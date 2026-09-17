@@ -1,0 +1,70 @@
+# ROADMAP.md
+
+**Composant** : LIVEX (général)
+**Statut** : [STABLE]
+**Dernière mise à jour** : 17 septembre 2026
+**Dépend de** : `VISION.md`, `VERSIONING.md`
+**Source Monographie** : Annexe J (feuille de route V2 détaillée), Partie 9 (Conclusions)
+
+---
+
+## 1. Principe
+
+La road map LIVEX est exprimée **en ordre, sans dates** : les phases s'enchaînent de manière obligatoire, mais leur calendrier dépend de la disponibilité et des validations intermédiaires. C'est la méthode retenue (décision utilisateur) pour préserver la rigueur scientifique du projet sans s'enfermer dans un planning irréaliste.
+
+## 2. Les 6 phases cadres
+
+| Phase | Intitulé | Objectif | Sortie |
+| :-- | :-- | :-- | :-- |
+| **0** | Socle & gouvernance | Réseau, dépôt, conventions, pipeline | `LICENSE`, `VERSIONING.md`, `GITFLOW.md`, `CI_CD.md`, gouvernance, templates |
+| **1** | Cadrage général | Vision, architecture, contrats, glossaire | Documents racine (`ARCHITECTURE.md`, `COMMUNICATION.md`, ...) |
+| **2** | Moteur (SYNE) | Cœur du monde simulé | `docs/docs-syne/*` |
+| **3** | Observation (ECHOS) | Analyse et pilotage | `docs/docs-echos/*` |
+| **4** | Représentation (PRISM) | Rendu et interaction | `docs/docs-prism/*` |
+| **5** | Consolidation | Cohérence des contrats, FAQ, contribution | Relecture croisée, `FAQ.md`, `CONTRIBUTING.md`, checklist finale |
+
+## 3. Alignement sur la feuille de route V2 (Annexe J)
+
+La Monographie fournit une feuille de route V2 en 24 semaines (13 phases). Elle sert de **référence technique** pour le contenu des jalons, mais sa temporalité est indicative. Équivalence indicative :
+
+| Phase Monographie (J.1) | Contenu | État LIVEX |
+| :-- | :-- | :-- |
+| 0 | Architecture & documentation | Contenu couvert par les **phases 0-1** |
+| 1 | BDI + Perception | **Phase 2** (SYNE) — boucle 10/15 étapes |
+| 2 | Mémoire + Croyances | Phase 2 |
+| 3 | Décision + Utilité | Phase 2 |
+| 4 | Actions | Phase 2 |
+| 5 | Communication | Phase 2 |
+| 6 | Groupes | Phase 2 |
+| 7 | Ressources + Environnement | Phase 2 |
+| 8 | Observabilité | Phase 2 (anti-triche, validations) |
+| 9 | Performance & Scalabilité | Phase 2 (PERFORMANCE.md) |
+| 10 | Tests & Couverture | Phase 2 (TESTING.md) |
+| 11 | Analyzer V2 (7 moteurs) | **Phase 3** (ECHOS) |
+| 12 | CI/CD & Déploiement | **Phase 0** (pipeline) + **Phase 5** (consolidation) |
+
+## 4. Jalons de validation (Monographie J.2, adapté)
+
+1. **T0 — Y3** : 50 entités, 1000 ticks, pas de crash.
+2. **T1** : 50 entités, 2000 ticks, croyances divergentes (deux entités avec expériences différentes → croyances différentes).
+3. **T2** : traits différents → décisions différentes (courage=0 vs courage=2 sur situation identique).
+4. **T3** : information locale (message n'est reçu que dans le rayon).
+5. **T4** : benchmarks — objectifs de ticks/s (cf. `docs/docs-syne/PERFORMANCE.md`).
+6. **T5** : 160+ tests, couverture ≥ 80%.
+7. **T6** : `docker compose up` démarre en < 30 s.
+
+## 5. Long terme (vision)
+
+Pistes futures (Monographie §5.15, Partie 9) :
+- PRISM sur moteur graphique définitif (Unreal/Unity/autre).
+- Mode joueur-habitant (incarner une entité).
+- Représentation des constructions/territoires, saisons, météo.
+- Intégration ECHOS dans la scène.
+
+Ces pistes sont documentées dans les ROADMAP de chaque composant ; elles ne sont pas datées.
+
+---
+
+## Points restés ouverts dans ce document
+- Pas de dates : aucune jalon daté ne sera fixé avant consolidation des phase 2-4.
+- L'ordre des phases Monographie V2 est conservé tel quel ; si une priorité émerge pendant la documentation (ex. un sous-système à détailler en premier), la route sera mise à jour explicitement.

@@ -1,0 +1,77 @@
+# ROADMAP.md
+
+**Composant** : SYNE
+**Statut** : [STABLE]
+**Dernière mise à jour** : 17 septembre 2026
+**Dépend de** : `../ROADMAP.md` (racine)
+**Source Monographie** : Annexe J (feuille de route V2), §3.24 (fondations V0.1)
+
+---
+
+## 1. Principes
+
+- Road map **en ordre, sans dates** (décision utilisateur) ; l'ordre reflète les dépendances techniques.
+- Alignée sur la feuille de route V2 de la Monographie (Annexe J), prolongée par les fondations V0.1.
+
+## 2. Les phases techniques (ordre)
+
+| # | Intitulé | Contenu | Livrables |
+| :-- | :-- | :-- | :-- |
+| 0 | Socle | Architecture & documentation | ADR |
+| 1 | BDI + Perception | Boucle 10/15 étapes, perception partielle | boucle de simulation, grille spatiale |
+| 2 | Mémoire + Croyances | Mémoire long terme, révision croyances | mémoires + BeliefStore |
+| 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formula d'utilité, DecisionRecord |
+| 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions |
+| 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses |
+| 6 | Groupes | Cohésion, leadership, décisions collectives | formation/dissolution de groupes |
+| 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 |
+| 8 | Observabilité | Tests anti-triche, validations | événements typés complets |
+| 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | grille spatiale, pooling, LOD |
+| 10 | Tests & Couverture | 160+ tests, ≥ 80 % | suite complète |
+| 11 | Persistance & Reprise | JSON → SQLite, migration | schéma SQLite 11 tables, reprise bit-à-bit |
+
+(Ordre adapté de l'Annexe J.1)
+
+## 3. Jalons de validation (rappel)
+
+- **T0** : 50 ent., 1000 ticks, pas de crash.
+- **T1** : 50 ent., 2000 ticks, croyances divergentes.
+- **T2** : traits différents → décisions différentes.
+- **T3** : information locale.
+- **T4** : benchmarks (tableaux d'objectifs Annexe I.3).
+- **T5** : 160+ tests, couverture ≥ 80 %.
+
+## 4. Priorités V0.1 spécifiques
+
+1. **Déterminisme** d'abord (PRNG, ordre causal) — fondation de tout le reste.
+2. **Contrats de transport** (WorldSnapshot/ExternalEvent) tôt, pour que ECHOS et PRISM se calent dessus.
+3. **Persistance & reprise** dès que possible (reprise bit-à-bit).
+4. **Paramétrages** (« Entité A/B ») plutôt que classes rigides.
+
+## 5. Liens
+
+- Performance : `PERFORMANCE.md` (budgets, benchmarks).
+- Tests : `TESTING.md` (jalons J.2).
+- Déterminisme : `DETERMINISM.md`.
+
+## 6. Décisions reportées (spécifications [OUVERT])
+
+Conformément à la checklist §12, les choix ci-dessous restent **consciemment reportés** à la réalisation, sans bloquer l'implémentation :
+
+| Emplacement | Sujet reporté | Où le trancher |
+| :-- | :-- | :-- |
+| `COMMUNICATION_PROTOCOL.md` | Interception des messages (décision n°8) | Phase d'implémentation communication |
+| `COMMUNICATION_PROTOCOL.md` | Coûts/latence des pulsations (décision n°9) | Phase d'implémentation communication |
+| `SYSTEMS_SPEC.md` | Résolution chiffrée des conflits (ADR-009) | Implémentation `Interaction/` |
+| `SYSTEMS_SPEC.md` | Modèle d'héritage / fusion consentie (décision n°17) | Implémentation cycle de vie |
+| `SYSTEMS_SPEC.md` | Coûts des livres (décisions n°18/19) | Implémentation savoir tangible |
+| `PERFORMANCE.md` | Machine de référence des benchmarks V0.1 | Phase 9 (performance) |
+| `CONFIGURATION.md` | Calibration des taux de besoins / seuils | Phase de calibration |
+
+Ces points n'obligent aucune refonte documentaire : ils relèvent de paramétrages et de chiffrages internes.
+
+---
+
+## Points restés ouverts dans ce document
+- L'ordre ci-dessus est une proposition issu de la Monographie ; toute inversion sera justifiée explicitement (décision en cours d'arbitrage).
+- Aucune date ne sera posée avant consolidation des phases 0-2 du cadrage racine.

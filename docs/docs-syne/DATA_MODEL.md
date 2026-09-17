@@ -1,0 +1,134 @@
+# DATA_MODEL.md
+
+**Composant** : SYNE
+**Statut** : [STABLE]
+**Dernière mise à jour** : 17 septembre 2026
+**Dépend de** : `ARCHITECTURE.md`
+**Source Monographie** : §3.5 (monde), §3.7 (entités), §3.10 (mémoire), §3.11 (croyances), Annexe G (schéma SQLite)
+
+---
+
+## 1. Objectif
+
+Ce document décrit les **structures de données** centrales de SYNE. Elles forment le contrat interne du moteur et la source pour les contrats externes (`API_CONTRACTS.md`).
+
+## 2. Le Monde
+
+- **Espace** : plan 2D logique, dimensions configurables (défaut 500×500 unités), positions `{x, y}`. Non-toroidal : positions clampées à `[0, width]×[0, height]` (Monographie §3.5.3).
+- **Obstacles** : statiques, formes **rectangle** `{x, y, width, height}` et **cercle** `{x, y, radius}`. Bloquent le mouvement (collision simple : pas annulé ou glissé). En V1 n'bloquent pas la perception (V2 : murs bloquent ligne de vue) — §3.5.2.
+- **Ressources** (V1) :
+
+| Propriété | FoodSource | WaterSource |
+| :-- | :-- | :-- |
+| Id | string | string |
+| Type | `"food"` | `"water"` |
+| Position | {x,y} | {x,y} |
+| Quantity | ≥ 0 | — |
+| MaxQuantity | ≥ 0 | — |
+| RegenerationRate | 0 (V1) | — |
+| Capacity | — | 1000 (V1) |
+| Infinite | false | **true** (V1) |
+| KnownFromStart | true (V1) | true (V1) |
+
+V2 : régénération et dégradation des ressources (Monographie §3.18, §6.9).
+
+## 3. L'Entité
+
+### 3.1 Structure (V1 → V2)
+
+| Composant | Contenu V1 | Évolution V2 |
+| :-- | :-- | :-- |
+| **Identité** | Id (string), Espèce, Nom, Âge | idem |
+| **État** | Santé (0-100), Énergie (0-100), Faim (0-100), Soif (0-100), Position | + Fatigue |
+| **Traits** | Agressivité, Sociabilité | 8 traits (voir §3.7.4) |
+| **Inventaire** | Nourriture (int), Eau (int) | idem |
+| **Perception** | Observations courantes | structure Observation |
+| **Mémoire** | Entités connues, positions, confiance | file de souvenirs, salience |
+| **Décision** | État de décision, action courante | BDI complet |
+
+### 3.2 Les 8 traits (V2, [HÉRITÉ])
+
+| Trait | Plage | Neutre | Rôle |
+| :-- | :-- | :-- | :-- |
+| Bravery | 0-2 | 1.0 | Tolérance au risque |
+| Curiosity | 0-2 | 1.0 | Pulsion d'exploration |
+| Sociability | 0-2 | 1.0 | Préférence socialisation |
+| Greed | 0-2 | 1.0 | Concentration ressources |
+| Pessimism | 0-2 | 1.0 | Prudence / danger |
+| Aggression | 0-2 | 1.0 | Disposition à l'attaque |
+| Strength | 0-2 | 1.0 | Puissance de combat |
+| Speed | 0-2 | 1.0 | Vitesse de déplacement |
+
+Initialisation aléatoire (gaussienne autour de 1.0, plage 0.5–1.5) — Monographie §3.7.4.
+
+> **V0.1 (paramétrage)** : pas de classes rigides d'entités — les types sont définis par **paramétrages** (« Entité A »/« Entité B » : plages de traits, taux de besoins, capacités). Les entités d'un même paramétrage restent singulières (traits tirés individuellement). (Monographie §3.7.4)
+
+### 3.3 Cycle de vie
+
+| État | Description |
+| :-- | :-- |
+| **Active** | Perçoit, décide, agit |
+| **Resting** | Inactive mais consciente |
+| **Sleeping** | Inactive, ne perçoit pas le danger |
+| **Dead** | Prototype : mort irréversible, reste observable |
+
+> **V0.1** : la naissance repose sur la **fusion consentie** (§6.6.2) et la mort sur la **dissolution complète** (§6.2.5) : l'entité cesse d'exister et ne laisse qu'un événement de trace. (Monographie §3.7.5)
+
+## 4. Observations (Perception)
+
+```mermaid
+classDiagram
+    class Observation {
+        +entity_id
+        +entity_type
+        +position
+        +confidence
+        +tick
+        +attributes
+    }
+```
+
+Confiance : `1.0 - (distance/sensor_radius) × 0.3`, clampée [0.7, 1.0] (Monographie §3.9.4).
+
+Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Ressources (ResourceType, Quantité, Régénération) ; Obstacles (Position, Taille, Passable) — §3.9.5.
+
+## 5. Mémoire
+
+- Entrée : salience initiale, catégorie (Observation / Événement / Interaction), tick de stockage.
+- Décroissance exponentielle : `salience(t) = salience(0) × exp(-decayRate × (currentTick - storedAt))`.
+- Seuil d'oubli : salience > **0.01** (recall). Capacité maximale : **1000 entrées**/entité (V2 configurable) ; au-delà, purge de la plus ancienne.
+- Decay par type : Observation 0.01, Événement 0.005, Interaction 0.002.
+- À distinguer des **croyances** (Monographie §3.10.6).
+
+## 6. Croyances
+
+- Fait : `(subject, predicate, value)`.
+- Confiance : 0-1 ; « vraie » pour l'entité si ≥ **0.5**.
+- Source : perception, mémoire, communication, inférence.
+- Cycle de vie : création (confiance initiale) → confirmation (alignement +0.2, max 1.0) → conflit (conflicting −0.1, plancher 0.1) → décroissance temporelle → expiration (expiry_tick, confiance plafonnée à 0.4) — Monographie §3.11.
+
+## 7. Besoins
+
+6 catégories conservées en V0.1 — échelles/seuils de prototype ([HÉRITÉ], calibration décision n°6) :
+
+| Besoin | Échelle | Seuil déclenchement | Objectif généré |
+| :-- | :-- | :-- | :-- |
+| Faim (Hunger) | 0-100 | 60 | SeekFood |
+| Soif (Thirst) | 0-100 | 60 | SeekWater |
+| Fatigue | 0-100 | 70 | Rest |
+| Sécurité | 0-1 | 0.5 | Flee |
+| Social | 0-1 | 0.7 | Socialize |
+| Curiosité | 0-1 | 0.3 | Explore |
+
+Monographie §3.12, §3.13.1.
+
+## 8. Contrats de persistence (SQLite Annexe G)
+
+Le schéma SQLite V2.0 (11 tables : `runs`, `tick_states`, `agents`, `agent_snapshots`, `resources`, `resource_snapshots`, `groups`, `group_memberships`, `events`, `messages`, `metrics`) est détaillé dans `PERSISTENCE.md`.
+
+---
+
+## Points restés ouverts dans ce document
+- Dimensionnement exact des seuils de besoins (décision n°6) : calibration à faire.
+- Plage décroissance mémoire en V0.1 : valeurs de prototype conservées ([HÉRITÉ]) ; confirmer lors de la calibration générale.
+- Les attributs observés par les obstacles (V0.1) incluent-ils **Passable** ? La ligne de vue bloquée dépend des décisions obstacles (V2).
