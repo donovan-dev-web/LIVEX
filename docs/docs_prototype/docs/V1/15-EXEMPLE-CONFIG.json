@@ -1,0 +1,63 @@
+{
+  "Simulation": {
+    "Seed": 12345,
+    "SimulatedMinutesPerTick": 1,
+    "TargetTicksPerSecond": 10
+  },
+  "World": {
+    "Width": 500,
+    "Height": 500
+  },
+  "Population": {
+    "InitialAgents": 20,
+    "InitialFoodSources": 10,
+    "InitialWaterSources": 5
+  },
+  "Agent": {
+    "Health": 100,
+    "Energy": 80,
+    "Hunger": 20,
+    "Thirst": 20,
+    "PerceptionRange": 30,
+    "InteractionRange": 2,
+    "WalkSpeed": 0.25,
+    "DangerRange": 30,
+    "DistanceScale": 150
+  },
+  "Biology": {
+    "HungerIncreasePerTick": 0.10,
+    "ThirstIncreasePerTick": 0.15,
+    "EnergyDecreasePerTick": 0.05,
+    "RestEnergyGainPerTick": 0.50,
+    "EatHungerReduction": 35,
+    "DrinkThirstReduction": 50,
+    "HungerDamageThreshold": 90,
+    "HungerDamagePerTick": 0.10,
+    "ThirstDamageThreshold": 90,
+    "ThirstDamagePerTick": 0.20,
+    "ExhaustionThreshold": 5,
+    "ExhaustionDamagePerTick": 0.02
+  },
+  "Resources": {
+    "FoodInitialQuantity": 100,
+    "FoodMaxQuantity": 100,
+    "FoodRegenerationRate": 0,
+    "WaterInfinite": true,
+    "FoodKnownFromStart": true,
+    "WaterKnownFromStart": true
+  },
+  "Decision": {
+    "DecisionIntervalTicks": 1,
+    "ActionSwitchMargin": 0.05,
+    "DangerRange": 30,
+    "AttackBase": 5,
+    "TalkGain": 0.10
+  },
+  "Memory": {
+    "ConfidenceDecayPerTick": 0.01
+  },
+  "Events": {
+    "EmitDecisions": true,
+    "EmitActions": true
+  }
+}

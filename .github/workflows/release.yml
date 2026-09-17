@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "syne-v*"
+      - "echos-v*"
+      - "prism-v*"
+      - "livex-v*"
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build & publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+      - name: Tests
+        run: dotnet test --no-build --configuration Release
+
+      - name: Login GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push images
+        run: |
+          TAG="${GITHUB_REF_NAME#[A-Za-z]+-v}"
+          OWNER_LOWER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          docker compose build
+          docker tag ghcr.io/${OWNER_LOWER}/simulation-core:latest ghcr.io/${OWNER_LOWER}/simulation-core:${TAG}
+          docker push --all-tags ghcr.io/${OWNER_LOWER}/simulation-core
+          docker tag ghcr.io/${OWNER_LOWER}/analyzer:latest ghcr.io/${OWNER_LOWER}/analyzer:${TAG}
+          docker push --all-tags ghcr.io/${OWNER_LOWER}/analyzer
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG.md
+          generate_release_notes: true
