@@ -10,7 +10,7 @@
 
 ## 1. Qu'est-ce que LIVEX cherche à démontrer ?
 
-LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les **structures collectives qui émergent** — groupes, échanges, conflits, propagation du savoir. LLIVEX n'affirme pas que cette émergence prouve une « intelligence » : il fournit des **observateurs et des métriques mesurables**.
+LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les **structures collectives qui émergent** — groupes, échanges, conflits, propagation du savoir. LIVEX n'affirme pas que cette émergence prouve une « intelligence » : il fournit des **observateurs et des métriques mesurables**.
 
 ## 2. LIVEX prouve-t-il que les sociétés émergent « comme ça » ?
 
