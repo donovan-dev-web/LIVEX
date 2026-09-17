@@ -12,6 +12,10 @@
 
 **Systems & Emergent Network EXperiment** — une plateforme de simulation multi-agents à émergence, persistante et temps réel.
 
+[![Licence: MIT](https://img.shields.io/badge/Licence-MIT-00d4a0.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-V0.1-9cf.svg)](VERSIONING.md)
+[![Langue: FR](https://img.shields.io/badge/Langue-Fran%C3%A7ais-949494.svg)](GLOSSARY.md)
+
 Des entités autonomes — dotées de besoins, de mémoire, de croyances et de capacités — interagissent dans un monde persistant et partiellement observable. Les structures collectives (groupes, échanges, conflits) **émergent**, elles ne sont jamais scriptées.
 
 ## Les trois modules

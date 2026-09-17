@@ -1,5 +1,9 @@
 # ECHOS — Emergent Cognition & Holistic Observation System
 
+[![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
+[![7 moteurs](https://img.shields.io/badge/Moteurs-7-1f7f6f.svg)](METRICS_SPEC.md)
+[![API: REST 5000](https://img.shields.io/badge/API-REST%205000-1f7f6f.svg)](API_REST.md)
+
 **Composant** : ECHOS
 **Statut** : [STABLE]
 **Dernière mise à jour** : 17 septembre 2026
