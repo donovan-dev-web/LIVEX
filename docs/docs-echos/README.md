@@ -55,3 +55,6 @@ cd echos/echos-ui && npm run start
 | `ROADMAP.md` | Roadmap ECHOS |
 | `CHANGELOG.md` | Versions |
 | `adr/` | Décisions d'architecture |
+| `FRONTEND_VISION.md` | **Interface** : rôle, front/pilotage vs analyse/data-science, règles & limites |
+| `USER_STORIES.md` | **Interface** : personas + user stories + critères d'acceptation |
+| `UI_DESIGN.md` | **Interface** : design system, écrans, layout, flux de navigation |
