@@ -56,7 +56,7 @@ Exemple (format condensé) :
 Exemple :
 
 ```json
-{ "type": "event", "type": "decision_made", "tick": 5010, "agentId": "a1",
+{ "type": "decision_made", "tick": 5010, "agentId": "a1",
   "action": "Eat", "cause": "hunger 75", "value": { "utility": 15.5 } }
 ```
 

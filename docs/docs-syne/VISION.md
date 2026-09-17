@@ -31,7 +31,7 @@ Il fonctionne en **mode headless** (sans interface), produit des événements ob
 
 SYNE doit être un **instrument scientifique validable** :
 - capacité de 50 → 1000 entités avec un budget de tick maîtrisé ;
-- bidi architecturale (boucle cognitive 15 étapes) ;
+- architecture BDI (boucle cognitive en 15 étapes) ;
 - communication inter-entités par pulsations lumineuses ;
 - persistance (JSON → SQLite) et reprise exacte ;
 - anti-triche : son observabilité est **partielle** (rayon de perception) ;

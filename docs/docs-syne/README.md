@@ -1,5 +1,9 @@
 # SYNE — Systems & Emergent Network Engine
 
+[![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
+[![Tests: 160+](https://img.shields.io/badge/Tests-160+-1f7f6f.svg)](TESTING.md)
+[![Coverage: ≥80%](https://img.shields.io/badge/Coverage-%E2%89%A580%25-1f7f6f.svg)](TESTING.md)
+
 **Composant** : SYNE
 **Statut** : [STABLE]
 **Dernière mise à jour** : 17 septembre 2026

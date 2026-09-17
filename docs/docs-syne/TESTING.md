@@ -19,7 +19,7 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 - **XPlat Code Coverage** (Coverlet) — mesurer la couverture.
 - CI : exécuté dans `ci.yml` GitHub Actions.
 
-## 3. Perimètre des tests par système
+## 3. Périmètre des tests par système
 
 | Système | Tests ciblés |
 | :-- | :-- |

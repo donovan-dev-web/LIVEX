@@ -1,5 +1,9 @@
 # PRISM — Perceptual Rendering & Interactive Simulation Module
 
+[![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
+[![Moteur: Godot 4.7.2](https://img.shields.io/badge/Moteur-Godot%204.7.2-1f7f6f.svg)](ARCHITECTURE.md)
+[![100% procédural](https://img.shields.io/badge/Assets-100%25%20proc%C3%A9dural-1f7f6f.svg)](ASSETS_CONVENTIONS.md)
+
 **Composant** : PRISM
 **Statut** : [STABLE]
 **Dernière mise à jour** : 17 septembre 2026
@@ -16,9 +20,9 @@ Couche qui rend le monde **perceptible et interactif** : il représente graphiqu
 
 ```console
 # Projet Godot (édition .NET), matériel C#
-godot --path echos-ui  # remplacé par le projet Godot PRISM (godot-renderer/)
+godot --path godot-renderer  # dossier PRISM (monorepo : prism/)
 # Le partenaire SYNE se lance en --headless
-dotnet run --project simulation-core/Simulation.Console -- --headless
+dotnet run --project simulation-core/Simulation.Console -- --headless  # (syne/)
 ```
 
 ## Dépendances et ports
