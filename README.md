@@ -12,6 +12,10 @@
 
 ## Peut-on construire un monde qui écrit sa propre histoire ?
 
+**Peut-on construire un environnement virtuel régi par des lois fondamentales, au sein duquel des entités autonomes peuvent produire des comportements et des structures qui n'ont pas été explicitement programmés ?**
+
+C’est la question qui a donné naissance à LIVEX.
+
 LIVEX ne programme pas de comportements. Il construit un environnement, des lois
 et des entités autonomes — puis observe ce qui en émerge.
 
@@ -28,7 +32,7 @@ mené en tant que développeur et infographiste 3D indépendant, avec la rigueur
 monographie de référence de 184 pages : fondements scientifiques, architecture
 détaillée, choix techniques justifiés (ADR), éthique et limites assumées.
 
-**Documentation complète du projet : [`LIVEX-Monographie.pdf`](docs/LIVEX-Monographie.pdf)**
+**Documentation complète du projet : [`LIVEX-Monographie.pdf`](docs/LIVEX-Monographie_SnapV0-1.pdf)**
 
 ---
 
