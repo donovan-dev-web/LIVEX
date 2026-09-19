@@ -18,7 +18,8 @@
 
 ## **Monographie Général**
 
-Simulation émergente multi-agents persistante  
+Simulation émergente multi-agents persistante
+
  Architecture BDI \- Observabilité partielle \- Visualisation 3D
 
 **Date** : Septembre 2026	**Statut** : Document de référence	**Auteur** : CHARTRAIN Donovan
@@ -45,7 +46,7 @@ Je ne connais pas encore les réponses. C’est précisément pour essayer de le
 
 Cette monographie  présente cette démarche : sa vision, ses fondements, son architecture, ses méthodes d’expérimentation et les moyens mis en place pour observer ce qui pourra émerger.
 
-**Bienvenue dans LIVEX.**									*Donovan Chartrain*
+**Bienvenue dans LIVEX.** 		*Donovan Chartrain*
 
 # **Table des Matières** {#table-des-matières}
 
@@ -55,26 +56,27 @@ Cette monographie  présente cette démarche : sa vision, ses fondements, son ar
 
 [**Table des Matières	3**](#table-des-matières)
 
-[**Partie 1 \- Préface, Introduction et Fondements Scientifiques	4**](#partie-1---préface,-introduction-et-fondements-scientifiques)
+[**Partie 1 \- Préface, Introduction et Fondements Scientifiques	7**](#partie-1---préface,-introduction-et-fondements-scientifiques)
 
-[**Partie 2 \- Présentation du Projet LIVEX	18**](#partie-2---présentation-du-projet-livex)
+[**Partie 2 \- Présentation du Projet LIVEX	21**](#partie-2---présentation-du-projet-livex)
 
-[**Partie 3 \- SYNE \- Systems & Emergent Network Engine	32**](#partie-3---syne---systems-&-emergent-network-engine)
+[**Partie 3 \- SYNE \- Systems & Emergent Network Engine	36**](#partie-3---syne---systems-&-emergent-network-engine)
 
-[**Partie 4 \- ECHOS : Emergent Cognition & Holistic Observation System	86**](#partie-4---echos-:-emergent-cognition-&-holistic-observation-system)
+[**Partie 4 \- ECHOS : Emergent Cognition & Holistic Observation System	92**](#partie-4---echos-:-emergent-cognition-&-holistic-observation-system)
 
-[**Partie 5 \- PRISM : Perceptual Rendering & Interactive Simulation Module	101**](#partie-5---prism-:-perceptual-rendering-&-interactive-simulation-module)
+[**Partie 5 \- PRISM : Perceptual Rendering & Interactive Simulation Module	106**](#partie-5---prism-:-perceptual-rendering-&-interactive-simulation-module)
 
-[**Partie 6 \- Concepts Détaillés	114**](#partie-6---concepts-détaillés)
+[**Partie 6 \- Concepts Détaillés	119**](#partie-6---concepts-détaillés)
 
-[**Partie 7 \- Présentation Technique	133**](#partie-7---présentation-technique)
+[**Partie 7 \- Présentation Technique	138**](#partie-7---présentation-technique)
 
-[**Partie 8 \- Portée, Risques et Éthique	147**](#partie-8---portée,-risques-et-éthique)
+[**Partie 8 \- Portée, Risques et Éthique	152**](#partie-8---portée,-risques-et-éthique)
 
-[**Partie 9 \- Conclusions	156**](#partie-9---conclusions)
+[**Partie 9 \- Conclusions	161**](#partie-9---conclusions)
 
-[**Partie 10 \- Annexes	161**](#partie-10---annexes)
+[**Partie 10 \- Annexes	168**](#partie-10---annexes)
 
+# 
 
 # Partie 1 \- Préface, Introduction et Fondements Scientifiques {#partie-1---préface,-introduction-et-fondements-scientifiques}
 
@@ -88,13 +90,12 @@ LIVEX n'est pas un jeu vidéo au sens traditionnel du terme. Il ne s'agit pas no
 
 Cette question, qui semble relever de la science-fiction, s'appuie en réalité sur des décennies de recherches en intelligence artificielle, en simulation multi-agent, en sciences des systèmes complexes et en Artificial Life. Le projet se situe à l'intersection de ces domaines, tout en proposant une approche singulière : celle d'un monde où les structures sociales, économiques et culturelles émergent de règles locales simples, sans jamais être imposées par un scénario prédéfini.
 
-Ce document s'adresse à un public large. Le lecteur curieux y trouvera une introduction accessible aux concepts fondamentaux. Le chercheur y découvrira les fondements scientifiques et les choix architecturaux. Le développeur y lira les spécifications techniques détaillées. L'ensemble est conçu pour offrir une vision à 360 degrés d'un projet qui se veut à la fois ambitieux et humble    
-Ambitieux dans ses objectifs, humble face à la complexité des phénomènes qu'il cherche à explorer.
+Ce document s’adresse à un public large. Le lecteur curieux y trouvera une introduction accessible aux concepts fondamentaux. Le chercheur y découvrira les fondements scientifiques et les choix architecturaux. Le développeur y lira les spécifications techniques détaillées. L’ensemble est conçu pour offrir une vision à 360 degrés d’un projet qui se veut à la fois ambitieux et humble  
+Ambitieux dans ses objectifs, humble face à la complexité des phénomènes qu’il cherche à explorer.
 
 Donovan Chartrain, septembre 2026\.
 
----
-
+## 
 
 ## 1.2 Introduction
 
@@ -106,8 +107,9 @@ Dans les jeux vidéo modernes, les personnages non-joueurs (PNJ) suivent des arb
 
 Les systèmes d'intelligence artificielle les plus avancés reposent aujourd'hui sur des modèles de langage (LLM) capables de produire des réponses sophistiquées. Mais ces systèmes introduisent leurs propres limites : coût de calcul élevé, absence de reproductibilité, difficulté à tracer les chaînes causales, et incapacité à garantir la cohérence d'un monde sur le long terme.
 
-**LIVEX propose une troisième voie.** Plutôt que de scripter des comportements ou de déléguer la cognition à un réseau de neurones, le projet construit un moteur de simulation où des entités autonomes, dotées de besoins, de mémoire, de croyances et de capacités d'action, interagissent dans un environnement persistant et partiellement observable. Les structures collectives \- regroupements, flux d'échange, spécialisations, conflits \- ne sont pas programmées. Elles émergent.
+**LIVEX propose une troisième voie.** Plutôt que de scripter des comportements ou de déléguer la cognition à un réseau de neurones, le projet construit un moteur de simulation où des entités autonomes, dotées de besoins, de mémoire, de croyances et de capacités d’action, interagissent dans un environnement persistant et partiellement observable. Les structures collectives \- regroupements, flux d’échange, spécialisations, conflits \- ne sont pas programmées. Elles émergent.
 
+### 
 
 ### 1.2.2 Résumé du projet
 
@@ -115,12 +117,13 @@ LIVEX est un écosystème logiciel composé de trois modules principaux :
 
 - **SYNE** \- Le moteur de simulation, responsable de la vérité du monde simulé. C'est un programme C\#/.NET capable de fonctionner en mode *headless* (sans interface graphique), de produire des événements observables et de sauvegarder/restaurer son état avec une garantie de déterminisme bit-à-bit.  
     
-- **ECHOS** \- Le système d'observation, d'analyse et de pilotage. Il consomme le flux d'événements de SYNE, calcule des métriques d'émergence (diversité cognitive, propagation de l'information, complexité sociale, dynamiques de groupes) et fournit l'interface de la simulation. (Stack du prototype : Python/Django — à définir pour la V0.1.)  
+- **ECHOS** \- Le système d’observation, d’analyse et de pilotage. Il consomme le flux d’événements de SYNE, calcule des métriques d’émergence (diversité cognitive, propagation de l’information, complexité sociale, dynamiques de groupes) et fournit l’interface de la simulation. (Stack du prototype : Python/Django — à définir pour la V0.1.)  
     
-- **PRISM** \- La couche de représentation 3D, actuellement implémentée avec Godot 4.7 en C\#. Elle se contente de refléter l'état du monde fourni par SYNE, sans jamais intervenir dans les décisions des entités.
+- **PRISM** \- La couche de représentation 3D, actuellement implémentée avec Godot 4.7 en C\#. Elle se contente de refléter l’état du monde fourni par SYNE, sans jamais intervenir dans les décisions des entités.
 
 Ce document présente l'ensemble de ces composants, ainsi que les choix scientifiques, techniques et philosophiques qui les fondent.
 
+## 
 
 ## 1.3 Origine du projet
 
@@ -138,7 +141,7 @@ Le développement de LIVEX a suivi une démarche progressive :
 
 1. **Phase de conception** \- Rédaction d'une spécification complète détaillant le modèle conceptuel, les règles du monde, les paramètres et les critères de réussite.  
      
-2. **Prototype V1** \- Développement d'un moteur de simulation fonctionnel en C\#/.NET, avec des entités dotées de besoins biologiques, d'une perception locale, d'une mémoire à décroissance et d'un système de décision par utilité. Ce prototype a permis de valider les principes fondamentaux du projet.  
+2. **Prototype V1** \- Développement d’un moteur de simulation fonctionnel en C\#/.NET, avec des entités dotées de besoins biologiques, d’une perception locale, d’une mémoire à décroissance et d’un système de décision par utilité. Ce prototype a permis de valider les principes fondamentaux du projet.  
      
 3. **Optimisation et tests** \- Mise en place d'une grille spatiale pour la perception O(n²) → O(n), réduction des allocations mémoire, mise en place d'un pipeline CI/CD complet avec couverture de tests ≥80%.  
      
@@ -146,18 +149,21 @@ Le développement de LIVEX a suivi une démarche progressive :
      
 5. **monographie**  \- Ce document, qui constitue la référence complète du projet.
 
+## 
+
 ## 1.4 Vision et Philosophie
 
 ### 1.4.1 Le principe d'émergence
 
-Le concept central de LIVEX est celui de l'**émergence**. Dans le contexte de ce projet, un comportement est dit « émergent » lorsqu'il résulte d'interactions répétées entre entités, ressources et environnement, sans avoir été explicitement codé comme comportement global.
+Le concept central de LIVEX est celui de l’**émergence**. Dans le contexte de ce projet, un comportement est dit « émergent » lorsqu’il résulte d’interactions répétées entre entités, ressources et environnement, sans avoir été explicitement codé comme comportement global.
 
 **Exemple concret :**
 
-Une entité a soif. Il cherche de l'eau. Il trouve une source. Une autre entité, dans le même cas, trouve la même source. Au fil du temps, plusieurs entités convergent vers ce même point. Elles s'y côtoient. Certaines interagissent. Des relations se forment. Une structure sociale locale apparaît \- non pas parce qu'un script a dit « formez un groupe autour de l'eau », mais parce que des besoins individuels ont produit des convergences spatiales qui ont, à leur tour, produit des interactions sociales.
+Une entité a soif. Il cherche de l’eau. Il trouve une source. Une autre entité, dans le même cas, trouve la même source. Au fil du temps, plusieurs entités convergent vers ce même point. Elles s’y côtoient. Certaines interagissent. Des relations se forment. Une structure sociale locale apparaît \- non pas parce qu’un script a dit « formez un groupe autour de l’eau », mais parce que des besoins individuels ont produit des convergences spatiales qui ont, à leur tour, produit des interactions sociales.
 
 C'est précisément cette chaîne causale \- du besoin individuel à la structure collective \- que LIVEX cherche à produire, à observer et à analyser.
 
+### 
 
 ### 1.4.2 Les principes fondamentaux
 
@@ -165,9 +171,9 @@ Le projet repose sur un ensemble de principes invariants :
 
 1. **Pas de narration imposée** \- Aucune règle du type « au tick 1000, créer un événement » ou « si la population dépasse X, créer un village ». Les résultats du monde ne doivent jamais être préprogrammés.  
      
-2. **Autonomie des entités** \- Le moteur fournit aux entités un état, des besoins, une perception, une mémoire, des capacités, un système de décision et des actions. Il ne leur dicte pas ce qu'ils doivent faire.  
+2. **Autonomie des entités** \- Le moteur fournit aux entités un état, des besoins, une perception, une mémoire, des capacités, un système de décision et des actions. Il ne leur dicte pas ce qu’ils doivent faire.  
      
-3. **Observabilité partielle** \- Une entité ne connaît qu'une partie du monde. Il ne sait pas ce que font les autres entités hors de son rayon de perception. Il peut se tromper. Il peut être induit en erreur par de faux messages. Cette imperfection de l'information est un moteur puissant de diversité comportementale.  
+3. **Observabilité partielle** \- Une entité ne connaît qu’une partie du monde. Il ne sait pas ce que font les autres entités hors de son rayon de perception. Il peut se tromper. Il peut être induit en erreur par de faux messages. Cette imperfection de l’information est un moteur puissant de diversité comportementale.  
      
 4. **Déterminisme reproductible** \- Avec la même seed et les mêmes paramètres, le monde produit exactement la même trajectoire. Cela permet de comparer des expériences, d'isoler l'effet d'un paramètre et de valider scientifiquement les résultats.  
      
@@ -175,7 +181,7 @@ Le projet repose sur un ensemble de principes invariants :
      
 6. **Indépendance du rendu** \- Le moteur de simulation (SYNE) ne dépend d'aucun moteur graphique. Il peut fonctionner sans affichage, servir plusieurs clients simultanément et être testé en mode headless.  
      
-7. **Observabilité scientifique** \- Chaque décision d'entité, chaque action, chaque interaction est tracée et analysable. Le système d'observation (ECHOS) est conçu comme un instrument scientifique : il observe sans modifier le phénomène étudié.
+7. **Observabilité scientifique** \- Chaque décision d’entité, chaque action, chaque interaction est tracée et analysable. Le système d’observation (ECHOS) est conçu comme un instrument scientifique : il observe sans modifier le phénomène étudié.
 
 ### 1.4.3 Émergence faible et émergence forte
 
@@ -183,19 +189,21 @@ LIVEX ne prétend pas produire une « émergence forte » \- c'est-à-dire l'app
 
 Cette distinction est importante scientifiquement. Elle signifie que les phénomènes observés dans LIVEX doivent pouvoir être analysés, expliqués et reproduits, sans recours à des concepts mystérieux ou à des interprétations subjectives.
 
+## 
+
 ## 1.5 Les Limites des Mondes Virtuels
 
 ### 1.5.1 L'état actuel des simulations
 
 L'industrie du jeu vidéo et de la simulation a produit des mondes virtuels d'une richesse visuelle impressionnante. Les mondes ouverts de AAA offrent des paysages immenses, des PNJ aux routines quotidiennes et des systèmes économiques simulés. Pourtant, ces mondes souffrent de limitations fondamentales :
 
-**Les PNJ scriptés.** Un personnage dans un jeu de rôle a un ensemble fini de comportements possibles. Il peut marcher, parler, combattre, dormir. Mais il ne peut pas *décider* de former un groupe avec d'autres PNJ, de créer une route commerciale, de transmettre un savoir à une génération suivante. Ses comportements sont des réponses à des conditions prédéfinies, pas des choix émergents.
+**Les PNJ scriptés.** Un personnage dans un jeu de rôle à un ensemble fini de comportements possibles. Il peut marcher, parler, combattre, dormir. Mais il ne peut pas *décider* de former un groupe avec d'autres PNJ, de créer une route commerciale, de transmettre un savoir à une génération suivante. Ses comportements sont des réponses à des conditions prédéfinies, pas des choix émergents.
 
 **Les mondes décoratifs.** Un village dans un jeu peut sembler vivant, mais sa vie est une illusion. Les habitants n'ont pas de mémoire partagée, pas de conflits non scriptés, pas d'économie qui évolue. Si on laisse le jeu tourner pendant des heures, le village reste fondamentalement le même.
 
 **L'agent omniscient.** Dans la plupart des simulations, chaque agent connaît l'état complet du monde. Il sait où se trouve chaque ressource, chaque allié, chaque ennemi. Cette omniscience élimine l'exploration, la surprise, la rumeur, l'erreur \- autant de facteurs qui, dans le monde réel, produisent de la complexité.
 
-**L'IA opaque.** Les modèles de langage utilisés dans certaines simulations récentes produisent des comportements impressionnants mais inexplicables. On ne peut pas tracer pourquoi une entité a fait tel choix. On ne peut pas reproduire exactement la même expérience. On ne peut pas distinguer un comportement émergent d'un artefact du modèle.
+**L’IA opaque.** Les modèles de langage utilisés dans certaines simulations récentes produisent des comportements impressionnants mais inexplicables. On ne peut pas tracer pourquoi une entité a fait tel choix. On ne peut pas reproduire exactement la même expérience. On ne peut pas distinguer un comportement émergent d’un artefact du modèle.
 
 ### 1.5.2 La problématique de l'immersion durable
 
@@ -205,6 +213,8 @@ Un monde où les villages apparaissent et disparaissent aléatoirement n'est pas
 
 LIVEX cherche à produire une immersion d'un genre différent : non pas l'immersion visuelle d'un jeu vidéo, mais l'immersion intellectuelle d'un observateur face à un système complexe qui évolue sous ses yeux, dont les résultats sont surprenants mais compréhensibles, dont les chaînes causales sont traçables.
 
+### 
+
 ### 1.5.3 Vers des mondes autonomes
 
 L'ambition à long terme de LIVEX est de créer un **monde autonome** \- un monde capable d'évoluer sans intervention permanente du développeur ou du joueur. Un monde qui produit sa propre histoire, avec ses propres crises, ses propres équilibres, ses propres découvertes.
@@ -213,6 +223,7 @@ Cette ambition n'est pas nouvelle. Elle remonte aux premières simulations de sy
 
 LIVEX ne prétend pas résoudre tous ces défis. Mais il propose un cadre méthodologique rigoureux pour les aborder : un moteur de simulation déterministe et observé, un système d'analyse intégré, et une philosophie de conception qui place l'émergence au centre de l'architecture.
 
+## 
 
 ## 1.6 Les Fondements Scientifiques
 
@@ -235,8 +246,9 @@ Les propriétés clés des systèmes complexes sont :
 - **L'auto-organisation** \- Des structures apparaissent sans ordonnateur central.  
 - **La rétroaction** \- Les résultats des actions modifient les conditions qui ont produit ces actions.
 
-**Lien avec LIVEX** : Le monde de LIVEX est conçu comme un système complexe. Les entités sont adaptatives (leur décision dépend de leur état et de leur perception). Les ressources s'épuisent et se régénèrent. Les interactions produisent des structures sociales qui, à leur tour, modifient les interactions futures. Les boucles de rétroaction \- la zone la plus critique du projet \- sont au cœur de l'architecture.
+**Lien avec LIVEX** : Le monde de LIVEX est conçu comme un système complexe. Les entités sont adaptatives (leur décision dépend de leur état et de leur perception). Les ressources s’épuisent et se régénèrent. Les interactions produisent des structures sociales qui, à leur tour, modifient les interactions futures. Les boucles de rétroaction \- la zone la plus critique du projet \- sont au cœur de l’architecture.
 
+### 
 
 ### 1.6.3 La Simulation Multi-Agent
 
@@ -249,7 +261,7 @@ Les principes fondamentaux du MAS sont :
 - **L'interaction locale** \- Les agents n'interagissent qu'avec leurs voisins.  
 - **L'environnement partagé** \- Un espace commun dans lequel les agents évoluent.
 
-**Lien avec LIVEX** : LIVEX adopte ces principes tout en les enrichissant d'une architecture cognitive (BDI), d'une observabilité partielle et d'un protocole de communication dégradable. La différence fondamentale avec Sugarscape est que les entités de LIVEX disposent de mémoire, de croyances et de raisonnement, ce qui leur permet de construire des modèles internes du monde \- des modèles qui peuvent différer de la réalité.
+**Lien avec LIVEX** : LIVEX adopte ces principes tout en les enrichissant d’une architecture cognitive (BDI), d’une observabilité partielle et d’un protocole de communication dégradable. La différence fondamentale avec Sugarscape est que les entités de LIVEX disposent de mémoire, de croyances et de raisonnement, ce qui leur permet de construire des modèles internes du monde \- des modèles qui peuvent différer de la réalité.
 
 ### 1.6.4 L'Intelligence Collective
 
@@ -257,20 +269,21 @@ L'intelligence collective étudie comment des systèmes distribués \- sans cont
 
 Les systèmes d'intelligence en essaim \- fourmis, abeilles, poissons, oiseaux \- montrent comment des règles locales simples (« suis ton voisin », « va vers la source de nourriture la plus proche ») peuvent produire des organisations collectives robustes et adaptatives.
 
-**Lien avec LIVEX** : LIVEX cherche un phénomène analogue mais plus large. Les entités de LIVEX ne se contentent pas de suivre des règles d'essaim. Elles raisonnent, se souviennent, communiquent, mentent parfois, coopèrent ou s'affrontent. L'intelligence collective dans LIVEX émerge non pas de règles de suivi, mais de l'interaction entre cognition individuelle et contraintes environnementales.
+**Lien avec LIVEX** : LIVEX cherche un phénomène analogue mais plus large. Les entités de LIVEX ne se contentent pas de suivre des règles d’essaim. Elles raisonnent, se souviennent, communiquent, mentent parfois, coopèrent ou s’affrontent. L’intelligence collective dans LIVEX émerge non pas de règles de suivi, mais de l’interaction entre cognition individuelle et contraintes environnementales.
 
+### 
 
 ### 1.6.5 Les Architectures Cognitives BDI
 
-L'architecture BDI (*Beliefs, Desires, Intentions*) est un modèle cognitif pour les agents rationnels, proposé par Anand Rao et Michael Georgeff en 1995\. Elle structure le raisonnement de l'entité en trois composantes :
+L’architecture BDI (*Beliefs, Desires, Intentions*) est un modèle cognitif pour les agents rationnels, proposé par Anand Rao et Michael Georgeff en 1995\. Elle structure le raisonnement de l’entité en trois composantes :
 
-- **Croyances (Beliefs)** \- Ce que l'entité considère comme vrai sur le monde. Les croyances peuvent être correctes ou erronées, complètes ou partielles.  
-- **Désirs/Objectifs (Desires/Goals)** \- Ce que l'entité cherche à obtenir. Les désirs résultent des besoins de l'entité et de sa compréhension du monde.  
-- **Intentions (Intentions)** \- Ce que l'entité s'engage à faire. L'intention est le résultat d'une délibération qui choisit un plan d'action parmi les possibilities.
+- **Croyances (Beliefs)** \- Ce que l’entité considère comme vrai sur le monde. Les croyances peuvent être correctes ou erronées, complètes ou partielles.  
+- **Désirs/Objectifs (Desires/Goals)** \- Ce que l’entité cherche à obtenir. Les désirs résultent des besoins de l’entité et de sa compréhension du monde.  
+- **Intentions (Intentions)** \- Ce que l’entité s’engage à faire. L’intention est le résultat d’une délibération qui choisit un plan d’action parmi les possibilities.
 
 Le cycle BDI suit une séquence : Perception → Mémoire → Croyances → Besoins → Objectifs → Évaluation → Délibération → Intention → Action → Conséquences → Nouvelles perceptions.
 
-**Lien avec LIVEX** : LIVEX adopte le formalisme BDI comme structure d'organisation du raisonnement agentique. Cependant, le projet ne cherche pas à implémenter une théorie philosophique de l'esprit. BDI sert de cadre organisationnel : les croyances décrivent le modèle interne de l'entité, les objectifs expriment ses motivations, et les intentions représentent ses engagements d'action. La sélection d'action utilise une approche par utilité, qui reste transparente et explicable.
+**Lien avec LIVEX** : LIVEX adopte le formalisme BDI comme structure d’organisation du raisonnement agentique. Cependant, le projet ne cherche pas à implémenter une théorie philosophique de l’esprit. BDI sert de cadre organisationnel : les croyances décrivent le modèle interne de l’entité, les objectifs expriment ses motivations, et les intentions représentent ses engagements d’action. La sélection d’action utilise une approche par utilité, qui reste transparente et explicable.
 
 ### 1.6.6 Les Agents Génératifs et les LLM
 
@@ -285,6 +298,8 @@ Cependant, cette approche présente des limites significatives pour un projet co
 
 **Position de LIVEX** : Le projet se place volontairement dans la direction mécaniste, où la causalité reste contrôlée et analysable. Un LLM peut éventuellement être introduit dans le futur, mais jamais comme mécanisme central de cohérence du monde. Si un LLM est utilisé, ce sera comme une expérimentation identifiée, comparable à une baseline non-LLM.
 
+## 
+
 ## 1.7 Concepts Clés
 
 ### 1.7.1 Émergence
@@ -295,30 +310,32 @@ L'émergence ne signifie pas magie. Elle signifie que le résultat global est su
 
 Dans LIVEX, l'émergence se manifeste potentiellement à plusieurs niveaux :
 
-- **Émergence spatiale** \- Concentration d'entités autour de ressources, formation de zones densément peuplées.  
+- **Émergence spatiale** \- Concentration d’entités autour de ressources, formation de zones densément peuplées.  
 - **Émergence sociale** \- Apparition de relations de confiance, de groupes, de hiérarchies informelles.  
-- **Émergence informationnelle** \- Circulation et déformation de l'information par communication inter-Entités.  
+- **Émergence informationnelle** \- Circulation et déformation de l’information par communication inter-Entités.  
 - **Émergence économique** \- Flux d'échange, spécialisation, dépendance mutuelle.
 
 ### 1.7.2 Autonomie et Agency
 
 > **Définition** : L'« agency » désigne la capacité d'une entité à produire des actions orientées par son état interne et ses objectifs, sans commande externe directe.
 
-L'autonomie dans LIVEX est fonctionnelle, pas philosophique. Une entité de LIVEX est autonome au sens informatique : il sélectionne ses actions sans intervention externe. Cela ne signifie pas qu'il possède une conscience, une volonté ou un libre arbitre au sens métaphysique. LIVEX ne prétend pas résoudre le problème philosophique du libre arbitre. Une décision produite par un algorithme peut être autonome au sens technique sans être « libre » au sens philosophique.
+L’autonomie dans LIVEX est fonctionnelle, pas philosophique. Une entité de LIVEX est autonome au sens informatique : il sélectionne ses actions sans intervention externe. Cela ne signifie pas qu’il possède une conscience, une volonté ou un libre arbitre au sens métaphysique. LIVEX ne prétend pas résoudre le problème philosophique du libre arbitre. Une décision produite par un algorithme peut être autonome au sens technique sans être « libre » au sens philosophique.
 
 ### 1.7.3 Persistance
 
 > **Définition** : La persistance désigne la capacité du monde simulé à continuer d'exister et d'évoluer dans le temps, indépendamment de l'observation, et à pouvoir être sauvegardé puis restauré sans perte d'état essentiel.
 
-La persistance dans LIVEX est bit-à-bit : une simulation sauvegardée puis restaurée produit exactement la même trajectoire qu'une simulation qui n'a jamais été interrompue. Cette garantie repose sur la sérialisation de l'état complet du PRNG (*Pseudo-Random Number Generator*) \- les 4 × 64 bits de l'état xoshiro256\*\* \- ainsi que de l'état de toutes les entités, ressources et relations.
+La persistance dans LIVEX est bit-à-bit : une simulation sauvegardée puis restaurée produit exactement la même trajectoire qu’une simulation qui n’a jamais été interrompue. Cette garantie repose sur la sérialisation de l’état complet du PRNG (*Pseudo-Random Number Generator*) \- les 4 × 64 bits de l’état xoshiro256\*\* \- ainsi que de l’état de toutes les entités, ressources et relations.
+
+### 
 
 ### 1.7.4 Observabilité Partielle
 
-> **Définition** : Une entité est dit « partiellement observable » lorsqu'il ne perçoit et ne connaît qu'une partie de l'état réel du monde.
+> **Définition** : Une entité est dite « partiellement observable » lorsqu’il ne perçoit et ne connaît qu’une partie de l’état réel du monde.
 
-L'observabilité partielle est un principe fondamental de LIVEX. Une entité ne voit que ce qui se trouve dans son rayon de perception (configurable, par défaut 30 à 50 unités). Il ne peut pas accéder à la liste de toutes les entités du monde, à toutes les ressources, à tous les événements. Il doit construire un modèle interne du monde \- ses croyances \- à partir de perceptions incomplètes, de souvenirs dégradés et de messages potentiellement inexacts.
+L’observabilité partielle est un principe fondamental de LIVEX. Une entité ne voit que ce qui se trouve dans son rayon de perception (configurable, par défaut 30 à 50 unités). Il ne peut pas accéder à la liste de toutes les entités du monde, à toutes les ressources, à tous les événements. Il doit construire un modèle interne du monde \- ses croyances \- à partir de perceptions incomplètes, de souvenirs dégradés et de messages potentiellement inexacts.
 
-Cette contrainte est un moteur puissant de diversité : deux entités dans la même situation peuvent avoir des modèles internes différents, et donc prendre des décisions différentes. L'information imparfaite produit de l'exploration, de la surprise, de l'erreur \- autant de facteurs qui enrichissent les comportements émergents.
+Cette contrainte est un moteur puissant de diversité : deux entités dans la même situation peuvent avoir des modèles internes différents, et donc prendre des décisions différentes. L’information imparfaite produit de l’exploration, de la surprise, de l’erreur \- autant de facteurs qui enrichissent les comportements émergents.
 
 ### 1.7.5 Déterminisme
 
@@ -339,8 +356,9 @@ LIVEX garantit le déterminisme par :
 
 Le tick est l'unité fondamentale de temps. Chaque tick, le moteur exécute une séquence d'opérations dans un ordre causal strict. La fréquence des ticks est configurable : par défaut, 10 ticks par seconde réelle, soit un rapport de 1:10 (1 seconde réelle \= 10 minutes simulées).
 
-Le tick n'est pas seulement une unité de temps. C'est l'unité de causalité : chaque tick, les entités perçoivent, décident et agissent dans un ordre déterminé. Les conséquences d'une action dans un tick T n'affectent le monde qu'au tick T+1 (ou plus tard, si l'action est multi-ticks).
+Le tick n’est pas seulement une unité de temps. C’est l’unité de causalité : chaque tick, les entités perçoivent, décident et agissent dans un ordre déterminé. Les conséquences d’une action dans un tick T n’affectent le monde qu’au tick T+1 (ou plus tard, si l’action est multi-ticks).
 
+### 
 
 ### 1.7.7 SYNE, ECHOS, PRISM
 
@@ -348,12 +366,13 @@ Ces trois acronymes désignent les trois modules architecturaux de LIVEX :
 
 - **SYNE** (*Systems & Emergent Network Engine*) \- Le moteur de simulation. Il possède la vérité du monde. Il calcule les états, les interactions, les décisions. Il reste indépendant du rendu et peut fonctionner sans interface graphique ni module de visualisation. (Implémentation du prototype : C\#/.NET — choix technologique non figé pour la V0.1.)  
     
-- **ECHOS** (*Emergent Cognition & Holistic Observation System*) \- Le système d'observation, d'analyse et de pilotage. Il consomme les événements produits par SYNE, calcule des métriques d'émergence, analyse les trajectoires et fournit l'interface de la simulation (observation, contrôle, calibration). (Stack du prototype : Python/Django — à définir pour la V0.1.)  
+- **ECHOS** (*Emergent Cognition & Holistic Observation System*) \- Le système d’observation, d’analyse et de pilotage. Il consomme les événements produits par SYNE, calculent des métriques d’émergence, analyse les trajectoires et fournit l’interface de la simulation (observation, contrôle, calibration). (Stack du prototype : Python/Django — à définir pour la V0.1.)  
     
-- **PRISM** (*Perceptual Rendering & Interactive Simulation Module*) \- La couche de représentation. Elle affiche le monde en 3D et permet à l'utilisateur d'interagir avec la simulation sans jamais devenir la source de vérité du monde. Elle est actuellement implémentée avec Godot (prototype), mais le moteur graphique définitif reste ouvert (Unreal Engine, Unity ou autre).
+- **PRISM** (*Perceptual Rendering & Interactive Simulation Module*) \- La couche de représentation. Elle affiche le monde en 3D et permet à l’utilisateur d’interagir avec la simulation sans jamais devenir la source de vérité du monde. Elle est actuellement implémentée avec Godot (prototype), mais le moteur graphique définitif reste ouvert (Unreal Engine, Unity ou autre).
 
 **Invariant architectural** : SYNE peut exister sans ECHOS et PRISM. ECHOS et PRISM peuvent évoluer indépendamment tant qu'ils respectent les contrats définis avec SYNE.
 
+# 
 
 # Partie 2 \- Présentation du Projet LIVEX {#partie-2---présentation-du-projet-livex}
 
@@ -361,7 +380,7 @@ Ces trois acronymes désignent les trois modules architecturaux de LIVEX :
 
 **LIVEX** \- *Living Intelligent Virtual Ecosystem eXperience* \- est un projet de simulation émergente persistante dont l'objectif est de créer un monde artificiel capable de produire sa propre histoire.
 
-Contrairement aux jeux vidéo traditionnels, où les comportements des personnages sont scriptés et les événements planifiés, LIVEX repose sur un principe fondamentalement différent : les structures collectives \- groupes, flux d'échange, spécialisations, conflits \- ne sont jamais programmées. Elles émergent de l'interaction entre entités autonomes, dotées de besoins, de mémoire, de croyances et de capacités d'action, évoluant dans un environnement persistant et partiellement observable.
+Contrairement aux jeux vidéo traditionnels, où les comportements des personnages sont scriptés et les événements planifiés, LIVEX repose sur un principe fondamentalement différent : les structures collectives \- groupes, flux d’échange, spécialisations, conflits \- ne sont jamais programmées. Elles émergent de l’interaction entre entités autonomes, dotées de besoins, de mémoire, de croyances et de capacités d’action, évoluant dans un environnement persistant et partiellement observable.
 
 LIVEX ne cherche pas à simuler le monde réel. Il cherche à créer un monde artificiel cohérent, dans lequel les phénomènes sociaux apparaissent de manière non scriptée, restent traçables et analysables, et peuvent être étudiés scientifiquement.
 
@@ -373,36 +392,44 @@ LIVEX ne cherche pas à simuler le monde réel. Il cherche à créer un monde ar
 - **E**cosystem \- Les entités interagissent avec un environnement et des ressources.  
 - **eXperience** \- Le monde est un espace d'expérience, pas un produit fini.
 
+## 
 
 ## 2.2 Architecture Globale
 
 ### 2.2.1 Les trois modules
 
 LIVEX est structuré en trois modules indépendants, chacun ayant un rôle précis et des responsabilités clairement définies :  
-┌───────────────────────────────────────────────────────────────┐  
-│                         LIVEX — Architecture                  │  
-├───────────────────────────────────────────────────────────────┤  
-│                                                               │  
-│   ┌─────────────────────┐                                    │  
-│   │        SYNE         │   moteur, vérité du monde,         │  
-│   │  (moteur de sim.)   │   indépendant du rendu             │  
-│   └─────────┬───────────┘                                    │  
-│             │                                                │  
-│  observe ───┤──► ECHOS   (événements, état)                  │  
-│  pilote ────┴──► SYNE    (contrôle, calibration)             │  
-│  observe ───► PRISM     (état observable, sans accès aux     │  
-│               décisions internes)                           │  
-│                                                               │  
-└───────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐  
+│                        LIVEX \- Architecture                     │  
+├─────────────────────────────────────────────────────────────────┤  
+│                                                                 │  
+│  ┌──────────────┐    WebSocket     ┌──────────────┐             │  
+│  │              │ ◄──────────────► │              │             │  
+│  │     SYNE     │    (port 5180\)   │    PRISM     │             │  
+│  │   (C\#/.NET)  │                  │   (Godot)    │             │  
+│  │              │ ◄──────────────► │              │             │  
+│  └──────┬───────┘   HTTP (5181)    └──────────────┘             │  
+│         │                                                       │  
+│         │ WebSocket                                             │  
+│         │                                                       │  
+│  ┌──────▼───────┐    REST API       ┌──────────────┐            │  
+│  │              │ ───────────────►  │              │            │  
+│  │    ECHOS     │    (port 5000\)    │   Web UI     │            │  
+│  │(Python/Django│                   │ (React \+ TS) │            │  
+│  │  \+ Electron) │                   │              │            │  
+│  └──────────────┘                   └──────────────┘            │  
+│                                                                 │  
+└─────────────────────────────────────────────────────────────────┘
 
-| Module | Rôle (V0.1) | Implémentation du prototype |
-| :---- | :---- | :---- |
-| **SYNE** | Moteur de simulation ; possède la vérité du monde ; peut fonctionner sans interface ni rendu | C\#/.NET ; WebSocket 5180, contrôle 5181 |
-| **ECHOS** | Observation, analyse, pilotage, calibration ; **fournit l'interface de la simulation** | Python/Django ; REST 5000 |
-| **PRISM** | Représentation 3D, inspection, interaction ; observe SYNE sans être requis pour son exécution | Godot 4.7 (C\#) |
+| Module | Technologie | Rôle | Port |
+| :---- | :---- | :---- | :---- |
+| **SYNE** | C\# / .NET 10 | Moteur de simulation, vérité du monde | 5180 (WebSocket), 5181 (contrôle) |
+| **ECHOS** | Python / Django / Electron | Observation, analyse, instrumentation | 5000 (REST) |
+| **PRISM** | Godot 4.7 (C\#) | Représentation 3D, interaction | \- |
 
-> **Architecture V0.1** : il n'existe pas de module « Web UI » séparé. L'interface de la simulation (observation, analyse, contrôle) est intégrée à ECHOS. PRISM et ECHOS observent SYNE ; ils ne modifient jamais la vérité du monde hors des mécanismes de SYNE.
+**Architecture V0.1** : il n’existe pas de module « Web UI » séparé. L’interface de la simulation (observation, analyse, contrôle) est intégrée à ECHOS. PRISM et ECHOS observent SYNE ; ils ne modifient jamais la vérité du monde hors des mécanismes de SYNE.
 
+### 
 
 ### 2.2.2 Le principe d'indépendance
 
@@ -414,15 +441,14 @@ Cela signifie que :
 
 - SYNE peut fonctionner en mode *headless* (sans interface graphique ni module de rendu), produire des événements et les exposer via un contrat de transport (dans le prototype : WebSocket).  
 - PRISM peut se connecter à SYNE, afficher le monde en 3D et interagir avec lui **sans jamais être requis** pour exécuter la simulation, et sans aucun accès aux décisions internes des entités.  
-- ECHOS consomme le flux d'événements de SYNE, calcule les métriques, analyse les trajectoires et **fournit l'interface de la simulation** (observation, pilotage, calibration). Les protocoles d'exposition restent à définir pour la V0.1 (décision ouverte n°28).  
+- ECHOS consomme le flux d’événements de SYNE, calcule les métriques, analyse les trajectoires et **fournit l’interface de la simulation** (observation, pilotage, calibration). Les protocoles d’exposition restent à définir pour la V0.1 (décision ouverte n°28).  
 - Aucun des trois modules ne dépend directement d'un moteur graphique.
 
-Cette séparation est essentielle pour la scientificité du projet : elle garantit que l'observation (ECHOS) et la visualisation (PRISM) ne modifient pas le phénomène observé (SYNE), et que la représentation n'intervient jamais dans les décisions des entités.
+Cette séparation est essentielle pour la scientificité du projet : elle garantit que l’observation (ECHOS) et la visualisation (PRISM) ne modifient pas le phénomène observé (SYNE), et que la représentation n’intervient jamais dans les décisions des entités.
 
 ### 2.2.3 Les contrats de transport
 
-*(Implémentation du prototype — la V0.1 ne fige pas les protocoles, décision ouverte n°28. Les contrats retenus par le prototype sont :)*
-
+*(Implémentation du prototype — la V0.1 ne fige pas les protocoles, décision ouverte n°28. Les contrats retenus par le prototype sont :)*  
 La communication entre les modules repose sur trois protocoles :
 
 **WebSocket** (SYNE → PRISM et ECHOS) :
@@ -433,7 +459,7 @@ La communication entre les modules repose sur trois protocoles :
 
 **REST API** (ECHOS → interface intégrée) :
 
-- Port 5000 pour les métriques et l'analyse. Dans le prototype, cette API alimentait un module « Web UI » séparé ; dans l'architecture V0.1, l'interface est intégrée à ECHOS.  
+- Port 5000 pour les métriques et l’analyse. Dans le prototype, cette API alimentait un module « Web UI » séparé ; dans l’architecture V0.1, l’interface est intégrée à ECHOS.  
 - Endpoints : `/api/runs`, `/api/runs/{id}`, `/api/compare`, `/api/beliefs`, `/api/groups`, etc.
 
 **HTTP de contrôle** (PRISM → SYNE) :
@@ -448,7 +474,7 @@ La communication entre les modules repose sur trois protocoles :
 L'état d'un système correspond à l'ensemble des informations nécessaires pour décrire sa situation à un instant donné. Dans LIVEX, l'état comprend :
 
 - **L'état du monde** : temps, ressources, obstacles, événements en cours.  
-- **L'état des entités** : position, santé, énergie, faim, soif, traits, inventaire.  
+- **L’état des entités** : position, santé, énergie, faim, soif, traits, inventaire.  
 - **L'état cognitif** : croyances, mémoire, objectifs, intentions courantes.  
 - **L'état social** : relations de confiance, appartenances à des groupes.  
 - **L'état aléatoire** : l'état complet du PRNG (256 bits).
@@ -481,7 +507,7 @@ public interface IResourceSystem { ... }
 
 ### 2.3.5 Événement et Commande
 
-Un événement décrit qu'un fait s'est produit (« l'entité X a mangé »). Une commande exprime une demande d'action (« entité X, mange »). Cette distinction est fondamentale : ECHOS observe des événements, pas des commandes. Une entité de LIVEX ne reçoit jamais de commande comportementale de l'extérieur \- sauf commandes de débogage explicites.
+Un événement décrit qu’un fait s’est produit (« l’entité X a mangé »). Une commande exprime une demande d’action (« entité X, mange »). Cette distinction est fondamentale : ECHOS observe des événements, pas des commandes. Une entité de LIVEX ne reçoit jamais de commande comportementale de l’extérieur \- sauf commandes de débogage explicites.
 
 ### 2.3.6 Sérialisation
 
@@ -497,26 +523,25 @@ Un monde sauvegardé peut survivre à plusieurs versions du logiciel. Le format 
 
 ### 2.3.8 Parallélisme
 
-La simulation de nombreux entités peut bénéficier de l'exécution parallèle. Cependant, le parallélisme introduit des problèmes d'ordre, de concurrence et de reproductibilité. Dans LIVEX, le parallélisme est utilisé de manière contrôlée :
+La simulation de nombreuses entités peut bénéficier de l’exécution parallèle. Cependant, le parallélisme introduit des problèmes d’ordre, de concurrence et de reproductibilité. Dans LIVEX, le parallélisme est utilisé de manière contrôlée :
 
 - La perception peut être parallélisée (en lecture seule sur la grille spatiale).  
-- Les écritures sur l'état des entités sont séquentielles (pour garantir le déterminisme).  
-- Les calculs d'utilité sont indépendants par entité (pas de concurrence).
+- Les écritures sur l’état des entités sont séquentielles (pour garantir le déterminisme).  
+- Les calculs d’utilité sont indépendants par entité (pas de concurrence).
 
----
-
+## 
 
 ## 2.4 Mise en Situation
 
 ### 2.4.1 Un monde qui se crée lui-même
 
-Imaginez un monde vide. Au centre, 20 entités se matérialisent. Chacune a un nom, une position, un état de santé, un niveau de faim et de soif. Chacune perçoit le monde autour d'elle, mais pas au-delà. Chacune a ses propres souvenirs, ses propres croyances, ses propres tendances.
+Imaginez un monde vide. Au centre, 20 entités se matérialisent. Chacune a un nom, une position, un état de santé, un niveau de faim et de soif. Chacune perçoit le monde autour d’elle, mais pas au-delà. Chacune a ses propres souvenirs, ses propres croyances, ses propres tendances.
 
-Au début, les entités se déplacent aléatoirement. Certaines trouvent de la nourriture. D'autres trouvent de l'eau. Certaines se rencontrent. Elles échangent une information : « il y a de l'eau à l'est ». L'entité qui reçoit ce message peut y croire ou non. Il peut décider de se déplacer vers l'est, ou de rester où il est.
+Au début, les entités se déplacent aléatoirement. Certaines trouvent de la nourriture. D’autres trouvent de l’eau. Certaines se rencontrent. Elles échangent une information : « il y a de l’eau à l’est ». L’entité qui reçoit ce message peut y croire ou non. Il peut décider de se déplacer vers l’est, ou de rester où il est.
 
-Au fil des heures simulées, des schémas se dessinent. Des entités convergent vers les mêmes sources d'eau. Elles s'y côtoient. Certaines développent une relation de confiance. Un groupe se forme \- non pas parce qu'un script l'a décidé, mais parce que des besoins partagés ont produit des convergences spatiales qui ont produit des interactions sociales.
+Au fil des heures simulées, des schémas se dessinent. Des entités convergent vers les mêmes sources d’eau. Elles s’y côtoient. Certaines développent une relation de confiance. Un groupe se forme \- non pas parce qu’un script l’a décidé, mais parce que des besoins partagés ont produit des convergences spatiales qui ont produit des interactions sociales.
 
-Plus tard, une ressource s'épuise. Les entités doivent explorer de nouvelles zones. Certaines meurent. D'autres survivent et transmettent l'information : « la forêt à l'est est riche en bois ». L'information se propage, se déforme, se perd. Certaines entités prennent des décisions basées sur de fausses informations.
+Plus tard, une ressource s’épuise. Les entités doivent explorer de nouvelles zones. Certaines meurent. D’autres survivent et transmettent l’information : « la forêt à l’est est riche en bois ». L’information se propage, se déforme, se perd. Certaines entités prennent des décisions basées sur de fausses informations.
 
 Le monde évolue. Des structures apparaissent, se stabilisent, parfois disparaissent. Personne ne les a planifiées. Elles émergent.
 
@@ -524,11 +549,13 @@ Le monde évolue. Des structures apparaissent, se stabilisent, parfois disparais
 
 LIVEX n'est pas :
 
-- **Un jeu vidéo** \- Il n'y a pas de joueur, pas de victoire, pas de scenario.  
+- **Un jeu vidéo** \- Il n'y a pas de joueur, pas de victoire, pas de scénario.  
 - **Un modèle économique** \- LIVEX ne simule pas un marché réel, bien que des phénomènes de type économique puissent émerger.  
 - **Une simulation biologique** \- Les entités ne reproduisent pas (pas de reproduction en V1/V2), ne vieillissent pas au sens biologique.  
 - **Un chatbot** \- Les entités ne conversent pas en langage naturel. Leur communication utilise un protocole structuré de messages.  
 - **Un modèle de société** \- LIVEX ne prétend pas modéliser la société humaine. Il produit un monde artificiel dont les phénomènes sociaux sont analogues mais pas identiques.
+
+## 
 
 ## 2.5 Sources Étudiées et Historique du Domaine
 
@@ -555,6 +582,8 @@ La recherche sur les systèmes multi-agents, l'intelligence artificielle et les 
 | 2024 | GABM tutorial | Navid Ghaffarzadegan | Modèles agent-based génératifs |
 | 2024 | LLMs and generative ABM | Yikang Lu et al. | Complexité et LLM |
 
+### 
+
 ### 2.5.2 Positionnement de LIVEX
 
 LIVEX se situe à l'intersection de plusieurs lignées de recherche :
@@ -571,6 +600,7 @@ LIVEX se distingue cependant par plusieurs choix :
 - **Observabilité intégrée** \- Le système d'observation (ECHOS) est un composant architectural, pas un outil externe.  
 - **Reproductibilité garantie** \- Même seed \= même résultat, vérifié bit-à-bit.
 
+## 
 
 ## 2.6 Histoire des Domaines Associés
 
@@ -594,6 +624,7 @@ Sugarscape a démontré plusieurs principes fondamentaux :
 
 **Pertinence pour LIVEX** : LIVEX s'inscrit directement dans cette tradition, mais avec des agents cognitivement plus riches (BDI), une observabilité partielle et un protocole de communication dégradable.
 
+### 
 
 ### 2.6.3 Les Architectures Cognitives Symboliques
 
@@ -601,11 +632,11 @@ Les architectures BDI apportent une représentation structurée des croyances, o
 
 Les systèmes BDI ont été appliqués avec succès dans de nombreux domaines : planification de missions spatiales (Remote Agent de la NASA), simulation de batailles navales, systèmes de contrôle industriels. Leur force réside dans la transparence du raisonnement : on peut toujours expliquer pourquoi un agent a fait un choix donné.
 
-**Pertinence pour LIVEX** : LIVEX utilise le formalisme BDI comme structure d'organisation, pas comme théorie philosophique de l'esprit. Les croyances décrivent le modèle interne de l'entité, les objectifs expriment ses motivations, et les intentions représentent ses engagements. La sélection d'action utilise une approche par utilité, qui reste transparente.
+**Pertinence pour LIVEX** : LIVEX utilise le formalisme BDI comme structure d’organisation, pas comme théorie philosophique de l’esprit. Les croyances décrivent le modèle interne de l’entité, les objectifs expriment ses motivations, et les intentions représentent ses engagements. La sélection d’action utilise une approche par utilité, qui reste transparente.
 
 ### 2.6.4 L'Intelligence en Essaim
 
-Les approches d'intelligence en essaim (*Swarm Intelligence*) montrent qu'un ensemble d'agents relativement simples peut produire des comportements collectifs robustes. Les colonies de fourmis, les essaims d'abeilles, les bancs de poissons et les volées d'oiseaux illustrent comment des règles locales de suivi, d'attraction et de répulsion peuvent produire des organisations distribuées sans coordonnateur central.
+Les approches d’intelligence en essaim (*Swarm Intelligence*) montrent qu’un ensemble d’agents relativement simples peut produire des comportements collectifs robustes. Les colonies de fourmis, les essaims d’abeilles, les bancs de poissons et les volées d’oiseaux illustrent comment des règles locales de suivi, d’attraction et de répulsion peuvent produire des organisations distribuées sans coordinateur central.
 
 **Pertinence pour LIVEX** : Les principes d'essaim \- autonomie, émergence, fonctionnement distribué \- sont pertinents pour LIVEX, mais ne couvrent pas à eux seuls la mémoire autobiographique, la croyance individuelle et l'histoire intergénérationnelle recherchées par le projet.
 
@@ -617,6 +648,8 @@ Cependant, les défis restent majeurs : coût de calcul, reproductibilité, late
 
 **Position de LIVEX** : Le projet se place principalement dans la direction mécaniste, tout en gardant la possibilité d'introduire un LLM de manière périphérique et expérimentale.
 
+## 
+
 ## 2.7 Présentation Simplifiée de SYNE
 
 **SYNE** \- *Systems & Emergent Network Engine* \- est le cœur de LIVEX. C'est le système qui possède la vérité simulée du monde.
@@ -624,7 +657,7 @@ Cependant, les défis restent majeurs : coût de calcul, reproductibilité, late
 ### 2.7.1 Ce que SYNE fait
 
 - Il gère le **temps simulé** (tick par tick).  
-- Il maintient l'**état du monde** (entités, ressources, obstacles, événements).  
+- Il maintient l’**état du monde** (entités, ressources, obstacles, événements).  
 - Il exécute la **boucle de simulation** : perception, mémoire, croyances, besoins, objectifs, décision, action.  
 - Il produit des **événements** observables (créations, morts, décisions, actions, communications).  
 - Il gère la **persistance** (sauvegarde/chargement en SQLite).  
@@ -634,15 +667,14 @@ Cependant, les défis restent majeurs : coût de calcul, reproductibilité, late
 
 - Il ne **rend pas** la scène graphique.  
 - Il ne **dépend** d'aucun moteur graphique (Godot, Unity, Unreal).  
-- Il ne **décide** pas des résultats à partir de ce qu'ECHOS souhaite observer.  
+- Il ne **décide** pas des résultats à partir de ce que ECHOS souhaite observer.  
 - Il ne **donne** pas à une entité une connaissance globale du monde.  
 - Il ne **narrate** pas artificiellement les événements.  
 - Il n'utilise pas de **LLM** comme mécanisme nécessaire à la cohérence fondamentale.
 
 ### 2.7.3 Technologies
 
-*(Choix de l'implémentation du prototype V1/V2 — repères [HÉRITÉ], non figés pour la V0.1 : le langage, le stockage et les protocoles restent des décisions ouvertes.)*
-
+- *(Choix de l’implémentation du prototype V1/V2 — repères \[HÉRITÉ\], non figés pour la V0.1 : le langage, le stockage et les protocoles restent des décisions ouvertes.)*  
 - **Langage** : C\# / .NET 10  
 - **Architecture** : Monorepo avec `Simulation.Core` (bibliothèque) et `Simulation.Console` (exécutable)  
 - **Déterminisme** : PRNG xoshiro256\*\*, seed configurable  
@@ -651,35 +683,36 @@ Cependant, les défis restent majeurs : coût de calcul, reproductibilité, late
 
 ---
 
+## 
 
 ## 2.8 Présentation Simplifiée d'ECHOS
 
-**ECHOS** \- *Emergent Cognition & Holistic Observation System* \- est l'observatoire de LIVEX.
+**ECHOS** \- *Emergent Cognition & Holistic Observation System* \- est l’observatoire de LIVEX.
 
-### 2.8.1 Ce qu'ECHOS fait
+### 2.8.1 Ce que ECHOS fait
 
-- Il **consomme** le flux d'événements de SYNE.  
-- Il **calcule** des métriques d'émergence (7 dimensions de métriques).  
-- Il **stocke** les résultats dans SQLite pour analyse historique (*[HÉRITÉ]* — stockage à définir pour la V0.1).  
-- Il **fournit l'interface** de la simulation : observation, pilotage (pause, reprise, vitesse, seed, lancement, sauvegarde, export) et calibration. Il n'existe pas de module d'interface séparé dans l'architecture V0.1.  
+- Il **consomme** le flux d’événements de SYNE.  
+- Il **calcule** des métriques d’émergence (7 dimensions de métriques).  
+- Il **stocke** les résultats dans SQLite pour analyse historique (*\[HÉRITÉ\]* — stockage à définir pour la V0.1).  
+- Il **fournit l’interface** de la simulation : observation, pilotage (pause, reprise, vitesse, seed, lancement, sauvegarde, export) et calibration. Il n’existe pas de module d’interface séparé dans l’architecture V0.1.  
 - Il **détecte** les phénomènes émergents (communautés, boucles de rétroaction, coordination collective).
 
-### 2.8.2 Ce qu'ECHOS ne fait pas
+### 2.8.2 Ce que ECHOS ne fait pas
 
 - Il ne **modifie** pas l'état de la simulation.  
-- Il ne **produit** pas d'événements qui affectent les entités.  
+- Il ne **produit** pas d’événements qui affectent les entités.  
 - Il ne **remplace** pas l'observation humaine \- il la complète.
 
 ### 2.8.3 Technologies
 
-*(Stack de l'implémentation du prototype — repères [HÉRITÉ], non figés pour la V0.1.)*
-
+- *(Stack de l’implémentation du prototype — repères \[HÉRITÉ\], non figés pour la V0.1.)*  
 - **Langage** : Python \+ Django  
 - **Interface** : intégrée à ECHOS (prototype : shell Electron abandonné, remplacé par le web React)  
 - **Stockage** : SQLite  
 - **API** : REST (port 5000\)  
 - **Métriques** : Diversité cognitive, propagation information, complexité sociale, convergence d'objectifs, boucles de rétroaction, dynamiques de groupes, durabilité des ressources.
 
+## 
 
 ## 2.9 Présentation Simplifiée de PRISM
 
@@ -689,13 +722,13 @@ Cependant, les défis restent majeurs : coût de calcul, reproductibilité, late
 
 - Il **affiche** le monde en 3D (entités, ressources, obstacles, livres, constructions, territoires).  
 - Il permet à l'utilisateur de **naviguer** (caméra, zoom, déplacement).  
-- Il permet d'**inspecter** une Entité (croyances, objectifs, décision).  
-- Il permet à l'utilisateur d'**interagir** avec le monde par ses mécanismes prévus par SYNE (interaction, sélection, visualisation analytique).  
+- Il permet d’**inspecter** une Entité (croyances, objectifs, décisions).  
+- Il permet à l’utilisateur d’**interagir** avec le monde par ses mécanismes prévus par SYNE (interaction, sélection, visualisation analytique).  
 - Il **visualise** les croyances, la confiance inter-Entités, les groupes, la communication lumineuse.
 
 ### 2.9.2 Ce que PRISM ne fait pas
 
-- Il ne **possède** pas l'état canonique d'une Entité.  
+- Il ne **possède** pas l'état canonique d'une entité.  
 - Il ne **calcule** pas les règles sociales.  
 - Il ne **détermine** pas la vérité d'une croyance.  
 - Il ne **modifie** pas directement le monde sans passer par les mécanismes prévus par SYNE.  
@@ -703,32 +736,37 @@ Cependant, les défis restent majeurs : coût de calcul, reproductibilité, late
 
 ### 2.9.3 Technologies
 
-*(Implémentation du prototype — repères [HÉRITÉ], non figés pour la V0.1. Le moteur graphique définitif reste ouvert : Godot est le moteur actuel.)*
-
+- *(Implémentation du prototype — repères \[HÉRITÉ\], non figés pour la V0.1. Le moteur graphique définitif reste ouvert : Godot est le moteur actuel.)*  
 - **Moteur** : Godot 4.7.2 (édition .NET)  
 - **Langage** : C\#  
 - **Assets** : Totalement procéduraux (aucun asset externe)  
 - **Transport** : WebSocket (port 5180), HTTP (port 5181\)  
 - **Rendu** : CapsuleMesh (entités), SphereMesh (ressources), PlaneMesh (sol)
 
+## 
+
 ### 2.9.4 Les sous-composants (V0.1)
 
-La V0.1 structure PRISM autour de sous-composants de visualisation clairement séparés :
+La V0.1 structure PRISM autour de sous-composants de visualisation clairement séparés :  
+**World Renderer** — le monde, le sol, l’environnement.  
+**Camera** — navigation (zoom, déplacement, angles).  
+**Entity Renderer** — entités et leurs états.  
+**Environment Renderer** — environnement, ressources, obstacles.  
+**Resource Visualization** — ressources et quantités.  
+**Construction Visualization** — constructions.
 
-1. **World Renderer** — le monde, le sol, l'environnement.  
-2. **Camera** — navigation (zoom, déplacement, angles).  
-3. **Entity Renderer** — entités et leurs états.  
-4. **Environment Renderer** — environnement, ressources, obstacles.  
-5. **Resource Visualization** — ressources et quantités.  
-6. **Construction Visualization** — constructions.  
-7. **Territory Visualization** — territoires et influences.  
-8. **Communication Visualization** — pulsations lumineuses.  
-9. **Debug Visualization** — couches d'aide au développement.  
-10. **Analysis Overlay** — superposition des données d'analyse ECHOS.  
-11. **Interaction Layer** — sélection, inspection, pilotage.
+**Territory Visualization** — territoires et influences.
 
-Cette séparation reflète le principe que PRISM n'est pas la source de vérité du monde (§2.9.2) et peut être enrichi ou modifié sans toucher au moteur.
+**Communication Visualization** — pulsations lumineuses.
 
+**Debug Visualization** — couches d’aide au développement.
+
+**Analysis Overlay** — superposition des données d’analyse ECHOS.
+
+**Interaction Layer** — sélection, inspection, pilotage.  
+Cette séparation reflète le principe que PRISM n’est pas la source de vérité du monde (§2.9.2) et peut être enrichi ou modifié sans toucher au moteur.
+
+## 
 
 ## 2.10 Ce que LIVEX Cherche à Faire Différemment
 
@@ -741,11 +779,12 @@ Cette séparation reflète le principe que PRISM n'est pas la source de vérité
 | LLM au centre | Coût et reproductibilité | LLM périphérique et optionnel |
 | Simulation sans mémoire | Peu d'histoire individuelle | Mémoire, croyances et trajectoire individuelle |
 | Société imposée | Résultat préprogrammé | Organisation émergente |
-| Rendu propriétaire du modèle | Couplage moteur/simulation | SYNE indépendant \+ PRISM inter-changeable |
+| Rendu propriétaire du modèle | Couplage moteur/simulation | SYNE indépendant \+ PRISM interchangeable |
 | Analyse après coup seulement | Faible observabilité | ECHOS intégré dès l'architecture |
 
 LIVEX ne prétend pas que son approche est supérieure à toutes les autres. Il prétend qu'elle est **différente** et qu'elle ouvre des possibilités que les autres approches n'explorent pas : la production de structures sociales non scriptées dans un monde persistant, reproductible et observable.
 
+# 
 
 # Partie 3 \- **SYNE** \- *Systems & Emergent Network Engine* {#partie-3---syne---systems-&-emergent-network-engine}
 
@@ -774,11 +813,12 @@ La liste des interdictions est aussi importante que la liste des responsabilité
 
 -  Rendre directement la scène graphique.  
 -  Dépendre d'Unreal Engine, Unity ou d'un autre moteur de rendu.  
--  Décider des résultats à partir de ce qu'ECHOS souhaite observer.  
+-  Décider des résultats à partir de ce que ECHOS souhaite observer.  
 -  Donner à une entité une connaissance globale du monde.  
 -  Introduire une narration pour expliquer artificiellement un événement.  
 -  Utiliser un LLM comme mécanisme nécessaire à la cohérence fondamentale du monde.
 
+## 
 
 ## 3.2 Architecture Logique
 
@@ -799,48 +839,45 @@ SYNE est organisé en couches logiques, chacune ayant des responsabilités clair
 | **Persistence** | Sauvegarde, chargement, versionnement | État global |
 | **Events** | Traçabilité et instrumentation | Tous les systèmes |
 
+### 
 
 ### 3.2.2 Les systèmes internes
 
 Dans l'implémentation V2, SYNE est composé de 14 systèmes complémentaires :
 
-1. **WorldSystem** \- Gestion du monde (dimensions, obstacles, environnement).  
-2. **PhysiologySystem** \- Évolution des paramètres biologiques (faim, soif, énergie, santé).  
-3. **PerceptionSystem** \- Génération des observations sensorielles.  
-4. **MemorySystem** \- Stockage et décroissance des souvenirs.  
-5. **BeliefStore** \- Gestion des croyances et leur révision.  
-6. **NeedsSystem** \- Calcul de l'état des besoins.  
-7. **GoalSystem** \- Génération et filtrage des objectifs.  
-8. **DecisionSystem** \- Sélection de la meilleure action (utilité).  
-9. **ActionSystem** \- Exécution des actions et gestion de leur cycle de vie.  
-10. **MovementSystem** \- Déplacement des entités dans le monde.  
-11. **CommunicationSystem** \- Protocole de messages entre entités.  
-12. **GroupSystem** \- Formation, gestion et dissolution des groupes.  
-13. **ResourceSystem** \- Gestion des ressources (quantité, régénération, dégradation).  
-14. **EnvironmentSystem** \- Événements mondiaux (saisons, catastrophes, cycles).
-
-> **V0.1 (17 sous-systèmes de référence)** : la V0.1 structure SYNE autour de **17 sous-systèmes**
-> clairement séparés (séparation des responsabilités, chaque couche testable indépendamment,
-> §27 de la Fondation) :  
-> 1. Core Runtime (boucle, tick, scheduler, état global, configuration, cycle de vie)  
-> 2. World System (état du monde, espace, environnement, règles globales minimales)  
-> 3. Entity System (entités)  
-> 4. Cognitive System (Perception, Memory, Beliefs, Internal State, Needs, Goals, Utility, Decision, Intention, Actions)  
-> 5. Resource & Energy System (ressources, disponibilité, consommation, énergie, coûts)  
-> 6. Spatial System (position, proximité, requêtes spatiales, visibilité, voisinage)  
-> 7. Navigation System (pathfinding, chemins, réévaluation, obstacles)  
-> 8. Communication System (émission, réception, portée, ligne de vue, coût, confiance, propagation)  
-> 9. Social System (relations, confiance, réputation, groupes, coalitions)  
-> 10. Knowledge System (connaissances, livres, lecture, écriture, transmission)  
-> 11. Construction System (bâtiments, coûts, placement, effets physiques)  
-> 12. Territory System (occupation, contrôle, influence spatiale, évolution territoriale)  
-> 13. Conflict System (confrontation, dégâts, épuisement, dissolution)  
-> 14. Life Cycle System (naissance, reproduction, générations, mort)  
-> 15. Event System (événements structurés, propagation interne, instrumentation, replay, analyse)  
-> 16. Persistence System (sauvegarde, chargement, cohérence, état PRNG)  
-> 17. Determinism System (seed, état PRNG, ordre d'exécution contrôlé, reproduction d'expérience)  
->  
-> Les 14 systèmes du prototype ci-dessus n'en sont que le sous-ensemble implémenté ([HÉRITÉ]).
+1. WorldSystem \- Gestion du monde (dimensions, obstacles, environnement).  
+2. PhysiologySystem \- Évolution des paramètres biologiques (faim, soif, énergie, santé).  
+3. PerceptionSystem \- Génération des observations sensorielles.  
+4. MemorySystem \- Stockage et décroissance des souvenirs.  
+5. BeliefStore \- Gestion des croyances et leur révision.  
+6. NeedsSystem \- Calcul de l'état des besoins.  
+7. GoalSystem \- Génération et filtrage des objectifs.  
+8. DecisionSystem \- Sélection de la meilleure action (utilité).  
+9. ActionSystem \- Exécution des actions et gestion de leur cycle de vie.  
+10. MovementSystem \- Déplacement des entités dans le monde.  
+11. CommunicationSystem \- Protocole de messages entre entités.  
+12. GroupSystem \- Formation, gestion et dissolution des groupes.  
+13. ResourceSystem \- Gestion des ressources (quantité, régénération, dégradation).  
+14. EnvironmentSystem \- Événements mondiaux (saisons, catastrophes, cycles).  
+15. V0.1 (17 sous-systèmes de référence) : la V0.1 structure SYNE autour de 17 sous-systèmes clairement séparés (séparation des responsabilités, chaque couche testable indépendamment, §27 de la Fondation) :  
+16. 1\. Core Runtime (boucle, tick, scheduler, état global, configuration, cycle de vie)  
+17. 2\. World System (état du monde, espace, environnement, règles globales minimales)  
+18. 3\. Entity System (entités)  
+19. 4\. Cognitive System (Perception, Memory, Beliefs, Internal State, Needs, Goals, Utility, Decision, Intention, Actions)  
+20. 5\. Resource & Energy System (resources, disponibilité, consommation, énergie, coûts)  
+21. 6\. Spatial System (position, proximité, requêtes spatiales, visibilité, voisinage)  
+22. 7\. Navigation System (pathfinding, chemins, réévaluation, obstacles)  
+23. 8\. Communication System (émission, réception, portée, ligne de vue, coût, confiance, propagation)  
+24. 9\. Social System (relations, confiance, réputation, groupes, coalitions)  
+25. 10\. Knowledge System (connaissances, livres, lecture, écriture, transmission)  
+26. 11\. Construction System (bâtiments, coûts, placement, effets physiques)  
+27. 12\. Territory System (occupation, contrôle, influence spatiale, évolution territoriale)  
+28. 13\. Conflict System (confrontation, dégâts, épuisement, dissolution)  
+29. 14\. Life Cycle System (naissance, reproduction, générations, mort)  
+30. 15\. Event System (événements structurés, propagation interne, instrumentation, replay, analyse)  
+31. 16\. Persistence System (sauvegarde, chargement, cohérence, état PRNG)  
+32. 17\. Determinism System (seed, état PRNG, ordre d’exécution contrôlé, reproduction d’expérience)  
+33. Les 14 systèmes du prototype ci-dessus n’en sont que le sous-ensemble implémenté (\[HÉRITÉ\]).
 
 ### 3.2.3 Le modèle de données
 
@@ -871,7 +908,7 @@ Le modèle de données central de SYNE est :
 
 Le **tick** est l'unité logique d'avancement de la simulation. Sa durée simulée est configurable ; la valeur par défaut en V1 est de 1 tick \= 1 minute simulée, et le rapport par défaut est de 10 ticks par seconde réelle. Cela signifie qu'une seconde réelle correspond à 10 minutes simulées.
 
-### 3.3.2 Ordre causal V1 (11 étapes) — [HÉRITÉ]
+### 3.3.2 Ordre causal V1 (11 étapes) — \[HÉRITÉ\]
 
 La boucle V1 suit un ordre causal strict de 11 étapes, documenté dans la spécification du prototype :
 
@@ -889,7 +926,9 @@ La boucle V1 suit un ordre causal strict de 11 étapes, documenté dans la spéc
 
 Cet ordre est **contractuel** : il doit rester stable entre versions pour garantir la reproductibilité. La causalité est documentée et testée (par exemple : l'action « boire » diminue la soif → l'événement « DrinkCompleted » est émis → l'état est modifié → la prochaine décision en tient compte).
 
-### 3.3.3 Chaîne causale V2 (10 étapes BDI) — [HÉRITÉ]
+### 
+
+### 3.3.3 Chaîne causale V2 (10 étapes BDI) — \[HÉRITÉ\]
 
 La boucle V2 étend la boucle V1 avec le cycle cognitif BDI complet :  
 *Perception → Mémoire → Croyances → État interne → Besoins →*  
@@ -901,29 +940,25 @@ Cette chaîne est **conceptuelle** : le scheduler peut distribuer chaque sous-sy
 
 ### 3.3.4 La boucle décisionnelle V0.1 (15 étapes)
 
-La boucle de simulation de référence pour la V0.1 est la suivante ([V0.1], §28 de la Fondation) :
-
-1\.  **Percevoir**  
-2\.  **Mettre à jour la mémoire**  
-3\.  **Réviser les croyances**  
-4\.  **Mettre à jour l'état interne**  
-5\.  **Mettre à jour les besoins**  
-6\.  **Générer / actualiser les objectifs**  
-7\.  **Générer les possibilités**  
-8\.  **Évaluer les possibilités**  
-9\.  **Délibérer**  
+La boucle de simulation de référence pour la V0.1 est la suivante (\[V0.1\], §28 de la Fondation) :  
+1\. **Percevoir**  
+2\. **Mettre à jour la mémoire**  
+3\. **Réviser les croyances**  
+4\. **Mettre à jour l’état interne**  
+5\. **Mettre à jour les besoins**  
+6\. **Générer / actualiser les objectifs**  
+7\. **Générer les possibilités**  
+8\. **Évaluer les possibilités**  
+9\. **Délibérer**  
 10\. **Définir une intention**  
-11\. **Exécuter l'action**  
+11\. **Exécuter l’action**  
 12\. **Produire des conséquences**  
 13\. **Modifier le monde**  
 14\. **Produire des événements**  
-15\. **Nouvelles perceptions** ↺
-
-Cette boucle est **conceptuelle** : elle ne signifie pas que chaque étape doit être exécutée à chaque tick (le scheduler distribue les sous-systèmes sur des fréquences distinctes, §3.4). Elle remplace les boucles V1/V2 (§3.3.2-§3.3.3), conservées comme historique du prototype ([HÉRITÉ]).
-
-**Traçabilité** : toute action est reconstructible remontant à sa perception d'origine (exigence ECHOS, §32.3) :
-
-`Action ← Intention ← Objectif ← Besoin ← Croyance ← Mémoire ← Perception`
+15\. **Nouvelles perceptions** ↺  
+Cette boucle est **conceptuelle** : elle ne signifie pas que chaque étape doit être exécutée à chaque tick (le scheduler distribue les sous-systèmes sur des fréquences distinctes, §3.4). Elle remplace les boucles V1/V2 (§3.3.2-§3.3.3), conservées comme historique du prototype (\[HÉRITÉ\]).  
+**Traçabilité** : toute action est reconstructible remontant à sa perception d’origine (exigence ECHOS, §32.3) :  
+Action ← Intention ← Objectif ← Besoin ← Croyance ← Mémoire ← Perception
 
 ### 3.3.5 Fréquence des ticks
 
@@ -963,9 +998,9 @@ Dans le scénario de haute échelle (500-1000 entités), SYNE applique un niveau
 | Zone 1 | 100-200 unités | Tous les 2 ticks (0.5) |
 | Zone 2 | 200-400 unités | Tous les 4 ticks (0.25) |
 
-La formule est simple : `decisionFrequency = 1 / 2^LOD`, et la décision n'est réévaluée que si `currentTick % decisionInterval == 0` (avec `decisionInterval = 2^LOD` ticks). Sinon, l'entité continue son action courante.
+La formule est simple : `decisionFrequency = 1 / LOD`, et la décision n'est réévaluée que si `currentTick % decisionFrequency == 0`. Sinon, l'agent continue son action courante.
 
-Ce mécanisme permet de réduire d'environ 2× le coût de décision pour les entités distantes, sans impact perceptible sur la qualité de simulation.
+Ce mécanisme permet de réduire d’environ 2× le coût de décision pour les entités distantes, sans impact perceptible sur la qualité de simulation.
 
 ## 3.5 Le Monde Simulé
 
@@ -984,7 +1019,7 @@ Les obstacles bloquent le mouvement (collision simple : pas annulé ou glissé l
 
 ### 3.5.3 Clamping des positions
 
-Les entités sont contraintes aux limites du monde (monde non-toroidal). La position est clampée à `[0, width] × [0, height]`. À chaque fin de tick, une validation d'état garantit que toutes les positions sont dans les limites.
+Les agents sont contraints aux limites du monde (monde non-toroidal). La position est clampée à `[0, width] × [0, height]`. À chaque fin de tick, une validation d'état garantit que toutes les positions sont dans les limites.
 
 ### 3.5.4 Ressources spatiales
 
@@ -993,7 +1028,7 @@ Le monde contient des sources de nourriture (FoodSource) et des sources d'eau (W
 | Propriété | FoodSource | WaterSource |
 | :---- | :---- | :---- |
 | Id | string | string |
-| Type | "food" | "water" |
+| Type | “food” | “water” |
 | Position | {x, y} | {x, y} |
 | Quantity | ≥ 0 | \- |
 | MaxQuantity | ≥ 0 | \- |
@@ -1030,21 +1065,23 @@ SYNE utilise le PRNG **xoshiro256\*\*** pour tous les tirages aléatoires. Ce ch
 
 L'initialisation se fait via **splitmix64**, un mélangeur qui permet de dériver une séquence reproductible à partir d'une seed.
 
-**Règle stricte : `System.Random` est interdit.** Il n'est pas stable entre versions de .NET et son état n'est pas directement sérialisable.
+**Règle stricte : `System.Random` est interdit.** Il n'est pas stable entre les versions de .NET et son état n'est pas directement sérialisable.
 
 ### 3.6.4 Sérialisation de l'état RNG
 
 Pour la garantie de reprise bit-à-bit, l'état complet du PRNG (4 × ulong) est sauvegardé dans le fichier de persistance. Cela signifie qu'une simulation sauvegardée au tick 1000, rechargée, puis poursuivie, produit exactement les mêmes événements qu'une simulation qui n'a jamais été interrompue.
 
+## 
+
 ## 3.7 Les Entités
 
 ### 3.7.1 Principe d'autonomie
 
-L'entité est la notion centrale de LIVEX. Elle possède un état, des besoins, une perception, une mémoire, des croyances, des capacités, un système de décision et des actions. Le moteur fournit ces structures \- il ne dicte pas ce que l'entité doit faire.
+L’entité est la notion centrale de LIVEX. Elle possède un état, des besoins, une perception, une mémoire, des croyances, des capacités, un système de décision et des actions. Le moteur fournit ces structures \- il ne dicte pas ce que l’entité doit faire.
 
-### 3.7.2 Structure de l'entité (V1)
+### 3.7.2 Structure de l’entité (V1)
 
-En V1, l'entité est composé de :
+En V1, l’entité est composé de :
 
 | Composant | Contenu |
 | :---- | :---- |
@@ -1056,13 +1093,14 @@ En V1, l'entité est composé de :
 | **Mémoire** | Entités connues, positions, confiance |
 | **Décision** | État de décision, action courante |
 
+### 
 
-### 3.7.3 Structure de l'entité (V2)
+### 3.7.3 Structure de l’entité (V2)
 
-En V2, l'entité adopte l'architecture BDI complète :  
+En V2, l’entité adopte l’architecture BDI complète :  
 ![][image1]
 
-### 3.7.4 Les 8 traits de personnalité (repère [HÉRITÉ])
+### 3.7.4 Les 8 traits de personnalité (repère \[HÉRITÉ\])
 
 | Trait | Plage | État neutre | Rôle |
 | :---- | :---- | :---- | :---- |
@@ -1079,26 +1117,20 @@ Les traits sont initialisés aléatoirement entre 0,5 et 1,5 (gaussienne autour 
 
 Bravery \= 0.5 \+ Random.Shared.NextSingle();  // Plage : 0.5-1.5
 
-Les traits influencent les décisions via le modificateur de personnalité dans la fonction d'utilité.
-
-> **V0.1 (paramétrage conceptuel)** : le jeu de 8 traits fixe ci-dessus est l'implémentation du
-> prototype ([HÉRITÉ]). La V0.1 n'impose pas de classes rigides d'entités : les types sont définis
-> par des **paramétrages** (variantes « Entité A » / « Entité B » : plages de traits, taux de
-> besoins, capacités) plutôt que par des types codés en dur. Les entités d'un même paramétrage
-> restent singulières (traits tirés individuellement).
+Les traits influencent les décisions via le modificateur de personnalité dans la fonction d'utilité.  
+**V0.1 (paramétrage conceptuel)** : le jeu de 8 traits fixe ci-dessus est l’implémentation du prototype (\[HÉRITÉ\]). La V0.1 n’impose pas de classes rigides d’entités : les types sont définis par des **paramétrages** (variantes « Entité A » / « Entité B » : plages de traits, taux de besoins, capacités) plutôt que par des types codés en dur. Les entités d’un même paramétrage restent singulières (traits tirés individuellement).
 
 ### 3.7.5 Cycle de vie
 
 | État | Description |
 | :---- | :---- |
-| **Active** | L'entité perçoit, décide, agit normalement |
-| **Resting** | L'entité est inactive mais consciente (état transitoire) |
-| **Sleeping** | L'entité est inactive et ne perçoit pas le danger |
-| **Dead** | L'entité ne perçoit plus, ne décide plus, ne bouge plus |
+| **Active** | L’entité perçoit, décide, agit normalement |
+| **Resting** | L’entité est inactive mais consciente (état transitoire) |
+| **Sleeping** | L’entité est inactive et ne perçoit pas le danger |
+| **Dead** | L’entité ne perçoit plus, ne décide plus, ne bouge plus |
 
-**Comportement du prototype ([HÉRITÉ])** : l'entité mourait lorsque la santé atteignait 0 ; la mort était irréversible (pas de résurrection en V1/V2) et l'entité morte restait dans le monde comme objet observable, sans interagir. En V0.1, ce comportement est remplacé par la **dissolution complète** (voir la note ci-dessous et §6.2.5).
-
-> **V0.1** : la naissance repose sur la **fusion consentie** (§6.6.2) et la mort sur la **dissolution complète** (§6.2.5) : l'entité cesse d'exister et ne laisse qu'un événement de trace. L'état `Dead` persistant du prototype ([HÉRITÉ]) est remplacé par la suppression de l'entité.
+**Comportement du prototype (\[HÉRITÉ\])** : l’entité mourait lorsque la santé atteignait 0 ; la mort était irréversible (pas de résurrection en V1/V2) et l’entité morte restait dans le monde comme objet observable, sans interagir. En V0.1, ce comportement est remplacé par la **dissolution complète** (voir la note ci-dessous et §6.2.5).  
+**V0.1** : la naissance repose sur la **fusion consentie** (§6.6.2) et la mort sur la **dissolution complète** (§6.2.5) : l’entité cesse d’exister et ne laisse qu’un événement de trace. L’état Dead persistant du prototype (\[HÉRITÉ\]) est remplacé par la suppression de l’entité.
 
 ## 3.8 Architecture Cognitive BDI
 
@@ -1122,20 +1154,21 @@ Tick i:
 
 Dans LIVEX, les trois composantes BDI sont :
 
-1. **Croyances** \- Ce que l'entité tient pour vrai sur le monde. Les croyances décrivent des faits : « il y a de la nourriture à (85, 42\) », « Bob est un allié », « l'eau est abondante à l'est ». Chaque croyance est associée à une confiance (0-1) et à une source (perception directe, mémoire, communication, inférence).  
+1. **Croyances** \- Ce que l’entité tient pour vrai sur le monde. Les croyances décrivent des faits : « il y a de la nourriture à (85, 42\) », « Bob est un allié », « l’eau est abondante à l’est ». Chaque croyance est associée à une confiance (0-1) et à une source (perception directe, mémoire, communication, inférence).  
      
-2. **Désirs/Objectifs** \- Ce que l'entité cherche à obtenir. Les objectifs sont générés à partir des besoins non satisfaits : « faim \> 60 → cherche nourriture », « soif \> 60 → cherche eau ». Chaque objectif a une priorité calculée à partir de l'intensité du besoin, de la probabilité de succès et de l'urgence.  
+2. **Désirs/Objectifs** \- Ce que l’entité cherche à obtenir. Les objectifs sont générés à partir des besoins non satisfaits : « faim \> 60 → cherche nourriture », « soif \> 60 → cherche eau ». Chaque objectif a une priorité calculée à partir de l’intensité du besoin, de la probabilité de succès et de l’urgence.  
      
-3. **Intentions** \- Ce que l'entité s'engage à faire. L'intention est le résultat de la délibération : c'est l'action sélectionnée par la fonction d'utilité, associée à un niveau d'engagement (commitmentLevel) et des conditions d'interruption.
+3. **Intentions** \- Ce que l’entité s’engage à faire. L’intention est le résultat de la délibération : c’est l’action sélectionnée par la fonction d’utilité, associée à un niveau d’engagement (commitmentLevel) et des conditions d’interruption.
 
+### 
 
 ### 3.8.3 Exemple de cycle complet
 
-Voici un exemple réaliste du raisonnement d'une entité « Alice » au tick 5000 :
+Voici un exemple réaliste du raisonnement d’une entité « Alice » au tick 5000 :
 
 1\. PERCEPTION (rayon 50\) :  
    \- Ressource (Nourriture, pos 60,80, dist 13, conf 0.95)  
-   \- Entité Bob (pos 40,70, dist 15, conf 0.93)  
+\- Entité Bob (pos 40,70, dist 15, conf 0.93)  
    \- Obstacle (pos 70,75, dist 20, conf 0.97)
 
 2\. MÉMOIRE :
@@ -1148,7 +1181,7 @@ Voici un exemple réaliste du raisonnement d'une entité « Alice » au tick 500
 
    \- « Nourriture à (60,80) » \- confiance 0.95  
    \- « Bob à proximité » \- confiance 0.93  
-   \- Révision : « status de Bob » était « repos » → « marche »  
+   \- Révision : « statuts de Bob » était « repos » → « marche »  
      → confiance 0.8
 
 4\. BESOINS :
@@ -1175,11 +1208,11 @@ Voici un exemple réaliste du raisonnement d'une entité « Alice » au tick 500
 
 ### 3.9.1 Rôle
 
-Le système de perception transforme l'état du monde en observations pour l'entité. C'est la première étape de la boucle BDI. L'objectif est de fournir à chaque entité une vue **locale** et **potentiellement inexacte** du monde.
+Le système de perception transforme l’état du monde en observations pour l’entité. C’est la première étape de la boucle BDI. L’objectif est de fournir à chaque entité une vue **locale** et **potentiellement inexacte** du monde.
 
 ### 3.9.2 Le rayon de perception
 
-Le rayon de perception est configurable par espèce, dans une plage de **20 à 50 unités**. La valeur par défaut en V2 est 30 unités (avec une plage documentée de 20-50 selon les documents).
+Le rayon de perception est configurable par espèce, dans une plage de **20 à 50 unités**. La valeur par défaut en V2 est de 30 unités (avec une plage documentée de 20-50 selon les documents).
 
 > **Note de cohérence** : le rayon de perception doit rester supérieur à la vitesse de déplacement par tick pour éviter des « angles morts ». En V1 : WalkSpeed \= 0,25 m/s → 15 m/tick \< PerceptionRange \= 30 m.
 
@@ -1191,12 +1224,12 @@ public class Observation
 
 ### 3.9.4 Algorithme de perception
 
-FUNCTION Perceive(entité, world, tick):  
+FUNCTION Perceive(agent, world, tick):  
   observations ← \[\]  
-  nearby ← SpatialGrid.QueryRadius(entité.position, sensor\_radius)  
+  nearby ← SpatialGrid.QueryRadius(agent.position, sensor\_radius)  
   POUR CHAQUE entity DANS nearby:  
-    SI Random() \> entité.traits.perception\_accuracy: CONTINUE  
-    distance ← Distance(entité.position, entity.position)  
+    SI Random() \> agent.traits.perception\_accuracy: CONTINUE  
+    distance ← Distance(agent.position, entity.position)  
     confidence ← 1.0 \- (distance / sensor\_radius) \* 0.3  
     confidence ← Clamp(confidence, 0.7, 1.0)   // Confiance min 0.7  
     obs ← Observation(entity\_id, entity\_type, position, confidence, tick, attributes)  
@@ -1205,7 +1238,7 @@ FUNCTION Perceive(entité, world, tick):
 
 ### 3.9.5 Les attributs perçus
 
-Selon le type d'entité, l'entité perçoit différents attributs :
+Selon le type d’entité, l’entité perçoit différents attributs :
 
 | Type d'entité | Attributs perçus |
 | :---- | :---- |
@@ -1215,7 +1248,7 @@ Selon le type d'entité, l'entité perçoit différents attributs :
 
 ### 3.9.6 Optimisation : la grille spatiale
 
-La perception naïve est en **O(n²)** : chaque entité compare sa position avec celle de  tous les autres. Pour 1000 entités, cela représente 1 000 000 de comparaison par tick.
+La perception naïve est en **O(n²)** : chaque entité compare sa position avec celle de tous les autres. Pour 1000 entités, cela représente 1 000 000 de comparaison par tick.
 
 La solution est une **grille spatiale uniforme** :
 
@@ -1234,13 +1267,15 @@ La grille est reconstruite intégralement tous les 10 ticks, avec des mises à j
 
 ### 3.9.7 Perception étagée (staggered perception)
 
-Pour réduire davantage le coût de perception aux hautes échelles, les entités sont réparties en 4 groupes de rotation (`agentId hash % 4`) : chaque entité perçoit tous les 4 ticks. Cela réduit le travail de perception d'un facteur 4, au prix d'une perception pouvant être obsolète jusqu'à 4 ticks.
+Pour réduire davantage le coût de perception aux hautes échelles, les agents sont répartis en 4 groupes de rotation (`agentId hash % 4`) : chaque agent perçoit tous les 4 ticks. Cela réduit le travail de perception d'un facteur 4, au prix d'une perception pouvant être obsolète jusqu'à 4 ticks.
+
+## 
 
 ## 3.10 Système de Mémoire
 
 ### 3.10.1 Rôle
 
-La mémoire stocke les informations passées. Elle ne représente pas le monde tel qu'il est, mais le monde tel que l'entité l'a perçu. Cette distinction est cruciale : un souvenir peut être obsolète, incomplet ou inexact.
+La mémoire stocke les informations passées. Elle ne représente pas le monde tel qu’il est, mais le monde tel que l’entité l’a perçu. Cette distinction est cruciale : un souvenir peut être obsolète, incomplet ou inexact.
 
 ### 3.10.2 Structure des entrées mémoire
 
@@ -1264,9 +1299,11 @@ Exemple chiffré avec decayRate \= 0.05 :
 - Tick 50 : salience ≈ 0.08  
 - Tick 100 : salience ≈ 0.006 (\< 0.01 → souvenir « mort »)
 
+### 
+
 ### 3.10.4 Seuil d'oubli
 
-Un souvenir « meurt » lorsque sa salience passe sous le seuil de **0.01**. Il peut alors être purgé. La fonction de rappel filtre les entrées :
+Un souvenir « meurt » lorsque sa saillance passe sous le seuil de **0.01**. Il peut alors être purgé. La fonction de rappel filtre les entrées :
 
 FUNCTION Recall(filter \= None):  
   recalled ← \[\]  
@@ -1277,7 +1314,7 @@ FUNCTION Recall(filter \= None):
 
 ### 3.10.5 Capacité maximale
 
-La mémoire est bornée à **1000 entrées** par entité (valeur configurable en V2). Au-delà, la plus ancienne entrée est supprimée (`Queue.Dequeue()`). Cette limite empêche la croissance mémoire illimitée dans les longues simulations.
+La mémoire est bornée à **1000 entrées** par agent (valeur configurable en V2). Au-delà, la plus ancienne entrée est supprimée (`Queue.Dequeue()`). Cette limite empêche la croissance mémoire illimitée dans les longues simulations.
 
 ### 3.10.6 Lien avec les croyances
 
@@ -1286,14 +1323,15 @@ La mémoire ne doit pas être confondue avec les croyances :
 - **Mémoire** : enregistrement des expériences passées (« j'ai vu de la nourriture à 85,42 au tick 500 »).  
 - **Croyance** : interprétation du monde (« il y a probablement de la nourriture à 85,42 »).
 
-Une expérience peut être mémorisée, puis oubliée, contredite par une expérience plus récente, ou réinterprétée. Cette distinction permet d'obtenir des **erreurs persistantes** \- une entité peut croire une chose fausse parce que sa mémoire contient une information obsolète qui n'était pas contradictoire.
+Une expérience peut être mémorisée, puis oubliée, contredite par une expérience plus récente, ou réinterprétée. Cette distinction permet d’obtenir des **erreurs persistantes** \- une entité peut croire une chose fausse parce que sa mémoire contient une information obsolète qui n’était pas contradictoire.
 
+## 
 
 ## 3.11 Système de Croyances
 
 ### 3.11.1 Rôle
 
-Le système de croyances (BeliefStore) est l'interface entre les perceptions/mémoires et la prise de décision. Les croyances sont la représentation structurée de ce que l'entité considère comme vrai sur le monde.
+Le système de croyances (BeliefStore) est l’interface entre les perceptions/mémoires et la prise de décision. Les croyances sont la représentation structurée de ce que l’entité considère comme vrai sur le monde.
 
 ### 3.11.2 Structure d'une croyance
 
@@ -1301,11 +1339,11 @@ Le système de croyances (BeliefStore) est l'interface entre les perceptions/mé
 
 ### 3.11.3 Cycle de vie d'une croyance
 
-Tick 100 : L'entité perçoit de la nourriture à (85, 42\)
+Tick 100 : L’entité perçoit de la nourriture à (85, 42\)
 
   → Croyance créée : confiance 0.8, source DirectPerception
 
-Tick 101 : L'entité perçoit de nouveau la nourriture au même endroit
+Tick 101 : L’entité perçoit de nouveau la nourriture au même endroit
 
   → Croyance confirmée : confiance 0.95 (alignement)
 
@@ -1315,7 +1353,7 @@ Tick 110 : Plus d'observation nouvelle
   → Confiance : 0.7
 
 Tick 150 : Expiration atteinte (expiry\_tick)  
-  → La croyance devient "suspecte" : confiance maximale 0.4
+→ La croyance devient “suspecte” : confiance maximale 0.4
 
 ### 3.11.4 Révision des croyances
 
@@ -1340,10 +1378,11 @@ ACTION   : L'ancienne croyance est supprimée, la nouvelle est confirmée
 
 ### 3.11.5 Le seuil de croyance
 
-Une croyance est considérée comme « vraie » pour l'entité si sa confiance est ≥ **0.5**. En dessous de ce seuil, l'entité peut l'ignorer ou la traiter avec prudence.
+Une croyance est considérée comme « vraie » pour l’entité si sa confiance est ≥ **0.5**. En dessous de ce seuil, l’entité peut l’ignorer ou la traiter avec prudence.
 
 La prise de décision utilise la confiance dans la fonction d'utilité : une action basée sur une croyance peu fiable sera pénalisée.
 
+## 
 
 ## 3.12 Système de Besoins
 
@@ -1360,9 +1399,7 @@ En V2, les entités possèdent 6 besoins (catégories conservées en V0.1) :
 | Social | 0-1 | 0.7 | Pousse à socialiser |
 | Curiosité | 0-1 | 0.3 | Pousse à explorer |
 
-> **V0.1** : les **échelles et seuils** ci-dessus sont des exemples chiffrés du prototype
-> ([HÉRITÉ]), non une norme. La V0.1 conserve les 6 catégories ; le dimensionnement exact des
-> seuils sera calibré par les décisions ouvertes (notamment décision n°6).
+**V0.1** : les **échelles et seuils** ci-dessus sont des exemples chiffrés du prototype (\[HÉRITÉ\]), non une norme. La V0.1 conserve les 6 catégories ; le dimensionnement exact des seuils sera calibré par les décisions ouvertes (notamment décision n°6).
 
 ### 3.12.2 Définition anthropomorphique
 
@@ -1372,6 +1409,7 @@ Les besoins sont définis comme des **tensions** \- des pressions comportemental
 
 ### ![][image5]
 
+### 
 
 ### 3.12.4 Besoins non satisfaits
 
@@ -1396,6 +1434,8 @@ Les taux de consommation sont configurables par espèce (JSON) :
   "movement\_cost": 0.2  
 }
 
+## 
+
 ## 3.13 Système d'Objectifs
 
 ### 3.13.1 Génération d'objectifs
@@ -1411,11 +1451,10 @@ Les objectifs sont générés à partir des besoins non satisfaits :
 | Social \> 0.7 | Socialize(nearby\_agents) |
 | Curiosité \> 0.3 (et pas en combat) | Explore(unknown\_regions) |
 
-
 ### 3.13.2 Filtrage de faisabilité
 
 Chaque objectif candidat est examiné pour sa faisabilité :  
-\- L'entité a-t-elle la capacité nécessaire ?  
+\- L’entité a-t-elle la capacité nécessaire ?  
 \- La cible est-elle accessible (dans les croyances) ?  
 \- Taux de succès estimé \> 0 ?  
 \- La mémoire ne contient-elle pas un échec récent ?  
@@ -1440,6 +1479,7 @@ Scoring des actions :
   Rest :           (3-0-0) × 1.0 × 1.0 \+ 1 \= 4.0  
 Sélection : MoveTo food (17.22)
 
+## 
 
 ## 3.14 Système de Décision (Utility AI)
 
@@ -1459,16 +1499,17 @@ Chaque terme est calculé séparément, ce qui rend la décision **transparente 
 
 Le bénéfice mesure la satisfaction potentielle d'un besoin par l'action :
 
-"Eat"      : benefit \= Min(entité.Needs\["Hunger"\].Level, 30\)  
-"Drink"    : benefit \= Min(entité.Needs\["Thirst"\].Level, 25\)  
-"Explore"  : benefit \= entité.Needs\["Curiosity"\].Level × 0.5 \+ 10  
-"Rest"     : benefit \= Min(entité.Needs\["Fatigue"\].Level, 40\)  
-"Social"   : benefit \= entité.Needs\["Social"\].Level × 0.8  
-"Gather"   : benefit \= action.Metadata\["ResourceAmount"\] ?? 10  
+“Eat” : benefit \= Min(entité.Needs\[“Hunger”\].Level, 30\)  
+“Drink” : benefit \= Min(entité.Needs\[“Thirst”\].Level, 25\)  
+“Explore” : benefit \= entité.Needs\[“Curiosity”\].Level × 0.5 \+ 10  
+“Rest” : benefit \= Min(entité.Needs\[“Fatigue”\].Level, 40\)  
+“Social” : benefit \= entité.Needs\[“Social”\].Level × 0.8  
+“Gather” : benefit \= action.Metadata\[“ResourceAmount”\] ?? 10  
 default    : benefit \= 5
 
 **Bonus d'alignement** : si l'action soutient directement l'objectif courant, le bénéfice est multiplié par **1.2**.
 
+### 
 
 ### 3.14.4 Le calcul du coût (Cost)
 
@@ -1478,9 +1519,11 @@ default    : benefit \= 5
 
 ### ![][image8]
 
+### 
+
 ### 3.14.6 Le calcul de la confiance (Confidence)
 
-La confiance mesure la fiabilité de l'information sur laquelle se base l'action :
+La confiance mesure la fiabilité de l’information sur laquelle se base l’action :
 
 confidence \= 0.5   // Confiance de base
 
@@ -1506,7 +1549,7 @@ RETOURNER Min(1.0, Max(0.0, confidence))
 
 ### 3.14.7 Le calcul de l'urgence (Urgency)
 
-L'urgence mesure la pression temporelle du besoin :
+L’urgence mesure la pression temporelle du besoin :
 
 // Courbe sigmoïde (transition douce autour du seuil 50\)  
 urgency \= 1 / (1 \+ exp(-0.1 × (need.Level \- 50)))  
@@ -1514,13 +1557,14 @@ urgency ×= 20   // Mise à l'échelle 0-20
 // Bonus pour objectif ancien  
 SI goalAge \> 100 ticks: urgency \+= 5  
 // Bonus pour état critique  
-SI entité.Energy \< 10 OU entité.Needs\["Hunger"\].Level \> 90 :  
+SI agent.Energy \< 10 OU agent.Needs\["Hunger"\].Level \> 90 :  
   urgency \+= 10
 
+### 
 
 ### 3.14.8 Le modificateur de personnalité (PersonalityMod)
 
-La personnalité module le score d'utilité en fonction des traits de l'entité :
+La personnalité module le score d’utilité en fonction des traits de l’entité :
 
 mod \= 1.0  
 SI action.IsRisky:  mod ×= (0.5 \+ traits.Bravery)       // 0.5-1.5  
@@ -1540,7 +1584,7 @@ Toutes les actions possibles pour chaque objectif sont évaluées. L'action à l
 
 ### 3.14.10 L'hystérésis (anti-oscillation)
 
-Pour éviter qu'une entité ne change d'action à chaque tick, un mécanisme d'hystérésis est appliqué : le passage d'une action courante à une nouvelle action nécessite que la nouvelle action dépasse l'action courante d'au moins `actionSwitchMargin` (par défaut 0.05).
+Pour éviter qu'un agent ne change d'action à chaque tick, un mécanisme d'hystérésis est appliqué : le passage d'une action courante à une nouvelle action nécessite que la nouvelle action dépasse l'action courante d'au moins `actionSwitchMargin` (par défaut 0.05).
 
 ### 3.14.11 Les interruptions
 
@@ -1553,6 +1597,7 @@ Une action peut être interrompue dans les cas suivants :
 
 Seuil d'interruption : si le besoin critique dépasse **85**, une action d'utilité supérieure de plus de **10** à l'action courante peut l'interrompre.
 
+### 
 
 ### 3.14.12 L'explicabilité : les Decision Records
 
@@ -1561,6 +1606,7 @@ Chaque décision produit un **DecisionRecord** complet :
 
 Cela permet de répondre à la question : « Pourquoi cette entité a-t-elle fait ce choix, à ce tick, dans ces circonstances ? » \- avec des données chiffrées.
 
+## 
 
 ## 3.15 Système d'Actions
 
@@ -1596,6 +1642,7 @@ Le système d'actions exécute les intentions sélectionnées par le système de
 
 5\. Mettre à jour les croyances/mémoire selon le résultat
 
+### 
 
 ### 3.15.4 Effets des actions (V1)
 
@@ -1612,7 +1659,7 @@ Les effets chiffrés des actions V1 sont documentés dans la spécification :
 
 ### 3.15.5 Les actions multi-ticks
 
-Les actions de déplacement sont multi-ticks. Un déplacement de 30 unités à 1 unité/tick dure 30 ticks. Pendant ce temps, l'entité n'est pas re-décidé à chaque tick \- la décision a été prise au démarrage, l'exécution est continue.
+Les actions de déplacement sont multi-ticks. Un déplacement de 30 unités à 1 unité/tick dure 30 ticks. Pendant ce temps, l’entité n’est pas re-décidé à chaque tick \- la décision a été prise au démarrage, l’exécution est continue.
 
 ### 3.15.6 La gestion des interruptions
 
@@ -1625,31 +1672,29 @@ Une action peut être interrompue pour plusieurs raisons :
 
 Interruption ≠ échec : l'action interrompue devient `Cancelled`, pas `Failed`.
 
+## 
 
 ## 3.16 Système de Communication
 
 ### 3.16.1 Rôle (V0.1)
 
-Dans le monde fermé et continu de LIVEX, la communication **n'est pas abstraite** : les entités échangent par des **pulsations lumineuses publiques**. Une entité qui émet une pulsation produit un signal physique visible par **toute entité en ligne de vue** — elle n'adresse pas de destinataire privilégié.
+Dans le monde fermé et continu de LIVEX, la communication **n’est pas abstraite** : les entités échangent par des **pulsations lumineuses publiques**. Une entité qui émet une pulsation produit un signal physique visible par **toute entité en ligne de vue** — elle n’adresse pas de destinataire privilégié.  
+Deux propriétés découlent de ce choix (V0.1) :  
+**Publicité** : le signal est visible de quiconque le perçoit. La possibilité d’une **interception** (une entité interprétant des pulsations qui ne lui étaient pas destinées) découle logiquement de cette publicité, mais elle reste **ouverte** (décision n°8) : elle ne doit pas devenir une règle implicite du moteur avant d’être tranchée.  
+**Obstruction** : un **mur ou un obstacle bloque** la pulsation — pas de propagation à travers la matière.  
+La portée effective est délimitée par la **ligne de vue** et la **distance** (pas de transmission à travers les obstacles). Les coûts de production d’une pulsation (énergie, temps) restent **ouverts** (décision n°9). Les mécanismes de dégradation (confiance, rumeur, incompréhension) s’appliquent toujours à l’interprétation du signal.  
+**Héritage du prototype** : le prototype V1/V2 implémentait une **messagerie dirigée par adresses** (messages Information, Request, Response, … adressés à des entités dans un rayon). La V0.1 généralise ce modèle en **signal public observable** ; la messagerie dirigée reste une optimisation permise (codage des pulsations), non une obligation.
 
-Deux propriétés découlent de ce choix (V0.1) :
+### 3.16.2 La structure d’une pulsation lumineuse
 
-- **Publicité** : le signal est visible de quiconque le perçoit. La possibilité d'une **interception** (une entité interprétant des pulsations qui ne lui étaient pas destinées) découle logiquement de cette publicité, mais elle reste **[OUVERTE]** (décision n°8) : elle ne doit pas devenir une règle implicite du moteur avant d'être tranchée.  
-- **Obstruction** : un **mur ou un obstacle bloque** la pulsation — pas de propagation à travers la matière.
-
-La portée effective est délimitée par la **ligne de vue** et la **distance** (pas de transmission à travers les obstacles). Les coûts de production d'une pulsation (énergie, temps) restent **ouverts** (décision n°9). Les mécanismes de dégradation (confiance, rumeur, incompréhension) s'appliquent toujours à l'interprétation du signal.
-
-> **Héritage du prototype** : le prototype V1/V2 implémentait une **messagerie dirigée par adresses** (messages `Information`, `Request`, `Response`, ... adressés à des entités dans un rayon). La V0.1 généralise ce modèle en **signal public observable** ; la messagerie dirigée reste une optimisation permise (codage des pulsations), non une obligation.
-
-### 3.16.2 La structure d'une pulsation lumineuse
-
-Une pulsation est un signal lumineux composé de **symboles** (cadence, couleur, modulation). Le sens véhiculé (information, demande, alerte, offre...) est décodé par l'entité qui la reçoit, selon son répertoire de symboles et sa confiance dans l'émettrice.
+Une pulsation est un signal lumineux composé de **symboles** (cadence, couleur, modulation). Le sens véhiculé (information, demande, alerte, offre…) est décodé par l’entité qui la reçoit, selon son répertoire de symboles et sa confiance dans l'émetteur.  
+L’image ci-dessus illustre la **structure d’un message du prototype**. En V0.1, le message structuré devient le contenu *sémantique* d’une pulsation ; le support physique est la pulsation lumineuse.
 
 ![][image10]
 
-> L'image ci-dessus illustre la **structure d'un message du prototype**. En V0.1, le message structuré devient le contenu *sémantique* d'une pulsation ; le support physique est la pulsation lumineuse.
+### 
 
-### 3.16.3 Les types de messages (protocole du prototype — [HÉRITÉ])
+### 3.16.3 Les types de messages (protocole du prototype — \[HÉRITÉ\])
 
 Les pulsations peuvent porter les significations suivantes, héritées du protocole de messagerie du prototype :
 
@@ -1665,20 +1710,21 @@ Les pulsations peuvent porter les significations suivantes, héritées du protoc
 
 ### 3.16.4 La portée : ligne de vue et distance
 
-La portée effective d'une pulsation est **physique** : elle est reçue si le récepteur est **en ligne de vue** de l'émettrice (segment du trajet non coupé par un obstacle) et si la distance est inférieure à la portée de visibilité. Dans le prototype, la valeur par défaut du rayon de communication était 20 unités (avec des variantes à 50) ; cette valeur doit être **centralisée dans une source unique** pour la V0.1.
+Le rayon de communication est **local** : seuls les agents à moins de `communicationRadius` unités reçoivent le message. La valeur par défaut est 20 unités (certaines documentation utilisent 50 ; la valeur doit être centralisée dans une source unique lors de la refonte V2).
 
 ### 3.16.5 L'algorithme de diffusion
 
 FUNCTION EmitPulse(pulse):  
-  sender \= world.GetAgent(pulse.SenderId)  
+sender \= world.GetAgent(pulse.SenderId)  
   POUR CHAQUE agent DANS world.agents:  
-    SI EstEnLigneDeVue(sender.position, agent.position)  
-       ET Distance(sender.position, agent.position) \<= visibilityRange  
-       ET agent.id \!= sender.id:  
-      agent.receivePulse(pulse)  
-      agent.energy \-= pulse.ProcessingCost   // coût de traitement (prototype)
+SI EstEnLigneDeVue(sender.position, agent.position)  
+ET Distance(sender.position, agent.position) \<= visibilityRange  
+ET agent.id \!= sender.id:  
+agent.receivePulse(pulse)  
+agent.energy \-= pulse.ProcessingCost // coût de traitement (prototype)  
+Le test de **ligne de vue** (tir de rayon contre les obstacles) est requis ; le prototype à rayon simple (sans obstacles) ne l'effectue pas.
 
-Le test de **ligne de vue** (tir de rayon contre les obstacles) est requis ; le prototype à rayon simple (sans obstacles) ne l'effectuait pas.
+### 
 
 ### 3.16.6 La dégradation de l'information
 
@@ -1701,34 +1747,35 @@ Chaque transmission a une probabilité de **5%** de produire une incompréhensio
 Action d'incompréhension :  
   belief.Position \+= Vector2(Random(-5, 5), Random(-5, 5))  
   belief.Confidence \*= 0.7  
-  belief.Source \= "misunderstood\_communication"
+belief.Source \= “misunderstood\_communication”
 
+### 
 
 ### 3.16.8 L'intégration des croyances
 
 À la réception, la confiance perçue est ajustée par la **confiance dans l'émetteur** :
 
-senderTrust \= entité.Relationships\[senderId\].TrustLevel  
+senderTrust \= agent.Relationships\[senderId\].TrustLevel  
 adjustedConfidence \= message.ConfidenceLevel × senderTrust  
-entité.beliefs.Add(fact, confidence \= adjustedConfidence,  
+agent.beliefs.Add(fact, confidence \= adjustedConfidence,  
                   source \= Communication, fromAgent \= senderId)  
 La croyance reçue expire après 100 ticks (expiryTick \= deliveryTick \+ 100).
 
-### 3.16.9 Les coûts de communication ([OUVERT])
+### 3.16.9 Les coûts de communication (\[OUVERT\])
 
-La V0.1 ne fige pas les coûts de production d'une pulsation (décision n°9). À titre de référence, le prototype appliquait des coûts d'envoi/réception de messages :
+La V0.1 ne fige pas les coûts de production d’une pulsation (décision n°9). À titre de référence, le prototype appliquait des coûts d’envoi/réception de messages :
 
 Coût d'envoi : 0.5 \+ (payloadCount × 0.1) × broadcastMultiplier  
-  broadcastMultiplier \= 1.5 pour "\*" (diffusion), 1.0 pour direct  
+broadcastMultiplier \= 1.5 pour “\*” (diffusion), 1.0 pour direct  
 Coût de réception : 0.2 \+ (payloadCount × 0.05)
 
-### 3.16.10 Les limites de bande passante ([HÉRITÉ])
+### 3.16.10 Les limites de bande passante (\[HÉRITÉ\])
 
-Le prototype limitait le trafic entrant/sortant (5 envois, 3 traitements par entité et par tick). Pour la V0.1, la régulation du flux (nombre de pulsations émises, saturation de la perception, coût d'attention) reste à définir.
+- Le prototype limitait le trafic entrant/sortant (5 envois, 3 traitements par entité et par tick). Pour la V0.1, la régulation du flux (nombre de pulsations émises, saturation de la perception, coût d’attention) reste à définir.
 
-### 3.16.11 La latence ([HÉRITÉ])
+### 3.16.11 La latence (\[HÉRITÉ\])
 
-Dans la messagerie du prototype, la livraison d'un message dépendait de la distance : `deliveryLatency = Ceil(distance / 10)`. À l'échelle du monde V0.1, une pulsation lumineuse se propage quasi instantanément : **la latence n'est plus une contrainte physique** ; le facteur dominant de dégradation reste la confiance et la ré-interprétation.
+Dans la messagerie du prototype, la livraison d’un message dépendait de la distance : deliveryLatency \= Ceil(distance / 10). À l’échelle du monde V0.1, une pulsation lumineuse se propage quasi instantanément : **la latence n’est plus une contrainte physique** ; le facteur dominant de dégradation reste la confiance et la ré-interprétation.
 
 ### 3.16.12 La gestion de la confiance
 
@@ -1741,12 +1788,13 @@ TrustLevel \= Clamp(TrustLevel, 0, 1\)
 elapsedTicks \= currentTick \- lastInteractionTick  
 trust \*= exp(-0.001 × elapsedTicks)
 
+## 
 
 ## 3.17 Système de Groupes
 
 ### 3.17.1 Rôle
 
-Le système de groupes permet aux entités de former des coalitions autour d'objectifs communs. Les groupes sont le premier niveau de structure sociale émergente de LIVEX.
+Le système de groupes permet aux entités de former des coalitions autour d’objectifs communs. Les groupes sont le premier niveau de structure sociale émergente de LIVEX.
 
 ### 3.17.2 Structure d'un groupe
 
@@ -1754,8 +1802,8 @@ Le système de groupes permet aux entités de former des coalitions autour d'obj
 
 ### 3.17.3 Le protocole d'admission
 
-L'entité A crée un groupe : leader \= A, membres \= \[A\]  
-L'entité B envoie « Puis-je rejoindre ? » à A  
+L’entité A crée un groupe : leader \= A, membres \= \[A\]  
+L’entité B envoie « Puis-je rejoindre ? » à A  
 A évalue : confiance en B ? besoin des compétences de B ?  
 A accepte : groupe.members.Add(B), B.groupId \= groupe.id
 
@@ -1775,7 +1823,6 @@ POUR CHAQUE goal DANS goals:
 bestGoal \= goals.MaxBy(g \=\> AverageScore(g))  
 POUR CHAQUE member: member.AddGoal(bestGoal)
 
-
 ### 3.17.6 Les conditions de dissolution
 
 \- Objectif atteint  
@@ -1783,87 +1830,82 @@ POUR CHAQUE member: member.AddGoal(bestGoal)
 \- Le leader meurt (et aucun successeur disponible)  
 \- Épuisement des ressources
 
-## 3.18 Les Livres (Savoirs tangibles) [V0.1]
+## 3.18 Les Livres (Savoirs tangibles) \[V0.1\]
 
-Dans la V0.1, la transmission **durable** du savoir passe par des **livres** : des objets
-physiques du monde (et non des inscriptions abstraites). Un livre est rédigé, transporté,
-gardé, consulté ou volé comme n'importe quel objet de l'environnement. Cette matérialité
-crée des tensions concrètes (concurrence pour le savoir, vols, monopoles, conflits) qui
-n'existent pas dans une communication éphémère.
+Dans la V0.1, la transmission **durable** du savoir passe par des **livres** : des objets physiques du monde (et non des inscriptions abstraites). Un livre est rédigé, transporté, gardé, consulté ou volé comme n’importe quel objet de l’environnement. Cette matérialité crée des tensions concrètes (concurrence pour le savoir, vols, monopoles, conflits) qui n’existent pas dans une communication éphémère.
 
-### 3.18.1 La définition d'un livre
+### 3.18.1 La définition d’un livre
 
 | Propriété | Description (V0.1) |
 | :---- | :---- |
 | **Support physique** | Le livre occupe un emplacement du monde ; il peut être transporté, déplacé, détruit. |
 | **Contenu** | Un savoir matérialisé (connaissances pratiques, mémoires, récits, croyances). |
 | **Consultation** | Une entité doit être à proximité et consacrer du temps pour le lire. |
-| **Rareté** | Un livre n'existe qu'en un (ou très peu d') exemplaire(s) → valeur et conflit. |
+| **Rareté** | Un livre n’existe qu’en un (ou très peu d’) exemplaire(s) → valeur et conflit. |
 
 ### 3.18.2 Les types de livres
 
-Le livre peut porter différents types de savoir : savoirs pratiques (ressources, techniques),
-mémoires (événements passés), récits et histoires, croyances et rites. La catégorisation fine
-des types de livres et de leurs dégradations reste **[OUVERT]**. Les catégories du
-prototype (savoirs pratiques, mémoires, récits) sont conservées comme repères [HÉRITÉ].
+Le livre peut porter différents types de savoir : savoirs pratiques (ressources, techniques), mémoires (événements passés), récits et histoires, croyances et rites. La catégorisation fine des types de livres et de leurs dégradations reste **\[OUVERT\]**. Les catégories du prototype (savoirs pratiques, mémoires, récits) sont conservées comme repères \[HÉRITÉ\].
 
 ### 3.18.3 Les rôles autour du livre
 
-- **Auteur** : l'entité qui rédige un livre, matérialisant une partie de ses connaissances à un instant T. La rédaction a un coût (énergie, temps) — modèle **[OUVERT]** (décision n°18).  
-- **Gardien** : l'entité (ou le groupe) qui détient et protège un livre. Garder un livre est une fonction sociale (prestige, pouvoir de transmission, rôle de bibliothèque).  
-- **Voleur** : l'entité qui subtilise un livre. Le vol est une alternative à l'écriture et à la coopération, au prix de la confiance et des représailles.  
-- **Lecteur consultant** : toute entité peut consulter un livre auquel elle a accès ; la lecture a elle aussi un coût et un bénéfice (décision n°19).
+**Auteur** : l’entité qui rédige un livre, matérialisant une partie de ses connaissances à un instant T. La rédaction a un coût (énergie, temps) — modèle **\[OUVERT\]** (décision n°18).
 
-### 3.18.4 Le cycle de vie d'un livre
+**Gardien** : l’entité (ou le groupe) qui détient et protège un livre. Garder un livre est une fonction sociale (prestige, pouvoir de transmission, rôle de bibliothèque).
 
-`Écriture (Auteur)` → `Détention / garde (Gardien)` → `Consultation (Lecteur)` → `Vol / échange (Voleur)` → `Destruction ou altération`
+**Voleur** : l’entité qui subtilise un livre. Le vol est une alternative à l’écriture et à la coopération, au prix de la confiance et des représailles.
 
-Chaque étape produit un événement observable (SYNE) : `BookWritten`, `BookRead`, `BookStolen`,
-`BookDestroyed` — alimentant les métriques d'ECHOS (diffusion culturelle, inégalités d'accès au savoir).
+**Lecteur consultant** : toute entité peut consulter un livre auquel elle a accès ; la lecture a elle aussi un coût et un bénéfice (décision n°19).
 
-### 3.18.5 Coûts et bénéfices ([OUVERT])
+### 
 
-La modélisation fine des coûts (rédaction, transport, conservation) et des bénéfices (transmission
-fiable, accumulate culturelle, prestige) est laissée ouverte : **décisions n°18 et n°19** de la V0.1.
+### 3.18.4 Le cycle de vie d’un livre
 
-### 3.18.6 Effets attendus sur l'émergence
+Écriture (Auteur) → Détention / garde (Gardien) → Consultation (Lecteur) → Vol / échange (Voleur) → Destruction ou altération  
+Chaque étape produit un événement observable (SYNE) : BookWritten, BookRead, BookStolen, BookDestroyed — alimentant les métriques d’ECHOS (diffusion culturelle, inégalités d’accès au savoir).
 
-Les livres agissent comme **réceptacles matérialisés de la mémoire collective** : ils permettent une
-accumulation culturelle qui survit aux individus (contrairement aux croyances éphémères, §6.7), tout en créant
-des inégalités — qui détient le savoir ? — et des enjeux de protection, de vol et de territoire. Ils
-complètent la communication éphémère (§3.16) par un canal **asynchrone et persistant**.
+### 3.18.5 Coûts et bénéfices (\[OUVERT\])
+
+La modélisation fine des coûts (rédaction, transport, conservation) et des bénéfices (transmission fiable, accumulate culturelle, prestige) est laissée ouverte : **décisions n°18 et n°19** de la V0.1.
+
+### 3.18.6 Effets attendus sur l’émergence
+
+Les livres agissent comme **réceptacles matérialisés de la mémoire collective** : ils permettent une accumulation culturelle qui survit aux individus (contrairement aux croyances éphémères, §6.7), tout en créant des inégalités — qui détient le savoir ? — et des enjeux de protection, de vol et de territoire. Ils complètent la communication éphémère (§3.16) par un canal **asynchrone et persistant**.
+
+## 
 
 ## 3.19 Système de Relations
 
 ### 3.19.1 Rôle
 
-Le système de relations gère les liens sociaux entre entités : confiance, familiarité, histoire d'interaction.
+Le système de relations gère les liens sociaux entre entités : confiance, familiarité, histoire d’interaction.
 
-### 3.19.2 Structure d'une relation
+### 3.19.2 Structure d’une relation
 
 ### ![][image12]
 
-### 3.19.3 L'évolution de la confiance
+### 3.19.3 L’évolution de la confiance
 
 // Interaction positive  
 trust \+= 0.1  
 trust \= Min(1.0, trust)  
 // Interaction négative  
-trust \-= 0.15  
+trust \-= 0.2  
 trust \= Max(0.0, trust)  
 // Décroissance si pas d'interaction  
 elapsedTicks \= currentTick \- lastInteractionTick  
 trust \*= exp(-0.001 × elapsedTicks)
 
-### 3.19.4 L'impact sur les décisions
+### 3.19.4 L’impact sur les décisions
 
 La confiance influence :
 
-- **L'acceptation des messages** : un message d'une entité de confiance ≤ 0.3 est ignoré ou fortement dévalué.  
-- **L'évaluation du risque** : commercer avec une entité de faible confiance augmente le risque.  
+- **L’acceptation des messages** : un message d’une entité de confiance ≤ 0.3 est ignoré ou fortement dévalué.  
+- **L’évaluation du risque** : commercer avec une entité de faible confiance augmente le risque.  
 - **La formation de groupes** : on ne rejoint un groupe que si le leader est assez fiable.  
-- **La détection de menaces** : une entité avec `trust < 0.3` dans le rayon de perception est une menace potentielle.
+- **La détection de menaces** : un agent avec `trust < 0.3` dans le rayon de perception est une menace potentielle.
 
+## 
 
 ## 3.20 Système de Ressources
 
@@ -1880,18 +1922,12 @@ En V2, quatre types de ressources sont prévus :
 
 ### 3.20.2 Les cycles énergétiques (V0.1)
 
-Le monde V0.1 n'est pas un « garde-manger » statique : **l'énergie circule**. Les ressources
-servent de supports à des cycles (absorption, transformation, régénération, perte) qui relient
-l'environnement aux besoins des entités :
+Le monde V0.1 n’est pas un « garde-manger » statique : **l’énergie circule**. Les ressources servent de supports à des cycles (absorption, transformation, régénération, perte) qui relient l’environnement aux besoins des entités :  
+**Abondance** : surplus de ressources → énergie disponible, croissance de l’activité.  
+**Pauvreté** : pénurie → compétition, migrations, conflits, stagnation.  
+Le modèle complet de conversion (biomasse → énergie, rendements, pertes, résidus) est **\[OUVERT\]** (**décisions n°3-5** de la V0.1). Les types de ressources du prototype (Food, Water, Wood, Mineral) sont conservés comme supports **\[HÉRITÉ\]** de ces cycles.
 
-- **Abondance** : surplus de ressources → énergie disponible, croissance de l'activité.
-- **Pauvreté** : pénurie → compétition, migrations, conflits, stagnation.
-
-Le modèle complet de conversion (biomasse → énergie, rendements, pertes, résidus) est
-**[OUVERT]** (**décisions n°3-5** de la V0.1). Les types de ressources du prototype
-(Food, Water, Wood, Mineral) sont conservés comme supports **[HÉRITÉ]** de ces cycles.
-
-### 3.20.3 Structure d'une ressource
+### 3.20.3 Structure d’une ressource
 
 ![][image13]
 
@@ -1905,11 +1941,13 @@ Une ressource est durable si :
 regenerationRate \>= average\_consumption\_rate  
 L'analyse de durabilité est l'une des métriques fournies par ECHOS.
 
-## 3.21 Système d'Environnement
+## 
+
+## 3.21 Système d’Environnement
 
 ### 3.21.1 Les événements mondiaux
 
-En V2, le système d'environnement introduit des événements à l'échelle du monde qui affectent les entités et les ressources dans un rayon donné :
+En V2, le système d’environnement introduit des événements à l’échelle du monde qui affectent les entités et les ressources dans un rayon donné :
 
 | Type d'événement | Effet |
 | :---- | :---- |
@@ -1920,7 +1958,7 @@ En V2, le système d'environnement introduit des événements à l'échelle du m
 | **SeasonChange** (changement de saison) | Modification des paramètres |
 | **DayNightCycle** (cycle jour/nuit) | Affecte la perception et l'activité |
 
-### 3.21.2 Structure d'un événement
+### 3.21.2 Structure d’un événement
 
 public class EnvironmentEvent
 
@@ -1936,12 +1974,11 @@ OnEventOccurs(event):
 
 ### 3.21.4 Interactions avec les besoins
 
-Les événements environnementaux modifient les paramètres du monde, ce qui affecte indirectement les besoins des entités. Un hiver rigoureux peut augmenter le taux de consommation d'énergie, une sécheresse réduit la disponibilité de l'eau \- les entités doivent s'adapter.
-
+Les événements environnementaux modifient les paramètres du monde, ce qui affecte indirectement les besoins des entités. Un hiver rigoureux peut augmenter le taux de consommation d’énergie, une sécheresse réduit la disponibilité de l’eau \- les entités doivent s’adapter.
 
 ## 3.22 Obstacles Statiques
 
-### 3.22.1 Le modèle d'obstacle
+### 3.22.1 Le modèle d’obstacle
 
 En V2, les obstacles sont des entités statiques :
 
@@ -1961,15 +1998,15 @@ La collision utilise un test AABB (Axis-Aligned Bounding Box) :
 
 SI |obstacle.Position.x \- pos.x| \< (obstacle.Size.x / 2 \+ entité.radius)
 
-  ET |obstacle.Position.y \- pos.y| \< (obstacle.Size.y / 2 \+ entité.radius):
+ET |obstacle.Position.y \- pos.y| \< (obstacle.Size.y / 2 \+ entité.radius):
 
   → Collision
 
 ### 3.22.3 Le pathfinding
 
-Le **pathfinding** est un sous-système de **SYNE** (module de navigation, §2.9.2) : il calcule un chemin sur le plan 2D autour des obstacles sans dépendre d'un moteur graphique. L'appui sur la navigation du moteur repère (`Navigation2D.GetSimplePath`) relève du prototype ([HÉRITÉ]) ; en V0.1, SYNE assure lui-même le calcul. Un cache de chemins évite le recalcul inutile :
+SYNE utilise la navigation de Godot (`Navigation2D.GetSimplePath`) pour calculer les chemins autour des obstacles. Un cache de chemins évite le recalcul inutile :
 
-Cache key : "{from}-\>{to}"
+Cache key : “{from}-\>{to}”
 
 Expiration : 50 ticks
 
@@ -1977,7 +2014,7 @@ Expiration : 50 ticks
 
 En V2, un obstacle de type `IsWall = true` bloque la perception : un segment de ligne entre l'observateur et la cible est testé contre tous les murs. Les observations bloquées sont écartées.
 
-### 3.22.5 Métriques d'obstacles
+### 3.22.5 Métriques d’obstacles
 
 | Métrique | Description |
 | :---- | :---- |
@@ -1986,10 +2023,11 @@ En V2, un obstacle de type `IsWall = true` bloque la perception : un segment de 
 | NavigationDifficulty | Ratio `actualPath / directPath` (1.0 \= pas d'impact) |
 | PathReplanCount | Fréquence de replanification |
 
+## 
 
 ## 3.23 Persistance
 
-### 3.23.1 Vue d'ensemble
+### 3.23.1 Vue d’ensemble
 
 SYNE utilise **SQLite** pour la persistance (V2). Le choix de SQLite repose sur :
 
@@ -2020,6 +2058,7 @@ Plus les tables de configuration : `species`, `resource_types`, `obstacle_types`
 
 *(Le DDL complet est fourni en Annexe G.)*
 
+### 
 
 ### 3.23.3 La procédure de sauvegarde (atomique)
 
@@ -2065,7 +2104,7 @@ CREATE TABLE schema\_version (
 La stratégie de migration est séquentielle : v1 \= Initial, v2 \= Ajout des groupes, v3+ \= évolution.  
 La version du schéma évolue **indépendamment** de la version de l'application (SemVer).
 
-### 3.23.7 L'optimisation de la base
+### 3.23.7 L’optimisation de la base
 
 REINDEX;    \-- Reconstruit les index  
 ANALYZE;    \-- Optimise le plan de requête  
@@ -2082,7 +2121,7 @@ Les insertions en masse utilisent **une seule transaction** pour réduire les al
 
 Les événements sont fondamentaux pour l'observation : ils permettent de reconstruire l'historique et de comprendre les chaînes causales.
 
-### 3.24.2 Les types d'événements (V1)
+### 3.24.2 Les types d’événements (V1)
 
 | Catégorie | Événements |
 | :---- | :---- |
@@ -2094,7 +2133,7 @@ Les événements sont fondamentaux pour l'observation : ils permettent de recons
 | Action | ActionStarted, ActionCompleted, ActionCancelled, ActionFailed |
 | Ressource | ResourceCreated, ResourceChanged, ResourceDepleted |
 
-### 3.24.3 Les types d'événements (V2 \- étendus)
+### 3.24.3 Les types d’événements (V2 \- étendus)
 
 | Catégorie | Événements |
 | :---- | :---- |
@@ -2103,6 +2142,7 @@ Les événements sont fondamentaux pour l'observation : ils permettent de recons
 | Social | CommunicationEvent, GroupEvent (Formed/MemberJoined/MemberLeft/Dissolved) |
 | Monde | ResourceEvent, EnvironmentEvent |
 
+### 
 
 ### 3.24.4 Le EventBus (ring buffer)
 
@@ -2112,17 +2152,18 @@ Le bus d'événements de SYNE utilise un **ring buffer** de capacité fixe (500 
 
 Chaque décision produit un DecisionRecord complet, incluant :
 
-- Le tick et l'ID de l'entité.  
+- Le tick et l’ID de l’entité.  
 - Le contexte (niveaux de besoins, croyances utilisées, objectifs actifs).  
 - Les scores (utilité de chaque action candidate).  
 - L'action sélectionnée et la raison.
 
 Cela permet d'expliquer chaque décision et de reconstruire le raisonnement.
 
-### 3.24.6 La politique d'émission
+### 3.24.6 La politique d’émission
 
 En mode benchmark, les événements verbeux (décisions, actions) peuvent être désactivés pour maximiser les performances. En mode observé, tous les événements sont émis.
 
+## 
 
 ## 3.25 Déterminisme
 
@@ -2138,7 +2179,7 @@ Le déterminisme est une condition essentielle pour la scientificité du projet 
 
 1. **PRNG unique et sérialisable** \- xoshiro256\*\*, seed via splitmix64, état complet sérialisé dans la sauvegarde.  
 2. **Ordre causal strict** \- la boucle de simulation exécute les systèmes dans un ordre documenté et stable.  
-3. **Grille spatiale déterministe** \- les candidats de la grille sont triés par index original pour produire un résultat bit-identique à la version naive O(n²).  
+3. **Grille spatiale déterministe** \- les candidats de la grille sont triés par index original pour produire un résultat bit-identique à la version naïve O(n²).  
 4. **Aucun parallélisme non contrôlé** \- les parallélisations (perception) sont en lecture seule sur les structures partagées, avec écritures disjointes par entité.  
 5. **Calculs flottants cohérents** \- pas de réordonnancement des opérations flottantes qui changerait les arrondis.
 
@@ -2154,13 +2195,11 @@ Vérification : série des états comparés bit-à-bit à chaque tick
 
 Le déterminisme n'est pas une fin en soi, mais un outil. Il ne garantit pas que les phénomènes émergents sont reproductibles statistiquement \- seulement qu'une exécution donnée peut être exactement reproduite. Deux seeds différentes peuvent produire des trajectoires très différentes (sensibilité aux conditions initiales, comportement chaotique).
 
+## 
 
 ## 3.26 Choix Technologiques
 
-> **V0.1** : le présent chapitre documente les choix du prototype (C\#/.NET, SQLite, WebSocket) et
-> leurs ADR. Pour la V0.1 ils constituent des **repères et non des contraintes** : la question de
-> la plateforme finale reste ouverte, les pistes ci-dessous étant évaluées sans engagement
-> ([HÉRITÉ]).
+**V0.1** : le présent chapitre documente les choix du prototype (C\#/.NET, SQLite, WebSocket) et leurs ADR. Pour la V0.1 ils constituent des **repères et non des contraintes** : la question de la plateforme finale reste ouverte, les pistes ci-dessous étant évaluées sans engagement (\[HÉRITÉ\]).
 
 ### 3.26.1 Pourquoi C\# / .NET Core ?
 
@@ -2178,10 +2217,10 @@ Le déterminisme n'est pas une fin en soi, mais un outil. Il ne garantit pas que
 - **Python** : excellent pour l'analyse, mais trop lent pour la boucle de simulation massive.  
 - **TypeScript/Node.js** : productif pour les services réseaux, mais moins performant pour le calcul pur.  
 - **Rust** : performance et concurrence excellentes, mais courbe d'apprentissage élevée.  
-- **C++** : performance excellente, mais complexité élevée et productivité réduite.
+- **C++** : performance excellente, mais complexité élevée et productivité réduite.  
+- Ces alternatives sont des **pistes** (\[HÉRITÉ\]) : la V0.1 tranchera par une ADR (décisions n°1-30, §9.6.4).
 
-> Ces alternatives sont des **pistes** ([HÉRITÉ]) : la V0.1 tranchera par une ADR
-> (decisions n°1-30, §9.6.4).
+### 
 
 ### 3.26.2 Pourquoi SQLite ?
 
@@ -2209,6 +2248,7 @@ Le déterminisme n'est pas une fin en soi, mais un outil. Il ne garantit pas que
 
 **Alternatives évaluées** : gRPC (excellent mais plus lourd), IPC (mais limité au machine local).
 
+### 
 
 ### 3.26.4 Les ADR (Architecture Decision Records)
 
@@ -2229,6 +2269,8 @@ Les décisions architecturales sont documentées dans des ADR formels (contexte,
 | ADR-011 | Événements structurés \+ SQLite | Accepté |
 
 *(Le détail des ADR est fourni en Annexe F.)*
+
+## 
 
 ## 3.27 Paramètres et Configuration
 
@@ -2284,6 +2326,7 @@ Cette séparation est essentielle : la configuration est reproductible, l'état 
 | Décision | talkGain | 0.10 | \- |
 | Mémoire | confidenceDecayPerTick | 0.01 | /tick |
 
+### 
 
 ### 3.27.3 Les groupes de paramètres (V2)
 
@@ -2315,7 +2358,6 @@ En V2, la configuration est étendue avec les sous-systèmes BDI :
 
 *(L'annexe H fournit le tableau exhaustif complet.)*
 
-
 ### 3.27.4 La philosophie de réglage
 
 Les paramètres doivent être :
@@ -2326,20 +2368,20 @@ Les paramètres doivent être :
 - **Faciles à modifier** : un fichier de configuration JSON, versionné.  
 - **Reproductibles** : la même configuration produit le même monde.
 
-
 ## 3.28 Ce que SYNE ne doit pas faire
 
 La liste des interdictions est aussi importante que la liste des responsabilités. SYNE ne doit jamais :
 
 1. **Rendre directement la scène graphique** \- le rendu est la fonction de PRISM.  
 2. **Dépendre d'Unreal Engine, Unity ou d'un autre moteur de rendu** \- SYNE fonctionne headless.  
-3. **Décider des résultats à partir de ce qu'ECHOS souhaiterait observer** \- ECHOS observe, il ne dirige pas.  
+3. **Décider des résultats à partir de ce que ECHOS souhaiterait observer** \- ECHOS observe, il ne dirige pas.  
 4. **Donner à une entité une connaissance globale du monde** \- l'observabilité partielle est un principe.  
 5. **Introduire une narration pour expliquer artificiellement un événement** \- les événements sont des faits causaux.  
 6. **Utiliser un LLM comme mécanisme nécessaire à la cohérence du monde** \- le monde est mécaniste.
 
 Cet ensemble de contraintes est ce qui fait de SYNE un moteur de simulation **scientifiquement valide** : les phénomènes observés sont le résultat de règles explicites, déterministes dans leur exécution et traçables dans leur causalité.
 
+# 
 
 # Partie 4 \- ECHOS : Emergent Cognition & Holistic Observation System {#partie-4---echos-:-emergent-cognition-&-holistic-observation-system}
 
@@ -2372,6 +2414,7 @@ ECHOS observe l'évolution de dix dimensions de la simulation :
 - Ne pas introduire de biais d'observation : les catégories de mesure doivent être explicitement documentées.  
 - Ne pas remplacer l'analyse humaine : ECHOS produit des données et des outils, le chercheur interprète.
 
+## 
 
 ## 4.2 Architecture Cible
 
@@ -2383,13 +2426,13 @@ La cible architecturale d'ECHOS est :
 | :---- | :---- | :---- |
 | **Analyse** | Calculs scientifiques, traitement des données, métriques | Python |
 | **Application** | Couche applicative, API REST, pilotage | Django |
-| **Interface** | Vues d'observation, contrôle, calibration (**intégrée à ECHOS**) | héritage du prototype web (React) ; shell Electron abandonné |
-| **Stockage** | Données d'analyse (séparé de la donnée SYNE) | SQLite |
-| **Source** | SYNE — production d'événements | WebSocket 5180 |
+| **Interface** | Vues d’observation, contrôle, calibration (**intégrée à ECHOS**) | héritage du prototype web (React) ; shell Electron abandonné |
+| **Stockage** | Données d’analyse (séparé de la donnée SYNE) | SQLite |
+| **Source** | SYNE — production d’événements | WebSocket 5180 |
 
 ### 4.2.2 L'intégration avec SYNE
 
-ECHOS observe SYNE (contrat de transport, prototype : WebSocket :5180) ──► ECHOS (consommateur d'événements) et ECHOS pilote SYNE (contrôle, calibration) :
+ECHOS observe SYNE (contrat de transport, prototype : WebSocket :5180) ──► ECHOS (consommateur d’événements) et ECHOS pilote SYNE (contrôle, calibration) :
 
                               │  
                               ├──► Métriques en temps réel  
@@ -2401,6 +2444,7 @@ ECHOS observe SYNE (contrat de transport, prototype : WebSocket :5180) ──►
 
 Les données d'analyse d'ECHOS sont **séparées** des données de persistance de SYNE. La base SYNE contient l'état canonique du monde simulé ; la base ECHOS contient les agrégations, métriques et indices mesurés.
 
+## 
 
 ## 4.3 Les Moteurs de Métriques
 
@@ -2413,11 +2457,11 @@ Mesure la séparation des croyances et des comportements entre entités :
 | Métrique | Définition |
 | :---- | :---- |
 | `BeliefDiversity` | Entropie de Shannon des croyances de la population |
-| `BeliefDisagreement` | % d'entités qui divergent sur un même fait |
+| `BeliefDisagreement` | % d’entités qui divergent sur un même fait |
 | `BeliefConfidenceVariance` | Variance de la confiance entre entités |
 | `GoalDiversity` | Entropie de Shannon des objectifs |
-| `GoalConvergence` | % d'entités partageant le même objectif principal |
-| `DecisionDiversity` | % d'entités faisant des choix différents |
+| `GoalConvergence` | % d’entités partageant le même objectif principal |
+| `DecisionDiversity` | % d’entités faisant des choix différents |
 | `IntentionStability` | Durée moyenne d'engagement sur une intention |
 | `TraitExpressionDiversity` | Variance des comportements émergents selon les traits |
 
@@ -2437,6 +2481,7 @@ Mesure la circulation et la dégradation de l'information :
 | `MaxMessageHops` | Plus longue chaîne avant perte du message |
 | `NetworkCentrality` | Concentration des hubs : `max_senders / total_messages` |
 
+### 
 
 ### 4.3.3 SocialComplexityMetrics \- Complexité sociale
 
@@ -2458,9 +2503,9 @@ Mesure l'alignement ou la divergence des objectifs :
 
 | Métrique | Définition |
 | :---- | :---- |
-| `GlobalGoalAlignment` | % d'entités partageant le même objectif principal |
+| `GlobalGoalAlignment` | % d’entités partageant le même objectif principal |
 | `GoalDiversity` | Entropie de Shannon de la distribution des objectifs |
-| `CooperationPotential` | % d'entités avec des objectifs compatibles (vérification par paire) |
+| `CooperationPotential` | % d’entités avec des objectifs compatibles (vérification par paire) |
 | `GoalTypeCounts` | Distribution des types d'objectifs actifs |
 
 ### 4.3.5 FeedbackLoopDetector \- Détection des boucles de rétroaction
@@ -2501,6 +2546,8 @@ Mesure la formation, la vie et la dissolution des groupes :
 | `GroupObjectiveSuccessRate` | Succès / total des groupes dissous |
 | `MemberTurnoverRate` | % de membres qui quittent par 100 ticks |
 
+## 
+
 ## 4.4 Les Indicateurs d'Émergence
 
 ### 4.4.1 Le score d'émergence composite
@@ -2510,17 +2557,13 @@ ECHOS calcule un **score d'émergence** composite (0-1) à partir des métriques
 EmergenceScore \= (  
     BeliefDiversity × 0.15  
     \+ GoalDiversity × 0.15  
-    \+ DiffusionSpeed\_Norm × 0.10  
+    \+ DiffusionSpeed × 0.10  
     \+ ClusteringCoefficient × 0.15  
     \+ LoopStrength × 0.20  
     \+ (ActiveGroups / 100\) × 0.25  
-)
-
-avec  DiffusionSpeed\_Norm \= clamp(1 \- InformationDiffusionSpeed / 100, 0, 1)
-
-Chaque terme est normalisé sur [0, 1] (DiffusionSpeed\_Norm convertit la vitesse de diffusion,
-exprimée en ticks pour atteindre 80 % des entités, en valeur croissante avec la vitesse) ; les
-poids somment à 1.0, le score est donc borné sur [0, 1].
+) / 5  
+avec DiffusionSpeed\_Norm \= clamp(1 \- InformationDiffusionSpeed / 100, 0, 1\)  
+Chaque terme est normalisé sur \[0, 1\] (DiffusionSpeed\_Norm convertit la vitesse de diffusion, exprimée en ticks pour atteindre 80 % des entités, en valeur croissante avec la vitesse) ; les poids somment à 1.0, le score est donc borné sur \[0, 1\].
 
 > ⚠️ **Avertissement méthodologique** : ce score est une heuristique d'observation, pas une preuve scientifique d'émergence.
 
@@ -2548,9 +2591,6 @@ UnpredictabilityIndex \= LoopStrength × DecisionVariability
 
 Mesure de la capacité du système à produire des résultats non anticipés.
 
----
-
-
 ## 4.5 Analyse Causale
 
 ### 4.5.1 Corrélation vs Causalité
@@ -2575,6 +2615,7 @@ L'objectif est de répondre à une question telle que : « Pourquoi ce groupe es
 - Les boucles de rétroaction rendent l'attribution causale difficile : qui a causé quoi, quand ?  
 - Le biais de conception : ECHOS observe un système que le concepteur a défini ; les catégories de mesure dépendent de ce que le développeur a choisi d'instrumenter.
 
+## 
 
 ## 4.6 Comparaison Expérimentale
 
@@ -2606,6 +2647,7 @@ Les résultats d'une expérience peuvent être exportés en CSV ou JSON :
 - Événements : journal complet ou échantillonné.  
 - État final : monde, entités, ressources.
 
+## 
 
 ## 4.7 API REST
 
@@ -2619,25 +2661,26 @@ Les résultats d'une expérience peuvent être exportés en CSV ou JSON :
 | GET | `/api/runs/{id}/metrics` | Dernières métriques (JSON) |
 | GET | `/api/runs/{id}/export` | Export des métriques (CSV/JSON) |
 | GET | `/api/compare?a={run1}&b={run2}` | Comparaison de deux runs |
-| GET | `/api/beliefs/{agentId}` | Croyances de l'entité au tick courant |
-| GET | `/api/relationships/{agentId}` | Réseau de confiance de l'entité |
+| GET | `/api/beliefs/{agentId}` | Croyances de l’entité au tick courant |
+| GET | `/api/relationships/{agentId}` | Réseau de confiance de l’entité |
 | GET | `/api/groups` | Liste des groupes actifs |
 | GET | `/api/emergent-phenomena` | Phénomènes émergents détectés |
 | GET | `/api/communication-heatmap` | Heatmap des communications entre entités |
 
 ### 4.7.2 La diffusion temps réel
 
-Dans le prototype, ECHOS diffusait aussi les métriques en temps réel via WebSocket (`ws://localhost:5180/metrics`) vers l'interface ; l'interface étant intégrée à ECHOS en V0.1, cette diffusion alimente directement les vues d'analyse :
+ECHOS diffuse également les métriques en temps réel via WebSocket (`ws://localhost:5180/metrics`) pour le Web UI :
 
 ![][image16]
 
+### 
 
 ### 4.7.3 L'optimisation
 
 Le traitement des métriques est optimisé :
 
 - **Agrégation incrémentale** : les métriques sont calculées à chaque snapshot au moment de l'ingestion (aucun recalcul complet).  
-- **Cache de séries** : les métriques par run sont mises en cache et invalidées uniquement sur ajout/mort d'entité.  
+- **Cache de séries** : les métriques par run sont mises en cache et invalidées uniquement sur ajout/mort d’entité.  
 - **Parallélisation** : les calculs lourds (co-localisation O(n²), plus proche ressource) sont parallélisés.  
 - **Sous-échantillonnage** : `--sample-every=N` pour ne garder 1 snapshot sur N ; `?every=N` pour retourner des séries sous-échantillonnées.
 
@@ -2665,7 +2708,6 @@ Les catégories d'événements :
 | BeliefEvent | Fact, OldConfidence, NewConfidence, Source |
 | GroupEvent | GroupId, GroupAction (Formed/Joined/Left/Dissolved) |
 
-
 ### 4.8.3 Les traces de décision
 
 ![][image18]
@@ -2674,15 +2716,17 @@ Les catégories d'événements :
 
 - Rotation quotidienne : `logs/v2_simulation_{date}.log`.  
 - Format : `"{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message}{NewLine}{Exception}"`.  
-- Tag d'application : "SSE-V2".
+- Tag d’application : “SSE-V2”.
 
 | Niveau | Usage |
 | :---- | :---- |
 | Error | Échec d'action, état incohérent |
 | Warning | Chemin bloqué, ressources insuffisantes |
 | Information | Résumé de tick, formation de groupe |
-| Debug | Décisions d'entités, mises à jour de croyances |
+| Debug | Décisions d’entités, mises à jour de croyances |
 | Verbose | Traces BDI complètes (développement uniquement) |
+
+### 
 
 ### 4.8.5 Le profilage
 
@@ -2700,7 +2744,7 @@ Exemple de sortie (500 appels) :
 | Commande | Description |
 | :---- | :---- |
 | `list-agents` | Liste toutes les entités (position, énergie, faim) |
-| `inspect-agent <name>` | Détail complet d'une entité (croyances, objectifs, action) |
+| `inspect-agent <name>` | Détail complet d’une entité (croyances, objectifs, action) |
 | `trace-decision <name>` | Trace de décision détaillée pour un tick spécifique |
 | `set-breakpoint <agent> "<condition>"` | Exemple : `"hunger > 90"` |
 
@@ -2709,9 +2753,11 @@ Exemple de sortie (500 appels) :
 - Export CSV des traces de décision : AgentId, Tick, BeliefCount, GoalCount, ChosenAction, Utility.  
 - Export JSON des données complètes pour analyse externe.
 
+## 
+
 ## 4.9 L'Instrumentation dans le Prototype V1
 
-Le prototype V1 a validé l'approche d'ECHOS avec une version .NET/C\# de l'analyzer :
+Le prototype V1 a validé l'approche d'ECHOS avec une version .NET/C\# de l'Analyzer :
 
 ### 4.9.1 Les métriques implémentées
 
@@ -2732,6 +2778,7 @@ Le prototype V1 a validé l'approche d'ECHOS avec une version .NET/C\# de l'anal
 - Agrégation incrémentale validée : identique au calcul de référence.  
 - Sous-échantillonnage validé : `?every=10` retourne 9/86 échantillons.
 
+## 
 
 ## 4.10 Les Limites d'ECHOS
 
@@ -2781,6 +2828,7 @@ PRISM est un **reflet du monde simulé**, jamais un co-auteur de la simulation. 
 -  Modifier directement le monde sans passer par les mécanismes prévus par SYNE.  
 -  Introduire des comportements non présents dans le modèle de simulation.
 
+## 
 
 ## 5.2 Pourquoi un Framework Intermédiaire
 
@@ -2800,13 +2848,13 @@ Godot / Unity / Unreal (moteur graphique)
 
 ### 5.2.3 Le moteur actuel : Godot
 
-Le prototype utilise **Godot 4.7.2 édition .NET** (piste [HÉRITÉ] ; le moteur graphique définitif reste ouvert), avec C\# comme langage. Ce choix préserve la cohérence du monorepo 100% .NET (typage fort, build/débug via `dotnet`, tests communs).
+Le prototype utilise **Godot 4.7.2 édition .NET**, avec C\# comme langage. Ce choix préserve la cohérence du monorepo 100% .NET (typage fort, build/débug via `dotnet`, tests communs).
 
 **Alternatives évaluées** :
 
 - GDScript : rompt la cohérence .NET.  
 - Godot non-.NET : incompatible avec le workflow C\#.  
-- Three.js : alternative à Godot pour un rendu 2D/3D dans l'interface ECHOS ; non retenu pour PRISM.  
+- Three.js : alternative à Godot pour un rendu 2D/3D dans l’interface ECHOS ; non retenu pour PRISM.  
 - Unity/Unreal : surdimensionnés pour un prototype de visualisation.
 
 ## 5.3 Scènes et Architecture
@@ -2824,6 +2872,7 @@ res://
 
 ### ![][image19]
 
+### 
 
 ### 5.3.3 Le mapping 2D → 3D
 
@@ -2847,6 +2896,7 @@ Le prototype est **100% procédural** : aucun asset externe. Les primitives gén
 | Ressource | SphereMesh |
 | Obstacle | BoxMesh / CylinderMesh |
 
+## 
 
 ## 5.4 Le Transport
 
@@ -2872,8 +2922,9 @@ L'état de SYNE est interrogé toutes les 2 secondes.
 
 ### 5.4.3 L'interface TypeScript
 
-Dans le prototype, l'interface ECHOS (sous forme d'une application web React + TypeScript) consommait les métriques d'ECHOS et le flux WebSocket de SYNE, offrant un tableau de bord complémentaire à PRISM.
+Dans le prototype, l’interface ECHOS (sous forme d’une application web React \+ TypeScript) consommait les métriques d’ECHOS et le flux WebSocket de SYNE, offrant un tableau de bord complémentaire à PRISM.
 
+## 
 
 ## 5.5 Rendu des Entités
 
@@ -2899,7 +2950,9 @@ Chaque entité est représenté par une capsule 3D, avec :
 
 ### 5.5.3 La sélection
 
-La sélection se fait par clic (raycast physique). Un `CircleShape2D` de rayon 5 sert de zone de détection. L'entité sélectionné ouvre le panneau BeliefViewer.
+La sélection se fait par clic (raycast physique). Un `CircleShape2D` de rayon 5 sert de zone de détection. L'agent sélectionné ouvre le panneau BeliefViewer.
+
+## 
 
 ## 5.6 Rendu des Ressources
 
@@ -2916,7 +2969,7 @@ La taille est normalisée par la proportion `quantité / capacité`. Des taches 
 
 ### 5.7.1 BeliefViewer
 
-L'inspection d'une entité sélectionné ouvre un panneau listant ses croyances, triées par confiance décroissante. Chaque croyance affiche :
+L’inspection d’une entité sélectionnée ouvre un panneau listant ses croyances, triées par confiance décroissante. Chaque croyance affiche :
 
 - Le fait (subject, predicate, value).  
 - La confiance (avec icône : haute / moyenne / basse).  
@@ -2931,6 +2984,7 @@ Une grille 50×50 (cellule \= 10 unités) est utilisée pour cartographier les c
 
 Au-dessus de chaque entité : affichage de la croyance dominante (confiance \> 0.8), avec disparition automatique après 2 secondes.
 
+## 
 
 ## 5.8 Visualisation Sociale
 
@@ -2948,11 +3002,11 @@ Les relations entre entités sont affichées sous forme de lignes si la confianc
 
 ### 5.8.2 Heatmap de confiance
 
-Une heatmap 256×256 (une pixel par paire d'entités) visualise la matrice de confiance globale. Couleur : HSV teinte `120 - trust × 120` (rouge \= méfiance, vert \= confiance).
+Une heatmap 256×256 (une pixel par paire d'agents) visualise la matrice de confiance globale. Couleur : HSV teinte `120 - trust × 120` (rouge \= méfiance, vert \= confiance).
 
 ### 5.8.3 Le graphe social (interface ECHOS)
 
-L'interface ECHOS (prototype : application web React + TypeScript) complète PRISM avec un graphe D3 force-directed :
+L’interface ECHOS (prototype : application web React \+ TypeScript) complète PRISM avec un graphe D3 force-directed :
 
 - **Force links** : distance 80\.  
 - **ForceManyBody** : strength \-300.  
@@ -2961,6 +3015,7 @@ L'interface ECHOS (prototype : application web React + TypeScript) complète PRI
 - Nœuds : rayon 8 px, couleur par groupe.  
 - Drag interactif.
 
+## 
 
 ## 5.9 Visualisation des Groupes
 
@@ -2968,10 +3023,8 @@ L'interface ECHOS (prototype : application web React + TypeScript) complète PRI
 
 Chaque groupe reçoit une couleur dérivée de son hash (`groupId.GetHashCode()` → hue) :
 
-hue \= groupId.GetHashCode() % 360
-
-saturation \= 0.8
-
+hue \= groupId.GetHashCode() % 360  
+saturation \= 0.8  
 value \= 1.0
 
 Les leaders sont éclaircis (Lightened 0.3), les membres ont la couleur normale du groupe.
@@ -2987,8 +3040,9 @@ Le GroupPanel affiche :
 
 ### 5.9.3 Vue groupes complémentaire (interface ECHOS)
 
-L'interface ECHOS fournit GroupList, GroupDetail et MembershipTree (formation → dissolution, timeline).
+L’interface ECHOS fournit GroupList, GroupDetail et MembershipTree (formation → dissolution, timeline).
 
+## 
 
 ## 5.10 Communication Visuelle
 
@@ -3012,17 +3066,18 @@ Le rendu utilise une file de pulsations avec minuterie delta-time.
 | Zoom | Molette (sensible 0.1, borné 0.5 \- 5.0) |
 | Déplacement | ZQSD / WASD |
 | Sélection | Clic gauche |
-| Suivre l'entité | Touche F |
+| Suivre l’entité | Touche F |
 | Ne plus suivre | Échap |
 | Recentrer | Espace (centre monde, zoom 1.0) |
 
+## 
 
 ## 5.12 HUD
 
 Le HUD affiche en superposition :
 
 - Tick courant.  
-- Nombre d'entités vivants.  
+- Nombre d’entités vivantes.  
 - Score d'émergence (format F2).  
 - Diversité des croyances (format F2).  
 - Liste des phénomènes détectés.  
@@ -3035,9 +3090,9 @@ Les contrôles de simulation sont accessibles depuis le HUD :
 - Start / Pause / Resume / Reset.  
 - Onglets : Paramètres (URL WS, run id, seed), Commandes & légende, Liste des entités, Journal (décès, ressources épuisées).
 
-## 5.13 L'interface d'analyse (intégrée à ECHOS — héritage du prototype)
+## 5.13 L’interface d’analyse (intégrée à ECHOS — héritage du prototype)
 
-PRISM n'est pas la seule interface. Dans le prototype V1/V2, une application web séparée (React + TypeScript) fournissait un tableau de bord d'analyse ; dans l'architecture V0.1, cette interface est intégrée à ECHOS. Composants hérités :
+PRISM n’est pas la seule interface. Dans le prototype V1/V2, une application web séparée (React \+ TypeScript) fournissait un tableau de bord d’analyse ; dans l’architecture V0.1, cette interface est intégrée à ECHOS. Composants hérités :
 
 ### 5.13.1 Les composants principaux
 
@@ -3047,7 +3102,7 @@ PRISM n'est pas la seule interface. Dans le prototype V1/V2, une application web
 | `KPICards` | 4 cartes : entités actifs, score émergence, groupes, messages/tick |
 | `MetricsPanel` | Jauges : diversité des croyances, diversité des objectifs, coefficient de clustering, vitesse de diffusion |
 | `TimelineChart` | Évolution des métriques dans le temps |
-| `AgentInspector` | Inspection d'entité (sondage toutes les 500 ms) |
+| `AgentInspector` | Inspection d’entité (sondage toutes les 500 ms) |
 | `SocialGraph` | Graphe social D3 (sondage toutes les 2 s) |
 | `GroupExplorer` | Liste/détail des groupes |
 | `MessageHeatmap` | Matrice entité×entité des communications |
@@ -3066,6 +3121,7 @@ PRISM n'est pas la seule interface. Dans le prototype V1/V2, une application web
 - D3.js pour la visualisation de graphes.  
 - Tailwind CSS (thème sombre : `bg-gray-900`).
 
+## 
 
 ## 5.14 Les Limites de PRISM
 
@@ -3073,7 +3129,7 @@ Les limites reconnues de l'implémentation actuelle :
 
 1. **V1** : les obstacles et la taille du monde ne sont pas transmis par le contrat de transport (sol fixe 500×500, obstacles ignorés). Corrigé en V2.  
 2. **Pas de sons** : aucune piste audio.  
-3. **Pas d'animations squelettiques** : les entités sont des capsules simples.  
+3. **Pas d’animations squelettiques** : les entités sont des capsules simples.  
 4. **Pas de minimap** : la navigation à grande échelle repose sur le zoom.  
 5. **Pas de rendu LOD** en V1 pour les entités distantes.  
 6. **Complexité du rendu** : 1000 entités \= 1000 capsules à rendre (culling nécessaire au-delà).
@@ -3086,8 +3142,8 @@ PRISM évoluera vers un framework complet destiné à **Unreal Engine ou Unity**
 
 ### 5.15.2 Les fonctionnalités futures
 
-- Mode joueur-habitant : l'utilisateur pourra incarner une entité dans le monde simulé.  
-- Représentation des constructions et territoires.  
+- Mode joueur-habitant : l’utilisateur pourra incarner une entité dans le monde simulé.  
+- Représentation des constructions et des territoires.  
 - Affichage multi-échelle (zoom sur une région → vue globale).  
 - Intégration de données ECHOS directement dans la scène.  
 - Effets visuels environnementaux (saisons, météo, jour/nuit).
@@ -3100,6 +3156,7 @@ Quel que soit le moteur choisi, PRISM restera :
 - **Commandes relayées** : le contrôle du moteur passe par l'API HTTP de SYNE.  
 - **Modèle propre** : LIVEX conserve son propre modèle de données, indépendant du moteur graphique.
 
+# 
 
 # Partie 6 \- Concepts Détaillés {#partie-6---concepts-détaillés}
 
@@ -3107,10 +3164,10 @@ Quel que soit le moteur choisi, PRISM restera :
 
 ### 6.1.1 Définition
 
-Le monde simulé est l'espace dans lequel les entités évoluent. Il est composé :
+Le monde simulé est l’espace dans lequel les entités évoluent. Il est composé :
 
-- D'un **espace logique** \- un plan 2D de dimensions configurable (défaut 500×500).  
-- De **ressources** \- nourriture, eau, bois, minéraux.  
+- D'un **espace logique** \- un plan 2D de dimensions configurables (défaut 500×500).  
+- Des ressources \- nourriture, eau, bois, minéraux.  
 - D'**obstacles** \- éléments qui bloquent le mouvement et, en V2, la ligne de vue.  
 - D'**événements d'environnement** \- saisons, catastrophes, cycles.  
 - De **contraintes** \- limites du monde, règles de transition d'état.
@@ -3127,16 +3184,17 @@ Cette séparation est une conséquence directe du principe d'indépendance du re
 
 ### 6.1.3 Le monde comme acteur
 
-Le monde n'est pas un simple décor passif. Il est un **acteur** de la simulation : il contient des ressources qui s'épuisent et se régénèrent, des obstacles qui contraignent les déplacements, des événements qui perturbent les entités, et des lois biologiques qui font vieillir les entités.
+Le monde n’est pas un simple décor passif. Il est un **acteur** de la simulation : il contient des ressources qui s’épuisent et se régénèrent, des obstacles qui contraignent les déplacements, des événements qui perturbent les entités, et des lois biologiques qui font vieillir les entités.
 
 La formule générale de transition d'état : **S(t+1) \= F(S(t), événements, actions, environnement, hasard contrôlé)**.
 
+## 
 
-## 6.2 L'Entité
+## 6.2 L’Entité
 
 ### 6.2.1 Définition
 
-> **Entité** : entité autonome capable d'agir dans le monde simulé.
+> **Entité** : entité autonome capable d’agir dans le monde simulé.
 
 Une entité de LIVEX est caractérisé par :
 
@@ -3153,10 +3211,11 @@ Une entité de LIVEX est caractérisé par :
 
 ### 6.2.2 L'autonomie
 
-L'autonomie d'une entité se définit informatiquement comme la capacité à sélectionner ses actions sans commande externe directe. Cette définition est **fonctionnelle** : elle ne présuppose ni conscience, ni libre arbitre, ni intentionnalité au sens philosophique.
+L’autonomie d’une entité se définit informatiquement comme la capacité à sélectionner ses actions sans commande externe directe. Cette définition est **fonctionnelle** : elle ne présuppose ni conscience, ni libre arbitre, ni intentionnalité au sens philosophique.
 
+### 
 
-### 6.2.3 L'hétérogénéité
+### 6.2.3 L’hétérogénéité
 
 Deux entités ne sont jamais identiques :
 
@@ -3174,16 +3233,16 @@ Les entités peuvent mourir. La mort est déclenchée par :
 - Santé ≤ 0 (conséquence des dégâts prolongés).  
 - Faim ou soif critiques prolongées (dégâts continus).  
 - Épuisement prolongé.  
-- Conflits avec d'autres entités (V0.1 : conflit frontal ; V2 : attaques).
+- Conflits avec d’autres entités (V0.1 : conflit frontal ; V2 : attaques).
 
 La mort n'est pas un échec de la simulation : elle est une **condition nécessaire** de l'évolution et de la diversité. Une population immortelle n'aurait aucune pression adaptative.
 
 ### 6.2.5 La dissolution complète (V0.1)
 
-En V0.1, la mort est une **dissolution complète** : l'entité cesse d'exister, ses ressources et son corps quittent le monde, et il ne subsiste qu'**un événement de trace** (`EntityDied`) consigné dans le journal de traçabilité (SYNE, §3.24) et exploitable par ECHOS. Il n'y a pas de corps résiduel observable ni d'état `Dead` persistant (contrairement au prototype V1/V2, [HÉRITÉ]).
+En V0.1, la mort est une **dissolution complète** : l’entité cesse d’exister, ses ressources et son corps quittent le monde, et il ne subsiste qu’**un événement de trace** (EntityDied) consigné dans le journal de traçabilité (SYNE, §3.24) et exploitable par ECHOS. Il n’y a pas de corps résiduel observable ni d’état Dead persistant (contrairement au prototype V1/V2, \[HÉRITÉ\]).  
+Cette dissolution renforce la matérialité des **livres** (§3.18) : puisque le savoir d’une entité disparaît avec elle, seule une transmission *explicite* (livre, groupe, écrit) lui survit. La question de savoir si une dissolution laisse des résidus (matière, substances) reste \[OUVERT\].
 
-Cette dissolution renforce la matérialité des **livres** (§3.18) : puisque le savoir d'une entité disparaît avec elle, seule une transmission *explicite* (livre, groupe, écrit) lui survit. La question de savoir si une dissolution laisse des résidus (matière, substances) reste [OUVERT].
-
+## 
 
 ## 6.3 L'Architecture Cognitive
 
@@ -3193,9 +3252,9 @@ L'architecture cognitive de LIVEX s'inspire du modèle BDI de Rao et Georgeff (1
 
 | Composante | Définition LIVEX | Question que cela résout |
 | :---- | :---- | :---- |
-| **Croyances** | Ce que l'entité considère comme vrai | « Que sais-je du monde ? » |
-| **Désirs/Objectifs** | Ce que l'entité cherche à obtenir | « Qu'est-ce qui est important pour moi ? » |
-| **Intentions** | Ce que l'entité s'engage à faire | « Que vais-je faire maintenant ? » |
+| **Croyances** | Ce que l’entité considère comme vrai | « Que sais-je du monde ? » |
+| **Désirs/Objectifs** | Ce que l’entité cherche à obtenir | « Qu'est-ce qui est important pour moi ? » |
+| **Intentions** | Ce que l’entité s’engage à faire | « Que vais-je faire maintenant ? » |
 
 ### 6.3.2 Le cycle cognitif
 
@@ -3205,18 +3264,14 @@ Objectifs → Possibilités → Évaluation → Délibération → Intention →
 
 Action → Conséquences → Modification du monde → Événements →
 
-Nouvelles perceptions
-
-> **V0.1** : ce cycle correspond aux boucles du prototype ([HÉRITÉ]). La boucle de référence de
-> la V0.1 est la **boucle décisionnelle en 15 étapes** (voir §3.3.4), qui conserve ce déroulé
-> tout en formalisant la séparation des responsabilités et la traçabilité
-> `Action ← Intention ← Objectif ← Besoin ← Croyance ← Mémoire ← Perception`.
+Nouvelles perceptions  
+**V0.1** : ce cycle correspond aux boucles du prototype (\[HÉRITÉ\]). La boucle de référence de la V0.1 est la **boucle décisionnelle en 15 étapes** (voir §3.3.4), qui conserve ce déroulé tout en formalisant la séparation des responsabilités et la traçabilité Action ← Intention ← Objectif ← Besoin ← Croyance ← Mémoire ← Perception.
 
 ### 6.3.3 La distinction intention / action
 
-Une **intention** est une décision délibérée : l'engagement de l'entité à poursuivre un objectif. Une **action** est l'exécution concrète de cette intention sur le monde.
+Une **intention** est une décision délibérée : l’engagement de l’entité à poursuivre un objectif. Une **action** est l’exécution concrète de cette intention sur le monde.
 
-Cette distinction est essentielle : une entité peut avoir l'intention de manger mais être temporairement incapable de le faire (pas de nourriture accessible). L'intention persiste, l'action attend ou change.
+Cette distinction est essentielle : une entité peut avoir l’intention de manger mais être temporairement incapable de le faire (pas de nourriture accessible). L’intention persiste, l’action attend ou change.
 
 ### 6.3.4 La fréquence de décision
 
@@ -3246,7 +3301,7 @@ Cette séparation est une question de coût : la cognition complète pour chaque
 | Niveau | Description | Exemple |
 | :---- | :---- | :---- |
 | **Scripté** | « SI événement X ALORS comportement Y » | Un PNJ qui attaque dès que le joueur entre dans son champ |
-| **Paramétré** | « L'entité choisit Y car Y maximise son utilité » | Une entité qui mange car sa faim est élevée |
+| **Paramétré** | « L’entité choisit Y car Y maximise son utilité » | Une entité qui mange car sa faim est élevée |
 | **Émergent** | « Plusieurs entités \+ règles locales \+ ressources \+ interactions \+ boucles de rétroaction → phénomène collectif non spécifié » | Un marché informel qui apparaît à un carrefour |
 
 LIVEX cherche à produire des comportements des trois niveaux, mais uniquement les deux derniers sont « intéressants ». Le niveau scripté est interdit pour les comportements collectifs.
@@ -3267,7 +3322,7 @@ Cela a une conséquence importante pour LIVEX : le monde est déterministe *dans
 
 ### 6.4.5 Le problème de la démonstration
 
-Dire qu'une ville est apparue « spontanément » n'est pas suffisant. Il faut pouvoir démontrer :
+Dire qu'une ville est apparue *spontanément* n'est pas suffisant. Il faut pouvoir démontrer :
 
 1. Qu'aucune règle directe n'a ordonné sa création.  
 2. Quels mécanismes ont rendu cette structure possible.  
@@ -3276,12 +3331,13 @@ Dire qu'une ville est apparue « spontanément » n'est pas suffisant. Il faut p
 
 Cette exigence de validation est au cœur du module ECHOS.
 
+## 
 
 ## 6.5 Paramètres et Configuration
 
 ### 6.5.1 Les traits de personnalité
 
-Les 8 traits de personnalité (repère [HÉRITÉ]) structurent les différences individuelles :
+Les 8 traits de personnalité (repère \[HÉRITÉ\]) structurent les différences individuelles :
 
 | Trait | Plage | Rôle dans la décision |
 | :---- | :---- | :---- |
@@ -3294,10 +3350,8 @@ Les 8 traits de personnalité (repère [HÉRITÉ]) structurent les différences 
 | Force | 0-2 | Puissance de combat (calcul du risque d'attaque) |
 | Vitesse | 0-2 | Vitesse de déplacement (coût de mouvement) |
 
-La plage 0-2 avec neutre à 1.0 permet une grande variété de personnalités sans extrêmes trop stéréotypés.
-
-> **V0.1** : comme au §3.7.4, ce jeu de traits est un repère **[HÉRITÉ]** du prototype ; la V0.1
-> privilégie un **paramétrage conceptuel** (variantes A/B) sans classes rigides.
+La plage 0-2 avec neutre à 1.0 permet une grande variété de personnalités sans extrêmes trop stéréotypés.  
+**V0.1** : comme au §3.7.4, ce jeu de traits est un repère **\[HÉRITÉ\]** du prototype ; la V0.1 privilégie un **paramétrage conceptuel** (variantes A/B) sans classes rigides.
 
 ### 6.5.2 Les besoins
 
@@ -3330,37 +3384,29 @@ Les besoins sont des **tensions numériques**, calculées à chaque tick. Ils co
 - Les paramètres sont **observables** : on doit pouvoir mesurer leur effet.  
 - Les modifications doivent être **explorables** : un fichier de config modifiable, versionné, avec comparaisons de runs.
 
+## 
 
-## 6.6 Cycle de Vie de l'Entité
+## 6.6 Cycle de Vie de l’Entité
 
 ### 6.6.1 Les phases de la vie
 
 | Phase | Description | Durée/fréquence |
 | :---- | :---- | :---- |
-| **Création** | L'entité est instancié, ses traits sont tirés | Début de run (ou naissance, futur) |
+| **Création** | L’entité est instancié, ses traits sont tirés | Début de run (ou naissance, futur) |
 | **Vie active** | Perception, décision, action | Continu |
 | **Repos** | Récupération d'énergie | Périodique (quand fatigue élevée) |
 | **Mort** | Fin des interactions | Quand santé ≤ 0 |
 
 ### 6.6.2 La naissance : fusion consentie (V0.1)
 
-Dans l'architecture V0.1, une nouvelle entité **naît de la fusion consentie de deux entités** (elle
-n'est pas instanciée par un « spawn » extérieur, et l'apparition ne relève pas d'une reproduction
-biologique au sens du prototype).
+Dans l’architecture V0.1, une nouvelle entité **naît de la fusion consentie de deux entités** (elle n’est pas instanciée par un « spawn » extérieur, et l’apparition ne relève pas d’une reproduction biologique au sens du prototype).
 
-- **Consentement** : les deux entités doivent choisir délibérément cette fusion (décision volontaire
-  au sein de la boucle cognitive, §6.3) ; la fusion est un acte social visible (événement
-  `EntityCreated`).  
-- **Conditions** : proximité (ligne de vue / contact), énergie suffisante, et un état cognitif
-  compatible (par exemple une confiance mutuelle au-delà d'un seuil — modèle [OUVERT]).  
-- **Résultat** : la fusion crée une entité nouvelle ; les deux entités initiales peuvent se dissoudre
-  ou conserver une existence autonome (modèle [OUVERT]).  
-- **Hérédité** : la transmission de traits et de savoir lors d'une fusion est laissée ouverte
-  (**décision n°17**).
+**Consentement** : les deux entités doivent choisir délibérément cette fusion (décision volontaire au sein de la boucle cognitive, §6.3) ; la fusion est un acte social visible (événement EntityCreated).
 
-> **Héritage du prototype** : la reproduction (hérédité des traits, démographie, pression adaptative)
-> reste une piste [HÉRITÉ], non retenue en V0.1. La fusion consentie en est une alternative
-> conceptuelle : la population n'est plus fixée par paramétrage mais par les choix des entités.
+- **Conditions** : proximité (ligne de vue / contact), énergie suffisante, et un état cognitif compatible (par exemple une confiance mutuelle au-delà d’un seuil — modèle \[OUVERT\]).  
+- **Résultat** : la fusion crée une entité nouvelle ; les deux entités initiales peuvent se dissoudre ou conserver une existence autonome (modèle \[OUVERT\]).  
+- **Hérédité** : la transmission de traits et de savoir lors d’une fusion est laissée ouverte (**décision n°17**).  
+- **Héritage du prototype** : la reproduction (hérédité des traits, démographie, pression adaptative) reste une piste \[HÉRITÉ\], non retenue en V0.1. La fusion consentie en est une alternative conceptuelle : la population n’est plus fixée par paramétrage mais par les choix des entités.
 
 ### 6.6.3 L'héritage intergénérationnel
 
@@ -3368,12 +3414,13 @@ La mort rompt la continuité d'une entité. Une génération suivante peut héri
 
 Cette distinction est fondamentale : LIVEX ne produit pas des « âmes réincarnées », mais un monde dans lequel le passé laisse des traces.
 
+## 
 
 ## 6.7 Mémoire et Transmission du Savoir
 
 ### 6.7.1 La mémoire comme différence
 
-La mémoire n'est pas identique à une croyance. Une expérience peut être mémorisée, puis interprétée, oubliée, généralisée ou contredite par une expérience plus récente. Cette distinction permet des **erreurs persistantes** : une entité peut croire une chose fausse parce que sa mémoire contient une information obsolète qui n'était pas contradictoire.
+La mémoire n’est pas identique à une croyance. Une expérience peut être mémorisée, puis interprétée, oubliée, généralisée ou contredite par une expérience plus récente. Cette distinction permet des **erreurs persistantes** : une entité peut croire une chose fausse parce que sa mémoire contient une information obsolète qui n’était pas contradictoire.
 
 ### 6.7.2 Le modèle de décroissance
 
@@ -3387,12 +3434,9 @@ Cette courbe correspond au phénomène psychologique d'oubli initial rapide puis
 
 Le savoir se transmet par communication :
 
-Entité A observe un fait (confiance 0.9)
-
-  → transmet à B avec dégradation (confiance 0.81)
-
-    → B transmet à C avec dégradation (confiance 0.72)
-
+Entité A observe un fait (confiance 0.9)  
+  → transmet à B avec dégradation (confiance 0.81)  
+    → B transmet à C avec dégradation (confiance 0.72)  
       → C croit le fait avec confiance 0.72 × trust(B)
 
 La **dégradation progressive** est un élément clé : elle produit des rumeurs, des distorsions, des informations incomplètes \- et donc des divergences de croyances entre entités.
@@ -3408,9 +3452,10 @@ Le savoir peut également se **perdre** :
 
 ### 6.7.5 Les livres comme vecteur durable (V0.1)
 
-La communication éphémère (§6.8) transmet vite et se dégrade ; les **livres** (objets physiques, §3.18) transmettent lentement et **persistent**. Ils permettent au savoir de survivre à la mort des entités, au prix d'une matérialité : détention, garde, vol, destruction. Cette opposition « éphémère vs durable » structure la profondeur temporelle de la société simulée : les entités communiquent avec leur environnement présent, les livres relient les générations.
+La communication éphémère (§6.8) transmet vite et se dégrade ; les **livres** (objets physiques, §3.18) transmettent lentement et **persistent**. Ils permettent au savoir de survivre à la mort des entités, au prix d’une matérialité : détention, garde, vol, destruction. Cette opposition « éphémère vs durable » structure la profondeur temporelle de la société simulée : les entités communiquent avec leur environnement présent, les livres relient les générations.  
+La question « comment le savoir se transmet-et-se-perd » est l’une des questions de recherche les plus intéressantes de LIVEX.
 
-La question « comment le savoir se transmet-et-se-perd » est l'une des questions de recherche les plus intéressantes de LIVEX.
+## 
 
 ## 6.8 Communication
 
@@ -3419,32 +3464,31 @@ La question « comment le savoir se transmet-et-se-perd » est l'une des questio
 En V0.1, la communication repose sur des **pulsations lumineuses publiques** : un signal physique visible de toute entité **en ligne de vue** (un amas ou un obstacle bloque la pulsation). Le signal est **public** (interception possible) ; la messagerie dirigée du prototype reste une optimisation permise. Les principes clés :
 
 - **Locale** : seule la ligne de vue et le voisinage proche reçoivent le signal.  
-- **Coûteuse** : produire une pulsation consomme de l'énergie (coût [OUVERT], décision n°9).  
+- **Coûteuse** : produire une pulsation consomme de l’énergie (coût \[OUVERT\], décision n°9).  
 - **Dégradable** : la confiance diminue à chaque saut (rumeur).  
 - **Ergone** : il peut y avoir incompréhension (5% de risque).  
-- **Fiable selon l'émetteur** : la confiance dans la source module la croyance reçue.
-- **Types de messages** : le protocole structuré (7 types) et le modèle de confiance sont hérités du prototype ([HÉRITÉ], voir §3.16.3).
+- **Fiable selon l'émetteur** : la confiance dans la source module la croyance reçue.  
+- **Types de messages** : le protocole structuré (7 types) et le modèle de confiance sont hérités du prototype (\[HÉRITÉ\], voir §3.16.3).
 
 ### 6.8.2 Pourquoi la communication imparfaite ?
 
-La communication **parfaite** élimine l'incertitude et réduit l'émergence. Si chaque entité savait tout le monde, l'exploration deviendrait inutile, les rumeurs n'existeraient pas, et la diversité des croyances tendrait vers zéro.
+La communication **parfaite** élimine l’incertitude et réduit l’émergence. Si chaque entité savait tout le monde, l’exploration deviendrait inutile, les rumeurs n’existeraient pas, et la diversité des croyances tendrait vers zéro.
 
 La communication imparfaite produit au contraire :
 
-- Des **goulots d'information** (certaines entités deviennent des hubs de confiance).  
+- Des **goulots d’information** (certaines entités deviennent des hubs de confiance).  
 - Des **rumeurs** (l'information circule avec déformation).  
 - Des **différences de perception** (qui croit quoi ?).  
 - De l'**exploration en valeur** (l'information nuit à être vérifiée).  
 - Des **conflits** (deux entités croient des choses contradictoires).
 
-
 ### 6.8.3 Les conditions d'une communication efficace
 
-Pour qu'une pulsation soit utile, il faut :
+Pour qu’une pulsation soit utile, il faut :
 
 - Un émetteur fiable (niveau de confiance ≥ seuil).  
 - Une convention de référence commune (positions, identités).  
-- Un coût acceptable (l'entité a assez d'énergie).  
+- Un coût acceptable (l’entité a assez d’énergie).  
 - Un bénéfice potentiel (l'information est nouvelle ou utile).
 
 ### 6.8.4 Les limites
@@ -3452,12 +3496,11 @@ Pour qu'une pulsation soit utile, il faut :
 | Limite | Description |
 | :---- | :---- |
 | Portée | **Ligne de vue** \+ distance ; les obstacles bloquent (prototype : rayon 20-50) |
-| Délai | Quasi nul pour la lumière ; la latence `distance / 10` est un artefact [HÉRITÉ] du prototype |
-| Coût | Énergie nécessaire à la production ([OUVERT], décision n°9) |
+| Délai | Quasi nul pour la lumière ; la latence distance / 10 est un artefact \[HÉRITÉ\] du prototype |
+| Coût | Énergie nécessaire à la production (\[OUVERT\], décision n°9) |
 | Fiabilité | Confiance dans la source, risque de mensonge |
 | Déformation | Dégradation par saut, incompréhension |
-| Partialité | Une entité ne transmet que ce qu'elle sait \- pas le monde entier |
-
+| Partialité | Une entité ne transmet que ce qu’elle sait \- pas le monde entier |
 
 ## 6.9 Ressources et Environnement
 
@@ -3474,14 +3517,15 @@ Les ressources sont **finies** ou **régénérantes**. Cette finitude est un mot
 
 Une ressource est durable si `régénération ≥ consommation moyenne`. Lorsque la consommation dépasse la régénération, la ressource dépérit \- un phénomène analogue à la surexploitation dans le monde réel.
 
-Les entités n'ont pas de concept de « durabilité » programmé. La durabilité est une **conséquence émergente** de leurs comportements individuels. Un groupe de chasseurs peut épuiser une ressource sans comprendre ce qu'il se passe.
+Les entités n’ont pas de concept de « durabilité » programmé. La durabilité est une **conséquence émergente** de leurs comportements individuels. Un groupe de chasseurs peut épuiser une ressource sans comprendre ce qu’il se passe.
 
 ### 6.9.3 Les événements d'environnement
 
-Les événements d'environnement (sécheresses, abondance, épidémies) introduisent des **perturbations exogènes** : des conditions que les entités ne peuvent pas prévoir et auxquelles ils doivent s'adapter.
+Les événements d’environnement (sécheresses, abondance, épidémies) introduisent des **perturbations exogènes** : des conditions que les entités ne peuvent pas prévoir et auxquelles ils doivent s’adapter.
 
 Ces perturbations sont importantes pour éviter que le système converge vers un équilibre statique. Elles forcent l'adaptation et la diversité comportementale.
 
+## 
 
 ## 6.10 Conflit et Coopération
 
@@ -3497,22 +3541,22 @@ Le conflit n'est pas une action scriptée. Il résulte de l'évaluation des util
 
 Vivre en paix : bénéfice \= 20, coût \= 5, risque \= 2 → utilité \= 13  
 Attaquer :     bénéfice \= 60, coût \= 15, risque \= 40 → utilité \= 5  
-→ L'entité choisit la paix.  
+→ L’entité choisit la paix.  
 Mais si la famine est extrême :  
 Vivre en paix : bénéfice \= 20, coût \= 5, risque \= 2, urgence \= 10 → utilité \= 13  
 Attaquer :     bénéfice \= 60, coût \= 15, risque \= 40, urgence \= 10 → utilité \= 5  
 → Même constat. Il faut que le bénéfice de l'action augmente (faim critique)  
   OU que la cible soit faible (risque réduit) pour que l'attaque devienne rationnelle.
 
-Le conflit émerge lorsque les conditions le rendent **rationnel selon l'évaluation d'utilité de l'entité** : cible vulnérable, besoin extrême, absence d'alternative.
+Le conflit émerge lorsque les conditions le rendent **rationnel selon l’évaluation d’utilité de l’entité** : cible vulnérable, besoin extrême, absence d’alternative.
 
 ### 6.10.3 La coopération
 
 La coopération émerge lorsque les intérêts convergent :
 
-- **Information partagée** : une entité informe une autre d'une ressource → bénéfice mutuel.  
-- **Chasse groupée** : plusieurs entités coordonnées peuvent abattre une proie qu'un seul ne pourrait pas vaincre.  
-- **Échange** : une entité a du bois, une autre a de l'eau → échange mutuellement bénéfique.  
+- **Information partagée** : une entité informe une autre d’une ressource → bénéfice mutuel.  
+- **Chasse groupée** : plusieurs entités coordonnées peuvent abattre une proie qu’un seul ne pourrait pas vaincre.  
+- **Échange** : une entité a du bois, une autre a de l’eau → échange mutuellement bénéfique.  
 - **Défense collective** : un groupe protège ses membres contre les attaques extérieures.
 
 ### 6.10.4 La confiance comme fondation
@@ -3527,7 +3571,7 @@ Toute coopération repose sur la confiance. Sans confiance, l'information est ig
 
 ### 6.11.1 Définition
 
-L'observabilité partielle est le principe selon lequel une entité ne perçoit et ne connaît qu'une partie de l'état réel du monde.
+L’observabilité partielle est le principe selon lequel une entité ne perçoit et ne connaît qu’une partie de l’état réel du monde.
 
 ### 6.11.2 Les mécanismes
 
@@ -3544,10 +3588,11 @@ Plusieurs mécanismes produisent cette partialité :
 
 Les entités ne peuvent **jamais** accéder à la vérité du monde directement. La règle stricte est :
 
-> Les entités n'utilisent que leurs perceptions, leurs souvenirs, leurs croyances et les messages reçus pour prendre leurs décisions. Ils ne consultent jamais la liste des entités, des ressources ou des événements du monde.
+> Les entités n’utilisent que leurs perceptions, leurs souvenirs, leurs croyances et les messages reçus pour prendre leurs décisions. Ils ne consultent jamais la liste des entités, des ressources ou des événements du monde.
 
-Cette règle est appliquée architecturalement (les entités n'exposent pas leurs globales) et testée (des tests vérifient que les entités ne trichent pas).
+Cette règle est appliquée architecturalement (les entités n’exposent pas leurs globales) et testée (des tests vérifient que les entités ne trichent pas).
 
+### 
 
 ### 6.11.4 Les conséquences émergentes
 
@@ -3555,15 +3600,15 @@ L'observabilité partielle produit :
 
 - **L'exploration en valeur** : chercher de l'information devient une stratégie rationnelle.  
 - **La rumeur et la désinformation** : les entités peuvent être trompés.  
-- **L'incertitude comportementale** : le modèle interne de l'entité diverge du monde.  
+- **L’incertitude comportementale** : le modèle interne de l’entité diverge du monde.  
 - **La coopération informationnelle** : échanger des informations devient utile.  
 - **La diversité** : des entités avec des informations différentes prennent des décisions différentes.
 
 ### 6.11.5 Vérité du monde vs vérité perçue
 
-|  | Monde objective | Monde de l'entité |
+|  | Monde objective | Monde de l’entité |
 | :---- | :---- | :---- |
-| Source | SYNE (définitive) | Croyances de l'entité |
+| Source | SYNE (définitive) | Croyances de l’entité |
 | Précision | Parfaite | Variable (0.1-1.0) |
 | Achèvement | Total | Partiel |
 | Actualité | Courante | Potentiellement obsolète |
@@ -3571,6 +3616,7 @@ L'observabilité partielle produit :
 
 Cette dualité est mesurée par ECHOS : la **divergence croyance/réalité** est un indicateur clé de la santé cognitive de la population.
 
+## 
 
 ## 6.12 Déterminisme et Reproductibilité
 
@@ -3607,6 +3653,7 @@ Cette garantie a été vérifiée sur le prototype V1 (20 entités, 2000 ticks).
 - Le parallélisme doit être contrôlé : deux ordres de parallélisation différents produisent des résultats différents.  
 - Les calculs flottants peuvent varier entre architectures si les opérations réordonnées.
 
+## 
 
 ## 6.13 Intelligence Collective
 
@@ -3630,7 +3677,7 @@ LIVEX cherche un phénomène analogue mais plus large :
 | Énergie | Spécialisation (chasseur / collecteur / garde) |
 | Construction (futur) | Villages, routes, monuments |
 
-Aucune de ces structures collectives n'est programmée. Chaque entité suit ses règles locales \- et la structure émergente est le résultat.
+Aucune de ces structures collectives n’est programmée. Chaque entité suit ses règles locales \- et la structure émergente est le résultat.
 
 ### 6.13.3 Attention au terme « intelligence »
 
@@ -3674,6 +3721,7 @@ LIVEX cherche à ne pas programmer directement ses résultats. Mais le choix des
 
 Le joueur et ECHOS sont des observateurs externes. Le fait de pouvoir observer un système sans intervenir est une propriété importante de l'expérimentation : elle permet de distinguer ce qui émerge du système de ce qui est projeté par l'observateur.
 
+# 
 
 # Partie 7 \- Présentation Technique {#partie-7---présentation-technique}
 
@@ -3683,11 +3731,11 @@ Le projet LIVEX repose sur une stack technologique orientée vers la **cohérenc
 
 | Couche | Technologie | Note |
 | :---- | :---- | :---- |
-| Moteur de simulation | C\# / .NET | SDK 10.0.400 (pinné global.json) — piste [HÉRITÉ] du prototype |
-| Persistance | SQLite | 3.x via System.Data.SQLite — piste [HÉRITÉ] |
+| Moteur de simulation | C\# / .NET | SDK 10.0.400 (pinné global.json) — piste \[HÉRITÉ\] du prototype |
+| Persistance | SQLite | 3.x via System.Data.SQLite — piste \[HÉRITÉ\] |
 | Transport | WebSocket \+ HTTP REST | Natif .NET ; protocoles non figés en V0.1 (décision n°28) |
-| Renderer 3D (PRISM) | Godot (.NET edition) | 4.7.2 — piste [HÉRITÉ] |
-| Analyse (ECHOS) | C\# / .NET (Analyzer.Core, Analyzer.Service ASP.NET) | phase V1 ; prototype Python — [HÉRITÉ] |
+| Renderer 3D (PRISM) | Godot (.NET edition) | 4.7.2 — piste \[HÉRITÉ\] |
+| Analyse (ECHOS) | C\# / .NET (Analyzer.Core, Analyzer.Service ASP.NET) | phase V1 ; prototype Python — \[HÉRITÉ\] |
 | Interface (ECHOS) | React \+ TypeScript (echos-ui) | intégrée à ECHOS en V0.1 ; héritage du prototype web |
 | Tests C\# | xUnit \+ Moq | \- |
 | Tests interface (prototype) | Vitest \+ ESLint \+ Prettier | \- |
@@ -3696,106 +3744,85 @@ Le projet LIVEX repose sur une stack technologique orientée vers la **cohérenc
 | Registre d'images | GHCR (GitHub Container Registry) | \- |
 | Contrôle de version | Git | \- |
 
+## 
 
-## 7.2 Organisation du Monorepo
-
-LIVEX/  
-├── simulation-core/           \# Moteur de simulation (C\#)  
-│   ├── Simulation.Core/       \# Bibliothèque principale  
-│   ├── Simulation.Console/    \# Exécutable (mode serveur / CLI)  
-│   ├── Simulation.Core.Tests/ \# Tests unitaires xUnit  
-│   └── Dockerfile             \# Image de conteneur  
-├── analyzer/                  \# Analyseur (phase V1 \= .NET)  
-│   ├── Analyzer.Core/         \# Moteur de métriques  
-│   ├── Analyzer.Service/      \# API REST ASP.NET  
-│   ├── Analyzer.Tests/        \# Tests xUnit  
-│   └── Dockerfile  
-├── echos-ui/                  \# Interface d'ECHOS (héritage du prototype web)  
-│   ├── src/                   \# Vues React (métriques, graphe social, groupes)  
-│   ├── Dockerfile             \# nginx serveur de dist/  
-│   └── package.json  
-├── godot-renderer/            \# Renderer 3D (Godot)  
-│   ├── scenes/                \# Scènes .tscn  
-│   ├── scripts/               \# Scripts C\#  
-│   └── \*.csproj               \# Godot.NET.Sdk  
-├── ci/                        \# Configuration CI/CD  
-│   ├── coverlet.sim.runsettings  
-│   ├── coverlet.an.runsettings  
-│   └── ...  
-├── docs/                      \# Documentation technique  
-│   └── docs\_prototype/        \# Documents de spécification V1/V2  
-├── compose.yml                \# Orchestration Docker  
-└── .github/workflows/         \# GitHub Actions  
-    ├── ci.yml                 \# PR \+ push main  
-    └── release.yml            \# Tags SemVer
-
+## 
 
 ## 7.3 Diagrammes d'Architecture
 
 ### 7.3.1 Flux de données haut niveau
 
-### ┌──────────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────────┐
 
-### │                          SYNE (Simulation.Core)                          │
+│                          SYNE (Simulation.Core)                          │
 
-### │                                                                          │
+│                                                                          │
 
-### │  World │ Agents │ Cognition │ Actions │ Interaction │ Spatial │ Nav      │
+│  World │ Agents │ Cognition │ Actions │ Interaction │ Spatial │ Nav      │
 
-### │   ▲        ▲         ▲          ▲           ▲          ▲         ▲       │
+│   ▲        ▲         ▲          ▲           ▲          ▲         ▲       │
 
-### │   └────────┴─────────┴──────────┴───────────┴──────────┴─────────┴─┘     │
+│   └────────┴─────────┴──────────┴───────────┴──────────┴─────────┴─┘     │
 
-### │                              │                                           │
+│                              │                                           │
 
-### │                        Runtime/Scheduler                                 │
+│                        Runtime/Scheduler                                 │
 
-### └─────────────────────────────┬────────────────────────────────────────────┘
+└─────────────────────────────┬────────────────────────────────────────────┘
 
-###                               │
+                              │
 
-###               WebSocket (5180) │  HTTP Contrôle (5181)
+              WebSocket (5180) │  HTTP Contrôle (5181)
 
-###                               │
+                              │
 
-###         ┌─────────────────────┴──────────────────┐
+        ┌─────────────────────┴──────────────────┐
 
-###         │                                        │
+        │                                        │
 
-### ┌───────▼────────┐                    ┌──────────▼─────────┐
+┌───────▼────────┐                    ┌──────────▼─────────┐
 
-### │      ECHOS     │                    │       PRISM        │
+│      ECHOS     │                    │       PRISM        │
 
-### │  analyse +     │                    │   (visualisation)  │
+│  (analyse)     │                    │   (visualisation)  │
 
-### │  interface     │                    │       Godot        │
+│   .NET/Python  │                    │       Godot        │
 
-### └────────────────┘                    └────────────────────┘
+└───────┬────────┘                    └────────────────────┘
 
-###         │
+        │ REST (5000)
 
-###         │ (l'interface est intégrée aux vues d'ECHOS)
+        │
 
-###         │
+┌───────▼────────┐
 
+│     Web UI     │
 
+│ (React \+ TS)   │
+
+└────────────────┘
+
+### 
+
+### 
 
 ### 7.3.2 Les contrats de données
 
 **WorldSnapshot** (diffusé par SYNE via WebSocket) :  
 ![][image21]
 
-
 ### 7.3.3 La matrice de dépendances
 
-| → | Core | Console | Analyzer | Godot |
-| :---- | :---- | :---- | :---- | :---- |
-| **Core** | \- | \- | \- | \- |
-| **Console** | → Core | \- | \- | \- |
-| **Analyzer** | → Core (DTOs) | \- | \- | \- |
-| **Godot** | \- | \- | \- | \- |
+| → | Core | Console | Analyzer | Web UI | Godot |
+| :---- | :---- | :---- | :---- | :---- | :---- |
+| **Core** | \- | \- | \- | \- | \- |
+| **Console** | → Core | \- | \- | \- | \- |
+| **Analyzer** | → Core (DTOs) | \- | \- | \- | \- |
+| **Web UI** | \- | \- | → Analyzer API | \- | \- |
 
-Règle : **Presentation Adapter → Simulation.Core** (jamais l'inverse). L'interface est fournie par ECHOS (Analyzer) et n'ajoute aucune dépendance du moteur.
+Règle : **Presentation Adapter → Simulation.Core** (jamais l’inverse). L’interface est fournie par ECHOS (Analyzer) et n’ajoute aucune dépendance du moteur.
+
+## 
 
 ## 7.4 Stratégies de Scalabilité
 
@@ -3816,6 +3843,7 @@ Le coût de la naïveté explose avec la population. LIVEX doit passer d'une app
 3. **Traitement par lots** \- Les messages sont traités en une seule passe (alléloissement de la communication).  
 4. **LOD décisionnel** \- Les entités distantes décident moins souvent.
 
+### 
 
 ### 7.4.3 Le budget de tick (1000 entités, 100 ms)
 
@@ -3848,6 +3876,7 @@ Le coût de la naïveté explose avec la population. LIVEX doit passer d'une app
 | Listes poolées (`ThreadLocal`) | Pas d'allocation par décision |
 | Ring buffer d'événements | 500 000 événements, bornés |
 
+## 
 
 ## 7.5 Benchmarks V1 (Résultats Concrets)
 
@@ -3865,8 +3894,8 @@ Le coût de la naïveté explose avec la population. LIVEX doit passer d'une app
 
 - **Déterminisme vérifié** : état RNG identique entre runs.  
 - **Aucun comportement scripté** : moyenne de 4,7 actions distinctes par tick.  
-- **Émergence de l'attaque** à 100 entités (agressivité devient pertinente).  
-- **Goulot d'étranglement** : perception O(n²) \- le débit s'effondre à 5 ticks/s à 1000 entités.  
+- **Émergence de l’attaque** à 100 entités (agressivité devient pertinente).  
+- **Goulot d’étranglement** : perception O(n²) \- le débit s’effondre à 5 ticks/s à 1000 entités.  
 - **EventBus non borné** : 305 000 événements à 1000 entités / 150 ticks.  
 - **Survie 100%** : la biologie V1 est permissive.
 
@@ -3915,8 +3944,7 @@ Déclenchement : **tags SemVer** (`v*`).
 1. Re-vérifier build/tests/couverture.  
 2. Construire et pousser les images Docker **GHCR** (tagged version \+ latest).  
 3. Packager le renderer Godot comme `.tgz`.  
-4. Créer une **GitHub Release** avec notes automatiques et packaging de l'interface ECHOS (prototype web) joint.
-
+4. Créer une **GitHub Release** avec notes automatiques et packaging de l’interface ECHOS (prototype web) joint.
 
 ### 7.6.4 Docker
 
@@ -3924,10 +3952,9 @@ Déclenchement : **tags SemVer** (`v*`).
 | :---- | :---- | :---- | :---- |
 | sim | simulation-core/Simulation.Console | 5180/5181 | Serveur de simulation |
 | analyzer | analyzer/Analyzer.Service | 5000 | API REST (ECHOS, prototype) |
-| echos-ui | echos-ui (Dist) | 80 | Interface d'ECHOS (héritage du prototype web) |
+| echos-ui | echos-ui (Dist) | 80 | Interface d’ECHOS (héritage du prototype web) |
 
-`compose.yml` orchestre : sim → analyzer (dépend de sim) → echos-ui (dépend d'analyzer).
-
+`compose.yml` orchestre : sim → analyzer (dépend de sim) → web-ui (dépend de l’Analyzer).
 
 ## 7.7 Stratégie de Test
 
@@ -3977,8 +4004,9 @@ Déclenchement : **tags SemVer** (`v*`).
 | Analyzer.Core | 18 | 85.1% | 67.9% |
 | Interface ECHOS (prototype, Vitest) | 11 | \- | \- |
 | Intégration SYNE ↔ ECHOS | 31 | \- | \- |
-| **Total** | **98** | \- | \- |
+| **Total** | **67** | \- | \- |
 
+## 
 
 ## 7.8 Gestion des Erreurs et Robustesse
 
@@ -4041,6 +4069,7 @@ Toute violation déclenche une erreur et arrête la simulation (fail-fast).
 | 12 | CI/CD \+ déploiement | 1,5 semaines | 2 |
 | **Total** |  | **≈ 24 semaines** | 2-3 devs |
 
+### 
 
 ### 7.9.2 Les jalons de validation
 
@@ -4051,11 +4080,11 @@ Chaque phase a des critères de succès concrets :
 | 1 | 50 entités run 1000 ticks sans crash ; perception détecte correctement |
 | 2 | 50 entités sur 2000 ticks montrent des croyances divergentes |
 | 3 | Des entités avec des traits différents font des décisions différentes |
-| 4 | MoveTo déplace l'entité sur plusieurs ticks ; les interruptions fonctionnent |
-| 5 | L'information atteint uniquement les entités proches ; la confiance se dégrade |
+| 4 | MoveTo déplace l’entité sur plusieurs ticks ; les interruptions fonctionnent |
+| 5 | L’information atteint uniquement les entités proches ; la confiance se dégrade |
 | 6 | Les entités créent des groupes ; les groupes prennent des décisions collectives |
 | 7 | Les ressources se régénèrent ; les saisons changent les comportements |
-| 8 | Les entités ne « trichent » pas (pas d'accès à la vérité du monde) |
+| 8 | Les entités ne « trichent » pas (pas d’accès à la vérité du monde) |
 | 9 | 50 entités : 30+ t/s ; 500 : 20+ ; 1000 : 10+ |
 | 10 | 160+ tests unitaires, couverture ≥ 80% |
 | 11 | Les 7 moteurs de métriques fonctionnent |
@@ -4096,6 +4125,7 @@ Chaque phase a des critères de succès concrets :
 - Le scope est centré sur **V1 \+ V2** (S1 à S12 de la feuille de route).  
 - Les générations futures (construction, reproduction, LLM, multijoueur) sont **des pistes documentées**, pas des engagements.
 
+## 
 
 ## 8.2 Limites
 
@@ -4120,6 +4150,7 @@ Chaque phase a des critères de succès concrets :
 - La parallélisation est limitée par le besoin de **déterminisme**.  
 - L'API REST de contrôle est un compromis (JSON en payload, pas de typage fort réseau).
 
+## 
 
 ## 8.3 Risques
 
@@ -4141,12 +4172,15 @@ Chaque phase a des critères de succès concrets :
 | Les paramètres par défaut donnent un systèmes « trop stéréotypé » | Exploration systématique des paramètres, comparaison de runs |
 | Les tests sont trop prescriptifs (ils codent le comportement attendu) | Tests sur les invariants et les sorties, pas sur les trajectoires internes |
 
+### 
 
 ### 8.3.3 Les risques techniques
 
-- **Dépendance au timeout de la connexion** : la charge élevée (500 000 événements dans un ring buffer) doit être bornée et profilée.  
+- **Dépendance au timeout de connexion** : la charge élevée (500 000 événements dans un ring buffer) doit être bornée et profilée.  
 - **Concurrence sur l'EventBus** : le parallélisme des perceptions est séparé de l'écriture des événements (chaque thread écrit dans son propre FileWriter via lock file scope).  
-- **Interopérabilité Godot** : l'ensemble C\# doit supporter le frontal Godot (signature de types, serialisation).
+- **Interopérabilité Godot** : l'ensemble C\# doit supporter le frontal Godot (signature de types, sérialisation).
+
+## 
 
 ## 8.4 Défis Scientifiques
 
@@ -4166,6 +4200,7 @@ Un système aussi réductionniste que LIVEX ne peut pas prédire des phénomène
 
 La statistique d'un run est-elle représentative ? La répétition de runs (multi-seeds) est le correctif standard. La question est de savoir combien de runs sont nécessaires pour une conclusion robuste \- c'est une question ouverte.
 
+## 
 
 ## 8.5 Défis Techniques
 
@@ -4189,6 +4224,7 @@ La sauvegarde et le chargement d'un état complet doivent être :
 
 Godot est bridé par sa `.csproj` (ne pas partager les dépendances du moteur de simulation). Les sommes de contrôle (assembly checksums) sont vérifiées aux démarrages. La communication se fait exclusivement par DTO JSON sur WebSocket/HTTP.
 
+## 
 
 ## 8.6 Éthique
 
@@ -4196,7 +4232,7 @@ Godot est bridé par sa `.csproj` (ne pas partager les dépendances du moteur de
 
 Bien que les entités soient des entités artificielles, LIVEX soulève plusieurs questions éthiques réelles :
 
-1. **La souffrance simulée** : les entités peuvent « mourir », « souffrir », être attaqués. Comment la représenter de manière non-glorifiante ?  
+1. **La souffrance simulée** : les entités peuvent « mourir », « souffrir », être attaquées. Comment la représenter de manière non-glorifiante ?  
 2. **La tromperie** : les entités peuvent mentir (confiance, désinformation). Est-ce légitime de simuler la tromperie ?  
 3. **La responsabilité** : qui est responsable si un utilisateur est offensé par un comportement simulé ?  
 4. **La désinformation de niveau supérieur** : un système qui produit des rumeurs pourrait renforcer l'idée que « la désinformation est naturelle ».  
@@ -4222,10 +4258,9 @@ ECHOS observé et quantifié des comportements simulés. Cette observation peut 
 
 ### 8.6.4 L'éthique du déterminisme
 
-Un système déterministe soulève une question philosophique : si une entité est entièrement déterminé, peut-on dire qu'il « choisit » ?
+Un système déterministe soulève une question philosophique : si une entité est entièrement déterminé, peut-on dire qu’il « choisit » ?
 
-Le positionnement de LIVEX est : **oui** \- l'entité peut avoir une autonomie informatique (il choisit selon son état, ses croyances et ses objectifs) sans avoir une liberté métaphysique. Cette distinction est documentée.
-
+Le positionnement de LIVEX est : **oui** \- l’entité peut avoir une autonomie informatique (il choisit selon son état, ses croyances et ses objectifs) sans avoir une liberté métaphysique. Cette distinction est documentée.
 
 ## 8.7 Questions Ouvertes
 
@@ -4239,7 +4274,7 @@ Le positionnement de LIVEX est : **oui** \- l'entité peut avoir une autonomie i
 
 ### 8.7.2 Questions techniques ouvertes
 
-1. Le passage à l'échelle peut-il être étendu au-delà de 1000 entités (par ex., 10 000 ou 100 000\) avec un schéma de décomposition spatiale / niveaux de détail ?  
+1. Le passage à l’échelle peut-il être étendu au-delà de 1000 entités (par ex., 10 000 ou 100 000\) avec un schéma de décomposition spatiale / niveaux de détail ?  
 2. Peut-on paralléliser les simulations distribuées tout en maintenant la reproductibilité ?  
 3. Un BDI peut-il être couplé à un LLM sans perdre la garantie de déterminisme ?  
 4. La persistance peut-elle être étendue à des **mondes multiples** parallèles ?
@@ -4247,9 +4282,10 @@ Le positionnement de LIVEX est : **oui** \- l'entité peut avoir une autonomie i
 ### 8.7.3 Questions philosophiques ouvertes
 
 1. Où s'arrête la simulation et où commence le modèle ?  
-2. Une entité simulé peut-il avoir une « fin » éthique si sa complexité s'accroît ?  
+2. Une entité simulé peut-il avoir une « fin » éthique si sa complexité s’accroît ?  
 3. La distinction entre vérité du monde et croyances est-elle une bonne abstraction du phénomène humain ?
 
+## 
 
 ## 8.8 Positionnement et Liens avec les Recherches Contemporaines
 
@@ -4275,7 +4311,7 @@ LIVEX fait le choix délibéré de **ne pas** fonder la cognition sur des résea
 3. **Transparence des primitives** : on sait ce que chaque entité « sait » et « croit ».  
 4. **Comparabilité** : on peut comparer deux simulations en variant un seul paramètre.
 
-L'introduction éventuelle d'un **adapter LLM** (communication naturelle) est documentée comme extension future optionnelle, mais elle reste **en infranchissable** en V2.
+L'introduction éventuelle d'un **adaptateur LLM** (communication naturelle) est documentée comme extension future optionnelle, mais elle reste **en infranchissable** en V2.
 
 ### 8.8.3 Ce que LIVEX apporte
 
@@ -4287,7 +4323,7 @@ L'introduction éventuelle d'un **adapter LLM** (communication naturelle) est do
 
 ## 9.1 Bilan
 
-Le projet LIVEX a pour ambition de poser une question simple : dans un monde simulé avec des entités dont les règles sont réduites à leur plus simple expression, comment l'ordre et la complexité émergent-ils ?
+Le projet LIVEX a pour ambition de poser une question simple : dans un monde simulé avec des entités dont les règles sont réduites à leur plus simple expression, comment l’ordre et la complexité émergent-ils ?
 
 À travers trois modules \- SYNE (le monde), ECHOS (l'observation) et PRISM (la représentation) \- le projet explore les frontières entre :
 
@@ -4298,7 +4334,9 @@ Le projet LIVEX a pour ambition de poser une question simple : dans un monde sim
 
 Le projet a été conçu pour rester **abordable** : 1 développeur, documentation publique, architecture ouverte, monorepo propre.
 
-## 9.2 Résumé des Résultats V1 — [HÉRITÉ]
+## 
+
+## 9.2 Résumé des Résultats V1 — \[HÉRITÉ\]
 
 ### 9.2.1 Les réalisations
 
@@ -4309,24 +4347,24 @@ Le projet a été conçu pour rester **abordable** : 1 développeur, documentati
 | **Robustesse** | 98 tests passants (56 C\#, 11 Vitest, 31 intégration) ; couverture 90.3% (core) et 85.1% (analyzer) |
 | **Performance** | 1000 entités : \~6.3 ticks/s après optimisation spatiale (+37%) ; mémoire réduite de \~10× |
 | **Observabilité** | 7 moteurs de métriques \+ score d'émergence composite |
-| **Visualisation** | Renderer Godot 3D fonctionnel (snapshot actifs, contrôle depuis l'interface ECHOS) |
-
+| **Visualisation** | Renderer Godot 3D fonctionnel (snapshot actifs, contrôle depuis l’interface ECHOS) |
 
 ### 9.2.2 Les leçons apprises
 
 1. **Le goulot n'est pas la structure de données, c'est la GC.** Les optimisations de structure (grille spatiale) ont aidé, mais la réduction des allocations a eu l'impact spectaculaire.  
-2. **L'émergence ne se décrète pas : elle s'implante.** Les besoins V1 (faim, soif, fatigue...) ont produit des comportements divers mais stéréotypés. V2 est construit pour rendre possible l'observabilité partielle et la divergence de croyances.  
+2. **L’émergence ne se décrète pas : elle s’implante.** Les besoins V1 (faim, soif, fatigue…) ont produit des comportements divers mais stéréotypés. V2 est construit pour rendre possible l’observabilité partielle et la divergence de croyances.  
 3. **Le déterminisme est une discipline, pas une option.** Beaucoup de choix d'architecture (scheduler, PRNG, pools, ordre des calculs) découlent de cette exigence.  
-4. **Le prototype est la démo** : le fragment V1 a validé l'hypothèse centrale \- la formation d'une classe sociale (la 3ᵉ entité au sein du groupe `Chase`) sans aucune règle globale.
+4. **Le prototype est la démo** : le fragment V1 a validé l'hypothèse centrale \- la formation d'une classe sociale (le 3e agent among `Chase` group) sans aucune règle globale.
 
 ### 9.2.3 La preuve de concept
 
 La simulation V1 a produit un **phénomène émergent** : la formation d'une division du travail (rôles de chasseur et collecteur) sans consigne globale. Ce résultat n'est pas la preuve d'une intelligence \- mais il démontre que des primitives minimales peuvent produire des structures sociales non triviales.
 
+## 
 
-## 9.3 Vers V2 — [HÉRITÉ]
+## 9.3 Vers V2 — \[HÉRITÉ\]
 
-### 9.3.1 Ce que V2 ajoute
+### 9.3.1 Ce que la V2 ajoute
 
 - **Architecture BDI** complète (perception → mémoire → croyances → besoins → objectifs → délibération → intention → action).  
 - **Persistance SQLite** robuste avec migration et vérification transactionnelle.  
@@ -4352,9 +4390,10 @@ La V2 est planifiée sur **24 semaines** (12 phases, 2-3 développeurs). Les jal
 ### 9.3.3 Les priorités
 
 1. **La qualité** \- Les tests ne sont pas un extra, ils sont le garde-fou du déterminisme.  
-2. **La performance** \- Sans 10+ ticks/s à 1000 entités, l'expérimentation devient impossible.  
+2. **La performance** \- Sans 10+ ticks/s à 1000 entités, l’expérimentation devient impossible.  
 3. **L'observabilité de l'émergence** \- ECHOS doit pouvoir démontrer, pas seulement rapporter.
 
+## 
 
 ## 9.4 Vision à Long Terme
 
@@ -4384,174 +4423,142 @@ Trois principes fondent l'esprit de LIVEX :
 2. **La transparence radicale** \- Tout est documenté, testé, versionné.  
 3. **La reproductibilité** \- Ce que l'on découvre doit pouvoir être vérifié par n'importe qui.
 
+## 
 
 ## 9.5 Note Finale
 
 LIVEX n'est pas un jeu. Ce n'est pas non plus une simulation de la société humaine.
 
-C'est un **outil de pensée** \- une fenêtre sur ce qui émerge lorsque des centaines d'entités simples interagissent selon des règles explicites, dans un monde où rien d'autre que leurs propres perceptions, leurs propres souvenirs et leurs propres décisions ne fait autorité.
+C’est un **outil de pensée** \- une fenêtre sur ce qui émerge lorsque des centaines d’entités simples interagissent selon des règles explicites, dans un monde où rien d’autre que leurs propres perceptions, leurs propres souvenirs et leurs propres décisions ne fait autorité.
 
-Cette monographie n'est pas le dernier mot sur le projet. Elle est une photographie à un instant donné : un instant où la V2 est planifiée, où les résultats V1 sont mesurés, et où la question fondamentale reste ouverte.
+Cette monographie n’est pas le dernier mot sur le projet. Elle est une photographie à un instant donné : un instant où la V2 est planifiée, où les résultats V1 sont mesurés, et où la question fondamentale reste ouverte.
 
 Et c'est précisément cette ouverture qui rend le projet possible.
 
+# 
+
 ## 9.6 Fondations V0.1
 
-Les sections 9.1 à 9.5 retracent l'histoire et la vision du prototype (V1/V2, [HÉRITÉ]). La
-présente section fixe le **socle contractuel de la V0.1** : ce qui doit être démontré, dans quel
-ordre, selon quelle doctrine et avec quelles décisions (Fondation, Doc-ref).
+Les sections 9.1 à 9.5 retracent l’histoire et la vision du prototype (V1/V2, \[HÉRITÉ\]). La présente section fixe le **socle contractuel de la V0.1** : ce qui doit être démontré, dans quel ordre, selon quelle doctrine et avec quelles décisions (Fondation, Doc-ref).
 
 ### 9.6.1 Les 25 critères de réussite minimaux
 
-La V0.1 ne cherche pas à démontrer une civilisation complète : elle doit démontrer la **boucle
-fondamentale du monde vivant**. Minimum attendu :
+La V0.1 ne cherche pas à démontrer une civilisation complète : elle doit démontrer la **boucle fondamentale du monde vivant**. Minimum attendu :  
+monde continu ;  
+temps simulé ;  
+entités autonomes ;  
+énergie ;  
+perception locale ;  
+mémoire ;  
+croyances ;  
+besoins ;  
+objectifs ;  
+évaluation d’utilité ;  
+délibération ;  
+intentions ;  
+actions ;  
+ressources ;  
+communication (pulsations lumineuses, §3.16) ;  
+relations ;  
+conséquences persistantes ;  
+mort (dissolution complète, §6.2.5) ;  
+naissance (fusion consentie, §6.6.2) ;  
+connaissance / livres (§3.18) ;  
+construction minimale ;  
+déterminisme ;  
+persistance ;  
+instrumentation ;  
+représentation via PRISM.  
+Le nombre d’entités est secondaire. **La cohérence du système est prioritaire.**
 
-1. monde continu ;
-2. temps simulé ;
-3. entités autonomes ;
-4. énergie ;
-5. perception locale ;
-6. mémoire ;
-7. croyances ;
-8. besoins ;
-9. objectifs ;
-10. évaluation d'utilité ;
-11. délibération ;
-12. intentions ;
-13. actions ;
-14. ressources ;
-15. communication (pulsations lumineuses, §3.16) ;
-16. relations ;
-17. conséquences persistantes ;
-18. mort (dissolution complète, §6.2.5) ;
-19. naissance (fusion consentie, §6.6.2) ;
-20. connaissance / livres (§3.18) ;
-21. construction minimale ;
-22. déterminisme ;
-23. persistance ;
-24. instrumentation ;
-25. représentation via PRISM.
+### 
 
-Le nombre d'entités est secondaire. **La cohérence du système est prioritaire.**
+### 9.6.2 Le principe d’ordre de construction
 
-### 9.6.2 Le principe d'ordre de construction
-
-**Un petit monde cohérent avant un grand monde incohérent.** La reconstruction suit 11 étapes
-(Étapes 0 à 10) :
-
-- **Étape 0 — Fondations** : vocabulaire, unités, temps, espace, seed, configuration, événements, interfaces, état minimal.
-- **Étape 1 — Monde minimal** : monde, espace, temps, ressources, énergie.
-- **Étape 2 — Entité minimale** : identité, position, énergie, perception, action.
-- **Étape 3 — Cognition** : mémoire, croyances, besoins, objectifs, utilité, décision, intention.
-- **Étape 4 — Interactions** : communication, relations, confiance, échanges.
-- **Étape 5 — Monde social** : livres, constructions, territoire, groupes, coalitions.
-- **Étape 6 — Cycle de vie** : naissance, générations, héritage, mort, transmission.
-- **Étape 7 — Conflit** : confrontation, énergie, dissolution, conséquences territoriales.
-- **Étape 8 — Persistance et déterminisme** : sauvegarde, chargement, seed, replay, comparaison.
-- **Étape 9 — ECHOS** : événements, traces, métriques, contrôle, calibration.
-- **Étape 10 — PRISM** : rendu, caméra, inspection, interaction, debug.
+**Un petit monde cohérent avant un grand monde incohérent.** La reconstruction suit 11 étapes (Étapes 0 à 10\) :  
+**Étape 0 — Fondations** : vocabulaire, unités, temps, espace, seed, configuration, événements, interfaces, état minimal.  
+**Étape 1 — Monde minimal** : monde, espace, temps, ressources, énergie.  
+**Étape 2 — Entité minimale** : identité, position, énergie, perception, action.  
+**Étape 3 — Cognition** : mémoire, croyances, besoins, objectifs, utilité, décision, intention.  
+**Étape 4 — Interactions** : communication, relations, confiance, échanges.  
+**Étape 5 — Monde social** : livres, constructions, territoire, groupes, coalitions.  
+**Étape 6 — Cycle de vie** : naissance, générations, héritage, mort, transmission.  
+**Étape 7 — Conflit** : confrontation, énergie, dissolution, conséquences territoriales.  
+**Étape 8 — Persistance et déterminisme** : sauvegarde, chargement, seed, replay, comparaison.  
+**Étape 9 — ECHOS** : événements, traces, métriques, contrôle, calibration.  
+**Étape 10 — PRISM** : rendu, caméra, inspection, interaction, debug.
 
 ### 9.6.3 Les 15 points de la doctrine
 
-1. Construire le monde avant l'histoire.
-2. Construire les mécanismes avant les phénomènes.
-3. Ne pas corriger immédiatement une émergence inattendue avec une règle globale.
-4. Considérer les comportements inattendus comme des résultats à analyser avant de les qualifier de bugs.
-5. Rendre les décisions traçables.
-6. Tester chaque système isolément.
-7. Garder SYNE indépendant du rendu.
-8. Garder ECHOS indépendant de la logique comportementale.
-9. Garder PRISM indépendant de la vérité du monde.
-10. Mesurer avant d'optimiser.
-11. Expérimenter avec des seeds contrôlées.
-12. Documenter les décisions d'architecture.
-13. Ne pas introduire trop tôt des systèmes sociaux complexes.
-14. Ne pas introduire trop tôt l'apprentissage automatique.
-15. Préférer des primitives simples pouvant produire plusieurs phénomènes.
+Construire le monde avant l’histoire.  
+Construire les mécanismes avant les phénomènes.  
+Ne pas corriger immédiatement une émergence inattendue avec une règle globale.  
+Considérer les comportements inattendus comme des résultats à analyser avant de les qualifier de bugs.  
+Rendre les décisions traçables.  
+Tester chaque système isolément.  
+Garder SYNE indépendant du rendu.  
+Garder ECHOS indépendant de la logique comportementale.  
+Garder PRISM indépendant de la vérité du monde.  
+Mesurer avant d’optimiser.  
+Expérimenter avec des seeds contrôlées.  
+Documenter les décisions d’architecture.  
+Ne pas introduire trop tôt des systèmes sociaux complexes.  
+Ne pas introduire trop tôt l’apprentissage automatique.  
+Préférer des primitives simples pouvant produire plusieurs phénomènes.
+
+### 
 
 ### 9.6.4 Les 30 décisions à figer
 
-Les points suivants doivent être explicitement décidés (une question non décidée reste
-explicitement **[OUVERTE]** plutôt que devenir accidentellement une règle du moteur) :
+Les points suivants doivent être explicitement décidés (une question non décidée reste explicitement **\[OUVERTE\]** plutôt que devenir accidentellement une règle du moteur) :  
+unité de temps ;  
+taille et géométrie du monde ;  
+cycle énergétique exact ;  
+modèle de ressource ;  
+modèle énergétique ;  
+portée de perception ;  
+portée de communication ;  
+interception des pulsations ;  
+coût émission/réception d’une pulsation ;  
+perte de confiance lors de la transmission ;  
+structure exacte de la mémoire ;  
+mécanisme de révision des croyances ;  
+formule d’utilité ;  
+fréquence de délibération ;  
+interruptions d’actions ;  
+héritage des traits ;  
+fusion du code à la naissance ;  
+coût d’écriture d’un livre ;  
+bénéfice des lectures ;  
+modèle des constructions ;  
+définition opérationnelle du territoire ;  
+résolution des conflits ;  
+modèle des relations ;  
+règles de formation des coalitions ;  
+structure de persistance ;  
+granularité des événements ;  
+stratégie déterministe ;  
+architecture exacte de communication SYNE/ECHOS/PRISM ;  
+limites de population V0.1 ;  
+objectifs de performance V0.1.  
+Certaines d’entre elles sont **adressées** dans le présent document sans être pour autant figées : la portée des pulsations (décision n°7, §3.16.1), leur coût (décision n°9, §3.16.9), l’héritage et la fusion à la naissance (décision n°17, §6.6.2), les coûts/bénéfices des livres (décisions n°18/19, §3.18.5) et les protocoles de transport SYNE/ECHOS/PRISM (décision n°28, §2.2.3) restent officiellement **\[OUVERTES\]** ; seuls les principes d’architecture qui y sont relatifs sont posés comme repères de la V0.1.
 
-1. unité de temps ;
-2. taille et géométrie du monde ;
-3. cycle énergétique exact ;
-4. modèle de ressource ;
-5. modèle énergétique ;
-6. portée de perception ;
-7. portée de communication ;
-8. interception des pulsations ;
-9. coût émission/réception d'une pulsation ;
-10. perte de confiance lors de la transmission ;
-11. structure exacte de la mémoire ;
-12. mécanisme de révision des croyances ;
-13. formule d'utilité ;
-14. fréquence de délibération ;
-15. interruptions d'actions ;
-16. héritage des traits ;
-17. fusion du code à la naissance ;
-18. coût d'écriture d'un livre ;
-19. bénéfice des lectures ;
-20. modèle des constructions ;
-21. définition opérationnelle du territoire ;
-22. résolution des conflits ;
-23. modèle des relations ;
-24. règles de formation des coalitions ;
-25. structure de persistance ;
-26. granularité des événements ;
-27. stratégie déterministe ;
-28. architecture exacte de communication SYNE/ECHOS/PRISM ;
-29. limites de population V0.1 ;
-30. objectifs de performance V0.1.
+### 
 
-Certaines d'entre elles sont **adressées** dans le présent document sans être pour autant figées :
-la portée des pulsations (décision n°7, §3.16.1), leur coût (décision n°9, §3.16.9), l'héritage et
-la fusion à la naissance (décision n°17, §6.6.2), les coûts/bénéfices des livres (décisions n°18/19,
-§3.18.5) et les protocoles de transport SYNE/ECHOS/PRISM (décision n°28, §2.2.3) restent
-officiellement **[OUVERTES]** ; seuls les principes d'architecture qui y sont relatifs sont posés
-comme repères de la V0.1.
+### 9.6.5 L’état de référence V0.1
 
-### 9.6.5 L'état de référence V0.1
+**Validé** : LIVEX comme projet global : SYNE moteur de simulation, ECHOS analyse/pilotage/ interface, PRISM rendu et interaction ; monde virtuel persistant et fermé ; entités autonomes ; observabilité partielle ; cognition de type BDI ; mémoire et croyances ; besoins et objectifs ; utilité et délibération ; ressources et énergie ; communication locale par pulsations lumineuses ; livres physiques et transmission du savoir ; construction ; territoire ; conflit ; coalitions ; naissance par fusion consentie ; dissolution complète à la mort ; déterminisme et persistance comme objectifs d’architecture ; séparation moteur / analyse / rendu.  
+**À définir techniquement** : valeurs numériques ; formules ; structures de données ; protocoles ; stockage ; algorithmes de navigation ; résolution des conflits ; héritage ; métriques finales.  
+**Reporté** : apprentissage avancé ; institutions complexes ; culture complexe ; politique ; économie avancée ; diplomatie avancée ; langage complexe ; évolution avancée.
 
-- **Validé** : LIVEX comme projet global : SYNE moteur de simulation, ECHOS analyse/pilotage/
-interface, PRISM rendu et interaction ; monde virtuel persistant et fermé ; entités autonomes ;
-observabilité partielle ; cognition de type BDI ; mémoire et croyances ; besoins et objectifs ;
-utilité et délibération ; ressources et énergie ; communication locale par pulsations lumineuses ;
-livres physiques et transmission du savoir ; construction ; territoire ; conflit ; coalitions ;
-naissance par fusion consentie ; dissolution complète à la mort ; déterminisme et persistance
-comme objectifs d'architecture ; séparation moteur / analyse / rendu.
-- **À définir techniquement** : valeurs numériques ; formules ; structures de données ; protocoles ;
-stockage ; algorithmes de navigation ; résolution des conflits ; héritage ; métriques finales.
-- **Reporté** : apprentissage avancé ; institutions complexes ; culture complexe ; politique ;
-économie avancée ; diplomatie avancée ; langage complexe ; évolution avancée.
+### 9.6.6 L’esprit des fondations
 
-### 9.6.6 L'esprit des fondations
-
-LIVEX est un **laboratoire de monde vivant**. SYNE ne doit pas être une machine qui raconte une
-histoire ; ECHOS ne doit pas être une machine qui fabrique l'émergence ; PRISM ne doit pas devenir
-la source de vérité du monde. La boucle complète — monde → perception → mémoire → croyance →
-besoin → objectif → décision → action → interaction → conséquence → monde modifié — se déploie
-ensuite à l'échelle collective : entités + règles locales + ressources + contraintes + information
-partielle + temps + rétroactions → structures collectives → phénomènes émergents.
-
+LIVEX est un **laboratoire de monde vivant**. SYNE ne doit pas être une machine qui raconte une histoire ; ECHOS ne doit pas être une machine qui fabrique l’émergence ; PRISM ne doit pas devenir la source de vérité du monde. La boucle complète — monde → perception → mémoire → croyance → besoin → objectif → décision → action → interaction → conséquence → monde modifié — se déploie ensuite à l’échelle collective : entités \+ règles locales \+ ressources \+ contraintes \+ information partielle \+ temps \+ rétroactions → structures collectives → phénomènes émergents.  
 **Construire les conditions. Observer les conséquences. Comprendre ce qui émerge.**
 
+# 
+
 # Partie 10 \- Annexes {#partie-10---annexes}
-
-## Table des Matières des Annexes
-
-- [Annexe A \- Références Scientifiques](#annexe-a--références-scientifiques)  
-- [Annexe B \- Tableau Comparatif V1 vs V2](#annexe-b--tableau-comparatif-v1-vs-v2)  
-- [Annexe C \- Chronologie du Projet](#annexe-c--chronologie-du-projet)  
-- [Annexe D \- Questions de Recherche Détaillées](#annexe-d--questions-de-recherche-détaillées)  
-- [Annexe E \- Glossaire Complet](#annexe-e--glossaire-complet)  
-- [Annexe F \- Architecture Decision Records (ADR)](#annexe-f--architecture-decision-records-adr)  
-- [Annexe G \- Schéma de la Base de Données SQLite (prototype — \[HÉRITÉ\])](#annexe-g--schéma-de-la-base-de-données-sqlite-prototype--hérité)  
-- [Annexe H \- Configuration et Paramètres (prototype — \[HÉRITÉ\])](#annexe-h--configuration-et-paramètres-prototype--hérité)  
-- [Annexe I \- Tableau des Benchmarks (prototype — \[HÉRITÉ\])](#annexe-i--tableau-des-benchmarks-prototype--hérité)  
-- [Annexe J \- Feuille de Route V2 Détaillée (prototype — \[HÉRITÉ\])](#annexe-j--feuille-de-route-v2-détaillée-prototype--hérité)  
-- [Annexe K \- Table des Matières Générale](#annexe-k--table-des-matières-générale)
 
 ## Annexe A \- Références Scientifiques
 
@@ -4563,7 +4570,6 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | Shannon, C. E. (1948). *A Mathematical Theory of Communication.* | Théorie de l'information, entropie, communication | Mesure de la divergence croyance/réalité (ECHOS) |
 | Wooldridge, M. (2009). *An Introduction to MultiAgent Systems.* | Synthèse des systèmes multi-agents | Architecture des agents autonomes, coordination, communication |
 | Nilsson, N. J. (1998). *Artificial Intelligence: A New Synthesis.* | Intelligence artificielle, planification, raisonnement | Fondements de l'IA symbolique, architecture cognitive |
-
 
 ### A.2 Vie Artificielle et Systèmes Complexes
 
@@ -4602,6 +4608,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | EU AI Act (2024). *Artificial Intelligence Act.* | Réglementation européenne sur l'IA | Responsabilité, transparence, classification des risques |
 | Floridi, L. (2014). *The Fourth Revolution: How the Infosphere is Reshaping Human Reality.* | Éthique de l'information | Considérations sur la manipulation et la tromperie |
 
+## 
 
 ## Annexe B \- Tableau Comparatif V1 vs V2
 
@@ -4629,11 +4636,13 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | Sauvegarde | Manuel | Automatique configurable (tous les 1000 ticks) |
 | Migration | Non supportée | Plans de migration documentés |
 
+### 
+
 ### B.3 Performance et Scalabilité
 
 | Caractéristique | V1 | V2 |
 | :---- | :---- | :---- |
-| Nombre d'entités max (cible) | 100-200 | 500-1000 |
+| Nombre d’entités max (cible) | 100-200 | 500-1000 |
 | Budget par tick | Aucun | 100 ms max |
 | Architecture mémoire | Listes simples | ECS avec component pools |
 | Espace d'état | Listes | Dictionnaires (actif, pool) |
@@ -4656,29 +4665,30 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | Mars 2026 | Création du dossier prototype V1 |
 | Mars-Mai 2026 | Développement du prototype V1 (90 jours) |
 | Mai 2026 | Premières observations : formation de la classe « clan » |
-| Juin 2026 | Réécriture complète de la monographie  à partir du document de spécification |
+| Juin 2026 | Réécriture complète de la monographie à partir du document de spécification |
 | Juillet 2026 | Objectifs V2 documentés : scalability 500-1000 entités, BDI, SQLite |
 | Août 2026 | Fin du prototype V1 : 98 tests passants, moteur déterministe validé |
 | Août 2026 | Analyse complète des 41 fichiers V2 (21 docs techniques) |
-| Septembre 2026 | Rédaction de la monographie  V2 (ce document) |
+| Septembre 2026 | Rédaction de la monographie V2 (ce document) |
 
+## 
 
 ## Annexe D \- Questions de Recherche Détaillées
 
 ### D.1 Question Principale
 
-**Peut-on, dans un monde minimal et persistant, observer des phénomènes émergents qui révèlent des structures complexes issues d'entités relativement simples ?**
+**Peut-on, dans un monde minimal et persistant, observer des phénomènes émergents qui révèlent des structures complexes issues d’entités relativement simples ?**
 
 ### D.2 Questions Secondaires
 
 #### Q1 \- Émergence Pure
 
-> « Peut-on observer, dans un monde minimal et persistant, des phénomènes émergents révélant des structures complexes issues d'entités relativement simples ? »  
+> « Peut-on observer, dans un monde minimal et persistant, des phénomènes émergents révélant des structures complexes issues d’entités relativement simples ? »  
 > 
 
 - **Objectifs** : Formuler des hypothèses testables sur l'émergence.  
 - **Méthode** : Comparer des résultats à des seuils définis (score composite ≥0.7, 3 critères minimums sur 5).  
-- **Résultats** : Un premier fragment de projet a montré qu'une population minimale de 5 entités peut produire une division du travail sans consigne globale.
+- **Résultats** : Un premier fragment de projet a montré qu’une population minimale de 5 entités peut produire une division du travail sans consigne globale.
 
 #### Q2 \- Rôle de la Mémoire
 
@@ -4700,7 +4710,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 
 #### Q4 \- Scalabilité et Émergence
 
-> « Au-delà de 500 entités, l'émergence est-elle un artefact ou un phénomène observable ? »  
+> « Au-delà de 500 entités, l’émergence est-elle un artefact ou un phénomène observable ? »  
 > 
 
 - **Objectifs** : Mesurer la robustesse de l'émergence à l'échelle.  
@@ -4716,6 +4726,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | Q3 \- Communication | Importance méthodologique | Influence la variabilité des résultats | Moyenne |
 | Q4 \- Scalabilité | Importance pratique | Conditionne la faisabilité | Haute |
 
+## 
 
 ## Annexe E \- Glossaire Complet
 
@@ -4724,7 +4735,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | Terme | Définition |
 | :---- | :---- |
 | **ADR** | Architecture Decision Record \- document formalisant une décision technique |
-| **BDI** | Beliefs-Desires-Intentions \- modèle d'architecture cognitive pour entités autonomes |
+| **BDI** | Beliefs-Desires-Intentions \- modèle d’architecture cognitive pour entités autonomes |
 | **CLI** | Command Line Interface \- ligne de commande |
 | **CQRS** | Command Query Responsibility Segregation \- pattern séparant lecture/écriture |
 | **DTO** | Data Transfer Object \- objet de transfert de données |
@@ -4747,30 +4758,33 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | **WebSocket** | Protocole de communication bidirectionnelle en temps réel |
 | **xUnit** | Framework de tests unitaires pour .NET |
 
+### 
 
 ### E.2 Termes de Simulation
 
 | Terme | Définition |
 | :---- | :---- |
 | **Entité** | Entité autonome capable d'agir dans le monde simulé |
-| **Autonomie** | Capacité d'une entité à agir sans intervention externe |
+| **Autonomie** | Capacité d’une entité à agir sans intervention externe |
 | **Croyances** | Représentation interne du monde par une entité |
-| **Cycle de vie** | Succession des états d'une entité de sa création à sa mort |
+| **Cycle de vie** | Succession des états d’une entité de sa création à sa mort |
 | **Délibération** | Processus de choix d'action par évaluation d'utilité |
 | **Déterminisme** | Propriété d'un système où la même cause produit toujours le même effet |
 | **Émergence** | Phénomène macroscopique résultant d'interactions microscopiques |
-| **Groupe** | Ensemble d'entités partageant des objectifs communs |
-| **Intention** | Engagement d'une entité à poursuivre un objectif |
-| **Observabilité** | Degré d'accès d'une entité à l'état du monde |
+| **Groupe** | Ensemble d’entités partageant des objectifs communs |
+| **Intention** | Engagement d’une entité à poursuivre un objectif |
+| **Observabilité** | Degré d’accès d’une entité à l’état du monde |
 | **Persistance** | Capacité de conservation d'un état entre sessions |
 | **PRNG** | Générateur de nombres pseudo-aléatoires reproductible |
 | **Reproductibilité** | Propriété d'obtenir les mêmes résultats avec les mêmes paramètres |
-| **Ressource** | Élément du monde qu'une entité peut utiliser |
-| **Livre** | Objet physique du monde portant un savoir durable (rédigé par un Auteur, gardé par un Gardien, volé par un Voleur) |
-| **Pulsation lumineuse** | Signal de communication éphémère, visible par toute entité en ligne de vue |
+| **Ressource** | Élément du monde qu’une entité peut utiliser |
+| **Utilité** | Score numérique d'attrait d'une action pour un agent |
+| **Utilité** | Score numérique d'attrait d'une action pour un agent |
 | **Seed** | Valeur d'initialisation du PRNG |
 | **Tick** | Unité de temps de simulation |
-| **Utilité** | Score numérique d'attrait d'une action pour une entité |
+| **Utilité** | Score numérique d’attrait d’une action pour une entité |
+
+### 
 
 ### E.3 Termes de Visualisation
 
@@ -4786,6 +4800,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | **Tiling** | Répétition de textures |
 | **VSync** | Synchronisation verticale |
 
+### 
 
 ### E.4 Sigles et Abréviations
 
@@ -4835,6 +4850,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 | ADR-010 | Abandon morphologie | Accepté |
 | ADR-011 | Persistance JSON | Accepté (V1) / SQLite (V2) |
 
+### 
 
 ### F.2 ADR-001 \- Simulation.Core : le cœur du moteur
 
@@ -4845,7 +4861,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 - `SimulationEngine` : la boucle principale (1 tick \= 1 pas)  
 - `Runtime` : l'état d'exécution (actifs, en attente, terminés)  
 - `World` : l'état logique du monde (position, taille, liste d'entités)  
-- `Agents/` : le comportement d'entité (AI, état, mémoire, cycles)  
+- `Agents/` : le comportement d'agent (AI, état, mémoire, cycles)  
 - `Interaction/` : l'interaction multi-agents (protocole de messages, conflit, relations)  
 - `Events/` : le bus d'événements et les handlers  
 - `Spatial/` : la structure spatiale (liste simple → future grille spatiale)  
@@ -4877,6 +4893,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 - Compatible avec un exécutable Python (simulation\_cli.py) pour analyse statistique.  
 - Testable via `Simulation.Console.Tests`.
 
+### 
 
 ### F.4 ADR-003 \- API HTTP REST légère
 
@@ -4918,13 +4935,14 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 
 **Statut** : Accepté  
 **Contexte** : Le temps simulé doit avoir un sens pour l'interprétation des besoins, de l'énergie, des ressources.  
-**Décision** : 1 tick \= 1 minute de temps simulé (cycle de 24 heures en 1440 ticks) — réglage hérité du prototype **[HÉRITÉ]**, paramétrable (décision n°1 « unité de temps »). L'échelle de temps est contrôlée par la boucle de simulation.  
+**Décision** : 1 tick \= 1 minute de temps simulé (cycle de 24 heures en 1440 ticks) — réglage hérité du prototype **\[HÉRITÉ\]**, paramétrable (décision n°1 « unité de temps »). L’échelle de temps est contrôlée par la boucle de simulation.  
 **Conséquences** :
 
 - Les besoins sont mesurés en unités de temps (e.g., \+1 soif/tick).  
 - Le renderer peut convertir tick en heures de la journée.  
 - La vitesse de la simulation est un paramètre de debug.
 
+### 
 
 ### F.7 ADR-006 \- PRNG reproductible
 
@@ -4940,7 +4958,7 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 ### F.8 ADR-007 \- Mémoire oubliante
 
 **Statut** : Accepté  
-**Contexte** : Une entité qui a tout acquis est trivial et n'a plus besoin d'exploration.  
+**Contexte** : Une entité qui a tout acquis est trivial et n’a plus besoin d’exploration.  
 **Décision** : Implémenter un modèle de mémoire avec :
 
 - Décroissance exponentielle de la salience  
@@ -4958,19 +4976,20 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 
 **Statut** : Accepté  
 **Contexte** : Pour simplifier la communication, toutes les entités peuvent théoriquement percevoir les messages. Mais cela crée un « espace public » déréglé.  
-**Décision** : La communication est **locale** (rayon limité) mais **non confidentielle**. Toutes les entités dans le rayon peuvent écouter. Le secret est écarté pour favoriser l'observation, les alliances, la tromperie.  
+**Décision** : La communication est **locale** (rayon limité) mais **non confidentielle**. Toutes les entités dans le rayon peuvent écouter. Le secret est écarté pour favoriser l’observation, les alliances, la tromperie.  
 **Conséquences** :
 
-- Les entités n'ont pas de canaux privés.  
+- Les entités n’ont pas de canaux privés.  
 - La tromperie est possible (diffuser de faux messages).  
 - La surveillance est facile (un tiers peut écouter).
 
+### 
 
 ### F.10 ADR-009 \- Énergie comme monnaie d'action
 
 **Statut** : Accepté  
 **Contexte** : Les actions doivent avoir un coût pour éviter les comportements dégénératifs.  
-**Décision** : Chaque action (déplacement, communication, combat) consomme de l'énergie. L'énergie se régénère lentement. Si l'énergie est épuisée, l'entité ne peut plus agir.  
+**Décision** : Chaque action (déplacement, communication, combat) consomme de l’énergie. L’énergie se régénère lentement. Si l’énergie est épuisée, l’entité ne peut plus agir.  
 **Conséquences** :
 
 - Les entités doivent prioriser leurs actions.  
@@ -5001,12 +5020,13 @@ partielle + temps + rétroactions → structures collectives → phénomènes é
 
 **Conséquences** :
 
-- SQLite s'utilise via un package NuGet (Microsoft.Data.Sqlite ou System.Data.SQLite) ; il n'est pas intégré nativement au runtime .NET.  
+- SQLite s’utilise via un package NuGet (Microsoft.Data.Sqlite ou System.Data.SQLite) ; il n’est pas intégré nativement au runtime .NET.  
 - Le format JSON reste utilisable pour le debug.  
 - La migration de V1 → V2 est documentée (script SQL).
 
+## 
 
-## Annexe G \- Schéma de la Base de Données SQLite (prototype — [HÉRITÉ])
+## Annexe G \- Schéma de la Base de Données SQLite (prototype — \[HÉRITÉ\])
 
 ### G.1 Version 2.0 \- 11 tables
 
@@ -5118,7 +5138,7 @@ CREATE TABLE events (
     run\_id TEXT REFERENCES runs(id),  
     tick\_id INTEGER REFERENCES tick\_states(id),  
     type TEXT,  
-    entity\_id TEXT,  
+entity\_id TEXT,  
     target\_id TEXT,  
     details TEXT  
 );
@@ -5156,53 +5176,54 @@ CREATE TABLE metrics (
     total\_messages INTEGER  
 );
 
+## 
 
-## Annexe H \- Configuration et Paramètres (prototype — [HÉRITÉ])
+## Annexe H \- Configuration et Paramètres (prototype — \[HÉRITÉ\])
 
 ### H.1 Fichier de configuration V1
 
 {  
-  "simulation": {  
-    "worldWidth": 500,  
-    "worldHeight": 500,  
-    "maxTicks": 1000000,  
-    "ticksPerSecond": 10,  
-    "autoSaveEveryNTicks": 1000,  
-    "maxBackups": 5  
+“simulation”: {  
+“worldWidth”: 500,  
+“worldHeight”: 500,  
+“maxTicks”: 1000000,  
+“ticksPerSecond”: 10,  
+“autoSaveEveryNTicks”: 1000,  
+“maxBackups”: 5  
   },  
-  "agents": {  
-    "initialCount": 100,  
-    "traits": {  
-      "bravery": 1.0,  
-      "curiosity": 1.0,  
-      "sociability": 1.0,  
-      "greed": 1.0,  
-      "pessimism": 1.0,  
-      "aggressiveness": 1.0,  
-      "strength": 1.0,  
-      "speed": 1.0  
+“agents”: {  
+“initialCount”: 100,  
+“traits”: {  
+“bravery”: 1.0,  
+“curiosity”: 1.0,  
+“sociability”: 1.0,  
+“greed”: 1.0,  
+“pessimism”: 1.0,  
+“aggressiveness”: 1.0,  
+“strength”: 1.0,  
+“speed”: 1.0  
     },  
-    "needs": {  
-      "hungerRate": 0.5,  
-      "thirstRate": 0.7,  
-      "fatigueRate": 0.3  
+“needs”: {  
+“hungerRate”: 0.5,  
+“thirstRate”: 0.7,  
+“fatigueRate”: 0.3  
     },  
-    "perception": {  
-      "radius": 30,  
-      "confidenceDecay": 0.9  
+“perception”: {  
+“radius”: 30,  
+“confidenceDecay”: 0.9  
     },  
-    "memory": {  
-      "maxCapacity": 1000,  
-      "decayRate": 0.01  
+“memory”: {  
+“maxCapacity”: 1000,  
+“decayRate”: 0.01  
     }  
   },  
-  "resources": {  
-    "food": {  
-      "initial": 100,  
-      "regenerationRate": 0,  
-      "degradationTick": 100  
+“resources”: {  
+“food”: {  
+“initial”: 100,  
+“regenerationRate”: 0,  
+“degradationTick”: 100  
     },  
-    "water": {
+“water”: {
 
       "initial": 1000,  
       "regenerationRate": 5  
@@ -5212,28 +5233,30 @@ CREATE TABLE metrics (
       "regenerationRate": 0.1  
     }  
   },  
-  "communication": {  
-    "maxSendsPerTick": 5,  
-    "maxReceivesPerTick": 3,  
-    "incomprehensionRate": 0.05,  
-    "trustDecay": 0.9  
+“communication”: {  
+“maxSendsPerTick”: 5,  
+“maxReceivesPerTick”: 3,  
+“incomprehensionRate”: 0.05,  
+“trustDecay”: 0.9  
   },  
-  "world": {  
-    "seasons": false,  
-    "events": false,  
-    "obstacles": false  
+“world”: {  
+“seasons”: false,  
+“events”: false,  
+“obstacles”: false  
   },  
-  "random": {  
-    "seed": 12345,  
-    "engine": "xoshiro256\*\*"  
+“random”: {  
+“seed”: 12345,  
+“engine”: “xoshiro256\*\*”  
   },  
-  "performance": {  
-    "parallelPerception": true,  
-    "spatialGrid": true,  
-    "decisionCaching": true,  
-    "batchCommunication": true  
+“performance”: {  
+“parallelPerception”: true,  
+“spatialGrid”: true,  
+“decisionCaching”: true,  
+“batchCommunication”: true  
   }  
 }
+
+### 
 
 ### H.2 Flags expérimentaux V1
 
@@ -5245,9 +5268,9 @@ CREATE TABLE metrics (
 | `--max-ticks 2000` | int | Nombre de ticks à exécuter |
 | `--config path/to/config.json` | string | Fichier de configuration |
 
----
+## 
 
-## Annexe I \- Tableau des Benchmarks (prototype — [HÉRITÉ])
+## Annexe I \- Tableau des Benchmarks (prototype — \[HÉRITÉ\])
 
 ### I.1 Phase 2 (initiale)
 
@@ -5276,7 +5299,6 @@ CREATE TABLE metrics (
 | 500 entités | ≥ 20 | ≤ 40 MB | ≥ 80% |
 | 1000 entités | ≥ 10 | ≤ 80 MB | ≥ 80% |
 
-
 ### I.4 Plan d'exécution des benchmarks V2
 
 Pour chaque population dans \[50, 500, 1000\]:  
@@ -5287,8 +5309,7 @@ Pour chaque population dans \[50, 500, 1000\]:
     Moyenner les résultats  
     Comparer avec les objectifs
 
-
-## Annexe J \- Feuille de Route V2 Détaillée (prototype — [HÉRITÉ])
+## Annexe J \- Feuille de Route V2 Détaillée (prototype — \[HÉRITÉ\])
 
 ### J.1 Vue d'ensemble
 
@@ -5308,6 +5329,7 @@ Pour chaque population dans \[50, 500, 1000\]:
 | 22-23 | 11 | Analyzer V2 | 7 moteurs métriques, score émergence |
 | 24 | 12 | CI/CD & Déploiement | Docker, GitHub Actions, documentation |
 
+### 
 
 ### J.2 Jalons de validation
 
@@ -5316,11 +5338,12 @@ Pour chaque population dans \[50, 500, 1000\]:
 | 1 | 50 entités, 1000 ticks, pas de crash | Lancer `dotnet run --project simulation-core/Simulation.Console -- --seed 12345 --max-ticks 1000 --config config-50.json` |
 | 2 | 50 entités, 2000 ticks, croyances divergentes | Vérifier que deux entités avec des expériences différentes ont des croyances différentes |
 | 3 | Traits différents → décisions différentes | Comparer les actions de 2 entités avec courage=0 vs courage=2 dans une situation identique |
-| 5 | Information locale | Vérifier qu'un message envoyé par l'entité 1 n'est reçu que par les entités dans le rayon |
+| 5 | Information locale | Vérifier qu’un message envoyé par l’entité 1 n’est reçu que par les entités dans le rayon |
 | 9 | Performance | Atteindre les objectifs de ticks/s du tableau I.3 |
 | 10 | 160+ tests | `dotnet test --collect:"XPlat Code Coverage"` ≥ 80% |
 | 12 | `docker compose up` | Le conteneur démarre et fonctionne en \< 30 secondes |
 
+## 
 
 ## Annexe K \- Table des Matières Générale
 
@@ -5369,7 +5392,7 @@ Pour chaque population dans \[50, 500, 1000\]:
 
 [image16]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXoAAADsCAYAAAB66G16AAAyIUlEQVR4Xu2deZAcxZ3v8T7vOtZ+b2P93jp2bTa8Xh+B8RVrC4MgsEDYoADMjbCCw5IxlwHjMGAQmFvIIED3faBbmpgQ0sTonkMzQudodI1uja7RfR+jw3/n60+2sru6qru6NTM90136KuITqqqsyqqurv5m1i9zft8rTMi/v//970IIIYqcK/zi7v3n31kIIUTxIaEXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiII6EXQoiIkxehr6urMz169DCdOnUyffr0CZQLIYRoP/Ii9C+88IIZNWqUOX/+fKBMCCFE+5IXoX/yySdNdXV1YLsQQoj2Jy9C/8QTT0johRCiQGhzod+5c6fp0qWL2bFjR6BMCCFE+9OmQj9jxgw7AFtSUhIoE0II0TG0qdA3Nzdbsb/55pvN4cOHA+VCCCHanzYVekevXr1MbW1tYLsQQoj2Jy9Cr1k3QghROEjohRAi4uRF6F999VUzadKkwHYhhBDtT16EfvXq1aZz585KgSCEEAVAXoReCCFE4SChF0KIiCOhF0KIiCOhF0KIiCOhF0KIiCOhF0KIiCOhF0KIiCOhF0KIiFMwQl9eudV86xfD7PIf355vnn1jXkr5zHmbzKBPVwSO8/If1w42q9bvC2zPF69+UGlWrGkKbM8nv3p0qhk8foXZseeY/bzbdh4J7NMS8lVvGG98vMg88kKZXf75PZ+aSTPXBfYRQrSeghH62hW7zP/cMdYu//WjatP7w6qU8g+HL8kq9NRx4mRzYHu+uPep0nYX+vufnmEmzFhrjhw7YwX54JHTgX1aQr7qDaPfyKXmmb/Otcu/fGSKmbVgc2AfIUTrKRihX7vxgLnpN5PtMqL+t2GfJ8pefG+hFR8vJ08lBf3Ox0sS2709+smxHmLPl8ptb/Xp1+aYNz9ZZDrfN97Mr9luy8+dO297lZRz7iHjV6ZcU9nCLabHH2eZ7s9+Zp6KHb+6YX+i7Pr7J6RcT7ee01KOHThuhbnzd9PNTQ9Nstd/9mzcKP35t+bZt5UbH5xo9+H6WN7VdNyW/yTW2PUfu9ye85q7PzV9hixOqfd3L5ebWfM3m/MXLtjz8r+3vKmi3pR88zFzas+hlO3ZyFZvPhg5ZZXp/UG8QafRrF66M7CPEKL1FIzQEzK458lSuzxsYp0ZGsNbjlhm69Hz+u8V+ill681P7xxrTp0+a35422gzrazBfFq6JhEW+mjUUivkiPDpM2fN7T2nm6olSQtEjtncGDdQadx9zLzyt8qU8yH26Xr0azbst28nh2K9YhokGhFElDLCUk+/Psde55XXD7UCz7oLW/zs1+PM87F9Llz4u307ufbe8Wbpqj2JujneCSKNgv/cLRX6bPXmA74f16D/9sWydg27CXE5UTBCn42WCv0Tr862y4gtbw0LarebR/8cjwuzreLzxsT+1P9in4WJdXr/o6bWm6b9JwLngkxC74devHtbQFDHTF9tDhw+Za66ZaTd9t6gWjN0Qrwcofc2NjQC7O+vUwghciXyQu967zf3mGwathw0C2sbzcOxXjzbfnDr6EBIiJCJO37T9sPmsVijcPWvRpl7Y28bNctTQwuZhJ74NuftdNe4RL3u2hF6eu/sw/nZ9t7gxYlyhN77Gfjcn4xeFjiHEELkymUt9Gxbtjoo1OmYMXej+fZNw03zxVg7ZBJ6Ys/0xF2cG3G/FKH3xqp//0q5GV+6NnAOIYTIlaIRegZNiV2zTMz98NHgrJBLFfoBY5eb3/2lPDFQyqwTQjssE1/n2HPn42LNjJ6rfjkysQ4M4nIOlg8cOpWoB3EePik+xrBn3wnbs2c8gPVchP6FdxbYGP2+gydteGf95oOJc2ajpTH6bPD5id3vPXAyUAa/frwkJezlhQHl6x+YENiejYqKCnPNNdeYxsZkeE0IcekUjdATRnngmRnmG9cNMd+5eYSpWb7Lbkc0/eEXFyrJJvSI9jsDa+3UPvYjVk7s3J1zenmDbVyYPYPgzq7cmnJNrHeN1cv5fnz7GHPseHwm0Od1u+06UxZffr/ClJZvsAO75RVbchL6UVPqE7Nu+g5Nzj7KhXwJ/cLFjfZz0nD5yyAfQt+vXz/z4osvBrYLIS6NohH6ywWEnkFj//bLkR49eli3Mv92IcSlIaEvMCT0cY4dO2Z69eoV2C6EuHQk9AWGhF4I0dZI6IUQIuJI6IUQIuJI6IUQIuJI6IUQIuJI6IUQIuJI6IUQIuJI6IUQIuJI6IUQIuIUjNB3hGcsGSm7PzszsN2RT0/Tk2fPma8PqzKD65K552H3iTPmrhl15oufzDffH1NrZm5OulrBmDW7zbdGLjJf6r/A9ChbbY6eORuou37/cXPFh3PN+HVJw5IbJi8zV/xtTgr7PS5dQojoUjBC3xGesdmEPl+epgdwnZq63PzvgRUBoUeQ31281Qp4ze4j5ssDFpodx+KZOudsO2iuion/2gMnzKHTzabX7LXm93NSG58LMa6ZsMR8c0R1itD/aNxiM78x9yyYQojoUDBCnw/PWCDdMKmIv9d1pBXrsR63Jq/QNzefM7c+NtVMLWtIlGfzND1/ptlmimwsrUnZHgbii5hP37jX3FayMiD0vas3m+Oxa3HrCPuMTfHPhNDP3pZMj1Aa294pJure4/st227eqNliz+EVeoS/bt+xlH2FEJcHBSP0+fCMhQf/8JlN9Yvg163bZ3PK8z9lXqHHKMTbuEA2T9OWCL2XdELvhZ78F/rNM7uOnwmUNcbKEPn3l2xLbNtz4oy5emytOXv+QkDo/2VQhekWO99XBi60ot9/hXK8C3G5UDBCn42WCD3GHVd2HmLOnUu6Qnn5bO4m89BzM23DgtD7y/NNmNATw79u4lLbw/eXdZmy3MbYu05bbs5ddLGCW0tWmEW74mbmfqEnVPT24i02bDSlocn8w0fzbGjIX7cQInpEWugJBzlzj3TQo8cghF7+u4NqA+X5JpPQnzp73lwbE/kXFm4IlDmI098/s97cURp/80G8f1uetBz0C72fB2fVm7/WBBsRIUT0iLTQ06PHkcrbo1+36YBp2h93SULou3SfZF2lfnrnWLN0VWZhzAfphJ5ZN4j8O4tT3axg0voms6Ax6RzVdKLZ9uzxpn0gJvr+WTXwVu0WG/Ov2JHqOMWMnZcqNwbOIYSIHkUj9C3xjAVi9KOn1dvlrTuOWBvC+ob4Pi50wzJesVj3Ube/3kzkI0ZPuIZZN/59YdDKHeY7o2rMhkNx31bi7MTk/fuBt0d/Iib0TNccGDuetwUGZZnxs3xvcnAWow/8WUtKSgJ1CSGKm6IR+pZ4xlKONyuzbqzv6y9Hmv5jliXq9E+vpCHBmNt/7ky0ROinbdgb6HXDK9WbzJYjpwLbXa+cY4nH3zNjld32xY/n2/n2HOM/B/hDN59t3m/+ecBCO7/+xinLAj18jLi7detmzpwJDvwKIYqbohF6kV8w4h47Nv53DEKIaCGhFxb8WQnf+LcLIYofCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkScghH6bJ6xHQWuU/5tufCrR6eaweNXWEMVcu9s29m2ud9JaEbOG7Jdum0kLfv2qBqb+OwHYxeb8q1xN6rDZ84G8ueAP6GaECKaFIzQZ/OM7Qiaz543/91leGB7Ltz/9AwzYcZac+TYGSv0JFfz79NScJz6yaefmys+mJsQelIWk6Fy5cWMlMNW7TT/Obw6cCyQzfKrgysTWTCFENGmYIQ+zDP2TEyYyCpJ7/q2304zo6bG0w47Rk2pN9ffP8Hc+2RpIpvl2bPxHPQHDp0yj/25zGavpJddtSTZi8VViroeeaHM3PDARPP4K+Xm+EVz8T37TgQyYr49IJmlcv3mgzYrJoKOzSApj73X9LuXy82s+ZttrniO5X9veVNFvc18eWpPahbJXMBsBCcpr9BXx9b/fWiycdwZawzoteNU5T/+hYoN5r7PVgW2CyGiScEIfZhn7IjJq6yYYiBCTnnsARFwyhp3HzNXXj/UpjFmnbcBhNWZjZDa+ONR8dTEiDepio8ei4sj4aH7YkJNDvrTZ86aXz9eYqbMWp84L/v/143xcJKfJ3vPNuNL445O585fME+9Nsc2SK6c8JMzE//JxTcVLy0V+rKtB8wj5WvsslfoyTP/r4MrzJoDx+0yxiU/Hrc4cPyh083Wh1a9eSEuHwpG6C+FTneNM3Vr99rlOVVbzR29pifKNmw9lBB6nKO+ft1gK+Ku/OE/zjKl5XGLPoT+k9HJ/PSv9asy/UYuTayHCf2f31tg/vTuAtOw5WCgLF/gFPW90bXmyMXP4xV6wIGKbTZfvSeM4+XV6k02p71/uxAiuhSF0CPq9OivumVkIoyyYk2TLZtW1pBwiQLE3Qk9IuwPv4ATd4R+5JSk6OFi5Q0ZhQk9jQfhJFypCPuMnb46sE9b88TcdSlmIl6hr99/3Hx9WJVZERN3GoTZ2w6Yrw2tSjQKDnr9pRtTXbiEENGmKISeePe4kni4ArAMdEI/p3qbjb+7MmLnTugZACWsc+FCsE5ojdB7wYf2Z78el3fPWQZQ/TNngHj9JysarTWhd3+E3+skRQ+f/fefio9DCCEuD4pC6K/+1SizumG/XcbblZkwi1futusYff/nDUOtETizZF56vyIlRt/92c8S8X4GRN/qX2Pj+qxnE3pi+dTl9mccwZVx7P6D8Tg35yYOj+B7rzuMlsbovXh79EubjtqGgBk5rCPqX+q/wBw8nRT1ASt3pAzYepFnrBDRpSiEnsFZeswYfTNL5i99K8z1D0xICDDz1ZmNc9NDk+yURq/QO89YBloRZwZ23QyYbEIPzAD6cbcxts5esTcLt33l2r12wJUZOzQ0H45IxvZzoa2FHiY3NNlplwzCYjJeuTM+QO14qXKjuTtDfF6esUJEl6IQ+kuBaZq5hFtEKvKMFSK6RELoe/xxlu3J01Pv/UGVefRPZYF9RDjyjBUiukRC6JevbjLdn51pQzeIPnPt/fsIIcTlSiSEXgghRGYk9EIIEXEk9EIIEXEk9EIIEXEk9EIIEXEk9EIIEXEk9EIIEXEk9EIIEXEk9EIIEXEKRugL1Ry80Min6TjuVF/4cG7AfWrx7iOm04Ql5n99PN90mbLcrD94IqX8qXnrzZcHLLTZM/st2x6oVwjRsRSM0BeiOXghki/T8dX7j5urx9YGbAaPnjlrvjJwoZmz7aA1NMF0/FsjFyXKh9fvtI3AliOnzLKmo+bK4dU2ZbK/fiFEx1EwQh9mDl63bp/p2mOydYzCZAR7QK/lH+Vsx1IQIfTmjQ8z8SaVMamJ6SXDoE9XJMroKeNo5dZdbnqX/njohJXWenDWgs3WmJwyGiu3//TyBus8hUctpuM7PdfU0uuFfJiOPxPrkd81o87U7Ttm/vGTBSlCv+3o6ZReOo5VmJfgS8v69ZOW2kbAlfddss38YX5D4BxCiI6jYIQ+zBz8xMlmm/Mdy0BcnLyOUYdjQvSDW0ebz+viRiSI4N1PxOuBMBPvj0YtNU+/PsfWhzUgwuuENZvQ42x17b3jrShv35Xag+UaEf8lsWviON5OHv1zPKNma64X8mU67vALvZ+J6/aYb46oTqzT2998JG7UDtM27DU3TE768AohOp6CEfowEGJEdua81N4tIJR3/T4plGdjPc3v3DzCOk+xHmbi/YvuE60Yu/Ux01ebp2PCynI2oa9Zvstc2XlI4jxeMEbxvnF4ac31tgdhQk945v8NqbR+tG4b5idNJ5qt4cnDZWtM+dYD1sDcf6wQouMoCqEHRHb33uOB7YizM/324gQ8zMQbIfcK6oy5G829F98qsgk9YZrO940PXA8QXuG6/NuhNdfbHmQS+o2HT5p/i4m831gcu0L2H1y3w5Rs3Gsmrm8y105M38gJITqGohL6dAOPxMh/8/zMwPZ0+E28b3xwYoqhNyL8xKuz7TKhpO92HZEoc7NcvEJ/c4/4mIIff4/+2PFms2x1k11uzfW2B+mEvmb3EfOdUTUpPXnHD8ctNlM37E2s/6Vqk+3Z+/cTQnQcRS/0iGinu5JiyGwUesReX9hMJt4M+Hpj9Lf3nG6FmDKMxpnuubkx7rs6aea6nIXexugfmGDj8c71ioHV1l5vLrR1jB5zcXrtTLH07wujVsfuw9TldplZOcy6YfaNK5fpuBAdT9ELPaxu2G/ufLzEDtY+/9Y8M7tya6IszMSb+DgDpRiLM+sG43Bvve8OqrXH4FpVXrHFzvbhGMrChB6YdXPrY1PtgC0x+S2NSaFs6fXmQkuEnnnwzKTxM2/7QTt90r8dFu1KGo+PWbPbfGNYtZ1muaAx9bwyHRei4ykaoRfFiUzHheh4JPQir8h0XIiOR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARp2CEPmqesfnydiWvDFZ+JBrrUbbaWv359xFCCC8FI/RR84zNh7crln1Xjak1aw+cMIdON5tes9ea389ZF9hPCCG8FIzQh3nG4rf68B9n2V4y6X5pCPoOTZZj01e2YLN5b/Bi8/1fjbLC6soOHDplHouVky2SLJUVnzcmynhrGDklmbES/1h3XtITk074nYG15r6YaJOp0uvf2hHergi9Nyd86aZ9NmOkfz8hhPBSMEIf5hlLvvZn/jrXLm/fedSKubcheKt/jbnpoUmmz5DFNge8t94HnplhPi2NG2Fwjh/dNjph1B0m9IRaSBPs/FsR9m/fNNzmrWe9o71dG4+dtiL//pJtgTIhhPBSMEIfBnnd59dsT6wjsl6hJ2d7l+6TAsdh3IFYI8RuGw5STvizCT09cQxIXDmC7awHO9LbtcuU5TYnfNdpy80535uCEEL4KQqhv+7e8WZpfdJOD8cmr9Bj24fw+o8jHPSDW0enbMPm74Ph8XBHNqGnB+899vr7JxSMtytx+vtn1ps7SpNvPkIIkY6iEHpi6wtqkz36379SHhD6dIO3ew+cNN+M9ei98XF69M64m/DK8ElJoWTdK/ReRykgZOSsBb20l7frpPVNKQ5OTSeabc/eH/8XQggvRSH09MJf/6jaLmPDd7UvRp9J6AEbPxdLR7yv+uVIs2ffCbv+8ahlNvbvPGPxefXH6Jk5wzoNDfF9FwbqCG/XQSt3WJNu5+naf0WjuXpsbco+PXr0ML179w4cK4S4fCkKod++66gdVGWw9sE/fGZeer8iZ6FHhPF8vfN3080dvaabzy+GXly9P+42xoZkqPO9QbWJ2TwIPQ0Kg8L3PlVqbnl4ivWNdcd2hLcr8fh7Zqyyvfgvfjzf3DWjzmw5cipRjpPTz3/+c7NunaZcCiGSFIXQ+2Hqojfkkg9s7/+WkYHthQxG3M8991xguxDi8qYohL5qyQ7Trec0c/TYGbN1R1yA69btC+zXlhSj0GPEXVubGsoRQoiiEPpz587bP4biD6Z+0X2iTS3g36etKUahF0KIdBSF0AshhGg5EnohhIg4EnohhIg4EnohhIg4EnohhIg4EnohhIg4EnohhIg4EnohhIg4BSP0UfOMbSllC7fYvD7fuXmEzc/jTaPcWl79oNKsWNMU2A758rj9a81m8x/Dqsw/9V9gHi1fY5rPJbOBOur3HzdXfDjXjF+Xmv3zqXnrzZcHLDRfHVxp+i1LZi8VQlwaBSP0UfOMbQn8BfB/3TjMZts8earZ1Dfss0nXFi5O2h+2BpKzZRL6fHjcTt+41/zbkEpTtfOwzbjZedJS0+fzrSn7XIhxzYQl5psjqlOEfnj9TuugRdK2ZU1HzZXDq83S2P/+cwghslMwQp/JM5YMk+S5wfcVgw96uNgGfjJ6WeJY8t647JQIFr1SVxbm7XrseLM1LKGM+klb7HWjmlO1NZG5knJvvTXLd9leMGmQaZjIrElOHlc+eeY6e9wvH5lino+9oTgLQqDXTkbN7s9+Zi0ISb3MdtInI7KnTif3bdx9zDR7LAoz1Uue/BsfnGhGTam318K9LJ29MXEcGTqp28E9dWWQD4/bx+esMy9VJq+hbOsB8z+fJrOOAj31N2q2mBsmL0sR+utjjQIeuW6975Jt5g/zGwLnEEJkp2CEPpNnrAslbNp+2Irty+9X2GWMPijHIxYXKZd+GLG6+4l4PRDm7Yor1NOvz0nsS6ph0g+zzD70ppevbrKih5sUzlZu32vvHW8mfhZPBzxz3iZrcOI8YrkW3k4wPiHXPW8nXjPzH942OmFggpC/8rdKu8x5MFl56LmZtm6//21YvYRaeBuYtWCzXScUhvuV93jEPlOPPh8et78tX2te9Ah9ze4j5isDFybW95w4Y/Ppn419L36hZ7/NnhTM0zbstfv4zyGEyE7BCH0mEHpnB4jQ0qOnF/vfXYbbbQg7vWq3P45QxLeb9sfNRcK8XaeXN1g/WsTP34P1Q0/60T+V2eXjJ5tt4+PtpXONTii5zveHJIWd+jE1ceud7xtvRk2tT1yjF+qkoeMNhcYDwxXXww+rF6G/8vqhtgFg/dCR04GeeZjQ54Nxa3ebrw2tMgdPN5vDsc91Z2md+YeP5iXKby1ZYRbtijd4fqG/4oO51kHrJ7E3gIfL1pjy2NvA90bXBs4hhMhOUQi9673Tg8UGkN42vVe2se4NSThy9XYdOG6F6dpjsu1lv/nJopSwSZ8hi22Zq/PhP86y23c1Hbei6q2HUIkTeuwK/dfD/k503dsJxib3xt5iapbHj/PDfrf3nJ4IY4XV68+2SUpnyon7u23tLfRc1/MLGsw/D1horpu41AxbtdMOzFI2paHJ9vjdvn6h/1L/BTauP7huhynZuNdMXN9krp14aeYuQog4RS/0hCp+8/zMwHHpCPN2PXDolHWv6j8mHh5gzICYN4OTrE8pW58Q+hNpevT4ySZ69LHrHDB2eeAc6Zgxd6M1IW+OvYkg1nOrt6WUj55Wb+Pn2eotRKH3w+Ds7aUr7fIDM+utU5aft2q32PIfjltspm6Ih9HgL1WbbM/eX6cQIjtFL/QMqHa6KyneCDM9eNd7DvN2JUTiZrQg2oRm3HRGBLbnS3GBRYSxDGTao7suQiYMqrLMGIA3Rr9sdZMVVc7HOnF+N+ZASIVrcoO+zDbCx5Z1PivXxwAyZTQoDNo6N62wenMRegaPabBYpmHzGp9noyUx+rnbD9rZNMycOR07149i4s2ArH8/8PfoR63eZW6eGm/Ujse+b2bdMPvGlWObeM0115iSkpJAXUKIVIpe6IFZK3c+XmIHMZ9/a56ZXZmcwhfm7YpgvthnoR2g/W7XEbbH7gZqKUNUGSBG8BFZet7ueBqIX8fOiXi+PaDG/u+EHoj/MzOGGT+cw2scThkzZojDI87e6y0p32DfLDgX4SDmtnvj7JnqzUXoOY8LRf349jG2kXRl2WiJ0MObsR46cfp/HVwRmFrpxS/0MGbNbvONYdV2muWCxtTzYpvYrVs3c+ZM/I1LCJGZghf6YgAhJt7upkmK/INt4tixwdlBQoggEvoWwjx+euWIPNMrEXr3NiDyT69evWz4xr9dCBFEQt9CCO0889e55uYek23YZkGt/kRfCFGYSOiFECLiSOiFECLiSOiFECLiSOiFECLiSOiFECLiSOiFECLiSOiFECLiSOiFECLiFIzQd6RnLEnRcJLyb88n5MH3b+Mva/1piMElLitEXE4dcgqRMM3lJWot5J73Z7Yk46UrJw/Ot0YusumMe5StNkc9mURz5Z4Zq2zSNf92IaJGwQh9R3nGrlq/zyY7Q6xcVsh8QzZMZ5zixQk9loL+skKFFBDfuG6I2dJ4xJRXbLF/Kezfpy341fQVNjc9yxU7DtlslmsPnDCHTjebXrPXmt/Njrt95crMzfvNd0fXSOjFZUHBCH0mz1hAAEk9TC8Yqz3cmVwZVoBv9a9JqYt0w/0v5m3P5u1K5sleL5fbesmM6a0H/1UyWGIOMmnmOivCLrUvaX4xDyEDJfV76yRtMZklcbeiDGvDNRtSfWG9cA3uc4YJfVi9EOadO3TCSvNavyqbv9/5x9K4UoYn7UvvV9jt3Z+dadMiOztGMnu6e+ngjavfyGQWULJmHjh8yhqoODtIL2v6TjWzu7wU2J4rs7cdsCbjWA6yTibL0k37EuXkuSd/vf+4TJw8e86+MXwWE/v/GrEoUC5E1CgYoc/kGQsjJq+yxt6k3N2644i5svMQK7SUkWMGb1dnoYfg4LrkbPrCvF2BsA2pfzH0QBzddrxcqQeXJ9ZpJBBHl/aX3PSYibOMMJNTnjAG6zQKOFZRB9eFcxUJ0Fzd7O9Ns+zIJvRh9Wbzzp1Tvc3eC9IbY7jurXdqWYPNr4+7Fnn5Sb/svgvSMV8XO87t66wauQa37ef3fGqvp75hn238/NfdWqGn5z1gZbIh9UOP3utWlY1n5q23Noe8GahHLy4HCkboLwXEue6iiTeGHT+KiZ+z46NRwKyD5Wzerhh30Ghg8LFp2yHz9euS4Zs5VVttz9gdt2HroYTQ05iwr7dectmXlm+wywhy92c/S5SVxXrR3kYkm9D7cdcUVm8271zebPis6Xxq3+y/yLw7qDaxjt2iE3oEnJAa98qex/dZ8s38xoPmXwZVmGZPXn0vs7bsN18dXGl2Hc8tL/3SpqPm+knxtxEJvbhcKAqhR9Tp0RMicOLntcQj9EE4g2XCO9jzsZzN2/WNjxclDL+Bnum4krhd3bRYLxcjE1eGuDuhx2jcL8ZA6mL2RZCd/R8w0OwNaWQT+rAefaZ6s3nnEqbBlNxfJ2Ce7g3P0Gh4r5cwzV/6Vtjlx18pT7hUtQcMwP5hfkNgO5Ru3GdDOnjL+svSce7CBRvi2Xwk/jYooReXC0Uh9IibE2BAkL1CvzHW26YRsP//cmQijh7m7UpPFZclvzA6u0BCHcS73XHY+1GO0B88cto2IC5c5CdMkCEfQp/NOxehzzRQyhjHe54ePTaK/uvlvhEe+l7XkebkqdydqVrDhRj/+MkCM8HnPAVDV+20or09dk3+skzQIPhn8sAX+s0L7CtElCgKofe6NxGTZ8bK4pXxnqqjW89pdlDVP1snk7crPV3ElvCO25fwDCEZBI0QB7NxCJswS4bBSif07EsIxY0jMPMEsXRx6zBBBjcl0e3vBk1bI/TZvHPDhJ43IOwJabgY+6CB8w+qEppi4JuBWP/x2WhpjH79wRNWiLcejffAHfTEsSY8EjKlct72g+b/DKoIDemk69HLi1ZEkaIQegZnmZ+NlyozbggjIODeAUFmyCCSTJf0HpvJ25UGIZ1o4T37aWn87QG/Vmbj3PTQJDNhxtoUoadXz8AmdTPnn7EBJ6phguxgZhGDyNRJA8W2TDF6N8CZrd4w79wwoee8fAaOxVOWz+2/XgayuRY3U+dSaKnQM9vmywMWBrZ3L1udtVdetmW/3b7jWOYefzqhlxetiCJFIfRtRWu8XZn+mS7cEkVGTlllDdG92zAhv+GBiRnDVVFBXrQiikRe6Fvj7crsHXryHNv7g6qUgdsoQZjnJ3eMtaErQkD07IeMX5koZ8yDNwnuhf/YqCEvWhFFIi/0rfF2ZUohf0BE6AbRZw6/f5+owEwaYvNduk+yM5jcgCuhGkI2pIhgKqv/OCFE4RN5oRdCiMsdCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkQcCb0QQkScghH6jvSMzUa6HDrw6geVKVk0/fDHRt++aXhge0t5b/Biey2kYuAPwPjr1XR/xJTpejuKsPuQzjs3F/jjN3LykBCOz7ttZ9v8Mdvo1bvNvw+tMl/8ZL55qGx1In9RLny6do899v8OrjQvVsZTZTvawuNWiJZSMELfUZ6xucC1kfLYv52/Fg0TerJUunzwbQFC/+J7C23a5YrPG+1f7LLNv1+m6+0oMt2HTN65uYD5CSkZSN+A0JNkzr/PpUIaY0xMSHa2+8QZ61P7t6XbAvulg0ybX4uJfOXOwzZjZqcJS8zc7QdtWVt43ArRGgpG6MM8Y+m1knmShoBUvDQCLosk4JVKFklytCAA3qyWYZ6xpN0lG+YjL5TZhF2YanjTFlOfyyDp7yE731UHaZJdmTcLpb8nm83jNsyL1gm9WydFA7171+vMdL1k4yQLp/ecvA14jVUmz1xnbnl4ik1XTG4gbw7/R2PXg5sV5ycvPfW7MnLjkDKB+851Y6/o3jLC7kOYdy5G47hjeXMSsT9vfNgdsk7uHQxS+Owc6+95N1XUm5JvPmZO7TmUsj2M1xZtNi9XbUqsL2s6aq4eWxvYLx3PLWgw7y9J3yi01uNWiNZSMEIf5hnbf8wyKyLkmtkZ2w/RxuyaMnLHk+4XYxDWyyu22AbD/fDDPGMJD90XEyivV+qUWUH3JIxO/EIPiH1Yj57P5Be4bB63YV60fqEn2Rgi589f779ejie3/vadSa9Y3gZKZ8fDC/jM0ojuPXDSXhcNad+hyYaWhon9+wxZbO+391zYDtJ4ufUPRyw1Ky/aPDrS3QfIZMACfBfu+gBPX29aaZbd90hCNv/xLRH6u2bUmWGrkn7Ch2PPxBc+nGsNUPz7+ukyZbkV+m4lK80/9V9gHi1fY05kSJ53qR63QrSWghH6MH7RfWLGPOiYZnh9VIEMlXjAZvOMReid/R+81q/K2ub5z+EXTkdLhD7M4zabF61f6OG7XUfYtyHvtnTX+9Rrc+ybEstrNuy31+V6zGTmfH9IUtj5TOT7d+uIN8nOvPU5MFYnzs4x/l61I919gDChJ/e+uy/AmESmZ6CtuGHyMjNx3R7zwsIN5hvDqs3Z2HdFTnsE37+vn6vG1JprJiyxIZy6fcfM92Pr7yxO+gE4LtXjVoi2oCiEHptAfFr924Hc6U+8OjtlGw3DomU7s3rGIvQc78rwkPWGjBzphBNaIvSQyeM2mxetX+gJX1HuN/xOd71zq7fZ62UZM3DnAQvcP/85uW9OuGn83PWmY+C4Fdaw5IexBuzNTxYlwiuOTPchTOipg/AN+5AL/6d3js17Lvw7SuvMoJU7TPnWA+bDpdvNvlhH4YoP5lqvWf++fhB5BlzdOlaHN01N+vDCpXrcCtFWFIXQ+3v0hG/wh2W5dA49+lSvVHr0iGaYZyzLHSX0mTxus3nR+oWemUq8ofj3T3e9vEkQMmI7/2O47soI1RAa8Z/PgdDnMjjO+AIuYITavNsz3YcwoQc+K2E8Qkbp3rTaGuLsT85Nhu4YTKVn798vHczQ+Wh5Y2LdL/Qt8bgVoq0oCqFHOJ7sPdv2MMmTfkev6VYAKEMcEW8XoycOT+/SiV8mz1jWWyv0DJaSx51lRM4JtiOTwEEmj9swL1on9PTk8cwlNu1sD71kul7eJDinG/R2LFvdZBstcvezziCvd4wkTOj5HrBrZJkGlYFl7z2FTPchk3eug0aUWD0D8N4B9lxoSYy+4eLMGRequXvGKvPhslT/gkxetIRkvjOqxhxrPmtOnj1nfhQT9fc+j4ducvG4xdkKC8Nz59LH9YVoDUUh9PRG3xlYa27vOd32gDES8fbSESbKmHVCXHf33uOJskyesZSFCT0xYn84AwZ9uiKxP56sNCps//HtY+wMFFev/zjw9v4zedyGedG6efTE8a+7d3yKGOdyvYRA2OY9zkGsnRk3nPvFPgvtvq4sTOhpHNifMQDGCxhTcLH/XO5DOu9cLzc+ONHO6PFvz0ZLhB5qdx8x101car4+rMr0X5HsoTvCvGjfqNli59B/ZeBCO33y1MWGPxeP2x49ephJk9KPgwjRWopC6NuK1njGio6BKa9uMDqqYF3YtWtXGZKLvBF5oW+NZ6zoWAgpdb5vfCAkFjUqKirMwIEDA9uFaCsiL/St8YwVHQfhGsZT5i3S9yVEa4m80AshxOWOhF4IISKOhF4IISKOhF4IISKOhF4IISKOhF4IISKOhF4IISKOhF4IISJOwQh9IXvG5oN0XqleRybA7AMnKFdOPhuclfzHRRGX8AwTExLH/ezX4wL7tJTq6mrTqVMnS+fOnVPK8uVF25Hwx2fp8hvxl+LeXEhtBRaR1qzmN/E8UOQ/8u/T3mTzdyafE+ZG/u0tJdvz+/rrryeewTfffDNwfFtTMEJfyJ6xbU0mr1Qn9KTvbY4tk3Xze11HWhs/yi8noSdlxTeuG2JtBXEN4y+b/fu0FIS+Z8+ege2QDy/ajgZjGm+iPwcJ5fIh9AtrG20GVb8vQUeSzd+Zht1lwG0Lcn1+SWR3WQl9qGfsufM2syS9Lfbx9nKff2ue7f2T5RADjJ4vldtlTEcoD/NgxWuW7JPkrqecrJDevOdkmCR9771PliayQ7q8K2H1kg6ZjI6YdVB29xOl1tWJsjCvVK/Qez8fdbHMNZDk67k351lTDvLwb248nPJ5uB7SOCNY3rS/pDSmB0e+eNL+vjeoNlEGeMZyrXjLck73I812f8O+m7D7AHOqttofIF613Et/mmJy9uO6hRuXs5n0sqbvVDO7y0uB7dkIE/owL1qS4XF/uffcX+cSBt77AF4B5X5jyEKvDutFUlSTzpky7jv3lGOefm2O3Y/8PvNr4qkfwjKsZru/Ltsp+Hv0pLv2P4ekAOfzYiCztH5Pyv58hlwcvvBH8NfrfTsP83fGHhSXt1mxjo3zZOac23cdtfeMZwRvZ+4Hb7ted7iwZynM35lGyW1P16MPu95sv6lszy9cdkLPF5PJM/ajUUtt+mFElvTEpCR2wkqYB89S0v1i2oEAsY4oUh7mwYoxCV6qmGQvXbUnxcCDL5T6Nm2PCylvGTwMzpQ8rF7OzY+FOqiTHy+J1VzdmQw30gk9D8+f3o27O1EvbwKkFMa7lbcedw2s8yPD/5V1xIofvqsHkXk3Vhc/ZOqnHvdj4Bh+QO76+bG98rdKu5zt/oZ9N2H3gc9KemJSTHNNL7yzwFoaeu8HvUKOq2/Yl/ZHmA+hz+RFy73hjZMfNhaV08oa7P126bK5D9wXrpdtNLafzY0bjfM58A3gmcaSkTc6vg/CQrzW455Fw8q9ol72deIYJvRh99f/mfxCD4h9uh49Ri8vvZ90ICO53KU4fJWUb0gbrsnm7zynepv1eCZVNuLujnNhNH6LPAcvx66NZRcOyeVZymYSxPfgf8ayXW/YbwqyPb9w2Ql9GNzcis+TucF5OF0vl4d4TKyXRMtJC8o2xJHeQTYPVr4EHiB+vP5z0kPgx+rWN2w9lBD6bPXyA/T62BJ68eZUz1XoEQLEBRtAVy9vF4l6F24xv3k+7q6FsGOa7soQXnqezmaQh3LJxUYAeJNxPTRsBb29I95weMBZDru/LId9N9nugxd6tq6Xm2/ChD4T2D1munbABc17f7ln9NBZ5gfPPeU7cqE33gzoLSIwzgqTe8mbLYn3Hr0oDNmEPpf7e6lCj1jx7CQ8hT9M76WciUxCH+bvzHLN8l3mys5DAtaYXA+NKssIOPeD31668Ceke5ZaIvTZrjfsN5UrEnoP6V4H3RfAQ8wDTyzVPQy8svIAZ/NgBdbTxS/pWdHTd+sInRP6bPX6Y+kMNHtf3bIJvYMeuddBKqxehMV/PeAeRB5Kr4m414CFOjnelZHxk2PpqYTdX5bDvpuw6wV6js64BdKJQz5oidCn8yb24vc1RiRco4zQ02gTknB1EApAeBAY13snjksdhBPcvcgm9GH313GpQg80GHwGTH9wcLsUh69MQp/uHjp/Z5YRScJW/uMQetd7p9HhWeW34v0NZXuWWiL02a437DeVKxJ6D/wAeH30b4cwIcrmwQo8FOkG3HiNpNfl1nl9Y1+EPlu92X6A2YTeG7rJtV5ExPXu0xH2UPIq7PV5RWzcvQy7vyyHfTdh18u1EOtn0JN1fmj+H2e+aInQp+vRY+fo3ur4LIT/XBli5ESiNULP/R8+KSnSrLeH0CPWv32xzDq0+T93NjIJfZi/M8sIfbpBy2xCn8uz1BKhz3a9Yb+pXJHQe8C4mridGwhlVoTLK59NiMI8WCGT0PP6SPye3i0xVWKWTuiz1ZvtB5jJK7U1Qo+NIQNCTmx46IlVeuOJmR5KBov4oRB7Zp2paG7WU7b7G/bdhF3v6Gn1dhCSZe7vIy+U2XEPt28u5CNGnwkXo3eDncTf6em6z434emP0jFUg7JS1RugZg8FPwdWLB3JbCT1vBy6mzxgBMWlXxrP4o9tG28F/54ucK5mEPpu/c0uFPpdniec9zN85ndBnu96w31SuSOg9OM9YPE35URAjJpRCWTYhCvNghUxCD8ynZhYKI/wImFfow+rN5QeYziu1NUIPdlZI7HoIOTFbBk9bV5btoWQGh5t1Qw+f6Z1sz3Z/w76bsOulAaWXxTo/Ut4KMBD/cETuseD2FHrg/hJO4z4h3rz1uTKEAxHi/lHO8+DKWiP0DErynHCv6Gxwf/sOzS70nM+FMbx4BZgBTQSRaYDE5ImRez8vDT5/23Kp0yQzCT2E+Tu3VOhzeZYy+TtTr/8eed+2w643228qFyT0BQZfaLpwiyg+Wir0lxujptYnBtZFfpDQFwC04PTk6akz2u8fyRfFiYQ+O4Q3mOroZpg4CAdmgt6vvx4RjoS+AODBZTCG0A2iv3VH8f85vAhPgSDi6QAIYVxKGE1cGpdtCgQhhBD5QUIvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARp02F/sknn7R/APD000+bHTuSjktCCCE6jjYVemhubjZvvPGGGTBgQKBMCCFE+9PmQg/jx483ffr0CWwXQgjR/kjohRAi4uRF6CsrK839999vjh1LGnwIIYToGPIi9NC3b187MFtXF3S2EUII0X7kRejXr19vbrnlFlNVVWUueNychBBCtD95EXqS6b/99tuB7UIIIdqfvAi9BmOFEKJwkNALIUTEyYvQ9+7d24wcOTKwXQghRPvTpkLvUiDceuutZt++fYFyIYQQ7U+bCr0QQojCQ0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBARR0IvhBAR5/8DSE15Yxw/uvMAAAAASUVORK5CYII=>
 
-[image17]: <data:image/png;base64,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>
+[image17]: <data:image/png;base64,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>
 
 [image18]: <data:image/png;base64,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>
 
@@ -5377,4 +5400,4 @@ Pour chaque population dans \[50, 500, 1000\]:
 
 [image20]: <data:image/png;base64,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>
 
-[image21]: <data:image/png;base64,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>
+[image21]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdIAAAIXCAYAAAAord+sAABUx0lEQVR4Xu3deXBUdb7/f2e591f3e++tut/vrVs1o1OOM3csnXG0ZgavLAUiiFouIIaJpgR0dEAcRrRcUFFQRlRk3/edsFQqQCqEEEJCwhZkCUsIAULYQiAkIUBC4v33/ev3pzknp8/pDgknZOl+WvWoPv35nNN9+oTpV38+58x53yX8x3/8x3/8x3/8d9v/3eVu0P/+93//V3744QcAAHALniAlRAEAaDpPkLpXAAAAkRGkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPvgO0r59+8rixYultrbW0wcAQLTzHaS9e/eWvLw8TzsAALHAd5D26tWLIAUAxCzfQdqlSxcpLS31tAMAEAt8Bem1a9fkmWeekerqak8fAACxwFeQqh49esi+ffs87QAAxALfQcrFRgCAWOY7SF955RVZvXq1px0AgFjgO0gzMzOlc+fO0qlTJxk0aJCnHwCAaOY7SAEAiGUEKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOBDqwfpY/2XythpufLIc4tk3MztdvvPHpshN27Ueda3/M+LS2ReYvPv6fvt7B0y5JONZrnkbKV5n/RtJ+VYcbls2V7sWb853h2bIc++vkaGfZYmL7y51tPfVqzP21wbMo552lalHDHHbGnSQfNYU3PDsw4AxLJWD9L44evMl3K/IUmyYv0hu90ZpFtyi6XwxKWQPuUMUg3Bni+vMK/3x+cXyYgvN0tNbXD7vQfPS6+ElfJ8INy03RksP+88w4Roff0PcrKkImTfct6YJBsf/zCkrTGTF+w2IfrNrB3y9zHpdnvSxqOSMGKDDHg7WRauOWC3WyGu7Z0DPyic719VXSOd+i42nK+lAf3l1Bx57i9r5KnBqyR7V4lp12P13dxd8ue/rZM3RqZK5o6GHwVvjUqTkd9kyv295plj7dznvn9NMq+pPwCc7fd0mWkfZ2W179x7xvzoydp5yuybcxsAQBsEqYbahs3HZPD7KZKaWWS3W0GqIajB6N4ublhySJBqoPyy+2yzfL6sWn7bZ755PQ1T3V5HUtr38DMLQ4L0d08tkLLyq2b5cuX1kPdobpBqSH46PktmLd8rn0/MNm06Yru780w5UnTRPB8+Ot3+UaCfUdfTz6nrWdsoHaWXXqyWU4FR85MDE+32F4cmSY/45WY5KbXAfB5d1mB7+NmF5vNeCGw36L0UqauvN3339ZhtArQi8Pl0Hf3RoO0nSi7LvsPB2rFnS694RuThRqT6OXq+stJs59wvAEBQqwdpJBoyR49fMlO4+494C4WHC9J7u80K6Z8dCLQ9+efkF4F2K1R0+vV2pzpvx7XrtfLQ0wtMuGpwOfv0M+4+cM5+/toHKZ7t1YdfZ9rLGqQ6Pa3L5RXX7NHi94EfHL96fI6kZZ/wbN8/sI21rCPww8eCoa4jWOd6GvLO5+GCFADQuHYVpDpy02nM598InXZU4YJUR5fW8/jh62X6kj0mYDRg2ypI3boNWC6L1+abZf2M1khVvTpig3nU0ak1ulY6LWstO4NUR6zOaVdLypYis73+ENHnzs+rU7b640KXJ8wLDdJ3vkgPeU6QAkDztasg1SlPpecD3f1NDdLrgVD6Ta+59tTuH55b1OQgbe7UbjgFgTDT87I36oJB3jVumb0vkYJUp6atgDxzvspckGWto0GqU6u6PGXhbunyUrBPp3l1BK7L+uNBg7T4TKV5HilI9dywNdrXC6927Ttrr6esoG3qBUW5ubmm6o+7HQBiSbsLUl3W83fW6EhHqM6LYKzAiRSkurwkKd9ed/ycnfLmx6me9wunJYJU6QhUR3t6IdQHX22xR8eRglSNmbzNrK/nXPViK+uKZg3SKYvyzMVBz7y+WnL3nDbtOoWsx0ZH3DrFq5/Zeq1IQar0Aiwd8bsvNjJ9gXadCtbXc/eFM2HCBElISPC0A0AsaTdBivA0SJ1X/rYncXFxph6tux0AYglB2s615yAFABCkAAD4QpACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD40OpBqjdk19qbWizaup+sqqyqkScSgjdnD0fLqzlvWt+YNz5KtSumOOmN2vV+t1pcW2/g7q7HeTtu1NfLi8mh+7W1pFw6L98lP56YLgvzz9jtJyqumXV/Onmz/Hx2ltTcvLew0zc7T8hd36bZz19LPWieWx5bHlrBBQDQtlo9SPXG7Fp0ut+QJFmx/pDdHu7G9O4+d5BaNTn7DFplam1aBaydQaq1OUdNyLK30Zuya4jquidLKkJerzk3rf9s2zF5PDFPlh06GxKke85XysS8hoDukbhbPskuNMsfBx41eK2+nqvyQl7zd4u2y97SSvnRhHS7rXtge+frAQDal1YPUq1MsmHzMRn8foqkZhbZ7YkphxsdkbrLqGkIarm0quoaUxpMR7hWBRQrSLXqihbJtgJWacWYsvKrZvly5fWQ92hOkDq5R6ROOipNKbrgac8oviSLDzaMVtVXO46bR2eQ/n7xdum2crf8dNJmeXLNHvn+fLBUGgCgfWj1II2kuUGqI9AERxkypzdGppryac4SZndSpCCtrKmVV1Maypupg2VX7GlaZ/vm4otSf3PZGaTxG/bLwNR8OVpeLYMDj/85c6vnfQAAbafDBqkWoXbW8yw8cUkKT5abZR2RDv10o5w+V2XOh7pfq6W5g1RHm/fN2yZz9peEtI/OKbLDUllhurrgfMh5UPVFbpFcq62T9JMXpbo2WGi7tq7eE8AAgLbVboI0JeOY/LbPfLl0+ZqnT7mD1Jra1eVTZyvl4WcXysqb51yd50gfeHKeucjI/XrhtMTUbsGlajOdm3nqkme9n0zcbM53VlyvlZpAKHZZEf7CIWtEqqH7s9lZZkSqI+u30g/Lr+fn2OtVVVVJly5dPNsDAFpPuwnSa4Fwee8fGSZMnRcbfTk1J+KFSHvyz8nzb6yRB3rPk9GTtsmNm1fBOoN0zORt8uTARKmpCY7qGtOcINXzme5RpHo3s8DT9vTa7802K4+ck3+dtsW06RRtaXWN53WVc2pXL17S0e0v5mTLsECQXg4cJ6tPi2p37drVsz0AoPW0myBF840bN04mTJjgaQcAtB6CFAAAHwhSAAB8IEgBAPCBIAUAwAeCFAAAHwhSAAB8IEgBAPCBIAUAwAeCFAAAH1o9SCMV9m5Jet9d5y0F9TaD7nWUllSzlp0Fv931UJvr3bEZ8uzra8zyC2+u9fTfaYkbDpsarf/9xFxTs9XZ99TgVaaGa4/45SHtZ85Xyf295kmXl5aGFEXX9ZzHUosFuN/PTd+/a9wy8z4nSi6H9J0vqzb3P7ZK3t2Klrob9F6KdOq7WCbO97731zO9BdybSz+vlvdzt1tu1NWburbOtl37z8qAt5PNZ3z6tdUhfXqcrl6rNXV3/f5bAtD+tXqQ6hf5tMV7pOfLK2TWsuA9aO8UDRN3m5M7SPMOnJOyS1d9f/mNmbLNLvE26P0UT/+dpmF4+NhFuVJdY8LRqruq9zPWL/eKwPONW49L8ZmGm/n3fGWlVFbVyMnTFRI/fL3d/vAzC2XH3tC6qbei22TvKjHv023A8pB6sPo3eejpBU0OUg3Rkd9kyoEjF8w+JqUWmPaa2joT6n98fpFnm+ZqLEi1dq3eu9n9Pnpct2wvNoGZX3BBcvIaKv38svts87g+vdAErfs1AUSXVg/SSIW9dQSjX7Iars4KMPqF7Nze+pLXdusLS0c5erN75+spd5Dqe4/4crNZ1lBxBqmz4Peve84J2e7o3FRZe+9guXrWW9ElnIVrDsin47PM8ucTs+32tYEQ0JGVfgb3SPFFx4hn176zIe39hgT7vpm1w9yA3/1+jdEv8vKK4PHUG/s7+zSk3Otr6D1/cxStx0h/VGhJut8Hwk+LpF+MUJ3HKXnT0ZD3mLk09AfTM6+vblKQpgbC3jly3hs4Zu5g2pR9wrNdJDoTUnqx2lQL0uM4ecFu065Bah2nVSlHzGd2VwyKNKuh9N+rhqr1XANfH/cdLm323wtAx9PqQRqJTo+9+XGqp72xIL232yy7XcuszV6+N2Rdd5Bq8O50jK6cQdoa0gJf+volfaiwzNPXWJBOXZRnlnP3nDbTte5tI9FpamsEp4aPTjdf7roPGuoaaO5ttFqOzhrosgaLHld9/92B0Xr/t5Jk2Ge3roeqU+SzAn8LfR9d3x1CTQ3SFesP2VPkWqRd683qa1Zfbaia05wgddIfBe98kW6WNUidx1/DW4+Pc333Z7DoqN897QsgtrSbINUv1/mJ+z3tjQWpMwi1ffqSPSHruoNUv4SPFF20n7d2kOqXvpZ8c7erxoJUR7hWuzUKV1MW7jbTpMr5uZQGn56HdrZ9+l2WnLtwxUyJapgPfDd0RKqh98o76004ONstmTuKQ0brur2+t84mONdLSjtq3l/fR6e4ZywN/buEC1KdGrU+y7Lkg6ZtQ8Yx6f7n4Ig0Leu4mXq/r0fD51fhgtTaL/e+6YyFnp+1zvfqDwtt1yDV6VtrPT3m+kPA+ZrhglRPA/R+NfGOnesH0DG0qyDVEYi7/WzpFSk4HpxSPX7qsjk3pcu3E6S6jjW1q+e2mhqkzZ3ajUS/9P/0wmJPu/ooMELS4t26rKMlq72xII1Ez+eFK5CuAWmd7yw8ccmevqytrTPnrN3r6/nSuzvPlOXrDpnznTrycu5bJPoZrWnyJxJW2p/LEi5II9FQ1B8M+vfSKdN1mwpD+sMFaTg6/W+d+9YLq/SiN52y1ucapNZIX4+xrnf6XFXI9u4g1alg5w+epurUqZOkpd16VA+g42j3Qar0y1wDZcqiPHtqsbEgjXTVrhYC/02vuabt0X5L5ME+8z3vFU5rBKleHKTnT98alSYpgZGY1X47Qer87Gpe4j67T4un63EbNqrhy1zP77m3sfo0uHT95/6yRuas2OsJxXB05KgBqH8HvYDJatfz4pHeJxItyD5+zk4zrbw556Td7n4dpVPf7u2ddNo6fvg6c/56S26xfb5VR5R6XP76car5t/Zd4P203Zqedgv3/s4RbWMSEhI8bQA6tnYTpEAsyMy89YgeQMdCkAKt5MyZ5v3fiAB0DAQpAAA+EKQAAPhAkAIA4ANBCgCADwQpAAA+EKQAAPhAkAIA4ANBCgCAD60epK1R2FvvzdqUW9C565G2VGFvy9y5c829VSdPnuzpAwBEh1YP0tYs7O2uv+nmDtKWKuytzp49a0LU3Q4AiC6tHqThCntr2S33elprVG+QfqLksqmhqW1aCUZvhG6tozUq3/58k1nHvb1yB2lrFfZWhYWFBCkAxIBWD9JwrDJpWr3lF4EA1RJWVgm07+buCll31IQse/mLKTlSU1vneT2LO0hbq7B3feAHwPTp0yU+Pt7TBwCILu0iSLUepo42n39jjXwza4fMX7Vf3rk5cnTXv5w0f7e97K4R6eYOUp2ybY3C3joSffbZZ7lJOQDEgHYRpEqndwe8nSzFZyrNo9a+1PYJ8yKPSJsbpDradRZjvlNBWl5ebi4weu+99zx9AIDo0m6CVEeL58uqzbKG5+XK63bf82+uNaPVZ19fY59XVbcKUi3ebF29W3iyvFULex87doxzpAAQA9pNkEYbghQAYgNBeofo9C5BCgDRjyC9g6ZOncoNGQAgyhGkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPnSIINV77OrjsM/S5IU313r6I7Fqj0bivGm93sP30+8abohv+Xb2Dk+b5d2xGWbfmrtf4byWelDu+jbNZrXXB7yZdkj+aXKG9EveJ1dqbth9s/eVyN2zs+WPS3dIwaXgfYoBAK2rQwRpwogN5vGT8Vtl0Pspnv5I9Eb17jYnZ5COn7Oz2UE6Zso2s2/N3a9wNCTdbWrs9uPyhyU7pKTquvRN3isDU/NNe86Zy/Kv07ZI6vEy+SK3SH4xJ9uErnt7AMCd1SGC9NPxwYCbtXyvfD4x21SJ0QouV6prQtZ7+NmFIc/dJdiGfLLRHqVeu14bEqTaHilIlyYdlIrK65KypSjkPRauOWD2zdov53bl+4+bijHu14vk94u3y/0LcuWnkzbLk2v2BF8jsI86Oj1zpaESzo8npptHXXfpoYaScE+syjOh635dAMCd1SGCNBwNwX2HS02N0dUpR0zZNQ1X5zruIP1l99myc29Dse2mBqm1XFdfLz/vHPoeLSV+w37JL6uSo+XVMjgw6qy5UWemazVIq2pumClcXe/fpgULnf/fGVslubBUvtpxXIorr8mLgRHt8M1HPK8LALizOmyQavHvtakF8t3cXfLmx6kmILXGqHMdd5Bq0B4pumg/b26Qqnu6zPSs09Ku1dbJ9jOX5cLVGhOkp6uuy3e7Tpq+H323yTz+an6OLDl4VrJKyqUiMHLtkbhbvtxe5HktAMCd1WGD9LOJ2TJlUZ5cD4zWuv95uSxYvV9e/zA1ZB13kOrodde+hunQ9hKkGpzpJxsCvrauXjJPXTLnPP95SoasP3bBtOuI9a7xwSB9Zu33MmJLgVnW9fR86Zqj5z2vDQC4szpskO4+cM6eys3dc9osr9tUKJuyT5hltz3554zf9Jprnuvo9cE+8+3XKyq+LK+O2CD39Zgtd3duCMvbDdLmniPdc77SjD71oqFh6YdD+mbtKzHt3+46YaaXrfbs0+XSc1WeWf9yYFRqtVdVVcmjjz4qmZnBaWAAwJ3TYYMUkaWlpUlCQoKnHQDQ8gjSKDRmzBhGowDQSghSAAB8IEgBAPCBIAUAwAeCFAAAHwhSAAB8IEgBAPCBIAUAwAeCFAAAHzpEkIYr7J29qyTkXrnNkZhyWB7oPc/THo77FoFuTw5M9LRZBb91uaULfj+2vOH+wZEKe1vtWnKNgt8AcGd1iCANV9jbT5CWXqwOuXl9YxoL0traupD78lqsgt+63BIFvz/NPuZpb6ywt9Wu9Uwp+A0Ad1aHCFIdierjN7N2yN/HpJtlDVItst2p72J55LlFJmSt9c+WXpHBgQDrM2iVjJ+zU27UBW/0rmXXrJvYu0ekGnw9X14hLw1LlpXrD9ntGqQjv8mU+3vNk14JK02Rb23XIHbeFN/5epMX7Lb32dpfp+QHh0jeyIYb5jeme+JumZhX7Gl/OeVASMDqCHTjiTKzHKkdANDyOkSQhqNB6iyyHRcIQC2lpnVJ7+02S2pqbpj2xA2HpecrK0O21Wox7iDN2nnKXk7edNRebqyw96mzlZ5i4i1NC34PTM23C37/58zgD4bGCntb7ToVTMFvALizOnSQOqd244evl+lL9siGzcc8JdQ0WOvrG7Z1B2lNbZ3sP1JqP8/JO20vu6d2nWXUWiNInbRuqYajLjdW2Ntq/zi7kILfAHCHRV2Q6oj0V4/P8azv5A5SlZNXYi8nbQw/IlWtGaRWwe/q2uDoWgt+W0HaWGFvq11R8BsA7qyoC1K9AEincqcuyjPtSakF9nlNS7ggtc6x6oVIep7Uam8sSC9dvmYH6eXK61JZVROybiRNPUeqAfmz2Vlmalenld9KPyy/DoxEtW9rYMSp07ul1TUy/8BpM0K1in5b7brsbAcAtLwOG6R3kv7fY9xtAACEQ5DepFfkXgiMRnVk2f+tJE8/AADhEKQ3fTElR54avEp6xC+X4aPTPf0AAIRDkAIA4ANBCgCADwQpAAA+EKQAAPhAkAIA4ANBCgCADwQpAAA+EKQAAPjQqkH62WefSadOnaRv376ePgAAOqJWDVJVX18vmzdvltraWk8fAAAdTasHqSorK5PKykpPOwAAHU2bBKmORhMTEz3tAAB0NG0SpKpXr17y7LPPetoBAOhI2iRI9TzpqFGj5NSpU54+AAA6kjYJ0nDnSDMzM6Vr166mz70+AADtVbsJ0nHjxsmECRM86wIA0J61SZBmZWWZ6V1nW1xcHKNRAECH06pBat2QQbn7AADoiFo1SAEAiDYEKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD40OpB+lj/pTJ2Wq488twiGTdzu6f/TkvNLJJPv8vytDdG91cfW2Kfp02bZv9/ac+fP+/pBwB0LK0epE8NXiXTFu+Rni+vkFnLvvf032nj5+xsdpDq/upjS+yzBunIkSM97QCAjqnVgzR++DpZmnRQ+g1JkhXrD9nt3wUC7smBiXJ/r3ky6P2UkG26Dlgm/d9KMgH4xkepdnvegXPy3F/WmHBOyThm2mpqbsjPHpsh6dtOyoC3k+XVERvkZEnFzfdeb/os8xL32a/1/lcZEjcsWV7++3oZ8eXmkPfX/dVH9z6r8v3HpTgpJ6StMQQpAESXVg/SIZ9slA2bj8ngQFjqNKvV/vCzC+Xo8UtyufK6vDs2w27P3XNaDhUG78GbuvW43NttllnWcPxl99lmufRitTzQe57kF1yQGzfqTEh+PjHbLGtw67L1ehqS4Uakul/W8pbtxSF9ur/66N5nRZACQGxr9SCN5M2PU6VT38X2aNFq/3rmjpD1XgqMGvXx0/FZIaNLlRAYfVpBeqToollvysLdZlRqbR8pSHU9HdlqIGtguvtbCkEKANGl3QTp38ekmxDU5eRNR+322cv3hqzXbcBy8zh5we6wgXe7QWq5XnNDJszb5WlvKQQpAESXdhOki9YcMI8aZM5zpHvyz8mZ81VmOXHDYXs6t/hMpTzYZ75Zrq//Qb6ZtUN27j1zyyAdNSHLTPfqevoaVvu23SX2a81d2XDu9FaY2gWA2NZugrSpdPrX3daREKQAEF3afZDqCNH6v5ykbCmSn3duOH/aERGkABBd2n2QKr2IqOcrK6XPoFWStLHh/GlHxA0ZACC6dIggBQCgvSJIAQDwgSAFAMAHghQAAB8IUgAAfCBIAQDwgSAFAMAHghQAAB86RJCePXvW3MBg797QG9gDANDWOkSQHjt2zASpux0AgLbWIYK0sLCQIAUAtEsdIkinT58u8fHxnnYAANpahwjSyZMny3vvvedpBwCgrXWIIC0oKJDHHnvM0w4AQFvrEEHKxUYAgPaqQwRpeXm5CdKioiJPHwAAbalDBKmaOnWqXRDb3QcAQFvpMEEKAEB7RJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4EJVBmpZ1XH7ZfbZZ/tXjczz9pRerZde+s552S/aukpDn0xbvMY89X14hs5Z971m/qZz7tT690NPfGu7uPFMuXr7mab+Vp19bbe+7+nR8lvz141Q5fa5K/jE9V/q/lWT3PTV4lX3M/BwvAOgIojJId+49I488t8gsd+q72G5fm1ogP3tshvFA73kh2ySM2CC9X02U+OHrZdzM7SF9S5MOmsd+Q5JkxfpDIX3l+49LcVJOSFskzv3K2nkqpK+qusbsq/r7mHS7vfDEJbNvLw1LlpWB93b+MFiSlC+9ElaaEDt87KLdPvKbTPlk/FZ5cWiSzFq+127XHw/W51fu/Yvk5OkKyckrkft6NATp/MT9UnD8klnOO3Au5PXih6+zj5n7eAFAtInKID1SdFF6vrLSLD85MNHTn7vntCdIR3y52Txeu15rQsvZt2HzMfM4+P0USc0sCulrTpA692vf4dKQvrHTcs1I+dTZypB9jgvsy1uj0uTqteB+/brnHNOuPwoefnahWX9LbrFZ1n3Xvt/2mS+FJ8vNsgZceUXDCFSfN2dEWldfL8++vkb25J8LGZE6fTVju7zw5lr7+ZBPNtrHzH28ACDaRGWQ3oo7SKuv1piQs55vzjnp2eZO08B54Ml5IaPFmto6s7z/SDB0c/JO20GqgewcXSprOlWDzHrde7rMNCFoPW8sSB96eoHxzs0fFQeOXDAhqmEaKUgXrjlghzYAxCKC9CbnOdNVKUc829xJNTU3QkJKp2atZQ1OnVbV5aSNR+0g1elT57St0+0G6YXAiFhVVF43z0dP2uYJa6Wvdz2wzzp9PODt0NE7AMQagvQma2pXp1B1OtW9TSTNmdqN5HxZtT0KPXO+Sh7rv9Tue3XEBhNYOu3rnNpN3nRUug5YZta/Ul1jRpEagtp3qyDVz6/LlVU1nn2JxD0i/WDcFrNvOlp1r9uYLl26yLhx4zztANBRxVSQukdWavqS4HTob3rNNc8f7bdEEjcc9mwbSUsEqRozeZsZZerVsHrO07rg6VBhmbmYSK8Y1gt4rCBVy9cdMhdI/W30ppCLehoL0qmL8qTbgOXms+YXXPDsRyTuIHUfR3XwaJlnO7euXbtKWdmt1wOAjiKmgrQj0pGnXpl7ufK6CdT3/pHhWacjIUQBRBuCtJ3TK3G/mJIjPeKXy/DR6WaK170OAKDtEKQAAPhAkAIA4ANBCgCADwQpAAA+EKQAAPhAkAIA4ANBCgCADwQpAAA+RGWQ6k3n9ZZ1et9cfdSbwrvXuZPeHZthqqbosrO82O0oOVtpPsOx4nLzuGV7cUj/l1NzZNvu0ELkeltA67Z97tdT//PiEpmXuM/T3hzWfqVvOxl2vwAgVkRlkEYq7K2hpsWwB72fYu5Rm5HbUC5Nw89dWFtv6v77pxfIn15YbILn9Q9TQ15PC1o/H3jNpwavkpSMYP1NNXnBbhn2WZpZdhbptiQ/OETyRs73tEfy884zpL4+eH/bkyUVdvum7BMmNLXYt5aCc26jFVzCBakVsO4g1TsmaRk3DVk9Flb72dIrpg6r3ut3/JydcqOu4Sb1ul9WwDv3CwBiSVQGaaTC3i8OTZJ+Q5KkqjoYOs6+ge+meAprazhpSGgR7V90m2VCRUeA2qfBoTdx1xvMmxDqPc++CbzW6NSbz+vy5xOzPfvX3CD93VMLzKPesF7vuWu1683pNeR0P9akhpZ+ixSkSqvbOINU657q8dLPUXymUl7++3rTfuNGnTwev0L+MT3X3KpQS6Y5t9P9Kiu/6tkvAIglURmkkWiQavUT6/l/PzHXs4768OtgPVArSHXkqSNTbdMRrT7qqFPLmlnbaBkzKzxbgwalhvu6TYVm9KuVY9z9TQ1SLRiuo1r3ejqyvzfwHtbUuFbFsX6gAACCYi5IdbRoPbfKgmlQaIkyq90qrG0FqZYQ0+ldbXMGqY4G3e/RWnQ62ZqmtUxx/EhoTpBqfVJnkGp9VH3UIA0XsACABgTpD8HgKDh+ySw7C2s3FqQ6Bfpgn/lmNKfnL7+ZtcMEj/s9w2nu1K6bdV5yd2CkbLV9NjFbOjsKgmux76YGqU7t6hSuLusFWtbotvbmlK81ik9KLQj5wRFJVVUVBbwBxAyC9OayBqW7sHZjQaq0ve9fk0xhbR2hWudeb8VvkGoRcH1fZ5sG+92dG4p4a7jrxVG6/9aFT3p+1zmCdX7+cxeumAun9IKjv3yUGtL+xshUU8JNz/eeKLns2R+3zMxMCngDiBkxFaRoHToSnTBhgqcdAKIRQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA9RGaStXdjbXdtTaSm2i5evedrViC83yxuO2/DdLr0n8Nhpuab2qt7S0N3fXBkZGfLKK69Ip06dPH1ut1vYW/dXH/3uc+rxMnlkyQ759fwceS5pr1TW1Np9d32bFsK9bTiz95XITyZtlu6JuyXnzK1vg9gY69+e3pc40v2O3Vr6b6n6rNkjP5qQbj8/WXFNXkzeJz+fnSUfbD0qNTfqPNs49V69x3Mslx4661nPKTk52fz7GT9+vNTVNf76QLSIyiBtrLC33m9W620+95c1kr2rxO4bPWmbKfb99GurTZ1Pq11rcv75b+vMfXj1nrOZOxoCo2vcMvNF6QzSXfvOhtzPVuuUWn0ffLXFbncHqdY6ff6NNdJn0Cr5akbDF6lVjFz3Tfudxch1n/TLWmusrlh/KOT1js5NlbX3Dg5pu5XevXtLXl5DBZlbiVTY23n89PPrjf2t59ZN78Pts+5vcVKw3uut6Jd6cWXwh8q7Wwqk28rddt/EvKaFumXN0fOSXFja8NrfbZLNxRc96zWV9W8va+cp+99f8qajdrvFWYavpf+W/x34gZF24qIdpJev18rH2YVSdfNH5ZjcIum8fJdnu0jqA97PPOppjyQuLs7cc9ndDkSjqAzSxgp794hfbopR6/OHn1loKpzo8tBPN8qNunqz/O3sHfY2+mWo1VF0+cLFahn0nrd0mntEqsXBNVwijUgnzNsVEqTO6iu6HD88WFhbWcXIdVkrzDg/jwbWhs3HTDm31MyikPe4nS/fXr16NStIIxX27jpgmQmFuvp6mTS/IeCU7q8+htvn5gTpQ4u324H5q0BojNtx3O7TUL1/Qa78NDDCfDIwKnNv25gNRRfkxxPT5eK1phUgCMf6t7fvcKn999IfZA8/u9BeR/+N3NN1lv28Jf+Wetx3nauQbafLQ0akFg1FHc2/m1ng6Ytk7v7TcqUZMzsapFu2bPG0A9EoKoM0Eg0lZ0hq2GnVFA1Tq2qKuhQIQKvKyfcHz0ta9gkprwgfispvkLoLa6dkBMNGOYuRa93QSMXIW4KWPistbRiZ3a6jxy+ZkH13bIapQuPubwl55yvl/0zdYkamjyfmyY364I8gNTA1X/LLquRoebUMDizfagrTcvjiFfOai/KbVg6vuaYsbPhR8dX0XLsqT0sbmVVoHiMF6bD0w/Lgwlx7dHorGsz3zMn2tDfmww8/lFGjRklNze3/IAE6ipgLUmfoadjpqEFLhbnLg+1w1BbVKTidotRp1vXpwS8pJ79BmrTxqF2mTTnf21n6TaeNnaXPWtLQoUNl27ZtnvbbpSXXmnp+8Hb8+/RMWVVw3oRBQsoB6b/Oe55aXQv8SNrexHOe+pqrA6/pbm8p+mNM/51pMD309IIm169tDh2J6mhdl8MFaW1dvTkP7DynfCtJR0ubfK7ZUl1dLQkJCU063w50dDEXpDrtpiNOfd7lpYZC2M6p3TFTGgJFi1lbyzo6DRdk7iDV19cQ0RGkTnlWVoX+KncHqV4Mpedbdfna9VrpP7Sh1ujtBmlzpwNVjx49ZN++8IHUHI/2WyIpW4rMaFQLjrv7I2nO1O5PJm6W9JPB85hvbDwkPVcFR+06bakj0jNXrpvAeisw+tIwtbabsqfYBObpqoapaL2A5j9mRD6f9/rrr5tQcLffDj2dMOj9FFmWfOsC6Zbb+VsqZ5DWBP5t3zdvm4zOKfKsZ4k0DX737GwZvvmIp70x8fHxkpbmDd9p06bJ6dMN58yBaBBzQTplUZ45z/ns62tM0Fl9WtBbL/RRb3++yW7XYNMpyqcGrzLTr1Zhb3eRbOUMOZ2O7TZguRl55BdcMG3u9ZU1pXz6XJW5AKpXwkoTtM59bq0gbe7FRuFoeOqxsZ7rSFtH3O71wmlOkGpI6JTu7xZtN9O3F642/FjRwNAR1C/mZJtpTOd2ei5V+07dvFBJ/WHJDs/Vqd/uOmH6qqqq5NFHH22xC2f6v5Uk9/eaZ/5dufsiuZ2/pXIGaUrRBc9n/KfJGSHrhwtS/WGiF181d6Qe6WKjlvpBArQnMRekVijBqyWCNNroqKolv/w/Gb815IdGtHrppZc8QXr+/Hnp1q2bZ12goyNIYdP/D+nq1as97bFszJgxnkDwQy/CKr1Y7WmPNnrh2qFDof83ng0bNsiECRM86wIdXUwFKQAALY0gBQDAB4IUAAAfCFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHwgSAEA8CEqg3RVyhFzH9ur12rNo94UXttb+s5GWjdUX99diFlpHUp39RddV2ulutdVus+6v1rH02/VlE+yC+XeudmmrqaWE3P2aTFnbf/tolzPduHo6zjvz6rFod3rAEAsi8og1fJUjzy3yCx36ttQnszctH7h7kAArjM3oHeWK9OyX3rDeOWuE6mhqDca16odB44Eb0Dv5AxSvbG886b0Wn7N6tPnqwOBqa/3m15z5XxZw63irJJaWkjcuc+WjY9/6GmL5LNtDfVM/3lKhmSfLjfLe85Xhqyngeve1k3Dc/+F0DAGADSIyiDVUZ+WS9NlDS2rXYO0c/+lsmV7sVRUXpe3RjUEZtywZFORQ0tvfTUjWM9RpW87aQpVazk0rQKjIex+P/eINFI9Um175Z31Joz1fquL1wYryShrpKr1UZ37bLndIP3PmVtlzv4SzzplV2tMRRB3u9OVwEheg/SFpL3yr9O2yCBXlRUAQJQGaSQapOPn7LSf/7bPfHs5J6+hpFrxmUopK7/q2V7LgYUbLTYnSLftbgi1v37cUJO0Jf3XrCw5d6XGFHH+0Xeb5LtdJ0P6tahzp2UNxyGSi9dq5LHlu0wNy6yScnk0sM2Lyf7rlQJANIm5IHWeI7Vqe2poOqdjVd6Bc6ZPR4oanla71td0v25zgtR5jvTVERs8r9UStJj1v03LlAcX5spDi7eH1JLUgP3v+TnybmZDwfKmSjleZgpqu9sBIJYRpDeX3/go1b4oSadyrfbuf15uHq8H+vQcqZbBcr/uItcFTJcCAaqhqYXDdUq4sio4HeonSJsztasXCB24eV6zb/Jeu73gUrVknmr4bG4/mbRZBqY2TDcXBn5g3DV+k0z//pSUXw+OYnV61+rPzc2VTp06eV4HAGIJQXpz+YspOdL71UQZ8slGcy7Ual+fXmjOn74xMlUKAgH7oGM62HJfj9kmJB9+dqHdNnVRnnQbsFweenqB5BcEz0W2VpC+n3lUfjEnW/5pcoZU3fxxoHQU6rwC9+m134ds5w5StezQWfmXqVvk94GR7dc7T5hzyFaf1pZsyaLXANARxVSQomXFxcW1aNFrAOiICFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHyIyiCNVNi7PWvJwt57SyvNzer1BvMbT5TZ7WeuXA+5RWD6yfBFxp0uXauRJ1blyf+bsbVJ9UsBINZEZZCmZR2376OrBbzd/e2R7rM+6r19/e7zv0/PlCl7iuXy9Vq5Z062fb/d/LIqqQ+zfmM0RF9LPSi7zlXIffO2yaL8hmLoAIAoDdJIhb0/+GpLSAFvrfhi9fUbkiRV1cEqLd/M2mG3r00tMGXRdHlLbnHIjen19fRG9ydKLtttWvHlnq6z5FBhcCR4b7dZMmt5sALL3Z1nmoLe1rrWPqqWLOw9ZNMheSfjiAnUxQcbgm/dsQvmRvX/PCXDhOKtQlXLr2klGet57pnL8uOJ6Z71ACCWRWWQRvKLQKg5C3jrFKpVwFurtVjtGobWcvzwdSGv8Wi/JfayVox55LlFIf0amhrK1vMe8cvtII0fvl4mzt9l9y1JCq200lI0QJMLS820rE7h6lSvtqeduChLD501JdE0JHXU6t7WacbeU2aKWJdfTcmXg2VXzOs5K8oAQKyLqSB1F+9WVgFvZ3m1XfvO2ss6anRvY/V9OTXHlFdzvsfXM3fIax+k2M9fCoyArSBNyz5hgldHw0XFl83I2LltS9HQs5a1/Nk3O0941lG9Vjf8eAhnxeFz9oh07dHzkn26XH40Id2zHgDEspgKUp1y1alTd7uKFKTuEamTBunw0ekhbbMDodn/rYYRqdYktYK0vv4H6Rq3zATq6EnbPK/XUl5Iaijm/YclO+wgPXzxSsh6XVc0jI7D0ZGsFvauuBn4kwMj2AcW5nrWA4BYFlNBqlfvOgt4O6dwIwWp0vUHvpsifxu9SVasP2S3hwtS9dWM7dJn0CrplbDSTOdaQar0PKxeTKTt7u0a05xzpEmFpSbw9HzmyiPBEbflru82mVFl98Tdnu3CFfa+VlsnH249Ko8u22nOsTr7KOwNADEWpG2hU9/FkphyOKSt58srZFN2+OnWjoTC3gBAkLY4nb7V0eisZd+b5z/vPENOnq6w+xes3i/PvL7arOfetiM5c+YMo1EA+IEgBQDAF4IUAAAfCFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHwgSAEA8IEgBQDAh6gM0lUpR0yVlqvXas2j3mNX218cmhRyT932RPdZ93dp0sGQCjO3Q0udOWnpNG0/c+V6SHv6yWAN1MacqLgmLybvk5/PzpIPth6Vmht1nnUAIJZFZZCmZR2XX3afbZb1BvFWe3sOUt1nfVyfXhiyz379dNJmKam6bpbzy6puWczb6UZ9vdw9O1sm7D4pheVXpcuKXfJRVqFnPQCIZVEZpEeKLpo6orr85MBEu12DtHP/pbJle7FUVF6Xt0al2X2Rqr98O3uHFJ4sN8tZO0/Zo0WtHKNl2Q4Vlknq1uNyb7dZpsrLyZIKE+JbcoNFsx/oPU/yC4JVU9amFpib2Gvll+8Pnvfssz5qmTfnPluaU/3FMnf/abniKMKt1VueXvu9/POUDLlv3rZmhWpG8SX5r1lZsvjgGU8fAMSyqAzSSDRIx8/ZaT//bZ/59nJjQWot643m9Sb0uqyh2W9IQ93RHvHBuqOTF+w2xbyt9ne+3Cyfjs8yy1qHVINYw9fqv1O0ePg9c4JFuS1pJy6aad7y67WyuuC8TNkTDPtbOVh2xUwF/z3jiKcPAGJdzAWpMzCt6V/VlCBV93SZaR6/nrlDXvsgxW7X8NQg1dDUsHRKGLHBrKOl03SE6ny9OyXpaKkJP3e7U6/VeZ62SDJPXZJOy3bKKyntc2ocANoKQXpzeX7ifnvZWSs0UpDODoRm/7caRqTdBjSMSAe/3xCwTvq6f3phsaf9TkgIBN7vF28PaTt88UrI864rdnm2c9JzqqNziuwp4M3FF28ZzgAQawjSm8sPPb3AnL/U86YpGcfs9khBqr6asd3UHh09aZs576lBqu178s9J378mmffTYK2qrjHtfoK0OedINfju+m6Tmb5192n7jyakS/fE3Z6+n0zaLANT80PaVh45J/86bYv858yt8lrqQSm9+VnUhAkTqEkKIObFVJDeSRrCiSmHPe3RLC4uTjIzMz3tABBLCNLbpBce6Wh01rLvJWVLkbkI6eTpCs960erMmTOMRgHgB4IUAABfCFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHwgSAEA8IEgBQDAh6gM0kiFvVVqZpF8+l2wGotTY3VKT52tNK9z8Kj/qi2fT8yWDY5bEFpasrD3jL2n5P4FueaWfzlnLof0PbgwV348MV3unRtaGeZW/m0adzACgHCiMkgjFfZWWkatuUF6PRDEWn+0+mrDfWZvV/+hSWGDtCULe/96fo4cuFAllTW18tPJm+XiteB+V9fekKnfnzJl1NYcPS/HLl/1bOtWc6NOPs4uJEgBIIKoDNKde8/II88tMst6D1yrXW8s7yxvNi9xn903ZeHuQP86E2LOqi5nS6/Y67tHpM/9ZY0p1t01blnI6yVtPGpKpw14OzkkoPWG9873d76e7rM+avFw5z5bmnPTeq07ai3/6LtN9qhUC3071/tw61HPtu7XeWTJDvlyexFBCgARRGWQNmaEFtoOMyJ1FvzW0ae73x186ospOXZgW64FRntaSUYrwZwoCZ1WVf/z4pKwI9KW9mLyPlPybF9pld02YP1+2XG2wrQvzD8jv1sUWmatMQQpAIRHkN4UqbC3JVyQfjk1R94YmepZ90jRRfnLR6nyh0DITl2UJzW1dXZfawWpOnelxpRA+/58pXn+ZtohKam6bqZqta3nqqYX9iZIASA8gvSm2w3S4aPTPes6acHvxWsbany2RpBmny63lzsv3yWfZgffb/yukyHrDUtvetk3ghQAwou5IC0qviyvjtgg9/WYLe+OzbDbIwXpM6+vDjmv6byiNlKQanC+80W6Oef6wVdbpK6+3u5L33ZSnn9jjSm7plfoureNpDnnSJ9cs8dM32oB78Qj50L6Xkk5IP8ydYv0S244P2xxF/a2poHd0k8Gz8FS2BsAYjBI0XIo7A0ABCluE4W9ASCIIAUAwAeCFAAAHwhSAAB8IEgBAPCBIAUAwAeCFAAAHwhSAAB8IEgBAPAhKoO0scLe7Vlj9+DVWxo2tR5qZVWNPJGw0tNu0fv9OkvI3Y6Sm8XO9ZaH+rhle7Fnneawbtc47LM0eeHNtWZ5xfpD5rW1VJ0+//uYdPO8qcehKbTSj/sWkOpPL3hL2Tnp/j77+hqzrPvs7gcQO6IySBsr7N2eRQrSguOX5BfdZkliStNuMr9td0mjQbon/5yps+pub46q6hoTOHkHzpnHvYdKPes0x5gp28zjJ+O3yqD3U8yyBunDzy40dWT1R9Efn1/U4kHq9Oueczxtkej+as1ZXdZ9dvcDiB1RGaSRCntrOTO90by2Pdhnvuw/0vDlH+mm9fqlXXym0nxZ6jbOm9ZHKuyt4fJ8YFSl/SmOcLRGcFrwu3P/pXKypMLucxf9ttqV7rNWrYkblhzSrkHT+9VEeSnQnrypoUi383Xe+Ci0zJvV7h6RarDqzfT7DFolX80I1inVkby1z7q/erN/5z7rjfePFZebdZzt6ujcVFl77+CQtsZMXrDbPH4za4cZeeqyfr4hn2yUB56cJ4kbDsvfRm+yg1T3V0vV6T7r/t64ESxVt25ToQld52trKTt91M/TK/ADQ+kosrziWsh64YJU/5Z9/5pkRslJaQ3HWPfXGonqPru3AxA7ojJItR5oz1eCI7InByba7R9+nWnCQMuhXa68bgLVqhUaKUiVhsusZd/LpcuhX7xa2UWDzFnAWwNFR8NbcoNTnQ/0nif5BRfMsobA5xOzzZe+fqnrsvP1wo1ItXLMw88slJy8ErO9Tqlqe9LGoybctH3D5mMmiHXkqn06cm1sRKqB7AxSPQaPx6+wl3UEqMu6n9Y+6/5qNRvnPv/uqQVSVn7VBJAeT+d7NDdIreOvBdGt99AgHfrpRnn/qwyzT2nZJ+wg1f2dv2q/WU/7xs0Mhr/us25nve7278/Yfzf9e2nhdT2mGr7uHxnuINW/q7btOxz8waWjY2sKW/f30/HBcny6z87tAMSWqAzSSPRL2Bl6To0F6fzE4Be2W7jC3vrl6hwRKmsKUJc15K11NdSd24YL0jc/TpVX3gkG2xdTckx46rLWOXUGhlNzg1RD2XlOcEdgRK+PVpBa+zxl4W7PPt9JVpDq8qT5u+X6zRGyBql7f7Xden5355ly+NhFE6D3dJ1l2jTw3X8X5zbKHaT6w8tZJk/34c9/WxeyDgDEVJDqF6yeH7Se64Um+uWsy86w3BQY+Ti3ixRY4eqR6pTf4Jvn+NyaG6QVgVGenhsN9+WvYTh9yR57XZ2CLL1YbZabG6R6HJznkq3p6PYQpDq1az13Bqnur1XnVffXOYX/+oep5hymziI8NXiVaauv/8EO1UjcQTph3q6QzztqQpapM+veDkBsi6kg1am9vwZGeBoQ+iWsV69aX8bDRqXZyzoScW7XnCDV86l6LjUn77R5rufP9JytLt8qSPWLWx+tq4w13PW1dDrSWseaqjbnZgcskwuB8NycE7xy1jpPqcHy28B2OiILNwJ3B6m+n57n1WV9r/5Dk8yynyBt7tRuOI0Fqe6vNbWr+6ujRWs9nVbXY6MhqldwW+0jv8m0j+3R45fMvwfn+7mDVM//6tXS1rn03z+9wDNbAQAxFaQAALQ0ghQAAB8IUgAAfCBIAQDwgSAFAMAHghQAAB8IUgAAfCBIAQDwgSAFAMAHghQAAB8IUgAAfGj3QZqcnCxPPPGEjB8/XurqgiXPAABoL9p9kKpTp05Jz549JS8vWKAZAID2okMEqYqLi5PMzNCqLAAAtLUOE6QffvihjBo1Smpqajx9AAC0lQ4TpNXV1ZKQkCCdOnXy9AEA0FY6TJBOmjRJBg4cKHv37vX0AQDQVjpMkMbHx0taWpqnHQCAttRhgvSll17iYiMAQLvTIYK0vLxcunTpIocOHfL0AQDQltp9kOoNGfQCI71q190HAEBba/dBCgBAe0aQAgDgA0EKAIAPBCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD60WZCOHDnS0wYAQEdDkAIA4ANBCgCADwQpAAA+EKQAAPjQboK0qqrKlEobN26cZ10AANqrdhOkWrS7a9euUlZW5lkXAID2qt0EaVxcHCEKAOhwWj1Iu3fvbgp1u4MUAICOqNWDFACAaEKQAgDgA0EKAIAPBCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD4QpAAA+NDqQfrU4FUybfEe6fnyCpm17HtPfzRLyzouv+w+2yyvTy/09DdXTU2NuUuUux0A0HpaPUjjh6+TpUkHpd+QJFmx/pDd/rPHZkjxmUr5ZPxWebDPfDl4tOG+u8+/uVae+8saE8IpGcfs9qSNR2XA28ky6L0UWbjmgN1+tvSK/OWjVHn+jTXy1YztcuNGnWl/cWhSyHpWqKmuccvMdoPfTwlpV71fTZRfPT5HXhqWLMmbjtrteQfOmX0Lt18JIzaYfXO+3869Z+SR5xaZ5aydp0LeQyU/OETyRs73tEdCkAJA22v1IB3yyUbZsPmYCazUzCK7XYOsz6BVZpR66fI1u/1kSYVsyS02y6UXq+WB3vPMck3NDbm780yzfKOuXoaPTpfCE5ekprZOHo9fIfNX7Td98cPXy7iZ281yY0GqQa7Bp4F47Xqt3a6hmJNXItVXa8x+39Ml+J66X7q97pu1X/kFF+z9OlJ00axn7Zcua1vPV1aa5X2HS+33sBCkANDxtHqQRvLM66tlfmIw/Jw+HZ9lQs7J6tNg+kNghNcjfrlMXZRnQlSD708vLLbX2REYBVrb3CpIDxV6q890G7Dc06bC7ZeOQrVP90tHxLpv1n65t28JBCkAtL12FaTOqV7L5AW7PW1uGoAaeIvX5kvuntNmGrauvt706QizU99gsMYNSw4Ja3eQnii57Hlt3cb5XKdz9VH3S0fV7vXdrP1yt7cEghQA2l67D1I9b5qTd9os19f/IN/M2mGWC45fkhFfbjbLFy5Wm6nhVSlHzNSqLltTu/0Do9BJ84Nh/NHXmTJsVJodsk0J0rWpBeb1dXlzzkl7dKv7pedydd+s/dJzoNZ+6XSzrmftl/t1w2FqFwA6nnYfpKrvX5PMtOzfRm8KGaHqSE8vXtLzlh98tcUOyNPnqmTguynmAqUJ83bZoXb42EV56OkFZoT6ViBQ7+02y36tSEGq9Nyt0u2c+7gn/5zZN2u/qqpr7P1654t0s2/O/boVghQAOp52E6RoPoIUANoeQdqBWUGqxo4d6+kHANx5BCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD4QpAAA+ECQAgDgA0EKAIAPHSJIz549a246sHfvXk8fAABtqUME6bFjx7gVHgCgXeoQQVpYWEiQAgDapQ4RpNOnT5f4+HhPOwAAba1DBOnkyZPlvffe87QDANDWOkSQFhQUyGOPPeZpBwCgrXWIIOViIwBAe0WQAgDgQ4cIUjV16lS7iLW7DwCAttJhghQAgPaIIAUAwAeCFAAAHwhSAAB8IEgBAPCBIAUAwAeCFAAAHwhSAAB8iMogXZVyRH722Ay5eq3WPNbU3AjpT0w5LA/0nufZzpK9qyTk+dhpuebxkecWybiZ2z3rN5Vzv5YmHfTs1/g5O+WFN9fKPV1myq79Zz3b3w59vyNFFz3t4Xw9c4c8/OzCkDZrn3V/wx1LAIh1URmkO/eeMaGny536Lrbb16YWmDBQ7iBNGLFBer+aKPHD13vCUkNEH/sNSZIV6w+F9JXvPy7FSTkhbZE49ytr5ym7/eLla/Z+Wc6WXjF9GlyjJ22Tp19bLUM+2Shl5Vft7ZYk5cuTAxOl/9AkyS+4YLd/Oj5LOvdfGvgs65oUpDl5JfJ8IMBTthR5gtTaZ91f57EEAARFZZBqcPR8ZaVZ1qBx9+fuOe0J0hFfbjaP167XykvDkkP6Nmw+Zh4Hv58iqZlFIX3NCVLnfu07XOrp7xG/3NP2/lcZMvTTjWb529k7pO9fk8zymtQj0m3AchPCGoS/6TVXLlysNn36Hjrq1eWmBKllU/YJT5Ba+6z7G+5YAkCsi8ogvZVwQaojL2tZpzPd27QGd5DW1tbJ3Z1nyp78c+b5pZsjV13WsJ++ZI+9bq+ElfZoefKC3Xa73yAFADSOIA2ovloTEjabc056tmkN7iA9d+GKCcITJZftNitIdTTqnGb+89/WyaT5wQBduOZAyPrOz/bQ0wtszvdSBCkANB9BepM1tatTonGuqd3GNGdq91bcQareCeyXNbU7Zso2GfB2cN8SNxw2Yaqj1PRtJ00wVlReN30tObXbmNzcXKrxAIh5MRWk7gt6lDU9qucY9fmj/ZaYkHJvG8mdDlI9Z6sXD/UZtEre/nyTXL4Zlmr+qv2mXYO/4Pglu12DVD/Lfz8xV37ZfbYcKizzvK6Tnv90Hxf9seFez23ChAmSkJDgaQeAWBJTQYqWFRcXJ5mZmZ52AIglBCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD4QpAAA+BCVQapl0PR+sXrjdn3U4thWn9YT/fS7LM82LendsRny7OtrzPILb6719DdHydlK8xmOFZebxy3bi0P6Vwc+6697zpGfd54hs5fv9Wx/O7TuqbVsHUstbu4+lgCAKA1SrS36yHOLzHKnvovt9vjh60NuzD4vcZ9pT950VG7cqAt5Dask2biZ2+XNj1Ol/1tJ0nXAMpm7MriNyjtwTp4PBOVTg1dJSkaw+LfSeqDDPkszy38fkx7yuub9HhwieSPne9oj0ZCsrw/edP9kSYVpeyIheGN6p7WpBaZvSVK+KcKtIZ5fcCHktbQwuLZbQW/Ze/C8+SyvjthgV8JR1rHM2nkq5FgCAIKiMki1bJhWQNFlDRRnn4aEe0SqIbo+vdB+fiowCiy9WG2WdXSmIaPLxWcq5RfdZpllDTStrLIlt9isq2XZrNDSeqBasUWXP5+YHfJeqrlB+rungrVDdeTprP6i76sB6l5fy6tdvHzNLGtVmws3P4vWNdVKL7p8tvSKPbqtqa2TPz4f/OGhn/3hZxpKqVnHUrdzH0sAQJQGaWPCBamy6nyqr6bn2svOaU7V+9VgmOio8yVH3VKtG2qFZ2uJFKRWaTjVKzBytQqAfzd3V8h6w0enm8c9+efsHwhKp6bdrwkACI8gvUlHlzpiq6uvN0WyrXZ3kL44NMk8ami6p1YTRmzwvO6dFClIreBUf/7bOnua+sOvQ0ueaZ8+akFva9Sr/uH4IQEAaFzMBemoCVkSP3ydmc7VqVqrXYtf65TmoPdTZFnyQbtdg9SaDt2176wdXLrtg33mS07eaXP+8ptZO8z5RPf7hdPcqd1IIgWpTu1eujm1qz8KKm5OB+sFS/uPBD+LXsSkn0eXr9fcMFPAuqxT1n+4eX75VnJzc6VTp06edgCIJTEXpEXFl80FNff1mO2ZwtQLiu7vNU+uXa+12zRIR36TKf2HBi82WrB6v92nU6J68c7fRm8yU71V1TWe9wvnTgfp/FX7pc+gVeaiooLjl0L69IKi599Y47nYSC9Q0tfSUer4OTs9rxnOhAkTJCEhwdMOALEk5oK0MZ+M3ypfTs0JaXNP7aJBXFycZGaGThcDQKwhSG+6p+ssWZN6xNNOkAIAGkOQAgDgA0EKAIAPBCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD4QpAAA+BCVQdpYYe87wapr6qQlx6xSZm564/w3Pkr1tDfXY/2XythpuaZeqNZNdfc3V0ZGhrzyyitNun+uVXA8fdtJ8+guOB6J7q8+ttQ+v5cZrMHq9GbaIfn36ZnyT5MzpF9y6N/m7tnZ8uOJ6fLHpTuk4FKwvFxjdp2rkAcX5ppt1h4NltO7XXrM9HhFKtIejvU31mW/x+veudly17dpto+zg6UD639oOGZ6vK408X8vzmPp7nM7deqU+XfVuXNnOX/e33EE2puoDNK0rOOmmosu/+rxOZ7+lqa1PZ3Pa2vr5O7OMyMGaeHJclPn093eXFpQfNriPdLz5RUya9n3nv7m6tu3ryxevDiw/w33Go5E7yusYaDFzfVx76HgzfBvRfdXH/3uc82NOhME/zHDe4vCPyzZIfsvVElJ1XXpm7zXbs85c1lSj5dJ+fVa+SK3SH4xx1sr1qm69ob8n6lbZOr3p8w2/9+UDDl2+apnvabSY6bHq+zS1SYfM+tvrMt+jpf612lbJKM49N7Lauz24/Yx0+M1MDXfs46b+1hqGLvXCaeiokLmzJnjaQc6sqgM0kiFvbUEWo/45VJWHvwy1GovGnq6PPTTjXKjrt4sO28LmLXzlCl8rctaIHvQeyme93OPSLU4tn5RRgrSCfN2hYxI9fUfj19hL8cPX2/36T73GxIs3aYVZpyfZ8gnG2XD5mMy+P0USc0sCnmPo3NTZe29gz3v3ZhevXpJXl6epz0SLb2mx9JdcFxv7r806aApSWeVcLPo/upjuH3W/S1OCr3X8a0kFYaGkX6xn7nSsC8qN/Clr4/3LwiO7CxPrGr8s76VflheS22oBKSBc6ttbsX6t+c8Zm+NSjP3edZlrSSk1XdSMoLHyfob67L7eJXvP97kY6ajTB2FvpC01wTqoEBYXrhaY46XtjuPmY4yrWMWiftY6rFxrxOJFjtwtwEdWVQGaSQaSs6Q1LDTcmgaplrJxWrXEmRam1SXvz94XtKyT0h5RfhQVH6DVEuxOUfO1peo0n2euij45Z2757T89xPBcmd3QpcuXaS09NajpFs5evySCVmtrqPB4O5vSe4g1enaqkBo9F69x0w9Otf5vzO2ylc7jpvgKK68Ji+6pn3dBqzfL3/POCI7zlaYbabsKZbfLfI3vRqOlrPTv79WHcrIPWmmvfVHiHs9Py5eq5HHlu+S0TlFklVSLo8u22k+vx4v/WzWMdN1/21apue4urmP5fDN3vtUR6LFDsrLyz3tQEcVc0HqDD0NO601eu7CFTs4LTsctUVfGpYsD/SeZ8qSrU8Pnldy8hukSRuPyp9eWGw/d7637vPCNQfMsn7hWlPWLW3o0KGybds2T/vt+nxidtgSby3N/YWvo6zTVddl8cEz8t2uk6ZNpyH18Vfzc0yI6JRwRSC0eiSGjpbd9Lzh4MDITaeIdZsxuUXS0+eINBIte6el7P76caopyefub2kpx8vkJxM3m+OlYWgdM+370Xeb7GMWiftYfrm9yLNOJGPHjjXnS5OTkz19QEcUc0GqU75W0esuLy21+5xTu2OmNARKUmrDxSw6Og0XZO4g1dfXENERpE7fVVaF1il1B6leDNU1bplZ1lGJ1j61+m43SG9nardHjx6yb1/jo7SmeLTfEknZUmRGo59NbPw8pFNTpymd3EGqugcC0hrRxacEj53aGvjiL71ZM3b+gdMmDJzb6cU2GijW88qaWnOO1DqvqFOixysazpFOmzZNunbtKqdPn/bsQ3PplP7vn14gb3++ydMXSXOmdgvLr8pd4zfJ9JvnezsFRqQ6vat9GoLWMdPj9bpjOlvpSFyPjbPNfSybM4L++uuvPW3WsXS3Ax1BzAXplEV55jynFrbWoLP6Ph2fZUYFyvllpsGmU5R60YdOv+moQdu1bqmGpZMz5HQ6ttuA5fJQ4Msxv+CCaXOvr6wp5dPnquS5v6yRXgkrTdA697m1grR3797NOkcajoans6arjrR1xO1eL5ymhoJyXn1qST8ZvIBr1r4Sc6WtXkz07a4TIdvpiFKnLoelH5bLjgLu1mueqgydRdBgfSUQLv8SCNTDF0MvKtOi5i15vu+7OTvN39jdHklzglQtO3TWfI7fL94uX+88ERJ+1jHT4+UOxXE3p3Ddr+c8lu6+xoQ7Zi19LIHWFHNBaoUSvFoiSGOF/l84unXrJmVlZZ6+2xXutEE0cgfmnTiWQGsiSGHT/w/p6tWrPe3w2rBhgycQ/ND/S4x15XY0u3Hjhixd2nBKRbX0sQRaW0wFKQAALY0gBQDAB4IUAAAfCFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHwgSAEA8CEqg3RVyhFzH9ur12rNo94U3r3OnaZ1QyNVfxnx5eaQm9ZbNjjKpzXFY/2Xythpuabs1riZ/sp7aZHmX8/PkXvmZMtzScFi2Fb5MKd75zb9JvQAEAuiMkjTso7bN3d31vlsLVrf9O7OMyMGaeHJclN83N3e3CDVG+lPW7xHer68QmYt+97T31Q1dfXy/2ZslfrAst7I/U9LG2q2Ov15w34Zuql5NygHgGgXlUGqIaXl0nRZR4ZW+5BPNppKLrqsVV20+LTV57wHr7MCR/q2k6ZQtZZD023jh68z7dm7SkxY6+j3fFm1/LbPfEnNLDJ9za1HanEH6Y0bdfLwswvtm5nr697TdZbdr59nw+ZjMvj9FPu9Lc2t/vLQ4uCI9mh5tae8mNKR6he5oe8BAIjSII1Eg2+no2h2U4LUScuBdeobLMCtQXpvt1mmbJg+jxuWLLOXB6dEWypI1ZSFu2XA28ECyF9Nz5Vhn3nLWbWEvPOV9vTt44neCjD/MSNTrgVG2u52AIh1MRWkGm7OKdWmBKmur+Fp1Q/V+prarkHq3D5++HqZvmSPWW7JIC2vuGZ+AGiNSK1t6vwh0FJKqq6bws1VNTdM4eoERzFsy/uZTaspCgCxJqaCVMNOL/TRZb0QyRmEw0al2QWNP/w6027v/ufl5vF6IGQGvZ9ib9NYkF4KBKgGqRYO1ynhyqqakP2IFKRWQW/3xVGHCsvMey9LPujZJpLmTO2eCIT1TyYGj4ueL31j46GQ/oX5Z6TCVQRb5ebmSqdOnTztABBLYipI9x48L7/pNdeEnI4ynUGooz1teysQqCmOkaGen9Rp2zdGpkrB8UvyYJ/5pr2xIFVTF+VJtwHLzevmF1wwbdao1mlP/jl7m+ffWCM/7zwj7AVS9/eaZ87rutsjaU6Qqm2ny+V3i7bL/QtyZXBqfkjfqG3ekbLSGpIJCQmedgCIJTEVpG7OIGzvvpzqvQCorcXFxUlmZsPoHQBiEUEapr290ZF06cVqT3tbOnPmDKNRAPghxoMUAAC/CFIAAHwgSAEA8IEgBQDAB4IUAAAfCFIAAHwgSAEA8IEgBQDAh6gM0vZQ2Lsx7bGwt3ovs0D+bVronYouXauRJ1blmXqln2QHy7kprV36Ztohc7P7fsn75Eo7O8YA0FqiMkjburD3rbS3wt6q5kadKZXmDlIN0ddSD8qucxVy37xtsig/WH1m7Pbj8oclO2T/hSrpm7xXBrruzwsAsSIqg1RLjekoTZet+qGqprbO3LNW2/Tm8/uPlNp9WrRb29Xfx6Tb7TrSe/PjVOn/VpJ0HbBM5q7cZ/et21QoLw1LlheHJknypoYyY98fPC/9hiSZEP9u7i67ZukHX22xb1bvHpHe02VmyM3stU1fUz+HFvi21tP3s5a1yPjSpIPmvVasD63Y0pyb1qeduCiPBEIx8ci5kCAtunxVfjwxXaprg6NNDdFOy3aa5f+alSUZxZfM8qnKa/KjCemMSgHEpKgM0kju7jxT8g40VFuJxFlG7dvZO0L6er+a6Fn/3IUrJvxOnq4wwZkwYoNnHadIZdTCjUhbq7C3SiosDQnSGXtPyUOLg1PGr6bky8GyK6bwt9YttR57rw5WvNHtdHv3awJAtIupINWwO1Fy2dOutAzaA0/OCxkRKneQ6uhTH69U18hHgcDVaVVrG31tDeHho9M9r+/UnCBtjcLeFneQrjh8Tu6dm22W1x49L9mny83IU59rkJ6uui6LDwb350ffbZKcM+GPLQBEs5gKUh2ROut/auFtLditFyPpFKnVPvKbyCPSHvHBQt+T5u82IapFvLUyixWkGpKvOkakhScumXOiztdoTpCq9/6RIalbj8uTA72j4ZbkDtK9pZVy1/hNdlHvyXuK5YGFuWb5n6dkyPpjwTqr+WVVZr2yq6EFzAEgFsRUkGpgfjElR/oMWmXOhe7af9bu+9MLi805x0/HZ8mW3GL7KlgNUg3W/kOD50gXrN5v2o8evyR/fH6ROT+5+8A5c+7SClkNa23XQt2jJ22zz3E6z4Fa2kNh7x1nK8wI0yn9ZPBiqGu1dfLh1qPy6LKdsu5mcFpm7SuRBwPB+u2uE2bE7H5dAIgFMRWkt8M9Im0r7bGwNwCAIL2l9hCk7bGwNwAgiCC9hbYOUp1yvqfrLE87AKB9IEgBAPCBIAUAwAeCFAAAHwhSAAB8IEgBAPCBIAUAwAeCFAAAH9p9kCYnJ8sTTzwh48ePl7q6hnJiAAC0B+0+SNWpU6ekZ8+ekpeX5+kDAKAtdYggVXFxcZKZ2VCZBACA9qDDBOmHH34oo0aNkpoaSnUBANqPDhOk1dXVkpCQIJ06dfL0AQDQVjpMkE6aNEkGDhwoe/fu9fQBANBWOkyQxsfHS1pamqcdAIC21GGC9KWXXuJiIwBAu9MhgrS8vFy6dOkihw4d8vQBANCW2n2Q6g0Z9AIjvWrX3QcAQFtr90EKAEB7RpACAOADQQoAgA8EKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPrR6kHbv3t3cYGHkyJGePgAAOppWD1ILQQoAiAYEKQAAPhCkAAD4QJACAOADQQoAgA8EKQAAPhCkAAD4QJACAOBDqwcpN2QAAESTVg9SAACiCUEKAIAPBCkAAD4QpAAA+ECQAgDgA0EKAIAPBCkAAD4QpAAA+OA7SIcMGSJz5szxtAMAEAt8B+m4ceNkwoQJnnYAAGIBQQoAgA++g7S+vl7Gjh1r7p+bnJzs6QcAIJr5DtKtW7fKE088Ienp6VJbW+vpBwAgmvkO0m+//Va+/vprTzsAALHAd5ByjhQAEMt8B+lrr70mS5cu9bQDABALbjtIT506ZS4w6tevn1y+fNnTDwBALLjtIAUAAAQpAAC+EKQAAPjw/wPdb5FqiIiM7QAAAABJRU5ErkJggg==>
