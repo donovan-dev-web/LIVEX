@@ -32,7 +32,7 @@ mené en tant que développeur et infographiste 3D indépendant, avec la rigueur
 monographie de référence de 184 pages : fondements scientifiques, architecture
 détaillée, choix techniques justifiés (ADR), éthique et limites assumées.
 
-**Documentation complète du projet : [`LIVEX-Monographie.pdf`](docs/LIVEX-Monographie_SnapV0-1.pdf)**
+**Documentation complète du projet : [`LIVEX-Monographie.pdf`](LIVEX-Monographie_SnapV0-1.pdf)**
 
 ---
 
