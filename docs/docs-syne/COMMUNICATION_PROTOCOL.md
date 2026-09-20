@@ -17,7 +17,7 @@ La communication est un **signal lumineux public**, local et dégradable :
 - **Publicité** : visible de quiconque le perçoit (ADR-008 — non confidentiel). Pas de canaux privés.
 - **Portée** : locale — le signal est nul au-delà du rayon effectif.
 - **Limite de ligne de vue** : la portée est délimitée par la **distance** et la **ligne de vue** (pas de transmission à travers les obstacles).
-- **Interception** (entité interprétant un signal non destiné) : **possible** mais reste **[OUVERTE]** (décision n°8) — à ne pas transformer en règle implicite avant décision.
+- **Interception** (entité interprétant un signal non destiné) : **possible et publique** — **[TRANCHÉE]** (décision n°8).
 
 (Monographie §3.16.1)
 
@@ -59,11 +59,11 @@ MessageId (UUID) | SenderId | Type | Payload | Confidence | Hops | Timestamp(tic
 | `communication.incomprehensionRate` | 0.05 | Probabilité d'incompréhension |
 | `communication.trustDecay` | 0.9 | Décroissance de confiance |
 
-**Latence** : dans le prototype, les messages pouvaient être non instantanés (optionnel) — ex. 1 tick pour traverser 10 unités. Reste **[OUVERT]** côté décision vitesse de signal en V0.1.
+**Latence** : non instantanée (optionnel) — ex. 1 tick pour 10 unités. La **vitesse de signal** (temporisation de la ligne de vue) reste un **paramètre configurable** (§3.16.6), la décision n°9 (coûts énergie/temps, hérités + configurables) étant **[TRANCHÉE]**.
 
-## 6. Coûts (décision n°9 — [OUVERT])
+## 6. Coûts (décision n°9 — [TRANCHÉE])
 
-Les coûts de production d'une pulsation (énergie, temps) restent **ouverts** (décision n°9). Référence prototype (à réévaluer) :
+Les coûts de production d'une pulsation (énergie, temps) sont **hérités du prototype** et **configurables** (décision n°9 — **[TRANCHÉE]**). Référence prototype (par défaut) :
 
 - coût d'envoi d'un message : énergie (valeur prototype) ;
 - coût de réception : énergie (valeur prototype).
