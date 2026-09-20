@@ -65,6 +65,28 @@ Ces pistes sont documentées dans les ROADMAP de chaque composant ; elles ne son
 
 ---
 
+## 6. Backlog unifié SYNE + ECHOS (jalons croisés)
+
+Section de **backlog consolidé** qui référence les issues des deux composants déjà réalisés et aligne la validation croisée (`docs/docs-syne/ISSUES.md`, `docs/docs-echos/ISSUES.md`). Elle sert de **base unique** pour la création des issues GitHub et du Kanban LIVEX (cf. `ISSUES.md` racine §5.1, `KANBAN.md` racine).
+
+| Jalon unifié | Couvre (SYNE) | Couvre (ECHOS) | Issues de référence | Critère de validation croisée |
+| :-- | :-- | :-- | :-- | :-- |
+| **U0** — Socle & gouvernance | ph0 (`SYNE-001…006`) | ph0 (`ECHOS-001…005`) | `docs-syne/ISSUES.md` ph0, `docs-echos/ISSUES.md` ph0 | Architecture + ADR (SYNE ADR-001/002, ECHOS ADR-001/002) ; pipeline CI vert |
+| **U1** — Boucle & perception | ph1 (`SYNE-010…015`) | ph1 (`ECHOS-010…016`) | ph1 SYNE, ph1 ECHOS | Boucle 10/15 étapes SYNE ; ingestion WebSocket ECHOS ; golden : T0/T1 |
+| **U2** — Mémoire & croyances | ph2 (`SYNE-020…022`) | ph2 (`ECHOS-020…027`) | ph2 SYNE, ph2 ECHOS | Révision des croyances ; 7 moteurs de métriques ECHOS ; golden files |
+| **U3** — Décision & utilité | ph3 (`SYNE-030…033`) | ph3 (`ECHOS-030…033`) | ph3 SYNE, ph3 ECHOS | Délibération BDI ; score d'émergence [0,1] ; T2 trait→décision |
+| **U4** — Actions & communication | ph4–5 (`SYNE-040…054`) | ph4 (`ECHOS-040…045`) | ph4±ph5 SYNE, ph4 ECHOS | Périmètre des actions ; API REST ECHOS ≥ 80 % ; T3 information locale |
+| **U5** — Groupes & ressources | ph6–7 (`SYNE-060…073`) | ph5 (`ECHOS-050…054`) | ph6±ph7 SYNE, ph5 ECHOS | Groupes BDI ; logging & instrumentation ; jalons J2/J3 |
+| **U6** — Observabilité | ph8 (`SYNE-080…082`) | ph6 (`ECHOS-060…063`) | ph8 SYNE, ph6 ECHOS | Événements typés ; analyse causale |
+| **U7** — Performance & comparaison | ph9–10 (`SYNE-090…102`) | ph7 (`ECHOS-070…072`) | ph9±ph10 SYNE, ph7 ECHOS | Budgets tick ; comparaison de runs (seed 12345) ; T4 benchmarks |
+| **U8** — Tests & persistance (V0.1 → V1) | ph11 (`SYNE-110…112`) + `SYNE-120…131` | ph8–9 (`ECHOS-080…093`) | ph11 syne, ph8±ph9 ECHOS | SQLite bit-à-bit ; tests ≥ 80 % ; T5/T6 ; v0.1 validée |
+
+### Condition PRISM
+
+- PRISM (feuille de route PRISM, `docs/docs-prism/ROADMAP.md`) n'est **créé qu'une fois SYNE + ECHOS réalisés** : son démarrage exige l'achèvement de **U0 → U8** (backlog unifié ci-dessus), sans lequel il n'aurait pas de contrat stable à rendre. Cette condition est reprise dans `docs/docs-prism/ROADMAP.md` §3 et `VERSIONING.md`.
+
+---
+
 ## Points restés ouverts dans ce document
 - Pas de dates : aucune jalon daté ne sera fixé avant consolidation des phase 2-4.
 - L'ordre des phases Monographie V2 est conservé tel quel ; si une priorité émerge pendant la documentation (ex. un sous-système à détailler en premier), la route sera mise à jour explicitement.
