@@ -58,13 +58,13 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 ## 8. Héritage & Fusion (Monographie §6.6)
 
 - **Naissance** : fusion consentie (décision n°17).
-- **Héritage** : transmission de traits/connaissances (modèle à détailler — partiellement [OUVERT]).
+- **Héritage** : transmission de traits/connaissances (via **fusion consentie** §6.6.3, mécanismes fins configurables — décision n°16 **[TRANCHÉE]**).
 - **Mort** : dissolution complète (V0.1) — seul un événement de trace subsiste.
 
 ## 9. Livres / Persistance de connaissance (Monographie §3.18 (livres))
 
-- **Auteur** : rédige un livre matérialisant des connaissances à un instant T — coût (énergie, temps) [OUVERT] (décision n°18).
-- **Lecteur consultant** : toute entité ayant accès peut consulter — coût/bénéfice (décision n°19).
+- **Auteur** : rédige un livre matérialisant des connaissances à un instant T — coût (énergie, temps) configurable (décision n°18 — [TRANCHÉE]).
+- **Lecteur consultant** : toute entité ayant accès peut consulter — coût/bénéfice posé (décision n°19 — [TRANCHÉE]).
 - Modèle de stockage spatial (lieu) à préciser.
 
 ## 10. Observabilité interne (Monographie §3.15)
@@ -78,5 +78,5 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 ## Points restés ouverts dans ce document
 - Détails chiffrés de résolution des conflits (probabilités, dégâts) — à documentation quand elle sera tranchée.
 - Modèle d'héritage (fusion consentie) : logique cognitive exacte à détailler.
-- Coûts des livres (décisions n°18/19) : modèles économiques [OUVERT].
+- Coûts des livres (décisions n°18/19) : modèles économiques — **[tranchés] au niveau hérité/prototype** (coûts héritables, budgets par fusion §6.6.3).
 - Mécanique V2 du monde (saisons, événements globaux) : non activée en V0.1.
