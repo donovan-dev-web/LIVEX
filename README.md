@@ -1,75 +1,99 @@
-# README.md
-
-**Composant** : LIVEX (général)
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : —
-**Source Monographie** : —
-
----
-
 # LIVEX
 
-**Systems & Emergent Network EXperiment** — une plateforme de simulation multi-agents à émergence, persistante et temps réel.
+**Living Intelligent Virtual Ecosystem eXperience**
+*Une simulation multi-agents émergente, persistante et partiellement observable.*
 
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-00d4a0.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-V0.1-9cf.svg)](VERSIONING.md)
+[![Statut](https://img.shields.io/badge/Statut-Exploration%20V0.1-orange.svg)](ROADMAP.md)
 [![Langue: FR](https://img.shields.io/badge/Langue-Fran%C3%A7ais-949494.svg)](GLOSSARY.md)
 
-Des entités autonomes — dotées de besoins, de mémoire, de croyances et de capacités — interagissent dans un monde persistant et partiellement observable. Les structures collectives (groupes, échanges, conflits) **émergent**, elles ne sont jamais scriptées.
+---
+
+## Peut-on construire un monde qui écrit sa propre histoire ?
+
+**Peut-on construire un environnement virtuel régi par des lois fondamentales, au sein duquel des entités autonomes peuvent produire des comportements et des structures qui n'ont pas été explicitement programmés ?**
+
+C’est la question qui a donné naissance à LIVEX.
+
+LIVEX ne programme pas de comportements. Il construit un environnement, des lois
+et des entités autonomes — puis observe ce qui en émerge.
+
+Chaque entité perçoit un fragment du monde, se souvient, croit des choses parfois
+fausses, ressent des besoins, décide selon une logique d'utilité explicable, et agit.
+Aucun scénario ne dicte ce qui doit se produire. Les structures sociales, les conflits,
+les échanges, les coalitions ou les marchés informels ne sont jamais scriptés :
+s'ils apparaissent, c'est parce que les mécanismes locaux les ont rendus possibles —
+pas parce qu'une règle globale les a ordonnés.
+
+C'est un projet de recherche expérimentale à la croisée de l'Artificial Life, de la
+simulation multi-agents, des architectures cognitives BDI et du rendu temps réel —
+mené en tant que développeur et infographiste 3D indépendant, avec la rigueur d'une
+monographie de référence de 184 pages : fondements scientifiques, architecture
+détaillée, choix techniques justifiés (ADR), éthique et limites assumées.
+
+**Documentation complète du projet : [`LIVEX-Monographie.pdf`](LIVEX-Monographie_SnapV0-1.pdf)**
+
+---
+
+## Ce que LIVEX démontre
+
+| Exigence | Comment LIVEX y répond |
+| :-- | :-- |
+| **Déterminisme bit-à-bit** | Même seed + même config + même version moteur → même trajectoire, garantie par un PRNG reproductible (xoshiro256\*\*) et une persistance transactionnelle. |
+| **Cognition explicable** | Architecture BDI (Beliefs–Desires–Intentions) : chaque décision produit un `DecisionRecord` traçable — jamais une boîte noire. |
+| **Observabilité partielle** | Aucune entité ne connaît la vérité du monde : perception locale, mémoire à décroissance, croyances révisables — la source de la plupart des phénomènes intéressants. |
+| **Rigueur scientifique** | Un score d'émergence est une mesure, pas une preuve. Chaque phénomène collectif doit être reproductible, causalement expliqué et distingué d'un artefact statistique (module ECHOS). |
+| **Séparation stricte des responsabilités** | Trois modules indépendants, communiquant par contrats explicites — aucun ne fait autorité sur les deux autres. |
 
 ## Les trois modules
 
-| Module | Rôle | Docs |
+| Module | Rôle | Documentation |
 | :-- | :-- | :-- |
-| **SYNE** | Moteur de simulation — vérité du monde | [`docs/docs-syne/README.md`](docs/docs-syne/README.md) |
-| **ECHOS** | Observation, analyse, pilotage | [`docs/docs-echos/README.md`](docs/docs-echos/README.md) |
-| **PRISM** | Représentation 3D & interaction | [`docs/docs-prism/README.md`](docs/docs-prism/README.md) |
-
-## Pourquoi LIVEX
-
-- **Déterminisme bit-à-bit** : reproductibilité exacte avec même seed + config + version moteur.
-- **Cognition explicite** : architecture BDI, décisions traçables (DecisionRecord).
-- **Anti-hallucination scientifique** : un score d'émergence est une mesure, pas une preuve.
-
-## Démarrage rapide
-
-> Les implémentations V0.1 sont en cours de conception (documentation d'abord). Les commandes ci-dessous reflètent la cible ; l'état courant du dépôt contient la documentation et le prototype historique (`docs/docs_prototype/`).
-
-```bash
-# Lancer le moteur (simulation-core du prototype, tête-à-tête)
-dotnet run --project simulation-core/Simulation.Console -- --seed 12345 --max-ticks 1000
-
-# Orchestration complète (cible)
-docker compose up --build
-```
-
-## Documentation
-
-- **Vision** : [`VISION.md`](VISION.md)
-- **Architecture** : [`ARCHITECTURE.md`](ARCHITECTURE.md)
-- **Communication inter-composants** : [`COMMUNICATION.md`](COMMUNICATION.md)
-- **Glossaire** : [`GLOSSARY.md`](GLOSSARY.md)
-- **Road map** : [`ROADMAP.md`](ROADMAP.md)
-- **FAQ** : [`FAQ.md`](FAQ.md)
-- **Éthique & portée** : [`docs/ETHICS_AND_SCOPE.md`](docs/ETHICS_AND_SCOPE.md)
-- **Composants** : [`docs/docs-syne/`](docs/docs-syne/) · [`docs/docs-echos/`](docs/docs-echos/) · [`docs/docs-prism/`](docs/docs-prism/)
-- **Gouvernance** : [`GITFLOW.md`](GITFLOW.md) · [`CI_CD.md`](CI_CD.md) · [`VERSIONING.md`](VERSIONING.md) · [`docs/governance/`](docs/governance/)
+| **SYNE** — *Systems & Emergent Network Engine* | Moteur de simulation. Seule source de vérité du monde : entités, cognition BDI, décision par utilité, ressources, persistance. | [`docs/docs-syne/README.md`](docs/docs-syne/README.md) |
+| **ECHOS** — *Emergent Cognition & Holistic Observation System* | Observation et analyse. Mesure l'émergence, détecte les phénomènes, ne modifie jamais le monde. | [`docs/docs-echos/README.md`](docs/docs-echos/README.md) |
+| **PRISM** — *Perceptual Rendering & Interactive Simulation Module* | Rendu 3D et interaction (Godot). Représente le monde, n'en est jamais la source de vérité. | [`docs/docs-prism/README.md`](docs/docs-prism/README.md) |
 
 ## État du projet
 
-- Phases 0–5 de documentation : ✅ **terminées** (socle, cadrage, SYNE, ECHOS, PRISM, consolidation).
-- Statut global : **exploration V0.1** — documentation consolidée ; implémentation des composants à venir, prototype historique fonctionnel (98 tests).
+- **Phases 0 à 5 de documentation** : ✅ terminées (socle, cadrage, SYNE, ECHOS, PRISM, consolidation).
+- **Statut global** : exploration V0.1 — documentation consolidée, implémentation des
+  composants à venir. Un prototype historique (V1/V2, `docs/docs_prototype/`) reste
+  fonctionnel et validé par 98 tests, et sert de socle d'héritage documenté (repères
+  marqués `[HÉRITÉ]` dans la monographie).
+- **Installation, commandes et état technique détaillé** : voir [`INSTALLATION.md`](INSTALLATION.md).
+
+## Documentation
+
+| | |
+| :-- | :-- |
+| [`VISION.md`](VISION.md) | Vision et philosophie du projet |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Architecture globale des trois modules |
+| [`COMMUNICATION.md`](COMMUNICATION.md) | Contrats de communication inter-composants |
+| [`GLOSSARY.md`](GLOSSARY.md) | Glossaire des concepts et termes du projet |
+| [`ROADMAP.md`](ROADMAP.md) | Feuille de route |
+| [`FAQ.md`](FAQ.md) | Questions fréquentes |
+| [`docs/ETHICS_AND_SCOPE.md`](docs/ETHICS_AND_SCOPE.md) | Éthique, portée et limites assumées |
+| [`docs/governance/`](docs/governance/) | Gouvernance du projet |
 
 ## Contribuer
 
-Voir [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+Les contributions sont les bienvenues — voir [`CONTRIBUTING.md`](CONTRIBUTING.md) et
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Le processus de branches et de releases
+est décrit dans [`GITFLOW.md`](GITFLOW.md), [`CI_CD.md`](CI_CD.md) et
+[`VERSIONING.md`](VERSIONING.md).
 
 ## Licence
 
 Distribué sous licence MIT — voir [`LICENSE`](LICENSE).
 
+## Auteur
+
+**Donovan Chartrain** — développeur & infographiste 3D.
+
+- Portfolio développement : [donovan-dev-web.vercel.app](https://donovan-dev-web.vercel.app)
+- Portfolio 3D : [donovan-dev-3d.vercel.app](https://donovan-dev-3d.vercel.app)
+
 ---
 
-## Points restés ouverts dans ce document
-- Commandes cibles (compose V0.1) à revalider lors de l'implémentation réelle ; les réferences au prototype restent [HÉRITÉ].
+*« Construire les conditions. Observer les conséquences. Comprendre ce qui émerge. »*
