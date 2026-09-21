@@ -1,0 +1,31 @@
+{
+  "type": "snapshot",
+  "version": "0.1.0",
+  "runId": "run-7",
+  "tick": 1,
+  "simulatedTimeMinutes": 1,
+  "aliveCount": 2,
+  "agents": [
+    {
+      "id": "1",
+      "species": "Entité A",
+      "position": { "x": 84.9583001305458, "y": 26.674590419183822 },
+      "energy": 40,
+      "hunger": 100,
+      "thirst": 100,
+      "fatigue": 61.49999999999977,
+      "currentAction": "SeekWater"
+    },
+    {
+      "id": "2",
+      "species": "Entité A",
+      "position": { "x": 24.144740614858417, "y": 23.794629727205685 },
+      "energy": 40,
+      "hunger": 100,
+      "thirst": 100,
+      "fatigue": 61.49999999999977,
+      "currentAction": "SeekWater"
+    }
+  ],
+  "resources": []
+}

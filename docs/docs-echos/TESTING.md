@@ -42,10 +42,13 @@ Fixtures et golden files **versionnés** dans `echos/echos/tests/` :
 
 | Fichier | Rôle |
 | :-- | :-- |
-| `fixtures/world_snapshot.json` | Snapshot camelCase (API_CONTRACTS.md §2.1) |
+| `fixtures/world_snapshot.json` | Snapshot camelCase (API_CONTRACTS.md §2.1, format doc) |
+| `fixtures/world_snapshot_v01.json` | Snapshot **V0.1 réel** émis par SYNE (sans `health`, avec `species`/`fatigue`) |
 | `fixtures/external_event.json` | Événement `decision_made` (§2.2) |
+| `fixtures/decision_made_v01.json`, `fixtures/tick_summary_v01.json` | Événements V0.1 réels émis par SYNE |
 | `fixtures/invalid_message.json` | Payload hors contrat (tick négatif) |
 | `golden/world_snapshot.json` | Forme canonique snake_case attendue après parse |
+| `golden/world_snapshot_v01.json`, `golden/segment_tick1_v01.json` | Forme canonique V0.1 (dump `exclude_none`) |
 | `golden/external_event.json` | Forme canonique du snapshot/événement |
 | `golden/stream.json` | Séquençage déterministe type+tick d'un flux rejoué |
 
@@ -55,6 +58,36 @@ Double garde : (1) le parse conserve le JSON camelCase du contrat
 réception WebSocket est rejouée **déterministe** (même fixture → même
 séquence type/tick), le client de contrôle vérifie le corps exact des
 requêtes (`start`/`pause`/`resume`/`reset`).
+
+### 4.2 Flux aligné par tick (ECHOS-010, U1)
+
+`test_ingestion_stream.py` valide `aligned_ticks`/`TickSegment` (1 snapshot +
+événements du même tick, `TickAlignmentError` sur désalignement) **deux façons** :
+
+- transport simulé réjoué (déterministe, golden `segment_tick1_v01`) ;
+- **serveur WebSocket réel in-process** (`websockets.sync.server`, port
+  éphémère) rejouant le contrat V0.1 — consommation bout-en-bout.
+
+### 4.3 Smoke E2E SYNE → ECHOS
+
+Procédure documentaire (nécessite le binaire SYNE, hors CI) :
+
+```bash
+# terminal 1 — lancer SYNE en mode observation (seed déterministe)
+dotnet run --project syne/Simulation.Console -c Release -- \
+  --observe --seed 7 --world-size 200 200 --max-ticks 1200 --headless
+
+# terminal 2 — consommation ECHOS réelle, alignée par tick
+cd echos && python - <<'PY'
+from echos.ingestion import WsClient, aligned_ticks
+client = WsClient(); client.connect("ws://127.0.0.1:5180/")
+for segment in aligned_ticks(client):
+    print(segment.tick, segment.snapshot.alive_count, len(segment.events))
+PY
+```
+
+Attendu : ticks consécutifs (ex. 201→202→203), `alive_count` constant,
+chaque événement au tick de son snapshot (alignement strict).
 
 ## 5. Critères de non-régression
 

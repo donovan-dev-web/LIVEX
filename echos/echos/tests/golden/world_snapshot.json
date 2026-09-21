@@ -27,8 +27,7 @@
       "health": 100.0,
       "energy": 90.0,
       "hunger": 10.0,
-      "thirst": 15.0,
-      "current_action": null
+      "thirst": 15.0
     },
     {
       "id": "a3",

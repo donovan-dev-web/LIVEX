@@ -1,0 +1,11 @@
+{
+  "type": "decision_made",
+  "tick": 1,
+  "agentId": "1",
+  "action": "SeekWater",
+  "cause": "hunger=100,thirst=100,fatigue=61.5",
+  "value": {
+    "intention": "SeekWater",
+    "utility": 61.7933890505355
+  }
+}
