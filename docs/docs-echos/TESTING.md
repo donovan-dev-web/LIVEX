@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -23,7 +23,7 @@ Garantir la **correction et la stabilité des métriques**. Objectif de couvertu
 
 | Niveau | Contenu |
 | :-- | :-- |
-| **Métriques** | Chaque moteur des 7 `METRICS_SPEC.md` testé sur des jeux de données synthétiques avec valeurs attendues calculées à la main (ex. entropie de Shannon, coefficient de clustering, Louvain). |
+| **Métriques** | Chaque moteur des 7 `METRICS_SPEC.md` testé sur des jeux de données synthétiques avec valeurs attendues calculées à la main (ex. entropie de Shannon, coefficient de clustering, communauté). |
 | **Scores** | Tests du score d'émergence composite (bornes [0,1], poids = 1.0), des phénomènes auto-détectés (conditions de seuils). |
 | **API** | Tests d'endpoints (`/health`, `/api/runs/*`, `/api/compare`) avec fixtures de runs. |
 | **Ingestion** | Test du consommateur WebSocket : ingérer un fixture de `snapshot`/`event`, vérifier agrégation incrémentale. |
@@ -109,6 +109,38 @@ PyArrow ↔ Parquet bit à bit et **cohérence** SQLite↔Parquet
 WebSocket réel in-process** → SQLite + Parquet (compteurs exacts puis
 relecture et jointure cohérente).
 
+### 4.5 Moteurs de métriques & preuve J2 (ECHOS-020 → ECHOS-027)
+
+`test_analysis.py` : contrat de registre (7 moteurs + seuil 1 métrique/moteur),
+**pureté/déterminisme** (2 exécutions identiques, entrée non mutée, clés
+inconnues ignorées), **données absentes → valeurs neutres 0.0** (incluant la
+stabilité sans historique), **valeurs vérifiées à la main** par moteur (entropie
+de Shannon, désaccord 2/3, variance 0.02, densité 1/3, cluster 0, boucles 4,
+récupération 2 ticks, rotation 55,56…), **rétro-compat transport** : le modèle
+`Agent` accepte `traits/beliefs/goals/trust/memoryCount` (camelCase, optionnels)
+et le roundtrip `parse → model_dump(by_alias=True)` == fixture
+(`world_snapshot_u2.json`).
+
+**Preuve J2 (ECHOS-027)** : `test_j2_determinism.py` rejoue **deux runs
+complets** du scénario de référence (`snapshot_analysis.json`, contexte par
+tick : snapshot + événements passés + fenêtre d'historique accumulée de 100
+ticks) :
+
+```bash
+cd echos && python -m pytest echos/tests/test_j2_determinism.py -q
+# → 2 passed ; séries bit-à-bit identiques, dernier tick == golden
+```
+
+Deux rejeux → **séries de métriques strictement égales** (bit-à-bit) et dernier
+contexte == `golden/analysis_golden.json`. Combinée à la preuve J1 (déterminisme
+SYNE, ci-dessus §4.3), la chaîne SYNE → ECHOS est déterministe : **traces
+d'entrée identiques (seed 7) → scores de métriques identiques**. Les golden
+files sont versionnés dans `echos/echos/tests/fixtures/` + `golden/` (double
+garde : fixture camelCase transport + golden camelCase attendu).
+
+Suite : **115 tests**, couverture **98,2 %** (pytest `--cov-fail-under=80`),
+flake8 sans alerte.
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).
@@ -116,5 +148,5 @@ relecture et jointure cohérente).
 ---
 
 ## Points restés ouverts dans ce document
-- Le périmètre exact de tests par moteur sera affiné à l'implémentation (nombres par moteur).
-- Outillage (pytest, golden files) à valider en environnement CI en même temps que la stack FastAPI.
+- Fenêtres temporelles et seuils des moteurs (100 ticks, fréquence > 2, amplification > 1,5) : valeurs `[HÉRITÉ]` à **confirmer en calibration** (METRICS_SPEC §6) — le code les expose en constantes de chaque module, la formule reste stables pour les golden files.
+- Preuve J2 ECHOS : rejeu synthétique en CI ; l'ingestion **réelle** de deux runs SYNE (binaire .NET, hors CI) suivra au jalon J3 avec l'API `/api/compare` (ECHOS-070).

@@ -19,7 +19,7 @@
 | :-- | :-- | :-- |
 | 0 | Fondation & stack | Choix FastAPI/Electron/React (tranché), structure monorepo `echos/`, outillage (pytest, CI) |
 | 1 | Ingestion & stockage | Consommateur WebSocket :5180, agrégation incrémentale, SQLite + Parquet (stockage d'analyse séparé) — **LIVRÉ (ECHOS-010 → 013, jalon U1)** |
-| 2 | Moteurs de métriques | Implémentation des 7 moteurs (`METRICS_SPEC.md`), golden files, tests unitaires |
+| 2 | Moteurs de métriques | Implémentation des 7 moteurs (`METRICS_SPEC.md`), golden files, tests unitaires — **LIVRÉ (ECHOS-020 → 027, jalon U2)** |
 | 3 | Indicateurs d'émergence | Score composite, auto-détection des phénomènes, complexité, indice d'imprévisibilité |
 | 4 | API REST | Endpoints (`API_REST.md`), sous-échantillonnage, cache de séries, parallélisation O(n²) |
 | 5 | Logging & instrumentation | 3 niveaux (structuré/traces/texte), profilage, console de débogage, export CSV/JSON |

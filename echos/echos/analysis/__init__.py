@@ -2,7 +2,7 @@
 
 Chaque moteur est buildable et testable séparément : ``ENGINE_NAME`` (contrat
 METRICS_SPEC), ``METRICS`` (nomenclature des métriques), ``compute(snapshot)``
-(implémentation à venir au jalon U1).
+(fonction pure et déterministe du dict de snapshot transport, camelCase).
 """
 
 from importlib import import_module
