@@ -89,6 +89,13 @@ PY
 Attendu : ticks consécutifs (ex. 201→202→203), `alive_count` constant,
 chaque événement au tick de son snapshot (alignement strict).
 
+**Validation du déterminisme (jalon J1)** : deux runs SYNE réels à seed
+identique (`--seed 7 --world-size 400 400 --max-ticks 500 --observe`),
+ingérés intégralement jusqu'à fermeture du WebSocket (SYNE sort proprement en
+fin de run → `aligned_ticks` s'achève) puis comparés sur leur fenêtre
+commune : **443 ticks de `tick_summaries` et 44 300 lignes de séries Parquet,
+0 divergence** (procédure documentaire, hors CI).
+
 ### 4.4 Agrégation & stockage (ECHOS-011 → ECHOS-013)
 
 `test_aggregation.py` : réduction **déterministe** d'un segment en
