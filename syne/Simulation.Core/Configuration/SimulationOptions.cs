@@ -43,6 +43,7 @@ public sealed class AgentSettings
     public PerceptionSettings Perception { get; set; } = new();
     public MemorySettings Memory { get; set; } = new();
     public BeliefSettings Beliefs { get; set; } = new();
+    public TrustSettings Trust { get; set; } = new();
     public ActionSettings Actions { get; set; } = new();
 }
 
@@ -89,6 +90,21 @@ public sealed class BeliefSettings
     public ulong ExpiryTicks { get; set; } = 100;
     public double ExpiredCap { get; set; } = 0.4;
     public double TimeDecayPerTick { get; set; } = 0.999;
+}
+
+public sealed class TrustSettings
+{
+    /// <summary>Confiance d'une première rencontre (décision n°10).</summary>
+    public double InitialTrust { get; set; } = 0.5;
+
+    /// <summary>Décroissance de confiance par tick sans interaction (trustDecay, COMMUNICATION_PROTOCOL.md §3).</summary>
+    public double DecayFactorPerTick { get; set; } = 0.9;
+
+    /// <summary>Bonus de confiance après une vérité constatée (plafond 1.0).</summary>
+    public double TruthBonus { get; set; } = 0.05;
+
+    /// <summary>Pénalité de confiance après un mensonge constaté (plancher 0.0).</summary>
+    public double LiePenalty { get; set; } = 0.2;
 }
 
 public sealed class ActionSettings
