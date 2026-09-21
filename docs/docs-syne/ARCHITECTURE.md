@@ -59,13 +59,17 @@ flowchart TB
 
 ```text
 syne/
-├── Simulation.Core/           # bibliothèque principale
-├── Simulation.Console/        # exécutable (mode serveur / CLI)
-├── Simulation.Core.Tests/     # tests unitaires xUnit
-└── Dockerfile
+├── global.json                   # SDK .NET 10.0.400 (pinné, rollForward latestFeature)
+├── Syne.sln                      # solution du composant
+├── Simulation.Core/              # bibliothèque principale
+│   ├── Configuration/            # options Annexe H, loader JSON, validation, flags CLI (ADR-012)
+│   └── Prng/                     # xoshiro256** + splitmix64 (ADR-006, `System.Random` interdit)
+├── Simulation.Console/           # exécutable (mode serveur WebSocket/HTTP / CLI batch) — ADR-002
+├── Simulation.Core.Tests/        # tests unitaires xUnit (vecteurs PRNG épinglés)
+└── Dockerfile                    # à venir — conteneurisation hors périmètre U0
 ```
 
-L'exécutable est en **mode serveur** (WebSocket + HTTP) ou **CLI** (exécution batch) — Monographie §7.1, ADR-002.
+L'exécutable est en **mode serveur** (WebSocket + HTTP) ou **CLI** (exécution batch) — Monographie §7.1, ADR-002. En U0, seul le mode CLI est implémenté (config résolue + sonde PRNG) ; le mode serveur et la boucle de simulation arrivent en jalon U1+.
 
 ## 5. Interfaces externes
 
@@ -80,8 +84,8 @@ Voir `API_CONTRACTS.md` et `PERSISTENCE.md`.
 ## 6. Dépendances
 
 - Aucune dépendance graphique.
-- `.NET` SDK 10.0.400 (pinné) sur `global.json` (Monographie §7.1, [HÉRITÉ]).
-- Aucune utilisation de `System.Random` (interdite — §3.6.3).
+- `.NET` SDK 10.0.400 (pinné sur `global.json`, band `latestFeature`) — Monographie §7.1, [HÉRITÉ].
+- Aucune utilisation de `System.Random` (interdite — §3.6.3) : PRNG **xoshiro256\*\*** + **splitmix64** (ADR-006, ADR-012).
 
 ## 7. Budget temps & fréquences (repère)
 
@@ -97,5 +101,5 @@ Voir `API_CONTRACTS.md` et `PERSISTENCE.md`.
 ---
 
 ## Points restés ouverts dans ce document
-- Réorganisation finale des répertoires (`simulation-core/` historique vs `syne/` cible) — en consolidation.
-- La distribution multi-fréquence exacte du scheduler sera affinée lors de l'implémentation.
+- La distribution multi-fréquence exacte du scheduler sera affinée lors de l'implémentation (jalon SYNE-2 : boucle minimale).
+- Conteneurisation (`Dockerfile` SYNE) : hors périmètre U0.
