@@ -25,7 +25,7 @@
 | 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses |
 | 6 | Groupes | Cohésion, leadership, décisions collectives | formation/dissolution de groupes |
 | 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 |
-| 8 | Observabilité | Tests anti-triche, validations | événements typés complets |
+| 8 | Observabilité | Tests anti-triche, validations | événements typés complets — **SYNE-080 livré** (émetteur WebSocket `--observe`, snapshot + events camelCase) |
 | 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | grille spatiale, pooling, LOD |
 | 10 | Tests & Couverture | 160+ tests, ≥ 80 % | suite complète |
 | 11 | Persistance & Reprise | JSON → SQLite, migration | schéma SQLite 11 tables, reprise bit-à-bit |

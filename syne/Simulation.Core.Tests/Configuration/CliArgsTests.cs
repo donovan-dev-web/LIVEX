@@ -20,13 +20,24 @@ public class CliArgsTests
     [Fact]
     public void Parse_AllFlags()
     {
-        var cli = CliOptions.Parse(["--seed", "999", "--max-ticks", "42", "--world-size", "300", "400", "--headless", "--config", "conf.json"]);
+        var cli = CliOptions.Parse(["--seed", "999", "--max-ticks", "42", "--world-size", "300", "400", "--headless", "--config", "conf.json", "--observe", "--observe-port", "6000"]);
 
         Assert.Equal(999UL, cli.Seed);
         Assert.Equal(42, cli.MaxTicks);
         Assert.Equal((300, 400), cli.WorldSize);
         Assert.True(cli.Headless);
         Assert.Equal("conf.json", cli.ConfigPath);
+        Assert.True(cli.Observe);
+        Assert.Equal(6000, cli.ObservePort);
+    }
+
+    [Fact]
+    public void Parse_ObserveFlags_DefaultsToNull()
+    {
+        var cli = CliOptions.Parse(["--observe"]);
+
+        Assert.True(cli.Observe);
+        Assert.Null(cli.ObservePort);
     }
 
     [Fact]

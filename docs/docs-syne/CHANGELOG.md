@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`syne-vX.Y.Z`).
@@ -21,6 +21,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **BDI + utilité (SYNE-010)** : pipeline 10/15 étapes branché dans la boucle (perception → mémoire → croyances → besoins → désirs → délibération → intention → action), utilité `U = (benefit − cost − risk) × confidence × personalityModifier + urgency`, mouvements déterministes sans consommation PRNG.
   - **Déterminisme (SYNE-015)** : `DeterminismRegressionTests` — hash FNV-1a **épinglé** de la trajectoire perception+décision, égalité bit-à-bit entre 2 runs identiques, divergence entre seeds.
   - Tests : +60 (62 → **122**). ADR-013 (ligne de vue en V1).
+
+### Added
+- **Observabilité (SYNE-080, issue #37, milestone ph8)** : émetteur WebSocket **BCL minimal**
+  (HttpListener + `AcceptWebSocketAsync`, zéro dépendance) dans `Simulation.Console` activé par
+  `--observe` (`--observe-port`, défaut 5180, bind `127.0.0.1`). Contrat API_CONTRACTS §2 :
+  **1 snapshot/tick** (version, runId `run-<seed>`, tick, simulatedTimeMinutes, aliveCount,
+  agents[{id, species, position{x,y}, energy, hunger, thirst, fatigue, currentAction}], resources[])
+  + **1 `tick_summary`/tick** + **1 `decision_made`/entité/tick** ({intention, utility}) en **JSON
+  camelCase déterministe**. Aucun tirage PRNG ajouté (déterminisme préservé). Diffusion à tous les
+  consommateurs connectés. Tests : `ObservabilitySensorTests` (Core, format/épinglage camelCase) +
+  **`Simulation.Console.Tests`** (tests de fil WebSocket réels, 2). Suite : **129 tests**.
 
 ### Changed
 - ARCHITECTURE.md : §4 (couche applicative réelle, Dockerfile reporté) et §6 (PRNG défini) mis à jour.

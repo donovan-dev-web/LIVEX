@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **122 tests** (baseline U0 62 → +60 au jalon SYNE ph1).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **129 tests** (baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -30,7 +30,8 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Besoins & Objectifs | seuils, filtrage de faisabilité, priorisation |
 | Décision / Utilité | formule complète, hystérésis, interruptions, cache |
 | Actions | déclaratives, pool d'actions, coûts |
-| Communication | rayon, incompréhension, dégradation par hop, bande passante |
+| Communications | rayon, incompréhension, dégradation par hop, bande passante |
+| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
 | Groupes | formation, cohésion, leader, dissolution |
 | Ressources | régénération, épuisement |
 | Persistance | sauvegarde/charge JSON et SQLite |
