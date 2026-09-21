@@ -63,13 +63,16 @@ syne/
 ├── Syne.sln                      # solution du composant
 ├── Simulation.Core/              # bibliothèque principale
 │   ├── Configuration/            # options Annexe H, loader JSON, validation, flags CLI (ADR-012)
-│   └── Prng/                     # xoshiro256** + splitmix64 (ADR-006, `System.Random` interdit)
+│   ├── Prng/                     # xoshiro256** + splitmix64 (ADR-006, `System.Random` interdit)
+│   ├── World/                    # monde 2D continu, grille spatiale uniforme (SYNE-003)
+│   ├── Entities/                 # entité, traits [0,2], paramétrage + fabrique déterministe (SYNE-004)
+│   └── Loop/                     # boucle minimale : 1 tick = 1 min, maxTicks, temps simulé (SYNE-002)
 ├── Simulation.Console/           # exécutable (mode serveur WebSocket/HTTP / CLI batch) — ADR-002
-├── Simulation.Core.Tests/        # tests unitaires xUnit (vecteurs PRNG épinglés)
+├── Simulation.Core.Tests/        # tests unitaires xUnit (vecteurs PRNG & fabrique épinglés)
 └── Dockerfile                    # à venir — conteneurisation hors périmètre U0
 ```
 
-L'exécutable est en **mode serveur** (WebSocket + HTTP) ou **CLI** (exécution batch) — Monographie §7.1, ADR-002. En U0, seul le mode CLI est implémenté (config résolue + sonde PRNG) ; le mode serveur et la boucle de simulation arrivent en jalon U1+.
+L'exécutable est en **mode serveur** (WebSocket + HTTP) ou **CLI** (exécution batch) — Monographie §7.1, ADR-002. En U0, le **mode CLI** est implémenté (config résolue → monde + entités + boucle minimale) ; le mode serveur (contrats 5180/5181) arrive en jalon U1+.
 
 ## 5. Interfaces externes
 

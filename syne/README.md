@@ -4,9 +4,9 @@ Moteur de simulation déterministe de LIVEX (1 tick = 1 minute simulée, monde 5
 
 | Projet | Rôle |
 | :-- | :-- |
-| `Simulation.Core` | Bibliothèque principale (configuration Annexe H, PRNG xoshiro256\*\*, monde/entités à venir) |
+| `Simulation.Core` | Bibliothèque principale (configuration Annexe H, PRNG xoshiro256\*\*, monde + grille spatiale, entités + traits, boucle minimale) |
 | `Simulation.Console` | Exécutable CLI (mode serveur WebSocket/HTTP à venir — ADR-002) |
-| `Simulation.Core.Tests` | Tests unitaires xUnit (vecteurs PRNG épinglés) |
+| `Simulation.Core.Tests` | Tests unitaires xUnit (vecteurs PRNG & fabrique épinglés) |
 
 ## Commandes
 
