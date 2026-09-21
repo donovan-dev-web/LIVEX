@@ -23,12 +23,43 @@ class Position(BaseModel):
     y: float
 
 
+class Belief(BaseModel):
+    """Croyance observable d'une entité (fait + confiance, U2 — snapshot agent)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    subject: str
+    predicate: str
+    value: str
+    confidence: float = Field(ge=0, le=1)
+
+
+class Goal(BaseModel):
+    """Objectif observable (type + âge en ticks, U2 — snapshot agent)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    kind: str
+    age: int = Field(ge=0)
+
+
+class Trust(BaseModel):
+    """Relation de confiance observable (pair + niveau, U2 — snapshot agent)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    peer_id: str = Field(alias="peerId")
+    trust: float = Field(ge=0, le=1)
+
+
 class Agent(BaseModel):
     """Entité observée (API_CONTRACTS.md §2.1).
 
     En V0.1, l'émetteur SYNE fournit ``species`` et ``fatigue`` mais pas
     ``health`` (santé non encore simulée) : ``health`` reste accepté pour la
-    compatibilité ascendante avec le format documentaire.
+    compatibilité ascendante avec le format documentaire. Les champs cognitifs
+    (``traits``, ``beliefs``, ``goals``, ``trust``, ``memoryCount``) sont émis
+    par SYNE depuis le jalon U2 et restent optionnels (rétro-compatibilité).
     """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
@@ -42,6 +73,11 @@ class Agent(BaseModel):
     thirst: float = Field(ge=0)
     fatigue: float | None = Field(default=None, ge=0)
     current_action: str | None = None
+    traits: dict[str, float] | None = None
+    beliefs: list[Belief] | None = None
+    goals: list[Goal] | None = None
+    trust: list[Trust] | None = None
+    memory_count: int | None = Field(default=None, alias="memoryCount", ge=0)
 
 
 class Resource(BaseModel):
