@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `DATA_MODEL.md`, `COGNITIVE_ARCHITECTURE.md`, `SIMULATION_LOOP.md`
 **Source Monographie** : Partie 3 (SYNE), Partie 6 (concepts détaillés)
 
@@ -16,8 +16,8 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 
 | Sous-système | Spécification | Source Monographie |
 | :-- | :-- | :-- |
-| **Spatial (grille)** | Grille uniforme ; `cellSize = sqrt(worldArea / (agentCount / 7))` ; 9 cellules voisines ; reconstruction tous les 10 ticks ; mises à jour incrémentales | §3.9.6 |
-| **Perception** | Grille + filtre distance/réalité; perception étagée (`hash % 4`) | §3.9 |
+| **Spatial (grille)** | Grille uniforme ; `cellSize = sqrt(worldArea / (agentCount / 7))` (V0.1 : paramètre direct, défaut `largeur/10`) ; 9 cellules voisines (fenêtre 3×3) ; mises à jour incrémentales | §3.9.6 |
+| **Perception** | Grille + filtre distance/rayon 50 ; perception étagée (`id % 4`) ; **ligne de vue** obstacle (ADR-013) | §3.9 |
 | **Navigation** | Pathfinding 2D autour des obstacles, cache de chemins ; indépendant des moteurs graphiques ; appui sur Navigation2D = [HÉRITÉ] (V0.1 : SYNE calcule lui-même) | §3.19 |
 | **Scheduler** | Exécution multi-fréquences + LOD décisionnel | §3.4 |
 | **Événements** | Ring buffer borné (500 000 événements) ; émission `ExternalEvent` | §7.4.5 |
@@ -26,7 +26,7 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 
 - Espace 2D logique, dimensions configurables (défaut 500×500).
 - Clamping des positions ; monde non-toroidal.
-- Obstacles statiques (rectangle/cercle) : blocage mouvement (V1), ligne de vue (V2).
+- Obstacles statiques (cercle en V0.1, rectangle reporté) : blocage mouvement **et** ligne de vue (perception masquée, ADR-013) — depuis le jalon SYNE ph1.
 - Ressources : FoodSource / WaterSource (V1 : taux de régénération nul, eau infinie ; V2 : régénération + dégradation).
 - Saisons, événements du monde, obstacles : flags de configuration (`world.seasons`, `world.events`, `world.obstacles` — prototype faux par défaut, Annexe H).
 

@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `DATA_MODEL.md`, `SIMULATION_LOOP.md`
 **Source Monographie** : §3.8, §3.11–3.14 (BDI, croyances, besoins, objectifs, décision/utilité)
 
@@ -39,22 +39,23 @@ Chaîne de traçabilité : `Action ← Intention ← Objectif ← Besoin ← Cro
 
 ## 3. Perception
 
-- Rayon configurable par espèce, **défaut 30 unités** (plage 20–50 selon les docs ; doit rester > vitesse de déplacement/tick pour éviter les angles morts).
+- Rayon de perception de l'entité, **défaut 50 unités** (décision n°6, plage 20–70), doit rester > vitesse de déplacement/tick pour éviter les angles morts.
 - Observation : `entity_id, entity_type, position, confidence, tick, attributes`.
 - Confiance = `1.0 - (distance/radius) × 0.3`, clampée [0.7, 1.0].
-- **Grille spatiale** : requêtes des 9 cellules voisines, reconstruction tous les 10 ticks.
-- **Perception étagée** : 4 groupes de rotation (`agentId hash % 4`), chaque entité perçoit tous les 4 ticks.
+- **Grille spatiale** : requêtes des cellules voisines (fenêtre 3×3, SYNE-012), mises à jour incrémentales.
+- **Perception étagée** : `rotationInterval` groupes (`id % rotationInterval`, défaut 4) — chaque entité perçoit au tick `t ≡ groupe`.
+- **Ligne de vue (J.V0.1, ADR-013)** : un obstacle cercle sur le segment sujet→cible masque la perception (intersection segment-disque).
 
-(Monographie §3.9)
+(J.V0.1, SYNE-011/SYNE-012 ; Monographie §3.9)
 
 ## 4. Mémoire et Croyances
 
-- **Mémoire** : stocke les expériences passées ; décroissance exponentielle de la salience (seuil d'oubli 0.01 ; capacité 1000 ; decay par type 0.01/0.005/0.002). Ne représente pas le monde « tel qu'il est » mais « tel que perçu ».
-- **Croyances** : interprétation du monde. Révision continue :
-  - conflictuel : les deux confiances −0.1 (min 0.1) ;
-  - aligné : +0.2 (max 1.0) ;
-  - sources différentes : moyenne ;
-  - les croyances expirées plafonnent à 0.4.
+- **Mémoire** : stocke les expériences passées ; décroissance exponentielle de la salience (seuil d'oubli 0.01 ; capacité 1000 avec éviction du moins saillant ; decay par type 0.01/0.005/0.002). Ne représente pas le monde « tel qu'il est » mais « tel que perçu » (décision n°11, SYNE-013).
+- **Croyances** : interprétation du monde. Révision continue (décision n°12, SYNE-014) :
+  - conflictuel (sujet+prédicat, valeur différente) : concurrentes −0.1 (min 0.1) + création au signal ;
+  - aligné (même fait, même source) : +0.2 (max 1.0) ;
+  - même fait, sources différentes : moyenne ;
+  - plafond par snap (`maxChangePerSnap`) dans la formule de révision ; les croyances expirées plafonnent à 0.4.
 
 (Monographie §3.10, §3.11)
 

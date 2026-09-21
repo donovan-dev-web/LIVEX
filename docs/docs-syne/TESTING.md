@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `DETERMINISM.md`, `ARCHITECTURE.md`
 **Source Monographie** : §7.1 (xUnit + Moq), Annexe J (jalons de validation, 160+ tests), Annexe I (benchmarks)
 
@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **122 tests** (baseline U0 62 → +60 au jalon SYNE ph1).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -23,9 +23,10 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 
 | Système | Tests ciblés |
 | :-- | :-- |
-| Perception | rayon, plage de confiance, grille spatiale, perception étagée |
-| Mémoire | décroissance exponentielle, purge au seuil 0.01, capacité 1000 |
-| Croyances | révision (alignement/conflit/sources différentes), expiration |
+| Perception | rayon, plage de confiance, grille spatiale, perception étagée, **ligne de vue obstacle (ADR-013)**, ordre distance/id, obstacles observés |
+| Pipeline BDI | boucle croyance→désir→intention à chaque tick, rotation, déterminisme inter-runs, blocage mouvement |
+| Mémoire | décroissance exponentielle, purge au seuil 0.01, capacité 1000, éviction épinglée |
+| Croyances | révision (alignement/conflit/sources différentes), expiration, plafond par snap |
 | Besoins & Objectifs | seuils, filtrage de faisabilité, priorisation |
 | Décision / Utilité | formule complète, hystérésis, interruptions, cache |
 | Actions | déclaratives, pool d'actions, coûts |
@@ -33,7 +34,8 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Groupes | formation, cohésion, leader, dissolution |
 | Ressources | régénération, épuisement |
 | Persistance | sauvegarde/charge JSON et SQLite |
-| Déterminisme | `BitIdenticalPersistenceTest`, checksums |
+| Déterminisme | `DeterminismRegressionTests` (hash épinglé SYNE-015), auto-égalité, checksums |
+| Performance | `PerceptionBenchmarkTests` (SYNE-012) — budget 10 ms/requête en CI |
 
 ## 4. Tests de déterminisme (critiques)
 
@@ -50,11 +52,11 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 
 | Phase | Critère | Commande indicative |
 | :-- | :-- | :-- |
-| BDI+Perception | 50 ent., 1000 ticks, pas de crash | `dotnet run --project simulation-core/Simulation.Console -- --seed 12345 --max-ticks 1000 --config config-50.json` |
-| Mémoire+Croyances | 50 ent., 2000 ticks, croyances divergentes | — |
-| Décision+Utilité | traits différents → décisions différentes | — |
+| BDI+Perception | 50 ent., 1000 ticks, pas de crash ; **pipeline BDI testé (SYNE ph1)** | `dotnet test -c Release` ≥ 122 tests |
+| Mémoire+Croyances | 50 ent., 2000 ticks, croyances divergentes | `dotnet test --filter "MemoryTests|BeliefTests"` |
+| Décision+Utilité | traits différents → décisions différentes | `dotnet test --filter "UtilityEvaluatorTests|CognitionPipelineTests"` |
 | Communication | information locale (rayon) | — |
-| Performance | objectifs de ticks/s | — |
+| Performance | micro-benchmark grille < budget CI | `dotnet test --filter "PerceptionBenchmarkTests"` |
 | Tests | 160+ tests, ≥ 80 % | `dotnet test --collect:"XPlat Code Coverage"` |
 
 ## 7. Convention d'écriture

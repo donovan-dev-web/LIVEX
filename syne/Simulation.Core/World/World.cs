@@ -7,6 +7,7 @@ namespace Simulation.Core.World;
 public sealed class World
 {
     private readonly List<Simulation.Core.Entities.Entity> _entities = [];
+    private readonly List<Obstacle> _obstacles = [];
 
     public World(WorldSize size)
         : this(size, size.Width / 10.0)
@@ -25,6 +26,8 @@ public sealed class World
 
     public IReadOnlyList<Simulation.Core.Entities.Entity> Entities => _entities;
 
+    public IReadOnlyList<Obstacle> Obstacles => _obstacles;
+
     public void AddEntity(Simulation.Core.Entities.Entity entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -35,6 +38,13 @@ public sealed class World
 
         Grid.Add(entity);
         _entities.Add(entity);
+    }
+
+    /// <summary>Ajoute un obstacle statique au monde (SYNE-011, DATA_MODEL.md §2).</summary>
+    public void AddObstacle(Obstacle obstacle)
+    {
+        ArgumentNullException.ThrowIfNull(obstacle);
+        _obstacles.Add(obstacle);
     }
 
     /// <summary>

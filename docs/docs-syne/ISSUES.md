@@ -72,7 +72,7 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | SYNE-010 | Cœur BDI (croyance, désir, intention) V0.1 | `type/feature`, `component/syne` | P0 | décisions n°12, 13, 14 ; `COGNITIVE_ARCHITECTURE.md` | Boucle BDI exécutée à chaque tick ; désirs priorités par l'utilité |
-| SYNE-011 | Perception partielle (rayon 50, ligne de vue) | `type/feature`, `component/syne` | P0 | décision n°6, `PERCEPTION_SPEC.md` | Entité ne perçoit que dans son rayon ; obstacle masque la ligne de vue |
+| SYNE-011 | Perception partielle (rayon 50, ligne de vue) | `type/feature`, `component/syne` | P0 | décision n°6, `COGNITIVE_ARCHITECTURE.md` §3, `DATA_MODEL.md` §4, ADR-013 | Entité ne perçoit que dans son rayon ; obstacle masque la ligne de vue |
 | SYNE-012 | Grille spatiale pour la perception | `type/perf`, `component/syne` | P1 | SYNE-011, `ARCHITECTURE.md` | Requête de voisinage < budget tick ; benchmark documenté |
 | SYNE-013 | Mémoire à court/long terme (décroissance) | `type/feature`, `component/syne` | P0 | décision n°11, `COGNITIVE_ARCHITECTURE.md` §3.2.2 | Souvenirs avec source/type/contenu/confiance/date ; decay 0.01/0.005/0.002 |
 | SYNE-014 | Révision des croyances (décision n°12) | `type/feature`, `component/syne` | P0 | SYNE-013, décision n°12 | `belief = belief + (signal − belief) × strength` ; plafond par snap |

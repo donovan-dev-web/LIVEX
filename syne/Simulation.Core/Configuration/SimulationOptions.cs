@@ -42,6 +42,8 @@ public sealed class AgentSettings
     public NeedsSettings Needs { get; set; } = new();
     public PerceptionSettings Perception { get; set; } = new();
     public MemorySettings Memory { get; set; } = new();
+    public BeliefSettings Beliefs { get; set; } = new();
+    public ActionSettings Actions { get; set; } = new();
 }
 
 public sealed class NeedsSettings
@@ -49,18 +51,51 @@ public sealed class NeedsSettings
     public double HungerRate { get; set; } = 0.5;
     public double ThirstRate { get; set; } = 0.7;
     public double FatigueRate { get; set; } = 0.3;
+    /// <summary>Dérive d'élan des besoins sociaux (V0.1, calibration prototype).</summary>
+    public double SafetyDriftRate { get; set; } = 0.001;
+    public double SocialDriftRate { get; set; } = 0.001;
+    public double CuriosityDriftRate { get; set; } = 0.002;
 }
 
 public sealed class PerceptionSettings
 {
-    public int Radius { get; set; } = 30;
-    public double ConfidenceDecay { get; set; } = 0.9;
+    /// <summary>Rayon de perception — décision n°6 : défaut 50 (plage 30–70).</summary>
+    public int Radius { get; set; } = 50;
+    public double ConfidenceFalloff { get; set; } = 0.3;
+    /// <summary>Perception étagée : rotation en groupes de <c>RotationInterval</c> (COGNITIVE_ARCHITECTURE §3).</summary>
+    public int RotationInterval { get; set; } = 4;
+    /// <summary>Ligne de vue : un obstacle masque la perception (SYNE-011, ADR-013).</summary>
+    public bool LineOfSight { get; set; } = true;
 }
 
 public sealed class MemorySettings
 {
     public int MaxCapacity { get; set; } = 1000;
-    public double DecayRate { get; set; } = 0.01;
+    public double RecallThreshold { get; set; } = 0.01;
+    /// <summary>Décroissance des souvenirs d'observation (décision n°11).</summary>
+    public double ObservationDecayRate { get; set; } = 0.01;
+    public double EventDecayRate { get; set; } = 0.005;
+    public double InteractionDecayRate { get; set; } = 0.002;
+}
+
+public sealed class BeliefSettings
+{
+    /// <summary>Force de révision : <c>belief = belief + (signal − belief) × strength</c> (décision n°12).</summary>
+    public double UpdateStrength { get; set; } = 0.3;
+    /// <summary>Plafond de variation de confiance par snap (décision n°12 : « plafond par snap »).</summary>
+    public double MaxChangePerSnap { get; set; } = 0.5;
+    public double AlignBonus { get; set; } = 0.2;
+    public double ConflictPenalty { get; set; } = 0.1;
+    public ulong ExpiryTicks { get; set; } = 100;
+    public double ExpiredCap { get; set; } = 0.4;
+    public double TimeDecayPerTick { get; set; } = 0.999;
+}
+
+public sealed class ActionSettings
+{
+    public double MoveEnergyCost { get; set; } = 0.5;
+    public double RestEnergyGain { get; set; } = 0.5;
+    public double RestFatigueRecovery { get; set; } = 1.0;
 }
 
 public sealed class ResourceSettings
