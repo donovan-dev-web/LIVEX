@@ -10,4 +10,8 @@
     <AssemblyName>Simulation.Core</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Simulation.Core.Tests" />
+  </ItemGroup>
+
 </Project>

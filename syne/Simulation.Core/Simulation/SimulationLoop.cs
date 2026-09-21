@@ -3,24 +3,32 @@ using Simulation.Core.Prng;
 namespace Simulation.Core.Loop;
 
 /// <summary>
-/// Boucle de simulation minimale (SYNE-002, SIMULATION_LOOP.md §1.
+/// Boucle de simulation (SYNE-002, SIMULATION_LOOP.md §1).
 /// <list type="bullet">
 /// <item>1 tick = 1 minute simulée (défaut) — <see cref="SimulationTime"/>.</item>
 /// <item>Respect de <c>maxTicks</c> : la boucle s'arrête après le tick n° <c>maxTicks</c>.</item>
 /// <item>L'état du PRNG avance d'un tirage par tick (flux ancré au tick index).</item>
+/// <item>Depuis U1 : pipeline cognitif BDI (perception, mémoire, croyances, besoins,
+///  objectifs, utilité, intention, action) exécuté à chaque tick (SYNE-010).</item>
 /// </list>
-/// Corps de tick volontairement minimal (pas de sous-systèmes) :
-/// les étapes Percevoir…Modifier le monde (boucle 15 étapes de référence) seront
-/// introduites avec l'exécution des sous-systèmes aux jalons U1+.
 /// </summary>
 public sealed class SimulationLoop
 {
+    private readonly Simulation.Core.Cognition.CognitionPipeline _cognition;
     private Xoshiro256StarStar _rng;
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
+        : this(world, initialRng, new Simulation.Core.Configuration.SimulationOptions())
     {
+    }
+
+    public SimulationLoop(World.World world, Xoshiro256StarStar initialRng, Simulation.Core.Configuration.SimulationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(options);
         World = world;
         _rng = initialRng;
+        _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options);
     }
 
     public World.World World { get; }
@@ -29,11 +37,18 @@ public sealed class SimulationLoop
 
     public Xoshiro256StarStar Rng => _rng;
 
-    /// <summary>Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1).</summary>
+    public Simulation.Core.Cognition.CognitionPipeline Cognition => _cognition;
+
+    /// <summary>
+    /// Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1) puis exécute le
+    /// pipeline cognitif BDI (U1, SYNE-010) dans l'ordre causal strict. Le PRNG
+    /// n'avance que d'un tirage par tick (contrat DETERMINISM.md §3).
+    /// </summary>
     public void AdvanceOneTick()
     {
         CurrentTick += 1;
         _rng = _rng.NextUInt64(out _);
+        _cognition.Step(CurrentTick);
     }
 
     /// <summary>Exécute la boucle jusqu'au tick n° <paramref name="maxTicks"/> inclus.</summary>

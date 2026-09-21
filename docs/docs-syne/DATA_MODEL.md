@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`
 **Source Monographie** : §3.5 (monde), §3.7 (entités), §3.10 (mémoire), §3.11 (croyances), Annexe G (schéma SQLite)
 
@@ -15,7 +15,7 @@ Ce document décrit les **structures de données** centrales de SYNE. Elles form
 ## 2. Le Monde
 
 - **Espace** : plan 2D logique, dimensions configurables (défaut 500×500 unités), positions `{x, y}`. Non-toroidal : positions clampées à `[0, width]×[0, height]` (Monographie §3.5.3).
-- **Obstacles** : statiques, formes **rectangle** `{x, y, width, height}` et **cercle** `{x, y, radius}`. Bloquent le mouvement (collision simple : pas annulé ou glissé). En V1 n'bloquent pas la perception (V2 : murs bloquent ligne de vue) — §3.5.2.
+- **Obstacles** : statiques, **cercle** `{x, y, radius}` (V0.1 — le rectangle est reporté). Bloquent le **mouvement** (collision simple : pas annulé si la cible est dans le disque) et, depuis le **jalon SYNE ph1**, la **ligne de vue** (perception masquée, ADR-013) — synchronisation des docs avec §3.5.2 et V2 (murs/passabilité).
 - **Ressources** (V1) :
 
 | Propriété | FoodSource | WaterSource |
@@ -89,8 +89,9 @@ classDiagram
 ```
 
 Confiance : `1.0 - (distance/sensor_radius) × 0.3`, clampée [0.7, 1.0] (Monographie §3.9.4).
+Rayon de perception **défaut 50 unités** (décision n°6, plage 20–70) — J.V0.1 ; perception **étagée** en 4 groupes de rotation (`id % rotationInterval`, perçoit au tick `t ≡ groupe`).
 
-Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Ressources (ResourceType, Quantité, Régénération) ; Obstacles (Position, Taille, Passable) — §3.9.5.
+Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Ressources (ResourceType, Quantité, Régénération) ; Obstacles (Position, Taille, Passable) — §3.9.5. En V0.1 le moteur émet : `species`, `x`, `y` pour les entités ; `radius` pour les obstacles (identification FNV-1a déterministe).
 
 ## 5. Mémoire
 
@@ -106,6 +107,8 @@ Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Res
 - Confiance : 0-1 ; « vraie » pour l'entité si ≥ **0.5**.
 - Source : perception, mémoire, communication, inférence.
 - Cycle de vie : création (confiance initiale) → confirmation (alignement +0.2, max 1.0) → conflit (conflicting −0.1, plancher 0.1) → décroissance temporelle → expiration (expiry_tick, confiance plafonnée à 0.4) — Monographie §3.11.
+- **Conflit (J.V0.1, SYNE-014)** : un signal portant sur un **sujet + prédicat** déjà croyu mais avec une **valeur différente** pénalise les croyances concurrentes (−0.1, plancher 0.1) puis crée la nouvelle croyance au signal.
+- Étant donnée la clé `(subject, predicate, value)`, `position` est canoniquement sérialisée « X,Y » invariant à la culture.
 
 ## 7. Besoins
 
@@ -131,4 +134,5 @@ Le schéma SQLite V2.0 (11 tables : `runs`, `tick_states`, `agents`, `agent_snap
 ## Points restés ouverts dans ce document
 - Dimensionnement exact des seuils de besoins (décision n°6) : calibration à faire.
 - Plage décroissance mémoire en V0.1 : valeurs de prototype conservées ([HÉRITÉ]) ; confirmer lors de la calibration générale.
-- Les attributs observés par les obstacles (V0.1) incluent-ils **Passable** ? La ligne de vue bloquée dépend des décisions obstacles (V2).
+- Forme **rectangle** des obstacles : reportée (V0.1 cercle seul, `LineOfSight` intersection segment-disque) — à rouvrir avec la navigation V2.
+- Attribut `Passable` des obstacles : à trancher avec la passerelle/Passable — la ligne de vue est déjà bloquelle en V1 (ADR-013).

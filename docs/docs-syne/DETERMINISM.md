@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `PERSISTENCE.md`, `CONFIGURATION.md`
 **Source Monographie** : §2.3.4, §3.6.2–3.6.4 (seed, PRNG, sérialisation), ADR-006, §7.5 (validation)
 
@@ -47,6 +47,10 @@
 | `BitIdenticalPersistenceTest` | Reprise bit-à-bit après sauvegarde/charge |
 | Checksum de run | Hash de trajectoire pour détecter toute divergence |
 | Matrices seeds × configs (Annexe I.4) | Pour chaque seed ∈ [12345, 67890, 99999, 42, 999], exécuter 1000 ticks, valider checksum |
+| `DeterminismRegressionTests` (SYNE-015) | Hash **épinglé** de la trajectoire perception+décision (seed 12345, 25 ent., 200 ticks) + égalité bit-à-bit entre deux runs identiques et différence entre seeds |
+| Auto-égalité (SYNE-015) | Deux exécutions (même seed/config) → chaîne de perception identique |
+
+**Contrat V0.1 (jalon SYNE ph1)** : le pipeline cognitif (perception → décision) ne consomme **aucun** tirage du PRNG — l'avance du générateur reste **1 tirage/tick** ; les cibles de déplacement dérivent d'un déterminisme propre (hash SplitMix64 stable, sans passerelle RNG).
 
 ## 7. Impacts & contractuels
 
