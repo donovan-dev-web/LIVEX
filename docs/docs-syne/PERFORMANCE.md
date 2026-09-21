@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `DETERMINISM.md`
 **Source Monographie** : §7.4 (scalabilité), §7.5 (benchmarks V1), Annexe I (benchmarks détaillés)
 
@@ -101,6 +101,17 @@ Config : monde 500×500, config défaut, 3 seeds (12345, 999, 7).
 Pour chaque population ∈ [50, 500, 1000], pour chaque seed ∈ [12345, 67890, 99999, 42, 999] : exécuter 1000 ticks ; mesurer débit/mémoire/CPU ; valider déterminisme (checksum) ; moyenner.
 
 (Monographie Annexe I.4)
+
+## 8. Micro-benchmark de voisinage (SYNE-012, jalon SYNE ph1)
+
+Méthodologie CI : `PerceptionBenchmarkTests.QueryCircle_AverageStayUnderBudget_AtOneThousandEntities`
+mesure le temps moyen de `Grid.QueryCircle` (rayon 50) sur 50 requêtes dans un monde
+1000×1000 (cellule 50, 1000 entités réparties uniformément) et asserte **< 10 ms/requête** —
+marge très large (≈ 500× le budget perception 20 ms) pour rester **déterministe en CI**
+(sans flakiness machine) tout en bloquant toute régression O(n).
+
+Le balayage est borné : une requête de rayon R ne visite que la **fenêtre de 3×3 cellules**
+qui l'intersecte (jamais la population entière) — cf. `QueryCircle_ScanWindowIsCellBounded`.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `DATA_MODEL.md`, `DETERMINISM.md`
 **Source Monographie** : Annexe H (configuration et paramètres), §3.6.2 (seed), §3.4 (scheduler)
 
@@ -28,9 +28,14 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "initialCount": 100,
     "traits": { "bravery": 1.0, "curiosity": 1.0, "sociability": 1.0, "greed": 1.0,
                  "pessimism": 1.0, "aggressiveness": 1.0, "strength": 1.0, "speed": 1.0 },
-    "needs": { "hungerRate": 0.5, "thirstRate": 0.7, "fatigueRate": 0.3 },
-    "perception": { "radius": 30, "confidenceDecay": 0.9 },
-    "memory": { "maxCapacity": 1000, "decayRate": 0.01 }
+    "needs": { "hungerRate": 0.5, "thirstRate": 0.7, "fatigueRate": 0.3,
+               "safetyDriftRate": 0.001, "socialDriftRate": 0.001, "curiosityDriftRate": 0.002 },
+    "perception": { "radius": 50, "confidenceFalloff": 0.3, "rotationInterval": 4, "lineOfSight": true },
+    "memory": { "maxCapacity": 1000, "recallThreshold": 0.01,
+                "observationDecayRate": 0.01, "eventDecayRate": 0.005, "interactionDecayRate": 0.002 },
+    "beliefs": { "updateStrength": 0.3, "maxChangePerSnap": 0.5, "alignBonus": 0.2,
+                 "conflictPenalty": 0.1, "expiryTicks": 100, "expiredCap": 0.4, "timeDecayPerTick": 0.999 },
+    "actions": { "moveEnergyCost": 0.5, "restEnergyGain": 0.5, "restFatigueRecovery": 1.0 }
   },
   "resources": {
     "food": { "initial": 100, "regenerationRate": 0, "degradationTick": 100 },
@@ -88,8 +93,12 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
 
 ## 6. Validation de configuration
 
-- Validation des plages à l'import (rayon perception > vitesse déplacement ; seed 64 bits ; ticks > 0).
-- Une configuration invalide stoppe avec un message d'erreur explicite.
+- Validation des plages à l'import :
+  - `perception.radius` ∈ [20, 70] (décision n°6) ; `rotationInterval` ≥ 1 ;
+  - `memory.maxCapacity` > 0 ; taux de décroissance ≥ 0 ;
+  - `beliefs.updateStrength` ∈ [0, 1] ;
+  - dimensions `worldWidth`/`worldHeight` > 0 ; `maxTicks` > 0 ; traits dans [0, 2] ; moteur `"xoshiro256**"` exclusif.
+- Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).
 
 ---
 

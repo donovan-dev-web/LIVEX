@@ -16,7 +16,14 @@ public class ConfigLoaderTests
         Assert.Equal(100, options.Agents.InitialCount);
         Assert.Equal(8, options.Agents.Traits.Count);
         Assert.All(options.Agents.Traits.Values, value => Assert.Equal(1.0, value));
-        Assert.Equal(30, options.Agents.Perception.Radius);
+        Assert.Equal(50, options.Agents.Perception.Radius);
+        Assert.Equal(4, options.Agents.Perception.RotationInterval);
+        Assert.True(options.Agents.Perception.LineOfSight);
+        Assert.Equal(1000, options.Agents.Memory.MaxCapacity);
+        Assert.Equal(0.01, options.Agents.Memory.ObservationDecayRate);
+        Assert.Equal(0.005, options.Agents.Memory.EventDecayRate);
+        Assert.Equal(0.002, options.Agents.Memory.InteractionDecayRate);
+        Assert.Equal(0.3, options.Agents.Beliefs.UpdateStrength);
         Assert.Equal(12_345UL, options.Random.Seed);
         Assert.Equal("xoshiro256**", options.Random.Engine);
         Assert.Equal(100, options.Resources.Food.Initial);
@@ -39,7 +46,7 @@ public class ConfigLoaderTests
         Assert.Equal(500, options.Simulation.WorldHeight);
         Assert.Equal(250, options.Simulation.MaxTicks);
         Assert.Equal(12_345UL, options.Random.Seed);
-        Assert.Equal(30, options.Agents.Perception.Radius);
+        Assert.Equal(50, options.Agents.Perception.Radius);
     }
 
     [Fact]
