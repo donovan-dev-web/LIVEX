@@ -55,6 +55,7 @@ public sealed class CognitionPipeline
         foreach (MindState mind in _minds.Values)
         {
             mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
+            mind.Trust.Tick();
         }
     }
 

@@ -106,4 +106,32 @@ public class ObservabilitySensorTests
     {
         Assert.Equal("run-42", ObservabilityContract.RunIdFor(42));
     }
+
+    [Fact]
+    public void Snapshot_ExposesCognitiveFieldsDeterministically()
+    {
+        (_, SimulationLoop loop) = BuildLoop();
+        loop.Run(50);
+
+        WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 7);
+        JsonObject message = ObservabilitySerializer.SnapshotMessage(snapshot);
+        JsonObject agent = message["agents"]![0]!.AsObject();
+
+        Assert.NotNull(agent["traits"]);
+        Assert.NotNull(agent["beliefs"]);
+        Assert.NotNull(agent["goals"]);
+        Assert.NotNull(agent["trust"]);
+        Assert.True((int?)agent["memoryCount"] >= 0);
+        Assert.InRange((int?)agent["memoryCount"] ?? 0, 0, 51);
+
+        // Traits exposés par nom (déterminisme : ordre inchangé pour une même seed).
+        JsonObject traits = agent["traits"]!.AsObject();
+        Assert.True(traits.Count > 0);
+        Assert.Contains("bravery", traits.Select(node => node.Key));
+
+        // Pas de clé PascalCase pour les nouveaux champs (contrat camelCase).
+        string json = ObservabilitySerializer.ToJsonText(message);
+        Assert.DoesNotContain("\"MemoryCount\"", json);
+        Assert.DoesNotContain("\"BeliefObservation\"", json);
+    }
 }

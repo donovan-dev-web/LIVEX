@@ -98,6 +98,14 @@ public sealed class BeliefSet
 
     public IReadOnlyList<Belief> All => _beliefs.Values.ToList();
 
+    /// <summary>Toutes les croyances triées par fait (sujet, prédicat, valeur — ordinal, déterminisme d'émission).</summary>
+    public IReadOnlyList<Belief> OrderedByFact() =>
+        All
+            .OrderBy(belief => belief.Fact.Subject, StringComparer.Ordinal)
+            .ThenBy(belief => belief.Fact.Predicate, StringComparer.Ordinal)
+            .ThenBy(belief => belief.Fact.Value, StringComparer.Ordinal)
+            .ToList();
+
     internal void Upsert(Belief belief) => _beliefs[belief.Fact] = belief;
 
     /// <summary>

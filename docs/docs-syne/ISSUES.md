@@ -82,9 +82,9 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-020 | Mémoire intergénérationnelle (héritage) | `type/feature`, `component/syne` | P0 | décision n°16, `COGNITIVE_ARCHITECTURE.md` §6.6 | Héritage par fusion consentie ; traits + savoir transmis (§6.6.3) |
-| SYNE-021 | Perte de confiance / trustDecay | `type/feature`, `component/syne` | P1 | décision n°10, `COMMUNICATION_PROTOCOL.md` §3 | Confiance décroît sans interaction (0.9) et après mensonge |
-| SYNE-022 | Éviction mémoire (capacité 1000) | `type/feature`, `component/syne` | P1 | SYNE-013, décision n°11 | Éviction par decay + seuil ; jamais de dépassement de capacité |
+| SYNE-020 | Mémoire intergénérationnelle (héritage) — **LIVRÉ (issue #13, PR SYNE, U2)** | `type/feature`, `component/syne` | P0 | décision n°16, `COGNITIVE_ARCHITECTURE.md` §6.6 | Héritage par fusion consentie ; traits + savoir transmis (§6.6.3) — ✓ `Inheritance.FuseTraits`/`InheritMemory`/`InheritBeliefs` (union, confiance max, source « héritage »), naissance `MindState.Born(parentA, parentB, birthTick)`, tests `InheritanceTests` |
+| SYNE-021 | Perte de confiance / trustDecay — **LIVRÉ (issue #14, PR SYNE, U2)** | `type/feature`, `component/syne` | P1 | décision n°10, `COMMUNICATION_PROTOCOL.md` §3 | Confiance décroît sans interaction (0.9) et après mensonge — ✓ `Relationships` (bonus vérité 0.05, sanction 0.2, décroissance ×0.9/tick, confiance initiale 0.5), `MindState.Trust` tické à chaque step, tests `RelationshipsTests` |
+| SYNE-022 | Éviction mémoire (capacité 1000) — **LIVRÉ (issue #15, PR SYNE, U2)** | `type/feature`, `component/syne` | P1 | SYNE-013, décision n°11 | Éviction par decay + seuil ; jamais de dépassement de capacité — ✓ `Memory.AllEntries` + stress test capacité 1000 jamais dépassée (catégories mixtes, éviction du moins saillant) dans `MemoryTests` |
 
 ### Milestone ph3 — Décision + Utilité
 

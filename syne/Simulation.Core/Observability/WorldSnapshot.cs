@@ -27,7 +27,7 @@ public sealed record WorldSnapshot(
         {
             if (loop.Cognition.HasMind(entity.Id.Value))
             {
-                agents.Add(AgentSnapshot.From(entity, loop.Cognition.MindOf(entity.Id.Value)));
+                agents.Add(AgentSnapshot.From(entity, loop.Cognition.MindOf(entity.Id.Value), loop.CurrentTick));
             }
         }
 
