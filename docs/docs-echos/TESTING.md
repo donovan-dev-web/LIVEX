@@ -36,6 +36,26 @@ Garantir la **correction et la stabilité des métriques**. Objectif de couvertu
 - **Golden files** : valeurs attendues stockées pour détection de non-régression.
 - CI : exécuté dans `ci.yml` GitHub Actions (`docs/../..` racine), job ECHOS.
 
+### 4.1 Contrats d'ingestion (ECHOS-003/ECHOS-004, U0)
+
+Fixtures et golden files **versionnés** dans `echos/echos/tests/` :
+
+| Fichier | Rôle |
+| :-- | :-- |
+| `fixtures/world_snapshot.json` | Snapshot camelCase (API_CONTRACTS.md §2.1) |
+| `fixtures/external_event.json` | Événement `decision_made` (§2.2) |
+| `fixtures/invalid_message.json` | Payload hors contrat (tick négatif) |
+| `golden/world_snapshot.json` | Forme canonique snake_case attendue après parse |
+| `golden/external_event.json` | Forme canonique du snapshot/événement |
+| `golden/stream.json` | Séquençage déterministe type+tick d'un flux rejoué |
+
+Double garde : (1) le parse conserve le JSON camelCase du contrat
+(`model_dump(by_alias=True)` == fixture) ; (2) la vue interne snake_case reste
+égale au golden — tout renommage de champ casse la non-régression. La
+réception WebSocket est rejouée **déterministe** (même fixture → même
+séquence type/tick), le client de contrôle vérifie le corps exact des
+requêtes (`start`/`pause`/`resume`/`reset`).
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).

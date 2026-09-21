@@ -1,0 +1,11 @@
+{
+  "type": "decision_made",
+  "tick": 5010,
+  "agent_id": "a1",
+  "target_id": null,
+  "action": "Eat",
+  "cause": "hunger 75",
+  "value": {
+    "utility": 15.5
+  }
+}

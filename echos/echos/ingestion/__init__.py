@@ -1,7 +1,36 @@
-"""Ingestion — contrats d'observation de SYNE.
+"""Ingestion — contrats d'observation et de pilotage de SYNE.
 
-Clients de transport (`ws_client` WebSocket :5180, `control_client` HTTP :5181)
-et modèles pydantic des contrats `WorldSnapshot` / `ExternalEvent`
-(API_CONTRACTS.md). Implémentés au jalon ECHOS-004 (U0 sociable) — squelette
-d'import préservé pour la structure du monorepo.
+- :mod:`models` : modèles pydantic des contrats `WorldSnapshot` / `ExternalEvent`
+  (JSON camelCase, API_CONTRACTS.md §2) + :func:`parse_message` déterministe.
+- :mod:`ws_client` : consommateur WebSocket :5180 (transport injectable).
+- :mod:`control_client` : client HTTP :5181 (start / pause / resume / reset).
 """
+
+from .control_client import ControlClient, ControlError, DEFAULT_BASE_URL
+from .models import (
+    Agent,
+    ExternalEvent,
+    InvalidMessageError,
+    Message,
+    parse_message,
+    Position,
+    Resource,
+    WorldSnapshot,
+)
+from .ws_client import WsClient, WsTransport
+
+__all__ = [
+    "Agent",
+    "ControlClient",
+    "ControlError",
+    "DEFAULT_BASE_URL",
+    "ExternalEvent",
+    "InvalidMessageError",
+    "Message",
+    "Position",
+    "Resource",
+    "WorldSnapshot",
+    "WsClient",
+    "WsTransport",
+    "parse_message",
+]
