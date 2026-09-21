@@ -49,3 +49,4 @@ Première version consolidée (aucune).
 | 21 septembre 2026 | Jalon SYNE ph1 : BDI + Perception | SYNE-010 → SYNE-015 |
 | 21 septembre 2026 | ECHOS-1 : structure code livrée (echos + echos-ui) | Jalon U0 — socle ECHOS |
 | 21 septembre 2026 | ECHOS-2 : contrats d'ingestion + golden files | Jalon U0 — clôture ECHOS |
+| 21 septembre 2026 | ECHOS-3 : stockage ECHOS — agrégation, SQLite, Parquet, pipeline | Jalon U1 — ECHOS-011/012/013 |
