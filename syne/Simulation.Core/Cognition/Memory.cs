@@ -79,6 +79,9 @@ public sealed class Memory
 
     public int Count => _entries.Count;
 
+    /// <summary>Copie de tous les souvenirs stockés (ordre d'insertion) — accès pour l'héritage (SYNE-020) et l'observabilité.</summary>
+    public IReadOnlyList<MemoryEntry> AllEntries => new List<MemoryEntry>(_entries);
+
     public MemorySettings Settings => _settings;
 
     /// <summary>Vitesse de décroissance de la catégorie (décision n°11).</summary>

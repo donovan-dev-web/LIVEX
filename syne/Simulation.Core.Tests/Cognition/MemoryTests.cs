@@ -105,4 +105,40 @@ public class MemoryTests
         IReadOnlyList<MemoryRecall> recalled = memory.Recall(10);
         Assert.Equal(["second", "third"], recalled.Select(r => r.Entry.Content));
     }
+
+    [Fact]
+    public void Store_NeverExceedsDefaultCapacityOfOneThousand()
+    {
+        var memory = NewMemory(); // capacité par défaut : 1000 (SYNE-022)
+
+        for (int tick = 1; tick <= 1500; tick++)
+        {
+            memory.Store(MemoryCategory.Observation, "s", $"souvenir-{tick}", 0.9, storedAt: (ulong)tick);
+        }
+
+        Assert.Equal(1000, memory.Count);
+        // Les plus récents sont conservés (les anciens sont les moins saillants).
+        MemoryRecall newest = memory.Recall(1500).Last();
+        Assert.Equal("souvenir-1500", newest.Entry.Content);
+    }
+
+    [Fact]
+    public void Store_EvictsAcrossMixedCategories_LeastSalientFirst()
+    {
+        var memory = NewMemory(capacity: 4);
+        // Catégorie à decay faible (Interaction 0.002) : très saillant longtemps.
+        memory.Store(MemoryCategory.Interaction, "s", "rituel", 0.9, storedAt: 0);
+        // Observation (0.01) : décroît le plus vite.
+        memory.Store(MemoryCategory.Observation, "s", "obs-py1", 0.9, storedAt: 0);
+        memory.Store(MemoryCategory.Event, "s", "event-py", 0.9, storedAt: 100);
+        memory.Store(MemoryCategory.Observation, "s", "obs-rec", 0.9, storedAt: 200);
+
+        // Le moins saillant à t=900 est « obs-py1 » (exp(-0.01×900) ≈ 0.00012).
+        memory.Store(MemoryCategory.Observation, "s", "obs-push", 0.9, storedAt: 900);
+
+        Assert.Equal(4, memory.Count);
+        IReadOnlyList<MemoryRecall> recalled = memory.Recall(900);
+        Assert.DoesNotContain(recalled, r => r.Entry.Content == "obs-py1");
+        Assert.Contains(recalled, r => r.Entry.Content == "rituel");
+    }
 }

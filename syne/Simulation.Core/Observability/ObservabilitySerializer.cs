@@ -80,6 +80,44 @@ public static class ObservabilitySerializer
             ["x"] = agent.PositionX,
             ["y"] = agent.PositionY,
         };
+        var traits = new System.Text.Json.Nodes.JsonObject();
+        foreach ((string name, double value) in agent.Traits.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            traits[name] = value;
+        }
+
+        var beliefs = new JsonArray();
+        foreach (BeliefObservation belief in agent.Beliefs)
+        {
+            beliefs.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["subject"] = belief.Subject,
+                ["predicate"] = belief.Predicate,
+                ["value"] = belief.Value,
+                ["confidence"] = belief.Confidence,
+            });
+        }
+
+        var goals = new JsonArray();
+        foreach (GoalObservation goal in agent.Goals)
+        {
+            goals.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["kind"] = goal.Kind,
+                ["age"] = goal.Age,
+            });
+        }
+
+        var trust = new JsonArray();
+        foreach (TrustObservation relation in agent.Trust)
+        {
+            trust.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["peerId"] = relation.PeerId,
+                ["trust"] = relation.Trust,
+            });
+        }
+
         return new System.Text.Json.Nodes.JsonObject
         {
             ["id"] = agent.Id,
@@ -90,6 +128,11 @@ public static class ObservabilitySerializer
             ["thirst"] = agent.Thirst,
             ["fatigue"] = agent.Fatigue,
             ["currentAction"] = agent.CurrentIntention,
+            ["traits"] = traits,
+            ["beliefs"] = beliefs,
+            ["goals"] = goals,
+            ["trust"] = trust,
+            ["memoryCount"] = agent.MemoryCount,
         };
     }
 }
