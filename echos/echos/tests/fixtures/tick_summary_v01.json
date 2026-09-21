@@ -1,0 +1,7 @@
+{
+  "type": "tick_summary",
+  "tick": 1,
+  "value": {
+    "aliveCount": 2
+  }
+}
