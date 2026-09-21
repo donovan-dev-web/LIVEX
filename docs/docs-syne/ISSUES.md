@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_V01.md`, `ROADMAP.md`
 **Source Monographie** : Annexe J (feuille de route V2), §1.7.5 (déterminisme), §9.6.4 (issues ADR)
 
@@ -136,7 +136,7 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-080 | Événements typés (snapshot + event) | `type/obs`, `component/syne`, `component/echos` | P0 | décision n°26, `API_CONTRACTS.md`, `PERCEPTION_SPEC.md` | Événements émis à chaque tick + événements discrets ; schéma JSON typé |
+| SYNE-080 | Événements typés (snapshot + event) — **LIVRÉ (issue #37, PR S2, U1)** | `type/obs`, `component/syne`, `component/echos` | P0 | décision n°26, `API_CONTRACTS.md`, `PERCEPTION_SPEC.md` | Événements émis à chaque tick + événements discrets ; schéma JSON typé — ✓ snapshot/tick + `tick_summary` + `decision_made`, JSON camelCase (emetteur BCL `--observe`) |
 | SYNE-081 | Anti-triche / observabilité non intrusive | `type/obs`, `component/syne` | P1 | SYNE-080, `ROADMAP.md` §8 | Vérification que l'observation ne modifie pas l'état du monde |
 | SYNE-082 | Métriques émises vers ECHOS | `type/feature`, `component/syne`, `component/echos` | P1 | SYNE-080, `METRICS_SPEC.md` | Flux ECHOS consommable pour l'analyse (déterministe) |
 
