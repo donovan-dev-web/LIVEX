@@ -6,6 +6,7 @@
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-00d4a0.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-V0.1-9cf.svg)](VERSIONING.md)
 [![Statut](https://img.shields.io/badge/Statut-U0%20Socle%20r%C3%A9alis%C3%A9-00d4a0.svg)](ROADMAP.md)
+[![Documentation](https://img.shields.io/badge/Documentation-GitHub%20Pages-1f7f6f.svg)](https://donovan-dev-web.github.io/LIVEX/)
 [![Langue: FR](https://img.shields.io/badge/Langue-Fran%C3%A7ais-949494.svg)](GLOSSARY.md)
 
 ---

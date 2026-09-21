@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schemastore.azurefd.net/schemas/json/docfx.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "files": ["Simulation.Core.dll", "Simulation.Core.xml"],
+          "src": "../../syne/Simulation.Core/bin/Release/net10.0"
+        }
+      ],
+      "dest": "api"
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "index.md",
+          "toc.yml",
+          "articles/**/*.md",
+          "api/*.yml"
+        ],
+        "exclude": ["obj/**", "_site/**"]
+      }
+    ],
+    "resource": [
+      { "files": ["articles/**/LICENSE"] }
+    ],
+    "overwrite": [],
+    "dest": "_site",
+    "globalMetadata": {
+      "_appTitle": "LIVEX · documentation",
+      "_appFooter": "LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)",
+      "_enableSearch": true
+    },
+    "template": [
+      "default"
+    ]
+  }
+}

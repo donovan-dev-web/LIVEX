@@ -1,0 +1,6 @@
+# Sortie de la génération DocFX (poussée sur gh-pages par CI)
+_site/
+# Générés : copies de synchronisation + API DocFX
+articles/
+api/
+obj/
