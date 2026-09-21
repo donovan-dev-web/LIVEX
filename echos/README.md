@@ -8,14 +8,14 @@ Observation et pilotage de SYNE : calculs d'analyse, API REST, interface d'obser
 
 ```
 echos/
-├── pyproject.toml            # paquet Python echos (API + analyse)
-├── requirements.txt          # dépendances runtime
+├── pyproject.toml            # paquet Python echos (API + analyse + ingestion)
+├── requirements.txt          # dépendances runtime (dont httpx, websockets)
 ├── requirements-dev.txt      # dépendances test/lint
 ├── echos/
 │   ├── __init__.py           # __version__
 │   ├── api/app.py            # application FastAPI (create_app, /health)
 │   ├── analysis/             # 7 moteurs de métriques (METRICS_SPEC §1)
-│   └── ingestion/            # clients SYNE ws/control (jalon ECHOS-004)
+│   └── ingestion/            # contrats + clients SYNE (API_CONTRACTS §2-3)
 └── echos-ui/                 # interface React + TypeScript (Vite)
 ```
 
@@ -30,7 +30,7 @@ curl http://127.0.0.1:8000/health                    # {"status":"ok", ...}
 ## Tests (U0)
 
 ```bash
-.venv/bin/flake8 echos && .venv/bin/pytest           # 13 tests, couverture ≥ 80 %
+.venv/bin/flake8 echos && .venv/bin/pytest           # 41 tests, couverture ≥ 80 %
 ```
 
 ## UI (echos-ui)
@@ -42,5 +42,5 @@ npm run lint && npm run build && npm test -- --run   # vérification CI
 
 ## Jalons
 
-- **U0 (ce socle)** : structure monorepo buildable/testable, API FastAPI + squelette des 7 moteurs, interface Vite/React.
-- **U1+** : implémentation des moteurs de métriques, connexion WebSocket :5180 (+ contrôle :5181), stockage SQLite/Parquet.
+- **U0 (ce socle)** : structure monorepo buildable/testable, API FastAPI + squelette des 7 moteurs, interface Vite/React, contrats d'ingestion (`WorldSnapshot`/`ExternalEvent` camelCase) + clients `WsClient` :5180 / `ControlClient` :5181 testés sur golden files.
+- **U1+** : implémentation des moteurs de métriques, connexion E2E réelle à SYNE, stockage SQLite/Parquet.
