@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `VISION.md`, `../COMMUNICATION.md`
 **Source Monographie** : §4.2
 
@@ -56,6 +56,29 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 | Comparaison expérimentale | Runs contrôlés, reproductibilité | `EXPERIMENT_COMPARISON.md` |
 | API REST | Endpoints d'interrogation (port 5000) | `API_REST.md` |
 | Logging & instrumentation | 3 niveaux (structuré, traces, texte) | `LOGGING_INSTRUMENTATION.md` |
+
+---
+
+## 5. Structure de code (jalon U0)
+
+Mise en œuvre découpée, chaque sous-composant buildable/testable séparément (ECHOS-002) :
+
+```
+echos/
+├── pyproject.toml            # paquet echos, pytest --cov-fail-under=80
+├── .flake8                   # flake8 (max-line-length=100)
+├── echos/
+│   ├── __init__.py           # __version__ (synchro pyproject)
+│   ├── api/app.py            # create_app() FastAPI, /health → {status, component, version}
+│   ├── analysis/             # 7 moteurs de métriques (METRICS_SPEC §2-8)
+│   │   └── __init__.py       #   registre ENGINES + known_engines() → {moteur: métriques}
+│   └── ingestion/            # clients ws/control SYNE (jalon ECHOS-004)
+├── tests/                    # pytest (api, registre moteurs, versionnage)
+└── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
+```
+
+- `echos` est le composant **Application + Analyse** ; `echos-ui` le composant **Interface** (§1).
+- Les moteurs exposent le contrat `ENGINE_NAME` / `METRICS` / `compute(snapshot)` ; implémentation au jalon U1.
 
 ---
 

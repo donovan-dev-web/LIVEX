@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : `VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`livex-vX.Y.Z` = triplet SYNE + ECHOS + PRISM).
@@ -22,7 +22,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - **Jalon U0 — Socle & gouvernance** :
   - `syne/` : solution .NET (`Simulation.Core`, `Simulation.Console`, `Simulation.Core.Tests`), `global.json` (SDK 10.0.400), modèle de configuration Annexe H + validation, flags CLI (`--seed`, `--max-ticks`, `--world-size`, `--config`, `--headless`) ;
   - `echos/` : monorepo `echos/` (API FastAPI :5000, package analyse, clients d'ingestion, `echos-ui` React/TS, tests pytest) ;
-  - `.gitignore`, `.editorconfig`, branches Git Flow (`develop`), milestones dédupliqués, labels normalisés, CI remaniée (jobs filtrés `syne/**`, `echos/**`).
+  - `.gitignore`, `.editorconfig`, branches Git Flow (`develop`), milestones dédupliqués, labels normalisés, CI remaniée (jobs filtrés `syne/**`, `echos/**`) ;
+  - **ECHOS-1** : structure code ECHOS livrée — paquet `echos` (API FastAPI `create_app()`, registre des **7 moteurs de métriques**, placeholder ingestion), `echos-ui` (Vite + React + TS : lint, build, tests vitest/jsdom), 13 tests pytest couverture 100 %, jobs CI `echos-python` + `echos-ui` actifs.
 
 ### Changed
 - Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → **FastAPI + Electron/React/TypeScript**, SQLite/Parquet).
@@ -42,3 +43,4 @@ Première version consolidée (aucune).
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 17 septembre 2026 | Création | Documentation V0.1
+| 21 septembre 2026 | ECHOS-1 : structure code livrée (echos + echos-ui) | Jalon U0 — socle ECHOS |
