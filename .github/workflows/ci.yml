@@ -111,7 +111,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
       - name: Lint
-        run: python -m flake8 echos/api echos/analysis echos/ingestion echos/tests
+        run: python -m flake8 echos
       - name: Tests pytest
         run: python -m pytest -q
 
