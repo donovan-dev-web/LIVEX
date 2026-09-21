@@ -24,16 +24,23 @@ class Position(BaseModel):
 
 
 class Agent(BaseModel):
-    """Entité observée (API_CONTRACTS.md §2.1)."""
+    """Entité observée (API_CONTRACTS.md §2.1).
+
+    En V0.1, l'émetteur SYNE fournit ``species`` et ``fatigue`` mais pas
+    ``health`` (santé non encore simulée) : ``health`` reste accepté pour la
+    compatibilité ascendante avec le format documentaire.
+    """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: str
+    species: str | None = None
     position: Position
-    health: float = Field(ge=0)
+    health: float | None = Field(default=None, ge=0)
     energy: float = Field(ge=0)
     hunger: float = Field(ge=0)
     thirst: float = Field(ge=0)
+    fatigue: float | None = Field(default=None, ge=0)
     current_action: str | None = None
 
 

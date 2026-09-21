@@ -27,7 +27,9 @@ def test_world_snapshot_parse_matches_golden():
     message = parse_message((FIXTURES / "world_snapshot.json").read_text())
 
     assert isinstance(message, WorldSnapshot)
-    assert message.model_dump(mode="json") == _golden("world_snapshot.json")
+    assert message.model_dump(mode="json", exclude_none=True) == _golden(
+        "world_snapshot.json"
+    )
     assert message.run_id == "run-abc"
     assert message.tick == 5010
     assert message.simulated_time_minutes == 5010
@@ -37,7 +39,7 @@ def test_world_snapshot_parse_matches_golden():
 def test_world_snapshot_preserves_camelcase_contract():
     message = parse_message((FIXTURES / "world_snapshot.json").read_text())
 
-    assert message.model_dump(mode="json", by_alias=True) == _load(
+    assert message.model_dump(mode="json", by_alias=True, exclude_none=True) == _load(
         "world_snapshot.json"
     )
 
@@ -104,7 +106,7 @@ def test_bytes_payload_is_accepted():
     message = parse_message(raw)
 
     assert isinstance(message, WorldSnapshot)
-    assert message.model_dump(mode="json") == _golden("world_snapshot.json")
+    assert message.model_dump(mode="json", exclude_none=True) == _golden("world_snapshot.json")
 
 
 def test_non_object_json_is_rejected():
