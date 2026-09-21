@@ -61,8 +61,16 @@ Mesure la structure des réseaux de relations.
 | `NetworkDensity` | Arêtes / arêtes possibles : `edges / (n×(n-1))` |
 | `ClusteringCoefficient` | Tendance à former des triangles (A→B→C→A) |
 | `AverageCentrality` | Centralité intermédiaire moyenne |
-| `NumberOfCommunities` | Communautés détectées (algorithme de Louvain) |
+| `NumberOfCommunities` | Communautés détectées (**propagation d'étiquettes déterministe**) |
 | `CommunityStability` | % de communautés stables vs fluctuantes |
+
+> **Écart documenté vs Monographie (Louvain)** : la détection de communautés
+> utilise une **propagation d'étiquettes asynchrone** (mise à jour en place,
+> ordre trié, ex-aequo → étiquette la plus petite, ≤ 10 itérations). Le Louvain
+> de la Monographie n'est pas déterministe bit-à-bit (dépend de la graine de
+> découverte) et n'est pas disponible en stdlib Python pure — la propagation
+> d'étiquettes préserve la **contrainte ECHOS de déterminisme bit-à-bit**
+> (`TESTING.md` §5) sans dépendance tierce.
 
 ## 5. Moteur 4 — GoalConvergenceMetrics (convergence des objectifs)
 
@@ -88,6 +96,13 @@ Identifie les cycles où `action → conséquence → décision`.
 | `LoopTypes` | Classification positive / négative |
 
 **Heuristique de détection** : un pattern est considéré comme une boucle s'il se répète avec une fréquence > 2 dans une fenêtre configurable (défaut : 100 ticks).
+
+**Implémentation (U2, `feedback_loop_detector.py`)** : fenêtre glissante lue sur
+la clé `history` du snapshot (série `{tick, actions: {agentId, action}}`), boucle
+= (agent, action) répété **> 2 fois** sur `WINDOW_SIZE = 100` ; facteur
+d'amplification = fréquence observée / fréquence uniforme attendue
+(fenêtre/nb d'actions distinctes) ; boucle critique si > 1,5 ; `SystemStability`
+= `1 − Σ|pᵢ − 1/k|` clampé [0,1]. Historique vide → neutre 0.0.
 
 ## 7. Moteur 6 — ResourceSustainabilityMetrics (durabilité des ressources)
 
