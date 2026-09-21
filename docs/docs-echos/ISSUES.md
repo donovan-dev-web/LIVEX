@@ -42,9 +42,9 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | ECHOS-010 | Consommateur WebSocket 5180 (snapshot + événements) — **LIVRÉ (issue #367, PR E1, U1)** | `type/feature`, `component/echos`, `component/syne` | P0 | ECHOS-004, ADR-001 ECHOS | Consommation des `snapshot`/`event` ; tick aligné sur la boucle SYNE — ✓ `aligned_ticks`/`TickSegment` (1 snapshot + événements par tick, refus des désalignements), modèles alignés sur l'émetteur V0.1, tests serveur WebSocket réel in-process, smoke E2E SYNE→ECHOS documenté |
-| ECHOS-011 | Agrégation incrémentale (séries temporelles) | `type/feature`, `component/echos` | P0 | ECHOS-010 | Agrégation par tick sans perte ; sous-échantillonnage paramétrable |
-| ECHOS-012 | Schéma SQLite d'analyse (Annexe G / Annexe L ECHOS) | `type/persistance`, `component/echos` | P0 | ECHOS-010, `ARCHITECTURE.md` ECHOS §3 | Schéma stable ; tables d'analyse distinctes des tables SYNE |
-| ECHOS-013 | Série Parquet (séries lourdes) | `type/persistance`, `component/echos` | P1 | ECHOS-012 | Séries lourdes en Parquet ; jointure SQLite↔Parquet cohérente |
+| ECHOS-011 | Agrégation incrémentale (séries temporelles) — **LIVRÉ (issue #368, PR E2, U1)** | `type/feature`, `component/echos` | P0 | ECHOS-010 | Agrégation par tick sans perte ; sous-échantillonnage paramétrable — ✓ `TickRecord.from_segment`/`summarize` (1 résumé par tick, `sample_every`), `downsample(records, every)` en lecture, réductions déterministes testées |
+| ECHOS-012 | Schéma SQLite d'analyse (Annexe G / Annexe L ECHOS) — **LIVRÉ (issue #369, PR E2, U1)** | `type/persistance`, `component/echos` | P0 | ECHOS-010, `ARCHITECTURE.md` ECHOS §3 | Schéma stable ; tables d'analyse distinctes des tables SYNE — ✓ `AnalyticsStore` SQLite (tables `runs`/`tick_summaries`/`events_log` + `_meta`), `SCHEMA_VERSION`, FK activées, dump du schéma versionné et testé |
+| ECHOS-013 | Série Parquet (séries lourdes) — **LIVRÉ (issue #370, PR E2, U1)** | `type/persistance`, `component/echos` | P1 | ECHOS-012 | Séries lourdes en Parquet ; jointure SQLite↔Parquet cohérente — ✓ `agent_rows`/`write_agent_series`/`read_agent_series` (pyarrow snappy), `coherence_errors` sur la clé `(run_id, tick)` jointe à `tick_summaries` |
 
 ### Milestone ph2 (echos) — Moteurs de métriques (7 moteurs)
 
