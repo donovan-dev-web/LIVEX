@@ -68,6 +68,8 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
 | `--seed 12345` | int | Seed du PRNG |
 | `--max-ticks 2000` | int | Nombre de ticks à exécuter |
 | `--config path/to/config.json` | string | Fichier de configuration |
+| `--observe` | bool | Active l'émission WebSocket (SYNE-080, API_CONTRACTS §2) |
+| `--observe-port 5180` | int | Port du serveur WebSocket (défaut : 5180, bind 127.0.0.1) |
 
 (Annexe H.2)
 
