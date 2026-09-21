@@ -95,6 +95,16 @@ class WsClient:
             if exc.detail.startswith("connexion fermée"):
                 raise StopIteration from exc
             raise
+        except Exception as exc:  # transport réel : fermeture ≙ fin de flux
+            try:
+                from websockets.exceptions import ConnectionClosed
+
+                is_closed = isinstance(exc, ConnectionClosed)
+            except ImportError:
+                is_closed = False
+            if is_closed:
+                raise StopIteration from exc
+            raise
 
     def __enter__(self) -> "WsClient":
         return self
