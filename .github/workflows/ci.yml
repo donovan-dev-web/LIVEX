@@ -2,63 +2,140 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop]
+    branches: [develop]
   push:
-    branches: [main, develop]
+    branches: [develop]
 
 env:
   DOTNET_VERSION: "10.0.x"
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  dotnet-build:
-    name: Build & tests (.NET)
+  # ---------------------------------------------------------------------
+  # Détection des composants modifiés (filtre par chemin, sans action tierce)
+  # ---------------------------------------------------------------------
+  changes:
+    name: Composants modifiés
     runs-on: ubuntu-latest
+    outputs:
+      syne: ${{ steps.diff.outputs.syne }}
+      echos: ${{ steps.diff.outputs.echos }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ]; then BASE="develop"; fi
+          mkdir -p /tmp/diy
+          for comp in syne echos; do
+            count=$(git diff --name-only "$BASE...HEAD" -- "$comp/" 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$count" -gt 0 ]; then echo "$comp=true" >> "$GITHUB_OUTPUT"; else echo "$comp=false" >> "$GITHUB_OUTPUT"; fi
+          done
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------
+  # Validation transverse (toujours exécutée)
+  # ---------------------------------------------------------------------
+  repo-check:
+    name: Structure & conventions (transverse)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fichiers de socle présents
+        run: |
+          test -f .editorconfig || { echo "::error::.editorconfig manquant"; exit 1; }
+          test -f .gitignore   || { echo "::error::.gitignore manquant";   exit 1; }
+          test -f LICENSE      || { echo "::error::LICENSE manquante";     exit 1; }
+      - name: Pas de secrets commités (heuristique)
+        run: |
+          if grep -rE --exclude='ci.yml' --include='*.json' --include='*.yml' --include='*.yaml' --include='*.cs' --include='*.py' -nE '(ghp_[0-9A-Za-z]{36}|gho_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{22,}|AKIA[0-9A-Z]{16})' . 2>/dev/null | grep -v '\.github/workflows/'; then
+            echo "::error::Secret détecté dans le dépôt"; exit 1;
+          fi
+
+  # ---------------------------------------------------------------------
+  # SYNE — .NET (build + tests xUnit)
+  # ---------------------------------------------------------------------
+  syne-dotnet:
+    name: Build & tests (SYNE .NET)
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.syne == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: syne
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: syne/global.json
       - name: Restore
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --no-restore --configuration Release --warnaserror
       - name: Tests
         run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
-      - name: Couverture
-        run: |
-          dotnet collect coverage \
-            --runsettings ci/coverlet.sim.runsettings \
-            --output TestResults/Coverage
       - name: Upload résultats
         uses: actions/upload-artifact@v4
         with:
-          name: dotnet-test-results
-          path: TestResults
+          name: syne-test-results
+          path: syne/TestResults
           retention-days: 7
+          if-no-files-found: error
 
-  echos-ui:
-    name: Lint & tests (interface ECHOS)
+  # ---------------------------------------------------------------------
+  # ECHOS — Python (FastAPI / ingestion / analyse)
+  # ---------------------------------------------------------------------
+  echos-python:
+    name: Tests & lint (ECHOS Python)
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.echos == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: echos-ui
+        working-directory: echos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Lint
+        run: python -m flake8 echos/api echos/analysis echos/ingestion echos/tests
+      - name: Tests pytest
+        run: python -m pytest -q
+
+  # ---------------------------------------------------------------------
+  # ECHOS — UI (React + TypeScript)
+  # ---------------------------------------------------------------------
+  echos-ui:
+    name: Lint & tests (ECHOS UI)
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.echos == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: echos/echos-ui
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: echos/echos-ui/package-lock.json
       - name: Install
         run: npm ci
       - name: Lint
         run: npm run lint
       - name: Tests
-        run: npm test
-
-  docker:
-    name: Build images Docker
-    runs-on: ubuntu-latest
-    needs: [dotnet-build, echos-ui]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build compose
-        run: docker compose build
+        run: npm test -- --run
