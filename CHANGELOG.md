@@ -19,9 +19,14 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - PRISM : 12 docs + ADR-001 (choix Godot) ;
   - ADR transverses : ADR-003 (API HTTP REST 5181), ADR-004 (WebSocket 5180) + `0000-template`.
   - `docs/ETHICS_AND_SCOPE.md`.
+- **Jalon U0 — Socle & gouvernance** :
+  - `syne/` : solution .NET (`Simulation.Core`, `Simulation.Console`, `Simulation.Core.Tests`), `global.json` (SDK 10.0.400), modèle de configuration Annexe H + validation, flags CLI (`--seed`, `--max-ticks`, `--world-size`, `--config`, `--headless`) ;
+  - `echos/` : monorepo `echos/` (API FastAPI :5000, package analyse, clients d'ingestion, `echos-ui` React/TS, tests pytest) ;
+  - `.gitignore`, `.editorconfig`, branches Git Flow (`develop`), milestones dédupliqués, labels normalisés, CI remaniée (jobs filtrés `syne/**`, `echos/**`).
 
 ### Changed
 - Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → **FastAPI + Electron/React/TypeScript**, SQLite/Parquet).
+- README et INSTALLATION reflètent l'état du socle U0 ; **conteneurisation Docker reportée** au-delà du Jalon U0.
 
 ### Deprecated
 - (aucun)

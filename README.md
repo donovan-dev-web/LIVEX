@@ -5,7 +5,7 @@
 
 [![Licence: MIT](https://img.shields.io/badge/Licence-MIT-00d4a0.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-V0.1-9cf.svg)](VERSIONING.md)
-[![Statut](https://img.shields.io/badge/Statut-Exploration%20V0.1-orange.svg)](ROADMAP.md)
+[![Statut](https://img.shields.io/badge/Statut-U0%20Socle%20r%C3%A9alis%C3%A9-00d4a0.svg)](ROADMAP.md)
 [![Langue: FR](https://img.shields.io/badge/Langue-Fran%C3%A7ais-949494.svg)](GLOSSARY.md)
 
 ---
@@ -57,10 +57,14 @@ détaillée, choix techniques justifiés (ADR), éthique et limites assumées.
 ## État du projet
 
 - **Phases 0 à 5 de documentation** : ✅ terminées (socle, cadrage, SYNE, ECHOS, PRISM, consolidation).
-- **Statut global** : exploration V0.1 — documentation consolidée, implémentation des
-  composants à venir. Un prototype historique (V1/V2, `docs/docs_prototype/`) reste
-  fonctionnel et validé par 98 tests, et sert de socle d'héritage documenté (repères
-  marqués `[HÉRITÉ]` dans la monographie).
+- **Jalon U0 — Socle & gouvernance** : ✅ réalisé (branche `develop`, gouvernance
+  GitHub normalisée, pipeline CI vert) — projets **SYNE** (`syne/`) et **ECHOS** (`echos/`)
+  initialisés : moteur C#/.NET (solution, tick, monde 500×500, entités, PRNG déterministe,
+  config + CLI) et observatoire Python/FastAPI (API :5000, clients d'ingestion, UI React/TS).
+- **Statut global** : exploration V0.1 — socle des composants en place ; persistance,
+  contrats de transport et moteurs de métriques à venir (jalons U1+). Un prototype
+  historique (V1/V2, `docs/docs_prototype/`) reste référencé comme socle d'héritage
+  documenté (repères marqués `[HÉRITÉ]` dans la monographie).
 - **Installation, commandes et état technique détaillé** : voir [`INSTALLATION.md`](INSTALLATION.md).
 
 ## Documentation
