@@ -1,0 +1,68 @@
+{
+  "type": "snapshot",
+  "version": "0.1.0",
+  "run_id": "run-abc",
+  "tick": 5010,
+  "simulated_time_minutes": 5010,
+  "alive_count": 98,
+  "agents": [
+    {
+      "id": "a1",
+      "position": {
+        "x": 53.0,
+        "y": 76.5
+      },
+      "health": 80.0,
+      "energy": 60.0,
+      "hunger": 30.0,
+      "thirst": 40.0,
+      "current_action": "MoveTo"
+    },
+    {
+      "id": "a2",
+      "position": {
+        "x": 190.0,
+        "y": 12.25
+      },
+      "health": 100.0,
+      "energy": 90.0,
+      "hunger": 10.0,
+      "thirst": 15.0,
+      "current_action": null
+    },
+    {
+      "id": "a3",
+      "position": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "health": 45.0,
+      "energy": 20.0,
+      "hunger": 85.0,
+      "thirst": 70.0,
+      "current_action": "Eat"
+    }
+  ],
+  "resources": [
+    {
+      "id": "f1",
+      "type": "food",
+      "position": {
+        "x": 60.0,
+        "y": 80.0
+      },
+      "quantity": 90.0,
+      "capacity": 100.0
+    },
+    {
+      "id": "w1",
+      "type": "water",
+      "position": {
+        "x": 12.0,
+        "y": 5.0
+      },
+      "quantity": 300.0,
+      "capacity": 300.0
+    }
+  ]
+}
