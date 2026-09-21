@@ -1,11 +1,14 @@
 using Simulation.Core.Configuration;
+using Simulation.Core.Entities;
 using Simulation.Core.Prng;
+using Simulation.Core.Loop;
 
 namespace Simulation.Console;
 
 /// <summary>
 /// Point d'entrée SYNE — mode CLI/batch (ADR-002).
 /// Priorité de configuration : défauts → --config → flags CLI (CONFIGURATION.md §5).
+/// Boucle minimale : monde + entités + grille spatiale + tick (SYNE-002/003/004).
 /// </summary>
 public static class Program
 {
@@ -35,11 +38,7 @@ public static class Program
                 return 2;
             }
 
-            if (cli.Headless != true)
-            {
-                PrintSummary(options);
-                PrintDeterminismProbe(options.Random.Seed);
-            }
+            RunBatch(options, cli.Headless == true);
 
             return 0;
         }
@@ -71,25 +70,55 @@ public static class Program
         return options;
     }
 
-    private static void PrintSummary(SimulationOptions options)
+    private static void RunBatch(SimulationOptions options, bool headless)
     {
-        System.Console.WriteLine("SYNE — configuration résolue :");
-        System.Console.WriteLine($"  monde : {options.Simulation.WorldWidth} x {options.Simulation.WorldHeight}");
-        System.Console.WriteLine($"  maxTicks : {options.Simulation.MaxTicks} (1 tick = 1 minute simulée)");
-        System.Console.WriteLine($"  PRNG : {options.Random.Engine}, seed : {options.Random.Seed}");
-    }
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
-    private static void PrintDeterminismProbe(ulong seed)
-    {
-        var rng = Xoshiro256StarStar.Create(seed);
-        System.Console.WriteLine("  sonde déterminisme (3 tirages) :");
-        System.Console.Write("    ");
-        for (int i = 0; i < 3; i++)
+        Xoshiro256StarStar rng = Xoshiro256StarStar.Create(options.Random.Seed);
+        var world = new Simulation.Core.World.World(
+            new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
+            options.Agents.Perception.Radius);
+
+        EntityTemplate template = EntityTemplate.DefaultA;
+        for (ulong i = 0; i < (ulong)options.Agents.InitialCount; i++)
         {
-            rng = rng.NextUInt64(out ulong value);
-            System.Console.Write(value.ToString("x16") + "  ");
+            (Entity entity, rng) = EntityFactory.CreateNext(template, world, rng, i + 1, bornAt: 0);
+            world.AddEntity(entity);
         }
 
-        System.Console.WriteLine();
+        var loop = new SimulationLoop(world, rng);
+        loop.Run(options.Simulation.MaxTicks);
+
+        sw.Stop();
+
+        if (!headless)
+        {
+            PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
+        }
+    }
+
+    private static void PrintSummary(SimulationOptions options, SimulationLoop loop, EntityTemplate template, long elapsedMs)
+    {
+        var summary = new System.Text.StringBuilder();
+        summary.AppendLine($"SYNE — boucle minimale ({template.Species}) :");
+        summary.AppendLine($"  monde : {options.Simulation.WorldWidth} x {options.Simulation.WorldHeight} | grille : {loop.World.Grid.CellCountX}x{loop.World.Grid.CellCountY}");
+        summary.AppendLine($"  PRNG : {options.Random.Engine}, seed : {options.Random.Seed}");
+
+        if (loop.CurrentTick > 0)
+        {
+            var head = BuildTickLine(1UL, loop.World.Entities.Count);
+            var tail = BuildTickLine(loop.CurrentTick, loop.World.Entities.Count);
+            summary.AppendLine("(tête) " + head);
+            summary.AppendLine("  …    …");
+            summary.AppendLine("(queue) " + tail);
+        }
+
+        summary.AppendLine($"  exécuté en {elapsedMs} ms | 1 tick = 1 minute simulée");
+        System.Console.WriteLine(summary.ToString());
+    }
+
+    private static string BuildTickLine(ulong tick, int entityCount)
+    {
+        return $"tick {tick:D8}  {SimulationTime.FormatClock(tick)}  entités : {entityCount}";
     }
 }
