@@ -1,0 +1,49 @@
+# Systèmes
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Éditeurs / IDE
+.vscode/
+.idea/
+*.user
+*.suo
+
+# .NET (SYNE)
+**/bin/
+**/obj/
+**/TestResults/
+*.nupkg
+
+# Python (ECHOS)
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+*.egg-info/
+.dmypy.json
+.pyre/
+
+# Node / front (ECHOS UI)
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+
+# Données de run & persistance locale
+runs/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.parquet
+
+# Logs
+*.log

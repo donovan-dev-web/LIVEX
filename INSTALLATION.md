@@ -8,46 +8,51 @@
 
 ---
 
-> Les implémentations V0.1 sont en cours de conception (documentation d'abord).
-> Les commandes ci-dessous reflètent la cible ; l'état courant du dépôt contient la
-> documentation et le prototype historique ([`docs/docs_prototype/`](docs/docs_prototype/)).
+> Les implémentations V0.1 du **Jalon U0** (socle & gouvernance) sont en place :
+> `syne/` (moteur C#/.NET) et `echos/` (observatoire Python/FastAPI + UI React/TS).
+> La conteneurisation Docker est **hors périmètre U0** (voir `ROADMAP.md`).
 
 ## Prérequis
 
-- [.NET SDK](https://dotnet.microsoft.com/) (moteur SYNE / prototype `Simulation.Console`)
-- Docker & Docker Compose (orchestration complète, cible V0.1)
+- [.NET SDK](https://dotnet.microsoft.com/download/dotnet/10.0) ≥ 10.0.4xx (pinné `syne/global.json`)
+- Python 3.11+ (ECHOS API/analyse) et Node 20+ (ECHOS UI)
 
-## Lancer le prototype historique (SYNE, tête-à-tête)
-
-```bash
-dotnet run --project simulation-core/Simulation.Console -- --seed 12345 --max-ticks 1000
-```
-
-- `--seed` : graine du PRNG (xoshiro256\*\*), garantit la reproductibilité bit-à-bit
-  pour une même config et une même version du moteur.
-- `--max-ticks` : nombre de ticks simulés avant arrêt.
-
-## Orchestration complète (cible V0.1)
+## Lancer SYNE (moteur — CLI)
 
 ```bash
-docker compose up --build
+dotnet run --project syne/Simulation.Console -- --seed 12345 --max-ticks 1000
 ```
 
-Cette commande est la cible d'orchestration des trois modules (SYNE, ECHOS, PRISM)
-une fois leur implémentation V0.1 disponible. Elle n'est pas encore fonctionnelle
-en l'état actuel du dépôt — voir [`ROADMAP.md`](ROADMAP.md) pour l'avancement.
+Flags : `--seed <s>`, `--max-ticks <n>`, `--world-size <w> <h>`, `--config <path>`, `--headless`.
 
-## État technique actuel
+## Lancer ECHOS (observatoire)
 
-- Prototype historique fonctionnel, validé par 98 tests (`[HÉRITÉ]`).
-- Documentation V0.1 (phases 0 à 5) consolidée — voir la
-  [monographie complète](docs/LIVEX-Monographie.pdf).
-- Implémentation des composants V0.1 : à venir.
+```bash
+# API FastAPI (port 5000)
+python3 -m venv echos/.venv
+echos/.venv/bin/pip install -r echos/requirements-dev.txt
+echos/.venv/bin/uvicorn echos.api.app:app --app-dir echos --host 127.0.0.1 --port 5000
+
+# Interface (React + TypeScript)
+cd echos/echos-ui && npm ci && npm run dev
+```
+
+## Prototype historique
+
+Le prototype V1/V2 (validé par 98 tests, [`docs/docs_prototype/`](docs/docs_prototype/))
+reste référencé comme socle d'héritage documenté (`[HÉRITÉ]`).
+
+## Orchestration complète (cible future)
+
+`docker compose up --build` est la cible d'orchestration des trois modules
+(SYNE, ECHOS, PRISM) une fois leur conteneurisation définie — **non encore
+actif** (hors périmètre U0, voir [`ROADMAP.md`](ROADMAP.md)).
 
 ## Points restés ouverts
 
-- Commandes cibles (`docker compose`, V0.1) à revalider lors de l'implémentation réelle.
-- Les références au prototype restent marquées `[HÉRITÉ]` jusqu'à la refonte V0.1.
+- Contrats de transport réels SYNE (WebSocket 5180 / HTTP 5181) : jalons U1+.
+- Persistance SQLite : jalon U8.
+- PRISM : créé après U0 → U8 (condition ROADMAP).
 
 ## Aller plus loin
 
