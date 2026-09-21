@@ -150,4 +150,4 @@ Le **déterminisme bit-à-bit** est un contrat transverse : le format `WorldSnap
 ## Points restés ouverts dans ce document
 - Moteur graphique définitif de PRISM : [OUVERT] (Godot 4.7.2 pour le prototype, piste [HÉRITÉ]).
 - Port de l'API REST ECHOS en V0.1 : **5000** (FastAPI local, confirmé dans `docs/docs-echos/API_REST.md`).
-- La structuration du dépôt final (`syne/`, `echos/`, `prism/`) vs l'historique `simulation-core/`, `analyzer/`, `echos-ui/`, `godot-renderer/` est en cours de consolidation.
+- La structuration courante du dépôt : `syne/`, `echos/` initialisés (Jalon U0) ; `prism/` créé après U0 → U8 (condition ROADMAP §6).
