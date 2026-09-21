@@ -1,0 +1,95 @@
+{
+  "type": "snapshot",
+  "version": "0.1.0",
+  "runId": "run-u2",
+  "tick": 10,
+  "simulatedTimeMinutes": 10,
+  "aliveCount": 3,
+  "agents": [
+    {
+      "id": "A",
+      "species": "Entité A",
+      "position": { "x": 10.0, "y": 20.0 },
+      "energy": 50,
+      "hunger": 30,
+      "thirst": 20,
+      "fatigue": 10.5,
+      "currentAction": "SeekFood",
+      "traits": { "courage": 0.6, "caution": 0.4 },
+      "beliefs": [
+        { "subject": "water", "predicate": "safe", "value": "true", "confidence": 0.9 },
+        { "subject": "food", "predicate": "abundant", "value": "true", "confidence": 0.6 }
+      ],
+      "goals": [{ "kind": "SeekFood", "age": 10 }],
+      "trust": [
+        { "peerId": "B", "trust": 0.7 },
+        { "peerId": "C", "trust": 0.4 }
+      ],
+      "memoryCount": 8
+    },
+    {
+      "id": "B",
+      "species": "Entité A",
+      "position": { "x": 30.0, "y": 40.0 },
+      "energy": 60,
+      "hunger": 40,
+      "thirst": 30,
+      "fatigue": 5.0,
+      "currentAction": "SeekWater",
+      "traits": { "courage": 0.8, "caution": 0.2 },
+      "beliefs": [
+        { "subject": "water", "predicate": "safe", "value": "false", "confidence": 0.8 },
+        { "subject": "food", "predicate": "abundant", "value": "false", "confidence": 0.7 }
+      ],
+      "goals": [{ "kind": "SeekWater", "age": 4 }],
+      "trust": [{ "peerId": "A", "trust": 0.6 }],
+      "memoryCount": 5
+    },
+    {
+      "id": "C",
+      "species": "Entité A",
+      "position": { "x": 50.0, "y": 60.0 },
+      "energy": 20,
+      "hunger": 90,
+      "thirst": 70,
+      "fatigue": 30.0,
+      "currentAction": "Idle",
+      "traits": { "courage": 0.9 },
+      "beliefs": [
+        { "subject": "water", "predicate": "safe", "value": "true", "confidence": 0.5 }
+      ],
+      "goals": [],
+      "trust": [],
+      "memoryCount": 0
+    }
+  ],
+  "resources": [
+    { "id": "r1", "type": "food", "position": { "x": 0.0, "y": 0.0 }, "quantity": 30, "capacity": 100 },
+    { "id": "r2", "type": "water", "position": { "x": 0.0, "y": 0.0 }, "quantity": 50, "capacity": 200 }
+  ],
+  "events": [
+    { "type": "message_sent", "tick": 5, "agentId": "A", "targetId": "B", "value": { "hops": 1, "content": "water" } },
+    { "type": "message_sent", "tick": 8, "agentId": "B", "targetId": "C", "value": { "hops": 2, "content": "food" } },
+    { "type": "message_sent", "tick": 10, "agentId": "C", "targetId": "A", "value": { "hops": 1, "content": "water" } },
+    { "type": "resource_consumed", "tick": 10, "agentId": "A", "value": { "type": "food", "amount": 10 } },
+    { "type": "resource_consumed", "tick": 10, "agentId": "B", "value": { "type": "water", "amount": 25 } },
+    { "type": "group_formed", "tick": 5, "value": { "groupId": "g1", "members": ["A", "B", "C"] } },
+    { "type": "group_dissolved", "tick": 10, "value": { "groupId": "g1", "lifetime": 15, "success": true, "membersIn": 3, "membersOut": 1 } }
+  ],
+  "history": [
+    { "tick": 1, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Sleep" }, "resources": [ { "type": "food", "quantity": 5, "capacity": 100 } ] },
+    { "tick": 2, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Sleep" }, "resources": [ { "type": "food", "quantity": 15, "capacity": 100 } ] },
+    { "tick": 3, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Sleep" }, "resources": [ { "type": "food", "quantity": 85, "capacity": 100 } ] },
+    { "tick": 4, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 50, "capacity": 100 } ] },
+    { "tick": 5, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 10, "capacity": 100 } ] },
+    { "tick": 6, "actions": { "A": "Idle", "B": "Idle", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 40, "capacity": 100 } ] },
+    { "tick": 7, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 90, "capacity": 100 } ] },
+    { "tick": 8, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 70, "capacity": 100 } ] },
+    { "tick": 9, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 70, "capacity": 100 } ] },
+    { "tick": 10, "actions": { "A": "SeekFood", "B": "SeekWater", "C": "Idle" }, "resources": [ { "type": "food", "quantity": 75, "capacity": 100 } ] }
+  ],
+  "groupEvents": [
+    { "type": "group_formed", "tick": 5, "value": { "groupId": "g1", "members": ["A", "B", "C"] } },
+    { "type": "group_dissolved", "tick": 10, "value": { "groupId": "g1", "lifetime": 15, "success": true, "membersIn": 3, "membersOut": 1 } }
+  ]
+}

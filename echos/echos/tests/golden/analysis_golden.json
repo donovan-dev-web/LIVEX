@@ -1,0 +1,62 @@
+{
+  "CognitiveDiversityMetrics": {
+    "BeliefConfidenceVariance": 0.020000000000000004,
+    "BeliefDisagreement": 0.41666666666666663,
+    "BeliefDiversity": 1.9219280948873623,
+    "DecisionDiversity": 1.0,
+    "GoalConvergence": 0.3333333333333333,
+    "GoalDiversity": 1.584962500721156,
+    "IntentionStability": 7.0,
+    "TraitExpressionDiversity": 0.01277777777777778
+  },
+  "FeedbackLoopDetector": {
+    "CriticalLoops": 4,
+    "IdentifiedLoops": 4,
+    "LoopStrength": 0.7,
+    "LoopTypes": {
+      "negative": 2,
+      "positive": 2
+    },
+    "SystemStability": 0.33333333333333337
+  },
+  "GoalConvergenceMetrics": {
+    "CooperationPotential": 0.3333333333333333,
+    "GlobalGoalAlignment": 0.3333333333333333,
+    "GoalDiversity": 1.584962500721156,
+    "GoalTypeCounts": {
+      "Idle": 1,
+      "SeekFood": 1,
+      "SeekWater": 1
+    }
+  },
+  "GroupDynamicsMetrics": {
+    "ActiveGroups": 1.0,
+    "AverageGroupLifetime": 15.0,
+    "AverageGroupSize": 3.0,
+    "GroupDissolutionRate": 166.66666666666666,
+    "GroupFormationRate": 166.66666666666666,
+    "GroupObjectiveSuccessRate": 1.0,
+    "MemberTurnoverRate": 55.55555555555555
+  },
+  "InformationPropagationMetrics": {
+    "InformationDiffusionSpeed": 10.0,
+    "MaxMessageHops": 2.0,
+    "MessageVolume": 0.3333333333333333,
+    "NetworkCentrality": 1.0,
+    "RumorAccuracyDegradation": 0.12999999999999998
+  },
+  "ResourceSustainabilityMetrics": {
+    "CriticalityPoints": 0.0,
+    "RecoveryTime": 2.0,
+    "ResourceToConsumptionRatio": 2.5
+  },
+  "SocialComplexityMetrics": {
+    "AverageCentrality": 0.5,
+    "AverageTrustLevel": 0.5666666666666667,
+    "ClusteringCoefficient": 0.0,
+    "CommunityStability": 0.0,
+    "NetworkDensity": 0.3333333333333333,
+    "NumberOfCommunities": 1,
+    "TrustVariance": 0.01555555555555555
+  }
+}
