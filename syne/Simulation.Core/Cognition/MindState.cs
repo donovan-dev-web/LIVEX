@@ -16,12 +16,24 @@ public sealed class MindState
         ArgumentNullException.ThrowIfNull(options);
         Memory = new Memory(options.Agents.Memory);
         Beliefs = new BeliefSet();
+        Trust = new Relationships(options.Agents.Trust);
+        Needs = new BodyNeeds();
+    }
+
+    private MindState(SimulationOptions options, Memory memory, BeliefSet beliefs, Relationships trust)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        Memory = memory;
+        Beliefs = beliefs;
+        Trust = trust;
         Needs = new BodyNeeds();
     }
 
     public Memory Memory { get; }
 
     public BeliefSet Beliefs { get; }
+
+    public Relationships Trust { get; }
 
     public BodyNeeds Needs { get; }
 
@@ -34,6 +46,36 @@ public sealed class MindState
     public UtilityScore? LastDecision { get; private set; }
 
     internal void RecordDecision(UtilityScore score) => LastDecision = score;
+
+    /// <summary>
+    /// Naissance par fusion consentie (SYNE-020, décision n°16) : l'entité née
+    /// hérite des traits (via l'Entity), de la **mémoire intergénérationnelle**
+    /// et des **croyances** des deux parents (§6.6.2/§6.6.3). Les besoins sont
+    /// vierges. La diffusion de cet état dans la simulation (action de
+    /// reproduction) est câblée au moteur d'actions (ph4).
+    /// </summary>
+    public static MindState Born(
+        SimulationOptions options,
+        MindState parentA,
+        MindState parentB,
+        ulong birthTick)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(parentA);
+        ArgumentNullException.ThrowIfNull(parentB);
+
+        Memory memory = Inheritance.InheritMemory(
+            parentA.Memory.AllEntries.Concat(parentB.Memory.AllEntries),
+            options.Agents.Memory,
+            birthTick);
+
+        BeliefSet beliefs = Inheritance.InheritBeliefs(
+            parentA.Beliefs.All.Concat(parentB.Beliefs.All),
+            options.Agents.Beliefs,
+            birthTick);
+
+        return new MindState(options, memory, beliefs, new Relationships(options.Agents.Trust));
+    }
 
     /// <summary>
     /// Probabilité de succès du désir (COGNITIVE_ARCHITECTURE.md §5) : base de

@@ -32,6 +32,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   camelCase déterministe**. Aucun tirage PRNG ajouté (déterminisme préservé). Diffusion à tous les
   consommateurs connectés. Tests : `ObservabilitySensorTests` (Core, format/épinglage camelCase) +
   **`Simulation.Console.Tests`** (tests de fil WebSocket réels, 2). Suite : **129 tests**.
+- **Jalon SYNE ph2 — Mémoire intergénérationnelle + Croyances + Confiance (SYNE-020 → SYNE-022, issues #13/#14/#15, milestone ph2)** :
+  - **Confiance inter-entités (SYNE-021)** : `Relationships` (Interact +bonus, ObserveDeception −sanction, Tick décroissance ×`TrustDecayFactorPerTick`, défaut **0.9** — COMMUNICATION_PROTOCOL §3), confiance initiale 0.5, bonus de vérité 0.05, sanction de mensonge 0.2 ; `MindState.Trust` intégré au pipeline (Tick décroissance à chaque step).
+  - **Mémoire intergénérationnelle (SYNE-020)** : `Inheritance.FuseTraits` (moyenne), `InheritMemory` (union, seuil de salience, ré-horodatage `birthTick`), `InheritBeliefs` (union, confiance max sur fait identique, source « héritage », expiration restampée) ; naissance par fusion consentie `MindState.Born(options, parentA, parentB, birthTick)` (décision n°16, COGNITIVE_ARCHITECTURE §6.6).
+  - **Éviction mémoire (SYNE-022)** : `Memory.AllEntries` ; stress test — capacité 1000 **jamais dépassée** (catégories mixtes, éviction du moins saillant).
+  - **Observabilité étendue (additif, contrat V0.1 inchangé)** : `AgentSnapshot.From(entity, mind, currentTick)` émet `traits`, `beliefs` (±confiance), `goals` (kind/age), `trust` (peerId/level), `memoryCount` (camelCase) — consommé par les 7 moteurs ECHOS au jalon U2 ECHOS.
+  - Tests : +17 (129 → **146**). Build Release 0 warning / 0 erreur.
 
 ### Changed
 - ARCHITECTURE.md : §4 (couche applicative réelle, Dockerfile reporté) et §6 (PRNG défini) mis à jour.
