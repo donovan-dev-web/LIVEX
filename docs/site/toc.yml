@@ -1,0 +1,65 @@
+- name: Accueil
+  href: index.md
+- name: Transversal
+  items:
+    - name: README du projet
+      href: articles/transverse/README.md
+    - name: Vision
+      href: articles/transverse/VISION.md
+    - name: Architecture
+      href: articles/transverse/ARCHITECTURE.md
+    - name: Feuille de route
+      href: articles/transverse/ROADMAP.md
+    - name: Glossaire
+      href: articles/transverse/GLOSSARY.md
+    - name: Installation
+      href: articles/transverse/INSTALLATION.md
+    - name: Versionnage
+      href: articles/transverse/VERSIONING.md
+    - name: FAQ
+      href: articles/transverse/FAQ.md
+    - name: Contribuer
+      href: articles/transverse/CONTRIBUTING.md
+    - name: Changelog
+      href: articles/transverse/CHANGELOG.md
+- name: SYNE — moteur
+  items:
+    - name: Lire le composant
+      href: articles/syne/README.md
+    - name: Vision SYNE
+      href: articles/syne/VISION.md
+    - name: Architecture SYNE
+      href: articles/syne/ARCHITECTURE.md
+    - name: Contrats d'ingestion
+      href: articles/syne/API_CONTRACTS.md
+    - name: Spécification systèmes
+      href: articles/syne/SYSTEMS_SPEC.md
+    - name: Configuration
+      href: articles/syne/CONFIGURATION.md
+    - name: Tests
+      href: articles/syne/TESTING.md
+- name: ECHOS — analyse
+  items:
+    - name: Lire le composant
+      href: articles/echos/README.md
+    - name: Vision ECHOS
+      href: articles/echos/VISION.md
+    - name: Architecture ECHOS
+      href: articles/echos/ARCHITECTURE.md
+    - name: Feuille de route ECHOS
+      href: articles/echos/ROADMAP.md
+- name: PRISM — rendu
+  items:
+    - name: Lire le composant
+      href: articles/prism/README.md
+    - name: Architecture PRISM
+      href: articles/prism/ARCHITECTURE.md
+    - name: Rendu
+      href: articles/prism/RENDERING_SPEC.md
+    - name: Scènes
+      href: articles/prism/SCENE_SPEC.md
+    - name: API de transport
+      href: articles/prism/TRANSPORT_API.md
+- name: API · Simulation.Core
+  tocHref: api/toc.yml
+  href: api/toc.html

@@ -1,0 +1,63 @@
+name: Docs site (GitHub Pages)
+
+on:
+  push:
+    branches: [develop]
+    paths:
+      - "docs/**"
+      - "docs/site/**"
+      - "syne/**"
+      - ".github/workflows/docs-pages.yml"
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "10.0.x"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build DocFX & publish gh-pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # --- SYNE : XML de documentation (Simulation.Core) ---
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: syne/global.json
+      - name: Build Simulation.Core (Release + XML)
+        working-directory: syne
+        run: dotnet build Simulation.Core/Simulation.Core.csproj -c Release --warnaserror
+
+      # --- DocFX : génération du site (landing + docs clés + API) ---
+      - name: Install DocFX
+        run: dotnet tool install --global docfx
+      - name: Sync docs clés
+        run: bash docs/site/sync-docs.sh
+      - name: DocFX metadata (API Simulation.Core)
+        working-directory: docs/site
+        run: ~/.dotnet/tools/docfx metadata
+      - name: DocFX build
+        working-directory: docs/site
+        run: ~/.dotnet/tools/docfx build
+
+      # --- Publication sur la branche dédiée gh-pages ---
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/site/_site
+          publish_branch: gh-pages
+          force_orphan: true
+          enable_jekyll: false
+          allow_empty_commit: true
+          commit_message: "docs: génération du site (DocFX)"
