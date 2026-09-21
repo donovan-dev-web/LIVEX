@@ -1,0 +1,10 @@
+[
+  {
+    "type": "snapshot",
+    "tick": 5010
+  },
+  {
+    "type": "decision_made",
+    "tick": 5010
+  }
+]

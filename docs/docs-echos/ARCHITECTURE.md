@@ -49,7 +49,7 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 
 | Système | Rôle | Doc |
 | :-- | :-- | :-- |
-| Ingestion temps réel | Consommateur WebSocket 5180 → `snapshot`/`event` | `../docs-syne/API_CONTRACTS.md` |
+| Ingestion temps réel | Consommateur WebSocket 5180 → `snapshot`/`event` — clients `ws_client` (transport injectable) + `control_client` HTTP 5181 | `../docs-syne/API_CONTRACTS.md`, `echos/echos/ingestion/` |
 | 7 moteurs de métriques | Calculs d'analyse | `METRICS_SPEC.md` |
 | Indicateurs d'émergence | Score composite, auto-détection | `EMERGENCE_INDICATORS.md` |
 | Analyse causale | Reconstruction des chaînes | `CAUSAL_ANALYSIS.md` |
@@ -72,13 +72,17 @@ echos/
 │   ├── api/app.py            # create_app() FastAPI, /health → {status, component, version}
 │   ├── analysis/             # 7 moteurs de métriques (METRICS_SPEC §2-8)
 │   │   └── __init__.py       #   registre ENGINES + known_engines() → {moteur: métriques}
-│   └── ingestion/            # clients ws/control SYNE (jalon ECHOS-004)
-├── tests/                    # pytest (api, registre moteurs, versionnage)
+│   └── ingestion/            # clients ws/control SYNE (API_CONTRACTS.md §2-3)
+│       ├── models.py         #   WorldSnapshot / ExternalEvent (camelCase) + parse_message
+│       ├── ws_client.py      #   WsClient :5180 (transport injectable, réception déterministe)
+│       └── control_client.py #   ControlClient :5181 (start / pause / resume / reset)
+├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
 └── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
 ```
 
 - `echos` est le composant **Application + Analyse** ; `echos-ui` le composant **Interface** (§1).
 - Les moteurs exposent le contrat `ENGINE_NAME` / `METRICS` / `compute(snapshot)` ; implémentation au jalon U1.
+- Les contrats d'ingestion (`WorldSnapshot`/`ExternalEvent`) sont des modèles pydantic camelCase validés ; le client WebSocket et le client de contrôle sont testés de façon **déterministe sur fixtures** (E2E réel SYNE = jalon U1).
 
 ---
 
