@@ -9,10 +9,11 @@ namespace Simulation.Console;
 /// Point d'entrée SYNE — mode CLI/batch (ADR-002).
 /// Priorité de configuration : défauts → --config → flags CLI (CONFIGURATION.md §5).
 /// Boucle minimale : monde + entités + grille spatiale + tick (SYNE-002/003/004).
+/// Mode --observe : diffusion WebSocket des snapshots/événements par tick (SYNE-080).
 /// </summary>
 public static class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         try
         {
@@ -38,7 +39,14 @@ public static class Program
                 return 2;
             }
 
-            RunBatch(options, cli.Headless == true);
+            if (cli.Observe == true)
+            {
+                await RunObservedAsync(options, cli);
+            }
+            else
+            {
+                RunBatch(options, cli.Headless == true);
+            }
 
             return 0;
         }
@@ -74,6 +82,44 @@ public static class Program
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
+        (_, var world, SimulationLoop loop, EntityTemplate template) = BuildSimulation(options);
+        loop.Run(options.Simulation.MaxTicks);
+
+        sw.Stop();
+
+        if (!headless)
+        {
+            PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
+        }
+    }
+
+    /// <summary>
+    /// Mode --observe (SYNE-080) : boucle pilotée par l'émetteur, chaque tick
+    /// diffusé en WebSocket (snapshot + événements) puis résumé final.
+    /// </summary>
+    private static async Task RunObservedAsync(SimulationOptions options, CliOptions cli)
+    {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        (_, var world, SimulationLoop loop, EntityTemplate template) = BuildSimulation(options);
+
+        int port = cli.ObservePort ?? Observability.ObservabilityServer.DefaultPort;
+        await using var server = new Observability.ObservabilityServer(port);
+        server.Start();
+        var emitter = new Observability.ObservabilityTickEmitter(loop, options.Random.Seed, server);
+        await emitter.RunAsync(options.Simulation.MaxTicks);
+
+        sw.Stop();
+
+        if (cli.Headless != true)
+        {
+            PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
+            System.Console.WriteLine($"  observabilité : ws://127.0.0.1:{server.Port}/ | {emitter.TicksEmitted} ticks diffusés | {server.ClientCount} client(s)");
+        }
+    }
+
+    private static (Xoshiro256StarStar Rng, Simulation.Core.World.World World, SimulationLoop Loop, EntityTemplate Template) BuildSimulation(SimulationOptions options)
+    {
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(options.Random.Seed);
         var world = new Simulation.Core.World.World(
             new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
@@ -87,14 +133,7 @@ public static class Program
         }
 
         var loop = new SimulationLoop(world, rng);
-        loop.Run(options.Simulation.MaxTicks);
-
-        sw.Stop();
-
-        if (!headless)
-        {
-            PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
-        }
+        return (rng, world, loop, template);
     }
 
     private static void PrintSummary(SimulationOptions options, SimulationLoop loop, EntityTemplate template, long elapsedMs)
