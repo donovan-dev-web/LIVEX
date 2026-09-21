@@ -50,6 +50,7 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 | Système | Rôle | Doc |
 | :-- | :-- | :-- |
 | Ingestion temps réel | Consommateur WebSocket 5180 → `snapshot`/`event` — clients `ws_client` (transport injectable) + `control_client` HTTP 5181 | `../docs-syne/API_CONTRACTS.md`, `echos/echos/ingestion/` |
+| Stockage d'analyse | Agrégation incrémentale par tick (sans perte, sous-échantillonnage `sample_every`), SQLite `AnalyticsStore` (schéma stable versionné) + séries lourdes Parquet (jointure SQLite↔Parquet cohérente), pipeline `consume()` | `echos/echos/storage/` |
 | 7 moteurs de métriques | Calculs d'analyse | `METRICS_SPEC.md` |
 | Indicateurs d'émergence | Score composite, auto-détection | `EMERGENCE_INDICATORS.md` |
 | Analyse causale | Reconstruction des chaînes | `CAUSAL_ANALYSIS.md` |
@@ -74,8 +75,14 @@ echos/
 │   │   └── __init__.py       #   registre ENGINES + known_engines() → {moteur: métriques}
 │   └── ingestion/            # clients ws/control SYNE (API_CONTRACTS.md §2-3)
 │       ├── models.py         #   WorldSnapshot / ExternalEvent (camelCase) + parse_message
+│       ├── stream.py         #   TickSegment / aligned_ticks (flux aligné par tick)
 │       ├── ws_client.py      #   WsClient :5180 (transport injectable, réception déterministe)
 │       └── control_client.py #   ControlClient :5181 (start / pause / resume / reset)
+├── storage/                  # stockage d'analyse (ECHOS-011 → 013)
+│   ├── aggregation.py        #   TickRecord.from_segment / summarize / downsample
+│   ├── sqlite.py             #   AnalyticsStore (schéma stable, SCHEMA_VERSION)
+│   ├── parquet.py            #   séries lourdes PyArrow + coherence_errors
+│   └── pipeline.py           #   consume() flux → SQLite + Parquet
 ├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
 └── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
 ```

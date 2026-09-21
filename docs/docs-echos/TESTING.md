@@ -89,6 +89,19 @@ PY
 Attendu : ticks consécutifs (ex. 201→202→203), `alive_count` constant,
 chaque événement au tick de son snapshot (alignement strict).
 
+### 4.4 Agrégation & stockage (ECHOS-011 → ECHOS-013)
+
+`test_aggregation.py` : réduction **déterministe** d'un segment en
+`TickRecord` (2 lectures → lignes identiques), conservation de **tous** les
+ticks sans échantillonnage, `sample_every`/`downsample` (1 sur N).
+`test_sqlite_store.py` : **schéma stable** (tables + `SCHEMA_VERSION`
+comparées exactement), règles de réécriture (upsert idempotent),
+persistance fermeture/réouverture. `test_parquet_store.py` : roundtrip
+PyArrow ↔ Parquet bit à bit et **cohérence** SQLite↔Parquet
+(`coherence_errors`). `test_pipeline.py` : bout-en-bout sur **serveur
+WebSocket réel in-process** → SQLite + Parquet (compteurs exacts puis
+relecture et jointure cohérente).
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).
