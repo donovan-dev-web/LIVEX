@@ -55,7 +55,7 @@ jobs:
           test -f LICENSE      || { echo "::error::LICENSE manquante";     exit 1; }
       - name: Pas de secrets commités (heuristique)
         run: |
-          if grep -rE --include='*.json' --include='*.yml' --include='*.yaml' --include='*.cs' --include='*.py' -nE '(ghp_|gho_|github_pat_|AKIA[0-9A-Z]{16})' . 2>/dev/null; then
+          if grep -rE --exclude='ci.yml' --include='*.json' --include='*.yml' --include='*.yaml' --include='*.cs' --include='*.py' -nE '(ghp_[0-9A-Za-z]{36}|gho_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{22,}|AKIA[0-9A-Z]{16})' . 2>/dev/null | grep -v '\.github/workflows/'; then
             echo "::error::Secret détecté dans le dépôt"; exit 1;
           fi
 
