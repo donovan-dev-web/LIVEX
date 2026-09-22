@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `PERSISTENCE.md`, `CONFIGURATION.md`
 **Source Monographie** : §2.3.4, §3.6.2–3.6.4 (seed, PRNG, sérialisation), ADR-006, §7.5 (validation)
 
@@ -52,11 +52,13 @@
 
 **Contrat V0.1 (jalon SYNE ph1)** : le pipeline cognitif (perception → décision) ne consomme **aucun** tirage du PRNG — l'avance du générateur reste **1 tirage/tick** ; les cibles de déplacement dérivent d'un déterminisme propre (hash SplitMix64 stable, sans passerelle RNG).
 
+**Jalon SYNE ph3 (engineVersion 0.2.0)** : la délibération à fréquence configurable (décision n°14), les interruptions par besoin critique (décision n°15), la sélection avec hystérésis et le tirage de conflit de priorités (décision n°22) restent **0 tirage PRNG** — le tirage probabiliste de `PriorityConflictResolver` dérive d'un hash SplitMix64 de (entityId, tick, kinds). Checksum de la trajectoire recalculé (0xab56603aedd578af → **0xe8d69e462fc22df7**).
+
 ## 7. Impacts & contractuels
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion`.
+  - mise à jour de `engineVersion` (0.2.0 au jalon SYNE ph3 ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
 
 ---

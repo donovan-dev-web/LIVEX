@@ -63,6 +63,8 @@ public sealed class CognitionPipeline
     {
         MindState mind = GetOrCreate(entity.Id.Value, entity);
         mind.Factors ??= new AgentFactors(entity.Traits);
+        mind.DeliberatedThisTick = false;
+        mind.InterruptedThisTick = false;
 
         int observed = 0;
         if (_perception.ShouldPerceive(entity, currentTick))
@@ -78,21 +80,127 @@ public sealed class CognitionPipeline
         mind.AcknowledgePerceptions(observed);
         mind.Needs.Advance(_options.Agents.Needs);
 
-        // Délibération : objectifs actifs + candidats, évalués par l'utilité.
-        IReadOnlyList<Goal> active = ActiveGoals(mind, currentTick);
-        IReadOnlyList<Goal> generated = DesireFactory.Generate(mind.Needs, currentTick, active.Select(goal => goal.Kind));
-        var candidates = new List<Goal>();
-        candidates.AddRange(active);
-        candidates.AddRange(generated);
+        ActionSettings actions = _options.Agents.Actions;
+        DesireKind chosenKind;
 
-        UtilityScore best = Deliberate(mind, candidates, currentTick);
-        mind.RecordDecision(best);
-        Goal? chosen = candidates.FirstOrDefault(candidate => candidate.Kind == best.Kind);
-        mind.Intention = best.Kind == DesireKind.Idle || chosen is null
+        // Délibération à fréquence configurable (décision n°14) : entre deux
+        // délibérations, l'intention est conservée (holdover) telle quelle.
+        if (ShouldDeliberate(entity, currentTick))
+        {
+            IReadOnlyList<Goal> active = ActiveGoals(mind, currentTick);
+            IReadOnlyList<Goal> generated = DesireFactory.Generate(mind.Needs, currentTick, active.Select(goal => goal.Kind));
+            var candidates = new List<Goal>(active.Count + generated.Count);
+            candidates.AddRange(active);
+            candidates.AddRange(generated);
+
+            (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(mind, candidates, currentTick, entity.Id.Value);
+            mind.RecordDecision(scores, best, deliberated: true, interrupted: false, currentTick, entity.Id.Value);
+            mind.DeliberatedThisTick = true;
+            chosenKind = best.Kind;
+        }
+        else
+        {
+            chosenKind = mind.LastDecision is { } held ? held.Kind : DesireKind.Idle;
+        }
+
+        // Interruptions d'action (décision n°15, COGNITIVE_ARCHITECTURE.md §6) :
+        // un besoin critique dont l'utilité surpasse de > utilityExcessMargin
+        // l'action en cours reprend la main, y compris entre deux délibérations.
+        DesireKind? interruptedKind = _options.Agents.Actions.Interruption.Enabled
+            ? TryInterrupt(mind, chosenKind, entity.Id.Value, currentTick)
+            : null;
+        if (interruptedKind is { } interruption)
+        {
+            chosenKind = interruption;
+        }
+
+        Goal? goal = chosenKind == DesireKind.Idle
             ? new Goal(DesireKind.Idle, currentTick)
-            : chosen.Value;
+            : mind.Intention is { } intention && intention.Kind == chosenKind
+                ? intention
+                : new Goal(chosenKind, currentTick);
+        mind.Intention = goal;
 
-        ExecuteIntention(entity, mind, best.Kind, currentTick);
+        ExecuteIntention(entity, mind, chosenKind, currentTick);
+    }
+
+    /// <summary>Fréquence de délibération configurable (décalée par entité pour lisser la charge).</summary>
+    private bool ShouldDeliberate(Entity entity, ulong currentTick) =>
+        (currentTick + entity.Id.Value) % (ulong)_options.Agents.Actions.Deliberation.IntervalTicks == 0;
+
+    /// <summary>
+    /// Interruption d'action (SYNE-032) : besoin critique (faim &gt; 85 ou
+    /// énergie &lt; 10) dont l'utilité excède de <c>utilityExcessMargin</c> celle
+    /// de l'action en cours. Enregistre une décision interrompue et renvoie le
+    /// désir qui reprend la main (ou <c>null</c> si rien ne justifie d'interrompre).
+    /// </summary>
+    private DesireKind? TryInterrupt(MindState mind, DesireKind currentKind, ulong entityId, ulong currentTick)
+    {
+        InterruptionSettings interruption = _options.Agents.Actions.Interruption;
+        var urgents = new List<DesireKind>(2);
+        if (mind.Needs.Energy < interruption.CriticalEnergy && currentKind != DesireKind.Rest)
+        {
+            urgents.Add(DesireKind.Rest);
+        }
+
+        if (mind.Needs.Hunger > interruption.CriticalHunger && currentKind != DesireKind.SeekFood)
+        {
+            urgents.Add(DesireKind.SeekFood);
+        }
+
+        if (urgents.Count == 0)
+        {
+            return null;
+        }
+
+        AgentFactors factors = mind.Factors ?? new AgentFactors(TraitSet.NeutralAll);
+        ActionSettings actions = _options.Agents.Actions;
+        ulong goalAge = mind.Intention is { } intention ? intention.Age(currentTick) : 0;
+
+        UtilityScore currentScore = UtilityEvaluator.Evaluate(
+            currentKind,
+            mind.Needs,
+            factors,
+            mind.SuccessRate(currentKind),
+            goalAge,
+            actions,
+            currentKind);
+
+        UtilityScore? best = null;
+        foreach (DesireKind kind in urgents)
+        {
+            UtilityScore candidate = UtilityEvaluator.Evaluate(
+                kind,
+                mind.Needs,
+                factors,
+                mind.SuccessRate(kind),
+                goalAge: 0,
+                actions,
+                kind);
+
+            if (candidate.Utility > currentScore.Utility + interruption.UtilityExcessMargin &&
+                (best is null ||
+                 candidate.Utility > best.Value.Utility ||
+                 (candidate.Utility == best.Value.Utility && candidate.Kind < best.Value.Kind)))
+            {
+                best = candidate;
+            }
+        }
+
+        if (best is null)
+        {
+            return null;
+        }
+
+        mind.RecordDecision(
+            [currentScore, best.Value],
+            best.Value,
+            deliberated: false,
+            interrupted: true,
+            currentTick,
+            entityId);
+        mind.InterruptedThisTick = true;
+        return best.Value.Kind;
     }
 
     /// <summary>Objectifs encore actifs : besoin encore déclenché ou objectif récemment défini.</summary>
@@ -108,7 +216,17 @@ public sealed class CognitionPipeline
         return stillNeeded || recent ? [intention] : [];
     }
 
-    private UtilityScore Deliberate(MindState mind, IReadOnlyList<Goal> candidates, ulong currentTick)
+    /// <summary>
+    /// Évalue toutes les actions candidates et sélectionne (SYNE-030/031/033) :
+    /// utilité maximale ; à conflit (candidats à moins de <c>conflictTieMargin</c>
+    /// du maximum), résolution probabiliste force × confiance (décision n°22) ;
+    /// puis hystérésis anti-oscillation (<c>actionSwitchMargin</c>).
+    /// </summary>
+    private (IReadOnlyList<UtilityScore> Scores, UtilityScore Best) Deliberate(
+        MindState mind,
+        IReadOnlyList<Goal> candidates,
+        ulong currentTick,
+        ulong entityId)
     {
         AgentFactors factors;
         if (mind.Factors is { } resolved)
@@ -121,7 +239,7 @@ public sealed class CognitionPipeline
         }
 
         ActionSettings actions = _options.Agents.Actions;
-        var scores = new List<UtilityScore>
+        var scores = new List<UtilityScore>(candidates.Count + 1)
         {
             UtilityEvaluator.Evaluate(
                 DesireKind.Idle,
@@ -145,10 +263,35 @@ public sealed class CognitionPipeline
                 factors,
                 mind.SuccessRate(goal.Kind),
                 goal.Age(currentTick),
-                actions));
+                actions,
+                mind.Intention?.Kind));
         }
 
-        return UtilityEvaluator.Best(scores);
+        double maximum = scores.Max(score => score.Utility);
+        var contested = scores.Where(score => maximum - score.Utility <= actions.Deliberation.ConflictTieMargin).ToList();
+        UtilityScore selected = contested.Count > 1
+            ? PriorityConflictResolver.Resolve(contested, mind.Needs, entityId, currentTick)
+            : contested[0];
+
+        if (mind.Intention is { } current)
+        {
+            UtilityScore adjusted = UtilityEvaluator.ApplyActionSwitchMargin(
+                selected,
+                current.Kind,
+                mind.Needs,
+                factors,
+                mind.SuccessRate(current.Kind),
+                current.Age(currentTick),
+                actions);
+
+            if (adjusted.Kind != selected.Kind)
+            {
+                scores.Add(adjusted);
+                selected = adjusted;
+            }
+        }
+
+        return (scores, selected);
     }
 
     private void StoreObservation(MindState mind, Entity self, Observation observation, ulong currentTick)

@@ -99,12 +99,28 @@ public class ObservabilitySensorTests
         Assert.NotNull(eventJson["value"]);
         Assert.Equal(mind.Intention?.Kind.ToString() ?? "Idle", (string?)eventJson["value"]!["intention"]);
         Assert.True((double?)eventJson["value"]!["utility"] >= 0);
+        Assert.NotNull((bool?)eventJson["value"]!["deliberated"]);
+        Assert.NotNull((bool?)eventJson["value"]!["interrupted"]);
     }
 
     [Fact]
     public void RunId_IsStableAndDerivedFromSeed()
     {
         Assert.Equal("run-42", ObservabilityContract.RunIdFor(42));
+    }
+
+    [Fact]
+    public void Snapshot_CarriesEngineVersion()
+    {
+        // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
+        Assert.Equal("0.2.0", ObservabilityContract.EngineVersion);
+
+        (_, SimulationLoop loop) = BuildLoop();
+        loop.Run(3);
+        WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 7);
+        JsonObject message = ObservabilitySerializer.SnapshotMessage(snapshot);
+
+        Assert.Equal(ObservabilityContract.EngineVersion, (string?)message["engineVersion"]);
     }
 
     [Fact]

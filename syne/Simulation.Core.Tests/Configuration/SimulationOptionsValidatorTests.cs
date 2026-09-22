@@ -64,4 +64,41 @@ public class SimulationOptionsValidatorTests
 
         Assert.True(SimulationOptionsValidator.Validate(options).Count >= 2);
     }
+
+    [Fact]
+    public void InvalidDeliberationInterval_IsRejected()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.Agents.Actions.Deliberation.IntervalTicks = 0;
+
+        Assert.Contains(SimulationOptionsValidator.Validate(options), e => e.Contains("intervalTicks"));
+    }
+
+    [Fact]
+    public void InvalidDeliberationMargins_AreRejected()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.Agents.Actions.Deliberation.AlignBonus = 0;
+        options.Agents.Actions.Deliberation.ActionSwitchMargin = -0.1;
+        options.Agents.Actions.Deliberation.ConflictTieMargin = -1;
+
+        var errors = SimulationOptionsValidator.Validate(options);
+        Assert.Contains(errors, e => e.Contains("alignBonus"));
+        Assert.Contains(errors, e => e.Contains("actionSwitchMargin"));
+        Assert.Contains(errors, e => e.Contains("conflictTieMargin"));
+    }
+
+    [Fact]
+    public void InvalidInterruptionThresholds_AreRejected()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.Agents.Actions.Interruption.UtilityExcessMargin = -1;
+        options.Agents.Actions.Interruption.CriticalHunger = 101;
+        options.Agents.Actions.Interruption.CriticalEnergy = 100;
+
+        var errors = SimulationOptionsValidator.Validate(options);
+        Assert.Contains(errors, e => e.Contains("utilityExcessMargin"));
+        Assert.Contains(errors, e => e.Contains("criticalHunger"));
+        Assert.Contains(errors, e => e.Contains("criticalEnergy"));
+    }
 }

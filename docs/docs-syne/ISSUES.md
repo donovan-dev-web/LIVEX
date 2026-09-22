@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_V01.md`, `ROADMAP.md`
 **Source Monographie** : Annexe J (feuille de route V2), §1.7.5 (déterminisme), §9.6.4 (issues ADR)
 
@@ -90,10 +90,10 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-030 | Formule d'utilité (décision n°13) | `type/feature`, `component/syne` | P0 | décision n°13, `COGNITIVE_ARCHITECTURE.md` §3.4.10 | `U = (benefit − cost − risk) × confidence × personalityModifier + urgency` implémenté et testé |
-| SYNE-031 | Sélecteur d'action (max utilité, délibération) | `type/feature`, `component/syne` | P0 | décision n°14, `SIMULATION_LOOP.md` §4.2.8 | Sélection déterministe ; fréquence de délibération configurable |
-| SYNE-032 | Interruptions d'actions (besoins critiques) | `type/feature`, `component/syne` | P1 | décision n°15, `SYSTEMS_SPEC.md` §3.4.7 | Action interrompue par besoin urgent / pulsation, reprise cohérente |
-| SYNE-033 | Gestion des conflits de priorités (V0.1) | `type/feature`, `component/syne` | P1 | décision n°22, `SYSTEMS_SPEC.md` §5 | Résolution probabiliste (confiance × force) ; aucun arbitraire d'ancienneté |
+| SYNE-030 | Formule d'utilité (décision n°13) — **LIVRÉ (issue #16, PR SYNE, U3)** | `type/feature`, `component/syne` | P0 | décision n°13, `COGNITIVE_ARCHITECTURE.md` §3.4.10 | `U = (benefit − cost − risk) × confidence × personalityModifier + urgency` implémenté et testé — ✓ `UtilityEvaluator.Evaluate` (formule complète), **bonus d'alignement ×1.2** si l'action rejoint l'objectif courant (`alignBonus` configurable), **hystérésis anti-oscillation `actionSwitchMargin`** (défaut 0.05, `ApplyActionSwitchMargin`), seuils critiques configurables (faim > 85 / énergie < 10), tests `UtilityEvaluatorTests` |
+| SYNE-031 | Sélecteur d'action (max utilité, délibération) — **LIVRÉ (issue #17, PR SYNE, U3)** | `type/feature`, `component/syne` | P0 | décision n°14, `SIMULATION_LOOP.md` §4.2.8 | Sélection déterministe ; fréquence de délibération configurable — ✓ sélection par utilité maximale ; **fréquence configurable** (`deliberation.intervalTicks`, défaut 10, LOD) avec **holdover** de l'intention entre deux délibérations (décalée par entité) ; trace `DecisionRecord` (COGNITIVE_ARCHITECTURE §7) ; tests `CognitionPipelineTests` |
+| SYNE-032 | Interruptions d'actions (besoins critiques) — **LIVRÉ (issue #18, PR SYNE, U3)** | `type/feature`, `component/syne` | P1 | décision n°15, `SYSTEMS_SPEC.md` §3.4.7 | Action interrompue par besoin urgent / pulsation, reprise cohérente — ✓ `TryInterrupt` : besoin critique (faim > `criticalHunger` ou énergie < `criticalEnergy`) dont l'utilité surpasse de > `utilityExcessMargin` (10) l'action en cours reprend la main, y compris entre deux délibérations ; décision interrompue tracée + drapeau `interrupted` dans `decision_made` |
+| SYNE-033 | Gestion des conflits de priorités (V0.1) — **LIVRÉ (issue #19, PR SYNE, U3)** | `type/feature`, `component/syne` | P1 | décision n°22, `SYSTEMS_SPEC.md` §5 | Résolution probabiliste (confiance × force) ; aucun arbitraire d'ancienneté — ✓ `PriorityConflictResolver` : candidats à moins de `conflictTieMargin` du maximum → tournoi pair-à-pair **probabiliste `p = (drive × confidence) / Σ`**, tirage SplitMix64 déterministe sans PRNG ; zéro-ancienneté (à force nulle, ordre du catalogue stable) ; tests `PriorityConflictResolverTests` |
 
 ### Milestone ph4 — Actions
 

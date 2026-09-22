@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `DATA_MODEL.md`, `SIMULATION_LOOP.md`
 **Source Monographie** : §3.8, §3.11–3.14 (BDI, croyances, besoins, objectifs, décision/utilité)
 
@@ -70,24 +70,26 @@ Chaîne de traçabilité : `Action ← Intention ← Objectif ← Besoin ← Cro
 
 **Formule** : `utility = (benefit − cost − risk) × confidence × personality_modifier + urgency`
 
-- **Benefit** : satisfaction potentielle d'un besoin par l'action (ex. `Eat = Min(Hunger, 30)`) ; bonus ×1.2 si alignés avec l'objectif courant.
+- **Benefit** : satisfaction potentielle d'un besoin par l'action (ex. `Eat = Min(Hunger, 30)`) ; bonus **×1.2** si alignés avec l'objectif courant (`deliberation.alignBonus`, configurable — implémenté).
 - **Cost** : coût de l'action (énergie, temps, risques).
 - **Risk** : risque de l'action.
 - **Confidence** : fiabilité de l'information (moyenne des croyances associées ; base 0.5 ; plages par action ex. `Trade = 0.5 + trust × 0.5`) ; historique de succès module (`× (0.5 + successRate × 0.5)`).
-- **Urgency** : sigmoïde `1 / (1 + exp(-0.1 × (need - 50))) × 20`, +5 si goalAge > 100, +10 si état critique (énergie < 10 ou faim > 90).
+- **Urgency** : sigmoïde `1 / (1 + exp(-0.1 × (need - 50))) × 20`, +5 si goalAge > 100, +10 si état critique (énergie < 10 ou faim > 85, seuils configurables).
 - **PersonalityMod** : module par trait (`risky × (0.5 + bravery)`, `Explore × (0.5 + curiosity)`, `social × (0.5 + sociability)`, `Gather × (0.5 + greed)`), Min 0.1.
 
 **Sélection** : utilité maximale. Optimisations : cache d'utilité (objectifs inchangés → pas de recalcul) ; arrêt précoce si score > 0.9.
 
-**Anti-oscillation (hystérésis)** : passage à une nouvelle action seulement si elle dépasse l'action courante de `actionSwitchMargin` (défaut 0.05).
+**Anti-oscillation (hystérésis, implémenté)** : passage à une nouvelle action seulement si elle dépasse l'action courante de `actionSwitchMargin` (défaut 0.05, `deliberation.actionSwitchMargin`).
 
-**Interruptions** : nouvelle perception rend l'action infaisable ; besoin urgent (sécurité) ; échec ; objectif atteint. Seuil : besoin critique > 85 et utilité supérieure de > 10.
+**Interruptions (implémenté)** : nouvelle perception rend l'action infaisable ; besoin urgent (sécurité) ; échec ; objectif atteint. Seuil : besoin critique (faim > 85 ou énergie < 10) et utilité supérieure de > 10 (`interruption.utilityExcessMargin`).
 
 (Monographie §3.13, §3.14)
 
 ## 7. DecisionRecord (trace)
 
 Chaque décision produit une trace complète : besoins, croyances considérées, scores d'utilité par action, action choisie. C'est la base de l'analyse causale ECHOS et de l'observabilité.
+
+Implémentation V0.1 : `MindState.LastDecisionRecord` (`DecisionRecord` : tick, identifiant d'entité, action choisie, cause, scores par action, flags `deliberated`/`interrupted`, décision par défaut en cas de holdover/catégorie vide). La délibération à fréquence (LOD, décision n°14) **reporte en holdover** la dernière décision entre deux délibérations ; `LastDecisionScores` expose les scores du dernier passage.
 
 (Monographie §3.14.12, §4.5.2)
 
@@ -98,6 +100,6 @@ Voir Monographie §3.8.3 (Alice, tick 5000) et §3.13.4 (Charlie) : exemples com
 ---
 
 ## Points restés ouverts dans ce document
-- Dimensionnement exact des seuils de besoins (décision n°6) — calibration V0.1.
+- Dimensionnement exact des seuils de besoins (décision n°6) — calibration V0.1 (les défauts sont désormais **configurables** : `interruption.criticalHunger` 85 / `criticalEnergy` 10, cf. CONFIGURATION.md §6.1).
 - Coûts/bénéfices d'actions (énergie, temps, risque) : valeurs [HÉRITÉ] du prototype à réévaluer ; cf. décision n°9 pour les coûts de communication.
-- Bonus d'alignement (×1.2) et `actionSwitchMargin` (0.05) : valeurs à confirmer en calibration.
+- Bonus d'alignement (×1.2) et `actionSwitchMargin` (0.05) : **configurables** (`deliberation.alignBonus`/`actionSwitchMargin`), valeurs optimales à confirmer en calibration.
