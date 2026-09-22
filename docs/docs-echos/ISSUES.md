@@ -91,10 +91,10 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-060 | Décision calcul causal (ADR-002 ECHOS) : hors ligne sur traces | `type/governance`, `component/echos`, `type/docs` | P0 | ADR-002 ECHOS, `CAUSAL_ANALYSIS.md` | ADR-002 accepté : calcul déterministe hors ligne (PAS temps réel) |
-| ECHOS-061 | Reconstruction de chaînes causales | `type/feature`, `component/echos` | P1 | ECHOS-060, ECHOS-051, `CAUSAL_ANALYSIS.md` | Chaîne Action←Intention←Objectif←Besoin←Croyance←Mémoire←Perception reconstruite |
-| ECHOS-062 | Détection de boucles causales (cycles) | `type/feature`, `component/echos` | P2 | ECHOS-061, `CAUSAL_ANALYSIS.md` §4.5.3 | Cycles marqués ; profondeur d'affichage limitée |
-| ECHOS-063 | Cache & invalidation des analyses causales | `type/perf`, `component/echos` | P2 | ECHOS-061 | Cache des résultats ; invalidation après re-run (déterminisme) |
+| ECHOS-060 | Décision calcul causal (ADR-002 ECHOS) : hors ligne sur traces — **LIVRÉ (issue #215, PR ECHOS, U6)** | `type/governance`, `component/echos`, `type/docs` | P0 | ADR-002 ECHOS, `CAUSAL_ANALYSIS.md` | ADR-002 accepté : calcul déterministe hors ligne (PAS temps réel) — ✓ `adr/ADR-002-mode-calcul-causal.md` **[Accepted]** ; `causal.build_chain` lit `decision_traces`/`events_log`/contexte — aucun calcul sur le flux temps réel |
+| ECHOS-061 | Reconstruction de chaînes causales — **LIVRÉ (issue #216, PR ECHOS, U6)** | `type/feature`, `component/echos` | P1 | ECHOS-060, ECHOS-051, `CAUSAL_ANALYSIS.md` | Chaîne Action←Intention←Objectif←Besoin←Croyance←Mémoire←Perception reconstruite — ✓ `echos/analysis/causal.py::build_chain` (7 couches, 1 nœud/couche, multiples agrégés dans `detail`, couche vide → `—`) ; `tick` optionnel (dernière décision) ; endpoint `GET /api/runs/{id}/causal-chains/{agentId}` ; déterminisme + troncature signalée |
+| ECHOS-062 | Détection de boucles causales (cycles) — **LIVRÉ (issue #217, PR ECHOS, U6)** | `type/feature`, `component/echos` | P2 | ECHOS-061, `CAUSAL_ANALYSIS.md` §4.5.3 | Cycles marqués ; profondeur d'affichage limitée — ✓ récurrence de l'action aux ticks précédents (`cycles[].ticks`), duplicat intra-chaîne arrêté au seuil du retour ; `depth` borné [1, `max_depth`=12] (défaut 7), `truncated` signalé |
+| ECHOS-063 | Cache & invalidation des analyses causales — **LIVRÉ (issue #218, PR ECHOS, U6)** | `type/perf`, `component/echos` | P2 | ECHOS-061 | Cache des résultats ; invalidation après re-run (déterminisme) — ✓ `CausalCache` LRU borné (256, thread-safe) invalidé sur `AnalyticsStore.ingest_version` — un re-run du même run re-analyse (réponse reproductible) |
 
 ### Milestone ph7 (echos) — Comparaison expérimentale
 

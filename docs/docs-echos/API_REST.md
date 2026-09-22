@@ -27,6 +27,7 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | GET | `/api/runs/{id}/metrics` | Séries de métriques (JSON, `?engine=`, `?metric=`, `?every=N`) |
 | GET | `/api/runs/{id}/export` | Export des métriques (`?format=json\|csv`), reproductible |
 | GET | `/api/runs/{id}/decisions` | Traces de décision des entités (analyse causale) |
+| GET | `/api/runs/{id}/causal-chains/{agentId}` | Chaîne causale d'une entité (`?tick=`, `?depth=` ≤ 12) — jalon ph6 |
 | GET | `/api/beliefs/{agentId}` | Croyances de l'entité au tick le plus récent |
 | GET | `/api/relationships/{agentId}` | Réseau de confiance de l'entité |
 | GET | `/api/groups` | Liste des groupes actifs (communautés) |
@@ -108,11 +109,38 @@ Traces de décision (table `decision_traces`, schéma v3) — brique de l'analys
 causale (`CAUSAL_ANALYSIS.md`). Tri **déterministe** `(tick, agent_id)` ;
 **reproductible** (deux appels → corps identiques) ; run inconnu → 404.
 
-### 3.8 Erreurs
+### 3.8 `GET /api/runs/{id}/causal-chains/{agentId}` (jalon ECHOS ph6, ECHOS-061 → ECHOS-063)
 
-- `404` : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent.
+```json
+{"run_id": "run-7", "agent_id": "A", "tick": 3, "depth_requested": 7, "depth_served": 7,
+ "chain": [
+   {"layer": "Action", "tick": 3, "label": "SeekFood", "detail": {"utility": 0.75}},
+   {"layer": "Intention", "tick": 3, "label": "SeekFood", "detail": {}},
+   {"layer": "Objectif", "tick": 3, "label": "SeekFood",
+    "detail": {"kinds": ["SeekFood", "Eat"], "goals_count": 2}},
+   {"layer": "Besoin", "tick": 3, "label": "hunger (80.0)",
+    "detail": {"needs": {"hunger": 80.0, "thirst": 20.0, "fatigue": 5.0}}},
+   {"layer": "Croyance", "tick": 3, "label": "2 croyance(s)",
+    "detail": {"subjects": ["food-1", "water-2"], "beliefs_count": 2}},
+   {"layer": "Mémoire", "tick": 3, "label": "4 souvenir(s)", "detail": {"memory_count": 4}},
+   {"layer": "Perception", "tick": 3, "label": "Information", "detail": {"received": []}}],
+ "cycle": true,
+ "cycles": [{"layer": "Action", "label": "SeekFood", "ticks": [1, 2]}],
+ "truncated": false}
+```
+
+Chaîne reconstruite **hors ligne** sur `decision_traces` + `events_log` + contexte
+`agents` (ADR-002 : pas de calcul temps réel) — détails par couche dans
+`CAUSAL_ANALYSIS.md` §5. `tick` optionnel (dernière décision de l'entité) ;
+`depth` ∈ [1, 12] (défaut 7, troncature signalée). **Déterministe** (deux appels
+→ corps identiques) ; réponse servie par le cache `CausalCache` invalidé sur
+`ingest_version` (re-run ⇒ re-analyse, ECHOS-063).
+
+### 3.9 Erreurs
+
+- `404` : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent ; entité sans trace de décision (`causal-chains`).
 - `400` : `format` d'export inconnu.
-- `422` : `every < 1` (validation OpenAPI).
+- `422` : `every < 1`, `depth` hors [1, 12] (validation OpenAPI).
 - `503` : aucun store configuré (`ECHOS_ANALYTICS_DB` non défini).
 
 ## 4. La diffusion temps réel
@@ -123,7 +151,7 @@ causale (`CAUSAL_ANALYSIS.md`). Tri **déterministe** `(tick, agent_id)` ;
 ## 5. L'optimisation
 
 - **Agrégation incrémentale** : les métriques sont calculées à chaque snapshot **au moment de l'ingestion** (`consume()` → `analysis.compute_all`) et persistées dans `tick_metrics` — aucun recalcul complet à la lecture (ECHOS ph4). Depuis ph5, le coût par moteur est aussi tracé (contexte `profiling`, ECHOS-052) et les `decision_made` alimentent `decision_traces`. Le contexte `agents` reste servi aux vues lecture seule (croyances/relations).
-- **Cache de séries** : `SeriesCache` LRU **borné** (256 entrées, thread-safe) ; les séries par run sont réutilisées et **invalidées sur `ingest_version`** (écriture d'un nouveau tick/contexte), pas sur le temps (ECHOS-044).
+- **Cache de séries** : `SeriesCache` LRU **borné** (256 entrées, thread-safe) ; les séries par run sont réutilisées et **invalidées sur `ingest_version`** (écriture d'un nouveau tick/contexte), pas sur le temps (ECHOS-044). Depuis ph6, les chaînes causales passent par un **`CausalCache`** LRU de même sémantique (ECHOS-063).
 - **Parallélisation** : les calculs lourds (co-localisation O(n²), plus proche ressource) sont parallélisés.
 - **Sous-échantillonnage** : `--sample-every=N` pour ne garder que 1 snapshot sur N à l'ingestion ; `?every=N` pour retourner des séries sous-échantillonnées à la lecture.
 

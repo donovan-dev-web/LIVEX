@@ -45,3 +45,4 @@ Le calcul causal est une **reconstruction déterministe hors ligne** à partir d
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 17 septembre 2026 | Création | — |
+| 22 septembre 2026 | Mise en œuvre au jalon ECHOS ph6 (ECHOS-060 → ECHOS-063) | `causal.build_chain` (7 couches), cycles/récurrence, `CausalCache`, endpoint `causal-chains` — voir `CAUSAL_ANALYSIS.md` §5 |
