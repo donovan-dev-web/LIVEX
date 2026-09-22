@@ -47,7 +47,8 @@ public readonly record struct UtilityScore(
 /// <summary>
 /// Évaluateur d'utilité (COGNITIVE_ARCHITECTURE.md §6, décision n°13) :
 /// <c>U = (benefit − cost − risk) × confidence × personalityModifier + urgency</c>.
-/// Sélection par utilité maximale, départage déterministe par ordre du catalogue.
+/// Bonus d'alignement ×1.2 si l'action rejoint l'objectif courant ; sélection par
+/// utilité maximale, départage déterministe par ordre du catalogue (SYNE-030).
 /// </summary>
 public static class UtilityEvaluator
 {
@@ -57,7 +58,8 @@ public static class UtilityEvaluator
         AgentFactors factors,
         double successRate,
         ulong goalAge,
-        ActionSettings actions)
+        ActionSettings actions,
+        DesireKind? currentIntention = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -68,11 +70,16 @@ public static class UtilityEvaluator
         }
 
         double benefit = BenefitOf(kind, needs, actions);
+        if (currentIntention is { } current && current == kind)
+        {
+            benefit *= actions.Deliberation.AlignBonus;
+        }
+
         double cost = CostOf(kind, actions);
         double risk = RiskOf(kind);
         double confidence = 0.5 * (0.5 + (successRate * 0.5));
         double personality = PersonalityModifierOf(kind, factors);
-        double urgency = UrgencyOf(kind, needs, goalAge);
+        double urgency = UrgencyOf(kind, needs, goalAge, actions);
 
         double utility = ((benefit - cost - risk) * confidence * personality) + urgency;
         return new UtilityScore(kind, benefit, cost, risk, confidence, personality, urgency, utility);
@@ -139,10 +146,14 @@ public static class UtilityEvaluator
 
     /// <summary>
     /// Urgence : sigmoïde <c>1 / (1 + exp(−0.1 × (need − 50))) × 20</c>, +5 si
-    /// l'objectif a plus de 100 ticks, +10 si l'état est critique (COGNITIVE_ARCHITECTURE.md §6).
+    /// l'objectif a plus de 100 ticks, +10 si l'état est critique (défaut
+    /// faim &gt; 85 ou énergie &lt; 10, agents.interruption.* — COGNITIVE_ARCHITECTURE.md §6).
     /// </summary>
-    public static double UrgencyOf(DesireKind kind, BodyNeeds needs, ulong goalAge)
+    public static double UrgencyOf(DesireKind kind, BodyNeeds needs, ulong goalAge, ActionSettings actions)
     {
+        ArgumentNullException.ThrowIfNull(needs);
+        ArgumentNullException.ThrowIfNull(actions);
+
         double drive = needs.Drive(kind);
         double sigmoid = 1.0 / (1.0 + Math.Exp(-0.1 * (drive - 50.0)));
         double urgency = sigmoid * 20.0;
@@ -151,7 +162,7 @@ public static class UtilityEvaluator
             urgency += 5.0;
         }
 
-        if (needs.IsCritical)
+        if (needs.IsCriticalFor(actions.Interruption))
         {
             urgency += 10.0;
         }
@@ -177,5 +188,38 @@ public static class UtilityEvaluator
         return best is null
             ? throw new InvalidOperationException("Aucun score d'utilité fourni à la sélection.")
             : best.Value;
+    }
+
+    /// <summary>
+    /// Hystérésis anti-oscillation (COGNITIVE_ARCHITECTURE.md §6) : ne passer à
+    /// une nouvelle action que si elle dépasse l'action courante de
+    /// <c>actionSwitchMargin</c> (défaut 0.05). Sinon l'action courante est
+    /// conservée (son score est re-évalué à l'état courant).
+    /// </summary>
+    public static UtilityScore ApplyActionSwitchMargin(
+        UtilityScore candidate,
+        DesireKind? currentKind,
+        BodyNeeds needs,
+        AgentFactors factors,
+        double successRate,
+        ulong goalAge,
+        ActionSettings actions)
+    {
+        ArgumentNullException.ThrowIfNull(needs);
+        ArgumentNullException.ThrowIfNull(factors);
+        ArgumentNullException.ThrowIfNull(actions);
+
+        if (currentKind is not { } current || current == candidate.Kind)
+        {
+            return candidate;
+        }
+
+        UtilityScore currentScore = Evaluate(current, needs, factors, successRate, goalAge, actions, current);
+        if (candidate.Utility < currentScore.Utility + actions.Deliberation.ActionSwitchMargin)
+        {
+            return currentScore;
+        }
+
+        return candidate;
     }
 }

@@ -25,6 +25,7 @@ public static class ObservabilitySerializer
         {
             ["type"] = ObservabilityContract.SnapshotType,
             ["version"] = snapshot.Version,
+            ["engineVersion"] = ObservabilityContract.EngineVersion,
             ["runId"] = snapshot.RunId,
             ["tick"] = (ulong)snapshot.Tick,
             ["simulatedTimeMinutes"] = snapshot.SimulatedTimeMinutes,

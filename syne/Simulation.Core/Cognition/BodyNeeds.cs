@@ -50,6 +50,13 @@ public sealed class BodyNeeds
     /// <summary>Indicateur « état critique » (énergie &lt; 10 ou faim &gt; 90, COGNITIVE_ARCHITECTURE.md §6).</summary>
     public bool IsCritical => Energy < CriticalEnergy || Hunger > CriticalHunger;
 
+    /// <summary>État critique selon les seuils configurables (agents.interruption.*, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    public bool IsCriticalFor(InterruptionSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        return Energy < settings.CriticalEnergy || Hunger > settings.CriticalHunger;
+    }
+
     /// <summary>Le besoin est au-dessus de son seuil de déclenchement (génère un désir).</summary>
     public bool IsTriggered(Simulation.Core.Cognition.DesireKind kind) => kind switch
     {

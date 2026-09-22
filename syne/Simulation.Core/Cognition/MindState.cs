@@ -45,7 +45,39 @@ public sealed class MindState
 
     public UtilityScore? LastDecision { get; private set; }
 
-    internal void RecordDecision(UtilityScore score) => LastDecision = score;
+    /// <summary>Trace complète de la dernière décision (COGNITIVE_ARCHITECTURE.md §7).</summary>
+    public DecisionRecord? LastDecisionRecord { get; private set; }
+
+    /// <summary>Scores d'utilité des candidats de la dernière décision.</summary>
+    public IReadOnlyList<UtilityScore> LastDecisionScores { get; private set; } = [];
+
+    /// <summary>Vrai si un tick a délibéré (fréquence configurable, décision n°14).</summary>
+    internal bool DeliberatedThisTick { get; set; }
+
+    /// <summary>Vrai si un tick a interrompu l'action en cours (besoin critique, décision n°15).</summary>
+    internal bool InterruptedThisTick { get; set; }
+
+    internal void RecordDecision(
+        IReadOnlyList<UtilityScore> scores,
+        UtilityScore chosen,
+        bool deliberated,
+        bool interrupted,
+        ulong tick,
+        ulong entityId)
+    {
+        ArgumentNullException.ThrowIfNull(scores);
+
+        LastDecision = chosen;
+        LastDecisionScores = scores;
+        LastDecisionRecord = new DecisionRecord(
+            tick,
+            entityId,
+            deliberated,
+            interrupted,
+            chosen.Kind,
+            chosen.Utility,
+            scores);
+    }
 
     /// <summary>
     /// Naissance par fusion consentie (SYNE-020, décision n°16) : l'entité née

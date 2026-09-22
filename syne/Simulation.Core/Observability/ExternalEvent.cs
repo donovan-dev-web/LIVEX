@@ -26,8 +26,9 @@ public static class EventSensor
         });
 
     /// <summary>
-    /// Événement <c>decision_made</c> par entité (intention + utilité du dernier
-    /// score délibéré, COGNITIVE_ARCHITECTURE.md §7).
+    /// Événement <c>decision_made</c> par entité (intention, utilité du dernier
+    /// score délibéré + drapeaux de délibération/interruption du tick courant,
+    /// COGNITIVE_ARCHITECTURE.md §7).
     /// </summary>
     public static ExternalEvent DecisionMade(ulong tick, ulong agentId, Cognition.MindState mind)
     {
@@ -37,6 +38,8 @@ public static class EventSensor
         {
             ["intention"] = action,
             ["utility"] = mind.LastDecision?.Utility ?? 0.0,
+            ["deliberated"] = mind.DeliberatedThisTick,
+            ["interrupted"] = mind.InterruptedThisTick,
         };
         return new ExternalEvent(
             ObservabilityContract.DecisionMade,

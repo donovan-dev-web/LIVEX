@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `../ROADMAP.md` (racine)
 **Source Monographie** : Annexe J (feuille de route V2), §3.24 (fondations V0.1)
 
@@ -20,7 +20,7 @@
 | 0 | Socle | Architecture & documentation | ADR |
 | 1 | BDI + Perception | Boucle 10/15 étapes, perception partielle | boucle de simulation, grille spatiale — **livré** (jalon SYNE ph1, issues #7–#12) |
 | 2 | Mémoire + Croyances | Mémoire long terme, révision croyances | mémoires + BeliefStore — **livré** (SYNE-013/014) |
-| 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formule d'utilité, DecisionRecord — **livré** (SYNE-010) |
+| 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formule d'utilité, DecisionRecord — **livré** (jalon SYNE ph3, issues #16–#19, engineVersion 0.2.0) |
 | 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions |
 | 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses |
 | 6 | Groupes | Cohésion, leadership, décisions collectives | formation/dissolution de groupes |
