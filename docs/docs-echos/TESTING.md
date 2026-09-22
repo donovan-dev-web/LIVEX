@@ -204,6 +204,46 @@ Couverture de la couche API (routes + cache + store v2 + pipeline) :
 Suite : **167 tests** (146 → +21), couverture **98,2 %** (pytest
 `--cov-fail-under=80`), flake8 sans alerte.
 
+### 4.8 Logging & instrumentation & preuve J5 étendue (ECHOS-050 → ECHOS-052)
+
+Le jalon **ph5 — Logging & instrumentation** (issues #389 → #391, milestone
+« ph5 (echos) — Logging & instrumentation ») ajoute les trois niveaux de
+`LOGGING_INSTRUMENTATION.md` (structuré / traces / texte) et le profilage
+des 8 moteurs — tous branchés sur le pipeline d'ingestion.
+
+```bash
+cd echos && python -m pytest echos/tests/test_instrumentation.py -q
+# → 14 passed ; JSONL déterministe, fusion BDI, profilage bit-à-bit
+```
+
+- `test_instrumentation.py` (nouveau, 14 tests) :
+  - **`EchosLogger`** : lignes JSON Lines par fichier (`structured-<run>.jsonl`,
+    `profilage-<run>.jsonl`, `decision-traces-<run>.jsonl`) **au format stable**
+    (clés triées, compacts — deux appels → mêmes clés, seules les valeurs
+    changent), événements taggés `[SSE-V2]` dans les logs texte quotidiens,
+    `ECHOS_LOG_DIR` lu par `from_env()`.
+  - **`build_decision_trace`** : fusion `decision_made` + **contexte BDI** du
+    snapshot (action, utilité, `deliberated`/`interrupted`, cause, besoins,
+    croyances/objectifs/mémoire — entité inconnue → contexte zéro), rejet
+    déterministe des événements non-`decision_made`.
+  - **Profilage** : `compute_all_profiled(snapshot)` == `compute_all(snapshot)`
+    **bit-à-bit** (déterminisme ECHOS-027 intact), **les 8 moteurs couverts**
+    avec 1 appel chacun, format `"{name:<15} : {total:10.2f} ms total,
+    {avg:8.2f} ms avg"` (§5).
+- `test_api_routes.py` (étendu) : `GET /api/runs/{run_id}/decisions` —
+  traces triées `(tick, agent_id)`, **deux appels identiques** (aucun
+  horodatage), contexte BDI de l'entité (croyances/objectifs/mémoire),
+  **404** run inconnu.
+- `test_pipeline.py` (étendu) : `consume()` écrit aussi le contexte
+  `profiling` (`contexts_written` = 4 × ticks) et les traces
+  (`decision_traces_written` = nombre de `decision_made`), relecture
+  `store.decision_traces` triée.
+- `test_sqlite_store.py` (étendu) : **schéma v3** — table `decision_traces`
+  ajoutée au dump attendu, `SCHEMA_VERSION = "3"`.
+
+Suite : **181 tests** (167 → +14), couverture **98,2 %** (pytest
+`--cov-fail-under=80`), flake8 sans alerte.
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).

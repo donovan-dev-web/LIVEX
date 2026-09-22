@@ -21,6 +21,9 @@ from echos.analysis import compute_all
 from echos.analysis._common import label_propagation
 from echos.ingestion.stream import TickSegment, aligned_ticks
 from echos.ingestion.ws_client import WsClient
+from echos.instrumentation.decision_traces import build_decision_trace
+from echos.instrumentation.logging import EchosLogger
+from echos.instrumentation.profiling import ProfileMarkers
 from echos.storage.aggregation import TickRecord
 from echos.storage.parquet import AgentSeriesRow, agent_rows, read_agent_series
 from echos.storage.parquet import write_agent_series
@@ -36,6 +39,7 @@ class ConsumeResult:
     agents_written: int
     metrics_written: int = 0
     contexts_written: int = 0
+    decision_traces_written: int = 0
 
 
 def _segments(
@@ -90,19 +94,26 @@ def consume(
     *,
     sample_every: int | None = None,
     parquet_path: str | Path | None = None,
+    logger: EchosLogger | None = None,
 ) -> ConsumeResult:
     """Consomme le flux :5180 et peuple le stockage d'analyse.
 
     Métadonnées (``run_id``, ``version``, ``seed``) dérivées du premier
     snapshot ; l'écriture Parquet est optionnelle via ``parquet_path``.
     Chaque tick écrit aussi les métriques des 8 moteurs (``tick_metrics``)
-    et les contextes ``agents``/``groups``/``phenomena`` (``tick_contexts``).
+    et les contextes ``agents``/``groups``/``phenomena``/``profiling``
+    (``tick_contexts``) — les métriques sont donc **calculées à l'ingestion,
+    jamais recalculées à la lecture** (API_REST.md §4). Depuis le jalon ph5 :
+    traces de décision ``decision_made`` (``decision_traces``, ECHOS-051),
+    profilage par moteur (ECHOS-052) et, si ``logger`` est fourni,
+    journalisation structurée JSON Lines (ECHOS-050).
     """
     ticks_written = 0
     events_written = 0
     agents_written = 0
     metrics_written = 0
     contexts_written = 0
+    decision_traces_written = 0
     run_known = False
 
     for _index, segment in _segments(client, sample_every):
@@ -119,7 +130,9 @@ def consume(
         ticks_written += 1
 
         engine_snapshot = _snapshot_for_engines(segment)
-        metrics = compute_all(engine_snapshot)
+        markers = ProfileMarkers()
+        metrics = compute_all(engine_snapshot, profile=markers)
+        profile = markers.summary()
         metrics_written += store.append_tick_metrics(
             snapshot.run_id, segment.tick, metrics
         )
@@ -146,7 +159,17 @@ def consume(
             "groups",
             _groups_of(engine_snapshot.get("agents") or []),
         )
-        contexts_written += 3
+        store.append_tick_context(
+            snapshot.run_id,
+            segment.tick,
+            "profiling",
+            profile,
+        )
+        contexts_written += 4
+
+        if logger is not None:
+            logger.structured(snapshot.run_id, segment.tick, metrics)
+            logger.profiling(snapshot.run_id, segment.tick, profile)
 
         for event in segment.events:
             store.append_event(
@@ -161,10 +184,25 @@ def consume(
             )
             events_written += 1
 
+            if event.type == "decision_made":
+                trace = build_decision_trace(
+                    snapshot.run_id, segment.tick, event, engine_snapshot
+                )
+                store.append_decision_trace(snapshot.run_id, segment.tick, trace)
+                decision_traces_written += 1
+                if logger is not None:
+                    logger.decision(trace)
+
         if parquet_path is not None:
             rows = agent_rows(segment)
             _extend_agent_series(parquet_path, rows)
             agents_written += len(rows)
+
+        if logger is not None:
+            logger.debug(
+                f"tick={segment.tick} run={snapshot.run_id} "
+                f"metrics={metrics_written} decisions={decision_traces_written}"
+            )
 
     return ConsumeResult(
         ticks_written,
@@ -172,6 +210,7 @@ def consume(
         agents_written,
         metrics_written,
         contexts_written,
+        decision_traces_written,
     )
 
 

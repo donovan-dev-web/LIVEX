@@ -31,6 +31,7 @@ def test_schema_is_stable_and_distinct_from_syne(tmp_path):
     with AnalyticsStore(path) as store:
         assert store.schema_tables() == {
             "_meta",
+            "decision_traces",
             "events_log",
             "runs",
             "tick_contexts",
