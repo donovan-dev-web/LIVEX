@@ -4,7 +4,9 @@ using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
+using Simulation.Core.Population;
 using Simulation.Core.Prng;
+using Simulation.Core.Social;
 using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
 using Xunit;
@@ -155,9 +157,9 @@ public class ObservabilitySensorTests
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
-        // Jalon SYNE ph5 → 0.4.0 : pulsations publiques, coûts émission/réception,
-        // relais et dégradation de confiance 10 %/hop altèrent la trajectoire.
-        Assert.Equal("0.4.0", ObservabilityContract.EngineVersion);
+        // Jalon SYNE ph6 → 0.5.0 : groupes émergents (SYNE-060/061) et naissance par
+        // fusion consentie (SYNE-062) altèrent la trajectoire.
+        Assert.Equal("0.5.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);
@@ -193,5 +195,116 @@ public class ObservabilitySensorTests
         string json = ObservabilitySerializer.ToJsonText(message);
         Assert.DoesNotContain("\"MemoryCount\"", json);
         Assert.DoesNotContain("\"BeliefObservation\"", json);
+    }
+
+    [Fact]
+    public void Snapshot_ExposesGroups_AsCamelCaseArray()
+    {
+        // SYNE-060 : la photographie embarque les groupes émergents (API_CONTRACTS §2.1).
+        SimulationOptions options = ConfigLoader.LoadDefaults();
+        var world = new WorldType(new WorldSize(500, 500));
+        world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(50, 50), TraitSet.NeutralAll, bornAt: 0));
+        world.AddEntity(new Entity(new EntityId(2), "Entité A", null, new Position(80, 50), TraitSet.NeutralAll, bornAt: 0));
+        world.AddEntity(new Entity(new EntityId(3), "Entité A", null, new Position(300, 300), TraitSet.NeutralAll, bornAt: 0));
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options);
+        loop.Run(1); // crée les esprits (création paresseuse dans le pipeline).
+
+        foreach (Simulation.Core.Entities.Entity entity in world.Entities)
+        {
+            MindState mind = loop.Cognition.MindOf(entity.Id.Value);
+            foreach (Simulation.Core.Entities.Entity peer in world.Entities.Where(other => other.Id.Value != entity.Id.Value))
+            {
+                mind.Trust.Interact(peer.Id.Value);
+            }
+
+            mind.Beliefs.ApplyEvidence(
+                new Fact("entity-9", "position", "10.00,10.00"),
+                0.9,
+                "perception-9",
+                options.Agents.Beliefs,
+                tick: 9);
+        }
+
+        loop.Cognition.Groups.Step(
+            tick: 10,
+            world.Entities.ToDictionary(entity => entity.Id.Value, entity => loop.Cognition.MindOf(entity.Id.Value)));
+
+        WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 7);
+        JsonObject message = ObservabilitySerializer.SnapshotMessage(snapshot);
+        JsonArray groups = message["groups"]!.AsArray();
+
+        GroupSnapshot group = Assert.Single(snapshot.Groups);
+        Assert.Equal(1UL, group.GroupId);
+        Assert.Equal(3, group.Size);
+        Assert.Contains(group.LeaderId, new ulong?[] { 1, 2, 3 });
+        Assert.Equal(10UL, group.BornTick);
+
+        JsonObject json = (JsonObject)groups[0]!;
+        Assert.DoesNotContain("\"GroupId\"", ObservabilitySerializer.ToJsonText(message));
+        Assert.Equal(1UL, (ulong?)json["groupId"]);
+        Assert.Equal(3, (int?)json["size"]);
+        Assert.Equal(group.LeaderId, (ulong?)json["leaderId"]);
+        Assert.Equal(10UL, (ulong?)json["bornTick"]);
+    }
+
+    [Fact]
+    public void EventSensor_GroupEvents_CarryContractValues()
+    {
+        // SYNE-060/061 : événements typés group_formed / group_dissolved /
+        // group_decision avec les schémas de valeur d'API_CONTRACTS §2.2.
+        var group = new Social.Group(1, bornTick: 10, [1UL, 2UL, 3UL])
+        {
+            MeanCohesion = 0.42,
+            LeaderId = 2,
+        };
+
+        ExternalEvent formed = EventSensor.GroupFormed(tick: 10, group);
+        Assert.Equal(ObservabilityContract.GroupFormed, formed.Type);
+        Assert.Equal("2", formed.AgentId);
+        var formedValue = (JsonObject)formed.Value!;
+        Assert.Equal(1UL, (ulong?)formedValue["groupId"]);
+        Assert.Equal(3, (int?)formedValue["size"]);
+        Assert.Equal(0.42, (double?)formedValue["cohesion"]);
+
+        var dissolved = new GroupDissolution(1, 30, 10, [1UL, 2UL, 3UL], Success: true, 3, 3);
+        ExternalEvent dissolvedEvent = EventSensor.GroupDissolved(tick: 30, dissolved);
+        Assert.Equal(ObservabilityContract.GroupDissolved, dissolvedEvent.Type);
+        var dissolvedValue = (JsonObject)dissolvedEvent.Value!;
+        Assert.Equal(20L, (long?)dissolvedValue["lifetime"]);
+        Assert.Equal(true, (bool?)dissolvedValue["success"]);
+        Assert.Equal(3, (int?)dissolvedValue["membersOut"]);
+        Assert.Equal(3, (int?)dissolvedValue["membersIn"]);
+
+        var decision = new GroupDecision(1, 20, 2, DesireKind.SeekFood, 0.67);
+        ExternalEvent decisionEvent = EventSensor.GroupDecision(tick: 20, decision);
+        Assert.Equal(ObservabilityContract.GroupDecision, decisionEvent.Type);
+        Assert.Equal("2", decisionEvent.AgentId);
+        Assert.Equal("SeekFood", decisionEvent.Action);
+        var decisionValue = (JsonObject)decisionEvent.Value!;
+        Assert.Equal("SeekFood", (string?)decisionValue["decision"]);
+    }
+
+    [Fact]
+    public void EventSensor_AgentSpawned_CarriesParentage()
+    {
+        // SYNE-062 : la naissance fournit la parenté de l'entité née.
+        var birth = new BirthObservation(
+            100,
+            MotherId: 1,
+            FatherId: 2,
+            ChildId: 3,
+            "Entité A",
+            new Position(12.5, 20.75),
+            TraitSet.NeutralAll);
+
+        ExternalEvent spawned = EventSensor.AgentSpawned(tick: 100, birth);
+        Assert.Equal(ObservabilityContract.AgentSpawned, spawned.Type);
+        Assert.Equal("3", spawned.AgentId);
+
+        var value = (JsonObject)spawned.Value!;
+        Assert.Equal(3UL, (ulong?)value["childId"]);
+        Assert.Equal(1UL, (ulong?)value["motherId"]);
+        Assert.Equal(2UL, (ulong?)value["fatherId"]);
+        Assert.Equal("Entité A", (string?)value["species"]);
     }
 }

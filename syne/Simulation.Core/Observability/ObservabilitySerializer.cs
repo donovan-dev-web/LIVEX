@@ -32,6 +32,7 @@ public static class ObservabilitySerializer
             ["aliveCount"] = snapshot.AliveCount,
             ["agents"] = agents,
             ["resources"] = ResourcesJson(snapshot.Resources),
+            ["groups"] = GroupsJson(snapshot.Groups),
         };
         return message;
     }
@@ -46,6 +47,42 @@ public static class ObservabilitySerializer
                 ["type"] = resource.Type,
                 ["quantity"] = resource.Quantity,
             });
+        }
+
+        return array;
+    }
+
+    private static JsonArray GroupsJson(IReadOnlyList<GroupSnapshot> groups)
+    {
+        var array = new JsonArray();
+        foreach (GroupSnapshot group in groups)
+        {
+            var members = new JsonArray();
+            foreach (ulong member in group.Members)
+            {
+                members.Add(member);
+            }
+
+            var json = new System.Text.Json.Nodes.JsonObject
+            {
+                ["groupId"] = group.GroupId,
+                ["members"] = members,
+                ["size"] = group.Size,
+                ["bornTick"] = group.BornTick,
+                ["cohesion"] = group.Cohesion,
+                ["consensus"] = group.Consensus,
+            };
+            if (group.LeaderId is { } leaderId)
+            {
+                json["leaderId"] = leaderId;
+            }
+
+            if (group.Decision is { } decision)
+            {
+                json["decision"] = decision;
+            }
+
+            array.Add(json);
         }
 
         return array;

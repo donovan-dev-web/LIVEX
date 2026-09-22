@@ -53,6 +53,90 @@ public class InheritanceTests
     }
 
     [Fact]
+    public void FuseTraits_DefaultSettings_MatchesAverage_BackwardCompatible()
+    {
+        // SYNE-063 : dominance 0 + mutation 0 ⇒ fusion égalitaire (V0.1 préservée).
+        TraitSet parentA = Traits(brave: true, clever: false);
+        TraitSet parentB = Traits(brave: false, clever: false);
+
+        TraitSet fused = Inheritance.FuseTraits(parentA, parentB, new InheritanceSettings(), seed: 7);
+
+        Assert.Equal(Inheritance.FuseTraits(parentA, parentB).Values, fused.Values);
+        Assert.Equal(1.0, fused["bravery"], 12);
+    }
+
+    [Fact]
+    public void FuseTraits_FullDominance_TakesExpressingParent()
+    {
+        // SYNE-063 : le parent « exprimant » (écart au neutre maximal) l'emporte à
+        // dominance pleine. Bravery : parentA 1.8 (écart 0.8) vs parentB 1.2 (0.2).
+        var parentA = new TraitSet(TraitSet.TraitNames.ToDictionary(
+            name => name,
+            name => name == "bravery" ? 1.8 : 1.0,
+            StringComparer.Ordinal));
+        var parentB = new TraitSet(TraitSet.TraitNames.ToDictionary(
+            name => name,
+            name => name == "bravery" ? 1.2 : 1.0,
+            StringComparer.Ordinal));
+
+        var settings = new InheritanceSettings { Dominance = 1.0 };
+        TraitSet fused = Inheritance.FuseTraits(parentA, parentB, settings, seed: 7);
+
+        Assert.Equal(1.8, fused["bravery"], 12);
+        Assert.Equal(1.0, fused["curiosity"], 12);
+    }
+
+    [Theory]
+    [InlineData(0.25)]
+    [InlineData(0.75)]
+    public void FuseTraits_Dominance_InterpolatesBetweenAverageAndExpress(double dominance)
+    {
+        var parentA = new TraitSet(TraitSet.TraitNames.ToDictionary(
+            name => name,
+            name => name == "bravery" ? 1.8 : 1.0,
+            StringComparer.Ordinal));
+        var parentB = new TraitSet(TraitSet.TraitNames.ToDictionary(
+            name => name,
+            name => name == "bravery" ? 1.2 : 1.0,
+            StringComparer.Ordinal));
+
+        var settings = new InheritanceSettings { Dominance = dominance };
+        TraitSet fused = Inheritance.FuseTraits(parentA, parentB, settings, seed: 7);
+
+        double expected = (1.5 * (1.0 - dominance)) + (1.8 * dominance);
+        Assert.Equal(expected, fused["bravery"], 12);
+    }
+
+    [Fact]
+    public void FuseTraits_Mutation_IsDeterministicForSameSeed()
+    {
+        var settings = new InheritanceSettings { MutationRate = 1.0, MutationMagnitude = 0.5 };
+        TraitSet parentA = Traits(brave: true, clever: true);
+        TraitSet parentB = Traits(brave: false, clever: false);
+
+        TraitSet first = Inheritance.FuseTraits(parentA, parentB, settings, seed: 123);
+        TraitSet second = Inheritance.FuseTraits(parentA, parentB, settings, seed: 123);
+
+        Assert.Equal(first.Values.OrderBy(pair => pair.Key), second.Values.OrderBy(pair => pair.Key));
+    }
+
+    [Fact]
+    public void FuseTraits_Mutation_RespectsBounds()
+    {
+        var settings = new InheritanceSettings { MutationRate = 1.0, MutationMagnitude = 10.0 };
+        TraitSet fused = Inheritance.FuseTraits(
+            Traits(brave: true, clever: true),
+            Traits(brave: false, clever: false),
+            settings,
+            seed: 5);
+
+        foreach (double value in fused.Values.Select(pair => pair.Value))
+        {
+            Assert.InRange(value, TraitSet.Min, TraitSet.Max);
+        }
+    }
+
+    [Fact]
     public void InheritMemory_ReunitesParentMemories_AtBirthTick()
     {
         var memoryA = new Memory(MemorySettings());
@@ -161,5 +245,24 @@ public class InheritanceTests
         Assert.Equal(0.75, belief.Confidence, 12);
         Assert.Equal(0.0, born.Needs.Hunger);
         Assert.Equal(0, born.Trust.Count);
+    }
+
+    [Fact]
+    public void MindState_Born_UsesConfiguredSalienceThreshold()
+    {
+        // SYNE-063 : le seuil de salience câblé via agents.inheritance.salienceThreshold.
+        var options = ConfigLoader.LoadDefaults();
+        options.Agents.Inheritance.SalienceThreshold = 0.7;
+
+        var mother = new MindState(options);
+        for (int i = 0; i < 3; i++)
+        {
+            mother.Memory.Store(MemoryCategory.Observation, "a", $"souvenir-{i}", 0.9, storedAt: (ulong)i);
+        }
+
+        MindState born = MindState.Born(options, mother, new MindState(options), birthTick: 50);
+
+        // exp(-0.01×50) = 0.607 < 0.7 → aucun souvenir transmis.
+        Assert.Equal(0, born.Memory.Count);
     }
 }

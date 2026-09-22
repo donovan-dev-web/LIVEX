@@ -8,6 +8,20 @@ namespace Simulation.Core.Observability;
 public sealed record ResourceSnapshot(string Type, double Quantity);
 
 /// <summary>
+/// Groupe émergent dans le snapshot (SYNE-060/061, API_CONTRACTS.md §2.1) :
+/// identifiant, membres triés, leader et dernière décision collective.
+/// </summary>
+public sealed record GroupSnapshot(
+    ulong GroupId,
+    IReadOnlyList<ulong> Members,
+    int Size,
+    ulong? LeaderId,
+    ulong BornTick,
+    double Cohesion,
+    string? Decision,
+    double Consensus);
+
+/// <summary>
 /// Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).
 /// Représentation pure, sérialisée en camelCase par <see cref="ObservabilitySerializer"/>.
 /// </summary>
@@ -18,7 +32,8 @@ public sealed record WorldSnapshot(
     long SimulatedTimeMinutes,
     int AliveCount,
     IReadOnlyList<AgentSnapshot> Agents,
-    IReadOnlyList<ResourceSnapshot> Resources)
+    IReadOnlyList<ResourceSnapshot> Resources,
+    IReadOnlyList<GroupSnapshot> Groups)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
     public static WorldSnapshot Capture(SimulationLoop loop, ulong seed)
@@ -41,6 +56,20 @@ public sealed record WorldSnapshot(
             resources.Add(new ResourceSnapshot(kind.ToString().ToLowerInvariant(), loop.Resources.Stock(kind)));
         }
 
+        var groups = new List<GroupSnapshot>(loop.Cognition.Groups.Active.Count);
+        foreach (Social.Group group in loop.Cognition.Groups.Active)
+        {
+            groups.Add(new GroupSnapshot(
+                group.Id,
+                group.Members,
+                group.Members.Count,
+                group.LeaderId,
+                group.BornTick,
+                Math.Round(group.MeanCohesion, 4),
+                group.Decision?.ToString(),
+                Math.Round(group.Consensus, 4)));
+        }
+
         return new WorldSnapshot(
             ObservabilityContract.Version,
             ObservabilityContract.RunIdFor(seed),
@@ -48,6 +77,7 @@ public sealed record WorldSnapshot(
             SimulationTime.ToSimulatedMinutes(loop.CurrentTick),
             agents.Count,
             agents,
-            resources);
+            resources,
+            groups);
     }
 }

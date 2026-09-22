@@ -105,11 +105,12 @@ public class DeterminismRegressionTests
     [Fact]
     public void GoldenChecksum_IsPinned()
     {
-        // Épinglé au jalon SYNE ph5 (engineVersion 0.4.0) : pulsations publiques
-        // (SYNE-050), coûts émission/réception (SYNE-052) et relais avec
-        // dégradation de confiance × 0.9/hop (SYNE-053) altèrent la trajectoire —
-        // DETERMINISM.md §7 impose recalcul + bump MINOR.
+        // Épinglé au jalon SYNE ph6 (engineVersion 0.5.0) : groupes émergents
+        // (SYNE-060/061), naissance par fusion (SYNE-062) et calibration du réseau
+        // de pulsations (transmissionRange 55 — la confiance réciproque se forme
+        // réellement) altèrent la trajectoire — DETERMINISM.md §7 impose recalcul
+        // + bump MINOR à chaque altération bit-à-bit.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x6aa2b2d87b32a8a5", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x864e72f57e1fe0d0", $"0x{Fnv1a(log):x16}");
     }
 }

@@ -13,10 +13,10 @@ public static class ObservabilityContract
     /// <summary>
     /// Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les
     /// règles de simulation ; incrémentée MINOR à toute altération de la trajectoire
-    /// bit-à-bit (jalon SYNE ph5 → 0.4.0 : pulsations publiques, coûts émission/
-    /// réception, relais et dégradation de confiance 10 %/hop). Emise dans chaque snapshot.
+    /// bit-à-bit (jalon SYNE ph6 → 0.5.0 : groupes émergents, décisions collectives,
+    /// naissance par fusion). Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.4.0";
+    public const string EngineVersion = "0.5.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -33,6 +33,18 @@ public static class ObservabilityContract
 
     /// <summary>Pulsation reçue (y compris interception) — SYNE-051, API_CONTRACTS.md §2.2.</summary>
     public const string MessageReceived = "message_received";
+
+    /// <summary>Formation d'un groupe émergent — SYNE-060, API_CONTRACTS.md §2.2.</summary>
+    public const string GroupFormed = "group_formed";
+
+    /// <summary>Dissolution d'un groupe (bilan + turnover) — SYNE-060, API_CONTRACTS.md §2.2.</summary>
+    public const string GroupDissolved = "group_dissolved";
+
+    /// <summary>Décision collective adoptée par consenssus — SYNE-061, API_CONTRACTS.md §2.2.</summary>
+    public const string GroupDecision = "group_decision";
+
+    /// <summary>Naissance par fusion consentie — SYNE-062, API_CONTRACTS.md §2.2.</summary>
+    public const string AgentSpawned = "agent_spawned";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }
