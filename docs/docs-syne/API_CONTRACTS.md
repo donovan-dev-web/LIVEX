@@ -39,24 +39,29 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.4.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.5.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
   "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
-                  { "type": "wood", "quantity": 50 } ] }
+                  { "type": "wood", "quantity": 50 } ],
+  "groups": [ { "groupId": 1, "members": ["a1", "a2", "a3"], "size": 3,
+                "leaderId": "a1", "bornTick": 5000, "cohesion": 0.42,
+                "decision": "SeekFood", "consensus": 0.80 } ] }
 ```
 
-> En V2 : intégrer beliefs, goals, relations, groupes dans le snapshot (prototype V2 §04-ARCHITECTURE).
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.4.0` (jalon SYNE ph5).
+> `engineVersion` = `0.5.0` (jalon SYNE ph6 — groupes + naissances). Le champ `groups[]`
+> (syne-060/061, ajout **additif**, MINOR) liste les groupes actifs au tick : `groupId`,
+> `members[]`, `size`, `leaderId`, `bornTick`, `cohesion` (cohésion moyenne au dernier LOD),
+> `decision`/`consensus` (dernière décision collective, `SYSTEMS_SPEC` §5).
 
 ### 2.2 `event` — ExternalEvent
 
 | Champ | Type | Description |
 | :-- | :-- | :-- |
-| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `group_formed`, `conflict`...) |
+| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `conflict`...) |
 | `tick` | uint | Tick |
 | `agentId?` | string | Entité concernée |
 | `targetId?` | string | Cible |
@@ -86,7 +91,17 @@ Exemple :
 > `value = {messageId, hops, confidence, payloadLength}`. `message_received` : `agentId` = récepteur
 > (interception incluse), `action` = `MessageType`, `value = {messageId, hops, confidence, understood}`
 > (COMMUNICATION_PROTOCOL.md §8).
-> `agent_spawned`/`agent_died` attendront la mortalité (ph4).
+> **`group_formed`/`group_dissolved`/`group_decision` (jalon SYNE ph6)** : diffusés par
+> `ObservabilityTickEmitter` à chaque révision LOD (défaut 10 ticks) par `Cognition.Groups`.
+> `group_formed` : `agentId` = leader émergent, `value = {groupId, size, cohesion, members[]}`.
+> `group_dissolved` : `agentId` = leader sortant, `value = {groupId, lifetime, success,
+> membersOut, membersIn, members[]}` (bilan de vie + turnover brut — consommé par ECHOS
+> `group_dynamics`). `group_decision` : `agentId` = leader, `action` = intention majoritaire,
+> `value = {groupId, decision, consensus}` (votum pondéré par la confiance au leader).
+> **`agent_spawned` (jalon SYNE ph6)** : émis par `BirthSystem` à la naissance — `agentId` = enfant
+> (id nouvellement alloué, dernier du run), `cause = "birth"`, `value = {childId, motherId,
+> fatherId, species, x, y}` ; traits/mémoire hérités consultables via la décision `Born` (SYNE-062/063).
+> `agent_died` attendra la mortalité (jalon ph7+).
 
 ## 3. Contrat de contrôle — HTTP 5181
 

@@ -59,7 +59,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "wood": { "initial": 50, "regenerationRate": 0.1 }
   },
   "communication": {
-    "transmissionRange": 20,
+    "transmissionRange": 55,
     "relayEnabled": true,
     "maxHops": 2,
     "maxSendsPerTick": 5,
@@ -73,6 +73,24 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "receiveEnergyPayloadFactor": 0.05
   },
   "world": { "seasons": false, "events": false, "obstacles": false },
+  "groups": {
+    "enabled": true,
+    "reviewIntervalTicks": 10,
+    "trustThreshold": 0.3,
+    "minGroupSize": 3,
+    "sharedBeliefBonus": 0.1,
+    "goalAlignmentBonus": 0.2,
+    "consensusThreshold": 0.5
+  },
+  "reproduction": {
+    "enabled": true,
+    "intervalTicks": 100,
+    "consentTrustThreshold": 0.6,
+    "maxBirthsPerTick": 1
+  },
+  "agents": {
+    "inheritance": { "salienceThreshold": 0.01 }
+  },
   "random": { "seed": 12345, "engine": "xoshiro256**" },
   "performance": {
     "parallelPerception": true,
@@ -127,7 +145,8 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
   - `actions.interruption.utilityExcessMargin` ≥ 0 ; `criticalHunger` ∈ (0, 100] ; `criticalEnergy` ∈ [0, 100) ;
   - `needs.hungerTriggerThreshold`/`thirstTriggerThreshold`/`fatigueTriggerThreshold` ∈ (0, 100] ;
   - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`) — échec déclaratif si une clé manque.
-  - `communication.transmissionRange` > 0 ; `maxSendsPerTick`/`maxReceivesPerTick` ≥ 0 ; `maxHops` ≥ 1 ; `incomprehensionRate`/`hopConfidenceDecay`/`trustDecay` ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053).
+  - `communication.transmissionRange` ∈ (0, 70] ; `maxSendsPerTick`/`maxReceivesPerTick` ≥ 0 ; `maxHops` ≥ 1 ; `incomprehensionRate`/`hopConfidenceDecay`/`trustDecay` ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053) ; `transmissionRange` > `perceptionRange` invalide (la perception doit rester strictement supérieure).
+   - `groups.enabled`/`reproduction.enabled` booléens ; `reviewIntervalTicks`/`intervalTicks` ≥ 1 ; `trustThreshold`/`consensusThreshold`/`consentTrustThreshold` ∈ [0, 1] ; `minGroupSize` ≥ 2 ; `maxBirthsPerTick` ≥ 1 ; `agents.inheritance.salienceThreshold` > 0.
   - dimensions `worldWidth`/`worldHeight` > 0 ; `maxTicks` > 0 ; traits dans [0, 2] ; moteur `"xoshiro256**"` exclusif.
 - Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).
 
@@ -168,7 +187,7 @@ Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Dr
 
 | Clé | Défaut | Décision | Rôle |
 | :-- | :-- | :-- | :-- |
-| `communication.transmissionRange` | 20 | n°7 | Portée effective d'une pulsation (héritée ; la perception reste 50) |
+| `communication.transmissionRange` | 55 | n°7 | Portée effective d'une pulsation (recalibrée au jalon ph6 ; bornes [1, 70] indépendantes de la perception [20, 70]) |
 | `communication.relayEnabled` | true | n°10 | Relais des messages compris au-delà du rayon |
 | `communication.maxHops` | 2 | n°10 | Nombre maximal de sauts avant abandon du relais |
 | `communication.maxSendsPerTick` | 5 | Annexe H | Cap d'émission (envois + relais) par entité et par tick |
@@ -180,6 +199,42 @@ Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Dr
 | `communication.sendEnergyPayloadFactor` | 0.1 | n°9 | Coût d'émission par caractère de payload |
 | `communication.receiveEnergyCost` | 0.2 | n°9 | Coût de réception d'une pulsation |
 | `communication.receiveEnergyPayloadFactor` | 0.05 | n°9 | Coût de réception par caractère de payload |
+
+> `transmissionRange` défaut **55** depuis le jalon SYNE ph6 (calibration : à 20 u. les pulsations
+> du scénario défaut n'atteignaient aucune entité — aucun tapis de confiance ne se formait
+> (SYNE-060) ; à 55 u. la confiance réciproque émerge au voisinage percepçable). Validation en
+> **bornes indépendantes** : `transmissionRange` ∈ [1, 70] et `agents.perception.radius` ∈ [20, 70]
+> — la portée de pulsation peut donc dépasser le rayon de perception sans violation de config.
+
+### 6.4 Clés de groupes — réseau social émergent (jalon SYNE ph6)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `groups.enabled` | true | n°24 | Active la révision périodique des groupes |
+| `groups.reviewIntervalTicks` | 10 | — | Fréquence (LOD) de révision des composantes |
+| `groups.trustThreshold` | 0.3 | n°24 | Confiance réciproque minimale d'un lien social |
+| `groups.minGroupSize` | 3 | n°24 | Taille minimale d'un groupe émergent |
+| `groups.sharedBeliefBonus` | 0.10 | n°24 | Bonus d'affinité par croyance partagée |
+| `groups.goalAlignmentBonus` | 0.20 | n°24 | Bonus d'affinité par but partagé |
+| `groups.consensusThreshold` | 0.5 | n°24 | Quorum pondéré d'une décision collective |
+
+(`SOCIAL_NETWORK.md` §9)
+
+### 6.5 Clés de reproduction — naissance par fusion consentie (SYNE-062)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `reproduction.enabled` | true | n°17 | Active la naissance par fusion consentie |
+| `reproduction.intervalTicks` | 100 | n°17 | Fréquence de passe candidature de fusion |
+| `reproduction.consentTrustThreshold` | 0.6 | n°17 | Confiance réciproque requise → consentement (couplé à CHILDREARING, jalon ph7) |
+| `reproduction.maxBirthsPerTick` | 1 | n°17 | Nombre maximal de naissances par passe |
+
+### 6.6 Clés d'héritage — mécanismes fins (SYNE-063, §6.6.3)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.inheritance.salienceThreshold` | 0.01 | n°16 | Salience minimale d'un souvenir parental transmis (ex-`DefaultSalienceThreshold`) |
+| (mécanismes fins dominante/mutation) | n°16 | §6.6.3 | Configurés par `InheritanceSettings` (dominance [0,1], taux de mutation ≥ 0) — défauts 0.5 / 0.01 |
 
 ---
 

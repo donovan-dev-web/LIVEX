@@ -115,7 +115,8 @@ public sealed class MindState
         Memory memory = Inheritance.InheritMemory(
             parentA.Memory.AllEntries.Concat(parentB.Memory.AllEntries),
             options.Agents.Memory,
-            birthTick);
+            birthTick,
+            options.Agents.Inheritance.SalienceThreshold);
 
         BeliefSet beliefs = Inheritance.InheritBeliefs(
             parentA.Beliefs.All.Concat(parentB.Beliefs.All),

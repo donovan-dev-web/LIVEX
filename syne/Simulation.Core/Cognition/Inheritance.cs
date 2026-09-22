@@ -9,18 +9,23 @@ namespace Simulation.Core.Cognition;
 /// transmet les **traits** et le **savoir** (mémoire intergénérationnelle +
 /// croyances) à l'entité née.
 ///
-/// La structure est figée (décision n°16) ; les paramètres fins (seuil de
-/// salience des souvenirs transmis, horizon des croyances) restent configurables
-/// pour la calibration V0.1.
+/// La structure est figée (décision n°16) ; les paramètres fins (réadaptation,
+/// dominance, mutation, seuil de salience) restent configurables
+/// (<see cref="InheritanceSettings"/>, SYNE-063 — §6.6.3, V0.2).
 /// </summary>
 public static class Inheritance
 {
-    /// <summary>Seuil de salience d'un souvenir parent pour être transmis (V0.1, configurable en calibration).</summary>
+    /// <summary>Seuil de salience par défaut d'un souvenir parent transmis (V0.1, désormais <see cref="InheritanceSettings.SalienceThreshold"/>).</summary>
     public const double DefaultSalienceThreshold = 0.01;
+
+    private const ulong GoldenGamma = 0x9E3779B97F4A7C15UL;
+    private const ulong Mix1 = 0xBF58476D1CE4E5B9UL;
+    private const ulong Mix2 = 0x94D049BB133111EBUL;
 
     /// <summary>
     /// Fusion des traits par moyenne arithmétique par trait (décision n°16,
-    /// §6.6.2) — la réadaptation/dominance/mutation restent configurables (V0.1).
+    /// §6.6.2) — équivalent à <c>FuseTraits(a, b, new InheritanceSettings(), seed)</c>
+    /// (dominance 0, mutation 0) : préservé pour la rétro-compatibilité V0.1.
     /// </summary>
     public static TraitSet FuseTraits(TraitSet parentA, TraitSet parentB)
     {
@@ -38,20 +43,84 @@ public static class Inheritance
     }
 
     /// <summary>
+    /// Mécanismes fins (SYNE-063, décision n°16, §6.6.3) — déterministes (hash
+    /// SplitMix64 stable, aucun PRNG global) :
+    /// <list type="bullet">
+    /// <item><b>réadaptation/dominance</b> (<c>dominance</c> ∈ [0, 1]) : à 0, fusion
+    ///  égalitaire (moyenne, V0.1) ; au-delà, le trait du parent « exprimant »
+    ///  (écart au neutre 1.0 le plus grand) pèse d'autant plus (pleine à 1) ;</item>
+    /// <item><b>mutation</b> (<c>mutationRate</c>) : tirage stable par trait via la
+    ///  graine <paramref name="seed"/>, perturbation bornée <c>± mutationMagnitude</c>,
+    ///  plage [0, 2] respectée.</item>
+    /// </list>
+    /// </summary>
+    public static TraitSet FuseTraits(
+        TraitSet parentA,
+        TraitSet parentB,
+        InheritanceSettings settings,
+        ulong seed)
+    {
+        ArgumentNullException.ThrowIfNull(parentA);
+        ArgumentNullException.ThrowIfNull(parentB);
+        ArgumentNullException.ThrowIfNull(settings);
+
+        var fused = new Dictionary<string, double>(StringComparer.Ordinal);
+        for (int index = 0; index < TraitSet.TraitNames.Count; index++)
+        {
+            string name = TraitSet.TraitNames[index];
+            double mother = parentA[name];
+            double father = parentB[name];
+            double average = (mother + father) / 2.0;
+
+            double express = Math.Abs(mother - 1.0) >= Math.Abs(father - 1.0) ? mother : father;
+            double value = (average * (1.0 - settings.Dominance)) + (express * settings.Dominance);
+
+            if (settings.MutationRate > 0.0)
+            {
+                double draw = Draw01(seed ^ ((ulong)index * Mix1));
+                if (draw < settings.MutationRate)
+                {
+                    double delta = (Draw01(seed ^ GoldenGamma ^ ((ulong)index * Mix2)) - 0.5) * 2.0 * settings.MutationMagnitude;
+                    value += delta;
+                }
+            }
+
+            fused[name] = Math.Clamp(value, TraitSet.Min, TraitSet.Max);
+        }
+
+        return new TraitSet(fused);
+    }
+
+    private static double Draw01(ulong z)
+    {
+        ulong h = SplitMix(z);
+        return (h % 10001) / 10000.0;
+    }
+
+    private static ulong SplitMix(ulong z)
+    {
+        z = (z ^ (z >> 30)) * Mix1;
+        z = (z ^ (z >> 27)) * Mix2;
+        return z ^ (z >> 31);
+    }
+
+    /// <summary>
     /// Mémoire intergénérationnelle (§6.6.3) : réunit les souvenirs des parents
-    /// dont la salience dépasse <paramref name="salienceThreshold"/> (évaluée au
-    /// tick courant), ré-horodatés au <paramref name="birthTick"/>. L'ordre
-    /// d'insertion est déterministe (parents puis tri par StoredAt/Sequence).
+    /// dont la salience dépasse <paramref name="salienceThreshold"/> (défaut :
+    /// <see cref="InheritanceSettings.SalienceThreshold"/>, évaluée au tick courant),
+    /// ré-horodatés au <paramref name="birthTick"/>. L'ordre d'insertion est
+    /// déterministe (parents puis tri par StoredAt/Sequence).
     /// </summary>
     public static Memory InheritMemory(
         IEnumerable<MemoryEntry> parentalMemory,
         MemorySettings settings,
         ulong birthTick,
-        double salienceThreshold = DefaultSalienceThreshold)
+        double? salienceThreshold = null)
     {
         ArgumentNullException.ThrowIfNull(parentalMemory);
         ArgumentNullException.ThrowIfNull(settings);
 
+        double threshold = salienceThreshold ?? DefaultSalienceThreshold;
         var inherited = new Memory(settings);
         foreach (MemoryEntry entry in parentalMemory
             .OrderBy(memory => memory.StoredAt)
@@ -61,7 +130,7 @@ public static class Inheritance
             // la connaissance des expériences parentes.
             double age = birthTick >= entry.StoredAt ? (double)(birthTick - entry.StoredAt) : 0.0;
             double salience = Math.Exp(-inherited.DecayRateFor(entry.Category) * age);
-            if (salience < salienceThreshold)
+            if (salience < threshold)
             {
                 continue;
             }

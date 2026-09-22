@@ -4,6 +4,8 @@ using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Perception;
+using Simulation.Core.Population;
+using Simulation.Core.Social;
 
 namespace Simulation.Core.Cognition;
 
@@ -32,6 +34,8 @@ public sealed class CognitionPipeline
     private readonly ActionExecutor _executor;
     private readonly InterruptionTrigger _interruption;
     private readonly CommunicationSystem _communication;
+    private readonly GroupSystem _groups;
+    private readonly BirthSystem _birth;
     private readonly Dictionary<ulong, MindState> _minds = new();
 
     public CognitionPipeline(
@@ -50,6 +54,8 @@ public sealed class CognitionPipeline
         _executor = new ActionExecutor(world, _catalog, stocks, options);
         _interruption = new InterruptionTrigger(_catalog, stocks);
         _communication = new CommunicationSystem(world, options.Communication);
+        _groups = new GroupSystem(options.Groups);
+        _birth = new BirthSystem(options.Reproduction);
     }
 
     public PerceptionSystem Perception => _perception;
@@ -60,6 +66,12 @@ public sealed class CognitionPipeline
 
     /// <summary>Sous-système de communication (une passe par tick — SYNE-050 → 054).</summary>
     public CommunicationSystem Communication => _communication;
+
+    /// <summary>Sous-système de groupes émergents (SYNE-060/061, révision LOD configurable).</summary>
+    public GroupSystem Groups => _groups;
+
+    /// <summary>Sous-système de naissance par fusion consentie (SYNE-062).</summary>
+    public BirthSystem Birth => _birth;
 
     public IReadOnlyCollection<MindState> Minds => _minds.Values;
 
@@ -88,6 +100,17 @@ public sealed class CognitionPipeline
         {
             mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
             mind.Trust.Tick();
+        }
+
+        // Groupes émergents (SYNE-060/061) puis naissances (SYNE-062) : après la
+        // boucle des entités, la communication de masse et les décréments de
+        // croyance/confiance — la population ne mute qu'après l'itération complète
+        // (ordre causal strict, DETERMINISM.md §5).
+        _groups.Step(currentTick, _minds);
+        _birth.Step(currentTick, _world, _minds, _options);
+        foreach ((ulong childId, MindState childMind) in _birth.NewbornMinds)
+        {
+            _minds[childId] = childMind;
         }
     }
 
