@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
@@ -21,6 +21,13 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **7 moteurs pur·s déterministes** (`echos/analysis/`) : `CognitiveDiversityMetrics` (8 métriques), `InformationPropagationMetrics` (5, événements `message_sent`), `SocialComplexityMetrics` (7, graphe de confiance + **communautés par propagation d'étiquettes** — écart vs Louvain documenté dans `METRICS_SPEC.md` §4), `GoalConvergenceMetrics` (4), `FeedbackLoopDetector` (5, heuristique fenêtre **100 ticks / fréquence > 2**), `ResourceSustainabilityMetrics` (3, `resource_consumed` + `RecoveryTime` sur historique), `GroupDynamicsMetrics` (7, `group_formed`/`group_dissolved`).
   - **Contrat** : `compute(snapshot: dict) -> dict` (transport camelCase), **données manquantes → valeurs neutres 0.0**, clés inconnues ignorées, aucune mutation d'entrée, registre `known_engines()` inchangé.
   - **Preuve J2 (ECHOS-027)** : golden files versionnés `fixtures/snapshot_analysis.json` + `golden/analysis_golden.json` (tous les moteurs, valeurs vérifiées à la main) ; `test_j2_determinism.py` — **rejeu bit-à-bit de 2 runs** (séries de métriques strictement identiques) et dernier tick == golden ; tests par moteur à valeurs attendues calculées à la main. Tests : 73 → **115**, couverture **98,2 %**. flake8 + pytest `--cov-fail-under=80` verts.
+- **ECHOS ph3 — Indicateurs d'émergence (ECHOS-030 → ECHOS-033, issues #379 → #382, milestone ph3)** :
+  - **Moteur composite `EmergenceIndicators`** (`echos/analysis/emergence.py`, 8ᵉ moteur du registre `known_engines()` qui devient contractuel) : `compute(snapshot)` exécute les 6 moteurs entrants puis compose ; `compute_from_metrics(metrics)` miroir du `Calculate` du prototype. Fonctions pures/déterministes (aucun PRNG).
+  - **ECHOS-030 Score composite [0,1]** : `EmergenceScore = BeliefDiversity×0.15 + GoalDiversity×0.15 + DiffusionSpeed_Norm×0.10 + ClusteringCoefficient×0.15 + LoopStrength×0.20 + (ActiveGroups/100)×0.25`, **clampé [0,1]** (entropies pouvant excéder 1), `DiffusionSpeed_Norm = clamp(1 − InformationDiffusionSpeed/100, 0, 1)` avec **neutralité étendue** (vitesse non mesurée → 0.0, convention ECHOS-006). Valeur de référence : 0.7585336.
+  - **ECHOS-031 Phénomènes auto-détectés** : `DetectedPhenomena` — 5 phénomènes (CommunityFormation, FeedbackLoops, CollectiveCoordination, InformationBottleneck, OrganizationalDynamics, ordre stable) avec **trace des signaux déclencheurs** `[{metric, value, threshold}]` ; sur la fixture, seul InformationBottleneck (centralité 1.0 > 0.3).
+  - **ECHOS-033 Complexité & imprévisibilité** : `SystemComplexity = (BeliefDiversity + GoalDiversity + InformationDiffusionSpeed)/3` (formule littérale, non bornée — incohérence d'échelle documentée) ; `UnpredictabilityIndex = LoopStrength × DecisionDiversity` (**décision [OUVERTE] résolue** : `DecisionVariability` n'existe dans aucun moteur, cf. EMERGENCE_INDICATORS.md §5).
+  - **ECHOS-032 Règle d'or §4.10.3** : constante `DISCLAIMER` émise par le moteur (« jamais une preuve de l'existence d'une intelligence ou d'une société »), invariante et testée.
+  - **Preuve J3** : `test_j3_determinism.py` — rejeu bit-à-bit des indicateurs, score borné sur [0,1] à chaque cadre, dernier cadre == golden ; golden `analysis_golden.json` étendu avec `EmergenceIndicators`. Tests : 120 → **146**, couverture **98,3 %**.
 
 ### Changed
 - Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **Electron + React** intégrée, analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
@@ -45,3 +52,4 @@ Version initiale (instrumentation prototype V1 : 18 tests xUnit, couverture 85 %
 | 21 septembre 2026 | ECHOS-010 : flux aligné par tick + serveur in-process | Jalon U1 — ECHOS-010 |
 | 21 septembre 2026 | ECHOS-011 à 013 : stockage — agrégation, SQLite, Parquet (+ pipeline) | Jalon U1 — clôture ECHOS |
 | 21 septembre 2026 | ECHOS-020 à 027 : 7 moteurs de métriques + golden files + preuve J2 | Jalon U2 — moteurs & déterminisme |
+| 22 septembre 2026 | ECHOS-030 à 033 : indicateurs d'émergence (score composite, phénomènes, complexité/imprévisibilité) + preuve J3 | Jalon U3 — indicateurs d'émergence |

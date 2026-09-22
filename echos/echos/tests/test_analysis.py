@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from echos.analysis import ENGINES, known_engines
+from echos.analysis import ENGINES, emergence, known_engines
 from echos.ingestion import WorldSnapshot, parse_message
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -40,7 +40,7 @@ def _fresh_snapshot() -> dict:
 # ---------------------------------------------------------------------------
 
 
-def test_registry_exposes_all_seven_engines():
+def test_registry_exposes_all_eight_engines():
     engines = known_engines()
 
     assert set(engines) == {
@@ -51,6 +51,7 @@ def test_registry_exposes_all_seven_engines():
         "FeedbackLoopDetector",
         "ResourceSustainabilityMetrics",
         "GroupDynamicsMetrics",
+        "EmergenceIndicators",
     }
 
 
@@ -87,6 +88,12 @@ def test_empty_snapshot_returns_neutral_metrics(engine):
     for value in result.values():
         if isinstance(value, dict):
             assert all(isinstance(item, int) for item in value.values())
+        elif isinstance(value, list):
+            # EmergenceIndicators : aucun phénomène sur données vides (ECHOS-031).
+            assert value == []
+        elif isinstance(value, str):
+            # EmergenceIndicators : disclaimer invariant présent (ECHOS-032).
+            assert value == emergence.DISCLAIMER
         else:
             assert isinstance(value, (int, float))
 
@@ -308,7 +315,7 @@ def test_compute_matches_golden_files(engine):
 
     assert set(result) == set(golden)
     for metric, expected in golden.items():
-        if isinstance(expected, dict):
+        if isinstance(expected, (dict, list, str)):
             assert result[metric] == expected
         elif isinstance(expected, int):
             assert result[metric] == expected
