@@ -38,8 +38,8 @@ public class UtilityEvaluatorTests
     [Fact]
     public void Urgency_SigmoidIncreasesWithNeed()
     {
-        var low = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 60), goalAge: 0);
-        var high = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 95), goalAge: 0);
+        var low = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 60), goalAge: 0, new ActionSettings());
+        var high = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 95), goalAge: 0, new ActionSettings());
 
         Assert.True(high > low);
     }
@@ -47,12 +47,22 @@ public class UtilityEvaluatorTests
     [Fact]
     public void Urgency_PenalizesStaleGoalsAndCriticalState()
     {
-        var baseScore = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 90), goalAge: 0);
-        var aged = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 90), goalAge: 200);
-        var critical = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 95, energy: 5), goalAge: 0);
+        var baseScore = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 80), goalAge: 0, new ActionSettings());
+        var aged = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 90), goalAge: 200, new ActionSettings());
+        var critical = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 95, energy: 5), goalAge: 0, new ActionSettings());
 
         Assert.True(aged > baseScore + 4.9);
         Assert.True(critical > baseScore + 9.9);
+    }
+
+    [Fact]
+    public void Urgency_CriticalUsesConfigurableThresholds()
+    {
+        // Seuil de faim critique : 85 (COGNITIVE_ARCHITECTURE.md §6, agents.interruption.criticalHunger).
+        var nonCritical = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 84), goalAge: 0, new ActionSettings());
+        var critical = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 86), goalAge: 0, new ActionSettings());
+
+        Assert.True(critical > nonCritical + 9.9);
     }
 
     [Fact]
@@ -86,5 +96,67 @@ public class UtilityEvaluatorTests
 
         Assert.Equal(DesireKind.SeekFood, UtilityEvaluator.Best([first, second]).Kind);
         Assert.Equal(DesireKind.SeekFood, UtilityEvaluator.Best([second, tie]).Kind);
+    }
+
+    [Fact]
+    public void Evaluate_AlignBonusBoostsBenefitOfCurrentIntention()
+    {
+        // SYNE-030 : bénéfice × alignBonus (défaut 1.2) si l'action rejoint l'objectif courant.
+        var needs = BodyNeeds.FromState(hunger: 80);
+        var actions = new ActionSettings();
+
+        UtilityScore aligned = UtilityEvaluator.Evaluate(
+            DesireKind.SeekFood, needs, Neutral(), successRate: 0.7, goalAge: 0, actions, currentIntention: DesireKind.SeekFood);
+        UtilityScore otherwise = UtilityEvaluator.Evaluate(
+            DesireKind.SeekFood, needs, Neutral(), successRate: 0.7, goalAge: 0, actions, currentIntention: DesireKind.SeekWater);
+
+        Assert.Equal(30.0 * 1.2, aligned.Benefit, 10);
+        Assert.Equal(30.0, otherwise.Benefit, 10);
+        Assert.True(aligned.Utility > otherwise.Utility);
+    }
+
+    [Fact]
+    public void ApplyActionSwitchMargin_BlocksUndecisiveSwitch()
+    {
+        // SYNE-031 : hystérésis anti-oscillation (actionSwitchMargin défaut 0.05).
+        var needs = BodyNeeds.FromState(hunger: 80, thirst: 70);
+        var actions = new ActionSettings();
+        var factor = Neutral();
+
+        UtilityScore current = UtilityEvaluator.Evaluate(
+            DesireKind.SeekWater, needs, factor, successRate: 0.7, goalAge: 0, actions, currentIntention: DesireKind.SeekWater);
+        UtilityScore barelyBetter = UtilityEvaluator.Evaluate(
+            DesireKind.SeekFood, needs, factor, successRate: 0.7, goalAge: 0, actions, currentIntention: DesireKind.SeekWater);
+
+        UtilityScore blocked = UtilityEvaluator.ApplyActionSwitchMargin(
+            barelyBetter, current.Kind, needs, factor, successRate: 0.7, goalAge: 0, actions);
+
+        // Le candidat ne dépasse pas la marge → l'action courante est conservée.
+        Assert.Equal(DesireKind.SeekWater, blocked.Kind);
+    }
+
+    [Fact]
+    public void ApplyActionSwitchMargin_AllowsDecisiveSwitch_AndSameKind()
+    {
+        var needs = BodyNeeds.FromState(hunger: 95, thirst: 30);
+        var actions = new ActionSettings();
+        var factor = Neutral();
+
+        UtilityScore dominant = UtilityEvaluator.Evaluate(
+            DesireKind.SeekFood, needs, factor, successRate: 0.7, goalAge: 0, actions, currentIntention: DesireKind.SeekWater);
+
+        UtilityScore selected = UtilityEvaluator.ApplyActionSwitchMargin(
+            dominant, DesireKind.SeekWater, needs, factor, successRate: 0.7, goalAge: 0, actions);
+
+        Assert.Equal(DesireKind.SeekFood, selected.Kind);
+        Assert.Equal(dominant.Utility, selected.Utility, 10);
+
+        UtilityScore sameKind = UtilityEvaluator.ApplyActionSwitchMargin(
+            dominant, DesireKind.SeekFood, needs, factor, successRate: 0.7, goalAge: 0, actions);
+        Assert.Equal(DesireKind.SeekFood, sameKind.Kind);
+
+        UtilityScore noCurrent = UtilityEvaluator.ApplyActionSwitchMargin(
+            dominant, currentKind: null, needs, factor, successRate: 0.7, goalAge: 0, actions);
+        Assert.Equal(DesireKind.SeekFood, noCurrent.Kind);
     }
 }

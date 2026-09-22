@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `../COMMUNICATION.md`, `DATA_MODEL.md`
 **Source Monographie** : §2.4 (contrats de transport), §5.4 (PRISM), §3.24 (événements), ADR-003/ADR-004
 
@@ -27,6 +27,7 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 | Champ | Type | Description |
 | :-- | :-- | :-- |
 | `version` | string | Version du contrat (SemVer) |
+| `engineVersion` | string | Version du moteur (DETERMINISM.md §3.6.2) — identifie les règles du run |
 | `runId` | string | Identifiant du run |
 | `tick` | uint | Numéro de tick courant |
 | `simulatedTimeMinutes` | uint | Temps simulé (minutes) |
@@ -37,7 +38,7 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.2.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
@@ -70,7 +71,9 @@ Exemple :
 
 > Événements typés du prototype : `tick_summary`, `agent_spawned`, `agent_died`, `decision_made` (ADR-004).
 > **V0.1 émet** `tick_summary` (1/tick, `value.aliveCount`) et `decision_made` (1/entité/tick,
-> `value = {intention, utility}`, `cause = "hunger=…,thirst=…,fatigue=…"`).
+> `value = {intention, utility, deliberated, interrupted}`, `cause = "hunger=…,thirst=…,fatigue=…"`).
+> `deliberated`/`interrupted` (bool, jalon SYNE ph3) indiquent si le tick a délibéré (fréquence
+> configurable, décision n°14) ou interrompu l'action par besoin critique (décision n°15).
 > `agent_spawned`/`agent_died` attendront la mortalité (ph4).
 
 ## 3. Contrat de contrôle — HTTP 5181

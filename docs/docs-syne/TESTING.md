@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `DETERMINISM.md`, `ARCHITECTURE.md`
 **Source Monographie** : §7.1 (xUnit + Moq), Annexe J (jalons de validation, 160+ tests), Annexe I (benchmarks)
 
@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **129 tests** (baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **166 tests** (baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -28,7 +28,7 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Mémoire | décroissance exponentielle, purge au seuil 0.01, capacité 1000, éviction épinglée |
 | Croyances | révision (alignement/conflit/sources différentes), expiration, plafond par snap |
 | Besoins & Objectifs | seuils, filtrage de faisabilité, priorisation |
-| Décision / Utilité | formule complète, hystérésis, interruptions, cache |
+| Décision / Utilité (SYNE ph3) | formule complète, **bonus d'alignement ×1.2**, hystérésis (`actionSwitchMargin`), interruptions par besoin critique, **fréquence de délibération configurable**, **conflits de priorités force × confiance**, **DecisionRecord** |
 | Actions | déclaratives, pool d'actions, coûts |
 | Communications | rayon, incompréhension, dégradation par hop, bande passante |
 | Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
@@ -63,8 +63,8 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 ## 7. Convention d'écriture
 
 - Test unitaire = comportement observable d'un sous-système avec données explicites (pas de mock hasardeux).
-- Chaque test de décision fournit le `DecisionRecord` attendu.
-- Les tests qui dépendent du hasard utilisent une **seed fixe**.
+- Chaque test de décision fournit le `DecisionRecord` attendu (SYNE-030 à 033 : `MindState.LastDecisionRecord`).
+- Les tests qui dépendent du hasard utilisent une **seed fixe** ; le tirage de conflit de priorités est **déterministe sans PRNG** (hash SplitMix64, `PriorityConflictResolver`).
 
 ---
 
