@@ -1,5 +1,8 @@
+using System.Globalization;
 using System.Text.Json.Nodes;
 using Simulation.Core.Communication;
+using Simulation.Core.Population;
+using Simulation.Core.Social;
 
 namespace Simulation.Core.Observability;
 
@@ -124,9 +127,117 @@ public static class EventSensor
         return new ExternalEvent(
             ObservabilityContract.MessageReceived,
             tick,
-            AgentId: received.ReceiverId.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            TargetId: received.SenderId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            AgentId: received.ReceiverId.ToString(CultureInfo.InvariantCulture),
+            TargetId: received.SenderId.ToString(CultureInfo.InvariantCulture),
             Action: received.Type.ToString(),
+            Value: value);
+    }
+
+    /// <summary>Convertit une liste triée de membres en nœud JSON (ordre croissant, déterministe).</summary>
+    private static JsonArray JsonMembers(IReadOnlyList<ulong> members)
+    {
+        var json = new JsonArray();
+        foreach (ulong member in members)
+        {
+            json.Add(member);
+        }
+
+        return json;
+    }
+
+    /// <summary>
+    /// Événement <c>group_formed</c> (SYNE-060) : apparition d'un groupe émergent.
+    /// Porteur (agentId) : le leader émergent, sinon le plus petit membre.
+    /// </summary>
+    public static ExternalEvent GroupFormed(ulong tick, Group group)
+    {
+        ArgumentNullException.ThrowIfNull(group);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["groupId"] = group.Id,
+            ["size"] = group.Members.Count,
+            ["cohesion"] = Math.Round(group.MeanCohesion, 4),
+            ["members"] = JsonMembers(group.Members),
+        };
+        ulong anchor = group.LeaderId ?? group.Members[0];
+        return new ExternalEvent(
+            ObservabilityContract.GroupFormed,
+            tick,
+            AgentId: anchor.ToString(CultureInfo.InvariantCulture),
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>group_dissolved</c> (SYNE-060) : dissolution avec bilan de vie
+    /// (durée, succès, turnover entrée/sortie). Sémantique consommée par ECHOS
+    /// (group_dynamics : lifetime/success/membersOut/membersIn).
+    /// </summary>
+    public static ExternalEvent GroupDissolved(ulong tick, GroupDissolution dissolution)
+    {
+        ArgumentNullException.ThrowIfNull(dissolution);
+        long lifetime = dissolution.FormedTick <= dissolution.Tick
+            ? (long)(dissolution.Tick - dissolution.FormedTick)
+            : 0;
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["groupId"] = dissolution.GroupId,
+            ["lifetime"] = lifetime,
+            ["success"] = dissolution.Success,
+            ["membersOut"] = dissolution.MembersOut,
+            ["membersIn"] = dissolution.MembersIn,
+            ["members"] = JsonMembers(dissolution.Members),
+        };
+        return new ExternalEvent(
+            ObservabilityContract.GroupDissolved,
+            tick,
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>group_decision</c> (SYNE-061) : décision collective adoptée —
+    /// intention dominante + consensus pondéré par la confiance au leader.
+    /// </summary>
+    public static ExternalEvent GroupDecision(ulong tick, GroupDecision decision)
+    {
+        ArgumentNullException.ThrowIfNull(decision);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["groupId"] = decision.GroupId,
+            ["decision"] = decision.Decision.ToString(),
+            ["consensus"] = Math.Round(decision.Consensus, 4),
+        };
+        return new ExternalEvent(
+            ObservabilityContract.GroupDecision,
+            tick,
+            AgentId: decision.LeaderId.ToString(CultureInfo.InvariantCulture),
+            Action: decision.Decision.ToString(),
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>agent_spawned</c> (SYNE-062) : naissance d'une entité par la
+    /// fusion consentie de deux parents.
+    /// </summary>
+    public static ExternalEvent AgentSpawned(ulong tick, BirthObservation birth)
+    {
+        ArgumentNullException.ThrowIfNull(birth);
+        var position = new System.Text.Json.Nodes.JsonObject
+        {
+            ["x"] = Math.Round(birth.Position.X, 4),
+            ["y"] = Math.Round(birth.Position.Y, 4),
+        };
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["childId"] = birth.ChildId,
+            ["motherId"] = birth.MotherId,
+            ["fatherId"] = birth.FatherId,
+            ["species"] = birth.Species,
+            ["position"] = position,
+        };
+        return new ExternalEvent(
+            ObservabilityContract.AgentSpawned,
+            tick,
+            AgentId: birth.ChildId.ToString(CultureInfo.InvariantCulture),
             Value: value);
     }
 }

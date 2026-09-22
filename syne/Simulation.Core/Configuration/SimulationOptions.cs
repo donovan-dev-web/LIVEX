@@ -13,6 +13,8 @@ public sealed class SimulationOptions
     public WorldSettings World { get; set; } = new();
     public RandomSettings Random { get; set; } = new();
     public PerformanceSettings Performance { get; set; } = new();
+    public GroupSettings Groups { get; set; } = new();
+    public ReproductionSettings Reproduction { get; set; } = new();
 }
 
 public sealed class SimulationSettings
@@ -45,6 +47,9 @@ public sealed class AgentSettings
     public BeliefSettings Beliefs { get; set; } = new();
     public TrustSettings Trust { get; set; } = new();
     public ActionSettings Actions { get; set; } = new();
+
+    /// <summary>Héritage intergénérationnel (SYNE-063, décision n°16) : mécanismes fins configurables (§6.6.3).</summary>
+    public InheritanceSettings Inheritance { get; set; } = new();
 }
 
 public sealed class NeedsSettings
@@ -230,7 +235,7 @@ public sealed class CommunicationSettings
     public double TrustDecay { get; set; } = 0.9;
 
     /// <summary>Portée effective de transmission d'une pulsation (décision n°7 : 20 u. héritées du prototype, configurable).</summary>
-    public int TransmissionRange { get; set; } = 20;
+    public int TransmissionRange { get; set; } = 55;
 
     /// <summary>Relais entité-à-entité actif (SYNE-050, COMMUNICATION_PROTOCOL.md §4).</summary>
     public bool RelayEnabled { get; set; } = true;
@@ -271,4 +276,76 @@ public sealed class PerformanceSettings
     public bool SpatialGrid { get; set; } = true;
     public bool DecisionCaching { get; set; } = true;
     public bool BatchCommunication { get; set; } = true;
+}
+
+/// <summary>
+/// Formation émergente des groupes (SYNE-060/061, SYSTEM_SPEC.md §5, décisions
+/// n°23, 24) : cohésion = confiance réciproque × affinité (buts partagés +
+/// croyances communes). Les structures émergent — aucun script de coalition.
+/// </summary>
+public sealed class GroupSettings
+{
+    /// <summary>Formation/dissolution des groupes active.</summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Fiducial : révision des groupes tous les N ticks (fréquence LOD déterministe).</summary>
+    public int ReviewIntervalTicks { get; set; } = 10;
+
+    /// <summary>Confiance réciproque minimale (min des deux sens) pour un lien social.</summary>
+    public double TrustThreshold { get; set; } = 0.3;
+
+    /// <summary>Taille minimale d'un groupe (en dessous : pas de formation / dissolution).</summary>
+    public int MinGroupSize { get; set; } = 3;
+
+    /// <summary>Bonus d'affinité par croyance partagée (même fait, confiances ≥ 0.5).</summary>
+    public double SharedBeliefBonus { get; set; } = 0.1;
+
+    /// <summary>Bonus d'affinité quand deux entités partagent leur objectif courant (décision n°24 : buts partagés).</summary>
+    public double GoalAlignmentBonus { get; set; } = 0.2;
+
+    /// <summary>Quorum : une décision collective est adoptée quand ≥ cette fraction des membres partage la même intention.</summary>
+    public double ConsensusThreshold { get; set; } = 0.5;
+}
+
+/// <summary>
+/// Cycle de vie — naissance par fusion consentie (SYNE-062, décisions n°17, 16,
+/// SYSTEM_SPEC.md §8) : fusion rare et volontaire, décision déterministe sans PRNG.
+/// </summary>
+public sealed class ReproductionSettings
+{
+    /// <summary>Naissances par fusion actives.</summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Une tentative de fusion tous les N ticks (rareté V0.1 → V0.2).</summary>
+    public int IntervalTicks { get; set; } = 100;
+
+    /// <summary>Consentement : confiance réciproque minimale du couple pour fusionner (§6.6.2).</summary>
+    public double ConsentTrustThreshold { get; set; } = 0.6;
+
+    /// <summary>Plafond de naissances par tick (0 = aucune, garde-fou de population).</summary>
+    public int MaxBirthsPerTick { get; set; } = 1;
+}
+
+/// <summary>
+/// Mécanismes fins d'héritage des traits (SYNE-063, décision n°16, DATA_MODEL.md
+/// §6.6.3) : la structure (fusion + transmission) est figée ; la réadaptation/
+/// dominance/mutation restent configurables (V0.2).
+/// </summary>
+public sealed class InheritanceSettings
+{
+    /// <summary>
+    /// Dominance dans [0, 1] : 0 = fusion égalitaire (moyenne arithmétique, V0.1) ;
+    /// &gt; 0 = le trait du parent « exprimant » (écart au neutre le plus grand)
+    /// pèse d'autant plus (dominance pleine à 1).
+    /// </summary>
+    public double Dominance { get; set; } = 0.0;
+
+    /// <summary>Probabilité de mutation par trait (0 = aucun bruit, V0.1).</summary>
+    public double MutationRate { get; set; } = 0.0;
+
+    /// <summary>Amplitude d'une mutation (± <c>mutationMagnitude</c>, borné à [0, 2]).</summary>
+    public double MutationMagnitude { get; set; } = 0.1;
+
+    /// <summary>Seuil de salience d'un souvenir parental pour être transmis (ex-V0.1 <c>DefaultSalienceThreshold</c>).</summary>
+    public double SalienceThreshold { get; set; } = 0.01;
 }

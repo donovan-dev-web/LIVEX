@@ -15,7 +15,7 @@
 La communication est un **signal lumineux public**, local et dégradable :
 
 - **Publicité** : visible de quiconque le perçoit (ADR-008 — non confidentiel). Pas de canaux privés.
-- **Portée** : locale — le signal est nul au-delà du rayon effectif `transmissionRange` (**défaut 20 u.** — portée héritée du prototype, décision n°7 **[TRANCHÉE]** ; distincte de la portée de perception, 50 u.).
+- **Portée** : locale — le signal est nul au-delà du rayon effectif `transmissionRange` (**défaut 55 u.** depuis le jalon ph6 — bornes [1, 70], calibré pour que le scénario défaut forme un tapis de confiance réciproque (SYNE-060) ; distincte de la portée de perception, 50 u.).
 - **Limite de ligne de vue** : la portée est délimitée par la **distance** et la **ligne de vue** (`LineOfSight.IsClear` — pas de transmission à travers les obstacles).
 - **Interception** : toute entité dans la portée (ligne de vue) reçoit le message **quelle que soit sa cible** — **[TRANCHÉE et livrée]** (décision n°8, SYNE-051).
 

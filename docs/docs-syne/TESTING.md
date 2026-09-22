@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **210 tests** (baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests`).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **242 tests** (suite Core + Console : baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests`). Checksum doré re-épinglé `0x864e72f57e1fe0d0` (engineVersion 0.5.0).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -31,8 +31,10 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Décision / Utilité (SYNE ph3) | formule complète, **bonus d'alignement ×1.2**, hystérésis (`actionSwitchMargin`), interruptions par besoin critique, **fréquence de délibération configurable**, **conflits de priorités force × confiance**, **DecisionRecord** |
 | Actions (SYNE ph4) | catalogue déclaratif complet + échec déclaratif, exécution atomique (Eat/Drink/rest/mouvement), déplacement déterministe sans obstacle, **réserves globales** (consommation, clamp, copie), **déclencheur d'interruption centralisé** (faim→Eat/SeekFood, énergie→Rest, marge, cas nominal), seuils de besoins **≥ 50**, terminal Eat/Drink en pipeline, événement `action_completed` (API_CONTRACTS §2.2) |
 | Communications (SYNE ph5) | portée + **ligne de vue**, **interception publique** (décision n°8), **coûts hérités configurables** (0.5+p×0.1 / 0.2+p×0.05, décision n°9), **confiance ajustée par le récepteur**, caps `maxSends`/`maxReceives`, **relais × 0.9/hop** + borne `maxHops` + anti-boucle, **déterminisme** (id SplitMix64, incompréhension, égalité inter-runs) — `CommunicationSystemTests` |
-| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` + `action_completed` + `message_sent`/`message_received`, `resources` peuplées, **engineVersion 0.4.0** ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
-| Groupes | formation, cohésion, leader, dissolution |
+| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` + `action_completed` + `message_sent`/`message_received`, `resources` peuplées, **engineVersion 0.5.0** ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
+| Groupes (SYNE ph6) | cohésion confiance × affinité (lien = confiance **et** part commune), composantes union-find, **cycle de vie par correspondance exacte des membres** (turnover ⇒ dissolution [+refonte]), taille minimale, leader par confiance entrante (tie-break id), décisions pondérées + quorum, formation/dissolution/décision événements + snapshot `groups[]` — `GroupSystemTests` |
+| Naissance & Héritage (SYNE ph6) | fusion consentie (min confiance réciproque ≥ seuil, paire d'id minimal, enfant médian clampé), allocation d'id croissante, naissances fusionnées post-boucle, `agent_spawned` (parentage), **dominance [0,1] parent exprimant**, **mutation déterministe** + bornes [0,2], seuil de salience configuré — `BirthSystemTests`, `InheritanceTests` |
+| Groupes/Births (déterminisme ph6) | mêmes options + seed ⇒ même séquence de groupes/naissances en 200 ticks, seeds différents ⇒ divergences, événements groupes via contrat — `GroupBirthDeterminismTests` |
 | Ressources | régénération, épuisement |
 | Persistance | sauvegarde/charge JSON et SQLite |
 | Déterminisme | `DeterminismRegressionTests` (hash épinglé SYNE-015), auto-égalité, checksums |
