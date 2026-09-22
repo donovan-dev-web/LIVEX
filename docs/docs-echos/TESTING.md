@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -141,6 +141,27 @@ garde : fixture camelCase transport + golden camelCase attendu).
 Suite : **115 tests**, couverture **98,2 %** (pytest `--cov-fail-under=80`),
 flake8 sans alerte.
 
+### 4.6 Indicateurs d'émergence & preuve J3 (ECHOS-030 → ECHOS-033)
+
+`test_emergence.py` (moteur composite `EmergenceIndicators`, 8ᵉ moteur du
+registre) : contrat (pureté/déterminisme, entrée non mutée, **données absentes →
+score 0.0 / phénomènes vides**), **score composite vérifié à la main**
+(0.7585336 sur `snapshot_analysis.json`, poids Σ=1.0), **bornes [0,1]**
+(entropies pouvant excéder 1 → clamp), **`DiffusionSpeed_Norm`** (diminue avec
+les ticks, neutralité à vitesse non mesurée), **auto-détection des 5
+phénomènes** par seuils (> 2 / > 5 / > 0.7 / > 0.3 / > 5 ET > 0.1) avec trace
+des signaux déclencheurs, **`SystemComplexity` et `UnpredictabilityIndex`
+(=`LoopStrength × DecisionDiversity`)** vérifiés à la main, **disclaimer §4.10.3
+invariant** (ECHOS-032). `compute(snapshot) ≡ compute_from_metrics(moteurs)`.
+
+**Preuve J3** : `test_j3_determinism.py` rejoue deux fois le scénario de
+référence (même contexte par tick qu'en J2) — séries d'indicateurs
+**bit-à-bit identiques**, **score borné sur [0,1] à chaque cadre**, dernier
+cadre == `golden/analysis_golden.json` (clé `EmergenceIndicators`).
+
+Suite : **146 tests** (120 → +26), couverture **98,3 %** (pytest
+`--cov-fail-under=80`), flake8 sans alerte.
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).
@@ -149,4 +170,4 @@ flake8 sans alerte.
 
 ## Points restés ouverts dans ce document
 - Fenêtres temporelles et seuils des moteurs (100 ticks, fréquence > 2, amplification > 1,5) : valeurs `[HÉRITÉ]` à **confirmer en calibration** (METRICS_SPEC §6) — le code les expose en constantes de chaque module, la formule reste stables pour les golden files.
-- Preuve J2 ECHOS : rejeu synthétique en CI ; l'ingestion **réelle** de deux runs SYNE (binaire .NET, hors CI) suivra au jalon J3 avec l'API `/api/compare` (ECHOS-070).
+- Preuve J2/J3 ECHOS : rejeux synthétiques en CI ; l'ingestion **réelle** de deux runs SYNE (binaire .NET, hors CI) suivra au jalon J3 avec l'API `/api/compare` (ECHOS-070).

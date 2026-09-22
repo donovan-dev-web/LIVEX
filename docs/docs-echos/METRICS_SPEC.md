@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.3
 
@@ -10,7 +10,7 @@
 
 ## 1. Vue d'ensemble
 
-ECHOS implémente **7 moteurs de métriques** pour analyser la simulation.
+ECHOS implémente **7 moteurs de métriques** pour analyser la simulation, plus un **moteur composite** `EmergenceIndicators` (ECHOS-030 → ECHOS-033, `EMERGENCE_INDICATORS.md`) qui compose les 6 premiers (hors durabilité).
 
 ```mermaid
 flowchart TD
@@ -21,6 +21,13 @@ flowchart TD
     E --> M5[FeedbackLoopDetector]
     E --> M6[ResourceSustainabilityMetrics]
     E --> M7[GroupDynamicsMetrics]
+    E --> M8[EmergenceIndicators]
+    M1 -.-> M8
+    M2 -.-> M8
+    M3 -.-> M8
+    M4 -.-> M8
+    M5 -.-> M8
+    M7 -.-> M8
 ```
 
 ## 2. Moteur 1 — CognitiveDiversityMetrics (diversité cognitive)

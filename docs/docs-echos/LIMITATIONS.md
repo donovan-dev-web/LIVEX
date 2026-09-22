@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `VISION.md`, `METRICS_SPEC.md`
 **Source Monographie** : §4.10
 
@@ -23,6 +23,8 @@
 ## 3. La règle d'or
 
 > **ECHOS ne doit jamais transformer une métrique en vérité scientifique.** Un score d'émergence ou une valeur de centralité reste une mesure particulière d'un phénomène, jamais une preuve de l'existence d'une intelligence ou d'une société.
+
+**Applicative (ECHOS-032, U3)** : le moteur `EmergenceIndicators` émet une constante `DISCLAIMER` reprise mot pour mot, présente dans **toute** sortie d'indicateurs (score, complexité, imprévisibilité) — testée comme invariant (`test_emergence.py`).
 
 ---
 

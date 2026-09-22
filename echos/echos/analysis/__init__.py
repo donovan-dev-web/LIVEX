@@ -1,8 +1,10 @@
-"""Moteurs de métriques ECHOS (METRICS_SPEC.md §1 — 7 moteurs).
+"""Moteurs de métriques ECHOS (METRICS_SPEC.md §1 — 7 moteurs + indicateurs).
 
 Chaque moteur est buildable et testable séparément : ``ENGINE_NAME`` (contrat
 METRICS_SPEC), ``METRICS`` (nomenclature des métriques), ``compute(snapshot)``
 (fonction pure et déterministe du dict de snapshot transport, camelCase).
+``EmergenceIndicators`` (ECHOS-030→033) est le moteur composite : il exécute
+les 7 moteurs puis compose le score d'émergence et les phénomènes (EMERGENCE_INDICATORS.md).
 """
 
 from importlib import import_module
@@ -15,6 +17,7 @@ _MODULES = (
     "feedback_loop_detector",
     "resource_sustainability",
     "group_dynamics",
+    "emergence",
 )
 
 ENGINES = tuple(import_module(f"{__name__}.{name}") for name in _MODULES)
