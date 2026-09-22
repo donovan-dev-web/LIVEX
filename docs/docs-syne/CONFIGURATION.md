@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `DATA_MODEL.md`, `DETERMINISM.md`
 **Source Monographie** : Annexe H (configuration et paramètres), §3.6.2 (seed), §3.4 (scheduler)
 
@@ -35,7 +35,11 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
                 "observationDecayRate": 0.01, "eventDecayRate": 0.005, "interactionDecayRate": 0.002 },
     "beliefs": { "updateStrength": 0.3, "maxChangePerSnap": 0.5, "alignBonus": 0.2,
                  "conflictPenalty": 0.1, "expiryTicks": 100, "expiredCap": 0.4, "timeDecayPerTick": 0.999 },
-    "actions": { "moveEnergyCost": 0.5, "restEnergyGain": 0.5, "restFatigueRecovery": 1.0 }
+    "actions": { "moveEnergyCost": 0.5, "restEnergyGain": 0.5, "restFatigueRecovery": 1.0,
+                 "deliberation": { "intervalTicks": 10, "alignBonus": 1.2,
+                                   "actionSwitchMargin": 0.05, "conflictTieMargin": 0.5 },
+                 "interruption": { "enabled": true, "utilityExcessMargin": 10.0,
+                                   "criticalHunger": 85.0, "criticalEnergy": 10.0 } }
   },
   "resources": {
     "food": { "initial": 100, "regenerationRate": 0, "degradationTick": 100 },
@@ -99,8 +103,23 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
   - `perception.radius` ∈ [20, 70] (décision n°6) ; `rotationInterval` ≥ 1 ;
   - `memory.maxCapacity` > 0 ; taux de décroissance ≥ 0 ;
   - `beliefs.updateStrength` ∈ [0, 1] ;
+  - `actions.deliberation.intervalTicks` ≥ 1 ; `alignBonus` > 0 ; `actionSwitchMargin`/`conflictTieMargin` ≥ 0 ;
+  - `actions.interruption.utilityExcessMargin` ≥ 0 ; `criticalHunger` ∈ (0, 100] ; `criticalEnergy` ∈ [0, 100) ;
   - dimensions `worldWidth`/`worldHeight` > 0 ; `maxTicks` > 0 ; traits dans [0, 2] ; moteur `"xoshiro256**"` exclusif.
 - Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).
+
+### 6.1 Clés de décision — Décision + Utilité (jalon SYNE ph3)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.actions.deliberation.intervalTicks` | 10 | n°14 | Fréquence de délibération (ticks entre deux) — LOD, défaut haute |
+| `agents.actions.deliberation.alignBonus` | 1.2 | n°13 | Bonus ×1.2 si l'action rejoint l'objectif courant (COGNITIVE_ARCHITECTURE §6) |
+| `agents.actions.deliberation.actionSwitchMargin` | 0.05 | n°13 | Hystérésis anti-oscillation |
+| `agents.actions.deliberation.conflictTieMargin` | 0.5 | n°22 | Marge de conflit de priorités → résolution probabiliste force × confiance |
+| `agents.actions.interruption.enabled` | true | n°15 | Interruptions d'action actives |
+| `agents.actions.interruption.utilityExcessMargin` | 10.0 | n°15 | Marge d'utilité requise pour interrompre (besoin critique) |
+| `agents.actions.interruption.criticalHunger` | 85.0 | n°6 | Seuil de faim critique (COGNITIVE_ARCHITECTURE §6) |
+| `agents.actions.interruption.criticalEnergy` | 10.0 | n°6 | Seuil d'énergie critique |
 
 ---
 

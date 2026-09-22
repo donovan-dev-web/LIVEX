@@ -112,6 +112,38 @@ public sealed class ActionSettings
     public double MoveEnergyCost { get; set; } = 0.5;
     public double RestEnergyGain { get; set; } = 0.5;
     public double RestFatigueRecovery { get; set; } = 1.0;
+    public DeliberationSettings Deliberation { get; set; } = new();
+    public InterruptionSettings Interruption { get; set; } = new();
+}
+
+public sealed class DeliberationSettings
+{
+    /// <summary>Fréquence de délibération : ticks entre deux délibérations (décision n°14, défaut 10).</summary>
+    public int IntervalTicks { get; set; } = 10;
+
+    /// <summary>Bonus d'alignement avec l'objectif courant (×1.2, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    public double AlignBonus { get; set; } = 1.2;
+
+    /// <summary>Marge anti-oscillation (hystérésis) : passer à une nouvelle action seulement si elle dépasse l'action courante de cette marge (défaut 0.05).</summary>
+    public double ActionSwitchMargin { get; set; } = 0.05;
+
+    /// <summary>Marge de conflit de priorités : candidats à moins de cette marge du maximum → résolution probabiliste confiance×force (décision n°22).</summary>
+    public double ConflictTieMargin { get; set; } = 0.5;
+}
+
+public sealed class InterruptionSettings
+{
+    /// <summary>Interruptions actives (décision n°15).</summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Marge : interruption seulement si l'utilité du besoin critique surpasse l'action courante de cette marge (défaut 10, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    public double UtilityExcessMargin { get; set; } = 10.0;
+
+    /// <summary>Seuil de faim critique (défaut 85, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    public double CriticalHunger { get; set; } = 85.0;
+
+    /// <summary>Seuil d'énergie critique (défaut 10).</summary>
+    public double CriticalEnergy { get; set; } = 10.0;
 }
 
 public sealed class ResourceSettings

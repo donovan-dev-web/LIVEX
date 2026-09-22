@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`syne-vX.Y.Z`).
@@ -39,6 +39,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **Observabilité étendue (additif, contrat V0.1 inchangé)** : `AgentSnapshot.From(entity, mind, currentTick)` émet `traits`, `beliefs` (±confiance), `goals` (kind/age), `trust` (peerId/level), `memoryCount` (camelCase) — consommé par les 7 moteurs ECHOS au jalon U2 ECHOS.
   - Tests : +17 (129 → **146**). Build Release 0 warning / 0 erreur.
 
+### Added
+- **Jalon SYNE ph3 — Décision + Utilité (SYNE-030 → SYNE-033, issues #16/#17/#18/#19, milestone ph3, engineVersion 0.2.0)** :
+  - **Formule d'utilité complète (SYNE-030)** : `U = (benefit − cost − risk) × confidence × personalityModifier + urgency` ; **bonus d'alignement ×1.2** (`deliberation.alignBonus`) quand l'action rejoint l'objectif courant ; seuils critiques **configurables** faim > 85 / énergie < 10 (`interruption.criticalHunger`/`criticalEnergy`, COGNITIVE_ARCHITECTURE §6) ; **hystérésis anti-oscillation** `actionSwitchMargin` (défaut 0.05, `ApplyActionSwitchMargin`) — ne changer d'action que si elle surpasse l'action courante de la marge.
+  - **Sélecteur d'action + fréquence de délibération (SYNE-031)** : sélection déterministe par utilité maximale ; **fréquence configurable** (`deliberation.intervalTicks`, défaut 10 — décision n°14, LOD « 1 tick tous les 10 ») avec **holdover** de l'intention entre deux délibérations, décalée par entité (lissage de charge) ; **trace `DecisionRecord`** complète (tick, entité, scores par action, délibéré/interrompu — COGNITIVE_ARCHITECTURE §7).
+  - **Interruptions d'actions (SYNE-032)** : `TryInterrupt` — besoin critique dont l'utilité surpasse de > `utilityExcessMargin` (10) l'action en cours reprend la main, y compris entre deux délibérations (décision n°15) ; décision interrompue tracée.
+  - **Conflits de priorités (SYNE-033)** : `PriorityConflictResolver` — candidats à moins de `conflictTieMargin` (0.5) du maximum → **résolution probabiliste `p = drive × confidence / Σ`**, tirage **SplitMix64 déterministe sans PRNG** (décision n°22, aucun arbitraire d'ancienneté ; à force nulle, ordre du catalogue stable).
+  - **Observabilité (additif, contrat V0.1 compatible)** : `decision_made` ajoute `deliberated`/`interrupted` (bool) par tick ; snapshot ajoute `engineVersion` (déterminsime : `0.2.0`, épinglé).
+  - **Déterminisme** : checksum de trajectoire **recalculé** (0xab56603aedd578af → 0xe8d69e462fc22df7, DETERMINISM.md §6) — délibération à fréquence + interruptions altèrent volontairement la trajectoire ; contrat « 0 tirage PRNG » préservé.
+  - Tests : +20 (146 → **166**, dont 2 `Simulation.Console.Tests`). Build Release 0 warning / 0 erreur.
+
 ### Changed
 - ARCHITECTURE.md : §4 (couche applicative réelle, Dockerfile reporté) et §6 (PRNG défini) mis à jour.
 - (SYNE-2) ARCHITECTURE.md : §4 précise la couche implémentée (mondes, entités, grille, boucle).
@@ -65,3 +75,5 @@ Version initiale (prototype V1/V2 de la Monographie référencé comme [HÉRITÉ
 | 21 septembre 2026 | Socle U0 : solution, config, PRNG, ADR-012 | SYNE-001 / SYNE-005 / SYNE-006 |
 | 21 septembre 2026 | Noyau U0 : boucle, monde + grille, entités + traits | SYNE-002 / SYNE-003 / SYNE-004 |
 | 21 septembre 2026 | Jalon SYNE ph1 : BDI + Perception | SYNE-010 → SYNE-015 |
+| 21 septembre 2026 | Jalon SYNE ph2 : Mémoire intergénérationnelle + Croyances + Confiance | SYNE-020 → SYNE-022 |
+| 21 septembre 2026 | Jalon SYNE ph3 : Décision + Utilité (engineVersion 0.2.0) | SYNE-030 → SYNE-033 |

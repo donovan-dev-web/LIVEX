@@ -136,6 +136,41 @@ public static class SimulationOptionsValidator
             errors.Add($"agents.beliefs.timeDecayPerTick doit être dans (0, 1] (reçu : {options.Agents.Beliefs.TimeDecayPerTick}).");
         }
 
+        if (options.Agents.Actions.Deliberation.IntervalTicks < 1)
+        {
+            errors.Add($"agents.deliberation.intervalTicks doit être &gt;= 1 (reçu : {options.Agents.Actions.Deliberation.IntervalTicks}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.AlignBonus <= 0.0)
+        {
+            errors.Add($"agents.deliberation.alignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.AlignBonus}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.ActionSwitchMargin < 0.0)
+        {
+            errors.Add($"agents.deliberation.actionSwitchMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ActionSwitchMargin}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.ConflictTieMargin < 0.0)
+        {
+            errors.Add($"agents.deliberation.conflictTieMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ConflictTieMargin}).");
+        }
+
+        if (options.Agents.Actions.Interruption.UtilityExcessMargin < 0.0)
+        {
+            errors.Add($"agents.interruption.utilityExcessMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Interruption.UtilityExcessMargin}).");
+        }
+
+        if (options.Agents.Actions.Interruption.CriticalHunger is <= 0.0 or > 100.0)
+        {
+            errors.Add($"agents.interruption.criticalHunger doit être dans (0, 100] (reçu : {options.Agents.Actions.Interruption.CriticalHunger}).");
+        }
+
+        if (options.Agents.Actions.Interruption.CriticalEnergy is < 0.0 or >= 100.0)
+        {
+            errors.Add($"agents.interruption.criticalEnergy doit être dans [0, 100) (reçu : {options.Agents.Actions.Interruption.CriticalEnergy}).");
+        }
+
         return errors;
     }
 }

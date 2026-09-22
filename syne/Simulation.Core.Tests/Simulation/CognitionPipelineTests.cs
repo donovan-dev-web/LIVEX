@@ -122,4 +122,105 @@ public class CognitionPipelineTests
             Assert.True(entity.Position.DistanceTo(obstacle.Position) >= obstacle.Radius);
         }
     }
+
+    private static (WorldType World, SimulationLoop Loop) BuildSingleLoop(SimulationOptions options)
+    {
+        var world = new WorldType(new WorldSize(500, 500));
+        world.AddEntity(MakeEntity(1, new Position(50, 50)));
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options);
+        return (world, loop);
+    }
+
+    [Fact]
+    public void DeliberationFrequency_IsConfigurable()
+    {
+        // SYNE-031 : intervalle 2 → l'entité 1 délibère aux ticks impairs (décision n°14).
+        SimulationOptions options = Options();
+        options.Agents.Actions.Deliberation.IntervalTicks = 2;
+
+        (_, SimulationLoop loop) = BuildSingleLoop(options);
+        var booleans = new List<bool>();
+        for (int tick = 1; tick <= 6; tick++)
+        {
+            loop.AdvanceOneTick();
+            booleans.Add(loop.Cognition.MindOf(1).DeliberatedThisTick);
+        }
+
+        Assert.Equal([true, false, true, false, true, false], booleans);
+    }
+
+    [Fact]
+    public void Holdover_KeepsIntentionBetweenDeliberations()
+    {
+        // SYNE-031 : entre deux délibérations (intervalle 10, entité 1), l'intention est conservée.
+        (_, SimulationLoop loop) = BuildSingleLoop(Options());
+        for (int tick = 1; tick <= 87; tick++)
+        {
+            loop.AdvanceOneTick();
+        }
+
+        MindState mind = loop.Cognition.MindOf(1);
+
+        // tick 87–88 : hors délibération ((87+1) % 10 != 0) — intention Idle conservée depuis le choix du tick 79.
+        Assert.False(mind.DeliberatedThisTick);
+        Assert.Equal(DesireKind.Idle, mind.Intention?.Kind);
+
+        loop.AdvanceOneTick();
+        Assert.False(mind.DeliberatedThisTick);
+        Assert.Equal(DesireKind.Idle, mind.Intention?.Kind);
+
+        // tick 89 : délibération — soif 62,3 ≥ 60 → SeekWater.
+        loop.AdvanceOneTick();
+        Assert.True(mind.DeliberatedThisTick);
+        Assert.Equal(DesireKind.SeekWater, mind.Intention?.Kind);
+    }
+
+    [Fact]
+    public void Interruption_OverridesHoldoverForCriticalNeed()
+    {
+        // SYNE-032 : faim critique (seuil 85) + utilité supérieure de > marge (10)
+        // pendant une non-délibération → reprise par interruption.
+        SimulationOptions options = Options();
+        options.Agents.Needs.HungerRate = 5;
+        options.Agents.Needs.ThirstRate = 0;
+        options.Agents.Needs.FatigueRate = 0;
+        options.Agents.Needs.SafetyDriftRate = 0;
+        options.Agents.Needs.SocialDriftRate = 0;
+        options.Agents.Needs.CuriosityDriftRate = 0;
+
+        (_, SimulationLoop loop) = BuildSingleLoop(options);
+        for (int tick = 1; tick <= 17; tick++)
+        {
+            loop.AdvanceOneTick();
+        }
+
+        MindState mind = loop.Cognition.MindOf(1);
+
+        // tick 17 : faim = 85, seuil STRICT (>) non atteint → pas d'interruption.
+        Assert.False(mind.InterruptedThisTick);
+
+        // tick 18 : faim = 90 > 85, hors délibération → interruption vers SeekFood.
+        loop.AdvanceOneTick();
+        Assert.True(mind.InterruptedThisTick);
+        Assert.False(mind.DeliberatedThisTick);
+        Assert.Equal(DesireKind.SeekFood, mind.Intention?.Kind);
+        Assert.NotNull(mind.LastDecisionRecord);
+        Assert.True(mind.LastDecisionRecord!.Interrupted);
+        Assert.False(mind.LastDecisionRecord.Deliberated);
+    }
+
+    [Fact]
+    public void DecisionRecord_ExposesFullTrace()
+    {
+        // SYNE-030/031 : chaque décision produit une trace complète (COGNITIVE_ARCHITECTURE.md §7).
+        (_, SimulationLoop loop) = BuildSingleLoop(Options());
+        loop.Run(100);
+
+        MindState mind = loop.Cognition.MindOf(1);
+        Assert.NotNull(mind.LastDecisionRecord);
+        Assert.True(mind.LastDecisionRecord!.Tick > 0);
+        Assert.Equal(1UL, mind.LastDecisionRecord.EntityId);
+        Assert.True(mind.LastDecisionScores.Count > 0);
+        Assert.NotNull(mind.LastDecision);
+    }
 }
