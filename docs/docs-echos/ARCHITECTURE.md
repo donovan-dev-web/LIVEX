@@ -55,12 +55,12 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 | Indicateurs d'émergence | Score composite, auto-détection | `EMERGENCE_INDICATORS.md` |
 | Analyse causale | Reconstruction des chaînes | `CAUSAL_ANALYSIS.md` |
 | Comparaison expérimentale | Runs contrôlés, reproductibilité | `EXPERIMENT_COMPARISON.md` |
-| API REST | Endpoints d'interrogation (port 5000) | `API_REST.md` |
+| API REST | Endpoints d'interrogation lecture seule (port 5000) — `api/app.py` (factory + `ECHOS_ANALYTICS_DB`), `api/routes.py` (ECHOS-040→044), `api/series.py` (cache LRU) | `API_REST.md` |
 | Logging & instrumentation | 3 niveaux (structuré, traces, texte) | `LOGGING_INSTRUMENTATION.md` |
 
 ---
 
-## 5. Structure de code (jalon U0)
+## 5. Structure de code
 
 Mise en œuvre découpée, chaque sous-composant buildable/testable séparément (ECHOS-002) :
 
@@ -70,19 +70,22 @@ echos/
 ├── .flake8                   # flake8 (max-line-length=100)
 ├── echos/
 │   ├── __init__.py           # __version__ (synchro pyproject)
-│   ├── api/app.py            # create_app() FastAPI, /health → {status, component, version}
-│   ├── analysis/             # 7 moteurs de métriques (METRICS_SPEC §2-8)
-│   │   └── __init__.py       #   registre ENGINES + known_engines() → {moteur: métriques}
+│   ├── api/                  # API REST (ECHOS-040 → 045)
+│   │   ├── app.py            #   create_app(store) FastAPI + ECHOS_ANALYTICS_DB, /health
+│   │   ├── routes.py         #   /api/runs*, /metrics, /export, /beliefs, /relationships, /groups, /emergent-phenomena
+│   │   └── series.py         #   SeriesCache LRU invalide par ingest_version
+│   ├── analysis/             # 8 moteurs (7 métriques + EmergenceIndicators)
+│   │   └── __init__.py       #   registre ENGINES + known_engines() + compute_all(snapshot)
 │   └── ingestion/            # clients ws/control SYNE (API_CONTRACTS.md §2-3)
 │       ├── models.py         #   WorldSnapshot / ExternalEvent (camelCase) + parse_message
 │       ├── stream.py         #   TickSegment / aligned_ticks (flux aligné par tick)
 │       ├── ws_client.py      #   WsClient :5180 (transport injectable, réception déterministe)
 │       └── control_client.py #   ControlClient :5181 (start / pause / resume / reset)
-├── storage/                  # stockage d'analyse (ECHOS-011 → 013)
-│   ├── aggregation.py        #   TickRecord.from_segment / summarize / downsample
-│   ├── sqlite.py             #   AnalyticsStore (schéma stable, SCHEMA_VERSION)
-│   ├── parquet.py            #   séries lourdes PyArrow + coherence_errors
-│   └── pipeline.py           #   consume() flux → SQLite + Parquet
+│   └── storage/              # stockage d'analyse (ECHOS-011 → 013, v2 en ph4)
+│       ├── aggregation.py    #   TickRecord.from_segment / summarize / downsample
+│       ├── sqlite.py         #   AnalyticsStore (SCHEMA_VERSION "2", tables tick_metrics + tick_contexts, thread-safe)
+│       ├── parquet.py        #   séries lourdes PyArrow + coherence_errors
+│       └── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
 ├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
 └── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
 ```

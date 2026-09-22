@@ -1,9 +1,14 @@
-"""Pipeline d'ingestion ECHOS vers le stockage d'analyse (ECHOS-011→013).
+"""Pipeline d'ingestion ECHOS vers le stockage d'analyse (ECHOS-011→013, ph4).
 
 :func:`consume` enchaîne la boucle réelle : écoute du WebSocket :5180
 (ECHOS-010), agrégation par tick sans perte (ECHOS-011), écriture SQLite
 (ECHOS-012) et séries Parquet (ECHOS-013). ``sample_every`` (``--sample-every=N``,
 API_REST.md §4) limite l'ingestion à 1 tick sur N ; ``None`` garde tout.
+Depuis le jalon ECHOS ph4, chaque tick déclenche aussi les 8 moteurs
+(``analysis.compute_all``) et persiste : ``tick_metrics`` (métriques
+numériques) et ``tick_contexts`` (agents, groupes, phénomènes) — les métriques
+sont donc **calculées à l'ingestion, jamais recalculées à la lecture**
+(API_REST.md §4). ``CoherenceResult`` ajoute les compteurs associés.
 """
 
 from __future__ import annotations
@@ -12,6 +17,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
 
+from echos.analysis import compute_all
+from echos.analysis._common import label_propagation
 from echos.ingestion.stream import TickSegment, aligned_ticks
 from echos.ingestion.ws_client import WsClient
 from echos.storage.aggregation import TickRecord
@@ -27,6 +34,8 @@ class ConsumeResult:
     ticks_written: int
     events_written: int
     agents_written: int
+    metrics_written: int = 0
+    contexts_written: int = 0
 
 
 def _segments(
@@ -42,6 +51,39 @@ def _seed_of(run_id: str) -> str:
     return run_id[4:] if run_id.startswith("run-") else ""
 
 
+def _snapshot_for_engines(segment: TickSegment) -> dict:
+    """Dict transport camelCase attendu par les moteurs (snapshot + événements).
+
+    Les moteurs lisent ``agents``/``resources``/``aliveCount`` sur le snapshot
+    et ``events`` (``decision_made``, ``message_sent``, ``group_formed``...)
+    au niveau racine — lisible par ``compute_all`` sans données manquantes.
+    """
+    snapshot = segment.snapshot.model_dump(mode="json", by_alias=True, exclude_none=True)
+    snapshot["events"] = [
+        event.model_dump(mode="json", by_alias=True, exclude_none=True)
+        for event in segment.events
+    ]
+    return snapshot
+
+
+def _groups_of(agents: list[dict]) -> list[dict]:
+    """Communautés actives (attribution d'étiquettes) en ordre déterministe.
+
+    Chaque groupe : ``label`` (communauté), ``members`` (ids triés) et
+    ``size``. Aucune liaison de confiance → liste vide (aucun groupe).
+    """
+    labels = label_propagation(agents)
+    if not labels:
+        return []
+    buckets: dict[str, list[str]] = {}
+    for agent_id in sorted(labels):
+        buckets.setdefault(str(labels[agent_id]), []).append(str(agent_id))
+    return [
+        {"label": label, "members": members, "size": len(members)}
+        for label, members in sorted(buckets.items())
+    ]
+
+
 def consume(
     client: WsClient,
     store: AnalyticsStore,
@@ -53,10 +95,14 @@ def consume(
 
     Métadonnées (``run_id``, ``version``, ``seed``) dérivées du premier
     snapshot ; l'écriture Parquet est optionnelle via ``parquet_path``.
+    Chaque tick écrit aussi les métriques des 8 moteurs (``tick_metrics``)
+    et les contextes ``agents``/``groups``/``phenomena`` (``tick_contexts``).
     """
     ticks_written = 0
     events_written = 0
     agents_written = 0
+    metrics_written = 0
+    contexts_written = 0
     run_known = False
 
     for _index, segment in _segments(client, sample_every):
@@ -71,6 +117,36 @@ def consume(
 
         store.append_tick(TickRecord.from_segment(segment))
         ticks_written += 1
+
+        engine_snapshot = _snapshot_for_engines(segment)
+        metrics = compute_all(engine_snapshot)
+        metrics_written += store.append_tick_metrics(
+            snapshot.run_id, segment.tick, metrics
+        )
+
+        emergence = metrics.get("EmergenceIndicators") or {}
+        store.append_tick_context(
+            snapshot.run_id,
+            segment.tick,
+            "phenomena",
+            {
+                "detected": emergence.get("DetectedPhenomena", []),
+                "disclaimer": emergence.get("Disclaimer", ""),
+            },
+        )
+        store.append_tick_context(
+            snapshot.run_id,
+            segment.tick,
+            "agents",
+            engine_snapshot.get("agents") or [],
+        )
+        store.append_tick_context(
+            snapshot.run_id,
+            segment.tick,
+            "groups",
+            _groups_of(engine_snapshot.get("agents") or []),
+        )
+        contexts_written += 3
 
         for event in segment.events:
             store.append_event(
@@ -90,7 +166,13 @@ def consume(
             _extend_agent_series(parquet_path, rows)
             agents_written += len(rows)
 
-    return ConsumeResult(ticks_written, events_written, agents_written)
+    return ConsumeResult(
+        ticks_written,
+        events_written,
+        agents_written,
+        metrics_written,
+        contexts_written,
+    )
 
 
 def _json_dumps(value: dict) -> str:
