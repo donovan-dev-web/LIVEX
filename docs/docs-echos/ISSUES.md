@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 22 septembre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_ECHOS.md`, `ROADMAP.md` ECHOS
 **Source Monographie** : Annexe K (feuille de route V2), §4.10.3 (règle d'or), §9.6.4 (issues ADR)
 
@@ -63,10 +63,10 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-030 | Score d'émergence composite [0,1] | `type/feature`, `component/echos` | P0 | ECHOS-027, `EMERGENCE_INDICATORS.md` | Score dans [0,1] ; stable entre runs identiques (jalon J3) |
-| ECHOS-031 | Auto-détection de phénomènes émergents | `type/feature`, `component/echos` | P1 | ECHOS-030, `EMERGENCE_INDICATORS.md` | Détection automatique ; trace des signaux déclencheurs |
-| ECHOS-032 | Mesures d'émergence vs règle d'or §4.10.3 | `type/obs`, `component/echos` | P1 | ECHOS-030, Monographie §4.10.3 | Les scores ne sont jamais présentés comme preuve d'intelligence ; disclaimer documenté |
-| ECHOS-033 | Indicateurs de complexité & d'imprévisibilité | `type/feature`, `component/echos` | P2 | ECHOS-030, `EMERGENCE_INDICATORS.md` | Complexité + imprévisibilité mesurées ; non régression |
+| ECHOS-030 | Score d'émergence composite [0,1] — **LIVRÉ (issue #379, PR ECHOS, U3)** | `type/feature`, `component/echos` | P0 | ECHOS-027, `EMERGENCE_INDICATORS.md` | Score dans [0,1] ; stable entre runs identiques (jalon J3) — ✓ moteur `EmergenceIndicators` (`emergence.py`) : `EmergenceScore` pondéré (0.15/0.15/0.10/0.15/0.20/0.25, Σ=1.0) clampé [0,1], `DiffusionSpeed_Norm = clamp(1 − InformationDiffusionSpeed/100, 0, 1)`, valeur de référence **0.7585336** ; **preuve J3** `test_j3_determinism.py` (rejeu bit-à-bit + bornes) |
+| ECHOS-031 | Auto-détection de phénomènes émergents — **LIVRÉ (issue #380, PR ECHOS, U3)** | `type/feature`, `component/echos` | P1 | ECHOS-030, `EMERGENCE_INDICATORS.md` | Détection automatique ; trace des signaux déclencheurs — ✓ `DetectedPhenomena` : 5 phénomènes (CommunityFormation, FeedbackLoops, CollectiveCoordination, InformationBottleneck, OrganizationalDynamics) avec **trace des signaux déclencheurs** `[{metric, value, threshold}]` ; seuils strictes (> 2 / > 5 / > 0.7 / > 0.3 / > 5 ET > 0.1) ; ordre d'émission stable |
+| ECHOS-032 | Mesures d'émergence vs règle d'or §4.10.3 — **LIVRÉ (issue #381, PR ECHOS, U3)** | `type/obs`, `component/echos` | P1 | ECHOS-030, Monographie §4.10.3 | Les scores ne sont jamais présentés comme preuve d'intelligence ; disclaimer documenté — ✓ constante `DISCLAIMER` (invariant émise par le moteur, « jamais une preuve de l'existence d'une intelligence ou d'une société »), testée ; alignement `LIMITATIONS.md` §3 |
+| ECHOS-033 | Indicateurs de complexité & d'imprévisibilité — **LIVRÉ (issue #382, PR ECHOS, U3)** | `type/feature`, `component/echos` | P2 | ECHOS-030, `EMERGENCE_INDICATORS.md` | Complexité + imprévisibilité mesurées ; non régression — ✓ `SystemComplexity = (BeliefDiversity + GoalDiversity + InformationDiffusionSpeed)/3` ; **`UnpredictabilityIndex = LoopStrength × DecisionDiversity`** (décision documentée : `DecisionVariability` n'existe pas dans les moteurs — résolue [OUVERTE] via `DecisionDiversity`, `EMERGENCE_INDICATORS.md` §5) ; non-régression 7 moteurs (série 120 → 146) |
 
 ### Milestone ph4 (echos) — API REST
 
