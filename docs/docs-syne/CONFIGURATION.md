@@ -59,10 +59,18 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "wood": { "initial": 50, "regenerationRate": 0.1 }
   },
   "communication": {
+    "transmissionRange": 20,
+    "relayEnabled": true,
+    "maxHops": 2,
     "maxSendsPerTick": 5,
     "maxReceivesPerTick": 3,
     "incomprehensionRate": 0.05,
-    "trustDecay": 0.9
+    "trustDecay": 0.9,
+    "hopConfidenceDecay": 0.9,
+    "sendEnergyCost": 0.5,
+    "sendEnergyPayloadFactor": 0.1,
+    "receiveEnergyCost": 0.2,
+    "receiveEnergyPayloadFactor": 0.05
   },
   "world": { "seasons": false, "events": false, "obstacles": false },
   "random": { "seed": 12345, "engine": "xoshiro256**" },
@@ -119,6 +127,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
   - `actions.interruption.utilityExcessMargin` ≥ 0 ; `criticalHunger` ∈ (0, 100] ; `criticalEnergy` ∈ [0, 100) ;
   - `needs.hungerTriggerThreshold`/`thirstTriggerThreshold`/`fatigueTriggerThreshold` ∈ (0, 100] ;
   - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`) — échec déclaratif si une clé manque.
+  - `communication.transmissionRange` > 0 ; `maxSendsPerTick`/`maxReceivesPerTick` ≥ 0 ; `maxHops` ≥ 1 ; `incomprehensionRate`/`hopConfidenceDecay`/`trustDecay` ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053).
   - dimensions `worldWidth`/`worldHeight` > 0 ; `maxTicks` > 0 ; traits dans [0, 2] ; moteur `"xoshiro256**"` exclusif.
 - Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).
 
@@ -154,6 +163,23 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
 Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Drink` sont les
 **actions terminales** résolues depuis SeekFood/SeekWater quand la réserve est disponible
 (SYNE-042, DATA_MODEL.md §7).
+
+### 6.3 Clés de communication (jalon SYNE ph5)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `communication.transmissionRange` | 20 | n°7 | Portée effective d'une pulsation (héritée ; la perception reste 50) |
+| `communication.relayEnabled` | true | n°10 | Relais des messages compris au-delà du rayon |
+| `communication.maxHops` | 2 | n°10 | Nombre maximal de sauts avant abandon du relais |
+| `communication.maxSendsPerTick` | 5 | Annexe H | Cap d'émission (envois + relais) par entité et par tick |
+| `communication.maxReceivesPerTick` | 3 | Annexe H | Cap de réception traitée par tick |
+| `communication.incomprehensionRate` | 0.05 | Annexe H | Probabilité d'incompréhension (tirage déterministe) |
+| `communication.trustDecay` | 0.9 | n°10 | Décroissance de confiance par tick sans interaction |
+| `communication.hopConfidenceDecay` | 0.9 | n°10 | Dégradation de confiance par hop (× 0.9) |
+| `communication.sendEnergyCost` | 0.5 | n°9 | Coût d'émission d'une pulsation (SYNE-052) |
+| `communication.sendEnergyPayloadFactor` | 0.1 | n°9 | Coût d'émission par caractère de payload |
+| `communication.receiveEnergyCost` | 0.2 | n°9 | Coût de réception d'une pulsation |
+| `communication.receiveEnergyPayloadFactor` | 0.05 | n°9 | Coût de réception par caractère de payload |
 
 ---
 

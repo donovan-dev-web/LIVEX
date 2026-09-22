@@ -13,10 +13,10 @@ public static class ObservabilityContract
     /// <summary>
     /// Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les
     /// règles de simulation ; incrémentée MINOR à toute altération de la trajectoire
-    /// bit-à-bit (jalon SYNE ph4 → 0.3.0 : catalogue d'actions, Eat/Drink, seuils de
-    /// déclenchement 50, interruption centralisée). Emise dans chaque snapshot.
+    /// bit-à-bit (jalon SYNE ph5 → 0.4.0 : pulsations publiques, coûts émission/
+    /// réception, relais et dégradation de confiance 10 %/hop). Emise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.3.0";
+    public const string EngineVersion = "0.4.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -27,6 +27,12 @@ public static class ObservabilityContract
 
     /// <summary>Exécution d'action terminée (SYNE-040, API_CONTRACTS.md §2.2).</summary>
     public const string ActionCompleted = "action_completed";
+
+    /// <summary>Pulsation émise (envoi ou relais) — SYNE-050, API_CONTRACTS.md §2.2.</summary>
+    public const string MessageSent = "message_sent";
+
+    /// <summary>Pulsation reçue (y compris interception) — SYNE-051, API_CONTRACTS.md §2.2.</summary>
+    public const string MessageReceived = "message_received";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }
