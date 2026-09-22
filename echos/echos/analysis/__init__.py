@@ -9,6 +9,9 @@ les 7 moteurs puis compose le score d'émergence et les phénomènes (EMERGENCE_
 
 from importlib import import_module
 
+from contextlib import nullcontext
+from typing import Any
+
 _MODULES = (
     "cognitive_diversity",
     "information_propagation",
@@ -28,7 +31,7 @@ def known_engines() -> dict[str, tuple[str, ...]]:
     return {engine.ENGINE_NAME: engine.METRICS for engine in ENGINES}
 
 
-def compute_all(snapshot: dict) -> dict[str, dict]:
+def compute_all(snapshot: dict, profile: Any = None) -> dict[str, dict]:
     """Exécute les 8 moteurs sur un snapshot (7 métriques + EmergenceIndicators).
 
     Retourne ``{ENGINE_NAME: {METRIC: value}}`` dans l'ordre stable du registre
@@ -37,6 +40,11 @@ def compute_all(snapshot: dict) -> dict[str, dict]:
     double calcul interne). Contrat des moteurs inchangé : fonction pure, hideuse
     des données manquantes (repli neutre 0.0). L'intégration ECHOS ph4 (API
     REST, pipeline d'ingestion) consomme ce résultat agrégé.
+
+    ``profile`` (optionnel, ECHOS-052) : objet à context-manager
+    ``measure(name)`` — les moteurs sont exécutés dans ce marqueur sans
+    modifier la valeur retournée (``ProfileMarkers`` de
+    ``echos.instrumentation.profiling``).
     """
     results: dict[str, dict] = {}
     composite: object | None = None
@@ -44,10 +52,16 @@ def compute_all(snapshot: dict) -> dict[str, dict]:
         if engine.ENGINE_NAME == "EmergenceIndicators":
             composite = engine
             continue
-        results[engine.ENGINE_NAME] = engine.compute(snapshot)
+        with _marker(profile, engine.ENGINE_NAME):
+            results[engine.ENGINE_NAME] = engine.compute(snapshot)
     if composite is not None:
-        results[composite.ENGINE_NAME] = composite.compute_from_metrics(results)
+        with _marker(profile, composite.ENGINE_NAME):
+            results[composite.ENGINE_NAME] = composite.compute_from_metrics(results)
     return results
+
+
+def _marker(profile: Any, name: str) -> Any:
+    return profile.measure(name) if profile is not None else nullcontext()
 
 
 __all__ = ["ENGINES", "compute_all", "known_engines"]

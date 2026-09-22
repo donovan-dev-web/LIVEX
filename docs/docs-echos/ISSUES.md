@@ -83,9 +83,9 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-050 | Logging structuré (JSON) des métriques | `type/feature`, `component/echos` | P0 | ECHOS-011, `LOGGING_INSTRUMENTATION.md` ECHOS | Événements structurés (3 niveaux : structuré/traces/texte) |
-| ECHOS-051 | Trace des décisions SYNE consommées | `type/obs`, `component/echos`, `component/syne` | P1 | ECHOS-050, `../docs-syne/COGNITIVE_ARCHITECTURE.md` §3.4.10 | Traces `decision_traces` disponibles pour analyse causale |
-| ECHOS-052 | Profilage des 7 moteurs | `type/perf`, `component/echos` | P1 | ECHOS-027, `LOGGING_INSTRUMENTATION.md` | Coût par moteur tracé ; budgets respectés (§performance) |
+| ECHOS-050 | Logging structuré (JSON) des métriques — **LIVRÉ (issue #389, PR ECHOS, U5)** | `type/feature`, `component/echos` | P0 | ECHOS-011, `LOGGING_INSTRUMENTATION.md` ECHOS | Événements structurés (3 niveaux : structuré/traces/texte) — ✓ package `echos/instrumentation/` (ECHOS ph5) : `EchosLogger` JSONL déterministe (`sort_keys`, compact) `logs/structured-<run>.jsonl` + `profilage-<run>.jsonl` + `decision-traces-<run>.jsonl`, logs texte taggés `[SSE-V2]` (`ECHOS_LOG_DIR`), contextes `profiling` par tick ; journalisation branchée au pipeline (`consume(logger=...)`) |
+| ECHOS-051 | Trace des décisions SYNE consommées — **LIVRÉ (issue #390, PR ECHOS, U5)** | `type/obs`, `component/echos`, `component/syne` | P1 | ECHOS-050, `../docs-syne/COGNITIVE_ARCHITECTURE.md` §3.4.10 | Traces `decision_traces` disponibles pour analyse causale — ✓ table `decision_traces` (schéma v3) + `build_decision_trace` (fusion BDI : `chosen_action`/`utility`/`deliberated`/`interrupted`/`cause`/`beliefs_count`/`goals_count`/`memory_count`/`needs`) ingérées depuis les événements `decision_made` ; endpoint `GET /api/runs/{run_id}/decisions` (tri `(tick, agent_id)`, reproductible) ; `ConsumeResult.decision_traces_written` |
+| ECHOS-052 | Profilage des moteurs — **LIVRÉ (issue #391, PR ECHOS, U5)** | `type/perf`, `component/echos` | P1 | ECHOS-027, `LOGGING_INSTRUMENTATION.md` | Coût par moteur tracé ; budgets respectés (§performance) — ✓ `ProfileMarkers` (8 moteurs), `compute_all_profiled` bit-à-bit identique à `compute_all` (déterminisme ECHOS-027) ; contexte `profiling` + JSONL ; budgets V0.1 calibrés en garde-fou CI (cibles issues de la fixture, pas des sims réelles) |
 
 ### Milestone ph6 (echos) — Analyse causale
 

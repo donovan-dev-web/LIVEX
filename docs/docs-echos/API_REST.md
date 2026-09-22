@@ -26,6 +26,7 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | GET | `/api/runs/{id}` | Métriques complètes du run (dernier tick) + phénomènes |
 | GET | `/api/runs/{id}/metrics` | Séries de métriques (JSON, `?engine=`, `?metric=`, `?every=N`) |
 | GET | `/api/runs/{id}/export` | Export des métriques (`?format=json\|csv`), reproductible |
+| GET | `/api/runs/{id}/decisions` | Traces de décision des entités (analyse causale) |
 | GET | `/api/beliefs/{agentId}` | Croyances de l'entité au tick le plus récent |
 | GET | `/api/relationships/{agentId}` | Réseau de confiance de l'entité |
 | GET | `/api/groups` | Liste des groupes actifs (communautés) |
@@ -33,7 +34,7 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 
 (Source : Monographie §4.7.1 — `/api/compare` et `/api/communication-heatmap` restent à venir, jalons ECHOS ph7 / hors V0.1.)
 
-## 3. Contrat des réponses (V0.1, jalon ECHOS ph4)
+## 3. Contrat des réponses (V0.1, jalons ECHOS ph4 → ph5)
 
 Ordres **déterministes** (aucun PRNG, aucun horodatage d'émission) : runs triés par `run_id`, séries triées par tick, lignes d'export triées `(tick, engine, metric)`.
 
@@ -91,7 +92,23 @@ Croyances / relations de confiance de l'entité **au tick le plus récent** (con
 
 Communautés actives (propagation d'étiquettes) et phénomènes (ECHOS-031) dérivés du contexte écrit à l'ingestion.
 
-### 3.7 Erreurs
+### 3.7 `GET /api/runs/{id}/decisions` (jalon ECHOS ph5, ECHOS-051)
+
+```json
+{"run_id": "run-7", "decisions": [
+  {"tick": 1, "agent_id": "A", "chosen_action": "SeekFood",
+   "utility": 0.75, "deliberated": true, "interrupted": false,
+   "cause": "hunger=30,thirst=20,fatigue=10.5",
+   "beliefs_count": 2, "goals_count": 1, "memory_count": 8,
+   "needs": {"hunger": 30.0, "thirst": 20.0, "fatigue": 10.5, "energy": 50.0}}]
+}
+```
+
+Traces de décision (table `decision_traces`, schéma v3) — brique de l'analyse
+causale (`CAUSAL_ANALYSIS.md`). Tri **déterministe** `(tick, agent_id)` ;
+**reproductible** (deux appels → corps identiques) ; run inconnu → 404.
+
+### 3.8 Erreurs
 
 - `404` : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent.
 - `400` : `format` d'export inconnu.
@@ -105,7 +122,7 @@ Communautés actives (propagation d'étiquettes) et phénomènes (ECHOS-031) dé
 
 ## 5. L'optimisation
 
-- **Agrégation incrémentale** : les métriques sont calculées à chaque snapshot **au moment de l'ingestion** (`consume()` → `analysis.compute_all`) et persistées dans `tick_metrics` — aucun recalcul complet à la lecture (ECHOS ph4).
+- **Agrégation incrémentale** : les métriques sont calculées à chaque snapshot **au moment de l'ingestion** (`consume()` → `analysis.compute_all`) et persistées dans `tick_metrics` — aucun recalcul complet à la lecture (ECHOS ph4). Depuis ph5, le coût par moteur est aussi tracé (contexte `profiling`, ECHOS-052) et les `decision_made` alimentent `decision_traces`. Le contexte `agents` reste servi aux vues lecture seule (croyances/relations).
 - **Cache de séries** : `SeriesCache` LRU **borné** (256 entrées, thread-safe) ; les séries par run sont réutilisées et **invalidées sur `ingest_version`** (écriture d'un nouveau tick/contexte), pas sur le temps (ECHOS-044).
 - **Parallélisation** : les calculs lourds (co-localisation O(n²), plus proche ressource) sont parallélisés.
 - **Sous-échantillonnage** : `--sample-every=N` pour ne garder que 1 snapshot sur N à l'ingestion ; `?every=N` pour retourner des séries sous-échantillonnées à la lecture.
