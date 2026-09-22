@@ -62,9 +62,10 @@ Chaîne de traçabilité : `Action ← Intention ← Objectif ← Besoin ← Cro
 ## 5. Besoins et Objectifs
 
 - 6 besoins (faim, soif, fatigue, sécurité, social, curiosité).
-- Objectifs générés depuis les besoins non satisfaits (seuils : 60/60/70/0.5/0.7/0.3).
+- Objectifs générés depuis les besoins non satisfaits (seuils par défaut : **50/50/70**/0.5/0.7/0.3 — faim/soif dès **≥ 50**, repos > 70, décision n°4 ; configurables `needs.*TriggerThreshold`).
 - Filtrage de faisabilité (capacité, cible croyue accessible, taux de succès > 0, pas d'échec récent en mémoire).
 - Priorité : `goal.priority = need_level × success_probability × urgency_factor`.
+- **Actions terminales (SYNE-042)** : faim/soif déclenchées → SeekFood/SeekWater résolus en **Eat/Drink** si la réserve globale correspondante est disponible (sinon poursuite de la quête), évalués à chaque délibération. Genèse des désirs : `DesireFactory` itère l'ordre canonique des besoins, saute `Idle`/`Eat`/`Drink` (résolus), écarte les classes déjà actives. Eat/Drink sont exécutés atomiquement par `ActionExecutor` (une action par entité par tick) et consomment la réserve (DATA_MODEL §8.1).
 
 ## 6. Décision par utilité
 
@@ -81,7 +82,7 @@ Chaîne de traçabilité : `Action ← Intention ← Objectif ← Besoin ← Cro
 
 **Anti-oscillation (hystérésis, implémenté)** : passage à une nouvelle action seulement si elle dépasse l'action courante de `actionSwitchMargin` (défaut 0.05, `deliberation.actionSwitchMargin`).
 
-**Interruptions (implémenté)** : nouvelle perception rend l'action infaisable ; besoin urgent (sécurité) ; échec ; objectif atteint. Seuil : besoin critique (faim > 85 ou énergie < 10) et utilité supérieure de > 10 (`interruption.utilityExcessMargin`).
+**Interruptions (implémenté)** : déclencheur **centralisé** `InterruptionTrigger` (SYNE-043) — unique point « l'action en cours est-elle interrompue ? » évalué à tout tick, y compris hors délibération : besoin critique (faim > 85 → **Eat** si réserve disponible, sinon SeekFood ; énergie < 10 → Rest) et utilité supérieure de > 10 (`interruption.utilityExcessMargin`) vs utilité de l'action courante (même formule que la délibération). Aucune consommation de PRNG (déterminisme, DETERMINISM.md §3).
 
 (Monographie §3.13, §3.14)
 
@@ -90,6 +91,8 @@ Chaîne de traçabilité : `Action ← Intention ← Objectif ← Besoin ← Cro
 Chaque décision produit une trace complète : besoins, croyances considérées, scores d'utilité par action, action choisie. C'est la base de l'analyse causale ECHOS et de l'observabilité.
 
 Implémentation V0.1 : `MindState.LastDecisionRecord` (`DecisionRecord` : tick, identifiant d'entité, action choisie, cause, scores par action, flags `deliberated`/`interrupted`, décision par défaut en cas de holdover/catégorie vide). La délibération à fréquence (LOD, décision n°14) **reporte en holdover** la dernière décision entre deux délibérations ; `LastDecisionScores` expose les scores du dernier passage.
+
+**Exécution (jalon SYNE ph4)** : chaque tick, après décision, `ActionExecutor` applique **atomiquement** l'action choisie — effets (coûts d'énergie, récupérations, consommation de réserve) issus du catalogue déclaratif `agents.actions.catalog` (CONFIGURATION §6.2), déplacement pseudo-aléatoire déterministe par (id, tick, désir) avec pas borné par la vitesse et **interdiction d'entrer dans un obstacle** (rejet → sur place, SYNE-041). Le résultat est tracé : `MindState.LastActionResult` (`ActionResult` : outcome Executed/Blocked, deltas d'effets, réserve consommée), émis en observabilité `action_completed` (API_CONTRACTS §2.2).
 
 (Monographie §3.14.12, §4.5.2)
 
@@ -100,6 +103,6 @@ Voir Monographie §3.8.3 (Alice, tick 5000) et §3.13.4 (Charlie) : exemples com
 ---
 
 ## Points restés ouverts dans ce document
-- Dimensionnement exact des seuils de besoins (décision n°6) — calibration V0.1 (les défauts sont désormais **configurables** : `interruption.criticalHunger` 85 / `criticalEnergy` 10, cf. CONFIGURATION.md §6.1).
+- Dimensionnement exact des seuils de besoins : défauts actés **50/50/70** (décision n°4, configurables `needs.*TriggerThreshold`, cf. CONFIGURATION.md §6.2) — calibration générale à faire.
 - Coûts/bénéfices d'actions (énergie, temps, risque) : valeurs [HÉRITÉ] du prototype à réévaluer ; cf. décision n°9 pour les coûts de communication.
 - Bonus d'alignement (×1.2) et `actionSwitchMargin` (0.05) : **configurables** (`deliberation.alignBonus`/`actionSwitchMargin`), valeurs optimales à confirmer en calibration.

@@ -29,7 +29,8 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "traits": { "bravery": 1.0, "curiosity": 1.0, "sociability": 1.0, "greed": 1.0,
                  "pessimism": 1.0, "aggressiveness": 1.0, "strength": 1.0, "speed": 1.0 },
     "needs": { "hungerRate": 0.5, "thirstRate": 0.7, "fatigueRate": 0.3,
-               "safetyDriftRate": 0.001, "socialDriftRate": 0.001, "curiosityDriftRate": 0.002 },
+               "safetyDriftRate": 0.001, "socialDriftRate": 0.001, "curiosityDriftRate": 0.002,
+               "hungerTriggerThreshold": 50, "thirstTriggerThreshold": 50, "fatigueTriggerThreshold": 70 },
     "perception": { "radius": 50, "confidenceFalloff": 0.3, "rotationInterval": 4, "lineOfSight": true },
     "memory": { "maxCapacity": 1000, "recallThreshold": 0.01,
                 "observationDecayRate": 0.01, "eventDecayRate": 0.005, "interactionDecayRate": 0.002 },
@@ -39,7 +40,18 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
                  "deliberation": { "intervalTicks": 10, "alignBonus": 1.2,
                                    "actionSwitchMargin": 0.05, "conflictTieMargin": 0.5 },
                  "interruption": { "enabled": true, "utilityExcessMargin": 10.0,
-                                   "criticalHunger": 85.0, "criticalEnergy": 10.0 } }
+                                   "criticalHunger": 85.0, "criticalEnergy": 10.0 },
+                 "catalog": {
+                   "idle": { },
+                   "seekFood": { "movement": true },
+                   "seekWater": { "movement": true },
+                   "eat": { "energyCost": 0.2, "hungerRecovery": 30.0, "reserve": "food" },
+                   "drink": { "energyCost": 0.2, "thirstRecovery": 30.0, "reserve": "water" },
+                   "rest": { },
+                   "flee": { "movement": true },
+                   "socialize": { "movement": true },
+                   "explore": { "movement": true }
+                 } }
   },
   "resources": {
     "food": { "initial": 100, "regenerationRate": 0, "degradationTick": 100 },
@@ -105,6 +117,8 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
   - `beliefs.updateStrength` ∈ [0, 1] ;
   - `actions.deliberation.intervalTicks` ≥ 1 ; `alignBonus` > 0 ; `actionSwitchMargin`/`conflictTieMargin` ≥ 0 ;
   - `actions.interruption.utilityExcessMargin` ≥ 0 ; `criticalHunger` ∈ (0, 100] ; `criticalEnergy` ∈ [0, 100) ;
+  - `needs.hungerTriggerThreshold`/`thirstTriggerThreshold`/`fatigueTriggerThreshold` ∈ (0, 100] ;
+  - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`) — échec déclaratif si une clé manque.
   - dimensions `worldWidth`/`worldHeight` > 0 ; `maxTicks` > 0 ; traits dans [0, 2] ; moteur `"xoshiro256**"` exclusif.
 - Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).
 
@@ -120,6 +134,26 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
 | `agents.actions.interruption.utilityExcessMargin` | 10.0 | n°15 | Marge d'utilité requise pour interrompre (besoin critique) |
 | `agents.actions.interruption.criticalHunger` | 85.0 | n°6 | Seuil de faim critique (COGNITIVE_ARCHITECTURE §6) |
 | `agents.actions.interruption.criticalEnergy` | 10.0 | n°6 | Seuil d'énergie critique |
+
+### 6.2 Clés d'actions déclaratives + seuils de besoins (jalon SYNE ph4)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.needs.hungerTriggerThreshold` | 50 | n°4 | Déclenchement du besoin de faim (≥) |
+| `agents.needs.thirstTriggerThreshold` | 50 | n°4 | Déclenchement du besoin de soif (≥) |
+| `agents.needs.fatigueTriggerThreshold` | 70 | n°4 | Déclenchement du besoin de repos (>) |
+| `agents.actions.catalog.<action>.movement` | false | n°4 | Action de déplacement (pas déterministe + coût d'énergie) |
+| `agents.actions.catalog.<action>.energyCost` | 0.5 (mouvement) / 0 | n°4 | Coût énergétique par exécution |
+| `agents.actions.catalog.<action>.energyRecovery` | 0.5 (rest) / 0 | n°4 | Énergie récupérée (ex. rest) |
+| `agents.actions.catalog.<action>.fatigueRecovery` | 1.0 (rest) / 0 | n°4 | Fatigue récupérée |
+| `agents.actions.catalog.<action>.hungerRecovery` | 0 | n°4 | Faim réduite (ex. eat : 30) |
+| `agents.actions.catalog.<action>.thirstRecovery` | 0 | n°4 | Soif réduite (ex. drink : 30) |
+| `agents.actions.catalog.<action>.reserve` | — | n°4 | Réserve globale requise/consommée (ex. eat → `food`, drink → `water`) |
+| `agents.actions.catalog.<action>.reserveConsumption` | 1.0 | n°4 | Quantité consommée de la réserve par exécution |
+
+Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Drink` sont les
+**actions terminales** résolues depuis SeekFood/SeekWater quand la réserve est disponible
+(SYNE-042, DATA_MODEL.md §7).
 
 ---
 

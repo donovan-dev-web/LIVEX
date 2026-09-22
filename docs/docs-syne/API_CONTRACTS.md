@@ -18,9 +18,9 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 
 > **Implémentation V0.1 (SYNE-080, livré avec U1)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
 > zéro dépendance) dans `Simulation.Console`, activé par `--observe` (port `--observe-port`, défaut 5180,
-> bind `127.0.0.1`). Chaque tick émet **1 snapshot + 1 `tick_summary` + 1 `decision_made` par entité**,
-> diffusion à **tous** les consommateurs connectés. L'émission n'ajoute aucun tirage PRNG (déterminisme
-> inchangé, DETERMINISM.md §3).
+> bind `127.0.0.1`). Chaque tick émet **1 snapshot + 1 `tick_summary` + 1 `decision_made` + 1
+> `action_completed` par entité**, diffusion à **tous** les consommateurs connectés. L'émission
+> n'ajoute aucun tirage PRNG (déterminisme inchangé, DETERMINISM.md §3).
 
 ### 2.1 `snapshot` — WorldSnapshot
 
@@ -33,28 +33,29 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 | `simulatedTimeMinutes` | uint | Temps simulé (minutes) |
 | `aliveCount` | uint | Entités vivantes |
 | `agents[]` | array | État des entités (position, santé, énergie, faim, soif, action courante...) |
-| `resources[]` | array | Ressources (type, position, quantity/capacity) |
+| `resources[]` | array | Réserves globales `{type, quantity}` — **peuplé depuis SYNE ph4** (DATA_MODEL §8.1) |
 
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.2.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.3.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
-  "resources": [ { "id": "f1", "type": "food", "position": {"x": 60, "y": 80},
-                   "quantity": 90, "capacity": 100 } ] }
+  "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
+                  { "type": "wood", "quantity": 50 } ] }
 ```
 
 > En V2 : intégrer beliefs, goals, relations, groupes dans le snapshot (prototype V2 §04-ARCHITECTURE).
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
-> `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>`.
+> `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
+> `engineVersion` = `0.3.0` (jalon SYNE ph4).
 
 ### 2.2 `event` — ExternalEvent
 
 | Champ | Type | Description |
 | :-- | :-- | :-- |
-| `type` | string | Type d'événement (`decision_made`, `agent_spawned`, `agent_died`, `message_sent`, `group_formed`, `conflict`...) |
+| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `group_formed`, `conflict`...) |
 | `tick` | uint | Tick |
 | `agentId?` | string | Entité concernée |
 | `targetId?` | string | Cible |
@@ -74,6 +75,10 @@ Exemple :
 > `value = {intention, utility, deliberated, interrupted}`, `cause = "hunger=…,thirst=…,fatigue=…"`).
 > `deliberated`/`interrupted` (bool, jalon SYNE ph3) indiquent si le tick a délibéré (fréquence
 > configurable, décision n°14) ou interrompu l'action par besoin critique (décision n°15).
+> **`action_completed` (jalon SYNE ph4)** : 1/entité/tick — suite de l'exécution atomique
+> (SYNE-040) ; `action` = action exécutée (ex. `Eat`), `value = {outcome: executed|blocked,
+> energyDelta, hungerDelta, thirstDelta, fatigueDelta, reserve?, reserveConsumed?}`,
+> `cause` = raison du blocage éventuel (réserve vide).
 > `agent_spawned`/`agent_died` attendront la mortalité (ph4).
 
 ## 3. Contrat de contrôle — HTTP 5181

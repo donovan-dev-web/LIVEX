@@ -111,6 +111,21 @@ public static class SimulationOptionsValidator
             errors.Add("agents.needs.*Rate doivent être &gt;= 0.");
         }
 
+        if (options.Agents.Needs.HungerTriggerThreshold is < 0.0 or > 100.0)
+        {
+            errors.Add($"agents.needs.hungerTriggerThreshold doit être dans [0, 100] (reçu : {options.Agents.Needs.HungerTriggerThreshold}).");
+        }
+
+        if (options.Agents.Needs.ThirstTriggerThreshold is < 0.0 or > 100.0)
+        {
+            errors.Add($"agents.needs.thirstTriggerThreshold doit être dans [0, 100] (reçu : {options.Agents.Needs.ThirstTriggerThreshold}).");
+        }
+
+        if (options.Agents.Needs.FatigueTriggerThreshold is < 0.0 or > 100.0)
+        {
+            errors.Add($"agents.needs.fatigueTriggerThreshold doit être dans [0, 100] (reçu : {options.Agents.Needs.FatigueTriggerThreshold}).");
+        }
+
         if (options.Agents.Needs.SafetyDriftRate < 0.0 || options.Agents.Needs.SocialDriftRate < 0.0 || options.Agents.Needs.CuriosityDriftRate < 0.0)
         {
             errors.Add("agents.needs.*DriftRate doivent être &gt;= 0.");
@@ -138,37 +153,70 @@ public static class SimulationOptionsValidator
 
         if (options.Agents.Actions.Deliberation.IntervalTicks < 1)
         {
-            errors.Add($"agents.deliberation.intervalTicks doit être &gt;= 1 (reçu : {options.Agents.Actions.Deliberation.IntervalTicks}).");
+            errors.Add($"agents.actions.deliberation.intervalTicks doit être &gt;= 1 (reçu : {options.Agents.Actions.Deliberation.IntervalTicks}).");
         }
 
         if (options.Agents.Actions.Deliberation.AlignBonus <= 0.0)
         {
-            errors.Add($"agents.deliberation.alignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.AlignBonus}).");
+            errors.Add($"agents.actions.deliberation.alignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.AlignBonus}).");
         }
 
         if (options.Agents.Actions.Deliberation.ActionSwitchMargin < 0.0)
         {
-            errors.Add($"agents.deliberation.actionSwitchMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ActionSwitchMargin}).");
+            errors.Add($"agents.actions.deliberation.actionSwitchMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ActionSwitchMargin}).");
         }
 
         if (options.Agents.Actions.Deliberation.ConflictTieMargin < 0.0)
         {
-            errors.Add($"agents.deliberation.conflictTieMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ConflictTieMargin}).");
+            errors.Add($"agents.actions.deliberation.conflictTieMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ConflictTieMargin}).");
         }
 
         if (options.Agents.Actions.Interruption.UtilityExcessMargin < 0.0)
         {
-            errors.Add($"agents.interruption.utilityExcessMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Interruption.UtilityExcessMargin}).");
+            errors.Add($"agents.actions.interruption.utilityExcessMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Interruption.UtilityExcessMargin}).");
         }
 
         if (options.Agents.Actions.Interruption.CriticalHunger is <= 0.0 or > 100.0)
         {
-            errors.Add($"agents.interruption.criticalHunger doit être dans (0, 100] (reçu : {options.Agents.Actions.Interruption.CriticalHunger}).");
+            errors.Add($"agents.actions.interruption.criticalHunger doit être dans (0, 100] (reçu : {options.Agents.Actions.Interruption.CriticalHunger}).");
         }
 
         if (options.Agents.Actions.Interruption.CriticalEnergy is < 0.0 or >= 100.0)
         {
-            errors.Add($"agents.interruption.criticalEnergy doit être dans [0, 100) (reçu : {options.Agents.Actions.Interruption.CriticalEnergy}).");
+            errors.Add($"agents.actions.interruption.criticalEnergy doit être dans [0, 100) (reçu : {options.Agents.Actions.Interruption.CriticalEnergy}).");
+        }
+
+        foreach (var (name, entry) in options.Agents.Actions.Catalog.Entries)
+        {
+            if (entry.EnergyCost is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.energyCost doit être &gt;= 0 (reçu : {entry.EnergyCost}).");
+            }
+
+            if (entry.EnergyRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.energyRecovery doit être &gt;= 0 (reçu : {entry.EnergyRecovery}).");
+            }
+
+            if (entry.FatigueRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.fatigueRecovery doit être &gt;= 0 (reçu : {entry.FatigueRecovery}).");
+            }
+
+            if (entry.HungerRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.hungerRecovery doit être &gt;= 0 (reçu : {entry.HungerRecovery}).");
+            }
+
+            if (entry.ThirstRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.thirstRecovery doit être &gt;= 0 (reçu : {entry.ThirstRecovery}).");
+            }
+
+            if (entry.ReserveConsumption is <= 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.reserveConsumption doit être &gt; 0 (reçu : {entry.ReserveConsumption}).");
+            }
         }
 
         return errors;

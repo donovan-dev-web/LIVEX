@@ -60,6 +60,13 @@ public sealed class ObservabilityTickEmitter
                 await _server.BroadcastAsync(
                     ObservabilitySerializer.ToJsonText(
                         ObservabilitySerializer.EventMessage(EventSensor.DecisionMade(_loop.CurrentTick, entity.Id.Value, mind))));
+
+                if (mind.LastActionResult is { } actionResult)
+                {
+                    await _server.BroadcastAsync(
+                        ObservabilitySerializer.ToJsonText(
+                            ObservabilitySerializer.EventMessage(EventSensor.ActionCompleted(_loop.CurrentTick, entity.Id.Value, actionResult))));
+                }
             }
         }
 
