@@ -162,6 +162,48 @@ cadre == `golden/analysis_golden.json` (clé `EmergenceIndicators`).
 Suite : **146 tests** (120 → +26), couverture **98,3 %** (pytest
 `--cov-fail-under=80`), flake8 sans alerte.
 
+### 4.7 API REST & preuve J5 (ECHOS-040 → ECHOS-045)
+
+Le jalon **ph4 — API REST** (issues #383 → #388, milestone « ph4 (echos) —
+API REST ») expose la couche lecture de l'analyse ECHOS. Les métriques sont
+**calculées à l'ingestion** (pipeline `consume()` → `analysis.compute_all`),
+jamais recalculées à la lecture (API_REST.md §4).
+
+```bash
+cd echos && python -m pytest echos/tests/test_api_routes.py -q
+# → 15 passed ; contrat complet exercé
+```
+
+Couverture de la couche API (routes + cache + store v2 + pipeline) :
+
+- `test_api_routes.py` : listage des runs (`/api/runs`), métriques complètes
+  (`/api/runs/{id}`), **séries `/metrics`** (ticks dédupliqués, alignement
+  moteur×métrique, `latest`), **sous-échantillonnage `?every=N`** (index-based,
+  réseau aligné sur les ticks), **export reproductible** (JSON trié
+  tick/engine/metric + **CSV RFC 4180** avec entête ; deux appels → corps
+  identiques : aucune dépendance temporelle), croyances/relations par entité
+  (`/beliefs/{agentId}`, `/relationships/{agentId}` — **lecture seule, sans
+  intrusion**), groupes (`/groups`) et phénomènes (`/emergent-phenomena`),
+  ex. 404 (**run/entité inconnus**, aucun run), 422 (`every` invalide), 400
+  (format d'export inconnu) et **503** (API démarrée sans base —
+  `ECHOS_ANALYTICS_DB`), résolution du run par défaut (le plus récent).
+- `test_sqlite_store.py` (étendu) : **schéma v2** (tables `tick_metrics` +
+  `tick_contexts` ajoutées au dump attendu, `SCHEMA_VERSION = "2"`), écriture
+  idempotente des métriques (upsert, **sorties non numériques ignorées**),
+  roundtrip contextes JSON + `latest_context`/`observations_for`, et
+  **`ingest_version` incrémentée à chaque écriture** (moteur d'invalidation
+  du cache).
+- `test_pipeline.py` (étendu) : `consume()` écrit aussi `tick_metrics`
+  (`metrics_written`) et les contextes `agents`/`groups`/`phenomena`
+  (`contexts_written` = 3 × ticks) depuis les 8 moteurs `compute_all`.
+- `test_api_routes.py::test_series_cache_*` : **cache de séries** LRU borné
+  et thread-safe — série **réutilisée tant que `ingest_version` ne bouge pas**,
+  **recalculée après une écriture**, capacité bornée (2 → éviction), capacité
+  nulle refusée.
+
+Suite : **167 tests** (146 → +21), couverture **98,2 %** (pytest
+`--cov-fail-under=80`), flake8 sans alerte.
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).

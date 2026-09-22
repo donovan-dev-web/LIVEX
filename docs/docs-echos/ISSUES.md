@@ -72,12 +72,12 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-040 | API REST de base (FastAPI, port 5000) | `type/feature`, `component/echos` | P0 | ECHOS-012, `API_REST.md` ECHOS | Endpoints `/api/runs`, `/api/runs/{id}` opérationnels |
-| ECHOS-041 | Métriques & export (`/metrics`, `/export`) | `type/feature`, `component/echos` | P0 | ECHOS-040, ECHOS-012, `API_REST.md` | Métriques JSON/CSV ; export reproductible |
-| ECHOS-042 | Croyances & relations observées (`/beliefs`, `/relationships`) | `type/feature`, `component/echos`, `component/syne` | P1 | ECHOS-040 | Accès lecture des croyances/confiance par entité, sans intrusion |
-| ECHOS-043 | Groupes & phénomènes émergents exposés | `type/feature`, `component/echos` | P1 | ECHOS-040, ECHOS-031 | Groupes actifs + phénomènes détectés via API |
-| ECHOS-044 | Sous-échantillonnage & cache de séries | `type/perf`, `component/echos` | P1 | ECHOS-041, `PERFORMANCE.md` ECHOS | Séries longues servies sans mémoire explosive ; cache validé |
-| ECHOS-045 | Couverture API ≥ 80 % (jalon J5) | `type/test`, `component/echos` | P0 | ECHOS-040→044, `TESTING.md` ECHOS | 80 %+ des endpoints testés ; golden files maintenus |
+| ECHOS-040 | API REST de base (FastAPI, port 5000) — **LIVRÉ (issue #383, PR ECHOS, U4)** | `type/feature`, `component/echos` | P0 | ECHOS-012, `API_REST.md` ECHOS | Endpoints `/api/runs`, `/api/runs/{id}` opérationnels — ✓ `GET /api/runs` (liste + bornes de ticks) et `GET /api/runs/{id}` (métriques complètes latest + phénomènes) ; 404 run inconnu, 503 sans base (`ECHOS_ANALYTICS_DB`) |
+| ECHOS-041 | Métriques & export (`/metrics`, `/export`) — **LIVRÉ (issue #384, PR ECHOS, U4)** | `type/feature`, `component/echos` | P0 | ECHOS-040, ECHOS-012, `API_REST.md` | Métriques JSON/CSV ; export reproductible — ✓ séries `/metrics` (filtres `engine`/`metric`, `?every=N`, `latest`), `/export` JSON trié + CSV RFC 4180, **export = f(store) seul** (aucun horodatage → deux appels identiques) |
+| ECHOS-042 | Croyances & relations observées (`/beliefs`, `/relationships`) — **LIVRÉ (issue #385, PR ECHOS, U4)** | `type/feature`, `component/echos`, `component/syne` | P1 | ECHOS-040 | Accès lecture des croyances/confiance par entité, sans intrusion — ✓ `/beliefs/{agentId}` et `/relationships/{agentId}` sur le contexte `agents` du tick le plus récent ; lecture seule (règle d'or), 404 entité inconnue |
+| ECHOS-043 | Groupes & phénomènes émergents exposés — **LIVRÉ (issue #386, PR ECHOS, U4)** | `type/feature`, `component/echos` | P1 | ECHOS-040, ECHOS-031 | Groupes actifs + phénomènes détectés via API — ✓ contexte `groups` (communautés par étiquettes, membres + taille) et `phenomena` (`DetectedPhenomena` + `Disclaimer`) écrits à l'ingestion puis exposés |
+| ECHOS-044 | Sous-échantillonnage & cache de séries — **LIVRÉ (issue #387, PR ECHOS, U4)** | `type/perf`, `component/echos` | P1 | ECHOS-041, `PERFORMANCE.md` ECHOS | Séries longues servies sans mémoire explosive ; cache validé — ✓ `?every=N` index-based ; `SeriesCache` LRU borné (256) thread-safe, invalidé par `AnalyticsStore.ingest_version` (testé : réutilisation puis recalcul après écriture) |
+| ECHOS-045 | Couverture API ≥ 80 % (jalon J5) — **LIVRÉ (issue #388, PR ECHOS, U4)** | `type/test`, `component/echos` | P0 | ECHOS-040→044, `TESTING.md` ECHOS | 80 %+ des endpoints testés ; golden files maintenus — ✓ `test_api_routes.py` (15 tests : contrat complet, 404/422/400/503) + store v2 + pipeline étendus ; couverture totale **98,2 %**, exports reproductibles testés (J5) |
 
 ### Milestone ph5 (echos) — Logging & instrumentation
 
