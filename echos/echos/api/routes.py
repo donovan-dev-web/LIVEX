@@ -182,6 +182,19 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             writer.writerow((resolved, tick, engine, metric, value))
         return {"run_id": resolved, "content_type": "text/csv", "body": buffer.getvalue()}
 
+    @app.get("/api/runs/{run_id}/decisions", tags=["api"])
+    def run_decisions(run_id: str) -> dict:
+        """Traces de décision du run (schéma ``decision_traces``, ECHOS-051).
+
+        Tri stable ``(tick, agent_id)`` ; l'URL d'export timestamp-free.
+        """
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+        return {
+            "run_id": resolved,
+            "decisions": active.decision_traces(resolved),
+        }
+
     @app.get("/api/beliefs/{agent_id}", tags=["api"])
     def beliefs(agent_id: str, run_id: str | None = Query(default=None)) -> dict:
         active = _require_store(store)
