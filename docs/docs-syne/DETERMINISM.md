@@ -56,11 +56,13 @@
 
 **Jalon SYNE ph4 (engineVersion 0.3.0)** : le catalogue d'actions déclaratif, l'exécuteur atomique et le déclencheur d'interruption centralisé restent **0 tirage PRNG** — la cible de déplacement dérive du hash SplitMix64 de (id, tick, désir) (ActionExecutor.DeterministicOffset), l'itération reste par identifiant croissant, le pas est clampé au monde et **jamais posé dans un obstacle** (rejet → sur place, SYNE-041). Checksum de la trajectoire recalculé (0xe8d69e462fc22df7 → **0xdfbc9a6c4a1d8122**).
 
+**Jalon SYNE ph5 (engineVersion 0.4.0)** : le sous-système de communication reste **0 tirage PRNG** — les identifiants de message dérivent du hash SplitMix64 de (émetteur, tick, séquence) et l'incompréhension (5 %) de `SplitMix64(receiverId, messageId)` (CommunicationSystem, COMMUNICATION_PROTOCOL.md §3/4) ; la passe par tick (diffusion par identifiant croissant puis relais, borné à `maxHops`) préserve l'ordre causal. Checksum de la trajectoire recalculé (0xdfbc9a6c4a1d8122 → **0x6aa2b2d87b32a8a5**).
+
 ## 7. Impacts & contractuels
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion` (0.3.0 au jalon SYNE ph4 ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
+  - mise à jour de `engineVersion` (0.4.0 au jalon SYNE ph5 ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
 
 ---

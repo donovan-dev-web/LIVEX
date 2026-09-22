@@ -70,6 +70,20 @@ public sealed class ObservabilityTickEmitter
             }
         }
 
+        foreach (Simulation.Core.Communication.MessageSent sent in _loop.Cognition.Communication.LastSent)
+        {
+            await _server.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(
+                    ObservabilitySerializer.EventMessage(EventSensor.MessageSent(_loop.CurrentTick, sent))));
+        }
+
+        foreach (Simulation.Core.Communication.MessageReceived received in _loop.Cognition.Communication.LastReceived)
+        {
+            await _server.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(
+                    ObservabilitySerializer.EventMessage(EventSensor.MessageReceived(_loop.CurrentTick, received))));
+        }
+
         TicksEmitted++;
     }
 }

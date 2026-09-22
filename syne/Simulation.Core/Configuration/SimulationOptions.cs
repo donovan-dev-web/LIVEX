@@ -217,10 +217,39 @@ public sealed class ResourceSpec
 
 public sealed class CommunicationSettings
 {
+    /// <summary>Max d'envois par entité et par tick (Annexe H : 5).</summary>
     public int MaxSendsPerTick { get; set; } = 5;
+
+    /// <summary>Max de réceptions traitées par tick et par entité (Annexe H : 3).</summary>
     public int MaxReceivesPerTick { get; set; } = 3;
+
+    /// <summary>Probabilité d'incompréhension d'un message reçu (Annexe H : 0.05).</summary>
     public double IncomprehensionRate { get; set; } = 0.05;
+
+    /// <summary>Décroissance de confiance inter-entités (Annexe H : 0.9, valeurs relatives au trust).</summary>
     public double TrustDecay { get; set; } = 0.9;
+
+    /// <summary>Portée effective de transmission d'une pulsation (décision n°7 : 20 u. héritées du prototype, configurable).</summary>
+    public int TransmissionRange { get; set; } = 20;
+
+    /// <summary>Relais entité-à-entité actif (SYNE-050, COMMUNICATION_PROTOCOL.md §4).</summary>
+    public bool RelayEnabled { get; set; } = true;
+
+    /// <summary>Nombre maximal de sauts d'un message relayé (anti-boucle, borne de dégradation).</summary>
+    public int MaxHops { get; set; } = 2;
+
+    /// <summary>Coût énergétique d'émission — décision n°9 : <c>sendEnergyCost + payload × sendEnergyPayloadFactor</c> (0.5 + p×0.1).</summary>
+    public double SendEnergyCost { get; set; } = 0.5;
+
+    public double SendEnergyPayloadFactor { get; set; } = 0.1;
+
+    /// <summary>Coût énergétique de réception — décision n°9 : <c>receiveEnergyCost + payload × receiveEnergyPayloadFactor</c> (0.2 + p×0.05).</summary>
+    public double ReceiveEnergyCost { get; set; } = 0.2;
+
+    public double ReceiveEnergyPayloadFactor { get; set; } = 0.05;
+
+    /// <summary>Décroissance de confiance par relais — décision n°10 : <c>confidence × hopConfidenceDecay</c> (0.9, ≈ 10 %/hop).</summary>
+    public double HopConfidenceDecay { get; set; } = 0.9;
 }
 
 public sealed class WorldSettings
