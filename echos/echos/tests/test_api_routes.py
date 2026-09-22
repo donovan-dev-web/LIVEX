@@ -2,7 +2,8 @@
 
 Contrat API_REST.md : liste de runs, métriques + séries (``?every=N`` et
 cache), export reproductible (JSON/CSV), croyances/relations par entité,
-groupes et phénomènes émergents, déterminisme des réponses, 404/400/422/503.
+groupes, phénomènes émergents et traces de décision (ECHOS-051),
+déterminisme des réponses, 404/400/422/503.
 Les stores sont peuplés par les vrais moteurs (``compute_all``) sur la fixture
 ``snapshot_analysis.json`` — aucune écriture dans le monde observé.
 """
@@ -16,6 +17,8 @@ from fastapi.testclient import TestClient
 from echos.analysis import compute_all
 from echos.api.app import create_app
 from echos.api.series import SeriesCache
+from echos.ingestion.models import ExternalEvent
+from echos.instrumentation.decision_traces import build_decision_trace
 from echos.storage.aggregation import TickRecord
 from echos.storage.pipeline import _groups_of
 from echos.storage.sqlite import AnalyticsStore
@@ -37,6 +40,18 @@ def _populate(db: AnalyticsStore, run_id: str, ticks: int = 3) -> None:
         snap = _snapshot(tick, run_id)
         agents = snap.get("agents") or []
         events = snap.get("events") or []
+        decision = ExternalEvent(
+            type="decision_made",
+            tick=tick,
+            agent_id="A",
+            action="SeekFood",
+            cause="hunger=30,thirst=20,fatigue=10.5",
+            value={
+                "intention": "SeekFood",
+                "utility": 0.75,
+                "deliberated": True,
+            },
+        )
         record = TickRecord(
             run_id=run_id,
             version="0.1.0",
@@ -57,6 +72,8 @@ def _populate(db: AnalyticsStore, run_id: str, ticks: int = 3) -> None:
         db.append_tick_metrics(run_id, tick, metrics)
         db.append_tick_context(run_id, tick, "agents", agents)
         db.append_tick_context(run_id, tick, "groups", _groups_of(agents))
+        trace = build_decision_trace(run_id, tick, decision, snap)
+        db.append_decision_trace(run_id, tick, trace)
         emergence = metrics.get("EmergenceIndicators") or {}
         db.append_tick_context(
             run_id,
@@ -206,6 +223,31 @@ def test_groups_and_phenomena_endpoints(tmp_path):
     assert phenomena["run_id"] == "run-7"
     assert phenomena["phenomena"]
     assert phenomena["disclaimer"]
+
+
+def test_decisions_endpoint_returns_deterministic_traces(tmp_path):
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    client = _client(db)
+
+    first = client.get("/api/runs/run-7/decisions").json()
+    second = client.get("/api/runs/run-7/decisions").json()
+    assert first == second  # reproductible (aucun horodatage d'émission)
+    assert first["run_id"] == "run-7"
+    traces = first["decisions"]
+    assert [trace["tick"] for trace in traces] == [1, 2]
+    assert [trace["agent_id"] for trace in traces] == ["A", "A"]
+    assert traces[0]["chosen_action"] == "SeekFood"
+    assert traces[0]["utility"] == 0.75
+    assert traces[0]["deliberated"] is True
+    assert traces[0]["interrupted"] is False
+    assert traces[0]["beliefs_count"] == 2  # croyances de l'entité A (fixture)
+    assert traces[0]["goals_count"] == 1
+    assert traces[0]["memory_count"] == 8
+    assert traces[0]["needs"]["hunger"] == 30.0
+    assert traces[0]["needs"]["energy"] == 50.0
+
+    assert client.get("/api/runs/ghost/decisions").status_code == 404
 
 
 def test_default_run_is_most_recent(tmp_path):

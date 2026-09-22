@@ -71,7 +71,12 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
         assert result.events_written == 6  # 2 événements par tick
         assert result.agents_written == 6  # 2 agents × 3 ticks
         assert result.metrics_written > 0  # métriques des 8 moteurs par tick
-        assert result.contexts_written == 9  # 3 ticks × (agents, groups, phenomena)
+        assert (
+            result.contexts_written == 12
+        )  # 3 ticks × (agents, groups, phenomena, profiling)
+        assert (
+            result.decision_traces_written == 3
+        )  # 1 décision decision_made par tick
         assert store.count_ticks("run-7") == 3
         assert len(store.events("run-7")) == 6
         assert len(store.tick_summaries("run-7")) == 3
@@ -79,6 +84,12 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
         assert store.latest_context("run-7", "agents") is not None
         assert store.latest_context("run-7", "phenomena") is not None
         assert store.latest_context("run-7", "groups") is not None
+        assert store.latest_context("run-7", "profiling") is not None
+        decision_traces = store.decision_traces("run-7")
+        assert len(decision_traces) == 3
+        assert decision_traces[0]["chosen_action"] == "SeekWater"
+        assert decision_traces[0]["utility"] == 61.7933890505355
+        assert [trace["tick"] for trace in decision_traces] == [1, 2, 3]
 
     series = list(storage.read_agent_series(parquet_path))
     assert len(series) == 6

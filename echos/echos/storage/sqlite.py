@@ -24,8 +24,14 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "2"
-"""Version du schéma — toute migration doit la bump + documenter (CHANGELOG)."""
+SCHEMA_VERSION = "3"
+"""Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
+
+v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces`` — traces de
+décision SYNE consommées (analyse causale, CAUSAL_ANALYSIS.md). Backward
+compatible : ``CREATE TABLE IF NOT EXISTS`` étend les bases v2 au prochain
+open sans perte de données.
+"""
 
 _DDL = """
 CREATE TABLE IF NOT EXISTS _meta (
@@ -82,10 +88,27 @@ CREATE TABLE IF NOT EXISTS tick_contexts (
     PRIMARY KEY (run_id, tick, context_type)
 );
 
+CREATE TABLE IF NOT EXISTS decision_traces (
+    run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
+    tick INTEGER NOT NULL CHECK (tick >= 0),
+    agent_id TEXT NOT NULL,
+    chosen_action TEXT,
+    utility REAL NOT NULL,
+    deliberated INTEGER NOT NULL DEFAULT 0,
+    interrupted INTEGER NOT NULL DEFAULT 0,
+    cause TEXT,
+    beliefs_count INTEGER NOT NULL DEFAULT 0,
+    goals_count INTEGER NOT NULL DEFAULT 0,
+    memory_count INTEGER NOT NULL DEFAULT 0,
+    needs TEXT,
+    PRIMARY KEY (run_id, tick, agent_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_tick_summaries_run ON tick_summaries(run_id);
 CREATE INDEX IF NOT EXISTS idx_events_run_tick ON events_log(run_id, tick);
 CREATE INDEX IF NOT EXISTS idx_tick_metrics_run_tick ON tick_metrics(run_id, tick);
 CREATE INDEX IF NOT EXISTS idx_tick_contexts_run_tick ON tick_contexts(run_id, tick);
+CREATE INDEX IF NOT EXISTS idx_decision_traces_run_tick ON decision_traces(run_id, tick);
 """
 
 
@@ -224,6 +247,86 @@ class AnalyticsStore:
                 "SELECT COUNT(*) FROM tick_summaries WHERE run_id = ?", (run_id,)
             ).fetchone()
         return int(row[0]) if row else 0
+
+    def append_decision_trace(self, run_id: str, tick: int, trace: dict) -> None:
+        """Persiste la trace de décision d'une entité au tick (ECHOS-051).
+
+        ``trace`` est produit par ``instrumentation.decision_traces.
+        build_decision_trace`` (fusion déterministe) ;
+        ``needs`` est stocké en JSON compact. Clé ``(run_id, tick, agent_id)``.
+        """
+        with self._lock:
+            self._conn.execute(
+                """
+                INSERT OR REPLACE INTO decision_traces (
+                    run_id, tick, agent_id, chosen_action, utility,
+                    deliberated, interrupted, cause,
+                    beliefs_count, goals_count, memory_count, needs
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    run_id,
+                    int(tick),
+                    str(trace["agent_id"]),
+                    str(trace["chosen_action"]),
+                    float(trace["utility"]),
+                    int(bool(trace["deliberated"])),
+                    int(bool(trace["interrupted"])),
+                    str(trace["cause"]),
+                    int(trace["beliefs_count"]),
+                    int(trace["goals_count"]),
+                    int(trace["memory_count"]),
+                    _json_dumps(trace["needs"]),
+                ),
+            )
+            self._conn.commit()
+            self._bump()
+
+    def decision_traces(
+        self, run_id: str, tick: int | None = None
+    ) -> list[dict]:
+        """Traces de décision d'un run (tri tick, agent_id) — analyse causale."""
+        with self._lock:
+            if tick is None:
+                rows = self._conn.execute(
+                    """
+                    SELECT tick, agent_id, chosen_action, utility,
+                           deliberated, interrupted, cause,
+                           beliefs_count, goals_count, memory_count, needs
+                    FROM decision_traces
+                    WHERE run_id = ?
+                    ORDER BY tick, agent_id
+                    """,
+                    (run_id,),
+                ).fetchall()
+            else:
+                rows = self._conn.execute(
+                    """
+                    SELECT tick, agent_id, chosen_action, utility,
+                           deliberated, interrupted, cause,
+                           beliefs_count, goals_count, memory_count, needs
+                    FROM decision_traces
+                    WHERE run_id = ? AND tick = ?
+                    ORDER BY agent_id
+                    """,
+                    (run_id, int(tick)),
+                ).fetchall()
+        return [
+            {
+                "tick": int(row[0]),
+                "agent_id": row[1],
+                "chosen_action": row[2],
+                "utility": float(row[3]),
+                "deliberated": bool(row[4]),
+                "interrupted": bool(row[5]),
+                "cause": row[6],
+                "beliefs_count": int(row[7]),
+                "goals_count": int(row[8]),
+                "memory_count": int(row[9]),
+                "needs": json.loads(row[10]) if row[10] else {},
+            }
+            for row in rows
+        ]
 
     def latest_tick(self, run_id: str) -> int | None:
         with self._lock:

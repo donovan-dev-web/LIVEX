@@ -35,6 +35,13 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **Cache de séries (ECHOS-044)** : `SeriesCache` LRU **borné** (256) et thread-safe, invalidé par `AnalyticsStore.ingest_version` (écritures) — séries longues servies sans mémoire explosive.
   - **Config API** : `create_app(store=None)` lit `ECHOS_ANALYTICS_DB` (sinon 503 sur les routes de données, contrat publié), `app.state.series_cache`, `/` annonce les 9 endpoints.
   - **Preuve J5 (ECHOS-045)** : `test_api_routes.py` (15 tests) + `test_sqlite_store.py`/`test_pipeline.py` étendus — couverture de la couche API ≥ 80 % (totale **98,2 %**), exports reproductibles testés. Tests : 146 → **167**, `SCHEMA_VERSION = "2"`.
+- **ECHOS ph5 — Logging & instrumentation (ECHOS-050 → ECHOS-052, issues #389 → #391, milestone ph5)** :
+  - **Package `echos/instrumentation/`** (`LOGGING_INSTRUMENTATION.md` §1–§9) :
+    - **ECHOS-050 Logging structuré** — `EchosLogger` : `structured-<run>.jsonl` (métriques par tick), `profilage-<run>.jsonl`, `decision-traces-<run>.jsonl`, logs texte quotidiens taggés `[SSE-V2]` ; sérialisation **déterministe** (`sort_keys=True`, compact — export reproductible) ; répertoire `ECHOS_LOG_DIR` (défaut `logs/`).
+    - **ECHOS-051 Traces de décision** — `build_decision_trace` : fusion d'un `decision_made` SYNE avec le **contexte BDI observé** (action/utilité/`deliberated`/`interrupted`/cause/besoins/croyances/objectifs/mémoire, aucune écriture dans le monde) ; **table `decision_traces` (schéma v3)**, ingestion dans `consume()` (`ConsumeResult.decision_traces_written`), export API `GET /api/runs/{run_id}/decisions` (tri `(tick, agent_id)`).
+    - **ECHOS-052 Profilage** — `profile.Markers` (`time.perf_counter`) autour de **chacun des 8 moteurs** via paramètre `profile` de `compute_all` (duck-typing, sortie inchangée) ; `compute_all_profiled` **bit-à-bit identique** à `compute_all` (déterminisme ECHOS-027) ; contexte `profiling` par tick ; budgets V0.1 en garde-fou CI (cibles de calibration, pas des sims réelles).
+  - **Pipeline branché** : `consume(client, store, ..., logger=EchosLogger|None)` écrit 4 contextes par tick (`agents`, `groups`, `phenomena`, **`profiling`**) — `contexts_written == 12` pour 3 ticks.
+  - **Preuve J5 étendue** : `test_instrumentation.py` (14 tests : JSONL déterministe + tag SSE-V2 + fusion BDI + profilage bit-à-bit/couverture 8 moteurs/format §5), `test_api_routes.py` (endpoint décisions reproductible + 404), `test_pipeline.py` étendu. Tests : 167 → **181**, `SCHEMA_VERSION = "3"`.
 
 ### Changed
 - Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **Electron + React** intégrée, analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
