@@ -241,8 +241,39 @@ cd echos && python -m pytest echos/tests/test_instrumentation.py -q
 - `test_sqlite_store.py` (étendu) : **schéma v3** — table `decision_traces`
   ajoutée au dump attendu, `SCHEMA_VERSION = "3"`.
 
-Suite : **181 tests** (167 → +14), couverture **98,2 %** (pytest
+Suite : **197 tests** (181 → +16), couverture **97,9 %** (pytest
 `--cov-fail-under=80`), flake8 sans alerte.
+
+### 4.9 Analyse causale & preuve J6 (ECHOS-060 → ECHOS-063)
+
+Le jalon **ph6 — Analyse causale** (issues #215 → #218, milestone
+« ph6 (echos) — Analyse causale ») reconstruit les chaînes causales **hors
+ligne** (ADR-002 [Accepted]) avec détection des boucles et cache versionné.
+
+```bash
+cd echos && python -m pytest echos/tests/test_causal_analysis.py -q
+# → 16 passed ; chaîne 7 couches, cycles, cache, endpoint REST
+```
+
+- `test_causal_analysis.py` (nouveau, 16 tests) :
+  - **Reconstruction (ECHOS-061)** : `build_chain` sans `tick` → dernière
+    décision de l'entité ; 7 couches exactement (`LAYERS`), ordre stable ;
+    besoins classés (valeur desc, clé), croyances triées, perception =
+    derniers `message_received` ; couche vide → `—` ; `depth` tronque et
+    signale ; `depth=0`/`max_depth=13` rejetés (`CausalError`) ; entité/run
+    inconnus → erreur.
+  - **Boucles (ECHOS-062)** : action reprise aux ticks précédents ⇒
+    `cycle=true` + `cycles[].ticks` ; première décision ⇒ aucun cycle.
+  - **Cache (ECHOS-063)** : `CausalCache` — réutilisé tant que
+    `ingest_version` ne bouge pas, **recalculé après une écriture**, capacity
+    bornée (LRU) ; `capacity <= 0` refusé.
+  - **Endpoint (API_REST.md §3.8)** : 200 chaîne complète (défauts),
+    `?depth=` honoré, 422 (`depth` 0 et > 12), 404 (entité sans trace, run
+    inconnu, tick sans trace), 503 sans store, **déterminisme** : deux
+    magasins à données identiques → corps JSON identiques.
+- `test_sqlite_store.py`/`test_api_routes.py` (non modifiés) : lecture
+  `latest_decision_tick`/`context_before` couverte indirectement par
+  `test_causal_analysis.py`.
 
 ## 5. Critères de non-régression
 

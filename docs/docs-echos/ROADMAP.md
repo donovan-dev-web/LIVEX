@@ -23,7 +23,7 @@
 | 3 | Indicateurs d'émergence | Score composite, auto-détection des phénomènes, complexité, indice d'imprévisibilité — **LIVRÉ (ECHOS-030 → 033, jalon U3)** |
 | 4 | API REST | Endpoints (`API_REST.md`), sous-échantillonnage, cache de séries, parallélisation O(n²) — **LIVRÉ (ECHOS-040 → 045, jalon U4)** : endpoints operatifs, métriques calculées à l'ingestion, `?every=N` + cache de séries (invalidation par version), export JSON/CSV reproductible, couverture API ≥ 80 % |
 | 5 | Logging & instrumentation | 3 niveaux (structuré/traces/texte), profilage, console de débogage, export CSV/JSON — **LIVRÉ (ECHOS-050 → 052, jalon U5)** : package `echos/instrumentation/` (JSONL déterministe + tag `SSE-V2`), traces `decision_traces` (schéma v3) accessibles via `/api/runs/{id}/decisions`, profilage bit-à-bit des 8 moteurs (budgets V0.1 en garde-fou CI) ; console de débogage hors périmètre ECHOS (spécif. monographie, console SYNE) |
-| 6 | Analyse causale | Reconstruction des chaînes causales depuis `decision_traces`, outillage de navigation |
+| 6 | Analyse causale | Reconstruction des chaînes causales depuis `decision_traces`, outillage de navigation — **LIVRÉ (ECHOS-060 → 063, jalon ph6, issues #215 → #218)** : ADR-002 [Accepted] (calcul hors ligne), `causal.build_chain` (7 couches), cycle/récurrence + profondeur bornée, `CausalCache` invalidé sur version, endpoint `GET /api/runs/{id}/causal-chains/{agentId}` |
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export |
 | 8 | Interface intégrée | Écrans ECHOS (Electron + React) : vues de métriques, croyances, réseaux, calibration |
 | 9 | Tests & couverture | ≥ 80 %, non-régression des scores (golden files) |
