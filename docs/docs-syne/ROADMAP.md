@@ -22,7 +22,7 @@
 | 2 | Mémoire + Croyances | Mémoire long terme, révision croyances | mémoires + BeliefStore — **livré** (SYNE-013/014) |
 | 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formule d'utilité, DecisionRecord — **livré** (jalon SYNE ph3, issues #16–#19, engineVersion 0.2.0) |
 | 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions + exécuteur atomique — **livré** (jalon SYNE ph4, issues #20–#23, engineVersion 0.3.0) |
-| 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses |
+| 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses — **livré** (jalon SYNE ph5, issues #24–#28, engineVersion 0.4.0, `CommunicationSystem` : diffusion + interception + relais + coûts + confiance, événements `message_sent`/`message_received`) |
 | 6 | Groupes | Cohésion, leadership, décisions collectives | formation/dissolution de groupes |
 | 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 |
 | 8 | Observabilité | Tests anti-triche, validations | événements typés complets — **SYNE-080 livré** (émetteur WebSocket `--observe`, snapshot + events camelCase) |
@@ -60,8 +60,7 @@ Conformément à la checklist §12, les choix ci-dessous restent **consciemment 
 
 | Emplacement | Sujet reporté | Où le trancher |
 | :-- | :-- | :-- |
-| `COMMUNICATION_PROTOCOL.md` | Interception des messages (décision n°8) | Phase d'implémentation communication |
-| `COMMUNICATION_PROTOCOL.md` | Coûts/latence des pulsations (décision n°9) | Phase d'implémentation communication |
+| `COMMUNICATION_PROTOCOL.md` | Latence des pulsations (vitesse de signal, §3.16.6) | Phase d'implémentation communication (paramètre configurable optionnel) |
 | `SYSTEMS_SPEC.md` | Résolution chiffrée des conflits (ADR-009) | Implémentation `Interaction/` |
 | `SYSTEMS_SPEC.md` | Modèle d'héritage / fusion consentie (décision n°17) | Implémentation cycle de vie |
 | `SYSTEMS_SPEC.md` | Coûts des livres (décisions n°18/19) | Implémentation savoir tangible |

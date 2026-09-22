@@ -1,4 +1,5 @@
 using Simulation.Core.Actions;
+using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Cognition;
@@ -19,6 +20,7 @@ public sealed class MindState
         Beliefs = new BeliefSet();
         Trust = new Relationships(options.Agents.Trust);
         Needs = new BodyNeeds();
+        Communication = new CommunicationState();
     }
 
     private MindState(SimulationOptions options, Memory memory, BeliefSet beliefs, Relationships trust)
@@ -28,6 +30,7 @@ public sealed class MindState
         Beliefs = beliefs;
         Trust = trust;
         Needs = new BodyNeeds();
+        Communication = new CommunicationState();
     }
 
     public Memory Memory { get; }
@@ -35,6 +38,9 @@ public sealed class MindState
     public BeliefSet Beliefs { get; }
 
     public Relationships Trust { get; }
+
+    /// <summary>État de communication (files sortante/entrante, relais — SYNE-050 → 054).</summary>
+    public CommunicationState Communication { get; }
 
     public BodyNeeds Needs { get; }
 

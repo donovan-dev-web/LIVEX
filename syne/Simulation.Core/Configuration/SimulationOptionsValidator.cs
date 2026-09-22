@@ -89,6 +89,36 @@ public static class SimulationOptionsValidator
             errors.Add($"communication.maxReceivesPerTick doit être &gt;= 0 (reçu : {options.Communication.MaxReceivesPerTick}).");
         }
 
+        if (options.Communication.TransmissionRange is <= 0 or > 70)
+        {
+            errors.Add($"communication.transmissionRange doit être dans [1, 70] (reçu : {options.Communication.TransmissionRange}).");
+        }
+
+        if (options.Communication.MaxHops < 0)
+        {
+            errors.Add($"communication.maxHops doit être &gt;= 0 (reçu : {options.Communication.MaxHops}).");
+        }
+
+        if (options.Communication.SendEnergyCost < 0.0 || options.Communication.SendEnergyPayloadFactor < 0.0)
+        {
+            errors.Add("communication.sendEnergyCost et sendEnergyPayloadFactor doivent être &gt;= 0.");
+        }
+
+        if (options.Communication.ReceiveEnergyCost < 0.0 || options.Communication.ReceiveEnergyPayloadFactor < 0.0)
+        {
+            errors.Add("communication.receiveEnergyCost et receiveEnergyPayloadFactor doivent être &gt;= 0.");
+        }
+
+        if (options.Communication.IncomprehensionRate is < 0.0 or > 1.0)
+        {
+            errors.Add($"communication.incomprehensionRate doit être dans [0, 1] (reçu : {options.Communication.IncomprehensionRate}).");
+        }
+
+        if (options.Communication.HopConfidenceDecay is <= 0.0 or > 1.0)
+        {
+            errors.Add($"communication.hopConfidenceDecay doit être dans (0, 1] (reçu : {options.Communication.HopConfidenceDecay}).");
+        }
+
         if (options.Agents.Memory.MaxCapacity <= 0)
         {
             errors.Add($"agents.memory.maxCapacity doit être &gt; 0 (reçu : {options.Agents.Memory.MaxCapacity}).");

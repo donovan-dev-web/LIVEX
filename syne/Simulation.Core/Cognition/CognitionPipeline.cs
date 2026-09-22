@@ -1,5 +1,6 @@
 using System.Globalization;
 using Simulation.Core.Actions;
+using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Perception;
@@ -30,6 +31,7 @@ public sealed class CognitionPipeline
     private readonly ActionCatalog _catalog;
     private readonly ActionExecutor _executor;
     private readonly InterruptionTrigger _interruption;
+    private readonly CommunicationSystem _communication;
     private readonly Dictionary<ulong, MindState> _minds = new();
 
     public CognitionPipeline(
@@ -47,6 +49,7 @@ public sealed class CognitionPipeline
         _catalog = new ActionCatalog(options.Agents.Actions);
         _executor = new ActionExecutor(world, _catalog, stocks, options);
         _interruption = new InterruptionTrigger(_catalog, stocks);
+        _communication = new CommunicationSystem(world, options.Communication);
     }
 
     public PerceptionSystem Perception => _perception;
@@ -54,6 +57,9 @@ public sealed class CognitionPipeline
     public ActionCatalog Catalog => _catalog;
 
     public World.ResourceStocks Stocks => _stocks;
+
+    /// <summary>Sous-système de communication (une passe par tick — SYNE-050 → 054).</summary>
+    public CommunicationSystem Communication => _communication;
 
     public IReadOnlyCollection<MindState> Minds => _minds.Values;
 
@@ -73,6 +79,11 @@ public sealed class CognitionPipeline
             StepEntity(entity, currentTick);
         }
 
+        // Communication de masse en une passe (performance.batchCommunication,
+        // COMMUNICATION_PROTOCOL.md §7) : cartes après perception/décision/action
+        // — l'ordre causal est agent par agent puis réseau de communication.
+        _communication.Step(currentTick, _minds);
+
         foreach (MindState mind in _minds.Values)
         {
             mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
@@ -88,6 +99,7 @@ public sealed class CognitionPipeline
         mind.InterruptedThisTick = false;
 
         int observed = 0;
+        bool announced = false;
         if (_perception.ShouldPerceive(entity, currentTick))
         {
             IReadOnlyList<Observation> observations = _perception.Perceive(entity, currentTick);
@@ -95,6 +107,11 @@ public sealed class CognitionPipeline
             foreach (Observation observation in observations)
             {
                 StoreObservation(mind, entity, observation, currentTick);
+                if (!announced && WantsToShare(entity, observation))
+                {
+                    EnqueueSharePulse(entity, observation, mind, currentTick);
+                    announced = true;
+                }
             }
         }
 
@@ -307,6 +324,35 @@ public sealed class CognitionPipeline
                 _options.Agents.Beliefs,
                 currentTick);
         }
+    }
+
+    /// <summary>
+    /// Partage social (SYNE-050, V0.1) : une entité sociable (trait ≥ 0.5) qui
+    /// perçoit une entité vivante émet une pulsation <b>Information</b> publique
+    /// — une au plus par tick (bien sous <c>maxSendsPerTick</c>). La décision de
+    /// partage ne consomme aucun tirage du PRNG global (DETERMINISM.md §3).
+    /// </summary>
+    private bool WantsToShare(Entity entity, Observation observation)
+    {
+        if (observation.EntityType != "entity")
+        {
+            return false;
+        }
+
+        return entity.Traits["sociability"] >= 0.5;
+    }
+
+    private void EnqueueSharePulse(Entity entity, Observation observation, MindState mind, ulong currentTick)
+    {
+        string payload = $"perceived-{observation.EntityId}#{CanonicalPosition(observation.Position)}";
+        Message share = CommunicationSystem.CreateMessage(
+            entity.Id.Value,
+            targetId: null,
+            MessageType.Information,
+            payload,
+            currentTick,
+            sequence: 1);
+        mind.Communication.Enqueue(share);
     }
 
     private static string FormatContent(Observation observation) =>

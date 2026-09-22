@@ -155,7 +155,9 @@ public class ObservabilitySensorTests
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
-        Assert.Equal("0.3.0", ObservabilityContract.EngineVersion);
+        // Jalon SYNE ph5 → 0.4.0 : pulsations publiques, coûts émission/réception,
+        // relais et dégradation de confiance 10 %/hop altèrent la trajectoire.
+        Assert.Equal("0.4.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);
