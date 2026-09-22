@@ -112,27 +112,45 @@ Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Res
 
 ## 7. Besoins
 
-6 catégories conservées en V0.1 — échelles/seuils de prototype ([HÉRITÉ], calibration décision n°6) :
+6 catégories conservées en V0.1 — seuils de déclenchement **configurables** par défaut (décision n°4, jalon SYNE ph4) :
 
-| Besoin | Échelle | Seuil déclenchement | Objectif généré |
+| Besoin | Échelle | Seuil déclenchement | Objectif/Action généré |
 | :-- | :-- | :-- | :-- |
-| Faim (Hunger) | 0-100 | 60 | SeekFood |
-| Soif (Thirst) | 0-100 | 60 | SeekWater |
-| Fatigue | 0-100 | 70 | Rest |
+| Faim (Hunger) | 0-100 | **50** (`needs.hungerTriggerThreshold`) | SeekFood → **Eat** si réserve Food disponible |
+| Soif (Thirst) | 0-100 | **50** (`needs.thirstTriggerThreshold`) | SeekWater → **Drink** si réserve Water disponible |
+| Fatigue | 0-100 | **70** (`needs.fatigueTriggerThreshold`) | Rest |
 | Sécurité | 0-1 | 0.5 | Flee |
 | Social | 0-1 | 0.7 | Socialize |
 | Curiosité | 0-1 | 0.3 | Explore |
 
 Monographie §3.12, §3.13.1.
 
+> **Actions terminales Eat/Drink (SYNE-042)** : dès que le besoin déclenche (≥ seuil), si la
+> réserve globale est disponible, l'entité **exécute l'action terminale** Eat/Drink (consomme la
+> réserve, réduit le besoin) ; sinon elle poursuit SeekFood/SeekWater. Ces actions sont
+> ré-évaluées à chaque délibération/holdover tant que le besoin reste déclenché.
+
 ## 8. Contrats de persistence (SQLite Annexe G)
 
 Le schéma SQLite V2.0 (11 tables : `runs`, `tick_states`, `agents`, `agent_snapshots`, `resources`, `resource_snapshots`, `groups`, `group_memberships`, `events`, `messages`, `metrics`) est détaillé dans `PERSISTENCE.md`.
 
+### 8.1 Réserves globales de ressources (SYNE-042)
+
+V0.1 : **réserves globales** partagées (`ResourceStocks`), initialisées depuis `resources.*`
+(CONFIGURATION.md §1) et consommées par les actions terminales Eat/Drink puis exposées dans le
+snapshot d'observabilité (`resources`, API_CONTRACTS.md §2.1). Les **sources spatiales** restent
+au jalon ph7 (SYNE-070).
+
+| Ressource | Initial | Régénération/tick | Consommée par |
+| :-- | :-- | :-- | :-- |
+| Food | 100 | 0 | Eat (1.0 / exécution) |
+| Water | 1000 | 5 | Drink (1.0 / exécution) |
+| Wood | 50 | 0.1 | — (ph7) |
+
 ---
 
 ## Points restés ouverts dans ce document
-- Dimensionnement exact des seuils de besoins (décision n°6) : calibration à faire.
+- Dimensionnement exact des seuils de besoins : défauts actés **50/50/70** (décision n°4, configurables `needs.*TriggerThreshold`) — calibration générale à faire.
 - Plage décroissance mémoire en V0.1 : valeurs de prototype conservées ([HÉRITÉ]) ; confirmer lors de la calibration générale.
 - Forme **rectangle** des obstacles : reportée (V0.1 cercle seul, `LineOfSight` intersection segment-disque) — à rouvrir avec la navigation V2.
 - Attribut `Passable` des obstacles : à trancher avec la passerelle/Passable — la ligne de vue est déjà bloquelle en V1 (ADR-013).

@@ -21,7 +21,7 @@
 | 1 | BDI + Perception | Boucle 10/15 étapes, perception partielle | boucle de simulation, grille spatiale — **livré** (jalon SYNE ph1, issues #7–#12) |
 | 2 | Mémoire + Croyances | Mémoire long terme, révision croyances | mémoires + BeliefStore — **livré** (SYNE-013/014) |
 | 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formule d'utilité, DecisionRecord — **livré** (jalon SYNE ph3, issues #16–#19, engineVersion 0.2.0) |
-| 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions |
+| 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions + exécuteur atomique — **livré** (jalon SYNE ph4, issues #20–#23, engineVersion 0.3.0) |
 | 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses |
 | 6 | Groupes | Cohésion, leadership, décisions collectives | formation/dissolution de groupes |
 | 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 |
@@ -67,6 +67,8 @@ Conformément à la checklist §12, les choix ci-dessous restent **consciemment 
 | `SYSTEMS_SPEC.md` | Coûts des livres (décisions n°18/19) | Implémentation savoir tangible |
 | `PERFORMANCE.md` | Machine de référence des benchmarks V0.1 | Phase 9 (performance) |
 | `CONFIGURATION.md` | Calibration des taux de besoins / seuils | Phase de calibration |
+| `CONFIGURATION.md` | « Instruire » (SYNE-042) : ingestion en mémoire épisodique via Eat | Jalon ph7 (sources spatiales, SYNE-070) |
+| `DATA_MODEL.md` | Sources spatiales de ressources (décision n°4) | Jalon ph7 (SYNE-070) |
 
 Ces points n'obligent aucune refonte documentaire : ils relèvent de paramétrages et de chiffrages internes.
 

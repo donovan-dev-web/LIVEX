@@ -40,6 +40,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - Tests : +17 (129 → **146**). Build Release 0 warning / 0 erreur.
 
 ### Added
+- **Jalon SYNE ph4 — Actions (SYNE-040 → SYNE-043, issues #20/#21/#22/#23, milestone ph4, engineVersion 0.3.0)** :
+  - **Sous-système d'actions déclaratif (SYNE-040)** : nouveau `Simulation.Core/Actions/` — `ActionCatalog` (définitions issues de `agents.actions.catalog`, ordre stable de l'enum, viabilité contre les réserves), `ActionExecutor` (**une action atomique par entité par tick**, itération par identifiant croissant, aucun tirage PRNG), `ActionResult`/`ActionOutcome` (Executed/Blocked + deltas d'effets). Les effets (coûts énergie, récupérations, consommation de réserve) proviennent du catalogue déclaratif (CONFIGURATION §6.2).
+  - **Déplacement + obstacles (SYNE-041)** : cible pseudo-aléatoire déterministe par (id, tick, désir) via finaliseur SplitMix64 (reproductible, 0 PRNG), **pas borné par la vitesse**, clamp aux limites du monde, **jamais de pas dans un obstacle** (rejet → sur place) ; coût par défaut = `actions.moveEnergyCost` pour les actions de déplacement.
+  - **Besoins déclenchés ≥ 50 + réserves (SYNE-042)** : seuils par défaut **50/50/70** (`needs.hungerTriggerThreshold`/`thirstTriggerThreshold`/`fatigueTriggerThreshold`, décision n°4) ; nouvelles actions terminales **Eat/Drink** (`DesireKind.Eat = 7`, `Drink = 8`, append) résolues depuis SeekFood/SeekWater quand la réserve est disponible ; **réserves globales** `ResourceStocks` (`Food` 100 / `Water` 1000 / `Wood` 50, régénération décision n°4), consommées par Eat/Drink et exposées `SimulationLoop.Resources` ; « instruire » reporté (jalon ph7, ROADMAP).
+  - **Déclencheur d'interruption centralisé (SYNE-043)** : `InterruptionTrigger` — unique point « action en cours interrompue ? » (faim critique > 85 → Eat si réserve, sinon SeekFood ; énergie < 10 → Rest), évalué à tout tick hors délibération, utilité + marge `utilityExcessMargin`, aucune consommation PRNG.
+  - **Observabilité (additif, contrat V0.1 compatible)** : événement **`action_completed`** (1/entité/tick — action, `outcome`, deltas, réserve consommée) ; snapshot ajoute **`resources`** peuplées (type/quantity, DATA_MODEL §8) ; `engineVersion` → **0.3.0**.
+  - **Config** : `SimulationOptionsValidator` chemins corrigés (`agents.actions.deliberation.*`/`interruption.*`, défaut ph3) + validation `needs.*TriggerThreshold` et catalogue complet.
+  - **Déterminisme** : checksum de trajectoire **recalculé** (0xe8d69e462fc22df7 → **0xdfbc9a6c4a1d8122**, DETERMINISM.md §6) ; contrat « 0 tirage PRNG » préservé.
+  - Tests : +30 (166 → **197**, dont 3 `Simulation.Console.Tests`). Build Release 0 warning / 0 erreur.
+
+### Added
 - **Jalon SYNE ph3 — Décision + Utilité (SYNE-030 → SYNE-033, issues #16/#17/#18/#19, milestone ph3, engineVersion 0.2.0)** :
   - **Formule d'utilité complète (SYNE-030)** : `U = (benefit − cost − risk) × confidence × personalityModifier + urgency` ; **bonus d'alignement ×1.2** (`deliberation.alignBonus`) quand l'action rejoint l'objectif courant ; seuils critiques **configurables** faim > 85 / énergie < 10 (`interruption.criticalHunger`/`criticalEnergy`, COGNITIVE_ARCHITECTURE §6) ; **hystérésis anti-oscillation** `actionSwitchMargin` (défaut 0.05, `ApplyActionSwitchMargin`) — ne changer d'action que si elle surpasse l'action courante de la marge.
   - **Sélecteur d'action + fréquence de délibération (SYNE-031)** : sélection déterministe par utilité maximale ; **fréquence configurable** (`deliberation.intervalTicks`, défaut 10 — décision n°14, LOD « 1 tick tous les 10 ») avec **holdover** de l'intention entre deux délibérations, décalée par entité (lissage de charge) ; **trace `DecisionRecord`** complète (tick, entité, scores par action, délibéré/interrompu — COGNITIVE_ARCHITECTURE §7).
@@ -77,3 +88,4 @@ Version initiale (prototype V1/V2 de la Monographie référencé comme [HÉRITÉ
 | 21 septembre 2026 | Jalon SYNE ph1 : BDI + Perception | SYNE-010 → SYNE-015 |
 | 21 septembre 2026 | Jalon SYNE ph2 : Mémoire intergénérationnelle + Croyances + Confiance | SYNE-020 → SYNE-022 |
 | 21 septembre 2026 | Jalon SYNE ph3 : Décision + Utilité (engineVersion 0.2.0) | SYNE-030 → SYNE-033 |
+| 22 septembre 2026 | Jalon SYNE ph4 : Actions déclaratives + réserves (engineVersion 0.3.0) | SYNE-040 → SYNE-043 |

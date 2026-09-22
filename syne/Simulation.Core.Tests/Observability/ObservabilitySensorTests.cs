@@ -104,6 +104,48 @@ public class ObservabilitySensorTests
     }
 
     [Fact]
+    public void Snapshot_Resources_ReflectStocksAfterActions()
+    {
+        // SYNE-042 : le snapshot porte les réserves (DATA_MODEL.md §8) —
+        // les actions terminales les mettent à jour.
+        (_, SimulationLoop loop) = BuildLoop();
+        loop.Run(500);
+
+        WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 7);
+        JsonObject message = ObservabilitySerializer.SnapshotMessage(snapshot);
+
+        Assert.NotNull(message["resources"]);
+        double water = message["resources"]!.AsArray().First(r => (string?)r!["type"] == "water")!["quantity"]!.GetValue<double>();
+        double food = message["resources"]!.AsArray().First(r => (string?)r!["type"] == "food")!["quantity"]!.GetValue<double>();
+
+        Assert.True(water >= 0.0 && water < 1000.0, "La réserve d'eau a été consommée par Drink.");
+        Assert.True(food >= 0.0 && food < 100.0, "La réserve de nourriture a été consommée par Eat.");
+    }
+
+    [Fact]
+    public void Event_ActionCompleted_RespectsContract()
+    {
+        // SYNE-080 : chaque exécution atomique produit un événement action_completed
+        // (API_CONTRACTS.md §2.2) portant l'action exécutée, son issue et ses deltas.
+        (_, SimulationLoop loop) = BuildLoop();
+        for (int tick = 1; tick <= 12; tick++)
+        {
+            loop.AdvanceOneTick();
+        }
+
+        MindState mind = loop.Cognition.MindOf(1);
+        Assert.NotNull(mind.LastActionResult);
+
+        ExternalEvent completed = EventSensor.ActionCompleted(loop.CurrentTick, agentId: 1, mind.LastActionResult!);
+        JsonObject eventJson = ObservabilitySerializer.EventMessage(completed);
+
+        Assert.Equal(ObservabilityContract.ActionCompleted, (string?)eventJson["type"]);
+        Assert.Equal("1", (string?)eventJson["agentId"]);
+        Assert.Equal(mind.LastActionResult!.Kind.ToString(), (string?)eventJson["action"]);
+        Assert.NotNull((string?)eventJson["value"]!["outcome"]);
+    }
+
+    [Fact]
     public void RunId_IsStableAndDerivedFromSeed()
     {
         Assert.Equal("run-42", ObservabilityContract.RunIdFor(42));
@@ -113,7 +155,7 @@ public class ObservabilitySensorTests
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
-        Assert.Equal("0.2.0", ObservabilityContract.EngineVersion);
+        Assert.Equal("0.3.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

@@ -99,10 +99,10 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-040 | Catalogue d'actions (déclaratif) | `type/feature`, `component/syne` | P0 | `SYSTEMS_SPEC.md` §4, `CONFIGURATION.md` | Actions déclarées en config ; exécution atomique par tick |
-| SYNE-041 | Action Déplacement | `type/feature`, `component/syne` | P0 | SYNE-002, SYNE-010 | Déplacement respecte les obstacles et le coût énergie |
-| SYNE-042 | Action Besoin (manger/boire/instruire) | `type/feature`, `component/syne` | P0 | décisions n°4, 5 ; `SYSTEMS_SPEC.md` §3.9.1 | Besoins déclenchés ≥ 50 ; réserves mises à jour |
-| SYNE-043 | Interruption d'action (déclenchement) | `type/feature`, `component/syne` | P1 | SYNE-032, décision n°15 | Déclencheur d'interruption centralisé |
+| SYNE-040 | Catalogue d'actions (déclaratif) — **LIVRÉ (issue #20, PR SYNE, U4)** | `type/feature`, `component/syne` | P0 | `SYSTEMS_SPEC.md` §4, `CONFIGURATION.md` | Actions déclarées en config ; exécution atomique par tick — ✓ `ActionCatalog` (définitions depuis `agents.actions.catalog`, ordre stable de l'enum, viabilité contre les réserves), `ActionExecutor` (une action/entité/tick atomique, sans PRNG), `ActionResult`/`ActionOutcome` ; tests `ActionCatalogTests`/`ActionExecutorTests` |
+| SYNE-041 | Action Déplacement — **LIVRÉ (issue #21, PR SYNE, U4)** | `type/feature`, `component/syne` | P0 | SYNE-002, SYNE-010 | Déplacement respecte les obstacles et le coût énergie — ✓ cible déterministe (id, tick, désir) → pas borné par la vitesse, clamp monde, **jamais dans un obstacle** (rejet) ; coût `moveEnergyCost` pour les actions `movement` ; tests exécuteur + `Movement_NeverEntersObstacleInterior` (30 entités, 300 ticks) |
+| SYNE-042 | Action Besoin (manger/boire) — **LIVRÉ (issue #22, PR SYNE, U4)** | `type/feature`, `component/syne` | P0 | décisions n°4, 5 ; `SYSTEMS_SPEC.md` §3.9.1 | Besoins déclenchés ≥ 50 ; réserves mises à jour — ✓ seuils par défaut **50/50/70** config., actions terminales **Eat/Drink** (consomment `ResourceStocks` Food/Water, réduisent le besoin), snapshot `resources` ; « instruire » **reporté** (jalon ph7) ; tests `ResourceStocksTests`/`BodyNeedsTests`/pipeline |
+| SYNE-043 | Interruption d'action (déclenchement) — **LIVRÉ (issue #23, PR SYNE, U4)** | `type/feature`, `component/syne` | P1 | SYNE-032, décision n°15 | Déclencheur d'interruption centralisé — ✓ `InterruptionTrigger` (unique point, évalué à tout tick hors délibération : faim critique → Eat/SeekFood, énergie → Rest, marge `utilityExcessMargin`, 0 PRNG) ; tests `InterruptionTriggerTests`
 
 ### Milestone ph5 — Communication
 
