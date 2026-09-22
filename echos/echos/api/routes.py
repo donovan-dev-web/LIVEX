@@ -19,8 +19,10 @@ import io
 
 from fastapi import FastAPI, HTTPException, Query
 
+from echos.analysis.causal import MAX_DEPTH, build_chain, CausalError
 from echos.storage.sqlite import AnalyticsStore
 
+from .causal_cache import CausalCache
 from .series import SeriesCache
 
 _VALID_FORMATS = ("json", "csv")
@@ -81,6 +83,7 @@ def _read_every(every: int | None) -> int:
 def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
     """Attache les endpoints d'analyse ECHOS à l'application."""
     cache = SeriesCache()
+    causal_cache = CausalCache()
 
     @app.get("/api/runs", tags=["api"])
     def list_runs() -> dict:
@@ -194,6 +197,49 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             "run_id": resolved,
             "decisions": active.decision_traces(resolved),
         }
+
+    @app.get("/api/runs/{run_id}/causal-chains/{agent_id}", tags=["api"])
+    def causal_chains(
+        run_id: str,
+        agent_id: str,
+        tick: int | None = Query(default=None, ge=0),
+        depth: int = Query(default=7, ge=1, le=MAX_DEPTH),
+    ) -> dict:
+        """Chaîne causale d'une entité à un tick (ECHOS-061 → ECHOS-063).
+
+        Reconstruction **hors ligne** sur ``decision_traces`` + ``events_log``
+        + contexte ``agents`` (ADR-002 [Accepted], CAUSAL_ANALYSIS.md §4) :
+        Action → Intention → Objectif → Besoin → Croyance → Mémoire →
+        Perception. ``tick`` optionnel (dernier tick tracé de l'entité) ;
+        ``depth`` > ``MAX_DEPTH`` (12) rejeté côté FastAPI (422). Réponse
+        servie par ``CausalCache`` invalidé sur ``ingest_version`` (ECHOS-063).
+        """
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+
+        resolved_tick = tick
+        if resolved_tick is None:
+            resolved_tick = active.latest_decision_tick(resolved, str(agent_id))
+        if resolved_tick is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"aucune trace de décision pour l'entité {agent_id} sur le run {resolved}",
+            )
+
+        try:
+            chain = causal_cache.chain(
+                active,
+                resolved,
+                str(agent_id),
+                int(resolved_tick),
+                int(depth),
+                loader=lambda: build_chain(
+                    active, resolved, str(agent_id), int(resolved_tick), int(depth)
+                ),
+            )
+        except CausalError as exc:
+            raise HTTPException(status_code=404, detail=str(exc))
+        return chain  # dict déterministe (tri stable intégré à build_chain)
 
     @app.get("/api/beliefs/{agent_id}", tags=["api"])
     def beliefs(agent_id: str, run_id: str | None = Query(default=None)) -> dict:

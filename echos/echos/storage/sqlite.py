@@ -335,6 +335,19 @@ class AnalyticsStore:
             ).fetchone()
         return int(row[0]) if row and row[0] is not None else None
 
+    def latest_decision_tick(self, run_id: str, agent_id: str) -> int | None:
+        """Dernier tick portant une trace de décision pour une entité.
+
+        Endpoint ``causal-chains`` sans ``?tick=`` (ECHOS-061) : l'analyse
+        s'ouvre sur la décision la plus récente de l'entité sur le run.
+        """
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT MAX(tick) FROM decision_traces WHERE run_id = ? AND agent_id = ?",
+                (run_id, agent_id),
+            ).fetchone()
+        return int(row[0]) if row and row[0] is not None else None
+
     def tick_summaries(self, run_id: str) -> list[tuple]:
         with self._lock:
             return list(
@@ -451,6 +464,27 @@ class AnalyticsStore:
                 ORDER BY tick DESC LIMIT 1
                 """,
                 (run_id, context_type),
+            ).fetchone()
+        if row is None:
+            return None
+        return int(row[0]), json.loads(row[1])
+
+    def context_before(
+        self, run_id: str, context_type: str, tick: int
+    ) -> tuple[int, object] | None:
+        """Contexte JSON le plus récent avec ``tick <= tick`` ou ``None``.
+
+        Lecture déterministe pour l'analyse causale (ECHOS-061) : le contexte
+        ``agents`` au-plus-près de la décision — ordre stable ``tick DESC``.
+        """
+        with self._lock:
+            row = self._conn.execute(
+                """
+                SELECT tick, payload FROM tick_contexts
+                WHERE run_id = ? AND context_type = ? AND tick <= ?
+                ORDER BY tick DESC LIMIT 1
+                """,
+                (run_id, context_type, int(tick)),
             ).fetchone()
         if row is None:
             return None
