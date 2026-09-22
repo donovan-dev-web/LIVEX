@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Simulation.Core.Communication;
 
 namespace Simulation.Core.Observability;
 
@@ -78,6 +79,54 @@ public static class EventSensor
             AgentId: agentId.ToString(System.Globalization.CultureInfo.InvariantCulture),
             Action: result.Kind.ToString(),
             Cause: result.Reason,
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>message_sent</c> (SYNE-050) : pulsation émise (envoi ou relais),
+    /// avec identifiant, type, nombre de sauts, confiance de transmission et taille
+    /// du payload. Traçable par ECHOS (heatmap de communication, NetworkCentrality...).
+    /// </summary>
+    public static ExternalEvent MessageSent(ulong tick, Communication.MessageSent sent)
+    {
+        ArgumentNullException.ThrowIfNull(sent);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["messageId"] = sent.MessageId,
+            ["hops"] = sent.Hops,
+            ["confidence"] = Math.Round(sent.Confidence, 4),
+            ["payloadLength"] = sent.Payload.Length,
+        };
+        return new ExternalEvent(
+            ObservabilityContract.MessageSent,
+            tick,
+            AgentId: sent.SenderId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            TargetId: sent.TargetId?.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Action: sent.Type.ToString(),
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>message_received</c> (SYNE-051) : pulsation reçue (y compris
+    /// interception — le signal est public), avec confiance ajustée par la relation
+    /// de confiance du récepteur envers l'émetteur et drapeau d'incompréhension.
+    /// </summary>
+    public static ExternalEvent MessageReceived(ulong tick, Communication.MessageReceived received)
+    {
+        ArgumentNullException.ThrowIfNull(received);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["messageId"] = received.MessageId,
+            ["hops"] = received.Hops,
+            ["confidence"] = Math.Round(received.Confidence, 4),
+            ["understood"] = received.Understood,
+        };
+        return new ExternalEvent(
+            ObservabilityContract.MessageReceived,
+            tick,
+            AgentId: received.ReceiverId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            TargetId: received.SenderId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Action: received.Type.ToString(),
             Value: value);
     }
 }

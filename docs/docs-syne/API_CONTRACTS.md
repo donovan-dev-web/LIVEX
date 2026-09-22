@@ -19,7 +19,8 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 > **Implémentation V0.1 (SYNE-080, livré avec U1)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
 > zéro dépendance) dans `Simulation.Console`, activé par `--observe` (port `--observe-port`, défaut 5180,
 > bind `127.0.0.1`). Chaque tick émet **1 snapshot + 1 `tick_summary` + 1 `decision_made` + 1
-> `action_completed` par entité**, diffusion à **tous** les consommateurs connectés. L'émission
+> `action_completed` par entité, + événements de communication dès qu'un message circule**,
+> diffusion à **tous** les consommateurs connectés. L'émission
 > n'ajoute aucun tirage PRNG (déterminisme inchangé, DETERMINISM.md §3).
 
 ### 2.1 `snapshot` — WorldSnapshot
@@ -38,7 +39,7 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.3.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.4.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
@@ -49,7 +50,7 @@ Exemple (format condensé) :
 > En V2 : intégrer beliefs, goals, relations, groupes dans le snapshot (prototype V2 §04-ARCHITECTURE).
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.3.0` (jalon SYNE ph4).
+> `engineVersion` = `0.4.0` (jalon SYNE ph5).
 
 ### 2.2 `event` — ExternalEvent
 
@@ -79,6 +80,12 @@ Exemple :
 > (SYNE-040) ; `action` = action exécutée (ex. `Eat`), `value = {outcome: executed|blocked,
 > energyDelta, hungerDelta, thirstDelta, fatigueDelta, reserve?, reserveConsumed?}`,
 > `cause` = raison du blocage éventuel (réserve vide).
+> **`message_sent`/`message_received` (jalon SYNE ph5)** : diffusés par `ObservabilityTickEmitter`
+> après les boucles entités dès qu'une pulsation circule. `message_sent` : `agentId` = émetteur
+> (d'origine, préservé aux relais), `targetId?` = cible nominale, `action` = `MessageType`,
+> `value = {messageId, hops, confidence, payloadLength}`. `message_received` : `agentId` = récepteur
+> (interception incluse), `action` = `MessageType`, `value = {messageId, hops, confidence, understood}`
+> (COMMUNICATION_PROTOCOL.md §8).
 > `agent_spawned`/`agent_died` attendront la mortalité (ph4).
 
 ## 3. Contrat de contrôle — HTTP 5181
