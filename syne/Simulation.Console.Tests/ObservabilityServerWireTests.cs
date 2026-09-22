@@ -80,6 +80,39 @@ public class ObservabilityServerWireTests
         Assert.Equal([1u, 2u, 3u], snapshotTicks);
     }
 
+    [Fact]
+    public async Task RunAsync_EmitsActionCompletedEventAfterExecution()
+    {
+        // SYNE-040/080 : chaque tick émet l'événement action_completed de l'action
+        // atomique exécutée (API_CONTRACTS.md §2.2).
+        await using var server = new ObservabilityServer(FreePort());
+        server.Start();
+
+        using var client = new ClientWebSocket();
+        await client.ConnectAsync(new Uri($"ws://127.0.0.1:{server.Port}/"), CancellationToken.None);
+        await WaitForClient(server);
+
+        var world = new WorldType(new WorldSize(100, 100));
+        world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(10, 10), TraitSet.NeutralAll, bornAt: 0));
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), ConfigLoader.LoadDefaults());
+        var emitter = new ObservabilityTickEmitter(loop, seed: 7, server);
+        await emitter.RunAsync(12);
+
+        string? outcome = null;
+        while (outcome is null)
+        {
+            JsonNode? frame = JsonNode.Parse(await ReceiveTextAsync(client));
+            if ((string?)frame!["type"] == "action_completed")
+            {
+                outcome = (string?)frame!["value"]!["outcome"];
+            }
+        }
+
+        Assert.NotNull(outcome);
+        Assert.True(outcome == "executed" || outcome == "blocked", $"outcome inattendu : {outcome}");
+        Assert.NotNull(loop.Cognition.MindOf(1).LastActionResult);
+    }
+
     private static async Task WaitForClient(ObservabilityServer server)
     {
         for (int i = 0; i < 50 && server.ClientCount == 0; i++)

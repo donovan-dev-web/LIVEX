@@ -56,6 +56,14 @@ public sealed class NeedsSettings
     public double SafetyDriftRate { get; set; } = 0.001;
     public double SocialDriftRate { get; set; } = 0.001;
     public double CuriosityDriftRate { get; set; } = 0.002;
+
+    /// <summary>Seuil de déclenchement : un besoin non satisfait lance une action dès ce niveau (décision n°4 : « ≥ 50 »).</summary>
+    public double HungerTriggerThreshold { get; set; } = 50.0;
+
+    public double ThirstTriggerThreshold { get; set; } = 50.0;
+
+    /// <summary>Seuil de déclenchement du repos (décision n°4 : Rest dès fatigue &gt; 70).</summary>
+    public double FatigueTriggerThreshold { get; set; } = 70.0;
 }
 
 public sealed class PerceptionSettings
@@ -114,6 +122,53 @@ public sealed class ActionSettings
     public double RestFatigueRecovery { get; set; } = 1.0;
     public DeliberationSettings Deliberation { get; set; } = new();
     public InterruptionSettings Interruption { get; set; } = new();
+
+    /// <summary>Catalogue déclaratif des actions (SYNE-040, CONFIGURATION.md §6.2).</summary>
+    public ActionCatalogSettings Catalog { get; set; } = new();
+}
+
+public sealed class ActionCatalogSettings
+{
+    /// <summary>Entrées déclaratives par action (clé = nom de l'<c>DesireKind</c>, camelCase).</summary>
+    public Dictionary<string, ActionEntrySettings> Entries { get; set; } = new(StringComparer.Ordinal)
+    {
+        ["idle"] = new ActionEntrySettings(),
+        ["seekFood"] = new ActionEntrySettings { Movement = true },
+        ["seekWater"] = new ActionEntrySettings { Movement = true },
+        ["eat"] = new ActionEntrySettings { EnergyCost = 0.2, HungerRecovery = 30.0, Reserve = World.ResourceKind.Food },
+        ["drink"] = new ActionEntrySettings { EnergyCost = 0.2, ThirstRecovery = 30.0, Reserve = World.ResourceKind.Water },
+        ["rest"] = new ActionEntrySettings(),
+        ["flee"] = new ActionEntrySettings { Movement = true },
+        ["socialize"] = new ActionEntrySettings { Movement = true },
+        ["explore"] = new ActionEntrySettings { Movement = true },
+    };
+}
+
+public sealed class ActionEntrySettings
+{
+    /// <summary>Action de déplacement (pas déterministe + coût énergie du mouvement).</summary>
+    public bool Movement { get; set; }
+
+    /// <summary>Coût énergétique (défaut : <c>actions.moveEnergyCost</c>).</summary>
+    public double? EnergyCost { get; set; }
+
+    /// <summary>Énergie récupérée (défaut : <c>actions.restEnergyGain</c>).</summary>
+    public double? EnergyRecovery { get; set; }
+
+    /// <summary>Fatigue récupérée (défaut : <c>actions.restFatigueRecovery</c>).</summary>
+    public double? FatigueRecovery { get; set; }
+
+    /// <summary>Réduction de la faim (ex. Eat).</summary>
+    public double? HungerRecovery { get; set; }
+
+    /// <summary>Réduction de la soif (ex. Drink).</summary>
+    public double? ThirstRecovery { get; set; }
+
+    /// <summary>Réserve globale requise/consommée (ex. Eat → Food).</summary>
+    public World.ResourceKind? Reserve { get; set; }
+
+    /// <summary>Quantité consommée de la réserve à chaque exécution (défaut 1.0).</summary>
+    public double? ReserveConsumption { get; set; }
 }
 
 public sealed class DeliberationSettings

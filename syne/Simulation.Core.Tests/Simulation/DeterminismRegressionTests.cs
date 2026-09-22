@@ -105,10 +105,11 @@ public class DeterminismRegressionTests
     [Fact]
     public void GoldenChecksum_IsPinned()
     {
-        // Épinglé au jalon SYNE ph3 (engineVersion 0.2.0) : délibération à fréquence
-        // configurable, interruptions, conflits probabilistes et hystérésis
-        // altèrent la trajectoire — DETERMINISM.md §7 impose recalcul + bump MINOR.
+        // Épinglé au jalon SYNE ph4 (engineVersion 0.3.0) : catalogue d'actions
+        // déclaratif, actions terminales Eat/Drink, seuils de déclenchement 50 et
+        // déclencheur d'interruption centralisé altèrent la trajectoire —
+        // DETERMINISM.md §7 impose recalcul + bump MINOR.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0xe8d69e462fc22df7", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0xdfbc9a6c4a1d8122", $"0x{Fnv1a(log):x16}");
     }
 }

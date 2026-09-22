@@ -1,3 +1,4 @@
+using Simulation.Core.Actions;
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Cognition;
@@ -51,11 +52,20 @@ public sealed class MindState
     /// <summary>Scores d'utilité des candidats de la dernière décision.</summary>
     public IReadOnlyList<UtilityScore> LastDecisionScores { get; private set; } = [];
 
+    /// <summary>Résultat de l'action atomique du tick courant (SYNE-040/041/042).</summary>
+    public ActionResult? LastActionResult { get; private set; }
+
     /// <summary>Vrai si un tick a délibéré (fréquence configurable, décision n°14).</summary>
     internal bool DeliberatedThisTick { get; set; }
 
     /// <summary>Vrai si un tick a interrompu l'action en cours (besoin critique, décision n°15).</summary>
     internal bool InterruptedThisTick { get; set; }
+
+    internal void RecordAction(Actions.ActionResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        LastActionResult = result;
+    }
 
     internal void RecordDecision(
         IReadOnlyList<UtilityScore> scores,

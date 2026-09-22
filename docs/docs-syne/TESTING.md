@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **166 tests** (baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **197 tests** (baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4, dont 3 `Simulation.Console.Tests`).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -29,9 +29,9 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Croyances | révision (alignement/conflit/sources différentes), expiration, plafond par snap |
 | Besoins & Objectifs | seuils, filtrage de faisabilité, priorisation |
 | Décision / Utilité (SYNE ph3) | formule complète, **bonus d'alignement ×1.2**, hystérésis (`actionSwitchMargin`), interruptions par besoin critique, **fréquence de délibération configurable**, **conflits de priorités force × confiance**, **DecisionRecord** |
-| Actions | déclaratives, pool d'actions, coûts |
+| Actions (SYNE ph4) | catalogue déclaratif complet + échec déclaratif, exécution atomique (Eat/Drink/rest/mouvement), déplacement déterministe sans obstacle, **réserves globales** (consommation, clamp, copie), **déclencheur d'interruption centralisé** (faim→Eat/SeekFood, énergie→Rest, marge, cas nominal), seuils de besoins **≥ 50**, terminal Eat/Drink en pipeline, événement `action_completed` (API_CONTRACTS §2.2) |
 | Communications | rayon, incompréhension, dégradation par hop, bande passante |
-| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
+| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` + `action_completed`, `resources` peuplées ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
 | Groupes | formation, cohésion, leader, dissolution |
 | Ressources | régénération, épuisement |
 | Persistance | sauvegarde/charge JSON et SQLite |

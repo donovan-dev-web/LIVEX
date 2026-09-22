@@ -64,15 +64,37 @@ public class CognitionPipelineTests
     }
 
     [Fact]
-    public void Deliberation_SelectsThirstOnceTriggered()
+    public void Deliberation_DrivesTerminalDrinkOnceThirstTriggered()
     {
+        // SYNE-042 : soif déclenchée dès 50 (décision n°4) → l'entité boit quand
+        // c'est viable ; la boisson consomme la réserve globale d'eau.
         (_, SimulationLoop loop) = BuildLoop();
-        loop.Run(100);
+        loop.Run(500);
 
-        // Soif = 0.7 × 100 = 70 ≥ 60 → désir SeekWater dominant.
+        MindState mind = loop.Cognition.MindOf(1);
+        Assert.NotNull(mind.LastDecision);
+
+        // La soif a été éteinte par Drink (réserve mise à jour, décision n°4) :
+        // la réserve globale d'eau a été consommée mais reste non vide.
+        Assert.True(loop.Resources.Stock(World.ResourceKind.Water) >= 0.0);
+        Assert.True(loop.Resources.Stock(World.ResourceKind.Water) < 1000.0);
+    }
+
+    [Fact]
+    public void StopDrinking_WhenWaterReserveExhausts_FallsBackToSeek()
+    {
+        // SYNE-042 : réserve d'eau vide → plus de Drink viable → poursuite SeekWater.
+        SimulationOptions options = Options();
+        options.Resources.Water.Initial = 0;
+
+        WorldType world = new(new WorldSize(500, 500));
+        world.AddEntity(MakeEntity(1, new Position(50, 50)));
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options);
+
+        loop.Run(120);
+
         MindState mind = loop.Cognition.MindOf(1);
         Assert.Equal(DesireKind.SeekWater, mind.Intention!.Value.Kind);
-        Assert.NotNull(mind.LastDecision);
     }
 
     [Fact]
@@ -161,25 +183,27 @@ public class CognitionPipelineTests
 
         MindState mind = loop.Cognition.MindOf(1);
 
-        // tick 87–88 : hors délibération ((87+1) % 10 != 0) — intention Idle conservée depuis le choix du tick 79.
+        // tick 87–88 : hors délibération ((87+1) % 10 != 0) — intention Drink conservée
+        // depuis la dernière délibération (soif déclenchée ≥ 50, décision n°4).
         Assert.False(mind.DeliberatedThisTick);
-        Assert.Equal(DesireKind.Idle, mind.Intention?.Kind);
+        Assert.Equal(DesireKind.Drink, mind.Intention?.Kind);
 
         loop.AdvanceOneTick();
         Assert.False(mind.DeliberatedThisTick);
-        Assert.Equal(DesireKind.Idle, mind.Intention?.Kind);
+        Assert.Equal(DesireKind.Drink, mind.Intention?.Kind);
 
-        // tick 89 : délibération — soif 62,3 ≥ 60 → SeekWater.
+        // tick 89 : délibération — soif toujours ≥ 50 → Drink conservé.
         loop.AdvanceOneTick();
         Assert.True(mind.DeliberatedThisTick);
-        Assert.Equal(DesireKind.SeekWater, mind.Intention?.Kind);
+        Assert.Equal(DesireKind.Drink, mind.Intention?.Kind);
     }
 
     [Fact]
     public void Interruption_OverridesHoldoverForCriticalNeed()
     {
-        // SYNE-032 : faim critique (seuil 85) + utilité supérieure de > marge (10)
-        // pendant une non-délibération → reprise par interruption.
+        // SYNE-032/043 : faim critique (seuil 85) + utilité supérieure de > marge (10)
+        // pendant une non-délibération → reprise par interruption. Réserve disponible →
+        // le déclencheur centralisé répond par l'action terminale Eat (SYNE-042).
         SimulationOptions options = Options();
         options.Agents.Needs.HungerRate = 5;
         options.Agents.Needs.ThirstRate = 0;
@@ -199,14 +223,39 @@ public class CognitionPipelineTests
         // tick 17 : faim = 85, seuil STRICT (>) non atteint → pas d'interruption.
         Assert.False(mind.InterruptedThisTick);
 
-        // tick 18 : faim = 90 > 85, hors délibération → interruption vers SeekFood.
+        // tick 18 : faim = 90 > 85, hors délibération → interruption vers Eat (réserve pleine).
         loop.AdvanceOneTick();
         Assert.True(mind.InterruptedThisTick);
         Assert.False(mind.DeliberatedThisTick);
-        Assert.Equal(DesireKind.SeekFood, mind.Intention?.Kind);
+        Assert.Equal(DesireKind.Eat, mind.Intention?.Kind);
         Assert.NotNull(mind.LastDecisionRecord);
         Assert.True(mind.LastDecisionRecord!.Interrupted);
         Assert.False(mind.LastDecisionRecord.Deliberated);
+    }
+
+    [Fact]
+    public void Interruption_FallsBackToSeekWhenNoReserve()
+    {
+        // SYNE-043 : réserve vide → le déclencheur centralisé répond à la faim
+        // critique par la poursuite SeekFood (action terminale non viable).
+        SimulationOptions options = Options();
+        options.Agents.Needs.HungerRate = 5;
+        options.Agents.Needs.ThirstRate = 0;
+        options.Agents.Needs.FatigueRate = 0;
+        options.Agents.Needs.SafetyDriftRate = 0;
+        options.Agents.Needs.SocialDriftRate = 0;
+        options.Agents.Needs.CuriosityDriftRate = 0;
+        options.Resources.Food.Initial = 0;
+
+        (_, SimulationLoop loop) = BuildSingleLoop(options);
+        for (int tick = 1; tick <= 18; tick++)
+        {
+            loop.AdvanceOneTick();
+        }
+
+        MindState mind = loop.Cognition.MindOf(1);
+        Assert.True(mind.InterruptedThisTick);
+        Assert.Equal(DesireKind.SeekFood, mind.Intention?.Kind);
     }
 
     [Fact]

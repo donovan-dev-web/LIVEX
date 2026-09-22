@@ -28,10 +28,14 @@ public sealed class SimulationLoop
         ArgumentNullException.ThrowIfNull(options);
         World = world;
         _rng = initialRng;
-        _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options);
+        Resources = new World.ResourceStocks(options.Resources);
+        _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources);
     }
 
     public World.World World { get; }
+
+    /// <summary>Réserves globales de ressources (SYNE-042) : consommées par Eat/Drink, exposées dans le snapshot.</summary>
+    public World.ResourceStocks Resources { get; }
 
     public ulong CurrentTick { get; private set; }
 

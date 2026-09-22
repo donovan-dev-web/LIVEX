@@ -49,4 +49,35 @@ public static class EventSensor
             Cause: $"hunger={mind.Needs.Hunger:0.#},thirst={mind.Needs.Thirst:0.#},fatigue={mind.Needs.Fatigue:0.#}",
             Value: value);
     }
+
+    /// <summary>
+    /// Événement <c>action_completed</c> par entité : issue de l'exécution atomique
+    /// de l'action du tick (SYNE-040, API_CONTRACTS.md §2.2) avec les deltas d'effets.
+    /// </summary>
+    public static ExternalEvent ActionCompleted(ulong tick, ulong agentId, Actions.ActionResult result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        string outcome = result.Outcome.ToString().ToLowerInvariant();
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["outcome"] = outcome,
+            ["energyDelta"] = Math.Round(result.EnergyDelta, 4),
+            ["hungerDelta"] = Math.Round(result.HungerDelta, 4),
+            ["thirstDelta"] = Math.Round(result.ThirstDelta, 4),
+            ["fatigueDelta"] = Math.Round(result.FatigueDelta, 4),
+        };
+        if (result.ReserveConsumed is { } reserve)
+        {
+            value["reserve"] = reserve.ToString().ToLowerInvariant();
+            value["reserveConsumed"] = Math.Round(result.ReserveConsumedAmount, 4);
+        }
+
+        return new ExternalEvent(
+            ObservabilityContract.ActionCompleted,
+            tick,
+            AgentId: agentId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Action: result.Kind.ToString(),
+            Cause: result.Reason,
+            Value: value);
+    }
 }
