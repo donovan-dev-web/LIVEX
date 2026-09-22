@@ -1,5 +1,7 @@
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
+using Simulation.Core.Population;
+using Simulation.Core.Social;
 
 namespace Simulation.Console.Observability;
 
@@ -84,6 +86,38 @@ public sealed class ObservabilityTickEmitter
                     ObservabilitySerializer.EventMessage(EventSensor.MessageReceived(_loop.CurrentTick, received))));
         }
 
+        foreach (GroupFormation formed in _loop.Cognition.Groups.LastFormed)
+        {
+            await _server.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(
+                    ObservabilitySerializer.EventMessage(EventSensor.GroupFormed(_loop.CurrentTick, GroupOf(formed.GroupId)))));
+        }
+
+        foreach (GroupDissolution dissolved in _loop.Cognition.Groups.LastDissolved)
+        {
+            await _server.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(
+                    ObservabilitySerializer.EventMessage(EventSensor.GroupDissolved(_loop.CurrentTick, dissolved))));
+        }
+
+        foreach (GroupDecision decision in _loop.Cognition.Groups.LastDecisions)
+        {
+            await _server.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(
+                    ObservabilitySerializer.EventMessage(EventSensor.GroupDecision(_loop.CurrentTick, decision))));
+        }
+
+        foreach (BirthObservation birth in _loop.Cognition.Birth.LastBirths)
+        {
+            await _server.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(
+                    ObservabilitySerializer.EventMessage(EventSensor.AgentSpawned(_loop.CurrentTick, birth))));
+        }
+
         TicksEmitted++;
     }
+
+    /// <summary>Résout le groupe vivant d'un événement (encore actif à la diffusion).</summary>
+    private Group GroupOf(ulong groupId) =>
+        _loop.Cognition.Groups.Active.First(group => group.Id == groupId);
 }

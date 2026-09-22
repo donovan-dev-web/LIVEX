@@ -249,6 +249,66 @@ public static class SimulationOptionsValidator
             }
         }
 
+        if (options.Groups.ReviewIntervalTicks < 1)
+        {
+            errors.Add($"groups.reviewIntervalTicks doit être &gt;= 1 (reçu : {options.Groups.ReviewIntervalTicks}).");
+        }
+
+        if (options.Groups.TrustThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"groups.trustThreshold doit être dans [0, 1] (reçu : {options.Groups.TrustThreshold}).");
+        }
+
+        if (options.Groups.MinGroupSize < 2)
+        {
+            errors.Add($"groups.minGroupSize doit être &gt;= 2 (reçu : {options.Groups.MinGroupSize}).");
+        }
+
+        if (options.Groups.SharedBeliefBonus < 0.0 || options.Groups.GoalAlignmentBonus < 0.0)
+        {
+            errors.Add("groups.sharedBeliefBonus et groups.goalAlignmentBonus doivent être &gt;= 0.");
+        }
+
+        if (options.Groups.ConsensusThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"groups.consensusThreshold doit être dans [0, 1] (reçu : {options.Groups.ConsensusThreshold}).");
+        }
+
+        if (options.Reproduction.IntervalTicks < 1)
+        {
+            errors.Add($"reproduction.intervalTicks doit être &gt;= 1 (reçu : {options.Reproduction.IntervalTicks}).");
+        }
+
+        if (options.Reproduction.ConsentTrustThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"reproduction.consentTrustThreshold doit être dans [0, 1] (reçu : {options.Reproduction.ConsentTrustThreshold}).");
+        }
+
+        if (options.Reproduction.MaxBirthsPerTick < 0)
+        {
+            errors.Add($"reproduction.maxBirthsPerTick doit être &gt;= 0 (reçu : {options.Reproduction.MaxBirthsPerTick}).");
+        }
+
+        if (options.Agents.Inheritance.Dominance is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.inheritance.dominance doit être dans [0, 1] (reçu : {options.Agents.Inheritance.Dominance}).");
+        }
+
+        if (options.Agents.Inheritance.MutationRate is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.inheritance.mutationRate doit être dans [0, 1] (reçu : {options.Agents.Inheritance.MutationRate}).");
+        }
+
+        if (options.Agents.Inheritance.MutationMagnitude < 0.0)
+        {
+            errors.Add($"agents.inheritance.mutationMagnitude doit être &gt;= 0 (reçu : {options.Agents.Inheritance.MutationMagnitude}).");
+        }
+
+        if (options.Agents.Inheritance.SalienceThreshold is <= 0.0 or > 1.0)
+        {
+            errors.Add($"agents.inheritance.salienceThreshold doit être dans (0, 1] (reçu : {options.Agents.Inheritance.SalienceThreshold}).");
+        }
+
         return errors;
     }
 }

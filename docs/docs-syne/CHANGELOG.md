@@ -10,6 +10,32 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon SYNE ph6 — Groupes & Naissance (SYNE-060 → SYNE-063, issues #29–#32, milestone ph6)** :
+  - **`GROUPES` (élément de réseau social, SYNE-060/061)** : `GroupSystem` (propriété `Cognition.Groups`).
+    Cohésion = min trust réciproque × affinité (1 + `sharedBeliefBonus` + `goalAlignmentBonus`),
+    lien = confiance ≥ `trustThreshold` **et** affinité > 1 (décisions n°23/24) ; composantes
+    union-find (racine = id min), révision LOD déterministe (`reviewIntervalTicks` = 10),
+    cycle de vie par correspondance exacte des membres (turnover ⇒ dissolution + refonte),
+    leader émergent = somme de confiance entrante max (tie-break id min), décisions collectives
+    pondérées par la confiance au leader (quorum `consensusThreshold` = 0.5).
+  - **`NAISSANCE` (fusion consentie, SYNE-062)** : `BirthSystem` — passe `reproduction.intervalTicks`
+    = 100, consentement = min trust réciproque ≥ `consentTrustThreshold` 0.6 (décision n°17),
+    première paire qualifiante en ordre d'id (mère = moindre), enfant au point médian clampé
+    (id = max+1), `MindState.Born` → mémoire + buts + `Born` ; `NewbornMinds` fusionnées dans le
+    pipeline **après** la révision des groupes (ordre causal).
+  - **`HERITAGE` (mécanismes fins, SYNE-063)** : `FuseTraits(a, b, settings, seed)` — parent
+    exprimant sous dominance ∈ [0, 1], mutation déterministe `SplitMix64(newTraitId, seed, tick)`
+    (+ clamps [0, 2]) ; `InheritMemory(double? salienceThreshold = null)` → défaut
+    `agents.inheritance.salienceThreshold` (0.01).
+  - **`Observabilité (additif, contrat 0.5.0 → engineVersion 0.5.0)`** : événements
+    `group_formed`/`group_dissolved`/`group_decision` (bilan de vie `lifetime`/`success`,
+    turnover `membersOut`/`membersIn`) et `agent_spawned` ({childId, motherId, fatherId, species, x, y});
+    snapshot `groups[]` (`WorldSnapshot.GroupSnapshot`, camelCase).
+  - **`Calibration`** : `communication.transmissionRange` défaut 20 → **55** (bornes [1, 70]
+    indépendantes de la perception) — le scénario défaut forme un tapis de confiance.
+  - Tests : +32 (210 → **242**), dont `GroupSystemTests` (9), `BirthSystemTests` (7),
+    `GroupBirthDeterminismTests` (3), mécanismes fins d'héritage (7), validations de config (3),
+    observabilité (3). Document `SOCIAL_NETWORK.md` créé ; checksum doré re-épinglé **0x864e72f57e1fe0d0**.
 - Documentation technique V0.1 complète du composant (VISION, ARCHITECTURE, DATA_MODEL, SIMULATION_LOOP, COGNITIVE_ARCHITECTURE, SYSTEMS_SPEC, COMMUNICATION_PROTOCOL, PERSISTENCE, DETERMINISM, CONFIGURATION, API_CONTRACTS, PERFORMANCE, TESTING, ROADMAP).
 - Formalisation des ADR-001, ADR-002, ADR-005 à ADR-011 (Annexe F de la Monographie).
 - **Socle U0 (SYNE-1)** : solution `Syne.sln`, bibliothèque `Simulation.Core` (configuration Annexe H, loader JSON générique, validation, flags CLI), `Simulation.Console` (conf résolue + sonde PRNG), tests xUnit (28). PRNG déterministe **xoshiro256\*\*** + **splitmix64** (vecteurs épinglés), `global.json` SDK 10.0.400. ADR-012 (config JSON + CLI).
