@@ -93,8 +93,8 @@ public static class UtilityEvaluator
 
         return kind switch
         {
-            DesireKind.SeekFood => Math.Min(needs.Hunger, 30.0),
-            DesireKind.SeekWater => Math.Min(needs.Thirst, 30.0),
+            DesireKind.SeekFood or DesireKind.Eat => Math.Min(needs.Hunger, 30.0),
+            DesireKind.SeekWater or DesireKind.Drink => Math.Min(needs.Thirst, 30.0),
             DesireKind.Rest => Math.Min(needs.Fatigue, 40.0),
             DesireKind.Flee => (1.0 - needs.Safety) * 60.0,
             DesireKind.Socialize => needs.Social * 60.0,
@@ -111,6 +111,8 @@ public static class UtilityEvaluator
         {
             DesireKind.SeekFood or DesireKind.SeekWater or DesireKind.Flee or DesireKind.Socialize or DesireKind.Explore
                 => actions.MoveEnergyCost,
+            DesireKind.Eat => actions.Catalog.Entries["eat"].EnergyCost ?? actions.MoveEnergyCost,
+            DesireKind.Drink => actions.Catalog.Entries["drink"].EnergyCost ?? actions.MoveEnergyCost,
             _ => 0.0,
         };
     }
@@ -122,6 +124,7 @@ public static class UtilityEvaluator
         DesireKind.Explore => 0.25,
         DesireKind.SeekFood or DesireKind.SeekWater => 0.15,
         DesireKind.Socialize => 0.10,
+        DesireKind.Eat or DesireKind.Drink => 0.10,
         DesireKind.Rest => 0.05,
         _ => 0.0,
     };
@@ -134,7 +137,7 @@ public static class UtilityEvaluator
     {
         double modifier = kind switch
         {
-            DesireKind.SeekFood or DesireKind.SeekWater => 0.5 + factors.Greed,
+            DesireKind.SeekFood or DesireKind.SeekWater or DesireKind.Eat or DesireKind.Drink => 0.5 + factors.Greed,
             DesireKind.Explore => 0.5 + factors.Curiosity,
             DesireKind.Socialize => 0.5 + factors.Sociability,
             DesireKind.Flee => 0.5 + (2.0 - factors.Bravery),

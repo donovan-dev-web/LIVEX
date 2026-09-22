@@ -31,9 +31,24 @@ public static class ObservabilitySerializer
             ["simulatedTimeMinutes"] = snapshot.SimulatedTimeMinutes,
             ["aliveCount"] = snapshot.AliveCount,
             ["agents"] = agents,
-            ["resources"] = new JsonArray(),
+            ["resources"] = ResourcesJson(snapshot.Resources),
         };
         return message;
+    }
+
+    private static JsonArray ResourcesJson(IReadOnlyList<ResourceSnapshot> resources)
+    {
+        var array = new JsonArray();
+        foreach (ResourceSnapshot resource in resources)
+        {
+            array.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["type"] = resource.Type,
+                ["quantity"] = resource.Quantity,
+            });
+        }
+
+        return array;
     }
 
     public static JsonObject EventMessage(ExternalEvent externalEvent)

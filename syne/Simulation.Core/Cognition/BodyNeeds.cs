@@ -11,9 +11,10 @@ public sealed class BodyNeeds
 {
     public const double MaxResource = 100.0;
 
-    // Échelles / seuils de prototype (DATA_MODEL.md §7, calibration décision n°6).
-    public const double HungerThreshold = 60.0;
-    public const double ThirstThreshold = 60.0;
+    // Échelles / seuils de prototype (DATA_MODEL.md §7, décision n°4 : besoins
+    // déclenchés dès « ≥ 50 » (équivalent des seuils configurables par défaut)).
+    public const double HungerThreshold = 50.0;
+    public const double ThirstThreshold = 50.0;
     public const double FatigueThreshold = 70.0;
     public const double SafetyThreshold = 0.5;
     public const double SocialThreshold = 0.7;
@@ -38,8 +39,8 @@ public sealed class BodyNeeds
     /// <summary>Valeur d'élan du besoin (0-100 homogénéisé) pour la génération d'objectifs.</summary>
     public double Drive(Simulation.Core.Cognition.DesireKind kind) => kind switch
     {
-        Simulation.Core.Cognition.DesireKind.SeekFood => Hunger,
-        Simulation.Core.Cognition.DesireKind.SeekWater => Thirst,
+        Simulation.Core.Cognition.DesireKind.SeekFood or Simulation.Core.Cognition.DesireKind.Eat => Hunger,
+        Simulation.Core.Cognition.DesireKind.SeekWater or Simulation.Core.Cognition.DesireKind.Drink => Thirst,
         Simulation.Core.Cognition.DesireKind.Rest => Fatigue,
         Simulation.Core.Cognition.DesireKind.Flee => (1.0 - Safety) * 100.0,
         Simulation.Core.Cognition.DesireKind.Socialize => Social * 100.0,
@@ -60,14 +61,35 @@ public sealed class BodyNeeds
     /// <summary>Le besoin est au-dessus de son seuil de déclenchement (génère un désir).</summary>
     public bool IsTriggered(Simulation.Core.Cognition.DesireKind kind) => kind switch
     {
-        Simulation.Core.Cognition.DesireKind.SeekFood => Hunger >= HungerThreshold,
-        Simulation.Core.Cognition.DesireKind.SeekWater => Thirst >= ThirstThreshold,
+        Simulation.Core.Cognition.DesireKind.SeekFood or Simulation.Core.Cognition.DesireKind.Eat => Hunger >= HungerThreshold,
+        Simulation.Core.Cognition.DesireKind.SeekWater or Simulation.Core.Cognition.DesireKind.Drink => Thirst >= ThirstThreshold,
         Simulation.Core.Cognition.DesireKind.Rest => Fatigue >= FatigueThreshold,
         Simulation.Core.Cognition.DesireKind.Flee => Safety <= SafetyThreshold,
         Simulation.Core.Cognition.DesireKind.Socialize => Social >= SocialThreshold,
         Simulation.Core.Cognition.DesireKind.Explore => Curiosity >= CuriosityThreshold,
         _ => false,
     };
+
+    /// <summary>
+    /// Déclenchement selon les seuils configurables (SYNE-042, décision n°4 :
+    /// besoins déclenchés dès « ≥ 50 » ; Rest dès fatigue &gt; 70).
+    /// </summary>
+    public bool IsTriggered(Simulation.Core.Cognition.DesireKind kind, NeedsSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        return kind switch
+        {
+            Simulation.Core.Cognition.DesireKind.SeekFood or Simulation.Core.Cognition.DesireKind.Eat =>
+                Hunger >= settings.HungerTriggerThreshold,
+            Simulation.Core.Cognition.DesireKind.SeekWater or Simulation.Core.Cognition.DesireKind.Drink =>
+                Thirst >= settings.ThirstTriggerThreshold,
+            Simulation.Core.Cognition.DesireKind.Rest => Fatigue >= settings.FatigueTriggerThreshold,
+            Simulation.Core.Cognition.DesireKind.Flee => Safety <= SafetyThreshold,
+            Simulation.Core.Cognition.DesireKind.Socialize => Social >= SocialThreshold,
+            Simulation.Core.Cognition.DesireKind.Explore => Curiosity >= CuriosityThreshold,
+            _ => false,
+        };
+    }
 
     /// <summary>Dérive périodique des besoins (décision n°3 : faim +0.5/tick, soif +0.7/tick, fatigue +0.3/tick).</summary>
     public BodyNeeds Advance(NeedsSettings settings)
@@ -89,6 +111,10 @@ public sealed class BodyNeeds
     public void RecoverEnergy(double gain) => Energy = Clamp100(Energy + gain);
 
     public void RecoverFatigue(double amount) => Fatigue = Clamp100(Fatigue - amount);
+
+    public void RecoverHunger(double amount) => Hunger = Clamp100(Hunger - amount);
+
+    public void RecoverThirst(double amount) => Thirst = Clamp100(Thirst - amount);
 
     public void SetCuriosityElapsed(double amount) => Curiosity = Clamp01(Curiosity + amount);
 

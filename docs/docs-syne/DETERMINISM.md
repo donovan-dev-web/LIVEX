@@ -54,11 +54,13 @@
 
 **Jalon SYNE ph3 (engineVersion 0.2.0)** : la délibération à fréquence configurable (décision n°14), les interruptions par besoin critique (décision n°15), la sélection avec hystérésis et le tirage de conflit de priorités (décision n°22) restent **0 tirage PRNG** — le tirage probabiliste de `PriorityConflictResolver` dérive d'un hash SplitMix64 de (entityId, tick, kinds). Checksum de la trajectoire recalculé (0xab56603aedd578af → **0xe8d69e462fc22df7**).
 
+**Jalon SYNE ph4 (engineVersion 0.3.0)** : le catalogue d'actions déclaratif, l'exécuteur atomique et le déclencheur d'interruption centralisé restent **0 tirage PRNG** — la cible de déplacement dérive du hash SplitMix64 de (id, tick, désir) (ActionExecutor.DeterministicOffset), l'itération reste par identifiant croissant, le pas est clampé au monde et **jamais posé dans un obstacle** (rejet → sur place, SYNE-041). Checksum de la trajectoire recalculé (0xe8d69e462fc22df7 → **0xdfbc9a6c4a1d8122**).
+
 ## 7. Impacts & contractuels
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion` (0.2.0 au jalon SYNE ph3 ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
+  - mise à jour de `engineVersion` (0.3.0 au jalon SYNE ph4 ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
 
 ---
