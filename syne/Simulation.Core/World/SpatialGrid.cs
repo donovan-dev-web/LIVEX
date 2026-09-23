@@ -79,6 +79,27 @@ public sealed class SpatialGrid
     }
 
     /// <summary>
+    /// Retire une entité de la grille (SYNE-074, mortalité) : désindexage de la
+    /// cellule et de la carte de références. Lève si l'entité n'était pas indexée.
+    /// </summary>
+    public void Remove(Simulation.Core.Entities.Entity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        if (!_cellOfEntity.TryGetValue(entity.Id.Value, out (int X, int Y) cell))
+        {
+            throw new InvalidOperationException($"L'entité {entity.Id.Value} n'est pas indexée dans la grille.");
+        }
+
+        bool removed = _cells[(cell.Y * _cellCountX) + cell.X].Remove(entity);
+        if (!removed)
+        {
+            throw new InvalidOperationException($"Incohérence de grille pour l'entité {entity.Id.Value}.");
+        }
+
+        _cellOfEntity.Remove(entity.Id.Value);
+    }
+
+    /// <summary>
     /// Entités dans le rayon <paramref name="radius"/> autour de <paramref name="center"/>,
     /// ordre déterministe. Ne renvoie pas l'entité <paramref name="center"/> de référence
     /// (<paramref name="excludeId"/>, nullable).

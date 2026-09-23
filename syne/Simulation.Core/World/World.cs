@@ -48,6 +48,21 @@ public sealed class World
     }
 
     /// <summary>
+    /// Retire une entité du monde (SYNE-074, mortalité) : grille spatiale + index.
+    /// Lève si l'entité n'était pas présente.
+    /// </summary>
+    public void RemoveEntity(Simulation.Core.Entities.Entity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        Grid.Remove(entity);
+        bool removed = _entities.Remove(entity);
+        if (!removed)
+        {
+            throw new InvalidOperationException($"L'entité {entity.Id.Value} n'est pas indexée dans le monde.");
+        }
+    }
+
+    /// <summary>
     /// Position uniforme dans le monde (déterministe en fonction de la graine du PRNG).
     /// </summary>
     public (Position Position, Simulation.Core.Prng.Xoshiro256StarStar Next) SamplePosition(Simulation.Core.Prng.Xoshiro256StarStar rng)

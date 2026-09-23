@@ -68,7 +68,15 @@ public class CognitionPipelineTests
     {
         // SYNE-042 : soif déclenchée dès 50 (décision n°4) → l'entité boit quand
         // c'est viable ; la boisson consomme la réserve globale d'eau.
-        (_, SimulationLoop loop) = BuildLoop();
+        // (mortalité désactivée : le scénario teste la soif, pas le cycle de vie)
+        SimulationOptions options = Options();
+        options.Agents.Life.DeathEnabled = false;
+        var world = new WorldType(new WorldSize(500, 500));
+        world.AddEntity(MakeEntity(1, new Position(50, 50)));
+        world.AddEntity(MakeEntity(2, new Position(80, 50)));
+        world.AddEntity(MakeEntity(3, new Position(300, 300)));
+        world.AddEntity(MakeEntity(4, new Position(50, 90)));
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options);
         loop.Run(500);
 
         MindState mind = loop.Cognition.MindOf(1);
@@ -106,7 +114,13 @@ public class CognitionPipelineTests
         first.Run(50);
         second.Run(50);
 
-        for (ulong id = 1; id <= 4; id++)
+        // Comparaison des survivants seulement (SYNE-074 : la mortalité est
+        // déterministe elle aussi) — mêmes survivants, mêmes états.
+        List<ulong> firstAlive = first.World.Entities.Select(e => e.Id.Value).OrderBy(id => id).ToList();
+        List<ulong> secondAlive = second.World.Entities.Select(e => e.Id.Value).OrderBy(id => id).ToList();
+        Assert.Equal(firstAlive, secondAlive);
+
+        foreach (ulong id in firstAlive)
         {
             MindState a = first.Cognition.MindOf(id);
             MindState b = second.Cognition.MindOf(id);

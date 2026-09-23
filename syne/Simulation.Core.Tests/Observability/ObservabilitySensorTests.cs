@@ -83,7 +83,14 @@ public class ObservabilitySensorTests
     [Fact]
     public void Events_DecisionMade_And_TickSummary_RespectContract()
     {
-        (_, SimulationLoop loop) = BuildLoop();
+        // Scénario du contrat (pas de la mortalité, SYNE-074) : population immortelle.
+        var world = new WorldType(new WorldSize(500, 500));
+        world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(50, 50), TraitSet.NeutralAll, bornAt: 0));
+        world.AddEntity(new Entity(new EntityId(2), "Entité A", null, new Position(80, 50), TraitSet.NeutralAll, bornAt: 0));
+        world.AddEntity(new Entity(new EntityId(3), "Entité A", null, new Position(300, 300), TraitSet.NeutralAll, bornAt: 0));
+        SimulationOptions options = ConfigLoader.LoadDefaults();
+        options.Agents.Life.DeathEnabled = false;
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options);
         loop.Run(200);
 
         var summary = EventSensor.TickSummary(loop.CurrentTick, aliveCount: 3);
@@ -157,9 +164,9 @@ public class ObservabilitySensorTests
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
-        // Jalon SYNE ph6 → 0.5.0 : groupes émergents (SYNE-060/061) et naissance par
-        // fusion consentie (SYNE-062) altèrent la trajectoire.
-        Assert.Equal("0.5.0", ObservabilityContract.EngineVersion);
+        // Jalon SYNE ph7b → 0.6.0 : mortalité (074), naissance consentie fidèle (075),
+        // décision collective → objectifs (076) et cheminement A* déterministe (077).
+        Assert.Equal("0.6.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

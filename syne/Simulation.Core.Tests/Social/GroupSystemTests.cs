@@ -293,4 +293,108 @@ public class GroupSystemTests
         Assert.Empty(system.LastFormed);
         Assert.Empty(system.Active);
     }
+
+    [Fact]
+    public void PropagateObjectives_AdoptsCollectiveDecision_InMembersTTL()
+    {
+        SimulationOptions options = Options();
+        Dictionary<ulong, MindState> minds = Minds(options, 3);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            foreach (ulong peer in minds.Keys.Where(id => id != self))
+            {
+                Bond(mind, peer);
+            }
+
+            ShareBelief(mind, options, target: 9, tick: 9);
+            mind.Intention = new Goal(DesireKind.SeekFood, BornTick: 8);
+        }
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds);
+        Assert.Single(system.Active);
+
+        system.PropagateObjectives(currentTick: 10, ttlTicks: 10, minds);
+
+        foreach (ulong member in new ulong[] { 1, 2, 3 })
+        {
+            GroupObjective? objective = minds[member].CollectiveObjective;
+            Assert.NotNull(objective);
+            Assert.Equal(1UL, objective.Value.GroupId);
+            Assert.Equal(DesireKind.SeekFood, objective.Value.Kind);
+            // Consensus 1.0 × confiance leader > 0 → bonus maximal ×1.2.
+            Assert.Equal(1.0, objective.Value.Consensus, 12);
+            Assert.True(objective.Value.LeaderTrust > 0.0);
+            Assert.Equal(10UL, objective.Value.AdoptedTick);
+            Assert.Equal(20UL, objective.Value.ExpiresTick);
+        }
+    }
+
+    [Fact]
+    public void PropagateObjectives_WithoutDecision_ClearsObjective()
+    {
+        SimulationOptions options = Options();
+        options.Groups.ConsensusThreshold = 1.0; // empêche l'adoption (divergence)
+
+        Dictionary<ulong, MindState> minds = Minds(options, 3);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            foreach (ulong peer in minds.Keys.Where(id => id != self))
+            {
+                Bond(mind, peer);
+            }
+
+            ShareBelief(mind, options, target: 9, tick: 9);
+        }
+
+        // Entités 1 et 2 sur SeekWater, entité 3 en divergence (Rest) :
+        // consensus SeekWater = 0.5 < quorum 1.0 → aucune décision adoptée.
+        minds[1].Intention = new Goal(DesireKind.SeekWater, BornTick: 8);
+        minds[2].Intention = new Goal(DesireKind.SeekWater, BornTick: 8);
+        minds[3].Intention = new Goal(DesireKind.Rest, BornTick: 8);
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds);
+        Assert.Null(Assert.Single(system.Active).Decision);
+
+        system.PropagateObjectives(currentTick: 10, ttlTicks: 10, minds);
+
+        foreach (ulong member in new ulong[] { 1, 2, 3 })
+        {
+            Assert.Null(minds[member].CollectiveObjective);
+        }
+    }
+
+    [Fact]
+    public void PropagateObjectives_WithoutLeaderTrust_DoesNotAlign()
+    {
+        // Chaîne 1-2-3-4 : leader émergent = 2 (confiance entrante max, départage
+        // par id min). Le membre 4 n'a aucune confiance envers le leader 2 (pas de
+        // lien direct) : il est dans le groupe sans s'aligner sur son objectif.
+        SimulationOptions options = Options();
+        Dictionary<ulong, MindState> minds = Minds(options, 4);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            ShareBelief(mind, options, target: 9, tick: 9);
+            mind.Intention = new Goal(DesireKind.SeekFood, BornTick: 8);
+        }
+
+        foreach ((ulong a, ulong b) in new[] { (1UL, 2UL), (2UL, 3UL), (3UL, 4UL) })
+        {
+            Bond(minds[a], b);
+            Bond(minds[b], a);
+        }
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds);
+        Assert.Equal(2UL, Assert.Single(system.Active).LeaderId);
+
+        system.PropagateObjectives(currentTick: 10, ttlTicks: 10, minds);
+
+        Assert.NotNull(minds[1].CollectiveObjective);
+        Assert.NotNull(minds[2].CollectiveObjective);
+        Assert.NotNull(minds[3].CollectiveObjective);
+        // Sans confiance envers le leader, le membre 4 ne s'aligne pas.
+        Assert.Null(minds[4].CollectiveObjective);
+    }
 }
