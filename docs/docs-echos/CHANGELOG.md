@@ -72,6 +72,17 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     - **ECHOS-052 Profilage** — `profile.Markers` (`time.perf_counter`) autour de **chacun des 8 moteurs** via paramètre `profile` de `compute_all` (duck-typing, sortie inchangée) ; `compute_all_profiled` **bit-à-bit identique** à `compute_all` (déterminisme ECHOS-027) ; contexte `profiling` par tick ; budgets V0.1 en garde-fou CI (cibles de calibration, pas des sims réelles).
   - **Pipeline branché** : `consume(client, store, ..., logger=EchosLogger|None)` écrit 4 contextes par tick (`agents`, `groups`, `phenomena`, **`profiling`**) — `contexts_written == 12` pour 3 ticks.
   - **Preuve J5 étendue** : `test_instrumentation.py` (14 tests : JSONL déterministe + tag SSE-V2 + fusion BDI + profilage bit-à-bit/couverture 8 moteurs/format §5), `test_api_routes.py` (endpoint décisions reproductible + 404), `test_pipeline.py` étendu. Tests : 167 → **181**, `SCHEMA_VERSION = "3"`.
+- **ECHOS ph8 — Interface web `echos-ui` (les 6 Écrans, UI_DESIGN.md A→F)** :
+  - **Stack & config** : `react-router-dom` (routes A→F), `echarts` + `echarts-for-react` (timeline, graphe social), `lucide-react` (icônes), `zustand` (état runs/KPI live/run sélectionné/état WS) ; Vite proxy `/api` et `/health` → `http://127.0.0.1:5000` (dév.), export statique servi par FastAPI en prod ; code-splitting par écran + chunk vendor `echarts`/`react`.
+  - **`src/api/`** — client REST typé sur les contrats `API_REST.md` §3 (runs, métriques `?every=`, export, décisions, chaînes causales, croyances/relations, groupes, phénomènes, `/compare`) ; 503/404 gérés ; `controlClient` = relais de pilotage ECHOS→SYNE :5181 (start/pause/resume/reset, **jamais en direct**).
+  - **`src/ws/realtime.ts`** — client WebSocket :5180 (reconnexion, tick courant, état SYNE).
+  - **Écran A `/dashboard`** : 4 KPICards (tabular-nums, delta ▲/▼, hint « score ≠ preuve ») + gauges 180° + timeline sous-échantillonnée + phénomènes auto-détectés.
+  - **Écran B `/explore`** : onglets Entités / Groupes / Communications ; entités construites depuis `/groups` (pas d'endpoint « liste agents ») ; heatmap = **état « à venir »** (pas d'`/communication-heatmap`).
+  - **Écran C `/social-graph`** : graphe force-directed depuis `/relationships/{agentId}` (sondage 2 s) + inspecteur latéral.
+  - **Écran D `/analysis`** : onglets Métriques (8 moteurs) / Causale (`causal-chains/{agentId}`, profondeur ≤ 12, navigation par tick) / Comparaison (`/compare` + scores reproductibilité).
+  - **Écran E `/control`** : pilotage relayé ECHOS→SYNE :5181, calibration, runs + export JSON/CSV, bandeau état WS.
+  - **Écran F `/log`** : console 3 niveaux (flux WS) + panneau « limites de validité » (LIMITATIONS.md).
+  - **Contraintes respectées** : vues **sans calcul de métrique** (pur affichage), pilotage = relais, pas de minimap. Qualité : eslint + `tsc -b` + vitest/RTL (13 tests, mock fetch + WS) verts.
 
 ### Changed
 - Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **React/TypeScript web local servie par FastAPI** (`echos-ui`, Vite — V0.1 ; **shell Electron conservé**, implémentation différée à un horizon ultérieur), analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
@@ -102,3 +113,4 @@ Version initiale (instrumentation prototype V1 : 18 tests xUnit, couverture 85 %
 | 22 septembre 2026 | ECHOS-030 à 033 : indicateurs d'émergence (score composite, phénomènes, complexité/imprévisibilité) + preuve J3 | Jalon U3 — indicateurs d'émergence |
 | 22 septembre 2026 | ECHOS-040 à 045 : API REST (runs, métriques/séries + `?every`, export JSON/CSV reproductible, croyances/relations, groupes, phénomènes, cache de séries) + preuve J5 | Jalon U4 — API REST |
 | 23 septembre 2026 | Correction stack : shell Electron **conservé** (implémentation différée post-V0.1), « PAS de shell Electron » reformulé (ADR-001, ARCHITECTURE, FRONTEND_VISION, README, ROADMAP, ISSUES, docs racine, TRANSPORT_API PRISM) | Décision utilisateur — ECHOS garde Electron |
+| 23 septembre 2026 | ECHOS ph8 : échos-ui — les 6 Écrans (A→F), client REST typé + WS, relais de pilotage, design system | Jalon U7 — interface web |
