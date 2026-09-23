@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Simulation.Core.Performance;
 using Simulation.Core.Prng;
 
 namespace Simulation.Core.Loop;
@@ -15,6 +17,7 @@ namespace Simulation.Core.Loop;
 public sealed class SimulationLoop
 {
     private readonly Simulation.Core.Cognition.CognitionPipeline _cognition;
+    private readonly TickBudgetCollector? _budget;
     private Xoshiro256StarStar _rng;
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
@@ -23,13 +26,23 @@ public sealed class SimulationLoop
     }
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng, Simulation.Core.Configuration.SimulationOptions options)
+        : this(world, initialRng, options, null)
+    {
+    }
+
+    public SimulationLoop(
+        World.World world,
+        Xoshiro256StarStar initialRng,
+        Simulation.Core.Configuration.SimulationOptions options,
+        TickBudgetCollector? budget)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(options);
         World = world;
         _rng = initialRng;
+        _budget = budget;
         Resources = new World.ResourceStocks(options.Resources);
-        _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources);
+        _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
     }
 
     public World.World World { get; }
@@ -44,6 +57,12 @@ public sealed class SimulationLoop
     public Simulation.Core.Cognition.CognitionPipeline Cognition => _cognition;
 
     /// <summary>
+    /// Collecteur de budgets de tick (SYNE-090) si la boucle en a été munie
+    /// (sinon <c>null</c> — aucun coût sur le chemin nominal).
+    /// </summary>
+    public TickBudgetCollector? Budgets => _budget;
+
+    /// <summary>
     /// Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1) puis exécute le
     /// pipeline cognitif BDI (U1, SYNE-010) dans l'ordre causal strict. Le PRNG
     /// n'avance que d'un tirage par tick (contrat DETERMINISM.md §3).
@@ -52,7 +71,16 @@ public sealed class SimulationLoop
     {
         CurrentTick += 1;
         _rng = _rng.NextUInt64(out _);
+        if (_budget is null)
+        {
+            _cognition.Step(CurrentTick);
+            return;
+        }
+
+        long start = Stopwatch.GetTimestamp();
         _cognition.Step(CurrentTick);
+        double elapsedMs = (Stopwatch.GetTimestamp() - start) * (1000.0 / Stopwatch.Frequency);
+        _budget.RecordPipelineTick(elapsedMs);
     }
 
     /// <summary>Exécute la boucle jusqu'au tick n° <paramref name="maxTicks"/> inclus.</summary>
