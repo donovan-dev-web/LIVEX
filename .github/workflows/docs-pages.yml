@@ -6,6 +6,7 @@ on:
     paths:
       - "docs/**"
       - "docs/site/**"
+      - "docs/landing/**"
       - "syne/**"
       - ".github/workflows/docs-pages.yml"
   workflow_dispatch:
@@ -22,7 +23,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    name: Build DocFX & publish gh-pages
+    name: Build DocFX & landing SaaS → publish gh-pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +39,7 @@ jobs:
         working-directory: syne
         run: dotnet build Simulation.Core/Simulation.Core.csproj -c Release --warnaserror
 
-      # --- DocFX : génération du site (landing + docs clés + API) ---
+      # --- DocFX : génération (landing + docs clés + API) ---
       - name: Install DocFX
         run: dotnet tool install --global docfx
       - name: Sync docs clés
@@ -50,14 +51,18 @@ jobs:
         working-directory: docs/site
         run: ~/.dotnet/tools/docfx build
 
+      # --- Assemblage : landing SaaS à la racine + DocFX sous /docs/ ---
+      - name: Assemble pages (landing racine + docs/)
+        run: bash docs/landing/assemble-pages.sh "$GITHUB_WORKSPACE/pages-dist"
+
       # --- Publication sur la branche dédiée gh-pages ---
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/site/_site
+          publish_dir: pages-dist
           publish_branch: gh-pages
           force_orphan: true
           enable_jekyll: false
           allow_empty_commit: true
-          commit_message: "docs: génération du site (DocFX)"
+          commit_message: "docs: assemblage GitHub Pages (landing LIVEX à la racine + doc DocFX sous /docs/)"

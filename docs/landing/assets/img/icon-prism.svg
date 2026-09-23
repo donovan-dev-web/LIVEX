@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PRISM — rendu" viewBox="0 0 48 48">
+  <rect x="4" y="4" width="40" height="40" rx="10" fill="#161B22" stroke="#30363D" stroke-width="2"/>
+  <path d="M14 34 L38 34 L26 14 Z" fill="none" stroke="#00D4A0" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M22 34 L30 24 L34 34 Z" fill="#00D4A0" opacity="0.35"/>
+</svg>
