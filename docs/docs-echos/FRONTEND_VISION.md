@@ -57,7 +57,7 @@ Les trois règles non négociables :
 - **Anti-triche d'affichage** : l'interface ne donne pas à l'utilisateur plus d'informations que les entités (pas de mode « Dieu » omniscient). Voir `../docs-syne/VISION.md`.
 - **Pas de minimap** en V0.1 : la navigation à grande échelle repose sur le zoom (héritage §5.14).
 - **Consommation honnête** : les vues live sont bornées (sondage 500 ms / 2 s, sous-échantillonnage `?every=N`) pour ne pas dégrader SYNE.
-- **Divergence documentée** : l'interface web du prototype devient **intégrée à ECHOS** en V0.1 (le shell Electron séparé est abandonné — décision en `ARCHITECTURE.md`).
+- **Divergence documentée** : l'interface web du prototype devient **intégrée à ECHOS** en V0.1 (**web local React/Vite servie par FastAPI** — le shell Electron séparé est abandonné, décision 23/09/2026, en `ARCHITECTURE.md` / `adr/ADR-001-stack-applicative.md`).
 
 ---
 
