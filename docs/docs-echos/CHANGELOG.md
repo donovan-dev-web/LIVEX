@@ -11,7 +11,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ### Added
 - Documentation technique V0.1 complète du composant (VISION, ARCHITECTURE, METRICS_SPEC, EMERGENCE_INDICATORS, CAUSAL_ANALYSIS, EXPERIMENT_COMPARISON, API_REST, LOGGING_INSTRUMENTATION, LIMITATIONS, TESTING, ROADMAP).
-- ADR-001 (stack FastAPI + React/Vite web local — **PAS de shell Electron**, décision 23/09/2026) et ADR-002 (mode de calcul causal hors ligne).
+- ADR-001 (stack FastAPI + React/Vite web local pour V0.1 — **shell Electron conservé**, implémentation différée à un horizon ultérieur) et ADR-002 (mode de calcul causal hors ligne).
 - ECHOS-1 : structure du monorepo — `echos/` (paquet Python `echos` : API FastAPI `create_app()`, `/health`, squelette des **7 moteurs de métriques** avec registre `known_engines()`, placeholder `ingestion`), `echos-ui/` (Vite + React + TypeScript : lint, build, tests vitest/jsdom), tests pytest (13 tests, couverture 100 %), CI `echos-python`/`echos-ui` activées.
 - ECHOS-2 : contrats d'ingestion — modèles pydantic `WorldSnapshot` / `ExternalEvent` (JSON **camelCase**, API_CONTRACTS.md §2, alias ingress + sortie `by_alias`), `parse_message()` déterministe, client WebSocket `WsClient` (:5180, transport injectable), client de contrôle `ControlClient` (:5181 : start/pause/resume/reset), golden files versionnés (`fixtures/` + `golden/`), tests ingestion (41 tests, couverture 97 %).
 - **ECHOS-010 (issue #367, milestone ph1)** : consommation du flux **alignée sur les ticks** — `TickSegment` (snapshot + événements d'un tick) et `aligned_ticks()` (refus déterministe des séquences désalignées) ; **modèles alignés sur l'émetteur SYNE V0.1** (agents sans `health` mais avec `species`/`fatigue`, `health` conservée pour compat doc) ; itération du client réel propres sur fermeture (`ConnectionClosed` → fin de flux) ; tests **serveur WebSocket réel in-process** rejouant le contrat V0.1 (goldens `*_v01`). Tests : 43 → **57**, couverture 98.7 %.
@@ -74,11 +74,14 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **Preuve J5 étendue** : `test_instrumentation.py` (14 tests : JSONL déterministe + tag SSE-V2 + fusion BDI + profilage bit-à-bit/couverture 8 moteurs/format §5), `test_api_routes.py` (endpoint décisions reproductible + 404), `test_pipeline.py` étendu. Tests : 167 → **181**, `SCHEMA_VERSION = "3"`.
 
 ### Changed
-- Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **React/TypeScript web local servie par FastAPI** (`echos-ui`, Vite — pas de shell Electron), analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
+- Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **React/TypeScript web local servie par FastAPI** (`echos-ui`, Vite — V0.1 ; **shell Electron conservé**, implémentation différée à un horizon ultérieur), analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
 - `METRICS_SPEC.md` §4 : détection de communautés = **propagation d'étiquettes déterministe** (remplace la mention Louvain, non déterministe bit-à-bit ni disponible en stdlib Python pure) ; hygiène de déterminisme ECHOS préservée.
 
 ### Deprecated
-- Shell Electron du prototype abandonné → remplacé par l'interface **web locale React/Vite servie par FastAPI** intégrée à ECHOS (décision 23/09/2026); le desktop s'appuiera sur le navigateur local, pas sur un wrapper de bureau.
+- (aucun)
+
+### Changed
+- **Correction documentation (23/09/2026)** : le shell Electron **n'est pas abandonné** — il est **conservé**, son implémentation étant **différée à un horizon ultérieur (post-V0.1)**. Les mentions « PAS de shell Electron » sont reformulées dans `ADR-001`, `ARCHITECTURE.md` (ECHOS + racine), `FRONTEND_VISION.md`, `README.md`, `ROADMAP.md`, `ISSUES.md`, `CHANGELOG.md` (racine) et `TRANSPORT_API.md` (PRISM) ; l'interface V0.1 reste le web local React/Vite servi par FastAPI. La Monographie reste un snapshot figé (non modifié).
 
 ## [0.0.0] — à venir
 
@@ -98,3 +101,4 @@ Version initiale (instrumentation prototype V1 : 18 tests xUnit, couverture 85 %
 | 21 septembre 2026 | ECHOS-020 à 027 : 7 moteurs de métriques + golden files + preuve J2 | Jalon U2 — moteurs & déterminisme |
 | 22 septembre 2026 | ECHOS-030 à 033 : indicateurs d'émergence (score composite, phénomènes, complexité/imprévisibilité) + preuve J3 | Jalon U3 — indicateurs d'émergence |
 | 22 septembre 2026 | ECHOS-040 à 045 : API REST (runs, métriques/séries + `?every`, export JSON/CSV reproductible, croyances/relations, groupes, phénomènes, cache de séries) + preuve J5 | Jalon U4 — API REST |
+| 23 septembre 2026 | Correction stack : shell Electron **conservé** (implémentation différée post-V0.1), « PAS de shell Electron » reformulé (ADR-001, ARCHITECTURE, FRONTEND_VISION, README, ROADMAP, ISSUES, docs racine, TRANSPORT_API PRISM) | Décision utilisateur — ECHOS garde Electron |
