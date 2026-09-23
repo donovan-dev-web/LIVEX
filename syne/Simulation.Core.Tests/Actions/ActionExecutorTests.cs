@@ -123,6 +123,43 @@ public class ActionExecutorTests
     }
 
     [Fact]
+    public void Movement_BlockedOnAllSides_FallsBackInPlace()
+    {
+        // SYNE-077 : quand chaque pas direct est bloqué (entité encerclée par un
+        // obstacle englobant), le chemin A* est vide → repli « sur place » : la
+        // position reste invariante et le déplacement reste déterministe.
+        var rover = new Entity(new EntityId(11), "Encerclée", name: null, new Position(150, 150), TraitSet.NeutralAll, bornAt: 0);
+        _world.AddEntity(rover);
+        MindState roverMind = new(_options);
+        _world.AddObstacle(new Obstacle("filet", new Position(150, 150), radius: 13));
+
+        Position before = rover.Position;
+        for (ulong tick = 1; tick <= 200; tick++)
+        {
+            _executor.Execute(rover, roverMind, DesireKind.Explore, tick);
+        }
+
+        Assert.Equal(before, rover.Position);
+    }
+
+    [Fact]
+    public void Movement_WithoutBlocking_MovesEveryTick()
+    {
+        // Contrôle : sans obstacle, la même entité progresse (le pas direct reste
+        // libre et le repli « sur place » n'intervient pas).
+        var rover = new Entity(new EntityId(13), "Libre", name: null, new Position(150, 150), TraitSet.NeutralAll, bornAt: 0);
+        _world.AddEntity(rover);
+        MindState roverMind = new(_options);
+
+        for (ulong tick = 1; tick <= 200; tick++)
+        {
+            _executor.Execute(rover, roverMind, DesireKind.Explore, tick);
+        }
+
+        Assert.True(rover.Position.DistanceTo(new Position(150, 150)) > 0.0);
+    }
+
+    [Fact]
     public void Rest_RecoversFatigueAndEnergyWithoutMoving()
     {
         Position before = _entity.Position;

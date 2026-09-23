@@ -16,9 +16,9 @@ public sealed record BirthObservation(
     TraitSet Traits);
 
 /// <summary>
-/// Cycle de vie — naissance par fusion consentie (SYNE-062, décisions n°17/16,
-/// SYSTEM_SPEC.md §8) : une fusion reste côté cycle de vie, l'entité née a un état
-/// cognitif vierge qui réinitialise la boucle de vie.
+/// Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17/16,
+/// SYSTEM_SPEC.md §8, Monographie §6.6.2) : une fusion reste côté cycle de vie,
+/// l'entité née a un état cognitif vierge qui réinitialise la boucle de vie.
 ///
 /// Exécuté <b>après</b> la boucle des entités et la communication de masse (ordre
 /// causal strict, DETERMINISM.md §5) : la population ne mute jamais pendant
@@ -30,6 +30,11 @@ public sealed record BirthObservation(
 ///  V0.1 → V0.2) ;</item>
 /// <item>le consentement est la confiance <b>réciproque</b> (min des deux sens)
 ///  ≥ <c>consentTrustThreshold</c> (§6.6.2) ;</item>
+/// <item>la fidélité de la fusion (SYNE-075, Monographie §6.6.2) exige en plus :
+///  proximité physique (<c>mergeRange</c>), ligne de vue dégagée
+///  (<c>requireLineOfSight</c>), énergie suffisante des deux parents
+///  (<c>mergeMinimumEnergy</c>) et absence de besoin critique chez les deux
+///  parents (<c>requireNoCriticalNeed</c>) ;</item>
 /// <item>première paire qualifiante dans l'ordre trié des identifiants (moindre
 ///  id = mère, suivant = père) — aucun choix stochastique ;</item>
 /// <item>l'enfant naît au point médian des parents (borné au monde), id = plus
@@ -96,10 +101,7 @@ public sealed class BirthSystem
                     continue;
                 }
 
-                double consent = Math.Min(
-                    motherMind.Trust.TrustWith(father.Id.Value),
-                    fatherMind.Trust.TrustWith(mother.Id.Value));
-                if (consent < reproduction.ConsentTrustThreshold)
+                if (!Qualifies(mother, motherMind, father, fatherMind, world, reproduction))
                 {
                     continue;
                 }
@@ -135,6 +137,53 @@ public sealed class BirthSystem
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// Fidélité de la fusion consentie (SYNE-075, Monographie §6.6.2) : confiance
+    /// réciproque + proximité + ligne de vue + énergie + absence de besoin critique.
+    /// Fonction pure et déterministe (aucun PRNG).
+    /// </summary>
+    private static bool Qualifies(
+        Entity mother,
+        MindState motherMind,
+        Entity father,
+        MindState fatherMind,
+        Simulation.Core.World.World world,
+        ReproductionSettings reproduction)
+    {
+        double consent = Math.Min(
+            motherMind.Trust.TrustWith(father.Id.Value),
+            fatherMind.Trust.TrustWith(mother.Id.Value));
+        if (consent < reproduction.ConsentTrustThreshold)
+        {
+            return false;
+        }
+
+        if (mother.Position.DistanceTo(father.Position) > reproduction.MergeRange)
+        {
+            return false;
+        }
+
+        if (reproduction.RequireLineOfSight &&
+            !LineOfSight.IsClear(mother.Position, father.Position, world.Obstacles))
+        {
+            return false;
+        }
+
+        if (motherMind.Needs.Energy < reproduction.MergeMinimumEnergy ||
+            fatherMind.Needs.Energy < reproduction.MergeMinimumEnergy)
+        {
+            return false;
+        }
+
+        if (reproduction.RequireNoCriticalNeed &&
+            (motherMind.Needs.IsCritical || fatherMind.Needs.IsCritical))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private static Position Midpoint(Entity mother, Entity father, Simulation.Core.World.World world)

@@ -5,6 +5,26 @@ using Simulation.Core.Configuration;
 namespace Simulation.Core.Cognition;
 
 /// <summary>
+/// Objectif collectif adopté par un groupe et propagé à ses membres (SYNE-076,
+/// SYSTEM_SPEC.md §5 décision n°24) : l'intention dominante du groupe devient un
+/// facteur d'alignement de l'utilité individuelle, pondéré par le consensus
+/// atteint et la confiance du membre envers le leader émergent. La durée de vie
+/// de l'objectif est l'intervalle de revue des groupes (TTL, ré-adopté à chaque
+/// révision).
+/// </summary>
+public readonly record struct GroupObjective(
+    ulong GroupId,
+    DesireKind Kind,
+    double Consensus,
+    double LeaderTrust,
+    ulong AdoptedTick,
+    ulong ExpiresTick)
+{
+    /// <summary>Vrai tant que l'objectif collectif n'a pas expiré.</summary>
+    public bool IsActive(ulong currentTick) => currentTick <= ExpiresTick;
+}
+
+/// <summary>
 /// État cognitif d'une entité (DATA_MODEL.md §3.1 : perception, mémoire,
 /// croyances, décision) : mémoire, croyances, besoins, intention et trace de
 /// décision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md §7).
@@ -49,6 +69,14 @@ public sealed class MindState
 
     /// <summary>Objectif courant (intention) — nul tant qu'aucune délibération n'a eu lieu.</summary>
     public Goal? Intention { get; set; }
+
+    /// <summary>
+    /// Objectif collectif adopté par le groupe du membre (SYNE-076) — nul hors
+    /// groupe ou sans décision collective. Contraint l'utilité via un bonus
+    /// d'alignement pondéré par le consensus et la confiance leader (TTL =
+    /// intervalle de revue).
+    /// </summary>
+    public GroupObjective? CollectiveObjective { get; set; }
 
     public UtilityScore? LastDecision { get; private set; }
 

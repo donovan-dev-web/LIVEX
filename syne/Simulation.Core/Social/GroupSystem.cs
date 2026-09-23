@@ -199,6 +199,104 @@ public sealed class GroupSystem
             .ToList();
     }
 
+    /// <summary>
+    /// Propage les décisions collectives adoptées aux membres (SYNE-076) : chaque
+    /// membre d'un groupe ayant adopté une décision reçoit un
+    /// <see cref="MindState.CollectiveObjective"/> (kind, consensus, confiance
+    /// leader, TTL = intervalle de revue). Tous les autres voient leur objectif
+    /// collectif expiré et nul. Déterministe : itération triée par identifiant.
+    /// </summary>
+    public void PropagateObjectives(
+        ulong currentTick,
+        ulong ttlTicks,
+        IReadOnlyDictionary<ulong, MindState> minds)
+    {
+        ArgumentNullException.ThrowIfNull(minds);
+
+        foreach (MindState mind in minds.Values)
+        {
+            mind.CollectiveObjective = null;
+        }
+
+        foreach (Group group in _groups.Values.OrderBy(group => group.Id))
+        {
+            if (group.Decision is not { } decision || group.LeaderId is not { } leaderId)
+            {
+                continue;
+            }
+
+            foreach (ulong memberId in group.Members)
+            {
+                if (!minds.TryGetValue(memberId, out MindState? memberMind))
+                {
+                    continue;
+                }
+
+                // Le leader émerge sans auto-confiance (le rapport interne est
+                // nul) : il s'aligne pleinement sur sa propre décision (×1.2).
+                double leaderTrust = memberId == leaderId ? 1.0 : memberMind.Trust.TrustWith(leaderId);
+                if (leaderTrust <= 0.0)
+                {
+                    continue;
+                }
+
+                memberMind.CollectiveObjective = new GroupObjective(
+                    group.Id,
+                    decision,
+                    group.Consensus,
+                    leaderTrust,
+                    currentTick,
+                    currentTick + ttlTicks);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Purge des membres décédés (SYNE-074, mortalité) : les survivants recalculent
+    /// leurs caractères émergents ; un groupe tombé sous <c>minGroupSize</c> est
+    /// dissous (dissolution rapportée, MembersOut = nombre de morts).
+    /// </summary>
+    public void PurgeDeceased(
+        IReadOnlyCollection<ulong> deceased,
+        ulong tick,
+        IReadOnlyDictionary<ulong, MindState> minds)
+    {
+        ArgumentNullException.ThrowIfNull(deceased);
+        ArgumentNullException.ThrowIfNull(minds);
+        if (deceased.Count == 0)
+        {
+            return;
+        }
+
+        var dead = deceased.ToHashSet();
+        foreach (ulong groupId in _groups.Keys.OrderBy(id => id).ToList())
+        {
+            Group group = _groups[groupId];
+            List<ulong> survivors = group.Members
+                .Where(id => !dead.Contains(id))
+                .OrderBy(id => id)
+                .ToList();
+
+            if (survivors.Count < _settings.MinGroupSize)
+            {
+                _groups.Remove(groupId);
+                _lastDissolved.Add(new GroupDissolution(
+                    group.Id,
+                    tick,
+                    group.BornTick,
+                    survivors,
+                    group.HadDecision,
+                    MembersIn: 0,
+                    MembersOut: group.Members.Count - survivors.Count));
+            }
+            else if (survivors.Count != group.Members.Count)
+            {
+                group.UpdateMembers(survivors);
+                RefreshEmergent(group, minds, tick);
+            }
+        }
+    }
+
     private static ulong Find(Dictionary<ulong, ulong> parent, ulong x)
     {
         while (parent[x] != x)

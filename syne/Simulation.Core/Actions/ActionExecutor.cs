@@ -1,6 +1,7 @@
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
+using Simulation.Core.Navigation;
 using Simulation.Core.World;
 
 namespace Simulation.Core.Actions;
@@ -11,6 +12,9 @@ namespace Simulation.Core.Actions;
 /// (coût d'énergie, récupérations, consommation de réserve) proviennent du
 /// catalogue déclaratif (SYNE-040). Le déplacement (SYNE-041) respecte les
 /// obstacles et le coût énergie ; Eat/Drink mettent à jour les réserves (SYNE-042).
+/// Depuis le jalon ph7b (SYNE-077), lorsqu'un obstacle barre le pas direct, le
+/// déplacement emprunte le chemin A* déterministe (grille rasterisée, cache LRU,
+/// repli « sur place »).
 ///
 /// Déterminisme : aucune consommation du PRNG — cible pseudo-aléatoire stable
 /// (hash SplitMix64 de (id, tick, désir)), itération par identifiant croissant,
@@ -22,6 +26,7 @@ public sealed class ActionExecutor
     private readonly ActionCatalog _catalog;
     private readonly ResourceStocks _stocks;
     private readonly SimulationOptions _options;
+    private readonly AStarPathfinder _pathfinder;
 
     public ActionExecutor(World.World world, ActionCatalog catalog, ResourceStocks stocks, SimulationOptions options)
     {
@@ -33,7 +38,10 @@ public sealed class ActionExecutor
         _catalog = catalog;
         _stocks = stocks;
         _options = options;
+        _pathfinder = new AStarPathfinder(world, options.Agents.Pathfinding);
     }
+
+    public AStarPathfinder Pathfinder => _pathfinder;
 
     /// <summary>
     /// Exécute l'action <paramref name="kind"/> pour l'entité : applique les effets
@@ -116,7 +124,12 @@ public sealed class ActionExecutor
             consumed);
     }
 
-    /// <summary>Pas de déplacement vers la cible déterministe, sans entrer dans un obstacle.</summary>
+    /// <summary>
+    /// Pas de déplacement vers la cible. Si le pas direct est bloqué par un
+    /// obstacle, le chemin A* contournant l'obstacle est emprunté (SYNE-077 :
+    /// le pas suit alors le premier centre de cellule du chemin) ; en l'absence de
+    /// chemin (destination inaccessible ou expansion plafonnée), repli « sur place ».
+    /// </summary>
     private void MoveTowardDeterministicTarget(Entity entity, DesireKind kind, ulong currentTick)
     {
         ActionDefinition definition = _catalog[kind];
@@ -132,10 +145,32 @@ public sealed class ActionExecutor
         Position step = StepToward(entity.Position, target, speed);
         if (IsBlocked(step))
         {
+            step = PathStep(entity, target, speed);
+        }
+
+        if (step == entity.Position)
+        {
             return;
         }
 
         _world.Grid.Move(entity, step);
+    }
+
+    /// <summary>
+    /// Prend le pas suivant sur le chemin A* (SYNE-077) quand le pas direct vers
+    /// la cible est bloqué. Dépasse la cellule cible si elle est la dernière.
+    /// </summary>
+    private Position PathStep(Entity entity, Position target, double speed)
+    {
+        IReadOnlyList<Position> path = _pathfinder.FindPath(entity.Position, target);
+        if (path.Count == 0)
+        {
+            return entity.Position; // repli « sur place »
+        }
+
+        Position waypoint = path[0];
+        Position step = StepToward(entity.Position, waypoint, speed);
+        return IsBlocked(step) ? entity.Position : step;
     }
 
     /// <summary>Pas de déplacement vers la cible (au plus <paramref name="speed"/> unités).</summary>

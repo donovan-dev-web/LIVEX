@@ -36,6 +36,7 @@ public sealed class CognitionPipeline
     private readonly CommunicationSystem _communication;
     private readonly GroupSystem _groups;
     private readonly BirthSystem _birth;
+    private readonly DeathSystem _death;
     private readonly Dictionary<ulong, MindState> _minds = new();
 
     public CognitionPipeline(
@@ -56,6 +57,7 @@ public sealed class CognitionPipeline
         _communication = new CommunicationSystem(world, options.Communication);
         _groups = new GroupSystem(options.Groups);
         _birth = new BirthSystem(options.Reproduction);
+        _death = new DeathSystem(options.Agents.Life);
     }
 
     public PerceptionSystem Perception => _perception;
@@ -72,6 +74,9 @@ public sealed class CognitionPipeline
 
     /// <summary>Sous-système de naissance par fusion consentie (SYNE-062).</summary>
     public BirthSystem Birth => _birth;
+
+    /// <summary>Sous-système de mortalité par épuisement (SYNE-074).</summary>
+    public DeathSystem Death => _death;
 
     public IReadOnlyCollection<MindState> Minds => _minds.Values;
 
@@ -107,10 +112,25 @@ public sealed class CognitionPipeline
         // croyance/confiance — la population ne mute qu'après l'itération complète
         // (ordre causal strict, DETERMINISM.md §5).
         _groups.Step(currentTick, _minds);
+        _groups.PropagateObjectives(currentTick, (ulong)_options.Groups.ReviewIntervalTicks, _minds);
         _birth.Step(currentTick, _world, _minds, _options);
         foreach ((ulong childId, MindState childMind) in _birth.NewbornMinds)
         {
             _minds[childId] = childMind;
+        }
+
+        // Mortalité (SYNE-074) : après les naissances — les nouveau-nés naissent à
+        // pleine énergie et ne meurent pas au tick de leur naissance. Retrait du
+        // monde, puis purge des esprits et des groupes (dissolution/redimension si
+        // passage sous la taille minimale). Tout se fait après l'itération complète.
+        IReadOnlyList<ulong> deceased = _death.Step(currentTick, _world, _minds);
+        if (deceased.Count > 0)
+        {
+            _groups.PurgeDeceased(deceased, currentTick, _minds);
+            foreach (ulong deathId in deceased)
+            {
+                _minds.Remove(deathId);
+            }
         }
     }
 
@@ -287,7 +307,8 @@ public sealed class CognitionPipeline
                 mind.SuccessRate(goal.Kind),
                 goal.Age(currentTick),
                 actions,
-                mind.Intention?.Kind));
+                mind.Intention?.Kind,
+                mind.CollectiveObjective));
         }
 
         double maximum = scores.Max(score => score.Utility);
@@ -305,7 +326,8 @@ public sealed class CognitionPipeline
                 factors,
                 mind.SuccessRate(current.Kind),
                 current.Age(currentTick),
-                actions);
+                actions,
+                mind.CollectiveObjective);
 
             if (adjusted.Kind != selected.Kind)
             {

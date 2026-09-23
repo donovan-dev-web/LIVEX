@@ -59,7 +59,8 @@ public static class UtilityEvaluator
         double successRate,
         ulong goalAge,
         ActionSettings actions,
-        DesireKind? currentIntention = null)
+        DesireKind? currentIntention = null,
+        GroupObjective? collectiveObjective = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -73,6 +74,18 @@ public static class UtilityEvaluator
         if (currentIntention is { } current && current == kind)
         {
             benefit *= actions.Deliberation.AlignBonus;
+        }
+
+        // Alignement collectif (SYNE-076) : l'objectif adopté par le groupe
+        // rehausse le bénéfice de l'action conforme, pondéré par le consensus
+        // atteint et la confiance du membre envers le leader (aucun alignement
+        // sans consensus ni confiance — ×1 ; bonification maximale quand les
+        // deux valent 1, ×CollectiveAlignBonus).
+        if (collectiveObjective is { } collective && collective.Kind == kind)
+        {
+            double effective = Math.Clamp(collective.Consensus, 0.0, 1.0) *
+                               Math.Clamp(collective.LeaderTrust, 0.0, 1.0);
+            benefit *= 1.0 + ((actions.Deliberation.CollectiveAlignBonus - 1.0) * effective);
         }
 
         double cost = CostOf(kind, actions);
@@ -206,7 +219,8 @@ public static class UtilityEvaluator
         AgentFactors factors,
         double successRate,
         ulong goalAge,
-        ActionSettings actions)
+        ActionSettings actions,
+        GroupObjective? collectiveObjective = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -217,7 +231,15 @@ public static class UtilityEvaluator
             return candidate;
         }
 
-        UtilityScore currentScore = Evaluate(current, needs, factors, successRate, goalAge, actions, current);
+        UtilityScore currentScore = Evaluate(
+            current,
+            needs,
+            factors,
+            successRate,
+            goalAge,
+            actions,
+            current,
+            collectiveObjective);
         if (candidate.Utility < currentScore.Utility + actions.Deliberation.ActionSwitchMargin)
         {
             return currentScore;
