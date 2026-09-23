@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `DETERMINISM.md`
 **Source Monographie** : §7.4 (scalabilité), §7.5 (benchmarks V1), Annexe I (benchmarks détaillés)
 
@@ -117,5 +117,57 @@ qui l'intersecte (jamais la population entière) — cf. `QueryCircle_ScanWindow
 
 ## Points restés ouverts dans ce document
 - Benchmarks V1 conservés comme référence historique [HÉRITÉ] — les chiffres V0.1 seront refaits après implémentation.
+  - **V0.1 partiel (jalon ph9, §9)** : les débits mesurés au jalon ph9 (définitifs à l'échelle ≥ 500 sur la
+    machine de référence) dépassent largement les cibles V2 ; un recalibrage complet est prévu au jalon
+    ph10 (T4) et avant la validation v0.1.
 - Machine de référence de la performance V0.1 à définir (processeur/coeurs utilisés) — impacte les budgets de tick.
+  - **Définie au jalon ph9 (§9)** pour le benchmark `--benchmark` (Linux, x86-64).
 - L'impact des optimisations (pooling, interning) sur le déterminisme reste à valider lors du codage.
+  - **Validé au jalon ph9** : pooling (`ObjectPool`, buffer de tri de perception) et instrumentation
+    (`TickBudgetCollector`) sont déterministes — checksum doré inchangé, tests d'égalité trajectoire.
+
+---
+
+## 9. Résultats V0.1 (jalon ph9 — SYNE-090 → SYNE-093)
+
+### 9.1 Machine de référence
+
+Benchmark exécuté en **Release**, monde **500×500**, cellule spatiale **50**, config par défaut,
+**300 ticks**, seeds {12345, 999, 7} — en une seule passe mono-thread (déterminisme). Machine :
+Linux x86-64 (poste de dev), .NET 10.0.400.
+
+Commande : `dotnet run -c Release --project syne/Simulation.Console -- --benchmark`
+(ticks/populations ajustables via `--benchmark-ticks`, `--benchmark-populations`).
+
+### 9.2 Résultats mesurés
+
+| Population | t/s min (3 seeds) | tick moyen min | part computation | Cible V2 (Decision n°30) |
+| :-- | :-- | :-- | :-- | :-- |
+| 50 | ≥ 2720 | 0.13 ms | 39–44 % | ≥ 30 t/s |
+| 500 | ≥ 1187 | 0.56 ms | 39–68 % | ≥ 20 t/s |
+| 1000 | ≥ 505 | 0.98 ms | 35–53 % | ≥ 10 t/s |
+
+Les **cibles sont dépassées de ~30× (50), ~60× (500) et ~50× (1000)** avec une marge de
+sécurité très large. La part de computation (Σ des sept sous-systèmes / temps de tick) reste
+≥ 35 % tout au long — l'objectif **≥ 30 %** (décision n°30) est respecté ; le reste du tick est
+de l'allocation/GC/overhead (à optimiser au ph10). Le goulot actuel est la passe de
+**communication** (`batchCommunication`), suivie des événements/groupe/population.
+
+### 9.3 Déterminisme performance (SYNE-093)
+
+`--benchmark` affiche un **checksum FNV-1a canonique** de l'état (préfixe `population=N;ticks=T`,
+puis une ligne `id;x;y;énergie` par entité, triée par id). Le checksum est **reproductible
+bit-à-bit à seed égale** — vérifié par les tests `ScaleChecksum_IsBitForBitReproducible`,
+`BudgetCollection_DoesNotAlterTrajectory` et la valeur épinglée `0x27fad50065d8c4a4` (inchangée
+au ph9 : l'instrumentation et le pooling n'altèrent pas la trajectoire).
+Note historique : aux échelles ≥ 500 sur des runs longs, la population s'éteint par épuisement
+des réserves par défaut (problème de calibration, suivi jalon SYNE-120) ; le checksum reflète
+alors fidèlement l'état (sans entité vivante).
+
+### 9.4 Convention de test CI (anti-régression)
+
+Les tests `ScaleTargetsTests` n'assertent **pas** les objectifs finaux (mesurés à la machine de
+référence en 9.2) mais des **planchers anti-régression** environ 7× en-deçà des mesures réelles :
+**50 → ≥ 120 t/s, 500 → ≥ 30 t/s, 1000 → ≥ 20 t/s** (meilleur de 3 essais). Une régression
+d'ordre de grandeur (retour à la perception naïve O(n²), boucle cassée, etc.) les casse ; la
+convention de marge est la même que pour le micro-benchmark `PerceptionBenchmarkTests` (§8).

@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **267 tests** (suite Core + Console : baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests` → **+19** au jalon SYNE ph7b : 4 `BirthSystemTests` fidélités (SYNE-075), 3 propagation + 1 bonus `GroupObjective` (SYNE-076), 8 `AStarPathfinderTests` + 2 `ActionExecutorTests` (SYNE-077), 1 observabilité preuve SYNE-081/082 ; +1 `test_health.py` ECHOS — registre `/api/runs/{id}/decisions`). Checksum doré ré-épinglé `0x27fad50065d8c4a4` (engineVersion 0.6.0).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **279 tests** (suite Core + Console : baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests` → **+19** au jalon SYNE ph7b : 4 `BirthSystemTests` fidélités (SYNE-075), 3 propagation + 1 bonus `GroupObjective` (SYNE-076), 8 `AStarPathfinderTests` + 2 `ActionExecutorTests` (SYNE-077), 1 observabilité preuve SYNE-081/082 ; +1 `test_health.py` ECHOS — registre `/api/runs/{id}/decisions` → **+12** au jalon SYNE ph9 : 5 `ObjectPoolTests`, 3 `TickBudgetTests` (part computation ≥ 30 % + non-altération trajectoire + golden), 4 `ScaleTargetsTests` (planchers 50/500/1000 + checksum à l'échelle)). Checksum doré ré-épinglé `0x27fad50065d8c4a4` (engineVersion 0.6.0), inchangé au ph9 (instrumentation/pooling déterministes).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -38,7 +38,7 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Ressources | régénération, épuisement |
 | Persistance | sauvegarde/charge JSON et SQLite |
 | Déterminisme | `DeterminismRegressionTests` (hash épinglé SYNE-015), auto-égalité, checksums |
-| Performance | `PerceptionBenchmarkTests` (SYNE-012) — budget 10 ms/requête en CI |
+| Performance | `PerceptionBenchmarkTests` (SYNE-012) — budget 10 ms/requête en CI ; **`ObjectPoolTests` + `TickBudgetTests` + `ScaleTargetsTests` (SYNE ph9)** — pooling actif, part computation ≥ 30 %, trajectoire non altérée, planchers anti-régression 50/500/1000, checksum bit-à-bit à l'échelle |
 
 ## 4. Tests de déterminisme (critiques)
 
@@ -50,6 +50,7 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 
 - Les benchmarks (Annexe I) sont des **tests intégrés** : débit, mémoire, CPU.
 - Seuil d'échec = objectifs de ticks/s (Annexe I.3).
+- **Jalon ph9 (SYNE-090…093)** : `TickBudgetTests` (part computation ≥ 30 % @250 entités/50 ticks, collecte n'altère pas la trajectoire, golden épinglé `0x27fad50065d8c4a4`), `ObjectPoolTests` (Rent/Return, équilibre des buffers de tri), `ScaleTargetsTests` (planchers anti-régression **50 → ≥ 120 t/s, 500 → ≥ 30 t/s, 1000 → ≥ 20 t/s**, meilleur de 3 ; checksum d'état reproductible à 500 entités × 30 ticks). Les planchers retiennent une **marge × ~7 en-deçà des mesures réelles** (PERFORMANCE.md §9.4) pour absorber la contention CI.
 
 ## 6. Jalons de validation (Annexe J.2)
 
@@ -59,7 +60,7 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Mémoire+Croyances | 50 ent., 2000 ticks, croyances divergentes | `dotnet test --filter "MemoryTests|BeliefTests"` |
 | Décision+Utilité | traits différents → décisions différentes | `dotnet test --filter "UtilityEvaluatorTests|CognitionPipelineTests"` |
 | Communication (SYNE ph5) | information locale (rayon), interception, relais ≤ 2 sauts | `dotnet test --filter "CommunicationSystemTests"` |
-| Performance | micro-benchmark grille < budget CI | `dotnet test --filter "PerceptionBenchmarkTests"` |
+| Performance | micro-benchmark grille < budget CI ; **débits 50/500/1000 ≥ 120/30/20 t/s (ph9)** | `dotnet test --filter "PerceptionBenchmarkTests|ScaleTargetsTests"` |
 | Tests | 160+ tests, ≥ 80 % | `dotnet test --collect:"XPlat Code Coverage"` |
 
 ## 7. Convention d'écriture

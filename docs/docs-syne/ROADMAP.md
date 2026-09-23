@@ -27,7 +27,7 @@
 | 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 |
 | 7b | Fidélités V0.1 (resegmentation) | 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe) | **livré** (jalon SYNE ph7b, SYNE-074…077, U6 — audit `RAPPORT_ECART_DOC_IMPLEMENTATION.md`, issues dédiées `docs/docs-syne/ISSUES.md` ph7b, engineVersion 0.6.0) |
 | 8 | Observabilité | Tests anti-triche, validations | événements typés complets — **SYNE-080 livré** (émetteur WebSocket `--observe`, snapshot + events camelCase) |
-| 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | grille spatiale, pooling, LOD |
+| 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | **livré** (jalon SYNE ph9, SYNE-090…093, U7 — `TickBudgetCollector` budgets ≥ 30 % computation, `--benchmark` cibles 50/500/1000 t/s ≥ 2720/1187/505 (PERFORMANCE.md §9), `ObjectPool` + grille spatiale, déterminisme bit-à-bit/checksum, tests `ScaleTargetsTests`) |
 | 10 | Tests & Couverture | 160+ tests, ≥ 80 % | suite complète |
 | 11 | Persistance & Reprise | JSON → SQLite, migration | schéma SQLite 11 tables, reprise bit-à-bit |
 
@@ -65,7 +65,7 @@ Conformément à la checklist §12, les choix ci-dessous restent **consciemment 
 | `SYSTEMS_SPEC.md` | Résolution chiffrée des conflits (ADR-009) | Implémentation `Interaction/` |
 | `SYSTEMS_SPEC.md` | Modèle d'héritage / fusion consentie (décision n°17) | Implémentation cycle de vie |
 | `SYSTEMS_SPEC.md` | Coûts des livres (décisions n°18/19) | Implémentation savoir tangible |
-| `PERFORMANCE.md` | Machine de référence des benchmarks V0.1 | Phase 9 (performance) |
+| ~~`PERFORMANCE.md`~~ | ~~Machine de référence des benchmarks V0.1~~ — **tranchée au jalon ph9** (PERFORMANCE.md §9.1 : Linux x86-64, .NET 10.0.400, poste de dev) | — |
 | `CONFIGURATION.md` | Calibration des taux de besoins / seuils | Phase de calibration |
 | `CONFIGURATION.md` | « Instruire » (SYNE-042) : ingestion en mémoire épisodique via Eat | Jalon ph7 (sources spatiales, SYNE-070) |
 | `DATA_MODEL.md` | Sources spatiales de ressources (décision n°4) | Jalon ph7 (SYNE-070) |
