@@ -19,6 +19,7 @@ import io
 
 from fastapi import FastAPI, HTTPException, Query
 
+from echos.analysis import reproducibility
 from echos.analysis.causal import MAX_DEPTH, build_chain, CausalError
 from echos.storage.sqlite import AnalyticsStore
 
@@ -196,6 +197,59 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         return {
             "run_id": resolved,
             "decisions": active.decision_traces(resolved),
+        }
+
+    @app.get("/api/compare", tags=["api"])
+    def compare_runs(
+        run_a: str = Query(...),
+        run_b: str = Query(...),
+        format: str = Query(default="json"),
+    ) -> dict:
+        """Comparaison de runs contrôlés (ECHOS-070→072, EXPERIMENT_COMPARISON.md).
+
+        Méta-métriques de reproductibilité (ECHOS-070/071) : même seed ET même
+        version ET contenu bit-à-bit identique ⇒ ``is_reproducible`` ; score de
+        reproductibilité ``1.0 - (CognitiveDiff + SocialDiff) / 2`` sinon.
+        ``format=csv`` produit l'export comparatif aligné (ECHOS-072).
+        Réponses déterministes : aucune horodatation d'émission, tris stables.
+        """
+        active = _require_store(store)
+        if format not in _VALID_FORMATS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"format inconnu : {format} (json|csv)",
+            )
+        known = {run["run_id"] for run in active.runs()}
+        for run_id in (run_a, run_b):
+            if run_id not in known:
+                raise HTTPException(status_code=404, detail=f"run inconnu : {run_id}")
+
+        summary = reproducibility.compare(active, run_a, run_b)
+        if format == "csv":
+            buffer = io.StringIO()
+            writer = csv.writer(buffer, lineterminator="\r\n")
+            writer.writerow(("tick", "engine", "metric", "run_a_value", "run_b_value", "diff"))
+            for row in reproducibility.aligned_series(active, run_a, run_b):
+                writer.writerow(
+                    (
+                        row["tick"],
+                        row["engine"],
+                        row["metric"],
+                        row["run_a"],
+                        row["run_b"],
+                        row["diff"],
+                    )
+                )
+            return {
+                "summary": summary,
+                "content_type": "text/csv",
+                "body": buffer.getvalue(),
+            }
+
+        return {
+            **summary,
+            "series": reproducibility.aligned_series(active, run_a, run_b),
+            "format": "json",
         }
 
     @app.get("/api/runs/{run_id}/causal-chains/{agent_id}", tags=["api"])

@@ -29,6 +29,7 @@ _ENDPOINTS = [
     "/api/relationships/{agentId}",
     "/api/groups",
     "/api/emergent-phenomena",
+    "/api/compare",
     "/api/runs/{id}/causal-chains/{agentId}",
 ]
 
