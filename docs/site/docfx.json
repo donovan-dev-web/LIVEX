@@ -29,12 +29,18 @@
     "overwrite": [],
     "dest": "_site",
     "globalMetadata": {
-      "_appTitle": "LIVEX · documentation",
+      "_appTitle": "LIVEX",
+      "_appName": "LIVEX",
+      "_appLogoPath": "logo.svg",
+      "_appFaviconPath": "favicon.ico",
+      "_appLogoUrl": "index.html",
       "_appFooter": "LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)",
-      "_enableSearch": true
+      "_enableSearch": true,
+      "_disableNavbarBreaker": true
     },
     "template": [
-      "default"
+      "default",
+      "template"
     ]
   }
 }

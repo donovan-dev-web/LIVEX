@@ -1,8 +1,20 @@
+---
+title: FRONTEND_VISION — vision du frontend ECHOS
+---
+
 # FRONTEND_VISION.md
 
 **Composant** : ECHOS
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Statut** : [LIVRÉ]
+
+> **Jalon ph8 (U7)** : la vision est désormais **implémentée** par `echos-ui`
+> (PR UI #441, les 6 Écrans A→F). Les dispositions figurant dans ce document
+> sont appliquées telles quelles (contrats §3.9, décision locale, relais de
+> pilotage, design system §4/§5).
+>
+> **Résumé du livrable** : étape cible « pas de coquille Electron » reformulée
+> en « **implémentation différée post-V0.1** » (décision 23/09/2026) — voir
+> `ADR-001-stack-applicative.md` log correctif et `LIVEX/CHANGELOG.md`.
 **Dépend de** : `VISION.md`, `ARCHITECTURE.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.2.2, §4.7, §5.13 (interface d'analyse)
 

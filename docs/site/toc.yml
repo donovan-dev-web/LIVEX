@@ -1,4 +1,4 @@
-- name: Accueil
+- name: Présentation
   href: index.md
 - name: Transversal
   items:
@@ -36,6 +36,8 @@
       href: articles/syne/SYSTEMS_SPEC.md
     - name: Configuration
       href: articles/syne/CONFIGURATION.md
+    - name: Déterminisme
+      href: articles/syne/DETERMINISM.md
     - name: Tests
       href: articles/syne/TESTING.md
 - name: ECHOS — analyse
@@ -46,8 +48,18 @@
       href: articles/echos/VISION.md
     - name: Architecture ECHOS
       href: articles/echos/ARCHITECTURE.md
+    - name: Frontend — vision
+      href: articles/echos/FRONTEND_VISION.md
+    - name: Frontend — design (Écrans A→F)
+      href: articles/echos/UI_DESIGN.md
+    - name: Métriques d'émergence
+      href: articles/echos/METRICS_SPEC.md
+    - name: API REST
+      href: articles/echos/API_REST.md
     - name: Feuille de route ECHOS
       href: articles/echos/ROADMAP.md
+    - name: Tests
+      href: articles/echos/TESTING.md
 - name: PRISM — rendu
   items:
     - name: Lire le composant
