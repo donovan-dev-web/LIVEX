@@ -10,6 +10,27 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon SYNE ph9 — Performance & Scalabilité (SYNE-090 → SYNE-093, jalon ph9, U7)** :
+  - **`BUDGETS PAR TICK` (SYNE-090)** : `TickBudgetCollector` (opt-in, `SimulationLoop.Budgets`) — mesure
+    du temps par sous-système (perception, mémoire/croyances, besoins/objectifs, décision/utilité,
+    actions/mouvement, communication, événements/groupe/population — PERFORMANCE.md §3) + total tick ;
+    part de computation = Σ phases / tick **≥ 30 %** (PERFORMANCE.md §9). Aucun coût sur le chemin
+    nominal (collecteur nul par défaut), **aucun tirage PRNG** — checksum doré inchangé
+    **0x27fad50065d8c4a4** même sous instrumentation.
+  - **`Cibles 50/500/1000` (SYNE-091)** : mode CLI **`--benchmark`** (`--benchmark-ticks`,
+    `--benchmark-populations`) — 50/500/1000 entités × seeds {12345, 999, 7} × 300 ticks :
+    **≥ 2720 / ≥ 1187 / ≥ 505 t/s** mesurés (cibles 30/20/10 largement dépassées, machine de
+    référence PERFORMANCE.md §9) + table des budgets par sous-système ; tests CI `ScaleTargetsTests`
+    (planchers anti-régression × ~7, convention PERFORMANCE.md §9).
+  - **`GRILLE SPATIALE + POOLING` (SYNE-092)** : `ObjectPool<T>` (Rent/Return, vidage au retour,
+    compteurs) appliqué au buffer de tri des candidats de perception (`PerceptionSystem.SortBuffers`) —
+    réduction de la charge GC sans toucher la trajectoire ; grille spatiale déjà en production
+    (`SpatialGrid`, perception O(fenêtre 3×3), SYNE-012).
+  - **`DÉTERMINISME PERFORMANCE` (SYNE-093)** : checksum d'état FNV-1a (id;x;y;énergie) reproductible
+    bit-à-bit à seed égale — tests d'échelle (500 entités) + `TickBudgetTests` (collecte n'altère pas
+    la trajectoire, golden épinglé) + checksums affichés par `--benchmark`.
+  - Tests : +12 (261 → **273** Core ; total **279** avec 6 Console). Aucune altération contractuelle —
+    `engineVersion` reste **0.6.0**, checksum doré **0x27fad50065d8c4a4**.
 - **Jalon SYNE ph6 — Groupes & Naissance (SYNE-060 → SYNE-063, issues #29–#32, milestone ph6)** :
   - **`GROUPES` (élément de réseau social, SYNE-060/061)** : `GroupSystem` (propriété `Cognition.Groups`).
     Cohésion = min trust réciproque × affinité (1 + `sharedBeliefBonus` + `goalAlignmentBonus`),

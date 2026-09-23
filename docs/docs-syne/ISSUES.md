@@ -156,10 +156,10 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-090 | Budgets par tick (§3.19.2) | `type/perf`, `component/syne` | P0 | `PERFORMANCE.md` §2 | Respect des budgets (≥ 30 % computation) ; benchmark annexe I |
-| SYNE-091 | Cibles 50/500/1000 entités | `type/perf`, `component/syne` | P0 | décision n°29, `PERFORMANCE.md` | ≥ 30 t/s (50) ; ≥ 20 t/s (500) ; ≥ 10 t/s (1000) |
-| SYNE-092 | Grille spatiale + pooling | `type/perf`, `component/syne` | P1 | SYNE-012, `PERFORMANCE.md` | Scalabilité ≥ 500 entités sans dégradation > budget |
-| SYNE-093 | Déterminisme performance (bit-à-bit) | `type/test`, `component/syne` | P1 | `DETERMINISM.md` | Benchmark reproductible bit-à-bit à seed égale |
+| SYNE-090 | Budgets par tick (§3.19.2) — **LIVRÉ (PR SYNE, U7)** | `type/perf`, `component/syne` | P0 | `PERFORMANCE.md` §2 | Respect des budgets (≥ 30 % computation) ; benchmark annexe I — ✓ `TickBudgetCollector` (opt-in, `SimulationLoop.Budgets`) : mesure des 7 sous-systèmes + total tick, part de computation **≥ 30 %** (mesurée 35-68 %), 0 coût/nominal, déterminisme conservé (golden inchangé) |
+| SYNE-091 | Cibles 50/500/1000 entités — **LIVRÉ (PR SYNE, U7)** | `type/perf`, `component/syne` | P0 | décision n°29, `PERFORMANCE.md` | ≥ 30 t/s (50) ; ≥ 20 t/s (500) ; ≥ 10 t/s (1000) — ✓ **≥ 2720 / ≥ 1187 / ≥ 505 t/s** (`--benchmark`, PERFORMANCE.md §9.2) ; tests CI `ScaleTargetsTests` (planchers anti-régression) |
+| SYNE-092 | Grille spatiale + pooling — **LIVRÉ (PR SYNE, U7)** | `type/perf`, `component/syne` | P1 | SYNE-012, `PERFORMANCE.md` | Scalabilité ≥ 500 entités sans dégradation > budget — ✓ grille spatiale en production (perception O(fenêtre 3×3)) + `ObjectPool<T>` (Rent/Return, vidage) sur le buffer de tri de perception ; t/s ×60 et ×50 aux échelles 500/1000 |
+| SYNE-093 | Déterminisme performance (bit-à-bit) — **LIVRÉ (PR SYNE, U7)** | `type/test`, `component/syne` | P1 | `DETERMINISM.md` | Benchmark reproductible bit-à-bit à seed égale — ✓ checksum FNV-1a d'état (id;x;y;énergie) reproductible (`--benchmark` + `ScaleChecksum_IsBitForBitReproducible` + `BudgetCollection_DoesNotAlterTrajectory`) |
 
 ### Milestone ph10 — Tests & Couverture
 
