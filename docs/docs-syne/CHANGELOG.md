@@ -36,6 +36,27 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - Tests : +32 (210 → **242**), dont `GroupSystemTests` (9), `BirthSystemTests` (7),
     `GroupBirthDeterminismTests` (3), mécanismes fins d'héritage (7), validations de config (3),
     observabilité (3). Document `SOCIAL_NETWORK.md` créé ; checksum doré re-épinglé **0x864e72f57e1fe0d0**.
+- **Jalon SYNE ph7b — Fidélités V0.1 (SYNE-074 → SYNE-077, jalon ph7b, U6, engineVersion 0.6.0)** :
+  - **`MORTALITÉ` (SYNE-074)** : `DeathSystem` — entité à énergie ≤ seuil fatal (défaut 0, `life.deathEnabled`)
+    meurt ; corps retiré du monde (`World.RemoveEntity`, `SpatialGrid.Remove`), esprit purgé de la
+    cognition et des groupes (`GroupSystem.PurgeDeceased`) **après** boucles entités, communication et
+    naissances (ordre causal, DETERMINISM §5) ; événement `agent_died` ({cause, species}).
+  - **`NAISSANCE CONSENTIE FIDÈLE` (SYNE-075)** : `BirthSystem.Qualifies` — distance ≤ `mergeRange` 40,
+    ligne de vue claire (`LineOfSight.IsClear`), énergie ≥ `mergeMinimumEnergy` 30 chacune, aucun besoin
+    critique (seuil `CriticalEnergy`) ; 4 tests fidélité (trop loin / LOS masquée / énergie épuisée /
+    état critique) + test pipeline (gates neutralisés, naissance observée).
+  - **`DÉCISION COLLECTIVE → OBJECTIFS` (SYNE-076)** : `GroupObjective {groupId, kind, consensus,
+    leaderTrust, adoptedTick, expiresTick}` propagé à chaque révision (`GroupSystem.PropagateObjectives`,
+    TTL = `reviewIntervalTicks`, confiance au leader, leader auto-aligné à 1.0) ; bonus d'alignement
+    `CollectiveAlignBonus` 1.2 appliqué dans `UtilityEvaluator.Evaluate`/`ApplyActionSwitchMargin`
+    (alignement = consensus × confiance au leader).
+  - **`CHEMINEMENT A* DÉTERMINISTE` (SYNE-077)** : `AStarPathfinder` — grille rasterisée (`PathfindingSettings`,
+    `CellSize` 10, disques + marge demi-cellule → cellules bloquées), voisinage ordonné, tie-break
+    (f, g, x, y), heuristique octile, expansion plafonnée (`MaxExpansionCells` 4096), repli « sur place » ;
+    `PathCache` LRU (`CacheCapacity` 256) ; intégré dans `ActionExecutor` quand le pas direct est bloqué ;
+    aucune consommation PRNG. Tests : `AStarPathfinderTests` (8) + `ActionExecutorTests` (+2).
+  - `engineVersion` → **0.6.0** ; checksum doré ré-épinglé (inchangé) **0x27fad50065d8c4a4** ;
+    tests : **261 Core + 6 Console**, couverture ≥ 80 %.
 - Documentation technique V0.1 complète du composant (VISION, ARCHITECTURE, DATA_MODEL, SIMULATION_LOOP, COGNITIVE_ARCHITECTURE, SYSTEMS_SPEC, COMMUNICATION_PROTOCOL, PERSISTENCE, DETERMINISM, CONFIGURATION, API_CONTRACTS, PERFORMANCE, TESTING, ROADMAP).
 - Formalisation des ADR-001, ADR-002, ADR-005 à ADR-011 (Annexe F de la Monographie).
 - **Socle U0 (SYNE-1)** : solution `Syne.sln`, bibliothèque `Simulation.Core` (configuration Annexe H, loader JSON générique, validation, flags CLI), `Simulation.Console` (conf résolue + sonde PRNG), tests xUnit (28). PRNG déterministe **xoshiro256\*\*** + **splitmix64** (vecteurs épinglés), `global.json` SDK 10.0.400. ADR-012 (config JSON + CLI).

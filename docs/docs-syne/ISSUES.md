@@ -132,6 +132,18 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 | SYNE-072 | Saisons & environnement dynamique | `type/feature`, `component/syne` | P2 | SYNE-070, `SYSTEMS_SPEC.md` §6. titled | Variations périodiques appliquées ; déterminisme conservé |
 | SYNE-073 | Territoire (décision n°21) | `type/feature`, `component/syne` | P1 | décision n°21, `SYSTEMS_SPEC.md` §6.5 | Territoire = zone des ressources autour du point de survie ; perception V0.1 |
 
+### Milestone ph7b — Fidélités V0.1 (resegmentation U6)
+
+> Sous-milestone ajouté à la réservation du jalon **U6** (ROADMAP §6) : 4 fidélités
+> monographie extraites du backlog V0.1 par l'audit `RAPPORT_ECART_DOC_IMPLEMENTATION.md`.
+
+| ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| SYNE-074 | Mortalité par épuisement — **LIVRÉ (PR SYNE, U6)** | `type/feature`, `component/syne` | P1 | SYNE-042, `SYSTEMS_SPEC.md` §8 | Entité à énergie ≤ seuil fatal meurt — ✓ `DeathSystem` (seuil fatal 0, `life.deathEnabled`) exécuté **après** boucles entités, communication et naissances (ordre causal DETERMINISM §5) : corps retiré (`World.RemoveEntity` + `SpatialGrid.Remove`), esprit purgé de la cognition et des groupes (`GroupSystem.PurgeDeceased`) ; événement `agent_died` {cause, species} (API_CONTRACTS §2.2) |
+| SYNE-075 | Naissance consentie fidèle — **LIVRÉ (PR SYNE, U6)** | `type/feature`, `component/syne` | P1 | SYNE-062, `RAPPORT_ECART_DOC_IMPLEMENTATION.md` | Naissance seulement quand la fusion est réellement possible — ✓ `BirthSystem.Qualifies` : distance ≤ `mergeRange` 40, ligne de vue claire (`LineOfSight`), énergie ≥ `mergeMinimumEnergy` 30 chacune, aucun besoin critique (seuil `CriticalEnergy`) ; 4 tests fidélité (trop loin / LOS masquée / énergie épuisée / état critique) |
+| SYNE-076 | Décision collective → objectifs des membres — **LIVRÉ (PR SYNE, U6)** | `type/feature`, `component/syne` | P1 | SYNE-061, décision n°24 | Chaque décision de groupe devient un objectif des membres — ✓ `GroupObjective {groupId, kind, consensus, leaderTrust, adoptedTick, expiresTick}` propagé à chaque révision (`PropagateObjectives`, TTL = `reviewIntervalTicks`, confiance au leader, auto-confiance leader = 1) ; bonus d'alignement `CollectiveAlignBonus` 1.2 appliqué dans l'utilité (alignement = consensus × confiance au leader) ; tests propagation + bonus |
+| SYNE-077 | Cheminement A* déterministe — **LIVRÉ (PR SYNE, U6)** | `type/feature`, `component/syne` | P1 | SYNE-041, `Monographie §6.2.12` | Contournement des obstacles par chemin A* déterministe — ✓ `AStarPathfinder` (grille rasterisée `CellSize` 10, disques → cellules bloquées, voisinage ordonné, tie-break (f, g, x, y), heuristique octile, expansion plafonnée `MaxExpansionCells` 4096, repli « sur place ») + `PathCache` LRU `CacheCapacity` 256 ; intégré dans `ActionExecutor` quand le pas direct est bloqué ; 0 consommation PRNG (déterminisme conservé) |
+
 ### Milestone ph8 — Observabilité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |

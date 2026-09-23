@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **242 tests** (suite Core + Console : baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests`). Checksum doré re-épinglé `0x864e72f57e1fe0d0` (engineVersion 0.5.0).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **267 tests** (suite Core + Console : baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests` → **+19** au jalon SYNE ph7b : 4 `BirthSystemTests` fidélités (SYNE-075), 3 propagation + 1 bonus `GroupObjective` (SYNE-076), 8 `AStarPathfinderTests` + 2 `ActionExecutorTests` (SYNE-077), 1 observabilité preuve SYNE-081/082 ; +1 `test_health.py` ECHOS — registre `/api/runs/{id}/decisions`). Checksum doré ré-épinglé `0x27fad50065d8c4a4` (engineVersion 0.6.0).
 
 ## 2. Stack de tests (Monographie §7.1)
 
