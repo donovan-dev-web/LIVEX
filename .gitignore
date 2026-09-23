@@ -46,4 +46,4 @@ runs/
 *.parquet
 
 # Logs
-*.log
+*.logdocs/pages-dist/
