@@ -14,13 +14,13 @@
 | :-- | :-- | :-- |
 | **Analyse** | Calculs scientifiques, traitement des données, métriques | Python (FastAPI) |
 | **Application** | Couche applicative, API REST, pilotage | FastAPI local |
-| **Interface** | Vues d'observation, contrôle, calibration (**intégrée à ECHOS**) | Electron + React/TypeScript |
+| **Interface** | Vues d'observation, contrôle, calibration (**intégrée à ECHOS**) | React/TypeScript — web local servie par FastAPI (`echos-ui`, Vite) |
 | **Stockage** | Données d'analyse (séparé de la donnée SYNE) | SQLite + Parquet |
 | **Source** | SYNE — production d'événements | WebSocket :5180 |
 
 ### ⚠ Divergence annoncée vs prototype
 
-L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Application) et un **shell Electron abandonné** avec interface web React (prototype C#/.NET). **Décision V0.1 (décision utilisateur)** : la stack ECHOS est **Electron + React/TypeScript + FastAPI local (PAS Django)**, avec **NumPy/Pandas/SciPy/NetworkX** pour le calcul et **ECharts/Plotly** pour la visualisation, et **SQLite/Parquet** pour le stockage d'analyse. Cette divergence est assumée et documentée (cf. `../ARCHITECTURE.md` racine).
+L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Application) et un **shell Electron** avec interface web React (prototype C#/.NET). **Décision V0.1 (décision utilisateur, 23/09/2026)** : la stack ECHOS est **React/TypeScript web local servie par FastAPI + FastAPI local (PAS Django, PAS de shell Electron)**, avec **NumPy/Pandas/SciPy/NetworkX** pour le calcul et **ECharts/Plotly** pour la visualisation, et **SQLite/Parquet** pour le stockage d'analyse. L'interface `echos-ui` (Vite) est servie par FastAPI (dev `npm run dev`, build statique en production), sans wrapper de bureau. Cette divergence est assumée et documentée (cf. `../ARCHITECTURE.md` racine, `adr/ADR-001-stack-applicative.md`).
 
 ## 2. Intégration avec SYNE
 

@@ -27,7 +27,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **ECHOS-2** : contrats d'ingestion SYNE livrés — modèles pydantic `WorldSnapshot`/`ExternalEvent` (JSON camelCase), clients `WsClient` :5180 + `ControlClient` :5181 testés de façon déterministe sur **golden files versionnés** (41 tests pytest, couverture 97 %).
 
 ### Changed
-- Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → **FastAPI + Electron/React/TypeScript**, SQLite/Parquet).
+- Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → **FastAPI + web local React/Vite servie par FastAPI, pas de shell Electron**, SQLite/Parquet).
 - README et INSTALLATION reflètent l'état du socle U0 ; **conteneurisation Docker reportée** au-delà du Jalon U0.
 
 ### Deprecated

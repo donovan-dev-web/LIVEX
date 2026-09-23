@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Ce document est le **backlog complet des issues du composant ECHOS**, conçu pour être la **source unique de création des cartes du tableau Kanban** (`docs/governance/KANBAN.md`). Il couvre la réalisation **de A à Z** d'ECHOS : consommation des contrats SYNE, ingestion, les 7 moteurs de métriques, indicateurs d'émergence, API REST, logging, analyse causale, comparaison expérimentale, interface Écrans (Electron/React) et tests.
+Ce document est le **backlog complet des issues du composant ECHOS**, conçu pour être la **source unique de création des cartes du tableau Kanban** (`docs/governance/KANBAN.md`). Il couvre la réalisation **de A à Z** d'ECHOS : consommation des contrats SYNE, ingestion, les 7 moteurs de métriques, indicateurs d'émergence, API REST, logging, analyse causale, comparaison expérimentale, interface Écrans (web local React/Vite — PAS de shell Electron) et tests.
 
 Chaque issue est **prête à être copiée** dans un système d'issues (GitHub/GitLab) avec son **titre**, son **label**, son **milestone**, sa **priorité**, ses **dépendances** et son **critère d'acceptation** — conformément aux règles de `docs/governance/ISSUES.md` (types, cycle de vie) et aux colonnes du Kanban.
 
@@ -32,7 +32,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-001 | Décision applicative ECHOS (ADR-001 ECHOS) : FastAPI + Electron/React | `type/governance`, `component/echos`, `type/docs` | P0 | ADR-001 ECHOS, `VISION.md`, Monographie §4.2.1 | ADR-001 accepté : stack = FastAPI (PAS Django) + Electron/React/TS ; divergence vs Monographie documentée dans `ARCHITECTURE.md` ECHOS |
+| ECHOS-001 | Décision applicative ECHOS (ADR-001 ECHOS) : FastAPI + React/Vite web local | `type/governance`, `component/echos`, `type/docs` | P0 | ADR-001 ECHOS, `VISION.md`, Monographie §4.2.1 | ADR-001 accepté : stack = FastAPI (PAS Django) + React/TypeScript web local servie par FastAPI (PAS de shell Electron) ; divergence vs Monographie documentée dans `ARCHITECTURE.md` ECHOS |
 | ECHOS-002 | Structure monorepo `echos/` (API, analyse, moteurs, UI, tests) | `type/feature`, `component/echos` | P0 | ECHOS-001 | Monorepo découpé ; chaque sous-composant buildable et testable séparément |
 | ECHOS-003 | Outillage CI/tests (pytest, couverture, golden files) | `type/test`, `component/echos` | P0 | ECHOS-002, `TESTING.md` ECHOS | Pipeline pytest vert ; couverture instrumentée ; golden files versionnés |
 | ECHOS-004 | Contrats d'ingestion hérités (WebSocket 5180 / HTTP 5181 SYNE) | `type/feature`, `component/echos`, `component/syne` | P0 | `../docs-syne/API_CONTRACTS.md`, `COMMUNICATION_PROTOCOL.md` §2.4 (SYNE) | Client WebSocket 5180 + contrôle HTTP 5181 opérationnels ; déterminisme de réception |
@@ -104,11 +104,11 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ECHOS-071 | Métriques de reproductibilité | `type/feature`, `component/echos` | P1 | ECHOS-070, `METRICS_SPEC.md` | Méta-métriques stables entre runs (déterminisme ECHOS) |
 | ECHOS-072 | Format d'export comparatif (CSV/JSON) | `type/feature`, `component/echos` | P2 | ECHOS-070 | Export uniforme pour analyse hors ligne |
 
-### Milestone ph8 (echos) — Interface intégrée (Écrans)
+### Milestone ph8 (echos) — Interface intégrée (Écrans web)
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-080 | Shell Electron + React/TS (V0.1) | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Shell démarre ; communique avec FastAPI local |
+| ECHOS-080 | Interface web locale React/Vite (V0.1) | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — **PAS de shell Electron (décision 23/09/2026)** |
 | ECHOS-081 | Vue métriques temps réel (WebSocket 5180) | `type/obs`, `component/echos` | P0 | ECHOS-080, ECHOS-011 | Métriques à jour en continu, sans figer l'exécution SYNE |
 | ECHOS-082 | Vue croyances & confiance | `type/feat`, `component/echos` | P1 | ECHOS-080, ECHOS-042 | Croyances de l'entité + confiance inter-entités visualisées |
 | ECHOS-083 | Vue réseaux sociaux (graphe) | `type/feature`, `component/echos` | P1 | ECHOS-080, ECHOS-022 | Graphe de confiance mis à jour ; communautés (Louvain) affichées |
@@ -143,5 +143,5 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 ## Points restés ouverts dans ce document
 
-- Le périmètre exact des **écrans Electron** reste `[OUVERT]` au-delà des besoins définis par les parties 4 et 5 de la Monographie (§ROADMAP ECHOS, LIMITATIONS).
+- Le périmètre exact des **écrans web (React/Vite)** reste `[OUVERT]` au-delà des besoins définis par les parties 4 et 5 de la Monographie (§ROADMAP ECHOS, LIMITATIONS).
 - Les **valeurs chiffrées** (seuils d'émergence, fenêtres, budgets moteur) sont calibrées après les premiers runs valides — cartes de calibration positionnées en fin de cycle, conformément à la règle §9.6.4 (déterminisme bit-à-bit conservé).

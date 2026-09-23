@@ -17,7 +17,7 @@
 
 | # | Intitulé | Contenu |
 | :-- | :-- | :-- |
-| 0 | Fondation & stack | Choix FastAPI/Electron/React (tranché), structure monorepo `echos/`, outillage (pytest, CI) |
+| 0 | Fondation & stack | Choix FastAPI + React/Vite web local (tranché ; **PAS de shell Electron**, décision 23/09/2026), structure monorepo `echos/`, outillage (pytest, CI) |
 | 1 | Ingestion & stockage | Consommateur WebSocket :5180, agrégation incrémentale, SQLite + Parquet (stockage d'analyse séparé) — **LIVRÉ (ECHOS-010 → 013, jalon U1)** |
 | 2 | Moteurs de métriques | Implémentation des 7 moteurs (`METRICS_SPEC.md`), golden files, tests unitaires — **LIVRÉ (ECHOS-020 → 027, jalon U2)** |
 | 3 | Indicateurs d'émergence | Score composite, auto-détection des phénomènes, complexité, indice d'imprévisibilité — **LIVRÉ (ECHOS-030 → 033, jalon U3)** |
@@ -25,7 +25,7 @@
 | 5 | Logging & instrumentation | 3 niveaux (structuré/traces/texte), profilage, console de débogage, export CSV/JSON — **LIVRÉ (ECHOS-050 → 052, jalon U5)** : package `echos/instrumentation/` (JSONL déterministe + tag `SSE-V2`), traces `decision_traces` (schéma v3) accessibles via `/api/runs/{id}/decisions`, profilage bit-à-bit des 8 moteurs (budgets V0.1 en garde-fou CI) ; console de débogage hors périmètre ECHOS (spécif. monographie, console SYNE) |
 | 6 | Analyse causale | Reconstruction des chaînes causales depuis `decision_traces`, outillage de navigation — **LIVRÉ (ECHOS-060 → 063, jalon ph6, issues #215 → #218)** : ADR-002 [Accepted] (calcul hors ligne), `causal.build_chain` (7 couches), cycle/récurrence + profondeur bornée, `CausalCache` invalidé sur version, endpoint `GET /api/runs/{id}/causal-chains/{agentId}` |
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export |
-| 8 | Interface intégrée | Écrans ECHOS (Electron + React) : vues de métriques, croyances, réseaux, calibration |
+| 8 | Interface intégrée | Écrans ECHOS (web local React/Vite servie par FastAPI) : vues de métriques, croyances, réseaux, calibration |
 | 9 | Tests & couverture | ≥ 80 %, non-régression des scores (golden files) |
 
 ## 3. Jalons de validation
@@ -53,4 +53,4 @@
 
 ## Points restés ouverts dans ce document
 - Aucune date n'est posée. L'ordre ci-dessus est une proposition issue du Plan doc ; il sera ajusté selon l'avancement réel de SYNE (les jalons dépendent des contrats SYNE).
-- Le périmètre exact des écrans Electron est [OUVERT] au-delà des besoins définis par les parties 4 et 5 de la Monographie.
+- Le périmètre exact des écrans **web (React/Vite)** est [OUVERT] au-delà des besoins définis par les parties 4 et 5 de la Monographie.
