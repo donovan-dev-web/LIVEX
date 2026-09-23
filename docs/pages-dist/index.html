@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIVEX — Plateforme de simulation multi-modèles durable</title>
+  <meta name="description" content="LIVEX, monorepo dotnet + python + typescript : simulation déterministe, observation non intrusive, rendu interactif. Plateforme de simulation multi-modèles durable.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="LIVEX — Plateforme de simulation">
+  <meta property="og:description" content="Déterminisme bit-à-bit, observation non intrusive, rendu interactif. SYNE · ECHOS · PRISM.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Aller au contenu</a>
+
+  <!-- ===== NAVIGATION ===== -->
+  <header class="site-header" data-header>
+    <nav class="nav container" aria-label="Navigation principale">
+      <a class="brand" href="#top" aria-label="LIVEX — retour en haut">
+        <img src="assets/img/logo.svg" alt="" width="30" height="30">
+        <span class="brand-name">LIVEX</span>
+      </a>
+      <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="nav-menu" aria-label="Ouvrir le menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="nav-menu" data-nav-menu>
+        <li><a href="#modules">Modules</a></li>
+        <li><a href="#features">Fonctionnalités</a></li>
+        <li><a href="#performances">Performances</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a class="nav-cta" href="#contact">Commencer</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="top">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <span class="eyebrow reveal"><span class="dot"></span> Plateforme de simulation open-source</span>
+          <h1 class="hero-title reveal">Simulez des mondes. <br><span class="grad">Observez, sans déranger.</span></h1>
+          <p class="hero-sub reveal">
+            LIVEX réunit trois moteurs complémentaires dans un monorepo unique —
+            <strong>SYNE</strong> (Simulation.Core), <strong>ECHOS</strong> (analyse &amp; interface),
+            <strong>PRISM</strong> (rendu) — pour des simulations déterministes,
+            observables et reproductibles, du cœur .NET jusqu'au navigateur.
+          </p>
+          <div class="hero-cta reveal">
+            <a class="btn btn-primary" href="docs/index.html">Découvrir la documentation</a>
+            <a class="btn btn-ghost" href="https://github.com/donovan-dev-web/LIVEX" target="_blank" rel="noopener">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+              Code source
+            </a>
+          </div>
+          <ul class="hero-badges reveal">
+            <li><span class="badge-icon">·</span>Résultats reproductibles bit à bit</li>
+            <li><span class="badge-icon">·</span>Observation zéro-intrusion</li>
+            <li><span class="badge-icon">·</span>Métriques &amp; tendances en direct</li>
+          </ul>
+        </div>
+        <div class="hero-visual reveal">
+          <div class="terminal" role="img" aria-label="Aperçu d'une simulation LIVEX dans un terminal">
+            <div class="terminal-bar">
+              <span class="tl t1"></span><span class="tl t2"></span><span class="tl t3"></span>
+              <span class="terminal-title">livex run -s demo</span>
+            </div>
+            <pre class="terminal-body"><code><span class="c-dim"># simulation déterministe · t=0000.000</span>
+<span class="c-acc">SYNE</span>  Simulation.Core  init ... <span class="c-ok">ok</span>
+<span class="c-acc">ECHOS</span> analyse.loaded       12 moteurs
+<span class="c-acc">PRISM</span> render.mode          canvas → ws:5180
+<span class="c-ok">✓</span> seed 0x4A11 — hash 8f3c…b2
+<span class="c-dim">→</span> tick 1..4096   <span class="c-acc">μ=0.000</span>
+<span class="c-dim">→</span> heap 48.2 KiB  <span class="c-acc">σ=0.000</span></code><span class="terminal-cursor"></span></pre>
+          </div>
+        </div>
+      </div>
+      <div class="hero-scroll" aria-hidden="true"><span></span></div>
+    </section>
+
+    <!-- ===== BANDEAU TECH ===== -->
+    <section class="tech-strip" aria-label="Technologies">
+      <div class="container">
+        <ul class="tech-items">
+          <li><span class="tech-dot dot-net"></span>.NET 10</li>
+          <li><span class="tech-dot dot-py"></span>Python 3.13</li>
+          <li><span class="tech-dot dot-ts"></span>TypeScript 5</li>
+          <li><span class="tech-dot dot-cloud"></span>GitHub Actions</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== MODULES ===== -->
+    <section class="section modules" id="modules">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Architecture</span>
+          <h2>Trois moteurs, un monorepo, une vision.</h2>
+          <p>Chaque brique est un module indépendant, assemblé dans un dépôt unique — dotnet, python et typescript cohabitent sous Gitflow, avec tests, lint et conformité vérifiés en continu.</p>
+        </div>
+        <div class="module-grid">
+          <article class="module-card reveal">
+            <div class="module-head">
+              <img class="module-icon" src="assets/img/icon-syne.svg" alt="" width="44" height="44">
+              <span class="module-chip">Moteur</span>
+            </div>
+            <h3>SYNE<span class="mono"> · Simulation.Core</span></h3>
+            <p>Le cœur déterministe .NET : simulation à la base de temps, historique des 15 derniers ticks par défaut, flux linéaire piloté par la bibliothèque <code>Simulation.Core</code>.</p>
+            <ul class="module-points">
+              <li>Routes &amp; événements typés</li>
+              <li>Horloge <code>ManualClock</code> déterministe</li>
+              <li>API REST &amp; WebSocket native</li>
+            </ul>
+          </article>
+          <article class="module-card reveal">
+            <div class="module-head">
+              <img class="module-icon" src="assets/img/icon-echos.svg" alt="" width="44" height="44">
+              <span class="module-chip">Analyse</span>
+            </div>
+            <h3>ECHOS<span class="mono"> · interface</span></h3>
+            <p>La brique analyse &amp; interface : 6 Écrans (A→F) branchés sur l'API REST et le WebSocket, relais de pilotage SYNE→ECHOS conservé en direct.</p>
+            <ul class="module-points">
+              <li>Dashboard, exploration &amp; graphe social</li>
+              <li>Analyse historique &amp; contrôle</li>
+              <li>Journal en temps réel (WS)</li>
+            </ul>
+          </article>
+          <article class="module-card reveal">
+            <div class="module-head">
+              <img class="module-icon" src="assets/img/icon-prism.svg" alt="" width="44" height="44">
+              <span class="module-chip">Rendu</span>
+            </div>
+            <h3>PRISM<span class="mono"> · rendu</span></h3>
+            <p>Le futur moteur de rendu interactif — roadmap du projet, pensé pour visualiser les états du monde simulé dans le navigateur.</p>
+            <ul class="module-points">
+              <li>Visualisation des états du monde</li>
+              <li>Intégration au flux ECHOS</li>
+              <li>Planifié dans la roadmap</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FONCTIONNALITÉS ===== -->
+    <section class="section features" id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Pourquoi LIVEX</span>
+          <h2>Une plateforme conçue pour la rigueur.</h2>
+        </div>
+        <div class="feature-grid">
+          <div class="feature reveal">
+            <div class="feature-ico">⚛︎</div>
+            <h3>Déterminisme bit à bit</h3>
+            <p>Le même scénario produit exactement les mêmes résultats — la reproductibilité est testée unitairement.</p>
+          </div>
+          <div class="feature reveal">
+            <div class="feature-ico">▦</div>
+            <h3>Observation non intrusive</h3>
+            <p>Métriques &amp; tendances collectées sans modifier l'état simulé : voir sans déranger.</p>
+          </div>
+          <div class="feature reveal">
+            <div class="feature-ico">⚡</div>
+            <h3>8+7 moteurs de métriques</h3>
+            <p>Simulation.Core embarque 8 métriques synthétiques ; ECHOS en ajoute 7 supplémentaires.</p>
+          </div>
+          <div class="feature reveal">
+            <div class="feature-ico">◎</div>
+            <h3>Flux temps réel</h3>
+            <p>WebSocket :5180 pour les Écrans A→F — le journal, les tendances et le graphe vivent en direct.</p>
+          </div>
+          <div class="feature reveal">
+            <div class="feature-ico">❐</div>
+            <h3>Pilotage par relais</h3>
+            <p>Feu direct conservé entre ECHOS et SYNE, via un relais de pilotage :5181 — jamais en accès multiple.</p>
+          </div>
+          <div class="feature reveal">
+            <div class="feature-ico">≡</div>
+            <h3>DocFX &amp; GitHub Pages</h3>
+            <p>Documentation centrale générée DocFX, landing de présentation publiée sur GitHub Pages.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PERFORMANCES / COMPTES ===== -->
+    <section class="section perf" id="performances">
+      <div class="container">
+        <div class="perf-grid">
+          <div class="perf-stat reveal">
+            <span class="perf-num" data-count="208">0</span>
+            <span class="perf-unit">tests</span>
+          </div>
+          <div class="perf-stat reveal">
+            <span class="perf-num" data-count="97" data-suffix="%">0</span>
+            <span class="perf-unit">couverture</span>
+          </div>
+          <div class="perf-stat reveal">
+            <span class="perf-num" data-count="15">0</span>
+            <span class="perf-unit">ticks historisés</span>
+          </div>
+          <div class="perf-stat reveal">
+            <span class="perf-num" data-count="8">0</span>
+            <span class="perf-unit">moteurs de métriques</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ROADMAP ===== -->
+    <section class="section roadmap" id="roadmap">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">Roadmap</span>
+          <h2>Un plan d'itération transparent.</h2>
+          <p>De la fondation documentaire au rendu interactif — chaque jalon est livré, testé et documenté en continu.</p>
+        </div>
+        <ol class="timeline">
+          <li class="tl-item reveal"><span class="tl-dot done">✓</span><div><h3>U0→U Bromol</h3><p>Fondation du monorepo, docs centrales, ADR, CI transverse (composants, structure, conventions).</p></div></li>
+          <li class="tl-item reveal"><span class="tl-dot done">✓</span><div><h3>U7 · ECHOS jalon</h3><p>Interface ECHOS V0.1 — les 6 Écrans A→F branchés sur l'API, tableaux de bord &amp; graphe social.</p></div></li>
+          <li class="tl-item reveal"><span class="tl-dot done">✓</span><div><h3>U7 · Simulation.Core</h3><p>Le cœur .NET : horloge de base de temps, historique 15 ticks, API REST/WS, 8 métriques.</p></div></li>
+          <li class="tl-item reveal"><span class="tl-dot next">→</span><div><h3>U8+ · PRISM — rendu</h3><p>Premier moteur de rendu interactif dans le navigateur, relié au flux ECHOS (planifié).</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="section faq" id="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="section-tag">FAQ</span>
+          <h2>Questions fréquentes.</h2>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item reveal">
+            <summary>Qu'est-ce que la « simulation déterministe » ?<span class="faq-chev" aria-hidden="true"></span></summary>
+            <p>À même scénario et même graine (<code>seed</code>), la simulation reproduit toujours exactement le même déroulement et les mêmes résultats — c'est le fondement de la reproductibilité scientifique, garanti par des tests unitaires.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Que signifie « observation non intrusive » ?<span class="faq-chev" aria-hidden="true"></span></summary>
+            <p>Les métriques et tendances sont calculées et diffusées sans jamais modifier l'état de la simulation : observer ne change pas le monde simulé. C'est un principe de conception transverse à SYNE et ECHOS.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Quelle est la différence entre SYNE, ECHOS et PRISM ?<span class="faq-chev" aria-hidden="true"></span></summary>
+            <p><strong>SYNE</strong> (Simulation.Core) est le moteur .NET de la base de temps. <strong>ECHOS</strong> est la couche analyse &amp; interface (Écrans A→F). <strong>PRISM</strong> est le moteur de rendu interactif à venir.</p>
+          </details>
+          <details class="faq-item reveal">
+            <summary>Comment est suivie l'interface utilisateur ?<span class="faq-chev" aria-hidden="true"></span></summary>
+            <p>La navigation DocFX publie la <a href="docs/index.html">documentation centrale</a> : FRONTEND_VISION, UI_DESIGN, METRICS_SPEC, API REST et TESTING — visibles dans le sommaire DocFX.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA FINAL ===== -->
+    <section class="section cta" id="contact">
+      <div class="container">
+        <div class="cta-box reveal">
+          <h2>Prêt à explorer LIVEX&nbsp;?</h2>
+          <p>Plongez dans le code source, la documentation technique ou la roadmap — l'ensemble est ouvert et versionné.</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="https://github.com/donovan-dev-web/LIVEX" target="_blank" rel="noopener">Voir le dépôt GitHub</a>
+            <a class="btn btn-ghost" href="docs/index.html">Documentation DocFX</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="#top">
+          <img src="assets/img/logo.svg" alt="" width="24" height="24">
+          <span class="brand-name">LIVEX</span>
+        </a>
+        <p class="footer-tag">Plateforme open-source de simulation multi-modèles durable.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Projet</h4>
+        <a href="#modules">Modules</a>
+        <a href="#features">Fonctionnalités</a>
+        <a href="#roadmap">Roadmap</a>
+      </div>
+      <div class="footer-col">
+        <h4>Documentation</h4>
+        <a href="docs/index.html">Documentation centrale</a>
+        <a href="docs/api/Simulation.Core.html">API Simulation.Core</a>
+      </div>
+      <div class="footer-col">
+        <h4>Communauté</h4>
+        <a href="https://github.com/donovan-dev-web/LIVEX" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span data-year>2026</span> LIVEX — Monorepo dotnet + python + typescript.</span>
+      <span class="mono">v0.1 · développé avec rigueur.</span>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
