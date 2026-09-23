@@ -4,6 +4,7 @@ using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Perception;
+using Simulation.Core.Performance;
 using Simulation.Core.Population;
 using Simulation.Core.Social;
 
@@ -37,12 +38,14 @@ public sealed class CognitionPipeline
     private readonly GroupSystem _groups;
     private readonly BirthSystem _birth;
     private readonly DeathSystem _death;
+    private readonly TickBudgetCollector? _budget;
     private readonly Dictionary<ulong, MindState> _minds = new();
 
     public CognitionPipeline(
         Simulation.Core.World.World world,
         SimulationOptions options,
-        World.ResourceStocks stocks)
+        World.ResourceStocks stocks,
+        TickBudgetCollector? budget = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(options);
@@ -58,6 +61,7 @@ public sealed class CognitionPipeline
         _groups = new GroupSystem(options.Groups);
         _birth = new BirthSystem(options.Reproduction);
         _death = new DeathSystem(options.Agents.Life);
+        _budget = budget;
     }
 
     public PerceptionSystem Perception => _perception;
@@ -99,37 +103,43 @@ public sealed class CognitionPipeline
         // Communication de masse en une passe (performance.batchCommunication,
         // COMMUNICATION_PROTOCOL.md §7) : cartes après perception/décision/action
         // — l'ordre causal est agent par agent puis réseau de communication.
-        _communication.Step(currentTick, _minds);
-
-        foreach (MindState mind in _minds.Values)
+        using (TickPhaseScope communicationScope = _budget?.Begin(TickPhase.Communication) ?? TickPhaseScope.Noop)
         {
-            mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
-            mind.Trust.Tick();
+            _communication.Step(currentTick, _minds);
         }
 
-        // Groupes émergents (SYNE-060/061) puis naissances (SYNE-062) : après la
-        // boucle des entités, la communication de masse et les décréments de
-        // croyance/confiance — la population ne mute qu'après l'itération complète
-        // (ordre causal strict, DETERMINISM.md §5).
-        _groups.Step(currentTick, _minds);
-        _groups.PropagateObjectives(currentTick, (ulong)_options.Groups.ReviewIntervalTicks, _minds);
-        _birth.Step(currentTick, _world, _minds, _options);
-        foreach ((ulong childId, MindState childMind) in _birth.NewbornMinds)
+        using (TickPhaseScope eventsScope = _budget?.Begin(TickPhase.EventsGroupsPopulation) ?? TickPhaseScope.Noop)
         {
-            _minds[childId] = childMind;
-        }
-
-        // Mortalité (SYNE-074) : après les naissances — les nouveau-nés naissent à
-        // pleine énergie et ne meurent pas au tick de leur naissance. Retrait du
-        // monde, puis purge des esprits et des groupes (dissolution/redimension si
-        // passage sous la taille minimale). Tout se fait après l'itération complète.
-        IReadOnlyList<ulong> deceased = _death.Step(currentTick, _world, _minds);
-        if (deceased.Count > 0)
-        {
-            _groups.PurgeDeceased(deceased, currentTick, _minds);
-            foreach (ulong deathId in deceased)
+            foreach (MindState mind in _minds.Values)
             {
-                _minds.Remove(deathId);
+                mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
+                mind.Trust.Tick();
+            }
+
+            // Groupes émergents (SYNE-060/061) puis naissances (SYNE-062) : après la
+            // boucle des entités, la communication de masse et les décréments de
+            // croyance/confiance — la population ne mute qu'après l'itération complète
+            // (ordre causal strict, DETERMINISM.md §5).
+            _groups.Step(currentTick, _minds);
+            _groups.PropagateObjectives(currentTick, (ulong)_options.Groups.ReviewIntervalTicks, _minds);
+            _birth.Step(currentTick, _world, _minds, _options);
+            foreach ((ulong childId, MindState childMind) in _birth.NewbornMinds)
+            {
+                _minds[childId] = childMind;
+            }
+
+            // Mortalité (SYNE-074) : après les naissances — les nouveau-nés naissent à
+            // pleine énergie et ne meurent pas au tick de leur naissance. Retrait du
+            // monde, puis purge des esprits et des groupes (dissolution/redimension si
+            // passage sous la taille minimale). Tout se fait après l'itération complète.
+            IReadOnlyList<ulong> deceased = _death.Step(currentTick, _world, _minds);
+            if (deceased.Count > 0)
+            {
+                _groups.PurgeDeceased(deceased, currentTick, _minds);
+                foreach (ulong deathId in deceased)
+                {
+                    _minds.Remove(deathId);
+                }
             }
         }
     }
@@ -143,81 +153,90 @@ public sealed class CognitionPipeline
 
         int observed = 0;
         bool announced = false;
-        if (_perception.ShouldPerceive(entity, currentTick))
+        using (TickPhaseScope perceptionScope = _budget?.Begin(TickPhase.Perception) ?? TickPhaseScope.Noop)
         {
-            IReadOnlyList<Observation> observations = _perception.Perceive(entity, currentTick);
-            observed = observations.Count;
-            foreach (Observation observation in observations)
+            if (_perception.ShouldPerceive(entity, currentTick))
             {
-                StoreObservation(mind, entity, observation, currentTick);
-                if (!announced && WantsToShare(entity, observation))
+                IReadOnlyList<Observation> observations = _perception.Perceive(entity, currentTick);
+                observed = observations.Count;
+                foreach (Observation observation in observations)
                 {
-                    EnqueueSharePulse(entity, observation, mind, currentTick);
-                    announced = true;
+                    StoreObservation(mind, entity, observation, currentTick);
+                    if (!announced && WantsToShare(entity, observation))
+                    {
+                        EnqueueSharePulse(entity, observation, mind, currentTick);
+                        announced = true;
+                    }
                 }
             }
         }
 
-        mind.AcknowledgePerceptions(observed);
-        mind.Needs.Advance(_options.Agents.Needs);
+        using (TickPhaseScope memoryScope = _budget?.Begin(TickPhase.MemoryBeliefs) ?? TickPhaseScope.Noop)
+        {
+            mind.AcknowledgePerceptions(observed);
+            mind.Needs.Advance(_options.Agents.Needs);
+        }
 
         ActionSettings actions = _options.Agents.Actions;
         DesireKind chosenKind;
 
-        // Délibération à fréquence configurable (décision n°14) : entre deux
-        // délibérations, l'intention est conservée (holdover) telle quelle.
-        if (ShouldDeliberate(entity, currentTick))
+        using (TickPhaseScope decisionScope = _budget?.Begin(TickPhase.NeedsGoals) ?? TickPhaseScope.Noop)
         {
-            IReadOnlyList<Goal> active = ActiveGoals(mind, currentTick);
-            IReadOnlyList<Goal> generated = DesireFactory.Generate(mind.Needs, currentTick, active.Select(goal => goal.Kind), _catalog, _stocks);
-            var candidates = new List<Goal>(active.Count + generated.Count);
-            candidates.AddRange(active);
-            candidates.AddRange(generated);
-
-            (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(mind, candidates, currentTick, entity.Id.Value);
-            mind.RecordDecision(scores, best, deliberated: true, interrupted: false, currentTick, entity.Id.Value);
-            mind.DeliberatedThisTick = true;
-            chosenKind = best.Kind;
-        }
-        else
-        {
-            chosenKind = mind.LastDecision is { } held ? held.Kind : DesireKind.Idle;
-
-            // Holdover : une action terminale Eat/Drink dont la réserve s'est
-            // épuisée retombe sur la poursuite SeekFood/SeekWater (SYNE-042).
-            if (chosenKind == DesireKind.Eat && !_catalog.IsViable(DesireKind.Eat, _stocks))
+            // Délibération à fréquence configurable (décision n°14) : entre deux
+            // délibérations, l'intention est conservée (holdover) telle quelle.
+            if (ShouldDeliberate(entity, currentTick))
             {
-                chosenKind = DesireKind.SeekFood;
+                IReadOnlyList<Goal> active = ActiveGoals(mind, currentTick);
+                IReadOnlyList<Goal> generated = DesireFactory.Generate(mind.Needs, currentTick, active.Select(goal => goal.Kind), _catalog, _stocks);
+                var candidates = new List<Goal>(active.Count + generated.Count);
+                candidates.AddRange(active);
+                candidates.AddRange(generated);
+
+                (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(mind, candidates, currentTick, entity.Id.Value);
+                mind.RecordDecision(scores, best, deliberated: true, interrupted: false, currentTick, entity.Id.Value);
+                mind.DeliberatedThisTick = true;
+                chosenKind = best.Kind;
             }
-            else if (chosenKind == DesireKind.Drink && !_catalog.IsViable(DesireKind.Drink, _stocks))
+            else
             {
-                chosenKind = DesireKind.SeekWater;
+                chosenKind = mind.LastDecision is { } held ? held.Kind : DesireKind.Idle;
+
+                // Holdover : une action terminale Eat/Drink dont la réserve s'est
+                // épuisée retombe sur la poursuite SeekFood/SeekWater (SYNE-042).
+                if (chosenKind == DesireKind.Eat && !_catalog.IsViable(DesireKind.Eat, _stocks))
+                {
+                    chosenKind = DesireKind.SeekFood;
+                }
+                else if (chosenKind == DesireKind.Drink && !_catalog.IsViable(DesireKind.Drink, _stocks))
+                {
+                    chosenKind = DesireKind.SeekWater;
+                }
             }
-        }
 
-        // Interruptions d'action (SYNE-043, décision n°15, COGNITIVE_ARCHITECTURE.md §6) :
-        // déclencheur centralisé — un besoin critique dont l'utilité surpasse de >
-        // utilityExcessMargin l'action en cours reprend la main, y compris entre
-        // deux délibérations. Eat/Drink répondent à la faim critique si la réserve est disponible.
-        if (_options.Agents.Actions.Interruption.Enabled)
-        {
-            (IReadOnlyList<UtilityScore> scores, UtilityScore? interruption) = _interruption.Evaluate(
-                actions.Interruption,
-                actions,
-                mind.Needs,
-                mind.Factors ?? new AgentFactors(TraitSet.NeutralAll),
-                mind.SuccessRate,
-                chosenKind,
-                mind.Intention,
-                currentTick,
-                entity.Id.Value);
-
-            if (interruption is { } chosen)
+            // Interruptions d'action (SYNE-043, décision n°15, COGNITIVE_ARCHITECTURE.md §6) :
+            // déclencheur centralisé — un besoin critique dont l'utilité surpasse de >
+            // utilityExcessMargin l'action en cours reprend la main, y compris entre
+            // deux délibérations. Eat/Drink répondent à la faim critique si la réserve est disponible.
+            if (_options.Agents.Actions.Interruption.Enabled)
             {
-                mind.RecordDecision(scores, chosen, deliberated: false, interrupted: true, currentTick, entity.Id.Value);
-                mind.DeliberatedThisTick = false;
-                mind.InterruptedThisTick = true;
-                chosenKind = chosen.Kind;
+                (IReadOnlyList<UtilityScore> scores, UtilityScore? interruption) = _interruption.Evaluate(
+                    actions.Interruption,
+                    actions,
+                    mind.Needs,
+                    mind.Factors ?? new AgentFactors(TraitSet.NeutralAll),
+                    mind.SuccessRate,
+                    chosenKind,
+                    mind.Intention,
+                    currentTick,
+                    entity.Id.Value);
+
+                if (interruption is { } chosen)
+                {
+                    mind.RecordDecision(scores, chosen, deliberated: false, interrupted: true, currentTick, entity.Id.Value);
+                    mind.DeliberatedThisTick = false;
+                    mind.InterruptedThisTick = true;
+                    chosenKind = chosen.Kind;
+                }
             }
         }
 
@@ -228,8 +247,11 @@ public sealed class CognitionPipeline
                 : new Goal(chosenKind, currentTick);
         mind.Intention = goal;
 
-        ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick);
-        mind.RecordAction(result);
+        using (TickPhaseScope actionScope = _budget?.Begin(TickPhase.ActionsMovement) ?? TickPhaseScope.Noop)
+        {
+            ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick);
+            mind.RecordAction(result);
+        }
     }
 
     /// <summary>Fréquence de délibération configurable (décalée par entité pour lisser la charge).</summary>
