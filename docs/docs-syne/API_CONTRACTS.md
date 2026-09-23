@@ -39,7 +39,7 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.5.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.6.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
@@ -52,7 +52,8 @@ Exemple (format condensé) :
 
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.5.0` (jalon SYNE ph6 — groupes + naissances). Le champ `groups[]`
+> `engineVersion` = `0.6.0` (jalon SYNE ph7b — mortalité, naissance consentie fidèle, décision
+> collective → objectifs, cheminement A* déterministe). Le champ `groups[]`
 > (syne-060/061, ajout **additif**, MINOR) liste les groupes actifs au tick : `groupId`,
 > `members[]`, `size`, `leaderId`, `bornTick`, `cohesion` (cohésion moyenne au dernier LOD),
 > `decision`/`consensus` (dernière décision collective, `SYSTEMS_SPEC` §5).
@@ -101,7 +102,10 @@ Exemple :
 > **`agent_spawned` (jalon SYNE ph6)** : émis par `BirthSystem` à la naissance — `agentId` = enfant
 > (id nouvellement alloué, dernier du run), `cause = "birth"`, `value = {childId, motherId,
 > fatherId, species, x, y}` ; traits/mémoire hérités consultables via la décision `Born` (SYNE-062/063).
-> `agent_died` attendra la mortalité (jalon ph7+).
+> **`agent_died` (jalon SYNE ph7b, SYNE-074)** : émis par `DeathSystem` quand une entité atteint
+> le seuil fatal (énergie nulle, épuisement) — `agentId` = défunt, `cause = "exhaustion"`,
+> `value = {cause, species}` (Monographie §6.2.10). L'appelant purge ensuite l'esprit de la
+> cognition et des groupes (les groupes vides sont dissous).
 
 ## 3. Contrat de contrôle — HTTP 5181
 
