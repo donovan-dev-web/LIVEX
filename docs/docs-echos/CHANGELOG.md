@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
@@ -35,6 +35,29 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **Cache de séries (ECHOS-044)** : `SeriesCache` LRU **borné** (256) et thread-safe, invalidé par `AnalyticsStore.ingest_version` (écritures) — séries longues servies sans mémoire explosive.
   - **Config API** : `create_app(store=None)` lit `ECHOS_ANALYTICS_DB` (sinon 503 sur les routes de données, contrat publié), `app.state.series_cache`, `/` annonce les 9 endpoints.
   - **Preuve J5 (ECHOS-045)** : `test_api_routes.py` (15 tests) + `test_sqlite_store.py`/`test_pipeline.py` étendus — couverture de la couche API ≥ 80 % (totale **98,2 %**), exports reproductibles testés. Tests : 146 → **167**, `SCHEMA_VERSION = "2"`.
+- **ECHOS ph7 — Comparaison expérimentale (ECHOS-070 → ECHOS-072, jalon ph7, U7)** :
+  - **`echos/analysis/reproducibility.py`** (ECHOS-070/071) — méta-métriques de reproductibilité,
+    fonctions pures : `IsReproducible` = même seed ∩ même version moteur ∩ **empreinte SHA-256** du
+    contenu canonique du run (séries de métriques, résumés de tick, événements, contextes
+    `agents`/`groups`/`phenomena`, traces de décision — cellule `run_id` exclue, deux runs du même
+    protocole ne diffèrent que par leur étiquette) ; `ReproducibilityScore` = `1.0` si reproductible,
+    sinon `1.0 − (CognitiveDiff + SocialDiff)/2` ; `CognitiveDiff`/`SocialDiff` = normes **L2
+    normalisées** (borne [0, 1]) entre distributions de croyances (`subject|predicate|value`,
+    somme = 1 — comparable entre populations) resp. réseaux de confiance (poids de paire moyen, non
+    orienté) au dernier contexte `agents` — clés triées, aucun PRNG ni dépendance temporelle
+    (déterminisme ECHOS, METRICS_SPEC.md §10, EXPERIMENT_COMPARISON.md §4).
+  - **`GET /api/compare`** (ECHOS-070) — `?run_a=&run_b=&format=json|csv` (API_REST.md §3.9) :
+    métadonnées des deux runs, `same_seed`/`same_version`/`bit_identical`/`is_reproducible`,
+    distances, `series` **alignées** ; `format=csv` export comparatif hors ligne (colonnes
+    `tick,engine,metric,run_a_value,run_b_value,diff`, `diff = run_b_value − run_a_value`, tri
+    `(tick, engine, metric)`) — reproductible ; erreurs 404 run inconnu / 400 format inconnu /
+    422 params manquants ; `_ENDPOINTS` annonce désormais **12 endpoints**.
+  - **Preuve J7** : `tests/test_compare.py` (**11 tests** — reproductibilité bit-à-bit, seed
+    différente non reproductible, distance nulle/non-nulle sur croyances/confiance, stabilité
+    **entre runs** (deux stores peuplés du même protocole ⇒ méta-métriques identiques, ECHOS-071) et
+    **entre appels** (réponse déterministe), séries alignées JSON/CSV, 404/400/422, fonctions
+    pures) ; fixture `snapshot_analysis.json` réutilisée pour peupler les runs. Tests : 197 → **208**,
+    couverture **97,97 %** (flake8 vert).
 - **ECHOS ph6 — Analyse causale (ECHOS-060 → ECHOS-063, issues #215 → #218, milestone ph6)** :
   - **`echos/analysis/causal.py`** (ECHOS-060/061) — reconstruction **hors ligne** (ADR-002 [Accepted]) : `build_chain(store, run_id, agent_id, tick=None, depth=7, max_depth=12)` produit la chaîne `Action ← Intention ← Objectif ← Besoin ← Croyance ← Mémoire ← Perception` depuis `decision_traces` + `events_log` (`decision_made` → intention, `message_received` → perception) + contexte `agents` (buts, croyances, mémoire) ; 1 nœud/couche (multiples agrégés dans `detail`, couche vide → `—`) ; besoins triés, croyances triées (déterminisme ECHOS-041).
   - **Boucles de rétroaction (ECHOS-062)** — récurrence de l'action aux ticks précédents (portée 16 dernières traces, `cycles[].ticks`) ; duplicat intra-chaîne arrêté au seuil du retour ; `depth` borné `[1, 12]` (défaut 7), `truncated` signalé.

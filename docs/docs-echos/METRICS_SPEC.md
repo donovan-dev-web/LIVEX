@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.3
 
@@ -142,6 +142,29 @@ Utilisée par diversité cognitive et complexité :
 ```text
 H(P) = -Σᵢ pᵢ × log₂(pᵢ)     pour toute pᵢ > 0
 ```
+
+## 10. Méta-métriques de reproductibilité (ECHOS-071, jalon ph7)
+
+Calculées par `echos/echos/analysis/reproducibility.py` sur deux runs contrôlés
+(`/api/compare`, EXPERIMENT_COMPARISON.md §2/§4) — fonctions pures, stables
+entre rejeux (déterminisme ECHOS) :
+
+| Méta-métrique | Définition |
+| :-- | :-- |
+| `IsReproducible` | même seed ∩ même version moteur ∩ empreinte SHA-256 du contenu canonique identique |
+| `ReproducibilityScore` | `1.0` si reproductible, sinon `1.0 − (CognitiveDiff + SocialDiff)/2` |
+| `CognitiveDiff` | norme L2 normalisée (borne [0, 1]) entre distributions de croyances de la population |
+| `SocialDiff` | norme L2 normalisée entre réseaux de confiance (poids de paire moyen, non orienté) |
+
+- **Empreinte canonique** : séries `tick_metrics`, résumés de tick, `events_log`,
+  contextes `agents`/`groups`/`phenomena`, `decision_traces` — sérialisés triés,
+  cellule `run_id` exclue (deux runs du même protocole diffèrent seulement par leur
+  étiquette) ; SHA-256 hex.
+- **Distributions normalisées** (somme = 1) : croyances `subject|predicate|value`
+  (population entière), confiance par paire (moyenne des deux directions, arêtes
+  positives).
+- Ces méta-métriques ne modifient **aucune** métrique des 7 moteurs (§1–§8) et ne
+  consomment aucun PRNG.
 
 ---
 

@@ -100,9 +100,9 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-070 | Comparaison de runs (`/api/compare`) | `type/feature`, `component/echos` | P1 | ECHOS-041, `EXPERIMENT_COMPARISON.md` | Comparaison bit-à-bit / seed différente reproductible |
-| ECHOS-071 | Métriques de reproductibilité | `type/feature`, `component/echos` | P1 | ECHOS-070, `METRICS_SPEC.md` | Méta-métriques stables entre runs (déterminisme ECHOS) |
-| ECHOS-072 | Format d'export comparatif (CSV/JSON) | `type/feature`, `component/echos` | P2 | ECHOS-070 | Export uniforme pour analyse hors ligne |
+| ECHOS-070 | Comparaison de runs (`/api/compare`) — **LIVRÉ (PR ECHOS, U7)** | `type/feature`, `component/echos` | P1 | ECHOS-041, `EXPERIMENT_COMPARISON.md` | Comparaison bit-à-bit / seed différente reproductible — ✓ `GET /api/compare?run_a=&run_b=` : `is_reproducible` (même seed ∩ même version ∩ empreinte SHA-256 du contenu canonique) + `bit_identical` ; divergence de seed détectée (déterminisme SYNE : runs de seed différente non reproductibles) |
+| ECHOS-071 | Métriques de reproductibilité — **LIVRÉ (PR ECHOS, U7)** | `type/feature`, `component/echos` | P1 | ECHOS-070, `METRICS_SPEC.md` | Méta-métriques stables entre runs (déterminisme ECHOS) — ✓ `ReproducibilityScore` = `1.0 − (CognitiveDiff + SocialDiff)/2`, `CognitiveDiff`/`SocialDiff` = L2 normalisées sur croyances/confiance (functions pures, clés triées) ; `test_compare.py` (stabilité entre appels, distributions comparables entre populations) |
+| ECHOS-072 | Format d'export comparatif (CSV/JSON) — **LIVRÉ (PR ECHOS, U7)** | `type/feature`, `component/echos` | P2 | ECHOS-070 | Export uniforme pour analyse hors ligne — ✓ `format=csv` (`tick,engine,metric,run_a,run_b,diff` alignés) et `format=json` (métadonnées + distances + séries) ; 11 tests `test_compare.py` |
 
 ### Milestone ph8 (echos) — Interface intégrée (Écrans web)
 
