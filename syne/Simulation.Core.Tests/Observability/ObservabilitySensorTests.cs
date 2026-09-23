@@ -1,5 +1,7 @@
 using System.Text.Json.Nodes;
+using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
+using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
@@ -7,8 +9,8 @@ using Simulation.Core.Observability;
 using Simulation.Core.Population;
 using Simulation.Core.Prng;
 using Simulation.Core.Social;
-using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
+using WorldType = Simulation.Core.World.World;
 using Xunit;
 
 namespace Simulation.Core.Tests;
@@ -313,5 +315,110 @@ public class ObservabilitySensorTests
         Assert.Equal(1UL, (ulong?)value["motherId"]);
         Assert.Equal(2UL, (ulong?)value["fatherId"]);
         Assert.Equal("Entité A", (string?)value["species"]);
+    }
+
+    [Fact]
+    public void EventSensor_MessageSent_CarriesDeliveryContract()
+    {
+        // SYNE-050 : événement message_sent (envoi ou relais) avec identifiant,
+        // type, sauts, confiance et taille du payload (API_CONTRACTS §2.2).
+        var sent = new MessageSent(
+            MessageId: 42,
+            SenderId: 1,
+            TargetId: 3,
+            Type: MessageType.Information,
+            Payload: "perceived-9#10.00,10.00",
+            Hops: 1,
+            Confidence: 0.81);
+
+        ExternalEvent messageEvent = EventSensor.MessageSent(tick: 7, sent);
+        JsonObject json = ObservabilitySerializer.EventMessage(messageEvent);
+
+        Assert.Equal(ObservabilityContract.MessageSent, (string?)json["type"]);
+        Assert.Equal("1", (string?)json["agentId"]);
+        Assert.Equal("3", (string?)json["targetId"]);
+        Assert.Equal("Information", (string?)json["action"]);
+        var value = (JsonObject)messageEvent.Value!;
+        Assert.Equal(42UL, (ulong?)value["messageId"]);
+        Assert.Equal(1, (int?)value["hops"]);
+        Assert.Equal(0.81, (double?)value["confidence"]);
+        Assert.Equal(23, (int?)value["payloadLength"]);
+    }
+
+    [Fact]
+    public void EventSensor_MessageReceived_CarriesReceptionContract()
+    {
+        // SYNE-051 : recevoir (y compris interception) — confiance ajustée par la
+        // relation du récepteur + drapeau d'incompréhension (API_CONTRACTS §2.2).
+        var received = new MessageReceived(
+            MessageId: 42,
+            ReceiverId: 2,
+            SenderId: 1,
+            Type: MessageType.Warning,
+            Hops: 2,
+            Confidence: 0.6,
+            Understood: false);
+
+        ExternalEvent messageEvent = EventSensor.MessageReceived(tick: 8, received);
+        JsonObject json = ObservabilitySerializer.EventMessage(messageEvent);
+
+        Assert.Equal(ObservabilityContract.MessageReceived, (string?)json["type"]);
+        Assert.Equal("2", (string?)json["agentId"]);
+        Assert.Equal("1", (string?)json["targetId"]);
+        Assert.Equal("Warning", (string?)json["action"]);
+        var value = (JsonObject)messageEvent.Value!;
+        Assert.Equal(42UL, (ulong?)value["messageId"]);
+        Assert.Equal(2, (int?)value["hops"]);
+        Assert.Equal(0.6, (double?)value["confidence"]);
+        Assert.False((bool?)value["understood"]);
+    }
+
+    [Fact]
+    public void EventSensor_AgentDied_CarriesCauseAndSpecies()
+    {
+        // SYNE-074 : la mort par épuisement porte cause et espèce (API_CONTRACTS §2.2).
+        var death = new DeathObservation(
+            Tick: 200,
+            EntityId: 9,
+            Species: "Entité A",
+            Cause: "energy_exhaustion");
+
+        ExternalEvent died = EventSensor.AgentDied(tick: 200, death);
+        JsonObject json = ObservabilitySerializer.EventMessage(died);
+
+        Assert.Equal(ObservabilityContract.AgentDied, (string?)json["type"]);
+        Assert.Equal("9", (string?)json["agentId"]);
+        Assert.Equal("energy_exhaustion", (string?)json["cause"]);
+        var value = (JsonObject)died.Value!;
+        Assert.Equal("energy_exhaustion", (string?)value["cause"]);
+        Assert.Equal("Entité A", (string?)value["species"]);
+    }
+
+    [Fact]
+    public void Event_ActionCompleted_WithReserve_AddsReserveFields()
+    {
+        // SYNE-040 : une action qui consomme une réserve (Eat/Drink) porte les
+        // champs reserve / reserveConsumed dans l'événement action_completed.
+        var result = new ActionResult(
+            DesireKind.Eat,
+            ActionOutcome.Executed,
+            Reason: null,
+            EnergyDelta: -0.5,
+            HungerDelta: -20.0,
+            ThirstDelta: 0.0,
+            FatigueDelta: 0.0,
+            ReserveConsumed: ResourceKind.Food,
+            ReserveConsumedAmount: 1.0);
+
+        ExternalEvent completed = EventSensor.ActionCompleted(tick: 12, agentId: 4, result);
+        JsonObject json = ObservabilitySerializer.EventMessage(completed);
+
+        Assert.Equal(ObservabilityContract.ActionCompleted, (string?)json["type"]);
+        Assert.Equal("4", (string?)json["agentId"]);
+        Assert.Equal("Eat", (string?)json["action"]);
+        var value = (JsonObject)completed.Value!;
+        Assert.Equal("food", (string?)value["reserve"]);
+        Assert.Equal(1.0, (double?)value["reserveConsumed"]);
+        Assert.Equal(-20.0, (double?)value["hungerDelta"]);
     }
 }
