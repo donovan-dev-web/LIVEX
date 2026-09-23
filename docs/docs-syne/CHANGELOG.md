@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`syne-vX.Y.Z`).
@@ -10,6 +10,30 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon SYNE ph10 — Tests & Couverture (SYNE-100 → SYNE-102, jalon ph10, U7)** :
+  - **`SUITE UNITAIRE & COUVERTURE` (SYNE-100)** : couverture lignes mesurée **96,19 %** (≥ 80 % requis ;
+    Coverlet XPlat) — les deux fichiers sous le seuil passent à **100 %** : `SimulationOptionsValidator.cs`
+    (278/278) via **`Ph10ValidationCoverageTests`** (27 tests / 35 exécutions — toutes les branches de
+    validation : monde, sauvegarde, débits, perception, communication, besoins, croyances, catalogue
+    d'actions, merge, mortalité, A*, options nulles) et `ExternalEvent.cs` (314/314) via
+    **`ObservabilitySensorTests`** étendu (`message_sent` contrat de livraison, `message_received`
+    contrat de réception, `agent_died` {cause, species}, `agent_spawned` parentage,
+    `action_completed` réserves).
+  - **`TESTS D'INTÉGRATION BOUCLE COMPLÈTE` (SYNE-101)** : **`ObservabilityChainedLoopTests`** —
+    150 ticks chaînés observés **sans perte** : 1 snapshot + 1 `tick_summary` par tick, ticks contigus
+    1..N (aucun trou ni doublon), toutes les trames JSON valides, 6 sous-systèmes engagés
+    (`decision_made`, `action_completed`, `message_sent`/`message_received`…) + au moins un événement
+    social/population ; invariant cross-check : les agents `agent_died` n'apparaissent dans aucun
+    snapshot post-mortem.
+  - **`NON-RÉGRESSION DÉTERMINISME` (SYNE-102)** : **`Ph10DeterminismBaselineTests`** — journal
+    d'état **complet** (population, envois, groupes, naissances, décès, puis id/position/énergie/
+    besoins/intention/mémoire/confiance par entité) en partie canonique — bit-à-bit identique pour
+    seeds {12345, 7, 999}, divergent pour seed différent ; **nouvelle baseline épinglée
+    `0x072a488aa18c05eb`** (25 ent., 200 ticks, seed 12345) documentée DETERMINISM.md §7. Golden de
+    perception **`0x27fad50065d8c4a4` inchangé**, `engineVersion` reste **0.6.0** (aucune altération
+    de trajectoire — tests seuls).
+  - Tests : +45 (279 → **324** : **315 Core** + **9 Console**). Seuils annexe J.1 largement dépassés
+    (160+ requis).
 - **Jalon SYNE ph9 — Performance & Scalabilité (SYNE-090 → SYNE-093, jalon ph9, U7)** :
   - **`BUDGETS PAR TICK` (SYNE-090)** : `TickBudgetCollector` (opt-in, `SimulationLoop.Budgets`) — mesure
     du temps par sous-système (perception, mémoire/croyances, besoins/objectifs, décision/utilité,

@@ -62,6 +62,8 @@
 
 **Jalon SYNE ph7b (engineVersion 0.6.0)** : les 4 fidélités restent **0 tirage PRNG** — la mortalité itère par identifiant croissant après les boucles entités/communication/naissances (SYNE-074) ; la naissance consentie évalue les paires qualifiantes dans l'ordre d'id (SYNE-075) ; l'alignement sur objectif collectif est un produit déterministe consensus × confiance au leader (SYNE-076) ; le cheminement A* est **sans PRNG** : grille rasterisée, voisinage ordonné, départage (f, g, x, y), expansion plafonnée, repli « sur place » (SYNE-077), cache LRU à accès déterministe. Checksum de la trajectoire **inchangé** (0x27fad50065d8c4a4 — le scénario de référence ne déclenche aucun pas bloqué), ré-épinglé pour pin contractuel.
 
+**Jalon SYNE ph10 (engineVersion 0.6.0, inchangé)** : tests de non-régression de déterminisme (SYNE-102) **sans modification du moteur** — le golden de perception reste **0x27fad50065d8c4a4** et `engineVersion` reste 0.6.0. Une **nouvelle baseline d'état complet** est épinglée en complément (`Ph10DeterminismBaselineTests.FullPipeline_StateBaseline_IsPinned`) : journal canonique par tick (population, envois, groupes, naissances, décès, puis id/position/énergie/besoins/intention/mémoire/confiance de chaque entité) — scénario identique (25 entités, 200 ticks, seed 12345) → checksum FNV-1a **0x072a488aa18c05eb**. Toute altération bit-à-bit de la trajectoire change ce checksum ET le golden ; recalcul + bump MINOR requis (§7).
+
 ## 7. Impacts & contractuels
 
 - Toute modification qui altère la trajectoire à seed identique impose :

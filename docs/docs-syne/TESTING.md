@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `DETERMINISM.md`, `ARCHITECTURE.md`
 **Source Monographie** : §7.1 (xUnit + Moq), Annexe J (jalons de validation, 160+ tests), Annexe I (benchmarks)
 
@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **279 tests** (suite Core + Console : baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests` → **+19** au jalon SYNE ph7b : 4 `BirthSystemTests` fidélités (SYNE-075), 3 propagation + 1 bonus `GroupObjective` (SYNE-076), 8 `AStarPathfinderTests` + 2 `ActionExecutorTests` (SYNE-077), 1 observabilité preuve SYNE-081/082 ; +1 `test_health.py` ECHOS — registre `/api/runs/{id}/decisions` → **+12** au jalon SYNE ph9 : 5 `ObjectPoolTests`, 3 `TickBudgetTests` (part computation ≥ 30 % + non-altération trajectoire + golden), 4 `ScaleTargetsTests` (planchers 50/500/1000 + checksum à l'échelle)). Checksum doré ré-épinglé `0x27fad50065d8c4a4` (engineVersion 0.6.0), inchangé au ph9 (instrumentation/pooling déterministes).
+Garantir — par des tests automatisés — la **correction**, le **déterminisme** et la **performance** de SYNE. Jalon : **160+ tests** (Annexe J.1) et **couverture ≥ 80 %** (Annexe I.3). État V0.1 : **324 tests** (315 Core + 9 Console ; baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 `Simulation.Console.Tests` → +32 au jalon SYNE ph6 : 9 `GroupSystemTests`, 7 `BirthSystemTests`, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 `GroupBirthDeterminismTests` → **+19** au jalon SYNE ph7b : 4 `BirthSystemTests` fidélités (SYNE-075), 3 propagation + 1 bonus `GroupObjective` (SYNE-076), 8 `AStarPathfinderTests` + 2 `ActionExecutorTests` (SYNE-077), 1 observabilité preuve SYNE-081/082 ; +1 `test_health.py` ECHOS — registre `/api/runs/{id}/decisions` → **+12** au jalon SYNE ph9 : 5 `ObjectPoolTests`, 3 `TickBudgetTests` (part computation ≥ 30 % + non-altération trajectoire + golden), 4 `ScaleTargetsTests` (planchers 50/500/1000 + checksum à l'échelle) → **+45** au jalon SYNE ph10 : 35 `Ph10ValidationCoverageTests` (toutes les branches du `SimulationOptionsValidator`), 4 `ObservabilitySensorTests` (`message_sent/received`, `agent_died`, `agent_spawned`, `action_completed` réserves), 3 `Ph10DeterminismBaselineTests` (SYNE-102, baseline d'état épinglée), 3 `ObservabilityChainedLoopTests` (SYNE-101, boucle complète sans perte — Console)). **Couverture lignes mesurée 96,19 %** (≥ 80 % requis par SYNE-100) — `SimulationOptionsValidator.cs` 100 %, `ExternalEvent.cs` 100 %. Checksum doré ré-épinglé `0x27fad50065d8c4a4` (engineVersion 0.6.0), inchangé au ph9/ph10 (instrumentation/pooling/tests seuls) ; baseline d'état complète ph10 `0x072a488aa18c05eb`.
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -31,13 +31,15 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Décision / Utilité (SYNE ph3) | formule complète, **bonus d'alignement ×1.2**, hystérésis (`actionSwitchMargin`), interruptions par besoin critique, **fréquence de délibération configurable**, **conflits de priorités force × confiance**, **DecisionRecord** |
 | Actions (SYNE ph4) | catalogue déclaratif complet + échec déclaratif, exécution atomique (Eat/Drink/rest/mouvement), déplacement déterministe sans obstacle, **réserves globales** (consommation, clamp, copie), **déclencheur d'interruption centralisé** (faim→Eat/SeekFood, énergie→Rest, marge, cas nominal), seuils de besoins **≥ 50**, terminal Eat/Drink en pipeline, événement `action_completed` (API_CONTRACTS §2.2) |
 | Communications (SYNE ph5) | portée + **ligne de vue**, **interception publique** (décision n°8), **coûts hérités configurables** (0.5+p×0.1 / 0.2+p×0.05, décision n°9), **confiance ajustée par le récepteur**, caps `maxSends`/`maxReceives`, **relais × 0.9/hop** + borne `maxHops` + anti-boucle, **déterminisme** (id SplitMix64, incompréhension, égalité inter-runs) — `CommunicationSystemTests` |
-| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` + `action_completed` + `message_sent`/`message_received`, `resources` peuplées, **engineVersion 0.5.0** ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
+| Observabilité (SYNE-080) | format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat `decision_made` + `action_completed` (avec réserves) + `message_sent`/`message_received` (contrats de livraison/réception) + `agent_died` ({cause, species}) + `agent_spawned` (parentage), `resources` peuplées, **engineVersion 0.6.0** ; **tests de fil WebSocket réels** (`Simulation.Console.Tests`) |
 | Groupes (SYNE ph6) | cohésion confiance × affinité (lien = confiance **et** part commune), composantes union-find, **cycle de vie par correspondance exacte des membres** (turnover ⇒ dissolution [+refonte]), taille minimale, leader par confiance entrante (tie-break id), décisions pondérées + quorum, formation/dissolution/décision événements + snapshot `groups[]` — `GroupSystemTests` |
 | Naissance & Héritage (SYNE ph6) | fusion consentie (min confiance réciproque ≥ seuil, paire d'id minimal, enfant médian clampé), allocation d'id croissante, naissances fusionnées post-boucle, `agent_spawned` (parentage), **dominance [0,1] parent exprimant**, **mutation déterministe** + bornes [0,2], seuil de salience configuré — `BirthSystemTests`, `InheritanceTests` |
 | Groupes/Births (déterminisme ph6) | mêmes options + seed ⇒ même séquence de groupes/naissances en 200 ticks, seeds différents ⇒ divergences, événements groupes via contrat — `GroupBirthDeterminismTests` |
 | Ressources | régénération, épuisement |
 | Persistance | sauvegarde/charge JSON et SQLite |
-| Déterminisme | `DeterminismRegressionTests` (hash épinglé SYNE-015), auto-égalité, checksums |
+| Configuration / Validation (SYNE-100) | toutes les branches du `SimulationOptionsValidator` : bornes monde/débits, sauvegarde (`autoSaveEveryNTicks`, `maxBackups`), perception, communication (caps, portée, `maxHops`, coûts, incompréhension), besoins (rates/triggers/drifts), croyances (plafonds, décroissance), groupe (`CollectiveAlignBonus`, catalogue eat/drink/rest, merge, mortalité), A* (`cellSize`, `maxExpansionCells`, `cacheCapacity`), `null` — `Ph10ValidationCoverageTests` (**`SimulationOptionsValidator.cs` 100 %**) |
+| Déterminisme | `DeterminismRegressionTests` (hash épinglé SYNE-015), auto-égalité, checksums ; **`Ph10DeterminismBaselineTests` (SYNE-102)** — journal d'état **complet** (positions, énergie, besoins, mémoire, confiance, groupes, naissances, décès) bit-à-bit pour seeds {12345, 7, 999}, divergence seed différente, baseline épinglée `0x072a488aa18c05eb` |
+| Intégration boucle complète (SYNE-101) | **`ObservabilityChainedLoopTests`** — 150 ticks chaînés sans perte : 1 snapshot + 1 `tick_summary`/tick, ticks contigus 1..N, trames JSON valides, 6 sous-systèmes engagés (`decision_made`, `action_completed`, `message_sent`/`message_received`…) + au moins un événement social/population ; agents décédés absents des snapshots post-mortem |
 | Performance | `PerceptionBenchmarkTests` (SYNE-012) — budget 10 ms/requête en CI ; **`ObjectPoolTests` + `TickBudgetTests` + `ScaleTargetsTests` (SYNE ph9)** — pooling actif, part computation ≥ 30 %, trajectoire non altérée, planchers anti-régression 50/500/1000, checksum bit-à-bit à l'échelle |
 
 ## 4. Tests de déterminisme (critiques)
@@ -61,7 +63,9 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Décision+Utilité | traits différents → décisions différentes | `dotnet test --filter "UtilityEvaluatorTests|CognitionPipelineTests"` |
 | Communication (SYNE ph5) | information locale (rayon), interception, relais ≤ 2 sauts | `dotnet test --filter "CommunicationSystemTests"` |
 | Performance | micro-benchmark grille < budget CI ; **débits 50/500/1000 ≥ 120/30/20 t/s (ph9)** | `dotnet test --filter "PerceptionBenchmarkTests|ScaleTargetsTests"` |
-| Tests | 160+ tests, ≥ 80 % | `dotnet test --collect:"XPlat Code Coverage"` |
+| Tests | **324 tests (315 Core + 9 Console), 96,19 % de couverture** (≥ 80 % requis, SYNE-100) | `dotnet test --collect:"XPlat Code Coverage"` |
+| Déterminisme (SYNE-102) | golden `0x27fad50065d8c4a4` + baseline d'état `0x072a488aa18c05eb` inchangés | `dotnet test --filter "DeterminismRegressionTests|Ph10DeterminismBaselineTests"` |
+| Intégration (SYNE-101) | 150 ticks chaînés sans perte (contiguïté 1..N) | `dotnet test --filter "ObservabilityChainedLoopTests"` |
 
 ## 7. Convention d'écriture
 

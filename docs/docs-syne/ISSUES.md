@@ -165,9 +165,9 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-100 | Suite de tests unitaires (> 160 tests) | `type/test`, `component/syne` | P0 | `TESTING.md`, jalons T5 | 160+ tests ; couverture ≥ 80 % |
-| SYNE-101 | Tests d'intégration (boucle complète) | `type/test`, `component/syne` | P1 | SYNE-100, `ROADMAP.md` §10 | Ticks chaînés ECHOS/PRISM sans perte |
-| SYNE-102 | Tests de non-régression déterminisme | `type/test`, `component/syne` | P0 | SYNE-015, SYNE-093 | Baseline bit-à-bit : même seed = même trajectoire |
+| SYNE-100 | Suite de tests unitaires (> 160 tests) — **LIVRÉ (PR SYNE, U7)** | `type/test`, `component/syne` | P0 | `TESTING.md`, jalons T5 | 160+ tests ; couverture ≥ 80 % — ✓ **315 tests** (Simulation.Core.Tests) + 9 (Console) ; couverture lignes **96,19 %** (`SimulationOptionsValidator.cs` 278/278 = 100 %, `ExternalEvent.cs` 314/314 = 100 % via `Ph10ValidationCoverageTests` + `ObservabilitySensorTests`) |
+| SYNE-101 | Tests d'intégration (boucle complète) — **LIVRÉ (PR SYNE, U7)** | `type/test`, `component/syne` | P1 | SYNE-100, `ROADMAP.md` §10 | Ticks chaînés ECHOS/PRISM sans perte — ✓ `ObservabilityChainedLoopTests` : 150 ticks chaînés sans trou (snapshots/tick_summary contigus 1..N, trames JSON valides), 6 sous-systèmes (`decision_made`, `action_completed`, `message_sent/received`…) + événement social/population vérifiés ; décès absents des snapshots ultérieurs |
+| SYNE-102 | Tests de non-régression déterminisme — **LIVRÉ (PR SYNE, U7)** | `type/test`, `component/syne` | P0 | SYNE-015, SYNE-093 | Baseline bit-à-bit : même seed = même trajectoire — ✓ `Ph10DeterminismBaselineTests` : journal d'état **complet** (positions, énergie, besoins, mémoire, confiance, groupes, naissances, décès) identique pour seeds {12345, 7, 999} et divergent pour seed différent ; baseline épinglée **`0x072a488aa18c05eb`** (25 ent., 200 ticks, seed 12345) + golden perception `0x27fad50065d8c4a4` inchangé (DETERMINISM §7) |
 
 ### Milestone ph11 — Persistance & Reprise
 
