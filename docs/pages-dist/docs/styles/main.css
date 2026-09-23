@@ -1,0 +1,274 @@
+/* ============================================================
+   LIVEX — theme DocFX overlay (palette alignée UI_DESIGN.md)
+   Fichier chargé APRÈS docfx.vendor.min.css / docfx.css / main.css
+   ============================================================ */
+
+:root {
+  /* fond & surfaces (palette LIVEX — UI_DESIGN.md §5) */
+  --lx-bg: color-mix(in srgb, var(--bs-body-bg, #f5f7f9) 6%, #0d1117);
+  --lx-surface: #161b22;
+  --lx-border: #30363d;
+  --lx-text: #e6edf3;
+  --lx-muted: #8b949e;
+  --lx-accent: #00d4a0;
+  --lx-accent-strong: #00b886;
+  --lx-info: #58a6ff;
+  --lx-danger: #f85149;
+  --lx-warning: #d29922;
+  --lx-radius: 10px;
+}
+
+/* Body : fond profond LIVEX + Inter */
+body {
+  background-color: var(--lx-bg);
+  color: var(--lx-text);
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.006em;
+}
+code, pre, kbd {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
+}
+
+/* ------------------------------------------------------------------
+   Bandeau navbar : fond de surface LIVEX, logo + titre
+   ------------------------------------------------------------------ */
+.navbar-inverse {
+  background-color: var(--lx-surface);
+  border-color: var(--lx-border);
+}
+.navbar-inverse .navbar-brand {
+  color: var(--lx-text);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.navbar-inverse .navbar-brand img#logo {
+  max-height: 34px;
+  vertical-align: middle;
+}
+.navbar-inverse .navbar-nav > li > a {
+  color: var(--lx-muted);
+  font-size: 14px;
+}
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus,
+.navbar-inverse .navbar-nav > .active > a {
+  color: var(--lx-text);
+  background-color: transparent;
+  border-bottom: 2px solid var(--lx-accent);
+}
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+  border-color: var(--lx-border);
+}
+
+/* ------------------------------------------------------------------
+   Liens & ancres : accent ECHOS
+   ------------------------------------------------------------------ */
+a {
+  color: var(--lx-info);
+}
+a:hover, a:focus {
+  color: var(--lx-accent);
+}
+a.anchorjs-link:hover, a.anchorjs-link:focus {
+  color: var(--lx-accent);
+}
+.article a[href^="http"]:hover {
+  color: var(--lx-info);
+}
+
+/* ------------------------------------------------------------------
+   Blocs de code : surface sombre + bordure + accent langue
+   ------------------------------------------------------------------ */
+pre {
+  background-color: var(--lx-surface) !important;
+  border: 1px solid var(--lx-border);
+  border-radius: 6px;
+  color: var(--lx-text) !important;
+}
+pre code {
+  color: var(--lx-text);
+}
+code {
+  color: #79b8ff;
+  background-color: rgba(88, 166, 255, 0.08);
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+pre code {
+  background-color: transparent;
+  padding: 0;
+}
+.hljs-keyword, .hljs-attribute { color: #ff7b72; }
+.hljs-string, .hljs-regexp { color: #a5d6ff; }
+.hljs-title, .hljs-title.function_ { color: #d2a8ff; }
+.hljs-comment { color: #8b949e; font-style: italic; }
+
+/* ------------------------------------------------------------------
+   Tableaux : alignement géo-tabulaire, bordures surface
+   ------------------------------------------------------------------ */
+.table > thead > tr > th {
+  color: var(--lx-text);
+  border-bottom: 2px solid var(--lx-accent);
+  font-weight: 600;
+}
+.table > tbody > tr > td {
+  border-top: 1px solid var(--lx-border);
+}
+.table-bordered,
+.table-bordered > thead > tr > th,
+.table-bordered > tbody > tr > td,
+.table-bordered > tfoot > tr > th,
+.table-bordered > tfoot > tr > td {
+  border: 1px solid var(--lx-border);
+}
+
+/* ------------------------------------------------------------------
+   TOC latérale & affix : muted → accent (survol/actif)
+   ------------------------------------------------------------------ */
+.sidenav {
+  border-right: 1px solid var(--lx-border);
+}
+.sidenav .nav > li > a {
+  color: var(--lx-muted);
+  font-size: 13.5px;
+}
+.sidenav .nav > li > a:hover,
+.sidenav .nav > li > a:focus {
+  color: var(--lx-text);
+  background-color: transparent;
+}
+.sidenav .nav > li.active > a {
+  color: var(--lx-accent);
+  font-weight: 600;
+}
+.sidenav .nav > li.active > a:hover {
+  color: var(--lx-accent);
+}
+li.active > a {
+  border-left: 3px solid var(--lx-accent);
+  padding-left: 12px;
+}
+.toc .nav > li > a {
+  color: var(--lx-muted);
+  border: 0;
+  font-size: 13.5px;
+}
+.toc .nav > li > a:hover {
+  color: var(--lx-text);
+  background: transparent;
+}
+
+/* ------------------------------------------------------------------
+   Affix (posts-article toc dans l'article DocFX) : accordéon propre
+   ------------------------------------------------------------------ */
+.affix {
+  border-left: 2px solid var(--lx-accent);
+}
+.affix h5 {
+  color: var(--lx-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12.5px;
+}
+.affix ul > li > a {
+  color: var(--lx-muted);
+}
+.affix ul > li.active > a,
+.affix ul > li > a:hover {
+  color: var(--lx-text);
+}
+
+/* ------------------------------------------------------------------
+   Héro / landing / cartes (index.md)
+   ------------------------------------------------------------------ */
+.hero {
+  padding: 64px 16px;
+  background: linear-gradient(180deg, #0b1120 0%, #0d1117 66%);
+  border-bottom: 1px solid var(--lx-border);
+  text-align: center;
+}
+.hero h1 {
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  color: var(--lx-text);
+  margin: 12px 0 0;
+}
+.hero .tagline {
+  color: var(--lx-accent);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 13.5px;
+}
+.hero p.lead {
+  color: var(--lx-muted);
+  max-width: 640px;
+  margin: 16px auto 0;
+}
+
+.modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 28px;
+}
+.lx-card {
+  flex: 1 1 260px;
+  display: block;
+  padding: 20px;
+  border: 1px solid var(--lx-border);
+  border-radius: var(--lx-radius);
+  background-color: var(--lx-surface);
+  color: var(--lx-text);
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.lx-card:hover {
+  border-color: var(--lx-accent);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: var(--lx-text);
+}
+.lx-card h3 {
+  margin: 0 0 6px;
+  color: var(--lx-accent);
+  font-size: 18px;
+  font-weight: 600;
+}
+.lx-card .role {
+  color: var(--lx-text);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.lx-card .role strong {
+  color: var(--lx-text);
+}
+.lx-card p {
+  color: var(--lx-muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.lx-card .lx-more {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--lx-info);
+  font-size: 13px;
+  font-weight: 500;
+}
+.lx-card .lx-more:hover {
+  color: var(--lx-accent);
+}
+
+/* ------------------------------------------------------------------
+   Footer : surface LIVEX + accent
+   ------------------------------------------------------------------ */
+footer {
+  border-top: 1px solid var(--lx-border);
+  background-color: #0a0e14;
+  color: var(--lx-muted);
+}
+footer a {
+  color: var(--lx-accent);
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECHOS — analyse & interface" viewBox="0 0 48 48">
+  <rect x="4" y="4" width="40" height="40" rx="10" fill="#161B22" stroke="#30363D" stroke-width="2"/>
+  <circle cx="15" cy="17" r="4" fill="#00D4A0"/>
+  <circle cx="28" cy="14" r="3" fill="#00D4A0" opacity="0.55"/>
+  <circle cx="35" cy="26" r="5" fill="#00D4A0"/>
+  <circle cx="19" cy="32" r="3.5" fill="#00D4A0" opacity="0.55"/>
+  <path d="M19 17 L25 15 L32 24 L25 31" stroke="#30363D" stroke-width="2" fill="none"/>
+</svg>
