@@ -50,6 +50,12 @@ public sealed class AgentSettings
 
     /// <summary>Héritage intergénérationnel (SYNE-063, décision n°16) : mécanismes fins configurables (§6.6.3).</summary>
     public InheritanceSettings Inheritance { get; set; } = new();
+
+    /// <summary>Cycle de vie — mortalité par épuisement (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4).</summary>
+    public LifeSettings Life { get; set; } = new();
+
+    /// <summary>Cheminement (SYNE-077, Monographie §6.2.12) : A* déterministe sur grille rasterisée + cache LRU.</summary>
+    public PathfindingSettings Pathfinding { get; set; } = new();
 }
 
 public sealed class NeedsSettings
@@ -184,6 +190,9 @@ public sealed class DeliberationSettings
     /// <summary>Bonus d'alignement avec l'objectif courant (×1.2, COGNITIVE_ARCHITECTURE.md §6).</summary>
     public double AlignBonus { get; set; } = 1.2;
 
+    /// <summary>Bonification maximale d'alignement avec l'objectif collectif (SYNE-076, ×1.2 par défaut).</summary>
+    public double CollectiveAlignBonus { get; set; } = 1.2;
+
     /// <summary>Marge anti-oscillation (hystérésis) : passer à une nouvelle action seulement si elle dépasse l'action courante de cette marge (défaut 0.05).</summary>
     public double ActionSwitchMargin { get; set; } = 0.05;
 
@@ -308,8 +317,11 @@ public sealed class GroupSettings
 }
 
 /// <summary>
-/// Cycle de vie — naissance par fusion consentie (SYNE-062, décisions n°17, 16,
-/// SYSTEM_SPEC.md §8) : fusion rare et volontaire, décision déterministe sans PRNG.
+/// Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17, 16,
+/// SYSTEM_SPEC.md §8, Monographie §6.6.2) : fusion rare et volontaire, décision
+/// déterministe sans PRNG. La « fusion consentie » est soumise aux conditions de
+/// fidélité comportementale (proximité physique, ligne de vue, énergie suffisante,
+/// absence de besoin critique) — SYNE-075.
 /// </summary>
 public sealed class ReproductionSettings
 {
@@ -324,6 +336,18 @@ public sealed class ReproductionSettings
 
     /// <summary>Plafond de naissances par tick (0 = aucune, garde-fou de population).</summary>
     public int MaxBirthsPerTick { get; set; } = 1;
+
+    /// <summary>Proximité physique : distance maximale entre les parents pour fusionner (SYNE-075).</summary>
+    public double MergeRange { get; set; } = 40.0;
+
+    /// <summary>Énergie minimale des deux parents pour fusionner (SYNE-075, Monographie §6.6.2).</summary>
+    public double MergeMinimumEnergy { get; set; } = 30.0;
+
+    /// <summary>La ligne de vue entre les parents doit être dégagée (SYNE-075, SYNE-011).</summary>
+    public bool RequireLineOfSight { get; set; } = true;
+
+    /// <summary>Ni l'un ni l'autre des parents ne doit être en état critique (SYNE-075 : faim/énergie critiques).</summary>
+    public bool RequireNoCriticalNeed { get; set; } = true;
 }
 
 /// <summary>
@@ -348,4 +372,43 @@ public sealed class InheritanceSettings
 
     /// <summary>Seuil de salience d'un souvenir parental pour être transmis (ex-V0.1 <c>DefaultSalienceThreshold</c>).</summary>
     public double SalienceThreshold { get; set; } = 0.01;
+}
+
+/// <summary>
+/// Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :
+/// une entité dont l'énergie atteint 0 (épuisement) meurt : retrait du monde
+/// (grille spatiale + index), des groupes et de la cognition, puis émission d'un
+/// événement <c>agent_died</c> (API_CONTRACTS.md §2.2).
+/// </summary>
+public sealed class LifeSettings
+{
+    /// <summary>Mortalité active.</summary>
+    public bool DeathEnabled { get; set; } = true;
+
+    /// <summary>Energie fatale : une entité dont l'énergie est ≤ ce seuil meurt (défaut 0 — épuisement total).</summary>
+    public double DeathEnergyThreshold { get; set; } = 0.0;
+
+    /// <summary>Cause d'une mort par épuisement (événement <c>agent_died</c>).</summary>
+    public string EnergyExhaustionCause { get; set; } = "energy_exhaustion";
+}
+
+/// <summary>
+/// Cheminement (SYNE-077, Monographie §6.2.12) : A* déterministe sur grille
+/// rasterisée (les disques obstacles bloquent leurs cellules), voisinage ordonné
+/// + tie-break, cache de chemins LRU borné, repli « sur place » quand
+/// aucun chemin n'existe (destination inaccessible ou expansion plafonnée).
+/// </summary>
+public sealed class PathfindingSettings
+{
+    /// <summary>Cheminement actif (peut être neutralisé par l'option V0.1).</summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Taille de cellule de la grille rasterisée (unités monde).</summary>
+    public double CellSize { get; set; } = 10.0;
+
+    /// <summary>Plafond d'expansion d'A* (cellules) — repli « sur place » au-delà.</summary>
+    public int MaxExpansionCells { get; set; } = 4096;
+
+    /// <summary>Capacité du cache de chemins LRU (mémoïsation source → but).</summary>
+    public int CacheCapacity { get; set; } = 256;
 }

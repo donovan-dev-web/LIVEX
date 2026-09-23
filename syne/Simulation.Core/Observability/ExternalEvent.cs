@@ -240,4 +240,24 @@ public static class EventSensor
             AgentId: birth.ChildId.ToString(CultureInfo.InvariantCulture),
             Value: value);
     }
+
+    /// <summary>
+    /// Événement <c>agent_died</c> (SYNE-074) : mort d'une entité par épuisement
+    /// (énergie ≤ seuil fatal). Consommé par ECHOS (population : courbe de survie).
+    /// </summary>
+    public static ExternalEvent AgentDied(ulong tick, DeathObservation death)
+    {
+        ArgumentNullException.ThrowIfNull(death);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["cause"] = death.Cause,
+            ["species"] = death.Species,
+        };
+        return new ExternalEvent(
+            ObservabilityContract.AgentDied,
+            tick,
+            AgentId: death.EntityId.ToString(CultureInfo.InvariantCulture),
+            Cause: death.Cause,
+            Value: value);
+    }
 }
