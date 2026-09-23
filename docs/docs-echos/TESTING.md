@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -275,6 +275,35 @@ cd echos && python -m pytest echos/tests/test_causal_analysis.py -q
   `latest_decision_tick`/`context_before` couverte indirectement par
   `test_causal_analysis.py`.
 
+### 4.10 Comparaison expérimentale & preuve J7 (ECHOS-070 → ECHOS-072)
+
+Le jalon **ph7 — Comparaison expérimentale** (milestone « ph7 (echos) »)
+ajoute `/api/compare` : méta-métriques de reproductibilité (ECHOS-070/071) et
+export comparatif CSV/JSON (ECHOS-072) — `echos/analysis/reproducibility.py`
+(fonctions pures, aucun PRNG ni horodatage).
+
+```bash
+cd echos && python -m pytest echos/tests/test_compare.py -q
+# → 11 passed ; reproductibilité, distances, séries alignées, erreurs
+```
+
+- `test_compare.py` (nouveau, 11 tests) :
+  - **ECHOS-070** : deux runs du même protocole (même seed/version/contenu)
+    ⇒ `is_reproducible=true`, `bit_identical=true`, score `1.0` ; même contenu
+    mais seed différente ⇒ **non reproductible** malgré le bit-à-bit
+    (`reproducibility_score` < 1.0) ; run inconnu → 404, format inconnu → 400,
+    paramètres manquants → 422.
+  - **ECHOS-071** : croyances divergentes ⇒ `cognitive_diff > 0` et score en
+    baisse ; confiance divergente ⇒ `social_diff > 0` ; **stabilité** : deux
+    magasins peuplés du même protocole → méta-métriques **strictement
+    identiques**, et réponse déterministe entre appels successifs.
+  - **ECHOS-072** : `format=json` → `series` alignées et triées
+    `(tick, engine, metric)` avec `diff = run_b_value − run_a_value` ;
+    `format=csv` → en-tête `tick,engine,metric,run_a_value,run_b_value,diff`,
+    `content_type text/csv`, lignes déterministes.
+Suite : **208 tests** (197 → +11), couverture **97,97 %** (pytest
+`--cov-fail-under=80`), flake8 sans alerte.
+
 ## 5. Critères de non-régression
 
 - Une modification qui **change un score calculé sur un fixture identique** est refusée (sauf changement de formule documenté dans `CHANGELOG.md` + mise à jour du score de version « moteur de métriques »).
@@ -283,4 +312,4 @@ cd echos && python -m pytest echos/tests/test_causal_analysis.py -q
 
 ## Points restés ouverts dans ce document
 - Fenêtres temporelles et seuils des moteurs (100 ticks, fréquence > 2, amplification > 1,5) : valeurs `[HÉRITÉ]` à **confirmer en calibration** (METRICS_SPEC §6) — le code les expose en constantes de chaque module, la formule reste stables pour les golden files.
-- Preuve J2/J3 ECHOS : rejeux synthétiques en CI ; l'ingestion **réelle** de deux runs SYNE (binaire .NET, hors CI) suivra au jalon J3 avec l'API `/api/compare` (ECHOS-070).
+- Preuve J2/J3 ECHOS : rejeux synthétiques en CI ; l'ingestion **réelle** de deux runs SYNE (binaire .NET, hors CI) reste à consolider — l'API de comparaison `/api/compare` (ECHOS-070) est livrée (jalon ph7) et peut être alimentée par ce jeu d'essai manuel.
