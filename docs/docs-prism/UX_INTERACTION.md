@@ -65,4 +65,4 @@ PRISM n'est pas la seule interface. L'application d'analyse, héritée du protot
 ---
 
 ## Points restés ouverts dans ce document
-- L'assemblage exact PRISM (Godot) ↔ interface Electron/React en V0.1 (fenêtres séparées, partage de données via API ECHOS :5000) sera précisé à l'implémentation.
+- L'assemblage exact PRISM (Godot) ↔ interface web ECHOS (React/Vite servie par FastAPI) en V0.1 (fenêtres séparées, partage de données via API ECHOS :5000) sera précisé à l'implémentation.

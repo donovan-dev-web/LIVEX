@@ -22,14 +22,14 @@ Observatoire de LIVEX : il transforme l'exécution de SYNE en données compréhe
 # API FastAPI (V0.1)
 uvicorn echos.api.app:app --host 127.0.0.1 --port 5000
 
-# Interface (Electron + React)
-cd echos/echos-ui && npm run start
+# Interface (web local React + Vite, servie par FastAPI)
+cd echos/echos-ui && npm run dev
 ```
 
 ## Dépendances
 
 - **Python** : FastAPI, NumPy, Pandas, SciPy, NetworkX.
-- **Interface** : Electron + React/TypeScript, ECharts/Plotly.
+- **Interface** : React/TypeScript (web local Vite, servie par FastAPI — pas de shell Electron), ECharts/Plotly.
 - **Stockage** : SQLite (agrégations) + Parquet (séries lourdes).
 - Se connecte à **SYNE** (WebSocket :5180 pour observer, HTTP :5181 pour piloter).
 

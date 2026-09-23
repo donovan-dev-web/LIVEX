@@ -11,7 +11,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ### Added
 - Documentation technique V0.1 complète du composant (VISION, ARCHITECTURE, METRICS_SPEC, EMERGENCE_INDICATORS, CAUSAL_ANALYSIS, EXPERIMENT_COMPARISON, API_REST, LOGGING_INSTRUMENTATION, LIMITATIONS, TESTING, ROADMAP).
-- ADR-001 (stack FastAPI + Electron/React) et ADR-002 (mode de calcul causal hors ligne).
+- ADR-001 (stack FastAPI + React/Vite web local — **PAS de shell Electron**, décision 23/09/2026) et ADR-002 (mode de calcul causal hors ligne).
 - ECHOS-1 : structure du monorepo — `echos/` (paquet Python `echos` : API FastAPI `create_app()`, `/health`, squelette des **7 moteurs de métriques** avec registre `known_engines()`, placeholder `ingestion`), `echos-ui/` (Vite + React + TypeScript : lint, build, tests vitest/jsdom), tests pytest (13 tests, couverture 100 %), CI `echos-python`/`echos-ui` activées.
 - ECHOS-2 : contrats d'ingestion — modèles pydantic `WorldSnapshot` / `ExternalEvent` (JSON **camelCase**, API_CONTRACTS.md §2, alias ingress + sortie `by_alias`), `parse_message()` déterministe, client WebSocket `WsClient` (:5180, transport injectable), client de contrôle `ControlClient` (:5181 : start/pause/resume/reset), golden files versionnés (`fixtures/` + `golden/`), tests ingestion (41 tests, couverture 97 %).
 - **ECHOS-010 (issue #367, milestone ph1)** : consommation du flux **alignée sur les ticks** — `TickSegment` (snapshot + événements d'un tick) et `aligned_ticks()` (refus déterministe des séquences désalignées) ; **modèles alignés sur l'émetteur SYNE V0.1** (agents sans `health` mais avec `species`/`fatigue`, `health` conservée pour compat doc) ; itération du client réel propres sur fermeture (`ConnectionClosed` → fin de flux) ; tests **serveur WebSocket réel in-process** rejouant le contrat V0.1 (goldens `*_v01`). Tests : 43 → **57**, couverture 98.7 %.
@@ -51,11 +51,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **Preuve J5 étendue** : `test_instrumentation.py` (14 tests : JSONL déterministe + tag SSE-V2 + fusion BDI + profilage bit-à-bit/couverture 8 moteurs/format §5), `test_api_routes.py` (endpoint décisions reproductible + 404), `test_pipeline.py` étendu. Tests : 167 → **181**, `SCHEMA_VERSION = "3"`.
 
 ### Changed
-- Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **Electron + React** intégrée, analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
+- Divergence assumée vs prototype/Monographie : application **FastAPI** (pas Django), interface **React/TypeScript web local servie par FastAPI** (`echos-ui`, Vite — pas de shell Electron), analyse **Python** (pas C#/.NET), stockage **SQLite/Parquet**.
 - `METRICS_SPEC.md` §4 : détection de communautés = **propagation d'étiquettes déterministe** (remplace la mention Louvain, non déterministe bit-à-bit ni disponible en stdlib Python pure) ; hygiène de déterminisme ECHOS préservée.
 
 ### Deprecated
-- Shell Electron du prototype abandonné → désormais interface Electron **intégrée** à ECHOS.
+- Shell Electron du prototype abandonné → remplacé par l'interface **web locale React/Vite servie par FastAPI** intégrée à ECHOS (décision 23/09/2026); le desktop s'appuiera sur le navigateur local, pas sur un wrapper de bureau.
 
 ## [0.0.0] — à venir
 

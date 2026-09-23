@@ -35,7 +35,7 @@
 | :-- | :-- |
 | Le choix du moteur définitif change | PRISM = framework intermédiaire : seuls les adaptateurs changent (principe invariant). |
 | Rendu lourd à haute échelle (1000 capsules) | Culling, LOD, minimap (phases 9+). |
-| Dissonance entre interface Electron et rendu Godot | Définition claire du partage via API ECHOS :5000 + contrats partagés. |
+| Dissonance entre interface web ECHOS et rendu Godot | Définition claire du partage via API ECHOS :5000 + contrats partagés. |
 
 ## 4. Évolution future (§5.15)
 
