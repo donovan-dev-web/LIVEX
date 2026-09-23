@@ -1,0 +1,76 @@
+import { WS_URL } from '../config'
+import { useLiveStore } from '../store'
+import type { WsMessage } from '../api/types'
+
+const RECONNECT_DELAY_MS = 2000
+
+let socket: WebSocket | null = null
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleReconnect() {
+  clearTimeout(reconnectTimer!)
+  reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS)
+}
+
+/**
+ * Consommation temps réel du flux SYNE (WebSocket :5180). Le client est
+ * non-intrusif : il n'écrit rien dans le monde observé (règle d'or) — il
+ * alimente les vues live de l'interface (tick courant, comptages d'affichage).
+ */
+export function connect(): void {
+  if (socket && socket.readyState !== WebSocket.CLOSED) return
+
+  useLiveStore.getState().setWsState('connecting')
+  useLiveStore.getState().setWsError(null)
+
+  try {
+    socket = new WebSocket(WS_URL)
+  } catch (error) {
+    useLiveStore.getState().setWsError(error instanceof Error ? error.message : String(error))
+    useLiveStore.getState().setWsState('disconnected')
+    scheduleReconnect()
+    return
+  }
+
+  socket.addEventListener('open', () => {
+    useLiveStore.getState().setWsState('connected')
+  })
+
+  socket.addEventListener('message', (event: MessageEvent) => {
+    try {
+      const message = JSON.parse(String(event.data)) as WsMessage
+      if (message.type === 'snapshot') {
+        useLiveStore.getState().setLive({
+          tick: message.tick ?? 0,
+          agentCount: Array.isArray(message.agents) ? message.agents.length : 0,
+          messageCount: 0,
+        })
+      } else if (message.type === 'event') {
+        const current = useLiveStore.getState().live
+        if (current) {
+          useLiveStore.getState().setLive({ ...current, messageCount: current.messageCount + 1 })
+        }
+      }
+    } catch {
+      /* message non JSON : ignoré */
+    }
+  })
+
+  socket.addEventListener('close', () => {
+    useLiveStore.getState().setWsState('disconnected')
+    scheduleReconnect()
+  })
+
+  socket.addEventListener('error', () => {
+    useLiveStore.getState().setWsError('Erreur de connexion WebSocket')
+  })
+}
+
+export function disconnect(): void {
+  if (reconnectTimer) clearTimeout(reconnectTimer)
+  if (socket) {
+    socket.close()
+    socket = null
+  }
+  useLiveStore.getState().setWsState('disconnected')
+}
