@@ -27,6 +27,7 @@ def test_root_describes_api_endpoints():
     assert isinstance(body["endpoints"], list)
     assert "/health" in body["endpoints"]
     assert "/api/runs" in body["endpoints"]  # contrat ph4 publié
+    assert "/api/runs/{id}/decisions" in body["endpoints"]  # contrat ph6 publié (ECHOS-051)
 
 
 def test_unknown_route_returns_404(tmp_path):
