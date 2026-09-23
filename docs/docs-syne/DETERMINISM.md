@@ -60,11 +60,13 @@
 
 **Jalon SYNE ph6 (engineVersion 0.5.0)** : le réseau social reste **0 tirage PRNG** — les liens de cohésion découlent de l'ordre trié des paires d'entités (id croissant), les composantes d'un union-find à racine minimale, le leader du max de confiance entrante (tie-break id min), la mutation d'héritage de `SplitMix64(nouvelTraitId, seed, tick)` (Inheritance, DATA_MODEL §6.6.3) ; la révision des groupes s'intercale déterministement **après** les décréments croyances/confiance et **avant** le merge des naissances ; `transmissionRange` recalibré 20 → **55** (au défaut ph5, le scénario de référence n'échangeait aucune pulsation → trajectoire « silencieuse » ; la calibration ph6 produit des événements de groupe/naissance dans le run de référence). Checksum de la trajectoire recalculé (0x6aa2b2d87b32a8a5 → **0x864e72f57e1fe0d0**).
 
+**Jalon SYNE ph7b (engineVersion 0.6.0)** : les 4 fidélités restent **0 tirage PRNG** — la mortalité itère par identifiant croissant après les boucles entités/communication/naissances (SYNE-074) ; la naissance consentie évalue les paires qualifiantes dans l'ordre d'id (SYNE-075) ; l'alignement sur objectif collectif est un produit déterministe consensus × confiance au leader (SYNE-076) ; le cheminement A* est **sans PRNG** : grille rasterisée, voisinage ordonné, départage (f, g, x, y), expansion plafonnée, repli « sur place » (SYNE-077), cache LRU à accès déterministe. Checksum de la trajectoire **inchangé** (0x27fad50065d8c4a4 — le scénario de référence ne déclenche aucun pas bloqué), ré-épinglé pour pin contractuel.
+
 ## 7. Impacts & contractuels
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion` (0.5.0 au jalon SYNE ph6 ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
+  - mise à jour de `engineVersion` (0.6.0 au jalon SYNE ph7b ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
 
 ---
