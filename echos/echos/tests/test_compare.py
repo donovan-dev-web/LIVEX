@@ -25,6 +25,9 @@ from echos.storage.sqlite import AnalyticsStore
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
+# Croyance de divergence ajoutée à l'agent "A" (ECHOS-071/072).
+EXTRA_BELIEF_A = {"A": {"subject": "x", "predicate": "y", "value": "true"}}
+
 
 def _snapshot(tick: int, run_id: str) -> dict:
     data = json.loads((FIXTURES / "snapshot_analysis.json").read_text())
@@ -203,7 +206,7 @@ def test_reproducibility_metrics_are_stable_between_runs(tmp_path):
 def test_compare_response_is_deterministic_across_calls(tmp_path):
     db = AnalyticsStore(tmp_path / "compare.db")
     _populate(db, "run-7", seed="7")
-    _populate(db, "run-9", seed="9", beliefs_extra={"A": {"subject": "x", "predicate": "y", "value": "true"}})
+    _populate(db, "run-9", seed="9", beliefs_extra=EXTRA_BELIEF_A)
 
     first = _compare(db, "run-7", "run-9")
     second = _compare(db, "run-7", "run-9")
@@ -217,7 +220,7 @@ def test_compare_response_is_deterministic_across_calls(tmp_path):
 def test_compare_json_export_has_aligned_series(tmp_path):
     db = AnalyticsStore(tmp_path / "compare.db")
     _populate(db, "run-7", seed="7")
-    _populate(db, "run-9", seed="9", beliefs_extra={"A": {"subject": "x", "predicate": "y", "value": "true"}})
+    _populate(db, "run-9", seed="9", beliefs_extra=EXTRA_BELIEF_A)
 
     body = _client(db).get("/api/compare", params={"run_a": "run-7", "run_b": "run-9"}).json()
 
@@ -232,7 +235,7 @@ def test_compare_json_export_has_aligned_series(tmp_path):
 def test_compare_csv_export_has_header_and_deterministic_rows(tmp_path):
     db = AnalyticsStore(tmp_path / "compare.db")
     _populate(db, "run-7", seed="7")
-    _populate(db, "run-9", seed="9", beliefs_extra={"A": {"subject": "x", "predicate": "y", "value": "true"}})
+    _populate(db, "run-9", seed="9", beliefs_extra=EXTRA_BELIEF_A)
 
     body = _client(db).get(
         "/api/compare", params={"run_a": "run-7", "run_b": "run-9", "format": "csv"}
@@ -252,7 +255,9 @@ def test_compare_unknown_run_and_bad_format(tmp_path):
     _populate(db, "run-7")
 
     client = _client(db)
-    assert client.get("/api/compare", params={"run_a": "run-7", "run_b": "ghost"}).status_code == 404
+    assert client.get(
+        "/api/compare", params={"run_a": "run-7", "run_b": "ghost"}
+    ).status_code == 404
     assert client.get(
         "/api/compare", params={"run_a": "run-7", "run_b": "run-8", "format": "xml"}
     ).status_code == 400
@@ -264,8 +269,18 @@ def test_compare_unknown_run_and_bad_format(tmp_path):
 
 def test_distributions_and_l2_are_pure_and_bounded():
     agents = [
-        {"id": "A", "beliefs": [{"subject": "s", "predicate": "p", "value": "true", "confidence": 0.9}]},
-        {"id": "B", "beliefs": [{"subject": "s", "predicate": "p", "value": "true", "confidence": 0.5}]},
+        {
+            "id": "A",
+            "beliefs": [
+                {"subject": "s", "predicate": "p", "value": "true", "confidence": 0.9}
+            ],
+        },
+        {
+            "id": "B",
+            "beliefs": [
+                {"subject": "s", "predicate": "p", "value": "true", "confidence": 0.5}
+            ],
+        },
     ]
     distribution = reproducibility.belief_distribution(agents)
     assert distribution == {"s|p|true": 1.0}
