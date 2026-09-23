@@ -108,12 +108,12 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-080 | Interface web locale React/Vite (V0.1) | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — **shell Electron conservé**, implémentation différée à un horizon ultérieur (post-V0.1, hors périmètre V0.1) |
-| ECHOS-081 | Vue métriques temps réel (WebSocket 5180) | `type/obs`, `component/echos` | P0 | ECHOS-080, ECHOS-011 | Métriques à jour en continu, sans figer l'exécution SYNE |
-| ECHOS-082 | Vue croyances & confiance | `type/feat`, `component/echos` | P1 | ECHOS-080, ECHOS-042 | Croyances de l'entité + confiance inter-entités visualisées |
-| ECHOS-083 | Vue réseaux sociaux (graphe) | `type/feature`, `component/echos` | P1 | ECHOS-080, ECHOS-022 | Graphe de confiance mis à jour ; communautés (Louvain) affichées |
-| ECHOS-084 | Vue calibration / budget | `type/feature`, `component/echos` | P1 | ECHOS-080 | Calibration des valeurs ECHOS paramétrable via interface |
-| ECHOS-085 | Contrôle du moteur depuis Écrans | `type/feature`, `component/echos`, `component/syne` | P2 | ECHOS-080, HTTP :5181 SYNE | Pilotage non intrusif via HTTP :5181 (démarrage/arrêt, éviter d'écrire dans le monde) |
+| ECHOS-080 | Interface web locale React/Vite (V0.1) — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — ✓ `echos-ui` (les 6 Écrans A→F, React + Vite + TypeScript), proxy `/api` + `/health`, build `tsc -b` ; run sélectionnable, pilier live WS :5180 ; shell Electron conservé à l'horizon ultérieur (post-V0.1) |
+| ECHOS-081 | Vue métriques temps réel (WebSocket 5180) — **LIVRÉ (PR UI, U7)** | `type/obs`, `component/echos` | P0 | ECHOS-080, ECHOS-011 | Métriques à jour en continu, sans figer l'exécution SYNE — ✓ Écran A (KPICards `latest` + timeline `?every=`) et Écran D onglet Métriques (8 moteurs) ; état SYNE/tick via WS :5180 (sous-échantillonnage `?every=N` à la lecture) |
+| ECHOS-082 | Vue croyances & confiance — **LIVRÉ (PR UI, U7)** | `type/feat`, `component/echos` | P1 | ECHOS-080, ECHOS-042 | Croyances de l'entité + confiance inter-entités visualisées — ✓ `AgentInspector` (`/beliefs/{agentId}`, `/relationships/{agentId}`) sur Écrans B/C |
+| ECHOS-083 | Vue réseaux sociaux (graphe) — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos` | P1 | ECHOS-080, ECHOS-022 | Graphe de confiance mis à jour ; communautés affichées (propagation d'étiquettes déterministe, METRICS_SPEC.md §4) — ✓ Écran C, graphe force-directed (`echarts`), sondage 2 s, sélection → inspecteur |
+| ECHOS-084 | Vue calibration / budget — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos` | P1 | ECHOS-080 | Calibration des valeurs ECHOS paramétrable via interface — ✓ Écran E (calibration + budget, relais ECHOS→SYNE :5181) |
+| ECHOS-085 | Contrôle du moteur depuis Écrans — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos`, `component/syne` | P2 | ECHOS-080, HTTP :5181 SYNE | Pilotage non intrusif via HTTP :5181 (démarrage/arrêt, éviter d'écrire dans le monde) — ✓ Écran E, `controlClient` relayé ECHOS→SYNE :5181 (start/pause/resume/reset), jamais en direct |
 
 ### Milestone ph9 (echos) — Tests & couverture
 
