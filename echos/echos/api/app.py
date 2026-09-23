@@ -24,6 +24,7 @@ _ENDPOINTS = [
     "/api/runs/{id}",
     "/api/runs/{id}/metrics",
     "/api/runs/{id}/export",
+    "/api/runs/{id}/decisions",
     "/api/beliefs/{agentId}",
     "/api/relationships/{agentId}",
     "/api/groups",
