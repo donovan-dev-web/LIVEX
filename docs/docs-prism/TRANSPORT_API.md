@@ -34,7 +34,7 @@ L'état de SYNE est interrogé toutes les **2 secondes** (polling léger).
 
 Dans le prototype, l'interface ECHOS (application web React + TypeScript) consommait les métriques d'ECHOS **et** le flux WebSocket de SYNE, offrant un tableau de bord complémentaire à PRISM.
 
-En **V0.1**, cette interface est **intégrée à ECHOS** (web local React/Vite servie par FastAPI — pas de shell Electron) et sert aussi de complément d'affichage pour PRISM (liste des interfaces TypeScript : ses composants — voir `UX_INTERACTION.md`).
+En **V0.1**, cette interface est **intégrée à ECHOS** (web local React/Vite servie par FastAPI — shell Electron conservé, implémentation différée à un horizon ultérieur) et sert aussi de complément d'affichage pour PRISM (liste des interfaces TypeScript : ses composants — voir `UX_INTERACTION.md`).
 
 ## 4. Alignement des contrats
 

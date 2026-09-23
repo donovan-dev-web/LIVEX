@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `VISION.md`, `../COMMUNICATION.md`
 **Source Monographie** : §4.2
 
@@ -20,7 +20,7 @@
 
 ### ⚠ Divergence annoncée vs prototype
 
-L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Application) et un **shell Electron** avec interface web React (prototype C#/.NET). **Décision V0.1 (décision utilisateur, 23/09/2026)** : la stack ECHOS est **React/TypeScript web local servie par FastAPI + FastAPI local (PAS Django, PAS de shell Electron)**, avec **NumPy/Pandas/SciPy/NetworkX** pour le calcul et **ECharts/Plotly** pour la visualisation, et **SQLite/Parquet** pour le stockage d'analyse. L'interface `echos-ui` (Vite) est servie par FastAPI (dev `npm run dev`, build statique en production), sans wrapper de bureau. Cette divergence est assumée et documentée (cf. `../ARCHITECTURE.md` racine, `adr/ADR-001-stack-applicative.md`).
+L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Application) et un **shell Electron** avec interface web React (prototype C#/.NET). **Décision V0.1 (décision utilisateur, 23/09/2026)** : la stack ECHOS est **React/TypeScript web local servie par FastAPI + FastAPI local (PAS Django)**, avec **NumPy/Pandas/SciPy/NetworkX** pour le calcul et **ECharts/Plotly** pour la visualisation, et **SQLite/Parquet** pour le stockage d'analyse. L'interface `echos-ui` (Vite) est servie par FastAPI (dev `npm run dev`, build statique en production), sans wrapper de bureau **en V0.1**. Le **shell Electron n'est pas abandonné** : il est **conservé**, son implémentation étant **différée à un horizon ultérieur (post-V0.1)** (correction 23/09/2026, cf. `adr/ADR-001-stack-applicative.md`). Cette divergence est assumée et documentée (cf. `../ARCHITECTURE.md` racine, `adr/ADR-001-stack-applicative.md`).
 
 ## 2. Intégration avec SYNE
 
@@ -97,5 +97,5 @@ echos/
 ---
 
 ## Points restés ouverts dans ce document
-- La divergence FastAPI/Django et Electron est tranchée et documentée — aucun reste ouvert.
+- La divergence FastAPI/Django et la place du shell Electron (conservé, implémentation différée post-V0.1) sont tranchées et documentées — aucun reste ouvert.
 - Choix des bibliothèques de visualisation (ECharts vs Plotly) par vue : à affiner à l'implémentation.
