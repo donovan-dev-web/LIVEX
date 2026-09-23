@@ -6,12 +6,24 @@ using System.Text;
 namespace Simulation.Console.Observability;
 
 /// <summary>
+/// Cible de diffusion des trames d'observabilité (API_CONTRACTS.md §2).
+/// Contrat unique pour le serveur WebSocket réel et les tests (in-memory) :
+/// l'infusion des trames ne doit jamais muter l'état de la simulation
+/// (anti-triche SYNE-081 — DETERMINISM.md §3).
+/// </summary>
+public interface IObservabilitySink
+{
+    /// <summary>Diffuse une trame texte JSON (sans effet sur le monde simulé).</summary>
+    Task BroadcastAsync(string text);
+}
+
+/// <summary>
 /// Serveur WebSocket minimal (BCL uniquement, ADR-002/ECHOS-010) exposant les
 /// messages d'observabilité SYNE sur ws://127.0.0.1:[port]/. Il n'archive rien :
 /// purement de diffusion. Chaque message = une trame texte JSON
 /// (API_CONTRACTS.md §2), diffusion fiable-en-fonction-du-mieux (V0.1).
 /// </summary>
-public sealed class ObservabilityServer : IAsyncDisposable
+public sealed class ObservabilityServer : IObservabilitySink, IAsyncDisposable
 {
     public const int DefaultPort = 5180;
 

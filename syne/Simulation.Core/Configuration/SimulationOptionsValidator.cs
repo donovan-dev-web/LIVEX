@@ -191,6 +191,11 @@ public static class SimulationOptionsValidator
             errors.Add($"agents.actions.deliberation.alignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.AlignBonus}).");
         }
 
+        if (options.Agents.Actions.Deliberation.CollectiveAlignBonus <= 0.0)
+        {
+            errors.Add($"agents.actions.deliberation.collectiveAlignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.CollectiveAlignBonus}).");
+        }
+
         if (options.Agents.Actions.Deliberation.ActionSwitchMargin < 0.0)
         {
             errors.Add($"agents.actions.deliberation.actionSwitchMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ActionSwitchMargin}).");
@@ -289,6 +294,16 @@ public static class SimulationOptionsValidator
             errors.Add($"reproduction.maxBirthsPerTick doit être &gt;= 0 (reçu : {options.Reproduction.MaxBirthsPerTick}).");
         }
 
+        if (options.Reproduction.MergeRange <= 0)
+        {
+            errors.Add($"reproduction.mergeRange doit être &gt; 0 (reçu : {options.Reproduction.MergeRange}).");
+        }
+
+        if (options.Reproduction.MergeMinimumEnergy is < 0.0 or > 100.0)
+        {
+            errors.Add($"reproduction.mergeMinimumEnergy doit être dans [0, 100] (reçu : {options.Reproduction.MergeMinimumEnergy}).");
+        }
+
         if (options.Agents.Inheritance.Dominance is < 0.0 or > 1.0)
         {
             errors.Add($"agents.inheritance.dominance doit être dans [0, 1] (reçu : {options.Agents.Inheritance.Dominance}).");
@@ -307,6 +322,31 @@ public static class SimulationOptionsValidator
         if (options.Agents.Inheritance.SalienceThreshold is <= 0.0 or > 1.0)
         {
             errors.Add($"agents.inheritance.salienceThreshold doit être dans (0, 1] (reçu : {options.Agents.Inheritance.SalienceThreshold}).");
+        }
+
+        if (options.Agents.Life.DeathEnergyThreshold is < 0.0 or >= 100.0)
+        {
+            errors.Add($"agents.life.deathEnergyThreshold doit être dans [0, 100) (reçu : {options.Agents.Life.DeathEnergyThreshold}).");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.Agents.Life.EnergyExhaustionCause))
+        {
+            errors.Add("agents.life.energyExhaustionCause ne doit pas être vide.");
+        }
+
+        if (options.Agents.Pathfinding.CellSize <= 0.0)
+        {
+            errors.Add($"agents.pathfinding.cellSize doit être &gt; 0 (reçu : {options.Agents.Pathfinding.CellSize}).");
+        }
+
+        if (options.Agents.Pathfinding.MaxExpansionCells < 1)
+        {
+            errors.Add($"agents.pathfinding.maxExpansionCells doit être &gt;= 1 (reçu : {options.Agents.Pathfinding.MaxExpansionCells}).");
+        }
+
+        if (options.Agents.Pathfinding.CacheCapacity < 0)
+        {
+            errors.Add($"agents.pathfinding.cacheCapacity doit être &gt;= 0 (reçu : {options.Agents.Pathfinding.CacheCapacity}).");
         }
 
         return errors;

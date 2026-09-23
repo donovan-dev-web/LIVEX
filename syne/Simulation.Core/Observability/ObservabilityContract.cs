@@ -14,9 +14,11 @@ public static class ObservabilityContract
     /// Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les
     /// règles de simulation ; incrémentée MINOR à toute altération de la trajectoire
     /// bit-à-bit (jalon SYNE ph6 → 0.5.0 : groupes émergents, décisions collectives,
-    /// naissance par fusion). Émise dans chaque snapshot.
+    /// naissance par fusion ; jalon SYNE ph7b → 0.6.0 : mortalité, naissance consentie
+    /// fidèle, décision collective → objectifs des membres, cheminement A* déterministe).
+    /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.5.0";
+    public const string EngineVersion = "0.6.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -45,6 +47,9 @@ public static class ObservabilityContract
 
     /// <summary>Naissance par fusion consentie — SYNE-062, API_CONTRACTS.md §2.2.</summary>
     public const string AgentSpawned = "agent_spawned";
+
+    /// <summary>Mort par épuisement — SYNE-074, API_CONTRACTS.md §2.2.</summary>
+    public const string AgentDied = "agent_died";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }
