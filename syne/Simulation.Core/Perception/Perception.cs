@@ -1,6 +1,7 @@
 using System.Globalization;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
+using Simulation.Core.Performance;
 using Simulation.Core.World;
 
 namespace Simulation.Core.Perception;
@@ -59,6 +60,14 @@ public sealed class PerceptionSystem
     private readonly Simulation.Core.World.World _world;
     private readonly PerceptionSettings _settings;
 
+    /// <summary>
+    /// Pool du buffer de tri des candidats (SYNE-092, PERFORMANCE.md §5) : la
+    /// liste temporaire (candidat, distance) est ré-empruntée entre les
+    /// perceptions — aucune influence sur l'ordre (tri stable, contenu vide
+    /// avant ré-emprunt), déterminisme conservé.
+    /// </summary>
+    private readonly ObjectPool<(Entity Candidate, double Distance)> _sortBufferPool = new();
+
     public PerceptionSystem(Simulation.Core.World.World world, PerceptionSettings settings)
     {
         ArgumentNullException.ThrowIfNull(world);
@@ -73,6 +82,9 @@ public sealed class PerceptionSystem
     }
 
     public PerceptionSettings Settings => _settings;
+
+    /// <summary>Pool du buffer de tri (observabilité SYNE-092 — compteurs Rent/Return).</summary>
+    public ObjectPool<(Entity Candidate, double Distance)> SortBuffers => _sortBufferPool;
 
     public int PerceptionGroupIndex(Entity subject) => (int)(subject.Id.Value % (ulong)_settings.RotationInterval);
 
@@ -96,30 +108,40 @@ public sealed class PerceptionSystem
             return [];
         }
 
-        var result = new List<Observation>();
+        var result = new List<Observation>(_sortBufferPool.Count > 0 ? 16 : 8);
         IReadOnlyList<Entity> candidates = _world.Grid.QueryCircle(
             subject.Position,
             _settings.Radius,
             excludeId: subject.Id.Value);
 
-        var ordered = candidates
-            .Select(candidate => (Candidate: candidate, Distance: subject.Position.DistanceTo(candidate.Position)))
-            .ToList();
-        ordered.Sort(static (a, b) =>
+        List<(Entity Candidate, double Distance)> ordered = _sortBufferPool.Rent();
+        try
         {
-            int byDistance = a.Distance.CompareTo(b.Distance);
-            return byDistance != 0 ? byDistance : a.Candidate.Id.Value.CompareTo(b.Candidate.Id.Value);
-        });
-
-        foreach ((Entity candidate, double distance) in ordered)
-        {
-            if (_settings.LineOfSight &&
-                !LineOfSight.IsClear(subject.Position, candidate.Position, _world.Obstacles))
+            foreach (Entity candidate in candidates)
             {
-                continue;
+                ordered.Add((candidate, subject.Position.DistanceTo(candidate.Position)));
             }
 
-            result.Add(ObservationOf(candidate, distance, tick));
+            ordered.Sort(static (a, b) =>
+            {
+                int byDistance = a.Distance.CompareTo(b.Distance);
+                return byDistance != 0 ? byDistance : a.Candidate.Id.Value.CompareTo(b.Candidate.Id.Value);
+            });
+
+            foreach ((Entity candidate, double distance) in ordered)
+            {
+                if (_settings.LineOfSight &&
+                    !LineOfSight.IsClear(subject.Position, candidate.Position, _world.Obstacles))
+                {
+                    continue;
+                }
+
+                result.Add(ObservationOf(candidate, distance, tick));
+            }
+        }
+        finally
+        {
+            _sortBufferPool.Return(ordered);
         }
 
         foreach (Obstacle obstacle in _world.Obstacles)
