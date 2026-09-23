@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.7
 
@@ -32,8 +32,9 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | GET | `/api/relationships/{agentId}` | Réseau de confiance de l'entité |
 | GET | `/api/groups` | Liste des groupes actifs (communautés) |
 | GET | `/api/emergent-phenomena` | Phénomènes émergents détectés + disclaimer |
+| GET | `/api/compare` | Comparaison de runs : méta-métriques de reproductibilité + séries comparatives (`?run_a=&run_b=&format=json\|csv`) — jalon ph7 |
 
-(Source : Monographie §4.7.1 — `/api/compare` et `/api/communication-heatmap` restent à venir, jalons ECHOS ph7 / hors V0.1.)
+(Source : Monographie §4.7.1 — `/api/communication-heatmap` reste à venir (périmètre UI, hors V0.1).)
 
 ## 3. Contrat des réponses (V0.1, jalons ECHOS ph4 → ph5)
 
@@ -136,11 +137,31 @@ Chaîne reconstruite **hors ligne** sur `decision_traces` + `events_log` + conte
 → corps identiques) ; réponse servie par le cache `CausalCache` invalidé sur
 `ingest_version` (re-run ⇒ re-analyse, ECHOS-063).
 
-### 3.9 Erreurs
+### 3.9 `GET /api/compare` (jalon ECHOS ph7, ECHOS-070 → 072)
+
+Comparaison de deux runs contrôlés (EXPERIMENT_COMPARISON.md §2, METRICS_SPEC.md §10) :
+
+```json
+{"run_a": {"run_id": "run-1", "version": "0.1.0", "seed": "12345"},
+ "run_b": {"run_id": "run-2", "version": "0.1.0", "seed": "12345"},
+ "same_seed": true, "same_version": true, "bit_identical": true,
+ "is_reproducible": true, "reproducibility_score": 1.0,
+ "cognitive_diff": 0.0, "social_diff": 0.0,
+ "series": [...], "format": "json"}
+```
+
+- `?run_a=` / `?run_b=` (obligatoires) : identifiants de runs ; `format` ∈ {`json`, `csv`} (défaut `json`).
+- `bit_identical` : empreinte **SHA-256** du contenu canonique du run (séries de métriques, résumés de tick, événements, contextes `agents`/`groups`/`phenomena`, traces de décision — sans l'étiquette `run_id`), `echos/analysis/reproducibility.py`.
+- `is_reproducible` = même **seed** ∩ même **version** du moteur ∩ contenu **bit-à-bit identique** ; `reproducibility_score` = `1.0` si reproductible, sinon `1.0 − (cognitive_diff + social_diff)/2` (définition EXPERIMENT_COMPARISON.md §2.3).
+- `cognitive_diff` / `social_diff` : distances **L2 normalisées** (borne [0, 1]) entre les distributions de croyances, resp. de confiance, de la population au dernier contexte `agents`.
+- `format=csv` : export comparatif aligné (ECHOS-072) — colonnes `tick,engine,metric,run_a_value,run_b_value,diff` (jointure sur ticks/métriques communs, `diff = run_b_value − run_a_value`), reproductible (sortie triée).
+- **Déterministe** : aucun PRNG, aucun horodatage ; les distributions/clés sont triées.
+
+### 3.10 Erreurs
 
 - `404` : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent ; entité sans trace de décision (`causal-chains`).
-- `400` : `format` d'export inconnu.
-- `422` : `every < 1`, `depth` hors [1, 12] (validation OpenAPI).
+- `400` : `format` d'export inconnu ou `format` de `/api/compare` hors {`json`, `csv`}.
+- `422` : `every < 1`, `depth` hors [1, 12], `run_a`/`run_b` manquants (validation OpenAPI).
 - `503` : aucun store configuré (`ECHOS_ANALYTICS_DB` non défini).
 
 ## 4. La diffusion temps réel
@@ -158,5 +179,5 @@ Chaîne reconstruite **hors ligne** sur `decision_traces` + `events_log` + conte
 ---
 
 ## Points restés ouverts dans ce document
-- `/api/compare` (jalon ph7, ECHOS-070) et `/api/communication-heatmap` (périmètre UI) ne sont pas implémentés en V0.1.
+- `/api/communication-heatmap` (périmètre UI) n'est pas implémenté en V0.1.
 - Compatibilité de versionnage des réponses à aligner sur `VERSIONING.md` (évolutions additives = MINOR).
