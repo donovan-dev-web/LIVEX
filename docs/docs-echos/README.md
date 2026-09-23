@@ -29,7 +29,7 @@ cd echos/echos-ui && npm run dev
 ## Dépendances
 
 - **Python** : FastAPI, NumPy, Pandas, SciPy, NetworkX.
-- **Interface** : React/TypeScript (web local Vite, servie par FastAPI — pas de shell Electron), ECharts/Plotly.
+- **Interface** : React/TypeScript (web local Vite, servie par FastAPI — shell Electron conservé, implémentation différée à un horizon ultérieur), ECharts/Plotly.
 - **Stockage** : SQLite (agrégations) + Parquet (séries lourdes).
 - Se connecte à **SYNE** (WebSocket :5180 pour observer, HTTP :5181 pour piloter).
 

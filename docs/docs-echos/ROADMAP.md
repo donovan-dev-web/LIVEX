@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 23 septembre 2026
 **Dépend de** : `../ROADMAP.md` (racine), `../docs-syne/ROADMAP.md`
 **Source Monographie** : §9.6, §7.9 (adapté), §4.2 (architecture)
 
@@ -17,7 +17,7 @@
 
 | # | Intitulé | Contenu |
 | :-- | :-- | :-- |
-| 0 | Fondation & stack | Choix FastAPI + React/Vite web local (tranché ; **PAS de shell Electron**, décision 23/09/2026), structure monorepo `echos/`, outillage (pytest, CI) |
+| 0 | Fondation & stack | Choix FastAPI + React/Vite web local (tranché pour V0.1 ; **shell Electron conservé**, implémentation **différée à un horizon ultérieur** — décision 23/09/2026), structure monorepo `echos/`, outillage (pytest, CI) |
 | 1 | Ingestion & stockage | Consommateur WebSocket :5180, agrégation incrémentale, SQLite + Parquet (stockage d'analyse séparé) — **LIVRÉ (ECHOS-010 → 013, jalon U1)** |
 | 2 | Moteurs de métriques | Implémentation des 7 moteurs (`METRICS_SPEC.md`), golden files, tests unitaires — **LIVRÉ (ECHOS-020 → 027, jalon U2)** |
 | 3 | Indicateurs d'émergence | Score composite, auto-détection des phénomènes, complexité, indice d'imprévisibilité — **LIVRÉ (ECHOS-030 → 033, jalon U3)** |
@@ -27,6 +27,7 @@
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export | **LIVRÉ (ECHOS-070 → 072, jalon ph7, U7)** : `GET /api/compare` (`is_reproducible` seed×version×SHA-256, `ReproducibilityScore = 1 − (CognitiveDiff+SocialDiff)/2`, L2 normalisées sur croyances/confiance — `echos/analysis/reproducibility.py`), exports `json`/`csv` (séries alignées `tick,engine,metric,run_a_value,run_b_value,diff`), 11 tests (`test_compare.py`), couverture 97,97 % |
 | 8 | Interface intégrée | Écrans ECHOS (web local React/Vite servie par FastAPI) : vues de métriques, croyances, réseaux, calibration |
 | 9 | Tests & couverture | ≥ 80 %, non-régression des scores (golden files) |
+| 10 | Shell Electron (horizon ultérieur) | Packaging natif de bureau de `echos-ui` via **Electron** — **conservé** (non abandonné), implémentation **différée post-V0.1** (correction décision 23/09/2026, `ADR-001`) ; coordonné avec PRISM (`../docs-prism/`) |
 
 ## 3. Jalons de validation
 

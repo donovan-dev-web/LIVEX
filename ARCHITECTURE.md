@@ -51,11 +51,11 @@ Voir `docs/docs-syne/ARCHITECTURE.md`.
 Source : Monographie Partie 4.
 
 - **Rôle** : observe, analyse et pilote la simulation ; expose des métriques, un score d'émergence, une analyse causale et la comparaison d'expériences.
-- **Implémentation V0.1** : interface **web locale React + TypeScript servie par FastAPI** (`echos-ui`, Vite — pas de shell Electron), backend d'analyse **Python (FastAPI, API locale)** sur la base des moteurs de métriques ; stockage SQLite / fichiers Parquet.
+- **Implémentation V0.1** : interface **web locale React + TypeScript servie par FastAPI** (`echos-ui`, Vite — shell Electron conservé, implémentation différée à un horizon ultérieur), backend d'analyse **Python (FastAPI, API locale)** sur la base des moteurs de métriques ; stockage SQLite / fichiers Parquet.
 - **Contrats d'entrée** : consomme le flux WebSocket 5180 de SYNE (snapshots + événements).
 - **Contrats de sortie** : API REST (liste des runs, métriques, comparaison, export), interface d'analyse intégrée.
 
-> Divergence documentée : la Monographie (§7.1) décrit un prototype ECHOS en **C#/.NET (Analyzer.Core + ASP.NET) avec interface web React TS**. **Décision V0.1 (utilisateur, 23/09/2026)** : ECHOS a une interface **web locale React/Vite servie par FastAPI** (**PAS de shell Electron**) avec backend **Python FastAPI** (analyse NumPy/Pandas/SciPy, graphes NetworkX, graphiques ECharts/Plotly) et stockage **SQLite/Parquet**. La logique métier reste calquée sur les 7 moteurs de métriques de la Monographie.
+> Divergence documentée : la Monographie (§7.1) décrit un prototype ECHOS en **C#/.NET (Analyzer.Core + ASP.NET) avec interface web React TS**. **Décision V0.1 (utilisateur, 23/09/2026)** : ECHOS a une interface **web locale React/Vite servie par FastAPI** avec backend **Python FastAPI** (analyse NumPy/Pandas/SciPy, graphes NetworkX, graphiques ECharts/Plotly) et stockage **SQLite/Parquet**. Le **shell Electron est conservé** (non abandonné) : son implémentation est **différée à un horizon ultérieur (post-V0.1)** (correction 23/09/2026, `ADR-001` ECHOS). La logique métier reste calquée sur les 7 moteurs de métriques de la Monographie.
 
 Voir `docs/docs-echos/ARCHITECTURE.md`.
 

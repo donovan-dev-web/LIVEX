@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Ce document est le **backlog complet des issues du composant ECHOS**, conçu pour être la **source unique de création des cartes du tableau Kanban** (`docs/governance/KANBAN.md`). Il couvre la réalisation **de A à Z** d'ECHOS : consommation des contrats SYNE, ingestion, les 7 moteurs de métriques, indicateurs d'émergence, API REST, logging, analyse causale, comparaison expérimentale, interface Écrans (web local React/Vite — PAS de shell Electron) et tests.
+Ce document est le **backlog complet des issues du composant ECHOS**, conçu pour être la **source unique de création des cartes du tableau Kanban** (`docs/governance/KANBAN.md`). Il couvre la réalisation **de A à Z** d'ECHOS : consommation des contrats SYNE, ingestion, les 7 moteurs de métriques, indicateurs d'émergence, API REST, logging, analyse causale, comparaison expérimentale, interface Écrans (web local React/Vite pour V0.1 ; shell Electron conservé, implémentation différée à un horizon ultérieur) et tests.
 
 Chaque issue est **prête à être copiée** dans un système d'issues (GitHub/GitLab) avec son **titre**, son **label**, son **milestone**, sa **priorité**, ses **dépendances** et son **critère d'acceptation** — conformément aux règles de `docs/governance/ISSUES.md` (types, cycle de vie) et aux colonnes du Kanban.
 
@@ -32,7 +32,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-001 | Décision applicative ECHOS (ADR-001 ECHOS) : FastAPI + React/Vite web local | `type/governance`, `component/echos`, `type/docs` | P0 | ADR-001 ECHOS, `VISION.md`, Monographie §4.2.1 | ADR-001 accepté : stack = FastAPI (PAS Django) + React/TypeScript web local servie par FastAPI (PAS de shell Electron) ; divergence vs Monographie documentée dans `ARCHITECTURE.md` ECHOS |
+| ECHOS-001 | Décision applicative ECHOS (ADR-001 ECHOS) : FastAPI + React/Vite web local | `type/governance`, `component/echos`, `type/docs` | P0 | ADR-001 ECHOS, `VISION.md`, Monographie §4.2.1 | ADR-001 accepté : stack = FastAPI (PAS Django) + React/TypeScript web local servie par FastAPI (V0.1) ; **shell Electron conservé, implémentation différée à un horizon ultérieur** (post-V0.1) ; divergence vs Monographie documentée dans `ARCHITECTURE.md` ECHOS |
 | ECHOS-002 | Structure monorepo `echos/` (API, analyse, moteurs, UI, tests) | `type/feature`, `component/echos` | P0 | ECHOS-001 | Monorepo découpé ; chaque sous-composant buildable et testable séparément |
 | ECHOS-003 | Outillage CI/tests (pytest, couverture, golden files) | `type/test`, `component/echos` | P0 | ECHOS-002, `TESTING.md` ECHOS | Pipeline pytest vert ; couverture instrumentée ; golden files versionnés |
 | ECHOS-004 | Contrats d'ingestion hérités (WebSocket 5180 / HTTP 5181 SYNE) | `type/feature`, `component/echos`, `component/syne` | P0 | `../docs-syne/API_CONTRACTS.md`, `COMMUNICATION_PROTOCOL.md` §2.4 (SYNE) | Client WebSocket 5180 + contrôle HTTP 5181 opérationnels ; déterminisme de réception |
@@ -108,7 +108,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-080 | Interface web locale React/Vite (V0.1) | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — **PAS de shell Electron (décision 23/09/2026)** |
+| ECHOS-080 | Interface web locale React/Vite (V0.1) | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — **shell Electron conservé**, implémentation différée à un horizon ultérieur (post-V0.1, hors périmètre V0.1) |
 | ECHOS-081 | Vue métriques temps réel (WebSocket 5180) | `type/obs`, `component/echos` | P0 | ECHOS-080, ECHOS-011 | Métriques à jour en continu, sans figer l'exécution SYNE |
 | ECHOS-082 | Vue croyances & confiance | `type/feat`, `component/echos` | P1 | ECHOS-080, ECHOS-042 | Croyances de l'entité + confiance inter-entités visualisées |
 | ECHOS-083 | Vue réseaux sociaux (graphe) | `type/feature`, `component/echos` | P1 | ECHOS-080, ECHOS-022 | Graphe de confiance mis à jour ; communautés (Louvain) affichées |
