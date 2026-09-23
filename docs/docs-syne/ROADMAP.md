@@ -25,6 +25,7 @@
 | 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses — **livré** (jalon SYNE ph5, issues #24–#28, engineVersion 0.4.0, `CommunicationSystem` : diffusion + interception + relais + coûts + confiance, événements `message_sent`/`message_received`) |
 | 6 | Groupes | Cohésion, leadership, décisions collectives | réseau social émergent — **livré** (jalon SYNE ph6, issues #29–#32, engineVersion 0.5.0, `GroupSystem` : cohésion confiance × affinité, LOD 10 ticks, leader par confiance entrante, décisions pondérées, turnover ; `BirthSystem` : fusion consentie, naissances post-boucle ; `SOCIAL_NETWORK.md`) |
 | 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 |
+| 7b | Fidélités V0.1 (resegmentation) | 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe) | **livré** (jalon SYNE ph7b, SYNE-074…077, U6 — audit `RAPPORT_ECART_DOC_IMPLEMENTATION.md`, issues dédiées `docs/docs-syne/ISSUES.md` ph7b, engineVersion 0.6.0) |
 | 8 | Observabilité | Tests anti-triche, validations | événements typés complets — **SYNE-080 livré** (émetteur WebSocket `--observe`, snapshot + events camelCase) |
 | 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | grille spatiale, pooling, LOD |
 | 10 | Tests & Couverture | 160+ tests, ≥ 80 % | suite complète |

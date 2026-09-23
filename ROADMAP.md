@@ -76,10 +76,10 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 | **U2** — Mémoire & croyances | ph2 (`SYNE-020…022`) | ph2 (`ECHOS-020…027`) | ph2 SYNE, ph2 ECHOS | Révision des croyances ; 7 moteurs de métriques ECHOS ; golden files |
 | **U3** — Décision & utilité | ph3 (`SYNE-030…033`) | ph3 (`ECHOS-030…033`) | ph3 SYNE, ph3 ECHOS | Délibération BDI ; score d'émergence [0,1] ; T2 trait→décision |
 | **U4** — Actions & communication | ph4–5 (`SYNE-040…054`) | ph4 (`ECHOS-040…045`) | ph4±ph5 SYNE, ph4 ECHOS | Périmètre des actions ; API REST ECHOS ≥ 80 % ; T3 information locale |
-| **U5** — Groupes & ressources | ph6–7 (`SYNE-060…073`) | ph5 (`ECHOS-050…054`) | ph6±ph7 SYNE, ph5 ECHOS | Groupes BDI ; logging & instrumentation ; jalons J2/J3 |
-| **U6** — Observabilité | ph8 (`SYNE-080…082`) | ph6 (`ECHOS-060…063`) | ph8 SYNE, ph6 ECHOS | Événements typés ; analyse causale |
+| **U5** — Groupes | ph6 (`SYNE-060…063`) | ph5 (`ECHOS-050…054`) | ph6 SYNE, ph5 ECHOS | Groupes BDI ; logging & instrumentation ; jalons J2/J3 |
+| **U6** — Observabilité & fidélités | ph8 (`SYNE-080…082`) + ph7b (`SYNE-074…077`) | ph6 (`ECHOS-060…063`) | ph8+ph7b SYNE, ph6 ECHOS | Événements typés ; analyse causale ; 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe) |
 | **U7** — Performance & comparaison | ph9–10 (`SYNE-090…102`) | ph7 (`ECHOS-070…072`) | ph9±ph10 SYNE, ph7 ECHOS | Budgets tick ; comparaison de runs (seed 12345) ; T4 benchmarks |
-| **U8** — Tests & persistance (V0.1 → V1) | ph11 (`SYNE-110…112`) + `SYNE-120…131` | ph8–9 (`ECHOS-080…093`) | ph11 syne, ph8±ph9 ECHOS | SQLite bit-à-bit ; tests ≥ 80 % ; T5/T6 ; v0.1 validée |
+| **U8** — Tests & persistance (V0.1 → V1) | ph7 (`SYNE-070…073`) + ph11 (`SYNE-110…112`) + `SYNE-120…131` | ph8–9 (`ECHOS-080…093`) | ph7+ph11 SYNE, ph8±ph9 ECHOS | Environnement (ressources/obstacles/territoire) ; SQLite bit-à-bit ; tests ≥ 80 % ; T5/T6 ; v0.1 validée ; packaging |
 
 ### Condition PRISM
 
