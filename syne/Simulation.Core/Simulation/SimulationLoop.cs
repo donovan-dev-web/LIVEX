@@ -20,6 +20,7 @@ public sealed class SimulationLoop
     private readonly TickBudgetCollector? _budget;
     private readonly int _autoSaveEveryNTicks;
     private readonly Action<SimulationLoop>? _autosaveHandler;
+    private readonly Simulation.Core.Configuration.SimulationOptions _options;
     private Xoshiro256StarStar _rng;
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
@@ -43,6 +44,7 @@ public sealed class SimulationLoop
         World = world;
         _rng = initialRng;
         _budget = budget;
+        _options = options;
         Resources = new World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
         _autoSaveEveryNTicks = options.Simulation.AutoSaveEveryNTicks;
@@ -67,6 +69,7 @@ public sealed class SimulationLoop
         World = world;
         _rng = initialRng;
         _budget = budget;
+        _options = options;
         Resources = new World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
         _autoSaveEveryNTicks = Math.Max(1, autoSaveEveryNTicks);
@@ -102,11 +105,17 @@ public sealed class SimulationLoop
         if (_budget is null)
         {
             _cognition.Step(CurrentTick);
+            Resources.ApplyLifecycle(CurrentTick, _options.Resources);
         }
         else
         {
             long start = Stopwatch.GetTimestamp();
             _cognition.Step(CurrentTick);
+            using (TickPhaseScope resourcesScope = _budget.Begin(TickPhase.EventsGroupsPopulation))
+            {
+                Resources.ApplyLifecycle(CurrentTick, _options.Resources);
+            }
+
             double elapsedMs = (Stopwatch.GetTimestamp() - start) * (1000.0 / Stopwatch.Frequency);
             _budget.RecordPipelineTick(elapsedMs);
         }

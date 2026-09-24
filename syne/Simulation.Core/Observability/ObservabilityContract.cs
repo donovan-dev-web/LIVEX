@@ -15,10 +15,14 @@ public static class ObservabilityContract
     /// règles de simulation ; incrémentée MINOR à toute altération de la trajectoire
     /// bit-à-bit (jalon SYNE ph6 → 0.5.0 : groupes émergents, décisions collectives,
     /// naissance par fusion ; jalon SYNE ph7b → 0.6.0 : mortalité, naissance consentie
-    /// fidèle, décision collective → objectifs des membres, cheminement A* déterministe).
+    /// fidèle, décision collective → objectifs des membres, cheminement A* déterministe ;
+    /// jalon SYNE ph7c → 0.7.0 : cycle des ressources — minéraux + régénération/
+    /// dégradation périodique appliquées en fin de tick (SYNE-070) — l'altération porte
+    /// sur les réserves du monde, pas sur la cognition du scénario de référence (checksum
+    /// doré ré-épinglé inchangé, pin contractuel).
     /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.6.0";
+    public const string EngineVersion = "0.7.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

@@ -349,6 +349,30 @@ public static class SimulationOptionsValidator
             errors.Add($"agents.pathfinding.cacheCapacity doit être &gt;= 0 (reçu : {options.Agents.Pathfinding.CacheCapacity}).");
         }
 
+        foreach (var (key, spec) in new[]
+                 {
+                     ("food", options.Resources.Food),
+                     ("water", options.Resources.Water),
+                     ("wood", options.Resources.Wood),
+                     ("mineral", options.Resources.Mineral),
+                 })
+        {
+            if (spec.Initial < 0)
+            {
+                errors.Add($"resources.{key}.initial doit être &gt;= 0 (reçu : {spec.Initial}).");
+            }
+
+            if (spec.RegenerationRate < 0.0)
+            {
+                errors.Add($"resources.{key}.regenerationRate doit être &gt;= 0 (reçu : {spec.RegenerationRate}).");
+            }
+
+            if (spec.DegradationTick is <= 0)
+            {
+                errors.Add($"resources.{key}.degradationTick doit être &gt; 0 ou absent (reçu : {spec.DegradationTick}).");
+            }
+        }
+
         return errors;
     }
 }

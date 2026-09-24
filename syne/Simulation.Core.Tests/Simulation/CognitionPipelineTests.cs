@@ -83,17 +83,24 @@ public class CognitionPipelineTests
         Assert.NotNull(mind.LastDecision);
 
         // La soif a été éteinte par Drink (réserve mise à jour, décision n°4) :
-        // la réserve globale d'eau a été consommée mais reste non vide.
+        // la réserve globale d'eau a été consommée mais reste non vide. Avec le cycle
+        // de vie (SYNE-070), l'eau régénère +5/tick ; sans consommation elle vaudrait
+        // exactement initial + 5 × tick — toute consommation la passe sous la borne.
         Assert.True(loop.Resources.Stock(World.ResourceKind.Water) >= 0.0);
-        Assert.True(loop.Resources.Stock(World.ResourceKind.Water) < 1000.0);
+        Assert.True(
+            loop.Resources.Stock(World.ResourceKind.Water) < 1000.0 + 5.0 * loop.CurrentTick,
+            "La réserve d'eau aurait dû être consommée au moins une fois par Drink.");
     }
 
     [Fact]
     public void StopDrinking_WhenWaterReserveExhausts_FallsBackToSeek()
     {
         // SYNE-042 : réserve d'eau vide → plus de Drink viable → poursuite SeekWater.
+        // Le cycle de vie (SYNE-070) est ici rendu inerte (régénération nulle) pour
+        // reproduire le cas d'épuisement — une réserve régénérée ne s'épuiserait pas.
         SimulationOptions options = Options();
         options.Resources.Water.Initial = 0;
+        options.Resources.Water.RegenerationRate = 0;
 
         WorldType world = new(new WorldSize(500, 500));
         world.AddEntity(MakeEntity(1, new Position(50, 50)));
