@@ -117,9 +117,24 @@ API REST locale de contrôle, relayée par PRISM (Monographie §5.4.2) :
 | POST | `/api/control/pause` | — |
 | POST | `/api/control/resume` | — |
 | POST | `/api/control/reset` | `{ seed, runId }` |
+| GET | `/api/control/status` | — |
 
 - Binding local : `127.0.0.1:5181`.
 - État interrogé par polling (~2 s, [HÉRITÉ]).
+- **Implémentation V0.1 (SYNE-113, livré avec U8)** : serveur BCL (`HttpListener`,
+  zéro dépendance, ADR-002/003) dans `Simulation.Console`, activé par `--serve`
+  (`--serve-port`, défaut 5181). Machine à états : `idle → running ⇋ paused → finished`.
+  `start { seed?, config? }` (JSON partiel fusionné sur les défauts, même règle que
+  `--config`) construit le run et répond `{ ok, action, runId, state, tick, aliveCount, seed }` ;
+  `pause`/`resume` gèlent/reprennent l'avancement des ticks ; `reset { seed?, runId? }`
+  reconstruit un run (le `runId` reçu identifie l'appelant, il n'est pas utilisé pour
+  restaurer — la reprise depuis le dernier `tick_states` reste le contrat de
+  persistance §4 via `SqlitePersistenceStore`). `GET /api/control/status` expose
+  `{ state, runId, tick, aliveCount, seed, maxTicks }` (polling ECHOS).
+  Ce contrat est **non intrusif** (SYNE-081, DETERMINISM.md §3) : aucune commande ne
+  retire de tirage au PRNG ni ne change la trajectoire (vérifié par test — run piloté
+  == run ininterrompu, état bit-à-bit). Consommé tel quel par le `ControlClient` ECHOS
+  (`echos/echos/ingestion/control_client.py`) — testé en interop réel.
 
 ## 4. Contrat de persistance
 
