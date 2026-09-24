@@ -193,4 +193,15 @@ public sealed class BeliefSet
             belief.SetConfidence(value);
         }
     }
+
+    /// <summary>Restauration complète de l'ensemble (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal void RestoreState(IEnumerable<Belief> beliefs)
+    {
+        ArgumentNullException.ThrowIfNull(beliefs);
+        _beliefs.Clear();
+        foreach (Belief belief in beliefs)
+        {
+            _beliefs[belief.Fact] = belief;
+        }
+    }
 }

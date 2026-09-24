@@ -109,6 +109,17 @@ public sealed class Relationships
         return result;
     }
 
+    /// <summary>Restauration des relations établies (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal void RestoreState(IEnumerable<(ulong PeerId, double Trust)> relations)
+    {
+        ArgumentNullException.ThrowIfNull(relations);
+        _byPeer.Clear();
+        foreach ((ulong peerId, double trust) in relations)
+        {
+            _byPeer[peerId] = trust;
+        }
+    }
+
     private List<ulong> SortedPeers()
     {
         var peers = new List<ulong>(_byPeer.Keys);

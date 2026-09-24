@@ -59,5 +59,8 @@ public readonly struct Xoshiro256StarStar
         return next;
     }
 
+    /// <summary>État complet du générateur (4 × ulong) — persistance bit-à-bit (PERSISTENCE.md §4).</summary>
+    internal (ulong S0, ulong S1, ulong S2, ulong S3) State => (_s0, _s1, _s2, _s3);
+
     private static ulong Rotl(ulong x, int k) => (x << k) | (x >> (64 - k));
 }
