@@ -73,7 +73,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "receiveEnergyCost": 0.2,
     "receiveEnergyPayloadFactor": 0.05
   },
-  "world": { "seasons": { "enabled": false }, "events": false, "obstacles": false },
+  "world": { "seasons": { "enabled": false }, "territories": { "enabled": false }, "events": false, "obstacles": false },
   "groups": {
     "enabled": true,
     "reviewIntervalTicks": 10,
@@ -315,6 +315,38 @@ Exemple (extrait) :
 ```
 
 Validation §6 : `seasonLengthTicks` &gt; 0 ; `initialSeason` dans {spring, summer, autumn, winter} ; `cycle` = les 4 saisons **exactement une fois** ; facteurs ≥ 0.
+
+### 6.10 Clés d'environnement — territoires (SYNE-073)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `world.territories` | `{enabled: false}` | n°21 | Bloc du suivi de territoire — zones « points de survie » dont la **présence des entités** délimite le territoire effectif (décision n°21) ; `enabled` = suivi actif (appartenance + événement `world.territory_membership_changed` + snapshot `territories[]`) |
+| `world.territories.enabled` | `false` | n°21 | Suivi actif (désactivé par défaut ⇒ trajectoire du scénario de référence inchangée) |
+| `world.territories.zones[]` | `[]` | n°21 | Zones (disques « points de survie ») suivies — liste de `{id, centerX, centerY, radius}` |
+| `world.territories.zones[].id` | — (requis) | n°21 | Identifiant unique de la zone (`targetId` des événements, clé du snapshot) |
+| `world.territories.zones[].centerX` | — (requis) | n°21 | Abscisse du centre (dans `[0, worldWidth]`) |
+| `world.territories.zones[].centerY` | — (requis) | n°21 | Ordonnée du centre (dans `[0, worldHeight]`) |
+| `world.territories.zones[].radius` | `20` | n°21 | Rayon du disque (la présence dans le disque délimite le territoire effectif) |
+
+Appartenance (0 tirage PRNG, DETERMINISM.md §3) : `entité ∈ zone ⟺ distance(entité, centre) ≤ radius`, suivie en fin de tick — `Entered`/`Left` tracés par zone (ordre de pose) et identifiant croissant, drainés `world.territory_membership_changed` (API_CONTRACTS §2.2).
+
+Exemple (extrait) :
+
+```json
+{
+  "world": {
+    "territories": {
+      "enabled": true,
+      "zones": [
+        { "id": "camp", "centerX": 250, "centerY": 250, "radius": 40 },
+        { "id": "foret", "centerX": 100, "centerY": 400, "radius": 25 }
+      ]
+    }
+  }
+}
+```
+
+Validation §6 : `zones` rejetée si `world.territories.enabled` est `false` ; par zone : `id` non vide et unique, `radius` &gt; 0, `centerX`/`centerY` dans le monde. Le suivi est **purement observationnel** (aucun comportement agentique, aucune revendication) — les **sources spatiales de ressources** du territoire restent **hors V0.1** (§6.7).
 
 ---
 

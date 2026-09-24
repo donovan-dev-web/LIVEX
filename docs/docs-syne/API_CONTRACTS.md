@@ -40,13 +40,15 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.9.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.10.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98, "season": "spring", "seasonIndex": 0,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
   "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
                   { "type": "wood", "quantity": 50 }, { "type": "mineral", "quantity": 0 } ],
   "obstacles": [ { "id": "maison-1", "x": 100.0, "y": 100.0, "radius": 10.0 } ],
+  "territories": [ { "id": "camp", "x": 250.0, "y": 250.0, "radius": 40.0, "memberCount": 12,
+                     "members": [1, 2, 3, 4, 5] } ],
   "groups": [ { "groupId": 1, "members": ["a1", "a2", "a3"], "size": 3,
                 "leaderId": "a1", "bornTick": 5000, "cohesion": 0.42,
                 "decision": "SeekFood", "consensus": 0.80 } ] }
@@ -54,9 +56,13 @@ Exemple (format condensé) :
 
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.9.0` (jalon U8 — cycle de saisons, SYNE-072 : `world.season_changed` +
-> champs `season`/`seasonIndex` du snapshot, **additifs** MINOR). Les champs `season`/`seasonIndex`
+> `engineVersion` = `0.10.0` (jalon U8 — territoires, SYNE-073 : `world.territory_membership_changed` +
+> champ `territories[]` du snapshot, **additifs** MINOR). Les champs `season`/`seasonIndex`
 > (SYNE-072) donnent la saison courante (nom camelCase + index 0..3, déterministe depuis le tick).
+> Le champ `territories[]` (SYNE-073, présent seulement si `world.territories.enabled`) liste les
+> zones « points de survie » suivies `{id, x, y, radius, memberCount, members[]}` : la **présence**
+> des entités délimite le territoire effectif (décision n°21) — `members[]` par identifiant
+> croissant, suivi déterministe 0 PRNG (DETERMINISM.md §3).
 > Les champs `obstacles[]`
 > (SYNE-071, ajout **additif**, MINOR) listent les constructions/obstacles du monde au tick :
 > `{id, x, y, radius}`, ordre d'insertion stable. Le champ `groups[]`
@@ -68,7 +74,7 @@ Exemple (format condensé) :
 
 | Champ | Type | Description |
 | :-- | :-- | :-- |
-| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `world.season_changed`, `conflict`...) |
+| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `world.season_changed`, `world.territory_membership_changed`, `conflict`...) |
 | `tick` | uint | Tick |
 | `agentId?` | string | Entité concernée |
 | `targetId?` | string | Cible |
@@ -123,6 +129,15 @@ Exemple :
 > basculement, uniquement quand la saison change. `targetId` = saison courante, `value =
 > {previous, current}` (clés camelCase). Déterminisme total : la saison est une fonction pure
 > du tick (0 tirage PRNG, DETERMINISM.md §3).
+> **`world.territory_membership_changed` (jalon U8, SYNE-073)** : bascule d'appartenance d'une
+> entité à une zone de territoire (`world.territories.zones[]`, disques « points de survie »,
+> décision n°21) — suivi actif seulement (`world.territories.enabled`). `agentId` = entité qui
+> franchit, `targetId` = id de la zone, `value = {kind: "entered" | "left"}`. Ordre déterministe :
+> par zone (ordre de pose), identifiant croissant, **sorties avant entrées** ; chaque bascule
+> émise **exactement une fois** (drainées par `ObservabilityTickEmitter` au tick de la
+> modification). `Entered`/`Left` = changement de l'état de présence (function pure des positions,
+> `distance ≤ radius`, 0 tirage PRNG — DETERMINISM.md §3) ; centré sur les répliques, chaque
+> zone rejoue la même séquence.
 
 ## 3. Contrat de contrôle — HTTP 5181
 

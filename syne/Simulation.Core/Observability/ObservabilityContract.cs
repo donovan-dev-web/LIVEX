@@ -28,10 +28,15 @@ public static class ObservabilityContract
     /// (l'ancien drapeau booléen homonyme, mort, devient un bloc actif), événement
     /// world.season_changed et champ snapshot season/seasonIndex (additif) ;
     /// désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
-    /// checksums dorés ré-épinglés inchangés (pin contractuel).
+    /// checksums dorés ré-épinglés inchangés (pin contractuel) ;
+    /// jalon SYNE U8 → 0.10.0 : territoires (SYNE-073, décision n°21) — <c>world.territories</c>
+    /// (zones « point de survie », appartenance suivie par la présence des entités),
+    /// événement world.territory_membership_changed et champ snapshot territories[]
+    /// (additif) ; désactivé par défaut ⇒ trajectoire du scénario de référence
+    /// inchangée, checksums dorés ré-épinglés inchangés (pin contractuel).
     /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.9.0";
+    public const string EngineVersion = "0.10.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -76,6 +81,14 @@ public static class ObservabilityContract
     /// PRNG — la saison est une fonction pure du tick). Charge utile {previous, current}.
     /// </summary>
     public const string SeasonChanged = "world.season_changed";
+
+    /// <summary>
+    /// Changement d'appartenance à une zone de territoire (SYNE-073, décision n°21,
+    /// API_CONTRACTS.md §2.2) : une entité est entrée dans ou sortie du disque d'un
+    /// « point de survie » quand <c>world.territories.enabled</c> (0 tirage PRNG —
+    /// l'appartenance est une fonction pure des positions). Charge utile {kind}.
+    /// </summary>
+    public const string TerritoryMembershipChanged = "world.territory_membership_changed";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }

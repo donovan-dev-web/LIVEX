@@ -22,6 +22,9 @@ public sealed class SimulationLoop
     private readonly Action<SimulationLoop>? _autosaveHandler;
     private readonly Simulation.Core.Configuration.SimulationOptions _options;
     private readonly List<Simulation.Core.Configuration.SeasonChange> _seasonChanges = new();
+    private readonly List<World.TerritoryMembershipChange> _territoryChanges = new();
+    private System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<ulong>> _territoryMembership =
+        new(System.StringComparer.Ordinal);
     private Xoshiro256StarStar _rng;
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
@@ -114,6 +117,38 @@ public sealed class SimulationLoop
     public bool SeasonsEnabled => _options.World.Seasons.Enabled;
 
     /// <summary>
+    /// Suivi du territoire activé (<c>world.territories.enabled</c>, SYNE-073) —
+    /// appartenance des entités aux zones, événements <c>world.territory_membership_changed</c>
+    /// et champ snapshot <c>territories[]</c> actifs.
+    /// </summary>
+    public bool TerritoriesEnabled => _options.World.Territories.Enabled;
+
+    /// <summary>
+    /// Changements d'appartenance aux zones de territoire survenus depuis la
+    /// dernière collecte (SYNE-073) : vidés (<see cref="ClearTerritoryChanges"/>)
+    /// par la couche d'observabilité après réémission — même protocole que les
+    /// modifications d'environnement et les changements de saison.
+    /// </summary>
+    public IReadOnlyList<World.TerritoryMembershipChange> LastTerritoryChanges => _territoryChanges;
+
+    /// <summary>Vide la file des changements d'appartenance (drain d'observabilité).</summary>
+    public void ClearTerritoryChanges() => _territoryChanges.Clear();
+
+    /// <summary>
+    /// Identifiants des entités présentes dans la zone <paramref name="zoneId"/>
+    /// au tick courant — ordre croissant (déterministe), initialement vide.
+    /// </summary>
+    public IReadOnlyList<ulong> MembersOfTerritory(string zoneId)
+    {
+        if (_territoryMembership.TryGetValue(zoneId, out System.Collections.Generic.HashSet<ulong>? members))
+        {
+            return members.OrderBy(member => member).ToList();
+        }
+
+        return [];
+    }
+
+    /// <summary>
     /// Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1) puis exécute le
     /// pipeline cognitif BDI (U1, SYNE-010) dans l'ordre causal strict. Le PRNG
     /// n'avance que d'un tirage par tick (contrat DETERMINISM.md §3).
@@ -144,6 +179,63 @@ public sealed class SimulationLoop
         {
             _autosaveHandler(this);
         }
+
+        TrackTerritoryMembership();
+    }
+
+    /// <summary>
+    /// Suivi de l'appartenance aux zones de territoire au tick courant (SYNE-073,
+    /// décision n°21) : la présence d'une entité dans le disque la classe membre du
+    /// territoire effectif. Recalculée à chaque tick (les positions sont finales
+    /// après les boucles entités) — **0 tirage PRNG** ; chaque différence avec le
+    /// tick précédent est **tracée** (<see cref="LastTerritoryChanges"/>) dans un
+    /// ordre déterministe : par zone (ordre de pose), par entité (id croissant),
+    /// sorties avant entrées. Cycle inactif : aucun tracé, appartenance nulle.
+    /// </summary>
+    private void TrackTerritoryMembership()
+    {
+        Simulation.Core.Configuration.TerritorySettings territories = _options.World.Territories;
+        if (!territories.Enabled)
+        {
+            _territoryMembership.Clear();
+            return;
+        }
+
+        var current = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<ulong>>(System.StringComparer.Ordinal);
+        foreach (World.Territory zone in World.Territories)
+        {
+            var members = new System.Collections.Generic.HashSet<ulong>();
+            foreach (Simulation.Core.Entities.Entity entity in World.Entities)
+            {
+                if (zone.Contains(entity.Position))
+                {
+                    members.Add(entity.Id.Value);
+                }
+            }
+
+            current[zone.Id] = members;
+        }
+
+        foreach (World.Territory zone in World.Territories)
+        {
+            System.Collections.Generic.HashSet<ulong> previous =
+                _territoryMembership.TryGetValue(zone.Id, out System.Collections.Generic.HashSet<ulong>? prev) ? prev : [];
+            System.Collections.Generic.HashSet<ulong> now = current[zone.Id];
+
+            foreach (ulong left in previous.Where(member => !now.Contains(member)).OrderBy(member => member))
+            {
+                _territoryChanges.Add(new Simulation.Core.World.TerritoryMembershipChange(
+                    Simulation.Core.World.TerritoryMembershipChangeKind.Left, zone, left));
+            }
+
+            foreach (ulong entered in now.Where(member => !previous.Contains(member)).OrderBy(member => member))
+            {
+                _territoryChanges.Add(new Simulation.Core.World.TerritoryMembershipChange(
+                    Simulation.Core.World.TerritoryMembershipChangeKind.Entered, zone, entered));
+            }
+        }
+
+        _territoryMembership = current;
     }
 
     /// <summary>

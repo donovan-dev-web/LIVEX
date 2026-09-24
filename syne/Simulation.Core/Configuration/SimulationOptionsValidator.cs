@@ -442,6 +442,42 @@ public static class SimulationOptionsValidator
             }
         }
 
+        if (options.World.Territories.Zones.Count > 0 && !options.World.Territories.Enabled)
+        {
+            errors.Add("world.territories.zones est fournie alors que world.territories.enabled est false — activer le suivi du territoire pour placer les zones.");
+        }
+
+        var zoneIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (TerritoryZoneDefinition zone in options.World.Territories.Zones)
+        {
+            if (string.IsNullOrWhiteSpace(zone.Id))
+            {
+                errors.Add("world.territories.zones[].id ne doit pas être vide.");
+            }
+
+            if (!zoneIds.Add(zone.Id))
+            {
+                errors.Add($"world.territories.zones définit deux fois l'identifiant \"{zone.Id}\" — un identifiant unique par zone attendu.");
+            }
+
+            if (zone.Radius <= 0)
+            {
+                errors.Add($"world.territories.zones[{zone.Id}].radius doit être &gt; 0 (reçu : {zone.Radius}).");
+            }
+
+            if (options.Simulation.WorldWidth > 0 &&
+                (zone.CenterX < 0 || zone.CenterX > options.Simulation.WorldWidth))
+            {
+                errors.Add($"world.territories.zones[{zone.Id}].centerX doit être dans [0, worldWidth] (reçu : {zone.CenterX}).");
+            }
+
+            if (options.Simulation.WorldHeight > 0 &&
+                (zone.CenterY < 0 || zone.CenterY > options.Simulation.WorldHeight))
+            {
+                errors.Add($"world.territories.zones[{zone.Id}].centerY doit être dans [0, worldHeight] (reçu : {zone.CenterY}).");
+            }
+        }
+
         return errors;
     }
 }
