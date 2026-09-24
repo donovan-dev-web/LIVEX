@@ -66,10 +66,11 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Décision+Utilité | traits différents → décisions différentes | `dotnet test --filter "UtilityEvaluatorTests|CognitionPipelineTests"` |
 | Communication (SYNE ph5) | information locale (rayon), interception, relais ≤ 2 sauts | `dotnet test --filter "CommunicationSystemTests"` |
 | Performance | micro-benchmark grille < budget CI ; **débits 50/500/1000 ≥ 120/30/20 t/s (ph9)** | `dotnet test --filter "PerceptionBenchmarkTests|ScaleTargetsTests"` |
-| Tests | **324 tests (315 Core + 9 Console), 96,19 % de couverture** (≥ 80 % requis, SYNE-100) | `dotnet test --collect:"XPlat Code Coverage"` |
+| Tests | **370 tests (353 Core + 17 Console), 94,01 % de couverture** (≥ 80 % requis, SYNE-100) ; jalons T0–T5 activés (SYNE-122) | `dotnet test --collect:"XPlat Code Coverage"` |
 | Déterminisme (SYNE-102) | golden `0x27fad50065d8c4a4` + baseline d'état `0x072a488aa18c05eb` inchangés | `dotnet test --filter "DeterminismRegressionTests|Ph10DeterminismBaselineTests"` |
 | Intégration (SYNE-101) | 150 ticks chaînés sans perte (contiguïté 1..N) | `dotnet test --filter "ObservabilityChainedLoopTests"` |
 | Contrôle (SYNE-113) | pilotage HTTP :5181 non intrusif (run piloté == ininterrompu) | `dotnet test --filter "ControlServerWireTests"` |
+| Jalons T0–T5 (SYNE-122) | T0 50/1000 sans crash + état valide déterministe ; T1 50/2000 croyances divergentes ; T2 traits → décisions différentes (situation identique) ; T3 info locale ; T4 reproductibilité benchmark ; T5 suite ≥ 160 tests | `dotnet test --filter "MilestoneT0T5Tests"` |
 
 ## 7. Convention d'écriture
 
