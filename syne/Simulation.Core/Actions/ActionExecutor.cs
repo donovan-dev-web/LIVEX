@@ -132,6 +132,10 @@ public sealed class ActionExecutor
     /// </summary>
     private void MoveTowardDeterministicTarget(Entity entity, DesireKind kind, ulong currentTick)
     {
+        // SYNE-071 : une construction posée/retirée en cours de run re-rasterise la
+        // grille A* et purge le cache (no-op si aucune modification — déterminisme).
+        _pathfinder.Refresh();
+
         ActionDefinition definition = _catalog[kind];
         (double dx, double dy) = DeterministicOffset(entity.Id.Value, currentTick, kind);
         double targetX = entity.Position.X + dx;

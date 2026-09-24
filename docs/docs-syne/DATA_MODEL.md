@@ -15,7 +15,7 @@ Ce document décrit les **structures de données** centrales de SYNE. Elles form
 ## 2. Le Monde
 
 - **Espace** : plan 2D logique, dimensions configurables (défaut 500×500 unités), positions `{x, y}`. Non-toroidal : positions clampées à `[0, width]×[0, height]` (Monographie §3.5.3).
-- **Obstacles** : statiques, **cercle** `{x, y, radius}` (V0.1 — le rectangle est reporté). Bloquent le **mouvement** (collision simple : pas annulé si la cible est dans le disque) et, depuis le **jalon SYNE ph1**, la **ligne de vue** (perception masquée, ADR-013) — synchronisation des docs avec §3.5.2 et V2 (murs/passabilité).
+- **Obstacles** : statiques, **cercle** `{id, x, y, radius}` (V0.1 — le rectangle est reporté). Bloquent le **mouvement** (collision simple : pas annulé si la cible est dans le disque) et, depuis le **jalon SYNE ph1**, la **ligne de vue** (perception masquée, ADR-013) — synchronisation des docs avec §3.5.2 et V2 (murs/passabilité). Depuis **SYNE-071 (engineVersion 0.8.0)** : portés par le monde comme **constructions/obstacles statiques** — layout `world.obstacleLayout[]` (CONFIGURATION §6.8), mutation dynamique validée (révision), grille A\* re-rasterisable, snapshot `obstacles[]`.
 - **Ressources** (V1) :
 
 | Propriété | FoodSource | WaterSource |
@@ -142,13 +142,18 @@ snapshot d'observabilité (`resources`, API_CONTRACTS.md §2.1). Les **sources s
 au jalon ph7 (SYNE-070). Depuis **SYNE-070 (engineVersion 0.7.0)** : cycle de vie appliqué en fin
 de tick — régénération (`+ regenerationRate` par tick) puis dégradation périodique (à chaque
 `degradationTick`, perte de `regenerationRate × degradationTick`, clamp ≥ 0 ; inerte sans taux).
+Depuis **SYNE-071 (engineVersion 0.8.0)** : les **constructions/obstacles statiques** (§6.4.4)
+sont des disques portés par le monde (`Obstacle {Id, Position, Radius}`), configurés par layout
+`world.obstacleLayout[]`, mutables dynamiquement (révision `ObstacleRevision`) et exposés dans le
+snapshot (`obstacles`, API_CONTRACTS.md §2.1) ; leur consommation de ressources relève de la
+mécanique agentique **ouverte** (décision n°20).
 
 | Ressource | Initial | Régénération/tick | Consommée par |
 | :-- | :-- | :-- | :-- |
 | Food | 100 | 0 | Eat (1.0 / exécution) |
 | Water | 1000 | 5 | Drink (1.0 / exécution) |
-| Wood | 50 | 0.1 | — (ph7 constructions) |
-| Mineral | 0 | 0 | — (ph7 constructions, SYNE-071) |
+| Wood | 50 | 0.1 | — (mécanique agentique des constructions, ouverte — décision n°20) |
+| Mineral | 0 | 0 | — (mécanique agentique des constructions, ouverte — décision n°20) |
 
 ---
 

@@ -296,7 +296,34 @@ public sealed class WorldSettings
 {
     public bool Seasons { get; set; }
     public bool Events { get; set; }
+
+    /// <summary>
+    /// Active le placement des obstacles statiques configurés (SYNE-071, Annexe H).
+    /// Les constructions sont des obstacles statiques de la grille (décision n°20) :
+    /// disposés par <see cref="ObstacleLayout"/> à l'init, poés/retirés en cours de run
+    /// par <c>World.PlaceConstruction</c>/<c>RemoveConstruction</c> (modification
+    /// d'environnement tracée, événement <c>world.construction_placed</c>).
+    /// </summary>
     public bool Obstacles { get; set; }
+
+    /// <summary>
+    /// Layout initial des obstacles statiques (disques) posés à l'init quand
+    /// <see cref="Obstacles"/> est vrai (SYNE-071, CONFIGURATION.md §6.8).
+    /// </summary>
+    public List<StaticObstacleSettings> ObstacleLayout { get; set; } = [];
+}
+
+/// <summary>
+/// Pose d'un obstacle statique issu de la configuration <c>world.obstacleLayout</c>
+/// (SYNE-071, DATA_MODEL.md §2) : disque {Position, Radius}. Une construction posée
+/// modifie la perception et le mouvement — modèle figé par la décision n°20.
+/// </summary>
+public sealed class StaticObstacleSettings
+{
+    public string Id { get; set; } = string.Empty;
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Radius { get; set; } = 10.0;
 }
 
 public sealed class RandomSettings

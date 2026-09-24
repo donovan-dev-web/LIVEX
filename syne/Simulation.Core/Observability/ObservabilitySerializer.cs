@@ -32,9 +32,27 @@ public static class ObservabilitySerializer
             ["aliveCount"] = snapshot.AliveCount,
             ["agents"] = agents,
             ["resources"] = ResourcesJson(snapshot.Resources),
+            ["obstacles"] = ObstaclesJson(snapshot.Obstacles),
             ["groups"] = GroupsJson(snapshot.Groups),
         };
         return message;
+    }
+
+    private static JsonArray ObstaclesJson(IReadOnlyList<ObstacleSnapshot> obstacles)
+    {
+        var array = new JsonArray();
+        foreach (ObstacleSnapshot obstacle in obstacles)
+        {
+            array.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["id"] = obstacle.Id,
+                ["x"] = obstacle.X,
+                ["y"] = obstacle.Y,
+                ["radius"] = obstacle.Radius,
+            });
+        }
+
+        return array;
     }
 
     private static JsonArray ResourcesJson(IReadOnlyList<ResourceSnapshot> resources)

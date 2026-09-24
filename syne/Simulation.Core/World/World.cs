@@ -1,5 +1,19 @@
 namespace Simulation.Core.World;
 
+/// <summary>Sens d'une modification d'environnement (SYNE-071).</summary>
+public enum EnvironmentChangeKind
+{
+    Added,
+    Removed,
+}
+
+/// <summary>
+/// Modification d'environnement tracée (SYNE-071) : pose ou retrait d'une
+/// construction (= obstacle statique). Consommée par l'émetteur d'observabilité
+/// (événements <c>world.construction_placed</c> / <c>world.construction_removed</c>).
+/// </summary>
+public sealed record EnvironmentChange(EnvironmentChangeKind Kind, Obstacle Obstacle);
+
 /// <summary>
 /// Le monde : plan 2D continu non-toroidal, grille spatiale de perception,
 /// index des entités. Positions dans [0, Width] x [0, Height] (DATA_MODEL.md §2).
@@ -8,6 +22,8 @@ public sealed class World
 {
     private readonly List<Simulation.Core.Entities.Entity> _entities = [];
     private readonly List<Obstacle> _obstacles = [];
+    private readonly List<EnvironmentChange> _environmentChanges = [];
+    private ulong _obstacleRevision;
 
     public World(WorldSize size)
         : this(size, size.Width / 10.0)
@@ -28,6 +44,21 @@ public sealed class World
 
     public IReadOnlyList<Obstacle> Obstacles => _obstacles;
 
+    /// <summary>
+    /// Révision des obstacles — incrémentée à chaque ajout/retrait (y compris le
+    /// layout d'init et la restauration). Pilote la re-rasterisation du cheminement
+    /// (SYNE-071) : quand elle change, <c>AStarPathfinder.Refresh</c> re-calcule la
+    /// grille bloquée et purge le cache de chemins.
+    /// </summary>
+    public ulong ObstacleRevision => _obstacleRevision;
+
+    /// <summary>
+    /// Modifications d'environnement tracées depuis la dernière collecte
+    /// (pose/retrait de construction, SYNE-071). Drainée par l'émetteur
+    /// d'observabilité via <see cref="ClearEnvironmentChanges"/>.
+    /// </summary>
+    public IReadOnlyList<EnvironmentChange> LastEnvironmentChanges => _environmentChanges;
+
     public void AddEntity(Simulation.Core.Entities.Entity entity)
     {
         ArgumentNullException.ThrowIfNull(entity);
@@ -40,11 +71,87 @@ public sealed class World
         _entities.Add(entity);
     }
 
-    /// <summary>Ajoute un obstacle statique au monde (SYNE-011, DATA_MODEL.md §2).</summary>
+    /// <summary>
+    /// Ajoute un obstacle statique de base au monde (SYNE-011, DATA_MODEL.md §2) :
+    /// configuration initiale ou restauration bit-à-bit. Non tracé (les obstacles
+    /// d'init sont l'environnement, pas des modifications d'environnement).
+    /// </summary>
     public void AddObstacle(Obstacle obstacle)
     {
         ArgumentNullException.ThrowIfNull(obstacle);
+        EnsureCanAdd(obstacle);
         _obstacles.Add(obstacle);
+        _obstacleRevision++;
+    }
+
+    /// <summary>
+    /// Pose une construction (SYNE-071, décision n°20) : un obstacle statique de la
+    /// grille, tracé comme modification d'environnement (événement
+    /// <c>world.construction_placed</c>). Bloque le mouvement et la ligne de vue.
+    /// </summary>
+    public void PlaceConstruction(Obstacle obstacle)
+    {
+        ArgumentNullException.ThrowIfNull(obstacle);
+        EnsureCanAdd(obstacle);
+        _obstacles.Add(obstacle);
+        _obstacleRevision++;
+        _environmentChanges.Add(new EnvironmentChange(EnvironmentChangeKind.Added, obstacle));
+    }
+
+    /// <summary>
+    /// Retire une construction (SYNE-071) : tracé comme modification d'environnement
+    /// (événement <c>world.construction_removed</c>). Renvoie <c>false</c> si aucun
+    /// obstacle ne porte cet identifiant.
+    /// </summary>
+    public bool RemoveConstruction(string id)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        int index = _obstacles.FindIndex(obstacle => obstacle.Id == id);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        Obstacle removed = _obstacles[index];
+        _obstacles.RemoveAt(index);
+        _obstacleRevision++;
+        _environmentChanges.Add(new EnvironmentChange(EnvironmentChangeKind.Removed, removed));
+        return true;
+    }
+
+    /// <summary>
+    /// Applique le layout d'obstacles configuré (SYNE-071, CONFIGURATION.md §6.8) :
+    /// place les disques de <c>world.obstacleLayout</c> quand <c>world.obstacles</c>
+    /// est vrai. Obstacles d'init non tracés.
+    /// </summary>
+    public void ApplyConfiguredLayout(Configuration.WorldSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        if (!settings.Obstacles)
+        {
+            return;
+        }
+
+        foreach (Configuration.StaticObstacleSettings spec in settings.ObstacleLayout)
+        {
+            AddObstacle(new Obstacle(spec.Id, new Position(spec.X, spec.Y), spec.Radius));
+        }
+    }
+
+    /// <summary>Consomme les modifications d'environnement tracées (drain par-tick de l'émetteur).</summary>
+    public void ClearEnvironmentChanges() => _environmentChanges.Clear();
+
+    private void EnsureCanAdd(Obstacle obstacle)
+    {
+        if (obstacle.Position != Position.Clamp(obstacle.Position, Size))
+        {
+            throw new ArgumentOutOfRangeException(nameof(obstacle), "La position de l'obstacle sort du monde (non-toroidal).");
+        }
+
+        if (_obstacles.Any(existing => existing.Id == obstacle.Id))
+        {
+            throw new ArgumentException($"Un obstacle portant l'identifiant « {obstacle.Id} » existe déjà.", nameof(obstacle));
+        }
     }
 
     /// <summary>
