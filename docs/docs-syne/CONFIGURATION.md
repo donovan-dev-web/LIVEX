@@ -247,12 +247,39 @@ Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Dr
 | `resources.food.degradationTick` | 100 | n°4 | Période de dégradation (perte de `rate × période` ; inerte sans taux) |
 | `resources.water.initial` | 1000 | n°4 | Réserve initiale d'eau (Drink : −1.0 / exécution) |
 | `resources.water.regenerationRate` | 5 | n°4 | Régénération par tick |
-| `resources.wood.initial` | 50 | n°4 | Réserve initiale de bois (consommation au jalon constructions, SYNE-071) |
+| `resources.wood.initial` | 50 | n°4 | Réserve initiale de bois (consommation à la mécanique agentique des constructions — **ouverte**, §6.8) |
 | `resources.wood.regenerationRate` | 0.1 | n°4 | Régénération par tick |
 | `resources.mineral.initial` | 0 | n°2.4 | Réserve initiale de minéraux (4ᵉ type, SYNE-070) |
 | `resources.mineral.regenerationRate` | 0 | n°2.4 | Régénération par tick |
 
 Validation §6 : `initial` ≥ 0 ; `regenerationRate` ≥ 0 ; `degradationTick` > 0 ou absent.
+
+### 6.8 Clés d'environnement — constructions = obstacles statiques (SYNE-071)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `world.obstacles` | `false` | n°20 | Active le monde avec obstacles (flag vivant ; appelle `ApplyConfiguredLayout` au build CLI/serveur) |
+| `world.obstacleLayout[]` | `[]` | n°20 | Layout **initial** des obstacles/constructions — liste de disques |
+| `world.obstacleLayout[].id` | — (requis) | n°20 | Identifiant unique de l'obstacle (`targetId` des événements, clé de retrait) |
+| `world.obstacleLayout[].x` | — (requis) | n°20 | Abscisse du centre (dans `[0, worldWidth]`) |
+| `world.obstacleLayout[].y` | — (requis) | n°20 | Ordonnée du centre (dans `[0, worldHeight]`) |
+| `world.obstacleLayout[].radius` | 10 | n°20 | Rayon de la zone bloquante (perception/ligne de vue/mouvement, ADR-013) |
+
+Exemple (extrait) :
+
+```json
+{
+  "world": {
+    "obstacles": true,
+    "obstacleLayout": [
+      { "id": "maison-1", "x": 100, "y": 100, "radius": 10 },
+      { "id": "rocher-bas", "x": 480, "y": 490, "radius": 20 }
+    ]
+  }
+}
+```
+
+Validation §6 : `world.obstacleLayout` rejeté si `world.obstacles` est `false` ; par entrée `id` non vide, `radius` > 0, `x`/`y` dans le monde. Mutations dynamiques (`AddObstacle`, `PlaceConstruction`/`RemoveConstruction`) validées à l'exécution (bornes + id unique) — la **mécanique agentique** d'une construction (qui, coût en bois/minéraux, durée) reste **ouverte** (décision n°20, §2.20).
 
 ---
 

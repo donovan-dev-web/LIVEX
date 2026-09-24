@@ -46,6 +46,8 @@ public static class SimulationFactory
             world.AddEntity(entity);
         }
 
+        world.ApplyConfiguredLayout(options.World);
+
         var loop = new SimulationLoop(world, rng, options);
         return (world, loop);
     }

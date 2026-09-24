@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `../COMMUNICATION.md`, `DATA_MODEL.md`
 **Source Monographie** : §2.4 (contrats de transport), §5.4 (PRISM), §3.24 (événements), ADR-003/ADR-004
 
@@ -35,16 +35,18 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 | `aliveCount` | uint | Entités vivantes |
 | `agents[]` | array | État des entités (position, santé, énergie, faim, soif, action courante...) |
 | `resources[]` | array | Réserves globales `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1) |
+| `obstacles[]` | array | Constructions/obstacles statiques `{id, x, y, radius}` — depuis **SYNE ph11d** (SYNE-071), ordre d'insertion (déterminisme) (DATA_MODEL §2) |
 
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.7.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.8.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
   "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
                   { "type": "wood", "quantity": 50 }, { "type": "mineral", "quantity": 0 } ],
+  "obstacles": [ { "id": "maison-1", "x": 100.0, "y": 100.0, "radius": 10.0 } ],
   "groups": [ { "groupId": 1, "members": ["a1", "a2", "a3"], "size": 3,
                 "leaderId": "a1", "bornTick": 5000, "cohesion": 0.42,
                 "decision": "SeekFood", "consensus": 0.80 } ] }
@@ -52,8 +54,10 @@ Exemple (format condensé) :
 
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.7.0` (jalon SYNE ph7c — cycle des ressources : minéraux +
-> régénération/dégradation périodique, SYNE-070). Le champ `groups[]`
+> `engineVersion` = `0.8.0` (jalon SYNE ph11d — constructions : obstacles statiques
+> configurables + modification d'environnement tracée, SYNE-071). Les champs `obstacles[]`
+> (SYNE-071, ajout **additif**, MINOR) listent les constructions/obstacles du monde au tick :
+> `{id, x, y, radius}`, ordre d'insertion stable. Le champ `groups[]`
 > (syne-060/061, ajout **additif**, MINOR) liste les groupes actifs au tick : `groupId`,
 > `members[]`, `size`, `leaderId`, `bornTick`, `cohesion` (cohésion moyenne au dernier LOD),
 > `decision`/`consensus` (dernière décision collective, `SYSTEMS_SPEC` §5).
@@ -62,7 +66,7 @@ Exemple (format condensé) :
 
 | Champ | Type | Description |
 | :-- | :-- | :-- |
-| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `conflict`...) |
+| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `conflict`...) |
 | `tick` | uint | Tick |
 | `agentId?` | string | Entité concernée |
 | `targetId?` | string | Cible |
@@ -106,6 +110,12 @@ Exemple :
 > le seuil fatal (énergie nulle, épuisement) — `agentId` = défunt, `cause = "exhaustion"`,
 > `value = {cause, species}` (Monographie §6.2.10). L'appelant purge ensuite l'esprit de la
 > cognition et des groupes (les groupes vides sont dissous).
+> **`world.construction_placed`/`world.construction_removed` (jalon SYNE ph11d, SYNE-071)** :
+> modification d'environnement **sans agentId** (événement du monde) — une construction posée
+> (`PlaceConstruction`) ou retirée (`RemoveConstruction`) d'un obstacle statique. `targetId` =
+> id de l'obstacle, `value = {id, x, y, radius}` (positions/rayon arrondis à 4 décimales).
+> Drainés par `ObservabilityTickEmitter` au tick suivant la modification, avant l'émission du
+> snapshot correspondant (chaque modification est émise **exactement une fois**).
 
 ## 3. Contrat de contrôle — HTTP 5181
 

@@ -31,6 +31,37 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     assertions existantes `CognitionPipelineTests`/`ObservabilitySensorTests` adaptées aux
     bornes de régénération.
   - **Suite totale : 342 tests** (327 Core + 15 Console).
+- **Jalon SYNE ph11d — Constructions (SYNE-071, jalon U8)** :
+  - **`MODÈLE & CONFIGURATION`** : `world.obstacles` réactivé (défaut `false`,
+    CONFIGURATION.md §6.8) — flag vivant + **layout initial** `world.obstacleLayout[]`
+    (`StaticObstacleSettings {id, x, y, radius}`) ; carte `Obstacle` (disque) inchangée ;
+    `WorldSettings` enrichi (enum-driven), défauts de layout = liste vide.
+  - **`MUTATION DYNAMIQUE`** : `World.AddObstacle` validé (position bornée au monde,
+    id unique, révision `ObstacleRevision` incrémentée) ; **constructions tracées** :
+    `PlaceConstruction` / `RemoveConstruction` enregistrent un `EnvironmentChange`
+    (`Added`/`Removed`) consommé par l'observabilité — AddObstacle reste **non tracé**
+    (init/restauration de config) ; `ClearEnvironmentChanges()` pour le drain.
+    `ApplyConfiguredLayout` → posé au build des mondes Console (CLI + serveur de contrôle).
+  - **`GRILLE A* DYNAMIQUE`** : `AStarPathfinder.Refresh()` re-rasterise la grille
+    (`_rasterizedRevision` vs `World.ObstacleRevision`) et purge le cache LRU ;
+    no-op déterministe quand rien n'a changé ; câblé en tête de
+    `MoveTowardDeterministicTarget` (ActionExecutor).
+  - **`OBSERVABILITÉ`** : événements d'environnement **`world.construction_placed`** /
+    **`world.construction_removed`** (value `{id, x, y, radius}`, `targetId`) drainés par
+    `ObservabilityTickEmitter` après les boucles entités ; snapshot embarque
+    **`obstacles[]`** (`{id, x, y, radius}`, ordre d'insertion — API_CONTRACTS §2.1) ;
+    `engineVersion` **0.7.0 → 0.8.0**. Checksums dorés **inchangés** (scénario de référence
+    sans modification d'environnement en cours de run → Refresh no-op ; 0 tirage PRNG).
+  - **`VALIDATION`** : `world.obstacleLayout[]` borné (`id` non vide, `radius` > 0, `x`/`y`
+    dans le monde) et rejeté si `world.obstacles` est `false`.
+  - Tests : `WorldTests` (+8 : bornes, id unique, trace/révision, drain), A*
+    (+4 : purge cache, re-routage après pose, no-op, re-liberation après retrait),
+    `ConfigLoaderTests` (+2 : défauts + layout JSON), `SimulationOptionsValidatorTests`
+    (+3 : layout valide/appel-flag/bornes), `ObservabilitySensorTests` (+3 : obstacles
+    snapshot + contrats construction_placed/removed, champ obstacles additif),
+    `ObservabilityConstructionTests` (+2, Console : pose/retrait drainés + déterminisme
+    non-altéré). Anciennes assertions adaptées (engineVersion 0.8.0).
+  - Suite totale : **362 tests** (345 Core + 17 Console).
 - **Jalon SYNE ph11 — Persistance & Contrôle (SYNE-110 → SYNE-113, jalon U8)** :
   - **`MODÈLE & REPRISE BIT-À-BIT` (SYNE-110/111/112, PR2 PR SYNE)** : persistance SQLite
     **11 tables** (`PRAGMA user_version=2`) — `SqlitePersistenceStore` : sauvegarde atomique de l'état

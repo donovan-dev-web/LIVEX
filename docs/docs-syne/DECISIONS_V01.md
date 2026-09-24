@@ -172,6 +172,7 @@ Chaque décision est ici **soit tranchée** (valeur + justification + source) **
 - **Source** : Monographie §3.14, §6.4.4.
 
 - **État** : **tranchée** (décision n°18 — [TRANCHÉE]). Les constructions (maisons, abris) modifient l'environnement (obstacles, vitesses) ; leur modèle **physique** (coût, matériaux, gain) est **configuré et hérité** du prototype (paramètres §5.8, calibration décision n°6) — Monographie §3.14, §6.4, §6.4.4.
+- **Acté V0.1 (SYNE-071, jalon U8)** : le **modèle** est implémenté côté monde — `world.obstacles` vivant + layout initial `world.obstacleLayout[]` (`StaticObstacleSettings {id, x, y, radius}`, CONFIGURATION §6.8), mutation dynamique validée (`AddObstacle` bornes/id unique + révision `ObstacleRevision`), constructions tracées `PlaceConstruction`/`RemoveConstruction` (modification d'environnement, events `world.construction_placed`/`removed` + snapshot `obstacles[]`), grille A\* re-rasterisable (`Refresh()`, no-op déterministe) — **sans mécanique agentique** : qui construit, à quel coût (minéraux/bois), en combien de temps reste **ouvert** (ci-dessous).
 - **Pourquoi ouverte** : les constructions interagissent avec l'espace (perception, mouvement) — un chiffrage prématuré altérerait le déterminisme perçu.
 - **Blocage** : le principe est posé (les constructions sont des obstacles statiques, objet de la grille) — la **mathématique** reste ouverte.
 

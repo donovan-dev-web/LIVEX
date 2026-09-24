@@ -148,4 +148,87 @@ public class AStarPathfinderTests
         Assert.Equal(0, cache.Count);
         Assert.Null(cache.TryGet(0, 0, 1, 0));
     }
+
+    [Fact]
+    public void PathCache_Clear_PurgesAllEntries()
+    {
+        var cache = new PathCache(capacity: 8);
+        cache.Add(0, 0, 1, 0, [new Position(5, 5)]);
+        cache.Add(0, 0, 1, 1, [new Position(5, 5)]);
+        Assert.Equal(2, cache.Count);
+
+        cache.Clear();
+
+        Assert.Equal(0, cache.Count);
+        Assert.Null(cache.TryGet(0, 0, 1, 0));
+        Assert.Null(cache.TryGet(0, 0, 1, 1));
+    }
+
+    [Fact]
+    public void Refresh_ReroutesAroundConstructionPlacedMidRun()
+    {
+        // SYNE-071 : sans Refresh, le chemin mémorisé (cache + grille) ignore la
+        // construction posée en cours de run ; après Refresh, la grille re-rasterisée
+        // bloque le passage et le chemin la contourne ou replie proprement.
+        var world = EmptyWorld();
+        var pathfinder = new AStarPathfinder(world, Options().Agents.Pathfinding);
+
+        IReadOnlyList<Position> before = pathfinder.FindPath(new Position(100, 250), new Position(400, 250));
+        Assert.NotEmpty(before); // aucun obstacle → route directe
+
+        // Mur vertical plein sur l'axe (mêmes disques que FindPath_AgainstWall).
+        for (int y = 0; y <= 500; y += 40)
+        {
+            world.PlaceConstruction(new Obstacle($"mur-{y}", new Position(250, y), radius: 30));
+        }
+        world.ClearEnvironmentChanges();
+
+        // Avant rafraîchissement le cache reste valide (grille non re-rasterisée).
+        IReadOnlyList<Position> stale = pathfinder.FindPath(new Position(100, 250), new Position(400, 250));
+        Assert.Equal(before, stale);
+
+        pathfinder.Refresh();
+        Assert.Equal(0, pathfinder.Cache.Count); // purge du cache LRU
+
+        Assert.Empty(pathfinder.FindPath(new Position(100, 250), new Position(400, 250)));
+    }
+
+    [Fact]
+    public void Refresh_WithoutWorldChange_KeepsGridAndCacheIntact()
+    {
+        // Cas nominal (aucune modification d'environnement) : Refresh est un no-op —
+        // la grille et le cache mémorisé restent identiques (déterminisme du chemin).
+        var world = EmptyWorld();
+        world.AddObstacle(new Obstacle("rocher", new Position(250, 250), radius: 30));
+        var pathfinder = new AStarPathfinder(world, Options().Agents.Pathfinding);
+        IReadOnlyList<Position> path = pathfinder.FindPath(new Position(100, 250), new Position(400, 250));
+        Assert.NotEmpty(path);
+
+        pathfinder.Refresh();
+
+        Assert.Equal(path, pathfinder.FindPath(new Position(100, 250), new Position(400, 250)));
+    }
+
+    [Fact]
+    public void RemoveConstruction_MidRun_RestoresRouteAfterRefresh()
+    {
+        // SYNE-071 : retirer une construction re-liber la grille — après Refresh un
+        // chemin bloqué redevient accessible.
+        var world = EmptyWorld();
+        for (int y = 0; y <= 500; y += 40)
+        {
+            world.AddObstacle(new Obstacle($"mur-{y}", new Position(250, y), radius: 30));
+        }
+
+        var pathfinder = new AStarPathfinder(world, Options().Agents.Pathfinding);
+        Assert.Empty(pathfinder.FindPath(new Position(100, 250), new Position(400, 250)));
+
+        for (int y = 0; y <= 500; y += 40)
+        {
+            Assert.True(world.RemoveConstruction($"mur-{y}"));
+        }
+        pathfinder.Refresh();
+
+        Assert.NotEmpty(pathfinder.FindPath(new Position(100, 250), new Position(400, 250)));
+    }
 }

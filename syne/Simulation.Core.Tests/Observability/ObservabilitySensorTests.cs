@@ -45,6 +45,7 @@ public class ObservabilitySensorTests
         Assert.Equal(3, (int?)message["aliveCount"]);
         Assert.Equal(3, message["agents"]!.AsArray().Count);
         Assert.NotNull(message["resources"]);
+        Assert.NotNull(message["obstacles"]);
 
         // Agents triés par id croissant (déterminisme d'émission).
         Assert.Equal("1", (string?)message["agents"]![0]!["id"]);
@@ -171,9 +172,9 @@ public class ObservabilitySensorTests
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
-        // Jalon SYNE ph7c → 0.7.0 : cycle des ressources — minéraux + régénération/
-        // dégradation (SYNE-070), appliquées en fin de tick.
-        Assert.Equal("0.7.0", ObservabilityContract.EngineVersion);
+        // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
+        // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
+        Assert.Equal("0.8.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);
@@ -425,5 +426,66 @@ public class ObservabilitySensorTests
         Assert.Equal("food", (string?)value["reserve"]);
         Assert.Equal(1.0, (double?)value["reserveConsumed"]);
         Assert.Equal(-20.0, (double?)value["hungerDelta"]);
+    }
+
+    [Fact]
+    public void Snapshot_ExposesObstacles_AsCamelCaseArray()
+    {
+        // SYNE-071 : la photographie embarque les obstacles (constructions) du monde
+        // (API_CONTRACTS §2.1), ordre stable d'insertion — déterminisme.
+        var world = new WorldType(new WorldSize(500, 500));
+        world.AddObstacle(new Obstacle("rocher-1", new Position(250, 150), radius: 15));
+        world.AddObstacle(new Obstacle("rocher-2", new Position(420, 380), radius: 25));
+        world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(50, 50), TraitSet.NeutralAll, bornAt: 0));
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), ConfigLoader.LoadDefaults());
+        loop.Run(1);
+
+        WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 7);
+        JsonObject message = ObservabilitySerializer.SnapshotMessage(snapshot);
+        JsonArray obstacles = message["obstacles"]!.AsArray();
+
+        Assert.Equal(2, obstacles.Count);
+        Assert.Equal(2, snapshot.Obstacles.Count);
+        Assert.Equal("rocher-1", (string?)obstacles[0]!["id"]);
+        Assert.Equal(250.0, (double?)obstacles[0]!["x"]);
+        Assert.Equal(150.0, (double?)obstacles[0]!["y"]);
+        Assert.Equal(25.0, (double?)obstacles[1]!["radius"]);
+        Assert.DoesNotContain("\"Obstacles\"", ObservabilitySerializer.ToJsonText(message));
+    }
+
+    [Fact]
+    public void EventSensor_ConstructionPlaced_CarriesPlacement()
+    {
+        // SYNE-071 : pose d'une construction = obstacle statique tracé (modification
+        // d'environnement) avec identifiant, position et rayon (API_CONTRACTS §2.2).
+        var construction = new Obstacle("maison-1", new Position(120.5, 240.25), radius: 12);
+
+        ExternalEvent placed = EventSensor.ConstructionPlaced(tick: 14, construction);
+        JsonObject json = ObservabilitySerializer.EventMessage(placed);
+
+        Assert.Equal(ObservabilityContract.ConstructionPlaced, (string?)json["type"]);
+        Assert.Equal(14UL, (ulong?)json["tick"]);
+        Assert.Equal("maison-1", (string?)json["targetId"]);
+        Assert.Null((string?)json["agentId"]);
+        var value = (JsonObject)placed.Value!;
+        Assert.Equal("maison-1", (string?)value["id"]);
+        Assert.Equal(120.5, (double?)value["x"]);
+        Assert.Equal(240.25, (double?)value["y"]);
+        Assert.Equal(12.0, (double?)value["radius"]);
+    }
+
+    [Fact]
+    public void EventSensor_ConstructionRemoved_CarriesRemoval()
+    {
+        var construction = new Obstacle("maison-1", new Position(120.5, 240.25), radius: 12);
+
+        ExternalEvent removed = EventSensor.ConstructionRemoved(tick: 60, construction);
+        JsonObject json = ObservabilitySerializer.EventMessage(removed);
+
+        Assert.Equal(ObservabilityContract.ConstructionRemoved, (string?)json["type"]);
+        Assert.Equal("maison-1", (string?)json["targetId"]);
+        Assert.Equal(120.5, (double?)json["value"]!["x"]);
+        Assert.Equal(240.25, (double?)json["value"]!["y"]);
+        Assert.Equal(12.0, (double?)json["value"]!["radius"]);
     }
 }
