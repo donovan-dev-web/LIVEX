@@ -125,6 +125,9 @@ class AnalyticsStore:
         self._conn = sqlite3.connect(self.path, check_same_thread=False)
         with self._lock:
             self._conn.execute("PRAGMA foreign_keys = ON")
+            self._conn.execute("PRAGMA busy_timeout = 5000")
+            self._conn.execute("PRAGMA journal_mode = WAL")
+            self._conn.execute("PRAGMA synchronous = NORMAL")
             self._ingest_version = 0
         if initialize:
             self.initialize()

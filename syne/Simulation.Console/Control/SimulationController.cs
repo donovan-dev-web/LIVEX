@@ -1,5 +1,6 @@
 using Simulation.Core.Configuration;
 using Simulation.Core.Loop;
+using Simulation.Console.Observability;
 
 namespace Simulation.Console.Control;
 
@@ -26,26 +27,33 @@ public sealed record SimulationStatusSnapshot(
     ulong Tick,
     int AliveCount,
     ulong Seed,
-    int MaxTicks);
+    int? MaxTicks);
 
 /// <summary>
 /// Contrôleur du moteur SYNE exposé via HTTP :5181 (SYNE-113, API_CONTRACTS.md §3).
 /// Il administre une <see cref="SimulationLoop"/> en tâche d'arrière-plan et expose
-/// les commandes <c>start</c>, <c>pause</c>, <c>resume</c>, <c>reset</c> ainsi qu'un
+/// les commandes <c>start</c>, <c>pause</c>, <c>resume</c>, <c>stop</c>, <c>reset</c> ainsi qu'un
 /// état interrogable (<c>status</c>). Le contrôle est **non intrusif** (SYNE-081,
 /// DETERMINISM.md §3) : aucune commande ne retire de tirage au PRNG ni ne change la
 /// trajectoire — elles gèlent/reprises simplement l'avancement des ticks.
 /// </summary>
 public sealed class SimulationController : IAsyncDisposable
 {
+    private const int TickIntervalMilliseconds = 10;
     private readonly object _gate = new();
     private readonly ManualResetEventSlim _runSignal = new(initialState: false);
+    private readonly IObservabilitySink? _observabilitySink;
     private SimulationLoop? _loop;
     private SimulationControlState _state = SimulationControlState.Idle;
     private ulong _seed;
     private string _runId = string.Empty;
-    private int _maxTicks;
+    private int? _maxTicks;
     private CancellationTokenSource? _runCts;
+
+    public SimulationController(IObservabilitySink? observabilitySink = null)
+    {
+        _observabilitySink = observabilitySink;
+    }
 
     public SimulationControlState State
     {
@@ -94,10 +102,12 @@ public sealed class SimulationController : IAsyncDisposable
     {
         await CancelCurrentRunSafeAsync();
 
-        int target = maxTicks ?? config?.Simulation.MaxTicks ?? 1_000_000;
         (SimulationOptions options, ulong effectiveSeed) = SimulationFactory.ResolveOptions(
             ConfigLoader.LoadDefaults(), config, seed);
         var (_, loop) = SimulationFactory.Build(options, effectiveSeed);
+        var emitter = _observabilitySink is null
+            ? null
+            : new ObservabilityTickEmitter(loop, effectiveSeed, _observabilitySink);
 
         var runCts = new CancellationTokenSource();
 
@@ -105,13 +115,13 @@ public sealed class SimulationController : IAsyncDisposable
         {
             _loop = loop;
             _seed = effectiveSeed;
-            _maxTicks = target;
+            _maxTicks = maxTicks;
             _runId = Guid.NewGuid().ToString("N")[..12];
             _state = SimulationControlState.Running;
             _runCts = runCts;
         }
 
-        _ = Task.Run(() => RunLoopAsync(loop, target, runCts), CancellationToken.None);
+        _ = Task.Run(() => RunLoopAsync(loop, maxTicks, emitter, runCts), CancellationToken.None);
 
         return _runId;
     }
@@ -145,6 +155,23 @@ public sealed class SimulationController : IAsyncDisposable
         {
             _runSignal.Set();
         }
+    }
+
+    /// <summary>Arrête le run courant et remet le serveur à l'état initial.</summary>
+    public void Stop()
+    {
+        CancellationTokenSource? runCts;
+        lock (_gate)
+        {
+            runCts = _runCts;
+            _runCts = null;
+            _loop = null;
+            _runId = string.Empty;
+            _state = SimulationControlState.Idle;
+            _maxTicks = null;
+        }
+
+        StopRun(runCts);
     }
 
     /// <summary>
@@ -186,7 +213,11 @@ public sealed class SimulationController : IAsyncDisposable
         }
     }
 
-    private async Task RunLoopAsync(SimulationLoop loop, int targetTicks, CancellationTokenSource runCts)
+    private async Task RunLoopAsync(
+        SimulationLoop loop,
+        int? targetTicks,
+        ObservabilityTickEmitter? emitter,
+        CancellationTokenSource runCts)
     {
         using (runCts)
         {
@@ -220,7 +251,7 @@ public sealed class SimulationController : IAsyncDisposable
                     continue;
                 }
 
-                if (loop.CurrentTick >= (ulong)targetTicks)
+                if (targetTicks is not null && loop.CurrentTick >= (ulong)targetTicks.Value)
                 {
                     lock (_gate)
                     {
@@ -231,6 +262,12 @@ public sealed class SimulationController : IAsyncDisposable
                 }
 
                 loop.AdvanceOneTick();
+                if (emitter is not null)
+                {
+                    await emitter.EmitCurrentTickAsync();
+                }
+
+                await Task.Delay(TickIntervalMilliseconds, token);
             }
         }
     }

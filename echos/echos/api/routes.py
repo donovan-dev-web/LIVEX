@@ -16,11 +16,13 @@ from __future__ import annotations
 
 import csv
 import io
+import os
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 
 from echos.analysis import reproducibility
 from echos.analysis.causal import MAX_DEPTH, build_chain, CausalError
+from echos.ingestion import ControlClient, ControlError
 from echos.storage.sqlite import AnalyticsStore
 
 from .causal_cache import CausalCache
@@ -82,9 +84,51 @@ def _read_every(every: int | None) -> int:
 
 
 def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
-    """Attache les endpoints d'analyse ECHOS à l'application."""
+    """Attache les endpoints ECHOS et le relais local de contrôle SYNE."""
+    control_base_url = os.environ.get(
+        "SYNE_CONTROL_URL", "http://127.0.0.1:5181"
+    )
     cache = SeriesCache()
     causal_cache = CausalCache()
+
+    @app.get("/api/control/status", tags=["control"])
+    def control_status() -> dict:
+        """Relaye l'état du serveur SYNE sans exposer son port au navigateur."""
+        try:
+            with ControlClient(base_url=control_base_url) as control:
+                return control.status()
+        except ControlError as exc:
+            _raise_control_error(exc)
+
+    @app.post("/api/control/{action}", tags=["control"])
+    def control_command(
+        action: str, payload: dict | None = Body(default=None)
+    ) -> dict:
+        """Relaye une commande locale au contrat HTTP SYNE :5181."""
+        if action not in {"start", "pause", "resume", "stop", "reset"}:
+            raise HTTPException(status_code=404, detail="commande de contrôle inconnue")
+        options = payload or {}
+        try:
+            with ControlClient(base_url=control_base_url) as control:
+                if action == "start":
+                    return control.start(
+                        seed=options.get("seed"),
+                        config=options.get("config"),
+                        max_ticks=options.get("maxTicks"),
+                    )
+                if action == "pause":
+                    return control.pause()
+                if action == "resume":
+                    return control.resume()
+                if action == "stop":
+                    return control.stop()
+                return control.reset(
+                    seed=options.get("seed"),
+                    run_id=options.get("runId"),
+                    max_ticks=options.get("maxTicks"),
+                )
+        except ControlError as exc:
+            _raise_control_error(exc)
 
     @app.get("/api/runs", tags=["api"])
     def list_runs() -> dict:
@@ -386,3 +430,18 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         }
 
     app.state.series_cache = cache
+
+
+def _raise_control_error(error: ControlError) -> None:
+    """Traduit les indisponibilités SYNE en erreurs explicites côté ECHOS."""
+    if error.status == "transport":
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "serveur de contrôle SYNE indisponible ; démarrez SYNE avec --serve "
+                "(port 5181)"
+            ),
+        ) from error
+    raise HTTPException(
+        status_code=int(error.status), detail=error.detail or "commande SYNE refusée"
+    ) from error

@@ -16,12 +16,15 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 
 - La base d'analyse est fournie à `create_app(store)` ; à défaut, la variable d'environnement **`ECHOS_ANALYTICS_DB`** (chemin du fichier SQLite) est lue.
 - Sans base configurée, les routes de données répondent **503** (le contrat reste publié dans l'OpenAPI) — `/health` et `/` restent disponibles.
+- `SYNE_CONTROL_URL` définit le serveur HTTP SYNE relayé par ECHOS (défaut `http://127.0.0.1:5181`). Si SYNE `--serve` est arrêté, les routes de contrôle répondent **503** avec une instruction de démarrage.
 
 ## 2. Les endpoints principaux
 
 | Méthode | Endpoint | Description |
 | :-- | :-- | :-- |
 | GET | `/health` | Vérification de santé du service |
+| GET | `/api/control/status` | État du serveur SYNE relayé par ECHOS (HTTP :5181) |
+| POST | `/api/control/{action}` | Relais ECHOS→SYNE pour `start`, `pause`, `resume`, `stop`, `reset` |
 | GET | `/api/runs` | Liste des runs enregistrés |
 | GET | `/api/runs/{id}` | Métriques complètes du run (dernier tick) + phénomènes |
 | GET | `/api/runs/{id}/metrics` | Séries de métriques (JSON, `?engine=`, `?metric=`, `?every=N`) |
@@ -173,6 +176,19 @@ automatique. Run sans tick ou inconnu : 404.
 - `400` : `format` d'export inconnu ou `format` de `/api/compare` hors {`json`, `csv`}.
 - `422` : `every < 1`, `depth` hors [1, 12], `run_a`/`run_b` manquants (validation OpenAPI).
 - `503` : aucun store configuré (`ECHOS_ANALYTICS_DB` non défini).
+
+### 3.12 Relais de contrôle SYNE
+
+`POST /api/control/{action}` relaie les actions `start`, `pause`, `resume`, `stop`
+et `reset` vers le client HTTP SYNE. Les payloads `seed`, `config`, `maxTicks` et
+`runId` sont transmis sans être interprétés par ECHOS. `GET /api/control/status`
+relaie l’état du serveur. Le navigateur ne contacte jamais directement le port
+5181 ; l’API relaie les requêtes. Si le serveur est inaccessible, ECHOS retourne
+503 et indique de lancer SYNE avec `--serve`.
+
+Le mode serveur `--serve` expose à la fois le contrôle HTTP (`:5181`) et le flux
+WebSocket (`:5180`). Sans `maxTicks`, un run démarré par `start` continue jusqu'à
+une commande `pause`, `stop`, `reset` ou l'arrêt du processus SYNE.
 
 ## 4. La diffusion temps réel
 

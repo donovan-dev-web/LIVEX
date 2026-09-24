@@ -362,3 +362,72 @@ def test_run_calibration_is_missing_until_a_run_finishes(tmp_path):
     response = _client(db).get("/api/runs/run-7/calibration")
 
     assert response.status_code == 404
+
+
+def test_control_start_relays_seed_and_returns_syne_response(monkeypatch):
+    calls = []
+
+    class FakeControlClient:
+        def __init__(self, base_url):
+            assert base_url == "http://127.0.0.1:5181"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def start(self, **options):
+            calls.append(("start", options))
+            return {"ok": True, "runId": "run-12345"}
+
+    monkeypatch.setattr("echos.api.routes.ControlClient", FakeControlClient)
+    response = _client().post("/api/control/start", json={"seed": 12345})
+
+    assert response.status_code == 200
+    assert response.json() == {"ok": True, "runId": "run-12345"}
+    assert calls == [("start", {"seed": 12345, "config": None, "max_ticks": None})]
+
+
+def test_control_status_relays_syne_state(monkeypatch):
+    class FakeControlClient:
+        def __init__(self, base_url):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def status(self):
+            return {"state": "running", "tick": 12}
+
+    monkeypatch.setattr("echos.api.routes.ControlClient", FakeControlClient)
+    response = _client().get("/api/control/status")
+
+    assert response.status_code == 200
+    assert response.json() == {"state": "running", "tick": 12}
+
+
+def test_control_unavailable_returns_actionable_service_unavailable(monkeypatch):
+    from echos.ingestion import ControlError
+
+    class OfflineControlClient:
+        def __init__(self, base_url):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return None
+
+        def start(self, **_options):
+            raise ControlError("start", "transport", "connection refused")
+
+    monkeypatch.setattr("echos.api.routes.ControlClient", OfflineControlClient)
+    response = _client().post("/api/control/start", json={})
+
+    assert response.status_code == 503
+    assert "--serve" in response.json()["detail"]

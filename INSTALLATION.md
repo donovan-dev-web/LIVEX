@@ -5,190 +5,142 @@
 **Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `ROADMAP.md`, `COMMUNICATION.md`
 
-Ce guide décrit l’installation locale de **SYNE**, de l’API et de l’interface **ECHOS**. Il inclut un exemple complet pour lancer une simulation observée et l’afficher dans le navigateur.
+Ce guide permet de démarrer localement **SYNE**, l’API et l’interface **ECHOS**, ainsi que l’ingestion des données de simulation.
 
-> **Périmètre actuel :** PRISM n’a pas encore de runtime. Son démarrage est planifié après U8 ; voir [`docs/docs-prism/ROADMAP.md`](docs/docs-prism/ROADMAP.md). La configuration ci-dessous lance SYNE et ECHOS avec son interface web.
+> **PRISM** n’a pas encore de runtime. Sa réalisation est planifiée après U8 ; voir la [feuille de route PRISM](docs/docs-prism/ROADMAP.md).
 
 ## Prérequis
 
-- **.NET SDK 10.0.4xx** : version demandée par [`syne/global.json`](syne/global.json).
-- **Python 3.11 ou plus récent**.
-- **Node.js 20 ou plus récent** et npm.
-- Un navigateur récent et quatre terminaux pour l’exemple intégré.
-
-Vérifiez les outils depuis la racine du dépôt :
+- **.NET SDK 10.0.4xx**, conformément à [`syne/global.json`](syne/global.json).
+- **Python 3.11+**.
+- **Node.js 20+** et npm.
+- `curl` pour les vérifications de disponibilité du lanceur.
 
 ```bash
 dotnet --version
 python3 --version
 node --version
 npm --version
+curl --version
 ```
 
-## Préparer l’environnement
+## Démarrage complet : SYNE, ECHOS et interface
 
-Depuis la racine du dépôt :
+Depuis la racine du dépôt, lancez :
 
 ```bash
-# Environnement Python ECHOS
+./scripts/dev-stack.sh
+```
+
+Le script prépare automatiquement l’environnement Python ECHOS et les dépendances npm s’ils manquent, compile SYNE, puis démarre dans le bon ordre :
+
+1. l’API ECHOS sur le port `5000` ;
+2. l’interface web sur le port `5173` ;
+3. SYNE en mode serveur, avec contrôle HTTP sur `5181` et WebSocket sur `5180` ;
+4. le consommateur ECHOS, connecté au WebSocket et en attente d’un run.
+
+Ouvrez ensuite <http://127.0.0.1:5173>. L’API et sa documentation se trouvent sur <http://127.0.0.1:5000> et <http://127.0.0.1:5000/docs>. Les runs ingérés sont stockés dans `echos/data/livex-analytics.sqlite`.
+
+Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à ce que vous cliquiez sur `Start` dans l’interface. Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
+
+### Boutons de pilotage
+
+L’interface relaie ses commandes à l’API ECHOS, qui contacte ensuite le serveur de contrôle SYNE sur le port `5181`. Le même processus SYNE expose aussi le WebSocket sur le port `5180` : dès que `Start` est envoyé, les snapshots et événements du run sont diffusés vers ECHOS pour analyse. Son état peut être vérifié avec :
+
+```bash
+curl http://127.0.0.1:5181/api/control/status
+```
+
+La seed est facultative dans le comportement conceptuel de l’UI : la valeur affichée par défaut est `12345`. La durée est également facultative. Si `maxTicks` n’est pas fourni, le run continue jusqu’à `Pause`, `Reset`, l’arrêt du processus SYNE ou `Ctrl+C`. Un `Start` ultérieur après `Reset` crée un nouveau run.
+
+## Préparation manuelle (facultative)
+
+Le lanceur s’occupe de ces étapes automatiquement. Pour préparer les dépendances à la main :
+
+```bash
 python3 -m venv echos/.venv
 echos/.venv/bin/python -m pip install --upgrade pip
 echos/.venv/bin/pip install -r echos/requirements-dev.txt
 
-# Dépendances de l’interface
 cd echos/echos-ui
 npm ci
 cd ../..
 
-# Vérifier et compiler SYNE
-cd syne
-dotnet restore Syne.sln
-dotnet build Syne.sln --configuration Release
-cd ..
+dotnet build syne/Syne.sln --configuration Release
 ```
 
-Les dépendances Python sont isolées dans `echos/.venv`. Le fichier `echos/echos-ui/package-lock.json` verrouille les dépendances de l’interface.
+## Démarrage manuel, service par service
 
-## Démarrage complet : SYNE, ECHOS et interface
-
-La pile de développement utilise **quatre terminaux** ouverts à la racine du dépôt. L’ordre est important : démarrez d’abord l’API et le consommateur ECHOS, puis l’interface, et enfin SYNE. Le consommateur doit être connecté avant que SYNE diffuse ses ticks.
-
-Les données analytiques sont enregistrées dans `echos/data/livex-analytics.sqlite` et les séries d’agents dans `echos/data/livex-agents.parquet`.
+Si vous ne souhaitez pas utiliser le lanceur, préparez d’abord l’environnement avec la section précédente. Ouvrez quatre terminaux depuis la racine du dépôt et démarrez les services dans cet ordre.
 
 ### Terminal 1 — API ECHOS
 
 ```bash
 mkdir -p echos/data
 export ECHOS_ANALYTICS_DB="$PWD/echos/data/livex-analytics.sqlite"
-PYTHONPATH=echos echos/.venv/bin/uvicorn echos.api.app:app \
+PYTHONPATH="$PWD/echos" echos/.venv/bin/python -m uvicorn echos.api.app:app \
   --app-dir echos --host 127.0.0.1 --port 5000
 ```
 
-API : <http://127.0.0.1:5000> · documentation interactive : <http://127.0.0.1:5000/docs>.
-
-### Terminal 2 — Ingestion du flux SYNE dans ECHOS
-
-L’interface reçoit l’état temps réel directement par WebSocket. Ce consommateur alimente séparément la base historique utilisée par les métriques et les écrans d’analyse.
+### Terminal 2 — Ingestion ECHOS
 
 ```bash
-mkdir -p echos/data
 export ECHOS_ANALYTICS_DB="$PWD/echos/data/livex-analytics.sqlite"
-PYTHONPATH=echos echos/.venv/bin/python - <<'PY'
-import time
-
-from echos.ingestion import WsClient
-from echos.storage import AnalyticsStore, consume
-
-url = "ws://127.0.0.1:5180/"
-database = "echos/data/livex-analytics.sqlite"
-parquet = "echos/data/livex-agents.parquet"
-
-# SYNE peut ne pas être démarré : réessayer jusqu’à l’ouverture du WebSocket.
-while True:
-    client = WsClient()
-    try:
-        client.connect(url)
-        break
-    except OSError:
-        time.sleep(0.5)
-
-with AnalyticsStore(database) as store:
-    result = consume(client, store, parquet_path=parquet)
-    print(f"Ingestion terminée : {result.ticks_written} ticks, "
-          f"{result.events_written} événements")
-PY
+PYTHONPATH="$PWD/echos" echos/.venv/bin/python -m echos.dev_ingest
 ```
 
-Le processus reste actif tant que SYNE diffuse. Quand le run se termine, ECHOS finalise le rapport de calibration. Arrêtez-le avec `Ctrl+C` si vous interrompez le run.
+Le consommateur attend le serveur WebSocket SYNE. Laissez ce terminal ouvert.
 
-### Terminal 3 — Interface ECHOS
+### Terminal 3 — Interface web
 
 ```bash
 cd echos/echos-ui
 npm run dev -- --host 127.0.0.1
 ```
 
-Ouvrez <http://127.0.0.1:5173>. Vite relaie les requêtes REST vers l’API sur le port `5000`; l’interface se connecte au WebSocket SYNE sur le port `5180`.
+### Terminal 4 — SYNE contrôle + observabilité
 
-### Terminal 4 — Simulation SYNE observée
-
-```bash
-dotnet run --project syne/Simulation.Console --configuration Release -- \
-  --observe --seed 12345 --max-ticks 1000 --headless
-```
-
-SYNE publie ses snapshots et événements sur `ws://127.0.0.1:5180/`. La simulation observée est une exécution finie, bornée ici à 1 000 ticks. Les données historiques apparaissent dans ECHOS au fur et à mesure de leur ingestion.
-
-### Contrôles et ports
-
-| Service | Adresse | Utilisation |
-|:--|:--|:--|
-| SYNE — observation WebSocket | `127.0.0.1:5180` | Flux live consommé par l’interface et le worker ECHOS. |
-| SYNE — contrôle HTTP | `127.0.0.1:5181` | Pilotage via `--serve` et l’écran de contrôle ECHOS. |
-| ECHOS — API REST | `127.0.0.1:5000` | Runs, métriques, analyses et accès aux données. |
-| ECHOS — interface Vite | `127.0.0.1:5173` | Interface web en développement. |
-
-**Limite actuelle du mode de contrôle :** SYNE démarre en mode `--observe` ou en mode `--serve`. Ces deux modes ne sont pas réunis dans un même processus. L’écran de pilotage ECHOS peut joindre un serveur SYNE lancé séparément avec la commande ci-dessous, mais ce serveur est une instance distincte du run observé :
+SYNE démarre en attente, sans lancer de simulation :
 
 ```bash
-dotnet run --project syne/Simulation.Console --configuration Release -- --serve --serve-port 5181
+dotnet run --project syne/Simulation.Console --configuration Release -- --serve
 ```
 
-Le serveur de contrôle attend ensuite les commandes HTTP de l’interface ; il ne diffuse pas le run `--observe` sur le WebSocket. Cette séparation doit être prise en compte lors des essais de pilotage.
+Il écoute sur `127.0.0.1:5181` et `127.0.0.1:5180`. Le run est ensuite démarré depuis l’écran de pilotage ECHOS. Ne passez pas `maxTicks` dans la requête si vous souhaitez une durée illimitée ; utilisez `Pause`, `Resume`, `Stop` ou `Reset` depuis l’UI.
 
-## Lancer les composants séparément
+### Démarrer uniquement SYNE
 
-### SYNE en mode batch
-
-Pour exécuter le moteur sans WebSocket :
+Exécution batch sans API ni interface :
 
 ```bash
 dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
-Options utiles : `--config <fichier.json>`, `--world-size <largeur> <hauteur>`, `--seed <entier>`, `--max-ticks <nombre>`, `--headless`. Le mode observé ajoute `--observe` et `--observe-port <port>` (5180 par défaut).
+## Ports utilisés
 
-### API ECHOS
+| Service | Adresse | Rôle |
+|:--|:--|:--|
+| SYNE WebSocket | `127.0.0.1:5180` | Snapshots et événements du run piloté par l’UI. |
+| SYNE HTTP | `127.0.0.1:5181` | Contrôle du serveur SYNE et démarrage des runs. |
+| API ECHOS | `127.0.0.1:5000` | Runs, métriques, analyses et relais de contrôle. |
+| Interface ECHOS | `127.0.0.1:5173` | Application web Vite. |
 
-```bash
-export ECHOS_ANALYTICS_DB="$PWD/echos/data/livex-analytics.sqlite"
-PYTHONPATH=echos echos/.venv/bin/uvicorn echos.api.app:app \
-  --app-dir echos --host 127.0.0.1 --port 5000
-```
+## Données, arrêt et vérifications
 
-Si la base n’existe pas encore, ECHOS initialise le schéma. Consultez les routes disponibles dans la documentation OpenAPI à `/docs`.
-
-### Interface ECHOS
-
-```bash
-cd echos/echos-ui
-npm run dev -- --host 127.0.0.1
-```
-
-Pour produire les fichiers optimisés :
-
-```bash
-npm run build
-```
-
-## Données locales et arrêt
-
-Les fichiers `echos/data/livex-analytics.sqlite` et `echos/data/livex-agents.parquet` contiennent les données générées par l’exemple. Supprimez-les pour repartir d’un stockage analytique vierge :
+Les fichiers analytiques locaux sont placés dans `echos/data/`. Pour repartir d’une base vierge, arrêtez les services et supprimez les données générées :
 
 ```bash
 rm -f echos/data/livex-analytics.sqlite echos/data/livex-agents.parquet
 ```
 
-Arrêtez chaque processus dans son terminal avec `Ctrl+C`. Les bases d’analyse ECHOS et la persistance interne SYNE sont distinctes.
-
-## Vérifications développeur
+Tests développeur :
 
 ```bash
 # SYNE
 cd syne && dotnet test Syne.sln --configuration Release
 
-# ECHOS — depuis la racine du dépôt
+# ECHOS — depuis la racine
 echos/.venv/bin/python -m pytest -q
 echos/.venv/bin/python -m flake8 echos/echos
 
@@ -201,9 +153,7 @@ npm run build
 
 ## Documentation complémentaire
 
-- [Architecture globale](ARCHITECTURE.md)
-- [Contrats inter-composants](COMMUNICATION.md)
-- [Guide SYNE](docs/docs-syne/README.md)
-- [Guide ECHOS](docs/docs-echos/README.md)
-- [Feuille de route PRISM](docs/docs-prism/ROADMAP.md)
+- [Architecture globale](ARCHITECTURE.md) · [Contrats inter-composants](COMMUNICATION.md)
+- [Guide SYNE](docs/docs-syne/README.md) · [Guide ECHOS](docs/docs-echos/README.md)
+- [Feuille de route](ROADMAP.md) · [Feuille de route PRISM](docs/docs-prism/ROADMAP.md)
 - [Gitflow](GITFLOW.md) · [Contribuer](CONTRIBUTING.md)

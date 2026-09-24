@@ -98,14 +98,21 @@ export const client = {
  * :5181 de SYNE (API_CONTRACTS.md §3).
  */
 export const controlClient = {
-  async command(action: 'start' | 'pause' | 'resume' | 'reset', body: Record<string, unknown> = {}) {
+  async command(action: 'start' | 'pause' | 'resume' | 'stop' | 'reset', body: Record<string, unknown> = {}) {
     const response = await fetch(`${CONTROL_BASE}/api/control/${action}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
     if (!response.ok) {
-      throw new ApiError(response.status, `Contrôle « ${action} » refusé (HTTP ${response.status})`)
+      let message = `Contrôle « ${action} » refusé (HTTP ${response.status})`
+      try {
+        const body = (await response.json()) as { detail?: string }
+        if (body.detail) message = body.detail
+      } catch {
+        /* réponse non JSON */
+      }
+      throw new ApiError(response.status, message)
     }
     return response
   },

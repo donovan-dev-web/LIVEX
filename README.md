@@ -64,7 +64,7 @@ dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
-Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, suivez le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface). Cette configuration utilise quatre terminaux afin que l’ingestion ECHOS soit prête avant le début de la simulation.
+Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface).
 
 ## 🗂️ Dans le dépôt
 
