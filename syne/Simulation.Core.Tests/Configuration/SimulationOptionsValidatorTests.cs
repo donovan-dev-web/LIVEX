@@ -103,6 +103,22 @@ public class SimulationOptionsValidatorTests
     }
 
     [Fact]
+    public void InvalidResourceSettings_AreRejected()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.Resources.Food.Initial = -1;
+        options.Resources.Water.RegenerationRate = -0.5;
+        options.Resources.Wood.DegradationTick = 0;
+        options.Resources.Mineral.Initial = -10;
+
+        var errors = SimulationOptionsValidator.Validate(options);
+        Assert.Contains(errors, e => e.Contains("resources.food.initial"));
+        Assert.Contains(errors, e => e.Contains("resources.water.regenerationRate"));
+        Assert.Contains(errors, e => e.Contains("resources.wood.degradationTick"));
+        Assert.Contains(errors, e => e.Contains("resources.mineral.initial"));
+    }
+
+    [Fact]
     public void InvalidGroupSettings_AreRejected()
     {
         var options = ConfigLoader.LoadDefaults();

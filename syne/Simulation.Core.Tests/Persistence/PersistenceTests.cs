@@ -278,6 +278,67 @@ public class PersistenceTests
         }
     }
 
+    /// <summary>
+    /// SYNE-070 : la persistance émet les quatre réserves globales (dont <c>mineral</c>)
+    /// et la reprise SQLite restaure les niveaux (minéral et valeurs régénérées).
+    /// </summary>
+    [Fact]
+    public void Resources_ArePersistedWithFourKindsIncludingMineral()
+    {
+        string db = TempDb();
+        try
+        {
+            SimulationLoop loop = BuildScenario(12345, 10);
+            var config = Simulation.Core.Configuration.ConfigLoader.LoadDefaults();
+            config.Resources.Mineral.Initial = 25;
+
+            loop = new SimulationLoop(loop.World, loop.Rng, config);
+            Reference(loop, ticks: 15);
+
+            SimulationSnapshot snapshot = SimulationSnapshotCodec.Capture(loop);
+            Assert.True(snapshot.World.MineralStock >= 25.0, "La réserve de minéraux est persistée.");
+            Assert.True(snapshot.World.WaterStock > 1000.0, "La régénération d'eau s'applique (SYNE-070).");
+
+            using (var store = new SqlitePersistenceStore(db))
+            {
+                store.BeginRun("run-res", "res-test", 12345, config);
+                store.SaveTick("run-res", loop);
+            }
+
+            using (var reloadStore = new SqlitePersistenceStore(db))
+            {
+                SimulationLoop resumed = reloadStore.LoadLatestRun();
+                Assert.Equal(loop.CurrentTick, resumed.CurrentTick);
+                Assert.Equal(snapshot.World.MineralStock, resumed.Resources.Stock(World.ResourceKind.Mineral), 10);
+                Assert.Equal(snapshot.World.WaterStock, resumed.Resources.Stock(World.ResourceKind.Water), 10);
+                Assert.Equal(snapshot.World.FoodStock, resumed.Resources.Stock(World.ResourceKind.Food), 10);
+            }
+
+            using var resourcesConnection = new SqliteConnection($"Data Source={db}");
+            resourcesConnection.Open();
+            using var resourcesCommand = resourcesConnection.CreateCommand();
+            resourcesCommand.CommandText = "SELECT type FROM resources ORDER BY type;";
+            var types = new List<string>();
+            using (var reader = resourcesCommand.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    types.Add(reader.GetString(0));
+                }
+            }
+
+            Assert.Contains("mineral", types);
+            Assert.Contains("food", types);
+            Assert.Contains("water", types);
+            Assert.Contains("wood", types);
+            Assert.Equal(4, types.Count);
+        }
+        finally
+        {
+            File.Delete(db);
+        }
+    }
+
     private static List<string> TableNames(string dbPath)
     {
         var names = new List<string>();

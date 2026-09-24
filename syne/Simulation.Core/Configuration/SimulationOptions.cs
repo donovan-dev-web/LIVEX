@@ -220,6 +220,32 @@ public sealed class ResourceSettings
     public ResourceSpec Food { get; set; } = new() { Initial = 100, RegenerationRate = 0, DegradationTick = 100 };
     public ResourceSpec Water { get; set; } = new() { Initial = 1000, RegenerationRate = 5 };
     public ResourceSpec Wood { get; set; } = new() { Initial = 50, RegenerationRate = 0.1 };
+    public ResourceSpec Mineral { get; set; } = new() { Initial = 0, RegenerationRate = 0 };
+
+    /// <summary>Niveaux initiaux des quatre réserves (SYNE-070), ordre stable du type.</summary>
+    internal Dictionary<World.ResourceKind, double> ToStocks()
+    {
+        return new Dictionary<World.ResourceKind, double>
+        {
+            [World.ResourceKind.Food] = Food.Initial,
+            [World.ResourceKind.Water] = Water.Initial,
+            [World.ResourceKind.Wood] = Wood.Initial,
+            [World.ResourceKind.Mineral] = Mineral.Initial,
+        };
+    }
+
+    /// <summary>Spécification d'une ressource par type (SYNE-070) — résolution garantie.</summary>
+    internal ResourceSpec Spec(World.ResourceKind kind)
+    {
+        return kind switch
+        {
+            World.ResourceKind.Food => Food,
+            World.ResourceKind.Water => Water,
+            World.ResourceKind.Wood => Wood,
+            World.ResourceKind.Mineral => Mineral,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Type de ressource inconnu."),
+        };
+    }
 }
 
 public sealed class ResourceSpec

@@ -139,13 +139,16 @@ Le schéma SQLite V2.0 (11 tables : `runs`, `tick_states`, `agents`, `agent_snap
 V0.1 : **réserves globales** partagées (`ResourceStocks`), initialisées depuis `resources.*`
 (CONFIGURATION.md §1) et consommées par les actions terminales Eat/Drink puis exposées dans le
 snapshot d'observabilité (`resources`, API_CONTRACTS.md §2.1). Les **sources spatiales** restent
-au jalon ph7 (SYNE-070).
+au jalon ph7 (SYNE-070). Depuis **SYNE-070 (engineVersion 0.7.0)** : cycle de vie appliqué en fin
+de tick — régénération (`+ regenerationRate` par tick) puis dégradation périodique (à chaque
+`degradationTick`, perte de `regenerationRate × degradationTick`, clamp ≥ 0 ; inerte sans taux).
 
 | Ressource | Initial | Régénération/tick | Consommée par |
 | :-- | :-- | :-- | :-- |
 | Food | 100 | 0 | Eat (1.0 / exécution) |
 | Water | 1000 | 5 | Drink (1.0 / exécution) |
-| Wood | 50 | 0.1 | — (ph7) |
+| Wood | 50 | 0.1 | — (ph7 constructions) |
+| Mineral | 0 | 0 | — (ph7 constructions, SYNE-071) |
 
 ---
 

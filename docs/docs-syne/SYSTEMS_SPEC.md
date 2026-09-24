@@ -35,7 +35,13 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 - **Contrainte d'absence** : la finitude des ressources est un moteur de comportement (compétition, stockage, déplacement).
 - V2 : agents en sources (`sources d'eau et de nourriture`), dégradation, puissance de régénération.
 - Représentation : entité spatiale (Quantity, Capacity, RegenerationRate, Infinite).
-- **V0.1 (SYNE-042, jalon SYNE ph4)** : **réserves globales** partagées (`ResourceStocks` : Food 100 / Water 1000 / Wood 50, régénération décision n°4), initialisées depuis `resources.*`, consommées par les actions terminales Eat/Drink et émissées dans le snapshot (`resources`, DATA_MODEL §8.1) ; les **sources spatiales** restent au jalon ph7 (SYNE-070).
+- **V0.1 (SYNE-042, jalon SYNE ph4 puis SYNE-070, jalon U8)** : **réserves globales** partagées
+  (`ResourceStocks` : Food 100 / Water 1000 / Wood 50 / **Mineral 0**, régénération décision n°4),
+  initialisées depuis `resources.*`, consommées par les actions terminales Eat/Drink et émissées
+  dans le snapshot (`resources`, DATA_MODEL §8.1) ; **cycle de vie (SYNE-070)** : régénération
+  `+ regenerationRate` par tick et dégradation périodique (`− regenerationRate × degradationTick`
+  à chaque période, clamp ≥ 0) appliquées en fin de tick, 0 tirage PRNG ; les **sources spatiales**
+  restent au jalon ph7-constructions (SYNE-071/072).
 
 ## 5. Groupes (Monographie §3.17, §6.7)
 
