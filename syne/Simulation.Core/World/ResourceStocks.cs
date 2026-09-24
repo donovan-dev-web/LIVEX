@@ -66,24 +66,27 @@ public sealed class ResourceStocks
     /// <summary>
     /// Cycle de vie à la fin du tick (SYNE-070) : régénération puis dégradation,
     /// exclusivement additives/multiplicatives pures — 0 tirage PRNG (DETERMINISM.md §3).
-    /// Régénération : + <c>RegenerationRate</c> à chaque tick. Dégradation : à chaque
+    /// Régénération : + <c>RegenerationRate × facteur</c> à chaque tick. Dégradation : à chaque
     /// tick multiple de <c>DegradationTick</c> (&gt; 0), la réserve perd la régénération
-    /// cumulée de la période (<c>RegenerationRate × DegradationTick</c>) ; sans taux de
+    /// cumulée de la période (<c>RegenerationRate × DegradationTick × facteur</c>) ; sans taux de
     /// régénération, la dégradation est nulle (mécanisme activable, inerte par défaut).
+    /// <paramref name="seasonFactors"/> module la régénération d'une saison (SYNE-072,
+    /// <c>world.seasons.enabled</c>) ; <c>null</c> = facteurs nominaux (×1, cycle désactivé).
     /// Toutes les réserves sont bornées à 0.
     /// </summary>
-    public void ApplyLifecycle(ulong currentTick, Configuration.ResourceSettings settings)
+    public void ApplyLifecycle(ulong currentTick, Configuration.ResourceSettings settings, Configuration.SeasonFactors? seasonFactors = null)
     {
         foreach (ResourceKind kind in Enum.GetValues<ResourceKind>())
         {
             Configuration.ResourceSpec spec = settings.Spec(kind);
-            _stocks[kind] = Math.Max(0.0, _stocks[kind] + spec.RegenerationRate);
+            double factor = seasonFactors?.For(kind) ?? 1.0;
+            _stocks[kind] = Math.Max(0.0, _stocks[kind] + (spec.RegenerationRate * factor));
 
             if (spec.DegradationTick is { } degradationTick
                 && degradationTick > 0
                 && currentTick % (ulong)degradationTick == 0)
             {
-                double loss = spec.RegenerationRate * degradationTick;
+                double loss = spec.RegenerationRate * degradationTick * factor;
                 _stocks[kind] = Math.Max(0.0, _stocks[kind] - loss);
             }
         }

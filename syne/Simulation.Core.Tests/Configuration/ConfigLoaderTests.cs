@@ -94,7 +94,10 @@ public class ConfigLoaderTests
         Assert.Equal(100.0, options.World.ObstacleLayout[0].X);
         Assert.Equal(10.0, options.World.ObstacleLayout[0].Radius);
         Assert.Equal(20.0, options.World.ObstacleLayout[1].Radius);
-        Assert.False(options.World.Seasons);
+        Assert.False(options.World.Seasons.Enabled);
+        Assert.Equal("spring", options.World.Seasons.InitialSeason);
+        Assert.Equal(360, options.World.Seasons.SeasonLengthTicks);
+        Assert.Equal(4, options.World.Seasons.Cycle.Count);
         Assert.False(options.World.Events);
     }
 

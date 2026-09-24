@@ -28,7 +28,7 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 - Clamping des positions ; monde non-toroidal.
 - Obstacles statiques (cercle en V0.1, rectangle reporté) : blocage mouvement **et** ligne de vue (perception masquée, ADR-013) — depuis le jalon SYNE ph1.
 - Ressources : FoodSource / WaterSource (V1 : taux de régénération nul, eau infinie ; V2 : régénération + dégradation).
-- Saisons, événements du monde, obstacles : flags de configuration (`world.seasons`, `world.events`, `world.obstacles` — prototype faux par défaut, Annexe H).
+- Saisons, événements du monde, obstacles : clés de configuration — `world.seasons` (bloc actif depuis **SYNE-072**, jalon U8 : `{enabled, seasonLengthTicks, initialSeason, cycle[]}` ; l'ancien drapeau booléen homonyme, mort, est remplacé par ce bloc — `enabled` remplit son rôle), `world.events`, `world.obstacles` (défauts Annexe H).
 
 ## 4. Ressources (Monographie §3.18, §6.9)
 
@@ -47,8 +47,12 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
   `ObstacleRevision`), constructions tracées `PlaceConstruction`/`RemoveConstruction`
   (modification d'environnement), grille A\* re-rasterisable (`Refresh()`, no-op déterministe,
   SYNE-071) ; la **mécanique agentique** (qui construit, coût en bois/minéraux, durée) reste
-  ouverte (décision n°20). Les **sources spatiales** de ressources restent au jalon Saisons
-  (SYNE-072).
+  ouverte (décision n°20). **Cycle de Saisons (SYNE-072, jalon U8)** : `world.seasons` (bloc
+  actif) module la **régénération/dégradation** en fin de tick par des facteurs par ressource
+  (cycle déterministe de 4 saisons, saison = fonction pure du tick, CONFIGURATION §6.9) et émet
+  `world.season_changed` au basculement (API_CONTRACTS §2.2). Les **sources spatiales** de
+  ressources restent **hors V0.1** (reportées — le jalon Saisons livre le cycle + facteurs, pas
+  les sources spatiales).
 
 ## 5. Groupes (Monographie §3.17, §6.7)
 
