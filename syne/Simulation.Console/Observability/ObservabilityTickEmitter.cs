@@ -133,6 +133,15 @@ public sealed class ObservabilityTickEmitter
 
         _loop.World.ClearEnvironmentChanges();
 
+        foreach (Simulation.Core.Configuration.SeasonChange change in _loop.LastSeasonChanges)
+        {
+            ExternalEvent seasonEvent = EventSensor.SeasonChanged(_loop.CurrentTick, change);
+            await _sink.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(ObservabilitySerializer.EventMessage(seasonEvent)));
+        }
+
+        _loop.ClearSeasonChanges();
+
         TicksEmitted++;
     }
 

@@ -34,6 +34,8 @@ public static class ObservabilitySerializer
             ["resources"] = ResourcesJson(snapshot.Resources),
             ["obstacles"] = ObstaclesJson(snapshot.Obstacles),
             ["groups"] = GroupsJson(snapshot.Groups),
+            ["season"] = snapshot.Season,
+            ["seasonIndex"] = snapshot.SeasonIndex,
         };
         return message;
     }
