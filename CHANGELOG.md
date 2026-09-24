@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`livex-vX.Y.Z` = triplet SYNE + ECHOS + PRISM).
@@ -16,6 +16,11 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - `SqlitePersistenceStore` : schéma V2.0 des **11 tables** (PERSISTENCE.md §3, `PRAGMA user_version = 2`), transactions atomiques, **rotation `maxBackups`** (défaut 5), reprise au dernier `tick_states` (SYNE-112 post-crash) ;
   - Hook d'autosave câblé dans `SimulationLoop.AdvanceOneTick` (`autoSaveEveryNTicks`, défaut 1000) — purement en écriture, aucun tirage du PRNG ⇒ checksums épinglés inchangés ;
   - 5 `PersistenceTests` (315 → **320 tests Core**, 329 au total avec Console : reprise bit-à-bit identique au run ininterrompu, état RNG, reprise post-crash, schéma 11 tables, rotation).
+- **Jalon U8 — Serveur de contrôle HTTP :5181 (SYNE-113)** :
+  - `ControlServer` (`HttpListener` BCL, zéro dépendance ADR-002/003) + `SimulationController` (machine à états `idle→running⇋paused→finished`, gate `ManualResetEventSlim` + `CancellationToken` par run) dans `Simulation.Console/Control/`, activés par `--serve` (`--serve-port`, défaut 5181) ;
+  - routes `POST /api/control/start {seed?, config?}` / `pause` / `resume` / `reset {seed?, runId?}` + `GET /status` (contrat API_CONTRACTS §3) — réponses `{ok, action, runId, state, tick, aliveCount, seed}` ;
+  - **non-intrusif** (SYNE-081/DETERMINISM §3) : 0 tirage PRNG ajouté ⇒ run piloté == run ininterrompu, vérifié bit-à-bit ; finalise l'interop ECHOS-085 (testé contre le vrai `ControlClient` ECHOS) ;
+  - 6 `ControlServerWireTests` (320 Core + **15 Console = 335 tests** au total).
 
 ### Fixed
 - Cadrage Jalon U8 (PR cadrage docs) : planche U8 du `ROADMAP` racine recalée sur le backlog réel — plage ECHOS `080…093` fictive remplacée par `080…085` (ph8, livrés U7) + `090…092` (ph9) ;
@@ -68,3 +73,4 @@ Première version consolidée (aucune).
 | 21 septembre 2026 | ECHOS-3 : stockage ECHOS — agrégation, SQLite, Parquet, pipeline | Jalon U1 — ECHOS-011/012/013 |
 | 21 septembre 2026 | Site de documentation GitHub Pages (DocFX) : landing + docs clés + API Simulation.Core, XML généré | U1 — documents |
 | 23 septembre 2026 | ECHOS ph8 : échos-ui — les 6 Écrans (A→F), client REST typé + WS :5180, relais de pilotage :5181, design system | Jalon U7 — interface web |
+| 24 septembre 2026 | SYNE ph11 : persistance SQLite bit-à-bit (SYNE-110→112) + serveur de contrôle HTTP :5181 (SYNE-113) | Jalon U8 — tests & persistance |

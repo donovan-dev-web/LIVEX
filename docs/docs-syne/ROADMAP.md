@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `../ROADMAP.md` (racine)
 **Source Monographie** : Annexe J (feuille de route V2), §3.24 (fondations V0.1)
 
@@ -29,7 +29,7 @@
 | 8 | Observabilité | Tests anti-triche, validations | événements typés complets — **SYNE-080 livré** (émetteur WebSocket `--observe`, snapshot + events camelCase) |
 | 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | **livré** (jalon SYNE ph9, SYNE-090…093, U7 — `TickBudgetCollector` budgets ≥ 30 % computation, `--benchmark` cibles 50/500/1000 t/s ≥ 2720/1187/505 (PERFORMANCE.md §9), `ObjectPool` + grille spatiale, déterminisme bit-à-bit/checksum, tests `ScaleTargetsTests`) |
 | 10 | Tests & Couverture | 160+ tests, ≥ 80 % | **livré** (jalon SYNE ph10, SYNE-100…102, U7 — **324 tests** (315 Core + 9 Console), couverture **96,19 %** (`Ph10ValidationCoverageTests` 100 % validator + `ObservabilitySensorTests` 100 % `ExternalEvent`), intégration boucle complète sans perte (`ObservabilityChainedLoopTests`), non-régression déterminisme baseline d'état `0x072a488aa18c05eb` (`Ph10DeterminismBaselineTests`, DETERMINISM §7)) |
-| 11 | Persistance & Reprise | JSON → SQLite, migration | schéma SQLite 11 tables, reprise bit-à-bit |
+| 11 | Persistance & Reprise | JSON → SQLite, migration | **livré** (jalon U8, SYNE-110…112 — SQLite 11 tables `PRAGMA user_version=2`, reprise bit-à-bit après crash `PersistenceTests` ; **SYNE-113** : serveur de contrôle HTTP :5181 `--serve`, non intrusif, `ControlServerWireTests`, finalise ECHOS-085) |
 
 (Ordre adapté de l'Annexe J.1)
 

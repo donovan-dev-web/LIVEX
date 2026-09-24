@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Simulation.Console.Control;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Prng;
@@ -50,6 +51,10 @@ public static class Program
             else if (cli.Benchmark == true)
             {
                 RunBenchmark(options, cli);
+            }
+            else if (cli.Serve == true)
+            {
+                await RunServeAsync(options, cli);
             }
             else
             {
@@ -215,6 +220,33 @@ public static class Program
             PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
             System.Console.WriteLine($"  observabilité : ws://127.0.0.1:{server.Port}/ | {emitter.TicksEmitted} ticks diffusés | {server.ClientCount} client(s)");
         }
+    }
+
+    /// <summary>
+    /// Mode --serve (SYNE-113) : expose l'API HTTP REST de contrôle sur
+    /// 127.0.0.1:[port] (défaut 5181, ADR-003, API_CONTRACTS.md §3). Le process
+    /// reste en vie jusqu'à Ctrl+C ; aucun run n'est démarré automatiquement —
+    /// il est lancé via POST /api/control/start.
+    /// </summary>
+    private static async Task RunServeAsync(SimulationOptions options, CliOptions cli)
+    {
+        int port = cli.ServePort ?? Control.ControlServer.DefaultPort;
+        await using var server = new Control.ControlServer(port);
+        server.Start();
+
+        System.Console.WriteLine($"SYNE — serveur de contrôle HTTP :{server.Port}/ (API_CONTRACTS.md §3)");
+        System.Console.WriteLine($"  POST /api/control/start|pause|resume|reset | GET /api/control/status");
+        System.Console.WriteLine($"  seed par défaut : {options.Random.Seed} | population : {options.Agents.InitialCount}");
+        System.Console.WriteLine("  Ctrl+C pour arrêter.");
+
+        var exit = new TaskCompletionSource();
+        System.Console.CancelKeyPress += (_, eventArgs) =>
+        {
+            eventArgs.Cancel = true;
+            exit.TrySetResult();
+        };
+
+        await exit.Task;
     }
 
     private static (Xoshiro256StarStar Rng, Simulation.Core.World.World World, SimulationLoop Loop, EntityTemplate Template) BuildSimulation(SimulationOptions options)
