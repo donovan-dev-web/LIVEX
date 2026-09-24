@@ -6,6 +6,7 @@ public enum ResourceKind
     Food = 0,
     Water = 1,
     Wood = 2,
+    Mineral = 3,
 }
 
 /// <summary>
@@ -14,8 +15,14 @@ public enum ResourceKind
 /// décrémentée par les actions terminales Eat/Drink (« réserves mises à jour »).
 ///
 /// Déterminisme : aucune consommation du PRNG ; les opérations de réserves sont
-/// des soustractions pures (DETERMINISM.md §3). V0.1 : réserves globales partagées,
-/// les sources spatiales restent au jalon ph7 (SYNE-070).
+/// des soustractions et additions pures (DETERMINISM.md §3). V0.1 : réserves
+/// globales partagées, les sources spatiales restent au jalon ph7 (SYNE-070).
+///
+/// Cycle de vie (SYNE-070) : appliqué par le moteur en fin de tick, après toute la
+/// cognition — les entités consomment pendant le tick, puis le monde régénère et/ou
+/// se dégrade. La régénération ajoute `RegenerationRate` par tick ; la dégradation
+/// retire, à chaque période `DegradationTick` (défaut inactif), la régénération
+/// cumulée de la période — les deux opérations restent pures (0 tirage PRNG).
 /// </summary>
 public sealed class ResourceStocks
 {
@@ -24,12 +31,7 @@ public sealed class ResourceStocks
     public ResourceStocks(Configuration.ResourceSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        _stocks = new Dictionary<ResourceKind, double>
-        {
-            [ResourceKind.Food] = settings.Food.Initial,
-            [ResourceKind.Water] = settings.Water.Initial,
-            [ResourceKind.Wood] = settings.Wood.Initial,
-        };
+        _stocks = settings.ToStocks();
     }
 
     /// <summary>Quantité courante (jamais négative).</summary>
@@ -61,8 +63,34 @@ public sealed class ResourceStocks
     /// <summary>État des réserves (ordre stable du type, déterminisme d'émission).</summary>
     public IReadOnlyDictionary<ResourceKind, double> Snapshot() => new Dictionary<ResourceKind, double>(_stocks);
 
+    /// <summary>
+    /// Cycle de vie à la fin du tick (SYNE-070) : régénération puis dégradation,
+    /// exclusivement additives/multiplicatives pures — 0 tirage PRNG (DETERMINISM.md §3).
+    /// Régénération : + <c>RegenerationRate</c> à chaque tick. Dégradation : à chaque
+    /// tick multiple de <c>DegradationTick</c> (&gt; 0), la réserve perd la régénération
+    /// cumulée de la période (<c>RegenerationRate × DegradationTick</c>) ; sans taux de
+    /// régénération, la dégradation est nulle (mécanisme activable, inerte par défaut).
+    /// Toutes les réserves sont bornées à 0.
+    /// </summary>
+    public void ApplyLifecycle(ulong currentTick, Configuration.ResourceSettings settings)
+    {
+        foreach (ResourceKind kind in Enum.GetValues<ResourceKind>())
+        {
+            Configuration.ResourceSpec spec = settings.Spec(kind);
+            _stocks[kind] = Math.Max(0.0, _stocks[kind] + spec.RegenerationRate);
+
+            if (spec.DegradationTick is { } degradationTick
+                && degradationTick > 0
+                && currentTick % (ulong)degradationTick == 0)
+            {
+                double loss = spec.RegenerationRate * degradationTick;
+                _stocks[kind] = Math.Max(0.0, _stocks[kind] - loss);
+            }
+        }
+    }
+
     /// <summary>État de calibration (tests et V0.1) — accès interne.</summary>
-    internal static ResourceStocks FromState(double food, double water, double wood)
+    internal static ResourceStocks FromState(double food, double water, double wood, double mineral = 0.0)
     {
         var stocks = new ResourceStocks(new Configuration.ResourceSettings())
         {
@@ -71,6 +99,7 @@ public sealed class ResourceStocks
                 [ResourceKind.Food] = food,
                 [ResourceKind.Water] = water,
                 [ResourceKind.Wood] = wood,
+                [ResourceKind.Mineral] = mineral,
             },
         };
         return stocks;
@@ -81,10 +110,11 @@ public sealed class ResourceStocks
     /// aux niveaux sauvegardés **en place**, sans remplacer l'objet — le pipeline
     /// et le catalogue d'actions gardent leur référence et voient les bonnes valeurs.
     /// </summary>
-    internal void RestoreState(double food, double water, double wood)
+    internal void RestoreState(double food, double water, double wood, double mineral = 0.0)
     {
         _stocks[ResourceKind.Food] = food;
         _stocks[ResourceKind.Water] = water;
         _stocks[ResourceKind.Wood] = wood;
+        _stocks[ResourceKind.Mineral] = mineral;
     }
 }

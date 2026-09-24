@@ -72,15 +72,17 @@ public static class SimulationSnapshotCodec
                 group.HadDecision));
         }
 
+        IReadOnlyDictionary<World.ResourceKind, double> stocks = loop.Resources.Snapshot();
         var world = new WorldSnapshotDto(
             loop.World.Size.Width,
             loop.World.Size.Height,
             loop.World.Grid.CellSize,
             entities,
             obstacles,
-            loop.Resources.Snapshot()[World.ResourceKind.Food],
-            loop.Resources.Snapshot()[World.ResourceKind.Water],
-            loop.Resources.Snapshot()[World.ResourceKind.Wood]);
+            stocks[World.ResourceKind.Food],
+            stocks[World.ResourceKind.Water],
+            stocks[World.ResourceKind.Wood],
+            stocks[World.ResourceKind.Mineral]);
 
         return new SimulationSnapshot(
             SchemaVersion,

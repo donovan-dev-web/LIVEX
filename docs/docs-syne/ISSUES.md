@@ -127,7 +127,7 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-070 | Cycle des ressources (nourriture, eau, bois, minéraux) | `type/feature`, `component/syne` | P0 | décision n°4, `DATA_MODEL.md`, `SYSTEMS_SPEC.md` §3.10 | Ressources V1 non régénératives ; V2 régénération/dégradation |
+| SYNE-070 | Cycle des ressources (nourriture, eau, bois, minéraux) — **LIVRÉ (PR, jalon U8)** | `type/feature`, `component/syne` | P0 | décision n°4, `DATA_MODEL.md`, `SYSTEMS_SPEC.md` §3.10 | Ressources V1 non régénératives ; V2 régénération/dégradation — ✓ 4ᵉ type `Mineral` (initial 0) ; **cycle de vie** en fin de tick (régénération `+ rate` ; dégradation périodique `− rate × degradationTick`, clamp ≥ 0), 0 tirage PRNG (DETERMINISM.md §5) ; persistance étendue (WorldSnapshotDto.MineralStock + SQLite `mineral`) ; engineVersion **0.7.0**, checksums dorés ré-épinglés inchangés (pin contractuel) ; bornes validées `resources.*` |
 | SYNE-071 | Constructions (obstacles statiques) | `type/feature`, `component/syne` | P1 | décision n°20, `SYSTEMS_SPEC.md` §3.14, §6.4 | Construction = obstacle statique de la grille ; modification d'environnement tracée |
 | SYNE-072 | Saisons & environnement dynamique | `type/feature`, `component/syne` | P2 | SYNE-070, `SYSTEMS_SPEC.md` §6. titled | Variations périodiques appliquées ; déterminisme conservé |
 | SYNE-073 | Territoire (décision n°21) | `type/feature`, `component/syne` | P1 | décision n°21, `SYSTEMS_SPEC.md` §6.5 | Territoire = zone des ressources autour du point de survie ; perception V0.1 |

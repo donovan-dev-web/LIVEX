@@ -56,7 +56,8 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
   "resources": {
     "food": { "initial": 100, "regenerationRate": 0, "degradationTick": 100 },
     "water": { "initial": 1000, "regenerationRate": 5 },
-    "wood": { "initial": 50, "regenerationRate": 0.1 }
+    "wood": { "initial": 50, "regenerationRate": 0.1 },
+    "mineral": { "initial": 0, "regenerationRate": 0 }
   },
   "communication": {
     "transmissionRange": 55,
@@ -147,6 +148,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
   - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`) — échec déclaratif si une clé manque.
   - `communication.transmissionRange` ∈ (0, 70] ; `maxSendsPerTick`/`maxReceivesPerTick` ≥ 0 ; `maxHops` ≥ 1 ; `incomprehensionRate`/`hopConfidenceDecay`/`trustDecay` ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053) ; `transmissionRange` > `perceptionRange` invalide (la perception doit rester strictement supérieure).
    - `groups.enabled`/`reproduction.enabled` booléens ; `reviewIntervalTicks`/`intervalTicks` ≥ 1 ; `trustThreshold`/`consensusThreshold`/`consentTrustThreshold` ∈ [0, 1] ; `minGroupSize` ≥ 2 ; `maxBirthsPerTick` ≥ 1 ; `agents.inheritance.salienceThreshold` > 0.
+  - `resources.<type>.initial` ≥ 0 ; `regenerationRate` ≥ 0 ; `degradationTick` > 0 ou absent (SYNE-070).
   - dimensions `worldWidth`/`worldHeight` > 0 ; `maxTicks` > 0 ; traits dans [0, 2] ; moteur `"xoshiro256**"` exclusif.
 - Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).
 
@@ -235,6 +237,22 @@ Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Dr
 | :-- | :-- | :-- | :-- |
 | `agents.inheritance.salienceThreshold` | 0.01 | n°16 | Salience minimale d'un souvenir parental transmis (ex-`DefaultSalienceThreshold`) |
 | (mécanismes fins dominante/mutation) | n°16 | §6.6.3 | Configurés par `InheritanceSettings` (dominance [0,1], taux de mutation ≥ 0) — défauts 0.5 / 0.01 |
+
+### 6.7 Clés de ressources — cycle de vie (SYNE-070)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `resources.food.initial` | 100 | n°4 | Réserve initiale de nourriture (Eat : −1.0 / exécution) |
+| `resources.food.regenerationRate` | 0 | n°4 | Régénération par tick |
+| `resources.food.degradationTick` | 100 | n°4 | Période de dégradation (perte de `rate × période` ; inerte sans taux) |
+| `resources.water.initial` | 1000 | n°4 | Réserve initiale d'eau (Drink : −1.0 / exécution) |
+| `resources.water.regenerationRate` | 5 | n°4 | Régénération par tick |
+| `resources.wood.initial` | 50 | n°4 | Réserve initiale de bois (consommation au jalon constructions, SYNE-071) |
+| `resources.wood.regenerationRate` | 0.1 | n°4 | Régénération par tick |
+| `resources.mineral.initial` | 0 | n°2.4 | Réserve initiale de minéraux (4ᵉ type, SYNE-070) |
+| `resources.mineral.regenerationRate` | 0 | n°2.4 | Régénération par tick |
+
+Validation §6 : `initial` ≥ 0 ; `regenerationRate` ≥ 0 ; `degradationTick` > 0 ou absent.
 
 ---
 

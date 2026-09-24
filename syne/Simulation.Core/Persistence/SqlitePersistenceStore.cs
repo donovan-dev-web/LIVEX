@@ -398,9 +398,15 @@ public sealed class SqlitePersistenceStore : IDisposable
 
     private static void WriteResources(SqliteConnection connection, SqliteTransaction transaction, string runId, SimulationSnapshot snapshot)
     {
-        string[] kinds = { "food", "water", "wood" };
-        double[] quantities = { snapshot.World.FoodStock, snapshot.World.WaterStock, snapshot.World.WoodStock };
-        for (int i = 0; i < kinds.Length; i++)
+        (string Kind, double Quantity)[] resources =
+        {
+            ("food", snapshot.World.FoodStock),
+            ("water", snapshot.World.WaterStock),
+            ("wood", snapshot.World.WoodStock),
+            ("mineral", snapshot.World.MineralStock),
+        };
+
+        foreach ((string kind, double quantity) in resources)
         {
             using var command = connection.CreateCommand();
             command.Transaction = transaction;
@@ -409,11 +415,11 @@ public sealed class SqlitePersistenceStore : IDisposable
                 VALUES ($id, $run, $type, '{"x":0,"y":0}', $qty, $cap)
                 ON CONFLICT(id) DO UPDATE SET quantity = excluded.quantity;
                 """;
-            command.Parameters.AddWithValue("$id", $"global-{kinds[i]}");
+            command.Parameters.AddWithValue("$id", $"global-{kind}");
             command.Parameters.AddWithValue("$run", runId);
-            command.Parameters.AddWithValue("$type", kinds[i]);
-            command.Parameters.AddWithValue("$qty", quantities[i]);
-            command.Parameters.AddWithValue("$cap", quantities[i]);
+            command.Parameters.AddWithValue("$type", kind);
+            command.Parameters.AddWithValue("$qty", quantity);
+            command.Parameters.AddWithValue("$cap", quantity);
             command.ExecuteNonQuery();
 
             using var snapCommand = connection.CreateCommand();
@@ -425,8 +431,8 @@ public sealed class SqlitePersistenceStore : IDisposable
                 """;
             snapCommand.Parameters.AddWithValue("$run", runId);
             snapCommand.Parameters.AddWithValue("$tick", checked((long)snapshot.Tick));
-            snapCommand.Parameters.AddWithValue("$id", $"global-{kinds[i]}");
-            snapCommand.Parameters.AddWithValue("$qty", quantities[i]);
+            snapCommand.Parameters.AddWithValue("$id", $"global-{kind}");
+            snapCommand.Parameters.AddWithValue("$qty", quantity);
             snapCommand.ExecuteNonQuery();
         }
     }

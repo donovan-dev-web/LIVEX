@@ -38,7 +38,8 @@ public sealed record WorldSnapshotDto(
     IReadOnlyList<ObstacleSnapshotDto> Obstacles,
     double FoodStock,
     double WaterStock,
-    double WoodStock);
+    double WoodStock,
+    double MineralStock);
 
 public sealed record EntitySnapshotDto(
     ulong Id,

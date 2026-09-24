@@ -10,6 +10,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon U8 — Cycle des ressources (SYNE-070)** :
+  - 4ᵉ type de réserve **`Mineral`** (`ResourceKind.Mineral`, défaut 0) — initialisation enum-driven, exposé dans l'observabilité `resources[]` (4 types) et persisté SQLite (`resources`/`resource_snapshots`) ;
+  - **régénération & dégradation périodique** : `ResourceStocks.ApplyLifecycle(tick, settings)` appliquée en fin de tick (ordre causal strict, 0 tirage PRNG) — `+ regenerationRate`/tick, dégradation `− regenerationRate × degradationTick` à chaque période, clamp ≥ 0 ;
+  - bornes `resources.*.{initial,regenerationRate,degradationTick}` ajoutées à la validation (CONFIGURATION.md §6.7) ;
+  - `engineVersion` **0.6.0 → 0.7.0** ; checksums dorés inchangés (pin contractuel, DETERMINISM.md §7) ;
+  - tests : +7 Core (cycle, minéral, validation, persistance 4 réserves) — **327 Core + 15 Console = 342 tests** au total.
 - **Jalon U8 — Persistance SQLite bit-à-bit (SYNE-110/111/112)** :
   - `SimulationSnapshot`/`SimulationSnapshotCodec` : capture déterministe (JSON `System.Text.Json`) de l'état complet du monde + cognition + PRNG 4×64, avec hash stable ;
   - `SimulationSnapshotRestorer` : reprise exacte au tick N sans re-jouage (kill states dérivés reconstruits déterministiquement, holdover `LastDecision` + réserves restaurées en place) ;
@@ -74,3 +80,4 @@ Première version consolidée (aucune).
 | 21 septembre 2026 | Site de documentation GitHub Pages (DocFX) : landing + docs clés + API Simulation.Core, XML généré | U1 — documents |
 | 23 septembre 2026 | ECHOS ph8 : échos-ui — les 6 Écrans (A→F), client REST typé + WS :5180, relais de pilotage :5181, design system | Jalon U7 — interface web |
 | 24 septembre 2026 | SYNE ph11 : persistance SQLite bit-à-bit (SYNE-110→112) + serveur de contrôle HTTP :5181 (SYNE-113) | Jalon U8 — tests & persistance |
+| 24 septembre 2026 | SYNE ph11c : cycle des ressources — minéraux + régénération/dégradation (SYNE-070), engineVersion 0.7.0 | Jalon U8 — tests & persistance |
