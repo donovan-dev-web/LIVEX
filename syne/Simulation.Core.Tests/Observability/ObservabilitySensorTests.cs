@@ -129,7 +129,12 @@ public class ObservabilitySensorTests
         double water = message["resources"]!.AsArray().First(r => (string?)r!["type"] == "water")!["quantity"]!.GetValue<double>();
         double food = message["resources"]!.AsArray().First(r => (string?)r!["type"] == "food")!["quantity"]!.GetValue<double>();
 
-        Assert.True(water >= 0.0 && water < 1000.0, "La réserve d'eau a été consommée par Drink.");
+        // Avec le cycle de vie (SYNE-070), l'eau régénère +5/tick : la réserve courante
+        // peut repasser au-dessus de 1000 sans contredire la consommation — sans
+        // consommation elle vaudrait exactement initial + 5 × tick. Food (régénération
+        // nulle) reste strictement décroissante : invariant du snapshot(bornes).
+        double waterCeiling = 1000.0 + 5.0 * loop.CurrentTick;
+        Assert.True(water >= 0.0 && water < waterCeiling, "La réserve d'eau a été consommée par Drink.");
         Assert.True(food >= 0.0 && food < 100.0, "La réserve de nourriture a été consommée par Eat.");
     }
 
@@ -166,9 +171,9 @@ public class ObservabilitySensorTests
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
-        // Jalon SYNE ph7b → 0.6.0 : mortalité (074), naissance consentie fidèle (075),
-        // décision collective → objectifs (076) et cheminement A* déterministe (077).
-        Assert.Equal("0.6.0", ObservabilityContract.EngineVersion);
+        // Jalon SYNE ph7c → 0.7.0 : cycle des ressources — minéraux + régénération/
+        // dégradation (SYNE-070), appliquées en fin de tick.
+        Assert.Equal("0.7.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

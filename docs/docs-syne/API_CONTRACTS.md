@@ -34,17 +34,17 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 | `simulatedTimeMinutes` | uint | Temps simulé (minutes) |
 | `aliveCount` | uint | Entités vivantes |
 | `agents[]` | array | État des entités (position, santé, énergie, faim, soif, action courante...) |
-| `resources[]` | array | Réserves globales `{type, quantity}` — **peuplé depuis SYNE ph4** (DATA_MODEL §8.1) |
+| `resources[]` | array | Réserves globales `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1) |
 
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.6.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.7.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
   "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
-                  { "type": "wood", "quantity": 50 } ],
+                  { "type": "wood", "quantity": 50 }, { "type": "mineral", "quantity": 0 } ],
   "groups": [ { "groupId": 1, "members": ["a1", "a2", "a3"], "size": 3,
                 "leaderId": "a1", "bornTick": 5000, "cohesion": 0.42,
                 "decision": "SeekFood", "consensus": 0.80 } ] }
@@ -52,8 +52,8 @@ Exemple (format condensé) :
 
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.6.0` (jalon SYNE ph7b — mortalité, naissance consentie fidèle, décision
-> collective → objectifs, cheminement A* déterministe). Le champ `groups[]`
+> `engineVersion` = `0.7.0` (jalon SYNE ph7c — cycle des ressources : minéraux +
+> régénération/dégradation périodique, SYNE-070). Le champ `groups[]`
 > (syne-060/061, ajout **additif**, MINOR) liste les groupes actifs au tick : `groupId`,
 > `members[]`, `size`, `leaderId`, `bornTick`, `cohesion` (cohésion moyenne au dernier LOD),
 > `decision`/`consensus` (dernière décision collective, `SYSTEMS_SPEC` §5).

@@ -10,6 +10,27 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon SYNE ph11c — Cycle des ressources (SYNE-070, jalon U8)** :
+  - **`4ᵉ TYPE MINÉRAL`** : `ResourceKind.Mineral` (défaut `resources.mineral.initial = 0`),
+    initialisé via `ResourceSettings` (enum-driven), exposé dans l'observabilité (`resources[]`
+    — 4 types, API_CONTRACTS §2.1) et persisté (SQLite `resources`/`resource_snapshots`,
+    `WriteResources`).
+  - **`RÉGÉNÉRATION & DÉGRADATION PÉRIODIQUE`** : `ResourceStocks.ApplyLifecycle(tick, settings)`
+    appliquée en **fin de tick** par `SimulationLoop.AdvanceOneTick` (ordre causal strict
+    DETERMINISM.md §5, mesurée sous `TickPhase.EventsGroupsPopulation`) — régénération
+    `+ regenerationRate` par tick, dégradation à chaque `degradationTick` de
+    `− regenerationRate × degradationTick` (clamp ≥ 0 ; inerte sans taux) ; **0 tirage PRNG**.
+  - **`VALIDATION`** : bornes `resources.{food,water,wood,mineral}.{initial,regenerationRate,
+    degradationTick}` dans `SimulationOptionsValidator` (CONFIGURATION.md §6/6.7).
+  - **`DÉTERMINISME & VERSION`** : `engineVersion` **0.6.0 → 0.7.0** ; checksum doré de perception
+    et baseline ph10 **inchangés** (l'altération porte sur les réserves, pas sur la cognition du
+    scénario de référence) — ré-épinglés pour pin contractuel (DETERMINISM.md §7).
+  - Tests : `ResourceStocksTests` (+5 : minéral, régénération bornée, dégradation périodique,
+    non-négativité, déterminisme du cycle) + `SimulationOptionsValidatorTests` (+1) +
+    `PersistenceTests` (+1 : 4 réserves dont mineral persistées, régénération restaurée) ;
+    assertions existantes `CognitionPipelineTests`/`ObservabilitySensorTests` adaptées aux
+    bornes de régénération.
+  - **Suite totale : 342 tests** (327 Core + 15 Console).
 - **Jalon SYNE ph11 — Persistance & Contrôle (SYNE-110 → SYNE-113, jalon U8)** :
   - **`MODÈLE & REPRISE BIT-À-BIT` (SYNE-110/111/112, PR2 PR SYNE)** : persistance SQLite
     **11 tables** (`PRAGMA user_version=2`) — `SqlitePersistenceStore` : sauvegarde atomique de l'état
@@ -26,7 +47,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     / `pause` / `resume` / `reset {seed?, runId?}` + `GET /api/control/status` (réponses
     `{ok, action, runId, state, tick, aliveCount, seed}`) ; finalise **ECHOS-085** (interop vérifiée
     contre le vrai `ControlClient` ECHOS) ; **`ControlServerWireTests`** (6).
-  - **Suite totale : 335 tests** (320 Core + 15 Console).
+  - **Suite totale : 335 tests** (320 Core + 15 Console) → **342** (327 Core + 15 Console) après le cycle des ressources (SYNE-070, bloc ph11c ci-dessus).
 - **Jalon SYNE ph10 — Tests & Couverture (SYNE-100 → SYNE-102, jalon ph10, U7)** :
   - **`SUITE UNITAIRE & COUVERTURE` (SYNE-100)** : couverture lignes mesurée **96,19 %** (≥ 80 % requis ;
     Coverlet XPlat) — les deux fichiers sous le seuil passent à **100 %** : `SimulationOptionsValidator.cs`

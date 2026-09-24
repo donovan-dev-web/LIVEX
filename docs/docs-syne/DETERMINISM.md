@@ -62,13 +62,15 @@
 
 **Jalon SYNE ph7b (engineVersion 0.6.0)** : les 4 fidélités restent **0 tirage PRNG** — la mortalité itère par identifiant croissant après les boucles entités/communication/naissances (SYNE-074) ; la naissance consentie évalue les paires qualifiantes dans l'ordre d'id (SYNE-075) ; l'alignement sur objectif collectif est un produit déterministe consensus × confiance au leader (SYNE-076) ; le cheminement A* est **sans PRNG** : grille rasterisée, voisinage ordonné, départage (f, g, x, y), expansion plafonnée, repli « sur place » (SYNE-077), cache LRU à accès déterministe. Checksum de la trajectoire **inchangé** (0x27fad50065d8c4a4 — le scénario de référence ne déclenche aucun pas bloqué), ré-épinglé pour pin contractuel.
 
-**Jalon SYNE ph10 (engineVersion 0.6.0, inchangé)** : tests de non-régression de déterminisme (SYNE-102) **sans modification du moteur** — le golden de perception reste **0x27fad50065d8c4a4** et `engineVersion` reste 0.6.0. Une **nouvelle baseline d'état complet** est épinglée en complément (`Ph10DeterminismBaselineTests.FullPipeline_StateBaseline_IsPinned`) : journal canonique par tick (population, envois, groupes, naissances, décès, puis id/position/énergie/besoins/intention/mémoire/confiance de chaque entité) — scénario identique (25 entités, 200 ticks, seed 12345) → checksum FNV-1a **0x072a488aa18c05eb**. Toute altération bit-à-bit de la trajectoire change ce checksum ET le golden ; recalcul + bump MINOR requis (§7).
+**Jalon SYNE ph7c (engineVersion 0.7.0)** : le **cycle des ressources** (SYNE-070) reste **0 tirage PRNG** — appliqué en **fin de tick** (ordre causal strict : entités → communication → groupes → naissances → mortalité → cycle ressources), il régénère de `regenerationRate` à chaque tick et se dégrade à chaque période `degradationTick` d'un montant `regenerationRate × degradationTick` (clamp ≥ 0) ; opérations purement additivo-subtractives, aucune passerelle PRNG. Quatre types désormais (Food, Water, Wood, **Mineral**). L'altération porte sur les **réserves du monde**, pas sur la cognition du scénario de référence : checksum doré de perception **inchangé** (0x27fad50065d8c4a4) et baseline ph10 **inchangée** (0x072a488aa18c05eb) — ré-épinglés identiques pour pin contractuel, `engineVersion` incrémenté 0.6.0 → 0.7.0.
+
+**Jalon SYNE ph10 (engineVersion 0.7.0, inchangé)** : tests de non-régression de déterminisme (SYNE-102) **sans modification du moteur** — le golden de perception reste **0x27fad50065d8c4a4** et `engineVersion` reste 0.7.0. Une **nouvelle baseline d'état complet** est épinglée en complément (`Ph10DeterminismBaselineTests.FullPipeline_StateBaseline_IsPinned`) : journal canonique par tick (population, envois, groupes, naissances, décès, puis id/position/énergie/besoins/intention/mémoire/confiance de chaque entité) — scénario identique (25 entités, 200 ticks, seed 12345) → checksum FNV-1a **0x072a488aa18c05eb**. Toute altération bit-à-bit de la trajectoire change ce checksum ET le golden ; recalcul + bump MINOR requis (§7).
 
 ## 7. Impacts & contractuels
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion` (0.6.0 au jalon SYNE ph7b ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
+  - mise à jour de `engineVersion` (0.7.0 au jalon SYNE ph7c ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
 
 ---

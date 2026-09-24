@@ -29,6 +29,8 @@ public class ConfigLoaderTests
         Assert.Equal(100, options.Resources.Food.Initial);
         Assert.Equal(100, options.Resources.Food.DegradationTick);
         Assert.Equal(5.0, options.Resources.Water.RegenerationRate);
+        Assert.Equal(0, options.Resources.Mineral.Initial);
+        Assert.Equal(0.0, options.Resources.Mineral.RegenerationRate);
     }
 
     [Fact]
@@ -64,6 +66,7 @@ public class ConfigLoaderTests
         Assert.Equal(5.0, options.Resources.Water.RegenerationRate);
         Assert.Equal(100, options.Resources.Food.Initial);
         Assert.Equal(100, options.Resources.Food.DegradationTick);
+        Assert.Equal(0, options.Resources.Mineral.Initial);
     }
 
     [Fact]

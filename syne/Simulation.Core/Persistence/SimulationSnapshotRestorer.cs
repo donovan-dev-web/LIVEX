@@ -35,7 +35,7 @@ public static class SimulationSnapshotRestorer
             snapshot.Rng.S3);
 
         var loop = new SimulationLoop(world, rng, options);
-        loop.Resources.RestoreState(snapshot.World.FoodStock, snapshot.World.WaterStock, snapshot.World.WoodStock);
+        loop.Resources.RestoreState(snapshot.World.FoodStock, snapshot.World.WaterStock, snapshot.World.WoodStock, snapshot.World.MineralStock);
         loop.RestoreState(snapshot.Tick, rng);
 
         RestoreCognition(loop, snapshot, options);
