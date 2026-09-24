@@ -107,6 +107,16 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             "phenomena": phenomena[1],
         }
 
+    @app.get("/api/runs/{run_id}/calibration", tags=["api"])
+    def run_calibration(run_id: str) -> dict:
+        """Read the deterministic post-run calibration evidence (SYNE-131)."""
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+        report = active.calibration_report(resolved)
+        if report is None:
+            raise HTTPException(status_code=404, detail="rapport de calibration indisponible")
+        return report
+
     @app.get("/api/runs/{run_id}/metrics", tags=["api"])
     def run_metrics(
         run_id: str,

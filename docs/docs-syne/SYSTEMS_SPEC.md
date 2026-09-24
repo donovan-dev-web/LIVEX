@@ -88,9 +88,9 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 
 ## 9. Livres / Persistance de connaissance (Monographie §3.18 (livres))
 
-- **Auteur** : rédige un livre matérialisant des connaissances à un instant T — coût (énergie, temps) configurable (décision n°18 — [TRANCHÉE]).
-- **Lecteur consultant** : toute entité ayant accès peut consulter — coût/bénéfice posé (décision n°19 — [TRANCHÉE]).
-- Modèle de stockage spatial (lieu) à préciser.
+- **Auteur** : écrit explicitement un livre matérialisant titre/contenu à un instant T. En V0.1 (SYNE-121), `SimulationLoop.WriteBook` débite le coût énergétique `world.books.writeCostEnergy`, poinçonne le tick, stocke le livre et émet `world.book_written` ; valeur par défaut provisoire, calibrage SYNE-120.
+- **Lecteur consultant** : `SimulationLoop.ReadBook` enregistre le lecteur distinct et émet `world.book_read` avec `world.books.readBenefit`. Le principe de bénéfice est livré ; l’effet sur cognition/confiance/savoir est différé au futur moteur mémoire (hors U8).
+- En V0.1 les opérations sont explicites et observationnelles : durée de rédaction, accès spatial et diffusion agentique restent ouverts.
 
 ## 10. Observabilité interne (Monographie §3.15)
 

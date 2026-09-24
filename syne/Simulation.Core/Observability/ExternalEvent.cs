@@ -350,4 +350,34 @@ public static class EventSensor
             TargetId: change.Zone.Id,
             Value: value);
     }
+    /// <summary>Écriture d'un livre (SYNE-121) : coût énergétique payé par l'auteur.</summary>
+    public static ExternalEvent BookWritten(ulong tick, World.BookChange change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["id"] = change.Book.Id,
+            ["title"] = change.Book.Title,
+            ["writtenTick"] = change.Book.WrittenTick,
+            ["cost"] = Math.Abs(change.Value),
+        };
+        return new ExternalEvent(ObservabilityContract.BookWritten, tick,
+            AgentId: change.Book.AuthorId.ToString(CultureInfo.InvariantCulture),
+            TargetId: change.Book.Id, Value: value);
+    }
+
+    /// <summary>Consultation d'un livre (SYNE-121) : bénéfice de principe configuré.</summary>
+    public static ExternalEvent BookRead(ulong tick, World.BookChange change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["id"] = change.Book.Id,
+            ["readBenefit"] = change.Value,
+        };
+        return new ExternalEvent(ObservabilityContract.BookRead, tick,
+            AgentId: change.ReaderId?.ToString(CultureInfo.InvariantCulture),
+            TargetId: change.Book.Id, Value: value);
+    }
+
 }

@@ -67,6 +67,8 @@ erDiagram
 - Règle : `System.Random` est interdit (non stable entre runtimes, état non sérialisable) — §3.6.3.
 - **Snapshot bit-à-bit (`SimulationSnapshot`)** : qui — monde (taille + cellule, obstacles, entités au trait près, réserves **en place** `ResourceStocks.RestoreState`), cognition par entité (besoins, mémoire+séquence, croyances, confiance, files de messages non éphémères + relais, taux de succès, intention, objectif collectif, **holdover `LastDecision`**), groupes actifs + `NextGroupId`, et le PRNG 4×64. Les états dérivés (grille spatiale, cache A*, buffers par-tick) sont reconstruits déterministiquement à la restauration. Validé par `PersistenceTests.ReloadFromSnapshot_ContinuesBitForBitIdenticalToUninterruptedRun` (hash bit-à-bit du run relancé == run ininterrompu).
 
+Les livres (SYNE-121) sont inclus dans le `WorldSnapshotDto` (contenu, auteur, tick d’écriture et lecteurs) afin que la reprise conserve les consultations déjà enregistrées. Le codec JSON évolue au schéma 3 ; le schéma relationnel SQLite reste à la version 2.
+
 ## 5. Sauvegarde automatique
 
 - `simulation.autoSaveEveryNTicks` (défaut 1000) et `maxBackups` (défaut 5) — Annexe H.
@@ -76,7 +78,7 @@ erDiagram
 
 ## 6. Compatibilité et migration
 
-- `schemaVersion` propre à la persistance, versionnée (`SchemaVersion = 2`, `PRAGMA user_version = 2`).
+- `schemaVersion` propre à la persistance, versionnée (`SchemaVersion = 3` pour le snapshot JSON (livres SYNE-121), `PRAGMA user_version = 2` pour le schéma SQLite).
 - Changements de schéma = script de migration + évolution MINOR/MAJOR selon `VERSIONING.md` (format de persistance = contrat).
 
 ---

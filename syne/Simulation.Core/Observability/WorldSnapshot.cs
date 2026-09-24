@@ -38,6 +38,22 @@ public sealed record TerritorySnapshot(
     IReadOnlyList<ulong> Members);
 
 /// <summary>
+/// Livre au snapshot (SYNE-121, décisions n°18/19, Monographie §3.18) :
+/// identifiant, auteur, titre, tick d'écriture (poinçonné par la boucle,
+/// <c>writtenTick</c>) et liste des lecteurs distincts (ordre de première
+/// consultation, <c>readCount</c> = taille redondante mais explicite).
+/// Émise quand <c>world.books.enabled</c> est actif (désactivé par défaut).
+/// </summary>
+public sealed record BookSnapshot(
+    string Id,
+    ulong AuthorId,
+    string Title,
+    string Content,
+    ulong WrittenTick,
+    IReadOnlyList<ulong> Readers,
+    int ReadCount);
+
+/// <summary>
 /// Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).
 /// Représentation pure, sérialisée en camelCase par <see cref="ObservabilitySerializer"/>.
 /// </summary>
@@ -53,7 +69,8 @@ public sealed record WorldSnapshot(
     IReadOnlyList<ObstacleSnapshot> Obstacles,
     string Season,
     int SeasonIndex,
-    IReadOnlyList<TerritorySnapshot> Territories)
+    IReadOnlyList<TerritorySnapshot> Territories,
+    IReadOnlyList<BookSnapshot> Books)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
     public static WorldSnapshot Capture(SimulationLoop loop, ulong seed)
@@ -128,6 +145,11 @@ public sealed record WorldSnapshot(
             obstacles,
             World.Seasons.Name(loop.CurrentSeason),
             (int)loop.CurrentSeason,
-            territories);
+            territories,
+            loop.BooksEnabled
+                ? loop.World.Books.Select(book => new BookSnapshot(
+                    book.Id, book.AuthorId, book.Title, book.Content, book.WrittenTick,
+                    book.Readers.ToArray(), book.ReadCount)).ToArray()
+                : []);
     }
 }

@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 23 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `../ROADMAP.md` (racine), `../docs-syne/ROADMAP.md`
 **Source Monographie** : §9.6, §7.9 (adapté), §4.2 (architecture)
 
@@ -26,7 +26,7 @@
 | 6 | Analyse causale | Reconstruction des chaînes causales depuis `decision_traces`, outillage de navigation — **LIVRÉ (ECHOS-060 → 063, jalon ph6, issues #215 → #218)** : ADR-002 [Accepted] (calcul hors ligne), `causal.build_chain` (7 couches), cycle/récurrence + profondeur bornée, `CausalCache` invalidé sur version, endpoint `GET /api/runs/{id}/causal-chains/{agentId}` |
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export | **LIVRÉ (ECHOS-070 → 072, jalon ph7, U7)** : `GET /api/compare` (`is_reproducible` seed×version×SHA-256, `ReproducibilityScore = 1 − (CognitiveDiff+SocialDiff)/2`, L2 normalisées sur croyances/confiance — `echos/analysis/reproducibility.py`), exports `json`/`csv` (séries alignées `tick,engine,metric,run_a_value,run_b_value,diff`), 11 tests (`test_compare.py`), couverture 97,97 % |
 | 8 | Interface intégrée | Écrans ECHOS (web local React/Vite servie par FastAPI) : vues de métriques, croyances, réseaux, calibration |
-| 9 | Tests & couverture | ≥ 80 %, non-régression des scores (golden files) |
+| 9 | Tests & couverture | **LIVRÉ (U8, ECHOS-090→092)** : suite pytest + goldens, couverture 96,01 %, test d’intégration réel SYNE→ECHOS en CI, rapport de calibration déterministe. Intégration PRISM au niveau contrat seulement, son runtime commençant après U8. |
 | 10 | Shell Electron (horizon ultérieur) | Packaging natif de bureau de `echos-ui` via **Electron** — **conservé** (non abandonné), implémentation **différée post-V0.1** (correction décision 23/09/2026, `ADR-001`) ; coordonné avec PRISM (`../docs-prism/`) |
 
 ## 3. Jalons de validation

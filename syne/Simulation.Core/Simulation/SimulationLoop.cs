@@ -23,6 +23,7 @@ public sealed class SimulationLoop
     private readonly Simulation.Core.Configuration.SimulationOptions _options;
     private readonly List<Simulation.Core.Configuration.SeasonChange> _seasonChanges = new();
     private readonly List<World.TerritoryMembershipChange> _territoryChanges = new();
+    private readonly List<Simulation.Core.World.BookChange> _bookChanges = new();
     private System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<ulong>> _territoryMembership =
         new(System.StringComparer.Ordinal);
     private Xoshiro256StarStar _rng;
@@ -124,6 +125,16 @@ public sealed class SimulationLoop
     public bool TerritoriesEnabled => _options.World.Territories.Enabled;
 
     /// <summary>
+    /// Livres activés (SYNE-121, décisions n°18/19, Monographie §3.18) —
+    /// <c>world.books.enabled</c> : écriture payée en énergie par l'auteur
+    /// (coût <c>world.books.writeCostEnergy</c>), lecture à bénéfice posé en
+    /// principe (n°19, <c>world.books.read_benefit</c>). Désactivés par défaut
+    /// ⇒ trajectoire du scénario de référence inchangée, checksums dorés
+    /// ré-épinglés inchangés (pin contractuel).
+    /// </summary>
+    public bool BooksEnabled => _options.World.Books.Enabled;
+
+    /// <summary>
     /// Changements d'appartenance aux zones de territoire survenus depuis la
     /// dernière collecte (SYNE-073) : vidés (<see cref="ClearTerritoryChanges"/>)
     /// par la couche d'observabilité après réémission — même protocole que les
@@ -133,6 +144,17 @@ public sealed class SimulationLoop
 
     /// <summary>Vide la file des changements d'appartenance (drain d'observabilité).</summary>
     public void ClearTerritoryChanges() => _territoryChanges.Clear();
+
+    /// <summary>
+    /// Mutations de livres survenues depuis la dernière collecte (SYNE-121) :
+    /// vidées (<see cref="ClearBookChanges"/>) par la couche d'observabilité
+    /// après réémission — même protocole que les changements de saison, de
+    /// territoire et de constructions (drain).
+    /// </summary>
+    public IReadOnlyList<Simulation.Core.World.BookChange> LastBookChanges => _bookChanges;
+
+    /// <summary>Vide la file des mutations de livres (drain d'observabilité).</summary>
+    public void ClearBookChanges() => _bookChanges.Clear();
 
     /// <summary>
     /// Identifiants des entités présentes dans la zone <paramref name="zoneId"/>
@@ -146,6 +168,74 @@ public sealed class SimulationLoop
         }
 
         return [];
+    }
+
+    /// <summary>
+    /// Écrit un livre (SYNE-121, décision n°18, Monographie §3.18) : l'auteur
+    /// (cognition requise) paie le **coût d'écriture posé en principe** —
+    /// énergie <c>world.books.writeCostEnergy</c> **débitée** de ses besoins
+    /// corporels (<see cref="Simulation.Core.Cognition.MindState.Needs"/> ;
+    /// durée de rédaction et pénalité non modélisées en V0.1) ; le livre est poinçonné
+    /// (<c>writtenTick</c> = tick courant) et ajouté au monde. Mutation
+    /// **tracée** dans <see cref="LastBookChanges"/>. API de la boucle —
+    /// **0 tirage PRNG** (déterministe, DETERMINISM.md §3).
+    /// </summary>
+    public void WriteBook(Simulation.Core.World.Book book)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        if (!BooksEnabled)
+        {
+            throw new InvalidOperationException("Les livres sont désactivés (world.books.enabled = false).");
+        }
+
+        if (!Cognition.HasMind(book.AuthorId))
+        {
+            throw new InvalidOperationException($"L'auteur {book.AuthorId} n'a pas de cognition.");
+        }
+
+        if (World.Books.Any(existing => existing.Id == book.Id))
+        {
+            throw new ArgumentException($"Un livre portant l'identifiant « {book.Id} » existe déjà.", nameof(book));
+        }
+
+        double cost = _options.World.Books.WriteCostEnergy;
+        book.WrittenTick = CurrentTick;
+        World.AddBook(book);
+        Cognition.MindOf(book.AuthorId).Needs.ExertEnergy(cost);
+        _bookChanges.Add(new Simulation.Core.World.BookChange(
+            Simulation.Core.World.BookChangeKind.Written, book, -cost, null));
+    }
+
+    /// <summary>
+    /// Lit un livre (SYNE-121, décision n°19, Monographie §3.18) : le lecteur
+    /// (cognition requise) tire le **bénéfice posé en principe**
+    /// (<c>world.books.read_benefit</c>, chiffrage savoir/confiance reporté au
+    /// moteur de mémoire) et la lecture est **tracée** (lecteurs distincts,
+    /// ordre de première consultation) dans <see cref="LastBookChanges"/>.
+    /// API de la boucle — **0 tirage PRNG** (déterministe, DETERMINISM.md §3).
+    /// </summary>
+    public void ReadBook(Simulation.Core.World.Book book, ulong readerId)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        if (!BooksEnabled)
+        {
+            throw new InvalidOperationException("Les livres sont désactivés (world.books.enabled = false).");
+        }
+
+        if (!Cognition.HasMind(readerId))
+        {
+            throw new InvalidOperationException($"Le lecteur {readerId} n'a pas de cognition.");
+        }
+
+        if (!World.Books.Any(existing => ReferenceEquals(existing, book)))
+        {
+            throw new ArgumentException("Le livre ne fait pas partie de ce monde.", nameof(book));
+        }
+
+        double benefit = _options.World.Books.ReadBenefit;
+        book.MarkReadBy(readerId);
+        _bookChanges.Add(new Simulation.Core.World.BookChange(
+            Simulation.Core.World.BookChangeKind.Read, book, benefit, readerId));
     }
 
     /// <summary>

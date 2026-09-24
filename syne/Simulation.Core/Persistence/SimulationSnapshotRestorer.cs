@@ -51,6 +51,16 @@ public static class SimulationSnapshotRestorer
             world.AddObstacle(new WorldNamespace.Obstacle(obstacle.Id, new WorldNamespace.Position(obstacle.X, obstacle.Y), obstacle.Radius));
         }
 
+        foreach (BookSnapshotDto bookDto in dto.Books ?? [])
+        {
+            var book = new WorldNamespace.Book(bookDto.Id, bookDto.AuthorId, bookDto.Title, bookDto.Content)
+            {
+                WrittenTick = bookDto.WrittenTick,
+            };
+            book.RestoreReaders(bookDto.Readers);
+            world.AddBook(book);
+        }
+
         foreach (EntitySnapshotDto entity in dto.Entities)
         {
             var traits = new TraitSet(entity.Traits.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal));
