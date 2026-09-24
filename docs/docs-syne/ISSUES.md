@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_V01.md`, `ROADMAP.md`
 **Source Monographie** : Annexe J (feuille de route V2), §1.7.5 (déterminisme), §9.6.4 (issues ADR)
 
@@ -182,16 +182,16 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-120 | Calibration des valeurs (énergie, livres, constructions) | `type/calibration`, `component/syne` | P2 | décisions n°4, 5, 18, 19, 20, `DECISIONS_V01` | Valeurs fixées après premiers runs valides ; trace ADR |
-| SYNE-121 | Livres : coût/bénéfice (V1, tranché) | `type/feature`, `component/syne` | P2 | décisions n°18, 19, `SYSTEMS_SPEC.md` §3.18 | Coût d'écriture configurable (auteur), bénéfice de lecture posé en principe |
+| SYNE-120 | Calibration des valeurs — **LIVRÉ (U8, baselines provisoires)** | `type/calibration`, `component/syne` | P2 | décisions n°4, 5, 18, 19, 20, `DECISIONS_V01` | ✓ Baselines V0.1 tracées dans ADR-014 et `MIGRATION_MORPHOLOGY.md` ; restent configurables/provisoires et non déclarées optimales. Construction agentique (coûts/matériaux/durée) reste ouverte selon décision 20. Rapport post-run ECHOS, lecture seule, sans ajustement automatique. |
+| SYNE-121 | Livres : coût/bénéfice (V1, tranché) — **LIVRÉ (jalon U8)** | `type/feature`, `component/syne` | P2 | décisions n°18, 19, `SYSTEMS_SPEC.md` §3.18 | ✓ `world.books` désactivé par défaut ; API explicite `WriteBook`/`ReadBook`, coût énergétique auteur configurable, bénéfice lecture tracé en principe ; événements `world.book_written`/`world.book_read`, snapshot additif `books[]`, persistance/reprise bit-à-bit ; engineVersion **0.11.0** ; effet cognitif de lecture différé au futur moteur mémoire (hors U8), valeurs provisoires tracées ADR-014 |
 | SYNE-122 | Jalon T0–T5 (validation du moteur) — **LIVRÉ (PR, jalon U8)** | `type/test`, `component/syne` | P0 | SYNE-100, `ROADMAP.md` §3 | T0..T5 validés (50 ent., 1000 ticks ; 50/2000 ; traits→décisions ; T5 160+) — ✓ **`MilestoneT0T5Tests`** (8 tests) : **T0** 50 ent./1000 ticks sans crash + état valide (ids uniques, positions bornées, énergie ∈ [0,100]) + déterminisme à l'échelle ; **T1** 50 ent./2000 ticks croyances divergentes (&gt; 1 carte de croyances distincte sur l'échantillon) ; **T2** traits différents ⇒ décisions différentes en situation **strictement identique** (même seed/position/autres traits — curiosité [0,2] vs [2,2], première divergence portée par Explore) ; **T3** information locale : entités distantes ne se connaissent jamais, entités proches apprennent l'une de l'autre ; **T4** reproductibilité du benchmark à l'échelle du jalon (objectifs de débit = `ScaleTargetsTests` + CLI `--benchmark`) ; **T5** suite &gt; 160 tests (370, jalonnée par réflexion) ; aucun changement moteur ni engineVersion (carte test, 0 tirage PRNG ajouté) |
 
 ### Milestone v1 — Consolidation
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-130 | Abandon de la morphologie (V1, ADR-010) | `type/docs`, `component/syne` | P1 | ADR-010 | Morphologie retirée ; doc de migration |
-| SYNE-131 | Processus de calibration continue | `type/governance`, `component/syne` | P2 | SYNE-120, `KANBAN.md` | Pipeline de calibration relancé après chaque run |
+| SYNE-130 | Abandon de la morphologie (ADR-010) — **LIVRÉ (U8)** | `type/docs`, `component/syne` | P1 | ADR-010 | ✓ `MIGRATION_MORPHOLOGY.md` spécifie les champs logiques conservés et les propriétés physiques retirées. |
+| SYNE-131 | Processus de calibration continue — **LIVRÉ (U8, rapport post-run)** | `type/governance`, `component/syne` | P2 | SYNE-120, `KANBAN.md` | ✓ Pipeline ECHOS persiste un rapport déterministe post-run (`calibration_reports`, SQLite v4), exposé par `GET /api/runs/{id}/calibration` ; aucune relance automatique ni modification des paramètres. |
 
 ---
 
@@ -212,4 +212,4 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 ## Points restés ouverts dans ce document
 
-- Les **volumes** chiffrés (énergie, coûts livres, constructions) font l'objet des décisions de calibration reconnues **configurables** (`DECISIONS_V01` : 7 décisions proposées ouvertes devenues tranchées en principe, valeurs calibrées à l'implémentation). Les cartes concernées (SYNE-120, SYNE-121) restent **créées** et **documentées** — rien n'est figé par accident. SYNE-052 (coûts émission/réception) a été résolue au jalon ph5 avec les défauts hérités configurables (décision n°9).
+- Les **volumes** chiffrés (énergie, coûts livres, constructions) font l'objet des décisions de calibration reconnues **configurables** (`DECISIONS_V01` : 7 décisions proposées ouvertes devenues tranchées en principe, valeurs calibrées à l'implémentation). SYNE-120/121 sont livrées avec valeurs provisoires configurables et documentées dans ADR-014 — rien n'est figé par accident. SYNE-052 (coûts émission/réception) a été résolue au jalon ph5 avec les défauts hérités configurables (décision n°9).

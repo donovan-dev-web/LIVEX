@@ -10,6 +10,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon U8 — Livres (SYNE-121, engineVersion 0.11.0)** : `world.books` désactivé par défaut, écriture explicite avec coût énergétique configurable débité à l’auteur, lectures distinctes et bénéfice de principe tracé ; événements `world.book_written`/`world.book_read`, snapshot `books[]` et reprise persistée. Le bénéfice cognitif est différé au futur moteur mémoire (hors U8) et les valeurs provisoires sont tracées dans ADR-014 (SYNE-120).
 - **Jalon SYNE ph11c — Cycle des ressources (SYNE-070, jalon U8)** :
   - **`4ᵉ TYPE MINÉRAL`** : `ResourceKind.Mineral` (défaut `resources.mineral.initial = 0`),
     initialisé via `ResourceSettings` (enum-driven), exposé dans l'observabilité (`resources[]`
@@ -90,7 +91,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     **objet** actif (CONFIGURATION.md §6.9) — `enabled` (défaut `false`), `seasonLengthTicks`
     (360), `initialSeason` (spring), `cycle[]` = 4 définitions × facteurs par resource
     (`SeasonFactor` Food/Water/Wood/Mineral ; V0.1 : spring ×1, summer eau ×1.2, autumn
-    bois ×1.2 + nourriture ×1.1, winter nourriture ×0.8 eau ×0.9 — calibrés en SYNE-120,
+    bois ×1.2 + nourriture ×1.1, winter nourriture ×0.8 eau ×0.9 — valeurs héritées provisoires (ADR-014),
     décision n°4).
   - **`MODÈLE`** : `Season` (enum) + statique `Seasons` (`Name`/`TryParse`/`Count`) ;
     saison courante = **fonction pure du tick** `(initialSeasonIndex + tick /

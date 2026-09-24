@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_ECHOS.md`, `ROADMAP.md` ECHOS
 **Source Monographie** : Annexe K (feuille de route V2), §4.10.3 (règle d'or), §9.6.4 (issues ADR)
 
@@ -119,9 +119,9 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-090 | Suite de tests ECHOS (→ 18+ jalons jeu) | `type/test`, `component/echos` | P0 | ECHOS-045, ECHOS-027 | Tests unitaires + golden files ; ≥ 80 % de couverture |
-| ECHOS-091 | Tests d'intégration (SYNE↔ECHOS↔PRISM) | `type/test`, `component/echos`, `component/syne`, `component/prism` | P1 | ECHOS-090, `../docs-prism/TESTING.md` | Flux complet sans perte ; déterminisme cross-composants |
-| ECHOS-092 | Non-régression des indicateurs (golden files V0.1) | `type/test`, `component/echos` | P0 | ECHOS-030 | Scores inchangés entre versions ; baseline V0.1 figée |
+| ECHOS-090 | Suite de tests ECHOS — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-045, ECHOS-027 | ✓ Tests unitaires/API/golden ; couverture mesurée ≥ 80 % (96,01 % sur la suite U8). |
+| ECHOS-091 | Intégration SYNE↔ECHOS — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le vrai SYNE, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Le déterminisme des deux composants est couvert par leurs suites dédiées. PRISM runtime commence après U8 ; le contrat REST ECHOS est vérifié, pas le rendu PRISM.
+| ECHOS-092 | Non-régression des indicateurs — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-030 | ✓ Baselines V0.1 et goldens vérifiés par les tests de métriques et API ; score inchangé sur données de référence. |
 
 ## 4. Règles de suivi (Kanban)
 

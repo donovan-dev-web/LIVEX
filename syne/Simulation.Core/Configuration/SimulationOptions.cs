@@ -325,6 +325,16 @@ public sealed class WorldSettings
     /// Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée.
     /// </summary>
     public TerritorySettings Territories { get; set; } = new();
+
+    /// <summary>
+    /// Livres (SYNE-121, décisions n°18/19, CONFIGURATION.md §6.11) : bloc
+    /// <c>world.books</c>. V0.1 : écriture/consultation via l'API de la boucle
+    /// (coût en énergie payé par l'auteur — décision n°18 ; bénéfice de lecture
+    /// posé en principe — décision n°19), activités seulement si
+    /// <c>enabled</c>. Désactivé par défaut ⇒ trajectoire du scénario de référence
+    /// inchangée (re-pin contractuel).
+    /// </summary>
+    public BookSettings Books { get; set; } = new();
 }
 
 /// <summary>
@@ -485,6 +495,29 @@ public sealed class TerritorySettings
 
     /// <summary>Les zones (disques) du territoire, posées à l'init dans cet ordre (déterministe).</summary>
     public List<TerritoryZoneDefinition> Zones { get; set; } = [];
+}
+
+
+/// <summary>
+/// Livres (SYNE-121, décisions n°18/19, CONFIGURATION.md §6.11) : <c>world.books</c>.
+/// L'écriture d'un livre matérialise une connaissance à un instant T au **coût**
+/// (énergie) payé par l'auteur ; la lecture produit un **bénéfice** posé en
+/// principe (structure figée, décision n°19) — le bénéfice cognitif chiffré
+/// dépend du moteur de mémoire (décision n°11) et reste reporté (SYNE-131).
+/// Chiffres V0.1 de premier jet, calibrés en SYNE-120 (DECISIONS_V01 n°18/19).
+/// Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée.
+/// </summary>
+public sealed class BookSettings
+{
+    /// <summary>Activité livres (écriture/consultation, événements <c>world.book_*</c>, snapshot <c>books[]</c>).</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Coût d'écriture en énergie payé par l'auteur (décision n°18, Monographie §3.18.5).</summary>
+    public double WriteCostEnergy { get; set; } = 20.0;
+
+
+    /// <summary>Bénéfice de lecture posé en principe (décision n°19, Monographie §3.18.6) — effet cognitif reporté (mine mémoire).</summary>
+    public double ReadBenefit { get; set; } = 1.0;
 }
 
 public sealed class RandomSettings

@@ -66,7 +66,7 @@ Conformément à la checklist §12, les choix ci-dessous restent **consciemment 
 | `SYSTEMS_SPEC.md` | Modèle d'héritage / fusion consentie (décision n°17) | Implémentation cycle de vie |
 | `SYSTEMS_SPEC.md` | Coûts des livres (décisions n°18/19) | Implémentation savoir tangible |
 | ~~`PERFORMANCE.md`~~ | ~~Machine de référence des benchmarks V0.1~~ — **tranchée au jalon ph9** (PERFORMANCE.md §9.1 : Linux x86-64, .NET 10.0.400, poste de dev) | — |
-| `CONFIGURATION.md` | Calibration des taux de besoins / seuils | Phase de calibration |
+| `CONFIGURATION.md` | Calibration des taux de besoins / seuils | Baselines provisoires U8 : ADR-014 ; paramètres configurables |
 | `CONFIGURATION.md` | « Instruire » (SYNE-042) : ingestion en mémoire épisodique via Eat | Jalon ph7 (sources spatiales, SYNE-071/072) |
 | `DATA_MODEL.md` | Sources spatiales de ressources (décision n°4) | Jalon ph7 (SYNE-071/072) |
 | `SYSTEMS_SPEC.md` | Mécanique des constructions (coût, matériaux, qui construit — décision n°20) | Mécanique agentique des constructions (post-SYNE-071) |

@@ -144,14 +144,10 @@ Chaque décision est ici **soit tranchée** (valeur + justification + source) **
 
 ### 2.18 Coût d'écriture d'un livre — **[TRANCHÉE]**
 
-- **Valeur** : écrire un livre a un **coût** (énergie, temps) que **l'auteur paie** — modèle **configurable** (§3.18.5), valeur héritée du prototype. La **structure** (coût = temps + énergie + pénalité) est **figée**.
-- **Configurable** : le **chiffre** (énergie/temps) reste dans `CONFIGURATION.md` — la **décision** (l'auteur paie un coût) est tranchée.
-- **Justification** : Monographie §3.18.5 (production de livre), `DATA_MODEL.md` (objet livre).
-- **Source** : Monographie §3.18.5.
-
-- **État** : ouverte. Le coût (énergie, temps) de production d'un livre est **hérité** (§3.18.5) mais reste configurable — la Monographie précise « coût \[OUVERT\] (décision n°18) ».
-- **Pourquoi ouverte** : fixer un chiffre d'énergie figerait le modèle économique des ressources ; la valeur sera calibrée après le cycle énergétique.
-- **Blocage** : l'auteur doit payer un coût (temps, énergie) — la **structure** est posée, le **chiffre** est ouvert.
+- **Valeur** : l'auteur paie un coût configurable à l'écriture (décision de principe tranchée ; chiffres calibrables).
+- **Acté V0.1 (SYNE-121, jalon U8)** : le coût énergétique est réglé par `world.books.writeCostEnergy` (défaut provisoire 20) et débité lors de `SimulationLoop.WriteBook`. Calibrage des valeurs dans SYNE-120 ; durée de rédaction et pénalité non modélisées en V0.1.
+- **Justification** : Monographie §3.18.5 ; garder le modèle économique configurable jusqu'à sa calibration.
+- **Source** : Monographie §3.18.5, `DATA_MODEL.md`.
 
 ### 2.19 Bénéfice des lectures — **[TRANCHÉE]**
 
@@ -160,9 +156,9 @@ Chaque décision est ici **soit tranchée** (valeur + justification + source) **
 - **Justification** : Monographie §3.18.6 (bénéfices des lectures).
 - **Source** : Monographie §3.18.6, `DATA_MODEL.md`.
 
-- **État** : ouverte. Les bénéfices (cognition, confiance, savoir) sont posés en **principe** (Lecture → bénéfice de la connaissance) mais leur **modèle chiffré** reste à définir (décision n°19).
-- **Pourquoi ouverte** : le bénéfice d'une lecture dépend du moteur de mémoire (décision n°11), qui lui-même est calibré plus tard.
-- **Blocage** : rien — lecture = coût + bénéfice est déjà un principe posé.
+- **Acté V0.1 (SYNE-121, jalon U8)** : le principe de bénéfice est configurable (`world.books.readBenefit`, défaut provisoire 1) et enregistré lors de chaque consultation. Aucun effet cognitif/confiance/savoir n'est appliqué avant le futur moteur mémoire (hors U8).
+- **Pourquoi différé** : le bénéfice chiffré dépend du moteur de mémoire (décision n°11) et reste calibrable (baselines provisoires, ADR-014).
+- **Portée** : la consultation et sa trace sont livrées ; l'application du bénéfice reste à implémenter.
 
 ### 2.20 Modèle des constructions — **[TRANCHÉE]**
 

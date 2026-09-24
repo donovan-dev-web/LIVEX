@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 23 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -313,3 +313,13 @@ Suite : **208 tests** (197 → +11), couverture **97,97 %** (pytest
 ## Points restés ouverts dans ce document
 - Fenêtres temporelles et seuils des moteurs (100 ticks, fréquence > 2, amplification > 1,5) : valeurs `[HÉRITÉ]` à **confirmer en calibration** (METRICS_SPEC §6) — le code les expose en constantes de chaque module, la formule reste stables pour les golden files.
 - Preuve J2/J3 ECHOS : rejeux synthétiques en CI ; l'ingestion **réelle** de deux runs SYNE (binaire .NET, hors CI) reste à consolider — l'API de comparaison `/api/compare` (ECHOS-070) est livrée (jalon ph7) et peut être alimentée par ce jeu d'essai manuel.
+
+### 4.5 Intégration U8 réelle SYNE → ECHOS
+
+`test_syne_echos_integration.py` démarre le binaire .NET Release en mode
+observation, consomme un tick complet depuis le WebSocket réel, alimente SQLite
+et Parquet, puis vérifie les décisions, métriques et endpoints REST, dont le
+rapport post-run de calibration. Le test est activé par `LIVEX_SYNE_E2E=1` et
+exécuté par le job CI transverse quand les sources SYNE ou ECHOS changent.
+L’intégration PRISM s’arrête au contrat API ECHOS : le runtime PRISM est prévu
+après U8 (voir ROADMAP racine).

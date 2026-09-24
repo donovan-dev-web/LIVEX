@@ -37,6 +37,7 @@ public static class ObservabilitySerializer
             ["season"] = snapshot.Season,
             ["seasonIndex"] = snapshot.SeasonIndex,
             ["territories"] = TerritoriesJson(snapshot.Territories),
+            ["books"] = BooksJson(snapshot.Books),
         };
         return message;
     }
@@ -60,6 +61,40 @@ public static class ObservabilitySerializer
                 ["radius"] = zone.Radius,
                 ["memberCount"] = zone.MemberCount,
                 ["members"] = members,
+            });
+        }
+
+        return array;
+    }
+
+    /// <summary>
+    /// Livres au serializer (SYNE-121, décisions n°18/19, Monographie §3.18) :
+    /// chaque livre est émis en <c>{id, authorId, title, writtenTick, readCount,
+    /// readers[]}</c> (lecteurs distincts dans l'ordre de première consultation)
+    /// — champ books[] additif, émis seulement quand world.books.enabled est actif
+    /// (désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
+    /// checksums dorés ré-épinglés inchangés, pin contractuel).
+    /// </summary>
+    private static JsonArray BooksJson(IReadOnlyList<BookSnapshot> books)
+    {
+        var array = new JsonArray();
+        foreach (BookSnapshot book in books)
+        {
+            var readers = new JsonArray();
+            foreach (ulong reader in book.Readers)
+            {
+                readers.Add(reader);
+            }
+
+            array.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["id"] = book.Id,
+                ["authorId"] = book.AuthorId,
+                ["title"] = book.Title,
+                ["content"] = book.Content,
+                ["writtenTick"] = book.WrittenTick,
+                ["readCount"] = book.ReadCount,
+                ["readers"] = readers,
             });
         }
 

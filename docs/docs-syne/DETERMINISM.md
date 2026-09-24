@@ -40,6 +40,8 @@
 - Les sous-systèmes sont exécutés dans un **ordre causal strict** (boucle 15 étapes, `SIMULATION_LOOP.md`).
 - Aucune exécution parallèle ne doit introduire de non-déterminisme : la parallélisation du prototype (`parallelPerception`, etc.) doit rester déterministe (agrégation d'ordre fixe).
 
+**Jalon U8 — Livres (engineVersion 0.11.0)** : les écritures/lectures explicites ne consomment aucun tirage PRNG. Elles sont déterministes, enregistrées dans l’ordre d’appel et persistées avec le monde ; l’émission d’événements et du snapshot est additive. `world.books.enabled = false` par défaut, donc le run de référence est inchangé. La lecture n’altère pas encore la cognition (effet différé au futur moteur mémoire (hors U8)).
+
 ## 6. Vérification (tests)
 
 | Test | Objectif |

@@ -24,13 +24,12 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "3"
+SCHEMA_VERSION = "4"
 """Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
 
-v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces`` — traces de
-décision SYNE consommées (analyse causale, CAUSAL_ANALYSIS.md). Backward
-compatible : ``CREATE TABLE IF NOT EXISTS`` étend les bases v2 au prochain
-open sans perte de données.
+v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces``.
+v4 (SYNE-131/U8) : table ``calibration_reports`` — résumé déterministe
+post-run, migration additive sans perte de données.
 """
 
 _DDL = """
@@ -102,6 +101,11 @@ CREATE TABLE IF NOT EXISTS decision_traces (
     memory_count INTEGER NOT NULL DEFAULT 0,
     needs TEXT,
     PRIMARY KEY (run_id, tick, agent_id)
+);
+
+CREATE TABLE IF NOT EXISTS calibration_reports (
+    run_id TEXT PRIMARY KEY REFERENCES runs(run_id) ON DELETE CASCADE,
+    report_json TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_tick_summaries_run ON tick_summaries(run_id);
@@ -377,6 +381,24 @@ class AnalyticsStore:
                     (run_id,),
                 ).fetchall()
             )
+
+    def save_calibration_report(self, run_id: str, report: dict) -> None:
+        """Persist one deterministic post-run calibration report."""
+        with self._lock:
+            self._conn.execute(
+                "INSERT OR REPLACE INTO calibration_reports (run_id, report_json) VALUES (?, ?)",
+                (run_id, json.dumps(report, sort_keys=True, separators=(",", ":"))),
+            )
+            self._conn.commit()
+            self._bump()
+
+    def calibration_report(self, run_id: str) -> dict | None:
+        """Read a stored post-run calibration report, if available."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT report_json FROM calibration_reports WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        return json.loads(row[0]) if row is not None else None
 
     def runs(self) -> list[dict]:
         """Runs enregistrés avec bornes de ticks (ordre déterministe par run_id)."""

@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 23 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.7
 
@@ -27,6 +27,7 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | GET | `/api/runs/{id}/metrics` | Séries de métriques (JSON, `?engine=`, `?metric=`, `?every=N`) |
 | GET | `/api/runs/{id}/export` | Export des métriques (`?format=json\|csv`), reproductible |
 | GET | `/api/runs/{id}/decisions` | Traces de décision des entités (analyse causale) |
+| GET | `/api/runs/{id}/calibration` | Rapport déterministe post-run (ticks, événements, métriques), lecture seule |
 | GET | `/api/runs/{id}/causal-chains/{agentId}` | Chaîne causale d'une entité (`?tick=`, `?depth=` ≤ 12) — jalon ph6 |
 | GET | `/api/beliefs/{agentId}` | Croyances de l'entité au tick le plus récent |
 | GET | `/api/relationships/{agentId}` | Réseau de confiance de l'entité |
@@ -157,7 +158,16 @@ Comparaison de deux runs contrôlés (EXPERIMENT_COMPARISON.md §2, METRICS_SPEC
 - `format=csv` : export comparatif aligné (ECHOS-072) — colonnes `tick,engine,metric,run_a_value,run_b_value,diff` (jointure sur ticks/métriques communs, `diff = run_b_value − run_a_value`), reproductible (sortie triée).
 - **Déterministe** : aucun PRNG, aucun horodatage ; les distributions/clés sont triées.
 
-### 3.10 Erreurs
+### 3.10 `GET /api/runs/{id}/calibration` (SYNE-131, U8)
+
+Retourne le rapport post-run persisté dans `calibration_reports` (schéma SQLite v4).
+Le JSON contient les résumés de ticks, statistiques de population et besoins,
+comptes d'événements et statistiques par moteur. Les clés et listes sont triées
+pour garantir un corps reproductible. Le rapport ne contient pas d'horodatage,
+ne modifie pas la configuration ou le monde, et ne déclenche aucun recalibrage
+automatique. Run sans tick ou inconnu : 404.
+
+### 3.11 Erreurs
 
 - `404` : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent ; entité sans trace de décision (`causal-chains`).
 - `400` : `format` d'export inconnu ou `format` de `/api/compare` hors {`json`, `csv`}.
@@ -181,3 +191,12 @@ Comparaison de deux runs contrôlés (EXPERIMENT_COMPARISON.md §2, METRICS_SPEC
 ## Points restés ouverts dans ce document
 - `/api/communication-heatmap` (périmètre UI) n'est pas implémenté en V0.1.
 - Compatibilité de versionnage des réponses à aligner sur `VERSIONING.md` (évolutions additives = MINOR).
+
+### 3.10 `GET /api/runs/{id}/calibration` (SYNE-131, U8)
+
+Retourne le rapport post-run persisté dans `calibration_reports` (schéma SQLite v4).
+Le JSON contient les résumés de ticks, statistiques de population et besoins,
+comptes d'événements et statistiques par moteur. Les clés et listes sont triées
+pour garantir un corps reproductible. Le rapport ne contient pas d'horodatage,
+ne modifie pas la configuration ou le monde, et ne déclenche aucun recalibrage
+automatique. Run sans tick ou inconnu : 404.

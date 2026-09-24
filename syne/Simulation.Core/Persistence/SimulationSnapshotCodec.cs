@@ -24,7 +24,7 @@ public static class SimulationSnapshotCodec
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public const int SchemaVersion = 2;
+    public const int SchemaVersion = 3;
 
     /// <summary>Capte l'état complet du monde + cognition à l'instant T.</summary>
     public static SimulationSnapshot Capture(SimulationLoop loop)
@@ -72,6 +72,9 @@ public static class SimulationSnapshotCodec
                 group.HadDecision));
         }
 
+        var books = loop.World.Books.Select(book => new BookSnapshotDto(
+            book.Id, book.AuthorId, book.Title, book.Content, book.WrittenTick, book.Readers.ToArray())).ToArray();
+
         IReadOnlyDictionary<World.ResourceKind, double> stocks = loop.Resources.Snapshot();
         var world = new WorldSnapshotDto(
             loop.World.Size.Width,
@@ -82,7 +85,8 @@ public static class SimulationSnapshotCodec
             stocks[World.ResourceKind.Food],
             stocks[World.ResourceKind.Water],
             stocks[World.ResourceKind.Wood],
-            stocks[World.ResourceKind.Mineral]);
+            stocks[World.ResourceKind.Mineral],
+            books);
 
         return new SimulationSnapshot(
             SchemaVersion,
