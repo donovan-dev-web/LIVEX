@@ -25,6 +25,19 @@ public sealed record GroupSnapshot(
 public sealed record ObstacleSnapshot(string Id, double X, double Y, double Radius);
 
 /// <summary>
+/// Zone de territoire au snapshot (SYNE-073, décision n°21, API_CONTRACTS.md §2.1) :
+/// disque « point de survie » + members courants (identifiants croissants,
+/// <c>memberCount</c> = taille, redondante mais explicite à l'émission JSON).
+/// </summary>
+public sealed record TerritorySnapshot(
+    string Id,
+    double X,
+    double Y,
+    double Radius,
+    int MemberCount,
+    IReadOnlyList<ulong> Members);
+
+/// <summary>
 /// Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).
 /// Représentation pure, sérialisée en camelCase par <see cref="ObservabilitySerializer"/>.
 /// </summary>
@@ -39,7 +52,8 @@ public sealed record WorldSnapshot(
     IReadOnlyList<GroupSnapshot> Groups,
     IReadOnlyList<ObstacleSnapshot> Obstacles,
     string Season,
-    int SeasonIndex)
+    int SeasonIndex,
+    IReadOnlyList<TerritorySnapshot> Territories)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
     public static WorldSnapshot Capture(SimulationLoop loop, ulong seed)
@@ -86,6 +100,22 @@ public sealed record WorldSnapshot(
                 Math.Round(obstacle.Radius, 4)));
         }
 
+        var territories = new List<TerritorySnapshot>();
+        if (loop.TerritoriesEnabled)
+        {
+            foreach (World.Territory zone in loop.World.Territories)
+            {
+                IReadOnlyList<ulong> members = loop.MembersOfTerritory(zone.Id);
+                territories.Add(new TerritorySnapshot(
+                    zone.Id,
+                    Math.Round(zone.Center.X, 4),
+                    Math.Round(zone.Center.Y, 4),
+                    Math.Round(zone.Radius, 4),
+                    members.Count,
+                    members));
+            }
+        }
+
         return new WorldSnapshot(
             ObservabilityContract.Version,
             ObservabilityContract.RunIdFor(seed),
@@ -97,6 +127,7 @@ public sealed record WorldSnapshot(
             groups,
             obstacles,
             World.Seasons.Name(loop.CurrentSeason),
-            (int)loop.CurrentSeason);
+            (int)loop.CurrentSeason,
+            territories);
     }
 }

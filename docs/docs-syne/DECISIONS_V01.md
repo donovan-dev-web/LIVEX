@@ -181,6 +181,7 @@ Chaque décision est ici **soit tranchée** (valeur + justification + source) **
 - **Valeur** : le territoire est défini comme une **zone délimitée** par les entités (ressources et ressources autour d'un point de survie). En V0.1 : la présence d'une entité dans la zone délimite le territoire effectif.
 - **Justification** : Monographie §6.5 (territoires), `EMERGENCE_INDICATORS.md` ECHOS.
 - **Source** : Monographie §6.5, `METRICS_SPEC.md` §4.3.6, `EMERGENCE_INDICATORS.md`.
+- **Acté V0.1 (SYNE-073, jalon U8, engineVersion 0.10.0)** : zones = disques configurés `world.territories.zones[]` (id, centre, rayon) — disques « points de survie » ; territoire effectif = **présence** d'entités dans le disque (`distance ≤ radius`), suivie en fin de tick comme **function pure des positions** (0 tirage PRNG) ; ordre de suivi déterministe (par zone telle que posée, identifiant croissant, sorties avant entrées), tracé `world.territory_membership_changed` (agentId = entité, targetId = zone, value `{kind}`) + snapshot `territories[]` `{id, x, y, radius, memberCount, members[]}` — suivi désactivé par défaut. Reversement opérationnel : **aucun comportement agentique, aucune revendication** (le territoire reste purement observationnel) ; l'ECHOS de mesure se rapproche de la base V0.1, mais l'ECHOS « fluidité des frontières » et la **négociation territoriale** restent hors V0.1 — divergence d'ampleur V1, sans impact sur le jalon U8.
 
 ### 2.22 Résolution des conflits — **[TRANCHÉE]**
 

@@ -142,6 +142,15 @@ public sealed class ObservabilityTickEmitter
 
         _loop.ClearSeasonChanges();
 
+        foreach (Simulation.Core.World.TerritoryMembershipChange change in _loop.LastTerritoryChanges)
+        {
+            ExternalEvent membershipEvent = EventSensor.TerritoryMembershipChanged(_loop.CurrentTick, change);
+            await _sink.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(ObservabilitySerializer.EventMessage(membershipEvent)));
+        }
+
+        _loop.ClearTerritoryChanges();
+
         TicksEmitted++;
     }
 
