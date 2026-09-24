@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 23 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`syne-vX.Y.Z`).
@@ -10,6 +10,23 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon SYNE ph11 — Persistance & Contrôle (SYNE-110 → SYNE-113, jalon U8)** :
+  - **`MODÈLE & REPRISE BIT-À-BIT` (SYNE-110/111/112, PR2 PR SYNE)** : persistance SQLite
+    **11 tables** (`PRAGMA user_version=2`) — `SqlitePersistenceStore` : sauvegarde atomique de l'état
+    complet (monde, entités, croyances/mémoire/relations, RNG 4×64) sur hooks `autoSaveEveryNTicks`
+    (défaut 1000) / `maxBackups` (défaut 5) branchés sur `SimulationLoop.AdvanceOneTick` (rotation
+    implémentée) ; reprise exacte post-crash au dernier `tick_states` ; snapshot JSON déterministe
+    à côté (`SimulationSnapshotCodec`) ; **`PersistenceTests`** (5).
+  - **`SERVEUR DE CONTRÔLE HTTP :5181` (SYNE-113, PR3 PR SYNE)** : contrôle **non intrusif** du
+    moteur — `Simulation.Console/Control/` : `ControlServer` (`HttpListener` BCL, zéro dépendance
+    ADR-002/003, option CLI `--serve` + `--serve-port` défaut 5181, contrat API_CONTRACTS §3) +
+    `SimulationController` (machine à états `idle→running⇋paused→finished`, boucle `RunLoopAsync`
+    avec gate `ManualResetEventSlim` + `CancellationToken` par run, **0 tirage PRNG ajouté** ⇒
+    trajectoire bit-à-bit identique au run ininterrompu) ; routes `POST /api/control/start {seed?, config?}`
+    / `pause` / `resume` / `reset {seed?, runId?}` + `GET /api/control/status` (réponses
+    `{ok, action, runId, state, tick, aliveCount, seed}`) ; finalise **ECHOS-085** (interop vérifiée
+    contre le vrai `ControlClient` ECHOS) ; **`ControlServerWireTests`** (6).
+  - **Suite totale : 335 tests** (320 Core + 15 Console).
 - **Jalon SYNE ph10 — Tests & Couverture (SYNE-100 → SYNE-102, jalon ph10, U7)** :
   - **`SUITE UNITAIRE & COUVERTURE` (SYNE-100)** : couverture lignes mesurée **96,19 %** (≥ 80 % requis ;
     Coverlet XPlat) — les deux fichiers sous le seuil passent à **100 %** : `SimulationOptionsValidator.cs`
