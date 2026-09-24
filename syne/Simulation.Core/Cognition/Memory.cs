@@ -79,6 +79,9 @@ public sealed class Memory
 
     public int Count => _entries.Count;
 
+    /// <summary>Séquence suivante — persistance (le compteur doit être restauré pour rester bit-à-bit).</summary>
+    internal ulong NextSequence => _sequence;
+
     /// <summary>Copie de tous les souvenirs stockés (ordre d'insertion) — accès pour l'héritage (SYNE-020) et l'observabilité.</summary>
     public IReadOnlyList<MemoryEntry> AllEntries => new List<MemoryEntry>(_entries);
 
@@ -170,5 +173,14 @@ public sealed class Memory
         }
 
         _entries.Remove(least);
+    }
+
+    /// <summary>Restauration d'état complet (persistance bit-à-bit, PERSISTENCE.md §4) : séquence + entrées.</summary>
+    internal void RestoreState(IEnumerable<MemoryEntry> entries, ulong nextSequence)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        _entries.Clear();
+        _entries.AddRange(entries);
+        _sequence = nextSequence;
     }
 }

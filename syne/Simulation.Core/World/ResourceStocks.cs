@@ -75,4 +75,16 @@ public sealed class ResourceStocks
         };
         return stocks;
     }
+
+    /// <summary>
+    /// Restauration bit-à-bit (SYNE-111, PERSISTENCE.md §4) : remet les réserves
+    /// aux niveaux sauvegardés **en place**, sans remplacer l'objet — le pipeline
+    /// et le catalogue d'actions gardent leur référence et voient les bonnes valeurs.
+    /// </summary>
+    internal void RestoreState(double food, double water, double wood)
+    {
+        _stocks[ResourceKind.Food] = food;
+        _stocks[ResourceKind.Water] = water;
+        _stocks[ResourceKind.Wood] = wood;
+    }
 }

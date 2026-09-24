@@ -173,9 +173,9 @@ Chaque sous-section = un milestone. Colones : ID · Titre · Labels · Priorité
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| SYNE-110 | Modèle de persistance (SQLite, 11 tables) | `type/persistence`, `component/syne` | P0 | décision n°25, `PERSISTENCE.md`, `DATA_MODEL.md` | Schéma SQLite (11 tables) créé ; migration depuis V1 JSON ; hooks `autoSaveEveryNTicks`/`maxBackups` (défaut 1000/5) branchés sur la boucle |
-| SYNE-111 | Sérialisation bit-à-bit + reprise | `type/persistence`, `component/syne` | P0 | SYNE-110, `DETERMINISM.md` | Reprise bit-à-bit : même seed+config = même suite |
-| SYNE-112 | Reprise après crash (reprise du monde) | `type/persistence`, `component/syne` | P1 | SYNE-111 | Reprise sans perte de ticks ; test de récupération |
+| SYNE-110 | Modèle de persistance (SQLite, 11 tables) — **LIVRÉ (PR SYNE, U8)** | `type/persistence`, `component/syne` | P0 | décision n°25, `PERSISTENCE.md`, `DATA_MODEL.md` | ✓ Schéma SQLite V2.0 (11 tables, `PRAGMA user_version=2`) créé par `SqlitePersistenceStore` ; hooks `autoSaveEveryNTicks`/`maxBackups` (défaut 1000/5) branchés sur `SimulationLoop.AdvanceOneTick` (rotation implémentée) ; snapshot JSON déterministe à côté (`SimulationSnapshotCodec`) |
+| SYNE-111 | Sérialisation bit-à-bit + reprise — **LIVRÉ (PR SYNE, U8)** | `type/persistence`, `component/syne` | P0 | SYNE-110, `DETERMINISM.md` | ✓ Reprise bit-à-bit : `SimulationSnapshot` (monde + cognition + RNG 4×64) restauré sans re-jouage — `PersistenceTests.ReloadFromSnapshot_ContinuesBitForBitIdenticalToUninterruptedRun` (hash identique au run ininterrompu) ; checksums épinglés inchangés |
+| SYNE-112 | Reprise après crash (reprise du monde) — **LIVRÉ (PR SYNE, U8)** | `type/persistence`, `component/syne` | P1 | SYNE-111 | ✓ Reprise sans perte de ticks au dernier `tick_states` — `PersistenceTests.LoadLatest_AfterCrash_ResumesFromLastSavedTick` (état RNG + monde identiques au point de sauvegarde) ; test de récupération |
 | SYNE-113 | Serveur de contrôle HTTP :5181 (start/pause/resume/reset) | `type/feature`, `component/syne` | P0 | ADR-002, `API_CONTRACTS.md` §2.4, `COMMUNICATION_PROTOCOL.md` | Contrôle non intrusif du moteur SYNE exposé sur HTTP :5181 (contrats identiques à 5180) ; finalise ECHOS-085 (relais ECHOS→SYNE actuellement sans cible réelle) — prérequis U8
 
 ### Milestone v0.1 — Cross-cutting / validation
