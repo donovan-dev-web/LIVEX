@@ -10,6 +10,13 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **Jalon U8 — Constructions = obstacles statiques (SYNE-071)** :
+  - `world.obstacles` réactivé (défaut `false`) + layout initial `world.obstacleLayout[]` (`{id, x, y, radius}`) posé au build des mondes (CLI + serveur de contrôle) ;
+  - mutation dynamique validée : `AddObstacle` borné/id unique avec révision, constructions tracées `PlaceConstruction`/`RemoveConstruction` (modification d'environnement) ;
+  - grille A\* re-rasterisable : `AStarPathfinder.Refresh()` purge le cache LRU et re-rasterise si la révision du monde a changé (no-op sinon), câblé en tête du déplacement déterministe ;
+  - traçabilité : événements `world.construction_placed`/`world.construction_removed` + champ `obstacles[]` dans le snapshot (API_CONTRACTS §2) ; bornes `world.obstacleLayout[]` validées ;
+  - `engineVersion` **0.7.0 → 0.8.0** ; checksums dorés inchangés (0 tirage PRNG, Refresh no-op sur le scénario de référence) ;
+  - tests : +20 (8 World, 4 A\*, 2 ConfigLoader, 3 Validator, 3 ObservabilitySensor, 2 Console end-to-end) — **345 Core + 17 Console = 362 tests** au total.
 - **Jalon U8 — Cycle des ressources (SYNE-070)** :
   - 4ᵉ type de réserve **`Mineral`** (`ResourceKind.Mineral`, défaut 0) — initialisation enum-driven, exposé dans l'observabilité `resources[]` (4 types) et persisté SQLite (`resources`/`resource_snapshots`) ;
   - **régénération & dégradation périodique** : `ResourceStocks.ApplyLifecycle(tick, settings)` appliquée en fin de tick (ordre causal strict, 0 tirage PRNG) — `+ regenerationRate`/tick, dégradation `− regenerationRate × degradationTick` à chaque période, clamp ≥ 0 ;

@@ -21,6 +21,9 @@ public sealed record GroupSnapshot(
     string? Decision,
     double Consensus);
 
+/// <summary>Obstacle statique (construction, SYNE-071, API_CONTRACTS.md §2.1).</summary>
+public sealed record ObstacleSnapshot(string Id, double X, double Y, double Radius);
+
 /// <summary>
 /// Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).
 /// Représentation pure, sérialisée en camelCase par <see cref="ObservabilitySerializer"/>.
@@ -33,7 +36,8 @@ public sealed record WorldSnapshot(
     int AliveCount,
     IReadOnlyList<AgentSnapshot> Agents,
     IReadOnlyList<ResourceSnapshot> Resources,
-    IReadOnlyList<GroupSnapshot> Groups)
+    IReadOnlyList<GroupSnapshot> Groups,
+    IReadOnlyList<ObstacleSnapshot> Obstacles)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
     public static WorldSnapshot Capture(SimulationLoop loop, ulong seed)
@@ -70,6 +74,16 @@ public sealed record WorldSnapshot(
                 Math.Round(group.Consensus, 4)));
         }
 
+        var obstacles = new List<ObstacleSnapshot>(loop.World.Obstacles.Count);
+        foreach (World.Obstacle obstacle in loop.World.Obstacles)
+        {
+            obstacles.Add(new ObstacleSnapshot(
+                obstacle.Id,
+                Math.Round(obstacle.Position.X, 4),
+                Math.Round(obstacle.Position.Y, 4),
+                Math.Round(obstacle.Radius, 4)));
+        }
+
         return new WorldSnapshot(
             ObservabilityContract.Version,
             ObservabilityContract.RunIdFor(seed),
@@ -78,6 +92,7 @@ public sealed record WorldSnapshot(
             agents.Count,
             agents,
             resources,
-            groups);
+            groups,
+            obstacles);
     }
 }

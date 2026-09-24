@@ -31,6 +31,8 @@ public class ConfigLoaderTests
         Assert.Equal(5.0, options.Resources.Water.RegenerationRate);
         Assert.Equal(0, options.Resources.Mineral.Initial);
         Assert.Equal(0.0, options.Resources.Mineral.RegenerationRate);
+        Assert.False(options.World.Obstacles);
+        Assert.Empty(options.World.ObstacleLayout);
     }
 
     [Fact]
@@ -67,6 +69,33 @@ public class ConfigLoaderTests
         Assert.Equal(100, options.Resources.Food.Initial);
         Assert.Equal(100, options.Resources.Food.DegradationTick);
         Assert.Equal(0, options.Resources.Mineral.Initial);
+    }
+
+    [Fact]
+    public void PartialWorldSection_ParsesObstacleLayout()
+    {
+        string path = WriteTempConfig("""
+            {
+              "world": {
+                "obstacles": true,
+                "obstacleLayout": [
+                  { "id": "maison-1", "x": 100, "y": 100, "radius": 10 },
+                  { "id": "rocher", "x": 480, "y": 490, "radius": 20 }
+                ]
+              }
+            }
+            """);
+
+        var options = ConfigLoader.LoadFile(path);
+
+        Assert.True(options.World.Obstacles);
+        Assert.Equal(2, options.World.ObstacleLayout.Count);
+        Assert.Equal("maison-1", options.World.ObstacleLayout[0].Id);
+        Assert.Equal(100.0, options.World.ObstacleLayout[0].X);
+        Assert.Equal(10.0, options.World.ObstacleLayout[0].Radius);
+        Assert.Equal(20.0, options.World.ObstacleLayout[1].Radius);
+        Assert.False(options.World.Seasons);
+        Assert.False(options.World.Events);
     }
 
     [Fact]

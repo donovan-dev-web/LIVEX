@@ -373,6 +373,36 @@ public static class SimulationOptionsValidator
             }
         }
 
+        if (options.World.ObstacleLayout.Count > 0 && !options.World.Obstacles)
+        {
+            errors.Add("world.obstacleLayout est fourni alors que world.obstacles est false — activer world.obstacles pour placer le layout.");
+        }
+
+        foreach (StaticObstacleSettings obstacle in options.World.ObstacleLayout)
+        {
+            if (string.IsNullOrWhiteSpace(obstacle.Id))
+            {
+                errors.Add("world.obstacleLayout[].id ne doit pas être vide.");
+            }
+
+            if (obstacle.Radius <= 0)
+            {
+                errors.Add($"world.obstacleLayout[{obstacle.Id}].radius doit être &gt; 0 (reçu : {obstacle.Radius}).");
+            }
+
+            if (options.Simulation.WorldWidth > 0 &&
+                (obstacle.X < 0 || obstacle.X > options.Simulation.WorldWidth))
+            {
+                errors.Add($"world.obstacleLayout[{obstacle.Id}].x doit être dans [0, worldWidth] (reçu : {obstacle.X}).");
+            }
+
+            if (options.Simulation.WorldHeight > 0 &&
+                (obstacle.Y < 0 || obstacle.Y > options.Simulation.WorldHeight))
+            {
+                errors.Add($"world.obstacleLayout[{obstacle.Id}].y doit être dans [0, worldHeight] (reçu : {obstacle.Y}).");
+            }
+        }
+
         return errors;
     }
 }

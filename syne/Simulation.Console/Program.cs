@@ -280,6 +280,8 @@ public static class Program
             world.AddEntity(entity);
         }
 
+        world.ApplyConfiguredLayout(options.World);
+
         var loop = new SimulationLoop(world, rng, options, budgets);
         return (rng, world, loop, template);
     }
