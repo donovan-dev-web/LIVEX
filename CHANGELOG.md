@@ -9,6 +9,12 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Fixed
+- Cadrage Jalon U8 (PR cadrage docs) : planche U8 du `ROADMAP` racine recalée sur le backlog réel — plage ECHOS `080…093` fictive remplacée par `080…085` (ph8, livrés U7) + `090…092` (ph9) ;
+- Ajout de la carte manquante **SYNE-113** (serveur de contrôle HTTP :5181, cible réelle du relais `controlClient` ECHOS — absente du backlog) ;
+- `SYNE-110` précisée : hooks `autoSaveEveryNTicks` (défaut 1000) / `maxBackups` (défaut 5) à brancher sur la boucle (aucun consommateur à ce jour) ;
+- ECHOS-085 annotée : livrée côté UI, finalisation en U8 contre SYNE-113.
+
 ### Added
 - Documentation technique V0.1 complète du monorepo (phases 0 à 5 du Plan documentation) :
   - générique racine : `VISION`, `ARCHITECTURE`, `COMMUNICATION`, `GLOSSARY`, `ROADMAP`, `FAQ`, `README` ;
