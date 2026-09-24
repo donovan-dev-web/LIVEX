@@ -16,6 +16,7 @@ Ce document décrit les **structures de données** centrales de SYNE. Elles form
 
 - **Espace** : plan 2D logique, dimensions configurables (défaut 500×500 unités), positions `{x, y}`. Non-toroidal : positions clampées à `[0, width]×[0, height]` (Monographie §3.5.3).
 - **Obstacles** : statiques, **cercle** `{id, x, y, radius}` (V0.1 — le rectangle est reporté). Bloquent le **mouvement** (collision simple : pas annulé si la cible est dans le disque) et, depuis le **jalon SYNE ph1**, la **ligne de vue** (perception masquée, ADR-013) — synchronisation des docs avec §3.5.2 et V2 (murs/passabilité). Depuis **SYNE-071 (engineVersion 0.8.0)** : portés par le monde comme **constructions/obstacles statiques** — layout `world.obstacleLayout[]` (CONFIGURATION §6.8), mutation dynamique validée (révision), grille A\* re-rasterisable, snapshot `obstacles[]`.
+- **Saisons** : dérivées du **cycle environnemental** (SYNE-072, engineVersion 0.9.0) — `Season` (spring/summer/autumn/winter), saison courante = fonction pure du tick `(initialIndex + tick / seasonLengthTicks) mod 4` (0 tirage PRNG, DETERMINISM.md §3) ; facteurs de régénération par ressource (`SeasonFactors`) modulant le cycle de vie SYNE-070 en fin de tick ; champ snapshot `season`/`seasonIndex` (API_CONTRACTS §2.1), événement `world.season_changed` (§2.2).
 - **Ressources** (V1) :
 
 | Propriété | FoodSource | WaterSource |

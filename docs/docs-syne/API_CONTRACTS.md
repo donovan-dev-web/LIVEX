@@ -40,8 +40,8 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.8.0", "runId": "run-abc",
-  "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98,
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.9.0", "runId": "run-abc",
+  "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98, "season": "spring", "seasonIndex": 0,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
   "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
@@ -54,8 +54,10 @@ Exemple (format condensé) :
 
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.8.0` (jalon SYNE ph11d — constructions : obstacles statiques
-> configurables + modification d'environnement tracée, SYNE-071). Les champs `obstacles[]`
+> `engineVersion` = `0.9.0` (jalon U8 — cycle de saisons, SYNE-072 : `world.season_changed` +
+> champs `season`/`seasonIndex` du snapshot, **additifs** MINOR). Les champs `season`/`seasonIndex`
+> (SYNE-072) donnent la saison courante (nom camelCase + index 0..3, déterministe depuis le tick).
+> Les champs `obstacles[]`
 > (SYNE-071, ajout **additif**, MINOR) listent les constructions/obstacles du monde au tick :
 > `{id, x, y, radius}`, ordre d'insertion stable. Le champ `groups[]`
 > (syne-060/061, ajout **additif**, MINOR) liste les groupes actifs au tick : `groupId`,
@@ -66,7 +68,7 @@ Exemple (format condensé) :
 
 | Champ | Type | Description |
 | :-- | :-- | :-- |
-| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `conflict`...) |
+| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `world.season_changed`, `conflict`...) |
 | `tick` | uint | Tick |
 | `agentId?` | string | Entité concernée |
 | `targetId?` | string | Cible |
@@ -116,6 +118,11 @@ Exemple :
 > id de l'obstacle, `value = {id, x, y, radius}` (positions/rayon arrondis à 4 décimales).
 > Drainés par `ObservabilityTickEmitter` au tick suivant la modification, avant l'émission du
 > snapshot correspondant (chaque modification est émise **exactement une fois**).
+> **`world.season_changed` (jalon U8, SYNE-072)** : basculement du cycle de saisons (cycle actif
+> `world.seasons.enabled`) — événement du monde **sans agentId**, émis **au tick exact** du
+> basculement, uniquement quand la saison change. `targetId` = saison courante, `value =
+> {previous, current}` (clés camelCase). Déterminisme total : la saison est une fonction pure
+> du tick (0 tirage PRNG, DETERMINISM.md §3).
 
 ## 3. Contrat de contrôle — HTTP 5181
 

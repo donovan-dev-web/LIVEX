@@ -174,7 +174,7 @@ public class ObservabilitySensorTests
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
         // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
         // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
-        Assert.Equal("0.8.0", ObservabilityContract.EngineVersion);
+        Assert.Equal("0.9.0", ObservabilityContract.EngineVersion);
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

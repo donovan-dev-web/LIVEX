@@ -403,6 +403,45 @@ public static class SimulationOptionsValidator
             }
         }
 
+        if (options.World.Seasons.SeasonLengthTicks <= 0)
+        {
+            errors.Add($"world.seasons.seasonLengthTicks doit être &gt; 0 (reçu : {options.World.Seasons.SeasonLengthTicks}).");
+        }
+
+        if (Simulation.Core.World.Seasons.TryParse(options.World.Seasons.InitialSeason) is null)
+        {
+            errors.Add($"world.seasons.initialSeason doit être l'une de {{spring, summer, autumn, winter}} (reçu : \"{options.World.Seasons.InitialSeason}\").");
+        }
+
+        var seen = new HashSet<Simulation.Core.World.Season>();
+        foreach (SeasonDefinition definition in options.World.Seasons.Cycle)
+        {
+            Simulation.Core.World.Season? parsed = Simulation.Core.World.Seasons.TryParse(definition.Name);
+            if (parsed is null)
+            {
+                errors.Add($"world.seasons.cycle[].name doit être l'une de {{spring, summer, autumn, winter}} (reçu : \"{definition.Name}\").");
+                continue;
+            }
+
+            if (!seen.Add(parsed.Value))
+            {
+                errors.Add($"world.seasons.cycle définit deux fois la saison \"{definition.Name}\" — une seule entrée par saison attendue.");
+            }
+
+            if (definition.FoodFactor < 0 || definition.WaterFactor < 0 || definition.WoodFactor < 0 || definition.MineralFactor < 0)
+            {
+                errors.Add($"world.seasons.cycle[{definition.Name}] : les facteurs de régénération doivent être &gt;= 0.");
+            }
+        }
+
+        foreach (Simulation.Core.World.Season season in Enum.GetValues<Simulation.Core.World.Season>())
+        {
+            if (!seen.Contains(season))
+            {
+                errors.Add($"world.seasons.cycle doit définir les 4 saisons — manquante : \"{Simulation.Core.World.Seasons.Name(season)}\".");
+            }
+        }
+
         return errors;
     }
 }

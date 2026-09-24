@@ -99,6 +99,6 @@ public class GroupBirthDeterminismTests
         Assert.Equal("group_dissolved", ObservabilityContract.GroupDissolved);
         Assert.Equal("group_decision", ObservabilityContract.GroupDecision);
         Assert.Equal("agent_spawned", ObservabilityContract.AgentSpawned);
-        Assert.Equal("0.8.0", ObservabilityContract.EngineVersion);
+        Assert.Equal("0.9.0", ObservabilityContract.EngineVersion);
     }
 }
