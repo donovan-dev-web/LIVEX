@@ -478,6 +478,16 @@ public static class SimulationOptionsValidator
             }
         }
 
+        if (!double.IsFinite(options.World.Books.WriteCostEnergy) || options.World.Books.WriteCostEnergy < 0.0)
+        {
+            errors.Add($"world.books.writeCostEnergy doit être fini et >= 0 (reçu : {options.World.Books.WriteCostEnergy}).");
+        }
+
+        if (!double.IsFinite(options.World.Books.ReadBenefit) || options.World.Books.ReadBenefit < 0.0)
+        {
+            errors.Add($"world.books.readBenefit doit être fini et >= 0 (reçu : {options.World.Books.ReadBenefit}).");
+        }
+
         return errors;
     }
 }

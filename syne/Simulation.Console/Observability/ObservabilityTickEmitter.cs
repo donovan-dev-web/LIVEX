@@ -151,6 +151,17 @@ public sealed class ObservabilityTickEmitter
 
         _loop.ClearTerritoryChanges();
 
+        foreach (Simulation.Core.World.BookChange change in _loop.LastBookChanges)
+        {
+            ExternalEvent bookEvent = change.Kind == Simulation.Core.World.BookChangeKind.Written
+                ? EventSensor.BookWritten(_loop.CurrentTick, change)
+                : EventSensor.BookRead(_loop.CurrentTick, change);
+            await _sink.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(ObservabilitySerializer.EventMessage(bookEvent)));
+        }
+
+        _loop.ClearBookChanges();
+
         TicksEmitted++;
     }
 

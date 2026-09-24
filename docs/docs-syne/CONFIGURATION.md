@@ -73,7 +73,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "receiveEnergyCost": 0.2,
     "receiveEnergyPayloadFactor": 0.05
   },
-  "world": { "seasons": { "enabled": false }, "territories": { "enabled": false }, "events": false, "obstacles": false },
+  "world": { "seasons": { "enabled": false }, "territories": { "enabled": false }, "books": { "enabled": false, "writeCostEnergy": 20.0, "readBenefit": 1.0 }, "events": false, "obstacles": false },
   "groups": {
     "enabled": true,
     "reviewIntervalTicks": 10,
@@ -347,6 +347,19 @@ Exemple (extrait) :
 ```
 
 Validation §6 : `zones` rejetée si `world.territories.enabled` est `false` ; par zone : `id` non vide et unique, `radius` &gt; 0, `centerX`/`centerY` dans le monde. Le suivi est **purement observationnel** (aucun comportement agentique, aucune revendication) — les **sources spatiales de ressources** du territoire restent **hors V0.1** (§6.7).
+
+
+### 6.11 Clés d’environnement — livres (SYNE-121)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `world.books` | `{enabled: false}` | n°18/19 | Active les livres et leurs événements/snapshot additifs |
+| `world.books.enabled` | `false` | n°18/19 | Désactivé par défaut ; ne change pas le run de référence |
+| `world.books.writeCostEnergy` | `20.0` | n°18 | Énergie débitée à l’auteur à l’écriture ; valeur provisoire, SYNE-120 |
+| `world.books.readBenefit` | `1.0` | n°19 | Bénéfice de principe tracé à la lecture ; son effet cognitif attend le moteur mémoire |
+
+Exemple : `{"world":{"books":{"enabled":true,"writeCostEnergy":20,"readBenefit":1}}}`.
+Les coûts doivent être positifs ou nuls. En V0.1, l’écriture et la lecture sont des appels explicites de l’API du moteur ; l’accès spatial, le temps de rédaction et l’effet cognitif détaillé restent hors de ce sous-jalon.
 
 ---
 

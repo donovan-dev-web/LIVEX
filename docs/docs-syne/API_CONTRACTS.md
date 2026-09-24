@@ -40,7 +40,7 @@ Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de mess
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.10.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.11.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98, "season": "spring", "seasonIndex": 0,
   "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
                 "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
@@ -56,8 +56,8 @@ Exemple (format condensé) :
 
 > V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
 > `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
-> `engineVersion` = `0.10.0` (jalon U8 — territoires, SYNE-073 : `world.territory_membership_changed` +
-> champ `territories[]` du snapshot, **additifs** MINOR). Les champs `season`/`seasonIndex`
+> `engineVersion` = `0.11.0` (jalon U8 — livres, SYNE-121 : `world.book_written` / `world.book_read` +
+> champ `books[]` du snapshot, **additifs** MINOR ; les ajouts précédents de saisons/territoires restent actifs). Les champs `season`/`seasonIndex`
 > (SYNE-072) donnent la saison courante (nom camelCase + index 0..3, déterministe depuis le tick).
 > Le champ `territories[]` (SYNE-073, présent seulement si `world.territories.enabled`) liste les
 > zones « points de survie » suivies `{id, x, y, radius, memberCount, members[]}` : la **présence**
@@ -74,7 +74,7 @@ Exemple (format condensé) :
 
 | Champ | Type | Description |
 | :-- | :-- | :-- |
-| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `world.season_changed`, `world.territory_membership_changed`, `conflict`...) |
+| `type` | string | Type d'événement (`decision_made`, `action_completed`, `tick_summary`, `agent_spawned`, `agent_died`, `message_sent`, `message_received`, `group_formed`, `group_dissolved`, `group_decision`, `world.construction_placed`, `world.construction_removed`, `world.season_changed`, `world.territory_membership_changed`, `world.book_written`, `world.book_read`, `conflict`...) |
 | `tick` | uint | Tick |
 | `agentId?` | string | Entité concernée |
 | `targetId?` | string | Cible |
@@ -138,6 +138,8 @@ Exemple :
 > modification). `Entered`/`Left` = changement de l'état de présence (function pure des positions,
 > `distance ≤ radius`, 0 tirage PRNG — DETERMINISM.md §3) ; centré sur les répliques, chaque
 > zone rejoue la même séquence.
+
+> **`world.book_written` / `world.book_read` (SYNE-121)** : mutations émises après le snapshot correspondant. Écriture : `agentId` auteur, `targetId` livre, `value = {id, title, writtenTick, cost}`. Lecture : `agentId` lecteur, `targetId` livre, `value = {id, readBenefit}`. Le snapshot `books[]` (seulement si `world.books.enabled`) contient `{id, authorId, title, content, writtenTick, readCount, readers[]}`. Les lecteurs distincts conservent l’ordre de première lecture. Aucun effet cognitif n’est appliqué avant le futur moteur mémoire.
 
 ## 3. Contrat de contrôle — HTTP 5181
 

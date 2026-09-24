@@ -33,10 +33,15 @@ public static class ObservabilityContract
     /// (zones « point de survie », appartenance suivie par la présence des entités),
     /// événement world.territory_membership_changed et champ snapshot territories[]
     /// (additif) ; désactivé par défaut ⇒ trajectoire du scénario de référence
-    /// inchangée, checksums dorés ré-épinglés inchangés (pin contractuel).
+    /// inchangée, checksums dorés ré-épinglés inchangés (pin contractuel) ;
+    /// jalon SYNE U8 → 0.11.0 : livres (SYNE-121, décisions n°18/19, Monographie
+    /// §3.18) — <c>world.books</c> (connaissances matérialisées), événements
+    /// world.book_written / world.book_read, champ snapshot books[] (additif) ;
+    /// désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
+    /// checksums dorés ré-épinglés inchangés (pin contractuel).
     /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.10.0";
+    public const string EngineVersion = "0.11.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -89,6 +94,24 @@ public static class ObservabilityContract
     /// l'appartenance est une fonction pure des positions). Charge utile {kind}.
     /// </summary>
     public const string TerritoryMembershipChanged = "world.territory_membership_changed";
+
+    /// <summary>
+    /// Livre écrit (SYNE-121, décisions n°18/19, Monographie §3.18.5) : une
+    /// connaissance matérialisée à l'instant T — l'auteur en paie le coût
+    /// (énergie <c>world.books.writeCostEnergy</c> ; la durée n'est pas modélisée en V0.1 ; aucun tirage
+    /// PRNG — l'écriture est une API de la boucle). Charge utile {id, authorId,
+    /// title, writtenTick, cost}.
+    /// </summary>
+    public const string BookWritten = "world.book_written";
+
+    /// <summary>
+    /// Livre lu (SYNE-121, décision n°19, Monographie §3.18.6) : le bénéfice de
+    /// lecture est **posé en principe** (cognition, confiance, savoir) — le
+    /// chiffrage appliqué au moteur de mémoire relève de SYNE-131 (décision n°11).
+    /// V0.1 : trace le lecteur dans agentId, 0 tirage PRNG. Charge utile
+    /// {id, readBenefit}.
+    /// </summary>
+    public const string BookRead = "world.book_read";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }

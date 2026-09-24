@@ -23,6 +23,7 @@ public sealed class World
     private readonly List<Simulation.Core.Entities.Entity> _entities = [];
     private readonly List<Obstacle> _obstacles = [];
     private readonly List<Territory> _territories = [];
+    private readonly List<Book> _books = [];
     private readonly List<EnvironmentChange> _environmentChanges = [];
     private ulong _obstacleRevision;
 
@@ -52,6 +53,14 @@ public sealed class World
     /// territoire effectif (appartenance suivie par la boucle, 0 PRNG).
     /// </summary>
     public IReadOnlyList<Territory> Territories => _territories;
+
+    /// <summary>
+    /// Livres du monde (SYNE-121, décisions n°18/19) : matérialisations de
+    /// connaissance à l'instant T, écrites par des entités (coût en énergie payé
+    /// à l'écriture, consultées par des lecteurs distincts). Actifs seulement si
+    /// <c>world.books.enabled</c> (API de la boucle <c>WriteBook</c>/<c>ReadBook</c>).
+    /// </summary>
+    public IReadOnlyList<Book> Books => _books;
 
     /// <summary>
     /// Révision des obstacles — incrémentée à chaque ajout/retrait (y compris le
@@ -170,6 +179,22 @@ public sealed class World
 
     /// <summary>Consomme les modifications d'environnement tracées (drain par-tick de l'émetteur).</summary>
     public void ClearEnvironmentChanges() => _environmentChanges.Clear();
+
+    /// <summary>
+    /// Ajoute un livre au monde (SYNE-121) : stocké à l'écriture
+    /// (<c>SimulationLoop.WriteBook</c>, tracé) ou pour la restauration d'état.
+    /// Identifiant unique exigé (jamais de mutation silencieuse du référentiel).
+    /// </summary>
+    public void AddBook(Book book)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        if (_books.Any(existing => existing.Id == book.Id))
+        {
+            throw new ArgumentException($"Un livre portant l'identifiant « {book.Id} » existe déjà.", nameof(book));
+        }
+
+        _books.Add(book);
+    }
 
     private void EnsureCanAdd(Obstacle obstacle)
     {

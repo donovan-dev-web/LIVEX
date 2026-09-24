@@ -81,15 +81,57 @@ class Agent(BaseModel):
 
 
 class Resource(BaseModel):
-    """Ressource du monde (type, quantité, capacité)."""
+    """Réserve de monde observée (SYNE V0.1 : type + quantité)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: str | None = None
+    type: str
+    position: Position | None = None
+    quantity: float = Field(ge=0)
+    capacity: float | None = Field(default=None, ge=0)
+
+
+class Group(BaseModel):
+    """Groupe observable dans le snapshot SYNE."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    group_id: int
+    members: list[int] = Field(default_factory=list)
+    size: int = Field(ge=0)
+    leader_id: int | None = None
+    born_tick: int = Field(ge=0)
+    cohesion: float
+    decision: str | None = None
+    consensus: float
+
+
+class Territory(BaseModel):
+    """Zone de territoire (SYNE-073)."""
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: str
-    type: str
-    position: Position
-    quantity: float = Field(ge=0)
-    capacity: float = Field(ge=0)
+    x: float
+    y: float
+    radius: float = Field(ge=0)
+    member_count: int = Field(ge=0)
+    members: list[int] = Field(default_factory=list)
+
+
+class Book(BaseModel):
+    """Savoir matérialisé (SYNE-121)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: str
+    author_id: int
+    title: str
+    content: str
+    written_tick: int = Field(ge=0)
+    read_count: int = Field(ge=0)
+    readers: list[int] = Field(default_factory=list)
 
 
 class WorldSnapshot(BaseModel):
@@ -100,11 +142,17 @@ class WorldSnapshot(BaseModel):
     type: Literal["snapshot"] = "snapshot"
     version: str
     run_id: str
+    engine_version: str | None = None
     tick: int = Field(ge=0)
     simulated_time_minutes: int = Field(ge=0)
     alive_count: int = Field(ge=0)
     agents: list[Agent] = Field(default_factory=list)
     resources: list[Resource] = Field(default_factory=list)
+    groups: list[Group] | None = None
+    season: str | None = None
+    season_index: int | None = Field(default=None, ge=0)
+    territories: list[Territory] | None = None
+    books: list[Book] | None = None
 
 
 class ExternalEvent(BaseModel):

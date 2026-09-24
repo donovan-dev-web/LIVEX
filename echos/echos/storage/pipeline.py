@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Iterator
 
 from echos.analysis import compute_all
+from echos.analysis.calibration import build_calibration_report
 from echos.analysis._common import label_propagation
 from echos.ingestion.stream import TickSegment, aligned_ticks
 from echos.ingestion.ws_client import WsClient
@@ -115,10 +116,12 @@ def consume(
     contexts_written = 0
     decision_traces_written = 0
     run_known = False
+    run_id: str | None = None
 
     for _index, segment in _segments(client, sample_every):
         snapshot = segment.snapshot
         if not run_known:
+            run_id = snapshot.run_id
             store.record_run(
                 snapshot.run_id,
                 snapshot.version,
@@ -203,6 +206,17 @@ def consume(
                 f"tick={segment.tick} run={snapshot.run_id} "
                 f"metrics={metrics_written} decisions={decision_traces_written}"
             )
+
+    if ticks_written:
+        assert run_id is not None
+        report = build_calibration_report(
+            run_id,
+            store.tick_summaries(run_id),
+            store.events(run_id),
+            store.metrics_all(run_id),
+        )
+        if report is not None:
+            store.save_calibration_report(run_id, report)
 
     return ConsumeResult(
         ticks_written,

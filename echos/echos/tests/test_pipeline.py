@@ -85,6 +85,11 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
         assert store.latest_context("run-7", "phenomena") is not None
         assert store.latest_context("run-7", "groups") is not None
         assert store.latest_context("run-7", "profiling") is not None
+        report = store.calibration_report("run-7")
+        assert report is not None
+        assert report["status"] == "complete"
+        assert report["ticks"] == {"count": 3, "first": 1, "last": 3}
+        assert report["needs"]["energy"]["count"] == 3
         decision_traces = store.decision_traces("run-7")
         assert len(decision_traces) == 3
         assert decision_traces[0]["chosen_action"] == "SeekWater"

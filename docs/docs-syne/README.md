@@ -6,7 +6,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : la documentation transversale (../)
 **Source Monographie** : Partie 3, 7.2, 7.3.1
 
@@ -56,3 +56,4 @@ Flags principaux : `--headless`, `--world-size <w> <h>`, `--seed <s>`, `--max-ti
 | `ROADMAP.md` | Roadmap SYNE |
 | `CHANGELOG.md` | Versions |
 | `adr/` | Décisions d'architecture |
+| `MIGRATION_MORPHOLOGY.md` | Guide de migration SYNE-130 vers des entités logiques |
