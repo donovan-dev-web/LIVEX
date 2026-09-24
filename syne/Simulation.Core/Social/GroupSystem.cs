@@ -62,6 +62,22 @@ public sealed class GroupSystem
 
     public GroupSettings Settings => _settings;
 
+    /// <summary>Prochain identifiant de groupe (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal ulong NextGroupId => _nextGroupId;
+
+    /// <summary>Restauration des groupes actifs et du compteur d'identifiants (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal void RestoreState(IEnumerable<Group> groups, ulong nextGroupId)
+    {
+        ArgumentNullException.ThrowIfNull(groups);
+        _groups.Clear();
+        foreach (Group group in groups)
+        {
+            _groups[group.Id] = group;
+        }
+
+        _nextGroupId = Math.Max(nextGroupId, _groups.Keys.Count == 0 ? 1 : _groups.Keys.Max() + 1);
+    }
+
     /// <summary>Groupes actifs (ordre d'identifiant).</summary>
     public IReadOnlyList<Group> Active =>
         _groups.Values.OrderBy(group => group.Id).ToList();

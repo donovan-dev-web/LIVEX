@@ -18,6 +18,8 @@ public sealed class SimulationLoop
 {
     private readonly Simulation.Core.Cognition.CognitionPipeline _cognition;
     private readonly TickBudgetCollector? _budget;
+    private readonly int _autoSaveEveryNTicks;
+    private readonly Action<SimulationLoop>? _autosaveHandler;
     private Xoshiro256StarStar _rng;
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
@@ -43,12 +45,38 @@ public sealed class SimulationLoop
         _budget = budget;
         Resources = new World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
+        _autoSaveEveryNTicks = options.Simulation.AutoSaveEveryNTicks;
+        _autosaveHandler = null;
+    }
+
+    /// <summary>
+    /// Boucle avec autosave branche : <paramref name="autosaveHandler"/> est appelé
+    /// après chaque <c>n</c>-ième tick (PERSISTENCE.md §5). Le handler ne doit
+    /// consommer aucun tirage du PRNG — le déterminisme bit-à-bit reste inchangé.
+    /// </summary>
+    public SimulationLoop(
+        World.World world,
+        Xoshiro256StarStar initialRng,
+        Simulation.Core.Configuration.SimulationOptions options,
+        TickBudgetCollector? budget,
+        int autoSaveEveryNTicks,
+        Action<SimulationLoop>? autosaveHandler)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(options);
+        World = world;
+        _rng = initialRng;
+        _budget = budget;
+        Resources = new World.ResourceStocks(options.Resources);
+        _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
+        _autoSaveEveryNTicks = Math.Max(1, autoSaveEveryNTicks);
+        _autosaveHandler = autosaveHandler;
     }
 
     public World.World World { get; }
 
     /// <summary>Réserves globales de ressources (SYNE-042) : consommées par Eat/Drink, exposées dans le snapshot.</summary>
-    public World.ResourceStocks Resources { get; }
+    public World.ResourceStocks Resources { get; internal set; }
 
     public ulong CurrentTick { get; private set; }
 
@@ -74,13 +102,19 @@ public sealed class SimulationLoop
         if (_budget is null)
         {
             _cognition.Step(CurrentTick);
-            return;
+        }
+        else
+        {
+            long start = Stopwatch.GetTimestamp();
+            _cognition.Step(CurrentTick);
+            double elapsedMs = (Stopwatch.GetTimestamp() - start) * (1000.0 / Stopwatch.Frequency);
+            _budget.RecordPipelineTick(elapsedMs);
         }
 
-        long start = Stopwatch.GetTimestamp();
-        _cognition.Step(CurrentTick);
-        double elapsedMs = (Stopwatch.GetTimestamp() - start) * (1000.0 / Stopwatch.Frequency);
-        _budget.RecordPipelineTick(elapsedMs);
+        if (_autosaveHandler is not null && CurrentTick % (ulong)_autoSaveEveryNTicks == 0)
+        {
+            _autosaveHandler(this);
+        }
     }
 
     /// <summary>Exécute la boucle jusqu'au tick n° <paramref name="maxTicks"/> inclus.</summary>
@@ -95,6 +129,18 @@ public sealed class SimulationLoop
         {
             AdvanceOneTick();
         }
+    }
+
+    /// <summary>
+    /// Restauration bit-à-bit (SYNE-111, PERSISTENCE.md §4) : pointe la boucle sur
+    /// le tick <paramref name="tick"/> et remplace l'état du PRNG par les 4 × 64 bits
+    /// sauvegardés. Aucun tirage supplémentaire — la suite est identique à une
+    /// exécution ininterrompue.
+    /// </summary>
+    internal void RestoreState(ulong tick, Xoshiro256StarStar rng)
+    {
+        CurrentTick = tick;
+        _rng = rng;
     }
 }
 
