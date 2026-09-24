@@ -13,7 +13,9 @@ public sealed record CliOptions(
     int? ObservePort = null,
     bool? Benchmark = null,
     int? BenchmarkTicks = null,
-    string? BenchmarkPopulations = null)
+    string? BenchmarkPopulations = null,
+    bool? Serve = null,
+    int? ServePort = null)
 {
     /// <summary>Analyse les arguments de la ligne de commande ; lève une erreur explicite sur un flag inconnu.</summary>
     public static CliOptions Parse(string[] args)
@@ -28,6 +30,8 @@ public sealed record CliOptions(
         bool? benchmark = null;
         int? benchmarkTicks = null;
         string? benchmarkPopulations = null;
+        bool? serve = null;
+        int? servePort = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -65,12 +69,18 @@ public sealed record CliOptions(
                 case "--benchmark-populations":
                     benchmarkPopulations = RequireValue(args, ref i, "--benchmark-populations");
                     break;
+                case "--serve":
+                    serve = true;
+                    break;
+                case "--serve-port":
+                    servePort = int.Parse(RequireValue(args, ref i, "--serve-port"));
+                    break;
                 default:
                     throw new ArgumentException($"Flag CLI inconnu : \"{args[i]}\".");
             }
         }
 
-        return new CliOptions(seed, maxTicks, worldSize, headless, configPath, observe, observePort, benchmark, benchmarkTicks, benchmarkPopulations);
+        return new CliOptions(seed, maxTicks, worldSize, headless, configPath, observe, observePort, benchmark, benchmarkTicks, benchmarkPopulations, serve, servePort);
     }
 
     private static string RequireValue(string[] args, ref int index, string flag)
