@@ -143,7 +143,7 @@ jobs:
         env:
           LIVEX_SYNE_E2E: "1"
         working-directory: echos
-        run: python -m pytest echos/tests/test_syne_echos_integration.py -q
+        run: python -m pytest echos/tests/test_syne_echos_integration.py -q --no-cov
 
   # ---------------------------------------------------------------------
   # ECHOS — UI (React + TypeScript)
