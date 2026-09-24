@@ -327,4 +327,27 @@ public static class EventSensor
             TargetId: World.Seasons.Name(change.Current),
             Value: value);
     }
+
+    /// <summary>
+    /// Événement <c>world.territory_membership_changed</c> (SYNE-073, décision n°21) :
+    /// une entité est **entrée dans** ou **sortie de** la zone d'un « point de survie »
+    /// au tick du franchissement (suivi actif <c>world.territories.enabled</c>) —
+    /// déterminisme total (appartenance = fonction pure des positions, 0 tirage PRNG,
+    /// DETERMINISM.md §3). Porteur : l'entité (AgentId), cible : la zone (TargetId),
+    /// charge utile : le sens du changement {kind} (camelCase).
+    /// </summary>
+    public static ExternalEvent TerritoryMembershipChanged(ulong tick, World.TerritoryMembershipChange change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["kind"] = change.Kind == World.TerritoryMembershipChangeKind.Entered ? "entered" : "left",
+        };
+        return new ExternalEvent(
+            ObservabilityContract.TerritoryMembershipChanged,
+            tick,
+            AgentId: change.EntityId.ToString(CultureInfo.InvariantCulture),
+            TargetId: change.Zone.Id,
+            Value: value);
+    }
 }

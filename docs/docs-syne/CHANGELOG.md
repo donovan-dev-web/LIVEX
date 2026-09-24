@@ -116,6 +116,31 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     (engineVersion 0.9.0). Checksums dorés **inchangés** (saisons désactivées par défaut
     ⇒ scénario de référence intact ; 0 tirage PRNG).
   - Suite totale : **389 tests** (369 Core + 20 Console).
+- **Jalon U8 — Territoires (SYNE-073)** :
+  - **`CONFIGURATION`** : `world.territories` = bloc `{enabled, zones[]}` (CONFIGURATION.md
+    §6.10) — zones « points de survie » = disques `{id, centerX, centerY, radius}` (défaut 20,
+    décision n°21) ; `enabled` défaut `false` ; layout posé à l'init (`ApplyConfiguredLayout`).
+  - **`MODÈLE`** : `Territory {Id, Center, Radius}` porté par le monde (ordre de pose stable) ;
+    l'appartenance d'une entité à une zone = **function pure des positions** (`distance ≤
+    radius`, bord inclus) — **0 tirage PRNG** (DETERMINISM.md §3) ; `TrackTerritoryMembership`
+    recalcule en **fin de tick** (même fenêtre causale fermée que saisons/constructions).
+  - **`OBSERVABILITÉ`** : bascules tracées `TerritoryMembershipChange {Kind, Zone, EntityId}`
+    (par zone telle que posée, identifiant croissant, **sorties avant entrées**), accumulées
+    (`LastTerritoryChanges`/`MembersOfTerritory`) et **drainées** en événement du monde
+    **`world.territory_membership_changed`** (`agentId` = entité, `targetId` = zone, `value =
+    {kind}` — API_CONTRACTS §2.2) ; snapshot embarque **`territories[]`** `{id, x, y, radius,
+    memberCount, members[]}` (**additif**, sérialisé seulement si suivi actif, §2.1) ;
+    `engineVersion` **0.9.0 → 0.10.0**.
+  - **`VALIDATION`** : `zones` rejetée si `world.territories.enabled` est `false` ; par zone :
+    `id` non vide et unique, `radius` &gt; 0, `centerX`/`centerY` dans le monde.
+  - Tests : `TerritoryTests` (+16, Core : layout/ordre de pose, `AddTerritory` bornes/id, bord
+    inclus, Entered puis Left (ordre), accumulation + drain, désactivé ⇒ aucun suivi,
+    déterminisme bit-à-bit (FNV `MembershipLog`), snapshot territoires + vide si désactivé,
+    sérialiseur JSON, événement typé, validateur défauts + 6 branches invalides) +
+    `ObservabilityTerritoryTests` (+2, Console : événements émis + snapshot `territories[]`
+    traversant l'émetteur, désactivé ⇒ silence). Checksums dorés **inchangés** (suivi
+    désactivé par défaut ⇒ scénario de référence intact ; 0 tirage PRNG).
+  - Suite totale : **407 tests** (385 Core + 22 Console).
 - **Jalon SYNE ph11 — Persistance & Contrôle (SYNE-110 → SYNE-113, jalon U8)** :
   - **`MODÈLE & REPRISE BIT-À-BIT` (SYNE-110/111/112, PR2 PR SYNE)** : persistance SQLite
     **11 tables** (`PRAGMA user_version=2`) — `SqlitePersistenceStore` : sauvegarde atomique de l'état

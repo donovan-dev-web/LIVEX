@@ -316,6 +316,15 @@ public sealed class WorldSettings
     /// <see cref="Obstacles"/> est vrai (SYNE-071, CONFIGURATION.md §6.8).
     /// </summary>
     public List<StaticObstacleSettings> ObstacleLayout { get; set; } = [];
+
+    /// <summary>
+    /// Zones de territoire (SYNE-073, décision n°21, CONFIGURATION.md §6.10) :
+    /// bloc <c>world.territories</c>. V0.1 : concept d'**observation** — la
+    /// présence des entités dans une zone délimite le territoire effectif,
+    /// suivi par la boucle et émis sans aucun comportement agentique.
+    /// Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée.
+    /// </summary>
+    public TerritorySettings Territories { get; set; } = new();
 }
 
 /// <summary>
@@ -444,6 +453,38 @@ public sealed class StaticObstacleSettings
     public double X { get; set; }
     public double Y { get; set; }
     public double Radius { get; set; } = 10.0;
+}
+
+/// <summary>
+/// Définition d'une zone de territoire (SYNE-073, <c>world.territories.zones[]</c>,
+/// décision n°21) : disque « point de survie » {Center, Radius}. La présence d'une
+/// entité dans le disque la délimite comme membre du territoire effectif —
+/// concept d'observation V0.1 (aucun comportement agentique, 0 tirage PRNG).
+/// </summary>
+public sealed class TerritoryZoneDefinition
+{
+    public string Id { get; set; } = string.Empty;
+    public double CenterX { get; set; }
+    public double CenterY { get; set; }
+    public double Radius { get; set; } = 20.0;
+}
+
+/// <summary>
+/// Zones de territoire (SYNE-073, décision n°21, CONFIGURATION.md §6.10) :
+/// <c>world.territories</c>. V0.1 : la présence d'une entité dans une zone délimite
+/// le **territoire effectif** (vue d'observation) — appartenance suivie en fin de
+/// tick (0 tirage PRNG, DETERMINISM.md §3) et émise en <c>world.territory_membership_changed</c>.
+/// Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée (re-pin
+/// contractuel). Les sources spatiales de ressources autour des points de survie
+/// (ressources du territoire) restent **hors V0.1** (SYSTEMS_SPEC.md §4).
+/// </summary>
+public sealed class TerritorySettings
+{
+    /// <summary>Suivi du territoire actif (appartenance + événements + snapshot <c>territories[]</c>).</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Les zones (disques) du territoire, posées à l'init dans cet ordre (déterministe).</summary>
+    public List<TerritoryZoneDefinition> Zones { get; set; } = [];
 }
 
 public sealed class RandomSettings

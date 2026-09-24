@@ -28,7 +28,14 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 - Clamping des positions ; monde non-toroidal.
 - Obstacles statiques (cercle en V0.1, rectangle reporté) : blocage mouvement **et** ligne de vue (perception masquée, ADR-013) — depuis le jalon SYNE ph1.
 - Ressources : FoodSource / WaterSource (V1 : taux de régénération nul, eau infinie ; V2 : régénération + dégradation).
-- Saisons, événements du monde, obstacles : clés de configuration — `world.seasons` (bloc actif depuis **SYNE-072**, jalon U8 : `{enabled, seasonLengthTicks, initialSeason, cycle[]}` ; l'ancien drapeau booléen homonyme, mort, est remplacé par ce bloc — `enabled` remplit son rôle), `world.events`, `world.obstacles` (défauts Annexe H).
+- Saisons, territoires, événements du monde, obstacles : clés de configuration — `world.seasons` (bloc actif depuis **SYNE-072**, jalon U8 : `{enabled, seasonLengthTicks, initialSeason, cycle[]}` ; l'ancien drapeau booléen homonyme, mort, est remplacé par ce bloc — `enabled` remplit son rôle), `world.territories` (bloc actif depuis **SYNE-073**, jalon U8 — §3.10), `world.events`, `world.obstacles` (défauts Annexe H).
+
+### 3.10 Territoires (Monographie §6.5, décision n°21)
+
+- **Définition (décision n°21, jalon U8)** : le territoire est une **zone délimitée** par la présence des entités autour d'un point de survie. En V0.1 : zone = disque **configurée** `world.territories.zones[]` `{id, centerX, centerY, radius}` (CONFIGURATION §6.10) — territoire effectif = présence d'entités dans le disque (`distance ≤ radius`, bord inclus).
+- **Suivi (SYNE-073)** : appartenance **recalculée en fin de tick** (fenêtre causale fermée, `TrackTerritoryMembership` après le cycle de vie) — **function pure des positions**, **0 tirage PRNG**, aucun comportement agentique, aucune revendication ; ordre déterministe (par zone telle que posée, identifiant croissant, **sorties avant entrées**) ; tracées `Entered`/`Left` + `MembersOf(zoneId)`, drainées `world.territory_membership_changed` (agentId = entité, targetId = zone, value `{kind}`, API_CONTRACTS §2.2) ; snapshot `territories[]` `{id, x, y, radius, memberCount, members[]}` (§2.1) si suivi actif.
+- **Déterminisme** : suivi désactivé par défaut (`enabled: false`) ⇒ scénario de référence intact (checksums dorés §3 — DETERMINISM.md §3) ; activé, l'altération se limite à des champs **additifs** du snapshot + événements typés, jamais à la cognition.
+- **Limite V0.1** : l'ECHOS « frontières fluides / négociation territoriale » reste hors V0.1 ; les **sources spatiales de ressources** par territoire sont reportées (les réserves restent globales, §4).
 
 ## 4. Ressources (Monographie §3.18, §6.9)
 
