@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using Simulation.Core.Communication;
 using Simulation.Core.Population;
 using Simulation.Core.Social;
+using Simulation.Core.World;
 
 namespace Simulation.Core.Observability;
 
@@ -258,6 +259,51 @@ public static class EventSensor
             tick,
             AgentId: death.EntityId.ToString(CultureInfo.InvariantCulture),
             Cause: death.Cause,
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>world.construction_placed</c> (SYNE-071) : pose d'une construction
+    /// (= obstacle statique, décision n°20) — modification d'environnement tracée.
+    /// Événement d'environnement (pas d'agent porteur) : identifiant, position et
+    /// rayon de l'obstacle posé.
+    /// </summary>
+    public static ExternalEvent ConstructionPlaced(ulong tick, Obstacle obstacle)
+    {
+        ArgumentNullException.ThrowIfNull(obstacle);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["id"] = obstacle.Id,
+            ["x"] = Math.Round(obstacle.Position.X, 4),
+            ["y"] = Math.Round(obstacle.Position.Y, 4),
+            ["radius"] = Math.Round(obstacle.Radius, 4),
+        };
+        return new ExternalEvent(
+            ObservabilityContract.ConstructionPlaced,
+            tick,
+            TargetId: obstacle.Id,
+            Value: value);
+    }
+
+    /// <summary>
+    /// Événement <c>world.construction_removed</c> (SYNE-071) : retrait d'une
+    /// construction — modification d'environnement tracée, même charge utile que
+    /// la pose (identifiant, position, rayon de l'obstacle retiré).
+    /// </summary>
+    public static ExternalEvent ConstructionRemoved(ulong tick, Obstacle obstacle)
+    {
+        ArgumentNullException.ThrowIfNull(obstacle);
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["id"] = obstacle.Id,
+            ["x"] = Math.Round(obstacle.Position.X, 4),
+            ["y"] = Math.Round(obstacle.Position.Y, 4),
+            ["radius"] = Math.Round(obstacle.Radius, 4),
+        };
+        return new ExternalEvent(
+            ObservabilityContract.ConstructionRemoved,
+            tick,
+            TargetId: obstacle.Id,
             Value: value);
     }
 }

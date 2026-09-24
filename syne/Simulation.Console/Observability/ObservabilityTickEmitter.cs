@@ -2,6 +2,7 @@ using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Population;
 using Simulation.Core.Social;
+using Simulation.Core.World;
 
 namespace Simulation.Console.Observability;
 
@@ -120,6 +121,17 @@ public sealed class ObservabilityTickEmitter
                 ObservabilitySerializer.ToJsonText(
                     ObservabilitySerializer.EventMessage(EventSensor.AgentDied(_loop.CurrentTick, death))));
         }
+
+        foreach (EnvironmentChange change in _loop.World.LastEnvironmentChanges)
+        {
+            ExternalEvent environmentEvent = change.Kind == EnvironmentChangeKind.Added
+                ? EventSensor.ConstructionPlaced(_loop.CurrentTick, change.Obstacle)
+                : EventSensor.ConstructionRemoved(_loop.CurrentTick, change.Obstacle);
+            await _sink.BroadcastAsync(
+                ObservabilitySerializer.ToJsonText(ObservabilitySerializer.EventMessage(environmentEvent)));
+        }
+
+        _loop.World.ClearEnvironmentChanges();
 
         TicksEmitted++;
     }

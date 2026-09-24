@@ -19,10 +19,14 @@ public static class ObservabilityContract
     /// jalon SYNE ph7c → 0.7.0 : cycle des ressources — minéraux + régénération/
     /// dégradation périodique appliquées en fin de tick (SYNE-070) — l'altération porte
     /// sur les réserves du monde, pas sur la cognition du scénario de référence (checksum
-    /// doré ré-épinglé inchangé, pin contractuel).
+    /// doré ré-épinglé inchangé, pin contractuel) ;
+    /// jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
+    /// pose/retrait tracés (world.construction_placed/_removed) et réémis dans le
+    /// snapshot (SYNE-071) — aucun obstacle du scénario de référence n'est modifié,
+    /// checksums dorés ré-épinglés inchangés (pin contractuel ph7b).
     /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.7.0";
+    public const string EngineVersion = "0.8.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -54,6 +58,12 @@ public static class ObservabilityContract
 
     /// <summary>Mort par épuisement — SYNE-074, API_CONTRACTS.md §2.2.</summary>
     public const string AgentDied = "agent_died";
+
+    /// <summary>Construction posée (obstacle statique, modification d'environnement) — SYNE-071, API_CONTRACTS.md §2.2.</summary>
+    public const string ConstructionPlaced = "world.construction_placed";
+
+    /// <summary>Construction retirée (modification d'environnement) — SYNE-071, API_CONTRACTS.md §2.2.</summary>
+    public const string ConstructionRemoved = "world.construction_removed";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }

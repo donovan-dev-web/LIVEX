@@ -41,7 +41,14 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
   dans le snapshot (`resources`, DATA_MODEL §8.1) ; **cycle de vie (SYNE-070)** : régénération
   `+ regenerationRate` par tick et dégradation périodique (`− regenerationRate × degradationTick`
   à chaque période, clamp ≥ 0) appliquées en fin de tick, 0 tirage PRNG ; les **sources spatiales**
-  restent au jalon ph7-constructions (SYNE-071/072).
+  → **V0.1 (SYNE-071, jalon U8)** : les constructions sont implémentées côté **monde** —
+  disques statiques `Obstacle {Id, Position, Radius}` (layout `world.obstacleLayout[]`,
+  CONFIGURATION §6.8), mutation dynamique validée (`AddObstacle` bornes/id unique + révision
+  `ObstacleRevision`), constructions tracées `PlaceConstruction`/`RemoveConstruction`
+  (modification d'environnement), grille A\* re-rasterisable (`Refresh()`, no-op déterministe,
+  SYNE-071) ; la **mécanique agentique** (qui construit, coût en bois/minéraux, durée) reste
+  ouverte (décision n°20). Les **sources spatiales** de ressources restent au jalon Saisons
+  (SYNE-072).
 
 ## 5. Groupes (Monographie §3.17, §6.7)
 

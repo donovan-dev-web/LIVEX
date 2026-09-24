@@ -31,6 +31,17 @@ public sealed class PathCache
 
     public int Count => _entries.Count;
 
+    /// <summary>
+    /// Purge complète du cache (SYNE-071) : appelée quand le monde re-rasterise sa
+    /// grille bloquée après une pose/retrait de construction — les chemins mémorisés
+    /// ne sont plus valides.
+    /// </summary>
+    public void Clear()
+    {
+        _entries.Clear();
+        _order.Clear();
+    }
+
     /// <summary>Récupère le chemin mémorisé (déplace la clé en queue LRU), sinon <c>null</c>.</summary>
     public IReadOnlyList<Position>? TryGet(int sx, int sy, int tx, int ty)
     {

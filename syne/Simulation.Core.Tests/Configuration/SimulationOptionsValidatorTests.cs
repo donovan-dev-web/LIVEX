@@ -167,4 +167,48 @@ public class SimulationOptionsValidatorTests
         Assert.Contains(errors, e => e.Contains("agents.inheritance.mutationMagnitude"));
         Assert.Contains(errors, e => e.Contains("agents.inheritance.salienceThreshold"));
     }
+
+    [Fact]
+    public void ValidObstacleLayout_IsAccepted()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.World.Obstacles = true;
+        options.World.ObstacleLayout =
+        [
+            new StaticObstacleSettings { Id = "maison-1", X = 100, Y = 100, Radius = 10 },
+            new StaticObstacleSettings { Id = "maison-2", X = 480, Y = 490, Radius = 5 },
+        ];
+
+        Assert.Empty(SimulationOptionsValidator.Validate(options));
+    }
+
+    [Fact]
+    public void ObstacleLayout_WithoutEnabledFlag_IsRejected()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.World.ObstacleLayout =
+        [
+            new StaticObstacleSettings { Id = "maison-1", X = 100, Y = 100, Radius = 10 },
+        ];
+
+        Assert.Contains(SimulationOptionsValidator.Validate(options), e => e.Contains("world.obstacles est false"));
+    }
+
+    [Fact]
+    public void InvalidObstacleLayout_EntriesAreRejected()
+    {
+        var options = ConfigLoader.LoadDefaults();
+        options.World.Obstacles = true;
+        options.World.ObstacleLayout =
+        [
+            new StaticObstacleSettings { Id = "  ", X = 100, Y = 100, Radius = 10 },
+            new StaticObstacleSettings { Id = "hors-bord-x", X = 600, Y = 100, Radius = 0 },
+            new StaticObstacleSettings { Id = "hors-bord-y", X = 100, Y = -5, Radius = 10 },
+        ];
+
+        var errors = SimulationOptionsValidator.Validate(options);
+        Assert.Contains(errors, e => e.Contains("world.obstacleLayout[].id"));
+        Assert.Contains(errors, e => e.Contains("world.obstacleLayout[hors-bord-x].radius"));
+        Assert.Contains(errors, e => e.Contains("world.obstacleLayout[hors-bord-y].y"));
+    }
 }

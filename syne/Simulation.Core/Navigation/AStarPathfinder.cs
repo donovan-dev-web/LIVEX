@@ -23,7 +23,8 @@ public sealed class AStarPathfinder
     private readonly PathCache _cache;
     private readonly int _cellCountX;
     private readonly int _cellCountY;
-    private readonly bool[] _blocked;
+    private bool[] _blocked;
+    private ulong _rasterizedRevision;
 
     public AStarPathfinder(WorldType world, PathfindingSettings settings)
     {
@@ -35,6 +36,7 @@ public sealed class AStarPathfinder
         _cellCountX = Math.Max(1, (int)Math.Ceiling(world.Size.Width / settings.CellSize));
         _cellCountY = Math.Max(1, (int)Math.Ceiling(world.Size.Height / settings.CellSize));
         _blocked = RasterizeObstacles();
+        _rasterizedRevision = world.ObstacleRevision;
     }
 
     public int CellCountX => _cellCountX;
@@ -42,6 +44,25 @@ public sealed class AStarPathfinder
     public int CellCountY => _cellCountY;
 
     public PathCache Cache => _cache;
+
+    /// <summary>
+    /// Re-rasterise la grille bloquée et purge le cache de chemins si la révision
+    /// des obstacles du monde a changé depuis la dernière rasterisation (SYNE-071) :
+    /// une construction posée/retirée en cours de run doit être contournée — aucun
+    /// chemin mémorisé n'est plus valide. Sans changement (cas nominal), ne fait rien
+    /// (coût nul, déterminisme préservé).
+    /// </summary>
+    public void Refresh()
+    {
+        if (_world.ObstacleRevision == _rasterizedRevision)
+        {
+            return;
+        }
+
+        _blocked = RasterizeObstacles();
+        _cache.Clear();
+        _rasterizedRevision = _world.ObstacleRevision;
+    }
 
     /// <summary>
     /// Centre du chemin depuis <paramref name="from"/> vers <paramref name="to"/>
