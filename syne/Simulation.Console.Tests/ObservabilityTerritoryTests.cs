@@ -102,7 +102,7 @@ public class ObservabilityTerritoryTests
         Assert.Equal(3, zone["memberCount"]!.GetValue<int>());
         var members = (JsonArray)zone["members"]!;
         Assert.Equal([1UL, 2UL, 3UL], members.Select(member => member!.GetValue<ulong>()));
-        Assert.Equal("0.10.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.11.0", (string?)snapshot["engineVersion"]);
     }
 
     [Fact]
@@ -124,4 +124,39 @@ public class ObservabilityTerritoryTests
         JsonArray territories = (JsonArray)snapshots[0]["territories"]!;
         Assert.Empty(territories);
     }
+
+    [Fact]
+    public async Task BookChanges_AreEmittedThroughTheEmitter_AndSnapshotCarriesBooks()
+    {
+        SimulationOptions options = ConfigLoader.LoadDefaults();
+        options.World.Books.Enabled = true;
+        options.World.Books.WriteCostEnergy = 4.0;
+        options.World.Books.ReadBenefit = 1.5;
+        var sink = new RecordingSink();
+        SimulationLoop loop = BuildScenario(seed: 11, options);
+        loop.AdvanceOneTick();
+        var book = new Simulation.Core.World.Book("book-1", 1, "Field notes", "A discovery.");
+        loop.WriteBook(book);
+        loop.ReadBook(book, 2);
+
+        await new ObservabilityTickEmitter(loop, seed: 11, sink).EmitCurrentTickAsync();
+
+        JsonNode snapshot = Assert.Single(EventsOf(sink.Frames, ObservabilityContract.SnapshotType));
+        JsonObject serializedBook = (JsonObject)snapshot["books"]![0]!;
+        Assert.Equal("book-1", (string?)serializedBook["id"]);
+        Assert.Equal("A discovery.", (string?)serializedBook["content"]);
+        Assert.Equal(1UL, (ulong?)serializedBook["writtenTick"]);
+        Assert.Equal(new ulong[] { 2 }, serializedBook["readers"]!.AsArray().Select(n => n!.GetValue<ulong>()));
+
+        JsonNode written = Assert.Single(EventsOf(sink.Frames, ObservabilityContract.BookWritten));
+        Assert.Equal("1", (string?)written["agentId"]);
+        Assert.Equal("book-1", (string?)written["targetId"]);
+        Assert.Equal(4.0, (double?)written["value"]!["cost"]);
+        JsonNode read = Assert.Single(EventsOf(sink.Frames, ObservabilityContract.BookRead));
+        Assert.Equal("2", (string?)read["agentId"]);
+        Assert.Equal(1.5, (double?)read["value"]!["readBenefit"]);
+        Assert.Empty(loop.LastBookChanges);
+        Assert.Equal("0.11.0", (string?)snapshot["engineVersion"]);
+    }
+
 }

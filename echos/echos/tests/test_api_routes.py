@@ -336,3 +336,29 @@ def test_create_app_reads_analytics_db_env(monkeypatch, tmp_path):
     monkeypatch.setenv("ECHOS_ANALYTICS_DB", str(db_path))
     body = _client(None).get("/api/runs").json()
     assert body["runs"][0]["run_id"] == "run-7"
+
+
+def test_run_calibration_returns_post_run_evidence(tmp_path):
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    report = {
+        "schemaVersion": 1,
+        "runId": "run-7",
+        "status": "complete",
+        "ticks": {"count": 2, "first": 1, "last": 2},
+    }
+    db.save_calibration_report("run-7", report)
+
+    response = _client(db).get("/api/runs/run-7/calibration")
+
+    assert response.status_code == 200
+    assert response.json() == report
+
+
+def test_run_calibration_is_missing_until_a_run_finishes(tmp_path):
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=1)
+
+    response = _client(db).get("/api/runs/run-7/calibration")
+
+    assert response.status_code == 404

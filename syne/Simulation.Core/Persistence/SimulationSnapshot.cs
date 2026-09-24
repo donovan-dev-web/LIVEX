@@ -39,7 +39,8 @@ public sealed record WorldSnapshotDto(
     double FoodStock,
     double WaterStock,
     double WoodStock,
-    double MineralStock);
+    double MineralStock,
+    IReadOnlyList<BookSnapshotDto>? Books = null);
 
 public sealed record EntitySnapshotDto(
     ulong Id,
@@ -51,6 +52,7 @@ public sealed record EntitySnapshotDto(
     ulong BornAt);
 
 public sealed record ObstacleSnapshotDto(string Id, double X, double Y, double Radius);
+public sealed record BookSnapshotDto(string Id, ulong AuthorId, string Title, string Content, ulong WrittenTick, IReadOnlyList<ulong> Readers);
 
 /// <summary>État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).</summary>
 public sealed record MindSnapshotDto(

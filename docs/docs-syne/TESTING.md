@@ -85,3 +85,4 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 ## Points restés ouverts dans ce document
 - Répartition numérique exacte des tests (par système) à établir lors de l'implémentation.
 - Outillage exact de tests Godot PRISM (hors SYNE) et outillage de tests front (Vitest) — voir `CI_CD.md`.
+| Livres (SYNE-121) | Coût d’écriture débité, tick poinçonné, lecteurs distincts, mutation tracée, désactivation par défaut, snapshot et reprise, événements console `world.book_written`/`world.book_read` — `SimulationLoopTests`, `ObservabilityTerritoryTests` | `dotnet test --filter "FullyQualifiedName~Books"` |
