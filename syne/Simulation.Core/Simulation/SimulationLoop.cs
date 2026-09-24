@@ -21,6 +21,7 @@ public sealed class SimulationLoop
     private readonly int _autoSaveEveryNTicks;
     private readonly Action<SimulationLoop>? _autosaveHandler;
     private readonly Simulation.Core.Configuration.SimulationOptions _options;
+    private readonly List<Simulation.Core.Configuration.SeasonChange> _seasonChanges = new();
     private Xoshiro256StarStar _rng;
 
     public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
@@ -94,6 +95,25 @@ public sealed class SimulationLoop
     public TickBudgetCollector? Budgets => _budget;
 
     /// <summary>
+    /// Changements de saison survenus au tick courant (SYNE-072) : vidés
+    /// (<see cref="ClearSeasonChanges"/>) par la couche d'observabilité après
+    /// réémission — même protocole que les modifications d'environnement.
+    /// </summary>
+    public IReadOnlyList<Configuration.SeasonChange> LastSeasonChanges => _seasonChanges;
+
+    /// <summary>Vide la file des changements de saison (drain d'observabilité).</summary>
+    public void ClearSeasonChanges() => _seasonChanges.Clear();
+
+    /// <summary>Saison courante du monde au tick courant (fonction pure du tick, 0 PRNG).</summary>
+    public World.Season CurrentSeason => _options.World.Seasons.At(CurrentTick);
+
+    /// <summary>
+    /// Cycle de saisons activé (<c>world.seasons.enabled</c>) — modifieurs de
+    /// régénération et événement <c>world.season_changed</c> actifs.
+    /// </summary>
+    public bool SeasonsEnabled => _options.World.Seasons.Enabled;
+
+    /// <summary>
     /// Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1) puis exécute le
     /// pipeline cognitif BDI (U1, SYNE-010) dans l'ordre causal strict. Le PRNG
     /// n'avance que d'un tirage par tick (contrat DETERMINISM.md §3).
@@ -105,7 +125,7 @@ public sealed class SimulationLoop
         if (_budget is null)
         {
             _cognition.Step(CurrentTick);
-            Resources.ApplyLifecycle(CurrentTick, _options.Resources);
+            Resources.ApplyLifecycle(CurrentTick, _options.Resources, SeasonFactorsForTick());
         }
         else
         {
@@ -113,7 +133,7 @@ public sealed class SimulationLoop
             _cognition.Step(CurrentTick);
             using (TickPhaseScope resourcesScope = _budget.Begin(TickPhase.EventsGroupsPopulation))
             {
-                Resources.ApplyLifecycle(CurrentTick, _options.Resources);
+                Resources.ApplyLifecycle(CurrentTick, _options.Resources, SeasonFactorsForTick());
             }
 
             double elapsedMs = (Stopwatch.GetTimestamp() - start) * (1000.0 / Stopwatch.Frequency);
@@ -124,6 +144,30 @@ public sealed class SimulationLoop
         {
             _autosaveHandler(this);
         }
+    }
+
+    /// <summary>
+    /// Facteurs de régénération saisonniers du tick courant (SYNE-072) + trace du
+    /// changement de saison quand le cycle est actif. <c>null</c> sans cycle actif
+    /// (régénération nominale ×1) ; pendant un changement, un <see cref="Configuration.SeasonChange"/>
+    /// est ajouté à <see cref="LastSeasonChanges"/>. 0 tirage PRNG (DETERMINISM.md §3).
+    /// </summary>
+    private Simulation.Core.Configuration.SeasonFactors? SeasonFactorsForTick()
+    {
+        Simulation.Core.Configuration.SeasonSettings seasons = _options.World.Seasons;
+        if (!seasons.Enabled)
+        {
+            return null;
+        }
+
+        World.Season current = seasons.At(CurrentTick);
+        World.Season previous = seasons.At(CurrentTick - 1);
+        if (current != previous)
+        {
+            _seasonChanges.Add(new Simulation.Core.Configuration.SeasonChange(previous, current));
+        }
+
+        return seasons.Factors(CurrentTick);
     }
 
     /// <summary>Exécute la boucle jusqu'au tick n° <paramref name="maxTicks"/> inclus.</summary>

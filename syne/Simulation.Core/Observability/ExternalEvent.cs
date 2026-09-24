@@ -306,4 +306,25 @@ public static class EventSensor
             TargetId: obstacle.Id,
             Value: value);
     }
+
+    /// <summary>
+    /// Événement <c>world.season_changed</c> (SYNE-072) : basculement d'une saison à
+    /// l'autre au tick du changement (cycle actif <c>world.seasons.enabled</c>) —
+    /// déterminisme total (fonction pure du tick, 0 tirage PRNG, DETERMINISM.md §3).
+    /// Événement d'environnement (pas d'agent porteur) : saisons précédente et courante
+    /// en clé JSON camelCase.
+    /// </summary>
+    public static ExternalEvent SeasonChanged(ulong tick, Simulation.Core.Configuration.SeasonChange change)
+    {
+        var value = new System.Text.Json.Nodes.JsonObject
+        {
+            ["previous"] = World.Seasons.Name(change.Previous),
+            ["current"] = World.Seasons.Name(change.Current),
+        };
+        return new ExternalEvent(
+            ObservabilityContract.SeasonChanged,
+            tick,
+            TargetId: World.Seasons.Name(change.Current),
+            Value: value);
+    }
 }

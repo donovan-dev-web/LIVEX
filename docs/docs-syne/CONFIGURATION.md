@@ -73,7 +73,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "receiveEnergyCost": 0.2,
     "receiveEnergyPayloadFactor": 0.05
   },
-  "world": { "seasons": false, "events": false, "obstacles": false },
+  "world": { "seasons": { "enabled": false }, "events": false, "obstacles": false },
   "groups": {
     "enabled": true,
     "reviewIntervalTicks": 10,
@@ -280,6 +280,41 @@ Exemple (extrait) :
 ```
 
 Validation §6 : `world.obstacleLayout` rejeté si `world.obstacles` est `false` ; par entrée `id` non vide, `radius` > 0, `x`/`y` dans le monde. Mutations dynamiques (`AddObstacle`, `PlaceConstruction`/`RemoveConstruction`) validées à l'exécution (bornes + id unique) — la **mécanique agentique** d'une construction (qui, coût en bois/minéraux, durée) reste **ouverte** (décision n°20, §2.20).
+
+### 6.9 Clés d'environnement — cycle de saisons (SYNE-072)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `world.seasons` | `{enabled: false}` | n°4 | Bloc du cycle de saisons — **l'ancien drapeau booléen homonyme, mort (jamais consommé), devient cet objet** ; `enabled` = cycle actif (modulation de la régénération + événement `world.season_changed`) |
+| `world.seasons.enabled` | `false` | n°4 | Cycle actif (Saisons désactivées par défaut ⇒ trajectoire du scénario de référence inchangée) |
+| `world.seasons.seasonLengthTicks` | `360` | n°4 | Durée d'une saison en ticks (≥ 1) |
+| `world.seasons.initialSeason` | `spring` | n°4 | Saison du tick 0 — `spring`, `summer`, `autumn` ou `winter` |
+| `world.seasons.cycle[]` | 4 saisons × facteurs ×1 | n°4 | Les 4 définitions (une par saison) : `name`, `foodFactor`, `waterFactor`, `woodFactor`, `mineralFactor` — facteur &gt; 1 = saison favorable, &lt; 1 = défavorable, appliqué à la régénération/dégradation en fin de tick (SYNE-070) |
+
+Saison courante (fonction pure du tick, 0 tirage PRNG — DETERMINISM.md §3) :
+`saison(tick) = (initialSeasonIndex + tick / seasonLengthTicks) mod 4`.
+
+Exemple (extrait) :
+
+```json
+{
+  "world": {
+    "seasons": {
+      "enabled": true,
+      "seasonLengthTicks": 360,
+      "initialSeason": "spring",
+      "cycle": [
+        { "name": "spring", "foodFactor": 1.0, "waterFactor": 1.0, "woodFactor": 1.0, "mineralFactor": 1.0 },
+        { "name": "summer", "foodFactor": 1.0, "waterFactor": 1.2, "woodFactor": 1.0, "mineralFactor": 1.0 },
+        { "name": "autumn", "foodFactor": 1.1, "waterFactor": 1.0, "woodFactor": 1.2, "mineralFactor": 1.0 },
+        { "name": "winter", "foodFactor": 0.8, "waterFactor": 0.9, "woodFactor": 1.0, "mineralFactor": 1.0 }
+      ]
+    }
+  }
+}
+```
+
+Validation §6 : `seasonLengthTicks` &gt; 0 ; `initialSeason` dans {spring, summer, autumn, winter} ; `cycle` = les 4 saisons **exactement une fois** ; facteurs ≥ 0.
 
 ---
 

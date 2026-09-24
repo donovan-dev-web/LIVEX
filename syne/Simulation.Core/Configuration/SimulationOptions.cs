@@ -294,7 +294,12 @@ public sealed class CommunicationSettings
 
 public sealed class WorldSettings
 {
-    public bool Seasons { get; set; }
+    /// <summary>
+    /// Cycle de saisons (SYNE-072) : objet <c>world.seasons</c> — l'ancien drapeau
+    /// booléen homonyme (mort, jamais consommé) est remplacé par ce bloc actif.
+    /// Voir <see cref="SeasonSettings"/>.
+    /// </summary>
+    public SeasonSettings Seasons { get; set; } = new();
     public bool Events { get; set; }
 
     /// <summary>
@@ -312,6 +317,121 @@ public sealed class WorldSettings
     /// </summary>
     public List<StaticObstacleSettings> ObstacleLayout { get; set; } = [];
 }
+
+/// <summary>
+/// Définition d'une saison du cycle (SYNE-072, <c>world.seasons.cycle[]</c>) :
+/// facteurs de régénération par ressource appliqués en fin de tick quand le
+/// cycle est actif (<c>world.seasons.enabled</c>). Facteur 1.0 = taux nominal ;
+/// &gt; 1 = saison favorable, &lt; 1 = saison défavorable. Pur (0 tirage PRNG,
+/// DETERMINISM.md §3) : la saison courante et son facteur sont des fonctions
+/// déterministes du tick.
+/// </summary>
+public sealed class SeasonDefinition
+{
+    /// <summary>Nom de la saison (clé JSON camelCase) : <c>spring</c>, <c>summer</c>, <c>autumn</c>, <c>winter</c>.</summary>
+    public string Name { get; set; } = string.Empty;
+
+    public double FoodFactor { get; set; } = 1.0;
+    public double WaterFactor { get; set; } = 1.0;
+    public double WoodFactor { get; set; } = 1.0;
+    public double MineralFactor { get; set; } = 1.0;
+}
+
+/// <summary>
+/// Cycle de saisons (SYNE-072, <c>world.seasons</c>) : l'ancien drapeau booléen
+/// homonyme (mort, jamais consommé aucun comportement) devient ce bloc actif —
+/// <c>enabled</c> remplit désormais ce rôle. Cycle déterministe de 4 saisons :
+/// saison( tick ) = (indexInitial + tick / seasonLengthTicks) mod 4, sans aucun
+/// tirage PRNG (DETERMINISM.md §3) ; les facteurs de régénération sont appliqués
+/// en fin de tick sur le cycle des ressources (SYNE-070). Saisons désactivées par
+/// défaut ⇒ trajectoire du scénario de référence inchangée (re-pin contractuel).
+/// </summary>
+public sealed class SeasonSettings
+{
+    /// <summary>Cycle de saisons actif (régénération modulée + événement <c>world.season_changed</c>).</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Saison du tick 0 (clé JSON camelCase, défaut <c>spring</c>).</summary>
+    public string InitialSeason { get; set; } = World.Seasons.Name(World.Season.Spring);
+
+    /// <summary>Durée d'une saison en ticks (défaut 360, temps simulé &gt; 6 h simulées à 1 tick/min).</summary>
+    public int SeasonLengthTicks { get; set; } = 360;
+
+    /// <summary>
+    /// Les 4 définitions du cycle (une par saison, ordre indifférent) — défaut :
+    /// spring (toutes ressources ×1), summer (eau ×1,2), autumn (bois ×1,2
+    /// + nourriture ×1,1), winter (nourriture ×0,8, eau ×0,9) — valeurs V0.1
+    /// de premier jet, calibrées en SYNE-120 (DECISIONS_V01 décision n°4).
+    /// </summary>
+    public List<SeasonDefinition> Cycle { get; set; } =
+    [
+        new() { Name = World.Seasons.Name(World.Season.Spring), FoodFactor = 1.0, WaterFactor = 1.0, WoodFactor = 1.0, MineralFactor = 1.0 },
+        new() { Name = World.Seasons.Name(World.Season.Summer), FoodFactor = 1.0, WaterFactor = 1.2, WoodFactor = 1.0, MineralFactor = 1.0 },
+        new() { Name = World.Seasons.Name(World.Season.Autumn), FoodFactor = 1.1, WaterFactor = 1.0, WoodFactor = 1.2, MineralFactor = 1.0 },
+        new() { Name = World.Seasons.Name(World.Season.Winter), FoodFactor = 0.8, WaterFactor = 0.9, WoodFactor = 1.0, MineralFactor = 1.0 },
+    ];
+
+    /// <summary>Facteurs de régénération des 4 ressources pour un tick donné (cycle résolu, déterminisme).</summary>
+    public SeasonFactors Factors(ulong tick)
+    {
+        World.Season season = At(tick);
+        double food = 1.0, water = 1.0, wood = 1.0, mineral = 1.0;
+        foreach (SeasonDefinition definition in Cycle)
+        {
+            if (DefinitionsByName.TryGetValue(definition.Name, out World.Season matches) && matches == season)
+            {
+                food = definition.FoodFactor;
+                water = definition.WaterFactor;
+                wood = definition.WoodFactor;
+                mineral = definition.MineralFactor;
+                break;
+            }
+        }
+
+        return new SeasonFactors(food, water, wood, mineral);
+    }
+
+    /// <summary>Saison courante au tick <paramref name="tick"/> — fonction pure du tick (0 PRNG).</summary>
+    public World.Season At(ulong tick)
+    {
+        int initialIndex = (World.Seasons.TryParse(InitialSeason) ?? World.Season.Spring) switch
+        {
+            World.Season.Spring => 0,
+            World.Season.Summer => 1,
+            World.Season.Autumn => 2,
+            World.Season.Winter => 3,
+            _ => 0,
+        };
+        int length = SeasonLengthTicks > 0 ? SeasonLengthTicks : 1;
+        return (World.Season)((initialIndex + (int)(tick / (ulong)length)) % World.Seasons.Count);
+    }
+
+    private static readonly IReadOnlyDictionary<string, World.Season> DefinitionsByName =
+        new Dictionary<string, World.Season>(StringComparer.Ordinal)
+        {
+            [World.Seasons.Name(World.Season.Spring)] = World.Season.Spring,
+            [World.Seasons.Name(World.Season.Summer)] = World.Season.Summer,
+            [World.Seasons.Name(World.Season.Autumn)] = World.Season.Autumn,
+            [World.Seasons.Name(World.Season.Winter)] = World.Season.Winter,
+        };
+}
+
+/// <summary>Facteurs de régénération des 4 ressources pour le cycle de saisons (SYNE-072).</summary>
+public readonly record struct SeasonFactors(double Food, double Water, double Wood, double Mineral)
+{
+    /// <summary>Facteur applicable à une ressource donnée (repli 1.0 si inconnu).</summary>
+    public double For(World.ResourceKind kind) => kind switch
+    {
+        World.ResourceKind.Food => Food,
+        World.ResourceKind.Water => Water,
+        World.ResourceKind.Wood => Wood,
+        World.ResourceKind.Mineral => Mineral,
+        _ => 1.0,
+    };
+}
+
+/// <summary>Changement de saison entre deux ticks (SYNE-072, événement <c>world.season_changed</c>).</summary>
+public readonly record struct SeasonChange(World.Season Previous, World.Season Current);
 
 /// <summary>
 /// Pose d'un obstacle statique issu de la configuration <c>world.obstacleLayout</c>

@@ -85,6 +85,37 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     **0 tirage PRNG ajouté** ; checksums dorés (perception `0x27fad50065d8c4a4`, baseline
     ph10 `0x072a488aa18c05eb`) non rejoués.
   - Suite totale : **370 tests** (353 Core + 17 Console).
+- **Jalon U8 — Saisons (SYNE-072)** :
+  - **`CONFIGURATION`** : `world.seasons` passe d'un booléen **mort** (jamais consommé) à un
+    **objet** actif (CONFIGURATION.md §6.9) — `enabled` (défaut `false`), `seasonLengthTicks`
+    (360), `initialSeason` (spring), `cycle[]` = 4 définitions × facteurs par resource
+    (`SeasonFactor` Food/Water/Wood/Mineral ; V0.1 : spring ×1, summer eau ×1.2, autumn
+    bois ×1.2 + nourriture ×1.1, winter nourriture ×0.8 eau ×0.9 — calibrés en SYNE-120,
+    décision n°4).
+  - **`MODÈLE`** : `Season` (enum) + statique `Seasons` (`Name`/`TryParse`/`Count`) ;
+    saison courante = **fonction pure du tick** `(initialSeasonIndex + tick /
+    seasonLengthTicks) mod 4` — **0 tirage PRNG** (DETERMINISM.md §3) ; `SeasonDefinition`
+    configurable, `SeasonChange {Previous, Current}` tracé par le monde.
+  - **`RÉGÉNÉRATION`** : `ResourceStocks.ApplyLifecycle(tick, settings, seasonFactors?)` —
+    les facteurs multiplient régénération et dégradation périodique (SYNE-070) en **fin de
+    tick** (fauche causale SYNE-070, clamp ≥ 0), facteurs neutres si saisons désactivées.
+  - **`OBSERVABILITÉ`** : événement du monde **`world.season_changed`** (`targetId` = saison
+    courante, `value = {previous, current}` — API_CONTRACTS §2.2) drainé par
+    `ObservabilityTickEmitter` au **tick exact** du basculement, avant le snapshot ;
+    snapshot embarque **`season`**/**`seasonIndex`** (**additifs**, §2.1) ;
+    `engineVersion` **0.8.0 → 0.9.0**.
+  - **`VALIDATION`** : `seasonLengthTicks` &gt; 0, `initialSeason` valide, `cycle` = les 4
+    saisons exactement une fois, facteurs ≥ 0.
+  - Tests : `SeasonTests` (+16, Core : marche `At` (cycle/types/longueur 1), facteurs par
+    saison/resource, pureté/déterminisme, `ApplyLifecycle` factorisé + dégradation bornée,
+    traçage au tick exact, drain, désactivé ⇒ aucun événement, déterminisme bit-à-bit
+    (FNV `ResourceLog`), snapshot `season`/`seasonIndex`, sérialiseur, événement typé,
+    validateur défauts + 6 branches invalides) + `ObservabilitySeasonTests` (+3, Console :
+    émission au tick du basculement, snapshot traversant l'émetteur, désactivé ⇒ silence) ;
+    `ConfigLoaderTests` adapté (objet vs booléen) ; anciennes assertions adaptées
+    (engineVersion 0.9.0). Checksums dorés **inchangés** (saisons désactivées par défaut
+    ⇒ scénario de référence intact ; 0 tirage PRNG).
+  - Suite totale : **389 tests** (369 Core + 20 Console).
 - **Jalon SYNE ph11 — Persistance & Contrôle (SYNE-110 → SYNE-113, jalon U8)** :
   - **`MODÈLE & REPRISE BIT-À-BIT` (SYNE-110/111/112, PR2 PR SYNE)** : persistance SQLite
     **11 tables** (`PRAGMA user_version=2`) — `SqlitePersistenceStore` : sauvegarde atomique de l'état

@@ -37,7 +37,9 @@ public sealed record WorldSnapshot(
     IReadOnlyList<AgentSnapshot> Agents,
     IReadOnlyList<ResourceSnapshot> Resources,
     IReadOnlyList<GroupSnapshot> Groups,
-    IReadOnlyList<ObstacleSnapshot> Obstacles)
+    IReadOnlyList<ObstacleSnapshot> Obstacles,
+    string Season,
+    int SeasonIndex)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
     public static WorldSnapshot Capture(SimulationLoop loop, ulong seed)
@@ -93,6 +95,8 @@ public sealed record WorldSnapshot(
             agents,
             resources,
             groups,
-            obstacles);
+            obstacles,
+            World.Seasons.Name(loop.CurrentSeason),
+            (int)loop.CurrentSeason);
     }
 }

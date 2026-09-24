@@ -23,10 +23,15 @@ public static class ObservabilityContract
     /// jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
     /// pose/retrait tracés (world.construction_placed/_removed) et réémis dans le
     /// snapshot (SYNE-071) — aucun obstacle du scénario de référence n'est modifié,
-    /// checksums dorés ré-épinglés inchangés (pin contractuel ph7b).
+    /// checksums dorés ré-épinglés inchangés (pin contractuel ph7b) ;
+    /// jalon SYNE U8 → 0.9.0 : cycle de saisons (SYNE-072) — <c>world.seasons</c>
+    /// (l'ancien drapeau booléen homonyme, mort, devient un bloc actif), événement
+    /// world.season_changed et champ snapshot season/seasonIndex (additif) ;
+    /// désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
+    /// checksums dorés ré-épinglés inchangés (pin contractuel).
     /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.8.0";
+    public const string EngineVersion = "0.9.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";
@@ -64,6 +69,13 @@ public static class ObservabilityContract
 
     /// <summary>Construction retirée (modification d'environnement) — SYNE-071, API_CONTRACTS.md §2.2.</summary>
     public const string ConstructionRemoved = "world.construction_removed";
+
+    /// <summary>
+    /// Changement de saison du cycle environnemental (SYNE-072, API_CONTRACTS.md §2.2) :
+    /// émis au tick exact du basculement quand <c>world.seasons.enabled</c> (0 tirage
+    /// PRNG — la saison est une fonction pure du tick). Charge utile {previous, current}.
+    /// </summary>
+    public const string SeasonChanged = "world.season_changed";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }
