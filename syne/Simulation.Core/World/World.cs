@@ -22,6 +22,7 @@ public sealed class World
 {
     private readonly List<Simulation.Core.Entities.Entity> _entities = [];
     private readonly List<Obstacle> _obstacles = [];
+    private readonly List<Territory> _territories = [];
     private readonly List<EnvironmentChange> _environmentChanges = [];
     private ulong _obstacleRevision;
 
@@ -43,6 +44,14 @@ public sealed class World
     public IReadOnlyList<Simulation.Core.Entities.Entity> Entities => _entities;
 
     public IReadOnlyList<Obstacle> Obstacles => _obstacles;
+
+    /// <summary>
+    /// Zones de territoire (SYNE-073, décision n°21) : disques « point de survie »
+    /// posés à l'init (config <c>world.territories.zones[]</c>), ordre de pose
+    /// stable. La présence d'une entité dans une zone la délimite comme
+    /// territoire effectif (appartenance suivie par la boucle, 0 PRNG).
+    /// </summary>
+    public IReadOnlyList<Territory> Territories => _territories;
 
     /// <summary>
     /// Révision des obstacles — incrémentée à chaque ajout/retrait (y compris le
@@ -122,20 +131,41 @@ public sealed class World
     /// <summary>
     /// Applique le layout d'obstacles configuré (SYNE-071, CONFIGURATION.md §6.8) :
     /// place les disques de <c>world.obstacleLayout</c> quand <c>world.obstacles</c>
-    /// est vrai. Obstacles d'init non tracés.
+    /// est vrai. Obstacles d'init non tracés. Pose aussi les zones de territoire
+    /// (SYNE-073, CONFIGURATION.md §6.10) quand <c>world.territories</c> est actif.
     /// </summary>
     public void ApplyConfiguredLayout(Configuration.WorldSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        if (!settings.Obstacles)
+
+        if (settings.Obstacles)
         {
-            return;
+            foreach (Configuration.StaticObstacleSettings spec in settings.ObstacleLayout)
+            {
+                AddObstacle(new Obstacle(spec.Id, new Position(spec.X, spec.Y), spec.Radius));
+            }
         }
 
-        foreach (Configuration.StaticObstacleSettings spec in settings.ObstacleLayout)
+        if (settings.Territories.Enabled)
         {
-            AddObstacle(new Obstacle(spec.Id, new Position(spec.X, spec.Y), spec.Radius));
+            foreach (Configuration.TerritoryZoneDefinition spec in settings.Territories.Zones)
+            {
+                AddTerritory(new Territory(spec.Id, new Position(spec.CenterX, spec.CenterY), spec.Radius));
+            }
         }
+    }
+
+    /// <summary>
+    /// Ajoute une zone de territoire au monde (SYNE-073) : configuration initiale
+    /// (layout <c>world.territories.zones[]</c>) — appartenance non tracée (aucune
+    /// mutation d'environnement ; la zone est statique, la présence des entités
+    /// est suivie par la boucle).
+    /// </summary>
+    public void AddTerritory(Territory territory)
+    {
+        ArgumentNullException.ThrowIfNull(territory);
+        EnsureCanAddTerritory(territory);
+        _territories.Add(territory);
     }
 
     /// <summary>Consomme les modifications d'environnement tracées (drain par-tick de l'émetteur).</summary>
@@ -151,6 +181,19 @@ public sealed class World
         if (_obstacles.Any(existing => existing.Id == obstacle.Id))
         {
             throw new ArgumentException($"Un obstacle portant l'identifiant « {obstacle.Id} » existe déjà.", nameof(obstacle));
+        }
+    }
+
+    private void EnsureCanAddTerritory(Territory territory)
+    {
+        if (territory.Center != Position.Clamp(territory.Center, Size))
+        {
+            throw new ArgumentOutOfRangeException(nameof(territory), "Le centre de la zone de territoire sort du monde (non-toroidal).");
+        }
+
+        if (_territories.Any(existing => existing.Id == territory.Id))
+        {
+            throw new ArgumentException($"Une zone de territoire portant l'identifiant « {territory.Id} » existe déjà.", nameof(territory));
         }
     }
 

@@ -36,8 +36,34 @@ public static class ObservabilitySerializer
             ["groups"] = GroupsJson(snapshot.Groups),
             ["season"] = snapshot.Season,
             ["seasonIndex"] = snapshot.SeasonIndex,
+            ["territories"] = TerritoriesJson(snapshot.Territories),
         };
         return message;
+    }
+
+    private static JsonArray TerritoriesJson(IReadOnlyList<TerritorySnapshot> territories)
+    {
+        var array = new JsonArray();
+        foreach (TerritorySnapshot zone in territories)
+        {
+            var members = new JsonArray();
+            foreach (ulong member in zone.Members)
+            {
+                members.Add(member);
+            }
+
+            array.Add(new System.Text.Json.Nodes.JsonObject
+            {
+                ["id"] = zone.Id,
+                ["x"] = zone.X,
+                ["y"] = zone.Y,
+                ["radius"] = zone.Radius,
+                ["memberCount"] = zone.MemberCount,
+                ["members"] = members,
+            });
+        }
+
+        return array;
     }
 
     private static JsonArray ObstaclesJson(IReadOnlyList<ObstacleSnapshot> obstacles)
