@@ -62,6 +62,29 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     `ObservabilityConstructionTests` (+2, Console : pose/retrait drainés + déterminisme
     non-altéré). Anciennes assertions adaptées (engineVersion 0.8.0).
   - Suite totale : **362 tests** (345 Core + 17 Console).
+- **Jalon U8 — Validation moteur T0–T5 (SYNE-122)** :
+  - **`MilestoneT0T5Tests`** (8 tests) verrouille les jalons transverses de validation
+    (ROADMAP.md §3, ROADMAP §7) :
+    - **T0** — 50 entités / 1000 ticks : aucun crash, état valide (ids uniques, positions
+      dans le monde, énergie ∈ [0, 100], non-NaN) et **déterminisme à l'échelle**
+      (empreinte bit-à-bit des positions identique à seed égale).
+    - **T1** — 50 entités / 2000 ticks : les **croyances divergent** (&gt; 1 carte de
+      croyances distincte parmi les entités — expériences différentes ⇒ croyances
+      différentes, décision n°14).
+    - **T2** — traits différents ⇒ décisions différentes en situation **strictement
+      identique** : même seed, même monde, même position, mêmes autres traits ; seule la
+      curiosité (plage [0,0] vs [2,2]) change — la première divergence de décision est
+      **portée par Explore** (modificateur de personnalité 0.5 vs 2.5).
+    - **T3** — information locale : deux entités hors de portée ne se connaissent jamais
+      (aucune croyance croisée), deux entités proches apprennent mutuellement leur position.
+    - **T4** — reproductibilité du benchmark à l'échelle du jalon (débits objectifs =
+      `ScaleTargetsTests` + CLI `--benchmark`, PERFORMANCE.md §9).
+    - **T5** — la suite dépasse la barre du jalon (&gt; 160 tests, vérifié par réflexion
+      sur l'assembly de test ; couverture mesurée **94,01 %**, ≥ 80 %).
+  - **Carte purement test** : aucun changement moteur — **engineVersion inchangé (0.8.0)**,
+    **0 tirage PRNG ajouté** ; checksums dorés (perception `0x27fad50065d8c4a4`, baseline
+    ph10 `0x072a488aa18c05eb`) non rejoués.
+  - Suite totale : **370 tests** (353 Core + 17 Console).
 - **Jalon SYNE ph11 — Persistance & Contrôle (SYNE-110 → SYNE-113, jalon U8)** :
   - **`MODÈLE & REPRISE BIT-À-BIT` (SYNE-110/111/112, PR2 PR SYNE)** : persistance SQLite
     **11 tables** (`PRAGMA user_version=2`) — `SqlitePersistenceStore` : sauvegarde atomique de l'état
