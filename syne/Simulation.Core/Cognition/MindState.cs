@@ -170,4 +170,76 @@ public sealed class MindState
             _successRates[kind] = Math.Clamp(rate + (observationCount > 0 ? 0.15 : -0.01), 0.1, 1.0);
         }
     }
+
+    /// <summary>Taux de succès par désir (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal IReadOnlyDictionary<DesireKind, double> SuccessRatesSnapshot()
+    {
+        var copy = new Dictionary<DesireKind, double>(_successRates);
+        foreach (DesireKind kind in Enum.GetValues<DesireKind>())
+        {
+            if (!copy.ContainsKey(kind))
+            {
+                copy[kind] = 0.7;
+            }
+        }
+
+        return copy;
+    }
+
+    /// <summary>Restauration des taux de succès par désir (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal void RestoreSuccessRates(IReadOnlyDictionary<DesireKind, double> rates)
+    {
+        ArgumentNullException.ThrowIfNull(rates);
+        _successRates.Clear();
+        foreach ((DesireKind kind, double rate) in rates)
+        {
+            _successRates[kind] = rate;
+        }
+    }
+
+    /// <summary>
+    /// Restaure l'état cognitif complet d'une entité (persistance bit-à-bit,
+    /// PERSISTENCE.md §4) : besoins, mémoire (avec séquence), croyances, relations,
+    /// communication non-éphémère, taux de succès, intention, objectif collectif
+    /// et facteurs de personnalité.
+    /// </summary>
+    internal void RestoreState(
+        BodyNeeds needs,
+        Memory memory,
+        BeliefSet beliefs,
+        Relationships trust,
+        CommunicationState communication,
+        IReadOnlyDictionary<DesireKind, double> successRates,
+        AgentFactors? factors,
+        Goal? intention,
+        GroupObjective? collectiveObjective)
+    {
+        ArgumentNullException.ThrowIfNull(needs);
+        ArgumentNullException.ThrowIfNull(memory);
+        ArgumentNullException.ThrowIfNull(beliefs);
+        ArgumentNullException.ThrowIfNull(trust);
+        ArgumentNullException.ThrowIfNull(communication);
+        ArgumentNullException.ThrowIfNull(successRates);
+
+        Needs.RestoreState(
+            needs.Hunger, needs.Thirst, needs.Fatigue, needs.Safety,
+            needs.Social, needs.Curiosity, needs.Energy);
+        Memory.RestoreState(memory.AllEntries, memory.NextSequence);
+        Beliefs.RestoreState(beliefs.All);
+        Trust.RestoreState(trust.Snapshot());
+        Communication.RestoreState(communication.OutgoingSnapshot, communication.RelayedIdsSnapshot);
+        RestoreSuccessRates(successRates);
+        Factors = factors;
+        Intention = intention;
+        CollectiveObjective = collectiveObjective;
+    }
+
+    /// <summary>Restaure le holdover de délibération (décision du dernier tick délibéré), persistance bit-à-bit.</summary>
+    internal void RestoreLastDecision(DesireKind? kind)
+    {
+        if (kind is { } resolved)
+        {
+            LastDecision = new UtilityScore(resolved, 0, 0, 0, 0, 0, 0, 0);
+        }
+    }
 }

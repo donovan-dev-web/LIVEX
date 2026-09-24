@@ -9,11 +9,20 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Added
+- **Jalon U8 — Persistance SQLite bit-à-bit (SYNE-110/111/112)** :
+  - `SimulationSnapshot`/`SimulationSnapshotCodec` : capture déterministe (JSON `System.Text.Json`) de l'état complet du monde + cognition + PRNG 4×64, avec hash stable ;
+  - `SimulationSnapshotRestorer` : reprise exacte au tick N sans re-jouage (kill states dérivés reconstruits déterministiquement, holdover `LastDecision` + réserves restaurées en place) ;
+  - `SqlitePersistenceStore` : schéma V2.0 des **11 tables** (PERSISTENCE.md §3, `PRAGMA user_version = 2`), transactions atomiques, **rotation `maxBackups`** (défaut 5), reprise au dernier `tick_states` (SYNE-112 post-crash) ;
+  - Hook d'autosave câblé dans `SimulationLoop.AdvanceOneTick` (`autoSaveEveryNTicks`, défaut 1000) — purement en écriture, aucun tirage du PRNG ⇒ checksums épinglés inchangés ;
+  - 5 `PersistenceTests` (315 → **320 tests Core**, 329 au total avec Console : reprise bit-à-bit identique au run ininterrompu, état RNG, reprise post-crash, schéma 11 tables, rotation).
+
 ### Fixed
 - Cadrage Jalon U8 (PR cadrage docs) : planche U8 du `ROADMAP` racine recalée sur le backlog réel — plage ECHOS `080…093` fictive remplacée par `080…085` (ph8, livrés U7) + `090…092` (ph9) ;
 - Ajout de la carte manquante **SYNE-113** (serveur de contrôle HTTP :5181, cible réelle du relais `controlClient` ECHOS — absente du backlog) ;
 - `SYNE-110` précisée : hooks `autoSaveEveryNTicks` (défaut 1000) / `maxBackups` (défaut 5) à brancher sur la boucle (aucun consommateur à ce jour) ;
 - ECHOS-085 annotée : livrée côté UI, finalisation en U8 contre SYNE-113.
+- `PERSISTENCE.md` §3 recalé sur le modèle réel V0.1 : `agent_snapshots` sans `health` fictive (besoins = `energy, hunger, thirst, fatigue`), implémentation du snapshot bit-à-bit et de la rotation documentée.
 
 ### Added
 - Documentation technique V0.1 complète du monorepo (phases 0 à 5 du Plan documentation) :

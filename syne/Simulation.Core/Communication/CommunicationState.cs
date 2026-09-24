@@ -129,4 +129,29 @@ public sealed class CommunicationState
             _relayedMessageIds.Add(keep);
         }
     }
+
+    /// <summary>Messages en attente d'émission (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal IReadOnlyList<Message> OutgoingSnapshot => _outgoing.ToList();
+
+    /// <summary>Identifiants déjà relayés (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal IReadOnlyList<ulong> RelayedIdsSnapshot => _relayedMessageIds.ToList();
+
+    /// <summary>Restauration de l'état de communication non-éphémère (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal void RestoreState(IEnumerable<Message> outgoing, IEnumerable<ulong> relayedMessageIds)
+    {
+        ArgumentNullException.ThrowIfNull(outgoing);
+        ArgumentNullException.ThrowIfNull(relayedMessageIds);
+
+        _outgoing.Clear();
+        foreach (Message message in outgoing)
+        {
+            _outgoing.Enqueue(message);
+        }
+
+        _relayedMessageIds.Clear();
+        foreach (ulong id in relayedMessageIds)
+        {
+            _relayedMessageIds.Add(id);
+        }
+    }
 }

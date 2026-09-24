@@ -84,6 +84,13 @@ public sealed class CognitionPipeline
 
     public IReadOnlyCollection<MindState> Minds => _minds.Values;
 
+    /// <summary>Paires (identifiant, esprit) triées par identifiant croissant — persistance bit-à-bit (PERSISTENCE.md §4).</summary>
+    internal IReadOnlyList<(ulong Id, MindState Mind)> MindPairsSorted() =>
+        _minds
+            .Select(pair => (pair.Key, pair.Value))
+            .OrderBy(pair => pair.Key)
+            .ToList();
+
     public MindState MindOf(ulong entityId) => _minds[entityId];
 
     public bool HasMind(ulong entityId) => _minds.ContainsKey(entityId);
@@ -447,5 +454,26 @@ public sealed class CognitionPipeline
         }
 
         return mind;
+    }
+
+    /// <summary>
+    /// Restauration de l'état cognitif complet (persistance bit-à-bit,
+    /// PERSISTENCE.md §4) : remplace le dictionnaire d'esprits et ré-importe les
+    /// groupes émergents. Aucun tirage du PRNG — la suite reste bit-à-bit.
+    /// </summary>
+    internal void RestoreState(IReadOnlyDictionary<ulong, MindState> minds, IEnumerable<Social.Group> groups, ulong nextGroupId)
+    {
+        ArgumentNullException.ThrowIfNull(minds);
+        ArgumentNullException.ThrowIfNull(groups);
+
+        _minds.Clear();
+        foreach ((ulong id, MindState mind) in minds)
+        {
+            _minds[id] = mind;
+        }
+
+        // Le GroupSystem est readonly — restauration en place des groupes actifs
+        // et du compteur d'identifiants (persistance bit-à-bit).
+        _groups.RestoreState(groups, nextGroupId);
     }
 }

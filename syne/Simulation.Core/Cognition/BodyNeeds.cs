@@ -141,6 +141,25 @@ public sealed class BodyNeeds
         return needs;
     }
 
+    /// <summary>Restauration d'état complet (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    internal void RestoreState(
+        double hunger,
+        double thirst,
+        double fatigue,
+        double safety,
+        double social,
+        double curiosity,
+        double energy)
+    {
+        Hunger = Clamp100(hunger);
+        Thirst = Clamp100(thirst);
+        Fatigue = Clamp100(fatigue);
+        Safety = Clamp01(safety);
+        Social = Clamp01(social);
+        Curiosity = Clamp01(curiosity);
+        Energy = Clamp100(energy);
+    }
+
     private static double Clamp100(double value) => Math.Clamp(value, 0.0, MaxResource);
 
     private static double Clamp01(double value) => Math.Clamp(value, 0.0, 1.0);
