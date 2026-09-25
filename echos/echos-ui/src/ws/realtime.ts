@@ -1,12 +1,12 @@
 import { WS_URL } from '../config'
 import { useLiveStore } from '../store'
-import type { WsMessage } from '../api/types'
+import type { LiveAgent, WsMessage } from '../api/types'
 
 const RECONNECT_DELAY_MS = 2000
 
 let socket: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
-let pendingSnapshot: { type: 'snapshot'; tick: number; agents: Record<string, unknown>[]; world?: import('../api/types').WorldSnapshot } | null = null
+let pendingSnapshot: { type: 'snapshot'; tick: number; agents: LiveAgent[]; world?: import('../api/types').WorldSnapshot } | null = null
 let pendingEventCount = 0
 let flushScheduled = false
 

@@ -36,8 +36,8 @@ export interface WorldCell {
 }
 
 export interface WorldResource {
-  kind: string
-  amount: number
+  type: string
+  quantity: number
 }
 
 export interface WorldObstacle {
@@ -54,6 +54,14 @@ export interface WorldSnapshot {
   obstacles?: WorldObstacle[]
   season?: string
   seasonIndex?: number
+}
+
+export interface LiveAgent {
+  id: string
+  position?: { x: number; y: number }
+  positionX?: number
+  positionY?: number
+  [key: string]: unknown
 }
 
 export type EngineData = Record<string, number>
@@ -219,7 +227,7 @@ export type WsMessage =
   | {
       type: 'snapshot'
       tick: number
-      agents: Record<string, unknown>[]
+      agents: LiveAgent[]
       resources?: WorldResource[]
       obstacles?: WorldObstacle[]
       season?: string

@@ -76,4 +76,32 @@ describe('useMetrics', () => {
     })
     expect(screen.getByRole('status')).toHaveTextContent('2')
   })
+
+  it('does not move the displayed tick backwards when a stale response arrives', async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          run_id: 'run-1', engine: null, metric: null, every: 1,
+          ticks: [1, 2], values: {}, latest: {}, latest_tick: 2,
+        }),
+      })
+      .mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          run_id: 'run-1', engine: null, metric: null, every: 1,
+          ticks: [1], values: {}, latest: {}, latest_tick: 1,
+        }),
+      })
+    vi.stubGlobal('fetch', request)
+    render(<Probe />)
+    await act(async () => {})
+    expect(screen.getByRole('status')).toHaveTextContent('2')
+    await act(async () => {
+      vi.advanceTimersByTime(1000)
+      await Promise.resolve()
+    })
+    expect(screen.getByRole('status')).toHaveTextContent('2')
+  })
 })

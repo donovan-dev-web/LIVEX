@@ -28,7 +28,21 @@ function mergeMetrics(previous: MetricsResponse | null, next: MetricsResponse): 
       values[engine][metric] = ticks.map((tick) => byTick.get(tick) ?? NaN)
     }
   }
-  return { ...next, ticks, values }
+  const latestTick = Math.max(
+    previous.latest_tick ?? 0,
+    next.latest_tick ?? 0,
+    ticks[ticks.length - 1] ?? 0,
+  ) || null
+  return {
+    ...previous,
+    ...next,
+    ticks,
+    values,
+    latest: latestTick === previous.latest_tick && previous.latest
+      ? previous.latest
+      : next.latest,
+    latest_tick: latestTick,
+  }
 }
 
 export function useLoadRuns() {
