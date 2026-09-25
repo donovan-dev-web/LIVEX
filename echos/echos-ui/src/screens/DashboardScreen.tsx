@@ -81,8 +81,8 @@ export function DashboardScreen() {
         {live?.world?.resources?.length ? (
           <div className="world-resources mt-3">
             {live.world.resources.map((resource) => (
-              <span className="badge" key={resource.kind}>
-                {resource.kind}: {resource.amount}
+              <span className="badge" key={resource.type}>
+                {resource.type}: {resource.quantity}
               </span>
             ))}
           </div>

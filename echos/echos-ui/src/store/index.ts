@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { RunMeta, WorldSnapshot } from '../api/types'
+import type { LiveAgent, RunMeta, WorldSnapshot } from '../api/types'
 
 export type WsState = 'connected' | 'connecting' | 'disconnected'
 
@@ -7,7 +7,7 @@ export interface LiveSnapshot {
   tick: number
   agentCount: number
   messageCount: number
-  agents: Record<string, unknown>[]
+  agents: LiveAgent[]
   world?: WorldSnapshot
 }
 
