@@ -45,6 +45,25 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         default=10,
         help="cadence SYNE du run batch (défaut: 10; augmenter seulement si ECHOS suit)",
     )
+    parser.add_argument(
+        "--analysis-every",
+        type=_ticks_per_second,
+        default=1,
+        help=(
+            "planifie l'analyse ECHOS (8 moteurs + contextes) 1 tick sur N "
+            "(défaut: 1 = chaque tick; N>1 réduit la RAM/CPU au détriment de la "
+            "granularité des séries métriques)"
+        ),
+    )
+    parser.add_argument(
+        "--parquet",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "conserve la trace .parquet complète (remplace le .json); le rapport "
+            ".md est toujours généré (défaut: activé)"
+        ),
+    )
     parser.add_argument("--database", type=Path, default=DEFAULT_DB, help="base SQLite ECHOS")
     parser.add_argument(
         "--config",
@@ -214,10 +233,17 @@ def run(args: argparse.Namespace) -> int:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     marker = args.output_dir / f".ingest-started-{os.getpid()}"
     marker.unlink(missing_ok=True)
+    agents_trace = args.output_dir / f".agents-{os.getpid()}.parquet"
+    agents_trace.unlink(missing_ok=True)
     api, syne, ingest = _command(args)
     environment = os.environ.copy()
     environment.update(
         ECHOS_ANALYTICS_DB=str(args.database),
+        ECHOS_ANALYSIS_EVERY=str(args.analysis_every),
+        # The per-agent series Parquet (ECHOS-013) is kept as an extra complete
+        # trace: written to a temp path while the run_id is unknown, then
+        # renamed to <run_id>.agents.parquet once the run is identified.
+        ECHOS_PARQUET_PATH=str(agents_trace) if args.parquet else "",
         SYNE_CONTROL_URL=args.control_url,
         SYNE_OBSERVABILITY_URL="ws://127.0.0.1:5180/",
         LIVEX_WS_STARTED_FILE=str(marker),
@@ -306,6 +332,8 @@ def run(args: argparse.Namespace) -> int:
         # The report is now durable; stop the consumer before it attempts its
         # normal reconnect and avoid connection-refused noise during cleanup.
         _terminate([processes[2]])
+        if args.parquet and agents_trace.exists():
+            agents_trace.replace(args.output_dir / f"{run_id}.agents.parquet")
 
         generator = (
             shlex.split(args.report_generator)
@@ -320,13 +348,21 @@ def run(args: argparse.Namespace) -> int:
             "--seed",
             str(args.seed),
         ]
+        if args.parquet:
+            generator.append("--parquet")
         completed = subprocess.run(generator, cwd=ROOT, env=environment, check=False)
         if completed.returncode:
             raise RuntimeError(f"générateur de rapport arrêté avec le code {completed.returncode}")
-        print(f"Run {run_id} terminé à {status.get('tick')} ticks; rapport dans {args.output_dir}")
+        artifacts = [str(args.output_dir / f"{run_id}.{ext}") for ext in ("parquet", "md")]
+        if args.parquet:
+            artifacts.append(str(args.output_dir / f"{run_id}.agents.parquet"))
+        print(f"Run {run_id} terminé à {status.get('tick')} ticks; artefacts dans {args.output_dir}:")
+        for artifact in artifacts:
+            print(f"  - {artifact}")
         return 0
     finally:
         marker.unlink(missing_ok=True)
+        agents_trace.unlink(missing_ok=True)
         _terminate(processes)
 
 
