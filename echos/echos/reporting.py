@@ -12,8 +12,24 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pyarrow as pa
+import pyarrow.parquet as pq
+
 from echos.analysis.calibration import build_calibration_report
 from echos.storage.sqlite import AnalyticsStore
+
+_TRACE_SCHEMA = pa.schema(
+    [
+        pa.field("section", pa.string()),
+        pa.field("run_id", pa.string()),
+        pa.field("tick", pa.int64()),
+        pa.field("engine", pa.string()),
+        pa.field("metric", pa.string()),
+        pa.field("key", pa.string()),
+        pa.field("value", pa.float64()),
+        pa.field("payload", pa.string()),
+    ]
+)
 
 
 def _event(row: tuple) -> dict[str, Any]:
@@ -148,7 +164,11 @@ generate_json_report = json_report
 
 
 def markdown_report(
-    store: AnalyticsStore, run_id: str, *, seed_override: int | str | None = None
+    store: AnalyticsStore,
+    run_id: str,
+    *,
+    seed_override: int | str | None = None,
+    trace_artifact: str = "json",
 ) -> str:
     """Render a compact, human-readable report from the canonical model."""
     report = build_report(store, run_id, seed_override=seed_override)
@@ -291,15 +311,16 @@ def markdown_report(
     lines += [
         "",
         "Les occurrences et signaux détaillés par tick restent disponibles dans "
-        "`contexts.phenomena` du fichier JSON.",
+        "`contexts.phenomena` de la trace.",
         "",
         "## Traces et données détaillées",
         "",
-        "Le fichier JSON associé contient l'intégralité des événements, métriques, "
-        "contextes, traces de décision et données de calibration. Ce document "
-        "Markdown conserve uniquement la synthèse utile à la comparaison humaine.",
+        f"La trace associée ({'Parquet' if trace_artifact == 'parquet' else 'JSON'}) contient "
+        "l'intégralité des événements, métriques, contextes, traces de décision et "
+        "données de calibration. Ce document Markdown conserve uniquement la "
+        "synthèse utile à la comparaison humaine.",
         "",
-        f"- Rapport complet : `{run['runId']}.json`",
+        f"- Trace complète : `{run['runId']}.{trace_artifact}`",
         "",
     ]
     return "\n".join(lines)
@@ -308,27 +329,115 @@ def markdown_report(
 generate_markdown_report = markdown_report
 
 
+def _json_repr(payload: object) -> str:
+    """Sérialisation JSON compacte et déterministe (clés triées)."""
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _trace_rows(report: dict[str, Any], run_id: str) -> list[tuple]:
+    """Aplatit le rapport canonique en lignes normalisées Parquet.
+
+    Chaque ligne porte ``section`` (run|tick|event|metric|decision|context|
+    detected_phenomenon|calibration) et, selon la section, ``tick``, ``engine``,
+    ``metric``, ``key``, ``value`` ou ``payload`` (JSON compact). La trace est
+    la donnée d'archivage « complète » : elle remplace le JSON sans
+    perte d'information (ordre stable, valeurs déterministes).
+    """
+    rows: list[tuple] = [
+        ("run", run_id, None, None, None, "metadata", None, _json_repr(report["run"]))
+    ]
+    for tick in report["ticks"]:
+        rows.append(("tick", run_id, tick["tick"], None, None, None, None, _json_repr(tick)))
+    for event in report["events"]:
+        rows.append(
+            ("event", run_id, event["tick"], None, None, event["type"], None, _json_repr(event))
+        )
+    for engine, metrics in report["metrics"]["series"].items():
+        for metric, points in metrics.items():
+            for point in points:
+                rows.append(
+                    ("metric", run_id, point["tick"], engine, metric, None, point["value"], None)
+                )
+    for decision in report["decisionTraces"]:
+        rows.append(
+            ("decision", run_id, decision["tick"], None, None, decision["agent_id"], None,
+             _json_repr(decision))
+        )
+    for context_type, observations in report["contexts"].items():
+        for observation in observations:
+            rows.append(
+                ("context", run_id, observation["tick"], None, None, context_type, None,
+                 _json_repr(observation["payload"]))
+            )
+    for phenomenon in report.get("detectedPhenomena", []):
+        rows.append(
+            ("detected_phenomenon", run_id, None, None, None, phenomenon["identifier"], None,
+             _json_repr(phenomenon))
+        )
+    rows.append(
+        ("calibration", run_id, None, None, None, "report", None, _json_repr(report["calibration"]))
+    )
+    return rows
+
+
+def parquet_report(
+    store: AnalyticsStore,
+    run_id: str,
+    path: str | Path,
+    *,
+    seed_override: int | str | None = None,
+) -> Path:
+    """Expose la trace complète du run en Parquet columnar (archivage).
+
+    Écrit un seul fichier Parquet normalisé (schéma ``_TRACE_SCHEMA``) à partir
+    du modèle canonique : chaque ligne est requêtable (``section``,
+    ``engine``/``metric``, ``key``...) et l'ordre est déterministe (aucune
+    horodatation d'émission). Renvoie le chemin écrit.
+    """
+    report = build_report(store, run_id, seed_override=seed_override)
+    rows = _trace_rows(report, run_id)
+    columns = {
+        field.name: [row[index] for row in rows] for index, field in enumerate(_TRACE_SCHEMA)
+    }
+    table = pa.Table.from_pydict(columns, schema=_TRACE_SCHEMA)
+    pq.write_table(table, str(path), compression="snappy")
+    return Path(path)
+
+
 def write_reports(
     store: AnalyticsStore,
     run_id: str,
     output_dir: str | Path,
     *,
     seed_override: int | str | None = None,
+    parquet: bool = False,
 ) -> tuple[Path, Path]:
-    """Write deterministic ``.json`` and ``.md`` files and return their paths."""
+    """Write deterministic trace + markdown files and return their paths.
+
+    ``parquet=False`` (défaut, rétrocompatible) écrit ``JSON`` + ``.md``.
+    ``parquet=True`` écrit la **trace complète** ``.parquet`` + ``.md`` (le
+    Parquet remplace le JSON comme archive, sans perte d'information).
+    """
     directory = Path(output_dir)
     directory.mkdir(parents=True, exist_ok=True)
-    json_path = directory / f"{run_id}.json"
+    if parquet:
+        trace_path = parquet_report(
+            store, run_id, directory / f"{run_id}.parquet", seed_override=seed_override
+        )
+        artifact = "parquet"
+    else:
+        trace_path = directory / f"{run_id}.json"
+        trace_path.write_text(
+            json_report(store, run_id, seed_override=seed_override) + "\n",
+            encoding="utf-8",
+        )
+        artifact = "json"
     markdown_path = directory / f"{run_id}.md"
-    json_path.write_text(
-        json_report(store, run_id, seed_override=seed_override) + "\n",
-        encoding="utf-8",
-    )
     markdown_path.write_text(
-        markdown_report(store, run_id, seed_override=seed_override),
+        markdown_report(store, run_id, seed_override=seed_override, trace_artifact=artifact),
         encoding="utf-8",
     )
-    return json_path, markdown_path
+    return trace_path, markdown_path
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -337,11 +446,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("run_id")
     parser.add_argument("-o", "--output-dir", type=Path, default=Path("."))
     parser.add_argument("--seed", help="seed à archiver si le flux ne la transporte pas")
+    parser.add_argument(
+        "--parquet",
+        action="store_true",
+        help="écrit la trace complète en .parquet à la place du .json (le .md reste généré)",
+    )
     args = parser.parse_args(argv)
     with AnalyticsStore(args.database) as store:
-        write_reports(
-            store, args.run_id, args.output_dir, seed_override=args.seed
+        trace_path, markdown_path = write_reports(
+            store,
+            args.run_id,
+            args.output_dir,
+            seed_override=args.seed,
+            parquet=args.parquet,
         )
+        print(f"Trace : {trace_path}")
+        print(f"Rapport Markdown : {markdown_path}")
     return 0
 
 

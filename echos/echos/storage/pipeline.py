@@ -9,6 +9,14 @@ Depuis le jalon ECHOS ph4, chaque tick déclenche aussi les 8 moteurs
 numériques) et ``tick_contexts`` (agents, groupes, phénomènes) — les métriques
 sont donc **calculées à l'ingestion, jamais recalculées à la lecture**
 (API_REST.md §4). ``CoherenceResult`` ajoute les compteurs associés.
+
+**Planification (scheduler)** : ``analysis_every=N`` exécute les moteurs et
+écrit métriques/contextes 1 tick sur N (déterminisme : indiciel, N stable).
+Les données d'ingestion (``tick_summaries``, ``events_log``,
+``decision_traces``, Parquet agents) restent écrites **à chaque tick**.
+``parquet_flush_every`` borne la mémoire de la série Parquet : écriture
+cumulée toutes les N ticks (au lieu de réécrire le fichier entier à chaque
+tick), vidée automatiquement en fin de flux.
 """
 
 from __future__ import annotations
@@ -29,6 +37,8 @@ from echos.storage.aggregation import TickRecord
 from echos.storage.parquet import AgentSeriesRow, agent_rows, read_agent_series
 from echos.storage.parquet import write_agent_series
 from echos.storage.sqlite import AnalyticsStore
+
+_DECISION_TYPE = "decision_made"
 
 
 @dataclass(frozen=True)
@@ -96,19 +106,22 @@ def consume(
     sample_every: int | None = None,
     parquet_path: str | Path | None = None,
     logger: EchosLogger | None = None,
+    analysis_every: int = 1,
+    parquet_flush_every: int | None = None,
 ) -> ConsumeResult:
     """Consomme le flux :5180 et peuple le stockage d'analyse.
 
     Métadonnées (``run_id``, ``version``, ``seed``) dérivées du premier
     snapshot ; l'écriture Parquet est optionnelle via ``parquet_path``.
-    Chaque tick écrit aussi les métriques des 8 moteurs (``tick_metrics``)
-    et les contextes ``agents``/``groups``/``phenomena``/``profiling``
-    (``tick_contexts``) — les métriques sont donc **calculées à l'ingestion,
-    jamais recalculées à la lecture** (API_REST.md §4). Depuis le jalon ph5 :
-    traces de décision ``decision_made`` (``decision_traces``, ECHOS-051),
-    profilage par moteur (ECHOS-052) et, si ``logger`` est fourni,
+    ``analysis_every`` (scheduler, défaut 1) planifie les 8 moteurs et les
+    contextes sur 1 tick sur N — le reste du pipeline (résumés, événements,
+    traces de décision, série Parquet) reste écrit à chaque tick. Depuis le
+    jalon ph5 : traces de décision ``decision_made`` (``decision_traces``,
+    ECHOS-051), profilage par moteur (ECHOS-052) et, si ``logger`` est fourni,
     journalisation structurée JSON Lines (ECHOS-050).
     """
+    if analysis_every < 1:
+        raise ValueError("analysis_every doit être >= 1")
     ticks_written = 0
     events_written = 0
     agents_written = 0
@@ -117,6 +130,7 @@ def consume(
     decision_traces_written = 0
     run_known = False
     run_id: str | None = None
+    pending_agents: list[AgentSeriesRow] = []
 
     for _index, segment in _segments(client, sample_every):
         snapshot = segment.snapshot
@@ -131,26 +145,6 @@ def consume(
 
         tick_record = TickRecord.from_segment(segment)
 
-        engine_snapshot = _snapshot_for_engines(segment)
-        markers = ProfileMarkers()
-        metrics = compute_all(engine_snapshot, profile=markers)
-        profile = markers.summary()
-        emergence = metrics.get("EmergenceIndicators") or {}
-        contexts = {
-            "phenomena": {
-                "detected": emergence.get("DetectedPhenomena", []),
-                "disclaimer": emergence.get("Disclaimer", ""),
-            },
-            "agents": engine_snapshot.get("agents") or [],
-            "groups": _groups_of(engine_snapshot.get("agents") or []),
-            "profiling": profile,
-        }
-        contexts_written += 4
-
-        if logger is not None:
-            logger.structured(snapshot.run_id, segment.tick, metrics)
-            logger.profiling(snapshot.run_id, segment.tick, profile)
-
         events = [
             (
                 event.type,
@@ -162,13 +156,45 @@ def consume(
             )
             for event in segment.events
         ]
+        has_decision = any(event.type == _DECISION_TYPE for event in segment.events)
+
+        # The engine snapshot is a large JSON dump of the world: build it only
+        # when analysis runs on this tick or a decision trace needs its context.
+        at_cadence = _index % analysis_every == 0
+        engine_snapshot = (
+            _snapshot_for_engines(segment) if (at_cadence or has_decision) else None
+        )
+        metrics: dict[str, dict] = {}
+        contexts: dict[str, object] = {}
+        if at_cadence:
+            assert engine_snapshot is not None
+            markers = ProfileMarkers()
+            metrics = compute_all(engine_snapshot, profile=markers)
+            profile = markers.summary()
+            emergence = metrics.get("EmergenceIndicators") or {}
+            contexts = {
+                "phenomena": {
+                    "detected": emergence.get("DetectedPhenomena", []),
+                    "disclaimer": emergence.get("Disclaimer", ""),
+                },
+                "agents": engine_snapshot.get("agents") or [],
+                "groups": _groups_of(engine_snapshot.get("agents") or []),
+                "profiling": profile,
+            }
+            contexts_written += 4
+
+            if logger is not None:
+                logger.structured(snapshot.run_id, segment.tick, metrics)
+                logger.profiling(snapshot.run_id, segment.tick, profile)
+
         traces = []
         for event in segment.events:
             events_written += 1
 
-            if event.type == "decision_made":
+            if event.type == _DECISION_TYPE:
                 trace = build_decision_trace(
-                    snapshot.run_id, segment.tick, event, engine_snapshot
+                    snapshot.run_id, segment.tick, event,
+                    engine_snapshot or _snapshot_for_engines(segment),
                 )
                 traces.append(trace)
                 decision_traces_written += 1
@@ -182,14 +208,20 @@ def consume(
 
         if parquet_path is not None:
             rows = agent_rows(segment)
-            _extend_agent_series(parquet_path, rows)
+            pending_agents.extend(rows)
             agents_written += len(rows)
+            if parquet_flush_every is not None and _index and _index % parquet_flush_every == 0:
+                _flush_agent_series(parquet_path, pending_agents)
+                pending_agents = []
 
         if logger is not None:
             logger.debug(
                 f"tick={segment.tick} run={snapshot.run_id} "
                 f"metrics={metrics_written} decisions={decision_traces_written}"
             )
+
+    if parquet_path is not None and pending_agents:
+        _flush_agent_series(parquet_path, pending_agents)
 
     if ticks_written:
         assert run_id is not None
@@ -218,10 +250,15 @@ def _json_dumps(value: dict) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"))
 
 
-def _extend_agent_series(
+def _flush_agent_series(
     path: str | Path, rows: list[AgentSeriesRow]
 ) -> None:
-    """Écriture cumulée : réunit les lignes existantes puis les nouvelles."""
+    """Écriture cumulée bornée : réunit les lignes existantes puis les nouvelles.
+
+    Remplace l'ancienne réécriture à chaque tick (O(n²) en lecture/émission) :
+    la série est regroupée en mémoire sur ``parquet_flush_every`` ticks puis
+    écrite en une passe — bien moins de RAM et d'I/O, ordre toujours stable.
+    """
     if Path(path).exists():
         existing = list(read_agent_series(str(path)))
         write_agent_series(path, [*existing, *rows])
