@@ -8,7 +8,7 @@
 
 [![Licence MIT](https://img.shields.io/badge/Licence-MIT-216e5a?style=for-the-badge)](LICENSE)
 [![Version V0.1](https://img.shields.io/badge/Version-V0.1-315c9b?style=for-the-badge)](VERSIONING.md)
-[![Jalon U8](https://img.shields.io/badge/Jalon-U8%20complet-216e5a?style=for-the-badge)](ROADMAP.md)
+[![Jalon U8](https://img.shields.io/badge/Jalon-U8%20en%20validation-d97706?style=for-the-badge)](ROADMAP.md)
 [![Documentation](https://img.shields.io/badge/Docs-en%20fran%C3%A7ais-6b7280?style=for-the-badge)](GLOSSARY.md)
 
 [Découvrir le projet](#-le-projet) · [Architecture](#-architecture) · [Démarrage](#-démarrage-rapide) · [Documentation](#-documentation) · [Contribuer](#-contribuer)
@@ -53,7 +53,9 @@ flowchart LR
 | **ECHOS** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI, stockage SQLite/Parquet et interface React/TypeScript. |
 | **PRISM** · *Perceptual Rendering & Interactive Simulation Module* | Doit représenter et rendre le monde interactif. | Documentation et contrats préparatoires ; le runtime vient après U8. |
 
-> **U8 — Tests & persistance : terminé.** Les jalons SYNE et ECHOS couverts, les limites connues et la suite du projet sont détaillés dans la [feuille de route](ROADMAP.md).
+> **U8 — Tests & persistance : en validation.** Le flux réel SYNE → ECHOS
+> est couvert par une intégration multi-ticks ; l'acceptation transverse et
+> l'expérience UI restent suivies dans la [feuille de route](ROADMAP.md).
 
 ## 🚀 Démarrage rapide
 

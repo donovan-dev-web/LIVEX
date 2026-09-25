@@ -73,7 +73,7 @@ public sealed record WorldSnapshot(
     IReadOnlyList<BookSnapshot> Books)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
-    public static WorldSnapshot Capture(SimulationLoop loop, ulong seed)
+    public static WorldSnapshot Capture(SimulationLoop loop, ulong seed, string? runId = null)
     {
         ArgumentNullException.ThrowIfNull(loop);
 
@@ -135,7 +135,7 @@ public sealed record WorldSnapshot(
 
         return new WorldSnapshot(
             ObservabilityContract.Version,
-            ObservabilityContract.RunIdFor(seed),
+            runId ?? ObservabilityContract.RunIdFor(seed),
             loop.CurrentTick,
             SimulationTime.ToSimulatedMinutes(loop.CurrentTick),
             agents.Count,

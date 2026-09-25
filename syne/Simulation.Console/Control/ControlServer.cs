@@ -166,7 +166,12 @@ public sealed class ControlServer : IAsyncDisposable
             return (409, ToJson(ErrorJson("run_active", "Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.")));
         }
 
-        string runId = await _controller.StartAsync(seed, config, maxTicks);
+        // Manual/UI runs use the reviewed reference profile unless the caller
+        // supplies an explicit configuration overlay.
+        string runId = await _controller.StartAsync(
+            seed,
+            config ?? SimulationProfiles.Reference(),
+            maxTicks);
         return (200, ToJson(OkJson("started", runId, _controller.Status())));
     }
 

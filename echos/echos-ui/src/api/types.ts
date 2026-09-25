@@ -24,6 +24,36 @@ export interface MetricsResponse {
   ticks: number[]
   values: MetricValues
   latest: MetricLatest
+  /** Highest tick currently persisted in the metrics store, if any. */
+  latest_tick?: number | null
+}
+
+export interface WorldCell {
+  x: number
+  y: number
+  terrain?: string
+  resource?: string | number
+}
+
+export interface WorldResource {
+  kind: string
+  amount: number
+}
+
+export interface WorldObstacle {
+  id: string
+  x: number
+  y: number
+  radius: number
+}
+
+export interface WorldSnapshot {
+  width?: number
+  height?: number
+  resources?: WorldResource[]
+  obstacles?: WorldObstacle[]
+  season?: string
+  seasonIndex?: number
 }
 
 export type EngineData = Record<string, number>
@@ -100,6 +130,10 @@ export interface PhenomenonSignal {
 export interface Phenomenon {
   identifier: string
   label: string
+  description?: string
+  firstTick?: number
+  lastTick?: number
+  occurrences?: number
   signals: PhenomenonSignal[]
 }
 
@@ -182,6 +216,14 @@ export interface ApiErrorPayload {
 }
 
 export type WsMessage =
-  | { type: 'snapshot'; tick: number; agents: Record<string, unknown>[] }
+  | {
+      type: 'snapshot'
+      tick: number
+      agents: Record<string, unknown>[]
+      resources?: WorldResource[]
+      obstacles?: WorldObstacle[]
+      season?: string
+      seasonIndex?: number
+    }
   | { type: 'event'; tick: number; event_type: string; agent_id?: string }
   | { type: string; tick?: number; [key: string]: unknown }

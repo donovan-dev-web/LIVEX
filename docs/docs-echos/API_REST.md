@@ -53,6 +53,10 @@ Ordres **déterministes** (aucun PRNG, aucun horodatage d'émission) : runs tri�
 
 Sans paramètre `run_id` sur les endpoints suivants, le **run par défaut** est le plus récent (`last_tick` maximal, départage `run_id`).
 
+L'identité persistée par ECHOS est le `runId` du snapshot SYNE. Elle est opaque
+et stable pendant le run ; le contrôle HTTP SYNE renvoie ce même identifiant
+pour permettre la corrélation avec les données analytiques.
+
 ### 3.2 `GET /api/runs/{id}`
 
 Métadonnées + **dernières métriques** de tous les moteurs (`{engine: {metric: value}}`) + contexte `phenomena` (`detected` + `disclaimer`).

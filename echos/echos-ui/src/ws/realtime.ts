@@ -6,7 +6,7 @@ const RECONNECT_DELAY_MS = 2000
 
 let socket: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
-let pendingSnapshot: { type: 'snapshot'; tick: number; agents: Record<string, unknown>[] } | null = null
+let pendingSnapshot: { type: 'snapshot'; tick: number; agents: Record<string, unknown>[]; world?: import('../api/types').WorldSnapshot } | null = null
 let pendingEventCount = 0
 let flushScheduled = false
 
@@ -18,6 +18,8 @@ function flushLiveUpdate() {
       tick: pendingSnapshot.tick ?? 0,
       agentCount: Array.isArray(pendingSnapshot.agents) ? pendingSnapshot.agents.length : 0,
       messageCount: pendingEventCount,
+      agents: pendingSnapshot.agents,
+      world: pendingSnapshot.world,
     })
     pendingSnapshot = null
     pendingEventCount = 0
@@ -73,6 +75,12 @@ export function connect(): void {
           type: 'snapshot',
           tick: message.tick ?? 0,
           agents: message.agents,
+          world: {
+            resources: Array.isArray(message.resources) ? message.resources as import('../api/types').WorldResource[] : undefined,
+            obstacles: Array.isArray(message.obstacles) ? message.obstacles as import('../api/types').WorldObstacle[] : undefined,
+            season: typeof message.season === 'string' ? message.season : undefined,
+            seasonIndex: typeof message.seasonIndex === 'number' ? message.seasonIndex : undefined,
+          },
         }
         pendingEventCount = 0
         scheduleLiveUpdate()

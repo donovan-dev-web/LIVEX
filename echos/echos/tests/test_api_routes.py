@@ -133,6 +133,7 @@ def test_metrics_series_contract_and_downsampling(tmp_path):
     assert body["run_id"] == "run-7"
     assert body["ticks"] == [1, 2, 3, 4, 5]
     assert body["every"] == 1
+    assert body["latest_tick"] == 5
     score = body["values"]["EmergenceIndicators"]["EmergenceScore"]
     assert len(score) == 5
     assert body["latest"]["EmergenceIndicators"]

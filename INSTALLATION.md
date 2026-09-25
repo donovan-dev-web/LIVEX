@@ -117,6 +117,128 @@ dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
+## Run batch SYNE + analyse ECHOS + rapport
+
+Pour exécuter une simulation reproductible sans lancer l'interface, utilisez le
+lanceur batch. Il démarre uniquement l'API ECHOS, l'ingestion analytique et
+SYNE, puis attend la fin du nombre de ticks demandé :
+
+```bash
+./scripts/batch-analysis.py 12345 1000
+```
+
+La commande accepte une seed et un nombre de ticks obligatoires. Elle arrête
+les processus après la fin du run et produit deux fichiers déterministes dans
+`echos/data/reports/` :
+
+- `<run-id>.json` : format complet pour comparaison/outillage ;
+- `<run-id>.md` : lecture humaine, avec résumé par tick, historique des
+  événements pertinents, métriques principales, évolution par tick et
+  calibration. Le détail exhaustif reste dans le JSON.
+
+La cadence batch est de 10 ticks/s par défaut, comme le mode contrôlé normal.
+Elle peut être augmentée si les mesures montrent qu'ECHOS suit le flux :
+
+```bash
+./scripts/batch-analysis.py 12345 1000 --ticks-per-second 25
+```
+
+Cette option accélère SYNE, mais ne mesure pas automatiquement la capacité
+d'ECHOS : si l'ingestion prend du retard, le drainage peut échouer et le run
+est alors signalé comme incomplet. Utilisez 10 ticks/s comme référence
+comparable entre les seeds, et une cadence supérieure uniquement pour les
+benchmarks.
+
+Le batch attend explicitement que tous les snapshots soient persistés avant de
+fermer SYNE. Si ECHOS décroche ou si le drainage dépasse le délai, la commande
+échoue avec le nombre de ticks effectivement ingérés au lieu de produire un
+rapport présenté à tort comme complet. Le délai de drainage peut être séparé
+du délai général :
+
+```bash
+./scripts/batch-analysis.py 12345 400 --drain-timeout 900
+```
+
+La configuration par défaut de SYNE utilise désormais le profil calibré
+`reference`, afin que le lancement manuel par l'UI ne démarre pas un monde
+condamné à l'extinction. Le dépôt conserve aussi l'ancien comportement dans
+le profil `raw`, utile pour reproduire le rapport historique où `seed=12345`
+sur 400 ticks provoquait une extinction complète par `energy_exhaustion`.
+
+Pour exécuter explicitement un run calibré :
+
+```bash
+./scripts/batch-analysis.py 12345 400 --profile reference
+```
+
+Ce profil réduit les coûts énergétiques auxiliaires et augmente les réserves
+initiales. Le profil `raw` reste disponible :
+
+```bash
+./scripts/batch-analysis.py 12345 400 --profile raw
+```
+
+`--config` reste disponible pour tester une configuration locale.
+
+Le drainage final est effectué après l'arrêt propre de SYNE afin que le
+dernier tick soit flushé par ECHOS. Le rapport n'est généré qu'après
+l'ingestion de tous les ticks demandés.
+
+Les snapshots peuvent dépasser 1 MiB après plusieurs centaines de ticks
+(mémoire et historique des agents). Le client ECHOS est configuré avec une
+limite de trame augmentée et une réception séparée du calcul analytique afin
+que le flux ne se ferme pas prématurément sur ces runs longs.
+
+Options utiles :
+
+```bash
+./scripts/batch-analysis.py 42 500 \
+  --database echos/data/runs.sqlite \
+  --output-dir echos/data/reports/seed-42
+```
+
+Les rapports restent archivés dans le répertoire de sortie et la base SQLite
+conserve les runs précédents. Pour comparer deux runs, utilisez deux seeds et
+des répertoires distincts, puis comparez les JSON ou consultez l'endpoint
+`/api/compare` avec leurs `runId`.
+
+### Benchmark et runs longs
+
+Le benchmark SYNE isolé permet de distinguer un problème de simulation d'un
+retard d'analyse :
+
+```bash
+dotnet run --project syne/Simulation.Console/Simulation.Console.csproj \
+  --configuration Release --no-build -- \
+  --benchmark --benchmark-populations 100 \
+  --benchmark-ticks 800 --seed 12345
+```
+
+Sur la configuration de référence, 800 ticks et 100 agents atteignent environ
+5 255 ticks/s (0,19 ms/tick). Le coût observé sur les runs longs vient
+principalement d'ECHOS : les contextes cognitifs `agents` grossissent avec
+l'historique des croyances. Ils sont compressés automatiquement dans SQLite,
+avec lecture rétrocompatible des anciennes lignes JSON. Cette compression
+réduit fortement la taille disque, mais ne rend pas l'analyse instantanée :
+après un run rapide, ECHOS peut encore devoir drainer les ticks en attente.
+
+Pour vérifier qu'un run long est réellement analysé, contrôlez que le nombre de
+ticks persistés atteint `last_tick` dans l'UI ou via `/api/runs/{runId}`. Un
+run SYNE arrivé à 800 ticks alors qu'ECHOS n'en a persisté que 722 est terminé
+côté simulation, mais incomplet côté analyse ; le rapport ne doit être généré
+qu'après ce drainage.
+
+Le JSON conserve les contextes phénomènes à chaque tick dans
+`contexts.phenomena`. Le rapport Markdown ajoute une synthèse des phénomènes
+uniques détectés, avec leur identifiant, description, première et dernière
+détection et nombre d'occurrences. L'endpoint `/api/emergent-phenomena` et
+l'interface affichent cette même vue historique, même si le dernier tick ne
+contient plus le phénomène.
+
+Le lanceur suppose que le binaire Release de SYNE existe. Compilez-le au
+préalable avec `dotnet build syne/Syne.sln --configuration Release` ou lancez
+`./scripts/dev-stack.sh` une première fois.
+
 ## Ports utilisés
 
 | Service | Adresse | Rôle |

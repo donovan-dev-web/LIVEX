@@ -39,7 +39,6 @@ public sealed record SimulationStatusSnapshot(
 /// </summary>
 public sealed class SimulationController : IAsyncDisposable
 {
-    private const int TickIntervalMilliseconds = 10;
     private readonly object _gate = new();
     private readonly ManualResetEventSlim _runSignal = new(initialState: false);
     private readonly IObservabilitySink? _observabilitySink;
@@ -105,25 +104,26 @@ public sealed class SimulationController : IAsyncDisposable
         (SimulationOptions options, ulong effectiveSeed) = SimulationFactory.ResolveOptions(
             ConfigLoader.LoadDefaults(), config, seed);
         var (_, loop) = SimulationFactory.Build(options, effectiveSeed);
+        var runCts = new CancellationTokenSource();
+        string runId = Guid.NewGuid().ToString("N")[..12];
+        TimeSpan tickInterval = TimeSpan.FromSeconds(1d / options.Simulation.TicksPerSecond);
         var emitter = _observabilitySink is null
             ? null
-            : new ObservabilityTickEmitter(loop, effectiveSeed, _observabilitySink);
-
-        var runCts = new CancellationTokenSource();
+            : new ObservabilityTickEmitter(loop, effectiveSeed, _observabilitySink, runId);
 
         lock (_gate)
         {
             _loop = loop;
             _seed = effectiveSeed;
             _maxTicks = maxTicks;
-            _runId = Guid.NewGuid().ToString("N")[..12];
+            _runId = runId;
             _state = SimulationControlState.Running;
             _runCts = runCts;
         }
 
-        _ = Task.Run(() => RunLoopAsync(loop, maxTicks, emitter, runCts), CancellationToken.None);
+        _ = Task.Run(() => RunLoopAsync(loop, maxTicks, emitter, runCts, tickInterval), CancellationToken.None);
 
-        return _runId;
+        return runId;
     }
 
     /// <summary>Suspend l'avancement : la boucle gèle au plus vite (au plus un tick après l'appel).</summary>
@@ -217,7 +217,8 @@ public sealed class SimulationController : IAsyncDisposable
         SimulationLoop loop,
         int? targetTicks,
         ObservabilityTickEmitter? emitter,
-        CancellationTokenSource runCts)
+        CancellationTokenSource runCts,
+        TimeSpan tickInterval)
     {
         using (runCts)
         {
@@ -267,7 +268,7 @@ public sealed class SimulationController : IAsyncDisposable
                     await emitter.EmitCurrentTickAsync();
                 }
 
-                await Task.Delay(TickIntervalMilliseconds, token);
+                await Task.Delay(tickInterval, token);
             }
         }
     }
