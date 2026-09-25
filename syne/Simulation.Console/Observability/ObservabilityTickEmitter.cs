@@ -16,14 +16,22 @@ public sealed class ObservabilityTickEmitter
 {
     private readonly SimulationLoop _loop;
     private readonly ulong _seed;
+    private readonly string _runId;
     private readonly IObservabilitySink _sink;
 
-    public ObservabilityTickEmitter(SimulationLoop loop, ulong seed, IObservabilitySink sink)
+    public ObservabilityTickEmitter(
+        SimulationLoop loop,
+        ulong seed,
+        IObservabilitySink sink,
+        string? runId = null)
     {
         ArgumentNullException.ThrowIfNull(loop);
         ArgumentNullException.ThrowIfNull(sink);
         _loop = loop;
         _seed = seed;
+        _runId = string.IsNullOrWhiteSpace(runId)
+            ? ObservabilityContract.RunIdFor(seed)
+            : runId;
         _sink = sink;
     }
 
@@ -47,7 +55,7 @@ public sealed class ObservabilityTickEmitter
     /// <summary>Diffuse le snapshot puis les événements du tick courant (API_CONTRACTS.md §2).</summary>
     public async Task EmitCurrentTickAsync()
     {
-        WorldSnapshot snapshot = WorldSnapshot.Capture(_loop, _seed);
+        WorldSnapshot snapshot = WorldSnapshot.Capture(_loop, _seed, _runId);
         await _sink.BroadcastAsync(
             ObservabilitySerializer.ToJsonText(ObservabilitySerializer.SnapshotMessage(snapshot)));
 

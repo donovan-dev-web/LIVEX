@@ -291,6 +291,18 @@ def test_no_trust_graph_isolates_every_agent():
     assert groups["AverageGroupSize"] == 1.0
 
 
+def test_self_trust_relation_does_not_break_community_detection():
+    from echos.analysis import social_complexity
+
+    snapshot = _fresh_snapshot()
+    for agent in snapshot["agents"]:
+        agent["trust"] = [{"peerId": agent["id"], "trust": 1.0}]
+
+    result = social_complexity.compute(snapshot)
+
+    assert result["NumberOfCommunities"] == 3
+
+
 def test_feedback_loop_without_history_is_neutral():
     from echos.analysis import feedback_loop_detector
 

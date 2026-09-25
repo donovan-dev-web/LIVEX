@@ -169,3 +169,5 @@ jobs:
         run: npm run lint
       - name: Tests
         run: npm test -- --run
+      - name: Build
+        run: npm run build

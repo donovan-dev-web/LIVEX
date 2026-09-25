@@ -16,11 +16,13 @@ from __future__ import annotations
 
 import csv
 import io
+import os
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 
 from echos.analysis import reproducibility
 from echos.analysis.causal import MAX_DEPTH, build_chain, CausalError
+from echos.ingestion import ControlClient, ControlError
 from echos.storage.sqlite import AnalyticsStore
 
 from .causal_cache import CausalCache
@@ -82,9 +84,51 @@ def _read_every(every: int | None) -> int:
 
 
 def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
-    """Attache les endpoints d'analyse ECHOS à l'application."""
+    """Attache les endpoints ECHOS et le relais local de contrôle SYNE."""
+    control_base_url = os.environ.get(
+        "SYNE_CONTROL_URL", "http://127.0.0.1:5181"
+    )
     cache = SeriesCache()
     causal_cache = CausalCache()
+
+    @app.get("/api/control/status", tags=["control"])
+    def control_status() -> dict:
+        """Relaye l'état du serveur SYNE sans exposer son port au navigateur."""
+        try:
+            with ControlClient(base_url=control_base_url) as control:
+                return control.status()
+        except ControlError as exc:
+            _raise_control_error(exc)
+
+    @app.post("/api/control/{action}", tags=["control"])
+    def control_command(
+        action: str, payload: dict | None = Body(default=None)
+    ) -> dict:
+        """Relaye une commande locale au contrat HTTP SYNE :5181."""
+        if action not in {"start", "pause", "resume", "stop", "reset"}:
+            raise HTTPException(status_code=404, detail="commande de contrôle inconnue")
+        options = payload or {}
+        try:
+            with ControlClient(base_url=control_base_url) as control:
+                if action == "start":
+                    return control.start(
+                        seed=options.get("seed"),
+                        config=options.get("config"),
+                        max_ticks=options.get("maxTicks"),
+                    )
+                if action == "pause":
+                    return control.pause()
+                if action == "resume":
+                    return control.resume()
+                if action == "stop":
+                    return control.stop()
+                return control.reset(
+                    seed=options.get("seed"),
+                    run_id=options.get("runId"),
+                    max_ticks=options.get("maxTicks"),
+                )
+        except ControlError as exc:
+            _raise_control_error(exc)
 
     @app.get("/api/runs", tags=["api"])
     def list_runs() -> dict:
@@ -97,14 +141,40 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         resolved = _resolve_run(active, run_id)
         runs = {run["run_id"]: run for run in active.runs()}
         run = runs[resolved]
-        phenomena = active.latest_context(resolved, "phenomena") or (
-            -1,
-            {"detected": [], "disclaimer": ""},
-        )
+        observations = active.contexts(resolved).get("phenomena", [])
+        detected: dict[str, dict] = {}
+        disclaimer = ""
+        first_tick = -1
+        last_tick = -1
+        for tick, payload in observations:
+            first_tick = tick if first_tick < 0 else min(first_tick, tick)
+            last_tick = max(last_tick, tick)
+            disclaimer = payload.get("disclaimer") or disclaimer
+            for phenomenon in payload.get("detected") or []:
+                identifier = phenomenon.get("identifier")
+                if not identifier:
+                    continue
+                item = detected.setdefault(
+                    identifier,
+                    {
+                        **phenomenon,
+                        "firstTick": tick,
+                        "lastTick": tick,
+                        "occurrences": 0,
+                    },
+                )
+                item["firstTick"] = min(item["firstTick"], tick)
+                item["lastTick"] = max(item["lastTick"], tick)
+                item["occurrences"] += 1
         return {
             **_metadata(run),
             "metrics": active.latest_metrics(resolved),
-            "phenomena": phenomena[1],
+            "phenomena": {
+                "detected": sorted(detected.values(), key=lambda item: item["identifier"]),
+                "disclaimer": disclaimer,
+                "first_tick": first_tick,
+                "last_tick": last_tick,
+            },
         }
 
     @app.get("/api/runs/{run_id}/calibration", tags=["api"])
@@ -163,6 +233,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             "ticks": out_ticks,
             "values": values,
             "latest": latest,
+            "latest_tick": ticks[-1] if ticks else None,
         }
 
     @app.get("/api/runs/{run_id}/export", tags=["api"])
@@ -369,20 +440,49 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
     def emergent_phenomena(run_id: str | None = Query(default=None)) -> dict:
         active = _require_store(store)
         resolved = _resolve_run(active, run_id)
-        observation = active.latest_context(resolved, "phenomena")
-        if observation is None:
+        observations = active.contexts(resolved).get("phenomena", [])
+        if not observations:
             return {
                 "run_id": resolved,
                 "tick": -1,
                 "phenomena": [],
                 "disclaimer": "",
             }
-        tick, phenomena = observation
+        detected: dict[str, dict] = {}
+        disclaimer = ""
+        for tick, payload in observations:
+            disclaimer = payload.get("disclaimer") or disclaimer
+            for phenomenon in payload.get("detected") or []:
+                identifier = phenomenon.get("identifier")
+                if not identifier:
+                    continue
+                item = detected.setdefault(
+                    identifier,
+                    {**phenomenon, "firstTick": tick, "lastTick": tick, "occurrences": 0},
+                )
+                item["firstTick"] = min(item["firstTick"], tick)
+                item["lastTick"] = max(item["lastTick"], tick)
+                item["occurrences"] += 1
         return {
             "run_id": resolved,
-            "tick": tick,
-            "phenomena": phenomena.get("detected") or [],
-            "disclaimer": phenomena.get("disclaimer") or "",
+            "tick": observations[-1][0],
+            "phenomena": sorted(detected.values(), key=lambda item: item["identifier"]),
+            "disclaimer": disclaimer,
         }
 
     app.state.series_cache = cache
+
+
+def _raise_control_error(error: ControlError) -> None:
+    """Traduit les indisponibilités SYNE en erreurs explicites côté ECHOS."""
+    if error.status == "transport":
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "serveur de contrôle SYNE indisponible ; démarrez SYNE avec --serve "
+                "(port 5181)"
+            ),
+        ) from error
+    raise HTTPException(
+        status_code=int(error.status), detail=error.detail or "commande SYNE refusée"
+    ) from error

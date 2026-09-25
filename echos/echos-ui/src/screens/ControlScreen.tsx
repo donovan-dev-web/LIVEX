@@ -13,11 +13,18 @@ export function ControlScreen() {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [pending, setPending] = useState<string | null>(null)
 
-  const send = async (action: 'start' | 'pause' | 'resume' | 'reset') => {
+  const send = async (action: 'start' | 'pause' | 'resume' | 'stop' | 'reset') => {
     setPending(action)
     setFeedback(null)
     try {
-      await controlClient.command(action)
+      const parsedSeed = Number(seed)
+      if ((action === 'start' || action === 'reset') && !Number.isSafeInteger(parsedSeed)) {
+        throw new Error('La seed doit être un entier valide.')
+      }
+      await controlClient.command(
+        action,
+        action === 'start' || action === 'reset' ? { seed: parsedSeed } : {},
+      )
       setFeedback(`Commande « ${action} » relayée à SYNE (:5181).`)
     } catch (err) {
       setFeedback(err instanceof Error ? err.message : String(err))
@@ -34,7 +41,7 @@ export function ControlScreen() {
 
       <div className="banner mb-4">
         Le pilotage est <strong>relayé</strong> : l'interface n'invoque jamais SYNE en direct —
-        ECHOS relaie vers HTTP :5181 (FRONTEND_VISION §2). État WebSocket : {wsState} · tick :{' '}
+        ECHOS relaie vers HTTP :5181 (FRONTEND_VISION §2). Le serveur SYNE `--serve` doit être démarré. État WebSocket : {wsState} · tick :{' '}
         {live?.tick ?? '—'}.
       </div>
 
@@ -51,6 +58,9 @@ export function ControlScreen() {
           </button>
           <button className="btn" type="button" disabled={pending !== null} onClick={() => void send('resume')}>
             {pending === 'resume' ? '…' : '▶ Resume'}
+          </button>
+          <button className="btn btn--danger" type="button" disabled={pending !== null} onClick={() => void send('stop')}>
+            {pending === 'stop' ? '…' : '■ Stop'}
           </button>
           <button className="btn btn--danger" type="button" disabled={pending !== null} onClick={() => void send('reset')}>
             {pending === 'reset' ? '…' : '↺ Reset'}

@@ -44,7 +44,7 @@ C'est la règle structurante de tout le front-end ECHOS. Deux mondes cohabitent 
 Les trois règles non négociables :
 
 1. **L'interface ne calcule jamais de métrique scientifique.** Elle consomme les métriques déjà produites par les moteurs ECHOS (§4.3 Monographie). La seule exception : des calculs de mise en forme (moyennes simples, taux) destinés aux affichages, jamais aux exports d'analyse.
-2. **Le pilotage passe par ECHOS qui relaie vers SYNE (HTTP :5181).** L'interface n'invoque jamais directement SYNE hors de ce contrat relayé.
+2. **Le pilotage passe par ECHOS qui relaie vers SYNE (HTTP :5181).** L’API ECHOS expose `/api/control/*`, puis relaie via `ControlClient` ; l’interface ne contacte jamais directement SYNE. Le serveur `--serve` doit être actif. En V0.1, `--serve` et `--observe` lancent des instances distinctes.
 3. **Un écart visuel n'est pas une preuve.** Quand l'interface montre une tendance, c'est une **invitation à l'analyse**, jamais un résultat scientifique. Le score d'émergence se lit dans la vue d'analyse, pas dans le HUD.
 
 > **Règle d'or** : l'interface **montre**, l'analyse **démontre**. Si une vue du front-end prétend « prouver » une émergence, c'est une erreur de conception (cf. `VISION.md` ECHOS).
