@@ -14,4 +14,9 @@ describe('WorldGrid', () => {
     expect(screen.getByTitle('0,0 · obstacle')).toBeInTheDocument()
     expect(screen.getByTitle('23,0 · agents: 1')).toBeInTheDocument()
   })
+
+  it('renders agents using the nested SYNE snapshot position', () => {
+    render(<WorldGrid agents={[{ id: 'a', position: { x: 12, y: 8 } }]} />)
+    expect(screen.getByTitle('23,15 · agents: 1')).toBeInTheDocument()
+  })
 })

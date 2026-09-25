@@ -2,7 +2,7 @@ import type React from 'react'
 import type { WorldSnapshot } from '../../api/types'
 
 interface WorldGridProps {
-  agents: Record<string, unknown>[]
+  agents: import('../../api/types').LiveAgent[]
   world?: WorldSnapshot
 }
 
@@ -12,8 +12,8 @@ function numberOf(value: unknown): number | null {
 
 export function WorldGrid({ agents, world }: WorldGridProps) {
   const positions = agents.flatMap((agent) => {
-    const x = numberOf(agent.positionX)
-    const y = numberOf(agent.positionY)
+    const x = numberOf(agent.position?.x ?? agent.positionX)
+    const y = numberOf(agent.position?.y ?? agent.positionY)
     return x !== null && y !== null ? [{ x, y }] : []
   })
   const obstacles = world?.obstacles ?? []
