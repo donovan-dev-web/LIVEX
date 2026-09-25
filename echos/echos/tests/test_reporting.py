@@ -1,4 +1,4 @@
-from echos.reporting import build_report, json_report, markdown_report
+from echos.reporting import build_report, json_report, markdown_report, write_reports
 from echos.storage.aggregation import TickRecord
 from echos.storage.sqlite import AnalyticsStore
 
@@ -61,3 +61,35 @@ def test_report_aggregates_detected_phenomena_by_identifier(tmp_path):
         assert report["detectedPhenomena"][0]["identifier"] == "CommunityFormation"
         assert report["detectedPhenomena"][0]["firstTick"] == 2
         assert "Formation de communauté" in markdown_report(store, "run-1")
+
+
+def test_write_reports_parquet_replaces_json_and_keeps_markdown(tmp_path):
+    with _store(tmp_path) as store:
+        trace, markdown = write_reports(store, "run-1", tmp_path, parquet=True)
+        assert trace.name == "run-1.parquet"
+        assert trace.exists()
+        assert markdown.name == "run-1.md"
+        assert markdown.exists()
+        assert not (tmp_path / "run-1.json").exists()
+        assert "Trace complète : `run-1.parquet`" in markdown.read_text(encoding="utf-8")
+
+        import pyarrow.parquet as pq
+
+        table = pq.read_table(str(trace))
+        sections = table.column("section").to_pylist()
+        assert sections.count("run") == 1
+        assert sections.count("calibration") == 1
+        assert "tick" in sections
+        assert "event" in sections
+        assert "metric" in sections
+        assert "decision" in sections
+        metric_rows = table.to_pylist() if hasattr(table, "to_pylist") else []
+        metric = next(row for row in metric_rows if row["section"] == "metric")
+        assert metric["engine"] == "Engine"
+        assert metric["metric"] == "score"
+        assert metric["value"] == 0.5
+        assert metric["tick"] == 1
+
+        json_path, markdown_json = write_reports(store, "run-1", tmp_path / "legacy")
+        assert json_path.name == "run-1.json"
+        assert markdown_json.name == "run-1.md"

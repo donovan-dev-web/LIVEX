@@ -22,6 +22,9 @@ def main() -> int:
     )
     ws_url = os.environ.get("SYNE_OBSERVABILITY_URL", "ws://127.0.0.1:5180/")
     parquet_path = os.environ.get("ECHOS_PARQUET_PATH") or None
+    analysis_every = int(os.environ.get("ECHOS_ANALYSIS_EVERY", "1") or "1")
+    parquet_flush_every = os.environ.get("ECHOS_PARQUET_FLUSH_EVERY")
+    parquet_flush_every = int(parquet_flush_every) if parquet_flush_every else None
     started_file = os.environ.get("LIVEX_WS_STARTED_FILE")
     stop_after_disconnect = os.environ.get("LIVEX_INGEST_ONCE") == "1"
     if started_file:
@@ -33,7 +36,13 @@ def main() -> int:
             try:
                 client.connect(ws_url)
                 print(f"ECHOS connecté au flux SYNE : {ws_url}", flush=True)
-                result = consume(client, store, parquet_path=parquet_path)
+                result = consume(
+                    client,
+                    store,
+                    parquet_path=parquet_path,
+                    analysis_every=analysis_every,
+                    parquet_flush_every=parquet_flush_every,
+                )
                 if stop_after_disconnect:
                     print(
                         "Ingestion terminée : "

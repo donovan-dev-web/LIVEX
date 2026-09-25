@@ -103,3 +103,40 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
     with storage.AnalyticsStore(db_path) as reopened:
         indexed_ticks = {row[1] for row in reopened.tick_summaries("run-7")}
     assert storage.coherence_errors(series, indexed_ticks) == []
+
+
+def test_consume_analysis_cadence_schedule(tmp_path):
+    """analysis_every>1 planifie les moteurs/contextes mais garde l'ingestion complète."""
+    port, thread = _in_process_server(_script(3))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    db_path = tmp_path / "analyse-cadence.db"
+    with AnalyticsStore(db_path) as store:
+        result = storage.consume(client, store, analysis_every=2)
+        assert result.ticks_written == 3
+        assert result.events_written == 6
+        assert result.decision_traces_written == 3
+        assert result.contexts_written == 8  # 2 ticks analysés × 4 contextes
+        assert result.metrics_written > 0
+        assert store.count_ticks("run-7") == 3
+        assert len(store.events("run-7")) == 6
+        assert len(store.decision_traces("run-7")) == 3
+        metrics = store.metrics_all("run-7")
+        assert {int(row[0]) for row in metrics} == {1, 3}
+
+    with storage.AnalyticsStore(db_path) as reopened:
+        assert reopened.tick_summaries("run-7")[1][1] == 2  # résumé du tick 2 conservé
+
+
+def test_consume_requires_positive_analysis_cadence(tmp_path):
+    port, thread = _in_process_server(_script(1))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+    with AnalyticsStore(tmp_path / "analyse.db") as store:
+        try:
+            storage.consume(client, store, analysis_every=0)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("analysis_every=0 doit être rejeté")

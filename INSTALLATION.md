@@ -128,13 +128,38 @@ SYNE, puis attend la fin du nombre de ticks demandé :
 ```
 
 La commande accepte une seed et un nombre de ticks obligatoires. Elle arrête
-les processus après la fin du run et produit deux fichiers déterministes dans
+les processus après la fin du run et produit des fichiers déterministes dans
 `echos/data/reports/` :
 
-- `<run-id>.json` : format complet pour comparaison/outillage ;
+- `<run-id>.parquet` : la **trace complète d'analyse** (columnar, requêtable
+  — sections `run`/`tick`/`metric`/`event`/`decision`/`context`/
+  `detected_phenomenon`/`calibration`). Ce fichier **remplace le `<run-id>.json`**,
+  plus volatil ;
+- `<run-id>.agents.parquet` : la série lourde des agents (snapshots par tick) ;
 - `<run-id>.md` : lecture humaine, avec résumé par tick, historique des
   événements pertinents, métriques principales, évolution par tick et
-  calibration. Le détail exhaustif reste dans le JSON.
+  calibration. Le détail exhaustif reste dans les `.parquet`.
+
+Le rapport Markdown est toujours produit. L'export Parquet est activé par
+défaut ; désactivez-le avec `--no-parquet` (trace JSON restaurée) :
+
+```bash
+./scripts/batch-analysis.py 12345 1000 --no-parquet
+```
+
+Par défaut l'analyse ECHOS est calculée à chaque tick (`--analysis-every 1`).
+Pour économiser CPU/RAM sur les runs longs, planifiez l'analyse 1 tick sur N
+(les résumés, événements et la série agents restent ingérés à chaque tick) :
+
+```bash
+./scripts/batch-analysis.py 12345 1000 --analysis-every 5
+./scripts/batch-analysis.py 12345 1000 --ticks-per-second 25 --analysis-every 2
+```
+
+Les mêmes réglages sont exposés par variables d'environnement, y compris pour
+l'ingestion manuelle : `ECHOS_ANALYSIS_EVERY`, `ECHOS_PARQUET_FLUSH_EVERY`
+(flush bufferisé de la série agents, en nombre de ticks) et
+`ECHOS_PARQUET_PATH` (chemin de la série agents).
 
 La cadence batch est de 10 ticks/s par défaut, comme le mode contrôlé normal.
 Elle peut être augmentée si les mesures montrent qu'ECHOS suit le flux :
@@ -202,6 +227,30 @@ conserve les runs précédents. Pour comparer deux runs, utilisez deux seeds et
 des répertoires distincts, puis comparez les JSON ou consultez l'endpoint
 `/api/compare` avec leurs `runId`.
 
+### Benchmark SYNE vs SYNE + ECHOS
+
+Pour mesurer le **coût réel de l'observabilité** (temps + RAM) sur une grille
+entités × ticks × seeds, le lanceur `scripts/benchmark.py` rejoue chaque
+cellule en deux scénarios — moteur seul (`--headless`) et chaîne complète
+SYNE `--serve` + API ECHOS + ingestion — puis écrit un CSV brut, un rapport
+Markdown et une synthèse JSON dans le répertoire de sortie.
+
+```bash
+echos/.venv/bin/python scripts/benchmark.py                 # grille complète (défauts)
+echos/.venv/bin/python scripts/benchmark.py --quick          # entités×ticks réduits, 1 seed
+echos/.venv/bin/python scripts/benchmark.py \
+  --entities 20,100 --ticks 400,1000 --seeds 12345,999,7 \
+  --output-dir echos/data/benchmarks
+```
+
+Options principales : `--ticks-per-second` (cadence ECHOS, défaut 50),
+`--analysis-every` (si la charge d'analyse pèse trop sur la RAM/CPU),
+`--parquet` (activer la série agents dans la mesure), `--cell-timeout`
+(défaut 600 s) et `--database`. Les ports `5000/5180/5181` doivent être
+libres : le script refuse de démarrer s'ils sont déjà occupés (pile en cours
+ou orphelins d'un run précédent). Méthodologie et lecture des chiffres :
+[`docs/docs-echos/BENCHMARKS.md`](docs/docs-echos/BENCHMARKS.md).
+
 ### Benchmark et runs longs
 
 Le benchmark SYNE isolé permet de distinguer un problème de simulation d'un
@@ -254,6 +303,8 @@ Les fichiers analytiques locaux sont placés dans `echos/data/`. Pour repartir d
 
 ```bash
 rm -f echos/data/livex-analytics.sqlite echos/data/livex-agents.parquet
+# rapports, traces Parquet et benchmarks générés localement :
+rm -rf echos/data/reports echos/data/benchmarks
 ```
 
 Tests développeur :
