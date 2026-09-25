@@ -14,7 +14,14 @@ Définit les **contrats de données** exposés par SYNE — ils sont la langue c
 
 ## 2. Contrat temps réel — WebSocket 5180
 
-Transport : WebSocket local, **binaires JSON** (`camelCase`). Deux types de messages (Monographie §5.4.1) :
+Transport : WebSocket local, **trames texte UTF-8 contenant du JSON** (`camelCase`).
+SYNE envoie `WebSocketMessageType.Text`, jamais une trame binaire. Deux types de
+messages (Monographie §5.4.1) :
+
+`runId` dans les snapshots est l'identité de contenu consommée par ECHOS. Elle
+est opaque et stable pendant le run (le mode batch peut utiliser `run-<seed>`).
+La réponse HTTP à `start`/`status` expose ce même identifiant pour permettre au
+client de corréler le pilotage et le flux.
 
 > **Implémentation V0.1 (SYNE-080, livré avec U1)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
 > zéro dépendance) dans `Simulation.Console`, activé par `--observe` (port `--observe-port`, défaut 5180,

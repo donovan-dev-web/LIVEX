@@ -129,72 +129,56 @@ def consume(
             )
             run_known = True
 
-        store.append_tick(TickRecord.from_segment(segment))
-        ticks_written += 1
+        tick_record = TickRecord.from_segment(segment)
 
         engine_snapshot = _snapshot_for_engines(segment)
         markers = ProfileMarkers()
         metrics = compute_all(engine_snapshot, profile=markers)
         profile = markers.summary()
-        metrics_written += store.append_tick_metrics(
-            snapshot.run_id, segment.tick, metrics
-        )
-
         emergence = metrics.get("EmergenceIndicators") or {}
-        store.append_tick_context(
-            snapshot.run_id,
-            segment.tick,
-            "phenomena",
-            {
+        contexts = {
+            "phenomena": {
                 "detected": emergence.get("DetectedPhenomena", []),
                 "disclaimer": emergence.get("Disclaimer", ""),
             },
-        )
-        store.append_tick_context(
-            snapshot.run_id,
-            segment.tick,
-            "agents",
-            engine_snapshot.get("agents") or [],
-        )
-        store.append_tick_context(
-            snapshot.run_id,
-            segment.tick,
-            "groups",
-            _groups_of(engine_snapshot.get("agents") or []),
-        )
-        store.append_tick_context(
-            snapshot.run_id,
-            segment.tick,
-            "profiling",
-            profile,
-        )
+            "agents": engine_snapshot.get("agents") or [],
+            "groups": _groups_of(engine_snapshot.get("agents") or []),
+            "profiling": profile,
+        }
         contexts_written += 4
 
         if logger is not None:
             logger.structured(snapshot.run_id, segment.tick, metrics)
             logger.profiling(snapshot.run_id, segment.tick, profile)
 
-        for event in segment.events:
-            store.append_event(
-                snapshot.run_id,
-                segment.tick,
+        events = [
+            (
                 event.type,
-                agent_id=event.agent_id,
-                target_id=event.target_id,
-                action=event.action,
-                cause=event.cause,
-                value=event.value and _json_dumps(event.value),
+                event.agent_id,
+                event.target_id,
+                event.action,
+                event.cause,
+                event.value and _json_dumps(event.value),
             )
+            for event in segment.events
+        ]
+        traces = []
+        for event in segment.events:
             events_written += 1
 
             if event.type == "decision_made":
                 trace = build_decision_trace(
                     snapshot.run_id, segment.tick, event, engine_snapshot
                 )
-                store.append_decision_trace(snapshot.run_id, segment.tick, trace)
+                traces.append(trace)
                 decision_traces_written += 1
                 if logger is not None:
                     logger.decision(trace)
+
+        metrics_written += store.append_tick_bundle(
+            tick_record, metrics, contexts, events, traces
+        )
+        ticks_written += 1
 
         if parquet_path is not None:
             rows = agent_rows(segment)

@@ -15,6 +15,10 @@ PRISM se connecte à SYNE via WebSocket (`ws://127.0.0.1:5180/`) avec **reconnex
 - **`snapshot`** : état complet du monde (`WorldSnapshot`).
 - **`event`** : événements ponctuels (`ExternalEvent`).
 
+Les messages sont des trames **texte UTF-8 JSON** (et non des trames binaires).
+Le champ `runId` du snapshot est l'identité canonique et stable du run ; PRISM
+doit le conserver pour corréler ses observations.
+
 ## 2. HTTP (contrôle) — :5181
 
 PRISM **relaie** les commandes de contrôle à l'API REST de SYNE (`http://127.0.0.1:5181/api/control/`) :
@@ -24,9 +28,11 @@ PRISM **relaie** les commandes de contrôle à l'API REST de SYNE (`http://127.0
 | `start` | Démarrer la simulation |
 | `pause` | Mettre en pause |
 | `resume` | Reprendre |
+| `stop` | Arrêter le run sans arrêter le serveur SYNE |
 | `reset` | Réinitialiser (avec seed et run id) |
 
-L'état de SYNE est interrogé toutes les **2 secondes** (polling léger).
+L'état de SYNE est interrogé toutes les **2 secondes** (polling léger). `stop`
+ramène le run à `Idle` mais laisse les serveurs actifs.
 
 > ⚠ PRISM relaie, il ne décide pas : tout contrôle passe par l'API HTTP de SYNE (principe invariant, cf. `VISION.md`). Ces endpoints sont documentés par les ADR transverses (ADR-003, ADR-004).
 

@@ -136,6 +136,43 @@ def test_tick_metrics_are_replaced_on_resend(tmp_path):
         assert store.count_ticks("run-7") == 0
 
 
+def test_tick_bundle_commits_all_outputs_and_bumps_once(tmp_path):
+    with AnalyticsStore(tmp_path / "analyse.db") as store:
+        store.record_run("run-7", "0.1.0", seed="7")
+        before = store.ingest_version
+        written = store.append_tick_bundle(
+            _record(),
+            {"Engine": {"score": 1.5}},
+            {"agents": [{"id": "A"}]},
+            [("message_sent", "A", "B", None, None, None)],
+            [],
+        )
+
+        assert written == 1
+        assert store.ingest_version == before + 1
+        assert store.count_ticks("run-7") == 1
+        assert store.metrics_all("run-7") == [(1, "Engine", "score", 1.5)]
+        assert store.latest_context("run-7", "agents") == (1, [{"id": "A"}])
+        assert len(store.events("run-7")) == 1
+
+
+def test_tick_bundle_rolls_back_when_one_output_fails(tmp_path):
+    with AnalyticsStore(tmp_path / "analyse.db") as store:
+        store.record_run("run-7", "0.1.0", seed="7")
+        with pytest.raises(KeyError):
+            store.append_tick_bundle(
+                _record(),
+                {"Engine": {"score": 1.5}},
+                {"agents": []},
+                [],
+                [{"agent_id": "A"}],
+            )
+
+        assert store.count_ticks("run-7") == 0
+        assert store.metrics_all("run-7") == []
+        assert store.latest_context("run-7", "agents") is None
+
+
 def test_tick_contexts_roundtrip_and_latest(tmp_path):
     with AnalyticsStore(tmp_path / "analyse.db") as store:
         store.record_run("run-7", "0.1.0", seed="7")
@@ -149,6 +186,28 @@ def test_tick_contexts_roundtrip_and_latest(tmp_path):
             [{"id": "B", "beliefs": [{"subject": "w"}]}],
         )
         assert len(store.observations_for("run-7", "agents")) == 2
+
+
+def test_large_tick_context_is_compressed_without_changing_api(tmp_path):
+    agents = [
+        {
+            "id": str(index),
+            "beliefs": [
+                {"subject": "world", "predicate": "state", "value": "stable"}
+            ]
+            * 100,
+        }
+        for index in range(20)
+    ]
+    with AnalyticsStore(tmp_path / "analyse.db") as store:
+        store.record_run("run-7", "0.1.0", seed="7")
+        store.append_tick_context("run-7", 1, "agents", agents)
+
+        raw = store._conn.execute(
+            "SELECT payload FROM tick_contexts WHERE run_id = 'run-7'"
+        ).fetchone()[0]
+        assert raw.startswith("z:")
+        assert store.latest_context("run-7", "agents") == (1, agents)
 
 
 def test_ingest_version_bumps_and_drives_cache(tmp_path):

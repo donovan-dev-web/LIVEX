@@ -424,3 +424,38 @@ a:hover {
   flex-direction: column;
   gap: var(--space-3);
 }
+
+.chart-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.world-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--world-columns, 20), minmax(12px, 1fr));
+  gap: 2px;
+  max-width: 720px;
+  aspect-ratio: 4 / 3;
+  background: #0b1016;
+  padding: 4px;
+  overflow: auto;
+}
+
+.world-cell {
+  min-width: 12px;
+  min-height: 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 2px;
+  background: #263238;
+  font-size: 10px;
+}
+.terrain-water { background: #164e63; }
+.terrain-forest { background: #14532d; }
+.terrain-mountain { background: #57534e; }
+.terrain-desert { background: #854d0e; }
+.world-agent { color: var(--accent); font-weight: 700; }
+.world-resource { color: #facc15; }

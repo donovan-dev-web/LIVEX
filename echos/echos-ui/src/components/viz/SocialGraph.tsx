@@ -3,6 +3,7 @@ import ReactECharts from 'echarts-for-react'
 import { client } from '../../api/client'
 import { colorForGroup } from '../agents/badges'
 import type { GroupsResponse, RelationshipsResponse } from '../../api/types'
+import { useLiveStore } from '../../store'
 
 interface SocialGraphProps {
   runId: string | null
@@ -25,6 +26,7 @@ export function SocialGraph({ runId, onSelectAgent }: SocialGraphProps) {
   const [groups, setGroups] = useState<GroupsResponse | null>(null)
   const [relations, setRelations] = useState<Record<string, RelationshipsResponse>>({})
   const [error, setError] = useState<string | null>(null)
+  const tick = useLiveStore((state) => state.live?.tick)
 
   useEffect(() => {
     if (!runId) return
@@ -50,7 +52,7 @@ export function SocialGraph({ runId, onSelectAgent }: SocialGraphProps) {
     return () => {
       cancelled = true
     }
-  }, [runId])
+  }, [runId, tick])
 
   const groupByMember = new Map<string, string>()
   for (const group of groups?.groups ?? []) {

@@ -108,3 +108,33 @@ def test_control_client_deterministic_requests():
         client.start(seed=42)
         client.resume()
         assert [json.loads(r.content or b"{}") for r in requests] == expected
+
+
+def test_start_can_send_max_ticks():
+    client, requests = _recording_client([httpx.Response(200, json={})])
+
+    client.start(seed=42, max_ticks=1000)
+
+    assert json.loads(requests[0].content or b"{}") == {
+        "seed": 42,
+        "maxTicks": 1000,
+    }
+
+
+def test_status_gets_control_state():
+    client, requests = _recording_client([httpx.Response(200, json={"state": "idle"})])
+
+    assert client.status() == {"state": "idle"}
+    assert requests[0].method == "GET"
+    assert requests[0].url.path == "/api/control/status"
+
+
+def test_reset_options_are_optional():
+    client, requests = _recording_client([httpx.Response(200, json={})])
+
+    client.reset(seed=8, max_ticks=50)
+
+    assert json.loads(requests[0].content or b"{}") == {
+        "seed": 8,
+        "maxTicks": 50,
+    }

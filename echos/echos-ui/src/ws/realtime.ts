@@ -6,6 +6,36 @@ const RECONNECT_DELAY_MS = 2000
 
 let socket: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+let pendingSnapshot: { type: 'snapshot'; tick: number; agents: Record<string, unknown>[]; world?: import('../api/types').WorldSnapshot } | null = null
+let pendingEventCount = 0
+let flushScheduled = false
+
+function flushLiveUpdate() {
+  flushScheduled = false
+  const store = useLiveStore.getState()
+  if (pendingSnapshot) {
+    store.setLive({
+      tick: pendingSnapshot.tick ?? 0,
+      agentCount: Array.isArray(pendingSnapshot.agents) ? pendingSnapshot.agents.length : 0,
+      messageCount: pendingEventCount,
+      agents: pendingSnapshot.agents,
+      world: pendingSnapshot.world,
+    })
+    pendingSnapshot = null
+    pendingEventCount = 0
+    return
+  }
+  if (store.live && pendingEventCount > 0) {
+    store.setLive({ ...store.live, messageCount: store.live.messageCount + pendingEventCount })
+    pendingEventCount = 0
+  }
+}
+
+function scheduleLiveUpdate() {
+  if (flushScheduled) return
+  flushScheduled = true
+  requestAnimationFrame(flushLiveUpdate)
+}
 
 function scheduleReconnect() {
   clearTimeout(reconnectTimer!)
@@ -40,16 +70,23 @@ export function connect(): void {
     try {
       const message = JSON.parse(String(event.data)) as WsMessage
       if (message.type === 'snapshot') {
-        useLiveStore.getState().setLive({
+        if (!Array.isArray(message.agents)) return
+        pendingSnapshot = {
+          type: 'snapshot',
           tick: message.tick ?? 0,
-          agentCount: Array.isArray(message.agents) ? message.agents.length : 0,
-          messageCount: 0,
-        })
-      } else if (message.type === 'event') {
-        const current = useLiveStore.getState().live
-        if (current) {
-          useLiveStore.getState().setLive({ ...current, messageCount: current.messageCount + 1 })
+          agents: message.agents,
+          world: {
+            resources: Array.isArray(message.resources) ? message.resources as import('../api/types').WorldResource[] : undefined,
+            obstacles: Array.isArray(message.obstacles) ? message.obstacles as import('../api/types').WorldObstacle[] : undefined,
+            season: typeof message.season === 'string' ? message.season : undefined,
+            seasonIndex: typeof message.seasonIndex === 'number' ? message.seasonIndex : undefined,
+          },
         }
+        pendingEventCount = 0
+        scheduleLiveUpdate()
+      } else if (message.type === 'event') {
+        pendingEventCount += 1
+        scheduleLiveUpdate()
       }
     } catch {
       /* message non JSON : ignoré */

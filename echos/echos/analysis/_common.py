@@ -110,7 +110,10 @@ def label_propagation(agents: list[dict]) -> dict[str, str]:
     ids = sorted({agent_id for agent in agents for agent_id in (str(agent.get("id")),)})
     neighbors: dict[str, set[str]] = {agent_id: set() for agent_id in ids}
     for edge in edges:
-        a, b = tuple(edge)
+        endpoints = tuple(edge)
+        if len(endpoints) != 2:
+            continue
+        a, b = endpoints
         if a in neighbors and b in neighbors:
             neighbors[a].add(b)
             neighbors[b].add(a)

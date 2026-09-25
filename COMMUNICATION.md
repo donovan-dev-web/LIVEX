@@ -14,7 +14,7 @@ Ce document décrit les **échanges inter-composants** de LIVEX. Il ne doit pas 
 
 ## 2. Principes
 
-- **JSON camelCase** pour toutes les charges utiles (contrat hérité du prototype).
+- **JSON texte camelCase** pour toutes les charges utiles (contrat hérité du prototype).
 - **Gateways à sens unique** : SYNE émet (WebSocket), ECHOS et PRISM consomment ; le contrôle circule via API HTTP relayée.
 - **Simple consommateur** par défaut sur WebSocket (Monographie ADR-004 §F.5) : un seul consommateur à la fois, sauf évolution future.
 - **Indépendance** : aucun module ne dépend des abstractions des autres (Matrice de dépendances `ARCHITECTURE.md`).
@@ -25,7 +25,7 @@ Ce document décrit les **échanges inter-composants** de LIVEX. Il ne doit pas 
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | 1 | Snapshots | WebSocket | 5180 | ECHOS, PRISM | `WorldSnapshot` |
 | 2 | Événements | WebSocket | 5180 | ECHOS, PRISM | `ExternalEvent` |
-| 3 | Contrôle | HTTP REST | 5181 | SYNE | start / pause / resume / reset |
+| 3 | Contrôle | HTTP REST | 5181 | SYNE | start / pause / resume / stop / reset |
 | 4 | Analyse | HTTP REST | 5000 | ECHOS consumers | runs, métriques, comparaison, export |
 
 Schéma :
@@ -46,7 +46,13 @@ flowchart LR
 Source : Monographie ADR-004 (§F.5).
 
 - URL (local) : `ws://127.0.0.1:5180/`
-- Messages : **binaires JSON** (camelCase).
+- Messages : **trames texte UTF-8 contenant du JSON** (camelCase). Le serveur
+  WebSocket envoie `WebSocketMessageType.Text`; les clients ne doivent pas
+  attendre des trames binaires.
+- Chaque `snapshot` porte l'identité canonique du run dans `runId`. Cette
+  valeur opaque est stable pour toute la durée du run et doit être propagée
+  par ECHOS dans ses réponses et son stockage. Le mode batch peut dériver
+  `run-<seed>` ; le serveur contrôlé génère un identifiant opaque.
 - Événements typés : `tick_summary`, `agent_spawned`, `agent_died`, `decision_made` (prototype). En V2/V0.1, la nomenclature s'élargit (perceptions, actions, communications) — cf. `docs/docs-syne/API_CONTRACTS.md`.
 - Politique : **single-consumer** par défaut (un consommateur à la fois) — évolution vers multi-consommateur à trancher.
 
@@ -59,11 +65,15 @@ Source : Monographie §3.5 (contrôle), Partie 5.4.2.
 | `start` | Démarrer la simulation |
 | `pause` | Mettre en pause |
 | `resume` | Reprendre |
+| `stop` | Arrêter le run proprement, sans arrêter le serveur SYNE |
 | `reset` | Réinitialiser (avec seed et run id) |
 
 - URL (local) : `http://127.0.0.1:5181/api/control/`
 - PRISM relaie les commandes utilisateur vers cette API (réflexion passive, Monographie §5.15.3) ; ECHOS pilote aussi la simulation depuis son interface.
 - L'état de SYNE est interrogé (polling) environ toutes les 2 secondes (valeur prototype, [HÉRITÉ]).
+- `stop` annule le run courant et ramène son état à `Idle`; il ne ferme ni
+  l'API de contrôle ni le serveur WebSocket. Un arrêt de toute la pile reste
+  une responsabilité du processus (`Ctrl+C`/arrêt du service).
 
 ## 6. API REST ECHOS
 

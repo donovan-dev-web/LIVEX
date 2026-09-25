@@ -231,11 +231,14 @@ public static class Program
     private static async Task RunServeAsync(SimulationOptions options, CliOptions cli)
     {
         int port = cli.ServePort ?? Control.ControlServer.DefaultPort;
-        await using var server = new Control.ControlServer(port);
+        var observability = new Observability.ObservabilityServer(
+            cli.ObservePort ?? Observability.ObservabilityServer.DefaultPort);
+        await using var server = new Control.ControlServer(port, observability: observability);
         server.Start();
 
         System.Console.WriteLine($"SYNE — serveur de contrôle HTTP :{server.Port}/ (API_CONTRACTS.md §3)");
-        System.Console.WriteLine($"  POST /api/control/start|pause|resume|reset | GET /api/control/status");
+        System.Console.WriteLine($"  observabilité WebSocket : ws://127.0.0.1:{observability.Port}/");
+        System.Console.WriteLine($"  POST /api/control/start|pause|resume|stop|reset | GET /api/control/status");
         System.Console.WriteLine($"  seed par défaut : {options.Random.Seed} | population : {options.Agents.InitialCount}");
         System.Console.WriteLine("  Ctrl+C pour arrêter.");
 

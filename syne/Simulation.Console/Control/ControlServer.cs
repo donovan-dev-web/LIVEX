@@ -2,13 +2,14 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Simulation.Core.Configuration;
+using Simulation.Console.Observability;
 
 namespace Simulation.Console.Control;
 
 /// <summary>
 /// Serveur de contrôle HTTP :5181 (SYNE-113, API_CONTRACTS.md §3, ADR-003).
 /// Expose un sous-ensemble REST local (binding <c>127.0.0.1</c>) de pilotage du
-/// moteur : <c>POST /api/control/start|pause|resume|reset</c> et
+/// moteur : <c>POST /api/control/start|pause|resume|stop|reset</c> et
 /// <c>GET /api/control/status</c>. Implémentation BCL uniquement (HttpListener),
 /// comme l'observabilité — aucune dépendance externe (ADR-002).
 /// </summary>
@@ -23,13 +24,18 @@ public sealed class ControlServer : IAsyncDisposable
 
     private readonly HttpListener _listener = new();
     private readonly SimulationController _controller;
+    private readonly ObservabilityServer? _observability;
     private bool _running;
 
-    public ControlServer(int port = DefaultPort, SimulationController? controller = null)
+    public ControlServer(
+        int port = DefaultPort,
+        SimulationController? controller = null,
+        ObservabilityServer? observability = null)
     {
         _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
         Port = port;
-        _controller = controller ?? new SimulationController();
+        _observability = observability;
+        _controller = controller ?? new SimulationController(observability);
     }
 
     public int Port { get; }
@@ -41,6 +47,7 @@ public sealed class ControlServer : IAsyncDisposable
     public void Start()
     {
         _listener.Start();
+        _observability?.Start();
         _running = true;
         _ = Task.Run(AcceptLoopAsync);
     }
@@ -51,6 +58,10 @@ public sealed class ControlServer : IAsyncDisposable
         _listener.Stop();
         _listener.Close();
         await _controller.DisposeAsync();
+        if (_observability is not null)
+        {
+            await _observability.DisposeAsync();
+        }
     }
 
     private async Task AcceptLoopAsync()
@@ -127,6 +138,9 @@ public sealed class ControlServer : IAsyncDisposable
             case "resume":
                 _controller.Resume();
                 return (200, ToJson(OkJson("resumed")));
+            case "stop":
+                _controller.Stop();
+                return (200, ToJson(OkJson("stopped")));
             case "reset":
                 return await ResetAsync(body);
             default:
@@ -146,14 +160,18 @@ public sealed class ControlServer : IAsyncDisposable
             ? maxTicksElement.GetInt32()
             : null;
 
-        // Boucle courante terminée/inexistante : on ne peut lancer un run que si
-        // aucun run n'est en cours. Un run actif est d'abord arrêté par reset.
+        // Une commande start sans options ne remplace pas un run actif.
         if (config is null && seed is null && maxTicks is null && _controller.HasRun)
         {
-            return (409, ToJson(ErrorJson("run_active", "Un run est déjà en cours — utilisez /reset avant de redémarrer.")));
+            return (409, ToJson(ErrorJson("run_active", "Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.")));
         }
 
-        string runId = await _controller.StartAsync(seed, config, maxTicks);
+        // Manual/UI runs use the reviewed reference profile unless the caller
+        // supplies an explicit configuration overlay.
+        string runId = await _controller.StartAsync(
+            seed,
+            config ?? SimulationProfiles.Reference(),
+            maxTicks);
         return (200, ToJson(OkJson("started", runId, _controller.Status())));
     }
 
