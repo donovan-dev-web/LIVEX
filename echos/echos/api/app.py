@@ -21,6 +21,8 @@ from echos.storage.sqlite import AnalyticsStore
 _ENDPOINTS = [
     "/health",
     "/api/runs",
+    "/api/control/status",
+    "/api/control/{action}",
     "/api/runs/{id}",
     "/api/runs/{id}/metrics",
     "/api/runs/{id}/calibration",

@@ -157,7 +157,7 @@ public class ControlServerWireTests : IAsyncLifetime
         Assert.Equal((ulong)maxTicks, _server.Controller.Status().Tick);
 
         // Rendu de référence ininterrompu (même construction que SimulationFactory).
-        var options = ConfigLoader.LoadDefaults();
+        var options = SimulationProfiles.Reference();
         var (_, referenceLoop) = SimulationFactory.Build(options, seed);
         referenceLoop.Run(maxTicks);
 
@@ -187,7 +187,8 @@ public class ControlServerWireTests : IAsyncLifetime
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
-        for (int i = 0; i < 100 && !condition(); i++)
+        // À 10 ticks/s, un run de 120 ticks dure au moins 12 secondes.
+        for (int i = 0; i < 800 && !condition(); i++)
         {
             await Task.Delay(25);
         }

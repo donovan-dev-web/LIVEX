@@ -20,6 +20,8 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+import zlib
+from base64 import b64decode, b64encode
 from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
@@ -117,7 +119,12 @@ CREATE INDEX IF NOT EXISTS idx_decision_traces_run_tick ON decision_traces(run_i
 
 
 class AnalyticsStore:
-    """Stockage SQLite d'analyse (1 connexion, autocommit, thread-safe)."""
+    """Stockage SQLite d'analyse (1 connexion, thread-safe).
+
+    Les méthodes historiques restent commit-at-a-time pour compatibilité.
+    ``append_tick_bundle`` permet au pipeline d'écrire toutes les données
+    dérivées d'un tick dans une seule transaction.
+    """
 
     def __init__(self, path: str | Path, initialize: bool = True) -> None:
         self.path = str(path)
@@ -125,6 +132,9 @@ class AnalyticsStore:
         self._conn = sqlite3.connect(self.path, check_same_thread=False)
         with self._lock:
             self._conn.execute("PRAGMA foreign_keys = ON")
+            self._conn.execute("PRAGMA busy_timeout = 5000")
+            self._conn.execute("PRAGMA journal_mode = WAL")
+            self._conn.execute("PRAGMA synchronous = NORMAL")
             self._ingest_version = 0
         if initialize:
             self.initialize()
@@ -240,7 +250,7 @@ class AnalyticsStore:
                 INSERT OR REPLACE INTO tick_contexts (run_id, tick, context_type, payload)
                 VALUES (?, ?, ?, ?)
                 """,
-                (run_id, tick, context_type, _json_dumps(payload)),
+                (run_id, tick, context_type, _encode_context(payload)),
             )
             self._conn.commit()
             self._bump()
@@ -285,6 +295,96 @@ class AnalyticsStore:
             )
             self._conn.commit()
             self._bump()
+
+    def append_tick_bundle(
+        self,
+        record: TickRecord,
+        metrics: dict[str, dict],
+        contexts: dict[str, object],
+        events: list[tuple[str, str | None, str | None, str | None, str | None, str | None]],
+        decision_traces: list[dict],
+    ) -> int:
+        """Write all SQLite rows produced for one tick atomically."""
+        metric_rows: list[tuple[str, int, str, str, float]] = []
+        for engine, values in metrics.items():
+            for metric, value in values.items():
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    continue
+                metric_rows.append(
+                    (record.run_id, record.tick, str(engine), str(metric), float(value))
+                )
+        with self._lock:
+            try:
+                self._conn.execute(
+                    """
+                    INSERT OR REPLACE INTO tick_summaries (
+                        run_id, tick, simulated_time_minutes, alive_count,
+                        agent_count, mean_energy, mean_hunger, mean_thirst,
+                        mean_fatigue, decision_count
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    record.to_row(),
+                )
+                if metric_rows:
+                    self._conn.executemany(
+                        """
+                        INSERT INTO tick_metrics (run_id, tick, engine, metric, value)
+                        VALUES (?, ?, ?, ?, ?)
+                        ON CONFLICT(run_id, tick, engine, metric)
+                        DO UPDATE SET value = excluded.value
+                        """,
+                        metric_rows,
+                    )
+                self._conn.executemany(
+                    """
+                    INSERT OR REPLACE INTO tick_contexts
+                    (run_id, tick, context_type, payload) VALUES (?, ?, ?, ?)
+                    """,
+                    [
+                        (record.run_id, record.tick, kind, _encode_context(payload))
+                        for kind, payload in contexts.items()
+                    ],
+                )
+                if events:
+                    self._conn.executemany(
+                        """
+                        INSERT INTO events_log
+                        (run_id, tick, type, agent_id, target_id, action, cause, value)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        [
+                            (record.run_id, record.tick, event_type, agent_id,
+                             target_id, action, cause, value)
+                            for event_type, agent_id, target_id, action, cause, value in events
+                        ],
+                    )
+                if decision_traces:
+                    self._conn.executemany(
+                        """
+                        INSERT OR REPLACE INTO decision_traces (
+                            run_id, tick, agent_id, chosen_action, utility,
+                            deliberated, interrupted, cause, beliefs_count,
+                            goals_count, memory_count, needs
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        [
+                            (
+                                record.run_id, record.tick, str(trace["agent_id"]),
+                                str(trace["chosen_action"]), float(trace["utility"]),
+                                int(bool(trace["deliberated"])), int(bool(trace["interrupted"])),
+                                str(trace["cause"]), int(trace["beliefs_count"]),
+                                int(trace["goals_count"]), int(trace["memory_count"]),
+                                _json_dumps(trace["needs"]),
+                            )
+                            for trace in decision_traces
+                        ],
+                    )
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
+            self._bump()
+        return len(metric_rows)
 
     def decision_traces(
         self, run_id: str, tick: int | None = None
@@ -489,7 +589,7 @@ class AnalyticsStore:
             ).fetchone()
         if row is None:
             return None
-        return int(row[0]), json.loads(row[1])
+        return int(row[0]), _decode_context(row[1])
 
     def context_before(
         self, run_id: str, context_type: str, tick: int
@@ -510,7 +610,7 @@ class AnalyticsStore:
             ).fetchone()
         if row is None:
             return None
-        return int(row[0]), json.loads(row[1])
+        return int(row[0]), _decode_context(row[1])
 
     def observations_for(
         self, run_id: str, context_type: str
@@ -525,7 +625,30 @@ class AnalyticsStore:
                 """,
                 (run_id, context_type),
             ).fetchall()
-        return [(int(tick), json.loads(payload)) for tick, payload in rows]
+        return [(int(tick), _decode_context(payload)) for tick, payload in rows]
+
+    def contexts(self, run_id: str) -> dict[str, list[tuple[int, object]]]:
+        """All recorded contexts, grouped by type in stable order.
+
+        This is the read-side counterpart to ``append_tick_context`` and is
+        intentionally kept as a storage API so exporters do not need to know
+        the SQLite schema.
+        """
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT context_type, tick, payload FROM tick_contexts
+                WHERE run_id = ?
+                ORDER BY context_type, tick
+                """,
+                (run_id,),
+            ).fetchall()
+        result: dict[str, list[tuple[int, object]]] = {}
+        for context_type, tick, payload in rows:
+            result.setdefault(str(context_type), []).append(
+                (int(tick), _decode_context(payload))
+            )
+        return result
 
     def schema_tables(self) -> set[str]:
         with self._lock:
@@ -548,3 +671,25 @@ class AnalyticsStore:
 def _json_dumps(payload: object) -> str:
     """Sérialisation JSON compacte et déterministe (clés triées pour l'export)."""
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+
+def _encode_context(payload: object) -> str:
+    """Encode contexts compactly; retain JSON fallback compatibility on reads.
+
+    Agent snapshots contain growing belief lists and were consuming ~1.6 MB per
+    tick at the 800-tick failure point. Deflate keeps the existing JSON payload
+    contract at the storage API boundary while reducing SQLite write pressure.
+    """
+    raw = _json_dumps(payload).encode("utf-8")
+    compressed = zlib.compress(raw, level=1)
+    if len(compressed) >= len(raw):
+        return raw.decode("utf-8")
+    return "z:" + b64encode(compressed).decode("ascii")
+
+
+def _decode_context(payload: str | bytes) -> object:
+    """Read compressed contexts and legacy plain JSON rows."""
+    text = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+    if text.startswith("z:"):
+        text = zlib.decompress(b64decode(text[2:])).decode("utf-8")
+    return json.loads(text)

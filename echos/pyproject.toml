@@ -11,6 +11,9 @@ dependencies = [
     "websockets>=13,<16",
 ]
 
+[project.scripts]
+echos-report = "echos.reporting:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3,<9.0",

@@ -1,0 +1,32 @@
+{
+  "simulation": {
+    "ticksPerSecond": 10
+  },
+  "resources": {
+    "food": {
+      "initial": 10000,
+      "regenerationRate": 5,
+      "degradationTick": 100
+    },
+    "water": {
+      "initial": 10000,
+      "regenerationRate": 5
+    }
+  },
+  "communication": {
+    "relayEnabled": false,
+    "maxSendsPerTick": 1,
+    "maxReceivesPerTick": 1,
+    "sendEnergyCost": 0,
+    "sendEnergyPayloadFactor": 0,
+    "receiveEnergyCost": 0,
+    "receiveEnergyPayloadFactor": 0
+  },
+  "agents": {
+    "actions": {
+      "moveEnergyCost": 0.05,
+      "restEnergyGain": 1.5,
+      "restFatigueRecovery": 2
+    }
+  }
+}

@@ -7,6 +7,8 @@ ouvre la connexion réelle via ``websockets.sync.client``.
 
 from __future__ import annotations
 
+import queue
+import threading
 from typing import Protocol
 
 from echos.ingestion.models import Message, InvalidMessageError, parse_message
@@ -34,15 +36,36 @@ class _WebsocketsTransport:
     def __init__(self, url: str) -> None:
         from websockets.sync.client import connect
 
-        self._websocket = connect(url)
+        # A long batch can queue many event frames while ECHOS computes its
+        # metrics. Disable the small default receive queue so backpressure is
+        # applied by the socket instead of terminating the stream mid-run.
+        self._websocket = connect(url, max_queue=None, max_size=16 * 1024 * 1024)
+        self._messages: queue.Queue[object] = queue.Queue()
+        self._closed = threading.Event()
+        self._receiver = threading.Thread(target=self._receive_loop, daemon=True)
+        self._receiver.start()
+
+    def _receive_loop(self) -> None:
+        try:
+            while not self._closed.is_set():
+                self._messages.put(self._websocket.recv())
+        except Exception as exc:
+            self._messages.put(exc)
 
     def recv(self, timeout: float | None = None) -> str | bytes:
-        return self._websocket.recv(timeout=timeout)
+        try:
+            value = self._messages.get(timeout=timeout)
+        except queue.Empty:
+            raise TimeoutError("délai dépassé en attendant une trame WebSocket") from None
+        if isinstance(value, Exception):
+            raise value
+        return value
 
     def send(self, payload: str | bytes) -> None:
         self._websocket.send(payload)
 
     def close(self) -> None:
+        self._closed.set()
         self._websocket.close()
 
 

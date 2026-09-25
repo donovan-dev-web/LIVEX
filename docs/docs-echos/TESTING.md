@@ -57,7 +57,7 @@ Double garde : (1) le parse conserve le JSON camelCase du contrat
 égale au golden — tout renommage de champ casse la non-régression. La
 réception WebSocket est rejouée **déterministe** (même fixture → même
 séquence type/tick), le client de contrôle vérifie le corps exact des
-requêtes (`start`/`pause`/`resume`/`reset`).
+requêtes (`start`/`pause`/`resume`/`stop`/`reset`).
 
 ### 4.2 Flux aligné par tick (ECHOS-010, U1)
 
