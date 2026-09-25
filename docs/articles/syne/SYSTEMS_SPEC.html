@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>SYSTEMS_SPEC.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="SYSTEMS_SPEC.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="systems_specmd">SYSTEMS_SPEC.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 21 septembre 2026
+<strong>Dépend de</strong> : <code>DATA_MODEL.md</code>, <code>COGNITIVE_ARCHITECTURE.md</code>, <code>SIMULATION_LOOP.md</code>
+<strong>Source Monographie</strong> : Partie 3 (SYNE), Partie 6 (concepts détaillés)</p>
+<hr>
+<h2 id="1-objectif">1. Objectif</h2>
+<p>Spécifications fonctionnelles des <strong>sous-systèmes</strong> du moteur SYNE. Chaque section référence la partie de la Monographie à implémenter. Les entités logiques, ressources, groupes, conflits, héritage/fusion, livres sont traités ici à niveau système.</p>
+<h2 id="2-sous-systèmes-techniques">2. Sous-systèmes techniques</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Sous-système</th>
+<th style="text-align: left;">Spécification</th>
+<th style="text-align: left;">Source Monographie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Spatial (grille)</strong></td>
+<td style="text-align: left;">Grille uniforme ; <code>cellSize = sqrt(worldArea / (agentCount / 7))</code> (V0.1 : paramètre direct, défaut <code>largeur/10</code>) ; 9 cellules voisines (fenêtre 3×3) ; mises à jour incrémentales</td>
+<td style="text-align: left;">§3.9.6</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Perception</strong></td>
+<td style="text-align: left;">Grille + filtre distance/rayon 50 ; perception étagée (<code>id % 4</code>) ; <strong>ligne de vue</strong> obstacle (ADR-013)</td>
+<td style="text-align: left;">§3.9</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Navigation</strong></td>
+<td style="text-align: left;">Pathfinding 2D autour des obstacles, cache de chemins ; indépendant des moteurs graphiques ; appui sur Navigation2D = [HÉRITÉ] (V0.1 : SYNE calcule lui-même)</td>
+<td style="text-align: left;">§3.19</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Scheduler</strong></td>
+<td style="text-align: left;">Exécution multi-fréquences + LOD décisionnel</td>
+<td style="text-align: left;">§3.4</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Événements</strong></td>
+<td style="text-align: left;">Ring buffer borné (500 000 événements) ; émission <code>ExternalEvent</code></td>
+<td style="text-align: left;">§7.4.5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-monde--environnement">3. Monde &amp; Environnement</h2>
+<ul>
+<li>Espace 2D logique, dimensions configurables (défaut 500×500).</li>
+<li>Clamping des positions ; monde non-toroidal.</li>
+<li>Obstacles statiques (cercle en V0.1, rectangle reporté) : blocage mouvement <strong>et</strong> ligne de vue (perception masquée, ADR-013) — depuis le jalon SYNE ph1.</li>
+<li>Ressources : FoodSource / WaterSource (V1 : taux de régénération nul, eau infinie ; V2 : régénération + dégradation).</li>
+<li>Saisons, territoires, événements du monde, obstacles : clés de configuration — <code>world.seasons</code> (bloc actif depuis <strong>SYNE-072</strong>, jalon U8 : <code>{enabled, seasonLengthTicks, initialSeason, cycle[]}</code> ; l'ancien drapeau booléen homonyme, mort, est remplacé par ce bloc — <code>enabled</code> remplit son rôle), <code>world.territories</code> (bloc actif depuis <strong>SYNE-073</strong>, jalon U8 — §3.10), <code>world.events</code>, <code>world.obstacles</code> (défauts Annexe H).</li>
+</ul>
+<h3 id="310-territoires-monographie-65-décision-n21">3.10 Territoires (Monographie §6.5, décision n°21)</h3>
+<ul>
+<li><strong>Définition (décision n°21, jalon U8)</strong> : le territoire est une <strong>zone délimitée</strong> par la présence des entités autour d'un point de survie. En V0.1 : zone = disque <strong>configurée</strong> <code>world.territories.zones[]</code> <code>{id, centerX, centerY, radius}</code> (CONFIGURATION §6.10) — territoire effectif = présence d'entités dans le disque (<code>distance ≤ radius</code>, bord inclus).</li>
+<li><strong>Suivi (SYNE-073)</strong> : appartenance <strong>recalculée en fin de tick</strong> (fenêtre causale fermée, <code>TrackTerritoryMembership</code> après le cycle de vie) — <strong>function pure des positions</strong>, <strong>0 tirage PRNG</strong>, aucun comportement agentique, aucune revendication ; ordre déterministe (par zone telle que posée, identifiant croissant, <strong>sorties avant entrées</strong>) ; tracées <code>Entered</code>/<code>Left</code> + <code>MembersOf(zoneId)</code>, drainées <code>world.territory_membership_changed</code> (agentId = entité, targetId = zone, value <code>{kind}</code>, API_CONTRACTS §2.2) ; snapshot <code>territories[]</code> <code>{id, x, y, radius, memberCount, members[]}</code> (§2.1) si suivi actif.</li>
+<li><strong>Déterminisme</strong> : suivi désactivé par défaut (<code>enabled: false</code>) ⇒ scénario de référence intact (checksums dorés §3 — DETERMINISM.md §3) ; activé, l'altération se limite à des champs <strong>additifs</strong> du snapshot + événements typés, jamais à la cognition.</li>
+<li><strong>Limite V0.1</strong> : l'ECHOS « frontières fluides / négociation territoriale » reste hors V0.1 ; les <strong>sources spatiales de ressources</strong> par territoire sont reportées (les réserves restent globales, §4).</li>
+</ul>
+<h2 id="4-ressources-monographie-318-69">4. Ressources (Monographie §3.18, §6.9)</h2>
+<ul>
+<li><strong>Contrainte d'absence</strong> : la finitude des ressources est un moteur de comportement (compétition, stockage, déplacement).</li>
+<li>V2 : agents en sources (<code>sources d'eau et de nourriture</code>), dégradation, puissance de régénération.</li>
+<li>Représentation : entité spatiale (Quantity, Capacity, RegenerationRate, Infinite).</li>
+<li><strong>V0.1 (SYNE-042, jalon SYNE ph4 puis SYNE-070, jalon U8)</strong> : <strong>réserves globales</strong> partagées
+(<code>ResourceStocks</code> : Food 100 / Water 1000 / Wood 50 / <strong>Mineral 0</strong>, régénération décision n°4),
+initialisées depuis <code>resources.*</code>, consommées par les actions terminales Eat/Drink et émissées
+dans le snapshot (<code>resources</code>, DATA_MODEL §8.1) ; <strong>cycle de vie (SYNE-070)</strong> : régénération
+<code>+ regenerationRate</code> par tick et dégradation périodique (<code>− regenerationRate × degradationTick</code>
+à chaque période, clamp ≥ 0) appliquées en fin de tick, 0 tirage PRNG ; les <strong>sources spatiales</strong>
+→ <strong>V0.1 (SYNE-071, jalon U8)</strong> : les constructions sont implémentées côté <strong>monde</strong> —
+disques statiques <code>Obstacle {Id, Position, Radius}</code> (layout <code>world.obstacleLayout[]</code>,
+CONFIGURATION §6.8), mutation dynamique validée (<code>AddObstacle</code> bornes/id unique + révision
+<code>ObstacleRevision</code>), constructions tracées <code>PlaceConstruction</code>/<code>RemoveConstruction</code>
+(modification d'environnement), grille A* re-rasterisable (<code>Refresh()</code>, no-op déterministe,
+SYNE-071) ; la <strong>mécanique agentique</strong> (qui construit, coût en bois/minéraux, durée) reste
+ouverte (décision n°20). <strong>Cycle de Saisons (SYNE-072, jalon U8)</strong> : <code>world.seasons</code> (bloc
+actif) module la <strong>régénération/dégradation</strong> en fin de tick par des facteurs par ressource
+(cycle déterministe de 4 saisons, saison = fonction pure du tick, CONFIGURATION §6.9) et émet
+<code>world.season_changed</code> au basculement (API_CONTRACTS §2.2). Les <strong>sources spatiales</strong> de
+ressources restent <strong>hors V0.1</strong> (reportées — le jalon Saisons livre le cycle + facteurs, pas
+les sources spatiales).</li>
+</ul>
+<h2 id="5-groupes-monographie-317-67">5. Groupes (Monographie §3.17, §6.7)</h2>
+<ul>
+<li>Formation émergente par <strong>cohésion</strong> (proximité sociale/représentation partagée).</li>
+<li>Leader désigné par dynamique (attributs, confiance, contribution).</li>
+<li>Décisions collectives; rôles; dissolution.</li>
+<li>Récupération dans le SQLite : <code>groups</code>, <code>group_memberships</code>.</li>
+</ul>
+<h2 id="6-conflits-monographie-68">6. Conflits (Monographie §6.8)</h2>
+<ul>
+<li>Combat = action coûteuse en énergie (ADR-009).</li>
+<li>Résolution probabiliste/numerique basée sur Strength et contexte (détails chiffrés à confirmer).</li>
+<li>Un conflit produit des événements typés (observables).</li>
+</ul>
+<h2 id="7-communication-vu-système--détail-dans-communication_protocolmd">7. Communication (vu système — détail dans <code>COMMUNICATION_PROTOCOL.md</code>)</h2>
+<ul>
+<li><strong>Locale</strong> (rayon limité) et <strong>non confidentielle</strong> (ADR-008). Pas de canaux privés.</li>
+<li>Monte en 7 types de messages (Information, Request, Response, Announcement, Warning, Trading, Acknowledgement).</li>
+<li>Coûts d'envoi/réception, bande passante (maxSendsPerTick=5, maxReceivesPerTick=3), incompréhension (5%), dégradation de confiance par saut (10%/hop).</li>
+</ul>
+<h2 id="8-héritage--fusion-monographie-66">8. Héritage &amp; Fusion (Monographie §6.6)</h2>
+<ul>
+<li><strong>Naissance</strong> : fusion consentie (décision n°17).</li>
+<li><strong>Héritage</strong> : transmission de traits/connaissances (via <strong>fusion consentie</strong> §6.6.3, mécanismes fins configurables — décision n°16 <strong>[TRANCHÉE]</strong>).</li>
+<li><strong>Mort</strong> : dissolution complète (V0.1) — seul un événement de trace subsiste.</li>
+</ul>
+<h2 id="9-livres--persistance-de-connaissance-monographie-318-livres">9. Livres / Persistance de connaissance (Monographie §3.18 (livres))</h2>
+<ul>
+<li><strong>Auteur</strong> : écrit explicitement un livre matérialisant titre/contenu à un instant T. En V0.1 (SYNE-121), <code>SimulationLoop.WriteBook</code> débite le coût énergétique <code>world.books.writeCostEnergy</code>, poinçonne le tick, stocke le livre et émet <code>world.book_written</code> ; valeur par défaut provisoire, calibrage SYNE-120.</li>
+<li><strong>Lecteur consultant</strong> : <code>SimulationLoop.ReadBook</code> enregistre le lecteur distinct et émet <code>world.book_read</code> avec <code>world.books.readBenefit</code>. Le principe de bénéfice est livré ; l’effet sur cognition/confiance/savoir est différé au futur moteur mémoire (hors U8).</li>
+<li>En V0.1 les opérations sont explicites et observationnelles : durée de rédaction, accès spatial et diffusion agentique restent ouverts.</li>
+</ul>
+<h2 id="10-observabilité-interne-monographie-315">10. Observabilité interne (Monographie §3.15)</h2>
+<ul>
+<li>Événements typés : perception, décision, action, communication, naissance/mort, groupe, ressource, conflit.</li>
+<li><code>ExternalEvent</code> émis via WebSocket ; DecisionRecord mémorisé.</li>
+<li>Exigence anti-triche : l'entité ne voit jamais le monde complet (observabilité partielle).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Détails chiffrés de résolution des conflits (probabilités, dégâts) — à documentation quand elle sera tranchée.</li>
+<li>Modèle d'héritage (fusion consentie) : logique cognitive exacte à détailler.</li>
+<li>Coûts des livres (décisions n°18/19) : modèles économiques — <strong>[tranchés] au niveau hérité/prototype</strong> (coûts héritables, budgets par fusion §6.6.3).</li>
+<li>Mécanique V2 du monde (saisons, événements globaux) : non activée en V0.1.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/SYSTEMS_SPEC.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>VISION.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="VISION.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="visionmd">VISION.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>../VISION.md</code> (racine), <code>../GLOSSARY.md</code>
+<strong>Source Monographie</strong> : Partie 3 (SYNE : Le Moteur de Simulation), §2.3.1</p>
+<hr>
+<h2 id="1-rôle-de-syne">1. Rôle de SYNE</h2>
+<p>SYNE (<strong>Systems &amp; Emergent Network Engine</strong>) est le <strong>moteur de simulation</strong> : il possède la <strong>vérité du monde</strong>. Il calcule les états, les interactions et les décisions, indépendamment de toute représentation graphique.</p>
+<p>Il fonctionne en <strong>mode headless</strong> (sans interface), produit des événements observables et sauvegarde/restaure son état avec une garantie de <strong>déterminisme bit-à-bit</strong>.</p>
+<h2 id="2-principes-fondateurs">2. Principes fondateurs</h2>
+<ol>
+<li><strong>Le moteur ne dicte pas aux entités ce qu'elles doivent faire</strong> — il fournit des structures (état, besoins, perception, mémoire, croyances, capacités, système de décision, actions). (Monographie §3.7.1)</li>
+<li><strong>Indépendance du rendu</strong> — aucune dépendance à un moteur graphique ; PRISM/ECHOS sont de simples consommateurs. (Monographie §1.4.6)</li>
+<li><strong>Déterminisme</strong> — reproductibilité exacte à seed + config + version moteur identiques. (Monographie §3.6.2)</li>
+<li><strong>Observabilité</strong> — chaque décision produit une trace (DecisionRecord) ; chaque événement est horodaté et attribué. (Monographie §3.14.12)</li>
+</ol>
+<h2 id="3-ce-que-syne-nest-pas">3. Ce que SYNE n'est pas</h2>
+<ul>
+<li>Ce n'est <strong>pas</strong> un moteur physique réaliste (entités logiques, sans collisions physiques — ADR-010).</li>
+<li>Ce n'est <strong>pas</strong> une IA d'apprentissage : la cognition est explicite, déterministe et inspectable.</li>
+<li>Ce n'est <strong>pas</strong> un moteur de rendu : le monde simulé est un plan 2D logique.</li>
+</ul>
+<h2 id="4-ambition-v01">4. Ambition V0.1</h2>
+<p>SYNE doit être un <strong>instrument scientifique validable</strong> :</p>
+<ul>
+<li>capacité de 50 → 1000 entités avec un budget de tick maîtrisé ;</li>
+<li>architecture BDI (boucle cognitive en 15 étapes) ;</li>
+<li>communication inter-entités par pulsations lumineuses ;</li>
+<li>persistance (JSON → SQLite) et reprise exacte ;</li>
+<li>anti-triche : son observabilité est <strong>partielle</strong> (rayon de perception) ;</li>
+<li>ensembles de tests massifs (couverture ≥ 80 %, jalon 160+ tests).</li>
+</ul>
+<h2 id="5-références">5. Références</h2>
+<ul>
+<li>Architecture : <code>ARCHITECTURE.md</code></li>
+<li>Modèle de données : <code>DATA_MODEL.md</code></li>
+<li>Boucle de simulation : <code>SIMULATION_LOOP.md</code></li>
+<li>Cognition : <code>COGNITIVE_ARCHITECTURE.md</code></li>
+<li>Systèmes : <code>SYSTEMS_SPEC.md</code></li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun — vision du composant stabilisée ; les détails opérationnels jusqu'à <code>[OUVERT]</code> sont déportés vers les docs techniques du composant.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/VISION.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

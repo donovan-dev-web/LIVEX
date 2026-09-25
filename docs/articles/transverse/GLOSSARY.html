@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>GLOSSARY.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="GLOSSARY.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="glossarymd">GLOSSARY.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : —
+<strong>Source Monographie</strong> : Annexe E (glossaire), Partie 6 (concepts détaillés)</p>
+<hr>
+<blockquote>
+<p>Glossaire central de LIVEX. Les termes spécifiques par composant sont détaillés dans les glossaires de chaque module (référencés ci-dessous).</p>
+</blockquote>
+<h2 id="a">A</h2>
+<h3 id="action">Action</h3>
+<p>Unité de comportement exécutable d'une entité (se déplacer, manger, boire, se reposer, explorer, socialiser, communiquer, commercer, combattre, ramasser...). La sélection de l'action est le fruit de la délibération par <strong>utilité</strong>. (Monographie §3.14)</p>
+<h3 id="adr">ADR</h3>
+<p>Architecture Decision Record — document structuré qui consigne une décision d'architecture (contexte, décision, conséquences, alternatives). Voir <code>docs/adr/0000-template.md</code>.</p>
+<h3 id="agent--entité">Agent / Entité</h3>
+<p>L'entité est la notion centrale de LIVEX : un être simulé autonome doté d'un état, de besoins, d'une perception, d'une mémoire, de croyances, de capacités, d'un système de décision et d'actions. Le moteur fournit les structures, jamais les conduites. (Monographie §3.7)</p>
+<h2 id="b">B</h2>
+<h3 id="besoin">Besoin</h3>
+<p>Tension comportementale (faim, soif, fatigue, sécurité, social, curiosité) exprimée sur une échelle 0-100 (ou 0-1). Un besoin élevé alimente la génération d'objectifs et la fonction d'utilité — il ne déclenche pas de comportement direct. (Monographie §3.12)</p>
+<h3 id="bdi-belief-desire-intention">BDI (Belief-Desire-Intention)</h3>
+<p>Architecture cognitive : Croyances (ce que l'entité tient pour vrai), Désirs/objectifs (ce qu'elle cherche), Intentions (ce qu'elle s'engage à faire). (Monographie §3.8)</p>
+<h3 id="boucle-de-simulation">Boucle de simulation</h3>
+<p>Séquence d'opérations causales exécutée à chaque tick. Cible V0.1 : 15 étapes (Percevoir → … → Nouvelles perceptions). (Monographie §3.3.4)</p>
+<h2 id="c">C</h2>
+<h3 id="croyance-belief">Croyance (Belief)</h3>
+<p>Représentation structurée d'un fait avec une <strong>confiance</strong> (0-1) et une source (perception, mémoire, communication, inférence). Une croyance est « vraie » pour l'entité si confiance ≥ 0.5. (Monographie §3.11)</p>
+<h2 id="d">D</h2>
+<h3 id="déterminisme-bit-à-bit">Déterminisme bit-à-bit</h3>
+<p>Propriété selon laquelle deux exécutions identiques (même seed, même config, même version moteur, même état initial) produisent exactement la même trajectoire. (Monographie §2.3.4, §3.6.3)</p>
+<h3 id="decisionrecord">DecisionRecord</h3>
+<p>Trace complète d'une décision : besoins, croyances considérées, scores d'utilité, action choisie. Base de l'observabilité causale. (Monographie §3.14.12)</p>
+<h2 id="e">E</h2>
+<h3 id="echos">ECHOS</h3>
+<p>Emergent Complex Hierarchical Observation System — module d'observation, d'analyse et de pilotage. (Monographie §2.3.2)</p>
+<h3 id="emergence">Emergence</h3>
+<p>Apparition de structures collectives (groupes, spécialisations, conflits, marchés) non programmées : elles résultent d'interactions locales sous contraintes. (Monographie §1.1, Partie 6)</p>
+<h3 id="événement-event">Événement (event)</h3>
+<p>Fait observable et horodaté produit par la simulation (<code>spawn</code>, <code>mort</code>, <code>décision</code>, <code>message</code>...). (Monographie §3.15)</p>
+<h2 id="f">F</h2>
+<h3 id="fonction-dutilité">Fonction d'utilité</h3>
+<p>Formule centrale de décision : <code>utility = (benefit − cost − risk) × confidence × personality_modifier + urgency</code>. Elle rend chaque choix transparent et explicable. (Monographie §3.14.1)</p>
+<h2 id="g">G</h2>
+<h3 id="groupe">Groupe</h3>
+<p>Regroupement d'entités formé par émergence, doté d'un leader, d'une cohésion et de rôles. (Monographie §3.17)</p>
+<h3 id="grille-spatiale">Grille spatiale</h3>
+<p>Structure de données (cellules uniformes) accélérant les requêtes de perception et de communication de O(n²) à quasi-linéaire. (Monographie §3.9.6)</p>
+<h2 id="m">M</h2>
+<h3 id="mémoire">Mémoire</h3>
+<p>Enregistrement des expériences passées selon une décroissance exponentielle de la salience. Capacité bornée (jusqu'à 1000 entrées). À ne pas confondre avec les croyances. (Monographie §3.10)</p>
+<h3 id="message">Message</h3>
+<p>Unité de communication inter-entités (pulsation lumineuse). 7 types : Information, Request, Response, Announcement, Warning, Trading, Acknowledgement. (Monographie §3.16)</p>
+<h2 id="o">O</h2>
+<h3 id="objectif-goal">Objectif (Goal)</h3>
+<p>État recherché généré à partir des besoins non satisfaits, doté d'une priorité. (Monographie §3.13)</p>
+<h3 id="obstacle">Obstacle</h3>
+<p>Élément statique qui bloque le mouvement (et en V2 la ligne de vue). Formes : rectangle, cercle. (Monographie §3.5.2)</p>
+<h3 id="observabilité-partielle">Observabilité partielle</h3>
+<p>Une entité ne connaît qu'une partie du monde (rayon de perception). Source de diversité, d'erreur et d'exploration. (Monographie §3.9)</p>
+<h2 id="p">P</h2>
+<h3 id="pathfinding">Pathfinding</h3>
+<p>Sous-système de navigation de SYNE calculant des chemins 2D autour des obstacles, indépendant de tout moteur graphique. (Monographie §3.19)</p>
+<h3 id="perception">Perception</h3>
+<p>Première étape de la boucle BDI : transformation de l'état du monde en observations locales, potentiellement inexactes. (Monographie §3.9)</p>
+<h3 id="prism">PRISM</h3>
+<p>Perceptual Rendering &amp; Interactive Simulation Module — couche de représentation 3D et d'interaction, jamais source de vérité. (Monographie §2.3.3)</p>
+<h3 id="prng-xoshiro256">PRNG (xoshiro256**)</h3>
+<p>Générateur pseudo-aléatoire rapide et de haute qualité, utilisé pour tous les tirages — initialisation splitmix64(seed). <code>System.Random</code> est <strong>interdit</strong>. (Monographie §3.6.3)</p>
+<h2 id="r">R</h2>
+<h3 id="ressource">Ressource</h3>
+<p>Élément spatial consommable (nourriture, eau, bois...) : fini ou régénérant, source de contraintes comportementales. (Monographie §3.18, §6.9)</p>
+<h3 id="run">Run</h3>
+<p>Exécution complète et reproductible d'une expérience, définie par seed + config + version moteur + état initial. (Monographie §3.6.2)</p>
+<h2 id="s">S</h2>
+<h3 id="seed">Seed</h3>
+<p>Entier 64 bits initialisant le PRNG ; elle rend deux runs comparables et reproductibles. (Monographie §3.6.2)</p>
+<h3 id="scheduler">Scheduler</h3>
+<p>Composant qui exécute les sous-systèmes à des fréquences différentes (élevée, moyenne, adaptative, faible) selon leur coût et leur besoin. (Monographie §3.4)</p>
+<h3 id="syne">SYNE</h3>
+<p>Systems &amp; Emergent Network Engine — moteur de simulation ; possède la vérité du monde. (Monographie §2.3.1)</p>
+<h2 id="t">T</h2>
+<h3 id="tick">Tick</h3>
+<p>Unité de temps simulé : 1 tick = 1 minute simulée par défaut (défaut 10 ticks/seconde réelle → 1 s = 10 min simulées). (Monographie §3.6.1)</p>
+<h3 id="trait">Trait</h3>
+<p>Paramètre de personnalité (bravery, curiosity, sociability, greed, pessimism, aggression, strength, speed), plage 0-2, neutre 1.0, modulant la fonction d'utilité. (Monographie §3.7.4)</p>
+<h2 id="u">U</h2>
+<h3 id="utilité">Utilité</h3>
+<p>Voir <strong>Fonction d'utilité</strong>.</p>
+<h2 id="v">V</h2>
+<h3 id="version-moteur">Version moteur</h3>
+<p>Identifiant qui garantit des règles identiques entre runs (navbar inclus dans la définition d'une expérience reproductible). (Monographie §3.6.2)</p>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Le glossaire de la Monographie (Annexe E) peut contenir d'autres entrées à reprendre si le besoin surgit ; ce document restera la référence centrale et sera enrichi sans rupture.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/GLOSSARY.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

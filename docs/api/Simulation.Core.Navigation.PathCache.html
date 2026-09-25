@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class PathCache | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class PathCache | LIVEX ">
+    
+    <meta name="description" content="Cache LRU de chemins (SYNE-077, Monographie &#167;6.2.12) : m&#233;mo&#239;sation d&#39;un calcul A* par paire (cellule source, cellule but) afin d&#39;&#233;viter de re-planifier le m&#234;me chemin &#224; chaque tick de d&#233;placement. Born&#233; : la plus ancienne entr&#233;e est &#233;vinc&#233;e au-del&#224; de . D&#233;terminisme : l&#39;ordre d&#39;acc&#232;s est l&#39;ordre d&#39;appel (lui-m&#234;me d&#233;terministe) ; le remplacement et l&#39;&#233;viction ne consomment aucun tirage du PRNG global.">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Navigation.PathCache">
+
+
+
+  <h1 id="Simulation_Core_Navigation_PathCache" data-uid="Simulation.Core.Navigation.PathCache" class="text-break">Class PathCache</h1>
+  <div class="markdown level0 summary"><p>Cache LRU de chemins (SYNE-077, Monographie §6.2.12) : mémoïsation d'un
+calcul A* par paire (cellule source, cellule but) afin d'éviter de re-planifier
+le même chemin à chaque tick de déplacement. Borné : la plus ancienne entrée
+est évincée au-delà de <a class="xref" href="Simulation.Core.Navigation.PathCache.html#Simulation_Core_Navigation_PathCache_Capacity">Capacity</a>.</p>
+<p>Déterminisme : l'ordre d'accès est l'ordre d'appel (lui-même déterministe) ;
+le remplacement et l'éviction ne consomment aucun tirage du PRNG global.</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">PathCache</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Navigation.html">Navigation</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Navigation_PathCache_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class PathCache</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_PathCache__ctor_" data-uid="Simulation.Core.Navigation.PathCache.#ctor*"></a>
+  <h4 id="Simulation_Core_Navigation_PathCache__ctor_System_Int32_" data-uid="Simulation.Core.Navigation.PathCache.#ctor(System.Int32)">PathCache(int)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PathCache(int capacity)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">capacity</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_PathCache_Capacity_" data-uid="Simulation.Core.Navigation.PathCache.Capacity*"></a>
+  <h4 id="Simulation_Core_Navigation_PathCache_Capacity" data-uid="Simulation.Core.Navigation.PathCache.Capacity">Capacity</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Capacity { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_PathCache_Count_" data-uid="Simulation.Core.Navigation.PathCache.Count*"></a>
+  <h4 id="Simulation_Core_Navigation_PathCache_Count" data-uid="Simulation.Core.Navigation.PathCache.Count">Count</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_PathCache_Add_" data-uid="Simulation.Core.Navigation.PathCache.Add*"></a>
+  <h4 id="Simulation_Core_Navigation_PathCache_Add_System_Int32_System_Int32_System_Int32_System_Int32_System_Collections_Generic_IReadOnlyList_Simulation_Core_World_Position__" data-uid="Simulation.Core.Navigation.PathCache.Add(System.Int32,System.Int32,System.Int32,System.Int32,System.Collections.Generic.IReadOnlyList{Simulation.Core.World.Position})">Add(int, int, int, int, IReadOnlyList&lt;Position&gt;)</h4>
+  <div class="markdown level1 summary"><p>Mémorise un chemin (source exclue, but inclus). Une même clé est remplacée
+et re-marquée récemment utilisée ; l'éviction retire la clé la plus ancienne.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Add(int sx, int sy, int tx, int ty, IReadOnlyList&lt;Position&gt; positions)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">sx</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">sy</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">tx</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">ty</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.Position.html">Position</a>&gt;</td>
+        <td><span class="parametername">positions</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_PathCache_Clear_" data-uid="Simulation.Core.Navigation.PathCache.Clear*"></a>
+  <h4 id="Simulation_Core_Navigation_PathCache_Clear" data-uid="Simulation.Core.Navigation.PathCache.Clear">Clear()</h4>
+  <div class="markdown level1 summary"><p>Purge complète du cache (SYNE-071) : appelée quand le monde re-rasterise sa
+grille bloquée après une pose/retrait de construction — les chemins mémorisés
+ne sont plus valides.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Clear()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_PathCache_TryGet_" data-uid="Simulation.Core.Navigation.PathCache.TryGet*"></a>
+  <h4 id="Simulation_Core_Navigation_PathCache_TryGet_System_Int32_System_Int32_System_Int32_System_Int32_" data-uid="Simulation.Core.Navigation.PathCache.TryGet(System.Int32,System.Int32,System.Int32,System.Int32)">TryGet(int, int, int, int)</h4>
+  <div class="markdown level1 summary"><p>Récupère le chemin mémorisé (déplace la clé en queue LRU), sinon <code>null</code>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Position&gt;? TryGet(int sx, int sy, int tx, int ty)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">sx</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">sy</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">tx</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">ty</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.Position.html">Position</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/PathCache.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

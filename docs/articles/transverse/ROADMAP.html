@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ROADMAP.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ROADMAP.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="roadmapmd">ROADMAP.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>VISION.md</code>, <code>VERSIONING.md</code>
+<strong>Source Monographie</strong> : Annexe J (feuille de route V2 détaillée), Partie 9 (Conclusions)</p>
+<hr>
+<h2 id="1-principe">1. Principe</h2>
+<p>La road map LIVEX est exprimée <strong>en ordre, sans dates</strong> : les phases s'enchaînent de manière obligatoire, mais leur calendrier dépend de la disponibilité et des validations intermédiaires. C'est la méthode retenue (décision utilisateur) pour préserver la rigueur scientifique du projet sans s'enfermer dans un planning irréaliste.</p>
+<h2 id="2-les-6-phases-cadres">2. Les 6 phases cadres</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Phase</th>
+<th style="text-align: left;">Intitulé</th>
+<th style="text-align: left;">Objectif</th>
+<th style="text-align: left;">Sortie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>0</strong></td>
+<td style="text-align: left;">Socle &amp; gouvernance</td>
+<td style="text-align: left;">Réseau, dépôt, conventions, pipeline</td>
+<td style="text-align: left;"><code>LICENSE</code>, <code>VERSIONING.md</code>, <code>GITFLOW.md</code>, <code>CI_CD.md</code>, gouvernance, templates</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>1</strong></td>
+<td style="text-align: left;">Cadrage général</td>
+<td style="text-align: left;">Vision, architecture, contrats, glossaire</td>
+<td style="text-align: left;">Documents racine (<code>ARCHITECTURE.md</code>, <code>COMMUNICATION.md</code>, ...)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>2</strong></td>
+<td style="text-align: left;">Moteur (SYNE)</td>
+<td style="text-align: left;">Cœur du monde simulé</td>
+<td style="text-align: left;"><code>docs/docs-syne/*</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>3</strong></td>
+<td style="text-align: left;">Observation (ECHOS)</td>
+<td style="text-align: left;">Analyse et pilotage</td>
+<td style="text-align: left;"><code>docs/docs-echos/*</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>4</strong></td>
+<td style="text-align: left;">Représentation (PRISM)</td>
+<td style="text-align: left;">Rendu et interaction</td>
+<td style="text-align: left;"><code>docs/docs-prism/*</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>5</strong></td>
+<td style="text-align: left;">Consolidation</td>
+<td style="text-align: left;">Cohérence des contrats, FAQ, contribution</td>
+<td style="text-align: left;">Relecture croisée, <code>FAQ.md</code>, <code>CONTRIBUTING.md</code>, checklist finale</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-alignement-sur-la-feuille-de-route-v2-annexe-j">3. Alignement sur la feuille de route V2 (Annexe J)</h2>
+<p>La Monographie fournit une feuille de route V2 en 24 semaines (13 phases). Elle sert de <strong>référence technique</strong> pour le contenu des jalons, mais sa temporalité est indicative. Équivalence indicative :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Phase Monographie (J.1)</th>
+<th style="text-align: left;">Contenu</th>
+<th style="text-align: left;">État LIVEX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">Architecture &amp; documentation</td>
+<td style="text-align: left;">Contenu couvert par les <strong>phases 0-1</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">BDI + Perception</td>
+<td style="text-align: left;"><strong>Phase 2</strong> (SYNE) — boucle 10/15 étapes</td>
+</tr>
+<tr>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Mémoire + Croyances</td>
+<td style="text-align: left;">Phase 2</td>
+</tr>
+<tr>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">Décision + Utilité</td>
+<td style="text-align: left;">Phase 2</td>
+</tr>
+<tr>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">Actions</td>
+<td style="text-align: left;">Phase 2</td>
+</tr>
+<tr>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">Communication</td>
+<td style="text-align: left;">Phase 2</td>
+</tr>
+<tr>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">Groupes</td>
+<td style="text-align: left;">Phase 2</td>
+</tr>
+<tr>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">Ressources + Environnement</td>
+<td style="text-align: left;">Phase 2</td>
+</tr>
+<tr>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">Observabilité</td>
+<td style="text-align: left;">Phase 2 (anti-triche, validations)</td>
+</tr>
+<tr>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">Performance &amp; Scalabilité</td>
+<td style="text-align: left;">Phase 2 (PERFORMANCE.md)</td>
+</tr>
+<tr>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">Tests &amp; Couverture</td>
+<td style="text-align: left;">Phase 2 (TESTING.md)</td>
+</tr>
+<tr>
+<td style="text-align: left;">11</td>
+<td style="text-align: left;">Analyzer V2 (7 moteurs)</td>
+<td style="text-align: left;"><strong>Phase 3</strong> (ECHOS)</td>
+</tr>
+<tr>
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">CI/CD &amp; Déploiement</td>
+<td style="text-align: left;"><strong>Phase 0</strong> (pipeline) + <strong>Phase 5</strong> (consolidation)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-jalons-de-validation-monographie-j2-adapté">4. Jalons de validation (Monographie J.2, adapté)</h2>
+<ol>
+<li><strong>T0 — Y3</strong> : 50 entités, 1000 ticks, pas de crash.</li>
+<li><strong>T1</strong> : 50 entités, 2000 ticks, croyances divergentes (deux entités avec expériences différentes → croyances différentes).</li>
+<li><strong>T2</strong> : traits différents → décisions différentes (courage=0 vs courage=2 sur situation identique).</li>
+<li><strong>T3</strong> : information locale (message n'est reçu que dans le rayon).</li>
+<li><strong>T4</strong> : benchmarks — objectifs de ticks/s (cf. <code>docs/docs-syne/PERFORMANCE.md</code>).</li>
+<li><strong>T5</strong> : 160+ tests, couverture ≥ 80%.</li>
+<li><strong>T6</strong> : <code>docker compose up</code> démarre en &lt; 30 s.</li>
+</ol>
+<h2 id="5-long-terme-vision">5. Long terme (vision)</h2>
+<p>Pistes futures (Monographie §5.15, Partie 9) :</p>
+<ul>
+<li>PRISM sur moteur graphique définitif (Unreal/Unity/autre).</li>
+<li>Mode joueur-habitant (incarner une entité).</li>
+<li>Représentation des constructions/territoires, saisons, météo.</li>
+<li>Intégration ECHOS dans la scène.</li>
+</ul>
+<p>Ces pistes sont documentées dans les ROADMAP de chaque composant ; elles ne sont pas datées.</p>
+<hr>
+<h2 id="6-backlog-unifié-syne--echos-jalons-croisés">6. Backlog unifié SYNE + ECHOS (jalons croisés)</h2>
+<p>Section de <strong>backlog consolidé</strong> qui référence les issues des deux composants déjà réalisés et aligne la validation croisée (<code>docs/docs-syne/ISSUES.md</code>, <code>docs/docs-echos/ISSUES.md</code>). Elle sert de <strong>base unique</strong> pour la création des issues GitHub et du Kanban LIVEX (cf. <code>ISSUES.md</code> racine §5.1, <code>KANBAN.md</code> racine).</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Jalon unifié</th>
+<th style="text-align: left;">Couvre (SYNE)</th>
+<th style="text-align: left;">Couvre (ECHOS)</th>
+<th style="text-align: left;">Issues de référence</th>
+<th style="text-align: left;">Critère de validation croisée</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>U0</strong> — Socle &amp; gouvernance</td>
+<td style="text-align: left;">ph0 (<code>SYNE-001…006</code>)</td>
+<td style="text-align: left;">ph0 (<code>ECHOS-001…005</code>)</td>
+<td style="text-align: left;"><code>docs-syne/ISSUES.md</code> ph0, <code>docs-echos/ISSUES.md</code> ph0</td>
+<td style="text-align: left;">Architecture + ADR (SYNE ADR-001/002, ECHOS ADR-001/002) ; pipeline CI vert</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U1</strong> — Boucle &amp; perception</td>
+<td style="text-align: left;">ph1 (<code>SYNE-010…015</code>)</td>
+<td style="text-align: left;">ph1 (<code>ECHOS-010…016</code>)</td>
+<td style="text-align: left;">ph1 SYNE, ph1 ECHOS</td>
+<td style="text-align: left;">Boucle 10/15 étapes SYNE ; ingestion WebSocket ECHOS ; golden : T0/T1</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U2</strong> — Mémoire &amp; croyances</td>
+<td style="text-align: left;">ph2 (<code>SYNE-020…022</code>)</td>
+<td style="text-align: left;">ph2 (<code>ECHOS-020…027</code>)</td>
+<td style="text-align: left;">ph2 SYNE, ph2 ECHOS</td>
+<td style="text-align: left;">Révision des croyances ; 7 moteurs de métriques ECHOS ; golden files</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U3</strong> — Décision &amp; utilité</td>
+<td style="text-align: left;">ph3 (<code>SYNE-030…033</code>)</td>
+<td style="text-align: left;">ph3 (<code>ECHOS-030…033</code>)</td>
+<td style="text-align: left;">ph3 SYNE, ph3 ECHOS</td>
+<td style="text-align: left;">Délibération BDI ; score d'émergence [0,1] ; T2 trait→décision</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U4</strong> — Actions &amp; communication</td>
+<td style="text-align: left;">ph4–5 (<code>SYNE-040…054</code>)</td>
+<td style="text-align: left;">ph4 (<code>ECHOS-040…045</code>)</td>
+<td style="text-align: left;">ph4±ph5 SYNE, ph4 ECHOS</td>
+<td style="text-align: left;">Périmètre des actions ; API REST ECHOS ≥ 80 % ; T3 information locale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U5</strong> — Groupes</td>
+<td style="text-align: left;">ph6 (<code>SYNE-060…063</code>)</td>
+<td style="text-align: left;">ph5 (<code>ECHOS-050…054</code>)</td>
+<td style="text-align: left;">ph6 SYNE, ph5 ECHOS</td>
+<td style="text-align: left;">Groupes BDI ; logging &amp; instrumentation ; jalons J2/J3</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U6</strong> — Observabilité &amp; fidélités</td>
+<td style="text-align: left;">ph8 (<code>SYNE-080…082</code>) + ph7b (<code>SYNE-074…077</code>)</td>
+<td style="text-align: left;">ph6 (<code>ECHOS-060…063</code>)</td>
+<td style="text-align: left;">ph8+ph7b SYNE, ph6 ECHOS</td>
+<td style="text-align: left;">Événements typés ; analyse causale ; 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U7</strong> — Performance &amp; comparaison</td>
+<td style="text-align: left;">ph9–10 (<code>SYNE-090…102</code>)</td>
+<td style="text-align: left;">ph7 (<code>ECHOS-070…072</code>)</td>
+<td style="text-align: left;"><strong>Implémentation avancée — validation produit partielle</strong> — budgets et benchmarks du moteur présents ; ECHOS <code>/api/compare</code>, reproductibilité et exports présents. La cadence contrôlée, le backpressure, le lag et le parcours UI ne sont pas encore des preuves de release.</td>
+<td style="text-align: left;">Budgets tick ; comparaison de runs (seed 12345) ; T4 benchmarks ; mesure pipeline à ajouter</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>U8</strong> — Tests &amp; persistance (V0.1 → V1)</td>
+<td style="text-align: left;">ph7 (<code>SYNE-070…073</code>) + ph11 (<code>SYNE-110…113</code>) + <code>SYNE-120…122</code> + <code>SYNE-130…131</code></td>
+<td style="text-align: left;">ph8 (<code>ECHOS-080…085</code>) + ph9 (<code>ECHOS-090…092</code>)</td>
+<td style="text-align: left;"><strong>Implémentation avancée — non accepté comme jalon transverse</strong> — persistance, contrôle :5181 et intégration réelle multi-ticks présents ; la stabilité long-run, la reprise worker et le parcours UI complet restent à prouver.</td>
+<td style="text-align: left;">Persistance bit-à-bit, contrôle, intégration SYNE→ECHOS, métriques REST ; test long-run et preuve de fraîcheur à ajouter</td>
+</tr>
+</tbody>
+</table>
+<h3 id="condition-prism">Condition PRISM</h3>
+<ul>
+<li>PRISM (feuille de route PRISM, <code>docs/docs-prism/ROADMAP.md</code>) démarre après l'achèvement de <strong>U0 → U8</strong>. ECHOS-091 vérifie le flux réel SYNE→ECHOS et le contrat REST de sortie ; il ne prétend pas tester un runtime PRISM avant la phase de représentation.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Pas de dates : aucune jalon daté ne sera fixé avant consolidation des phase 2-4.</li>
+<li>L'ordre des phases Monographie V2 est conservé tel quel ; si une priorité émerge pendant la documentation (ex. un sous-système à détailler en premier), la route sera mise à jour explicitement.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/ROADMAP.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

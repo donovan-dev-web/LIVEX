@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class World | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class World | LIVEX ">
+    
+    <meta name="description" content="Le monde : plan 2D continu non-toroidal, grille spatiale de perception, index des entit&#233;s. Positions dans [0, Width] x [0, Height] (DATA_MODEL.md &#167;2).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.World.World">
+
+
+
+  <h1 id="Simulation_Core_World_World" data-uid="Simulation.Core.World.World" class="text-break">Class World</h1>
+  <div class="markdown level0 summary"><p>Le monde : plan 2D continu non-toroidal, grille spatiale de perception,
+index des entités. Positions dans [0, Width] x [0, Height] (DATA_MODEL.md §2).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">World</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.World.html">World</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_World_World_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class World</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World__ctor_" data-uid="Simulation.Core.World.World.#ctor*"></a>
+  <h4 id="Simulation_Core_World_World__ctor_Simulation_Core_World_WorldSize_" data-uid="Simulation.Core.World.World.#ctor(Simulation.Core.World.WorldSize)">World(WorldSize)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public World(WorldSize size)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.WorldSize.html">WorldSize</a></td>
+        <td><span class="parametername">size</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World__ctor_" data-uid="Simulation.Core.World.World.#ctor*"></a>
+  <h4 id="Simulation_Core_World_World__ctor_Simulation_Core_World_WorldSize_System_Double_" data-uid="Simulation.Core.World.World.#ctor(Simulation.Core.World.WorldSize,System.Double)">World(WorldSize, double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public World(WorldSize size, double spatialCellSize)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.WorldSize.html">WorldSize</a></td>
+        <td><span class="parametername">size</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">spatialCellSize</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_Books_" data-uid="Simulation.Core.World.World.Books*"></a>
+  <h4 id="Simulation_Core_World_World_Books" data-uid="Simulation.Core.World.World.Books">Books</h4>
+  <div class="markdown level1 summary"><p>Livres du monde (SYNE-121, décisions n°18/19) : matérialisations de
+connaissance à l'instant T, écrites par des entités (coût en énergie payé
+à l'écriture, consultées par des lecteurs distincts). Actifs seulement si
+<code>world.books.enabled</code> (API de la boucle <code>WriteBook</code>/<code>ReadBook</code>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Book&gt; Books { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.Book.html">Book</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_Entities_" data-uid="Simulation.Core.World.World.Entities*"></a>
+  <h4 id="Simulation_Core_World_World_Entities" data-uid="Simulation.Core.World.World.Entities">Entities</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Entity&gt; Entities { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Entities.Entity.html">Entity</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_Grid_" data-uid="Simulation.Core.World.World.Grid*"></a>
+  <h4 id="Simulation_Core_World_World_Grid" data-uid="Simulation.Core.World.World.Grid">Grid</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SpatialGrid Grid { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.SpatialGrid.html">SpatialGrid</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_LastEnvironmentChanges_" data-uid="Simulation.Core.World.World.LastEnvironmentChanges*"></a>
+  <h4 id="Simulation_Core_World_World_LastEnvironmentChanges" data-uid="Simulation.Core.World.World.LastEnvironmentChanges">LastEnvironmentChanges</h4>
+  <div class="markdown level1 summary"><p>Modifications d'environnement tracées depuis la dernière collecte
+(pose/retrait de construction, SYNE-071). Drainée par l'émetteur
+d'observabilité via <a class="xref" href="Simulation.Core.World.World.html#Simulation_Core_World_World_ClearEnvironmentChanges">ClearEnvironmentChanges()</a>.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;EnvironmentChange&gt; LastEnvironmentChanges { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.EnvironmentChange.html">EnvironmentChange</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_ObstacleRevision_" data-uid="Simulation.Core.World.World.ObstacleRevision*"></a>
+  <h4 id="Simulation_Core_World_World_ObstacleRevision" data-uid="Simulation.Core.World.World.ObstacleRevision">ObstacleRevision</h4>
+  <div class="markdown level1 summary"><p>Révision des obstacles — incrémentée à chaque ajout/retrait (y compris le
+layout d'init et la restauration). Pilote la re-rasterisation du cheminement
+(SYNE-071) : quand elle change, <code>AStarPathfinder.Refresh</code> re-calcule la
+grille bloquée et purge le cache de chemins.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ulong ObstacleRevision { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_Obstacles_" data-uid="Simulation.Core.World.World.Obstacles*"></a>
+  <h4 id="Simulation_Core_World_World_Obstacles" data-uid="Simulation.Core.World.World.Obstacles">Obstacles</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Obstacle&gt; Obstacles { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.Obstacle.html">Obstacle</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_Size_" data-uid="Simulation.Core.World.World.Size*"></a>
+  <h4 id="Simulation_Core_World_World_Size" data-uid="Simulation.Core.World.World.Size">Size</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public WorldSize Size { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.WorldSize.html">WorldSize</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_Territories_" data-uid="Simulation.Core.World.World.Territories*"></a>
+  <h4 id="Simulation_Core_World_World_Territories" data-uid="Simulation.Core.World.World.Territories">Territories</h4>
+  <div class="markdown level1 summary"><p>Zones de territoire (SYNE-073, décision n°21) : disques « point de survie »
+posés à l'init (config <code>world.territories.zones[]</code>), ordre de pose
+stable. La présence d'une entité dans une zone la délimite comme
+territoire effectif (appartenance suivie par la boucle, 0 PRNG).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Territory&gt; Territories { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.Territory.html">Territory</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_AddBook_" data-uid="Simulation.Core.World.World.AddBook*"></a>
+  <h4 id="Simulation_Core_World_World_AddBook_Simulation_Core_World_Book_" data-uid="Simulation.Core.World.World.AddBook(Simulation.Core.World.Book)">AddBook(Book)</h4>
+  <div class="markdown level1 summary"><p>Ajoute un livre au monde (SYNE-121) : stocké à l'écriture
+(<code>SimulationLoop.WriteBook</code>, tracé) ou pour la restauration d'état.
+Identifiant unique exigé (jamais de mutation silencieuse du référentiel).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddBook(Book book)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Book.html">Book</a></td>
+        <td><span class="parametername">book</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_AddEntity_" data-uid="Simulation.Core.World.World.AddEntity*"></a>
+  <h4 id="Simulation_Core_World_World_AddEntity_Simulation_Core_Entities_Entity_" data-uid="Simulation.Core.World.World.AddEntity(Simulation.Core.Entities.Entity)">AddEntity(Entity)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddEntity(Entity entity)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.Entity.html">Entity</a></td>
+        <td><span class="parametername">entity</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_AddObstacle_" data-uid="Simulation.Core.World.World.AddObstacle*"></a>
+  <h4 id="Simulation_Core_World_World_AddObstacle_Simulation_Core_World_Obstacle_" data-uid="Simulation.Core.World.World.AddObstacle(Simulation.Core.World.Obstacle)">AddObstacle(Obstacle)</h4>
+  <div class="markdown level1 summary"><p>Ajoute un obstacle statique de base au monde (SYNE-011, DATA_MODEL.md §2) :
+configuration initiale ou restauration bit-à-bit. Non tracé (les obstacles
+d'init sont l'environnement, pas des modifications d'environnement).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddObstacle(Obstacle obstacle)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Obstacle.html">Obstacle</a></td>
+        <td><span class="parametername">obstacle</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_AddTerritory_" data-uid="Simulation.Core.World.World.AddTerritory*"></a>
+  <h4 id="Simulation_Core_World_World_AddTerritory_Simulation_Core_World_Territory_" data-uid="Simulation.Core.World.World.AddTerritory(Simulation.Core.World.Territory)">AddTerritory(Territory)</h4>
+  <div class="markdown level1 summary"><p>Ajoute une zone de territoire au monde (SYNE-073) : configuration initiale
+(layout <code>world.territories.zones[]</code>) — appartenance non tracée (aucune
+mutation d'environnement ; la zone est statique, la présence des entités
+est suivie par la boucle).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AddTerritory(Territory territory)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Territory.html">Territory</a></td>
+        <td><span class="parametername">territory</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_ApplyConfiguredLayout_" data-uid="Simulation.Core.World.World.ApplyConfiguredLayout*"></a>
+  <h4 id="Simulation_Core_World_World_ApplyConfiguredLayout_Simulation_Core_Configuration_WorldSettings_" data-uid="Simulation.Core.World.World.ApplyConfiguredLayout(Simulation.Core.Configuration.WorldSettings)">ApplyConfiguredLayout(WorldSettings)</h4>
+  <div class="markdown level1 summary"><p>Applique le layout d'obstacles configuré (SYNE-071, CONFIGURATION.md §6.8) :
+place les disques de <code>world.obstacleLayout</code> quand <code>world.obstacles</code>
+est vrai. Obstacles d'init non tracés. Pose aussi les zones de territoire
+(SYNE-073, CONFIGURATION.md §6.10) quand <code>world.territories</code> est actif.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ApplyConfiguredLayout(WorldSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.WorldSettings.html">WorldSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_ClearEnvironmentChanges_" data-uid="Simulation.Core.World.World.ClearEnvironmentChanges*"></a>
+  <h4 id="Simulation_Core_World_World_ClearEnvironmentChanges" data-uid="Simulation.Core.World.World.ClearEnvironmentChanges">ClearEnvironmentChanges()</h4>
+  <div class="markdown level1 summary"><p>Consomme les modifications d'environnement tracées (drain par-tick de l'émetteur).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearEnvironmentChanges()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_PlaceConstruction_" data-uid="Simulation.Core.World.World.PlaceConstruction*"></a>
+  <h4 id="Simulation_Core_World_World_PlaceConstruction_Simulation_Core_World_Obstacle_" data-uid="Simulation.Core.World.World.PlaceConstruction(Simulation.Core.World.Obstacle)">PlaceConstruction(Obstacle)</h4>
+  <div class="markdown level1 summary"><p>Pose une construction (SYNE-071, décision n°20) : un obstacle statique de la
+grille, tracé comme modification d'environnement (événement
+<code>world.construction_placed</code>). Bloque le mouvement et la ligne de vue.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void PlaceConstruction(Obstacle obstacle)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Obstacle.html">Obstacle</a></td>
+        <td><span class="parametername">obstacle</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_RemoveConstruction_" data-uid="Simulation.Core.World.World.RemoveConstruction*"></a>
+  <h4 id="Simulation_Core_World_World_RemoveConstruction_System_String_" data-uid="Simulation.Core.World.World.RemoveConstruction(System.String)">RemoveConstruction(string)</h4>
+  <div class="markdown level1 summary"><p>Retire une construction (SYNE-071) : tracé comme modification d'environnement
+(événement <code>world.construction_removed</code>). Renvoie <code>false</code> si aucun
+obstacle ne porte cet identifiant.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool RemoveConstruction(string id)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td><span class="parametername">id</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_RemoveEntity_" data-uid="Simulation.Core.World.World.RemoveEntity*"></a>
+  <h4 id="Simulation_Core_World_World_RemoveEntity_Simulation_Core_Entities_Entity_" data-uid="Simulation.Core.World.World.RemoveEntity(Simulation.Core.Entities.Entity)">RemoveEntity(Entity)</h4>
+  <div class="markdown level1 summary"><p>Retire une entité du monde (SYNE-074, mortalité) : grille spatiale + index.
+Lève si l'entité n'était pas présente.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RemoveEntity(Entity entity)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.Entity.html">Entity</a></td>
+        <td><span class="parametername">entity</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_World_SamplePosition_" data-uid="Simulation.Core.World.World.SamplePosition*"></a>
+  <h4 id="Simulation_Core_World_World_SamplePosition_Simulation_Core_Prng_Xoshiro256StarStar_" data-uid="Simulation.Core.World.World.SamplePosition(Simulation.Core.Prng.Xoshiro256StarStar)">SamplePosition(Xoshiro256StarStar)</h4>
+  <div class="markdown level1 summary"><p>Position uniforme dans le monde (déterministe en fonction de la graine du PRNG).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public (Position Position, Xoshiro256StarStar Next) SamplePosition(Xoshiro256StarStar rng)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a></td>
+        <td><span class="parametername">rng</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>(<a class="xref" href="Simulation.Core.World.Position.html">Position</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-simulation.core.world.position,simulation.core.prng.xoshiro256starstar-.position">Position</a>, <a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-simulation.core.world.position,simulation.core.prng.xoshiro256starstar-.next">Next</a>)</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/World.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

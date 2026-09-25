@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>FRONTEND_VISION — vision du frontend ECHOS | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="FRONTEND_VISION — vision du frontend ECHOS | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="frontend_visionmd">FRONTEND_VISION.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [LIVRÉ]</p>
+<blockquote>
+<p><strong>Jalon ph8 (U7)</strong> : la vision est désormais <strong>implémentée</strong> par <code>echos-ui</code>
+(PR UI #441, les 6 Écrans A→F). Les dispositions figurant dans ce document
+sont appliquées telles quelles (contrats §3.9, décision locale, relais de
+pilotage, design system §4/§5).</p>
+<p><strong>Résumé du livrable</strong> : étape cible « pas de coquille Electron » reformulée
+en « <strong>implémentation différée post-V0.1</strong> » (décision 23/09/2026) — voir
+<code>ADR-001-stack-applicative.md</code> log correctif et <code>LIVEX/CHANGELOG.md</code>.
+<strong>Dépend de</strong> : <code>VISION.md</code>, <code>ARCHITECTURE.md</code>, <code>../docs-syne/API_CONTRACTS.md</code>
+<strong>Source Monographie</strong> : §4.2.2, §4.7, §5.13 (interface d'analyse)</p>
+</blockquote>
+<hr>
+<h2 id="1-positionnement">1. Positionnement</h2>
+<p>L'interface d'ECHOS est la <strong>face visible de LIVEX</strong> : c'est elle que l'utilisateur regarde et manie. Elle rassemble en V0.1 l'observation, le pilotage, la calibration et les rapports — héritage direct de l'interface web du prototype (React + TypeScript, §5.13 de la Monographie).</p>
+<p>Elle n'est <strong>ni</strong> un moteur, <strong>ni</strong> un laboratoire : elle affiche ce que les moteurs décident et expose ce que les moteurs produisent.</p>
+<h2 id="2-la-distinction-fondamentale--interfacepilotage-vs-analysedata-science">2. La distinction fondamentale : interface/pilotage VS analyse/data-science</h2>
+<p>C'est la règle structurante de tout le front-end ECHOS. Deux mondes cohabitent dans ECHOS, et ils ne doivent <strong>jamais</strong> être confondus :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: left;"><strong>Partie interface &amp; pilotage</strong></th>
+<th style="text-align: left;"><strong>Partie analyse &amp; data-science</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>But</strong></td>
+<td style="text-align: left;">Voir, comprendre et <strong>piloter</strong> la simulation</td>
+<td style="text-align: left;">Mesurer, comparer et <strong>prouver</strong> des phénomènes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Nature</strong></td>
+<td style="text-align: left;">Vues, contrôles, rapports humains</td>
+<td style="text-align: left;">Moteurs de métriques, causalité, expériences</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Production</strong></td>
+<td style="text-align: left;">Tableaux de bord, HUD, formulaires de calibration</td>
+<td style="text-align: left;">7 moteurs, scores composites, graphes causaux</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Interaction</strong></td>
+<td style="text-align: left;">L'utilisateur <strong>agit</strong> (play/pause/step, calibration)</td>
+<td style="text-align: left;">L'utilisateur <strong>lit</strong> des résultats déjà calculés</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Vérité</strong></td>
+<td style="text-align: left;">Reflète l'état courant (observable)</td>
+<td style="text-align: left;">Reflète les mesures stabilisées (analysées)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Temps réel</strong></td>
+<td style="text-align: left;">Oui — WebSocket, vues vivantes</td>
+<td style="text-align: left;">Différé — calculs agrégés, snapshots</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Qui écrit</strong></td>
+<td style="text-align: left;">L'interface <strong>commande</strong> SYNE (contrôle :5181)</td>
+<td style="text-align: left;">ECHOS <strong>observe</strong> SYNE (WebSocket :5180)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Document</strong></td>
+<td style="text-align: left;"><code>UI_DESIGN.md</code>, <code>USER_STORIES.md</code></td>
+<td style="text-align: left;"><code>METRICS_SPEC.md</code>, <code>CAUSAL_ANALYSIS.md</code>, <code>EXPERIMENT_COMPARISON.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>Les trois règles non négociables :</p>
+<ol>
+<li><strong>L'interface ne calcule jamais de métrique scientifique.</strong> Elle consomme les métriques déjà produites par les moteurs ECHOS (§4.3 Monographie). La seule exception : des calculs de mise en forme (moyennes simples, taux) destinés aux affichages, jamais aux exports d'analyse.</li>
+<li><strong>Le pilotage passe par ECHOS qui relaie vers SYNE (HTTP :5181).</strong> L’API ECHOS expose <code>/api/control/*</code>, puis relaie via <code>ControlClient</code> ; l’interface ne contacte jamais directement SYNE. Le serveur <code>--serve</code> doit être actif. En V0.1, <code>--serve</code> et <code>--observe</code> lancent des instances distinctes.</li>
+<li><strong>Un écart visuel n'est pas une preuve.</strong> Quand l'interface montre une tendance, c'est une <strong>invitation à l'analyse</strong>, jamais un résultat scientifique. Le score d'émergence se lit dans la vue d'analyse, pas dans le HUD.</li>
+</ol>
+<blockquote>
+<p><strong>Règle d'or</strong> : l'interface <strong>montre</strong>, l'analyse <strong>démontre</strong>. Si une vue du front-end prétend « prouver » une émergence, c'est une erreur de conception (cf. <code>VISION.md</code> ECHOS).</p>
+</blockquote>
+<h2 id="3-ce-que-linterface-expose-v01">3. Ce que l'interface expose (V0.1)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Vue</th>
+<th style="text-align: left;">Contenu</th>
+<th style="text-align: left;">Alimentation</th>
+<th style="text-align: left;">Interdit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>KPICards</strong></td>
+<td style="text-align: left;">4 cartes : entités actives, score émergence, groupes, messages/tick</td>
+<td style="text-align: left;">Métriques temps réel</td>
+<td style="text-align: left;">Interpréter les scores</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MetricsPanel</strong></td>
+<td style="text-align: left;">Jauges : diversité des croyances/objectifs, coefficient de clustering, vitesse de diffusion</td>
+<td style="text-align: left;">Métriques</td>
+<td style="text-align: left;">Transférer les jauges en conclusions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>TimelineChart</strong></td>
+<td style="text-align: left;">Évolution temporelle des métriques</td>
+<td style="text-align: left;">Séries (cache, sous-échantillonnage)</td>
+<td style="text-align: left;">Rapprocher des séries de causes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>AgentInspector</strong></td>
+<td style="text-align: left;">Sondage d'une entité (500 ms) : croyances, besoins, relations</td>
+<td style="text-align: left;">Snapshot SYNE</td>
+<td style="text-align: left;">Modifier l'entité (lecture seule)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SocialGraph</strong></td>
+<td style="text-align: left;">Graphe social D3 (sondage 2 s) — force-directed</td>
+<td style="text-align: left;">Différentiel de confiance</td>
+<td style="text-align: left;">Inférer des liens « réels »</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GroupExplorer</strong></td>
+<td style="text-align: left;">Groupes : liste, membres, formation/dissolution</td>
+<td style="text-align: left;">Détection de groupes</td>
+<td style="text-align: left;">Qualifier de « société »</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MessageHeatmap</strong></td>
+<td style="text-align: left;">Matrice entité×entité des communications</td>
+<td style="text-align: left;">Flux d'événements</td>
+<td style="text-align: left;">Issuer des causalités</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SimulationControls</strong></td>
+<td style="text-align: left;">Play / Pause / Step / vitesse / seed / reset</td>
+<td style="text-align: left;">Pilote → SYNE :5181</td>
+<td style="text-align: left;">Accès hors contrat</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>RecordingPanel</strong></td>
+<td style="text-align: left;">Enregistrement des runs, IDs, export de comparaison</td>
+<td style="text-align: left;">Stockage ECHOS</td>
+<td style="text-align: left;">Écrire directement dans SYNE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Console de débogage</strong></td>
+<td style="text-align: left;">3 niveaux : structuré / traces / texte (Serilog)</td>
+<td style="text-align: left;"><code>LOGGING_INSTRUMENTATION.md</code></td>
+<td style="text-align: left;">Utiliser les logs comme métriques</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-les-limites-assumées-de-linterface">4. Les limites assumées de l'interface</h2>
+<ul>
+<li><strong>Anti-triche d'affichage</strong> : l'interface ne donne pas à l'utilisateur plus d'informations que les entités (pas de mode « Dieu » omniscient). Voir <code>../docs-syne/VISION.md</code>.</li>
+<li><strong>Pas de minimap</strong> en V0.1 : la navigation à grande échelle repose sur le zoom (héritage §5.14).</li>
+<li><strong>Consommation honnête</strong> : les vues live sont bornées (sondage 500 ms / 2 s, sous-échantillonnage <code>?every=N</code>) pour ne pas dégrader SYNE.</li>
+<li><strong>Divergence documentée</strong> : l'interface web du prototype devient <strong>intégrée à ECHOS</strong> en V0.1 (<strong>web local React/Vite servie par FastAPI</strong>) ; le shell Electron est <strong>conservé</strong> — son implémentation est <strong>différée à un horizon ultérieur (post-V0.1)</strong> (correction décision 23/09/2026, en <code>ARCHITECTURE.md</code> / <code>adr/ADR-001-stack-applicative.md</code>).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun — la distinction interface/analyse est une contrainte ferme de conception.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/FRONTEND_VISION.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

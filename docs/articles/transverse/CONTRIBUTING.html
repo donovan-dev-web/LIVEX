@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>CONTRIBUTING.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="CONTRIBUTING.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="contributingmd">CONTRIBUTING.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>GITFLOW.md</code>, <code>VERSIONING.md</code>, <code>CI_CD.md</code>, <code>docs/governance/*</code></p>
+<hr>
+<h2 id="1-principe">1. Principe</h2>
+<p>Même en développement solo, ces conventions servent au « futur toi » et à d'éventuels contributeurs. Elles sont volontairement légères mais <strong>opposables</strong> (les PR qui les violent sont refusées).</p>
+<h2 id="2-prérequis">2. Prérequis</h2>
+<ul>
+<li>Lire <code>README.md</code>, <code>VISION.md</code> et <code>ARCHITECTURE.md</code>.</li>
+<li>Comprendre le monorepo : 3 composants (<code>syne/</code>, <code>echos/</code>, <code>prism/</code>) versionnés indépendamment.</li>
+<li>Ne jamais modifier un <strong>contrat de transport</strong> sans relire <code>COMMUNICATION.md</code> et <code>docs/docs-*/API_CONTRACTS.md</code>/<code>API_REST.md</code>/<code>TRANSPORT_API.md</code>.</li>
+</ul>
+<h2 id="3-workflow-git">3. Workflow Git</h2>
+<p>Suivre <code>GITFLOW.md</code> :</p>
+<ul>
+<li>Branches <code>feature/&lt;composant&gt;-&lt;sujet&gt;</code>, <code>fix/&lt;composant&gt;-&lt;sujet&gt;</code>, <code>docs/&lt;composant&gt;-&lt;sujet&gt;</code>.</li>
+<li>Commit conventionnel : <code>feat(syne): ...</code>, <code>fix(echos): ...</code>, <code>docs(prism): ...</code>.</li>
+<li>PR vers <code>develop</code> (squash), releases par <code>release/&lt;composant&gt;-vX.Y.Z</code>.</li>
+</ul>
+<h2 id="4-avant-douvrir-une-pr--checklist">4. Avant d'ouvrir une PR — checklist</h2>
+<ul>
+<li>[ ] Issue référencée et rattachée à un composant + une phase de roadmap (<code>docs/governance/ISSUES.md</code>).</li>
+<li>[ ] Tests : nouveaux tests unitaires pour toute fonctionnalité ; <strong>le déterminisme de SYNE n'est jamais cassé</strong>.</li>
+<li>[ ] Couverture maintenue ≥ 80 % sur le composant touché.</li>
+<li>[ ] Documentation mise à jour (doc des composants + <code>CHANGELOG.md</code> + docs). <strong>Une PR qui modifie le comportement sans MAJ de doc est refusée.</strong></li>
+<li>[ ] Style : respecter les conventions du langage (C# .editorconfig / lint TS / format python black, etc. — cf. <code>CI_CD.md</code>).</li>
+<li>[ ] Le contrat de transport n'est modifié que selon <code>VERSIONING.md</code> (evol adhesion <code>MINOR</code>, breaking <code>MAJOR</code>).</li>
+</ul>
+<h2 id="5-revue">5. Revue</h2>
+<ul>
+<li>Solo : <strong>auto-revue documentée</strong> (relire le diff à tête reposée, décrire les points vérifiés dans la PR).</li>
+<li>Contributions externes : au minimum 1 reviewer, sinon pas de merge.</li>
+<li>Règle : pas de merge direct sur <code>main</code>, protection de branches.</li>
+</ul>
+<h2 id="6-signalement-de-bugs">6. Signalement de bugs</h2>
+<ul>
+<li>Ouvrir une issue avec le template <code>bug_report.md</code> (<code>.github/ISSUE_TEMPLATE/</code>).</li>
+<li>Pour un bug de déterminisme SYNE : toujours fournir seed + config + version moteur (reproductibilité exigée).</li>
+</ul>
+<h2 id="7-définition-de--fini-">7. Définition de « fini »</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Critère</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Code</td>
+<td style="text-align: left;">Implémenté + testé (unitaire + intégration)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Déterminisme</td>
+<td style="text-align: left;">Vérifié (checksums, <code>BitIdenticalPersistenceTest</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Doc</td>
+<td style="text-align: left;">Docs du composant + CHANGELOG à jour</td>
+</tr>
+<tr>
+<td style="text-align: left;">CI</td>
+<td style="text-align: left;"><code>.github/workflows/ci.yml</code> vert</td>
+</tr>
+<tr>
+<td style="text-align: left;">Périmètre</td>
+<td style="text-align: left;">Pas de <code>[OUVERT]</code> introduits sans trace dans <code>ROADMAP.md</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="mises-à-jour">Mises à jour</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Date</th>
+<th style="text-align: left;">Changement</th>
+<th style="text-align: left;">Motif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">17 septembre 2026</td>
+<td style="text-align: left;">Création</td>
+<td style="text-align: left;">—</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/CONTRIBUTING.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

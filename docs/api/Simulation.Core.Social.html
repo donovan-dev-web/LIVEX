@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.Social | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.Social | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Social">
+
+  <h1 id="Simulation_Core_Social" data-uid="Simulation.Core.Social" class="text-break">Namespace Simulation.Core.Social</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Social.Group.html">Group</a></h4>
+      <section><p>Groupe émergent (SYNE-060, SYSTEM_SPEC.md §5, décisions n°23/24) : ensemble
+d'entités liées par une cohésion (confiance réciproque × parts communes de
+croyances / buts partagés). Les structures émergent — aucun script de
+coalition. Modèle mutable, mis à jour par <a class="xref" href="Simulation.Core.Social.GroupSystem.html">GroupSystem</a> à chaque
+révision.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Social.GroupDecision.html">GroupDecision</a></h4>
+      <section><p>Événement discret de décision collective (SYNE-061, consensus pondéré par la confiance).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Social.GroupDissolution.html">GroupDissolution</a></h4>
+      <section><p>Événement discret de dissolution d'un groupe (SYNE-060).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Social.GroupFormation.html">GroupFormation</a></h4>
+      <section><p>Événement discret de formation d'un groupe (SYNE-060, API_CONTRACTS.md §2.2).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Social.GroupSystem.html">GroupSystem</a></h4>
+      <section><p>Système de groupes émergents (SYNE-060/061, SYSTEM_SPEC.md §5, décisions
+n°23/24). Il n'invente aucune coalition scriptée : les groupes naissent de la
+<strong>cohésion</strong> constatée entre les entités —
+<code>confiance réciproque × affinité (croyances partagées + buts partagés)</code>.</p>
+<p>Exécuté à fréquence <code>reviewIntervalTicks</code> (LOD déterministe), après le
+pipeline cognitif et la communication de masse (ordre causal strict) :</p>
+<ol><li><b>Liens sociaux</b> : paires (entité, entité) en confiance réciproque
+ ≥ <code>trustThreshold</code> partageant au moins une croyance ou un but — la
+ « proximité sociale » (décision n°24) ;</li><li><b>Composantes connexes</b> du graphe = candidats groupes (union-find
+ déterministe, racine = plus petit id) ; taille ≥ <code>minGroupSize</code> ;</li><li><b>Cycle de vie</b> : continuité par ensemble de membres identique
+ (même id, durée cumulée) sinon formation / dissolution ;</li><li><b>Leader émergent</b> (SYNE-061) : membre de plus forte confiance
+ entrante intra-groupe (départage par id minimal) ;</li><li><b>Décisions collectives</b> (SYNE-061) : adoption par quorum
+ <code>consensusThreshold</code> sur l'intention dominante des membres.</li></ol>
+<p>Déterminisme : aucun tirage du PRNG global ; toutes les itérations suivent
+des ordres triés par identifiant (DETERMINISM.md §3).</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

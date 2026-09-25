@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>SECURITY.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="SECURITY.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="securitymd">SECURITY.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>ARCHITECTURE.md</code>, <code>COMMUNICATION.md</code></p>
+<hr>
+<h2 id="1-périmètre">1. Périmètre</h2>
+<p>LIVEX est un <strong>projet de recherche en simulation multi-agents</strong>. En V0.1, l'intégralité des services tourne <strong>en local</strong> (SYNE, ECHOS, PRISM). Il n'y a <strong>a priori pas de données sensibles</strong> dans le dépôt ni dans les bases de données de simulation.</p>
+<h2 id="2-bindings-réseau-v01">2. Bindings réseau (V0.1)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Service</th>
+<th style="text-align: left;">Port</th>
+<th style="text-align: left;">Binding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">WebSocket SYNE (données)</td>
+<td style="text-align: left;">5180</td>
+<td style="text-align: left;">local uniquement (<code>127.0.0.1</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">HTTP SYNE (contrôle)</td>
+<td style="text-align: left;">5181</td>
+<td style="text-align: left;">local uniquement</td>
+</tr>
+<tr>
+<td style="text-align: left;">HTTP ECHOS (API REST)</td>
+<td style="text-align: left;">5000</td>
+<td style="text-align: left;">local uniquement</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Règle</strong> : aucun binding réseau ouvert sur l'extérieur sans décision explicite. En cas d'ouverture, ajouter une authentification avant publication.</p>
+<h2 id="3-signalement-de-vulnérabilités">3. Signalement de vulnérabilités</h2>
+<p>Aucune faille connue en V0.1 (serveurs locaux). Toute vulnérabilité découverte doit être signalée <strong>avant</strong> discussion publique :</p>
+<ol>
+<li>Ouvrir une issue GitHub <strong>privée</strong> (ou contacter le mainteneur) — ne pas exposer la faille en issue publique.</li>
+<li>Décrire : version, composant, port concerné, reproduction minimale, impact.</li>
+<li>Accusé de réception sous 5 jours ouvrés ; correctif selon la gravité (hotfix si critique, cf. <code>GITFLOW.md</code>).</li>
+</ol>
+<h2 id="4-secrets">4. Secrets</h2>
+<ul>
+<li><strong>Aucun secret</strong> (clés, tokens) ne doit être versionné dans le dépôt.</li>
+<li>Configuration sensible via variables d'environnement locales uniquement (ex. <code>.env.*</code> hors git).</li>
+<li>Les fichiers de log et de persistance (SQLite, Parquet, JSON) ne doivent pas contenir d'informations personnelles.</li>
+</ul>
+<h2 id="5-dépendances">5. Dépendances</h2>
+<ul>
+<li>Mises à jour régulières des dépendances (dotnet, npm, pip, Godot) via les PR de dépendances et le pipeline CI.</li>
+<li>À la merci d'une CVE sur un paquet : escalader en issue de sécurité prioritaire (label <code>priority:P0</code>, voir <code>docs/governance/ISSUES.md</code>).</li>
+</ul>
+<h2 id="6-responsable">6. Responsable</h2>
+<p>Mainteneur du dépôt (développeur solo pour l'instant). Une fiche de sécurité consolidée sera ajoutée si le projet est publié publiquement.</p>
+<hr>
+<h2 id="mises-à-jour">Mises à jour</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Date</th>
+<th style="text-align: left;">Changement</th>
+<th style="text-align: left;">Motif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">17 septembre 2026</td>
+<td style="text-align: left;">Création</td>
+<td style="text-align: left;">—</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/SECURITY.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

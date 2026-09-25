@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class SimulationLoop | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class SimulationLoop | LIVEX ">
+    
+    <meta name="description" content="Boucle de simulation (SYNE-002, SIMULATION_LOOP.md &#167;1). 1 tick = 1 minute simul&#233;e (d&#233;faut) — .Respect de maxTicks : la boucle s&#39;arr&#234;te apr&#232;s le tick n&#176; maxTicks.L&#39;&#233;tat du PRNG avance d&#39;un tirage par tick (flux ancr&#233; au tick index).Depuis U1 : pipeline cognitif BDI (perception, m&#233;moire, croyances, besoins,  objectifs, utilit&#233;, intention, action) ex&#233;cut&#233; &#224; chaque tick (SYNE-010).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Loop.SimulationLoop">
+
+
+
+  <h1 id="Simulation_Core_Loop_SimulationLoop" data-uid="Simulation.Core.Loop.SimulationLoop" class="text-break">Class SimulationLoop</h1>
+  <div class="markdown level0 summary"><p>Boucle de simulation (SYNE-002, SIMULATION_LOOP.md §1).</p>
+<ul><li>1 tick = 1 minute simulée (défaut) — <a class="xref" href="Simulation.Core.Loop.SimulationTime.html">SimulationTime</a>.</li><li>Respect de <code>maxTicks</code> : la boucle s'arrête après le tick n° <code>maxTicks</code>.</li><li>L'état du PRNG avance d'un tirage par tick (flux ancré au tick index).</li><li>Depuis U1 : pipeline cognitif BDI (perception, mémoire, croyances, besoins,
+ objectifs, utilité, intention, action) exécuté à chaque tick (SYNE-010).</li></ul>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">SimulationLoop</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Loop.html">Loop</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Loop_SimulationLoop_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class SimulationLoop</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop__ctor_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop__ctor_Simulation_Core_World_World_Simulation_Core_Prng_Xoshiro256StarStar_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor(Simulation.Core.World.World,Simulation.Core.Prng.Xoshiro256StarStar)">SimulationLoop(World, Xoshiro256StarStar)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SimulationLoop(World world, Xoshiro256StarStar initialRng)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a></td>
+        <td><span class="parametername">initialRng</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop__ctor_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop__ctor_Simulation_Core_World_World_Simulation_Core_Prng_Xoshiro256StarStar_Simulation_Core_Configuration_SimulationOptions_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor(Simulation.Core.World.World,Simulation.Core.Prng.Xoshiro256StarStar,Simulation.Core.Configuration.SimulationOptions)">SimulationLoop(World, Xoshiro256StarStar, SimulationOptions)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SimulationLoop(World world, Xoshiro256StarStar initialRng, SimulationOptions options)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a></td>
+        <td><span class="parametername">initialRng</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></td>
+        <td><span class="parametername">options</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop__ctor_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop__ctor_Simulation_Core_World_World_Simulation_Core_Prng_Xoshiro256StarStar_Simulation_Core_Configuration_SimulationOptions_Simulation_Core_Performance_TickBudgetCollector_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor(Simulation.Core.World.World,Simulation.Core.Prng.Xoshiro256StarStar,Simulation.Core.Configuration.SimulationOptions,Simulation.Core.Performance.TickBudgetCollector)">SimulationLoop(World, Xoshiro256StarStar, SimulationOptions, TickBudgetCollector?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SimulationLoop(World world, Xoshiro256StarStar initialRng, SimulationOptions options, TickBudgetCollector? budget)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a></td>
+        <td><span class="parametername">initialRng</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></td>
+        <td><span class="parametername">options</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Performance.TickBudgetCollector.html">TickBudgetCollector</a></td>
+        <td><span class="parametername">budget</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop__ctor_" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop__ctor_Simulation_Core_World_World_Simulation_Core_Prng_Xoshiro256StarStar_Simulation_Core_Configuration_SimulationOptions_Simulation_Core_Performance_TickBudgetCollector_System_Int32_System_Action_Simulation_Core_Loop_SimulationLoop__" data-uid="Simulation.Core.Loop.SimulationLoop.#ctor(Simulation.Core.World.World,Simulation.Core.Prng.Xoshiro256StarStar,Simulation.Core.Configuration.SimulationOptions,Simulation.Core.Performance.TickBudgetCollector,System.Int32,System.Action{Simulation.Core.Loop.SimulationLoop})">SimulationLoop(World, Xoshiro256StarStar, SimulationOptions, TickBudgetCollector?, int, Action&lt;SimulationLoop&gt;?)</h4>
+  <div class="markdown level1 summary"><p>Boucle avec autosave branche : <code class="paramref">autosaveHandler</code> est appelé
+après chaque <code>n</code>-ième tick (PERSISTENCE.md §5). Le handler ne doit
+consommer aucun tirage du PRNG — le déterminisme bit-à-bit reste inchangé.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SimulationLoop(World world, Xoshiro256StarStar initialRng, SimulationOptions options, TickBudgetCollector? budget, int autoSaveEveryNTicks, Action&lt;SimulationLoop&gt;? autosaveHandler)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a></td>
+        <td><span class="parametername">initialRng</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></td>
+        <td><span class="parametername">options</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Performance.TickBudgetCollector.html">TickBudgetCollector</a></td>
+        <td><span class="parametername">budget</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">autoSaveEveryNTicks</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.action-1">Action</a>&lt;<a class="xref" href="Simulation.Core.Loop.SimulationLoop.html">SimulationLoop</a>&gt;</td>
+        <td><span class="parametername">autosaveHandler</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_BooksEnabled_" data-uid="Simulation.Core.Loop.SimulationLoop.BooksEnabled*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_BooksEnabled" data-uid="Simulation.Core.Loop.SimulationLoop.BooksEnabled">BooksEnabled</h4>
+  <div class="markdown level1 summary"><p>Livres activés (SYNE-121, décisions n°18/19, Monographie §3.18) —
+<code>world.books.enabled</code> : écriture payée en énergie par l'auteur
+(coût <code>world.books.writeCostEnergy</code>), lecture à bénéfice posé en
+principe (n°19, <code>world.books.read_benefit</code>). Désactivés par défaut
+⇒ trajectoire du scénario de référence inchangée, checksums dorés
+ré-épinglés inchangés (pin contractuel).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool BooksEnabled { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_Budgets_" data-uid="Simulation.Core.Loop.SimulationLoop.Budgets*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_Budgets" data-uid="Simulation.Core.Loop.SimulationLoop.Budgets">Budgets</h4>
+  <div class="markdown level1 summary"><p>Collecteur de budgets de tick (SYNE-090) si la boucle en a été munie
+(sinon <code>null</code> — aucun coût sur le chemin nominal).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TickBudgetCollector? Budgets { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Performance.TickBudgetCollector.html">TickBudgetCollector</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_Cognition_" data-uid="Simulation.Core.Loop.SimulationLoop.Cognition*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_Cognition" data-uid="Simulation.Core.Loop.SimulationLoop.Cognition">Cognition</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CognitionPipeline Cognition { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.CognitionPipeline.html">CognitionPipeline</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_CurrentSeason_" data-uid="Simulation.Core.Loop.SimulationLoop.CurrentSeason*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_CurrentSeason" data-uid="Simulation.Core.Loop.SimulationLoop.CurrentSeason">CurrentSeason</h4>
+  <div class="markdown level1 summary"><p>Saison courante du monde au tick courant (fonction pure du tick, 0 PRNG).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Season CurrentSeason { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Season.html">Season</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_CurrentTick_" data-uid="Simulation.Core.Loop.SimulationLoop.CurrentTick*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_CurrentTick" data-uid="Simulation.Core.Loop.SimulationLoop.CurrentTick">CurrentTick</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ulong CurrentTick { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_LastBookChanges_" data-uid="Simulation.Core.Loop.SimulationLoop.LastBookChanges*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_LastBookChanges" data-uid="Simulation.Core.Loop.SimulationLoop.LastBookChanges">LastBookChanges</h4>
+  <div class="markdown level1 summary"><p>Mutations de livres survenues depuis la dernière collecte (SYNE-121) :
+vidées (<a class="xref" href="Simulation.Core.Loop.SimulationLoop.html#Simulation_Core_Loop_SimulationLoop_ClearBookChanges">ClearBookChanges()</a>) par la couche d'observabilité
+après réémission — même protocole que les changements de saison, de
+territoire et de constructions (drain).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;BookChange&gt; LastBookChanges { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.BookChange.html">BookChange</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_LastSeasonChanges_" data-uid="Simulation.Core.Loop.SimulationLoop.LastSeasonChanges*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_LastSeasonChanges" data-uid="Simulation.Core.Loop.SimulationLoop.LastSeasonChanges">LastSeasonChanges</h4>
+  <div class="markdown level1 summary"><p>Changements de saison survenus au tick courant (SYNE-072) : vidés
+(<a class="xref" href="Simulation.Core.Loop.SimulationLoop.html#Simulation_Core_Loop_SimulationLoop_ClearSeasonChanges">ClearSeasonChanges()</a>) par la couche d'observabilité après
+réémission — même protocole que les modifications d'environnement.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;SeasonChange&gt; LastSeasonChanges { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Configuration.SeasonChange.html">SeasonChange</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_LastTerritoryChanges_" data-uid="Simulation.Core.Loop.SimulationLoop.LastTerritoryChanges*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_LastTerritoryChanges" data-uid="Simulation.Core.Loop.SimulationLoop.LastTerritoryChanges">LastTerritoryChanges</h4>
+  <div class="markdown level1 summary"><p>Changements d'appartenance aux zones de territoire survenus depuis la
+dernière collecte (SYNE-073) : vidés (<a class="xref" href="Simulation.Core.Loop.SimulationLoop.html#Simulation_Core_Loop_SimulationLoop_ClearTerritoryChanges">ClearTerritoryChanges()</a>)
+par la couche d'observabilité après réémission — même protocole que les
+modifications d'environnement et les changements de saison.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TerritoryMembershipChange&gt; LastTerritoryChanges { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_Resources_" data-uid="Simulation.Core.Loop.SimulationLoop.Resources*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_Resources" data-uid="Simulation.Core.Loop.SimulationLoop.Resources">Resources</h4>
+  <div class="markdown level1 summary"><p>Réserves globales de ressources (SYNE-042) : consommées par Eat/Drink, exposées dans le snapshot.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ResourceStocks Resources { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.ResourceStocks.html">ResourceStocks</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_Rng_" data-uid="Simulation.Core.Loop.SimulationLoop.Rng*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_Rng" data-uid="Simulation.Core.Loop.SimulationLoop.Rng">Rng</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Xoshiro256StarStar Rng { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Prng.Xoshiro256StarStar.html">Xoshiro256StarStar</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_SeasonsEnabled_" data-uid="Simulation.Core.Loop.SimulationLoop.SeasonsEnabled*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_SeasonsEnabled" data-uid="Simulation.Core.Loop.SimulationLoop.SeasonsEnabled">SeasonsEnabled</h4>
+  <div class="markdown level1 summary"><p>Cycle de saisons activé (<code>world.seasons.enabled</code>) — modifieurs de
+régénération et événement <code>world.season_changed</code> actifs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool SeasonsEnabled { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_TerritoriesEnabled_" data-uid="Simulation.Core.Loop.SimulationLoop.TerritoriesEnabled*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_TerritoriesEnabled" data-uid="Simulation.Core.Loop.SimulationLoop.TerritoriesEnabled">TerritoriesEnabled</h4>
+  <div class="markdown level1 summary"><p>Suivi du territoire activé (<code>world.territories.enabled</code>, SYNE-073) —
+appartenance des entités aux zones, événements <code>world.territory_membership_changed</code>
+et champ snapshot <code>territories[]</code> actifs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TerritoriesEnabled { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_World_" data-uid="Simulation.Core.Loop.SimulationLoop.World*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_World" data-uid="Simulation.Core.Loop.SimulationLoop.World">World</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public World World { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_AdvanceOneTick_" data-uid="Simulation.Core.Loop.SimulationLoop.AdvanceOneTick*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_AdvanceOneTick" data-uid="Simulation.Core.Loop.SimulationLoop.AdvanceOneTick">AdvanceOneTick()</h4>
+  <div class="markdown level1 summary"><p>Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1) puis exécute le
+pipeline cognitif BDI (U1, SYNE-010) dans l'ordre causal strict. Le PRNG
+n'avance que d'un tirage par tick (contrat DETERMINISM.md §3).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void AdvanceOneTick()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_ClearBookChanges_" data-uid="Simulation.Core.Loop.SimulationLoop.ClearBookChanges*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_ClearBookChanges" data-uid="Simulation.Core.Loop.SimulationLoop.ClearBookChanges">ClearBookChanges()</h4>
+  <div class="markdown level1 summary"><p>Vide la file des mutations de livres (drain d'observabilité).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearBookChanges()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_ClearSeasonChanges_" data-uid="Simulation.Core.Loop.SimulationLoop.ClearSeasonChanges*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_ClearSeasonChanges" data-uid="Simulation.Core.Loop.SimulationLoop.ClearSeasonChanges">ClearSeasonChanges()</h4>
+  <div class="markdown level1 summary"><p>Vide la file des changements de saison (drain d'observabilité).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearSeasonChanges()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_ClearTerritoryChanges_" data-uid="Simulation.Core.Loop.SimulationLoop.ClearTerritoryChanges*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_ClearTerritoryChanges" data-uid="Simulation.Core.Loop.SimulationLoop.ClearTerritoryChanges">ClearTerritoryChanges()</h4>
+  <div class="markdown level1 summary"><p>Vide la file des changements d'appartenance (drain d'observabilité).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearTerritoryChanges()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_MembersOfTerritory_" data-uid="Simulation.Core.Loop.SimulationLoop.MembersOfTerritory*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_MembersOfTerritory_System_String_" data-uid="Simulation.Core.Loop.SimulationLoop.MembersOfTerritory(System.String)">MembersOfTerritory(string)</h4>
+  <div class="markdown level1 summary"><p>Identifiants des entités présentes dans la zone <code class="paramref">zoneId</code>
+au tick courant — ordre croissant (déterministe), initialement vide.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;ulong&gt; MembersOfTerritory(string zoneId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td><span class="parametername">zoneId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_ReadBook_" data-uid="Simulation.Core.Loop.SimulationLoop.ReadBook*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_ReadBook_Simulation_Core_World_Book_System_UInt64_" data-uid="Simulation.Core.Loop.SimulationLoop.ReadBook(Simulation.Core.World.Book,System.UInt64)">ReadBook(Book, ulong)</h4>
+  <div class="markdown level1 summary"><p>Lit un livre (SYNE-121, décision n°19, Monographie §3.18) : le lecteur
+(cognition requise) tire le <strong>bénéfice posé en principe</strong>
+(<code>world.books.read_benefit</code>, chiffrage savoir/confiance reporté au
+moteur de mémoire) et la lecture est <strong>tracée</strong> (lecteurs distincts,
+ordre de première consultation) dans <a class="xref" href="Simulation.Core.Loop.SimulationLoop.html#Simulation_Core_Loop_SimulationLoop_LastBookChanges">LastBookChanges</a>.
+API de la boucle — <strong>0 tirage PRNG</strong> (déterministe, DETERMINISM.md §3).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ReadBook(Book book, ulong readerId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Book.html">Book</a></td>
+        <td><span class="parametername">book</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">readerId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_Run_" data-uid="Simulation.Core.Loop.SimulationLoop.Run*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_Run_System_Int32_" data-uid="Simulation.Core.Loop.SimulationLoop.Run(System.Int32)">Run(int)</h4>
+  <div class="markdown level1 summary"><p>Exécute la boucle jusqu'au tick n° <code class="paramref">maxTicks</code> inclus.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Run(int maxTicks)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">maxTicks</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Loop_SimulationLoop_WriteBook_" data-uid="Simulation.Core.Loop.SimulationLoop.WriteBook*"></a>
+  <h4 id="Simulation_Core_Loop_SimulationLoop_WriteBook_Simulation_Core_World_Book_" data-uid="Simulation.Core.Loop.SimulationLoop.WriteBook(Simulation.Core.World.Book)">WriteBook(Book)</h4>
+  <div class="markdown level1 summary"><p>Écrit un livre (SYNE-121, décision n°18, Monographie §3.18) : l'auteur
+(cognition requise) paie le <strong>coût d'écriture posé en principe</strong> —
+énergie <code>world.books.writeCostEnergy</code> <strong>débitée</strong> de ses besoins
+corporels (<a class="xref" href="Simulation.Core.Cognition.MindState.html#Simulation_Core_Cognition_MindState_Needs">Needs</a> ;
+durée de rédaction et pénalité non modélisées en V0.1) ; le livre est poinçonné
+(<code>writtenTick</code> = tick courant) et ajouté au monde. Mutation
+<strong>tracée</strong> dans <a class="xref" href="Simulation.Core.Loop.SimulationLoop.html#Simulation_Core_Loop_SimulationLoop_LastBookChanges">LastBookChanges</a>. API de la boucle —
+<strong>0 tirage PRNG</strong> (déterministe, DETERMINISM.md §3).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void WriteBook(Book book)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Book.html">Book</a></td>
+        <td><span class="parametername">book</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Simulation/SimulationLoop.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ARCHITECTURE.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ARCHITECTURE.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="architecturemd">ARCHITECTURE.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>VISION.md</code>, <code>../COMMUNICATION.md</code>
+<strong>Source Monographie</strong> : §3.2–3.5, §7.1 (monorepo), §7.3 (diagrammes, matrice de dépendances)</p>
+<hr>
+<h2 id="1-vue-densemble">1. Vue d'ensemble</h2>
+<p>SYNE est organisé en <strong>sous-systèmes</strong> pilotés par un <strong>Runtime/Scheduler</strong> :</p>
+<pre><code class="lang-mermaid">flowchart TB
+    subgraph SYNE[&quot;SYNE — Simulation.Core&quot;]
+        RT[Runtime / Scheduler]
+        WORLD[World]
+        AGENTS[Agents]
+        COG[Cognition]
+        ACT[Actions]
+        INTER[Interaction]
+        SPATIAL[Spatial — grille]
+        NAV[Nav — pathfinding]
+        RT --&gt; WORLD
+        RT --&gt; AGENTS
+        RT --&gt; COG
+        RT --&gt; ACT
+        RT --&gt; INTER
+        RT --&gt; SPATIAL
+        RT --&gt; NAV
+    end
+    SYNE --&gt;|&quot;WebSocket 5180&quot;| WS[(WorldSnapshot / ExternalEvent)]
+    SYNE --&gt;|&quot;HTTP 5181&quot;| CTL[(API contrôle)]
+    WS --&gt; ECHOS
+    WS --&gt; PRISM
+</code></pre>
+<h2 id="2-sous-systèmes-monographie-731">2. Sous-systèmes (Monographie §7.3.1)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Sous-système</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>World</strong></td>
+<td style="text-align: left;">Espace 2D (dimensions configurables), ressources, obstacles</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Agents</strong></td>
+<td style="text-align: left;">Cycle de vie des entités (naissance, vie, dissolution)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Cognition</strong></td>
+<td style="text-align: left;">BDI : boucle cognitive de chaque entité</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Actions</strong></td>
+<td style="text-align: left;">Répartition des actions possibles (déclaratives)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Interaction</strong></td>
+<td style="text-align: left;">Interactions inter-entités (social, combat, commerce)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Spatial</strong></td>
+<td style="text-align: left;">Grille spatiale uniforme (perception/communication O(quasi-linéaire))</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Nav</strong></td>
+<td style="text-align: left;">Pathfinding 2D autour des obstacles</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-runtime--scheduler">3. Runtime / Scheduler</h2>
+<ul>
+<li>Exécute les sous-systèmes à des fréquences différentes selon leur coût (élevée/moyenne/adaptative/faible) — Monographie §3.4.</li>
+<li><strong>LOD décisionnel</strong> (multi-échelle) : <code>decisionFrequency = 1 / 2^LOD</code> ; zone 0 (≤100) tous les ticks, zone 1 (100-200) tous les 2, zone 2 (200-400) tous les 4 (Monographie §3.4.3).</li>
+<li>Budget de tick (1000 entités, 100 ms) : Perception 20 ms, Mémoire/Croyances 15 ms, Besoins/Objectifs 10 ms, Utilité 20 ms, Communication 15 ms, Actions/Mouvement 15 ms, Événements 5 ms — Monographie §7.4.3.</li>
+</ul>
+<h2 id="4-couche-applicative-organisation-code">4. Couche applicative (organisation code)</h2>
+<pre><code class="lang-text">syne/
+├── global.json                   # SDK .NET 10.0.400 (pinné, rollForward latestFeature)
+├── Syne.sln                      # solution du composant
+├── Simulation.Core/              # bibliothèque principale
+│   ├── Configuration/            # options Annexe H, loader JSON, validation, flags CLI (ADR-012)
+│   ├── Prng/                     # xoshiro256** + splitmix64 (ADR-006, `System.Random` interdit)
+│   ├── World/                    # monde 2D continu, grille spatiale uniforme (SYNE-003)
+│   ├── Entities/                 # entité, traits [0,2], paramétrage + fabrique déterministe (SYNE-004)
+│   └── Loop/                     # boucle minimale : 1 tick = 1 min, maxTicks, temps simulé (SYNE-002)
+├── Simulation.Console/           # exécutable (mode serveur WebSocket/HTTP / CLI batch) — ADR-002
+├── Simulation.Core.Tests/        # tests unitaires xUnit (vecteurs PRNG &amp; fabrique épinglés)
+└── Dockerfile                    # à venir — conteneurisation hors périmètre U0
+</code></pre>
+<p>L'exécutable est en <strong>mode serveur</strong> (WebSocket + HTTP) ou <strong>CLI</strong> (exécution batch) — Monographie §7.1, ADR-002. En U0, le <strong>mode CLI</strong> est implémenté (config résolue → monde + entités + boucle minimale) ; le mode serveur (contrats 5180/5181) arrive en jalon U1+.</p>
+<h2 id="5-interfaces-externes">5. Interfaces externes</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Interface</th>
+<th style="text-align: left;">Transport</th>
+<th style="text-align: left;">Détail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Sortie temps réel</td>
+<td style="text-align: left;">WebSocket 5180</td>
+<td style="text-align: left;"><code>WorldSnapshot</code>, <code>ExternalEvent</code> (JSON camelCase)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Contrôle</td>
+<td style="text-align: left;">HTTP REST 5181</td>
+<td style="text-align: left;"><code>start</code>, <code>pause</code>, <code>resume</code>, <code>reset</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Persistance</td>
+<td style="text-align: left;">JSON (V1) / SQLite (V2)</td>
+<td style="text-align: left;">schéma Annexe G</td>
+</tr>
+</tbody>
+</table>
+<p>Voir <code>API_CONTRACTS.md</code> et <code>PERSISTENCE.md</code>.</p>
+<h2 id="6-dépendances">6. Dépendances</h2>
+<ul>
+<li>Aucune dépendance graphique.</li>
+<li><code>.NET</code> SDK 10.0.400 (pinné sur <code>global.json</code>, band <code>latestFeature</code>) — Monographie §7.1, [HÉRITÉ].</li>
+<li>Aucune utilisation de <code>System.Random</code> (interdite — §3.6.3) : PRNG <strong>xoshiro256**</strong> + <strong>splitmix64</strong> (ADR-006, ADR-012).</li>
+</ul>
+<h2 id="7-budget-temps--fréquences-repère">7. Budget temps &amp; fréquences (repère)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Fréquence</th>
+<th style="text-align: left;">Sous-systèmes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Élevée</td>
+<td style="text-align: left;">Mouvement, collisions, contraintes immédiates</td>
+</tr>
+<tr>
+<td style="text-align: left;">Moyenne</td>
+<td style="text-align: left;">Besoins, perception locale, environnement</td>
+</tr>
+<tr>
+<td style="text-align: left;">Adaptative</td>
+<td style="text-align: left;">Délibération, planification</td>
+</tr>
+<tr>
+<td style="text-align: left;">Faible</td>
+<td style="text-align: left;">Analyse, agrégations, statistiques</td>
+</tr>
+</tbody>
+</table>
+<p>(Principes d'architecture, pas valeurs figées — Monographie §3.4.2.)</p>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>La distribution multi-fréquence exacte du scheduler sera affinée lors de l'implémentation (jalon SYNE-2 : boucle minimale).</li>
+<li>Conteneurisation (<code>Dockerfile</code> SYNE) : hors périmètre U0.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/ARCHITECTURE.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

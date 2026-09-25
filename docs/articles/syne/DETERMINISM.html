@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>DETERMINISM.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="DETERMINISM.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="determinismmd">DETERMINISM.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 22 septembre 2026
+<strong>Dépend de</strong> : <code>PERSISTENCE.md</code>, <code>CONFIGURATION.md</code>
+<strong>Source Monographie</strong> : §2.3.4, §3.6.2–3.6.4 (seed, PRNG, sérialisation), ADR-006, §7.5 (validation)</p>
+<hr>
+<h2 id="1-définition">1. Définition</h2>
+<p><strong>Déterminisme bit-à-bit</strong> : deux exécutions identiques (même seed, même config, même version moteur, même état initial) produisent <strong>exactement</strong> la même trajectoire — mêmes événements, mêmes décisions, mêmes états.</p>
+<h2 id="2-les-4-piliers-dune-exécution-reproductible">2. Les 4 piliers d'une exécution reproductible</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Pillier</th>
+<th style="text-align: left;">Contenu</th>
+<th style="text-align: left;">Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Seed</strong></td>
+<td style="text-align: left;">Entier 64 bits initialisant le PRNG</td>
+<td style="text-align: left;">§3.6.2</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Configuration</strong></td>
+<td style="text-align: left;"><code>config.json</code> : paramètres du monde</td>
+<td style="text-align: left;">§3.6.2</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Version moteur</strong></td>
+<td style="text-align: left;"><code>engineVersion</code> — garantit des règles identiques</td>
+<td style="text-align: left;">§3.6.2</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>État initial</strong></td>
+<td style="text-align: left;">positions, ressources, entités</td>
+<td style="text-align: left;">§3.6.2</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-le-prng--xoshiro256">3. Le PRNG : xoshiro256**</h2>
+<ul>
+<li><strong>Algorithme</strong> : xoshiro256** (<code>prng_engine = xoshiro256**</code>), rapide (l'un des plus rapides en 64 bits), qualité éprouvée (BigCrush de TestU01), état compact (4 × 64 bits = 256 bits).</li>
+<li><strong>Initialisation</strong> : <strong>splitmix64(seed)</strong> — dérive une séquence reproductible à partir de la seed.</li>
+<li><strong>Règle stricte</strong> : <code>System.Random</code> est <strong>interdit</strong> — pas stable entre versions .NET, état non directement sérialisable.</li>
+<li><strong>Reproductibilité bit-à-bit</strong> garantie si seed identique.</li>
+</ul>
+<p>(ADR-006, §3.6.3)</p>
+<h2 id="4-sérialisation-de-létat-rng">4. Sérialisation de l'état RNG</h2>
+<ul>
+<li>L'état complet du PRNG (<strong>4 × ulong</strong>) est sérialisé dans <code>tick_states.rng_state</code>.</li>
+<li>Une simulation sauvegardée au tick 1000, rechargée puis poursuivie, produit exactement les mêmes événements qu'une exécution ininterrompue (§3.6.4).</li>
+</ul>
+<h2 id="5-ordre-causal-strict">5. Ordre causal strict</h2>
+<ul>
+<li>Les sous-systèmes sont exécutés dans un <strong>ordre causal strict</strong> (boucle 15 étapes, <code>SIMULATION_LOOP.md</code>).</li>
+<li>Aucune exécution parallèle ne doit introduire de non-déterminisme : la parallélisation du prototype (<code>parallelPerception</code>, etc.) doit rester déterministe (agrégation d'ordre fixe).</li>
+</ul>
+<p><strong>Jalon U8 — Livres (engineVersion 0.11.0)</strong> : les écritures/lectures explicites ne consomment aucun tirage PRNG. Elles sont déterministes, enregistrées dans l’ordre d’appel et persistées avec le monde ; l’émission d’événements et du snapshot est additive. <code>world.books.enabled = false</code> par défaut, donc le run de référence est inchangé. La lecture n’altère pas encore la cognition (effet différé au futur moteur mémoire (hors U8)).</p>
+<h2 id="6-vérification-tests">6. Vérification (tests)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Test</th>
+<th style="text-align: left;">Objectif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>BitIdenticalPersistenceTest</code></td>
+<td style="text-align: left;">Reprise bit-à-bit après sauvegarde/charge</td>
+</tr>
+<tr>
+<td style="text-align: left;">Checksum de run</td>
+<td style="text-align: left;">Hash de trajectoire pour détecter toute divergence</td>
+</tr>
+<tr>
+<td style="text-align: left;">Matrices seeds × configs (Annexe I.4)</td>
+<td style="text-align: left;">Pour chaque seed ∈ [12345, 67890, 99999, 42, 999], exécuter 1000 ticks, valider checksum</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DeterminismRegressionTests</code> (SYNE-015)</td>
+<td style="text-align: left;">Hash <strong>épinglé</strong> de la trajectoire perception+décision (seed 12345, 25 ent., 200 ticks) + égalité bit-à-bit entre deux runs identiques et différence entre seeds</td>
+</tr>
+<tr>
+<td style="text-align: left;">Auto-égalité (SYNE-015)</td>
+<td style="text-align: left;">Deux exécutions (même seed/config) → chaîne de perception identique</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Contrat V0.1 (jalon SYNE ph1)</strong> : le pipeline cognitif (perception → décision) ne consomme <strong>aucun</strong> tirage du PRNG — l'avance du générateur reste <strong>1 tirage/tick</strong> ; les cibles de déplacement dérivent d'un déterminisme propre (hash SplitMix64 stable, sans passerelle RNG).</p>
+<p><strong>Jalon SYNE ph3 (engineVersion 0.2.0)</strong> : la délibération à fréquence configurable (décision n°14), les interruptions par besoin critique (décision n°15), la sélection avec hystérésis et le tirage de conflit de priorités (décision n°22) restent <strong>0 tirage PRNG</strong> — le tirage probabiliste de <code>PriorityConflictResolver</code> dérive d'un hash SplitMix64 de (entityId, tick, kinds). Checksum de la trajectoire recalculé (0xab56603aedd578af → <strong>0xe8d69e462fc22df7</strong>).</p>
+<p><strong>Jalon SYNE ph4 (engineVersion 0.3.0)</strong> : le catalogue d'actions déclaratif, l'exécuteur atomique et le déclencheur d'interruption centralisé restent <strong>0 tirage PRNG</strong> — la cible de déplacement dérive du hash SplitMix64 de (id, tick, désir) (ActionExecutor.DeterministicOffset), l'itération reste par identifiant croissant, le pas est clampé au monde et <strong>jamais posé dans un obstacle</strong> (rejet → sur place, SYNE-041). Checksum de la trajectoire recalculé (0xe8d69e462fc22df7 → <strong>0xdfbc9a6c4a1d8122</strong>).</p>
+<p><strong>Jalon SYNE ph5 (engineVersion 0.4.0)</strong> : le sous-système de communication reste <strong>0 tirage PRNG</strong> — les identifiants de message dérivent du hash SplitMix64 de (émetteur, tick, séquence) et l'incompréhension (5 %) de <code>SplitMix64(receiverId, messageId)</code> (CommunicationSystem, COMMUNICATION_PROTOCOL.md §3/4) ; la passe par tick (diffusion par identifiant croissant puis relais, borné à <code>maxHops</code>) préserve l'ordre causal. Checksum de la trajectoire recalculé (0xdfbc9a6c4a1d8122 → <strong>0x6aa2b2d87b32a8a5</strong>).</p>
+<p><strong>Jalon SYNE ph6 (engineVersion 0.5.0)</strong> : le réseau social reste <strong>0 tirage PRNG</strong> — les liens de cohésion découlent de l'ordre trié des paires d'entités (id croissant), les composantes d'un union-find à racine minimale, le leader du max de confiance entrante (tie-break id min), la mutation d'héritage de <code>SplitMix64(nouvelTraitId, seed, tick)</code> (Inheritance, DATA_MODEL §6.6.3) ; la révision des groupes s'intercale déterministement <strong>après</strong> les décréments croyances/confiance et <strong>avant</strong> le merge des naissances ; <code>transmissionRange</code> recalibré 20 → <strong>55</strong> (au défaut ph5, le scénario de référence n'échangeait aucune pulsation → trajectoire « silencieuse » ; la calibration ph6 produit des événements de groupe/naissance dans le run de référence). Checksum de la trajectoire recalculé (0x6aa2b2d87b32a8a5 → <strong>0x864e72f57e1fe0d0</strong>).</p>
+<p><strong>Jalon SYNE ph7b (engineVersion 0.6.0)</strong> : les 4 fidélités restent <strong>0 tirage PRNG</strong> — la mortalité itère par identifiant croissant après les boucles entités/communication/naissances (SYNE-074) ; la naissance consentie évalue les paires qualifiantes dans l'ordre d'id (SYNE-075) ; l'alignement sur objectif collectif est un produit déterministe consensus × confiance au leader (SYNE-076) ; le cheminement A* est <strong>sans PRNG</strong> : grille rasterisée, voisinage ordonné, départage (f, g, x, y), expansion plafonnée, repli « sur place » (SYNE-077), cache LRU à accès déterministe. Checksum de la trajectoire <strong>inchangé</strong> (0x27fad50065d8c4a4 — le scénario de référence ne déclenche aucun pas bloqué), ré-épinglé pour pin contractuel.</p>
+<p><strong>Jalon SYNE ph7c (engineVersion 0.7.0)</strong> : le <strong>cycle des ressources</strong> (SYNE-070) reste <strong>0 tirage PRNG</strong> — appliqué en <strong>fin de tick</strong> (ordre causal strict : entités → communication → groupes → naissances → mortalité → cycle ressources), il régénère de <code>regenerationRate</code> à chaque tick et se dégrade à chaque période <code>degradationTick</code> d'un montant <code>regenerationRate × degradationTick</code> (clamp ≥ 0) ; opérations purement additivo-subtractives, aucune passerelle PRNG. Quatre types désormais (Food, Water, Wood, <strong>Mineral</strong>). L'altération porte sur les <strong>réserves du monde</strong>, pas sur la cognition du scénario de référence : checksum doré de perception <strong>inchangé</strong> (0x27fad50065d8c4a4) et baseline ph10 <strong>inchangée</strong> (0x072a488aa18c05eb) — ré-épinglés identiques pour pin contractuel, <code>engineVersion</code> incrémenté 0.6.0 → 0.7.0.</p>
+<p><strong>Jalon SYNE ph11d (engineVersion 0.8.0)</strong> : les <strong>constructions (SYNE-071)</strong> restent <strong>0 tirage PRNG</strong> — <code>AddObstacle</code>/<code>PlaceConstruction</code>/<code>RemoveConstruction</code> sont purement déclaratifs (validations, révision ulong, journal <code>EnvironmentChange</code>) et <strong>jamais branchés sur le RNG</strong> ; la grille A* se re-rasterise via <code>AStarPathfinder.Refresh()</code> <strong>en mode paresseux</strong> : comparant <code>_rasterizedRevision</code> à <code>World.ObstacleRevision</code>, c'est un <strong>no-op sans changement</strong> — sur le scénario de référence (layout posé avant le ctor du pathfinder, aucune modification d'environnement en cours de run), aucun pas A* n'est rejoué et la purge du cache LRU n'altère pas la trajectoire des replis (aucun pas bloqué). Ordre causal : la pose/le retrait interviennent <strong>hors boucle</strong> (API de contrôle/consommateurs) et sont <strong>réémis et vidés</strong> par <code>ObservabilityTickEmitter</code> avant le snapshot du tick suivant (jamais intercalés dans les boucles entités). Checksum doré de perception <strong>inchangé</strong> (0x27fad50065d8c4a4) et baseline ph10 <strong>inchangée</strong> (0x072a488aa18c05eb) — ré-épinglés identiques pour pin contractuel, <code>engineVersion</code> incrémenté 0.7.0 → 0.8.0.
+<strong>Jalon U8 — Saisons (engineVersion 0.9.0)</strong> : le <strong>cycle de Saisons (SYNE-072)</strong> reste <strong>0 tirage PRNG</strong> — la saison courante est une <strong>fonction pure du tick</strong> <code>(initialSeasonIndex + tick / seasonLengthTicks) mod 4</code> (aucune passerelle RNG) ; les facteurs saisonniers (<code>SeasonFactors</code>) multiplient la régénération et la dégradation périodique du cycle SYNE-070 en <strong>fin de tick</strong> (même fenêtre causale, opérations additivo-subtractives sur les réserves du monde, jamais sur la cognition). Le basculement est tracé par <code>_seasonChanges</code> et <strong>drainé</strong> par <code>ObservabilityTickEmitter</code> en <code>world.season_changed</code> <strong>au tick exact</strong> du changement, avant le snapshot. Saisons <strong>désactivées par défaut</strong> (<code>world.seasons.enabled = false</code>) : facteurs neutres ∗1, aucune modification de la trajectoire → checksum doré de perception <strong>inchangé</strong> (0x27fad50065d8c4a4) et baseline ph10 <strong>inchangée</strong> (0x072a488aa18c05eb) — ré-épinglés identiques pour pin contractuel, <code>engineVersion</code> incrémenté 0.8.0 → 0.9.0.</p>
+<p><strong>Jalon U8 — Territoires (engineVersion 0.10.0)</strong> : le <strong>suivi de territoire (SYNE-073)</strong> reste <strong>0 tirage PRNG</strong> — l'appartenance à une zone (<code>Territory</code>, disque autour d'un point de survie, décision n°21) est une <strong>function pure des positions</strong> (<code>distance ≤ radius</code>), <strong>recalculée en fin de tick</strong> par <code>SimulationLoop.TrackTerritoryMembership</code> (même fenêtre causale fermée que saisons/constructions, jamais intercalée dans les boucles entités) ; <strong>aucun comportement agentique, aucune revendication, aucune passerelle RNG</strong>. Ordre d'émission déterministe : par zone <strong>telle que posée</strong> (ordre de <code>world.territories.zones[]</code>), identifiant d'entité <strong>croissant</strong>, <strong>sorties (Left) avant entrées (Entered)</strong>. Les bascules sont tracées par <code>LastTerritoryChanges</code> (accumulées, vidables via <code>ClearTerritoryChanges</code>) et <strong>drainées</strong> par <code>ObservabilityTickEmitter</code> en <code>world.territory_membership_changed</code> — suivi <strong>désactivé par défaut</strong> (<code>world.territories.enabled = false</code>) : aucune altération de la trajectoire du scénario de référence → checksum doré de perception <strong>inchangé</strong> (0x27fad50065d8c4a4) et baseline ph10 <strong>inchangée</strong> (0x072a488aa18c05eb) — ré-épinglés identiques pour pin contractuel, <code>engineVersion</code> incrémenté 0.9.0 → 0.10.0. Activé, l'altération se borne à des champs <strong>additifs</strong> du snapshot (<code>territories[]</code>) et des événements typés, jamais à la cognition ni aux réserves.</p>
+<p><strong>Jalon SYNE ph10 (engineVersion 0.7.0, inchangé)</strong>: tests de non-régression de déterminisme (SYNE-102) <strong>sans modification du moteur</strong> — le golden de perception reste <strong>0x27fad50065d8c4a4</strong> et <code>engineVersion</code> reste 0.7.0. Une <strong>nouvelle baseline d'état complet</strong> est épinglée en complément (<code>Ph10DeterminismBaselineTests.FullPipeline_StateBaseline_IsPinned</code>) : journal canonique par tick (population, envois, groupes, naissances, décès, puis id/position/énergie/besoins/intention/mémoire/confiance de chaque entité) — scénario identique (25 entités, 200 ticks, seed 12345) → checksum FNV-1a <strong>0x072a488aa18c05eb</strong>. Toute altération bit-à-bit de la trajectoire change ce checksum ET le golden ; recalcul + bump MINOR requis (§7).</p>
+<h2 id="7-impacts--contractuels">7. Impacts &amp; contractuels</h2>
+<ul>
+<li>Toute modification qui altère la trajectoire à seed identique impose :
+<ul>
+<li>incrément <code>MINOR</code>/<code>MAJOR</code> (cf. <code>../../VERSIONING.md</code>) ;</li>
+<li>mise à jour de <code>engineVersion</code> (0.10.0 au jalon U8 — Saisons + Territoires ; 0.8.0 au jalon SYNE ph11d ; émise dans chaque snapshot, <code>ObservabilityContract.EngineVersion</code>).</li>
+</ul>
+</li>
+<li>Les benchmarks (Annexe I) vérifient le déterminisme via checksum.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun — le déterminisme est un contrat ferme et vérifié. Les implémentations parallèles devront maintenir l'ordre causal (détail à valider au moment du code).</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/DETERMINISM.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

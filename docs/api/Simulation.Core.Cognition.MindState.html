@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class MindState | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class MindState | LIVEX ">
+    
+    <meta name="description" content="&#201;tat cognitif d&#39;une entit&#233; (DATA_MODEL.md &#167;3.1 : perception, m&#233;moire, croyances, d&#233;cision) : m&#233;moire, croyances, besoins, intention et trace de d&#233;cision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md &#167;7).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition.MindState">
+
+
+
+  <h1 id="Simulation_Core_Cognition_MindState" data-uid="Simulation.Core.Cognition.MindState" class="text-break">Class MindState</h1>
+  <div class="markdown level0 summary"><p>État cognitif d'une entité (DATA_MODEL.md §3.1 : perception, mémoire,
+croyances, décision) : mémoire, croyances, besoins, intention et trace de
+décision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md §7).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">MindState</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Cognition.html">Cognition</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Cognition_MindState_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class MindState</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState__ctor_" data-uid="Simulation.Core.Cognition.MindState.#ctor*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState__ctor_Simulation_Core_Configuration_SimulationOptions_" data-uid="Simulation.Core.Cognition.MindState.#ctor(Simulation.Core.Configuration.SimulationOptions)">MindState(SimulationOptions)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MindState(SimulationOptions options)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></td>
+        <td><span class="parametername">options</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Beliefs_" data-uid="Simulation.Core.Cognition.MindState.Beliefs*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Beliefs" data-uid="Simulation.Core.Cognition.MindState.Beliefs">Beliefs</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BeliefSet Beliefs { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BeliefSet.html">BeliefSet</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_CollectiveObjective_" data-uid="Simulation.Core.Cognition.MindState.CollectiveObjective*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_CollectiveObjective" data-uid="Simulation.Core.Cognition.MindState.CollectiveObjective">CollectiveObjective</h4>
+  <div class="markdown level1 summary"><p>Objectif collectif adopté par le groupe du membre (SYNE-076) — nul hors
+groupe ou sans décision collective. Contraint l'utilité via un bonus
+d'alignement pondéré par le consensus et la confiance leader (TTL =
+intervalle de revue).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GroupObjective? CollectiveObjective { get; set; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.GroupObjective.html">GroupObjective</a>?</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Communication_" data-uid="Simulation.Core.Cognition.MindState.Communication*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Communication" data-uid="Simulation.Core.Cognition.MindState.Communication">Communication</h4>
+  <div class="markdown level1 summary"><p>État de communication (files sortante/entrante, relais — SYNE-050 → 054).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CommunicationState Communication { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Communication.CommunicationState.html">CommunicationState</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Factors_" data-uid="Simulation.Core.Cognition.MindState.Factors*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Factors" data-uid="Simulation.Core.Cognition.MindState.Factors">Factors</h4>
+  <div class="markdown level1 summary"><p>Facteurs de personnalité dérivés des traits (résolus à la première exécution).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AgentFactors? Factors { get; set; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.AgentFactors.html">AgentFactors</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Intention_" data-uid="Simulation.Core.Cognition.MindState.Intention*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Intention" data-uid="Simulation.Core.Cognition.MindState.Intention">Intention</h4>
+  <div class="markdown level1 summary"><p>Objectif courant (intention) — nul tant qu'aucune délibération n'a eu lieu.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Goal? Intention { get; set; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Goal.html">Goal</a>?</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_LastActionResult_" data-uid="Simulation.Core.Cognition.MindState.LastActionResult*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_LastActionResult" data-uid="Simulation.Core.Cognition.MindState.LastActionResult">LastActionResult</h4>
+  <div class="markdown level1 summary"><p>Résultat de l'action atomique du tick courant (SYNE-040/041/042).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ActionResult? LastActionResult { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Actions.ActionResult.html">ActionResult</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_LastDecision_" data-uid="Simulation.Core.Cognition.MindState.LastDecision*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_LastDecision" data-uid="Simulation.Core.Cognition.MindState.LastDecision">LastDecision</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public UtilityScore? LastDecision { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a>?</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_LastDecisionRecord_" data-uid="Simulation.Core.Cognition.MindState.LastDecisionRecord*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_LastDecisionRecord" data-uid="Simulation.Core.Cognition.MindState.LastDecisionRecord">LastDecisionRecord</h4>
+  <div class="markdown level1 summary"><p>Trace complète de la dernière décision (COGNITIVE_ARCHITECTURE.md §7).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DecisionRecord? LastDecisionRecord { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DecisionRecord.html">DecisionRecord</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_LastDecisionScores_" data-uid="Simulation.Core.Cognition.MindState.LastDecisionScores*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_LastDecisionScores" data-uid="Simulation.Core.Cognition.MindState.LastDecisionScores">LastDecisionScores</h4>
+  <div class="markdown level1 summary"><p>Scores d'utilité des candidats de la dernière décision.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;UtilityScore&gt; LastDecisionScores { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Memory_" data-uid="Simulation.Core.Cognition.MindState.Memory*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Memory" data-uid="Simulation.Core.Cognition.MindState.Memory">Memory</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Memory Memory { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Memory.html">Memory</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Needs_" data-uid="Simulation.Core.Cognition.MindState.Needs*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Needs" data-uid="Simulation.Core.Cognition.MindState.Needs">Needs</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BodyNeeds Needs { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Trust_" data-uid="Simulation.Core.Cognition.MindState.Trust*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Trust" data-uid="Simulation.Core.Cognition.MindState.Trust">Trust</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Relationships Trust { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Relationships.html">Relationships</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_Born_" data-uid="Simulation.Core.Cognition.MindState.Born*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_Born_Simulation_Core_Configuration_SimulationOptions_Simulation_Core_Cognition_MindState_Simulation_Core_Cognition_MindState_System_UInt64_" data-uid="Simulation.Core.Cognition.MindState.Born(Simulation.Core.Configuration.SimulationOptions,Simulation.Core.Cognition.MindState,Simulation.Core.Cognition.MindState,System.UInt64)">Born(SimulationOptions, MindState, MindState, ulong)</h4>
+  <div class="markdown level1 summary"><p>Naissance par fusion consentie (SYNE-020, décision n°16) : l'entité née
+hérite des traits (via l'Entity), de la <strong>mémoire intergénérationnelle</strong>
+et des <strong>croyances</strong> des deux parents (§6.6.2/§6.6.3). Les besoins sont
+vierges. La diffusion de cet état dans la simulation (action de
+reproduction) est câblée au moteur d'actions (ph4).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static MindState Born(SimulationOptions options, MindState parentA, MindState parentB, ulong birthTick)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></td>
+        <td><span class="parametername">options</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a></td>
+        <td><span class="parametername">parentA</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a></td>
+        <td><span class="parametername">parentB</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">birthTick</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_MindState_SuccessRate_" data-uid="Simulation.Core.Cognition.MindState.SuccessRate*"></a>
+  <h4 id="Simulation_Core_Cognition_MindState_SuccessRate_Simulation_Core_Cognition_DesireKind_" data-uid="Simulation.Core.Cognition.MindState.SuccessRate(Simulation.Core.Cognition.DesireKind)">SuccessRate(DesireKind)</h4>
+  <div class="markdown level1 summary"><p>Probabilité de succès du désir (COGNITIVE_ARCHITECTURE.md §5) : base de
+capacité 0.7, renforcée par la conscience de l'environnement (perception
+récente). La calibration précise arrive avec le moteur d'actions (ph4).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double SuccessRate(DesireKind kind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/MindState.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

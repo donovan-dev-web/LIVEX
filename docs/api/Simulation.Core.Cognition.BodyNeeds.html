@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class BodyNeeds | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class BodyNeeds | LIVEX ">
+    
+    <meta name="description" content="&#201;tat des besoins d&#39;une entit&#233; (DATA_MODEL.md &#167;7, d&#233;cision n&#176;3) : 6 besoins (faim, soif, fatigue 0-100 ; s&#233;curit&#233;, social, curiosit&#233; 0-1)  &#233;nergie (0-100). D&#233;rive par tick selon les taux configurables.">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition.BodyNeeds">
+
+
+
+  <h1 id="Simulation_Core_Cognition_BodyNeeds" data-uid="Simulation.Core.Cognition.BodyNeeds" class="text-break">Class BodyNeeds</h1>
+  <div class="markdown level0 summary"><p>État des besoins d'une entité (DATA_MODEL.md §7, décision n°3) :
+6 besoins (faim, soif, fatigue 0-100 ; sécurité, social, curiosité 0-1)</p>
+<ul>
+<li>énergie (0-100). Dérive par tick selon les taux configurables.</li>
+</ul>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">BodyNeeds</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Cognition.html">Cognition</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Cognition_BodyNeeds_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class BodyNeeds</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds__ctor_" data-uid="Simulation.Core.Cognition.BodyNeeds.#ctor*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds__ctor" data-uid="Simulation.Core.Cognition.BodyNeeds.#ctor">BodyNeeds()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BodyNeeds()</code></pre>
+  </div>
+  <h3 id="fields">Fields
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_CriticalEnergy" data-uid="Simulation.Core.Cognition.BodyNeeds.CriticalEnergy">CriticalEnergy</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double CriticalEnergy = 10</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_CriticalHunger" data-uid="Simulation.Core.Cognition.BodyNeeds.CriticalHunger">CriticalHunger</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double CriticalHunger = 90</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_CuriosityThreshold" data-uid="Simulation.Core.Cognition.BodyNeeds.CuriosityThreshold">CuriosityThreshold</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double CuriosityThreshold = 0.3</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_FatigueThreshold" data-uid="Simulation.Core.Cognition.BodyNeeds.FatigueThreshold">FatigueThreshold</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double FatigueThreshold = 70</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_HungerThreshold" data-uid="Simulation.Core.Cognition.BodyNeeds.HungerThreshold">HungerThreshold</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double HungerThreshold = 50</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_MaxResource" data-uid="Simulation.Core.Cognition.BodyNeeds.MaxResource">MaxResource</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double MaxResource = 100</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_SafetyThreshold" data-uid="Simulation.Core.Cognition.BodyNeeds.SafetyThreshold">SafetyThreshold</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double SafetyThreshold = 0.5</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_SocialThreshold" data-uid="Simulation.Core.Cognition.BodyNeeds.SocialThreshold">SocialThreshold</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double SocialThreshold = 0.7</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_ThirstThreshold" data-uid="Simulation.Core.Cognition.BodyNeeds.ThirstThreshold">ThirstThreshold</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double ThirstThreshold = 50</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Curiosity_" data-uid="Simulation.Core.Cognition.BodyNeeds.Curiosity*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Curiosity" data-uid="Simulation.Core.Cognition.BodyNeeds.Curiosity">Curiosity</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Curiosity { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Energy_" data-uid="Simulation.Core.Cognition.BodyNeeds.Energy*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Energy" data-uid="Simulation.Core.Cognition.BodyNeeds.Energy">Energy</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Energy { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Fatigue_" data-uid="Simulation.Core.Cognition.BodyNeeds.Fatigue*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Fatigue" data-uid="Simulation.Core.Cognition.BodyNeeds.Fatigue">Fatigue</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Fatigue { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Hunger_" data-uid="Simulation.Core.Cognition.BodyNeeds.Hunger*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Hunger" data-uid="Simulation.Core.Cognition.BodyNeeds.Hunger">Hunger</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Hunger { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_IsCritical_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsCritical*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_IsCritical" data-uid="Simulation.Core.Cognition.BodyNeeds.IsCritical">IsCritical</h4>
+  <div class="markdown level1 summary"><p>Indicateur « état critique » (énergie &lt; 10 ou faim &gt; 90, COGNITIVE_ARCHITECTURE.md §6).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsCritical { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Safety_" data-uid="Simulation.Core.Cognition.BodyNeeds.Safety*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Safety" data-uid="Simulation.Core.Cognition.BodyNeeds.Safety">Safety</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Safety { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Social_" data-uid="Simulation.Core.Cognition.BodyNeeds.Social*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Social" data-uid="Simulation.Core.Cognition.BodyNeeds.Social">Social</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Social { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Thirst_" data-uid="Simulation.Core.Cognition.BodyNeeds.Thirst*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Thirst" data-uid="Simulation.Core.Cognition.BodyNeeds.Thirst">Thirst</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Thirst { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Advance_" data-uid="Simulation.Core.Cognition.BodyNeeds.Advance*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Advance_Simulation_Core_Configuration_NeedsSettings_" data-uid="Simulation.Core.Cognition.BodyNeeds.Advance(Simulation.Core.Configuration.NeedsSettings)">Advance(NeedsSettings)</h4>
+  <div class="markdown level1 summary"><p>Dérive périodique des besoins (décision n°3 : faim +0.5/tick, soif +0.7/tick, fatigue +0.3/tick).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BodyNeeds Advance(NeedsSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.NeedsSettings.html">NeedsSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_Drive_" data-uid="Simulation.Core.Cognition.BodyNeeds.Drive*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_Drive_Simulation_Core_Cognition_DesireKind_" data-uid="Simulation.Core.Cognition.BodyNeeds.Drive(Simulation.Core.Cognition.DesireKind)">Drive(DesireKind)</h4>
+  <div class="markdown level1 summary"><p>Valeur d'élan du besoin (0-100 homogénéisé) pour la génération d'objectifs.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Drive(DesireKind kind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_ExertEnergy_" data-uid="Simulation.Core.Cognition.BodyNeeds.ExertEnergy*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_ExertEnergy_System_Double_" data-uid="Simulation.Core.Cognition.BodyNeeds.ExertEnergy(System.Double)">ExertEnergy(double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ExertEnergy(double cost)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">cost</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_IsCriticalFor_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsCriticalFor*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_IsCriticalFor_Simulation_Core_Configuration_InterruptionSettings_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsCriticalFor(Simulation.Core.Configuration.InterruptionSettings)">IsCriticalFor(InterruptionSettings)</h4>
+  <div class="markdown level1 summary"><p>État critique selon les seuils configurables (agents.interruption.*, COGNITIVE_ARCHITECTURE.md §6).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsCriticalFor(InterruptionSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.InterruptionSettings.html">InterruptionSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_IsTriggered_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsTriggered*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_IsTriggered_Simulation_Core_Cognition_DesireKind_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsTriggered(Simulation.Core.Cognition.DesireKind)">IsTriggered(DesireKind)</h4>
+  <div class="markdown level1 summary"><p>Le besoin est au-dessus de son seuil de déclenchement (génère un désir).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsTriggered(DesireKind kind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_IsTriggered_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsTriggered*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_IsTriggered_Simulation_Core_Cognition_DesireKind_Simulation_Core_Configuration_NeedsSettings_" data-uid="Simulation.Core.Cognition.BodyNeeds.IsTriggered(Simulation.Core.Cognition.DesireKind,Simulation.Core.Configuration.NeedsSettings)">IsTriggered(DesireKind, NeedsSettings)</h4>
+  <div class="markdown level1 summary"><p>Déclenchement selon les seuils configurables (SYNE-042, décision n°4 :
+besoins déclenchés dès « ≥ 50 » ; Rest dès fatigue &gt; 70).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsTriggered(DesireKind kind, NeedsSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.NeedsSettings.html">NeedsSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_RecoverEnergy_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverEnergy*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_RecoverEnergy_System_Double_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverEnergy(System.Double)">RecoverEnergy(double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RecoverEnergy(double gain)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">gain</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_RecoverFatigue_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverFatigue*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_RecoverFatigue_System_Double_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverFatigue(System.Double)">RecoverFatigue(double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RecoverFatigue(double amount)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">amount</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_RecoverHunger_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverHunger*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_RecoverHunger_System_Double_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverHunger(System.Double)">RecoverHunger(double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RecoverHunger(double amount)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">amount</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_RecoverThirst_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverThirst*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_RecoverThirst_System_Double_" data-uid="Simulation.Core.Cognition.BodyNeeds.RecoverThirst(System.Double)">RecoverThirst(double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RecoverThirst(double amount)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">amount</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BodyNeeds_SetCuriosityElapsed_" data-uid="Simulation.Core.Cognition.BodyNeeds.SetCuriosityElapsed*"></a>
+  <h4 id="Simulation_Core_Cognition_BodyNeeds_SetCuriosityElapsed_System_Double_" data-uid="Simulation.Core.Cognition.BodyNeeds.SetCuriosityElapsed(System.Double)">SetCuriosityElapsed(double)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetCuriosityElapsed(double amount)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">amount</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/BodyNeeds.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

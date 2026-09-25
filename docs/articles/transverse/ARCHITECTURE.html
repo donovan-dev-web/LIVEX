@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ARCHITECTURE.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ARCHITECTURE.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="architecturemd">ARCHITECTURE.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>VISION.md</code>, <code>CI_CD.md</code>
+<strong>Source Monographie</strong> : Partie 2 (Présentation du Projet), §7.1–7.3 (monorepo, diagrammes, contrats)</p>
+<hr>
+<h2 id="1-vue-densemble">1. Vue d'ensemble</h2>
+<p>LIVEX est un <strong>monorepo</strong> à trois composants, chacun autonome et versionné indépendamment :</p>
+<pre><code class="lang-mermaid">flowchart TB
+    subgraph SYNE[&quot;SYNE — Moteur de simulation&quot;]
+        CORE[Simulation.Core]
+        CONSOLE[Simulation.Console / serveur]
+        TESTS1[Tests xUnit]
+    end
+    subgraph ECHOS[&quot;ECHOS — Observation &amp; analyse&quot;]
+        ACORE[Analyzer.Core — 7 moteurs de métriques]
+        AAPI[Analyzer API REST]
+        UI[Interface React + TypeScript]
+    end
+    subgraph PRISM[&quot;PRISM — Représentation 3D&quot;]
+        G[Godot .NET — framework intermédiaire]
+        SCRIPTS[scripts + scènes]
+    end
+    SYNE -- &quot;WebSocket 5180 + HTTP 5181&quot; --&gt; ECHOS
+    SYNE -- &quot;WebSocket 5180 (snapshots/events)&quot; --&gt; PRISM
+    ECHOS -- &quot;contrôle (HTTP relayé)&quot; --&gt; SYNE
+</code></pre>
+<h2 id="2-les-trois-composants">2. Les trois composants</h2>
+<h3 id="21-syne--systems--emergent-network-engine">2.1 SYNE — Systems &amp; Emergent Network Engine</h3>
+<p>Source : Monographie §2.3, Partie 3.</p>
+<ul>
+<li><strong>Rôle</strong> : possède la vérité du monde simulé ; calcule états, interactions, décisions.</li>
+<li><strong>Contraintes</strong> : indépendant du rendu, fonctionne headless, déterministe bit-à-bit, persistant.</li>
+<li><strong>Sous-systèmes</strong> : World, Agents, Cognition, Actions, Interaction, Spatial (grille spatiale), Nav (pathfinding).</li>
+<li><strong>Contrats de sortie</strong> : <code>WorldSnapshot</code> et <code>ExternalEvent</code> (JSON camelCase) via WebSocket 5180 ; API de contrôle HTTP 5181.</li>
+</ul>
+<p>Voir <code>docs/docs-syne/ARCHITECTURE.md</code>.</p>
+<h3 id="22-echos--emergent-cognition--holistic-observation-system">2.2 ECHOS — Emergent Cognition &amp; Holistic Observation System</h3>
+<p>Source : Monographie Partie 4.</p>
+<ul>
+<li><strong>Rôle</strong> : observe, analyse et pilote la simulation ; expose des métriques, un score d'émergence, une analyse causale et la comparaison d'expériences.</li>
+<li><strong>Implémentation V0.1</strong> : interface <strong>web locale React + TypeScript servie par FastAPI</strong> (<code>echos-ui</code>, Vite — shell Electron conservé, implémentation différée à un horizon ultérieur), backend d'analyse <strong>Python (FastAPI, API locale)</strong> sur la base des moteurs de métriques ; stockage SQLite / fichiers Parquet.</li>
+<li><strong>Contrats d'entrée</strong> : consomme le flux WebSocket 5180 de SYNE (snapshots + événements).</li>
+<li><strong>Contrats de sortie</strong> : API REST (liste des runs, métriques, comparaison, export), interface d'analyse intégrée.</li>
+</ul>
+<blockquote>
+<p>Divergence documentée : la Monographie (§7.1) décrit un prototype ECHOS en <strong>C#/.NET (Analyzer.Core + ASP.NET) avec interface web React TS</strong>. <strong>Décision V0.1 (utilisateur, 23/09/2026)</strong> : ECHOS a une interface <strong>web locale React/Vite servie par FastAPI</strong> avec backend <strong>Python FastAPI</strong> (analyse NumPy/Pandas/SciPy, graphes NetworkX, graphiques ECharts/Plotly) et stockage <strong>SQLite/Parquet</strong>. Le <strong>shell Electron est conservé</strong> (non abandonné) : son implémentation est <strong>différée à un horizon ultérieur (post-V0.1)</strong> (correction 23/09/2026, <code>ADR-001</code> ECHOS). La logique métier reste calquée sur les 7 moteurs de métriques de la Monographie.</p>
+</blockquote>
+<p>Voir <code>docs/docs-echos/ARCHITECTURE.md</code>.</p>
+<h3 id="23-prism--perceptual-rendering--interactive-simulation-module">2.3 PRISM — Perceptual Rendering &amp; Interactive Simulation Module</h3>
+<p>Source : Monographie Partie 5.</p>
+<ul>
+<li><strong>Rôle</strong> : affiche le monde en 3D et permet d'interagir, sans jamais devenir source de vérité.</li>
+<li><strong>Implémentation actuelles</strong> : Godot 4.7.2 édition .NET (piste [HÉRITÉ] du prototype) ; le moteur graphique définitif reste <strong>ouvert</strong> (Unreal/Unity/autre).</li>
+<li><strong>Contrats d'entrée</strong> : WebSocket 5180 (snapshots/events), reconnexion automatique (1,5 s).</li>
+<li><strong>Contrôle</strong> : relaie les commandes à l'API de contrôle HTTP 5181 de SYNE (start/pause/resume/reset).</li>
+</ul>
+<p>Voir <code>docs/docs-prism/ARCHITECTURE.md</code>.</p>
+<h2 id="3-communication-inter-composants">3. Communication inter-composants</h2>
+<p>Détaillé dans <code>COMMUNICATION.md</code>. Résumé contractuel :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Flux</th>
+<th style="text-align: left;">Transport</th>
+<th style="text-align: left;">Port</th>
+<th style="text-align: left;">Payload (JSON camelCase)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">SYNE → ECHOS/PRISM</td>
+<td style="text-align: left;">WebSocket</td>
+<td style="text-align: left;">5180</td>
+<td style="text-align: left;"><code>WorldSnapshot</code>, <code>ExternalEvent</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Contrôle de SYNE</td>
+<td style="text-align: left;">HTTP REST</td>
+<td style="text-align: left;">5181</td>
+<td style="text-align: left;">commandes <code>start/pause/resume/reset</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">ECHOS API</td>
+<td style="text-align: left;">HTTP REST</td>
+<td style="text-align: left;">5000 (V0.1 FastAPI)</td>
+<td style="text-align: left;">runs, métriques, export, comparaison</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-matrice-de-dépendances">4. Matrice de dépendances</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">→</th>
+<th style="text-align: left;">Core (SYNE)</th>
+<th style="text-align: left;">Console</th>
+<th style="text-align: left;">ECHOS</th>
+<th style="text-align: left;">PRISM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Core</strong></td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Console</strong></td>
+<td style="text-align: left;">→ Core</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ECHOS</strong></td>
+<td style="text-align: left;">→ Core (DTOs)</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PRISM</strong></td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+<td style="text-align: left;">−</td>
+</tr>
+</tbody>
+</table>
+<p>Règle structurante (Monographie §7.3.3) : <strong>Presentation Adapter → Simulation.Core</strong> (jamais l'inverse). Aucun module ne dépend d'un moteur graphique (Monographie §2.4.2).</p>
+<h2 id="5-stacks-monographie-71">5. Stacks (Monographie §7.1)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Agent</th>
+<th style="text-align: left;">Stack</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Moteur de simulation</td>
+<td style="text-align: left;">C#/.NET, SDK 10.0.400 (pinné <code>global.json</code>) — [HÉRITÉ]</td>
+</tr>
+<tr>
+<td style="text-align: left;">Analyse ECHOS</td>
+<td style="text-align: left;">Prototype C#/.NET ; <strong>V0.1 : Python (FastAPI)</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Interface ECHOS</td>
+<td style="text-align: left;">React + TypeScript (intégrée à ECHOS)</td>
+</tr>
+<tr>
+<td style="text-align: left;">PRISM</td>
+<td style="text-align: left;">Godot 4.7.2 .NET (moteur définitif ouvert)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tests C#</td>
+<td style="text-align: left;">xUnit + Moq</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tests interface</td>
+<td style="text-align: left;">Vitest + ESLint + Prettier</td>
+</tr>
+<tr>
+<td style="text-align: left;">CI/CD</td>
+<td style="text-align: left;">GitHub Actions</td>
+</tr>
+<tr>
+<td style="text-align: left;">Conteneurisation</td>
+<td style="text-align: left;">Docker multi-stage</td>
+</tr>
+<tr>
+<td style="text-align: left;">Registre d'images</td>
+<td style="text-align: left;">GHCR</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-monorepo-cible-v01">6. Monorepo (cible V0.1)</h2>
+<pre><code class="lang-text">LIVEX/
+├── syne/                  # Moteur de simulation (C#/.NET)
+├── echos/                 # Observation &amp; analyse (Python/FastAPI + React/TS)
+├── prism/                 # Représentation (Godot .NET — moteur définitif ouvert)
+├── docs/                  # Documentation technique
+│   ├── docs-syne/
+│   ├── docs-echos/
+│   ├── docs-prism/
+│   ├── governance/
+│   └── adr/
+├── compose.yml            # Orchestration Docker
+└── .github/workflows/     # GitHub Actions (ci.yml, release.yml)
+</code></pre>
+<blockquote>
+<p>Note : le dépôt conserve en <code>docs/docs_prototype/</code> l'historique de spécification V1/V2 du prototype.</p>
+</blockquote>
+<h2 id="7-flux-de-données-de-référence">7. Flux de données de référence</h2>
+<pre><code class="lang-mermaid">sequenceDiagram
+    participant SYNE
+    participant WS as WebSocket 5180
+    participant HTTP as HTTP 5181
+    participant ECHOS
+    participant PRISM
+    ECHOS-&gt;&gt;HTTP: start / pause / resume / reset
+    HTTP--&gt;&gt;SYNE: commande
+    SYNE--&gt;&gt;WS: WorldSnapshot (tick, entités, ressources)
+    SYNE--&gt;&gt;WS: ExternalEvent (deaths, spawns, décisions)
+    WS--&gt;&gt;ECHOS: flux métriques temps réel
+    WS--&gt;&gt;PRISM: snapshots + événements
+</code></pre>
+<h3 id="71-déterminisme-transverse">7.1 Déterminisme transverse</h3>
+<p>Le <strong>déterminisme bit-à-bit</strong> est un contrat transverse : le format <code>WorldSnapshot</code> et l'ordre causal des événements sont des engagements stables de SYNE vers ECHOS et PRISM. Toute évolution de ce contrat est gérée selon <code>VERSIONING.md</code> (MINOR si rétrocompatible, sinon MAJOR).</p>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Moteur graphique définitif de PRISM : [OUVERT] (Godot 4.7.2 pour le prototype, piste [HÉRITÉ]).</li>
+<li>Port de l'API REST ECHOS en V0.1 : <strong>5000</strong> (FastAPI local, confirmé dans <code>docs/docs-echos/API_REST.md</code>).</li>
+<li>La structuration courante du dépôt : <code>syne/</code>, <code>echos/</code> initialisés (Jalon U0) ; <code>prism/</code> créé après U0 → U8 (condition ROADMAP §6).</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/ARCHITECTURE.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

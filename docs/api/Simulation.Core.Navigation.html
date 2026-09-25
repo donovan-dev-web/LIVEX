@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.Navigation | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.Navigation | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Navigation">
+
+  <h1 id="Simulation_Core_Navigation" data-uid="Simulation.Core.Navigation" class="text-break">Namespace Simulation.Core.Navigation</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Navigation.AStarPathfinder.html">AStarPathfinder</a></h4>
+      <section><p>Cheminement déterministe (SYNE-077, Monographie §6.2.12) : A* sur une grille
+rasterisée du monde — les disques obstacles bloquent les cellules dont le
+centre tombe dans le disque (marge demi-cellule). Voisinage carré 8-connexe
+parcouru dans un ordre fixe, fermeture par égalité à 1e-12, départage
+déterministe par (f, puis g, puis (x, y)) — aucune consommation du PRNG.</p>
+<p>Le repli est « sur place » : si aucun chemin n'existe (destination dans un
+obstacle ou inaccessible), ou si le plafond d'expansion
+<a class="xref" href="Simulation.Core.Configuration.PathfindingSettings.html#Simulation_Core_Configuration_PathfindingSettings_MaxExpansionCells">MaxExpansionCells</a> est atteint, le chemin
+renvoyé est vide (l'entité ne se déplace pas ce tick-ci).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Navigation.PathCache.html">PathCache</a></h4>
+      <section><p>Cache LRU de chemins (SYNE-077, Monographie §6.2.12) : mémoïsation d'un
+calcul A* par paire (cellule source, cellule but) afin d'éviter de re-planifier
+le même chemin à chaque tick de déplacement. Borné : la plus ancienne entrée
+est évincée au-delà de <a class="xref" href="Simulation.Core.Navigation.PathCache.html#Simulation_Core_Navigation_PathCache_Capacity">Capacity</a>.</p>
+<p>Déterminisme : l'ordre d'accès est l'ordre d'appel (lui-même déterministe) ;
+le remplacement et l'éviction ne consomment aucun tirage du PRNG global.</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

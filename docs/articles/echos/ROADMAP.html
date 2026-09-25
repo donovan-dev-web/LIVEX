@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ROADMAP.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ROADMAP.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="roadmapmd">ROADMAP.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [DRAFT]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>../ROADMAP.md</code> (racine), <code>../docs-syne/ROADMAP.md</code>
+<strong>Source Monographie</strong> : §9.6, §7.9 (adapté), §4.2 (architecture)</p>
+<hr>
+<h2 id="1-principes">1. Principes</h2>
+<ul>
+<li>Road map <strong>en ordre, sans dates</strong> (décision utilisateur).</li>
+<li>ECHOS <strong>consomme les contrats SYNE</strong> définis en phase 2 : il dépend des <code>API_CONTRACTS.md</code> SYNE et du schéma SQLite (Annexe G).</li>
+</ul>
+<h2 id="2-les-phases-ordre">2. Les phases (ordre)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">#</th>
+<th style="text-align: left;">Intitulé</th>
+<th style="text-align: left;">Contenu</th>
+<th style="text-align: left;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">Fondation &amp; stack</td>
+<td style="text-align: left;">Choix FastAPI + React/Vite web local (tranché pour V0.1 ; <strong>shell Electron conservé</strong>, implémentation <strong>différée à un horizon ultérieur</strong> — décision 23/09/2026), structure monorepo <code>echos/</code>, outillage (pytest, CI)</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">Ingestion &amp; stockage</td>
+<td style="text-align: left;">Consommateur WebSocket :5180, agrégation incrémentale, SQLite + Parquet (stockage d'analyse séparé) — <strong>LIVRÉ (ECHOS-010 → 013, jalon U1)</strong></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">Moteurs de métriques</td>
+<td style="text-align: left;">Implémentation des 7 moteurs (<code>METRICS_SPEC.md</code>), golden files, tests unitaires — <strong>LIVRÉ (ECHOS-020 → 027, jalon U2)</strong></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">Indicateurs d'émergence</td>
+<td style="text-align: left;">Score composite, auto-détection des phénomènes, complexité, indice d'imprévisibilité — <strong>LIVRÉ (ECHOS-030 → 033, jalon U3)</strong></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">API REST</td>
+<td style="text-align: left;">Endpoints (<code>API_REST.md</code>), sous-échantillonnage, cache de séries, parallélisation O(n²) — <strong>LIVRÉ (ECHOS-040 → 045, jalon U4)</strong> : endpoints operatifs, métriques calculées à l'ingestion, <code>?every=N</code> + cache de séries (invalidation par version), export JSON/CSV reproductible, couverture API ≥ 80 %</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">Logging &amp; instrumentation</td>
+<td style="text-align: left;">3 niveaux (structuré/traces/texte), profilage, console de débogage, export CSV/JSON — <strong>LIVRÉ (ECHOS-050 → 052, jalon U5)</strong> : package <code>echos/instrumentation/</code> (JSONL déterministe + tag <code>SSE-V2</code>), traces <code>decision_traces</code> (schéma v3) accessibles via <code>/api/runs/{id}/decisions</code>, profilage bit-à-bit des 8 moteurs (budgets V0.1 en garde-fou CI) ; console de débogage hors périmètre ECHOS (spécif. monographie, console SYNE)</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">Analyse causale</td>
+<td style="text-align: left;">Reconstruction des chaînes causales depuis <code>decision_traces</code>, outillage de navigation — <strong>LIVRÉ (ECHOS-060 → 063, jalon ph6, issues #215 → #218)</strong> : ADR-002 [Accepted] (calcul hors ligne), <code>causal.build_chain</code> (7 couches), cycle/récurrence + profondeur bornée, <code>CausalCache</code> invalidé sur version, endpoint <code>GET /api/runs/{id}/causal-chains/{agentId}</code></td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">Comparaison expérimentale</td>
+<td style="text-align: left;"><code>/api/compare</code>, métriques de reproductibilité, format d'export</td>
+<td style="text-align: left;"><strong>LIVRÉ (ECHOS-070 → 072, jalon ph7, U7)</strong> : <code>GET /api/compare</code> (<code>is_reproducible</code> seed×version×SHA-256, <code>ReproducibilityScore = 1 − (CognitiveDiff+SocialDiff)/2</code>, L2 normalisées sur croyances/confiance — <code>echos/analysis/reproducibility.py</code>), exports <code>json</code>/<code>csv</code> (séries alignées <code>tick,engine,metric,run_a_value,run_b_value,diff</code>), 11 tests (<code>test_compare.py</code>), couverture 97,97 %</td>
+</tr>
+<tr>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">Interface intégrée</td>
+<td style="text-align: left;">Écrans ECHOS (web local React/Vite servie par FastAPI) : vues de métriques, croyances, réseaux, calibration</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">Tests &amp; couverture</td>
+<td style="text-align: left;"><strong>LIVRÉ (U8, ECHOS-090→092)</strong> : suite pytest + goldens, couverture 96,01 %, test d’intégration réel SYNE→ECHOS en CI, rapport de calibration déterministe. Intégration PRISM au niveau contrat seulement, son runtime commençant après U8.</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">Shell Electron (horizon ultérieur)</td>
+<td style="text-align: left;">Packaging natif de bureau de <code>echos-ui</code> via <strong>Electron</strong> — <strong>conservé</strong> (non abandonné), implémentation <strong>différée post-V0.1</strong> (correction décision 23/09/2026, <code>ADR-001</code>) ; coordonné avec PRISM (<code>../docs-prism/</code>)</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-jalons-de-validation">3. Jalons de validation</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Jalon</th>
+<th style="text-align: left;">Critère</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">J1</td>
+<td style="text-align: left;">Ingestion de 2 runs de démo → séries complètes en SQLite (déterministes et alignées sur SYNE)</td>
+</tr>
+<tr>
+<td style="text-align: left;">J2</td>
+<td style="text-align: left;">7 moteurs calculés sur fixtures = golden files (18+ tests du prototype porte-unitaire reconduits)</td>
+</tr>
+<tr>
+<td style="text-align: left;">J3</td>
+<td style="text-align: left;">Score d'émergence dans [0,1] et stable entre runs identiques — <strong>LIVRÉ (preuve <code>test_j3_determinism.py</code>, moteur <code>EmergenceIndicators</code>)</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">J4</td>
+<td style="text-align: left;">Comparaison seed=12345, sociabilité 0.2 vs 0.8 → divergence mesurable et reproductible</td>
+</tr>
+<tr>
+<td style="text-align: left;">J5</td>
+<td style="text-align: left;">API REST couverte par tests, ≥ 80 % — <strong>LIVRÉ (preuve <code>test_api_routes.py</code> + <code>test_sqlite_store.py</code>/<code>test_pipeline.py</code> étendus, couverture totale 98,2 %)</strong> ; étendue U5 : traces de décision exposées et profilage couvert (preuve <code>test_instrumentation.py</code>, 181 tests)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-dépendances-externes">4. Dépendances externes</h2>
+<ul>
+<li>SYNE : WebSocket :5180 (snapshot/event), HTTP :5181 (contrôle), schéma SQLite Annexe G.</li>
+<li>PRISM : les vues d'analyse intégrées à ECHOS sont réutilisées dans PRISM (cf. <code>../docs-prism/UX_INTERACTION.md</code>) — coordination en <code>../ARCHITECTURE.md</code> racine.</li>
+</ul>
+<h2 id="5-limites-assumées-cf-limitationsmd">5. Limites assumées (cf. <code>LIMITATIONS.md</code>)</h2>
+<ul>
+<li>Volumétrie → sous-échantillonnage.</li>
+<li>Calculs O(n²) → parallélisation.</li>
+<li>Causalité → traces + reconstruction (pas de causalité magique).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucune date n'est posée. L'ordre ci-dessus est une proposition issue du Plan doc ; il sera ajusté selon l'avancement réel de SYNE (les jalons dépendent des contrats SYNE).</li>
+<li>Le périmètre exact des écrans <strong>web (React/Vite)</strong> est [OUVERT] au-delà des besoins définis par les parties 4 et 5 de la Monographie.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/ROADMAP.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>UI_DESIGN.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="UI_DESIGN.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="ui_designmd">UI_DESIGN.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>FRONTEND_VISION.md</code>, <code>USER_STORIES.md</code>, <code>../docs-syne/API_CONTRACTS.md</code>
+<strong>Source Monographie</strong> : §4.2.2, §4.7, §5.13 (interface intégrée)</p>
+<hr>
+<h2 id="1-design-system">1. Design system</h2>
+<h3 id="11-palette">1.1 Palette</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Rôle</th>
+<th style="text-align: left;">Couleur (hex)</th>
+<th style="text-align: left;">Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Fond principal</strong></td>
+<td style="text-align: left;"><code>#0D1117</code></td>
+<td style="text-align: left;">arrière-plan des vues (hérité <code>bg-gray-900</code> du prototype)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Fond surfaces</strong></td>
+<td style="text-align: left;"><code>#161B22</code></td>
+<td style="text-align: left;">cartes, panneaux, conteneurs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Bordure</strong></td>
+<td style="text-align: left;"><code>#30363D</code></td>
+<td style="text-align: left;">séparateurs, contours de cartes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Texte primaire</strong></td>
+<td style="text-align: left;"><code>#E6EDF3</code></td>
+<td style="text-align: left;">texte courant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Texte secondaire</strong></td>
+<td style="text-align: left;"><code>#8B949E</code></td>
+<td style="text-align: left;">libellés, sous-titres</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Accent</strong></td>
+<td style="text-align: left;"><code>#00D4A0</code></td>
+<td style="text-align: left;">actions, focus, valeurs positives</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Alerte/Danger</strong></td>
+<td style="text-align: left;"><code>#F85149</code></td>
+<td style="text-align: left;">limites, scores hors bornes, conflits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Info</strong></td>
+<td style="text-align: left;"><code>#58A6FF</code></td>
+<td style="text-align: left;">indicateurs, liens d'analyse</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Success stable</strong></td>
+<td style="text-align: left;"><code>#3FB950</code></td>
+<td style="text-align: left;">validations, healthy</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Thème <strong>sombre uniquement</strong> en V0.1 (héritage prototype). Le thème clair est une amélioration P2, <strong>après</strong> validation des contrastes scientifiques (limites §5.14 Monographie).</p>
+</blockquote>
+<h3 id="12-typographie">1.2 Typographie</h3>
+<ul>
+<li><strong>Police</strong> : Inter (système) avec fallback <code>system-ui, -apple-system, Segoe UI</code>.</li>
+<li><strong>Échelle</strong> : <code>12 / 13 / 14 / 16 / 20 / 24 / 30 px</code> (taille de base 14 px).</li>
+<li><strong>Chiffres</strong> : <code>tabular-nums</code> pour tous les KPI et jauges (pas d'oscillation des largeurs dans la timeline).</li>
+<li><strong>Monospace</strong> : <code>JetBrains Mono</code> (traces, JSON, sortie console).</li>
+</ul>
+<h3 id="13-grille--espacement">1.3 Grille &amp; espacement</h3>
+<ul>
+<li><strong>Grille responsive</strong> : 12 colonnes ; grandeur d'écartement 4 px (<code>4 / 8 / 12 / 16 / 24 / 32</code>).</li>
+<li><strong>Bandeau d'application</strong> (40 px) : identité du run + horloge tick + controls globaux.</li>
+<li><strong>Hauteur de ligne de table</strong> : 28 px (lisible, dense).</li>
+</ul>
+<h3 id="14-composants-réutilisables">1.4 Composants réutilisables</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Composant</th>
+<th style="text-align: left;">Spécification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>KPICard</code></td>
+<td style="text-align: left;">Titre, valeur <code>tabular-nums</code>, delta (▲/▼ coloré), hint « score ≠ preuve » au survol</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Gauge</code></td>
+<td style="text-align: left;">Jauge 180°, borne min/max affichée, zone de limite grisée</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TimelineChart</code></td>
+<td style="text-align: left;">Série sous-échantillonnée (<code>?every=N</code>), axe temps, survol = valeur exacte</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>EntityBadge</code></td>
+<td style="text-align: left;">Pastille couleur groupe + émoticône besoin dominant, survol = sonde</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GroupChip</code></td>
+<td style="text-align: left;">Étiquette de groupe avec code couleur hash (fidèle §5.9.1)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ConfidenceEdge</code></td>
+<td style="text-align: left;">Arête de graphe dont l'opacité suit le niveau de confiance</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-écrans">2. Écrans</h2>
+<h3 id="21-écran-a--tableau-de-bord-dashboard">2.1 Écran A — Tableau de bord (<code>/dashboard</code>)</h3>
+<ul>
+<li><strong>Haut</strong> : 4 <code>KPICard</code> (entités actives, score émergence, groupes, messages/tick).</li>
+<li><strong>Milieu</strong> : grille de <code>Gauge</code> (diversité croyances, diversité objectifs, clustering, vitesse de diffusion) + <code>TimelineChart</code> principal.</li>
+<li><strong>Bas</strong> : liste des phénomènes détectés (lien → Écran D).</li>
+<li><em>Sources</em> : <code>GET /api/runs/{id}/metrics</code>, <code>/api/emergent-phenomena</code>.</li>
+</ul>
+<h3 id="22-écran-b--exploration-explore">2.2 Écran B — Exploration (<code>/explore</code>)</h3>
+<ul>
+<li><strong>Onglets</strong> : <em>Entités</em> | <em>Groupes</em> | <em>Communications</em>.</li>
+<li><strong>Entités</strong> : liste paginée + <code>AgentInspector</code> au clic (sondage 500 ms).</li>
+<li><strong>Groupes</strong> : <code>GroupList</code> + <code>GroupDetail</code> (membres, rôle, timeline de formation/dissolution).</li>
+<li><strong>Communications</strong> : <code>MessageHeatmap</code> (matrice entité×entité).</li>
+<li><em>Sources</em> : <code>GET /api/groups</code>, <code>/api/beliefs/{agentId}</code>, <code>/api/communication-heatmap</code>.</li>
+</ul>
+<h3 id="23-écran-c--graphe-social-social-graph">2.3 Écran C — Graphe social (<code>/social-graph</code>)</h3>
+<ul>
+<li>Vue <strong>force-directed D3</strong> 2D/3D : nœuds = entités, arêtes = relations, couleur/opacité = confiance.</li>
+<li>Sélection d'un nœud → son <code>AgentInspector</code>.</li>
+<li><em>Sources</em> : <code>GET /api/relationships/{agentId}</code>, flux WebSocket (sondage 2 s).</li>
+</ul>
+<h3 id="24-écran-d--analyse--causalité-analysis">2.4 Écran D — Analyse &amp; causalité (<code>/analysis</code>)</h3>
+<ul>
+<li><strong>Vue métriques</strong> : tous les scores et séries (7 moteurs).</li>
+<li><strong>Vue causale</strong> : graphe des chaînes reconstruites (depuis <code>decision_traces</code>), navigation par profondeur.</li>
+<li><strong>Vue comparaison</strong> : deux runs côte à côte (<code>?a={run1}&amp;b={run2}</code>).</li>
+<li><em>Sources</em> : <code>GET /api/compare</code>, <code>GET /api/runs/{id}/export</code>.</li>
+</ul>
+<h3 id="25-écran-e--pilotage--calibration-control">2.5 Écran E — Pilotage &amp; calibration (<code>/control</code>)</h3>
+<ul>
+<li><strong>SimulationControls</strong> : play / pause / step, vitesse, seed, reset.</li>
+<li><strong>CalibrationForm</strong> : paramètres éditables → ECHOS relaie à SYNE (<code>:5181</code>) — jamais en direct.</li>
+<li><strong>RecordingPanel</strong> : enregistrer / sauvegarder / charger / exporter un run.</li>
+<li><strong>Bandeau d'état</strong> : WebSocket (connecté/reconnexion), tick courant, FPS.</li>
+</ul>
+<h3 id="26-écran-f--journal--limites-log">2.6 Écran F — Journal &amp; limites (<code>/log</code>)</h3>
+<ul>
+<li><strong>Console de débogage</strong> (3 niveaux : structuré / traces / texte — <code>LOGGING_INSTRUMENTATION.md</code>).</li>
+<li><strong>Panneau « limites de validité »</strong> : rappels des interdits et des bornes — le <strong>contrepoint</strong> de l'écran D (cf. <code>LIMITATIONS.md</code>).</li>
+<li><strong>Export</strong> : CSV/JSON (bouton, <code>?every=</code>).</li>
+</ul>
+<hr>
+<h2 id="3-flux-de-navigation">3. Flux de navigation</h2>
+<pre><code class="lang-mermaid">flowchart LR
+    A[Tableau de bord] --&gt;|phénomène| D[Analyse &amp; causalité]
+    A --&gt;|plonge| B[Exploration]
+    B --&gt;|graphe| C[Graphe social]
+    B -.-&gt;|entité| I[AgentInspector\n(sondage 500 ms)]
+    A --&gt;|commande| E[Pilotage &amp; calibration]
+    A --&gt;|doute| F[Journal &amp; limites]
+    D --&gt;|comparer| G[Comparaison\n? a = run1, b = run2]
+    C -.-&gt;|confiance| I
+</code></pre>
+<blockquote>
+<p>Les transitions <code>-.-&gt;</code> sont des <strong>panneaux latéraux</strong> (pas de navigation complète) : l'inspecteur d'entité s'ouvre <strong>sur</strong> le graphe ou la liste sans quitter le contexte.</p>
+</blockquote>
+<h2 id="4-règles-dinterface-rappel-contractuel">4. Règles d'interface (rappel contractuel)</h2>
+<ol>
+<li><strong>Les vues ne calculent pas</strong> : elles affichent ce que l'API REST ECHOS :5000 fournit (message passe à travers, aucune métrique recomputée).</li>
+<li><strong>Piloter = relayer</strong> : play/pause/calibration passent par ECHOS → SYNE :5181 ; un contrôle n'est jamais appliqué en direct au moteur.</li>
+<li><strong>Limites accessibles</strong> : chaque score expose, à un survol/clic, sa zone de non-validité — l'interface ne masque jamais les mises en garde.</li>
+</ol>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Pixel-perfect vs lint visuel (tests snapshot) : choix à trancher en implémentation (phase 6), doc <code>TESTING.md</code> ECHOS.</li>
+<li>Contraste exact des états de graphe D3 à valider avec le rendu PRISM (éclair rouge = Warning, etc. — §5.10 Monographie).</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/UI_DESIGN.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

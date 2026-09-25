@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.Population | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.Population | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Population">
+
+  <h1 id="Simulation_Core_Population" data-uid="Simulation.Core.Population" class="text-break">Namespace Simulation.Core.Population</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Population.BirthObservation.html">BirthObservation</a></h4>
+      <section><p>Événement de naissance par fusion consentie (SYNE-062, SYSTEM_SPEC.md §8).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Population.BirthSystem.html">BirthSystem</a></h4>
+      <section><p>Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17/16,
+SYSTEM_SPEC.md §8, Monographie §6.6.2) : une fusion reste côté cycle de vie,
+l'entité née a un état cognitif vierge qui réinitialise la boucle de vie.</p>
+<p>Exécuté <b>après</b> la boucle des entités et la communication de masse (ordre
+causal strict, DETERMINISM.md §5) : la population ne mute jamais pendant
+l'itération.</p>
+<p>V0.2 : mécanique déterministe sans PRNG —</p>
+<ol><li>une tentative de fusion au plus tous les <code>intervalTicks</code> (rareté,
+ V0.1 → V0.2) ;</li><li>le consentement est la confiance <b>réciproque</b> (min des deux sens)
+ ≥ <code>consentTrustThreshold</code> (§6.6.2) ;</li><li>la fidélité de la fusion (SYNE-075, Monographie §6.6.2) exige en plus :
+ proximité physique (<code>mergeRange</code>), ligne de vue dégagée
+ (<code>requireLineOfSight</code>), énergie suffisante des deux parents
+ (<code>mergeMinimumEnergy</code>) et absence de besoin critique chez les deux
+ parents (<code>requireNoCriticalNeed</code>) ;</li><li>première paire qualifiante dans l'ordre trié des identifiants (moindre
+ id = mère, suivant = père) — aucun choix stochastique ;</li><li>l'enfant naît au point médian des parents (borné au monde), id = plus
+ grand id existant + 1, traits fusionnés (dominance/mutation configurables,
+ SYNE-063) et les parents sont conservés (couple non dissous).</li></ol>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Population.DeathObservation.html">DeathObservation</a></h4>
+      <section><p>Événement de mort par épuisement (SYNE-074, SYSTEM_SPEC.md §8).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Population.DeathSystem.html">DeathSystem</a></h4>
+      <section><p>Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :
+une entité dont l'énergie atteint le seuil fatal (défaut 0 — épuisement) meurt :
+son corps est retiré du monde (grille spatiale + index) et les esprits sont
+purgés de la cognition et des groupes par l'appelant.</p>
+<p>Exécuté <b>après</b> la boucle des entités, la communication de masse et
+naissances (ordre causal strict, DETERMINISM.md §5) : la population ne mute
+jamais pendant l'itération. Déterminisme : itération par ordre d'identifiant,
+aucun tirage du PRNG.</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

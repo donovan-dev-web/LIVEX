@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class TerritoryMembershipChange | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class TerritoryMembershipChange | LIVEX ">
+    
+    <meta name="description" content="Changement d&#39;appartenance &#224; une zone de territoire (SYNE-073) : une entit&#233; a franchi le disque entre deux ticks. Consomm&#233;e par l&#39;&#233;metteur d&#39;observabilit&#233; (&#233;v&#233;nement world.territory_membership_changed). Ordre d&#39;&#233;mission d&#233;terministe : par zone (ordre de pose), par entit&#233; (id croissant).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.World.TerritoryMembershipChange">
+
+
+
+  <h1 id="Simulation_Core_World_TerritoryMembershipChange" data-uid="Simulation.Core.World.TerritoryMembershipChange" class="text-break">Class TerritoryMembershipChange</h1>
+  <div class="markdown level0 summary"><p>Changement d'appartenance à une zone de territoire (SYNE-073) : une entité a
+franchi le disque entre deux ticks. Consommée par l'émetteur d'observabilité
+(événement <code>world.territory_membership_changed</code>). Ordre d'émission
+déterministe : par zone (ordre de pose), par entité (id croissant).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">TerritoryMembershipChange</span></div>
+  </div>
+  <div class="implements">
+    <h5>Implements</h5>
+    <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a>&gt;</div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.World.html">World</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_World_TerritoryMembershipChange_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record TerritoryMembershipChange : IEquatable&lt;TerritoryMembershipChange&gt;</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange__ctor_" data-uid="Simulation.Core.World.TerritoryMembershipChange.#ctor*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange__ctor_Simulation_Core_World_TerritoryMembershipChangeKind_Simulation_Core_World_Territory_System_UInt64_" data-uid="Simulation.Core.World.TerritoryMembershipChange.#ctor(Simulation.Core.World.TerritoryMembershipChangeKind,Simulation.Core.World.Territory,System.UInt64)">TerritoryMembershipChange(TerritoryMembershipChangeKind, Territory, ulong)</h4>
+  <div class="markdown level1 summary"><p>Changement d'appartenance à une zone de territoire (SYNE-073) : une entité a
+franchi le disque entre deux ticks. Consommée par l'émetteur d'observabilité
+(événement <code>world.territory_membership_changed</code>). Ordre d'émission
+déterministe : par zone (ordre de pose), par entité (id croissant).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TerritoryMembershipChange(TerritoryMembershipChangeKind Kind, Territory Zone, ulong EntityId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChangeKind.html">TerritoryMembershipChangeKind</a></td>
+        <td><span class="parametername">Kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Territory.html">Territory</a></td>
+        <td><span class="parametername">Zone</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">EntityId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_EntityId_" data-uid="Simulation.Core.World.TerritoryMembershipChange.EntityId*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_EntityId" data-uid="Simulation.Core.World.TerritoryMembershipChange.EntityId">EntityId</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ulong EntityId { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_Kind_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Kind*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_Kind" data-uid="Simulation.Core.World.TerritoryMembershipChange.Kind">Kind</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TerritoryMembershipChangeKind Kind { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChangeKind.html">TerritoryMembershipChangeKind</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_Zone_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Zone*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_Zone" data-uid="Simulation.Core.World.TerritoryMembershipChange.Zone">Zone</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Territory Zone { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Territory.html">Territory</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_Deconstruct_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Deconstruct*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_Deconstruct_Simulation_Core_World_TerritoryMembershipChangeKind__Simulation_Core_World_Territory__System_UInt64__" data-uid="Simulation.Core.World.TerritoryMembershipChange.Deconstruct(Simulation.Core.World.TerritoryMembershipChangeKind@,Simulation.Core.World.Territory@,System.UInt64@)">Deconstruct(out TerritoryMembershipChangeKind, out Territory, out ulong)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out TerritoryMembershipChangeKind Kind, out Territory Zone, out ulong EntityId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChangeKind.html">TerritoryMembershipChangeKind</a></td>
+        <td><span class="parametername">Kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Territory.html">Territory</a></td>
+        <td><span class="parametername">Zone</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">EntityId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_Equals_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Equals*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_Equals_Simulation_Core_World_TerritoryMembershipChange_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Equals(Simulation.Core.World.TerritoryMembershipChange)">Equals(TerritoryMembershipChange?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Equals(TerritoryMembershipChange? other)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></td>
+        <td><span class="parametername">other</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_Equals_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Equals*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_Equals_System_Object_" data-uid="Simulation.Core.World.TerritoryMembershipChange.Equals(System.Object)">Equals(object?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></td>
+        <td><span class="parametername">obj</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a></div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_GetHashCode_" data-uid="Simulation.Core.World.TerritoryMembershipChange.GetHashCode*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_GetHashCode" data-uid="Simulation.Core.World.TerritoryMembershipChange.GetHashCode">GetHashCode()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int GetHashCode()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a></div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_ToString_" data-uid="Simulation.Core.World.TerritoryMembershipChange.ToString*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_ToString" data-uid="Simulation.Core.World.TerritoryMembershipChange.ToString">ToString()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a></div>
+  <h3 id="operators">Operators
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_op_Equality_" data-uid="Simulation.Core.World.TerritoryMembershipChange.op_Equality*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_op_Equality_Simulation_Core_World_TerritoryMembershipChange_Simulation_Core_World_TerritoryMembershipChange_" data-uid="Simulation.Core.World.TerritoryMembershipChange.op_Equality(Simulation.Core.World.TerritoryMembershipChange,Simulation.Core.World.TerritoryMembershipChange)">operator ==(TerritoryMembershipChange?, TerritoryMembershipChange?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator ==(TerritoryMembershipChange? left, TerritoryMembershipChange? right)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></td>
+        <td><span class="parametername">left</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></td>
+        <td><span class="parametername">right</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_World_TerritoryMembershipChange_op_Inequality_" data-uid="Simulation.Core.World.TerritoryMembershipChange.op_Inequality*"></a>
+  <h4 id="Simulation_Core_World_TerritoryMembershipChange_op_Inequality_Simulation_Core_World_TerritoryMembershipChange_Simulation_Core_World_TerritoryMembershipChange_" data-uid="Simulation.Core.World.TerritoryMembershipChange.op_Inequality(Simulation.Core.World.TerritoryMembershipChange,Simulation.Core.World.TerritoryMembershipChange)">operator !=(TerritoryMembershipChange?, TerritoryMembershipChange?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator !=(TerritoryMembershipChange? left, TerritoryMembershipChange? right)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></td>
+        <td><span class="parametername">left</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></td>
+        <td><span class="parametername">right</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable&lt;T&gt;</a>
+  </div>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/World/Territory.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

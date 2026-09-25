@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>API_REST.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="API_REST.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="api_restmd">API_REST.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>ARCHITECTURE.md</code>, <code>../docs-syne/API_CONTRACTS.md</code>
+<strong>Source Monographie</strong> : §4.7</p>
+<hr>
+<h2 id="1-positionnement">1. Positionnement</h2>
+<p>API REST <strong>locale</strong> d'ECHOS (FastAPI en V0.1 — voir <code>ARCHITECTURE.md</code>), port <strong>5000</strong>. Elle sert l'interface ECHOS (intégrée) et expose les données d'analyse. Elle est distincte du contract de contrôle de SYNE (HTTP :5181) et de transport de SYNE (WS :5180). L'API est <strong>lecture seule</strong> : aucune écriture dans le monde observé (règle d'or §4.10.3, ECHOS-042).</p>
+<h3 id="11-configuration">1.1 Configuration</h3>
+<ul>
+<li>La base d'analyse est fournie à <code>create_app(store)</code> ; à défaut, la variable d'environnement <strong><code>ECHOS_ANALYTICS_DB</code></strong> (chemin du fichier SQLite) est lue.</li>
+<li>Sans base configurée, les routes de données répondent <strong>503</strong> (le contrat reste publié dans l'OpenAPI) — <code>/health</code> et <code>/</code> restent disponibles.</li>
+<li><code>SYNE_CONTROL_URL</code> définit le serveur HTTP SYNE relayé par ECHOS (défaut <code>http://127.0.0.1:5181</code>). Si SYNE <code>--serve</code> est arrêté, les routes de contrôle répondent <strong>503</strong> avec une instruction de démarrage.</li>
+</ul>
+<h2 id="2-les-endpoints-principaux">2. Les endpoints principaux</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Méthode</th>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/health</code></td>
+<td style="text-align: left;">Vérification de santé du service</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/control/status</code></td>
+<td style="text-align: left;">État du serveur SYNE relayé par ECHOS (HTTP :5181)</td>
+</tr>
+<tr>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/api/control/{action}</code></td>
+<td style="text-align: left;">Relais ECHOS→SYNE pour <code>start</code>, <code>pause</code>, <code>resume</code>, <code>stop</code>, <code>reset</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs</code></td>
+<td style="text-align: left;">Liste des runs enregistrés</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs/{id}</code></td>
+<td style="text-align: left;">Métriques complètes du run (dernier tick) + phénomènes</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs/{id}/metrics</code></td>
+<td style="text-align: left;">Séries de métriques (JSON, <code>?engine=</code>, <code>?metric=</code>, <code>?every=N</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs/{id}/export</code></td>
+<td style="text-align: left;">Export des métriques (<code>?format=json\|csv</code>), reproductible</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs/{id}/decisions</code></td>
+<td style="text-align: left;">Traces de décision des entités (analyse causale)</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs/{id}/calibration</code></td>
+<td style="text-align: left;">Rapport déterministe post-run (ticks, événements, métriques), lecture seule</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/runs/{id}/causal-chains/{agentId}</code></td>
+<td style="text-align: left;">Chaîne causale d'une entité (<code>?tick=</code>, <code>?depth=</code> ≤ 12) — jalon ph6</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/beliefs/{agentId}</code></td>
+<td style="text-align: left;">Croyances de l'entité au tick le plus récent</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/relationships/{agentId}</code></td>
+<td style="text-align: left;">Réseau de confiance de l'entité</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/groups</code></td>
+<td style="text-align: left;">Liste des groupes actifs (communautés)</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/emergent-phenomena</code></td>
+<td style="text-align: left;">Phénomènes émergents détectés + disclaimer</td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/compare</code></td>
+<td style="text-align: left;">Comparaison de runs : méta-métriques de reproductibilité + séries comparatives (<code>?run_a=&amp;run_b=&amp;format=json\|csv</code>) — jalon ph7</td>
+</tr>
+</tbody>
+</table>
+<p>(Source : Monographie §4.7.1 — <code>/api/communication-heatmap</code> reste à venir (périmètre UI, hors V0.1).)</p>
+<h2 id="3-contrat-des-réponses-v01-jalons-echos-ph4--ph5">3. Contrat des réponses (V0.1, jalons ECHOS ph4 → ph5)</h2>
+<p>Ordres <strong>déterministes</strong> (aucun PRNG, aucun horodatage d'émission) : runs triés par <code>run_id</code>, séries triées par tick, lignes d'export triées <code>(tick, engine, metric)</code>.</p>
+<h3 id="31-get-apiruns">3.1 <code>GET /api/runs</code></h3>
+<pre><code class="lang-json">{&quot;runs&quot;: [{&quot;run_id&quot;: &quot;run-7&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;seed&quot;: &quot;7&quot;,
+           &quot;ticks_count&quot;: 1200, &quot;first_tick&quot;: 1, &quot;last_tick&quot;: 1200}]}
+</code></pre>
+<p>Sans paramètre <code>run_id</code> sur les endpoints suivants, le <strong>run par défaut</strong> est le plus récent (<code>last_tick</code> maximal, départage <code>run_id</code>).</p>
+<p>L'identité persistée par ECHOS est le <code>runId</code> du snapshot SYNE. Elle est opaque
+et stable pendant le run ; le contrôle HTTP SYNE renvoie ce même identifiant
+pour permettre la corrélation avec les données analytiques.</p>
+<h3 id="32-get-apirunsid">3.2 <code>GET /api/runs/{id}</code></h3>
+<p>Métadonnées + <strong>dernières métriques</strong> de tous les moteurs (<code>{engine: {metric: value}}</code>) + contexte <code>phenomena</code> (<code>detected</code> + <code>disclaimer</code>).</p>
+<h3 id="33-get-apirunsidmetrics">3.3 <code>GET /api/runs/{id}/metrics</code></h3>
+<pre><code class="lang-json">{&quot;run_id&quot;: &quot;run-7&quot;, &quot;engine&quot;: null, &quot;metric&quot;: null, &quot;every&quot;: 1,
+ &quot;ticks&quot;: [1, 2, 3],
+ &quot;values&quot;: {&quot;EmergenceIndicators&quot;: {&quot;EmergenceScore&quot;: [0.5, 0.52, 0.51]}},
+ &quot;latest&quot;: {&quot;EmergenceIndicators&quot;: {&quot;EmergenceScore&quot;: 0.51}}}
+</code></pre>
+<ul>
+<li><code>ticks</code> : union des ticks des séries demandées, <strong>sous-échantillonnés</strong> <code>ticks[::every]</code> (<code>?every=N</code>, <code>N ≥ 1</code> — <code>N = 0</code> → 422) ; <code>values</code> alignées sur <code>ticks</code>.</li>
+<li><code>every = 1</code> (défaut) : série complète ; <code>?engine=</code> / <code>?metric=</code> restreignent <code>values</code>.</li>
+<li>Les séries sont servies par <strong>cache</strong> validé sur <code>AnalyticsStore.ingest_version</code> (invalidation à la première écriture post-cache).</li>
+</ul>
+<h3 id="34-get-apirunsidexportformatjsoncsv">3.4 <code>GET /api/runs/{id}/export?format=json|csv</code></h3>
+<ul>
+<li><code>format=json</code> : <code>{&quot;run_id&quot;, &quot;format&quot;: &quot;json&quot;, &quot;rows&quot;: [{&quot;tick&quot;, &quot;engine&quot;, &quot;metric&quot;, &quot;value&quot;}]}</code> triés <code>(tick, engine, metric)</code>.</li>
+<li><code>format=csv</code> : <strong>RFC 4180</strong> (CRLF), entête <code>run_id,tick,engine,metric,value</code>, mêmes lignes.</li>
+<li><strong>Reproductible</strong> : deux appels à un run inchangé → corps identiques (aucune dépendance temporelle). <code>format</code> inconnu → 400.</li>
+</ul>
+<h3 id="35-get-apibeliefsagentid-et-get-apirelationshipsagentid">3.5 <code>GET /api/beliefs/{agentId}</code> et <code>GET /api/relationships/{agentId}</code></h3>
+<pre><code class="lang-json">{&quot;agent_id&quot;: &quot;A&quot;, &quot;run_id&quot;: &quot;run-7&quot;, &quot;tick&quot;: 1200,
+ &quot;beliefs&quot;: [{&quot;subject&quot;: &quot;water&quot;, &quot;predicate&quot;: &quot;safe&quot;, &quot;value&quot;: &quot;true&quot;, &quot;confidence&quot;: 0.9}],
+ &quot;// ou →&quot;: &quot;trust&quot;: [{&quot;peerId&quot;: &quot;B&quot;, &quot;trust&quot;: 0.7}], &quot;count&quot;: 1}
+</code></pre>
+<p>Croyances / relations de confiance de l'entité <strong>au tick le plus récent</strong> (contexte <code>agents</code> du pipeline). Entité absente → 404. Lecture seule.</p>
+<h3 id="36-get-apigroups-et-get-apiemergent-phenomena">3.6 <code>GET /api/groups</code> et <code>GET /api/emergent-phenomena</code></h3>
+<pre><code class="lang-json">{&quot;run_id&quot;: &quot;run-7&quot;, &quot;tick&quot;: 1200,
+ &quot;groups&quot;: [{&quot;label&quot;: &quot;A&quot;, &quot;members&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;], &quot;size&quot;: 3}]}
+{&quot;run_id&quot;: &quot;run-7&quot;, &quot;tick&quot;: 1200,
+ &quot;phenomena&quot;: [{&quot;identifier&quot;: &quot;InformationBottleneck&quot;, &quot;label&quot;: &quot;…&quot;, &quot;signals&quot;: […]}],
+ &quot;disclaimer&quot;: &quot;ECHOS ne doit jamais transformer une métrique en vérité scientifique…&quot;}
+</code></pre>
+<p>Communautés actives (propagation d'étiquettes) et phénomènes (ECHOS-031) dérivés du contexte écrit à l'ingestion.</p>
+<h3 id="37-get-apirunsiddecisions-jalon-echos-ph5-echos-051">3.7 <code>GET /api/runs/{id}/decisions</code> (jalon ECHOS ph5, ECHOS-051)</h3>
+<pre><code class="lang-json">{&quot;run_id&quot;: &quot;run-7&quot;, &quot;decisions&quot;: [
+  {&quot;tick&quot;: 1, &quot;agent_id&quot;: &quot;A&quot;, &quot;chosen_action&quot;: &quot;SeekFood&quot;,
+   &quot;utility&quot;: 0.75, &quot;deliberated&quot;: true, &quot;interrupted&quot;: false,
+   &quot;cause&quot;: &quot;hunger=30,thirst=20,fatigue=10.5&quot;,
+   &quot;beliefs_count&quot;: 2, &quot;goals_count&quot;: 1, &quot;memory_count&quot;: 8,
+   &quot;needs&quot;: {&quot;hunger&quot;: 30.0, &quot;thirst&quot;: 20.0, &quot;fatigue&quot;: 10.5, &quot;energy&quot;: 50.0}}]
+}
+</code></pre>
+<p>Traces de décision (table <code>decision_traces</code>, schéma v3) — brique de l'analyse
+causale (<code>CAUSAL_ANALYSIS.md</code>). Tri <strong>déterministe</strong> <code>(tick, agent_id)</code> ;
+<strong>reproductible</strong> (deux appels → corps identiques) ; run inconnu → 404.</p>
+<h3 id="38-get-apirunsidcausal-chainsagentid-jalon-echos-ph6-echos-061--echos-063">3.8 <code>GET /api/runs/{id}/causal-chains/{agentId}</code> (jalon ECHOS ph6, ECHOS-061 → ECHOS-063)</h3>
+<pre><code class="lang-json">{&quot;run_id&quot;: &quot;run-7&quot;, &quot;agent_id&quot;: &quot;A&quot;, &quot;tick&quot;: 3, &quot;depth_requested&quot;: 7, &quot;depth_served&quot;: 7,
+ &quot;chain&quot;: [
+   {&quot;layer&quot;: &quot;Action&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;SeekFood&quot;, &quot;detail&quot;: {&quot;utility&quot;: 0.75}},
+   {&quot;layer&quot;: &quot;Intention&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;SeekFood&quot;, &quot;detail&quot;: {}},
+   {&quot;layer&quot;: &quot;Objectif&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;SeekFood&quot;,
+    &quot;detail&quot;: {&quot;kinds&quot;: [&quot;SeekFood&quot;, &quot;Eat&quot;], &quot;goals_count&quot;: 2}},
+   {&quot;layer&quot;: &quot;Besoin&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;hunger (80.0)&quot;,
+    &quot;detail&quot;: {&quot;needs&quot;: {&quot;hunger&quot;: 80.0, &quot;thirst&quot;: 20.0, &quot;fatigue&quot;: 5.0}}},
+   {&quot;layer&quot;: &quot;Croyance&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;2 croyance(s)&quot;,
+    &quot;detail&quot;: {&quot;subjects&quot;: [&quot;food-1&quot;, &quot;water-2&quot;], &quot;beliefs_count&quot;: 2}},
+   {&quot;layer&quot;: &quot;Mémoire&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;4 souvenir(s)&quot;, &quot;detail&quot;: {&quot;memory_count&quot;: 4}},
+   {&quot;layer&quot;: &quot;Perception&quot;, &quot;tick&quot;: 3, &quot;label&quot;: &quot;Information&quot;, &quot;detail&quot;: {&quot;received&quot;: []}}],
+ &quot;cycle&quot;: true,
+ &quot;cycles&quot;: [{&quot;layer&quot;: &quot;Action&quot;, &quot;label&quot;: &quot;SeekFood&quot;, &quot;ticks&quot;: [1, 2]}],
+ &quot;truncated&quot;: false}
+</code></pre>
+<p>Chaîne reconstruite <strong>hors ligne</strong> sur <code>decision_traces</code> + <code>events_log</code> + contexte
+<code>agents</code> (ADR-002 : pas de calcul temps réel) — détails par couche dans
+<code>CAUSAL_ANALYSIS.md</code> §5. <code>tick</code> optionnel (dernière décision de l'entité) ;
+<code>depth</code> ∈ [1, 12] (défaut 7, troncature signalée). <strong>Déterministe</strong> (deux appels
+→ corps identiques) ; réponse servie par le cache <code>CausalCache</code> invalidé sur
+<code>ingest_version</code> (re-run ⇒ re-analyse, ECHOS-063).</p>
+<h3 id="39-get-apicompare-jalon-echos-ph7-echos-070--072">3.9 <code>GET /api/compare</code> (jalon ECHOS ph7, ECHOS-070 → 072)</h3>
+<p>Comparaison de deux runs contrôlés (EXPERIMENT_COMPARISON.md §2, METRICS_SPEC.md §10) :</p>
+<pre><code class="lang-json">{&quot;run_a&quot;: {&quot;run_id&quot;: &quot;run-1&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;seed&quot;: &quot;12345&quot;},
+ &quot;run_b&quot;: {&quot;run_id&quot;: &quot;run-2&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;seed&quot;: &quot;12345&quot;},
+ &quot;same_seed&quot;: true, &quot;same_version&quot;: true, &quot;bit_identical&quot;: true,
+ &quot;is_reproducible&quot;: true, &quot;reproducibility_score&quot;: 1.0,
+ &quot;cognitive_diff&quot;: 0.0, &quot;social_diff&quot;: 0.0,
+ &quot;series&quot;: [...], &quot;format&quot;: &quot;json&quot;}
+</code></pre>
+<ul>
+<li><code>?run_a=</code> / <code>?run_b=</code> (obligatoires) : identifiants de runs ; <code>format</code> ∈ {<code>json</code>, <code>csv</code>} (défaut <code>json</code>).</li>
+<li><code>bit_identical</code> : empreinte <strong>SHA-256</strong> du contenu canonique du run (séries de métriques, résumés de tick, événements, contextes <code>agents</code>/<code>groups</code>/<code>phenomena</code>, traces de décision — sans l'étiquette <code>run_id</code>), <code>echos/analysis/reproducibility.py</code>.</li>
+<li><code>is_reproducible</code> = même <strong>seed</strong> ∩ même <strong>version</strong> du moteur ∩ contenu <strong>bit-à-bit identique</strong> ; <code>reproducibility_score</code> = <code>1.0</code> si reproductible, sinon <code>1.0 − (cognitive_diff + social_diff)/2</code> (définition EXPERIMENT_COMPARISON.md §2.3).</li>
+<li><code>cognitive_diff</code> / <code>social_diff</code> : distances <strong>L2 normalisées</strong> (borne [0, 1]) entre les distributions de croyances, resp. de confiance, de la population au dernier contexte <code>agents</code>.</li>
+<li><code>format=csv</code> : export comparatif aligné (ECHOS-072) — colonnes <code>tick,engine,metric,run_a_value,run_b_value,diff</code> (jointure sur ticks/métriques communs, <code>diff = run_b_value − run_a_value</code>), reproductible (sortie triée).</li>
+<li><strong>Déterministe</strong> : aucun PRNG, aucun horodatage ; les distributions/clés sont triées.</li>
+</ul>
+<h3 id="310-get-apirunsidcalibration-syne-131-u8">3.10 <code>GET /api/runs/{id}/calibration</code> (SYNE-131, U8)</h3>
+<p>Retourne le rapport post-run persisté dans <code>calibration_reports</code> (schéma SQLite v4).
+Le JSON contient les résumés de ticks, statistiques de population et besoins,
+comptes d'événements et statistiques par moteur. Les clés et listes sont triées
+pour garantir un corps reproductible. Le rapport ne contient pas d'horodatage,
+ne modifie pas la configuration ou le monde, et ne déclenche aucun recalibrage
+automatique. Run sans tick ou inconnu : 404.</p>
+<h3 id="311-erreurs">3.11 Erreurs</h3>
+<ul>
+<li><code>404</code> : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent ; entité sans trace de décision (<code>causal-chains</code>).</li>
+<li><code>400</code> : <code>format</code> d'export inconnu ou <code>format</code> de <code>/api/compare</code> hors {<code>json</code>, <code>csv</code>}.</li>
+<li><code>422</code> : <code>every &lt; 1</code>, <code>depth</code> hors [1, 12], <code>run_a</code>/<code>run_b</code> manquants (validation OpenAPI).</li>
+<li><code>503</code> : aucun store configuré (<code>ECHOS_ANALYTICS_DB</code> non défini).</li>
+</ul>
+<h3 id="312-relais-de-contrôle-syne">3.12 Relais de contrôle SYNE</h3>
+<p><code>POST /api/control/{action}</code> relaie les actions <code>start</code>, <code>pause</code>, <code>resume</code>, <code>stop</code>
+et <code>reset</code> vers le client HTTP SYNE. Les payloads <code>seed</code>, <code>config</code>, <code>maxTicks</code> et
+<code>runId</code> sont transmis sans être interprétés par ECHOS. <code>GET /api/control/status</code>
+relaie l’état du serveur. Le navigateur ne contacte jamais directement le port
+5181 ; l’API relaie les requêtes. Si le serveur est inaccessible, ECHOS retourne
+503 et indique de lancer SYNE avec <code>--serve</code>.</p>
+<p>Le mode serveur <code>--serve</code> expose à la fois le contrôle HTTP (<code>:5181</code>) et le flux
+WebSocket (<code>:5180</code>). Sans <code>maxTicks</code>, un run démarré par <code>start</code> continue jusqu'à
+une commande <code>pause</code>, <code>stop</code>, <code>reset</code> ou l'arrêt du processus SYNE.</p>
+<h2 id="4-la-diffusion-temps-réel">4. La diffusion temps réel</h2>
+<ul>
+<li>Prototype : ECHOS diffusait les métriques en temps réel via WebSocket (<code>ws://localhost:5180/metrics</code>) vers l'interface.</li>
+<li><strong>V0.1</strong> : l'interface étant <strong>intégrée à ECHOS</strong>, cette diffusion alimente directement les vues d'analyse (consommation temps réel des <code>snapshot</code>/<code>event</code> de SYNE + métriques calculées en ligne).</li>
+</ul>
+<h2 id="5-loptimisation">5. L'optimisation</h2>
+<ul>
+<li><strong>Agrégation incrémentale</strong> : les métriques sont calculées à chaque snapshot <strong>au moment de l'ingestion</strong> (<code>consume()</code> → <code>analysis.compute_all</code>) et persistées dans <code>tick_metrics</code> — aucun recalcul complet à la lecture (ECHOS ph4). Depuis ph5, le coût par moteur est aussi tracé (contexte <code>profiling</code>, ECHOS-052) et les <code>decision_made</code> alimentent <code>decision_traces</code>. Le contexte <code>agents</code> reste servi aux vues lecture seule (croyances/relations).</li>
+<li><strong>Cache de séries</strong> : <code>SeriesCache</code> LRU <strong>borné</strong> (256 entrées, thread-safe) ; les séries par run sont réutilisées et <strong>invalidées sur <code>ingest_version</code></strong> (écriture d'un nouveau tick/contexte), pas sur le temps (ECHOS-044). Depuis ph6, les chaînes causales passent par un <strong><code>CausalCache</code></strong> LRU de même sémantique (ECHOS-063).</li>
+<li><strong>Parallélisation</strong> : les calculs lourds (co-localisation O(n²), plus proche ressource) sont parallélisés.</li>
+<li><strong>Sous-échantillonnage</strong> : <code>--sample-every=N</code> pour ne garder que 1 snapshot sur N à l'ingestion ; <code>?every=N</code> pour retourner des séries sous-échantillonnées à la lecture.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li><code>/api/communication-heatmap</code> (périmètre UI) n'est pas implémenté en V0.1.</li>
+<li>Compatibilité de versionnage des réponses à aligner sur <code>VERSIONING.md</code> (évolutions additives = MINOR).</li>
+</ul>
+<h3 id="310-get-apirunsidcalibration-syne-131-u8-1">3.10 <code>GET /api/runs/{id}/calibration</code> (SYNE-131, U8)</h3>
+<p>Retourne le rapport post-run persisté dans <code>calibration_reports</code> (schéma SQLite v4).
+Le JSON contient les résumés de ticks, statistiques de population et besoins,
+comptes d'événements et statistiques par moteur. Les clés et listes sont triées
+pour garantir un corps reproductible. Le rapport ne contient pas d'horodatage,
+ne modifie pas la configuration ou le monde, et ne déclenche aucun recalibrage
+automatique. Run sans tick ou inconnu : 404.</p>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/API_REST.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

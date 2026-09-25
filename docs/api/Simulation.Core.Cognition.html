@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.Cognition | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.Cognition | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition">
+
+  <h1 id="Simulation_Core_Cognition" data-uid="Simulation.Core.Cognition" class="text-break">Namespace Simulation.Core.Cognition</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Cognition.AgentFactors.html">AgentFactors</a></h4>
+      <section><p>Facteurs de personnalité issus des traits (plage 0-2, neutre 1.0) — entrée
+de la formule d'utilité (COGNITIVE_ARCHITECTURE.md §6).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.Belief.html">Belief</a></h4>
+      <section><p>Croyance : interprétation d'un fait avec une confiance 0-1, une source et un
+cycle de vie (création → confirmation → conflit → décroissance → expiration).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.BeliefRevision.html">BeliefRevision</a></h4>
+      <section><p>Révision des croyances (décision n°12, SYNE-014) :
+<code>belief = belief + (signal − belief) × strength</code>, avec plafond de
+variation par snap (« plafond par snap » : un signal trompeur ne peut pas
+inverser une croyance forte d'un coup).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.BeliefSet.html">BeliefSet</a></h4>
+      <section><p>Ensemble de croyances d'une entité, indexé par fait (ProductName de
+comparaison ordinale). Les croyances expirent (plafond 0.4) et décroissent
+temporellement (DATA_MODEL.md §6, COGNITIVE_ARCHITECTURE.md §4).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></h4>
+      <section><p>État des besoins d'une entité (DATA_MODEL.md §7, décision n°3) :
+6 besoins (faim, soif, fatigue 0-100 ; sécurité, social, curiosité 0-1)</p>
+<ul>
+<li>énergie (0-100). Dérive par tick selon les taux configurables.</li>
+</ul>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.CognitionPipeline.html">CognitionPipeline</a></h4>
+      <section><p>Pipeline cognitif BDI (SYNE-010, COGNITIVE_ARCHITECTURE.md §2) exécuté à
+chaque tick dans l'ordre causal strict (DETERMINISM.md §5) :
+perception → mémoire → croyances → besoins → objectifs → faisabilité →
+utilité → délibération → intention → action (« boucle 10/15 étapes », jalon U1).</p>
+<p>Depuis le jalon ph4, l'exécution des actions sort du pipeline : elle est
+confiée au catalogue déclaratif + exécuteur atomique (SYNE-040/041/042) et
+les interruptions au déclencheur centralisé (SYNE-043).</p>
+<p>Déterminisme : aucune consommation du PRNG (l'avance du générateur reste à
+un tirage par tick), ordre d'itération par identifiant croissant, cibles de
+déplacement pseudo-aléatoires déterministes (hash stable), agrégats en
+représentation invariante à la culture.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.DecisionRecord.html">DecisionRecord</a></h4>
+      <section><p>Trace complète d'une décision (COGNITIVE_ARCHITECTURE.md §7, SYNE-031/032/033) :
+tick, entité, scores d'utilité par action candidate, action choisie, et les
+drapeaux de délibération (fréquence configurable) et d'interruption (besoin
+critique). Base de l'analyse causale ECHOS et de l'observabilité.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.DesireFactory.html">DesireFactory</a></h4>
+      <section><p>Générateur d'objectifs : un désir est créé quand son besoin passe son seuil
+(SYNE-042, décision n°4 : déclenchement dès « ≥ 50 ») et qu'aucun objectif du
+même type n'est actif. Pour faim/soif, le désir engendré est l'action terminale
+<a class="xref" href="Simulation.Core.Cognition.DesireKind.html#Simulation_Core_Cognition_DesireKind_Eat">Eat</a>/<a class="xref" href="Simulation.Core.Cognition.DesireKind.html#Simulation_Core_Cognition_DesireKind_Drink">Drink</a> si la réserve globale
+correspondante est disponible, sinon le <a class="xref" href="Simulation.Core.Cognition.DesireKind.html#Simulation_Core_Cognition_DesireKind_SeekFood">SeekFood</a>/
+<a class="xref" href="Simulation.Core.Cognition.DesireKind.html#Simulation_Core_Cognition_DesireKind_SeekWater">SeekWater</a> de poursuite (catalogue, SYNE-040) — le
+déclencheur est donc viable par construction.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.Inheritance.html">Inheritance</a></h4>
+      <section><p>Héritage intergénérationnel (SYNE-020, décision n°16, DATA_MODEL.md §6.6) :
+la naissance repose sur la <strong>fusion consentie</strong> des entités parentes et
+transmet les <strong>traits</strong> et le <strong>savoir</strong> (mémoire intergénérationnelle +
+croyances) à l'entité née.</p>
+<p>La structure est figée (décision n°16) ; les paramètres fins (réadaptation,
+dominance, mutation, seuil de salience) restent configurables
+(<a class="xref" href="Simulation.Core.Configuration.InheritanceSettings.html">InheritanceSettings</a>, SYNE-063 — §6.6.3, V0.2).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.Memory.html">Memory</a></h4>
+      <section><p>Mémoire (court/long terme) : décroissance exponentielle de la salience
+<code>salience(t) = salience(0) × exp(−decayRate × (t − storedAt))</code>, seuil
+d'oubli (défaut 0.01), capacité (défaut 1000) avec éviction de l'élément le
+moins saillant, decay par catégorie 0.01/0.005/0.002 (décision n°11, SYNE-013).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.MemoryEntry.html">MemoryEntry</a></h4>
+      <section><p>Souvenir : source, catégorie, contenu, confiance, horodatage (décision n°11).
+Le contenu est une chaîne canonique (papier déterministe, pas d'objet mutable).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a></h4>
+      <section><p>État cognitif d'une entité (DATA_MODEL.md §3.1 : perception, mémoire,
+croyances, décision) : mémoire, croyances, besoins, intention et trace de
+décision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md §7).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.PriorityConflictResolver.html">PriorityConflictResolver</a></h4>
+      <section><p>Résolution probabiliste des conflits de priorités (SYNE-033, décision n°22,
+SYSTEMS_SPEC.md §5) : quand plusieurs candidats se disputent le maximum
+d'utilité (marge <code>conflictTieMargin</code>), le vainqueur est tiré selon la
+<b>force × confiance</b> de chaque désir — <code>p = force × confidence / Σ</code> —
+sans aucun arbitraire d'ancienneté.</p>
+<p>Déterminisme : le tirage dérive d'un hash SplitMix64 stable de
+(entityId, tick, kinds) — aucune consommation du PRNG global ; à force nulle
+des deux côtés, l'ordre du catalogue (stable) tranche.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.Relationships.html">Relationships</a></h4>
+      <section><p>Rapport inter-entités (décision n°10, COMMUNICATION_PROTOCOL.md §3,
+DATA_MODEL.md — table « relationships ») : niveau de confiance 0-1 envers
+chaque pair connu.</p>
+<ul><li><b>Décroissance</b> : en l'absence d'interaction dans la tickée, la
+ confiance est multipliée par <code>decayFactor</code> (défaut 0.9, trustDecay) ;</li><li><b>Vérité constatée</b> : la confiance augmente (bonus de véracité) ;</li><li><b>Mensonge constaté</b> : la confiance est pénalisée (pénalité de tromperie).</li></ul>
+<p>Déterminisme : toutes les opérations sont commutatives et les itérations
+s'effectuent sur des listes triées par identifiant de pair.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.UtilityEvaluator.html">UtilityEvaluator</a></h4>
+      <section><p>Évaluateur d'utilité (COGNITIVE_ARCHITECTURE.md §6, décision n°13) :
+<code>U = (benefit − cost − risk) × confidence × personalityModifier + urgency</code>.
+Bonus d'alignement ×1.2 si l'action rejoint l'objectif courant ; sélection par
+utilité maximale, départage déterministe par ordre du catalogue (SYNE-030).</p>
+</section>
+    <h3 id="structs">
+Structs
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Cognition.Fact.html">Fact</a></h4>
+      <section><p>Fait : (subject, predicate, value) — DATA_MODEL.md §6. Les trois champs sont
+comparés sur leur valeur ordinale (insensible à la culture).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.Goal.html">Goal</a></h4>
+      <section><p>État recherché (objectif) né d'un besoin non satisfait (COGNITIVE_ARCHITECTURE.md §5).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.GroupObjective.html">GroupObjective</a></h4>
+      <section><p>Objectif collectif adopté par un groupe et propagé à ses membres (SYNE-076,
+SYSTEM_SPEC.md §5 décision n°24) : l'intention dominante du groupe devient un
+facteur d'alignement de l'utilité individuelle, pondéré par le consensus
+atteint et la confiance du membre envers le leader émergent. La durée de vie
+de l'objectif est l'intervalle de revue des groupes (TTL, ré-adopté à chaque
+révision).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.MemoryRecall.html">MemoryRecall</a></h4>
+      <section><p>Élément rappelé avec sa salience courante.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a></h4>
+      <section><p>Score d'utilité d'une action candidate (décision n°13, SYNE-010).</p>
+</section>
+    <h3 id="enums">
+Enums
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></h4>
+      <section><p>Les 6 désirs V0.1 (DATA_MODEL.md §7) + Idle, puis les actions terminales de
+besoin Eat/Drink (SYNE-042, décision n°4). Chaque désir découle d'un besoin
+non satisfait (objectif = état recherché, COGNITIVE_ARCHITECTURE.md §5).</p>
+<ul><li>Les valeurs existantes (0-6) ne changent jamais : l'ordre du catalogue
+   est stable pour le départage déterministe (décision n°22, DETERMINISM.md §5).</li><li>Eat/Drink (7-8) : actions terminales immédiates, non persistantes
+   (exécutées tant que le besoin est déclenché, jamais en holdover).</li></ul>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Cognition.MemoryCategory.html">MemoryCategory</a></h4>
+      <section><p>Catégorie d'un souvenir — décision n°11 (COGNITIVE_ARCHITECTURE.md §4,
+DATA_MODEL.md §5). Chaque catégorie a sa propre vitesse de décroissance.</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

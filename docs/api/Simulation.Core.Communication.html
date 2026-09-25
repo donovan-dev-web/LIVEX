@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.Communication | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.Communication | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Communication">
+
+  <h1 id="Simulation_Core_Communication" data-uid="Simulation.Core.Communication" class="text-break">Namespace Simulation.Core.Communication</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Communication.CommunicationState.html">CommunicationState</a></h4>
+      <section><p>État de communication d'une entité (COMMUNICATION_PROTOCOL.md §7) : file
+sortante (bornée par <code>maxSendsPerTick</code>), file entrante (bornée par
+<code>maxReceivesPerTick</code>) et ensemble &quot;déjà relayé&quot; anti-boucle.</p>
+<p>V0.1 : la file entrante est consommée comme trace d'activité du tick (la
+révision des croyances par messages arrive avec l'analyse/les besoins
+sociaux) — la réception ajuste la confiance par la matrice de relations et
+marque l'interaction (COMMUNICATION_PROTOCOL.md §7).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Communication.CommunicationSystem.html">CommunicationSystem</a></h4>
+      <section><p>Système de communication par pulsations lumineuses publiques (SYNE-050 → 054,
+COMMUNICATION_PROTOCOL.md, décisions n°7-10). Exécuté en <strong>une passe par tick</strong>
+(<code>performance.batchCommunication</code>, PERFORMANCE.md) après le pipeline
+cognitif, dans un ordre causal strict :</p>
+<ol><li><b>Diffusion</b> : chaque entité (identifiant croissant) émet ses
+ messages sortants (cap <code>maxSendsPerTick</code>) — portée
+ <code>transmissionRange</code> + ligne de vue ; toute entité dans la portée reçoit,
+ quelle que soit la cible (publicité, interception — décision n°8).</li><li><b>Relais</b> : chaque entité relaye les messages compris (cap partagé
+ avec les envois) tant que <code>hops &lt; maxHops</code>, avec dégradation de
+ confiance <code>× hopConfidenceDecay</code> (10 %/hop — décision n°10).</li></ol>
+<p>Coûts énergétiques (décision n°9) : envoi <code>sendEnergyCost + payload ×
+sendEnergyPayloadFactor</code>, réception <code>receiveEnergyCost + payload ×
+receiveEnergyPayloadFactor</code>, appliqués via <code>BodyNeeds.ExertEnergy</code>.</p>
+<p>Déterminisme : aucun tirage du PRNG global ; l'incompréhension (5 %) et les
+identifiants de message dérivent de hash SplitMix64 stables (DETERMINISM.md §3).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Communication.Message.html">Message</a></h4>
+      <section><p>Message échangé par pulsation (COMMUNICATION_PROTOCOL.md §3) :
+<code>MessageId | SenderId | Type | Payload | Confidence | Hops | Timestamp(tick)</code>.</p>
+<ul><li><b>Confidence</b> : confiance de transmission du message, dégradée de
+ 10 %/hop à chaque relais (décision n°10). La confiance du récepteur envers
+ l'émetteur ajuste la confiance à la réception (COMMUNICATION_PROTOCOL.md §7).</li><li><b>Hops</b> : nombre de relais déjà effectués (bordures par <code>maxHops</code>).</li></ul>
+<p>Déterminisme : le <code>MessageId</code> est un hash stable (SplitMix64) de
+(senderId, tick, séquence) — pas de dépendance au PRNG global (DETERMINISM.md §3).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Communication.MessageReceived.html">MessageReceived</a></h4>
+      <section><p>Réception d'un message (y compris interception — toute entité dans la portée reçoit).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Communication.MessageSent.html">MessageSent</a></h4>
+      <section><p>Activité de communication d'un tick — alimente l'observabilité
+(<code>message_sent</code> / <code>message_received</code>, API_CONTRACTS.md §2.2)
+et les traces pour ECHOS (heatmap de communication, NetworkCentrality...).</p>
+</section>
+    <h3 id="enums">
+Enums
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Communication.MessageType.html">MessageType</a></h4>
+      <section><p>Les 7 types de messages (COMMUNICATION_PROTOCOL.md §2, Monographie §3.16) :
+Information, Request, Response, Announcement, Warning, Trading, Acknowledgement.</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

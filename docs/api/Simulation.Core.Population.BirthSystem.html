@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class BirthSystem | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class BirthSystem | LIVEX ">
+    
+    <meta name="description" content="Cycle de vie — naissance par fusion consentie (SYNE-062/075, d&#233;cisions n&#176;17/16, SYSTEM_SPEC.md &#167;8, Monographie &#167;6.6.2) : une fusion reste c&#244;t&#233; cycle de vie, l&#39;entit&#233; n&#233;e a un &#233;tat cognitif vierge qui r&#233;initialise la boucle de vie. Ex&#233;cut&#233; apr&#232;s la boucle des entit&#233;s et la communication de masse (ordre causal strict, DETERMINISM.md &#167;5) : la population ne mute jamais pendant l&#39;it&#233;ration. V0.2 : m&#233;canique d&#233;terministe sans PRNG — une tentative de fusion au plus tous les intervalTicks (raret&#233;,  V0.1 → V0.2) ;le consentement est la confiance r&#233;ciproque (min des deux sens)  ≥ consentTrustThreshold (&#167;6.6.2) ;la fid&#233;lit&#233; de la fusion (SYNE-075, Monographie &#167;6.6.2) exige en plus :  proximit&#233; physique (mergeRange), ligne de vue d&#233;gag&#233;e  (requireLineOfSight), &#233;nergie suffisante des deux parents  (mergeMinimumEnergy) et absence de besoin critique chez les deux  parents (requireNoCriticalNeed) ;premi&#232;re paire qualifiante dans l&#39;ordre tri&#233; des identifiants (moindre  id = m&#232;re, suivant = p&#232;re) — aucun choix stochastique ;l&#39;enfant na&#238;t au point m&#233;dian des parents (born&#233; au monde), id = plus  grand id existant + 1, traits fusionn&#233;s (dominance/mutation configurables,  SYNE-063) et les parents sont conserv&#233;s (couple non dissous).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Population.BirthSystem">
+
+
+
+  <h1 id="Simulation_Core_Population_BirthSystem" data-uid="Simulation.Core.Population.BirthSystem" class="text-break">Class BirthSystem</h1>
+  <div class="markdown level0 summary"><p>Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17/16,
+SYSTEM_SPEC.md §8, Monographie §6.6.2) : une fusion reste côté cycle de vie,
+l'entité née a un état cognitif vierge qui réinitialise la boucle de vie.</p>
+<p>Exécuté <b>après</b> la boucle des entités et la communication de masse (ordre
+causal strict, DETERMINISM.md §5) : la population ne mute jamais pendant
+l'itération.</p>
+<p>V0.2 : mécanique déterministe sans PRNG —</p>
+<ol><li>une tentative de fusion au plus tous les <code>intervalTicks</code> (rareté,
+ V0.1 → V0.2) ;</li><li>le consentement est la confiance <b>réciproque</b> (min des deux sens)
+ ≥ <code>consentTrustThreshold</code> (§6.6.2) ;</li><li>la fidélité de la fusion (SYNE-075, Monographie §6.6.2) exige en plus :
+ proximité physique (<code>mergeRange</code>), ligne de vue dégagée
+ (<code>requireLineOfSight</code>), énergie suffisante des deux parents
+ (<code>mergeMinimumEnergy</code>) et absence de besoin critique chez les deux
+ parents (<code>requireNoCriticalNeed</code>) ;</li><li>première paire qualifiante dans l'ordre trié des identifiants (moindre
+ id = mère, suivant = père) — aucun choix stochastique ;</li><li>l'enfant naît au point médian des parents (borné au monde), id = plus
+ grand id existant + 1, traits fusionnés (dominance/mutation configurables,
+ SYNE-063) et les parents sont conservés (couple non dissous).</li></ol>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">BirthSystem</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Population.html">Population</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Population_BirthSystem_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class BirthSystem</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Population/BirthSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Population_BirthSystem__ctor_" data-uid="Simulation.Core.Population.BirthSystem.#ctor*"></a>
+  <h4 id="Simulation_Core_Population_BirthSystem__ctor_Simulation_Core_Configuration_ReproductionSettings_" data-uid="Simulation.Core.Population.BirthSystem.#ctor(Simulation.Core.Configuration.ReproductionSettings)">BirthSystem(ReproductionSettings)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BirthSystem(ReproductionSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ReproductionSettings.html">ReproductionSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Population/BirthSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Population_BirthSystem_LastBirths_" data-uid="Simulation.Core.Population.BirthSystem.LastBirths*"></a>
+  <h4 id="Simulation_Core_Population_BirthSystem_LastBirths" data-uid="Simulation.Core.Population.BirthSystem.LastBirths">LastBirths</h4>
+  <div class="markdown level1 summary"><p>Naissances du tick courant (au plus <code>maxBirthsPerTick</code>, ordre d'identifiant).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;BirthObservation&gt; LastBirths { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Population.BirthObservation.html">BirthObservation</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Population/BirthSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Population_BirthSystem_NewbornMinds_" data-uid="Simulation.Core.Population.BirthSystem.NewbornMinds*"></a>
+  <h4 id="Simulation_Core_Population_BirthSystem_NewbornMinds" data-uid="Simulation.Core.Population.BirthSystem.NewbornMinds">NewbornMinds</h4>
+  <div class="markdown level1 summary"><p>Esprits des nouveaux-nés du tick (à fusionner dans le pipeline).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyDictionary&lt;ulong, MindState&gt; NewbornMinds { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>, <a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Population/BirthSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Population_BirthSystem_Settings_" data-uid="Simulation.Core.Population.BirthSystem.Settings*"></a>
+  <h4 id="Simulation_Core_Population_BirthSystem_Settings" data-uid="Simulation.Core.Population.BirthSystem.Settings">Settings</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReproductionSettings Settings { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ReproductionSettings.html">ReproductionSettings</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Population/BirthSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Population_BirthSystem_Step_" data-uid="Simulation.Core.Population.BirthSystem.Step*"></a>
+  <h4 id="Simulation_Core_Population_BirthSystem_Step_System_UInt64_Simulation_Core_World_World_System_Collections_Generic_IReadOnlyDictionary_System_UInt64_Simulation_Core_Cognition_MindState__Simulation_Core_Configuration_SimulationOptions_" data-uid="Simulation.Core.Population.BirthSystem.Step(System.UInt64,Simulation.Core.World.World,System.Collections.Generic.IReadOnlyDictionary{System.UInt64,Simulation.Core.Cognition.MindState},Simulation.Core.Configuration.SimulationOptions)">Step(ulong, World, IReadOnlyDictionary&lt;ulong, MindState&gt;, SimulationOptions)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Step(ulong tick, World world, IReadOnlyDictionary&lt;ulong, MindState&gt; minds, SimulationOptions options)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>, <a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a>&gt;</td>
+        <td><span class="parametername">minds</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></td>
+        <td><span class="parametername">options</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Population/BirthSystem.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

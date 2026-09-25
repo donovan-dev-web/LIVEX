@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>API_CONTRACTS.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="API_CONTRACTS.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="api_contractsmd">API_CONTRACTS.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>../COMMUNICATION.md</code>, <code>DATA_MODEL.md</code>
+<strong>Source Monographie</strong> : §2.4 (contrats de transport), §5.4 (PRISM), §3.24 (événements), ADR-003/ADR-004</p>
+<hr>
+<h2 id="1-objectif">1. Objectif</h2>
+<p>Définit les <strong>contrats de données</strong> exposés par SYNE — ils sont la langue commune entre SYNE, ECHOS et PRISM. Toute évolution est gérée par <code>../../VERSIONING.md</code>.</p>
+<h2 id="2-contrat-temps-réel--websocket-5180">2. Contrat temps réel — WebSocket 5180</h2>
+<p>Transport : WebSocket local, <strong>trames texte UTF-8 contenant du JSON</strong> (<code>camelCase</code>).
+SYNE envoie <code>WebSocketMessageType.Text</code>, jamais une trame binaire. Deux types de
+messages (Monographie §5.4.1) :</p>
+<p><code>runId</code> dans les snapshots est l'identité de contenu consommée par ECHOS. Elle
+est opaque et stable pendant le run (le mode batch peut utiliser <code>run-&lt;seed&gt;</code>).
+La réponse HTTP à <code>start</code>/<code>status</code> expose ce même identifiant pour permettre au
+client de corréler le pilotage et le flux.</p>
+<blockquote>
+<p><strong>Implémentation V0.1 (SYNE-080, livré avec U1)</strong> : émetteur BCL (HttpListener + <code>AcceptWebSocketAsync</code>,
+zéro dépendance) dans <code>Simulation.Console</code>, activé par <code>--observe</code> (port <code>--observe-port</code>, défaut 5180,
+bind <code>127.0.0.1</code>). Chaque tick émet <strong>1 snapshot + 1 <code>tick_summary</code> + 1 <code>decision_made</code> + 1
+<code>action_completed</code> par entité, + événements de communication dès qu'un message circule</strong>,
+diffusion à <strong>tous</strong> les consommateurs connectés. L'émission
+n'ajoute aucun tirage PRNG (déterminisme inchangé, DETERMINISM.md §3).</p>
+</blockquote>
+<h3 id="21-snapshot--worldsnapshot">2.1 <code>snapshot</code> — WorldSnapshot</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Champ</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>version</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Version du contrat (SemVer)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>engineVersion</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Version du moteur (DETERMINISM.md §3.6.2) — identifie les règles du run</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>runId</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Identifiant du run</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tick</code></td>
+<td style="text-align: left;">uint</td>
+<td style="text-align: left;">Numéro de tick courant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>simulatedTimeMinutes</code></td>
+<td style="text-align: left;">uint</td>
+<td style="text-align: left;">Temps simulé (minutes)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>aliveCount</code></td>
+<td style="text-align: left;">uint</td>
+<td style="text-align: left;">Entités vivantes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents[]</code></td>
+<td style="text-align: left;">array</td>
+<td style="text-align: left;">État des entités (position, santé, énergie, faim, soif, action courante...)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources[]</code></td>
+<td style="text-align: left;">array</td>
+<td style="text-align: left;">Réserves globales <code>{type, quantity}</code> — 4 types depuis <strong>SYNE ph7c</strong> (food, water, wood, <strong>mineral</strong>) (DATA_MODEL §8.1)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>obstacles[]</code></td>
+<td style="text-align: left;">array</td>
+<td style="text-align: left;">Constructions/obstacles statiques <code>{id, x, y, radius}</code> — depuis <strong>SYNE ph11d</strong> (SYNE-071), ordre d'insertion (déterminisme) (DATA_MODEL §2)</td>
+</tr>
+</tbody>
+</table>
+<p>Exemple (format condensé) :</p>
+<pre><code class="lang-json">{ &quot;type&quot;: &quot;snapshot&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;engineVersion&quot;: &quot;0.11.0&quot;, &quot;runId&quot;: &quot;run-abc&quot;,
+  &quot;tick&quot;: 5010, &quot;simulatedTimeMinutes&quot;: 5010, &quot;aliveCount&quot;: 98, &quot;season&quot;: &quot;spring&quot;, &quot;seasonIndex&quot;: 0,
+  &quot;agents&quot;: [ { &quot;id&quot;: &quot;a1&quot;, &quot;position&quot;: {&quot;x&quot;: 53.0, &quot;y&quot;: 76.5}, &quot;health&quot;: 80,
+                &quot;energy&quot;: 60, &quot;hunger&quot;: 30, &quot;thirst&quot;: 40, &quot;currentAction&quot;: &quot;MoveTo&quot; } ],
+  &quot;resources&quot;: [ { &quot;type&quot;: &quot;food&quot;, &quot;quantity&quot;: 90 }, { &quot;type&quot;: &quot;water&quot;, &quot;quantity&quot;: 912 },
+                  { &quot;type&quot;: &quot;wood&quot;, &quot;quantity&quot;: 50 }, { &quot;type&quot;: &quot;mineral&quot;, &quot;quantity&quot;: 0 } ],
+  &quot;obstacles&quot;: [ { &quot;id&quot;: &quot;maison-1&quot;, &quot;x&quot;: 100.0, &quot;y&quot;: 100.0, &quot;radius&quot;: 10.0 } ],
+  &quot;territories&quot;: [ { &quot;id&quot;: &quot;camp&quot;, &quot;x&quot;: 250.0, &quot;y&quot;: 250.0, &quot;radius&quot;: 40.0, &quot;memberCount&quot;: 12,
+                     &quot;members&quot;: [1, 2, 3, 4, 5] } ],
+  &quot;groups&quot;: [ { &quot;groupId&quot;: 1, &quot;members&quot;: [&quot;a1&quot;, &quot;a2&quot;, &quot;a3&quot;], &quot;size&quot;: 3,
+                &quot;leaderId&quot;: &quot;a1&quot;, &quot;bornTick&quot;: 5000, &quot;cohesion&quot;: 0.42,
+                &quot;decision&quot;: &quot;SeekFood&quot;, &quot;consensus&quot;: 0.80 } ] }
+</code></pre>
+<blockquote>
+<p>V0.1 émet par entité : <code>id</code> (uint), <code>species</code>, <code>position{x,y}</code>, <code>energy</code>, <code>hunger</code>, <code>thirst</code>, <code>fatigue</code>,
+<code>currentAction</code> (intention <code>DesireKind</code>, ex. <code>Idle</code>, <code>SeekWater</code>) ; <code>runId</code> = <code>run-&lt;seed&gt;</code> ;
+<code>engineVersion</code> = <code>0.11.0</code> (jalon U8 — livres, SYNE-121 : <code>world.book_written</code> / <code>world.book_read</code> +
+champ <code>books[]</code> du snapshot, <strong>additifs</strong> MINOR ; les ajouts précédents de saisons/territoires restent actifs). Les champs <code>season</code>/<code>seasonIndex</code>
+(SYNE-072) donnent la saison courante (nom camelCase + index 0..3, déterministe depuis le tick).
+Le champ <code>territories[]</code> (SYNE-073, présent seulement si <code>world.territories.enabled</code>) liste les
+zones « points de survie » suivies <code>{id, x, y, radius, memberCount, members[]}</code> : la <strong>présence</strong>
+des entités délimite le territoire effectif (décision n°21) — <code>members[]</code> par identifiant
+croissant, suivi déterministe 0 PRNG (DETERMINISM.md §3).
+Les champs <code>obstacles[]</code>
+(SYNE-071, ajout <strong>additif</strong>, MINOR) listent les constructions/obstacles du monde au tick :
+<code>{id, x, y, radius}</code>, ordre d'insertion stable. Le champ <code>groups[]</code>
+(syne-060/061, ajout <strong>additif</strong>, MINOR) liste les groupes actifs au tick : <code>groupId</code>,
+<code>members[]</code>, <code>size</code>, <code>leaderId</code>, <code>bornTick</code>, <code>cohesion</code> (cohésion moyenne au dernier LOD),
+<code>decision</code>/<code>consensus</code> (dernière décision collective, <code>SYSTEMS_SPEC</code> §5).</p>
+</blockquote>
+<h3 id="22-event--externalevent">2.2 <code>event</code> — ExternalEvent</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Champ</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>type</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Type d'événement (<code>decision_made</code>, <code>action_completed</code>, <code>tick_summary</code>, <code>agent_spawned</code>, <code>agent_died</code>, <code>message_sent</code>, <code>message_received</code>, <code>group_formed</code>, <code>group_dissolved</code>, <code>group_decision</code>, <code>world.construction_placed</code>, <code>world.construction_removed</code>, <code>world.season_changed</code>, <code>world.territory_membership_changed</code>, <code>world.book_written</code>, <code>world.book_read</code>, <code>conflict</code>...)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>tick</code></td>
+<td style="text-align: left;">uint</td>
+<td style="text-align: left;">Tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agentId?</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Entité concernée</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>targetId?</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Cible</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>action?</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Action (le cas échéant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cause?</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Cause</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>value?</code></td>
+<td style="text-align: left;">object</td>
+<td style="text-align: left;">Valeur contextuelle (détails)</td>
+</tr>
+</tbody>
+</table>
+<p>Exemple :</p>
+<pre><code class="lang-json">{ &quot;type&quot;: &quot;decision_made&quot;, &quot;tick&quot;: 5010, &quot;agentId&quot;: &quot;a1&quot;,
+  &quot;action&quot;: &quot;Eat&quot;, &quot;cause&quot;: &quot;hunger 75&quot;, &quot;value&quot;: { &quot;utility&quot;: 15.5 } }
+</code></pre>
+<blockquote>
+<p>Événements typés du prototype : <code>tick_summary</code>, <code>agent_spawned</code>, <code>agent_died</code>, <code>decision_made</code> (ADR-004).
+<strong>V0.1 émet</strong> <code>tick_summary</code> (1/tick, <code>value.aliveCount</code>) et <code>decision_made</code> (1/entité/tick,
+<code>value = {intention, utility, deliberated, interrupted}</code>, <code>cause = &quot;hunger=…,thirst=…,fatigue=…&quot;</code>).
+<code>deliberated</code>/<code>interrupted</code> (bool, jalon SYNE ph3) indiquent si le tick a délibéré (fréquence
+configurable, décision n°14) ou interrompu l'action par besoin critique (décision n°15).
+<strong><code>action_completed</code> (jalon SYNE ph4)</strong> : 1/entité/tick — suite de l'exécution atomique
+(SYNE-040) ; <code>action</code> = action exécutée (ex. <code>Eat</code>), <code>value = {outcome: executed|blocked, energyDelta, hungerDelta, thirstDelta, fatigueDelta, reserve?, reserveConsumed?}</code>,
+<code>cause</code> = raison du blocage éventuel (réserve vide).
+<strong><code>message_sent</code>/<code>message_received</code> (jalon SYNE ph5)</strong> : diffusés par <code>ObservabilityTickEmitter</code>
+après les boucles entités dès qu'une pulsation circule. <code>message_sent</code> : <code>agentId</code> = émetteur
+(d'origine, préservé aux relais), <code>targetId?</code> = cible nominale, <code>action</code> = <code>MessageType</code>,
+<code>value = {messageId, hops, confidence, payloadLength}</code>. <code>message_received</code> : <code>agentId</code> = récepteur
+(interception incluse), <code>action</code> = <code>MessageType</code>, <code>value = {messageId, hops, confidence, understood}</code>
+(COMMUNICATION_PROTOCOL.md §8).
+<strong><code>group_formed</code>/<code>group_dissolved</code>/<code>group_decision</code> (jalon SYNE ph6)</strong> : diffusés par
+<code>ObservabilityTickEmitter</code> à chaque révision LOD (défaut 10 ticks) par <code>Cognition.Groups</code>.
+<code>group_formed</code> : <code>agentId</code> = leader émergent, <code>value = {groupId, size, cohesion, members[]}</code>.
+<code>group_dissolved</code> : <code>agentId</code> = leader sortant, <code>value = {groupId, lifetime, success, membersOut, membersIn, members[]}</code> (bilan de vie + turnover brut — consommé par ECHOS
+<code>group_dynamics</code>). <code>group_decision</code> : <code>agentId</code> = leader, <code>action</code> = intention majoritaire,
+<code>value = {groupId, decision, consensus}</code> (votum pondéré par la confiance au leader).
+<strong><code>agent_spawned</code> (jalon SYNE ph6)</strong> : émis par <code>BirthSystem</code> à la naissance — <code>agentId</code> = enfant
+(id nouvellement alloué, dernier du run), <code>cause = &quot;birth&quot;</code>, <code>value = {childId, motherId, fatherId, species, x, y}</code> ; traits/mémoire hérités consultables via la décision <code>Born</code> (SYNE-062/063).
+<strong><code>agent_died</code> (jalon SYNE ph7b, SYNE-074)</strong> : émis par <code>DeathSystem</code> quand une entité atteint
+le seuil fatal (énergie nulle, épuisement) — <code>agentId</code> = défunt, <code>cause = &quot;exhaustion&quot;</code>,
+<code>value = {cause, species}</code> (Monographie §6.2.10). L'appelant purge ensuite l'esprit de la
+cognition et des groupes (les groupes vides sont dissous).
+<strong><code>world.construction_placed</code>/<code>world.construction_removed</code> (jalon SYNE ph11d, SYNE-071)</strong> :
+modification d'environnement <strong>sans agentId</strong> (événement du monde) — une construction posée
+(<code>PlaceConstruction</code>) ou retirée (<code>RemoveConstruction</code>) d'un obstacle statique. <code>targetId</code> =
+id de l'obstacle, <code>value = {id, x, y, radius}</code> (positions/rayon arrondis à 4 décimales).
+Drainés par <code>ObservabilityTickEmitter</code> au tick suivant la modification, avant l'émission du
+snapshot correspondant (chaque modification est émise <strong>exactement une fois</strong>).
+<strong><code>world.season_changed</code> (jalon U8, SYNE-072)</strong> : basculement du cycle de saisons (cycle actif
+<code>world.seasons.enabled</code>) — événement du monde <strong>sans agentId</strong>, émis <strong>au tick exact</strong> du
+basculement, uniquement quand la saison change. <code>targetId</code> = saison courante, <code>value = {previous, current}</code> (clés camelCase). Déterminisme total : la saison est une fonction pure
+du tick (0 tirage PRNG, DETERMINISM.md §3).
+<strong><code>world.territory_membership_changed</code> (jalon U8, SYNE-073)</strong> : bascule d'appartenance d'une
+entité à une zone de territoire (<code>world.territories.zones[]</code>, disques « points de survie »,
+décision n°21) — suivi actif seulement (<code>world.territories.enabled</code>). <code>agentId</code> = entité qui
+franchit, <code>targetId</code> = id de la zone, <code>value = {kind: &quot;entered&quot; | &quot;left&quot;}</code>. Ordre déterministe :
+par zone (ordre de pose), identifiant croissant, <strong>sorties avant entrées</strong> ; chaque bascule
+émise <strong>exactement une fois</strong> (drainées par <code>ObservabilityTickEmitter</code> au tick de la
+modification). <code>Entered</code>/<code>Left</code> = changement de l'état de présence (function pure des positions,
+<code>distance ≤ radius</code>, 0 tirage PRNG — DETERMINISM.md §3) ; centré sur les répliques, chaque
+zone rejoue la même séquence.</p>
+</blockquote>
+<blockquote>
+<p><strong><code>world.book_written</code> / <code>world.book_read</code> (SYNE-121)</strong> : mutations émises après le snapshot correspondant. Écriture : <code>agentId</code> auteur, <code>targetId</code> livre, <code>value = {id, title, writtenTick, cost}</code>. Lecture : <code>agentId</code> lecteur, <code>targetId</code> livre, <code>value = {id, readBenefit}</code>. Le snapshot <code>books[]</code> (seulement si <code>world.books.enabled</code>) contient <code>{id, authorId, title, content, writtenTick, readCount, readers[]}</code>. Les lecteurs distincts conservent l’ordre de première lecture. Aucun effet cognitif n’est appliqué avant le futur moteur mémoire.</p>
+</blockquote>
+<h2 id="3-contrat-de-contrôle--http-5181">3. Contrat de contrôle — HTTP 5181</h2>
+<p>API REST locale de contrôle, relayée par PRISM (Monographie §5.4.2) :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Méthode</th>
+<th style="text-align: left;">Endpoint</th>
+<th style="text-align: left;">Corps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/api/control/start</code></td>
+<td style="text-align: left;"><code>{ seed, config }</code> (optionnel)</td>
+</tr>
+<tr>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/api/control/pause</code></td>
+<td style="text-align: left;">—</td>
+</tr>
+<tr>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/api/control/resume</code></td>
+<td style="text-align: left;">—</td>
+</tr>
+<tr>
+<td style="text-align: left;">POST</td>
+<td style="text-align: left;"><code>/api/control/reset</code></td>
+<td style="text-align: left;"><code>{ seed, runId }</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">GET</td>
+<td style="text-align: left;"><code>/api/control/status</code></td>
+<td style="text-align: left;">—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Binding local : <code>127.0.0.1:5181</code>.</li>
+<li>État interrogé par polling (~2 s, [HÉRITÉ]).</li>
+<li><strong>Implémentation V0.1 (SYNE-113, livré avec U8)</strong> : serveur BCL (<code>HttpListener</code>,
+zéro dépendance, ADR-002/003) dans <code>Simulation.Console</code>, activé par <code>--serve</code>
+(<code>--serve-port</code>, défaut 5181). Machine à états : <code>idle → running ⇋ paused → finished</code>.
+<code>start { seed?, config? }</code> (JSON partiel fusionné sur les défauts, même règle que
+<code>--config</code>) construit le run et répond <code>{ ok, action, runId, state, tick, aliveCount, seed }</code> ;
+<code>pause</code>/<code>resume</code> gèlent/reprennent l'avancement des ticks ; <code>reset { seed?, runId? }</code>
+reconstruit un run (le <code>runId</code> reçu identifie l'appelant, il n'est pas utilisé pour
+restaurer — la reprise depuis le dernier <code>tick_states</code> reste le contrat de
+persistance §4 via <code>SqlitePersistenceStore</code>). <code>GET /api/control/status</code> expose
+<code>{ state, runId, tick, aliveCount, seed, maxTicks }</code> (polling ECHOS).
+Ce contrat est <strong>non intrusif</strong> (SYNE-081, DETERMINISM.md §3) : aucune commande ne
+retire de tirage au PRNG ni ne change la trajectoire (vérifié par test — run piloté
+== run ininterrompu, état bit-à-bit). Consommé tel quel par le <code>ControlClient</code> ECHOS
+(<code>echos/echos/ingestion/control_client.py</code>) — testé en interop réel.</li>
+</ul>
+<h2 id="4-contrat-de-persistance">4. Contrat de persistance</h2>
+<p>Le schéma SQLite (Annexe G) sert de <strong>contrat de persistance</strong> — voir <code>PERSISTENCE.md</code>. Les tables <code>events_log</code> et <code>decision_traces</code> alimentent l'analyse ECHOS (voir <code>LOGGING_INSTRUMENTATION.md</code> ECHOS).</p>
+<h2 id="5-compatibilité-ascendante">5. Compatibilité ascendante</h2>
+<ul>
+<li>Ajout de champs = compatible (<code>MINOR</code>).</li>
+<li>Suppression/renommage/redéfinition de sens = <strong>breaking</strong> (<code>MAJOR</code>).</li>
+<li>Le champ <code>version</code> du snapshot permet aux consommateurs de détecter les changements.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Extension exacte du <code>WorldSnapshot</code> V0.1 (beliefs/goals/relations/groups) à figer lors de l'implémentation.</li>
+<li>Nomenclature exhaustive des types d'<code>ExternalEvent</code> V0.1 (alignée sur les événements du système).</li>
+<li>Multi-consommateur : <strong>tranché en V0.1</strong> — diffusion à tous les clients connectés (pas de règle single-consumer).</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/API_CONTRACTS.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

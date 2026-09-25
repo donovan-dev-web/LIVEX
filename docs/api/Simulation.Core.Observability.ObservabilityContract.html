@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class ObservabilityContract | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class ObservabilityContract | LIVEX ">
+    
+    <meta name="description" content="Contrat d&#39;observabilit&#233; (SYNE-080, API_CONTRACTS.md &#167;2) : messages JSON camelCase sur WebSocket, versionn&#233;s. Chaque message est un objet avec un champ type (&amp;quot;snapshot&amp;quot; ou &amp;quot;event&amp;quot;).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Observability.ObservabilityContract">
+
+
+
+  <h1 id="Simulation_Core_Observability_ObservabilityContract" data-uid="Simulation.Core.Observability.ObservabilityContract" class="text-break">Class ObservabilityContract</h1>
+  <div class="markdown level0 summary"><p>Contrat d'observabilité (SYNE-080, API_CONTRACTS.md §2) : messages JSON
+camelCase sur WebSocket, versionnés. Chaque message est un objet avec un
+champ <code>type</code> (&quot;snapshot&quot; ou &quot;event&quot;).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">ObservabilityContract</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Observability.html">Observability</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Observability_ObservabilityContract_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class ObservabilityContract</code></pre>
+  </div>
+  <h3 id="fields">Fields
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_ActionCompleted" data-uid="Simulation.Core.Observability.ObservabilityContract.ActionCompleted">ActionCompleted</h4>
+  <div class="markdown level1 summary"><p>Exécution d'action terminée (SYNE-040, API_CONTRACTS.md §2.2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string ActionCompleted = &quot;action_completed&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_AgentDied" data-uid="Simulation.Core.Observability.ObservabilityContract.AgentDied">AgentDied</h4>
+  <div class="markdown level1 summary"><p>Mort par épuisement — SYNE-074, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string AgentDied = &quot;agent_died&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_AgentSpawned" data-uid="Simulation.Core.Observability.ObservabilityContract.AgentSpawned">AgentSpawned</h4>
+  <div class="markdown level1 summary"><p>Naissance par fusion consentie — SYNE-062, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string AgentSpawned = &quot;agent_spawned&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_BookRead" data-uid="Simulation.Core.Observability.ObservabilityContract.BookRead">BookRead</h4>
+  <div class="markdown level1 summary"><p>Livre lu (SYNE-121, décision n°19, Monographie §3.18.6) : le bénéfice de
+lecture est <strong>posé en principe</strong> (cognition, confiance, savoir) — le
+chiffrage appliqué au moteur de mémoire relève de SYNE-131 (décision n°11).
+V0.1 : trace le lecteur dans agentId, 0 tirage PRNG. Charge utile
+{id, readBenefit}.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string BookRead = &quot;world.book_read&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_BookWritten" data-uid="Simulation.Core.Observability.ObservabilityContract.BookWritten">BookWritten</h4>
+  <div class="markdown level1 summary"><p>Livre écrit (SYNE-121, décisions n°18/19, Monographie §3.18.5) : une
+connaissance matérialisée à l'instant T — l'auteur en paie le coût
+(énergie <code>world.books.writeCostEnergy</code> ; la durée n'est pas modélisée en V0.1 ; aucun tirage
+PRNG — l'écriture est une API de la boucle). Charge utile {id, authorId,
+title, writtenTick, cost}.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string BookWritten = &quot;world.book_written&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_ConstructionPlaced" data-uid="Simulation.Core.Observability.ObservabilityContract.ConstructionPlaced">ConstructionPlaced</h4>
+  <div class="markdown level1 summary"><p>Construction posée (obstacle statique, modification d'environnement) — SYNE-071, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string ConstructionPlaced = &quot;world.construction_placed&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_ConstructionRemoved" data-uid="Simulation.Core.Observability.ObservabilityContract.ConstructionRemoved">ConstructionRemoved</h4>
+  <div class="markdown level1 summary"><p>Construction retirée (modification d'environnement) — SYNE-071, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string ConstructionRemoved = &quot;world.construction_removed&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_DecisionMade" data-uid="Simulation.Core.Observability.ObservabilityContract.DecisionMade">DecisionMade</h4>
+  <div class="markdown level1 summary"><p>Types d'événements typés émis (nomenclature V0.1, API_CONTRACTS.md §2.2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string DecisionMade = &quot;decision_made&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_EngineVersion" data-uid="Simulation.Core.Observability.ObservabilityContract.EngineVersion">EngineVersion</h4>
+  <div class="markdown level1 summary"><p>Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les
+règles de simulation ; incrémentée MINOR à toute altération de la trajectoire
+bit-à-bit (jalon SYNE ph6 → 0.5.0 : groupes émergents, décisions collectives,
+naissance par fusion ; jalon SYNE ph7b → 0.6.0 : mortalité, naissance consentie
+fidèle, décision collective → objectifs des membres, cheminement A* déterministe ;
+jalon SYNE ph7c → 0.7.0 : cycle des ressources — minéraux + régénération/
+dégradation périodique appliquées en fin de tick (SYNE-070) — l'altération porte
+sur les réserves du monde, pas sur la cognition du scénario de référence (checksum
+doré ré-épinglé inchangé, pin contractuel) ;
+jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
+pose/retrait tracés (world.construction_placed/_removed) et réémis dans le
+snapshot (SYNE-071) — aucun obstacle du scénario de référence n'est modifié,
+checksums dorés ré-épinglés inchangés (pin contractuel ph7b) ;
+jalon SYNE U8 → 0.9.0 : cycle de saisons (SYNE-072) — <code>world.seasons</code>
+(l'ancien drapeau booléen homonyme, mort, devient un bloc actif), événement
+world.season_changed et champ snapshot season/seasonIndex (additif) ;
+désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
+checksums dorés ré-épinglés inchangés (pin contractuel) ;
+jalon SYNE U8 → 0.10.0 : territoires (SYNE-073, décision n°21) — <code>world.territories</code>
+(zones « point de survie », appartenance suivie par la présence des entités),
+événement world.territory_membership_changed et champ snapshot territories[]
+(additif) ; désactivé par défaut ⇒ trajectoire du scénario de référence
+inchangée, checksums dorés ré-épinglés inchangés (pin contractuel) ;
+jalon SYNE U8 → 0.11.0 : livres (SYNE-121, décisions n°18/19, Monographie
+§3.18) — <code>world.books</code> (connaissances matérialisées), événements
+world.book_written / world.book_read, champ snapshot books[] (additif) ;
+désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
+checksums dorés ré-épinglés inchangés (pin contractuel).
+Émise dans chaque snapshot.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string EngineVersion = &quot;0.11.0&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_EventType" data-uid="Simulation.Core.Observability.ObservabilityContract.EventType">EventType</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string EventType = &quot;event&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_GroupDecision" data-uid="Simulation.Core.Observability.ObservabilityContract.GroupDecision">GroupDecision</h4>
+  <div class="markdown level1 summary"><p>Décision collective adoptée par consenssus — SYNE-061, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string GroupDecision = &quot;group_decision&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_GroupDissolved" data-uid="Simulation.Core.Observability.ObservabilityContract.GroupDissolved">GroupDissolved</h4>
+  <div class="markdown level1 summary"><p>Dissolution d'un groupe (bilan + turnover) — SYNE-060, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string GroupDissolved = &quot;group_dissolved&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_GroupFormed" data-uid="Simulation.Core.Observability.ObservabilityContract.GroupFormed">GroupFormed</h4>
+  <div class="markdown level1 summary"><p>Formation d'un groupe émergent — SYNE-060, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string GroupFormed = &quot;group_formed&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_MessageReceived" data-uid="Simulation.Core.Observability.ObservabilityContract.MessageReceived">MessageReceived</h4>
+  <div class="markdown level1 summary"><p>Pulsation reçue (y compris interception) — SYNE-051, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string MessageReceived = &quot;message_received&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_MessageSent" data-uid="Simulation.Core.Observability.ObservabilityContract.MessageSent">MessageSent</h4>
+  <div class="markdown level1 summary"><p>Pulsation émise (envoi ou relais) — SYNE-050, API_CONTRACTS.md §2.2.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string MessageSent = &quot;message_sent&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_SeasonChanged" data-uid="Simulation.Core.Observability.ObservabilityContract.SeasonChanged">SeasonChanged</h4>
+  <div class="markdown level1 summary"><p>Changement de saison du cycle environnemental (SYNE-072, API_CONTRACTS.md §2.2) :
+émis au tick exact du basculement quand <code>world.seasons.enabled</code> (0 tirage
+PRNG — la saison est une fonction pure du tick). Charge utile {previous, current}.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string SeasonChanged = &quot;world.season_changed&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_SnapshotType" data-uid="Simulation.Core.Observability.ObservabilityContract.SnapshotType">SnapshotType</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string SnapshotType = &quot;snapshot&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_TerritoryMembershipChanged" data-uid="Simulation.Core.Observability.ObservabilityContract.TerritoryMembershipChanged">TerritoryMembershipChanged</h4>
+  <div class="markdown level1 summary"><p>Changement d'appartenance à une zone de territoire (SYNE-073, décision n°21,
+API_CONTRACTS.md §2.2) : une entité est entrée dans ou sortie du disque d'un
+« point de survie » quand <code>world.territories.enabled</code> (0 tirage PRNG —
+l'appartenance est une fonction pure des positions). Charge utile {kind}.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string TerritoryMembershipChanged = &quot;world.territory_membership_changed&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_TickSummary" data-uid="Simulation.Core.Observability.ObservabilityContract.TickSummary">TickSummary</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string TickSummary = &quot;tick_summary&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_Version" data-uid="Simulation.Core.Observability.ObservabilityContract.Version">Version</h4>
+  <div class="markdown level1 summary"><p>Version du contrat d'observabilité (API_CONTRACTS.md §2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const string Version = &quot;0.1.0&quot;</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_ObservabilityContract_RunIdFor_" data-uid="Simulation.Core.Observability.ObservabilityContract.RunIdFor*"></a>
+  <h4 id="Simulation_Core_Observability_ObservabilityContract_RunIdFor_System_UInt64_" data-uid="Simulation.Core.Observability.ObservabilityContract.RunIdFor(System.UInt64)">RunIdFor(ulong)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string RunIdFor(ulong seed)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">seed</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ObservabilityContract.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

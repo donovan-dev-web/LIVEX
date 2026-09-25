@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>VERSIONING.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="VERSIONING.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="versioningmd">VERSIONING.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : —
+<strong>Source Monographie</strong> : §7.1 (organisation du monorepo), Annexe J (roadmap V2)</p>
+<hr>
+<h2 id="1-objectif">1. Objectif</h2>
+<p>Ce document définit la politique de versionnement de LIVEX et de chacun de ses trois composants (SYNE, ECHOS, PRISM). Il repose sur la <strong>sémantique des versions (SemVer 2.0.0)</strong> appliquée de manière <strong>indépendante par composant</strong>, doublée d'un marqueur de version <strong>globale</strong> pour les livraisons transverses.</p>
+<h2 id="2-principe-général">2. Principe général</h2>
+<ul>
+<li>Chaque composant (SYNE, ECHOS, PRISM) est versionné <strong>indépendamment</strong> selon SemVer : <code>MAJOR.MINOR.PATCH</code>.</li>
+<li>Un <strong>numéro global LIVEX</strong> est publié lorsque les trois composants sont livrés ensemble (release assemblée des trois composants). Il suit aussi SemVer mais son rythme est <strong>transverse</strong> (décidé au niveau du dépôt racine).</li>
+<li>Les dépendances inter-composants sont exprimées en <strong>fourchettes SemVer compatibles</strong> (<code>^</code>), jamais en versions exactes, sauf dans les contrats de compilation figés.</li>
+</ul>
+<h2 id="3-définition-des-niveaux-semver">3. Définition des niveaux SemVer</h2>
+<p>Pour chaque composant appliquant SemVer :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Niveau</th>
+<th style="text-align: left;">Règle propre composant</th>
+<th style="text-align: left;">Exemples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>MAJOR</strong></td>
+<td style="text-align: left;">Changement <strong>incompatible</strong> d'API publique, de contrat de transport ou de format de persistance (sans migration fournie)</td>
+<td style="text-align: left;">Suppression d'un endpoint, changement de schéma SQLite sans script de migration, changement du format <code>WorldSnapshot</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MINOR</strong></td>
+<td style="text-align: left;">Ajout <strong>rétrocompatible</strong> de fonctionnalité ; les anciens consommateurs continuent de fonctionner</td>
+<td style="text-align: left;">Nouveau moteur de métriques ECHOS, nouveau type de message SYNE, nouvelle scène PRISM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PATCH</strong></td>
+<td style="text-align: left;">Correction de bug, optimisation interne, documentation ; aucune modification observable d'interface</td>
+<td style="text-align: left;">Correction d'un calcul de santé, ajustement d'un coût d'action, typo dans un log</td>
+</tr>
+</tbody>
+</table>
+<p>Règles transverses :</p>
+<ul>
+<li>Version <code>0.x.y</code> : pendant la phase d'exploration (V0.1), un incrément de <code>x</code> est toléré pour un changement mineur, mais <strong>tout contrat de transport ou de persistance cassé impose l'incrément de <code>x</code></strong> (pas de faux <code>MAJOR</code> avant la 1.0).</li>
+<li>Le <strong>déterminisme bit-à-bit</strong> (§2.3.4 de la Monographie) est un contrat : toute modification qui altère la trajectoire reproductible d'un run avec la même seed incrémente au minimum <code>MINOR</code> et impose la mise à jour de l'identifiant de version moteur (<code>engineVersion</code>) qui entre dans la définition d'un run.</li>
+</ul>
+<h2 id="4-tags-git">4. Tags Git</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Préfixe</th>
+<th style="text-align: left;">Portée</th>
+<th style="text-align: left;">Exemple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>syne-v</code></td>
+<td style="text-align: left;">Moteur de simulation SYNE</td>
+<td style="text-align: left;"><code>syne-v0.1.0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>echos-v</code></td>
+<td style="text-align: left;">Système d'observation ECHOS</td>
+<td style="text-align: left;"><code>echos-v0.2.1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>prism-v</code></td>
+<td style="text-align: left;">Représentation PRISM</td>
+<td style="text-align: left;"><code>prism-v0.1.0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>livex-v</code></td>
+<td style="text-align: left;">Release globale assemblée</td>
+<td style="text-align: left;"><code>livex-v0.1.0</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Le tag <code>livex-vX.Y.Z</code> référence l'ensemble des tags composants qui le composent (renseignés dans les notes de release).</li>
+<li>Les tags de composant sont posés sur le répertoire du composant ; le tag <code>livex-v</code> est posé sur la racine du dépôt.</li>
+</ul>
+<h2 id="5-convention-de-branche">5. Convention de branche</h2>
+<p>Le versionnement est déclenché par les évènements suivants :</p>
+<ul>
+<li><code>MINOR</code>/<code>MAJOR</code> → fusion dans <code>develop</code> puis promotions successives des branches <code>release/</code> (cf. <code>GITFLOW.md</code>).</li>
+<li><code>PATCH</code> → fusion directe (hotfix) dans <code>main</code> et <code>develop</code>.</li>
+</ul>
+<h2 id="6-changelog">6. Changelog</h2>
+<ul>
+<li>Le fichier <code>CHANGELOG.md</code> de la racine et de chaque composant suit la convention <strong>Keep a Changelog</strong> : sections <code>[Unreleased]</code>, <code>[x.y.z] - AAAA-MM-JJ</code>.</li>
+<li>Les entrées sont regroupées en <code>Added</code>, <code>Changed</code>, <code>Deprecated</code>, <code>Removed</code>, <code>Fixed</code>, <code>Security</code>.</li>
+<li>Chaque entrée mineure/majeure référence les exigeabilités issues de la Monographie quand applicable (ex. « ajout du moteur <code>FeedbackLoopDetector</code> (Monographie §4.3.5) »).</li>
+</ul>
+<h2 id="7-règles-dincrément-en-pratique-v01">7. Règles d'incrément en pratique (V0.1)</h2>
+<ul>
+<li>Le projet est en pré-1.0 : <code>MAJOR</code> reste à <code>0</code>.</li>
+<li>Toute libération composant visible publiquement incrémente au minimum <code>PATCH</code>.</li>
+<li>Le numéro global <code>livex-v</code> n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans <code>ROADMAP.md</code>.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun — document stabilisé. Le rythme de pose des tags <code>livex-v</code> sera affiné lors de la première release assemblée (phase CI/CD réelle).</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/VERSIONING.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

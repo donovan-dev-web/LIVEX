@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class BeliefSet | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class BeliefSet | LIVEX ">
+    
+    <meta name="description" content="Ensemble de croyances d&#39;une entit&#233;, index&#233; par fait (ProductName de comparaison ordinale). Les croyances expirent (plafond 0.4) et d&#233;croissent temporellement (DATA_MODEL.md &#167;6, COGNITIVE_ARCHITECTURE.md &#167;4).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition.BeliefSet">
+
+
+
+  <h1 id="Simulation_Core_Cognition_BeliefSet" data-uid="Simulation.Core.Cognition.BeliefSet" class="text-break">Class BeliefSet</h1>
+  <div class="markdown level0 summary"><p>Ensemble de croyances d'une entité, indexé par fait (ProductName de
+comparaison ordinale). Les croyances expirent (plafond 0.4) et décroissent
+temporellement (DATA_MODEL.md §6, COGNITIVE_ARCHITECTURE.md §4).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">BeliefSet</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Cognition.html">Cognition</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Cognition_BeliefSet_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class BeliefSet</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet__ctor_" data-uid="Simulation.Core.Cognition.BeliefSet.#ctor*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet__ctor" data-uid="Simulation.Core.Cognition.BeliefSet.#ctor">BeliefSet()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BeliefSet()</code></pre>
+  </div>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet_All_" data-uid="Simulation.Core.Cognition.BeliefSet.All*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet_All" data-uid="Simulation.Core.Cognition.BeliefSet.All">All</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Belief&gt; All { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Cognition.Belief.html">Belief</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet_Count_" data-uid="Simulation.Core.Cognition.BeliefSet.Count*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet_Count" data-uid="Simulation.Core.Cognition.BeliefSet.Count">Count</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet_ApplyEvidence_" data-uid="Simulation.Core.Cognition.BeliefSet.ApplyEvidence*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet_ApplyEvidence_Simulation_Core_Cognition_Fact_System_Double_System_String_Simulation_Core_Configuration_BeliefSettings_System_UInt64_" data-uid="Simulation.Core.Cognition.BeliefSet.ApplyEvidence(Simulation.Core.Cognition.Fact,System.Double,System.String,Simulation.Core.Configuration.BeliefSettings,System.UInt64)">ApplyEvidence(Fact, double, string, BeliefSettings, ulong)</h4>
+  <div class="markdown level1 summary"><p>Applique une observation (COGNITIVE_ARCHITECTURE.md §4) :</p>
+<ul><li>fait inconnu → création à la confiance du signal ;</li><li>même fait, même source → alignement (+0.2, max 1.0) ;</li><li>même fait, source différente → moyenne des confiances ;</li><li>fait contradictoire (même sujet + prédicat, valeur différente) →
+ conflit (−0.1, min 0.1) sur les croyances concurrentes existantes +
+ création d'une nouvelle croyance au signal.</li></ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ApplyEvidence(Fact fact, double signal, string source, BeliefSettings settings, ulong tick)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Fact.html">Fact</a></td>
+        <td><span class="parametername">fact</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">signal</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td><span class="parametername">source</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.BeliefSettings.html">BeliefSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet_OrderedByFact_" data-uid="Simulation.Core.Cognition.BeliefSet.OrderedByFact*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet_OrderedByFact" data-uid="Simulation.Core.Cognition.BeliefSet.OrderedByFact">OrderedByFact()</h4>
+  <div class="markdown level1 summary"><p>Toutes les croyances triées par fait (sujet, prédicat, valeur — ordinal, déterminisme d'émission).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Belief&gt; OrderedByFact()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Cognition.Belief.html">Belief</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet_Tick_" data-uid="Simulation.Core.Cognition.BeliefSet.Tick*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet_Tick_System_UInt64_Simulation_Core_Configuration_BeliefSettings_" data-uid="Simulation.Core.Cognition.BeliefSet.Tick(System.UInt64,Simulation.Core.Configuration.BeliefSettings)">Tick(ulong, BeliefSettings)</h4>
+  <div class="markdown level1 summary"><p>Passe temporel : décroissance (× <code>timeDecayPerTick</code>) puis, si la
+croyance est expirée, plafonnement à <code>expiredCap</code> (0.4).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Tick(ulong currentTick, BeliefSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">currentTick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.BeliefSettings.html">BeliefSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_BeliefSet_TryGet_" data-uid="Simulation.Core.Cognition.BeliefSet.TryGet*"></a>
+  <h4 id="Simulation_Core_Cognition_BeliefSet_TryGet_Simulation_Core_Cognition_Fact_Simulation_Core_Cognition_Belief__" data-uid="Simulation.Core.Cognition.BeliefSet.TryGet(Simulation.Core.Cognition.Fact,Simulation.Core.Cognition.Belief@)">TryGet(Fact, out Belief)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool TryGet(Fact fact, out Belief belief)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Fact.html">Fact</a></td>
+        <td><span class="parametername">fact</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Belief.html">Belief</a></td>
+        <td><span class="parametername">belief</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Belief.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

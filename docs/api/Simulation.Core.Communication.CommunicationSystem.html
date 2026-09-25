@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class CommunicationSystem | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class CommunicationSystem | LIVEX ">
+    
+    <meta name="description" content="Syst&#232;me de communication par pulsations lumineuses publiques (SYNE-050 → 054, COMMUNICATION_PROTOCOL.md, d&#233;cisions n&#176;7-10). Ex&#233;cut&#233; en une passe par tick (performance.batchCommunication, PERFORMANCE.md) apr&#232;s le pipeline cognitif, dans un ordre causal strict : Diffusion : chaque entit&#233; (identifiant croissant) &#233;met ses  messages sortants (cap maxSendsPerTick) — port&#233;e  transmissionRange + ligne de vue ; toute entit&#233; dans la port&#233;e re&#231;oit,  quelle que soit la cible (publicit&#233;, interception — d&#233;cision n&#176;8).Relais : chaque entit&#233; relaye les messages compris (cap partag&#233;  avec les envois) tant que hops &amp;lt; maxHops, avec d&#233;gradation de  confiance &#215; hopConfidenceDecay (10 %/hop — d&#233;cision n&#176;10). Co&#251;ts &#233;nerg&#233;tiques (d&#233;cision n&#176;9) : envoi sendEnergyCost + payload &#215; sendEnergyPayloadFactor, r&#233;ception receiveEnergyCost + payload &#215; receiveEnergyPayloadFactor, appliqu&#233;s via BodyNeeds.ExertEnergy. D&#233;terminisme : aucun tirage du PRNG global ; l&#39;incompr&#233;hension (5 %) et les identifiants de message d&#233;rivent de hash SplitMix64 stables (DETERMINISM.md &#167;3).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Communication.CommunicationSystem">
+
+
+
+  <h1 id="Simulation_Core_Communication_CommunicationSystem" data-uid="Simulation.Core.Communication.CommunicationSystem" class="text-break">Class CommunicationSystem</h1>
+  <div class="markdown level0 summary"><p>Système de communication par pulsations lumineuses publiques (SYNE-050 → 054,
+COMMUNICATION_PROTOCOL.md, décisions n°7-10). Exécuté en <strong>une passe par tick</strong>
+(<code>performance.batchCommunication</code>, PERFORMANCE.md) après le pipeline
+cognitif, dans un ordre causal strict :</p>
+<ol><li><b>Diffusion</b> : chaque entité (identifiant croissant) émet ses
+ messages sortants (cap <code>maxSendsPerTick</code>) — portée
+ <code>transmissionRange</code> + ligne de vue ; toute entité dans la portée reçoit,
+ quelle que soit la cible (publicité, interception — décision n°8).</li><li><b>Relais</b> : chaque entité relaye les messages compris (cap partagé
+ avec les envois) tant que <code>hops &lt; maxHops</code>, avec dégradation de
+ confiance <code>× hopConfidenceDecay</code> (10 %/hop — décision n°10).</li></ol>
+<p>Coûts énergétiques (décision n°9) : envoi <code>sendEnergyCost + payload ×
+sendEnergyPayloadFactor</code>, réception <code>receiveEnergyCost + payload ×
+receiveEnergyPayloadFactor</code>, appliqués via <code>BodyNeeds.ExertEnergy</code>.</p>
+<p>Déterminisme : aucun tirage du PRNG global ; l'incompréhension (5 %) et les
+identifiants de message dérivent de hash SplitMix64 stables (DETERMINISM.md §3).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">CommunicationSystem</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Communication.html">Communication</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Communication_CommunicationSystem_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class CommunicationSystem</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Communication_CommunicationSystem__ctor_" data-uid="Simulation.Core.Communication.CommunicationSystem.#ctor*"></a>
+  <h4 id="Simulation_Core_Communication_CommunicationSystem__ctor_Simulation_Core_World_World_Simulation_Core_Configuration_CommunicationSettings_" data-uid="Simulation.Core.Communication.CommunicationSystem.#ctor(Simulation.Core.World.World,Simulation.Core.Configuration.CommunicationSettings)">CommunicationSystem(World, CommunicationSettings)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CommunicationSystem(World world, CommunicationSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.CommunicationSettings.html">CommunicationSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Communication_CommunicationSystem_LastReceived_" data-uid="Simulation.Core.Communication.CommunicationSystem.LastReceived*"></a>
+  <h4 id="Simulation_Core_Communication_CommunicationSystem_LastReceived" data-uid="Simulation.Core.Communication.CommunicationSystem.LastReceived">LastReceived</h4>
+  <div class="markdown level1 summary"><p>Messages reçus au tick courant (y compris interceptions), ordre de réception.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;MessageReceived&gt; LastReceived { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Communication.MessageReceived.html">MessageReceived</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Communication_CommunicationSystem_LastSent_" data-uid="Simulation.Core.Communication.CommunicationSystem.LastSent*"></a>
+  <h4 id="Simulation_Core_Communication_CommunicationSystem_LastSent" data-uid="Simulation.Core.Communication.CommunicationSystem.LastSent">LastSent</h4>
+  <div class="markdown level1 summary"><p>Messages émis au tick courant (envois + relais), ordre d'émission.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;MessageSent&gt; LastSent { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Communication.MessageSent.html">MessageSent</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Communication_CommunicationSystem_Settings_" data-uid="Simulation.Core.Communication.CommunicationSystem.Settings*"></a>
+  <h4 id="Simulation_Core_Communication_CommunicationSystem_Settings" data-uid="Simulation.Core.Communication.CommunicationSystem.Settings">Settings</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public CommunicationSettings Settings { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.CommunicationSettings.html">CommunicationSettings</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Communication_CommunicationSystem_CreateMessage_" data-uid="Simulation.Core.Communication.CommunicationSystem.CreateMessage*"></a>
+  <h4 id="Simulation_Core_Communication_CommunicationSystem_CreateMessage_System_UInt64_System_Nullable_System_UInt64__Simulation_Core_Communication_MessageType_System_String_System_UInt64_System_Int32_" data-uid="Simulation.Core.Communication.CommunicationSystem.CreateMessage(System.UInt64,System.Nullable{System.UInt64},Simulation.Core.Communication.MessageType,System.String,System.UInt64,System.Int32)">CreateMessage(ulong, ulong?, MessageType, string, ulong, int)</h4>
+  <div class="markdown level1 summary"><p>Crée un message sortant avec identifiant déterministe (hash stable, pas de PRNG).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Message CreateMessage(ulong senderId, ulong? targetId, MessageType type, string payload, ulong tick, int sequence)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">senderId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>?</td>
+        <td><span class="parametername">targetId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Communication.MessageType.html">MessageType</a></td>
+        <td><span class="parametername">type</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td><span class="parametername">payload</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">sequence</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Communication.Message.html">Message</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Communication_CommunicationSystem_Step_" data-uid="Simulation.Core.Communication.CommunicationSystem.Step*"></a>
+  <h4 id="Simulation_Core_Communication_CommunicationSystem_Step_System_UInt64_System_Collections_Generic_IReadOnlyDictionary_System_UInt64_Simulation_Core_Cognition_MindState__" data-uid="Simulation.Core.Communication.CommunicationSystem.Step(System.UInt64,System.Collections.Generic.IReadOnlyDictionary{System.UInt64,Simulation.Core.Cognition.MindState})">Step(ulong, IReadOnlyDictionary&lt;ulong, MindState&gt;)</h4>
+  <div class="markdown level1 summary"><p>Exécute le cycle de communication du tick (diffusion puis relais).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Step(ulong tick, IReadOnlyDictionary&lt;ulong, MindState&gt; minds)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>, <a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a>&gt;</td>
+        <td><span class="parametername">minds</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Communication/CommunicationSystem.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

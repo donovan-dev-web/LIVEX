@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ECHOS — Emergent Cognition &amp; Holistic Observation System | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ECHOS — Emergent Cognition &amp; Holistic Observation System | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="echos--emergent-cognition--holistic-observation-system">ECHOS — Emergent Cognition &amp; Holistic Observation System</h1>
+
+<p><a href="README.html"><img src="https://img.shields.io/badge/Statut-STABLE-00d4a0.svg" alt="Statut: STABLE"></a>
+<a href="METRICS_SPEC.html"><img src="https://img.shields.io/badge/Moteurs-7-1f7f6f.svg" alt="7 moteurs"></a>
+<a href="API_REST.html"><img src="https://img.shields.io/badge/API-REST%205000-1f7f6f.svg" alt="API: REST 5000"></a></p>
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : la documentation transversale (../)
+<strong>Source Monographie</strong> : Partie 4</p>
+<hr>
+<h2 id="rôle">Rôle</h2>
+<p>Observatoire de LIVEX : il transforme l'exécution de SYNE en données compréhensibles (états, événements, métriques, graphes, historiques, comparaisons, contrôles). <strong>Il observe, il n'influence pas le phénomène mesuré.</strong></p>
+<h2 id="lancement-seul">Lancement seul</h2>
+<pre><code class="lang-console"># API FastAPI (V0.1)
+uvicorn echos.api.app:app --host 127.0.0.1 --port 5000
+
+# Interface (web local React + Vite, servie par FastAPI)
+cd echos/echos-ui &amp;&amp; npm run dev
+</code></pre>
+<h2 id="dépendances">Dépendances</h2>
+<ul>
+<li><strong>Python</strong> : FastAPI, NumPy, Pandas, SciPy, NetworkX.</li>
+<li><strong>Interface</strong> : React/TypeScript (web local Vite, servie par FastAPI — shell Electron conservé, implémentation différée à un horizon ultérieur), ECharts/Plotly.</li>
+<li><strong>Stockage</strong> : SQLite (agrégations) + Parquet (séries lourdes).</li>
+<li>Se connecte à <strong>SYNE</strong> (WebSocket :5180 pour observer, HTTP :5181 pour piloter).</li>
+</ul>
+<h2 id="interfaces">Interfaces</h2>
+<ul>
+<li><code>API_REST.md</code> — API REST locale, port 5000.</li>
+<li><code>../docs-syne/API_CONTRACTS.md</code> — contrat d'entrée (snapshot/event de SYNE).</li>
+</ul>
+<h2 id="documentation-du-composant">Documentation du composant</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Document</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>VISION.md</code></td>
+<td style="text-align: left;">Rôle scientifique, dimensions, interdits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ARCHITECTURE.md</code></td>
+<td style="text-align: left;">Composants, intégration SYNE, séparation des données</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>METRICS_SPEC.md</code></td>
+<td style="text-align: left;">Les 7 moteurs de métriques</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>EMERGENCE_INDICATORS.md</code></td>
+<td style="text-align: left;">Score d'émergence, auto-détection</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CAUSAL_ANALYSIS.md</code></td>
+<td style="text-align: left;">Reconstruction causale et limites</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>EXPERIMENT_COMPARISON.md</code></td>
+<td style="text-align: left;">Comparaison de runs, reproductibilité</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>API_REST.md</code></td>
+<td style="text-align: left;">Endpoints</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>LOGGING_INSTRUMENTATION.md</code></td>
+<td style="text-align: left;">3 niveaux de journalisation, profilage</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>LIMITATIONS.md</code></td>
+<td style="text-align: left;">Limites méthodologiques et techniques</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TESTING.md</code></td>
+<td style="text-align: left;">Tests, golden files, ≥ 80 %</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ROADMAP.md</code></td>
+<td style="text-align: left;">Roadmap ECHOS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CHANGELOG.md</code></td>
+<td style="text-align: left;">Versions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>adr/</code></td>
+<td style="text-align: left;">Décisions d'architecture</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>FRONTEND_VISION.md</code></td>
+<td style="text-align: left;"><strong>Interface</strong> : rôle, front/pilotage vs analyse/data-science, règles &amp; limites</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>USER_STORIES.md</code></td>
+<td style="text-align: left;"><strong>Interface</strong> : personas + user stories + critères d'acceptation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>UI_DESIGN.md</code></td>
+<td style="text-align: left;"><strong>Interface</strong> : design system, écrans, layout, flux de navigation</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/README.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

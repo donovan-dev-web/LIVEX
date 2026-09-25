@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class MindSnapshotDto | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class MindSnapshotDto | LIVEX ">
+    
+    <meta name="description" content="&#201;tat cognitif complet d&#39;une entit&#233; au tick T (PERSISTENCE.md &#167;3 table 4).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Persistence.MindSnapshotDto">
+
+
+
+  <h1 id="Simulation_Core_Persistence_MindSnapshotDto" data-uid="Simulation.Core.Persistence.MindSnapshotDto" class="text-break">Class MindSnapshotDto</h1>
+  <div class="markdown level0 summary"><p>État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">MindSnapshotDto</span></div>
+  </div>
+  <div class="implements">
+    <h5>Implements</h5>
+    <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Simulation.Core.Persistence.MindSnapshotDto.html">MindSnapshotDto</a>&gt;</div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Persistence.html">Persistence</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Persistence_MindSnapshotDto_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed record MindSnapshotDto : IEquatable&lt;MindSnapshotDto&gt;</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto__ctor_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.#ctor*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto__ctor_System_UInt64_Simulation_Core_Persistence_NeedsSnapshotDto_Simulation_Core_Persistence_MemorySnapshotDto_System_Collections_Generic_IReadOnlyList_Simulation_Core_Persistence_BeliefSnapshotDto__System_Collections_Generic_IReadOnlyList_Simulation_Core_Persistence_TrustSnapshotDto__System_Collections_Generic_IReadOnlyList_Simulation_Core_Persistence_MessageSnapshotDto__System_Collections_Generic_IReadOnlyList_System_UInt64__System_Collections_Generic_IReadOnlyDictionary_System_Int32_System_Double__Simulation_Core_Persistence_GoalSnapshotDto_Simulation_Core_Persistence_GroupObjectiveSnapshotDto_System_Nullable_System_Int32__" data-uid="Simulation.Core.Persistence.MindSnapshotDto.#ctor(System.UInt64,Simulation.Core.Persistence.NeedsSnapshotDto,Simulation.Core.Persistence.MemorySnapshotDto,System.Collections.Generic.IReadOnlyList{Simulation.Core.Persistence.BeliefSnapshotDto},System.Collections.Generic.IReadOnlyList{Simulation.Core.Persistence.TrustSnapshotDto},System.Collections.Generic.IReadOnlyList{Simulation.Core.Persistence.MessageSnapshotDto},System.Collections.Generic.IReadOnlyList{System.UInt64},System.Collections.Generic.IReadOnlyDictionary{System.Int32,System.Double},Simulation.Core.Persistence.GoalSnapshotDto,Simulation.Core.Persistence.GroupObjectiveSnapshotDto,System.Nullable{System.Int32})">MindSnapshotDto(ulong, NeedsSnapshotDto, MemorySnapshotDto, IReadOnlyList&lt;BeliefSnapshotDto&gt;, IReadOnlyList&lt;TrustSnapshotDto&gt;, IReadOnlyList&lt;MessageSnapshotDto&gt;, IReadOnlyList&lt;ulong&gt;, IReadOnlyDictionary&lt;int, double&gt;, GoalSnapshotDto?, GroupObjectiveSnapshotDto?, int?)</h4>
+  <div class="markdown level1 summary"><p>État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MindSnapshotDto(ulong EntityId, NeedsSnapshotDto Needs, MemorySnapshotDto Memory, IReadOnlyList&lt;BeliefSnapshotDto&gt; Beliefs, IReadOnlyList&lt;TrustSnapshotDto&gt; Trust, IReadOnlyList&lt;MessageSnapshotDto&gt; OutgoingMessages, IReadOnlyList&lt;ulong&gt; RelayedMessageIds, IReadOnlyDictionary&lt;int, double&gt; SuccessRates, GoalSnapshotDto? Intention, GroupObjectiveSnapshotDto? CollectiveObjective, int? LastDecisionKind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">EntityId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.NeedsSnapshotDto.html">NeedsSnapshotDto</a></td>
+        <td><span class="parametername">Needs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MemorySnapshotDto.html">MemorySnapshotDto</a></td>
+        <td><span class="parametername">Memory</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.BeliefSnapshotDto.html">BeliefSnapshotDto</a>&gt;</td>
+        <td><span class="parametername">Beliefs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.TrustSnapshotDto.html">TrustSnapshotDto</a>&gt;</td>
+        <td><span class="parametername">Trust</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.MessageSnapshotDto.html">MessageSnapshotDto</a>&gt;</td>
+        <td><span class="parametername">OutgoingMessages</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>&gt;</td>
+        <td><span class="parametername">RelayedMessageIds</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>&gt;</td>
+        <td><span class="parametername">SuccessRates</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.GoalSnapshotDto.html">GoalSnapshotDto</a></td>
+        <td><span class="parametername">Intention</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.GroupObjectiveSnapshotDto.html">GroupObjectiveSnapshotDto</a></td>
+        <td><span class="parametername">CollectiveObjective</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</td>
+        <td><span class="parametername">LastDecisionKind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Beliefs_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Beliefs*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Beliefs" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Beliefs">Beliefs</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;BeliefSnapshotDto&gt; Beliefs { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.BeliefSnapshotDto.html">BeliefSnapshotDto</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_CollectiveObjective_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.CollectiveObjective*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_CollectiveObjective" data-uid="Simulation.Core.Persistence.MindSnapshotDto.CollectiveObjective">CollectiveObjective</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GroupObjectiveSnapshotDto? CollectiveObjective { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.GroupObjectiveSnapshotDto.html">GroupObjectiveSnapshotDto</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_EntityId_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.EntityId*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_EntityId" data-uid="Simulation.Core.Persistence.MindSnapshotDto.EntityId">EntityId</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ulong EntityId { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Intention_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Intention*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Intention" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Intention">Intention</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public GoalSnapshotDto? Intention { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.GoalSnapshotDto.html">GoalSnapshotDto</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_LastDecisionKind_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.LastDecisionKind*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_LastDecisionKind" data-uid="Simulation.Core.Persistence.MindSnapshotDto.LastDecisionKind">LastDecisionKind</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int? LastDecisionKind { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Memory_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Memory*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Memory" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Memory">Memory</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MemorySnapshotDto Memory { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MemorySnapshotDto.html">MemorySnapshotDto</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Needs_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Needs*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Needs" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Needs">Needs</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public NeedsSnapshotDto Needs { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.NeedsSnapshotDto.html">NeedsSnapshotDto</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_OutgoingMessages_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.OutgoingMessages*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_OutgoingMessages" data-uid="Simulation.Core.Persistence.MindSnapshotDto.OutgoingMessages">OutgoingMessages</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;MessageSnapshotDto&gt; OutgoingMessages { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.MessageSnapshotDto.html">MessageSnapshotDto</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_RelayedMessageIds_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.RelayedMessageIds*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_RelayedMessageIds" data-uid="Simulation.Core.Persistence.MindSnapshotDto.RelayedMessageIds">RelayedMessageIds</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;ulong&gt; RelayedMessageIds { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_SuccessRates_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.SuccessRates*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_SuccessRates" data-uid="Simulation.Core.Persistence.MindSnapshotDto.SuccessRates">SuccessRates</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyDictionary&lt;int, double&gt; SuccessRates { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Trust_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Trust*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Trust" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Trust">Trust</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;TrustSnapshotDto&gt; Trust { get; init; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.TrustSnapshotDto.html">TrustSnapshotDto</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Deconstruct_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Deconstruct*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Deconstruct_System_UInt64__Simulation_Core_Persistence_NeedsSnapshotDto__Simulation_Core_Persistence_MemorySnapshotDto__System_Collections_Generic_IReadOnlyList_Simulation_Core_Persistence_BeliefSnapshotDto___System_Collections_Generic_IReadOnlyList_Simulation_Core_Persistence_TrustSnapshotDto___System_Collections_Generic_IReadOnlyList_Simulation_Core_Persistence_MessageSnapshotDto___System_Collections_Generic_IReadOnlyList_System_UInt64___System_Collections_Generic_IReadOnlyDictionary_System_Int32_System_Double___Simulation_Core_Persistence_GoalSnapshotDto__Simulation_Core_Persistence_GroupObjectiveSnapshotDto__System_Nullable_System_Int32___" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Deconstruct(System.UInt64@,Simulation.Core.Persistence.NeedsSnapshotDto@,Simulation.Core.Persistence.MemorySnapshotDto@,System.Collections.Generic.IReadOnlyList{Simulation.Core.Persistence.BeliefSnapshotDto}@,System.Collections.Generic.IReadOnlyList{Simulation.Core.Persistence.TrustSnapshotDto}@,System.Collections.Generic.IReadOnlyList{Simulation.Core.Persistence.MessageSnapshotDto}@,System.Collections.Generic.IReadOnlyList{System.UInt64}@,System.Collections.Generic.IReadOnlyDictionary{System.Int32,System.Double}@,Simulation.Core.Persistence.GoalSnapshotDto@,Simulation.Core.Persistence.GroupObjectiveSnapshotDto@,System.Nullable{System.Int32}@)">Deconstruct(out ulong, out NeedsSnapshotDto, out MemorySnapshotDto, out IReadOnlyList&lt;BeliefSnapshotDto&gt;, out IReadOnlyList&lt;TrustSnapshotDto&gt;, out IReadOnlyList&lt;MessageSnapshotDto&gt;, out IReadOnlyList&lt;ulong&gt;, out IReadOnlyDictionary&lt;int, double&gt;, out GoalSnapshotDto?, out GroupObjectiveSnapshotDto?, out int?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Deconstruct(out ulong EntityId, out NeedsSnapshotDto Needs, out MemorySnapshotDto Memory, out IReadOnlyList&lt;BeliefSnapshotDto&gt; Beliefs, out IReadOnlyList&lt;TrustSnapshotDto&gt; Trust, out IReadOnlyList&lt;MessageSnapshotDto&gt; OutgoingMessages, out IReadOnlyList&lt;ulong&gt; RelayedMessageIds, out IReadOnlyDictionary&lt;int, double&gt; SuccessRates, out GoalSnapshotDto? Intention, out GroupObjectiveSnapshotDto? CollectiveObjective, out int? LastDecisionKind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">EntityId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.NeedsSnapshotDto.html">NeedsSnapshotDto</a></td>
+        <td><span class="parametername">Needs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MemorySnapshotDto.html">MemorySnapshotDto</a></td>
+        <td><span class="parametername">Memory</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.BeliefSnapshotDto.html">BeliefSnapshotDto</a>&gt;</td>
+        <td><span class="parametername">Beliefs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.TrustSnapshotDto.html">TrustSnapshotDto</a>&gt;</td>
+        <td><span class="parametername">Trust</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.Persistence.MessageSnapshotDto.html">MessageSnapshotDto</a>&gt;</td>
+        <td><span class="parametername">OutgoingMessages</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a>&gt;</td>
+        <td><span class="parametername">RelayedMessageIds</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2">IReadOnlyDictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>&gt;</td>
+        <td><span class="parametername">SuccessRates</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.GoalSnapshotDto.html">GoalSnapshotDto</a></td>
+        <td><span class="parametername">Intention</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.GroupObjectiveSnapshotDto.html">GroupObjectiveSnapshotDto</a></td>
+        <td><span class="parametername">CollectiveObjective</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</td>
+        <td><span class="parametername">LastDecisionKind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Equals_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Equals*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Equals_Simulation_Core_Persistence_MindSnapshotDto_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Equals(Simulation.Core.Persistence.MindSnapshotDto)">Equals(MindSnapshotDto?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Equals(MindSnapshotDto? other)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MindSnapshotDto.html">MindSnapshotDto</a></td>
+        <td><span class="parametername">other</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_Equals_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Equals*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_Equals_System_Object_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.Equals(System.Object)">Equals(object?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override bool Equals(object? obj)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></td>
+        <td><span class="parametername">obj</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a></div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_GetHashCode_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.GetHashCode*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_GetHashCode" data-uid="Simulation.Core.Persistence.MindSnapshotDto.GetHashCode">GetHashCode()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override int GetHashCode()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a></div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_ToString_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.ToString*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_ToString" data-uid="Simulation.Core.Persistence.MindSnapshotDto.ToString">ToString()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string ToString()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="overrides">Overrides</h5>
+  <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a></div>
+  <h3 id="operators">Operators
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_op_Equality_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.op_Equality*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_op_Equality_Simulation_Core_Persistence_MindSnapshotDto_Simulation_Core_Persistence_MindSnapshotDto_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.op_Equality(Simulation.Core.Persistence.MindSnapshotDto,Simulation.Core.Persistence.MindSnapshotDto)">operator ==(MindSnapshotDto?, MindSnapshotDto?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator ==(MindSnapshotDto? left, MindSnapshotDto? right)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MindSnapshotDto.html">MindSnapshotDto</a></td>
+        <td><span class="parametername">left</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MindSnapshotDto.html">MindSnapshotDto</a></td>
+        <td><span class="parametername">right</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Persistence_MindSnapshotDto_op_Inequality_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.op_Inequality*"></a>
+  <h4 id="Simulation_Core_Persistence_MindSnapshotDto_op_Inequality_Simulation_Core_Persistence_MindSnapshotDto_Simulation_Core_Persistence_MindSnapshotDto_" data-uid="Simulation.Core.Persistence.MindSnapshotDto.op_Inequality(Simulation.Core.Persistence.MindSnapshotDto,Simulation.Core.Persistence.MindSnapshotDto)">operator !=(MindSnapshotDto?, MindSnapshotDto?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool operator !=(MindSnapshotDto? left, MindSnapshotDto? right)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MindSnapshotDto.html">MindSnapshotDto</a></td>
+        <td><span class="parametername">left</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Persistence.MindSnapshotDto.html">MindSnapshotDto</a></td>
+        <td><span class="parametername">right</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable&lt;T&gt;</a>
+  </div>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Persistence/SimulationSnapshot.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

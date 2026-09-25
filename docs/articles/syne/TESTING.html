@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>TESTING.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="TESTING.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="testingmd">TESTING.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 23 septembre 2026
+<strong>Dépend de</strong> : <code>DETERMINISM.md</code>, <code>ARCHITECTURE.md</code>
+<strong>Source Monographie</strong> : §7.1 (xUnit + Moq), Annexe J (jalons de validation, 160+ tests), Annexe I (benchmarks)</p>
+<hr>
+<h2 id="1-objectif">1. Objectif</h2>
+<p>Garantir — par des tests automatisés — la <strong>correction</strong>, le <strong>déterminisme</strong> et la <strong>performance</strong> de SYNE. Jalon : <strong>160+ tests</strong> (Annexe J.1) et <strong>couverture ≥ 80 %</strong> (Annexe I.3). État V0.1 : <strong>362 tests</strong> (345 Core + 17 Console ; baseline U0 62 → +60 au jalon SYNE ph1 → +5 observabilité SYNE-080 → +2 tests de fil WebSocket → +17 au jalon SYNE ph2 → +20 au jalon SYNE ph3 → +30 au jalon SYNE ph4 → +13 au jalon SYNE ph5, dont 3 <code>Simulation.Console.Tests</code> → +32 au jalon SYNE ph6 : 9 <code>GroupSystemTests</code>, 7 <code>BirthSystemTests</code>, 7 mécanismes fins d'héritage, 3 validations de configuration, 3 observabilité, 3 <code>GroupBirthDeterminismTests</code> → <strong>+19</strong> au jalon SYNE ph7b : 4 <code>BirthSystemTests</code> fidélités (SYNE-075), 3 propagation + 1 bonus <code>GroupObjective</code> (SYNE-076), 8 <code>AStarPathfinderTests</code> + 2 <code>ActionExecutorTests</code> (SYNE-077), 1 observabilité preuve SYNE-081/082 ; +1 <code>test_health.py</code> ECHOS — registre <code>/api/runs/{id}/decisions</code> → <strong>+12</strong> au jalon SYNE ph9 : 5 <code>ObjectPoolTests</code>, 3 <code>TickBudgetTests</code> (part computation ≥ 30 % + non-altération trajectoire + golden), 4 <code>ScaleTargetsTests</code> (planchers 50/500/1000 + checksum à l'échelle) → <strong>+45</strong> au jalon SYNE ph10 : 35 <code>Ph10ValidationCoverageTests</code> (toutes les branches du <code>SimulationOptionsValidator</code>), 4 <code>ObservabilitySensorTests</code> (<code>message_sent/received</code>, <code>agent_died</code>, <code>agent_spawned</code>, <code>action_completed</code> réserves), 3 <code>Ph10DeterminismBaselineTests</code> (SYNE-102, baseline d'état épinglée), 3 <code>ObservabilityChainedLoopTests</code> (SYNE-101, boucle complète sans perte — Console) → <strong>+5</strong> au jalon U8 persistance : 5 <code>PersistenceTests</code> (SYNE-110/111/112 — reprise bit-à-bit après SQLite, état RNG 4×64, reprise post-crash, schéma 11 tables, rotation <code>maxBackups</code>) → <strong>+6</strong> au jalon U8 contrôle : 6 <code>ControlServerWireTests</code> (SYNE-113 — start/status, pause gèle le tick, resume reprend, reset, <strong>contrôle non intrusif</strong> = run piloté bit-à-bit identique au run ininterrompu, 404 JSON) → <strong>+7</strong> au jalon U8 cycle des ressources : 5 <code>ResourceStocksTests</code> (minéral 4ᵉ réserve, régénération bornée, dégradation périodique, non-négativité, déterminisme du cycle), 1 <code>SimulationOptionsValidatorTests</code> (bornes <code>resources.*</code>), 1 <code>PersistenceTests</code> (4 réserves dont mineral persistées + régénération restaurée) ; assertions existantes <code>CognitionPipelineTests</code>/<code>ObservabilitySensorTests</code> adaptées aux bornes de régénération → <strong>+20</strong> au jalon U8 constructions : 8 <code>WorldTests</code> (bornes + id unique de <code>AddObstacle</code>, trace/révision <code>PlaceConstruction</code>/<code>RemoveConstruction</code>, drain <code>ClearEnvironmentChanges</code>, layout appliqué), 4 <code>AStarPathfinderTests</code> (purge cache, re-routage après pose, no-op, route rétablie après retrait), 2 <code>ConfigLoaderTests</code> (défauts layout + chargement JSON), 3 <code>SimulationOptionsValidatorTests</code> (layout valide / sans flag / bornes), 3 <code>ObservabilitySensorTests</code> (snapshot <code>obstacles[]</code>, contrats construction_placed/removed, champ additif), 2 <code>ObservabilityConstructionTests</code> Console (pose/retrait drainés + déterminisme non altéré) ; épingles <code>engineVersion</code> passées à 0.8.0. <strong>Couverture lignes mesurée 96,19 %</strong> (≥ 80 % requis par SYNE-100) — <code>SimulationOptionsValidator.cs</code> 100 %, <code>ExternalEvent.cs</code> 100 %. Checksum doré ré-épinglé <code>0x27fad50065d8c4a4</code> (engineVersion 0.8.0), inchangé au ph9/ph10/U8 (instrumentation/pooling/persistance/tests/contrôle + cycle ressources + constructions seuls, 0 tirage PRNG et Refresh no-op sur le scénario de référence) ; baseline d'état complète ph10 <code>0x072a488aa18c05eb</code>. <strong>Suite totale : 362 tests</strong> (345 Core + 17 Console).</p>
+<h2 id="2-stack-de-tests-monographie-71">2. Stack de tests (Monographie §7.1)</h2>
+<ul>
+<li><strong>xUnit</strong> — framework de test.</li>
+<li><strong>Moq</strong> — isolation des dépendances.</li>
+<li><strong>XPlat Code Coverage</strong> (Coverlet) — mesurer la couverture.</li>
+<li>CI : exécuté dans <code>ci.yml</code> GitHub Actions.</li>
+</ul>
+<h2 id="3-périmètre-des-tests-par-système">3. Périmètre des tests par système</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Système</th>
+<th style="text-align: left;">Tests ciblés</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Perception</td>
+<td style="text-align: left;">rayon, plage de confiance, grille spatiale, perception étagée, <strong>ligne de vue obstacle (ADR-013)</strong>, ordre distance/id, obstacles observés</td>
+</tr>
+<tr>
+<td style="text-align: left;">Pipeline BDI</td>
+<td style="text-align: left;">boucle croyance→désir→intention à chaque tick, rotation, déterminisme inter-runs, blocage mouvement</td>
+</tr>
+<tr>
+<td style="text-align: left;">Mémoire</td>
+<td style="text-align: left;">décroissance exponentielle, purge au seuil 0.01, capacité 1000, éviction épinglée</td>
+</tr>
+<tr>
+<td style="text-align: left;">Croyances</td>
+<td style="text-align: left;">révision (alignement/conflit/sources différentes), expiration, plafond par snap</td>
+</tr>
+<tr>
+<td style="text-align: left;">Besoins &amp; Objectifs</td>
+<td style="text-align: left;">seuils, filtrage de faisabilité, priorisation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Décision / Utilité (SYNE ph3)</td>
+<td style="text-align: left;">formule complète, <strong>bonus d'alignement ×1.2</strong>, hystérésis (<code>actionSwitchMargin</code>), interruptions par besoin critique, <strong>fréquence de délibération configurable</strong>, <strong>conflits de priorités force × confiance</strong>, <strong>DecisionRecord</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">Actions (SYNE ph4)</td>
+<td style="text-align: left;">catalogue déclaratif complet + échec déclaratif, exécution atomique (Eat/Drink/rest/mouvement), déplacement déterministe sans obstacle, <strong>réserves globales</strong> (consommation, clamp, copie), <strong>déclencheur d'interruption centralisé</strong> (faim→Eat/SeekFood, énergie→Rest, marge, cas nominal), seuils de besoins <strong>≥ 50</strong>, terminal Eat/Drink en pipeline, événement <code>action_completed</code> (API_CONTRACTS §2.2)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Communications (SYNE ph5)</td>
+<td style="text-align: left;">portée + <strong>ligne de vue</strong>, <strong>interception publique</strong> (décision n°8), <strong>coûts hérités configurables</strong> (0.5+p×0.1 / 0.2+p×0.05, décision n°9), <strong>confiance ajustée par le récepteur</strong>, caps <code>maxSends</code>/<code>maxReceives</code>, <strong>relais × 0.9/hop</strong> + borne <code>maxHops</code> + anti-boucle, <strong>déterminisme</strong> (id SplitMix64, incompréhension, égalité inter-runs) — <code>CommunicationSystemTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Observabilité (SYNE-080)</td>
+<td style="text-align: left;">format camelCase des messages (snapshot/event), épinglage et déterminisme d'émission, contrat <code>decision_made</code> + <code>action_completed</code> (avec réserves) + <code>message_sent</code>/<code>message_received</code> (contrats de livraison/réception) + <code>agent_died</code> ({cause, species}) + <code>agent_spawned</code> (parentage), <code>resources</code> peuplées (4 types dep. SYNE-070), <code>obstacles[]</code> (dep. SYNE-071), <code>season</code>/<code>seasonIndex</code> + <code>world.season_changed</code> (dep. SYNE-072), <code>territories[]</code> + <code>world.territory_membership_changed</code> (dep. SYNE-073), <strong>engineVersion</strong> ; <strong>tests de fil WebSocket réels</strong> (<code>Simulation.Console.Tests</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Groupes (SYNE ph6)</td>
+<td style="text-align: left;">cohésion confiance × affinité (lien = confiance <strong>et</strong> part commune), composantes union-find, <strong>cycle de vie par correspondance exacte des membres</strong> (turnover ⇒ dissolution [+refonte]), taille minimale, leader par confiance entrante (tie-break id), décisions pondérées + quorum, formation/dissolution/décision événements + snapshot <code>groups[]</code> — <code>GroupSystemTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Naissance &amp; Héritage (SYNE ph6)</td>
+<td style="text-align: left;">fusion consentie (min confiance réciproque ≥ seuil, paire d'id minimal, enfant médian clampé), allocation d'id croissante, naissances fusionnées post-boucle, <code>agent_spawned</code> (parentage), <strong>dominance [0,1] parent exprimant</strong>, <strong>mutation déterministe</strong> + bornes [0,2], seuil de salience configuré — <code>BirthSystemTests</code>, <code>InheritanceTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Groupes/Births (déterminisme ph6)</td>
+<td style="text-align: left;">mêmes options + seed ⇒ même séquence de groupes/naissances en 200 ticks, seeds différents ⇒ divergences, événements groupes via contrat — <code>GroupBirthDeterminismTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Ressources</td>
+<td style="text-align: left;">réserves globales SYNE-042 (initialisation, consommation, clamp, copie snapshot), épuisement</td>
+</tr>
+<tr>
+<td style="text-align: left;">Cycle des ressources (SYNE-070, jalon U8)</td>
+<td style="text-align: left;">minéral 4ᵉ réserve (défaut 0), régénération bornée par tick, <strong>dégradation périodique</strong> (<code>− rate × degradationTick</code> tous les <code>degradationTick</code>), non-négativité, déterminisme du cycle (deux répliques ⇒ mêmes niveaux), bornes <code>resources.*</code> validées — <code>ResourceStocksTests</code>, <code>SimulationOptionsValidatorTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Constructions / obstacles statiques (SYNE-071, U8)</td>
+<td style="text-align: left;">config <code>world.obstacles</code> + <code>world.obstacleLayout[]</code> (défauts, chargement JSON, bornes <code>id</code>/<code>radius</code>/<code>x</code>/<code>y</code>, layout rejeté quand flag <code>false</code>) ; mutation dynamique : <code>AddObstacle</code> hors bornes / id dupliqué rejetés, révision incrémentée, trace <code>PlaceConstruction</code>/<code>RemoveConstruction</code> + drain <code>ClearEnvironmentChanges</code> ; <strong>grille A* re-rasterisable</strong> : <code>Refresh()</code> purge le cache et re-rasterise (re-routage après pose, route rétablie après retrait, <strong>no-op</strong> quand rien n'a changé) ; observabilité : <code>world.construction_placed</code>/<code>world.construction_removed</code> drainés (Console end-to-end), snapshot <code>obstacles[]</code> additif, déterminisme non altéré — <code>WorldTests</code>, <code>AStarPathfinderTests</code>, <code>PathCacheTest</code>(s), <code>ConfigLoaderTests</code>, <code>SimulationOptionsValidatorTests</code>, <code>ObservabilitySensorTests</code>, <code>ObservabilityConstructionTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Persistance (jalon U8)</td>
+<td style="text-align: left;">reprise bit-à-bit après SQLite (état monde+cognition+RNG), sauvegarde atomique des <strong>11 tables</strong> (PERSISTENCE.md §3, <code>PRAGMA user_version=2</code>), rotation <code>maxBackups</code>, reprise après crash au dernier <code>tick_states</code> — <code>PersistenceTests</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Contrôle HTTP (SYNE-113, U8)</td>
+<td style="text-align: left;">serveur de contrôle :5181 piloté par API (<em>state machine</em> <code>idle→running⇋paused→finished</code>) — <strong><code>ControlServerWireTests</code></strong> : start (<code>seed</code>/<code>maxTicks</code>) + <code>state=Running</code>, pause gèle le tick / resume reprend, reset régénère un <code>runId</code>, <strong>non-intrusion</strong> (run piloté tick-à-tick == run ininterrompu, bit-à-bit), 404 JSON sur action inconnue</td>
+</tr>
+<tr>
+<td style="text-align: left;">Configuration / Validation (SYNE-100)</td>
+<td style="text-align: left;">toutes les branches du <code>SimulationOptionsValidator</code> : bornes monde/débits, sauvegarde (<code>autoSaveEveryNTicks</code>, <code>maxBackups</code>), perception, communication (caps, portée, <code>maxHops</code>, coûts, incompréhension), besoins (rates/triggers/drifts), croyances (plafonds, décroissance), groupe (<code>CollectiveAlignBonus</code>, catalogue eat/drink/rest, merge, mortalité), A* (<code>cellSize</code>, <code>maxExpansionCells</code>, <code>cacheCapacity</code>), <code>null</code> — <code>Ph10ValidationCoverageTests</code> (<strong><code>SimulationOptionsValidator.cs</code> 100 %</strong>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Déterminisme</td>
+<td style="text-align: left;"><code>DeterminismRegressionTests</code> (hash épinglé SYNE-015), auto-égalité, checksums ; <strong><code>Ph10DeterminismBaselineTests</code> (SYNE-102)</strong> — journal d'état <strong>complet</strong> (positions, énergie, besoins, mémoire, confiance, groupes, naissances, décès) bit-à-bit pour seeds {12345, 7, 999}, divergence seed différente, baseline épinglée <code>0x072a488aa18c05eb</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Intégration boucle complète (SYNE-101)</td>
+<td style="text-align: left;"><strong><code>ObservabilityChainedLoopTests</code></strong> — 150 ticks chaînés sans perte : 1 snapshot + 1 <code>tick_summary</code>/tick, ticks contigus 1..N, trames JSON valides, 6 sous-systèmes engagés (<code>decision_made</code>, <code>action_completed</code>, <code>message_sent</code>/<code>message_received</code>…) + au moins un événement social/population ; agents décédés absents des snapshots post-mortem</td>
+</tr>
+<tr>
+<td style="text-align: left;">Performance</td>
+<td style="text-align: left;"><code>PerceptionBenchmarkTests</code> (SYNE-012) — budget 10 ms/requête en CI ; <strong><code>ObjectPoolTests</code> + <code>TickBudgetTests</code> + <code>ScaleTargetsTests</code> (SYNE ph9)</strong> — pooling actif, part computation ≥ 30 %, trajectoire non altérée, planchers anti-régression 50/500/1000, checksum bit-à-bit à l'échelle</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-tests-de-déterminisme-critiques">4. Tests de déterminisme (critiques)</h2>
+<ul>
+<li><strong>Reproductibilité</strong> : exécuter deux runs identiques → checksums identiques.</li>
+<li><strong>Reprise</strong> : sauvegarder au tick N, charger, poursuivre → même trajectoire qu'un run ininterrompu (état RNG inclus).</li>
+<li><strong>Anti-triche</strong> : vérifier que les entités ne voient jamais plus que leur rayon (observabilité partielle).</li>
+</ul>
+<h2 id="5-tests-de-performance">5. Tests de performance</h2>
+<ul>
+<li>Les benchmarks (Annexe I) sont des <strong>tests intégrés</strong> : débit, mémoire, CPU.</li>
+<li>Seuil d'échec = objectifs de ticks/s (Annexe I.3).</li>
+<li><strong>Jalon ph9 (SYNE-090…093)</strong> : <code>TickBudgetTests</code> (part computation ≥ 30 % @250 entités/50 ticks, collecte n'altère pas la trajectoire, golden épinglé <code>0x27fad50065d8c4a4</code>), <code>ObjectPoolTests</code> (Rent/Return, équilibre des buffers de tri), <code>ScaleTargetsTests</code> (planchers anti-régression <strong>50 → ≥ 120 t/s, 500 → ≥ 30 t/s, 1000 → ≥ 20 t/s</strong>, meilleur de 3 ; checksum d'état reproductible à 500 entités × 30 ticks). Les planchers retiennent une <strong>marge × ~7 en-deçà des mesures réelles</strong> (PERFORMANCE.md §9.4) pour absorber la contention CI.</li>
+</ul>
+<h2 id="6-jalons-de-validation-annexe-j2">6. Jalons de validation (Annexe J.2)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Phase</th>
+<th style="text-align: left;">Critère</th>
+<th style="text-align: left;">Commande indicative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">BDI+Perception</td>
+<td style="text-align: left;">50 ent., 1000 ticks, pas de crash ; <strong>pipeline BDI testé (SYNE ph1)</strong></td>
+<td style="text-align: left;"><code>dotnet test -c Release</code> ≥ 122 tests</td>
+</tr>
+<tr>
+<td style="text-align: left;">Mémoire+Croyances</td>
+<td style="text-align: left;">50 ent., 2000 ticks, croyances divergentes</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;MemoryTests|BeliefTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Décision+Utilité</td>
+<td style="text-align: left;">traits différents → décisions différentes</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;UtilityEvaluatorTests|CognitionPipelineTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Communication (SYNE ph5)</td>
+<td style="text-align: left;">information locale (rayon), interception, relais ≤ 2 sauts</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;CommunicationSystemTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Performance</td>
+<td style="text-align: left;">micro-benchmark grille &lt; budget CI ; <strong>débits 50/500/1000 ≥ 120/30/20 t/s (ph9)</strong></td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;PerceptionBenchmarkTests|ScaleTargetsTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Tests</td>
+<td style="text-align: left;"><strong>407 tests (385 Core + 22 Console), 94,01 % de couverture</strong> (≥ 80 % requis, SYNE-100) ; jalons T0–T5 activés (SYNE-122)</td>
+<td style="text-align: left;"><code>dotnet test --collect:&quot;XPlat Code Coverage&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Déterminisme (SYNE-102)</td>
+<td style="text-align: left;">golden <code>0x27fad50065d8c4a4</code> + baseline d'état <code>0x072a488aa18c05eb</code> inchangés</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;DeterminismRegressionTests|Ph10DeterminismBaselineTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Intégration (SYNE-101)</td>
+<td style="text-align: left;">150 ticks chaînés sans perte (contiguïté 1..N)</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;ObservabilityChainedLoopTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Contrôle (SYNE-113)</td>
+<td style="text-align: left;">pilotage HTTP :5181 non intrusif (run piloté == ininterrompu)</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;ControlServerWireTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Jalons T0–T5 (SYNE-122)</td>
+<td style="text-align: left;">T0 50/1000 sans crash + état valide déterministe ; T1 50/2000 croyances divergentes ; T2 traits → décisions différentes (situation identique) ; T3 info locale ; T4 reproductibilité benchmark ; T5 suite ≥ 160 tests</td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;MilestoneT0T5Tests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Saisons (SYNE-072)</td>
+<td style="text-align: left;">cycle déterministe (<code>At</code> : spring 0..359, summer 360..719, ...), initialSeason respectée, longueur 1 ; facteurs spring/summer/autumn/winter par ressource, invariants purs ; <code>ApplyLifecycle</code> factorisé (régénération 120/105/110/100, dégradation ≥ 0) ; traçage au tick exact (Run(10), longueur 4 → 2 changements, autumn) + drain ; désactivé ⇒ aucun événement ; déterminisme bit-à-bit (FNV ResourceLog) ; snapshot <code>season</code>/<code>seasonIndex</code> (summer/1) ; sérialiseur (autumn/2) ; événement <code>world.season_changed</code> typé {previous, current} ; validateur défauts + 6 branches invalides ; Console end-to-end (au tick du basculement, traversant l'émetteur, désactivé ⇒ silence) ; engineVersion 0.9.0 — <code>SeasonTests</code>, <code>ObservabilitySeasonTests</code></td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;SeasonTests|ObservabilitySeasonTests&quot;</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Territoires (SYNE-073)</td>
+<td style="text-align: left;">layout/ordre de pose (<code>ApplyConfiguredLayout</code>), <code>AddTerritory</code> bornes/id unique, bord inclus (<code>distance ≤ radius</code>) ; Entered puis Left (ordre), accumulation + drain (<code>ClearTerritoryChanges</code>) ; désactivé ⇒ aucun suivi ; déterminisme bit-à-bit (FNV MembershipLog, 2 répliques même seed) ; snapshot <code>territories[]</code> (members triés, membre par ordre croissant) + vide si désactivé ; sérialiseur JSON (<code>world.territory_membership_changed</code> {kind}) ; événement typé (agentId/targetId/value) ; validateur défauts + 6 branches invalides ; Console end-to-end (3 entités dans une zone géante au tick 1 → 3 <code>entered</code> drainés + snapshot <code>territories[]</code> traversant l'émetteur, désactivé ⇒ silence) ; engineVersion 0.10.0, checksums dorés inchangés (désactivé par défaut) — <code>TerritoryTests</code>, <code>ObservabilityTerritoryTests</code></td>
+<td style="text-align: left;"><code>dotnet test --filter &quot;TerritoryTests|ObservabilityTerritoryTests&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-convention-décriture">7. Convention d'écriture</h2>
+<ul>
+<li>Test unitaire = comportement observable d'un sous-système avec données explicites (pas de mock hasardeux).</li>
+<li>Chaque test de décision fournit le <code>DecisionRecord</code> attendu (SYNE-030 à 033 : <code>MindState.LastDecisionRecord</code>).</li>
+<li>Les tests qui dépendent du hasard utilisent une <strong>seed fixe</strong> ; le tirage de conflit de priorités est <strong>déterministe sans PRNG</strong> (hash SplitMix64, <code>PriorityConflictResolver</code>).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Répartition numérique exacte des tests (par système) à établir lors de l'implémentation.</li>
+<li>Outillage exact de tests Godot PRISM (hors SYNE) et outillage de tests front (Vitest) — voir <code>CI_CD.md</code>.
+| Livres (SYNE-121) | Coût d’écriture débité, tick poinçonné, lecteurs distincts, mutation tracée, désactivation par défaut, snapshot et reprise, événements console <code>world.book_written</code>/<code>world.book_read</code> — <code>SimulationLoopTests</code>, <code>ObservabilityTerritoryTests</code> | <code>dotnet test --filter &quot;FullyQualifiedName~Books&quot;</code> |</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/TESTING.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

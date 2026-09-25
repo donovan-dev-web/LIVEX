@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>PRISM — Perceptual Rendering &amp; Interactive Simulation Module | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="PRISM — Perceptual Rendering &amp; Interactive Simulation Module | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="prism--perceptual-rendering--interactive-simulation-module">PRISM — Perceptual Rendering &amp; Interactive Simulation Module</h1>
+
+<p><a href="README.html"><img src="https://img.shields.io/badge/Statut-STABLE-00d4a0.svg" alt="Statut: STABLE"></a>
+<a href="ARCHITECTURE.html"><img src="https://img.shields.io/badge/Moteur-Godot%204.7.2-1f7f6f.svg" alt="Moteur: Godot 4.7.2"></a>
+<a href="ASSETS_CONVENTIONS.html"><img src="https://img.shields.io/badge/Assets-100%25%20proc%C3%A9dural-1f7f6f.svg" alt="100% procédural"></a></p>
+<p><strong>Composant</strong> : PRISM
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : la documentation transversale (../)
+<strong>Source Monographie</strong> : Partie 5</p>
+<hr>
+<h2 id="rôle">Rôle</h2>
+<p>Couche qui rend le monde <strong>perceptible et interactif</strong> : il représente graphiquement l'état fourni par SYNE et fournit navigation, caméra, inspection et interaction. <strong>Reflet du monde simulé, jamais co-auteur.</strong></p>
+<h2 id="lancement-seul">Lancement seul</h2>
+<pre><code class="lang-console"># Projet Godot (édition .NET), matériel C#
+godot --path godot-renderer  # dossier PRISM (monorepo : prism/)
+# Le partenaire SYNE se lance en --headless
+dotnet run --project simulation-core/Simulation.Console -- --headless  # (syne/)
+</code></pre>
+<h2 id="dépendances-et-ports">Dépendances et ports</h2>
+<ul>
+<li><strong>Godot 4.7.2 édition .NET</strong> (C#), [HÉRITÉ] — moteur définitif ouvert.</li>
+<li>Se connecte à <strong>SYNE</strong> : WebSocket :5180 (données), HTTP :5181 (contrôle relayé).</li>
+<li>Interface d'analyse <strong>intégrée à ECHOS</strong> :5000.</li>
+</ul>
+<h2 id="documentation-du-composant">Documentation du composant</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Document</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>VISION.md</code></td>
+<td style="text-align: left;">Rôle, frontières, principe invariant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ARCHITECTURE.md</code></td>
+<td style="text-align: left;">Choix Godot, scènes, mapping, transport</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SCENE_SPEC.md</code></td>
+<td style="text-align: left;">Structure des scènes, meshes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TRANSPORT_API.md</code></td>
+<td style="text-align: left;">WebSocket (données) + HTTP (contrôle)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>RENDERING_SPEC.md</code></td>
+<td style="text-align: left;">Rendu des entités et ressources, code couleur</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>VISUALIZATION_SPEC.md</code></td>
+<td style="text-align: left;">Croyances, social, groupes, communication</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>UX_INTERACTION.md</code></td>
+<td style="text-align: left;">Caméra, HUD, interface d'analyse</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ASSETS_CONVENTIONS.md</code></td>
+<td style="text-align: left;">Primitives procédurales, nommage</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TESTING.md</code></td>
+<td style="text-align: left;">Tests unitaires, intégration transport, visuels</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ROADMAP.md</code></td>
+<td style="text-align: left;">Roadmap PRISM, évolution future</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CHANGELOG.md</code></td>
+<td style="text-align: left;">Versions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>adr/</code></td>
+<td style="text-align: left;">ADR locaux + références transverses</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/prism/README.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ARCHITECTURE.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ARCHITECTURE.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="architecturemd">ARCHITECTURE.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 23 septembre 2026
+<strong>Dépend de</strong> : <code>VISION.md</code>, <code>../COMMUNICATION.md</code>
+<strong>Source Monographie</strong> : §4.2</p>
+<hr>
+<h2 id="1-architecture-cible">1. Architecture cible</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Composant</th>
+<th style="text-align: left;">Rôle (V0.1)</th>
+<th style="text-align: left;">Implémentation V0.1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Analyse</strong></td>
+<td style="text-align: left;">Calculs scientifiques, traitement des données, métriques</td>
+<td style="text-align: left;">Python (FastAPI)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Application</strong></td>
+<td style="text-align: left;">Couche applicative, API REST, pilotage</td>
+<td style="text-align: left;">FastAPI local</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Interface</strong></td>
+<td style="text-align: left;">Vues d'observation, contrôle, calibration (<strong>intégrée à ECHOS</strong>)</td>
+<td style="text-align: left;">React/TypeScript — web local servie par FastAPI (<code>echos-ui</code>, Vite)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Stockage</strong></td>
+<td style="text-align: left;">Données d'analyse (séparé de la donnée SYNE)</td>
+<td style="text-align: left;">SQLite + Parquet</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source</strong></td>
+<td style="text-align: left;">SYNE — production d'événements</td>
+<td style="text-align: left;">WebSocket :5180</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-divergence-annoncée-vs-prototype">⚠ Divergence annoncée vs prototype</h3>
+<p>L'architecture cible de la Monographie (§4.2.1) prévoit <strong>Django</strong> (Application) et un <strong>shell Electron</strong> avec interface web React (prototype C#/.NET). <strong>Décision V0.1 (décision utilisateur, 23/09/2026)</strong> : la stack ECHOS est <strong>React/TypeScript web local servie par FastAPI + FastAPI local (PAS Django)</strong>, avec <strong>NumPy/Pandas/SciPy/NetworkX</strong> pour le calcul et <strong>ECharts/Plotly</strong> pour la visualisation, et <strong>SQLite/Parquet</strong> pour le stockage d'analyse. L'interface <code>echos-ui</code> (Vite) est servie par FastAPI (dev <code>npm run dev</code>, build statique en production), sans wrapper de bureau <strong>en V0.1</strong>. Le <strong>shell Electron n'est pas abandonné</strong> : il est <strong>conservé</strong>, son implémentation étant <strong>différée à un horizon ultérieur (post-V0.1)</strong> (correction 23/09/2026, cf. <code>adr/ADR-001-stack-applicative.md</code>). Cette divergence est assumée et documentée (cf. <code>../ARCHITECTURE.md</code> racine, <code>adr/ADR-001-stack-applicative.md</code>).</p>
+<h2 id="2-intégration-avec-syne">2. Intégration avec SYNE</h2>
+<pre><code class="lang-mermaid">flowchart LR
+    S[SYNE\nWebSocket :5180] --&gt;|snapshot / event| E[ECHOS\nconsommateur d'événements]
+    E --&gt;|contrôle / calibration\nHTTP :5181| S
+    E --&gt; M[Métriques temps réel]
+    E --&gt; DB[(Stockage SQLite\nhistorique)]
+    E --&gt; API[API REST :5000]
+    E --&gt; WS2[Diffusion WebSocket\nmétriques]
+</code></pre>
+<ul>
+<li>ECHOS <strong>observe</strong> SYNE (contrat de transport, WebSocket :5180) et <strong>pilote</strong> SYNE (contrôle, calibration) — Monographie §4.2.2.</li>
+<li>L'interface étant <strong>intégrée à ECHOS</strong> en V0.1, la diffusion temps réel des métriques (prototype <code>ws://localhost:5180/metrics</code>) alimente directement les vues d'analyse.</li>
+</ul>
+<h2 id="3-séparation-des-données">3. Séparation des données</h2>
+<p>Les données d'analyse d'ECHOS sont <strong>séparées</strong> des données de persistance de SYNE :</p>
+<ul>
+<li>la base SYNE contient l'<strong>état canonique</strong> du monde simulé (schéma 11 tables, Annexe G) ;</li>
+<li>la base ECHOS contient les <strong>agrégations, métriques et indices mesurés</strong> (SQLite + Parquet pour les séries lourdes).</li>
+</ul>
+<p>Cette séparation garantit que l'observation ne modifie pas la persistance de référence.</p>
+<h2 id="4-systèmes-internes">4. Systèmes internes</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Système</th>
+<th style="text-align: left;">Rôle</th>
+<th style="text-align: left;">Doc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Ingestion temps réel</td>
+<td style="text-align: left;">Consommateur WebSocket 5180 → <code>snapshot</code>/<code>event</code> — clients <code>ws_client</code> (transport injectable) + <code>control_client</code> HTTP 5181</td>
+<td style="text-align: left;"><code>../docs-syne/API_CONTRACTS.md</code>, <code>echos/echos/ingestion/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Stockage d'analyse</td>
+<td style="text-align: left;">Agrégation incrémentale par tick (sans perte, sous-échantillonnage <code>sample_every</code>), SQLite <code>AnalyticsStore</code> (schéma stable versionné) + séries lourdes Parquet (jointure SQLite↔Parquet cohérente), pipeline <code>consume()</code></td>
+<td style="text-align: left;"><code>echos/echos/storage/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">7 moteurs de métriques</td>
+<td style="text-align: left;">Calculs d'analyse</td>
+<td style="text-align: left;"><code>METRICS_SPEC.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Indicateurs d'émergence</td>
+<td style="text-align: left;">Score composite, auto-détection</td>
+<td style="text-align: left;"><code>EMERGENCE_INDICATORS.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Analyse causale</td>
+<td style="text-align: left;">Reconstruction des chaînes</td>
+<td style="text-align: left;"><code>CAUSAL_ANALYSIS.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Comparaison expérimentale</td>
+<td style="text-align: left;">Runs contrôlés, reproductibilité</td>
+<td style="text-align: left;"><code>EXPERIMENT_COMPARISON.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">API REST</td>
+<td style="text-align: left;">Endpoints d'interrogation lecture seule (port 5000) — <code>api/app.py</code> (factory + <code>ECHOS_ANALYTICS_DB</code>), <code>api/routes.py</code> (ECHOS-040→044), <code>api/series.py</code> (cache LRU)</td>
+<td style="text-align: left;"><code>API_REST.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Logging &amp; instrumentation</td>
+<td style="text-align: left;">3 niveaux (structuré, traces, texte)</td>
+<td style="text-align: left;"><code>LOGGING_INSTRUMENTATION.md</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="5-structure-de-code">5. Structure de code</h2>
+<p>Mise en œuvre découpée, chaque sous-composant buildable/testable séparément (ECHOS-002) :</p>
+<pre><code>echos/
+├── pyproject.toml            # paquet echos, pytest --cov-fail-under=80
+├── .flake8                   # flake8 (max-line-length=100)
+├── echos/
+│   ├── __init__.py           # __version__ (synchro pyproject)
+│   ├── api/                  # API REST (ECHOS-040 → 045)
+│   │   ├── app.py            #   create_app(store) FastAPI + ECHOS_ANALYTICS_DB, /health
+│   │   ├── routes.py         #   /api/runs*, /metrics, /export, /beliefs, /relationships, /groups, /emergent-phenomena
+│   │   └── series.py         #   SeriesCache LRU invalide par ingest_version
+│   ├── analysis/             # 8 moteurs (7 métriques + EmergenceIndicators)
+│   │   └── __init__.py       #   registre ENGINES + known_engines() + compute_all(snapshot)
+│   └── ingestion/            # clients ws/control SYNE (API_CONTRACTS.md §2-3)
+│       ├── models.py         #   WorldSnapshot / ExternalEvent (camelCase) + parse_message
+│       ├── stream.py         #   TickSegment / aligned_ticks (flux aligné par tick)
+│       ├── ws_client.py      #   WsClient :5180 (transport injectable, réception déterministe)
+│       └── control_client.py #   ControlClient :5181 (start / pause / resume / reset)
+│   └── storage/              # stockage d'analyse (ECHOS-011 → 013, v2 en ph4)
+│       ├── aggregation.py    #   TickRecord.from_segment / summarize / downsample
+│       ├── sqlite.py         #   AnalyticsStore (SCHEMA_VERSION &quot;2&quot;, tables tick_metrics + tick_contexts, thread-safe)
+│       ├── parquet.py        #   séries lourdes PyArrow + coherence_errors
+│       └── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
+├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
+└── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
+</code></pre>
+<ul>
+<li><code>echos</code> est le composant <strong>Application + Analyse</strong> ; <code>echos-ui</code> le composant <strong>Interface</strong> (§1).</li>
+<li>Les moteurs exposent le contrat <code>ENGINE_NAME</code> / <code>METRICS</code> / <code>compute(snapshot)</code> ; implémentation au jalon U1.</li>
+<li>Les contrats d'ingestion (<code>WorldSnapshot</code>/<code>ExternalEvent</code>) sont des modèles pydantic camelCase validés ; le client WebSocket et le client de contrôle sont testés de façon <strong>déterministe sur fixtures</strong> (E2E réel SYNE = jalon U1).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>La divergence FastAPI/Django et la place du shell Electron (conservé, implémentation différée post-V0.1) sont tranchées et documentées — aucun reste ouvert.</li>
+<li>Choix des bibliothèques de visualisation (ECharts vs Plotly) par vue : à affiner à l'implémentation.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/ARCHITECTURE.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

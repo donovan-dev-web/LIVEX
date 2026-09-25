@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.World | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.World | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.World">
+
+  <h1 id="Simulation_Core_World" data-uid="Simulation.Core.World" class="text-break">Namespace Simulation.Core.World</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.World.Book.html">Book</a></h4>
+      <section><p>Livre (SYNE-121, décisions n°18/19, Monographie §3.18, DATA_DATA.md §3.11) :
+une <strong>connaissance matérialisée à l'instant T</strong> — {id, auteur, titre,
+contenu} figés à l'écriture, <code>writtenTick</code> poinçonné par la boucle
+(instant T exact). V0.1 : <strong>stockage observationnel</strong> — l'écriture coûte de
+l'énergie à l'auteur (payée, décision n°18 : coût = temps + énergie +
+pénalité, structure figée), la lecture produit un <strong>bénéfice posé en
+principe</strong> (décision n°19 : cognition, confiance, savoir — le chiffrage
+dépend du moteur de mémoire, reporté) et trace les lecteurs distincts.
+Déterministe : écritures/lectures = API de la boucle (0 tirage PRNG),
+ordre de trace des lecteurs = ordre de première consultation.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.BookChange.html">BookChange</a></h4>
+      <section><p>Mutation de livre tracée (SYNE-121, décisions n°18/19, Monographie §3.18) :
+un livre a été <strong>écrit</strong> (par un auteur qui en paie le coût) ou <strong>lu</strong> (par
+un lecteur qui en tire le bénéfice posé en principe). Consommée par
+l'émetteur d'observabilité — même protocole que les changements de saison,
+de territoire et de constructions (drain).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.EnvironmentChange.html">EnvironmentChange</a></h4>
+      <section><p>Modification d'environnement tracée (SYNE-071) : pose ou retrait d'une
+construction (= obstacle statique). Consommée par l'émetteur d'observabilité
+(événements <code>world.construction_placed</code> / <code>world.construction_removed</code>).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.LineOfSight.html">LineOfSight</a></h4>
+      <section><p>Ligne de vue (SYNE-011, ADR-013) : un segment entre deux positions du monde
+est occulté si un obstacle l'intersecte. Pure fonction déterministe ;
+aucune approximation d'échantillonnage (calcul géométrique exact).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.Obstacle.html">Obstacle</a></h4>
+      <section><p>Obstacle statique (DATA_MODEL.md §2) : disque {Position, Radius}.
+Bloque le mouvement (collision simple) et, depuis U1, la ligne de vue
+(SYNE-011 « un obstacle masque la ligne de vue » ; ADR-013).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.ResourceStocks.html">ResourceStocks</a></h4>
+      <section><p>Réserves globales de ressources (SYNE-042, décision n°4) : quantité courante
+de chaque ressource, initialisée depuis <code>resources.*</code> (CONFIGURATION.md §1),
+décrémentée par les actions terminales Eat/Drink (« réserves mises à jour »).</p>
+<p>Déterminisme : aucune consommation du PRNG ; les opérations de réserves sont
+des soustractions et additions pures (DETERMINISM.md §3). V0.1 : réserves
+globales partagées, les sources spatiales restent au jalon ph7 (SYNE-070).</p>
+<p>Cycle de vie (SYNE-070) : appliqué par le moteur en fin de tick, après toute la
+cognition — les entités consomment pendant le tick, puis le monde régénère et/ou
+se dégrade. La régénération ajoute <code>RegenerationRate</code> par tick ; la dégradation
+retire, à chaque période <code>DegradationTick</code> (défaut inactif), la régénération
+cumulée de la période — les deux opérations restent pures (0 tirage PRNG).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.Seasons.html">Seasons</a></h4>
+      <section><p>Points d'accroche du type <a class="xref" href="Simulation.Core.World.Season.html">Season</a> : noms stables (clés JSON
+camelCase) et conversion java — culture invariante, déterminisme d'émission.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.SpatialGrid.html">SpatialGrid</a></h4>
+      <section><p>Grille spatiale uniforme (ADR — perceptualité O(quasi-linéaire), Monographie §3.5.4).
+Cellules de taille configurable ; requêtes par rayon (centre ± r) en ordre
+déterministe : cellules en parcours ligne-par-ligne, entités dans l'ordre d'insertion.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.Territory.html">Territory</a></h4>
+      <section><p>Zone de territoire (SYNE-073, décision n°21, Monographie §6.5) : disque
+« point de survie » {Center, Radius} autour duquel la présence des entités
+délimite le <strong>territoire effectif</strong>. V0.1 : le territoire est un concept
+d'observation (aucun comportement agentique, aucune revendication) — la
+présence d'une entité dans la zone la classe comme membre du territoire.
+Pur (0 tirage PRNG, DETERMINISM.md §3) : l'appartenance est une fonction
+pure des positions.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></h4>
+      <section><p>Changement d'appartenance à une zone de territoire (SYNE-073) : une entité a
+franchi le disque entre deux ticks. Consommée par l'émetteur d'observabilité
+(événement <code>world.territory_membership_changed</code>). Ordre d'émission
+déterministe : par zone (ordre de pose), par entité (id croissant).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.World.html">World</a></h4>
+      <section><p>Le monde : plan 2D continu non-toroidal, grille spatiale de perception,
+index des entités. Positions dans [0, Width] x [0, Height] (DATA_MODEL.md §2).</p>
+</section>
+    <h3 id="structs">
+Structs
+</h3>
+      <h4><a class="xref" href="Simulation.Core.World.Position.html">Position</a></h4>
+      <section><p>Position continue 2D dans le monde. Monde non-toroidal : la position est
+clampée dans [[0, Width], [0, Height]] (DATA_MODEL.md §2).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.WorldSize.html">WorldSize</a></h4>
+      <section><p>Dimensions du monde (défaut 500×500, Annexe H). Strictement positives.</p>
+</section>
+    <h3 id="enums">
+Enums
+</h3>
+      <h4><a class="xref" href="Simulation.Core.World.BookChangeKind.html">BookChangeKind</a></h4>
+      <section><p>Nature d'une mutation de livre (SYNE-121, API_CONTRACTS.md §2.2).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.EnvironmentChangeKind.html">EnvironmentChangeKind</a></h4>
+      <section><p>Sens d'une modification d'environnement (SYNE-071).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.ResourceKind.html">ResourceKind</a></h4>
+      <section><p>Types de ressources du moteur (décision n°2.4, DATA_MODEL.md §8).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.Season.html">Season</a></h4>
+      <section><p>Saisons du cycle environnemental (SYNE-072, jalon U8) : quatre saisons
+en boucle déterministe. Le cycle est purement une fonction du tick
+(aucun PRNG, DETERMINISM.md §3) — la saison courante se déduit de
+<code>(indexInitial + tick / seasonLengthTicks) % 4</code>.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.World.TerritoryMembershipChangeKind.html">TerritoryMembershipChangeKind</a></h4>
+      <section><p>Sens d'un changement d'appartenance à une zone de territoire (SYNE-073).</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

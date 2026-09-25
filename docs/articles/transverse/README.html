@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>LIVEX | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="LIVEX | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+
+<div align="center">
+<h1 id="livex">LIVEX</h1>
+<h3 id="living-intelligent-virtual-ecosystem-experience">Living Intelligent Virtual Ecosystem eXperience</h3>
+<p><strong>Un monde simulé. Des agents autonomes. Des phénomènes à observer.</strong></p>
+<p><a href="LICENSE"><img src="https://img.shields.io/badge/Licence-MIT-216e5a?style=for-the-badge" alt="Licence MIT"></a>
+<a href="VERSIONING.html"><img src="https://img.shields.io/badge/Version-V0.1-315c9b?style=for-the-badge" alt="Version V0.1"></a>
+<a href="ROADMAP.html"><img src="https://img.shields.io/badge/Jalon-U8%20en%20validation-d97706?style=for-the-badge" alt="Jalon U8"></a>
+<a href="GLOSSARY.html"><img src="https://img.shields.io/badge/Docs-en%20fran%C3%A7ais-6b7280?style=for-the-badge" alt="Documentation"></a></p>
+<p><a href="#-le-projet">Découvrir le projet</a> · <a href="#-architecture">Architecture</a> · <a href="#-d%C3%A9marrage-rapide">Démarrage</a> · <a href="#-documentation">Documentation</a> · <a href="#-contribuer">Contribuer</a></p>
+</div>
+<hr>
+<h2 id="-le-projet">🌱 Le projet</h2>
+<p><strong>LIVEX explore une question : comment des comportements collectifs peuvent-ils émerger de règles locales simples, sans scénario qui les impose ?</strong></p>
+<p>Le moteur fait évoluer des entités autonomes dans un monde régi par des règles explicites. Chaque entité perçoit une partie de son environnement, possède des besoins, des croyances et une mémoire, puis choisit ses actions selon une architecture cognitive BDI (<em>Beliefs, Desires, Intentions</em>). Le système observe les résultats sans les dicter.</p>
+<p>LIVEX est un projet de recherche et d’expérimentation en vie artificielle et en simulation multi-agents. Ses résultats sont des observations à analyser, pas des preuves scientifiques en eux-mêmes. Les hypothèses, limites et choix du projet sont documentés dans la <a href="LIVEX-Monographie_SnapV0-1.pdf">monographie</a> et les <a href="docs/docs-syne/adr/">décisions d’architecture</a>.</p>
+<h2 id="-principes-de-conception">✨ Principes de conception</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Principe</th>
+<th style="text-align: left;">Application dans LIVEX</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Déterminisme</strong></td>
+<td style="text-align: left;">Une même graine, configuration et version du moteur permettent de reproduire une trajectoire.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Décisions explicables</strong></td>
+<td style="text-align: left;">Les décisions BDI produisent des traces consultables et analysables.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Information locale</strong></td>
+<td style="text-align: left;">Les entités agissent à partir de ce qu’elles perçoivent et mémorisent, pas d’une vérité globale.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Observation indépendante</strong></td>
+<td style="text-align: left;">L’analyse mesure le monde sans en devenir la source de vérité.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Contrats explicites</strong></td>
+<td style="text-align: left;">Les composants échangent par des interfaces documentées et versionnées.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-architecture">🧩 Architecture</h2>
+<pre><code class="lang-mermaid">flowchart LR
+    S[SYNE&lt;br/&gt;Simulation et monde] --&gt;|WebSocket :5180&lt;br/&gt;snapshots et événements| I[Ingestion ECHOS]
+    I --&gt; D[(SQLite + Parquet)]
+    D --&gt; A[API ECHOS&lt;br/&gt;REST :5000]
+    A --&gt; U[Interface web&lt;br/&gt;React + Vite]
+    S -.-&gt;|WebSocket :5180&lt;br/&gt;état temps réel| U
+    C[PRISM&lt;br/&gt;rendu interactif planifié] -.-&gt;|phase ultérieure| S
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Composant</th>
+<th style="text-align: left;">Responsabilité</th>
+<th style="text-align: left;">État</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>SYNE</strong> · <em>Systems &amp; Emergent Network Engine</em></td>
+<td style="text-align: left;">Simule le monde et les agents. C’est la source de vérité de l’état simulé.</td>
+<td style="text-align: left;">Moteur .NET 10, observabilité, persistance et contrôle local.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ECHOS</strong> · <em>Emergent Cognition &amp; Holistic Observation System</em></td>
+<td style="text-align: left;">Ingère et analyse les runs, expose les métriques et fournit le pilotage.</td>
+<td style="text-align: left;">API FastAPI, stockage SQLite/Parquet et interface React/TypeScript.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PRISM</strong> · <em>Perceptual Rendering &amp; Interactive Simulation Module</em></td>
+<td style="text-align: left;">Doit représenter et rendre le monde interactif.</td>
+<td style="text-align: left;">Documentation et contrats préparatoires ; le runtime vient après U8.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>U8 — Tests &amp; persistance : en validation.</strong> Le flux réel SYNE → ECHOS
+est couvert par une intégration multi-ticks ; l'acceptation transverse et
+l'expérience UI restent suivies dans la <a href="ROADMAP.html">feuille de route</a>.</p>
+</blockquote>
+<h2 id="-démarrage-rapide">🚀 Démarrage rapide</h2>
+<p>Pour lancer le moteur seul :</p>
+<pre><code class="lang-bash">dotnet run --project syne/Simulation.Console --configuration Release -- \
+  --seed 12345 --max-ticks 1000 --headless
+</code></pre>
+<p>Pour démarrer <strong>SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web</strong> ensemble, lancez <code>./scripts/dev-stack.sh</code>. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Voir le guide <a href="INSTALLATION.html#d%C3%A9marrage-complet-syne-echos-et-interface">Installation &amp; démarrage</a>.</p>
+<h2 id="-dans-le-dépôt">🗂️ Dans le dépôt</h2>
+<pre><code class="lang-text">LIVEX/
+├── syne/                   # Moteur de simulation C#/.NET
+├── echos/
+│   ├── echos/              # API, analyse, ingestion et stockage
+│   └── echos-ui/           # Interface React + TypeScript
+├── docs/
+│   ├── docs-syne/          # Documentation et décisions SYNE
+│   ├── docs-echos/         # Documentation ECHOS
+│   ├── docs-prism/         # Contrats et feuille de route PRISM
+│   └── governance/         # Gouvernance et processus
+├── ROADMAP.md              # Jalons unifiés
+├── INSTALLATION.md         # Prérequis et commandes de lancement
+└── LIVEX-Monographie...    # Référence scientifique et technique
+</code></pre>
+<h2 id="-documentation">📚 Documentation</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Lire…</th>
+<th style="text-align: left;">Pour…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><a href="VISION.html">Vision</a></td>
+<td style="text-align: left;">Comprendre les objectifs, le périmètre et les limites.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="ARCHITECTURE.html">Architecture</a></td>
+<td style="text-align: left;">Voir les composants et leurs responsabilités.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="INSTALLATION.html">Installation &amp; démarrage</a></td>
+<td style="text-align: left;">Installer les dépendances et lancer la pile locale.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="ROADMAP.html">Feuille de route</a></td>
+<td style="text-align: left;">Suivre les jalons et les travaux à venir.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="COMMUNICATION.md">Communication</a></td>
+<td style="text-align: left;">Consulter les protocoles et ports inter-composants.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="GLOSSARY.html">Glossaire</a></td>
+<td style="text-align: left;">Retrouver le vocabulaire du projet.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="FAQ.html">FAQ</a></td>
+<td style="text-align: left;">Obtenir des réponses aux questions fréquentes.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="LIVEX-Monographie_SnapV0-1.pdf">Monographie</a></td>
+<td style="text-align: left;">Lire les fondements, modèles et choix détaillés.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><a href="docs/docs-syne/README.md">Documentation SYNE</a> · <a href="docs/docs-echos/README.md">ECHOS</a> · <a href="docs/docs-prism/README.md">PRISM</a></td>
+<td style="text-align: left;">Entrer dans la documentation d’un composant.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-contribuer">🤝 Contribuer</h2>
+<p>Les contributions suivent les conventions du dépôt. Avant de proposer un changement, consultez le <a href="CONTRIBUTING.html">guide de contribution</a>, le <a href="GITFLOW.md">Gitflow</a> et le <a href="CODE_OF_CONDUCT.html">code de conduite</a>. Les choix techniques durables doivent rester cohérents avec l’<a href="ARCHITECTURE.html">architecture</a> et les ADR du composant concerné.</p>
+<h2 id="licence--auteur">Licence &amp; auteur</h2>
+<p>Distribué sous licence <a href="LICENSE">MIT</a>.</p>
+<p><strong>Donovan Chartrain</strong> · Développeur et infographiste 3D</p>
+<p><a href="https://donovan-dev-web.vercel.app">Portfolio développement</a> · <a href="https://donovan-dev-3d.vercel.app">Portfolio 3D</a></p>
+<div align="center">
+<p><em>Construire les conditions. Observer les conséquences. Comprendre ce qui émerge.</em></p>
+</div>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/README.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

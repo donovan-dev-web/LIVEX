@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Inheritance | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Inheritance | LIVEX ">
+    
+    <meta name="description" content="H&#233;ritage interg&#233;n&#233;rationnel (SYNE-020, d&#233;cision n&#176;16, DATA_MODEL.md &#167;6.6) : la naissance repose sur la fusion consentie des entit&#233;s parentes et transmet les traits et le savoir (m&#233;moire interg&#233;n&#233;rationnelle + croyances) &#224; l&#39;entit&#233; n&#233;e. La structure est fig&#233;e (d&#233;cision n&#176;16) ; les param&#232;tres fins (r&#233;adaptation, dominance, mutation, seuil de salience) restent configurables (, SYNE-063 — &#167;6.6.3, V0.2).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition.Inheritance">
+
+
+
+  <h1 id="Simulation_Core_Cognition_Inheritance" data-uid="Simulation.Core.Cognition.Inheritance" class="text-break">Class Inheritance</h1>
+  <div class="markdown level0 summary"><p>Héritage intergénérationnel (SYNE-020, décision n°16, DATA_MODEL.md §6.6) :
+la naissance repose sur la <strong>fusion consentie</strong> des entités parentes et
+transmet les <strong>traits</strong> et le <strong>savoir</strong> (mémoire intergénérationnelle +
+croyances) à l'entité née.</p>
+<p>La structure est figée (décision n°16) ; les paramètres fins (réadaptation,
+dominance, mutation, seuil de salience) restent configurables
+(<a class="xref" href="Simulation.Core.Configuration.InheritanceSettings.html">InheritanceSettings</a>, SYNE-063 — §6.6.3, V0.2).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">Inheritance</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Cognition.html">Cognition</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Cognition_Inheritance_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class Inheritance</code></pre>
+  </div>
+  <h3 id="fields">Fields
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Inheritance.cs">View Source</a>
+  </span>
+  <h4 id="Simulation_Core_Cognition_Inheritance_DefaultSalienceThreshold" data-uid="Simulation.Core.Cognition.Inheritance.DefaultSalienceThreshold">DefaultSalienceThreshold</h4>
+  <div class="markdown level1 summary"><p>Seuil de salience par défaut d'un souvenir parent transmis (V0.1, désormais <a class="xref" href="Simulation.Core.Configuration.InheritanceSettings.html#Simulation_Core_Configuration_InheritanceSettings_SalienceThreshold">SalienceThreshold</a>).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const double DefaultSalienceThreshold = 0.01</code></pre>
+  </div>
+  <h5 class="fieldValue">Field Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Inheritance.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Inheritance_FuseTraits_" data-uid="Simulation.Core.Cognition.Inheritance.FuseTraits*"></a>
+  <h4 id="Simulation_Core_Cognition_Inheritance_FuseTraits_Simulation_Core_Entities_TraitSet_Simulation_Core_Entities_TraitSet_" data-uid="Simulation.Core.Cognition.Inheritance.FuseTraits(Simulation.Core.Entities.TraitSet,Simulation.Core.Entities.TraitSet)">FuseTraits(TraitSet, TraitSet)</h4>
+  <div class="markdown level1 summary"><p>Fusion des traits par moyenne arithmétique par trait (décision n°16,
+§6.6.2) — équivalent à <code>FuseTraits(a, b, new InheritanceSettings(), seed)</code>
+(dominance 0, mutation 0) : préservé pour la rétro-compatibilité V0.1.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TraitSet FuseTraits(TraitSet parentA, TraitSet parentB)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.TraitSet.html">TraitSet</a></td>
+        <td><span class="parametername">parentA</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.TraitSet.html">TraitSet</a></td>
+        <td><span class="parametername">parentB</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.TraitSet.html">TraitSet</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Inheritance.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Inheritance_FuseTraits_" data-uid="Simulation.Core.Cognition.Inheritance.FuseTraits*"></a>
+  <h4 id="Simulation_Core_Cognition_Inheritance_FuseTraits_Simulation_Core_Entities_TraitSet_Simulation_Core_Entities_TraitSet_Simulation_Core_Configuration_InheritanceSettings_System_UInt64_" data-uid="Simulation.Core.Cognition.Inheritance.FuseTraits(Simulation.Core.Entities.TraitSet,Simulation.Core.Entities.TraitSet,Simulation.Core.Configuration.InheritanceSettings,System.UInt64)">FuseTraits(TraitSet, TraitSet, InheritanceSettings, ulong)</h4>
+  <div class="markdown level1 summary"><p>Mécanismes fins (SYNE-063, décision n°16, §6.6.3) — déterministes (hash
+SplitMix64 stable, aucun PRNG global) :</p>
+<ul><li><b>réadaptation/dominance</b> (<code>dominance</code> ∈ [0, 1]) : à 0, fusion
+ égalitaire (moyenne, V0.1) ; au-delà, le trait du parent « exprimant »
+ (écart au neutre 1.0 le plus grand) pèse d'autant plus (pleine à 1) ;</li><li><b>mutation</b> (<code>mutationRate</code>) : tirage stable par trait via la
+ graine <code class="paramref">seed</code>, perturbation bornée <code>± mutationMagnitude</code>,
+ plage [0, 2] respectée.</li></ul>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static TraitSet FuseTraits(TraitSet parentA, TraitSet parentB, InheritanceSettings settings, ulong seed)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.TraitSet.html">TraitSet</a></td>
+        <td><span class="parametername">parentA</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.TraitSet.html">TraitSet</a></td>
+        <td><span class="parametername">parentB</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.InheritanceSettings.html">InheritanceSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">seed</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Entities.TraitSet.html">TraitSet</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Inheritance.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Inheritance_InheritBeliefs_" data-uid="Simulation.Core.Cognition.Inheritance.InheritBeliefs*"></a>
+  <h4 id="Simulation_Core_Cognition_Inheritance_InheritBeliefs_System_Collections_Generic_IEnumerable_Simulation_Core_Cognition_Belief__Simulation_Core_Configuration_BeliefSettings_System_UInt64_" data-uid="Simulation.Core.Cognition.Inheritance.InheritBeliefs(System.Collections.Generic.IEnumerable{Simulation.Core.Cognition.Belief},Simulation.Core.Configuration.BeliefSettings,System.UInt64)">InheritBeliefs(IEnumerable&lt;Belief&gt;, BeliefSettings, ulong)</h4>
+  <div class="markdown level1 summary"><p>Croyances transmises (§6.6.3 « savoir ») : union des croyances parentes ;
+sur un fait identique porté par les deux parents, la confiance la plus
+haute est conservée. Source ramenée à « héritage » (traçabilité V0.1).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static BeliefSet InheritBeliefs(IEnumerable&lt;Belief&gt; parentalBeliefs, BeliefSettings settings, ulong birthTick)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Simulation.Core.Cognition.Belief.html">Belief</a>&gt;</td>
+        <td><span class="parametername">parentalBeliefs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.BeliefSettings.html">BeliefSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">birthTick</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BeliefSet.html">BeliefSet</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Inheritance.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Inheritance_InheritMemory_" data-uid="Simulation.Core.Cognition.Inheritance.InheritMemory*"></a>
+  <h4 id="Simulation_Core_Cognition_Inheritance_InheritMemory_System_Collections_Generic_IEnumerable_Simulation_Core_Cognition_MemoryEntry__Simulation_Core_Configuration_MemorySettings_System_UInt64_System_Nullable_System_Double__" data-uid="Simulation.Core.Cognition.Inheritance.InheritMemory(System.Collections.Generic.IEnumerable{Simulation.Core.Cognition.MemoryEntry},Simulation.Core.Configuration.MemorySettings,System.UInt64,System.Nullable{System.Double})">InheritMemory(IEnumerable&lt;MemoryEntry&gt;, MemorySettings, ulong, double?)</h4>
+  <div class="markdown level1 summary"><p>Mémoire intergénérationnelle (§6.6.3) : réunit les souvenirs des parents
+dont la salience dépasse <code class="paramref">salienceThreshold</code> (défaut :
+<a class="xref" href="Simulation.Core.Configuration.InheritanceSettings.html#Simulation_Core_Configuration_InheritanceSettings_SalienceThreshold">SalienceThreshold</a>, évaluée au tick courant),
+ré-horodatés au <code class="paramref">birthTick</code>. L'ordre d'insertion est
+déterministe (parents puis tri par StoredAt/Sequence).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Memory InheritMemory(IEnumerable&lt;MemoryEntry&gt; parentalMemory, MemorySettings settings, ulong birthTick, double? salienceThreshold = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Simulation.Core.Cognition.MemoryEntry.html">MemoryEntry</a>&gt;</td>
+        <td><span class="parametername">parentalMemory</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.MemorySettings.html">MemorySettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">birthTick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a>?</td>
+        <td><span class="parametername">salienceThreshold</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.Memory.html">Memory</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Inheritance.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

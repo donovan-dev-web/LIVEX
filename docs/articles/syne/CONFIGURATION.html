@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>CONFIGURATION.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="CONFIGURATION.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="configurationmd">CONFIGURATION.md</h1>
+
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 22 septembre 2026
+<strong>Dépend de</strong> : <code>DATA_MODEL.md</code>, <code>DETERMINISM.md</code>
+<strong>Source Monographie</strong> : Annexe H (configuration et paramètres), §3.6.2 (seed), §3.4 (scheduler)</p>
+<hr>
+<h2 id="1-principe">1. Principe</h2>
+<p>La configuration est un <strong>contrat reproductible</strong> : le même <code>config.json</code> + même seed + même version moteur doit remplacer la même trajectoire. Toute évolution de la configuration doit suivre <code>VERSIONING.md</code>.</p>
+<h2 id="2-fichier-de-configuration-v1-annexe-h">2. Fichier de configuration V1 (Annexe H)</h2>
+<pre><code class="lang-json">{
+  &quot;simulation&quot;: {
+    &quot;worldWidth&quot;: 500,
+    &quot;worldHeight&quot;: 500,
+    &quot;maxTicks&quot;: 1000000,
+    &quot;ticksPerSecond&quot;: 10,
+    &quot;autoSaveEveryNTicks&quot;: 1000,
+    &quot;maxBackups&quot;: 5
+  },
+  &quot;agents&quot;: {
+    &quot;initialCount&quot;: 100,
+    &quot;traits&quot;: { &quot;bravery&quot;: 1.0, &quot;curiosity&quot;: 1.0, &quot;sociability&quot;: 1.0, &quot;greed&quot;: 1.0,
+                 &quot;pessimism&quot;: 1.0, &quot;aggressiveness&quot;: 1.0, &quot;strength&quot;: 1.0, &quot;speed&quot;: 1.0 },
+    &quot;needs&quot;: { &quot;hungerRate&quot;: 0.5, &quot;thirstRate&quot;: 0.7, &quot;fatigueRate&quot;: 0.3,
+               &quot;safetyDriftRate&quot;: 0.001, &quot;socialDriftRate&quot;: 0.001, &quot;curiosityDriftRate&quot;: 0.002,
+               &quot;hungerTriggerThreshold&quot;: 50, &quot;thirstTriggerThreshold&quot;: 50, &quot;fatigueTriggerThreshold&quot;: 70 },
+    &quot;perception&quot;: { &quot;radius&quot;: 50, &quot;confidenceFalloff&quot;: 0.3, &quot;rotationInterval&quot;: 4, &quot;lineOfSight&quot;: true },
+    &quot;memory&quot;: { &quot;maxCapacity&quot;: 1000, &quot;recallThreshold&quot;: 0.01,
+                &quot;observationDecayRate&quot;: 0.01, &quot;eventDecayRate&quot;: 0.005, &quot;interactionDecayRate&quot;: 0.002 },
+    &quot;beliefs&quot;: { &quot;updateStrength&quot;: 0.3, &quot;maxChangePerSnap&quot;: 0.5, &quot;alignBonus&quot;: 0.2,
+                 &quot;conflictPenalty&quot;: 0.1, &quot;expiryTicks&quot;: 100, &quot;expiredCap&quot;: 0.4, &quot;timeDecayPerTick&quot;: 0.999 },
+    &quot;actions&quot;: { &quot;moveEnergyCost&quot;: 0.5, &quot;restEnergyGain&quot;: 0.5, &quot;restFatigueRecovery&quot;: 1.0,
+                 &quot;deliberation&quot;: { &quot;intervalTicks&quot;: 10, &quot;alignBonus&quot;: 1.2,
+                                   &quot;actionSwitchMargin&quot;: 0.05, &quot;conflictTieMargin&quot;: 0.5 },
+                 &quot;interruption&quot;: { &quot;enabled&quot;: true, &quot;utilityExcessMargin&quot;: 10.0,
+                                   &quot;criticalHunger&quot;: 85.0, &quot;criticalEnergy&quot;: 10.0 },
+                 &quot;catalog&quot;: {
+                   &quot;idle&quot;: { },
+                   &quot;seekFood&quot;: { &quot;movement&quot;: true },
+                   &quot;seekWater&quot;: { &quot;movement&quot;: true },
+                   &quot;eat&quot;: { &quot;energyCost&quot;: 0.2, &quot;hungerRecovery&quot;: 30.0, &quot;reserve&quot;: &quot;food&quot; },
+                   &quot;drink&quot;: { &quot;energyCost&quot;: 0.2, &quot;thirstRecovery&quot;: 30.0, &quot;reserve&quot;: &quot;water&quot; },
+                   &quot;rest&quot;: { },
+                   &quot;flee&quot;: { &quot;movement&quot;: true },
+                   &quot;socialize&quot;: { &quot;movement&quot;: true },
+                   &quot;explore&quot;: { &quot;movement&quot;: true }
+                 } }
+  },
+  &quot;resources&quot;: {
+    &quot;food&quot;: { &quot;initial&quot;: 100, &quot;regenerationRate&quot;: 0, &quot;degradationTick&quot;: 100 },
+    &quot;water&quot;: { &quot;initial&quot;: 1000, &quot;regenerationRate&quot;: 5 },
+    &quot;wood&quot;: { &quot;initial&quot;: 50, &quot;regenerationRate&quot;: 0.1 },
+    &quot;mineral&quot;: { &quot;initial&quot;: 0, &quot;regenerationRate&quot;: 0 }
+  },
+  &quot;communication&quot;: {
+    &quot;transmissionRange&quot;: 55,
+    &quot;relayEnabled&quot;: true,
+    &quot;maxHops&quot;: 2,
+    &quot;maxSendsPerTick&quot;: 5,
+    &quot;maxReceivesPerTick&quot;: 3,
+    &quot;incomprehensionRate&quot;: 0.05,
+    &quot;trustDecay&quot;: 0.9,
+    &quot;hopConfidenceDecay&quot;: 0.9,
+    &quot;sendEnergyCost&quot;: 0.5,
+    &quot;sendEnergyPayloadFactor&quot;: 0.1,
+    &quot;receiveEnergyCost&quot;: 0.2,
+    &quot;receiveEnergyPayloadFactor&quot;: 0.05
+  },
+  &quot;world&quot;: { &quot;seasons&quot;: { &quot;enabled&quot;: false }, &quot;territories&quot;: { &quot;enabled&quot;: false }, &quot;books&quot;: { &quot;enabled&quot;: false, &quot;writeCostEnergy&quot;: 20.0, &quot;readBenefit&quot;: 1.0 }, &quot;events&quot;: false, &quot;obstacles&quot;: false },
+  &quot;groups&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;reviewIntervalTicks&quot;: 10,
+    &quot;trustThreshold&quot;: 0.3,
+    &quot;minGroupSize&quot;: 3,
+    &quot;sharedBeliefBonus&quot;: 0.1,
+    &quot;goalAlignmentBonus&quot;: 0.2,
+    &quot;consensusThreshold&quot;: 0.5
+  },
+  &quot;reproduction&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;intervalTicks&quot;: 100,
+    &quot;consentTrustThreshold&quot;: 0.6,
+    &quot;maxBirthsPerTick&quot;: 1
+  },
+  &quot;agents&quot;: {
+    &quot;inheritance&quot;: { &quot;salienceThreshold&quot;: 0.01 }
+  },
+  &quot;random&quot;: { &quot;seed&quot;: 12345, &quot;engine&quot;: &quot;xoshiro256**&quot; },
+  &quot;performance&quot;: {
+    &quot;parallelPerception&quot;: true,
+    &quot;spatialGrid&quot;: true,
+    &quot;decisionCaching&quot;: true,
+    &quot;batchCommunication&quot;: true
+  }
+}
+</code></pre>
+<h2 id="3-flags-expérimentaux-ligne-de-commande">3. Flags expérimentaux (ligne de commande)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Flag</th>
+<th style="text-align: left;">Valeur</th>
+<th style="text-align: left;">Effet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>--headless</code></td>
+<td style="text-align: left;">bool</td>
+<td style="text-align: left;">Pas de console</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--world-size 500 500</code></td>
+<td style="text-align: left;">int int</td>
+<td style="text-align: left;">Dimensions du monde</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--seed 12345</code></td>
+<td style="text-align: left;">int</td>
+<td style="text-align: left;">Seed du PRNG</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--max-ticks 2000</code></td>
+<td style="text-align: left;">int</td>
+<td style="text-align: left;">Nombre de ticks à exécuter</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--config path/to/config.json</code></td>
+<td style="text-align: left;">string</td>
+<td style="text-align: left;">Fichier de configuration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--observe</code></td>
+<td style="text-align: left;">bool</td>
+<td style="text-align: left;">Active l'émission WebSocket (SYNE-080, API_CONTRACTS §2)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>--observe-port 5180</code></td>
+<td style="text-align: left;">int</td>
+<td style="text-align: left;">Port du serveur WebSocket (défaut : 5180, bind 127.0.0.1)</td>
+</tr>
+</tbody>
+</table>
+<p>(Annexe H.2)</p>
+<h2 id="4-configuration-par-espèce-monographie-3125">4. Configuration par espèce (Monographie §3.12.5)</h2>
+<pre><code class="lang-json">{
+  &quot;species&quot;: &quot;Human&quot;,
+  &quot;consumption_rate&quot;: 0.5,
+  &quot;dehydration_rate&quot;: 0.3,
+  &quot;base_metabolism&quot;: 0.1,
+  &quot;movement_cost&quot;: 0.2
+}
+</code></pre>
+<blockquote>
+<p>V0.1 : paramétrages (« Entité A » / « Entité B ») plutôt que classes codées en dur (cf. <code>DATA_MODEL.md</code>).</p>
+</blockquote>
+<h2 id="5-priorité-de-chargement">5. Priorité de chargement</h2>
+<ol>
+<li><code>config.json</code> défaut intégré.</li>
+<li><code>--config &lt;fichier&gt;</code> (surcouche).</li>
+<li>FLAGS CLI pour overrides (seed, taille, ticks).</li>
+</ol>
+<h2 id="6-validation-de-configuration">6. Validation de configuration</h2>
+<ul>
+<li>Validation des plages à l'import :
+<ul>
+<li><code>perception.radius</code> ∈ [20, 70] (décision n°6) ; <code>rotationInterval</code> ≥ 1 ;</li>
+<li><code>memory.maxCapacity</code> &gt; 0 ; taux de décroissance ≥ 0 ;</li>
+<li><code>beliefs.updateStrength</code> ∈ [0, 1] ;</li>
+<li><code>actions.deliberation.intervalTicks</code> ≥ 1 ; <code>alignBonus</code> &gt; 0 ; <code>actionSwitchMargin</code>/<code>conflictTieMargin</code> ≥ 0 ;</li>
+<li><code>actions.interruption.utilityExcessMargin</code> ≥ 0 ; <code>criticalHunger</code> ∈ (0, 100] ; <code>criticalEnergy</code> ∈ [0, 100) ;</li>
+<li><code>needs.hungerTriggerThreshold</code>/<code>thirstTriggerThreshold</code>/<code>fatigueTriggerThreshold</code> ∈ (0, 100] ;</li>
+<li><code>actions.catalog</code> complet : une entrée <strong>obligatoire</strong> pour chaque action (<code>idle</code>, <code>seekFood</code>, <code>seekWater</code>, <code>eat</code>, <code>drink</code>, <code>rest</code>, <code>flee</code>, <code>socialize</code>, <code>explore</code>) — échec déclaratif si une clé manque.</li>
+<li><code>communication.transmissionRange</code> ∈ (0, 70] ; <code>maxSendsPerTick</code>/<code>maxReceivesPerTick</code> ≥ 0 ; <code>maxHops</code> ≥ 1 ; <code>incomprehensionRate</code>/<code>hopConfidenceDecay</code>/<code>trustDecay</code> ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053) ; <code>transmissionRange</code> &gt; <code>perceptionRange</code> invalide (la perception doit rester strictement supérieure).</li>
+<li><code>groups.enabled</code>/<code>reproduction.enabled</code> booléens ; <code>reviewIntervalTicks</code>/<code>intervalTicks</code> ≥ 1 ; <code>trustThreshold</code>/<code>consensusThreshold</code>/<code>consentTrustThreshold</code> ∈ [0, 1] ; <code>minGroupSize</code> ≥ 2 ; <code>maxBirthsPerTick</code> ≥ 1 ; <code>agents.inheritance.salienceThreshold</code> &gt; 0.</li>
+<li><code>resources.&lt;type&gt;.initial</code> ≥ 0 ; <code>regenerationRate</code> ≥ 0 ; <code>degradationTick</code> &gt; 0 ou absent (SYNE-070).</li>
+<li>dimensions <code>worldWidth</code>/<code>worldHeight</code> &gt; 0 ; <code>maxTicks</code> &gt; 0 ; traits dans [0, 2] ; moteur <code>&quot;xoshiro256**&quot;</code> exclusif.</li>
+</ul>
+</li>
+<li>Une configuration invalide stoppe avec un message d'erreur explicite (code de sortie 2).</li>
+</ul>
+<h3 id="61-clés-de-décision--décision--utilité-jalon-syne-ph3">6.1 Clés de décision — Décision + Utilité (jalon SYNE ph3)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>agents.actions.deliberation.intervalTicks</code></td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">n°14</td>
+<td style="text-align: left;">Fréquence de délibération (ticks entre deux) — LOD, défaut haute</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.deliberation.alignBonus</code></td>
+<td style="text-align: left;">1.2</td>
+<td style="text-align: left;">n°13</td>
+<td style="text-align: left;">Bonus ×1.2 si l'action rejoint l'objectif courant (COGNITIVE_ARCHITECTURE §6)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.deliberation.actionSwitchMargin</code></td>
+<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">n°13</td>
+<td style="text-align: left;">Hystérésis anti-oscillation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.deliberation.conflictTieMargin</code></td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">n°22</td>
+<td style="text-align: left;">Marge de conflit de priorités → résolution probabiliste force × confiance</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.interruption.enabled</code></td>
+<td style="text-align: left;">true</td>
+<td style="text-align: left;">n°15</td>
+<td style="text-align: left;">Interruptions d'action actives</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.interruption.utilityExcessMargin</code></td>
+<td style="text-align: left;">10.0</td>
+<td style="text-align: left;">n°15</td>
+<td style="text-align: left;">Marge d'utilité requise pour interrompre (besoin critique)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.interruption.criticalHunger</code></td>
+<td style="text-align: left;">85.0</td>
+<td style="text-align: left;">n°6</td>
+<td style="text-align: left;">Seuil de faim critique (COGNITIVE_ARCHITECTURE §6)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.interruption.criticalEnergy</code></td>
+<td style="text-align: left;">10.0</td>
+<td style="text-align: left;">n°6</td>
+<td style="text-align: left;">Seuil d'énergie critique</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-clés-dactions-déclaratives--seuils-de-besoins-jalon-syne-ph4">6.2 Clés d'actions déclaratives + seuils de besoins (jalon SYNE ph4)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>agents.needs.hungerTriggerThreshold</code></td>
+<td style="text-align: left;">50</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Déclenchement du besoin de faim (≥)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.needs.thirstTriggerThreshold</code></td>
+<td style="text-align: left;">50</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Déclenchement du besoin de soif (≥)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.needs.fatigueTriggerThreshold</code></td>
+<td style="text-align: left;">70</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Déclenchement du besoin de repos (&gt;)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.movement</code></td>
+<td style="text-align: left;">false</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Action de déplacement (pas déterministe + coût d'énergie)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.energyCost</code></td>
+<td style="text-align: left;">0.5 (mouvement) / 0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Coût énergétique par exécution</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.energyRecovery</code></td>
+<td style="text-align: left;">0.5 (rest) / 0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Énergie récupérée (ex. rest)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.fatigueRecovery</code></td>
+<td style="text-align: left;">1.0 (rest) / 0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Fatigue récupérée</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.hungerRecovery</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Faim réduite (ex. eat : 30)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.thirstRecovery</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Soif réduite (ex. drink : 30)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.reserve</code></td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Réserve globale requise/consommée (ex. eat → <code>food</code>, drink → <code>water</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>agents.actions.catalog.&lt;action&gt;.reserveConsumption</code></td>
+<td style="text-align: left;">1.0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Quantité consommée de la réserve par exécution</td>
+</tr>
+</tbody>
+</table>
+<p>Chaque action du catalogue doit être déclarée (liste fermée §6) ; <code>Eat</code>/<code>Drink</code> sont les
+<strong>actions terminales</strong> résolues depuis SeekFood/SeekWater quand la réserve est disponible
+(SYNE-042, DATA_MODEL.md §7).</p>
+<h3 id="63-clés-de-communication-jalon-syne-ph5">6.3 Clés de communication (jalon SYNE ph5)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>communication.transmissionRange</code></td>
+<td style="text-align: left;">55</td>
+<td style="text-align: left;">n°7</td>
+<td style="text-align: left;">Portée effective d'une pulsation (recalibrée au jalon ph6 ; bornes [1, 70] indépendantes de la perception [20, 70])</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.relayEnabled</code></td>
+<td style="text-align: left;">true</td>
+<td style="text-align: left;">n°10</td>
+<td style="text-align: left;">Relais des messages compris au-delà du rayon</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.maxHops</code></td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">n°10</td>
+<td style="text-align: left;">Nombre maximal de sauts avant abandon du relais</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.maxSendsPerTick</code></td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">Annexe H</td>
+<td style="text-align: left;">Cap d'émission (envois + relais) par entité et par tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.maxReceivesPerTick</code></td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">Annexe H</td>
+<td style="text-align: left;">Cap de réception traitée par tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.incomprehensionRate</code></td>
+<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">Annexe H</td>
+<td style="text-align: left;">Probabilité d'incompréhension (tirage déterministe)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.trustDecay</code></td>
+<td style="text-align: left;">0.9</td>
+<td style="text-align: left;">n°10</td>
+<td style="text-align: left;">Décroissance de confiance par tick sans interaction</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.hopConfidenceDecay</code></td>
+<td style="text-align: left;">0.9</td>
+<td style="text-align: left;">n°10</td>
+<td style="text-align: left;">Dégradation de confiance par hop (× 0.9)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.sendEnergyCost</code></td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">n°9</td>
+<td style="text-align: left;">Coût d'émission d'une pulsation (SYNE-052)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.sendEnergyPayloadFactor</code></td>
+<td style="text-align: left;">0.1</td>
+<td style="text-align: left;">n°9</td>
+<td style="text-align: left;">Coût d'émission par caractère de payload</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.receiveEnergyCost</code></td>
+<td style="text-align: left;">0.2</td>
+<td style="text-align: left;">n°9</td>
+<td style="text-align: left;">Coût de réception d'une pulsation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>communication.receiveEnergyPayloadFactor</code></td>
+<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">n°9</td>
+<td style="text-align: left;">Coût de réception par caractère de payload</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>transmissionRange</code> défaut <strong>55</strong> depuis le jalon SYNE ph6 (calibration : à 20 u. les pulsations
+du scénario défaut n'atteignaient aucune entité — aucun tapis de confiance ne se formait
+(SYNE-060) ; à 55 u. la confiance réciproque émerge au voisinage percepçable). Validation en
+<strong>bornes indépendantes</strong> : <code>transmissionRange</code> ∈ [1, 70] et <code>agents.perception.radius</code> ∈ [20, 70]
+— la portée de pulsation peut donc dépasser le rayon de perception sans violation de config.</p>
+</blockquote>
+<h3 id="64-clés-de-groupes--réseau-social-émergent-jalon-syne-ph6">6.4 Clés de groupes — réseau social émergent (jalon SYNE ph6)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>groups.enabled</code></td>
+<td style="text-align: left;">true</td>
+<td style="text-align: left;">n°24</td>
+<td style="text-align: left;">Active la révision périodique des groupes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>groups.reviewIntervalTicks</code></td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">—</td>
+<td style="text-align: left;">Fréquence (LOD) de révision des composantes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>groups.trustThreshold</code></td>
+<td style="text-align: left;">0.3</td>
+<td style="text-align: left;">n°24</td>
+<td style="text-align: left;">Confiance réciproque minimale d'un lien social</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>groups.minGroupSize</code></td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">n°24</td>
+<td style="text-align: left;">Taille minimale d'un groupe émergent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>groups.sharedBeliefBonus</code></td>
+<td style="text-align: left;">0.10</td>
+<td style="text-align: left;">n°24</td>
+<td style="text-align: left;">Bonus d'affinité par croyance partagée</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>groups.goalAlignmentBonus</code></td>
+<td style="text-align: left;">0.20</td>
+<td style="text-align: left;">n°24</td>
+<td style="text-align: left;">Bonus d'affinité par but partagé</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>groups.consensusThreshold</code></td>
+<td style="text-align: left;">0.5</td>
+<td style="text-align: left;">n°24</td>
+<td style="text-align: left;">Quorum pondéré d'une décision collective</td>
+</tr>
+</tbody>
+</table>
+<p>(<code>SOCIAL_NETWORK.md</code> §9)</p>
+<h3 id="65-clés-de-reproduction--naissance-par-fusion-consentie-syne-062">6.5 Clés de reproduction — naissance par fusion consentie (SYNE-062)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>reproduction.enabled</code></td>
+<td style="text-align: left;">true</td>
+<td style="text-align: left;">n°17</td>
+<td style="text-align: left;">Active la naissance par fusion consentie</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reproduction.intervalTicks</code></td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">n°17</td>
+<td style="text-align: left;">Fréquence de passe candidature de fusion</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reproduction.consentTrustThreshold</code></td>
+<td style="text-align: left;">0.6</td>
+<td style="text-align: left;">n°17</td>
+<td style="text-align: left;">Confiance réciproque requise → consentement (couplé à CHILDREARING, jalon ph7)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reproduction.maxBirthsPerTick</code></td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">n°17</td>
+<td style="text-align: left;">Nombre maximal de naissances par passe</td>
+</tr>
+</tbody>
+</table>
+<h3 id="66-clés-dhéritage--mécanismes-fins-syne-063-663">6.6 Clés d'héritage — mécanismes fins (SYNE-063, §6.6.3)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>agents.inheritance.salienceThreshold</code></td>
+<td style="text-align: left;">0.01</td>
+<td style="text-align: left;">n°16</td>
+<td style="text-align: left;">Salience minimale d'un souvenir parental transmis (ex-<code>DefaultSalienceThreshold</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;">(mécanismes fins dominante/mutation)</td>
+<td style="text-align: left;">n°16</td>
+<td style="text-align: left;">§6.6.3</td>
+<td style="text-align: left;">Configurés par <code>InheritanceSettings</code> (dominance [0,1], taux de mutation ≥ 0) — défauts 0.5 / 0.01</td>
+</tr>
+</tbody>
+</table>
+<h3 id="67-clés-de-ressources--cycle-de-vie-syne-070">6.7 Clés de ressources — cycle de vie (SYNE-070)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>resources.food.initial</code></td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Réserve initiale de nourriture (Eat : −1.0 / exécution)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.food.regenerationRate</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Régénération par tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.food.degradationTick</code></td>
+<td style="text-align: left;">100</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Période de dégradation (perte de <code>rate × période</code> ; inerte sans taux)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.water.initial</code></td>
+<td style="text-align: left;">1000</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Réserve initiale d'eau (Drink : −1.0 / exécution)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.water.regenerationRate</code></td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Régénération par tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.wood.initial</code></td>
+<td style="text-align: left;">50</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Réserve initiale de bois (consommation à la mécanique agentique des constructions — <strong>ouverte</strong>, §6.8)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.wood.regenerationRate</code></td>
+<td style="text-align: left;">0.1</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Régénération par tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.mineral.initial</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">n°2.4</td>
+<td style="text-align: left;">Réserve initiale de minéraux (4ᵉ type, SYNE-070)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resources.mineral.regenerationRate</code></td>
+<td style="text-align: left;">0</td>
+<td style="text-align: left;">n°2.4</td>
+<td style="text-align: left;">Régénération par tick</td>
+</tr>
+</tbody>
+</table>
+<p>Validation §6 : <code>initial</code> ≥ 0 ; <code>regenerationRate</code> ≥ 0 ; <code>degradationTick</code> &gt; 0 ou absent.</p>
+<h3 id="68-clés-denvironnement--constructions--obstacles-statiques-syne-071">6.8 Clés d'environnement — constructions = obstacles statiques (SYNE-071)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>world.obstacles</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">n°20</td>
+<td style="text-align: left;">Active le monde avec obstacles (flag vivant ; appelle <code>ApplyConfiguredLayout</code> au build CLI/serveur)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.obstacleLayout[]</code></td>
+<td style="text-align: left;"><code>[]</code></td>
+<td style="text-align: left;">n°20</td>
+<td style="text-align: left;">Layout <strong>initial</strong> des obstacles/constructions — liste de disques</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.obstacleLayout[].id</code></td>
+<td style="text-align: left;">— (requis)</td>
+<td style="text-align: left;">n°20</td>
+<td style="text-align: left;">Identifiant unique de l'obstacle (<code>targetId</code> des événements, clé de retrait)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.obstacleLayout[].x</code></td>
+<td style="text-align: left;">— (requis)</td>
+<td style="text-align: left;">n°20</td>
+<td style="text-align: left;">Abscisse du centre (dans <code>[0, worldWidth]</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.obstacleLayout[].y</code></td>
+<td style="text-align: left;">— (requis)</td>
+<td style="text-align: left;">n°20</td>
+<td style="text-align: left;">Ordonnée du centre (dans <code>[0, worldHeight]</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.obstacleLayout[].radius</code></td>
+<td style="text-align: left;">10</td>
+<td style="text-align: left;">n°20</td>
+<td style="text-align: left;">Rayon de la zone bloquante (perception/ligne de vue/mouvement, ADR-013)</td>
+</tr>
+</tbody>
+</table>
+<p>Exemple (extrait) :</p>
+<pre><code class="lang-json">{
+  &quot;world&quot;: {
+    &quot;obstacles&quot;: true,
+    &quot;obstacleLayout&quot;: [
+      { &quot;id&quot;: &quot;maison-1&quot;, &quot;x&quot;: 100, &quot;y&quot;: 100, &quot;radius&quot;: 10 },
+      { &quot;id&quot;: &quot;rocher-bas&quot;, &quot;x&quot;: 480, &quot;y&quot;: 490, &quot;radius&quot;: 20 }
+    ]
+  }
+}
+</code></pre>
+<p>Validation §6 : <code>world.obstacleLayout</code> rejeté si <code>world.obstacles</code> est <code>false</code> ; par entrée <code>id</code> non vide, <code>radius</code> &gt; 0, <code>x</code>/<code>y</code> dans le monde. Mutations dynamiques (<code>AddObstacle</code>, <code>PlaceConstruction</code>/<code>RemoveConstruction</code>) validées à l'exécution (bornes + id unique) — la <strong>mécanique agentique</strong> d'une construction (qui, coût en bois/minéraux, durée) reste <strong>ouverte</strong> (décision n°20, §2.20).</p>
+<h3 id="69-clés-denvironnement--cycle-de-saisons-syne-072">6.9 Clés d'environnement — cycle de saisons (SYNE-072)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>world.seasons</code></td>
+<td style="text-align: left;"><code>{enabled: false}</code></td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Bloc du cycle de saisons — <strong>l'ancien drapeau booléen homonyme, mort (jamais consommé), devient cet objet</strong> ; <code>enabled</code> = cycle actif (modulation de la régénération + événement <code>world.season_changed</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.seasons.enabled</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Cycle actif (Saisons désactivées par défaut ⇒ trajectoire du scénario de référence inchangée)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.seasons.seasonLengthTicks</code></td>
+<td style="text-align: left;"><code>360</code></td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Durée d'une saison en ticks (≥ 1)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.seasons.initialSeason</code></td>
+<td style="text-align: left;"><code>spring</code></td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Saison du tick 0 — <code>spring</code>, <code>summer</code>, <code>autumn</code> ou <code>winter</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.seasons.cycle[]</code></td>
+<td style="text-align: left;">4 saisons × facteurs ×1</td>
+<td style="text-align: left;">n°4</td>
+<td style="text-align: left;">Les 4 définitions (une par saison) : <code>name</code>, <code>foodFactor</code>, <code>waterFactor</code>, <code>woodFactor</code>, <code>mineralFactor</code> — facteur &gt; 1 = saison favorable, &lt; 1 = défavorable, appliqué à la régénération/dégradation en fin de tick (SYNE-070)</td>
+</tr>
+</tbody>
+</table>
+<p>Saison courante (fonction pure du tick, 0 tirage PRNG — DETERMINISM.md §3) :
+<code>saison(tick) = (initialSeasonIndex + tick / seasonLengthTicks) mod 4</code>.</p>
+<p>Exemple (extrait) :</p>
+<pre><code class="lang-json">{
+  &quot;world&quot;: {
+    &quot;seasons&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;seasonLengthTicks&quot;: 360,
+      &quot;initialSeason&quot;: &quot;spring&quot;,
+      &quot;cycle&quot;: [
+        { &quot;name&quot;: &quot;spring&quot;, &quot;foodFactor&quot;: 1.0, &quot;waterFactor&quot;: 1.0, &quot;woodFactor&quot;: 1.0, &quot;mineralFactor&quot;: 1.0 },
+        { &quot;name&quot;: &quot;summer&quot;, &quot;foodFactor&quot;: 1.0, &quot;waterFactor&quot;: 1.2, &quot;woodFactor&quot;: 1.0, &quot;mineralFactor&quot;: 1.0 },
+        { &quot;name&quot;: &quot;autumn&quot;, &quot;foodFactor&quot;: 1.1, &quot;waterFactor&quot;: 1.0, &quot;woodFactor&quot;: 1.2, &quot;mineralFactor&quot;: 1.0 },
+        { &quot;name&quot;: &quot;winter&quot;, &quot;foodFactor&quot;: 0.8, &quot;waterFactor&quot;: 0.9, &quot;woodFactor&quot;: 1.0, &quot;mineralFactor&quot;: 1.0 }
+      ]
+    }
+  }
+}
+</code></pre>
+<p>Validation §6 : <code>seasonLengthTicks</code> &gt; 0 ; <code>initialSeason</code> dans {spring, summer, autumn, winter} ; <code>cycle</code> = les 4 saisons <strong>exactement une fois</strong> ; facteurs ≥ 0.</p>
+<h3 id="610-clés-denvironnement--territoires-syne-073">6.10 Clés d'environnement — territoires (SYNE-073)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>world.territories</code></td>
+<td style="text-align: left;"><code>{enabled: false}</code></td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Bloc du suivi de territoire — zones « points de survie » dont la <strong>présence des entités</strong> délimite le territoire effectif (décision n°21) ; <code>enabled</code> = suivi actif (appartenance + événement <code>world.territory_membership_changed</code> + snapshot <code>territories[]</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.territories.enabled</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Suivi actif (désactivé par défaut ⇒ trajectoire du scénario de référence inchangée)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.territories.zones[]</code></td>
+<td style="text-align: left;"><code>[]</code></td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Zones (disques « points de survie ») suivies — liste de <code>{id, centerX, centerY, radius}</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.territories.zones[].id</code></td>
+<td style="text-align: left;">— (requis)</td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Identifiant unique de la zone (<code>targetId</code> des événements, clé du snapshot)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.territories.zones[].centerX</code></td>
+<td style="text-align: left;">— (requis)</td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Abscisse du centre (dans <code>[0, worldWidth]</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.territories.zones[].centerY</code></td>
+<td style="text-align: left;">— (requis)</td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Ordonnée du centre (dans <code>[0, worldHeight]</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.territories.zones[].radius</code></td>
+<td style="text-align: left;"><code>20</code></td>
+<td style="text-align: left;">n°21</td>
+<td style="text-align: left;">Rayon du disque (la présence dans le disque délimite le territoire effectif)</td>
+</tr>
+</tbody>
+</table>
+<p>Appartenance (0 tirage PRNG, DETERMINISM.md §3) : <code>entité ∈ zone ⟺ distance(entité, centre) ≤ radius</code>, suivie en fin de tick — <code>Entered</code>/<code>Left</code> tracés par zone (ordre de pose) et identifiant croissant, drainés <code>world.territory_membership_changed</code> (API_CONTRACTS §2.2).</p>
+<p>Exemple (extrait) :</p>
+<pre><code class="lang-json">{
+  &quot;world&quot;: {
+    &quot;territories&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;zones&quot;: [
+        { &quot;id&quot;: &quot;camp&quot;, &quot;centerX&quot;: 250, &quot;centerY&quot;: 250, &quot;radius&quot;: 40 },
+        { &quot;id&quot;: &quot;foret&quot;, &quot;centerX&quot;: 100, &quot;centerY&quot;: 400, &quot;radius&quot;: 25 }
+      ]
+    }
+  }
+}
+</code></pre>
+<p>Validation §6 : <code>zones</code> rejetée si <code>world.territories.enabled</code> est <code>false</code> ; par zone : <code>id</code> non vide et unique, <code>radius</code> &gt; 0, <code>centerX</code>/<code>centerY</code> dans le monde. Le suivi est <strong>purement observationnel</strong> (aucun comportement agentique, aucune revendication) — les <strong>sources spatiales de ressources</strong> du territoire restent <strong>hors V0.1</strong> (§6.7).</p>
+<h3 id="611-clés-denvironnement--livres-syne-121">6.11 Clés d’environnement — livres (SYNE-121)</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Clé</th>
+<th style="text-align: left;">Défaut</th>
+<th style="text-align: left;">Décision</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>world.books</code></td>
+<td style="text-align: left;"><code>{enabled: false}</code></td>
+<td style="text-align: left;">n°18/19</td>
+<td style="text-align: left;">Active les livres et leurs événements/snapshot additifs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.books.enabled</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">n°18/19</td>
+<td style="text-align: left;">Désactivé par défaut ; ne change pas le run de référence</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.books.writeCostEnergy</code></td>
+<td style="text-align: left;"><code>20.0</code></td>
+<td style="text-align: left;">n°18</td>
+<td style="text-align: left;">Énergie débitée à l’auteur à l’écriture ; valeur provisoire, SYNE-120</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>world.books.readBenefit</code></td>
+<td style="text-align: left;"><code>1.0</code></td>
+<td style="text-align: left;">n°19</td>
+<td style="text-align: left;">Bénéfice de principe tracé à la lecture ; son effet cognitif attend le moteur mémoire</td>
+</tr>
+</tbody>
+</table>
+<p>Exemple : <code>{&quot;world&quot;:{&quot;books&quot;:{&quot;enabled&quot;:true,&quot;writeCostEnergy&quot;:20,&quot;readBenefit&quot;:1}}}</code>.
+Les coûts doivent être positifs ou nuls. En V0.1, l’écriture et la lecture sont des appels explicites de l’API du moteur ; l’accès spatial, le temps de rédaction et l’effet cognitif détaillé restent hors de ce sous-jalon.</p>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Valeurs de calibration (taux de besoins, seuils) issues du prototype [HÉRITÉ] — à consolider en décisions numériques.</li>
+<li>Clés de configuration par espèce en V0.1 : format final à stabiliser avec le modèle de paramétrages.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/CONFIGURATION.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

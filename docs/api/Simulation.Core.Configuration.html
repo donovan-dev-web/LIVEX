@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Namespace Simulation.Core.Configuration | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Namespace Simulation.Core.Configuration | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Configuration">
+
+  <h1 id="Simulation_Core_Configuration" data-uid="Simulation.Core.Configuration" class="text-break">Namespace Simulation.Core.Configuration</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+    <h3 id="classes">
+Classes
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ActionCatalogSettings.html">ActionCatalogSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ActionEntrySettings.html">ActionEntrySettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ActionSettings.html">ActionSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.AgentSettings.html">AgentSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.BeliefSettings.html">BeliefSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.BookSettings.html">BookSettings</a></h4>
+      <section><p>Livres (SYNE-121, décisions n°18/19, CONFIGURATION.md §6.11) : <code>world.books</code>.
+L'écriture d'un livre matérialise une connaissance à un instant T au <strong>coût</strong>
+(énergie) payé par l'auteur ; la lecture produit un <strong>bénéfice</strong> posé en
+principe (structure figée, décision n°19) — le bénéfice cognitif chiffré
+dépend du moteur de mémoire (décision n°11) et reste reporté (SYNE-131).
+Chiffres V0.1 de premier jet, calibrés en SYNE-120 (DECISIONS_V01 n°18/19).
+Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.CliOptions.html">CliOptions</a></h4>
+      <section><p>Options brutes issues des flags de ligne de commande (Annexe H §3), avant fusion.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.CommunicationSettings.html">CommunicationSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ConfigLoader.html">ConfigLoader</a></h4>
+      <section><p>Charge la configuration selon la priorité Annexe H §5 :</p>
+<ol>
+<li>défauts intégrés ; 2. fichier <code>--config</code> (surcouche) ; 3. flags CLI (overrides).
+Un fichier partiel ne surcharge que les sections/propriétés présentes.</li>
+</ol>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.DeliberationSettings.html">DeliberationSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.GroupSettings.html">GroupSettings</a></h4>
+      <section><p>Formation émergente des groupes (SYNE-060/061, SYSTEM_SPEC.md §5, décisions
+n°23, 24) : cohésion = confiance réciproque × affinité (buts partagés +
+croyances communes). Les structures émergent — aucun script de coalition.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.InheritanceSettings.html">InheritanceSettings</a></h4>
+      <section><p>Mécanismes fins d'héritage des traits (SYNE-063, décision n°16, DATA_MODEL.md
+§6.6.3) : la structure (fusion + transmission) est figée ; la réadaptation/
+dominance/mutation restent configurables (V0.2).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.InterruptionSettings.html">InterruptionSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.LifeSettings.html">LifeSettings</a></h4>
+      <section><p>Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :
+une entité dont l'énergie atteint 0 (épuisement) meurt : retrait du monde
+(grille spatiale + index), des groupes et de la cognition, puis émission d'un
+événement <code>agent_died</code> (API_CONTRACTS.md §2.2).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.MemorySettings.html">MemorySettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.NeedsSettings.html">NeedsSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.PathfindingSettings.html">PathfindingSettings</a></h4>
+      <section><p>Cheminement (SYNE-077, Monographie §6.2.12) : A* déterministe sur grille
+rasterisée (les disques obstacles bloquent leurs cellules), voisinage ordonné</p>
+<ul>
+<li>tie-break, cache de chemins LRU borné, repli « sur place » quand
+aucun chemin n'existe (destination inaccessible ou expansion plafonnée).</li>
+</ul>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.PerceptionSettings.html">PerceptionSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.PerformanceSettings.html">PerformanceSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.RandomSettings.html">RandomSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ReproductionSettings.html">ReproductionSettings</a></h4>
+      <section><p>Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17, 16,
+SYSTEM_SPEC.md §8, Monographie §6.6.2) : fusion rare et volontaire, décision
+déterministe sans PRNG. La « fusion consentie » est soumise aux conditions de
+fidélité comportementale (proximité physique, ligne de vue, énergie suffisante,
+absence de besoin critique) — SYNE-075.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ResourceSettings.html">ResourceSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.ResourceSpec.html">ResourceSpec</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SeasonDefinition.html">SeasonDefinition</a></h4>
+      <section><p>Définition d'une saison du cycle (SYNE-072, <code>world.seasons.cycle[]</code>) :
+facteurs de régénération par ressource appliqués en fin de tick quand le
+cycle est actif (<code>world.seasons.enabled</code>). Facteur 1.0 = taux nominal ;</p>
+<blockquote>
+<p>1 = saison favorable, &lt; 1 = saison défavorable. Pur (0 tirage PRNG,
+DETERMINISM.md §3) : la saison courante et son facteur sont des fonctions
+déterministes du tick.</p>
+</blockquote>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SeasonSettings.html">SeasonSettings</a></h4>
+      <section><p>Cycle de saisons (SYNE-072, <code>world.seasons</code>) : l'ancien drapeau booléen
+homonyme (mort, jamais consommé aucun comportement) devient ce bloc actif —
+<code>enabled</code> remplit désormais ce rôle. Cycle déterministe de 4 saisons :
+saison( tick ) = (indexInitial + tick / seasonLengthTicks) mod 4, sans aucun
+tirage PRNG (DETERMINISM.md §3) ; les facteurs de régénération sont appliqués
+en fin de tick sur le cycle des ressources (SYNE-070). Saisons désactivées par
+défaut ⇒ trajectoire du scénario de référence inchangée (re-pin contractuel).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SimulationOptions.html">SimulationOptions</a></h4>
+      <section><p>Options de simulation (Annexe H). Structure parallèle au fichier config.json :
+les propriétés absentes d'un fichier partiel conservent les défauts intégrés.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SimulationOptionsValidator.html">SimulationOptionsValidator</a></h4>
+      <section><p>Validation des plages à l'import (CONFIGURATION.md §6).
+Une configuration invalide stoppe avec un message d'erreur explicite.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SimulationProfiles.html">SimulationProfiles</a></h4>
+      <section><p>Profils opérationnels explicites utilisés par les lanceurs de runs.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SimulationSettings.html">SimulationSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.StaticObstacleSettings.html">StaticObstacleSettings</a></h4>
+      <section><p>Pose d'un obstacle statique issu de la configuration <code>world.obstacleLayout</code>
+(SYNE-071, DATA_MODEL.md §2) : disque {Position, Radius}. Une construction posée
+modifie la perception et le mouvement — modèle figé par la décision n°20.</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.TerritorySettings.html">TerritorySettings</a></h4>
+      <section><p>Zones de territoire (SYNE-073, décision n°21, CONFIGURATION.md §6.10) :
+<code>world.territories</code>. V0.1 : la présence d'une entité dans une zone délimite
+le <strong>territoire effectif</strong> (vue d'observation) — appartenance suivie en fin de
+tick (0 tirage PRNG, DETERMINISM.md §3) et émise en <code>world.territory_membership_changed</code>.
+Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée (re-pin
+contractuel). Les sources spatiales de ressources autour des points de survie
+(ressources du territoire) restent <strong>hors V0.1</strong> (SYSTEMS_SPEC.md §4).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.TerritoryZoneDefinition.html">TerritoryZoneDefinition</a></h4>
+      <section><p>Définition d'une zone de territoire (SYNE-073, <code>world.territories.zones[]</code>,
+décision n°21) : disque « point de survie » {Center, Radius}. La présence d'une
+entité dans le disque la délimite comme membre du territoire effectif —
+concept d'observation V0.1 (aucun comportement agentique, 0 tirage PRNG).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.TrustSettings.html">TrustSettings</a></h4>
+      <section></section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.WorldSettings.html">WorldSettings</a></h4>
+      <section></section>
+    <h3 id="structs">
+Structs
+</h3>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SeasonChange.html">SeasonChange</a></h4>
+      <section><p>Changement de saison entre deux ticks (SYNE-072, événement <code>world.season_changed</code>).</p>
+</section>
+      <h4><a class="xref" href="Simulation.Core.Configuration.SeasonFactors.html">SeasonFactors</a></h4>
+      <section><p>Facteurs de régénération des 4 ressources pour le cycle de saisons (SYNE-072).</p>
+</section>
+
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

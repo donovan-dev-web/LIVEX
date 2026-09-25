@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>FAQ.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="FAQ.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="faqmd">FAQ.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>VISION.md</code>, <code>GLOSSARY.md</code>
+<strong>Source Monographie</strong> : Partie 8 (portée, risques, éthique) — reformulée en FAQ</p>
+<hr>
+<h2 id="1-quest-ce-que-livex-cherche-à-démontrer-">1. Qu'est-ce que LIVEX cherche à démontrer ?</h2>
+<p>LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les <strong>structures collectives qui émergent</strong> — groupes, échanges, conflits, propagation du savoir. LIVEX n'affirme pas que cette émergence prouve une « intelligence » : il fournit des <strong>observateurs et des métriques mesurables</strong>.</p>
+<h2 id="2-livex-prouve-t-il-que-les-sociétés-émergent--comme-ça--">2. LIVEX prouve-t-il que les sociétés émergent « comme ça » ?</h2>
+<p><strong>Non.</strong> Un score d'émergence est une <strong>mesure particulière</strong>, pas une preuve. ECHOS documente explicitement ses limites (<code>docs/docs-echos/LIMITATIONS.md</code>) : les catégories de mesure reflètent les choix du développeur, et un phénomène rare peut passer inaperçu.</p>
+<h2 id="3-pourquoi-tant-dimportance-au-déterminisme-">3. Pourquoi tant d'importance au déterminisme ?</h2>
+<p>Le déterminisme <strong>bit-à-bit</strong> (même seed + config + version moteur → même trajectoire) est indispensable à la <strong>répétabilité scientifique</strong> : comparer deux expériences en changeant un seul paramètre n'a de sens que si le reste est reproductible. Voir <code>docs/docs-syne/DETERMINISM.md</code>.</p>
+<h2 id="4-les-entités-communiquent-elles--entre-elles--">4. Les entités communiquent-elles « entre elles » ?</h2>
+<p>Oui, au sein du monde simulé — via des pulsations lumineuses locales, non confidentielles, dégradées (7 types de messages). C'est <strong>distinct</strong> de la communication inter-composants (SYNE↔ECHOS↔PRISM par WebSocket/HTTP). Voir <code>docs/docs-syne/COMMUNICATION_PROTOCOL.md</code> vs <code>COMMUNICATION.md</code>.</p>
+<h2 id="5-peut-on--tricher--en-donnant-la-vue-du-monde-aux-entités-">5. Peut-on « tricher » en donnant la vue du monde aux entités ?</h2>
+<p>Non par conception : l'<strong>observabilité partielle</strong> est une fonctionnalité de premier plan. Une entité ne voit que ce que ses capteurs perçoivent (rayon, ligne de vue), et sa mémoire/croyances se dégradent. L'anti-triche est vérifié par tests.</p>
+<h2 id="6-y-a-t-il-une-modélisation-physique-collisions-corps-morphologie-">6. Y a-t-il une modélisation physique (collisions, corps, morphologie) ?</h2>
+<p>Non (ADR-010). Les entités sont des <strong>entités logiques</strong> (position, vitesse, santé) sans représentation physique détaillée ; elles peuvent se chevaucher. Le rendu PRISM stylise ce modèle.</p>
+<h2 id="7-quelle-est-la-limite-déchelle-visée-">7. Quelle est la limite d'échelle visée ?</h2>
+<p>Objectifs V2 (Annexe I) : 50 entités ≥ 30 t/s ≤ 15 Mo, 500 ≥ 20 t/s ≤ 40 Mo, 1000 ≥ 10 t/s ≤ 80 Mo, couverture ≥ 80 %. La scalabilité au-delà est un axe de recherche (grille spatiale, LOD, culling).</p>
+<h2 id="8-livex-est-il-multi-joueur-">8. LIVEX est-il multi-joueur ?</h2>
+<p>Pas en V0.1. PRISM prévoit un futur <strong>mode joueur-habitant</strong> (incarner une entité), mais c'est une évolution lointaine (§5.15).</p>
+<h2 id="9-pourquoi-pas-unrealunity-dès-le-départ-">9. Pourquoi pas Unreal/Unity dès le départ ?</h2>
+<p>Surdimensionnés pour un prototype de visualisation, et le modèle de simulation <strong>ne doit pas être lié</strong> à un moteur graphique. PRISM est un framework intermédiaire ; le moteur définitif reste ouvert.</p>
+<h2 id="10-quelle-est-la-licence-et-qui-possède-le-projet-">10. Quelle est la licence et qui possède le projet ?</h2>
+<p>MIT (voir <code>LICENSE</code>), dépôt solo pour l'instant. Les règles de contribution sont dans <code>CONTRIBUTING.md</code>.</p>
+<h2 id="11-que-livex-ne-cherche-t-il-pas-à-prouver-">11. Que LIVEX ne cherche-t-il <strong>pas</strong> à prouver ?</h2>
+<ul>
+<li>Qu'une société s'est formée « à l'insu » du concepteur (les composants sont définis par lui).</li>
+<li>Qu'une métrique vaut une preuve d'émergence.</li>
+<li>Que les comportements des entités reproduisent des faits sociaux réels.</li>
+</ul>
+<h2 id="12-où-sont-les-risques-éthiques-documentés-">12. Où sont les risques éthiques documentés ?</h2>
+<p>Dans <code>docs/ETHICS_AND_SCOPE.md</code> (portée, risques, éthique), issu de la Partie 8 de la Monographie.</p>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Les réponses ci-dessus sont alignées sur l'état de conception V0.1 ; elles évolueront avec les décisions d'implémentation.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/FAQ.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

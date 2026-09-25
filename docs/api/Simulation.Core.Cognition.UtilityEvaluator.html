@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class UtilityEvaluator | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class UtilityEvaluator | LIVEX ">
+    
+    <meta name="description" content="&#201;valuateur d&#39;utilit&#233; (COGNITIVE_ARCHITECTURE.md &#167;6, d&#233;cision n&#176;13) : U = (benefit − cost − risk) &#215; confidence &#215; personalityModifier + urgency. Bonus d&#39;alignement &#215;1.2 si l&#39;action rejoint l&#39;objectif courant ; s&#233;lection par utilit&#233; maximale, d&#233;partage d&#233;terministe par ordre du catalogue (SYNE-030).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition.UtilityEvaluator">
+
+
+
+  <h1 id="Simulation_Core_Cognition_UtilityEvaluator" data-uid="Simulation.Core.Cognition.UtilityEvaluator" class="text-break">Class UtilityEvaluator</h1>
+  <div class="markdown level0 summary"><p>Évaluateur d'utilité (COGNITIVE_ARCHITECTURE.md §6, décision n°13) :
+<code>U = (benefit − cost − risk) × confidence × personalityModifier + urgency</code>.
+Bonus d'alignement ×1.2 si l'action rejoint l'objectif courant ; sélection par
+utilité maximale, départage déterministe par ordre du catalogue (SYNE-030).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">UtilityEvaluator</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Cognition.html">Cognition</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Cognition_UtilityEvaluator_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class UtilityEvaluator</code></pre>
+  </div>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_ApplyActionSwitchMargin_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.ApplyActionSwitchMargin*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_ApplyActionSwitchMargin_Simulation_Core_Cognition_UtilityScore_System_Nullable_Simulation_Core_Cognition_DesireKind__Simulation_Core_Cognition_BodyNeeds_Simulation_Core_Cognition_AgentFactors_System_Double_System_UInt64_Simulation_Core_Configuration_ActionSettings_System_Nullable_Simulation_Core_Cognition_GroupObjective__" data-uid="Simulation.Core.Cognition.UtilityEvaluator.ApplyActionSwitchMargin(Simulation.Core.Cognition.UtilityScore,System.Nullable{Simulation.Core.Cognition.DesireKind},Simulation.Core.Cognition.BodyNeeds,Simulation.Core.Cognition.AgentFactors,System.Double,System.UInt64,Simulation.Core.Configuration.ActionSettings,System.Nullable{Simulation.Core.Cognition.GroupObjective})">ApplyActionSwitchMargin(UtilityScore, DesireKind?, BodyNeeds, AgentFactors, double, ulong, ActionSettings, GroupObjective?)</h4>
+  <div class="markdown level1 summary"><p>Hystérésis anti-oscillation (COGNITIVE_ARCHITECTURE.md §6) : ne passer à
+une nouvelle action que si elle dépasse l'action courante de
+<code>actionSwitchMargin</code> (défaut 0.05). Sinon l'action courante est
+conservée (son score est re-évalué à l'état courant).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static UtilityScore ApplyActionSwitchMargin(UtilityScore candidate, DesireKind? currentKind, BodyNeeds needs, AgentFactors factors, double successRate, ulong goalAge, ActionSettings actions, GroupObjective? collectiveObjective = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a></td>
+        <td><span class="parametername">candidate</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a>?</td>
+        <td><span class="parametername">currentKind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></td>
+        <td><span class="parametername">needs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.AgentFactors.html">AgentFactors</a></td>
+        <td><span class="parametername">factors</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">successRate</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">goalAge</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ActionSettings.html">ActionSettings</a></td>
+        <td><span class="parametername">actions</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.GroupObjective.html">GroupObjective</a>?</td>
+        <td><span class="parametername">collectiveObjective</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_BenefitOf_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.BenefitOf*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_BenefitOf_Simulation_Core_Cognition_DesireKind_Simulation_Core_Cognition_BodyNeeds_Simulation_Core_Configuration_ActionSettings_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.BenefitOf(Simulation.Core.Cognition.DesireKind,Simulation.Core.Cognition.BodyNeeds,Simulation.Core.Configuration.ActionSettings)">BenefitOf(DesireKind, BodyNeeds, ActionSettings)</h4>
+  <div class="markdown level1 summary"><p>Bénéfice : satisfaction potentielle d'un besoin (COGNITIVE_ARCHITECTURE.md §6).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static double BenefitOf(DesireKind kind, BodyNeeds needs, ActionSettings actions)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></td>
+        <td><span class="parametername">needs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ActionSettings.html">ActionSettings</a></td>
+        <td><span class="parametername">actions</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_Best_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.Best*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_Best_System_Collections_Generic_IEnumerable_Simulation_Core_Cognition_UtilityScore__" data-uid="Simulation.Core.Cognition.UtilityEvaluator.Best(System.Collections.Generic.IEnumerable{Simulation.Core.Cognition.UtilityScore})">Best(IEnumerable&lt;UtilityScore&gt;)</h4>
+  <div class="markdown level1 summary"><p>Meilleur candidat : utilité maximale ; à égalité, premier dans l'ordre du catalogue.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static UtilityScore Best(IEnumerable&lt;UtilityScore&gt; scores)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a>&gt;</td>
+        <td><span class="parametername">scores</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_CostOf_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.CostOf*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_CostOf_Simulation_Core_Cognition_DesireKind_Simulation_Core_Configuration_ActionSettings_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.CostOf(Simulation.Core.Cognition.DesireKind,Simulation.Core.Configuration.ActionSettings)">CostOf(DesireKind, ActionSettings)</h4>
+  <div class="markdown level1 summary"><p>Coût de l'action (énergie, temps, risques) — valeurs V0.1 configurables.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static double CostOf(DesireKind kind, ActionSettings actions)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ActionSettings.html">ActionSettings</a></td>
+        <td><span class="parametername">actions</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_Evaluate_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.Evaluate*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_Evaluate_Simulation_Core_Cognition_DesireKind_Simulation_Core_Cognition_BodyNeeds_Simulation_Core_Cognition_AgentFactors_System_Double_System_UInt64_Simulation_Core_Configuration_ActionSettings_System_Nullable_Simulation_Core_Cognition_DesireKind__System_Nullable_Simulation_Core_Cognition_GroupObjective__" data-uid="Simulation.Core.Cognition.UtilityEvaluator.Evaluate(Simulation.Core.Cognition.DesireKind,Simulation.Core.Cognition.BodyNeeds,Simulation.Core.Cognition.AgentFactors,System.Double,System.UInt64,Simulation.Core.Configuration.ActionSettings,System.Nullable{Simulation.Core.Cognition.DesireKind},System.Nullable{Simulation.Core.Cognition.GroupObjective})">Evaluate(DesireKind, BodyNeeds, AgentFactors, double, ulong, ActionSettings, DesireKind?, GroupObjective?)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static UtilityScore Evaluate(DesireKind kind, BodyNeeds needs, AgentFactors factors, double successRate, ulong goalAge, ActionSettings actions, DesireKind? currentIntention = null, GroupObjective? collectiveObjective = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></td>
+        <td><span class="parametername">needs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.AgentFactors.html">AgentFactors</a></td>
+        <td><span class="parametername">factors</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td><span class="parametername">successRate</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">goalAge</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ActionSettings.html">ActionSettings</a></td>
+        <td><span class="parametername">actions</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a>?</td>
+        <td><span class="parametername">currentIntention</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.GroupObjective.html">GroupObjective</a>?</td>
+        <td><span class="parametername">collectiveObjective</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.UtilityScore.html">UtilityScore</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_PersonalityModifierOf_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.PersonalityModifierOf*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_PersonalityModifierOf_Simulation_Core_Cognition_DesireKind_Simulation_Core_Cognition_AgentFactors_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.PersonalityModifierOf(Simulation.Core.Cognition.DesireKind,Simulation.Core.Cognition.AgentFactors)">PersonalityModifierOf(DesireKind, AgentFactors)</h4>
+  <div class="markdown level1 summary"><p>Modulateur de personnalité (min 0.1) : Gather par Greed, Explore par
+Curiosity, Social par Sociability, actions risqueuses par Bravery.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static double PersonalityModifierOf(DesireKind kind, AgentFactors factors)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.AgentFactors.html">AgentFactors</a></td>
+        <td><span class="parametername">factors</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_RiskOf_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.RiskOf*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_RiskOf_Simulation_Core_Cognition_DesireKind_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.RiskOf(Simulation.Core.Cognition.DesireKind)">RiskOf(DesireKind)</h4>
+  <div class="markdown level1 summary"><p>Risque de l'action (aucun danger modélisé en V0.1 — valeurs statiques par type).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static double RiskOf(DesireKind kind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_UtilityEvaluator_UrgencyOf_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.UrgencyOf*"></a>
+  <h4 id="Simulation_Core_Cognition_UtilityEvaluator_UrgencyOf_Simulation_Core_Cognition_DesireKind_Simulation_Core_Cognition_BodyNeeds_System_UInt64_Simulation_Core_Configuration_ActionSettings_" data-uid="Simulation.Core.Cognition.UtilityEvaluator.UrgencyOf(Simulation.Core.Cognition.DesireKind,Simulation.Core.Cognition.BodyNeeds,System.UInt64,Simulation.Core.Configuration.ActionSettings)">UrgencyOf(DesireKind, BodyNeeds, ulong, ActionSettings)</h4>
+  <div class="markdown level1 summary"><p>Urgence : sigmoïde <code>1 / (1 + exp(−0.1 × (need − 50))) × 20</code>, +5 si
+l'objectif a plus de 100 ticks, +10 si l'état est critique (défaut
+faim &gt; 85 ou énergie &lt; 10, agents.interruption.* — COGNITIVE_ARCHITECTURE.md §6).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static double UrgencyOf(DesireKind kind, BodyNeeds needs, ulong goalAge, ActionSettings actions)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.DesireKind.html">DesireKind</a></td>
+        <td><span class="parametername">kind</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.BodyNeeds.html">BodyNeeds</a></td>
+        <td><span class="parametername">needs</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">goalAge</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.ActionSettings.html">ActionSettings</a></td>
+        <td><span class="parametername">actions</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/UtilityEvaluator.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

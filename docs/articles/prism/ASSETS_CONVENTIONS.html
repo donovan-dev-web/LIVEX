@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>ASSETS_CONVENTIONS.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="ASSETS_CONVENTIONS.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="assets_conventionsmd">ASSETS_CONVENTIONS.md</h1>
+
+<p><strong>Composant</strong> : PRISM
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>SCENE_SPEC.md</code>
+<strong>Source Monographie</strong> : §5.3.4, §5.5.2</p>
+<hr>
+<h2 id="1-principe">1. Principe</h2>
+<p>Le prototype est <strong>100 % procédural</strong> : aucun asset externe. Les primitives sont générées au runtime et paramétrées par code (couleurs, tailles).</p>
+<h2 id="2-correspondance-élément--mesh">2. Correspondance élément ↔ mesh</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Élément</th>
+<th style="text-align: left;">Mesh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Sol</td>
+<td style="text-align: left;">PlaneMesh</td>
+</tr>
+<tr>
+<td style="text-align: left;">Entité</td>
+<td style="text-align: left;">CapsuleMesh</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ressource</td>
+<td style="text-align: left;">SphereMesh</td>
+</tr>
+<tr>
+<td style="text-align: left;">Obstacle</td>
+<td style="text-align: left;">BoxMesh / CylinderMesh</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-code-couleur-des-entités">3. Code couleur des entités</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Condition</th>
+<th style="text-align: left;">Couleur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Énergie basse (&lt; 20)</td>
+<td style="text-align: left;">Rouge</td>
+</tr>
+<tr>
+<td style="text-align: left;">Faim élevée (&gt; 80)</td>
+<td style="text-align: left;">Orange</td>
+</tr>
+<tr>
+<td style="text-align: left;">En bonne santé</td>
+<td style="text-align: left;">Vert</td>
+</tr>
+<tr>
+<td style="text-align: left;">Dans un groupe</td>
+<td style="text-align: left;">Couleur du groupe (hash HSV)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Sélectionné</td>
+<td style="text-align: left;">Modulation blanche</td>
+</tr>
+<tr>
+<td style="text-align: left;">Non sélectionné</td>
+<td style="text-align: left;">Modulation grise</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-code-couleur-des-ressources">4. Code couleur des ressources</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Couleur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Nourriture</td>
+<td style="text-align: left;">Vert</td>
+</tr>
+<tr>
+<td style="text-align: left;">Eau</td>
+<td style="text-align: left;">Bleu</td>
+</tr>
+</tbody>
+</table>
+<p>Taille normalisée par <code>quantité / capacité</code>.</p>
+<h2 id="5-couleur-des-groupes">5. Couleur des groupes</h2>
+<pre><code class="lang-text">hue = groupId.GetHashCode() % 360
+saturation = 0.8
+value = 1.0
+</code></pre>
+<ul>
+<li>Leaders : éclaircis (Lightened 0.3).</li>
+<li>Membres : couleur normale.</li>
+</ul>
+<h2 id="6-couleur-des-pulsations-de-communication">6. Couleur des pulsations de communication</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Type de pulsation</th>
+<th style="text-align: left;">Couleur rendue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Warning</td>
+<td style="text-align: left;">Rouge</td>
+</tr>
+<tr>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">Blanc</td>
+</tr>
+<tr>
+<td style="text-align: left;">Request</td>
+<td style="text-align: left;">Jaune</td>
+</tr>
+<tr>
+<td style="text-align: left;">Trading</td>
+<td style="text-align: left;">Vert</td>
+</tr>
+<tr>
+<td style="text-align: left;">Autre</td>
+<td style="text-align: left;">Gris</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-convention-de-nommage-des-nœuds">7. Convention de nommage des nœuds</h2>
+<ul>
+<li>Préfixes typés : <code>Agent_&lt;id&gt;</code>, <code>Resource_&lt;type&gt;_&lt;id&gt;</code>, <code>Obstacle_&lt;id&gt;</code>, <code>Pulse_&lt;messageId&gt;</code>.</li>
+<li>Organisation par <code>PackedScene</code> réutilisable (capsule-entité, sphère-ressource, cube-obstacle).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun. Les conventions proviennent de la Monographie §5.3.4 / §5.5.2.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/prism/ASSETS_CONVENTIONS.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class AStarPathfinder | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class AStarPathfinder | LIVEX ">
+    
+    <meta name="description" content="Cheminement d&#233;terministe (SYNE-077, Monographie &#167;6.2.12) : A* sur une grille rasteris&#233;e du monde — les disques obstacles bloquent les cellules dont le centre tombe dans le disque (marge demi-cellule). Voisinage carr&#233; 8-connexe parcouru dans un ordre fixe, fermeture par &#233;galit&#233; &#224; 1e-12, d&#233;partage d&#233;terministe par (f, puis g, puis (x, y)) — aucune consommation du PRNG. Le repli est &#171; sur place &#187; : si aucun chemin n&#39;existe (destination dans un obstacle ou inaccessible), ou si le plafond d&#39;expansion  est atteint, le chemin renvoy&#233; est vide (l&#39;entit&#233; ne se d&#233;place pas ce tick-ci).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Navigation.AStarPathfinder">
+
+
+
+  <h1 id="Simulation_Core_Navigation_AStarPathfinder" data-uid="Simulation.Core.Navigation.AStarPathfinder" class="text-break">Class AStarPathfinder</h1>
+  <div class="markdown level0 summary"><p>Cheminement déterministe (SYNE-077, Monographie §6.2.12) : A* sur une grille
+rasterisée du monde — les disques obstacles bloquent les cellules dont le
+centre tombe dans le disque (marge demi-cellule). Voisinage carré 8-connexe
+parcouru dans un ordre fixe, fermeture par égalité à 1e-12, départage
+déterministe par (f, puis g, puis (x, y)) — aucune consommation du PRNG.</p>
+<p>Le repli est « sur place » : si aucun chemin n'existe (destination dans un
+obstacle ou inaccessible), ou si le plafond d'expansion
+<a class="xref" href="Simulation.Core.Configuration.PathfindingSettings.html#Simulation_Core_Configuration_PathfindingSettings_MaxExpansionCells">MaxExpansionCells</a> est atteint, le chemin
+renvoyé est vide (l'entité ne se déplace pas ce tick-ci).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">AStarPathfinder</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Navigation.html">Navigation</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Navigation_AStarPathfinder_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class AStarPathfinder</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_AStarPathfinder__ctor_" data-uid="Simulation.Core.Navigation.AStarPathfinder.#ctor*"></a>
+  <h4 id="Simulation_Core_Navigation_AStarPathfinder__ctor_Simulation_Core_World_World_Simulation_Core_Configuration_PathfindingSettings_" data-uid="Simulation.Core.Navigation.AStarPathfinder.#ctor(Simulation.Core.World.World,Simulation.Core.Configuration.PathfindingSettings)">AStarPathfinder(World, PathfindingSettings)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AStarPathfinder(World world, PathfindingSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.World.html">World</a></td>
+        <td><span class="parametername">world</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.PathfindingSettings.html">PathfindingSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_AStarPathfinder_Cache_" data-uid="Simulation.Core.Navigation.AStarPathfinder.Cache*"></a>
+  <h4 id="Simulation_Core_Navigation_AStarPathfinder_Cache" data-uid="Simulation.Core.Navigation.AStarPathfinder.Cache">Cache</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public PathCache Cache { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Navigation.PathCache.html">PathCache</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_AStarPathfinder_CellCountX_" data-uid="Simulation.Core.Navigation.AStarPathfinder.CellCountX*"></a>
+  <h4 id="Simulation_Core_Navigation_AStarPathfinder_CellCountX" data-uid="Simulation.Core.Navigation.AStarPathfinder.CellCountX">CellCountX</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int CellCountX { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_AStarPathfinder_CellCountY_" data-uid="Simulation.Core.Navigation.AStarPathfinder.CellCountY*"></a>
+  <h4 id="Simulation_Core_Navigation_AStarPathfinder_CellCountY" data-uid="Simulation.Core.Navigation.AStarPathfinder.CellCountY">CellCountY</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int CellCountY { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_AStarPathfinder_FindPath_" data-uid="Simulation.Core.Navigation.AStarPathfinder.FindPath*"></a>
+  <h4 id="Simulation_Core_Navigation_AStarPathfinder_FindPath_Simulation_Core_World_Position_Simulation_Core_World_Position_" data-uid="Simulation.Core.Navigation.AStarPathfinder.FindPath(Simulation.Core.World.Position,Simulation.Core.World.Position)">FindPath(Position, Position)</h4>
+  <div class="markdown level1 summary"><p>Centre du chemin depuis <code class="paramref">from</code> vers <code class="paramref">to</code>
+(cellule source exclue, but inclus). Chemin vide si non trouvé (repli sur
+place) ou si les deux extrêmes partagent la même cellule. La mémoïsation
+du cache LRU est consultée en premier (déterminisme de l'ordre d'appel).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;Position&gt; FindPath(Position from, Position to)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Position.html">Position</a></td>
+        <td><span class="parametername">from</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Position.html">Position</a></td>
+        <td><span class="parametername">to</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="Simulation.Core.World.Position.html">Position</a>&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Navigation_AStarPathfinder_Refresh_" data-uid="Simulation.Core.Navigation.AStarPathfinder.Refresh*"></a>
+  <h4 id="Simulation_Core_Navigation_AStarPathfinder_Refresh" data-uid="Simulation.Core.Navigation.AStarPathfinder.Refresh">Refresh()</h4>
+  <div class="markdown level1 summary"><p>Re-rasterise la grille bloquée et purge le cache de chemins si la révision
+des obstacles du monde a changé depuis la dernière rasterisation (SYNE-071) :
+une construction posée/retirée en cours de run doit être contournée — aucun
+chemin mémorisé n'est plus valide. Sans changement (cas nominal), ne fait rien
+(coût nul, déterminisme préservé).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Refresh()</code></pre>
+  </div>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Navigation/AStarPathfinder.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

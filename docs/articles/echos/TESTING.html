@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>TESTING.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="TESTING.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="testingmd">TESTING.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [DRAFT]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>ARCHITECTURE.md</code>, <code>METRICS_SPEC.md</code>
+<strong>Source Monographie</strong> : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)</p>
+<hr>
+<h2 id="1-objectif">1. Objectif</h2>
+<p>Garantir la <strong>correction et la stabilité des métriques</strong>. Objectif de couverture : <strong>≥ 80 %</strong> (Annexe I.3).</p>
+<h2 id="2-référence-validée-dans-le-prototype-v1-annexe-492">2. Référence validée dans le prototype V1 (Annexe §4.9.2)</h2>
+<ul>
+<li><strong>18 tests xUnit</strong> couvrant <code>MetricsTests</code>, <code>RunStoreTests</code>, <code>EmergenceTests</code> (prototype .NET de l'analyzer).</li>
+<li><strong>Couverture : 85.0 %</strong> des lignes.</li>
+<li><strong>Agrégation incrémentale validée</strong> : identique au calcul de référence.</li>
+<li><strong>Sous-échantillonnage validé</strong> : <code>?every=10</code> retourne 9/86 échantillons.</li>
+</ul>
+<h2 id="3-stratégie-de-test-v01--fastapipython">3. Stratégie de test (V0.1 — FastAPI/Python)</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Niveau</th>
+<th style="text-align: left;">Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Métriques</strong></td>
+<td style="text-align: left;">Chaque moteur des 7 <code>METRICS_SPEC.md</code> testé sur des jeux de données synthétiques avec valeurs attendues calculées à la main (ex. entropie de Shannon, coefficient de clustering, communauté).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Scores</strong></td>
+<td style="text-align: left;">Tests du score d'émergence composite (bornes [0,1], poids = 1.0), des phénomènes auto-détectés (conditions de seuils).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>API</strong></td>
+<td style="text-align: left;">Tests d'endpoints (<code>/health</code>, <code>/api/runs/*</code>, <code>/api/compare</code>) avec fixtures de runs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Ingestion</strong></td>
+<td style="text-align: left;">Test du consommateur WebSocket : ingérer un fixture de <code>snapshot</code>/<code>event</code>, vérifier agrégation incrémentale.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Non-régression</strong></td>
+<td style="text-align: left;">Série temporelle de référence figée : recalculer les métriques, comparer aux valeurs dorées (golden files).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reproductibilité</strong></td>
+<td style="text-align: left;"><code>ReproducibilityScore</code> vérifié sur deux runs identiques (1.0) et sur deux runs avec un paramètre modifié (&lt; 1.0).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-outillage">4. Outillage</h2>
+<ul>
+<li><strong>pytest</strong> + fixtures dédiées (runs synthétiques exportés en fichiers Parquet/JSON).</li>
+<li><strong>Golden files</strong> : valeurs attendues stockées pour détection de non-régression.</li>
+<li>CI : exécuté dans <code>ci.yml</code> GitHub Actions (<code>docs/../..</code> racine), job ECHOS.</li>
+</ul>
+<h3 id="41-contrats-dingestion-echos-003echos-004-u0">4.1 Contrats d'ingestion (ECHOS-003/ECHOS-004, U0)</h3>
+<p>Fixtures et golden files <strong>versionnés</strong> dans <code>echos/echos/tests/</code> :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Fichier</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>fixtures/world_snapshot.json</code></td>
+<td style="text-align: left;">Snapshot camelCase (API_CONTRACTS.md §2.1, format doc)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fixtures/world_snapshot_v01.json</code></td>
+<td style="text-align: left;">Snapshot <strong>V0.1 réel</strong> émis par SYNE (sans <code>health</code>, avec <code>species</code>/<code>fatigue</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fixtures/external_event.json</code></td>
+<td style="text-align: left;">Événement <code>decision_made</code> (§2.2)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fixtures/decision_made_v01.json</code>, <code>fixtures/tick_summary_v01.json</code></td>
+<td style="text-align: left;">Événements V0.1 réels émis par SYNE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>fixtures/invalid_message.json</code></td>
+<td style="text-align: left;">Payload hors contrat (tick négatif)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>golden/world_snapshot.json</code></td>
+<td style="text-align: left;">Forme canonique snake_case attendue après parse</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>golden/world_snapshot_v01.json</code>, <code>golden/segment_tick1_v01.json</code></td>
+<td style="text-align: left;">Forme canonique V0.1 (dump <code>exclude_none</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>golden/external_event.json</code></td>
+<td style="text-align: left;">Forme canonique du snapshot/événement</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>golden/stream.json</code></td>
+<td style="text-align: left;">Séquençage déterministe type+tick d'un flux rejoué</td>
+</tr>
+</tbody>
+</table>
+<p>Double garde : (1) le parse conserve le JSON camelCase du contrat
+(<code>model_dump(by_alias=True)</code> == fixture) ; (2) la vue interne snake_case reste
+égale au golden — tout renommage de champ casse la non-régression. La
+réception WebSocket est rejouée <strong>déterministe</strong> (même fixture → même
+séquence type/tick), le client de contrôle vérifie le corps exact des
+requêtes (<code>start</code>/<code>pause</code>/<code>resume</code>/<code>stop</code>/<code>reset</code>).</p>
+<h3 id="42-flux-aligné-par-tick-echos-010-u1">4.2 Flux aligné par tick (ECHOS-010, U1)</h3>
+<p><code>test_ingestion_stream.py</code> valide <code>aligned_ticks</code>/<code>TickSegment</code> (1 snapshot +
+événements du même tick, <code>TickAlignmentError</code> sur désalignement) <strong>deux façons</strong> :</p>
+<ul>
+<li>transport simulé réjoué (déterministe, golden <code>segment_tick1_v01</code>) ;</li>
+<li><strong>serveur WebSocket réel in-process</strong> (<code>websockets.sync.server</code>, port
+éphémère) rejouant le contrat V0.1 — consommation bout-en-bout.</li>
+</ul>
+<h3 id="43-smoke-e2e-syne--echos">4.3 Smoke E2E SYNE → ECHOS</h3>
+<p>Procédure documentaire (nécessite le binaire SYNE, hors CI) :</p>
+<pre><code class="lang-bash"># terminal 1 — lancer SYNE en mode observation (seed déterministe)
+dotnet run --project syne/Simulation.Console -c Release -- \
+  --observe --seed 7 --world-size 200 200 --max-ticks 1200 --headless
+
+# terminal 2 — consommation ECHOS réelle, alignée par tick
+cd echos &amp;&amp; python - &lt;&lt;'PY'
+from echos.ingestion import WsClient, aligned_ticks
+client = WsClient(); client.connect(&quot;ws://127.0.0.1:5180/&quot;)
+for segment in aligned_ticks(client):
+    print(segment.tick, segment.snapshot.alive_count, len(segment.events))
+PY
+</code></pre>
+<p>Attendu : ticks consécutifs (ex. 201→202→203), <code>alive_count</code> constant,
+chaque événement au tick de son snapshot (alignement strict).</p>
+<p><strong>Validation du déterminisme (jalon J1)</strong> : deux runs SYNE réels à seed
+identique (<code>--seed 7 --world-size 400 400 --max-ticks 500 --observe</code>),
+ingérés intégralement jusqu'à fermeture du WebSocket (SYNE sort proprement en
+fin de run → <code>aligned_ticks</code> s'achève) puis comparés sur leur fenêtre
+commune : <strong>443 ticks de <code>tick_summaries</code> et 44 300 lignes de séries Parquet,
+0 divergence</strong> (procédure documentaire, hors CI).</p>
+<h3 id="44-agrégation--stockage-echos-011--echos-013">4.4 Agrégation &amp; stockage (ECHOS-011 → ECHOS-013)</h3>
+<p><code>test_aggregation.py</code> : réduction <strong>déterministe</strong> d'un segment en
+<code>TickRecord</code> (2 lectures → lignes identiques), conservation de <strong>tous</strong> les
+ticks sans échantillonnage, <code>sample_every</code>/<code>downsample</code> (1 sur N).
+<code>test_sqlite_store.py</code> : <strong>schéma stable</strong> (tables + <code>SCHEMA_VERSION</code>
+comparées exactement), règles de réécriture (upsert idempotent),
+persistance fermeture/réouverture. <code>test_parquet_store.py</code> : roundtrip
+PyArrow ↔ Parquet bit à bit et <strong>cohérence</strong> SQLite↔Parquet
+(<code>coherence_errors</code>). <code>test_pipeline.py</code> : bout-en-bout sur <strong>serveur
+WebSocket réel in-process</strong> → SQLite + Parquet (compteurs exacts puis
+relecture et jointure cohérente).</p>
+<h3 id="45-moteurs-de-métriques--preuve-j2-echos-020--echos-027">4.5 Moteurs de métriques &amp; preuve J2 (ECHOS-020 → ECHOS-027)</h3>
+<p><code>test_analysis.py</code> : contrat de registre (7 moteurs + seuil 1 métrique/moteur),
+<strong>pureté/déterminisme</strong> (2 exécutions identiques, entrée non mutée, clés
+inconnues ignorées), <strong>données absentes → valeurs neutres 0.0</strong> (incluant la
+stabilité sans historique), <strong>valeurs vérifiées à la main</strong> par moteur (entropie
+de Shannon, désaccord 2/3, variance 0.02, densité 1/3, cluster 0, boucles 4,
+récupération 2 ticks, rotation 55,56…), <strong>rétro-compat transport</strong> : le modèle
+<code>Agent</code> accepte <code>traits/beliefs/goals/trust/memoryCount</code> (camelCase, optionnels)
+et le roundtrip <code>parse → model_dump(by_alias=True)</code> == fixture
+(<code>world_snapshot_u2.json</code>).</p>
+<p><strong>Preuve J2 (ECHOS-027)</strong> : <code>test_j2_determinism.py</code> rejoue <strong>deux runs
+complets</strong> du scénario de référence (<code>snapshot_analysis.json</code>, contexte par
+tick : snapshot + événements passés + fenêtre d'historique accumulée de 100
+ticks) :</p>
+<pre><code class="lang-bash">cd echos &amp;&amp; python -m pytest echos/tests/test_j2_determinism.py -q
+# → 2 passed ; séries bit-à-bit identiques, dernier tick == golden
+</code></pre>
+<p>Deux rejeux → <strong>séries de métriques strictement égales</strong> (bit-à-bit) et dernier
+contexte == <code>golden/analysis_golden.json</code>. Combinée à la preuve J1 (déterminisme
+SYNE, ci-dessus §4.3), la chaîne SYNE → ECHOS est déterministe : <strong>traces
+d'entrée identiques (seed 7) → scores de métriques identiques</strong>. Les golden
+files sont versionnés dans <code>echos/echos/tests/fixtures/</code> + <code>golden/</code> (double
+garde : fixture camelCase transport + golden camelCase attendu).</p>
+<p>Suite : <strong>115 tests</strong>, couverture <strong>98,2 %</strong> (pytest <code>--cov-fail-under=80</code>),
+flake8 sans alerte.</p>
+<h3 id="46-indicateurs-démergence--preuve-j3-echos-030--echos-033">4.6 Indicateurs d'émergence &amp; preuve J3 (ECHOS-030 → ECHOS-033)</h3>
+<p><code>test_emergence.py</code> (moteur composite <code>EmergenceIndicators</code>, 8ᵉ moteur du
+registre) : contrat (pureté/déterminisme, entrée non mutée, <strong>données absentes →
+score 0.0 / phénomènes vides</strong>), <strong>score composite vérifié à la main</strong>
+(0.7585336 sur <code>snapshot_analysis.json</code>, poids Σ=1.0), <strong>bornes [0,1]</strong>
+(entropies pouvant excéder 1 → clamp), <strong><code>DiffusionSpeed_Norm</code></strong> (diminue avec
+les ticks, neutralité à vitesse non mesurée), <strong>auto-détection des 5
+phénomènes</strong> par seuils (&gt; 2 / &gt; 5 / &gt; 0.7 / &gt; 0.3 / &gt; 5 ET &gt; 0.1) avec trace
+des signaux déclencheurs, <strong><code>SystemComplexity</code> et <code>UnpredictabilityIndex</code>
+(=<code>LoopStrength × DecisionDiversity</code>)</strong> vérifiés à la main, <strong>disclaimer §4.10.3
+invariant</strong> (ECHOS-032). <code>compute(snapshot) ≡ compute_from_metrics(moteurs)</code>.</p>
+<p><strong>Preuve J3</strong> : <code>test_j3_determinism.py</code> rejoue deux fois le scénario de
+référence (même contexte par tick qu'en J2) — séries d'indicateurs
+<strong>bit-à-bit identiques</strong>, <strong>score borné sur [0,1] à chaque cadre</strong>, dernier
+cadre == <code>golden/analysis_golden.json</code> (clé <code>EmergenceIndicators</code>).</p>
+<p>Suite : <strong>146 tests</strong> (120 → +26), couverture <strong>98,3 %</strong> (pytest
+<code>--cov-fail-under=80</code>), flake8 sans alerte.</p>
+<h3 id="47-api-rest--preuve-j5-echos-040--echos-045">4.7 API REST &amp; preuve J5 (ECHOS-040 → ECHOS-045)</h3>
+<p>Le jalon <strong>ph4 — API REST</strong> (issues #383 → #388, milestone « ph4 (echos) —
+API REST ») expose la couche lecture de l'analyse ECHOS. Les métriques sont
+<strong>calculées à l'ingestion</strong> (pipeline <code>consume()</code> → <code>analysis.compute_all</code>),
+jamais recalculées à la lecture (API_REST.md §4).</p>
+<pre><code class="lang-bash">cd echos &amp;&amp; python -m pytest echos/tests/test_api_routes.py -q
+# → 15 passed ; contrat complet exercé
+</code></pre>
+<p>Couverture de la couche API (routes + cache + store v2 + pipeline) :</p>
+<ul>
+<li><code>test_api_routes.py</code> : listage des runs (<code>/api/runs</code>), métriques complètes
+(<code>/api/runs/{id}</code>), <strong>séries <code>/metrics</code></strong> (ticks dédupliqués, alignement
+moteur×métrique, <code>latest</code>), <strong>sous-échantillonnage <code>?every=N</code></strong> (index-based,
+réseau aligné sur les ticks), <strong>export reproductible</strong> (JSON trié
+tick/engine/metric + <strong>CSV RFC 4180</strong> avec entête ; deux appels → corps
+identiques : aucune dépendance temporelle), croyances/relations par entité
+(<code>/beliefs/{agentId}</code>, <code>/relationships/{agentId}</code> — <strong>lecture seule, sans
+intrusion</strong>), groupes (<code>/groups</code>) et phénomènes (<code>/emergent-phenomena</code>),
+ex. 404 (<strong>run/entité inconnus</strong>, aucun run), 422 (<code>every</code> invalide), 400
+(format d'export inconnu) et <strong>503</strong> (API démarrée sans base —
+<code>ECHOS_ANALYTICS_DB</code>), résolution du run par défaut (le plus récent).</li>
+<li><code>test_sqlite_store.py</code> (étendu) : <strong>schéma v2</strong> (tables <code>tick_metrics</code> +
+<code>tick_contexts</code> ajoutées au dump attendu, <code>SCHEMA_VERSION = &quot;2&quot;</code>), écriture
+idempotente des métriques (upsert, <strong>sorties non numériques ignorées</strong>),
+roundtrip contextes JSON + <code>latest_context</code>/<code>observations_for</code>, et
+<strong><code>ingest_version</code> incrémentée à chaque écriture</strong> (moteur d'invalidation
+du cache).</li>
+<li><code>test_pipeline.py</code> (étendu) : <code>consume()</code> écrit aussi <code>tick_metrics</code>
+(<code>metrics_written</code>) et les contextes <code>agents</code>/<code>groups</code>/<code>phenomena</code>
+(<code>contexts_written</code> = 3 × ticks) depuis les 8 moteurs <code>compute_all</code>.</li>
+<li><code>test_api_routes.py::test_series_cache_*</code> : <strong>cache de séries</strong> LRU borné
+et thread-safe — série <strong>réutilisée tant que <code>ingest_version</code> ne bouge pas</strong>,
+<strong>recalculée après une écriture</strong>, capacité bornée (2 → éviction), capacité
+nulle refusée.</li>
+</ul>
+<p>Suite : <strong>167 tests</strong> (146 → +21), couverture <strong>98,2 %</strong> (pytest
+<code>--cov-fail-under=80</code>), flake8 sans alerte.</p>
+<h3 id="48-logging--instrumentation--preuve-j5-étendue-echos-050--echos-052">4.8 Logging &amp; instrumentation &amp; preuve J5 étendue (ECHOS-050 → ECHOS-052)</h3>
+<p>Le jalon <strong>ph5 — Logging &amp; instrumentation</strong> (issues #389 → #391, milestone
+« ph5 (echos) — Logging &amp; instrumentation ») ajoute les trois niveaux de
+<code>LOGGING_INSTRUMENTATION.md</code> (structuré / traces / texte) et le profilage
+des 8 moteurs — tous branchés sur le pipeline d'ingestion.</p>
+<pre><code class="lang-bash">cd echos &amp;&amp; python -m pytest echos/tests/test_instrumentation.py -q
+# → 14 passed ; JSONL déterministe, fusion BDI, profilage bit-à-bit
+</code></pre>
+<ul>
+<li><code>test_instrumentation.py</code> (nouveau, 14 tests) :
+<ul>
+<li><strong><code>EchosLogger</code></strong> : lignes JSON Lines par fichier (<code>structured-&lt;run&gt;.jsonl</code>,
+<code>profilage-&lt;run&gt;.jsonl</code>, <code>decision-traces-&lt;run&gt;.jsonl</code>) <strong>au format stable</strong>
+(clés triées, compacts — deux appels → mêmes clés, seules les valeurs
+changent), événements taggés <code>[SSE-V2]</code> dans les logs texte quotidiens,
+<code>ECHOS_LOG_DIR</code> lu par <code>from_env()</code>.</li>
+<li><strong><code>build_decision_trace</code></strong> : fusion <code>decision_made</code> + <strong>contexte BDI</strong> du
+snapshot (action, utilité, <code>deliberated</code>/<code>interrupted</code>, cause, besoins,
+croyances/objectifs/mémoire — entité inconnue → contexte zéro), rejet
+déterministe des événements non-<code>decision_made</code>.</li>
+<li><strong>Profilage</strong> : <code>compute_all_profiled(snapshot)</code> == <code>compute_all(snapshot)</code>
+<strong>bit-à-bit</strong> (déterminisme ECHOS-027 intact), <strong>les 8 moteurs couverts</strong>
+avec 1 appel chacun, format <code>&quot;{name:&lt;15} : {total:10.2f} ms total, {avg:8.2f} ms avg&quot;</code> (§5).</li>
+</ul>
+</li>
+<li><code>test_api_routes.py</code> (étendu) : <code>GET /api/runs/{run_id}/decisions</code> —
+traces triées <code>(tick, agent_id)</code>, <strong>deux appels identiques</strong> (aucun
+horodatage), contexte BDI de l'entité (croyances/objectifs/mémoire),
+<strong>404</strong> run inconnu.</li>
+<li><code>test_pipeline.py</code> (étendu) : <code>consume()</code> écrit aussi le contexte
+<code>profiling</code> (<code>contexts_written</code> = 4 × ticks) et les traces
+(<code>decision_traces_written</code> = nombre de <code>decision_made</code>), relecture
+<code>store.decision_traces</code> triée.</li>
+<li><code>test_sqlite_store.py</code> (étendu) : <strong>schéma v3</strong> — table <code>decision_traces</code>
+ajoutée au dump attendu, <code>SCHEMA_VERSION = &quot;3&quot;</code>.</li>
+</ul>
+<p>Suite : <strong>197 tests</strong> (181 → +16), couverture <strong>97,9 %</strong> (pytest
+<code>--cov-fail-under=80</code>), flake8 sans alerte.</p>
+<h3 id="49-analyse-causale--preuve-j6-echos-060--echos-063">4.9 Analyse causale &amp; preuve J6 (ECHOS-060 → ECHOS-063)</h3>
+<p>Le jalon <strong>ph6 — Analyse causale</strong> (issues #215 → #218, milestone
+« ph6 (echos) — Analyse causale ») reconstruit les chaînes causales <strong>hors
+ligne</strong> (ADR-002 [Accepted]) avec détection des boucles et cache versionné.</p>
+<pre><code class="lang-bash">cd echos &amp;&amp; python -m pytest echos/tests/test_causal_analysis.py -q
+# → 16 passed ; chaîne 7 couches, cycles, cache, endpoint REST
+</code></pre>
+<ul>
+<li><code>test_causal_analysis.py</code> (nouveau, 16 tests) :
+<ul>
+<li><strong>Reconstruction (ECHOS-061)</strong> : <code>build_chain</code> sans <code>tick</code> → dernière
+décision de l'entité ; 7 couches exactement (<code>LAYERS</code>), ordre stable ;
+besoins classés (valeur desc, clé), croyances triées, perception =
+derniers <code>message_received</code> ; couche vide → <code>—</code> ; <code>depth</code> tronque et
+signale ; <code>depth=0</code>/<code>max_depth=13</code> rejetés (<code>CausalError</code>) ; entité/run
+inconnus → erreur.</li>
+<li><strong>Boucles (ECHOS-062)</strong> : action reprise aux ticks précédents ⇒
+<code>cycle=true</code> + <code>cycles[].ticks</code> ; première décision ⇒ aucun cycle.</li>
+<li><strong>Cache (ECHOS-063)</strong> : <code>CausalCache</code> — réutilisé tant que
+<code>ingest_version</code> ne bouge pas, <strong>recalculé après une écriture</strong>, capacity
+bornée (LRU) ; <code>capacity &lt;= 0</code> refusé.</li>
+<li><strong>Endpoint (API_REST.md §3.8)</strong> : 200 chaîne complète (défauts),
+<code>?depth=</code> honoré, 422 (<code>depth</code> 0 et &gt; 12), 404 (entité sans trace, run
+inconnu, tick sans trace), 503 sans store, <strong>déterminisme</strong> : deux
+magasins à données identiques → corps JSON identiques.</li>
+</ul>
+</li>
+<li><code>test_sqlite_store.py</code>/<code>test_api_routes.py</code> (non modifiés) : lecture
+<code>latest_decision_tick</code>/<code>context_before</code> couverte indirectement par
+<code>test_causal_analysis.py</code>.</li>
+</ul>
+<h3 id="410-comparaison-expérimentale--preuve-j7-echos-070--echos-072">4.10 Comparaison expérimentale &amp; preuve J7 (ECHOS-070 → ECHOS-072)</h3>
+<p>Le jalon <strong>ph7 — Comparaison expérimentale</strong> (milestone « ph7 (echos) »)
+ajoute <code>/api/compare</code> : méta-métriques de reproductibilité (ECHOS-070/071) et
+export comparatif CSV/JSON (ECHOS-072) — <code>echos/analysis/reproducibility.py</code>
+(fonctions pures, aucun PRNG ni horodatage).</p>
+<pre><code class="lang-bash">cd echos &amp;&amp; python -m pytest echos/tests/test_compare.py -q
+# → 11 passed ; reproductibilité, distances, séries alignées, erreurs
+</code></pre>
+<ul>
+<li><code>test_compare.py</code> (nouveau, 11 tests) :
+<ul>
+<li><strong>ECHOS-070</strong> : deux runs du même protocole (même seed/version/contenu)
+⇒ <code>is_reproducible=true</code>, <code>bit_identical=true</code>, score <code>1.0</code> ; même contenu
+mais seed différente ⇒ <strong>non reproductible</strong> malgré le bit-à-bit
+(<code>reproducibility_score</code> &lt; 1.0) ; run inconnu → 404, format inconnu → 400,
+paramètres manquants → 422.</li>
+<li><strong>ECHOS-071</strong> : croyances divergentes ⇒ <code>cognitive_diff &gt; 0</code> et score en
+baisse ; confiance divergente ⇒ <code>social_diff &gt; 0</code> ; <strong>stabilité</strong> : deux
+magasins peuplés du même protocole → méta-métriques <strong>strictement
+identiques</strong>, et réponse déterministe entre appels successifs.</li>
+<li><strong>ECHOS-072</strong> : <code>format=json</code> → <code>series</code> alignées et triées
+<code>(tick, engine, metric)</code> avec <code>diff = run_b_value − run_a_value</code> ;
+<code>format=csv</code> → en-tête <code>tick,engine,metric,run_a_value,run_b_value,diff</code>,
+<code>content_type text/csv</code>, lignes déterministes.
+Suite : <strong>208 tests</strong> (197 → +11), couverture <strong>97,97 %</strong> (pytest
+<code>--cov-fail-under=80</code>), flake8 sans alerte.</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-critères-de-non-régression">5. Critères de non-régression</h2>
+<ul>
+<li>Une modification qui <strong>change un score calculé sur un fixture identique</strong> est refusée (sauf changement de formule documenté dans <code>CHANGELOG.md</code> + mise à jour du score de version « moteur de métriques »).</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Fenêtres temporelles et seuils des moteurs (100 ticks, fréquence &gt; 2, amplification &gt; 1,5) : valeurs <code>[HÉRITÉ]</code> à <strong>confirmer en calibration</strong> (METRICS_SPEC §6) — le code les expose en constantes de chaque module, la formule reste stables pour les golden files.</li>
+<li>Preuve J2/J3 ECHOS : rejeux synthétiques en CI ; l'ingestion <strong>réelle</strong> de deux runs SYNE (binaire .NET, hors CI) reste à consolider — l'API de comparaison <code>/api/compare</code> (ECHOS-070) est livrée (jalon ph7) et peut être alimentée par ce jeu d'essai manuel.</li>
+</ul>
+<h3 id="45-intégration-u8-réelle-syne--echos">4.5 Intégration U8 réelle SYNE → ECHOS</h3>
+<p><code>test_syne_echos_integration.py</code> démarre le binaire .NET Release en mode
+observation, consomme un tick complet depuis le WebSocket réel, alimente SQLite
+et Parquet, puis vérifie les décisions, métriques et endpoints REST, dont le
+rapport post-run de calibration. Le test est activé par <code>LIVEX_SYNE_E2E=1</code> et
+exécuté par le job CI transverse quand les sources SYNE ou ECHOS changent.
+L’intégration PRISM s’arrête au contrat API ECHOS : le runtime PRISM est prévu
+après U8 (voir ROADMAP racine).</p>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/TESTING.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

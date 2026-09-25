@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>CHANGELOG.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="CHANGELOG.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="changelogmd">CHANGELOG.md</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [DRAFT]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>VERSIONING.md</code></p>
+<p>Format : <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>. Versionnement : SemVer (<code>livex-vX.Y.Z</code> = triplet SYNE + ECHOS + PRISM).</p>
+<h2 id="unreleased">[Unreleased]</h2>
+<h3 id="added">Added</h3>
+<ul>
+<li><strong>Jalon U8 — Constructions = obstacles statiques (SYNE-071)</strong> :
+<ul>
+<li><code>world.obstacles</code> réactivé (défaut <code>false</code>) + layout initial <code>world.obstacleLayout[]</code> (<code>{id, x, y, radius}</code>) posé au build des mondes (CLI + serveur de contrôle) ;</li>
+<li>mutation dynamique validée : <code>AddObstacle</code> borné/id unique avec révision, constructions tracées <code>PlaceConstruction</code>/<code>RemoveConstruction</code> (modification d'environnement) ;</li>
+<li>grille A* re-rasterisable : <code>AStarPathfinder.Refresh()</code> purge le cache LRU et re-rasterise si la révision du monde a changé (no-op sinon), câblé en tête du déplacement déterministe ;</li>
+<li>traçabilité : événements <code>world.construction_placed</code>/<code>world.construction_removed</code> + champ <code>obstacles[]</code> dans le snapshot (API_CONTRACTS §2) ; bornes <code>world.obstacleLayout[]</code> validées ;</li>
+<li><code>engineVersion</code> <strong>0.7.0 → 0.8.0</strong> ; checksums dorés inchangés (0 tirage PRNG, Refresh no-op sur le scénario de référence) ;</li>
+<li>tests : +20 (8 World, 4 A*, 2 ConfigLoader, 3 Validator, 3 ObservabilitySensor, 2 Console end-to-end) — <strong>345 Core + 17 Console = 362 tests</strong> au total.</li>
+</ul>
+</li>
+<li><strong>Jalon U8 — Cycle des ressources (SYNE-070)</strong> :
+<ul>
+<li>4ᵉ type de réserve <strong><code>Mineral</code></strong> (<code>ResourceKind.Mineral</code>, défaut 0) — initialisation enum-driven, exposé dans l'observabilité <code>resources[]</code> (4 types) et persisté SQLite (<code>resources</code>/<code>resource_snapshots</code>) ;</li>
+<li><strong>régénération &amp; dégradation périodique</strong> : <code>ResourceStocks.ApplyLifecycle(tick, settings)</code> appliquée en fin de tick (ordre causal strict, 0 tirage PRNG) — <code>+ regenerationRate</code>/tick, dégradation <code>− regenerationRate × degradationTick</code> à chaque période, clamp ≥ 0 ;</li>
+<li>bornes <code>resources.*.{initial,regenerationRate,degradationTick}</code> ajoutées à la validation (CONFIGURATION.md §6.7) ;</li>
+<li><code>engineVersion</code> <strong>0.6.0 → 0.7.0</strong> ; checksums dorés inchangés (pin contractuel, DETERMINISM.md §7) ;</li>
+<li>tests : +7 Core (cycle, minéral, validation, persistance 4 réserves) — <strong>327 Core + 15 Console = 342 tests</strong> au total.</li>
+</ul>
+</li>
+<li><strong>Jalon U8 — Persistance SQLite bit-à-bit (SYNE-110/111/112)</strong> :
+<ul>
+<li><code>SimulationSnapshot</code>/<code>SimulationSnapshotCodec</code> : capture déterministe (JSON <code>System.Text.Json</code>) de l'état complet du monde + cognition + PRNG 4×64, avec hash stable ;</li>
+<li><code>SimulationSnapshotRestorer</code> : reprise exacte au tick N sans re-jouage (kill states dérivés reconstruits déterministiquement, holdover <code>LastDecision</code> + réserves restaurées en place) ;</li>
+<li><code>SqlitePersistenceStore</code> : schéma V2.0 des <strong>11 tables</strong> (PERSISTENCE.md §3, <code>PRAGMA user_version = 2</code>), transactions atomiques, <strong>rotation <code>maxBackups</code></strong> (défaut 5), reprise au dernier <code>tick_states</code> (SYNE-112 post-crash) ;</li>
+<li>Hook d'autosave câblé dans <code>SimulationLoop.AdvanceOneTick</code> (<code>autoSaveEveryNTicks</code>, défaut 1000) — purement en écriture, aucun tirage du PRNG ⇒ checksums épinglés inchangés ;</li>
+<li>5 <code>PersistenceTests</code> (315 → <strong>320 tests Core</strong>, 329 au total avec Console : reprise bit-à-bit identique au run ininterrompu, état RNG, reprise post-crash, schéma 11 tables, rotation).</li>
+</ul>
+</li>
+<li><strong>Jalon U8 — Serveur de contrôle HTTP :5181 (SYNE-113)</strong> :
+<ul>
+<li><code>ControlServer</code> (<code>HttpListener</code> BCL, zéro dépendance ADR-002/003) + <code>SimulationController</code> (machine à états <code>idle→running⇋paused→finished</code>, gate <code>ManualResetEventSlim</code> + <code>CancellationToken</code> par run) dans <code>Simulation.Console/Control/</code>, activés par <code>--serve</code> (<code>--serve-port</code>, défaut 5181) ;</li>
+<li>routes <code>POST /api/control/start {seed?, config?}</code> / <code>pause</code> / <code>resume</code> / <code>reset {seed?, runId?}</code> + <code>GET /status</code> (contrat API_CONTRACTS §3) — réponses <code>{ok, action, runId, state, tick, aliveCount, seed}</code> ;</li>
+<li><strong>non-intrusif</strong> (SYNE-081/DETERMINISM §3) : 0 tirage PRNG ajouté ⇒ run piloté == run ininterrompu, vérifié bit-à-bit ; finalise l'interop ECHOS-085 (testé contre le vrai <code>ControlClient</code> ECHOS) ;</li>
+<li>6 <code>ControlServerWireTests</code> (320 Core + <strong>15 Console = 335 tests</strong> au total).</li>
+</ul>
+</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<ul>
+<li>Cadrage Jalon U8 (PR cadrage docs) : planche U8 du <code>ROADMAP</code> racine recalée sur le backlog réel — plage ECHOS <code>080…093</code> fictive remplacée par <code>080…085</code> (ph8, livrés U7) + <code>090…092</code> (ph9) ;</li>
+<li>Ajout de la carte manquante <strong>SYNE-113</strong> (serveur de contrôle HTTP :5181, cible réelle du relais <code>controlClient</code> ECHOS — absente du backlog) ;</li>
+<li><code>SYNE-110</code> précisée : hooks <code>autoSaveEveryNTicks</code> (défaut 1000) / <code>maxBackups</code> (défaut 5) à brancher sur la boucle (aucun consommateur à ce jour) ;</li>
+<li>ECHOS-085 annotée : livrée côté UI, finalisation en U8 contre SYNE-113.</li>
+<li><code>PERSISTENCE.md</code> §3 recalé sur le modèle réel V0.1 : <code>agent_snapshots</code> sans <code>health</code> fictive (besoins = <code>energy, hunger, thirst, fatigue</code>), implémentation du snapshot bit-à-bit et de la rotation documentée.</li>
+</ul>
+<h3 id="added-1">Added</h3>
+<ul>
+<li>Documentation technique V0.1 complète du monorepo (phases 0 à 5 du Plan documentation) :
+<ul>
+<li>générique racine : <code>VISION</code>, <code>ARCHITECTURE</code>, <code>COMMUNICATION</code>, <code>GLOSSARY</code>, <code>ROADMAP</code>, <code>FAQ</code>, <code>README</code> ;</li>
+<li>gouvernance : <code>GITFLOW</code>, <code>CI_CD</code>, <code>VERSIONING</code>, <code>LICENSE</code>, <code>CONTRIBUTING</code>, <code>CODE_OF_CONDUCT</code>, <code>SECURITY</code> ;</li>
+<li><code>docs/governance/*</code> (ISSUES, PULL_REQUESTS, KANBAN) et templates <code>.github/</code> (issues, PR, CI <code>ci.yml</code>, release <code>release.yml</code>) ;</li>
+<li>SYNE : 16 docs + ADR-001/002/005–011 ;</li>
+<li>ECHOS : 14 docs + ADR-001/002 (stack FastAPI + électron, calcul causal) ;</li>
+<li>PRISM : 12 docs + ADR-001 (choix Godot) ;</li>
+<li>ADR transverses : ADR-003 (API HTTP REST 5181), ADR-004 (WebSocket 5180) + <code>0000-template</code>.</li>
+<li><code>docs/ETHICS_AND_SCOPE.md</code>.</li>
+</ul>
+</li>
+<li><strong>Jalon U0 — Socle &amp; gouvernance</strong> :
+<ul>
+<li><code>syne/</code> : solution .NET (<code>Simulation.Core</code>, <code>Simulation.Console</code>, <code>Simulation.Core.Tests</code>), <code>global.json</code> (SDK 10.0.400), modèle de configuration Annexe H + validation, flags CLI (<code>--seed</code>, <code>--max-ticks</code>, <code>--world-size</code>, <code>--config</code>, <code>--headless</code>) ;</li>
+<li><code>echos/</code> : monorepo <code>echos/</code> (API FastAPI :5000, package analyse, clients d'ingestion, <code>echos-ui</code> React/TS, tests pytest) ;</li>
+<li><code>.gitignore</code>, <code>.editorconfig</code>, branches Git Flow (<code>develop</code>), milestones dédupliqués, labels normalisés, CI remaniée (jobs filtrés <code>syne/**</code>, <code>echos/**</code>) ;</li>
+<li><strong>ECHOS-1</strong> : structure code ECHOS livrée — paquet <code>echos</code> (API FastAPI <code>create_app()</code>, registre des <strong>7 moteurs de métriques</strong>, placeholder ingestion), <code>echos-ui</code> (Vite + React + TS : lint, build, tests vitest/jsdom), 13 tests pytest couverture 100 %, jobs CI <code>echos-python</code> + <code>echos-ui</code> actifs ;</li>
+<li><strong>ECHOS-2</strong> : contrats d'ingestion SYNE livrés — modèles pydantic <code>WorldSnapshot</code>/<code>ExternalEvent</code> (JSON camelCase), clients <code>WsClient</code> :5180 + <code>ControlClient</code> :5181 testés de façon déterministe sur <strong>golden files versionnés</strong> (41 tests pytest, couverture 97 %).</li>
+</ul>
+</li>
+</ul>
+<h3 id="changed">Changed</h3>
+<ul>
+<li>Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → <strong>FastAPI + web local React/Vite servie par FastAPI pour V0.1</strong>, SQLite/Parquet) ; le <strong>shell Electron est conservé</strong> (implémentation différée à un horizon ultérieur, correction 23/09/2026).</li>
+<li><strong>Correction Electron (23/09/2026)</strong> : reformulation « PAS de shell Electron » → « shell Electron <strong>conservé</strong>, implémentation <strong>différée post-V0.1</strong> » dans ADR-001 ECHOS, <code>ARCHITECTURE.md</code> (ECHOS + racine), <code>FRONTEND_VISION.md</code>, <code>README.md</code>, <code>ROADMAP.md</code>, <code>ISSUES.md</code>, <code>CHANGELOG.md</code> (ECHOS), <code>TRANSPORT_API.md</code> (PRISM). Monographie non modifiée (snapshot figé).</li>
+<li>README et INSTALLATION reflètent l'état du socle U0 ; <strong>conteneurisation Docker reportée</strong> au-delà du Jalon U0.</li>
+</ul>
+<h3 id="deprecated">Deprecated</h3>
+<ul>
+<li>(aucun)</li>
+</ul>
+<h2 id="000--à-venir">[0.0.0] — à venir</h2>
+<p>Première version consolidée (aucune).</p>
+<hr>
+<h2 id="mises-à-jour">Mises à jour</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Date</th>
+<th style="text-align: left;">Changement</th>
+<th style="text-align: left;">Motif</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">17 septembre 2026</td>
+<td style="text-align: left;">Création</td>
+<td style="text-align: left;">Documentation V0.1</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">Socle U0 : solution, config, PRNG, ADR-012</td>
+<td style="text-align: left;">SYNE-001 / SYNE-005 / SYNE-006</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">Noyau U0 : boucle, monde + grille, entités + traits</td>
+<td style="text-align: left;">SYNE-002 / SYNE-003 / SYNE-004</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">Jalon SYNE ph1 : BDI + Perception</td>
+<td style="text-align: left;">SYNE-010 → SYNE-015</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">ECHOS-1 : structure code livrée (echos + echos-ui)</td>
+<td style="text-align: left;">Jalon U0 — socle ECHOS</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">ECHOS-2 : contrats d'ingestion + golden files</td>
+<td style="text-align: left;">Jalon U0 — clôture ECHOS</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">ECHOS-3 : stockage ECHOS — agrégation, SQLite, Parquet, pipeline</td>
+<td style="text-align: left;">Jalon U1 — ECHOS-011/012/013</td>
+</tr>
+<tr>
+<td style="text-align: left;">21 septembre 2026</td>
+<td style="text-align: left;">Site de documentation GitHub Pages (DocFX) : landing + docs clés + API Simulation.Core, XML généré</td>
+<td style="text-align: left;">U1 — documents</td>
+</tr>
+<tr>
+<td style="text-align: left;">23 septembre 2026</td>
+<td style="text-align: left;">ECHOS ph8 : échos-ui — les 6 Écrans (A→F), client REST typé + WS :5180, relais de pilotage :5181, design system</td>
+<td style="text-align: left;">Jalon U7 — interface web</td>
+</tr>
+<tr>
+<td style="text-align: left;">24 septembre 2026</td>
+<td style="text-align: left;">SYNE ph11 : persistance SQLite bit-à-bit (SYNE-110→112) + serveur de contrôle HTTP :5181 (SYNE-113)</td>
+<td style="text-align: left;">Jalon U8 — tests &amp; persistance</td>
+</tr>
+<tr>
+<td style="text-align: left;">24 septembre 2026</td>
+<td style="text-align: left;">SYNE ph11c : cycle des ressources — minéraux + régénération/dégradation (SYNE-070), engineVersion 0.7.0</td>
+<td style="text-align: left;">Jalon U8 — tests &amp; persistance</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/CHANGELOG.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>METRICS_SPEC.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="METRICS_SPEC.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="metrics_specmd">METRICS_SPEC.md</h1>
+
+<p><strong>Composant</strong> : ECHOS
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 23 septembre 2026
+<strong>Dépend de</strong> : <code>ARCHITECTURE.md</code>, <code>../docs-syne/API_CONTRACTS.md</code>
+<strong>Source Monographie</strong> : §4.3</p>
+<hr>
+<h2 id="1-vue-densemble">1. Vue d'ensemble</h2>
+<p>ECHOS implémente <strong>7 moteurs de métriques</strong> pour analyser la simulation, plus un <strong>moteur composite</strong> <code>EmergenceIndicators</code> (ECHOS-030 → ECHOS-033, <code>EMERGENCE_INDICATORS.md</code>) qui compose les 6 premiers (hors durabilité).</p>
+<pre><code class="lang-mermaid">flowchart TD
+    E[ECHOS] --&gt; M1[CognitiveDiversityMetrics]
+    E --&gt; M2[InformationPropagationMetrics]
+    E --&gt; M3[SocialComplexityMetrics]
+    E --&gt; M4[GoalConvergenceMetrics]
+    E --&gt; M5[FeedbackLoopDetector]
+    E --&gt; M6[ResourceSustainabilityMetrics]
+    E --&gt; M7[GroupDynamicsMetrics]
+    E --&gt; M8[EmergenceIndicators]
+    M1 -.-&gt; M8
+    M2 -.-&gt; M8
+    M3 -.-&gt; M8
+    M4 -.-&gt; M8
+    M5 -.-&gt; M8
+    M7 -.-&gt; M8
+</code></pre>
+<h2 id="2-moteur-1--cognitivediversitymetrics-diversité-cognitive">2. Moteur 1 — CognitiveDiversityMetrics (diversité cognitive)</h2>
+<p>Mesure la séparation des croyances et des comportements entre entités.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>BeliefDiversity</code></td>
+<td style="text-align: left;">Entropie de Shannon des croyances de la population</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>BeliefDisagreement</code></td>
+<td style="text-align: left;">% d'entités qui divergent sur un même fait</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>BeliefConfidenceVariance</code></td>
+<td style="text-align: left;">Variance de la confiance entre entités</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GoalDiversity</code></td>
+<td style="text-align: left;">Entropie de Shannon des objectifs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GoalConvergence</code></td>
+<td style="text-align: left;">% d'entités partageant le même objectif principal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DecisionDiversity</code></td>
+<td style="text-align: left;">% d'entités faisant des choix différents</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>IntentionStability</code></td>
+<td style="text-align: left;">Durée moyenne d'engagement sur une intention</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TraitExpressionDiversity</code></td>
+<td style="text-align: left;">Variance des comportements émergents selon les traits</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-moteur-2--informationpropagationmetrics-propagation-de-linformation">3. Moteur 2 — InformationPropagationMetrics (propagation de l'information)</h2>
+<p>Mesure la circulation et la dégradation de l'information.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>MessageVolume</code></td>
+<td style="text-align: left;">Messages par entité et par tick</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>InformationDiffusionSpeed</code></td>
+<td style="text-align: left;">Ticks nécessaires pour atteindre 80 % des entités</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>RumorAccuracyDegradation</code></td>
+<td style="text-align: left;">Perte de confiance par saut</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MaxMessageHops</code></td>
+<td style="text-align: left;">Plus longue chaîne avant perte du message</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>NetworkCentrality</code></td>
+<td style="text-align: left;">Concentration des hubs : <code>max_senders / total_messages</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-moteur-3--socialcomplexitymetrics-complexité-sociale">4. Moteur 3 — SocialComplexityMetrics (complexité sociale)</h2>
+<p>Mesure la structure des réseaux de relations.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>AverageTrustLevel</code></td>
+<td style="text-align: left;">Confiance moyenne sur toutes les relations</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TrustVariance</code></td>
+<td style="text-align: left;">Variance des niveaux de confiance</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>NetworkDensity</code></td>
+<td style="text-align: left;">Arêtes / arêtes possibles : <code>edges / (n×(n-1))</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ClusteringCoefficient</code></td>
+<td style="text-align: left;">Tendance à former des triangles (A→B→C→A)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>AverageCentrality</code></td>
+<td style="text-align: left;">Centralité intermédiaire moyenne</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>NumberOfCommunities</code></td>
+<td style="text-align: left;">Communautés détectées (<strong>propagation d'étiquettes déterministe</strong>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CommunityStability</code></td>
+<td style="text-align: left;">% de communautés stables vs fluctuantes</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Écart documenté vs Monographie (Louvain)</strong> : la détection de communautés
+utilise une <strong>propagation d'étiquettes asynchrone</strong> (mise à jour en place,
+ordre trié, ex-aequo → étiquette la plus petite, ≤ 10 itérations). Le Louvain
+de la Monographie n'est pas déterministe bit-à-bit (dépend de la graine de
+découverte) et n'est pas disponible en stdlib Python pure — la propagation
+d'étiquettes préserve la <strong>contrainte ECHOS de déterminisme bit-à-bit</strong>
+(<code>TESTING.md</code> §5) sans dépendance tierce.</p>
+</blockquote>
+<h2 id="5-moteur-4--goalconvergencemetrics-convergence-des-objectifs">5. Moteur 4 — GoalConvergenceMetrics (convergence des objectifs)</h2>
+<p>Mesure l'alignement ou la divergence des objectifs.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>GlobalGoalAlignment</code></td>
+<td style="text-align: left;">% d'entités partageant le même objectif principal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GoalDiversity</code></td>
+<td style="text-align: left;">Entropie de Shannon de la distribution des objectifs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CooperationPotential</code></td>
+<td style="text-align: left;">% d'entités avec des objectifs compatibles (vérification par paire)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GoalTypeCounts</code></td>
+<td style="text-align: left;">Distribution des types d'objectifs actifs</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-moteur-5--feedbackloopdetector-boucles-de-rétroaction">6. Moteur 5 — FeedbackLoopDetector (boucles de rétroaction)</h2>
+<p>Identifie les cycles où <code>action → conséquence → décision</code>.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>IdentifiedLoops</code></td>
+<td style="text-align: left;">Nombre de cycles détectés</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>LoopStrength</code></td>
+<td style="text-align: left;">Facteur d'amplification moyen</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SystemStability</code></td>
+<td style="text-align: left;"><code>1 - divergence de l'équilibre</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CriticalLoops</code></td>
+<td style="text-align: left;">Boucles où <code>AmplificationFactor &gt; 1.5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>LoopTypes</code></td>
+<td style="text-align: left;">Classification positive / négative</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Heuristique de détection</strong> : un pattern est considéré comme une boucle s'il se répète avec une fréquence &gt; 2 dans une fenêtre configurable (défaut : 100 ticks).</p>
+<p><strong>Implémentation (U2, <code>feedback_loop_detector.py</code>)</strong> : fenêtre glissante lue sur
+la clé <code>history</code> du snapshot (série <code>{tick, actions: {agentId, action}}</code>), boucle
+= (agent, action) répété <strong>&gt; 2 fois</strong> sur <code>WINDOW_SIZE = 100</code> ; facteur
+d'amplification = fréquence observée / fréquence uniforme attendue
+(fenêtre/nb d'actions distinctes) ; boucle critique si &gt; 1,5 ; <code>SystemStability</code>
+= <code>1 − Σ|pᵢ − 1/k|</code> clampé [0,1]. Historique vide → neutre 0.0.</p>
+<h2 id="7-moteur-6--resourcesustainabilitymetrics-durabilité-des-ressources">7. Moteur 6 — ResourceSustainabilityMetrics (durabilité des ressources)</h2>
+<p>Mesure l'équilibre entre consommation et production.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>ResourceToConsumptionRatio</code></td>
+<td style="text-align: left;">Ratio ressource disponible / consommation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CriticalityPoints</code></td>
+<td style="text-align: left;">Points proches de l'épuisement</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>RecoveryTime</code></td>
+<td style="text-align: left;">Temps de récupération après un effondrement</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-moteur-7--groupdynamicsmetrics-dynamique-des-groupes">8. Moteur 7 — GroupDynamicsMetrics (dynamique des groupes)</h2>
+<p>Mesure la formation, la vie et la dissolution des groupes.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>ActiveGroups</code></td>
+<td style="text-align: left;">Nombre de groupes actifs</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>AverageGroupSize</code></td>
+<td style="text-align: left;">Membres moyens par groupe</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>AverageGroupLifetime</code></td>
+<td style="text-align: left;">Durée de vie moyenne (en ticks)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GroupFormationRate</code></td>
+<td style="text-align: left;">Nouveaux groupes par 1000 ticks</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GroupDissolutionRate</code></td>
+<td style="text-align: left;">Groupes dissous par 1000 ticks</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GroupObjectiveSuccessRate</code></td>
+<td style="text-align: left;">Succès / total des groupes dissous</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MemberTurnoverRate</code></td>
+<td style="text-align: left;">% de membres qui quittent par 100 ticks</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9-outil-commun--entropie-de-shannon">9. Outil commun : entropie de Shannon</h2>
+<p>Utilisée par diversité cognitive et complexité :</p>
+<pre><code class="lang-text">H(P) = -Σᵢ pᵢ × log₂(pᵢ)     pour toute pᵢ &gt; 0
+</code></pre>
+<h2 id="10-méta-métriques-de-reproductibilité-echos-071-jalon-ph7">10. Méta-métriques de reproductibilité (ECHOS-071, jalon ph7)</h2>
+<p>Calculées par <code>echos/echos/analysis/reproducibility.py</code> sur deux runs contrôlés
+(<code>/api/compare</code>, EXPERIMENT_COMPARISON.md §2/§4) — fonctions pures, stables
+entre rejeux (déterminisme ECHOS) :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Méta-métrique</th>
+<th style="text-align: left;">Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>IsReproducible</code></td>
+<td style="text-align: left;">même seed ∩ même version moteur ∩ empreinte SHA-256 du contenu canonique identique</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ReproducibilityScore</code></td>
+<td style="text-align: left;"><code>1.0</code> si reproductible, sinon <code>1.0 − (CognitiveDiff + SocialDiff)/2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CognitiveDiff</code></td>
+<td style="text-align: left;">norme L2 normalisée (borne [0, 1]) entre distributions de croyances de la population</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SocialDiff</code></td>
+<td style="text-align: left;">norme L2 normalisée entre réseaux de confiance (poids de paire moyen, non orienté)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Empreinte canonique</strong> : séries <code>tick_metrics</code>, résumés de tick, <code>events_log</code>,
+contextes <code>agents</code>/<code>groups</code>/<code>phenomena</code>, <code>decision_traces</code> — sérialisés triés,
+cellule <code>run_id</code> exclue (deux runs du même protocole diffèrent seulement par leur
+étiquette) ; SHA-256 hex.</li>
+<li><strong>Distributions normalisées</strong> (somme = 1) : croyances <code>subject|predicate|value</code>
+(population entière), confiance par paire (moyenne des deux directions, arêtes
+positives).</li>
+<li>Ces méta-métriques ne modifient <strong>aucune</strong> métrique des 7 moteurs (§1–§8) et ne
+consomment aucun PRNG.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun : les 7 moteurs et leurs métriques proviennent de la Monographie §4.3.</li>
+<li>Implémentation : fenêtres temporelles et seuils de détection (fenêtre 100 ticks, seuil &gt; 2) restent des valeurs config [HÉRITÉ] à confirmer en calibration.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/echos/METRICS_SPEC.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

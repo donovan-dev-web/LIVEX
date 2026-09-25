@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class Relationships | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class Relationships | LIVEX ">
+    
+    <meta name="description" content="Rapport inter-entit&#233;s (d&#233;cision n&#176;10, COMMUNICATION_PROTOCOL.md &#167;3, DATA_MODEL.md — table &#171; relationships &#187;) : niveau de confiance 0-1 envers chaque pair connu. D&#233;croissance : en l&#39;absence d&#39;interaction dans la tick&#233;e, la  confiance est multipli&#233;e par decayFactor (d&#233;faut 0.9, trustDecay) ;V&#233;rit&#233; constat&#233;e : la confiance augmente (bonus de v&#233;racit&#233;) ;Mensonge constat&#233; : la confiance est p&#233;nalis&#233;e (p&#233;nalit&#233; de tromperie). D&#233;terminisme : toutes les op&#233;rations sont commutatives et les it&#233;rations s&#39;effectuent sur des listes tri&#233;es par identifiant de pair.">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Cognition.Relationships">
+
+
+
+  <h1 id="Simulation_Core_Cognition_Relationships" data-uid="Simulation.Core.Cognition.Relationships" class="text-break">Class Relationships</h1>
+  <div class="markdown level0 summary"><p>Rapport inter-entités (décision n°10, COMMUNICATION_PROTOCOL.md §3,
+DATA_MODEL.md — table « relationships ») : niveau de confiance 0-1 envers
+chaque pair connu.</p>
+<ul><li><b>Décroissance</b> : en l'absence d'interaction dans la tickée, la
+ confiance est multipliée par <code>decayFactor</code> (défaut 0.9, trustDecay) ;</li><li><b>Vérité constatée</b> : la confiance augmente (bonus de véracité) ;</li><li><b>Mensonge constaté</b> : la confiance est pénalisée (pénalité de tromperie).</li></ul>
+<p>Déterminisme : toutes les opérations sont commutatives et les itérations
+s'effectuent sur des listes triées par identifiant de pair.</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">Relationships</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Cognition.html">Cognition</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Cognition_Relationships_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class Relationships</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships__ctor_" data-uid="Simulation.Core.Cognition.Relationships.#ctor*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships__ctor" data-uid="Simulation.Core.Cognition.Relationships.#ctor">Relationships()</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Relationships()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships__ctor_" data-uid="Simulation.Core.Cognition.Relationships.#ctor*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships__ctor_Simulation_Core_Configuration_TrustSettings_" data-uid="Simulation.Core.Cognition.Relationships.#ctor(Simulation.Core.Configuration.TrustSettings)">Relationships(TrustSettings)</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Relationships(TrustSettings settings)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.TrustSettings.html">TrustSettings</a></td>
+        <td><span class="parametername">settings</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_Count_" data-uid="Simulation.Core.Cognition.Relationships.Count*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_Count" data-uid="Simulation.Core.Cognition.Relationships.Count">Count</h4>
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Count { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_Settings_" data-uid="Simulation.Core.Cognition.Relationships.Settings*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_Settings" data-uid="Simulation.Core.Cognition.Relationships.Settings">Settings</h4>
+  <div class="markdown level1 summary"><p>Configuration de confiance (décision n°10, Table Annexe H).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public TrustSettings Settings { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.TrustSettings.html">TrustSettings</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_Interact_" data-uid="Simulation.Core.Cognition.Relationships.Interact*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_Interact_System_UInt64_" data-uid="Simulation.Core.Cognition.Relationships.Interact(System.UInt64)">Interact(ulong)</h4>
+  <div class="markdown level1 summary"><p>Interaction : première rencontre → confiance initiale ; relation connue →
+renforcement (bonus de véracité, plafonné à 1.0) puis marquage pour la
+tickée courante (pas de décroissance ce tick).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double Interact(ulong peerId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">peerId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_Knows_" data-uid="Simulation.Core.Cognition.Relationships.Knows*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_Knows_System_UInt64_" data-uid="Simulation.Core.Cognition.Relationships.Knows(System.UInt64)">Knows(ulong)</h4>
+  <div class="markdown level1 summary"><p>L'entité a-t-elle une relation établie avec ce pair ?</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Knows(ulong peerId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">peerId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_ObserveDeception_" data-uid="Simulation.Core.Cognition.Relationships.ObserveDeception*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_ObserveDeception_System_UInt64_" data-uid="Simulation.Core.Cognition.Relationships.ObserveDeception(System.UInt64)">ObserveDeception(ulong)</h4>
+  <div class="markdown level1 summary"><p>Mensonge constaté (COMMUNICATION_PROTOCOL.md §3) : pénalité appliquée,
+plancher 0.0. Le pair reste marqué comme « interagi » ce cycle : une
+tromperie constitue bien une interaction.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double ObserveDeception(ulong peerId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">peerId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_Snapshot_" data-uid="Simulation.Core.Cognition.Relationships.Snapshot*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_Snapshot" data-uid="Simulation.Core.Cognition.Relationships.Snapshot">Snapshot()</h4>
+  <div class="markdown level1 summary"><p>Relations (pair, confiance) triées par identifiant de pair — ordre d'émission stable.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;(ulong PeerId, double Trust)&gt; Snapshot()</code></pre>
+  </div>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.uint64,system.double-.peerid">PeerId</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.uint64,system.double-.trust">Trust</a>)&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_Tick_" data-uid="Simulation.Core.Cognition.Relationships.Tick*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_Tick" data-uid="Simulation.Core.Cognition.Relationships.Tick">Tick()</h4>
+  <div class="markdown level1 summary"><p>Fin de tickée : décroissance <code>trust × decayFactor</code> de chaque relation
+sans interaction à ce cycle, puis remise à zéro du marqueur de cycle.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Tick()</code></pre>
+  </div>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Cognition_Relationships_TrustWith_" data-uid="Simulation.Core.Cognition.Relationships.TrustWith*"></a>
+  <h4 id="Simulation_Core_Cognition_Relationships_TrustWith_System_UInt64_" data-uid="Simulation.Core.Cognition.Relationships.TrustWith(System.UInt64)">TrustWith(ulong)</h4>
+  <div class="markdown level1 summary"><p>Confiance envers le pair <code class="paramref">peerId</code> (0.0 si inconnu).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double TrustWith(ulong peerId)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">peerId</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Cognition/Relationships.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

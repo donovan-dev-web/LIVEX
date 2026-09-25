@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>SYNE — Systems &amp; Emergent Network Engine | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="SYNE — Systems &amp; Emergent Network Engine | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="syne--systems--emergent-network-engine">SYNE — Systems &amp; Emergent Network Engine</h1>
+
+<p><a href="README.html"><img src="https://img.shields.io/badge/Statut-STABLE-00d4a0.svg" alt="Statut: STABLE"></a>
+<a href="TESTING.html"><img src="https://img.shields.io/badge/Tests-160+-1f7f6f.svg" alt="Tests: 160+"></a>
+<a href="TESTING.html"><img src="https://img.shields.io/badge/Coverage-%E2%89%A580%25-1f7f6f.svg" alt="Coverage: ≥80%"></a></p>
+<p><strong>Composant</strong> : SYNE
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : la documentation transversale (../)
+<strong>Source Monographie</strong> : Partie 3, 7.2, 7.3.1</p>
+<hr>
+<h2 id="rôle">Rôle</h2>
+<p>Cœur de simulation de LIVEX (C#/.NET). Il exécute le monde simulé, les entités BDI, la communication, la persistance et le <strong>déterminisme bit-à-bit</strong>. Il émet des données vers ECHOS (analyse) et PRISM (rendu) via les contrats de transport.</p>
+<h2 id="lancement-seul">Lancement seul</h2>
+<pre><code class="lang-console">dotnet run --project simulation-core/Simulation.Console \
+  -- --seed 12345 --max-ticks 2000 --config config.json
+</code></pre>
+<p>Flags principaux : <code>--headless</code>, <code>--world-size &lt;w&gt; &lt;h&gt;</code>, <code>--seed &lt;s&gt;</code>, <code>--max-ticks &lt;n&gt;</code>, <code>--config &lt;path&gt;</code>. (Voir <code>CONFIGURATION.md</code>.)</p>
+<h2 id="dépendances">Dépendances</h2>
+<ul>
+<li>.NET (C#) — bibliothèque <code>Simulation.Core</code> + exécutable <code>Simulation.Console</code>.</li>
+<li>SQLite (NuGet) pour la persistance V2, JSON en V1 (debug).</li>
+<li>Ports exposés : <strong>5180</strong> (WebSocket temps réel), <strong>5181</strong> (HTTP contrôle).</li>
+</ul>
+<h2 id="interfaces">Interfaces</h2>
+<ul>
+<li><code>API_CONTRACTS.md</code> — WorldSnapshot (WS) et ExternalEvent (WS) + contrôle HTTP.</li>
+<li><code>COMMUNICATION.md</code> (../) — transport inter-composants.</li>
+</ul>
+<h2 id="documentation-du-composant">Documentation du composant</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Document</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>VISION.md</code></td>
+<td style="text-align: left;">Rôle, garanties, interdits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ARCHITECTURE.md</code></td>
+<td style="text-align: left;">Couches internes et choix techno</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DATA_MODEL.md</code></td>
+<td style="text-align: left;">Modèle de données (entités, croyances, groupes, ressources)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SIMULATION_LOOP.md</code></td>
+<td style="text-align: left;">Tick, ordre causal, scheduler, LOD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>COGNITIVE_ARCHITECTURE.md</code></td>
+<td style="text-align: left;">BDI, perception, mémoire, croyances, décision/utilité</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SYSTEMS_SPEC.md</code></td>
+<td style="text-align: left;">Systèmes transverses (groupes, conflits, livres, etc.)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>COMMUNICATION_PROTOCOL.md</code></td>
+<td style="text-align: left;">Communication inter-entités</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERSISTENCE.md</code></td>
+<td style="text-align: left;">SQLite, sauvegarde/chargement, reprise</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>DETERMINISM.md</code></td>
+<td style="text-align: left;">Garanties de reproductibilité</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CONFIGURATION.md</code></td>
+<td style="text-align: left;">Config, flags, paramétrages</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>API_CONTRACTS.md</code></td>
+<td style="text-align: left;">Contrats de transport (WS/HTTP)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERFORMANCE.md</code></td>
+<td style="text-align: left;">Scalabilité, budget de tick, benchmarks</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>TESTING.md</code></td>
+<td style="text-align: left;">Plan de tests (160+ tests, ≥ 80 %)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ROADMAP.md</code></td>
+<td style="text-align: left;">Roadmap SYNE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CHANGELOG.md</code></td>
+<td style="text-align: left;">Versions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>adr/</code></td>
+<td style="text-align: left;">Décisions d'architecture</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>MIGRATION_MORPHOLOGY.md</code></td>
+<td style="text-align: left;">Guide de migration SYNE-130 vers des entités logiques</td>
+</tr>
+</tbody>
+</table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/syne/README.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

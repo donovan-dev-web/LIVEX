@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Class EventSensor | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Class EventSensor | LIVEX ">
+    
+    <meta name="description" content="Production d&#39;&#233;v&#233;nements discrets &#224; partir de la cognition (SYNE-080).">
+      <link rel="shortcut icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../styles/docfx.css">
+      <link rel="stylesheet" href="../styles/main.css">
+      <meta property="docfx:navrel" content="../toc.html">
+      <meta property="docfx:tocrel" content="toc.html">
+    
+    <meta property="docfx:rel" content="../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Simulation.Core.Observability.EventSensor">
+
+
+
+  <h1 id="Simulation_Core_Observability_EventSensor" data-uid="Simulation.Core.Observability.EventSensor" class="text-break">Class EventSensor</h1>
+  <div class="markdown level0 summary"><p>Production d'événements discrets à partir de la cognition (SYNE-080).</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+    <div class="level1"><span class="xref">EventSensor</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <span class="xref">Simulation</span>.<span class="xref">Core</span>.<a class="xref" href="Simulation.Core.Observability.html">Observability</a></h6>
+  <h6><strong>Assembly</strong>: Simulation.Core.dll</h6>
+  <h5 id="Simulation_Core_Observability_EventSensor_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class EventSensor</code></pre>
+  </div>
+  <h3 id="methods">Methods
+</h3>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_ActionCompleted_" data-uid="Simulation.Core.Observability.EventSensor.ActionCompleted*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_ActionCompleted_System_UInt64_System_UInt64_Simulation_Core_Actions_ActionResult_" data-uid="Simulation.Core.Observability.EventSensor.ActionCompleted(System.UInt64,System.UInt64,Simulation.Core.Actions.ActionResult)">ActionCompleted(ulong, ulong, ActionResult)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>action_completed</code> par entité : issue de l'exécution atomique
+de l'action du tick (SYNE-040, API_CONTRACTS.md §2.2) avec les deltas d'effets.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent ActionCompleted(ulong tick, ulong agentId, ActionResult result)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">agentId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Actions.ActionResult.html">ActionResult</a></td>
+        <td><span class="parametername">result</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_AgentDied_" data-uid="Simulation.Core.Observability.EventSensor.AgentDied*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_AgentDied_System_UInt64_Simulation_Core_Population_DeathObservation_" data-uid="Simulation.Core.Observability.EventSensor.AgentDied(System.UInt64,Simulation.Core.Population.DeathObservation)">AgentDied(ulong, DeathObservation)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>agent_died</code> (SYNE-074) : mort d'une entité par épuisement
+(énergie ≤ seuil fatal). Consommé par ECHOS (population : courbe de survie).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent AgentDied(ulong tick, DeathObservation death)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Population.DeathObservation.html">DeathObservation</a></td>
+        <td><span class="parametername">death</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_AgentSpawned_" data-uid="Simulation.Core.Observability.EventSensor.AgentSpawned*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_AgentSpawned_System_UInt64_Simulation_Core_Population_BirthObservation_" data-uid="Simulation.Core.Observability.EventSensor.AgentSpawned(System.UInt64,Simulation.Core.Population.BirthObservation)">AgentSpawned(ulong, BirthObservation)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>agent_spawned</code> (SYNE-062) : naissance d'une entité par la
+fusion consentie de deux parents.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent AgentSpawned(ulong tick, BirthObservation birth)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Population.BirthObservation.html">BirthObservation</a></td>
+        <td><span class="parametername">birth</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_BookRead_" data-uid="Simulation.Core.Observability.EventSensor.BookRead*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_BookRead_System_UInt64_Simulation_Core_World_BookChange_" data-uid="Simulation.Core.Observability.EventSensor.BookRead(System.UInt64,Simulation.Core.World.BookChange)">BookRead(ulong, BookChange)</h4>
+  <div class="markdown level1 summary"><p>Consultation d'un livre (SYNE-121) : bénéfice de principe configuré.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent BookRead(ulong tick, BookChange change)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.BookChange.html">BookChange</a></td>
+        <td><span class="parametername">change</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_BookWritten_" data-uid="Simulation.Core.Observability.EventSensor.BookWritten*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_BookWritten_System_UInt64_Simulation_Core_World_BookChange_" data-uid="Simulation.Core.Observability.EventSensor.BookWritten(System.UInt64,Simulation.Core.World.BookChange)">BookWritten(ulong, BookChange)</h4>
+  <div class="markdown level1 summary"><p>Écriture d'un livre (SYNE-121) : coût énergétique payé par l'auteur.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent BookWritten(ulong tick, BookChange change)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.BookChange.html">BookChange</a></td>
+        <td><span class="parametername">change</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_ConstructionPlaced_" data-uid="Simulation.Core.Observability.EventSensor.ConstructionPlaced*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_ConstructionPlaced_System_UInt64_Simulation_Core_World_Obstacle_" data-uid="Simulation.Core.Observability.EventSensor.ConstructionPlaced(System.UInt64,Simulation.Core.World.Obstacle)">ConstructionPlaced(ulong, Obstacle)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>world.construction_placed</code> (SYNE-071) : pose d'une construction
+(= obstacle statique, décision n°20) — modification d'environnement tracée.
+Événement d'environnement (pas d'agent porteur) : identifiant, position et
+rayon de l'obstacle posé.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent ConstructionPlaced(ulong tick, Obstacle obstacle)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Obstacle.html">Obstacle</a></td>
+        <td><span class="parametername">obstacle</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_ConstructionRemoved_" data-uid="Simulation.Core.Observability.EventSensor.ConstructionRemoved*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_ConstructionRemoved_System_UInt64_Simulation_Core_World_Obstacle_" data-uid="Simulation.Core.Observability.EventSensor.ConstructionRemoved(System.UInt64,Simulation.Core.World.Obstacle)">ConstructionRemoved(ulong, Obstacle)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>world.construction_removed</code> (SYNE-071) : retrait d'une
+construction — modification d'environnement tracée, même charge utile que
+la pose (identifiant, position, rayon de l'obstacle retiré).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent ConstructionRemoved(ulong tick, Obstacle obstacle)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.Obstacle.html">Obstacle</a></td>
+        <td><span class="parametername">obstacle</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_DecisionMade_" data-uid="Simulation.Core.Observability.EventSensor.DecisionMade*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_DecisionMade_System_UInt64_System_UInt64_Simulation_Core_Cognition_MindState_" data-uid="Simulation.Core.Observability.EventSensor.DecisionMade(System.UInt64,System.UInt64,Simulation.Core.Cognition.MindState)">DecisionMade(ulong, ulong, MindState)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>decision_made</code> par entité (intention, utilité du dernier
+score délibéré + drapeaux de délibération/interruption du tick courant,
+COGNITIVE_ARCHITECTURE.md §7).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent DecisionMade(ulong tick, ulong agentId, MindState mind)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">agentId</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Cognition.MindState.html">MindState</a></td>
+        <td><span class="parametername">mind</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_GroupDecision_" data-uid="Simulation.Core.Observability.EventSensor.GroupDecision*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_GroupDecision_System_UInt64_Simulation_Core_Social_GroupDecision_" data-uid="Simulation.Core.Observability.EventSensor.GroupDecision(System.UInt64,Simulation.Core.Social.GroupDecision)">GroupDecision(ulong, GroupDecision)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>group_decision</code> (SYNE-061) : décision collective adoptée —
+intention dominante + consensus pondéré par la confiance au leader.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent GroupDecision(ulong tick, GroupDecision decision)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Social.GroupDecision.html">GroupDecision</a></td>
+        <td><span class="parametername">decision</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_GroupDissolved_" data-uid="Simulation.Core.Observability.EventSensor.GroupDissolved*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_GroupDissolved_System_UInt64_Simulation_Core_Social_GroupDissolution_" data-uid="Simulation.Core.Observability.EventSensor.GroupDissolved(System.UInt64,Simulation.Core.Social.GroupDissolution)">GroupDissolved(ulong, GroupDissolution)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>group_dissolved</code> (SYNE-060) : dissolution avec bilan de vie
+(durée, succès, turnover entrée/sortie). Sémantique consommée par ECHOS
+(group_dynamics : lifetime/success/membersOut/membersIn).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent GroupDissolved(ulong tick, GroupDissolution dissolution)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Social.GroupDissolution.html">GroupDissolution</a></td>
+        <td><span class="parametername">dissolution</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_GroupFormed_" data-uid="Simulation.Core.Observability.EventSensor.GroupFormed*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_GroupFormed_System_UInt64_Simulation_Core_Social_Group_" data-uid="Simulation.Core.Observability.EventSensor.GroupFormed(System.UInt64,Simulation.Core.Social.Group)">GroupFormed(ulong, Group)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>group_formed</code> (SYNE-060) : apparition d'un groupe émergent.
+Porteur (agentId) : le leader émergent, sinon le plus petit membre.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent GroupFormed(ulong tick, Group group)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Social.Group.html">Group</a></td>
+        <td><span class="parametername">group</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_MessageReceived_" data-uid="Simulation.Core.Observability.EventSensor.MessageReceived*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_MessageReceived_System_UInt64_Simulation_Core_Communication_MessageReceived_" data-uid="Simulation.Core.Observability.EventSensor.MessageReceived(System.UInt64,Simulation.Core.Communication.MessageReceived)">MessageReceived(ulong, MessageReceived)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>message_received</code> (SYNE-051) : pulsation reçue (y compris
+interception — le signal est public), avec confiance ajustée par la relation
+de confiance du récepteur envers l'émetteur et drapeau d'incompréhension.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent MessageReceived(ulong tick, MessageReceived received)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Communication.MessageReceived.html">MessageReceived</a></td>
+        <td><span class="parametername">received</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_MessageSent_" data-uid="Simulation.Core.Observability.EventSensor.MessageSent*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_MessageSent_System_UInt64_Simulation_Core_Communication_MessageSent_" data-uid="Simulation.Core.Observability.EventSensor.MessageSent(System.UInt64,Simulation.Core.Communication.MessageSent)">MessageSent(ulong, MessageSent)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>message_sent</code> (SYNE-050) : pulsation émise (envoi ou relais),
+avec identifiant, type, nombre de sauts, confiance de transmission et taille
+du payload. Traçable par ECHOS (heatmap de communication, NetworkCentrality...).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent MessageSent(ulong tick, MessageSent sent)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Communication.MessageSent.html">MessageSent</a></td>
+        <td><span class="parametername">sent</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_SeasonChanged_" data-uid="Simulation.Core.Observability.EventSensor.SeasonChanged*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_SeasonChanged_System_UInt64_Simulation_Core_Configuration_SeasonChange_" data-uid="Simulation.Core.Observability.EventSensor.SeasonChanged(System.UInt64,Simulation.Core.Configuration.SeasonChange)">SeasonChanged(ulong, SeasonChange)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>world.season_changed</code> (SYNE-072) : basculement d'une saison à
+l'autre au tick du changement (cycle actif <code>world.seasons.enabled</code>) —
+déterminisme total (fonction pure du tick, 0 tirage PRNG, DETERMINISM.md §3).
+Événement d'environnement (pas d'agent porteur) : saisons précédente et courante
+en clé JSON camelCase.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent SeasonChanged(ulong tick, SeasonChange change)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Configuration.SeasonChange.html">SeasonChange</a></td>
+        <td><span class="parametername">change</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_TerritoryMembershipChanged_" data-uid="Simulation.Core.Observability.EventSensor.TerritoryMembershipChanged*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_TerritoryMembershipChanged_System_UInt64_Simulation_Core_World_TerritoryMembershipChange_" data-uid="Simulation.Core.Observability.EventSensor.TerritoryMembershipChanged(System.UInt64,Simulation.Core.World.TerritoryMembershipChange)">TerritoryMembershipChanged(ulong, TerritoryMembershipChange)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>world.territory_membership_changed</code> (SYNE-073, décision n°21) :
+une entité est <strong>entrée dans</strong> ou <strong>sortie de</strong> la zone d'un « point de survie »
+au tick du franchissement (suivi actif <code>world.territories.enabled</code>) —
+déterminisme total (appartenance = fonction pure des positions, 0 tirage PRNG,
+DETERMINISM.md §3). Porteur : l'entité (AgentId), cible : la zone (TargetId),
+charge utile : le sens du changement {kind} (camelCase).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent TerritoryMembershipChanged(ulong tick, TerritoryMembershipChange change)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.World.TerritoryMembershipChange.html">TerritoryMembershipChange</a></td>
+        <td><span class="parametername">change</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs">View Source</a>
+  </span>
+  <a id="Simulation_Core_Observability_EventSensor_TickSummary_" data-uid="Simulation.Core.Observability.EventSensor.TickSummary*"></a>
+  <h4 id="Simulation_Core_Observability_EventSensor_TickSummary_System_UInt64_System_Int32_" data-uid="Simulation.Core.Observability.EventSensor.TickSummary(System.UInt64,System.Int32)">TickSummary(ulong, int)</h4>
+  <div class="markdown level1 summary"><p>Événement <code>tick_summary</code> (voir API_CONTRACTS.md §2.2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="declaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static ExternalEvent TickSummary(ulong tick, int aliveCount)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></td>
+        <td><span class="parametername">tick</span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></td>
+        <td><span class="parametername">aliveCount</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="returns">Returns</h5>
+  <table class="table table-bordered table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Simulation.Core.Observability.ExternalEvent.html">ExternalEvent</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/syne/Simulation.Core/Observability/ExternalEvent.cs" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

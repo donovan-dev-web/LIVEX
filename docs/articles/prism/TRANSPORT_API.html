@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>TRANSPORT_API.md | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="TRANSPORT_API.md | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="transport_apimd">TRANSPORT_API.md</h1>
+
+<p><strong>Composant</strong> : PRISM
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 17 septembre 2026
+<strong>Dépend de</strong> : <code>../COMMUNICATION.md</code>, <code>../docs-syne/API_CONTRACTS.md</code>, <code>../adr/ADR-003-api-http-rest.md</code>, <code>../adr/ADR-004-websocket-temps-reel.md</code>
+<strong>Source Monographie</strong> : §5.4</p>
+<hr>
+<h2 id="1-websocket-données--5180">1. WebSocket (données) — :5180</h2>
+<p>PRISM se connecte à SYNE via WebSocket (<code>ws://127.0.0.1:5180/</code>) avec <strong>reconnexion automatique (1,5 s)</strong>. Deux types de messages (contract partagé avec ECHOS, cf. <code>../docs-syne/API_CONTRACTS.md</code>) :</p>
+<ul>
+<li><strong><code>snapshot</code></strong> : état complet du monde (<code>WorldSnapshot</code>).</li>
+<li><strong><code>event</code></strong> : événements ponctuels (<code>ExternalEvent</code>).</li>
+</ul>
+<p>Les messages sont des trames <strong>texte UTF-8 JSON</strong> (et non des trames binaires).
+Le champ <code>runId</code> du snapshot est l'identité canonique et stable du run ; PRISM
+doit le conserver pour corréler ses observations.</p>
+<h2 id="2-http-contrôle--5181">2. HTTP (contrôle) — :5181</h2>
+<p>PRISM <strong>relaie</strong> les commandes de contrôle à l'API REST de SYNE (<code>http://127.0.0.1:5181/api/control/</code>) :</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Commande</th>
+<th style="text-align: left;">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>start</code></td>
+<td style="text-align: left;">Démarrer la simulation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>pause</code></td>
+<td style="text-align: left;">Mettre en pause</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>resume</code></td>
+<td style="text-align: left;">Reprendre</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>stop</code></td>
+<td style="text-align: left;">Arrêter le run sans arrêter le serveur SYNE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reset</code></td>
+<td style="text-align: left;">Réinitialiser (avec seed et run id)</td>
+</tr>
+</tbody>
+</table>
+<p>L'état de SYNE est interrogé toutes les <strong>2 secondes</strong> (polling léger). <code>stop</code>
+ramène le run à <code>Idle</code> mais laisse les serveurs actifs.</p>
+<blockquote>
+<p>⚠ PRISM relaie, il ne décide pas : tout contrôle passe par l'API HTTP de SYNE (principe invariant, cf. <code>VISION.md</code>). Ces endpoints sont documentés par les ADR transverses (ADR-003, ADR-004).</p>
+</blockquote>
+<h2 id="3-linterface-typescript-intégrée-à-echos">3. L'interface TypeScript (intégrée à ECHOS)</h2>
+<p>Dans le prototype, l'interface ECHOS (application web React + TypeScript) consommait les métriques d'ECHOS <strong>et</strong> le flux WebSocket de SYNE, offrant un tableau de bord complémentaire à PRISM.</p>
+<p>En <strong>V0.1</strong>, cette interface est <strong>intégrée à ECHOS</strong> (web local React/Vite servie par FastAPI — shell Electron conservé, implémentation différée à un horizon ultérieur) et sert aussi de complément d'affichage pour PRISM (liste des interfaces TypeScript : ses composants — voir <code>UX_INTERACTION.md</code>).</p>
+<h2 id="4-alignement-des-contrats">4. Alignement des contrats</h2>
+<ul>
+<li>Les schémas <code>WorldSnapshot</code>/<code>ExternalEvent</code> sont définis une fois dans <code>../docs-syne/API_CONTRACTS.md</code> (source de vérité transport).</li>
+<li><code>TRANSPORT_API.md</code> (PRISM) et <code>API_REST.md</code> (ECHOS) déclinent chacun leur face : PRISM consomme données WS + envoie commandes HTTP ; ECHOS observe WS + interroge son API REST :5000.</li>
+<li>Versionnage compatible : voir <code>../VERSIONING.md</code> et <code>../COMMUNICATION.md</code>.</li>
+</ul>
+<hr>
+<h2 id="points-restés-ouverts-dans-ce-document">Points restés ouverts dans ce document</h2>
+<ul>
+<li>Aucun : les contrats sont partagés et référencés. Le polling 2 s de l'état SYNE (prototype) pourrait être remplacé par le <code>snapshot</code> temps réel en V0.1 — décision d'implémentation.</li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/prism/TRANSPORT_API.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

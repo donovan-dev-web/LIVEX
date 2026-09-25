@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+
+  <head>
+    <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <title>Installation &amp; d&#233;marrage | LIVEX </title>
+      <meta name="viewport" content="width=device-width">
+      <meta name="title" content="Installation &amp; d&#233;marrage | LIVEX ">
+    
+    
+      <link rel="shortcut icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../styles/docfx.vendor.min.css">
+      <link rel="stylesheet" href="../../styles/docfx.css">
+      <link rel="stylesheet" href="../../styles/main.css">
+      <meta property="docfx:navrel" content="../../toc.html">
+      <meta property="docfx:tocrel" content="../../toc.html">
+    
+    <meta property="docfx:rel" content="../../">
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="../../logo.svg" alt="LIVEX">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div class="container body-content">
+
+        <div id="search-results">
+          <div class="search-list">Search Results for <span></span></div>
+          <div class="sr-items">
+            <p><i class="glyphicon glyphicon-refresh index-loading"></i></p>
+          </div>
+          <ul id="pagination" data-first=First data-prev=Previous data-next=Next data-last=Last></ul>
+        </div>
+      </div>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="installation--démarrage">Installation &amp; démarrage</h1>
+
+<p><strong>Composant</strong> : LIVEX (général)
+<strong>Statut</strong> : [STABLE]
+<strong>Dernière mise à jour</strong> : 24 septembre 2026
+<strong>Dépend de</strong> : <code>ROADMAP.md</code>, <code>COMMUNICATION.md</code></p>
+<p>Ce guide permet de démarrer localement <strong>SYNE</strong>, l’API et l’interface <strong>ECHOS</strong>, ainsi que l’ingestion des données de simulation.</p>
+<blockquote>
+<p><strong>PRISM</strong> n’a pas encore de runtime. Sa réalisation est planifiée après U8 ; voir la <a href="docs/docs-prism/ROADMAP.md">feuille de route PRISM</a>.</p>
+</blockquote>
+<h2 id="prérequis">Prérequis</h2>
+<ul>
+<li><strong>.NET SDK 10.0.4xx</strong>, conformément à <a href="syne/global.json"><code>syne/global.json</code></a>.</li>
+<li><strong>Python 3.11+</strong>.</li>
+<li><strong>Node.js 20+</strong> et npm.</li>
+<li><code>curl</code> pour les vérifications de disponibilité du lanceur.</li>
+</ul>
+<pre><code class="lang-bash">dotnet --version
+python3 --version
+node --version
+npm --version
+curl --version
+</code></pre>
+<h2 id="démarrage-complet--syne-echos-et-interface">Démarrage complet : SYNE, ECHOS et interface</h2>
+<p>Depuis la racine du dépôt, lancez :</p>
+<pre><code class="lang-bash">./scripts/dev-stack.sh
+</code></pre>
+<p>Le script prépare automatiquement l’environnement Python ECHOS et les dépendances npm s’ils manquent, compile SYNE, puis démarre dans le bon ordre :</p>
+<ol>
+<li>l’API ECHOS sur le port <code>5000</code> ;</li>
+<li>l’interface web sur le port <code>5173</code> ;</li>
+<li>SYNE en mode serveur, avec contrôle HTTP sur <code>5181</code> et WebSocket sur <code>5180</code> ;</li>
+<li>le consommateur ECHOS, connecté au WebSocket et en attente d’un run.</li>
+</ol>
+<p>Ouvrez ensuite <a href="http://127.0.0.1:5173">http://127.0.0.1:5173</a>. L’API et sa documentation se trouvent sur <a href="http://127.0.0.1:5000">http://127.0.0.1:5000</a> et <a href="http://127.0.0.1:5000/docs">http://127.0.0.1:5000/docs</a>. Les runs ingérés sont stockés dans <code>echos/data/livex-analytics.sqlite</code>.</p>
+<p>Le script ne démarre <strong>aucune simulation</strong>. SYNE reste à l’état <code>Idle</code> jusqu’à ce que vous cliquiez sur <code>Start</code> dans l’interface. Pour arrêter toute la pile, utilisez <code>Ctrl+C</code> dans le terminal du script.</p>
+<h3 id="boutons-de-pilotage">Boutons de pilotage</h3>
+<p>L’interface relaie ses commandes à l’API ECHOS, qui contacte ensuite le serveur de contrôle SYNE sur le port <code>5181</code>. Le même processus SYNE expose aussi le WebSocket sur le port <code>5180</code> : dès que <code>Start</code> est envoyé, les snapshots et événements du run sont diffusés vers ECHOS pour analyse. Son état peut être vérifié avec :</p>
+<pre><code class="lang-bash">curl http://127.0.0.1:5181/api/control/status
+</code></pre>
+<p>La seed est facultative dans le comportement conceptuel de l’UI : la valeur affichée par défaut est <code>12345</code>. La durée est également facultative. Si <code>maxTicks</code> n’est pas fourni, le run continue jusqu’à <code>Pause</code>, <code>Reset</code>, l’arrêt du processus SYNE ou <code>Ctrl+C</code>. Un <code>Start</code> ultérieur après <code>Reset</code> crée un nouveau run.</p>
+<h2 id="préparation-manuelle-facultative">Préparation manuelle (facultative)</h2>
+<p>Le lanceur s’occupe de ces étapes automatiquement. Pour préparer les dépendances à la main :</p>
+<pre><code class="lang-bash">python3 -m venv echos/.venv
+echos/.venv/bin/python -m pip install --upgrade pip
+echos/.venv/bin/pip install -r echos/requirements-dev.txt
+
+cd echos/echos-ui
+npm ci
+cd ../..
+
+dotnet build syne/Syne.sln --configuration Release
+</code></pre>
+<h2 id="démarrage-manuel-service-par-service">Démarrage manuel, service par service</h2>
+<p>Si vous ne souhaitez pas utiliser le lanceur, préparez d’abord l’environnement avec la section précédente. Ouvrez quatre terminaux depuis la racine du dépôt et démarrez les services dans cet ordre.</p>
+<h3 id="terminal-1--api-echos">Terminal 1 — API ECHOS</h3>
+<pre><code class="lang-bash">mkdir -p echos/data
+export ECHOS_ANALYTICS_DB=&quot;$PWD/echos/data/livex-analytics.sqlite&quot;
+PYTHONPATH=&quot;$PWD/echos&quot; echos/.venv/bin/python -m uvicorn echos.api.app:app \
+  --app-dir echos --host 127.0.0.1 --port 5000
+</code></pre>
+<h3 id="terminal-2--ingestion-echos">Terminal 2 — Ingestion ECHOS</h3>
+<pre><code class="lang-bash">export ECHOS_ANALYTICS_DB=&quot;$PWD/echos/data/livex-analytics.sqlite&quot;
+PYTHONPATH=&quot;$PWD/echos&quot; echos/.venv/bin/python -m echos.dev_ingest
+</code></pre>
+<p>Le consommateur attend le serveur WebSocket SYNE. Laissez ce terminal ouvert.</p>
+<h3 id="terminal-3--interface-web">Terminal 3 — Interface web</h3>
+<pre><code class="lang-bash">cd echos/echos-ui
+npm run dev -- --host 127.0.0.1
+</code></pre>
+<h3 id="terminal-4--syne-contrôle--observabilité">Terminal 4 — SYNE contrôle + observabilité</h3>
+<p>SYNE démarre en attente, sans lancer de simulation :</p>
+<pre><code class="lang-bash">dotnet run --project syne/Simulation.Console --configuration Release -- --serve
+</code></pre>
+<p>Il écoute sur <code>127.0.0.1:5181</code> et <code>127.0.0.1:5180</code>. Le run est ensuite démarré depuis l’écran de pilotage ECHOS. Ne passez pas <code>maxTicks</code> dans la requête si vous souhaitez une durée illimitée ; utilisez <code>Pause</code>, <code>Resume</code>, <code>Stop</code> ou <code>Reset</code> depuis l’UI.</p>
+<h3 id="démarrer-uniquement-syne">Démarrer uniquement SYNE</h3>
+<p>Exécution batch sans API ni interface :</p>
+<pre><code class="lang-bash">dotnet run --project syne/Simulation.Console --configuration Release -- \
+  --seed 12345 --max-ticks 1000 --headless
+</code></pre>
+<h2 id="run-batch-syne--analyse-echos--rapport">Run batch SYNE + analyse ECHOS + rapport</h2>
+<p>Pour exécuter une simulation reproductible sans lancer l'interface, utilisez le
+lanceur batch. Il démarre uniquement l'API ECHOS, l'ingestion analytique et
+SYNE, puis attend la fin du nombre de ticks demandé :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 1000
+</code></pre>
+<p>La commande accepte une seed et un nombre de ticks obligatoires. Elle arrête
+les processus après la fin du run et produit des fichiers déterministes dans
+<code>echos/data/reports/</code> :</p>
+<ul>
+<li><code>&lt;run-id&gt;.parquet</code> : la <strong>trace complète d'analyse</strong> (columnar, requêtable
+— sections <code>run</code>/<code>tick</code>/<code>metric</code>/<code>event</code>/<code>decision</code>/<code>context</code>/
+<code>detected_phenomenon</code>/<code>calibration</code>). Ce fichier <strong>remplace le <code>&lt;run-id&gt;.json</code></strong>,
+plus volatil ;</li>
+<li><code>&lt;run-id&gt;.agents.parquet</code> : la série lourde des agents (snapshots par tick) ;</li>
+<li><code>&lt;run-id&gt;.md</code> : lecture humaine, avec résumé par tick, historique des
+événements pertinents, métriques principales, évolution par tick et
+calibration. Le détail exhaustif reste dans les <code>.parquet</code>.</li>
+</ul>
+<p>Le rapport Markdown est toujours produit. L'export Parquet est activé par
+défaut ; désactivez-le avec <code>--no-parquet</code> (trace JSON restaurée) :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 1000 --no-parquet
+</code></pre>
+<p>Par défaut l'analyse ECHOS est calculée à chaque tick (<code>--analysis-every 1</code>).
+Pour économiser CPU/RAM sur les runs longs, planifiez l'analyse 1 tick sur N
+(les résumés, événements et la série agents restent ingérés à chaque tick) :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 1000 --analysis-every 5
+./scripts/batch-analysis.py 12345 1000 --ticks-per-second 25 --analysis-every 2
+</code></pre>
+<p>Les mêmes réglages sont exposés par variables d'environnement, y compris pour
+l'ingestion manuelle : <code>ECHOS_ANALYSIS_EVERY</code>, <code>ECHOS_PARQUET_FLUSH_EVERY</code>
+(flush bufferisé de la série agents, en nombre de ticks) et
+<code>ECHOS_PARQUET_PATH</code> (chemin de la série agents).</p>
+<p>La cadence batch est de 10 ticks/s par défaut, comme le mode contrôlé normal.
+Elle peut être augmentée si les mesures montrent qu'ECHOS suit le flux :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 1000 --ticks-per-second 25
+</code></pre>
+<p>Cette option accélère SYNE, mais ne mesure pas automatiquement la capacité
+d'ECHOS : si l'ingestion prend du retard, le drainage peut échouer et le run
+est alors signalé comme incomplet. Utilisez 10 ticks/s comme référence
+comparable entre les seeds, et une cadence supérieure uniquement pour les
+benchmarks.</p>
+<p>Le batch attend explicitement que tous les snapshots soient persistés avant de
+fermer SYNE. Si ECHOS décroche ou si le drainage dépasse le délai, la commande
+échoue avec le nombre de ticks effectivement ingérés au lieu de produire un
+rapport présenté à tort comme complet. Le délai de drainage peut être séparé
+du délai général :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 400 --drain-timeout 900
+</code></pre>
+<p>La configuration par défaut de SYNE utilise désormais le profil calibré
+<code>reference</code>, afin que le lancement manuel par l'UI ne démarre pas un monde
+condamné à l'extinction. Le dépôt conserve aussi l'ancien comportement dans
+le profil <code>raw</code>, utile pour reproduire le rapport historique où <code>seed=12345</code>
+sur 400 ticks provoquait une extinction complète par <code>energy_exhaustion</code>.</p>
+<p>Pour exécuter explicitement un run calibré :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 400 --profile reference
+</code></pre>
+<p>Ce profil réduit les coûts énergétiques auxiliaires et augmente les réserves
+initiales. Le profil <code>raw</code> reste disponible :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 12345 400 --profile raw
+</code></pre>
+<p><code>--config</code> reste disponible pour tester une configuration locale.</p>
+<p>Le drainage final est effectué après l'arrêt propre de SYNE afin que le
+dernier tick soit flushé par ECHOS. Le rapport n'est généré qu'après
+l'ingestion de tous les ticks demandés.</p>
+<p>Les snapshots peuvent dépasser 1 MiB après plusieurs centaines de ticks
+(mémoire et historique des agents). Le client ECHOS est configuré avec une
+limite de trame augmentée et une réception séparée du calcul analytique afin
+que le flux ne se ferme pas prématurément sur ces runs longs.</p>
+<p>Options utiles :</p>
+<pre><code class="lang-bash">./scripts/batch-analysis.py 42 500 \
+  --database echos/data/runs.sqlite \
+  --output-dir echos/data/reports/seed-42
+</code></pre>
+<p>Les rapports restent archivés dans le répertoire de sortie et la base SQLite
+conserve les runs précédents. Pour comparer deux runs, utilisez deux seeds et
+des répertoires distincts, puis comparez les JSON ou consultez l'endpoint
+<code>/api/compare</code> avec leurs <code>runId</code>.</p>
+<h3 id="benchmark-syne-vs-syne--echos">Benchmark SYNE vs SYNE + ECHOS</h3>
+<p>Pour mesurer le <strong>coût réel de l'observabilité</strong> (temps + RAM) sur une grille
+entités × ticks × seeds, le lanceur <code>scripts/benchmark.py</code> rejoue chaque
+cellule en deux scénarios — moteur seul (<code>--headless</code>) et chaîne complète
+SYNE <code>--serve</code> + API ECHOS + ingestion — puis écrit un CSV brut, un rapport
+Markdown et une synthèse JSON dans le répertoire de sortie.</p>
+<pre><code class="lang-bash">echos/.venv/bin/python scripts/benchmark.py                 # grille complète (défauts)
+echos/.venv/bin/python scripts/benchmark.py --quick          # entités×ticks réduits, 1 seed
+echos/.venv/bin/python scripts/benchmark.py \
+  --entities 20,100 --ticks 400,1000 --seeds 12345,999,7 \
+  --output-dir echos/data/benchmarks
+</code></pre>
+<p>Options principales : <code>--ticks-per-second</code> (cadence ECHOS, défaut 50),
+<code>--analysis-every</code> (si la charge d'analyse pèse trop sur la RAM/CPU),
+<code>--parquet</code> (activer la série agents dans la mesure), <code>--cell-timeout</code>
+(défaut 600 s) et <code>--database</code>. Les ports <code>5000/5180/5181</code> doivent être
+libres : le script refuse de démarrer s'ils sont déjà occupés (pile en cours
+ou orphelins d'un run précédent). Méthodologie et lecture des chiffres :
+<a href="docs/docs-echos/BENCHMARKS.md"><code>docs/docs-echos/BENCHMARKS.md</code></a>.</p>
+<h3 id="benchmark-et-runs-longs">Benchmark et runs longs</h3>
+<p>Le benchmark SYNE isolé permet de distinguer un problème de simulation d'un
+retard d'analyse :</p>
+<pre><code class="lang-bash">dotnet run --project syne/Simulation.Console/Simulation.Console.csproj \
+  --configuration Release --no-build -- \
+  --benchmark --benchmark-populations 100 \
+  --benchmark-ticks 800 --seed 12345
+</code></pre>
+<p>Sur la configuration de référence, 800 ticks et 100 agents atteignent environ
+5 255 ticks/s (0,19 ms/tick). Le coût observé sur les runs longs vient
+principalement d'ECHOS : les contextes cognitifs <code>agents</code> grossissent avec
+l'historique des croyances. Ils sont compressés automatiquement dans SQLite,
+avec lecture rétrocompatible des anciennes lignes JSON. Cette compression
+réduit fortement la taille disque, mais ne rend pas l'analyse instantanée :
+après un run rapide, ECHOS peut encore devoir drainer les ticks en attente.</p>
+<p>Pour vérifier qu'un run long est réellement analysé, contrôlez que le nombre de
+ticks persistés atteint <code>last_tick</code> dans l'UI ou via <code>/api/runs/{runId}</code>. Un
+run SYNE arrivé à 800 ticks alors qu'ECHOS n'en a persisté que 722 est terminé
+côté simulation, mais incomplet côté analyse ; le rapport ne doit être généré
+qu'après ce drainage.</p>
+<p>Le JSON conserve les contextes phénomènes à chaque tick dans
+<code>contexts.phenomena</code>. Le rapport Markdown ajoute une synthèse des phénomènes
+uniques détectés, avec leur identifiant, description, première et dernière
+détection et nombre d'occurrences. L'endpoint <code>/api/emergent-phenomena</code> et
+l'interface affichent cette même vue historique, même si le dernier tick ne
+contient plus le phénomène.</p>
+<p>Le lanceur suppose que le binaire Release de SYNE existe. Compilez-le au
+préalable avec <code>dotnet build syne/Syne.sln --configuration Release</code> ou lancez
+<code>./scripts/dev-stack.sh</code> une première fois.</p>
+<h2 id="ports-utilisés">Ports utilisés</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Service</th>
+<th style="text-align: left;">Adresse</th>
+<th style="text-align: left;">Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">SYNE WebSocket</td>
+<td style="text-align: left;"><code>127.0.0.1:5180</code></td>
+<td style="text-align: left;">Snapshots et événements du run piloté par l’UI.</td>
+</tr>
+<tr>
+<td style="text-align: left;">SYNE HTTP</td>
+<td style="text-align: left;"><code>127.0.0.1:5181</code></td>
+<td style="text-align: left;">Contrôle du serveur SYNE et démarrage des runs.</td>
+</tr>
+<tr>
+<td style="text-align: left;">API ECHOS</td>
+<td style="text-align: left;"><code>127.0.0.1:5000</code></td>
+<td style="text-align: left;">Runs, métriques, analyses et relais de contrôle.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Interface ECHOS</td>
+<td style="text-align: left;"><code>127.0.0.1:5173</code></td>
+<td style="text-align: left;">Application web Vite.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="données-arrêt-et-vérifications">Données, arrêt et vérifications</h2>
+<p>Les fichiers analytiques locaux sont placés dans <code>echos/data/</code>. Pour repartir d’une base vierge, arrêtez les services et supprimez les données générées :</p>
+<pre><code class="lang-bash">rm -f echos/data/livex-analytics.sqlite echos/data/livex-agents.parquet
+# rapports, traces Parquet et benchmarks générés localement :
+rm -rf echos/data/reports echos/data/benchmarks
+</code></pre>
+<p>Tests développeur :</p>
+<pre><code class="lang-bash"># SYNE
+cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
+
+# ECHOS — depuis la racine
+echos/.venv/bin/python -m pytest -q
+echos/.venv/bin/python -m flake8 echos/echos
+
+# Interface
+cd echos/echos-ui
+npm run lint
+npm test -- --run
+npm run build
+</code></pre>
+<h2 id="documentation-complémentaire">Documentation complémentaire</h2>
+<ul>
+<li><a href="ARCHITECTURE.html">Architecture globale</a> · <a href="COMMUNICATION.md">Contrats inter-composants</a></li>
+<li><a href="docs/docs-syne/README.md">Guide SYNE</a> · <a href="docs/docs-echos/README.md">Guide ECHOS</a></li>
+<li><a href="ROADMAP.html">Feuille de route</a> · <a href="docs/docs-prism/ROADMAP.md">Feuille de route PRISM</a></li>
+<li><a href="GITFLOW.md">Gitflow</a> · <a href="CONTRIBUTING.html">Contribuer</a></li>
+</ul>
+
+</article>
+          </div>
+
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/donovan-dev-web/LIVEX/blob/develop/docs/site/articles/transverse/INSTALLATION.md/#L1" class="contribution-link">Edit this page</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+                <h5>In this article</h5>
+                <div></div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+      LIVEX — Simulation & émergence sociale · documentation technique (générée par DocFX)
+      
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <script type="text/javascript" src="../../styles/docfx.vendor.min.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

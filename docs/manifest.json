@@ -1,0 +1,2698 @@
+{
+  "docfx_version": "2.81.0+ba844df625370a6bd7c1ecab0d0ec4d1d9128ac4",
+  "source_base_path": "/home/runner/work/LIVEX/LIVEX/docs/site",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.ActionCatalog.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.ActionCatalog.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions.ActionCatalog",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Actions.ActionCatalog.yml\" sourcestartlinenumber=\"1\">Catalogue déclaratif des actions (SYNE-040) : pour chaque <xref href=\"Simulation.Core.Cognition.DesireKind\" data-throw-if-not-resolved=\"false\"></xref>,\nune <xref href=\"Simulation.Core.Actions.ActionDefinition\" data-throw-if-not-resolved=\"false\"></xref> issue de la configuration <code>agents.actions.catalog</code>.\nL'ordre du catalogue (ordre de l'enum) est l'ordre stable de départage (décision n°22),\nles actions sont vérifiées viables contre l'état des réserves.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.ActionDefinition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.ActionDefinition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions.ActionDefinition",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Actions.ActionDefinition.yml\" sourcestartlinenumber=\"1\">Définition déclarative d'une action du catalogue (SYNE-040) : coût énergétique,\neffets sur les besoins, dépendance à une réserve. Issue de la configuration\n<code>agents.actions.catalog</code> (CONFIGURATION.md §6.2) — une action est déclarée\nen config, ses effets sont appliqués atomiquement par tick par l'exécuteur.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.ActionExecutor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.ActionExecutor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions.ActionExecutor",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Actions.ActionExecutor.yml\" sourcestartlinenumber=\"1\">Exécuteur d'actions (SYNE-040) : applique atomiquement chaque tick l'action\nchoisie par la délibération — une action par entité par tick. Les effets\n(coût d'énergie, récupérations, consommation de réserve) proviennent du\ncatalogue déclaratif (SYNE-040). Le déplacement (SYNE-041) respecte les\nobstacles et le coût énergie ; Eat/Drink mettent à jour les réserves (SYNE-042).\nDepuis le jalon ph7b (SYNE-077), lorsqu'un obstacle barre le pas direct, le\ndéplacement emprunte le chemin A* déterministe (grille rasterisée, cache LRU,\nrepli « sur place »).</p>\n<p sourcefile=\"api/Simulation.Core.Actions.ActionExecutor.yml\" sourcestartlinenumber=\"10\">Déterminisme : aucune consommation du PRNG — cible pseudo-aléatoire stable\n(hash SplitMix64 de (id, tick, désir)), itération par identifiant croissant,\npas de déplacement dans un obstacle (DETERMINISM.md §5).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.ActionOutcome.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.ActionOutcome.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions.ActionOutcome",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Actions.ActionOutcome.yml\" sourcestartlinenumber=\"1\">Issue de l'exécution d'une action (mécanique déclarative, SYNE-040).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.ActionResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.ActionResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions.ActionResult",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Actions.ActionResult.yml\" sourcestartlinenumber=\"1\">Résultat d'une exécution atomique d'action (une par entité par tick, SYNE-040).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.InterruptionTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.InterruptionTrigger.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions.InterruptionTrigger",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Actions.InterruptionTrigger.yml\" sourcestartlinenumber=\"1\">Déclencheur d'interruption d'action centralisé (SYNE-043, décision n°15) :\nunique point de décision « l'action en cours est-elle interrompue par un\nbesoin urgent ? ». Les règles sont déclaratives (besoin critique faim/énergie)\net évaluées facialement à n'importe quel tick, y compris entre deux\ndélibérations (holdover, COGNITIVE_ARCHITECTURE.md §6).</p>\n<p sourcefile=\"api/Simulation.Core.Actions.InterruptionTrigger.yml\" sourcestartlinenumber=\"7\">Contrat de déterminisme : évalue par utilité (même formule que la délibération),\naucune consommation du PRNG ; en cas d'égalité, l'ordre du catalogue tranche.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Actions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Actions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Actions",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.AgentFactors.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.AgentFactors.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.AgentFactors",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.AgentFactors.yml\" sourcestartlinenumber=\"1\">Facteurs de personnalité issus des traits (plage 0-2, neutre 1.0) — entrée\nde la formule d'utilité (COGNITIVE_ARCHITECTURE.md §6).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.Belief.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.Belief.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.Belief",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.Belief.yml\" sourcestartlinenumber=\"1\">Croyance : interprétation d'un fait avec une confiance 0-1, une source et un\ncycle de vie (création → confirmation → conflit → décroissance → expiration).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.BeliefRevision.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.BeliefRevision.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.BeliefRevision",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.BeliefRevision.yml\" sourcestartlinenumber=\"1\">Révision des croyances (décision n°12, SYNE-014) :\n<code>belief = belief + (signal − belief) × strength</code>, avec plafond de\nvariation par snap (« plafond par snap » : un signal trompeur ne peut pas\ninverser une croyance forte d'un coup).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.BeliefSet.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.BeliefSet.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.BeliefSet",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.BeliefSet.yml\" sourcestartlinenumber=\"1\">Ensemble de croyances d'une entité, indexé par fait (ProductName de\ncomparaison ordinale). Les croyances expirent (plafond 0.4) et décroissent\ntemporellement (DATA_MODEL.md §6, COGNITIVE_ARCHITECTURE.md §4).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.BodyNeeds.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.BodyNeeds.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.BodyNeeds",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.BodyNeeds.yml\" sourcestartlinenumber=\"1\">État des besoins d'une entité (DATA_MODEL.md §7, décision n°3) :\n6 besoins (faim, soif, fatigue 0-100 ; sécurité, social, curiosité 0-1)</p>\n<ul sourcefile=\"api/Simulation.Core.Cognition.BodyNeeds.yml\" sourcestartlinenumber=\"3\">\n<li sourcefile=\"api/Simulation.Core.Cognition.BodyNeeds.yml\" sourcestartlinenumber=\"3\">énergie (0-100). Dérive par tick selon les taux configurables.</li>\n</ul>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.CognitionPipeline.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.CognitionPipeline.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.CognitionPipeline",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.CognitionPipeline.yml\" sourcestartlinenumber=\"1\">Pipeline cognitif BDI (SYNE-010, COGNITIVE_ARCHITECTURE.md §2) exécuté à\nchaque tick dans l'ordre causal strict (DETERMINISM.md §5) :\nperception → mémoire → croyances → besoins → objectifs → faisabilité →\nutilité → délibération → intention → action (« boucle 10/15 étapes », jalon U1).</p>\n<p sourcefile=\"api/Simulation.Core.Cognition.CognitionPipeline.yml\" sourcestartlinenumber=\"6\">Depuis le jalon ph4, l'exécution des actions sort du pipeline : elle est\nconfiée au catalogue déclaratif + exécuteur atomique (SYNE-040/041/042) et\nles interruptions au déclencheur centralisé (SYNE-043).</p>\n<p sourcefile=\"api/Simulation.Core.Cognition.CognitionPipeline.yml\" sourcestartlinenumber=\"10\">Déterminisme : aucune consommation du PRNG (l'avance du générateur reste à\nun tirage par tick), ordre d'itération par identifiant croissant, cibles de\ndéplacement pseudo-aléatoires déterministes (hash stable), agrégats en\nreprésentation invariante à la culture.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.DecisionRecord.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.DecisionRecord.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.DecisionRecord",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.DecisionRecord.yml\" sourcestartlinenumber=\"1\">Trace complète d'une décision (COGNITIVE_ARCHITECTURE.md §7, SYNE-031/032/033) :\ntick, entité, scores d'utilité par action candidate, action choisie, et les\ndrapeaux de délibération (fréquence configurable) et d'interruption (besoin\ncritique). Base de l'analyse causale ECHOS et de l'observabilité.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.DesireFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.DesireFactory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.DesireFactory",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.DesireFactory.yml\" sourcestartlinenumber=\"1\">Générateur d'objectifs : un désir est créé quand son besoin passe son seuil\n(SYNE-042, décision n°4 : déclenchement dès « ≥ 50 ») et qu'aucun objectif du\nmême type n'est actif. Pour faim/soif, le désir engendré est l'action terminale\n<xref href=\"Simulation.Core.Cognition.DesireKind.Eat\" data-throw-if-not-resolved=\"false\"></xref>/<xref href=\"Simulation.Core.Cognition.DesireKind.Drink\" data-throw-if-not-resolved=\"false\"></xref> si la réserve globale\ncorrespondante est disponible, sinon le <xref href=\"Simulation.Core.Cognition.DesireKind.SeekFood\" data-throw-if-not-resolved=\"false\"></xref>/\n<xref href=\"Simulation.Core.Cognition.DesireKind.SeekWater\" data-throw-if-not-resolved=\"false\"></xref> de poursuite (catalogue, SYNE-040) — le\ndéclencheur est donc viable par construction.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.DesireKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.DesireKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.DesireKind",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.DesireKind.yml\" sourcestartlinenumber=\"1\">Les 6 désirs V0.1 (DATA_MODEL.md §7) + Idle, puis les actions terminales de\nbesoin Eat/Drink (SYNE-042, décision n°4). Chaque désir découle d'un besoin\nnon satisfait (objectif = état recherché, COGNITIVE_ARCHITECTURE.md §5).</p>\n<ul><li>Les valeurs existantes (0-6) ne changent jamais : l'ordre du catalogue\n   est stable pour le départage déterministe (décision n°22, DETERMINISM.md §5).</li><li>Eat/Drink (7-8) : actions terminales immédiates, non persistantes\n   (exécutées tant que le besoin est déclenché, jamais en holdover).</li></ul>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.Fact.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.Fact.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.Fact",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.Fact.yml\" sourcestartlinenumber=\"1\">Fait : (subject, predicate, value) — DATA_MODEL.md §6. Les trois champs sont\ncomparés sur leur valeur ordinale (insensible à la culture).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.Goal.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.Goal.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.Goal",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.Goal.yml\" sourcestartlinenumber=\"1\">État recherché (objectif) né d'un besoin non satisfait (COGNITIVE_ARCHITECTURE.md §5).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.GroupObjective.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.GroupObjective.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.GroupObjective",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.GroupObjective.yml\" sourcestartlinenumber=\"1\">Objectif collectif adopté par un groupe et propagé à ses membres (SYNE-076,\nSYSTEM_SPEC.md §5 décision n°24) : l'intention dominante du groupe devient un\nfacteur d'alignement de l'utilité individuelle, pondéré par le consensus\natteint et la confiance du membre envers le leader émergent. La durée de vie\nde l'objectif est l'intervalle de revue des groupes (TTL, ré-adopté à chaque\nrévision).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.Inheritance.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.Inheritance.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.Inheritance",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.Inheritance.yml\" sourcestartlinenumber=\"1\">Héritage intergénérationnel (SYNE-020, décision n°16, DATA_MODEL.md §6.6) :\nla naissance repose sur la <strong sourcefile=\"api/Simulation.Core.Cognition.Inheritance.yml\" sourcestartlinenumber=\"2\">fusion consentie</strong> des entités parentes et\ntransmet les <strong sourcefile=\"api/Simulation.Core.Cognition.Inheritance.yml\" sourcestartlinenumber=\"3\">traits</strong> et le <strong sourcefile=\"api/Simulation.Core.Cognition.Inheritance.yml\" sourcestartlinenumber=\"3\">savoir</strong> (mémoire intergénérationnelle +\ncroyances) à l'entité née.</p>\n<p sourcefile=\"api/Simulation.Core.Cognition.Inheritance.yml\" sourcestartlinenumber=\"6\">La structure est figée (décision n°16) ; les paramètres fins (réadaptation,\ndominance, mutation, seuil de salience) restent configurables\n(<xref href=\"Simulation.Core.Configuration.InheritanceSettings\" data-throw-if-not-resolved=\"false\"></xref>, SYNE-063 — §6.6.3, V0.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.Memory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.Memory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.Memory",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.Memory.yml\" sourcestartlinenumber=\"1\">Mémoire (court/long terme) : décroissance exponentielle de la salience\n<code>salience(t) = salience(0) × exp(−decayRate × (t − storedAt))</code>, seuil\nd'oubli (défaut 0.01), capacité (défaut 1000) avec éviction de l'élément le\nmoins saillant, decay par catégorie 0.01/0.005/0.002 (décision n°11, SYNE-013).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.MemoryCategory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.MemoryCategory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.MemoryCategory",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.MemoryCategory.yml\" sourcestartlinenumber=\"1\">Catégorie d'un souvenir — décision n°11 (COGNITIVE_ARCHITECTURE.md §4,\nDATA_MODEL.md §5). Chaque catégorie a sa propre vitesse de décroissance.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.MemoryEntry.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.MemoryEntry.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.MemoryEntry",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.MemoryEntry.yml\" sourcestartlinenumber=\"1\">Souvenir : source, catégorie, contenu, confiance, horodatage (décision n°11).\nLe contenu est une chaîne canonique (papier déterministe, pas d'objet mutable).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.MemoryRecall.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.MemoryRecall.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.MemoryRecall",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.MemoryRecall.yml\" sourcestartlinenumber=\"1\">Élément rappelé avec sa salience courante.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.MindState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.MindState.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.MindState",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.MindState.yml\" sourcestartlinenumber=\"1\">État cognitif d'une entité (DATA_MODEL.md §3.1 : perception, mémoire,\ncroyances, décision) : mémoire, croyances, besoins, intention et trace de\ndécision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md §7).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.PriorityConflictResolver.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.PriorityConflictResolver.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.PriorityConflictResolver",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.PriorityConflictResolver.yml\" sourcestartlinenumber=\"1\">Résolution probabiliste des conflits de priorités (SYNE-033, décision n°22,\nSYSTEMS_SPEC.md §5) : quand plusieurs candidats se disputent le maximum\nd'utilité (marge <code>conflictTieMargin</code>), le vainqueur est tiré selon la\n<b>force × confiance</b> de chaque désir — <code>p = force × confidence / Σ</code> —\nsans aucun arbitraire d'ancienneté.</p>\n<p sourcefile=\"api/Simulation.Core.Cognition.PriorityConflictResolver.yml\" sourcestartlinenumber=\"7\">Déterminisme : le tirage dérive d'un hash SplitMix64 stable de\n(entityId, tick, kinds) — aucune consommation du PRNG global ; à force nulle\ndes deux côtés, l'ordre du catalogue (stable) tranche.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.Relationships.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.Relationships.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.Relationships",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.Relationships.yml\" sourcestartlinenumber=\"1\">Rapport inter-entités (décision n°10, COMMUNICATION_PROTOCOL.md §3,\nDATA_MODEL.md — table « relationships ») : niveau de confiance 0-1 envers\nchaque pair connu.</p>\n<ul><li><b>Décroissance</b> : en l'absence d'interaction dans la tickée, la\n confiance est multipliée par <code>decayFactor</code> (défaut 0.9, trustDecay) ;</li><li><b>Vérité constatée</b> : la confiance augmente (bonus de véracité) ;</li><li><b>Mensonge constaté</b> : la confiance est pénalisée (pénalité de tromperie).</li></ul>\n<p sourcefile=\"api/Simulation.Core.Cognition.Relationships.yml\" sourcestartlinenumber=\"8\">Déterminisme : toutes les opérations sont commutatives et les itérations\ns'effectuent sur des listes triées par identifiant de pair.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.UtilityEvaluator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.UtilityEvaluator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.UtilityEvaluator",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.UtilityEvaluator.yml\" sourcestartlinenumber=\"1\">Évaluateur d'utilité (COGNITIVE_ARCHITECTURE.md §6, décision n°13) :\n<code>U = (benefit − cost − risk) × confidence × personalityModifier + urgency</code>.\nBonus d'alignement ×1.2 si l'action rejoint l'objectif courant ; sélection par\nutilité maximale, départage déterministe par ordre du catalogue (SYNE-030).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.UtilityScore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.UtilityScore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition.UtilityScore",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Cognition.UtilityScore.yml\" sourcestartlinenumber=\"1\">Score d'utilité d'une action candidate (décision n°13, SYNE-010).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Cognition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Cognition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Cognition",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.CommunicationState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.CommunicationState.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication.CommunicationState",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Communication.CommunicationState.yml\" sourcestartlinenumber=\"1\">État de communication d'une entité (COMMUNICATION_PROTOCOL.md §7) : file\nsortante (bornée par <code>maxSendsPerTick</code>), file entrante (bornée par\n<code>maxReceivesPerTick</code>) et ensemble &quot;déjà relayé&quot; anti-boucle.</p>\n<p sourcefile=\"api/Simulation.Core.Communication.CommunicationState.yml\" sourcestartlinenumber=\"5\">V0.1 : la file entrante est consommée comme trace d'activité du tick (la\nrévision des croyances par messages arrive avec l'analyse/les besoins\nsociaux) — la réception ajuste la confiance par la matrice de relations et\nmarque l'interaction (COMMUNICATION_PROTOCOL.md §7).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.CommunicationSystem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.CommunicationSystem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication.CommunicationSystem",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Communication.CommunicationSystem.yml\" sourcestartlinenumber=\"1\">Système de communication par pulsations lumineuses publiques (SYNE-050 → 054,\nCOMMUNICATION_PROTOCOL.md, décisions n°7-10). Exécuté en <strong sourcefile=\"api/Simulation.Core.Communication.CommunicationSystem.yml\" sourcestartlinenumber=\"2\">une passe par tick</strong>\n(<code>performance.batchCommunication</code>, PERFORMANCE.md) après le pipeline\ncognitif, dans un ordre causal strict :</p>\n<ol><li><b>Diffusion</b> : chaque entité (identifiant croissant) émet ses\n messages sortants (cap <code>maxSendsPerTick</code>) — portée\n <code>transmissionRange</code> + ligne de vue ; toute entité dans la portée reçoit,\n quelle que soit la cible (publicité, interception — décision n°8).</li><li><b>Relais</b> : chaque entité relaye les messages compris (cap partagé\n avec les envois) tant que <code>hops &lt; maxHops</code>, avec dégradation de\n confiance <code>× hopConfidenceDecay</code> (10 %/hop — décision n°10).</li></ol>\n<p sourcefile=\"api/Simulation.Core.Communication.CommunicationSystem.yml\" sourcestartlinenumber=\"13\">Coûts énergétiques (décision n°9) : envoi <code>sendEnergyCost + payload ×\nsendEnergyPayloadFactor</code>, réception <code>receiveEnergyCost + payload ×\nreceiveEnergyPayloadFactor</code>, appliqués via <code>BodyNeeds.ExertEnergy</code>.</p>\n<p sourcefile=\"api/Simulation.Core.Communication.CommunicationSystem.yml\" sourcestartlinenumber=\"17\">Déterminisme : aucun tirage du PRNG global ; l'incompréhension (5 %) et les\nidentifiants de message dérivent de hash SplitMix64 stables (DETERMINISM.md §3).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.Message.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.Message.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication.Message",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Communication.Message.yml\" sourcestartlinenumber=\"1\">Message échangé par pulsation (COMMUNICATION_PROTOCOL.md §3) :\n<code>MessageId | SenderId | Type | Payload | Confidence | Hops | Timestamp(tick)</code>.</p>\n<ul><li><b>Confidence</b> : confiance de transmission du message, dégradée de\n 10 %/hop à chaque relais (décision n°10). La confiance du récepteur envers\n l'émetteur ajuste la confiance à la réception (COMMUNICATION_PROTOCOL.md §7).</li><li><b>Hops</b> : nombre de relais déjà effectués (bordures par <code>maxHops</code>).</li></ul>\n<p sourcefile=\"api/Simulation.Core.Communication.Message.yml\" sourcestartlinenumber=\"8\">Déterminisme : le <code>MessageId</code> est un hash stable (SplitMix64) de\n(senderId, tick, séquence) — pas de dépendance au PRNG global (DETERMINISM.md §3).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.MessageReceived.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.MessageReceived.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication.MessageReceived",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Communication.MessageReceived.yml\" sourcestartlinenumber=\"1\">Réception d'un message (y compris interception — toute entité dans la portée reçoit).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.MessageSent.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.MessageSent.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication.MessageSent",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Communication.MessageSent.yml\" sourcestartlinenumber=\"1\">Activité de communication d'un tick — alimente l'observabilité\n(<code>message_sent</code> / <code>message_received</code>, API_CONTRACTS.md §2.2)\net les traces pour ECHOS (heatmap de communication, NetworkCentrality...).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.MessageType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.MessageType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication.MessageType",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Communication.MessageType.yml\" sourcestartlinenumber=\"1\">Les 7 types de messages (COMMUNICATION_PROTOCOL.md §2, Monographie §3.16) :\nInformation, Request, Response, Announcement, Warning, Trading, Acknowledgement.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Communication.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Communication.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Communication",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ActionCatalogSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ActionCatalogSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ActionCatalogSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ActionEntrySettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ActionEntrySettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ActionEntrySettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ActionSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ActionSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ActionSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.AgentSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.AgentSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.AgentSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.BeliefSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.BeliefSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.BeliefSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.BookSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.BookSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.BookSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.BookSettings.yml\" sourcestartlinenumber=\"1\">Livres (SYNE-121, décisions n°18/19, CONFIGURATION.md §6.11) : <code>world.books</code>.\nL'écriture d'un livre matérialise une connaissance à un instant T au <strong sourcefile=\"api/Simulation.Core.Configuration.BookSettings.yml\" sourcestartlinenumber=\"2\">coût</strong>\n(énergie) payé par l'auteur ; la lecture produit un <strong sourcefile=\"api/Simulation.Core.Configuration.BookSettings.yml\" sourcestartlinenumber=\"3\">bénéfice</strong> posé en\nprincipe (structure figée, décision n°19) — le bénéfice cognitif chiffré\ndépend du moteur de mémoire (décision n°11) et reste reporté (SYNE-131).\nChiffres V0.1 de premier jet, calibrés en SYNE-120 (DECISIONS_V01 n°18/19).\nDésactivé par défaut ⇒ trajectoire du scénario de référence inchangée.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.CliOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.CliOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.CliOptions",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.CliOptions.yml\" sourcestartlinenumber=\"1\">Options brutes issues des flags de ligne de commande (Annexe H §3), avant fusion.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.CommunicationSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.CommunicationSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.CommunicationSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ConfigLoader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ConfigLoader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ConfigLoader",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.ConfigLoader.yml\" sourcestartlinenumber=\"1\">Charge la configuration selon la priorité Annexe H §5 :</p>\n<ol sourcefile=\"api/Simulation.Core.Configuration.ConfigLoader.yml\" sourcestartlinenumber=\"2\">\n<li sourcefile=\"api/Simulation.Core.Configuration.ConfigLoader.yml\" sourcestartlinenumber=\"2\">défauts intégrés ; 2. fichier <code>--config</code> (surcouche) ; 3. flags CLI (overrides).\nUn fichier partiel ne surcharge que les sections/propriétés présentes.</li>\n</ol>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.DeliberationSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.DeliberationSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.DeliberationSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.GroupSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.GroupSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.GroupSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.GroupSettings.yml\" sourcestartlinenumber=\"1\">Formation émergente des groupes (SYNE-060/061, SYSTEM_SPEC.md §5, décisions\nn°23, 24) : cohésion = confiance réciproque × affinité (buts partagés +\ncroyances communes). Les structures émergent — aucun script de coalition.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.InheritanceSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.InheritanceSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.InheritanceSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.InheritanceSettings.yml\" sourcestartlinenumber=\"1\">Mécanismes fins d'héritage des traits (SYNE-063, décision n°16, DATA_MODEL.md\n§6.6.3) : la structure (fusion + transmission) est figée ; la réadaptation/\ndominance/mutation restent configurables (V0.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.InterruptionSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.InterruptionSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.InterruptionSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.LifeSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.LifeSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.LifeSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.LifeSettings.yml\" sourcestartlinenumber=\"1\">Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :\nune entité dont l'énergie atteint 0 (épuisement) meurt : retrait du monde\n(grille spatiale + index), des groupes et de la cognition, puis émission d'un\névénement <code>agent_died</code> (API_CONTRACTS.md §2.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.MemorySettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.MemorySettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.MemorySettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.NeedsSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.NeedsSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.NeedsSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.PathfindingSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.PathfindingSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.PathfindingSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.PathfindingSettings.yml\" sourcestartlinenumber=\"1\">Cheminement (SYNE-077, Monographie §6.2.12) : A* déterministe sur grille\nrasterisée (les disques obstacles bloquent leurs cellules), voisinage ordonné</p>\n<ul sourcefile=\"api/Simulation.Core.Configuration.PathfindingSettings.yml\" sourcestartlinenumber=\"3\">\n<li sourcefile=\"api/Simulation.Core.Configuration.PathfindingSettings.yml\" sourcestartlinenumber=\"3\">tie-break, cache de chemins LRU borné, repli « sur place » quand\naucun chemin n'existe (destination inaccessible ou expansion plafonnée).</li>\n</ul>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.PerceptionSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.PerceptionSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.PerceptionSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.PerformanceSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.PerformanceSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.PerformanceSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.RandomSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.RandomSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.RandomSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ReproductionSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ReproductionSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ReproductionSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.ReproductionSettings.yml\" sourcestartlinenumber=\"1\">Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17, 16,\nSYSTEM_SPEC.md §8, Monographie §6.6.2) : fusion rare et volontaire, décision\ndéterministe sans PRNG. La « fusion consentie » est soumise aux conditions de\nfidélité comportementale (proximité physique, ligne de vue, énergie suffisante,\nabsence de besoin critique) — SYNE-075.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ResourceSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ResourceSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ResourceSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.ResourceSpec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.ResourceSpec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.ResourceSpec",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SeasonChange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SeasonChange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SeasonChange",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SeasonChange.yml\" sourcestartlinenumber=\"1\">Changement de saison entre deux ticks (SYNE-072, événement <code>world.season_changed</code>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SeasonDefinition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SeasonDefinition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SeasonDefinition",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SeasonDefinition.yml\" sourcestartlinenumber=\"1\">Définition d'une saison du cycle (SYNE-072, <code>world.seasons.cycle[]</code>) :\nfacteurs de régénération par ressource appliqués en fin de tick quand le\ncycle est actif (<code>world.seasons.enabled</code>). Facteur 1.0 = taux nominal ;</p>\n<blockquote sourcefile=\"api/Simulation.Core.Configuration.SeasonDefinition.yml\" sourcestartlinenumber=\"4\">\n<p sourcefile=\"api/Simulation.Core.Configuration.SeasonDefinition.yml\" sourcestartlinenumber=\"4\">1 = saison favorable, &lt; 1 = saison défavorable. Pur (0 tirage PRNG,\nDETERMINISM.md §3) : la saison courante et son facteur sont des fonctions\ndéterministes du tick.</p>\n</blockquote>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SeasonFactors.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SeasonFactors.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SeasonFactors",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SeasonFactors.yml\" sourcestartlinenumber=\"1\">Facteurs de régénération des 4 ressources pour le cycle de saisons (SYNE-072).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SeasonSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SeasonSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SeasonSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SeasonSettings.yml\" sourcestartlinenumber=\"1\">Cycle de saisons (SYNE-072, <code>world.seasons</code>) : l'ancien drapeau booléen\nhomonyme (mort, jamais consommé aucun comportement) devient ce bloc actif —\n<code>enabled</code> remplit désormais ce rôle. Cycle déterministe de 4 saisons :\nsaison( tick ) = (indexInitial + tick / seasonLengthTicks) mod 4, sans aucun\ntirage PRNG (DETERMINISM.md §3) ; les facteurs de régénération sont appliqués\nen fin de tick sur le cycle des ressources (SYNE-070). Saisons désactivées par\ndéfaut ⇒ trajectoire du scénario de référence inchangée (re-pin contractuel).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SimulationOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SimulationOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SimulationOptions",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SimulationOptions.yml\" sourcestartlinenumber=\"1\">Options de simulation (Annexe H). Structure parallèle au fichier config.json :\nles propriétés absentes d'un fichier partiel conservent les défauts intégrés.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SimulationOptionsValidator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SimulationOptionsValidator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SimulationOptionsValidator",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SimulationOptionsValidator.yml\" sourcestartlinenumber=\"1\">Validation des plages à l'import (CONFIGURATION.md §6).\nUne configuration invalide stoppe avec un message d'erreur explicite.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SimulationProfiles.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SimulationProfiles.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SimulationProfiles",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.SimulationProfiles.yml\" sourcestartlinenumber=\"1\">Profils opérationnels explicites utilisés par les lanceurs de runs.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.SimulationSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.SimulationSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.SimulationSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.StaticObstacleSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.StaticObstacleSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.StaticObstacleSettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.StaticObstacleSettings.yml\" sourcestartlinenumber=\"1\">Pose d'un obstacle statique issu de la configuration <code>world.obstacleLayout</code>\n(SYNE-071, DATA_MODEL.md §2) : disque {Position, Radius}. Une construction posée\nmodifie la perception et le mouvement — modèle figé par la décision n°20.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.TerritorySettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.TerritorySettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.TerritorySettings",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.TerritorySettings.yml\" sourcestartlinenumber=\"1\">Zones de territoire (SYNE-073, décision n°21, CONFIGURATION.md §6.10) :\n<code>world.territories</code>. V0.1 : la présence d'une entité dans une zone délimite\nle <strong sourcefile=\"api/Simulation.Core.Configuration.TerritorySettings.yml\" sourcestartlinenumber=\"3\">territoire effectif</strong> (vue d'observation) — appartenance suivie en fin de\ntick (0 tirage PRNG, DETERMINISM.md §3) et émise en <code>world.territory_membership_changed</code>.\nDésactivé par défaut ⇒ trajectoire du scénario de référence inchangée (re-pin\ncontractuel). Les sources spatiales de ressources autour des points de survie\n(ressources du territoire) restent <strong sourcefile=\"api/Simulation.Core.Configuration.TerritorySettings.yml\" sourcestartlinenumber=\"7\">hors V0.1</strong> (SYSTEMS_SPEC.md §4).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.TerritoryZoneDefinition.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.TerritoryZoneDefinition.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.TerritoryZoneDefinition",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Configuration.TerritoryZoneDefinition.yml\" sourcestartlinenumber=\"1\">Définition d'une zone de territoire (SYNE-073, <code>world.territories.zones[]</code>,\ndécision n°21) : disque « point de survie » {Center, Radius}. La présence d'une\nentité dans le disque la délimite comme membre du territoire effectif —\nconcept d'observation V0.1 (aucun comportement agentique, 0 tirage PRNG).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.TrustSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.TrustSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.TrustSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.WorldSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.WorldSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration.WorldSettings",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Configuration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Configuration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Configuration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Entities.Entity.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Entities.Entity.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Entities.Entity",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Entities.Entity.yml\" sourcestartlinenumber=\"1\">Entité : identité, espèce, position, bornAt, traits (DATA_MODEL.md §3).\nLes invariants position/traits sont validés à la création (SYNE-004).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Entities.EntityFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Entities.EntityFactory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Entities.EntityFactory",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Entities.EntityFactory.yml\" sourcestartlinenumber=\"1\">Fabrique d'entités déterministe : mêmes (seed, template, nombre, monde) →\nmêmes entités (ids séquentiels, positions, traits tirés dans les plages du\nparamétrage). L'état du PRNG est restitué pour enchaîner les créations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Entities.EntityId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Entities.EntityId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Entities.EntityId",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Entities.EntityId.yml\" sourcestartlinenumber=\"1\">Identifiant d'entité (ulong séquentiel déterministe, DATA_MODEL.md §3.1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Entities.EntityTemplate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Entities.EntityTemplate.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Entities.EntityTemplate",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Entities.EntityTemplate.yml\" sourcestartlinenumber=\"1\">Paramétrage V0.1 (DATA_MODEL.md §3.2 « Entité A »/« Entité B ») : plages de\ntraits d'où les traits individuels sont hérités (tirage uniforme déterministe).\nDéfauts : bande 0.5–1.5 autour du neutre (initialisation Monographie §3.7.4).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Entities.TraitSet.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Entities.TraitSet.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Entities.TraitSet",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Entities.TraitSet.yml\" sourcestartlinenumber=\"1\">L'ensemble des 8 traits (DATA_MODEL.md §3.2 — plage [0, 2], neutre 1.0).\nType immuable : tous les invariants sont validés à la construction.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Entities.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Entities.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Entities",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Loop.SimulationLoop.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Loop.SimulationLoop.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Loop.SimulationLoop",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Loop.SimulationLoop.yml\" sourcestartlinenumber=\"1\">Boucle de simulation (SYNE-002, SIMULATION_LOOP.md §1).</p>\n<ul><li>1 tick = 1 minute simulée (défaut) — <xref href=\"Simulation.Core.Loop.SimulationTime\" data-throw-if-not-resolved=\"false\"></xref>.</li><li>Respect de <code>maxTicks</code> : la boucle s'arrête après le tick n° <code>maxTicks</code>.</li><li>L'état du PRNG avance d'un tirage par tick (flux ancré au tick index).</li><li>Depuis U1 : pipeline cognitif BDI (perception, mémoire, croyances, besoins,\n objectifs, utilité, intention, action) exécuté à chaque tick (SYNE-010).</li></ul>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Loop.SimulationTime.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Loop.SimulationTime.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Loop.SimulationTime",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Loop.SimulationTime.yml\" sourcestartlinenumber=\"1\">Correspondance tick ↔ temps simulé (1 tick = 1 minute, SIMULATION_LOOP.md §1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Loop.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Loop.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Loop",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Navigation.AStarPathfinder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Navigation.AStarPathfinder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Navigation.AStarPathfinder",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Navigation.AStarPathfinder.yml\" sourcestartlinenumber=\"1\">Cheminement déterministe (SYNE-077, Monographie §6.2.12) : A* sur une grille\nrasterisée du monde — les disques obstacles bloquent les cellules dont le\ncentre tombe dans le disque (marge demi-cellule). Voisinage carré 8-connexe\nparcouru dans un ordre fixe, fermeture par égalité à 1e-12, départage\ndéterministe par (f, puis g, puis (x, y)) — aucune consommation du PRNG.</p>\n<p sourcefile=\"api/Simulation.Core.Navigation.AStarPathfinder.yml\" sourcestartlinenumber=\"7\">Le repli est « sur place » : si aucun chemin n'existe (destination dans un\nobstacle ou inaccessible), ou si le plafond d'expansion\n<xref href=\"Simulation.Core.Configuration.PathfindingSettings.MaxExpansionCells\" data-throw-if-not-resolved=\"false\"></xref> est atteint, le chemin\nrenvoyé est vide (l'entité ne se déplace pas ce tick-ci).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Navigation.PathCache.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Navigation.PathCache.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Navigation.PathCache",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Navigation.PathCache.yml\" sourcestartlinenumber=\"1\">Cache LRU de chemins (SYNE-077, Monographie §6.2.12) : mémoïsation d'un\ncalcul A* par paire (cellule source, cellule but) afin d'éviter de re-planifier\nle même chemin à chaque tick de déplacement. Borné : la plus ancienne entrée\nest évincée au-delà de <xref href=\"Simulation.Core.Navigation.PathCache.Capacity\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n<p sourcefile=\"api/Simulation.Core.Navigation.PathCache.yml\" sourcestartlinenumber=\"6\">Déterminisme : l'ordre d'accès est l'ordre d'appel (lui-même déterministe) ;\nle remplacement et l'éviction ne consomment aucun tirage du PRNG global.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Navigation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Navigation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Navigation",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.AgentSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.AgentSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.AgentSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.AgentSnapshot.yml\" sourcestartlinenumber=\"1\">État d'une entité dans un <xref href=\"Simulation.Core.Observability.WorldSnapshot\" data-throw-if-not-resolved=\"false\"></xref> (API_CONTRACTS.md §2.1).\nV0.1 : identité, espèce, position, besoins, intention, et cognition observable\n(traits, croyances, objectifs, relations de confiance, volume mémoire) —\nnourrit les moteurs de métriques ECHOS (jalon U2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.BeliefObservation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.BeliefObservation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.BeliefObservation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.BeliefObservation.yml\" sourcestartlinenumber=\"1\">Observation d'une croyance (fait + confiance) — snapshot agent, API_CONTRACTS.md §2.1.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.BookSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.BookSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.BookSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.BookSnapshot.yml\" sourcestartlinenumber=\"1\">Livre au snapshot (SYNE-121, décisions n°18/19, Monographie §3.18) :\nidentifiant, auteur, titre, tick d'écriture (poinçonné par la boucle,\n<code>writtenTick</code>) et liste des lecteurs distincts (ordre de première\nconsultation, <code>readCount</code> = taille redondante mais explicite).\nÉmise quand <code>world.books.enabled</code> est actif (désactivé par défaut).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.EventSensor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.EventSensor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.EventSensor",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.EventSensor.yml\" sourcestartlinenumber=\"1\">Production d'événements discrets à partir de la cognition (SYNE-080).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.ExternalEvent.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.ExternalEvent.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.ExternalEvent",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.ExternalEvent.yml\" sourcestartlinenumber=\"1\">Événement discret typé (API_CONTRACTS.md §2.2 — ExternalEvent). V0.1 :\n<code>tick_summary</code> (1 par tick) et <code>decision_made</code> (1 par entité par tick).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.GoalObservation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.GoalObservation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.GoalObservation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.GoalObservation.yml\" sourcestartlinenumber=\"1\">Observation d'un objectif (type + âge en ticks) — snapshot agent.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.GroupSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.GroupSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.GroupSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.GroupSnapshot.yml\" sourcestartlinenumber=\"1\">Groupe émergent dans le snapshot (SYNE-060/061, API_CONTRACTS.md §2.1) :\nidentifiant, membres triés, leader et dernière décision collective.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.ObservabilityContract.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.ObservabilityContract.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.ObservabilityContract",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.ObservabilityContract.yml\" sourcestartlinenumber=\"1\">Contrat d'observabilité (SYNE-080, API_CONTRACTS.md §2) : messages JSON\ncamelCase sur WebSocket, versionnés. Chaque message est un objet avec un\nchamp <code>type</code> (&quot;snapshot&quot; ou &quot;event&quot;).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.ObservabilitySerializer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.ObservabilitySerializer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.ObservabilitySerializer",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.ObservabilitySerializer.yml\" sourcestartlinenumber=\"1\">Sérialisation déterministe camelCase des messages d'observabilité\n(API_CONTRACTS.md §2). Les objets <code>JsonObject</code> préservent leur ordre\nd'insertion → sortie stable et testable (checksum d'émission).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.ObstacleSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.ObstacleSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.ObstacleSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.ObstacleSnapshot.yml\" sourcestartlinenumber=\"1\">Obstacle statique (construction, SYNE-071, API_CONTRACTS.md §2.1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.ResourceSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.ResourceSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.ResourceSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.ResourceSnapshot.yml\" sourcestartlinenumber=\"1\">État d'une réserve globale dans le snapshot (SYNE-042, API_CONTRACTS.md §2.1).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.TerritorySnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.TerritorySnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.TerritorySnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.TerritorySnapshot.yml\" sourcestartlinenumber=\"1\">Zone de territoire au snapshot (SYNE-073, décision n°21, API_CONTRACTS.md §2.1) :\ndisque « point de survie » + members courants (identifiants croissants,\n<code>memberCount</code> = taille, redondante mais explicite à l'émission JSON).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.TrustObservation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.TrustObservation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.TrustObservation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.TrustObservation.yml\" sourcestartlinenumber=\"1\">Observation d'une relation de confiance (pair + niveau 0-1) — snapshot agent.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.WorldSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.WorldSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability.WorldSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Observability.WorldSnapshot.yml\" sourcestartlinenumber=\"1\">Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).\nReprésentation pure, sérialisée en camelCase par <xref href=\"Simulation.Core.Observability.ObservabilitySerializer\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Observability.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Observability.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Observability",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Perception.Observation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Perception.Observation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Perception.Observation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Perception.Observation.yml\" sourcestartlinenumber=\"1\">Observation (DATA_MODEL.md §4) : identité, type, position, confiance, tick,\nattributs (représentation canonique de type sérialisable).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Perception.PerceptionSystem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Perception.PerceptionSystem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Perception.PerceptionSystem",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Perception.PerceptionSystem.yml\" sourcestartlinenumber=\"1\">Perception partielle (SYNE-011) : chaque entité ne perçoit que dans son rayon\n(décision n°6, défaut 50), la ligne de vue peut être masquée par un obstacle\n(ADR-013), la confiance décroît avec la distance\n<code>1 − (distance/radius) × 0.3</code> clampée [0.7, 1.0] (DATA_MODEL.md §4), et\nla perception est étagée en groupes de rotation (COGNITIVE_ARCHITECTURE.md §3\n— groupe = <code>id % rotationInterval</code>, perçoit au tick <code>t ≡ groupe</code>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Perception.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Perception.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Perception",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Performance.ObjectPool-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Performance.ObjectPool-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Performance.ObjectPool<T>",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Performance.ObjectPool-1.yml\" sourcestartlinenumber=\"1\">Pool d'objets réutilisables (SYNE-092, PERFORMANCE.md §5) : réduit la charge\nGC des structures éphémères (listes de candidats de perception, scores…)\nsans changer le comportement — un objet rendu est vidé avant ré-emprunt, et\nl'ordre des éléments produits reste identique à une allocation « fraîche »\n(aucun PRNG, aucune influence sur la trajectoire — DETERMINISM.md §3).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Performance.TickBudgetCollector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Performance.TickBudgetCollector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Performance.TickBudgetCollector",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Performance.TickBudgetCollector.yml\" sourcestartlinenumber=\"1\">Collecteur de budgets de tick (SYNE-090, PERFORMANCE.md §3) : mesure le temps\npassé par sous-système (par phase) et le temps total de tick computationnel.\nOpt-in (toujours détachable — aucun coût structurel sur la trajectoire, aucun\ntirage de PRNG, déterminisme conservé : DETERMINISM.md §3). Le mode par défaut\nde la boucle ne collecte rien.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Performance.TickBudgetSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Performance.TickBudgetSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Performance.TickBudgetSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Performance.TickBudgetSnapshot.yml\" sourcestartlinenumber=\"1\">Photographie agrégée des budgets de tick (SYNE-090) : moyennes par phase en\nmillisecondes par tick, part de computation (Σ phases / tick total) et temps\nmoyen d'un tick computationnel. Immutable.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Performance.TickPhase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Performance.TickPhase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Performance.TickPhase",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Performance.TickPhase.yml\" sourcestartlinenumber=\"1\">Sous-systèmes mesurés par tick (PY (Monographie §7.4.3) — PERFORMANCE.md §3).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Performance.TickPhaseScope.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Performance.TickPhaseScope.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Performance.TickPhaseScope",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Performance.TickPhaseScope.yml\" sourcestartlinenumber=\"1\">Scope de mesure d'une phase : enregistre l'écoulement de la phase dans le\ncollecteur à la disposition. <xref href=\"Simulation.Core.Performance.TickPhaseScope.Noop\" data-throw-if-not-resolved=\"false\"></xref> est un scope inerte (collecteur\nnul) — aucune collecte, aucun coût de branchement sur le chemin nominal.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Performance.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Performance.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Performance",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.BeliefSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.BeliefSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.BeliefSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.BookSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.BookSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.BookSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.EntitySnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.EntitySnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.EntitySnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.GoalSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.GoalSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.GoalSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.GroupObjectiveSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.GroupObjectiveSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.GroupObjectiveSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.GroupSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.GroupSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.GroupSnapshotDto",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.GroupSnapshotDto.yml\" sourcestartlinenumber=\"1\">Groupe émergent actif au tick T (PERSISTENCE.md §3 table 7-8).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.MemoryEntrySnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.MemoryEntrySnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.MemoryEntrySnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.MemorySnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.MemorySnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.MemorySnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.MessageSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.MessageSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.MessageSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.MindSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.MindSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.MindSnapshotDto",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.MindSnapshotDto.yml\" sourcestartlinenumber=\"1\">État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.NeedsSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.NeedsSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.NeedsSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.ObstacleSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.ObstacleSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.ObstacleSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.RngStateDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.RngStateDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.RngStateDto",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.RngStateDto.yml\" sourcestartlinenumber=\"1\">État d'un PRNG xoshiro256** (4 × ulong, PERSISTENCE.md §4).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.SimulationSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.SimulationSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.SimulationSnapshot",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.SimulationSnapshot.yml\" sourcestartlinenumber=\"1\">Snapshot bit-à-bit de l'état de simulation à un instant T (SYNE-111,\nPERSISTENCE.md §4) : ne capture que les états <strong sourcefile=\"api/Simulation.Core.Persistence.SimulationSnapshot.yml\" sourcestartlinenumber=\"2\">mutables durables</strong> — le reste\n(grille spatiale, cache de chemins, buffers par-tick) est reconstruit\ndéterministiquement à la restauration.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.SimulationSnapshotCodec.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.SimulationSnapshotCodec.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.SimulationSnapshotCodec",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.SimulationSnapshotCodec.yml\" sourcestartlinenumber=\"1\">Codec bit-à-bit des snapshots de simulation (SYNE-111) : capture l'état\nmutable durable d'un <xref href=\"Simulation.Core.Loop.SimulationLoop\" data-throw-if-not-resolved=\"false\"></xref> à l'instant T et le\nrestaure sans tirage du PRNG. La sérialisation JSON est déterministe\n(System.Text.Json en indentation simple, ordre de propriétés stable).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.SimulationSnapshotRestorer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.SimulationSnapshotRestorer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.SimulationSnapshotRestorer",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.SimulationSnapshotRestorer.yml\" sourcestartlinenumber=\"1\">Restauration bit-à-bit (SYNE-111/112) : reconstruit un <xref href=\"Simulation.Core.Loop.SimulationLoop\" data-throw-if-not-resolved=\"false\"></xref>\ndepuis un <xref href=\"Simulation.Core.Persistence.SimulationSnapshot\" data-throw-if-not-resolved=\"false\"></xref> sans retirer de tirages au PRNG.\nLes états dérivés (grille spatiale, cache de chemins, buffers par-tick) sont\nreconstruits déterministiquement. La boucle reprend exactement au tick T.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.SqlitePersistenceStore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.SqlitePersistenceStore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.SqlitePersistenceStore",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.SqlitePersistenceStore.yml\" sourcestartlinenumber=\"1\">Store SQLite V2.0 (SYNE-110, PERSISTENCE.md §3 — Annexe G) : schéma relationnel\nde 11 tables, transactions atomiques (PERSISTENCE.md §5) et rotation de\n<code>maxBackups</code> runs. Le snapshot bit-à-bit complet (monde + cognition + RNG\n4×64) est conservé dans <code>tick_states.state</code>/<code>rng_state</code> pour la reprise\nexacte (PERSISTENCE.md §4). Les tables agents/ressources/groupes/événements/\nmessages/metrics restent le pendant relationnel requis par le schéma.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.TrustSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.TrustSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.TrustSnapshotDto",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.WorldSnapshotDto.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.WorldSnapshotDto.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence.WorldSnapshotDto",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Persistence.WorldSnapshotDto.yml\" sourcestartlinenumber=\"1\">État du monde au tick T : dimensions, obstacles, entités, réserves.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Persistence.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Persistence.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Persistence",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Population.BirthObservation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Population.BirthObservation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Population.BirthObservation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Population.BirthObservation.yml\" sourcestartlinenumber=\"1\">Événement de naissance par fusion consentie (SYNE-062, SYSTEM_SPEC.md §8).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Population.BirthSystem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Population.BirthSystem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Population.BirthSystem",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Population.BirthSystem.yml\" sourcestartlinenumber=\"1\">Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17/16,\nSYSTEM_SPEC.md §8, Monographie §6.6.2) : une fusion reste côté cycle de vie,\nl'entité née a un état cognitif vierge qui réinitialise la boucle de vie.</p>\n<p sourcefile=\"api/Simulation.Core.Population.BirthSystem.yml\" sourcestartlinenumber=\"5\">Exécuté <b>après</b> la boucle des entités et la communication de masse (ordre\ncausal strict, DETERMINISM.md §5) : la population ne mute jamais pendant\nl'itération.</p>\n<p sourcefile=\"api/Simulation.Core.Population.BirthSystem.yml\" sourcestartlinenumber=\"9\">V0.2 : mécanique déterministe sans PRNG —</p>\n<ol><li>une tentative de fusion au plus tous les <code>intervalTicks</code> (rareté,\n V0.1 → V0.2) ;</li><li>le consentement est la confiance <b>réciproque</b> (min des deux sens)\n ≥ <code>consentTrustThreshold</code> (§6.6.2) ;</li><li>la fidélité de la fusion (SYNE-075, Monographie §6.6.2) exige en plus :\n proximité physique (<code>mergeRange</code>), ligne de vue dégagée\n (<code>requireLineOfSight</code>), énergie suffisante des deux parents\n (<code>mergeMinimumEnergy</code>) et absence de besoin critique chez les deux\n parents (<code>requireNoCriticalNeed</code>) ;</li><li>première paire qualifiante dans l'ordre trié des identifiants (moindre\n id = mère, suivant = père) — aucun choix stochastique ;</li><li>l'enfant naît au point médian des parents (borné au monde), id = plus\n grand id existant + 1, traits fusionnés (dominance/mutation configurables,\n SYNE-063) et les parents sont conservés (couple non dissous).</li></ol>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Population.DeathObservation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Population.DeathObservation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Population.DeathObservation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Population.DeathObservation.yml\" sourcestartlinenumber=\"1\">Événement de mort par épuisement (SYNE-074, SYSTEM_SPEC.md §8).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Population.DeathSystem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Population.DeathSystem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Population.DeathSystem",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Population.DeathSystem.yml\" sourcestartlinenumber=\"1\">Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :\nune entité dont l'énergie atteint le seuil fatal (défaut 0 — épuisement) meurt :\nson corps est retiré du monde (grille spatiale + index) et les esprits sont\npurgés de la cognition et des groupes par l'appelant.</p>\n<p sourcefile=\"api/Simulation.Core.Population.DeathSystem.yml\" sourcestartlinenumber=\"6\">Exécuté <b>après</b> la boucle des entités, la communication de masse et\nnaissances (ordre causal strict, DETERMINISM.md §5) : la population ne mute\njamais pendant l'itération. Déterminisme : itération par ordre d'identifiant,\naucun tirage du PRNG.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Population.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Population.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Population",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Prng.SplitMix64.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Prng.SplitMix64.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Prng.SplitMix64",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Prng.SplitMix64.yml\" sourcestartlinenumber=\"1\">Mélangeur 64 bits SplitMix64 (faux-aléatoire déterministe) utilisé pour\ninitialiser l'état d'un <xref href=\"Simulation.Core.Prng.Xoshiro256StarStar\" data-throw-if-not-resolved=\"false\"></xref> à partir d'une graine.\nPurement déterministe : aucune dépendance à <xref href=\"System.Random\" data-throw-if-not-resolved=\"false\"></xref>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Prng.Xoshiro256StarStar.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Prng.Xoshiro256StarStar.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Prng.Xoshiro256StarStar",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Prng.Xoshiro256StarStar.yml\" sourcestartlinenumber=\"1\">Générateur pseudo-aléatoire déterministe xoshiro256** (Blackman &amp; Vigna).</p>\n<p>\nType valeur immuable : chaque tirage renvoie le résultat ET l'état suivant.\nPour une même graine et un même nombre de tirages, la séquence est identique\nbit-à-bit quelle que soit la plateforme — les trajectoires de simulation\nrestent reproductibles (cf. DETERMINISM.md, arrêt d'utilisation de System.Random).\n</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Prng.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Prng.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Prng",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Social.Group.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Social.Group.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Social.Group",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Social.Group.yml\" sourcestartlinenumber=\"1\">Groupe émergent (SYNE-060, SYSTEM_SPEC.md §5, décisions n°23/24) : ensemble\nd'entités liées par une cohésion (confiance réciproque × parts communes de\ncroyances / buts partagés). Les structures émergent — aucun script de\ncoalition. Modèle mutable, mis à jour par <xref href=\"Simulation.Core.Social.GroupSystem\" data-throw-if-not-resolved=\"false\"></xref> à chaque\nrévision.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Social.GroupDecision.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Social.GroupDecision.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Social.GroupDecision",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Social.GroupDecision.yml\" sourcestartlinenumber=\"1\">Événement discret de décision collective (SYNE-061, consensus pondéré par la confiance).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Social.GroupDissolution.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Social.GroupDissolution.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Social.GroupDissolution",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Social.GroupDissolution.yml\" sourcestartlinenumber=\"1\">Événement discret de dissolution d'un groupe (SYNE-060).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Social.GroupFormation.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Social.GroupFormation.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Social.GroupFormation",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Social.GroupFormation.yml\" sourcestartlinenumber=\"1\">Événement discret de formation d'un groupe (SYNE-060, API_CONTRACTS.md §2.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Social.GroupSystem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Social.GroupSystem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Social.GroupSystem",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.Social.GroupSystem.yml\" sourcestartlinenumber=\"1\">Système de groupes émergents (SYNE-060/061, SYSTEM_SPEC.md §5, décisions\nn°23/24). Il n'invente aucune coalition scriptée : les groupes naissent de la\n<strong sourcefile=\"api/Simulation.Core.Social.GroupSystem.yml\" sourcestartlinenumber=\"3\">cohésion</strong> constatée entre les entités —\n<code>confiance réciproque × affinité (croyances partagées + buts partagés)</code>.</p>\n<p sourcefile=\"api/Simulation.Core.Social.GroupSystem.yml\" sourcestartlinenumber=\"6\">Exécuté à fréquence <code>reviewIntervalTicks</code> (LOD déterministe), après le\npipeline cognitif et la communication de masse (ordre causal strict) :</p>\n<ol><li><b>Liens sociaux</b> : paires (entité, entité) en confiance réciproque\n ≥ <code>trustThreshold</code> partageant au moins une croyance ou un but — la\n « proximité sociale » (décision n°24) ;</li><li><b>Composantes connexes</b> du graphe = candidats groupes (union-find\n déterministe, racine = plus petit id) ; taille ≥ <code>minGroupSize</code> ;</li><li><b>Cycle de vie</b> : continuité par ensemble de membres identique\n (même id, durée cumulée) sinon formation / dissolution ;</li><li><b>Leader émergent</b> (SYNE-061) : membre de plus forte confiance\n entrante intra-groupe (départage par id minimal) ;</li><li><b>Décisions collectives</b> (SYNE-061) : adoption par quorum\n <code>consensusThreshold</code> sur l'intention dominante des membres.</li></ol>\n<p sourcefile=\"api/Simulation.Core.Social.GroupSystem.yml\" sourcestartlinenumber=\"17\">Déterminisme : aucun tirage du PRNG global ; toutes les itérations suivent\ndes ordres triés par identifiant (DETERMINISM.md §3).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.Social.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.Social.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.Social",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.Book.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.Book.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.Book",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.Book.yml\" sourcestartlinenumber=\"1\">Livre (SYNE-121, décisions n°18/19, Monographie §3.18, DATA_DATA.md §3.11) :\nune <strong sourcefile=\"api/Simulation.Core.World.Book.yml\" sourcestartlinenumber=\"2\">connaissance matérialisée à l'instant T</strong> — {id, auteur, titre,\ncontenu} figés à l'écriture, <code>writtenTick</code> poinçonné par la boucle\n(instant T exact). V0.1 : <strong sourcefile=\"api/Simulation.Core.World.Book.yml\" sourcestartlinenumber=\"4\">stockage observationnel</strong> — l'écriture coûte de\nl'énergie à l'auteur (payée, décision n°18 : coût = temps + énergie +\npénalité, structure figée), la lecture produit un <strong sourcefile=\"api/Simulation.Core.World.Book.yml\" sourcestartlinenumber=\"6\">bénéfice posé en\nprincipe</strong> (décision n°19 : cognition, confiance, savoir — le chiffrage\ndépend du moteur de mémoire, reporté) et trace les lecteurs distincts.\nDéterministe : écritures/lectures = API de la boucle (0 tirage PRNG),\nordre de trace des lecteurs = ordre de première consultation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.BookChange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.BookChange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.BookChange",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.BookChange.yml\" sourcestartlinenumber=\"1\">Mutation de livre tracée (SYNE-121, décisions n°18/19, Monographie §3.18) :\nun livre a été <strong sourcefile=\"api/Simulation.Core.World.BookChange.yml\" sourcestartlinenumber=\"2\">écrit</strong> (par un auteur qui en paie le coût) ou <strong sourcefile=\"api/Simulation.Core.World.BookChange.yml\" sourcestartlinenumber=\"2\">lu</strong> (par\nun lecteur qui en tire le bénéfice posé en principe). Consommée par\nl'émetteur d'observabilité — même protocole que les changements de saison,\nde territoire et de constructions (drain).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.BookChangeKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.BookChangeKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.BookChangeKind",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.BookChangeKind.yml\" sourcestartlinenumber=\"1\">Nature d'une mutation de livre (SYNE-121, API_CONTRACTS.md §2.2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.EnvironmentChange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.EnvironmentChange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.EnvironmentChange",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.EnvironmentChange.yml\" sourcestartlinenumber=\"1\">Modification d'environnement tracée (SYNE-071) : pose ou retrait d'une\nconstruction (= obstacle statique). Consommée par l'émetteur d'observabilité\n(événements <code>world.construction_placed</code> / <code>world.construction_removed</code>).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.EnvironmentChangeKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.EnvironmentChangeKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.EnvironmentChangeKind",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.EnvironmentChangeKind.yml\" sourcestartlinenumber=\"1\">Sens d'une modification d'environnement (SYNE-071).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.LineOfSight.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.LineOfSight.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.LineOfSight",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.LineOfSight.yml\" sourcestartlinenumber=\"1\">Ligne de vue (SYNE-011, ADR-013) : un segment entre deux positions du monde\nest occulté si un obstacle l'intersecte. Pure fonction déterministe ;\naucune approximation d'échantillonnage (calcul géométrique exact).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.Obstacle.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.Obstacle.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.Obstacle",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.Obstacle.yml\" sourcestartlinenumber=\"1\">Obstacle statique (DATA_MODEL.md §2) : disque {Position, Radius}.\nBloque le mouvement (collision simple) et, depuis U1, la ligne de vue\n(SYNE-011 « un obstacle masque la ligne de vue » ; ADR-013).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.Position.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.Position.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.Position",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.Position.yml\" sourcestartlinenumber=\"1\">Position continue 2D dans le monde. Monde non-toroidal : la position est\nclampée dans [[0, Width], [0, Height]] (DATA_MODEL.md §2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.ResourceKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.ResourceKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.ResourceKind",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.ResourceKind.yml\" sourcestartlinenumber=\"1\">Types de ressources du moteur (décision n°2.4, DATA_MODEL.md §8).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.ResourceStocks.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.ResourceStocks.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.ResourceStocks",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.ResourceStocks.yml\" sourcestartlinenumber=\"1\">Réserves globales de ressources (SYNE-042, décision n°4) : quantité courante\nde chaque ressource, initialisée depuis <code>resources.*</code> (CONFIGURATION.md §1),\ndécrémentée par les actions terminales Eat/Drink (« réserves mises à jour »).</p>\n<p sourcefile=\"api/Simulation.Core.World.ResourceStocks.yml\" sourcestartlinenumber=\"5\">Déterminisme : aucune consommation du PRNG ; les opérations de réserves sont\ndes soustractions et additions pures (DETERMINISM.md §3). V0.1 : réserves\nglobales partagées, les sources spatiales restent au jalon ph7 (SYNE-070).</p>\n<p sourcefile=\"api/Simulation.Core.World.ResourceStocks.yml\" sourcestartlinenumber=\"9\">Cycle de vie (SYNE-070) : appliqué par le moteur en fin de tick, après toute la\ncognition — les entités consomment pendant le tick, puis le monde régénère et/ou\nse dégrade. La régénération ajoute <code sourcefile=\"api/Simulation.Core.World.ResourceStocks.yml\" sourcestartlinenumber=\"11\">RegenerationRate</code> par tick ; la dégradation\nretire, à chaque période <code sourcefile=\"api/Simulation.Core.World.ResourceStocks.yml\" sourcestartlinenumber=\"12\">DegradationTick</code> (défaut inactif), la régénération\ncumulée de la période — les deux opérations restent pures (0 tirage PRNG).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.Season.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.Season.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.Season",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.Season.yml\" sourcestartlinenumber=\"1\">Saisons du cycle environnemental (SYNE-072, jalon U8) : quatre saisons\nen boucle déterministe. Le cycle est purement une fonction du tick\n(aucun PRNG, DETERMINISM.md §3) — la saison courante se déduit de\n<code>(indexInitial + tick / seasonLengthTicks) % 4</code>.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.Seasons.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.Seasons.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.Seasons",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.Seasons.yml\" sourcestartlinenumber=\"1\">Points d'accroche du type <xref href=\"Simulation.Core.World.Season\" data-throw-if-not-resolved=\"false\"></xref> : noms stables (clés JSON\ncamelCase) et conversion java — culture invariante, déterminisme d'émission.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.SpatialGrid.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.SpatialGrid.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.SpatialGrid",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.SpatialGrid.yml\" sourcestartlinenumber=\"1\">Grille spatiale uniforme (ADR — perceptualité O(quasi-linéaire), Monographie §3.5.4).\nCellules de taille configurable ; requêtes par rayon (centre ± r) en ordre\ndéterministe : cellules en parcours ligne-par-ligne, entités dans l'ordre d'insertion.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.Territory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.Territory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.Territory",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.Territory.yml\" sourcestartlinenumber=\"1\">Zone de territoire (SYNE-073, décision n°21, Monographie §6.5) : disque\n« point de survie » {Center, Radius} autour duquel la présence des entités\ndélimite le <strong sourcefile=\"api/Simulation.Core.World.Territory.yml\" sourcestartlinenumber=\"3\">territoire effectif</strong>. V0.1 : le territoire est un concept\nd'observation (aucun comportement agentique, aucune revendication) — la\nprésence d'une entité dans la zone la classe comme membre du territoire.\nPur (0 tirage PRNG, DETERMINISM.md §3) : l'appartenance est une fonction\npure des positions.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.TerritoryMembershipChange.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.TerritoryMembershipChange.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.TerritoryMembershipChange",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.TerritoryMembershipChange.yml\" sourcestartlinenumber=\"1\">Changement d'appartenance à une zone de territoire (SYNE-073) : une entité a\nfranchi le disque entre deux ticks. Consommée par l'émetteur d'observabilité\n(événement <code>world.territory_membership_changed</code>). Ordre d'émission\ndéterministe : par zone (ordre de pose), par entité (id croissant).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.TerritoryMembershipChangeKind.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.TerritoryMembershipChangeKind.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.TerritoryMembershipChangeKind",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.TerritoryMembershipChangeKind.yml\" sourcestartlinenumber=\"1\">Sens d'un changement d'appartenance à une zone de territoire (SYNE-073).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.World.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.World.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.World",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.World.yml\" sourcestartlinenumber=\"1\">Le monde : plan 2D continu non-toroidal, grille spatiale de perception,\nindex des entités. Positions dans [0, Width] x [0, Height] (DATA_MODEL.md §2).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.WorldSize.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.WorldSize.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World.WorldSize",
+      "Summary": "<p sourcefile=\"api/Simulation.Core.World.WorldSize.yml\" sourcestartlinenumber=\"1\">Dimensions du monde (défaut 500×500, Annexe H). Strictement positives.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Simulation.Core.World.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Simulation.Core.World.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Simulation.Core.World",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/API_REST.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/API_REST.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/ARCHITECTURE.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/ARCHITECTURE.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/FRONTEND_VISION.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/FRONTEND_VISION.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/METRICS_SPEC.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/METRICS_SPEC.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/README.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/README.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/ROADMAP.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/ROADMAP.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/TESTING.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/TESTING.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/UI_DESIGN.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/UI_DESIGN.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/echos/VISION.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/echos/VISION.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/prism/ARCHITECTURE.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/prism/ARCHITECTURE.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/prism/ASSETS_CONVENTIONS.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/prism/ASSETS_CONVENTIONS.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/prism/README.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/prism/README.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/prism/RENDERING_SPEC.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/prism/RENDERING_SPEC.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/prism/SCENE_SPEC.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/prism/SCENE_SPEC.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/prism/TRANSPORT_API.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/prism/TRANSPORT_API.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/API_CONTRACTS.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/API_CONTRACTS.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/ARCHITECTURE.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/ARCHITECTURE.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/CONFIGURATION.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/CONFIGURATION.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/DETERMINISM.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/DETERMINISM.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/README.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/README.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/SYSTEMS_SPEC.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/SYSTEMS_SPEC.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/TESTING.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/TESTING.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/syne/VISION.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/syne/VISION.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/ARCHITECTURE.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/ARCHITECTURE.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/CHANGELOG.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/CHANGELOG.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/CODE_OF_CONDUCT.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/CODE_OF_CONDUCT.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/CONTRIBUTING.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/CONTRIBUTING.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/FAQ.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/FAQ.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/GLOSSARY.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/GLOSSARY.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/INSTALLATION.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/INSTALLATION.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "articles/transverse/LICENSE",
+      "output": {
+        "resource": {
+          "relative_path": "articles/transverse/LICENSE"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/README.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/README.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/ROADMAP.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/ROADMAP.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/SECURITY.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/SECURITY.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/VERSIONING.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/VERSIONING.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/transverse/VISION.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/transverse/VISION.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
