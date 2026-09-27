@@ -46,4 +46,17 @@ runs/
 *.parquet
 
 # Logs
-*.logdocs/pages-dist/
+*.log
+docs/pages-dist/
+
+# Unreal Engine (PRISM-LDK host project)
+prism/**/Binaries/
+prism/**/DerivedDataCache/
+prism/**/Intermediate/
+prism/**/Saved/
+prism/**/Replays/
+prism/**/StagedBuilds/
+prism/LDK/.vs/
+prism/LDK/Plugins/VisualStudioTools/
+prism/LDK/*.sln
+prism/LDK/*.slnx
