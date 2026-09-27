@@ -2,9 +2,12 @@ name: CI
 
 on:
   pull_request:
-    branches: [develop]
+    # main est inclus pour que la protection « CI verte » soit applicable :
+    # sans ce déclencheur, une PR de release ou de hotfix n'exécuterait
+    # aucun check et resterait bloquée indéfiniment sur un status attendu.
+    branches: [develop, main]
   push:
-    branches: [develop]
+    branches: [develop, main]
 
 env:
   DOTNET_VERSION: "10.0.x"
