@@ -1,0 +1,57 @@
+{
+  "seed": 42,
+  "agents": 50,
+  "maxTicks": 400,
+  "ticksPerSecond": 10,
+  "world": {
+    "width": 500,
+    "height": 500,
+    "cellSize": 10,
+    "obstacles": true,
+    "obstacleLayout": [
+      { "id": "rock-1", "x": 250, "y": 250, "radius": 8 },
+      { "id": "ridge-1", "type": "shape", "shape": "line3Vertical", "x": 120, "y": 300 },
+      { "id": "boulder-cluster-1", "type": "shape", "shape": "cross", "x": 380, "y": 150 }
+    ],
+    "proceduralObstacles": {
+      "enabled": true,
+      "count": 15,
+      "shapes": ["single", "duo", "line3", "cross", "block2x2", "lShape"],
+      "minRadius": 4,
+      "maxRadius": 10
+    },
+    "terrain": {
+      "seaEdge": "south",
+      "seaDepthRatio": 0.12,
+      "riverCount": 2,
+      "riverWidth": 1
+    }
+  },
+  "agentSimulation": {
+    "needs": {
+      "hungerRate": 0.5,
+      "thirstRate": 0.7,
+      "fatigueRate": 0.3,
+      "hungerTriggerThreshold": 50,
+      "thirstTriggerThreshold": 50,
+      "fatigueTriggerThreshold": 70
+    },
+    "perceptionRadius": 50,
+    "deliberationIntervalTicks": 10,
+    "moveEnergyCost": 0.5
+  },
+  "resources": {
+    "food": 10000,
+    "water": 10000,
+    "wood": 50,
+    "mineral": 0,
+    "regeneration": { "food": 5, "water": 5, "wood": 0.1, "mineral": 0 }
+  },
+  "communication": { "enabled": true, "transmissionRange": 55, "maxSendsPerTick": 5, "maxReceivesPerTick": 3, "maxHops": 2 },
+  "groups": { "enabled": true, "lodInterval": 10 },
+  "territories": { "enabled": true, "zones": [{ "id": "camp", "x": 250, "y": 250, "radius": 40 }] },
+  "books": { "enabled": true },
+  "controlPort": 5181,
+  "dataPort": 5180,
+  "replay": { "file": null, "loop": false }
+}
