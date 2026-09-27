@@ -20,7 +20,7 @@ La road map LIVEX est exprimée **en ordre, sans dates** : les phases s'enchaîn
 | **1** | Cadrage général | Vision, architecture, contrats, glossaire | Documents racine (`ARCHITECTURE.md`, `COMMUNICATION.md`, ...) |
 | **2** | Moteur (SYNE) | Cœur du monde simulé | `docs/docs-syne/*` |
 | **3** | Observation (ECHOS) | Analyse et pilotage | `docs/docs-echos/*` |
-| **4** | Représentation (PRISM) | Rendu et interaction | `docs/docs-prism/*` |
+| **4** | Intégration Unreal (PRISM) | Projet Unreal PRISM, intégrant le plugin PRISM-LDK (`PrismLdk`) | `docs/docs-prism/*` |
 | **5** | Consolidation | Cohérence des contrats, FAQ, contribution | Relecture croisée, `FAQ.md`, `CONTRIBUTING.md`, checklist finale |
 
 ## 3. Alignement sur la feuille de route V2 (Annexe J)
@@ -56,7 +56,7 @@ La Monographie fournit une feuille de route V2 en 24 semaines (13 phases). Elle 
 ## 5. Long terme (vision)
 
 Pistes futures (Monographie §5.15, Partie 9) :
-- PRISM sur moteur graphique définitif (Unreal/Unity/autre).
+- Finaliser l'intégration du plugin PRISM-LDK dans le projet Unreal PRISM et valider le projet contre SYNE réel.
 - Mode joueur-habitant (incarner une entité).
 - Représentation des constructions/territoires, saisons, météo.
 - Intégration ECHOS dans la scène.
@@ -81,9 +81,10 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 | **U7** — Performance & comparaison | ph9–10 (`SYNE-090…102`) | ph7 (`ECHOS-070…072`) | **Implémentation avancée — validation produit partielle** — budgets et benchmarks du moteur présents ; ECHOS `/api/compare`, reproductibilité et exports présents. La cadence contrôlée, le backpressure, le lag et le parcours UI ne sont pas encore des preuves de release. | Budgets tick ; comparaison de runs (seed 12345) ; T4 benchmarks ; mesure pipeline à ajouter |
 | **U8** — Tests & persistance (V0.1 → V1) | ph7 (`SYNE-070…073`) + ph11 (`SYNE-110…113`) + `SYNE-120…122` + `SYNE-130…131` | ph8 (`ECHOS-080…085`) + ph9 (`ECHOS-090…092`) | **Implémentation avancée — non accepté comme jalon transverse** — persistance, contrôle :5181 et intégration réelle multi-ticks présents ; la stabilité long-run, la reprise worker et le parcours UI complet restent à prouver. | Persistance bit-à-bit, contrôle, intégration SYNE→ECHOS, métriques REST ; test long-run et preuve de fraîcheur à ajouter |
 
-### Condition PRISM
+### Intégration PRISM
 
-- PRISM (feuille de route PRISM, `docs/docs-prism/ROADMAP.md`) démarre après l'achèvement de **U0 → U8**. ECHOS-091 vérifie le flux réel SYNE→ECHOS et le contrat REST de sortie ; il ne prétend pas tester un runtime PRISM avant la phase de représentation.
+- PRISM est le projet Unreal final de LIVEX et intègre le plugin PRISM-LDK (`PrismLdk`). Le `LDK.uproject` présent dans le dépôt sert d'hôte technique de build/test du plugin, pas de projet produit indépendant. ECHOS-091 vérifie uniquement SYNE→ECHOS ; la validation PRISM doit couvrir le plugin et le projet Unreal PRISM contre le vrai SYNE.
+- Le mock Node.js (`syne-mock/`) facilite le développement client, mais ne remplace ni la validation contre SYNE ni les critères scientifiques du moteur.
 
 ---
 
