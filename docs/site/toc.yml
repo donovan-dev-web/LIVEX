@@ -72,6 +72,8 @@
       href: articles/prism/SCENE_SPEC.md
     - name: API de transport
       href: articles/prism/TRANSPORT_API.md
+    - name: Intégration Unreal (PRISM-LDK)
+      href: articles/prism/PRISM_UNREAL_IMPLEMENTATION.md
 - name: API · Simulation.Core
   tocHref: api/toc.yml
   href: api/toc.html

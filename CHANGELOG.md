@@ -9,19 +9,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
-### Changed
-- Dossier de documentation PRISM réécrit pour le projet Unreal final et son plugin PRISM-LDK : `world_initialized`, snapshot global par tick, deltas/événements et cycle de contrôle `prepare`/`ready`/`start`/`pause`/`resume`/`stop`/`reset` deviennent la référence du composant ; les instructions d'implémentation Godot sont remplacées par le périmètre réel du plugin, et les spécifications visuelles sont recadrées en objectifs de présentation (elles ne décrivent pas des fonctions déjà livrées).
-- Décision d'architecture actée : **PRISM est le projet Unreal final de LIVEX** et intègre le plugin Unreal **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). L'ADR-002 formality ce choix et supersède l'ADR-001 (prototype Godot), désormais conservée comme décision historique. SYNE reste le seul moteur décisionnel et l'autorité de l'état simulé ; `prism/LDK/LDK.uproject` est un hôte technique de développement/build du plugin, pas un second produit.
-- ADR-003 (API HTTP) et ADR-004 (WebSocket temps réel) précisent désormais que la liste des routes et des formats qu'elles portaient est celle de la proposition d'origine de la Monographie, et renvoient vers `docs/docs-syne/API_CONTRACTS.md` et `COMMUNICATION.md` pour le contrat courant (diffusion multi-consommateur, cycle `prepare/ready/start/pause/resume/stop/reset`).
-
-### Changed
-- Documentation transverse réalignée sur PRISM, projet Unreal final de LIVEX : `README.md`, `ARCHITECTURE.md` (§2.4 `syne-mock`, §6 arborescence), `VISION.md`, `ROADMAP.md`, `FAQ.md`, `INSTALLATION.md`, `COMMUNICATION.md`, `SECURITY.md`, `CI_CD.md`, `CONTRIBUTING.md` et la Monographie. Les références à Godot et à `godot-renderer/` ne décrivent plus l'implémentation actuelle ; `ARCHITECTURE.md` devient la source de vérité pour les responsabilités, le plugin PRISM, LDK et les projets Unreal.
-- Portée de `syne-mock` cadrée explicitement comme **outil de développement des contrats Unreal, pas un moteur de simulation** : `README.md`, `ARCHITECTURE.md` §2.4, `CONTRIBUTING.md` §4 (checklist `npm test --prefix syne-mock`), `CI_CD.md` §2 et §5, `docs/ETHICS_AND_SCOPE.md` §4.1 et `docs/docs-prism/`. Ses résultats ne doivent pas être présentés comme ceux de SYNE.
-- `docs/docs-echos/{ISSUES,ROADMAP,TESTING}.md` : la validation `ECHOS-091` ne couvre plus « le runtime PRISM qui commence après U8 » mais est explicitement restreinte à SYNE→ECHOS. La validation du plugin PRISM-LDK et du projet Unreal PRISM relève d'un chantier distinct.
-- `docs/docs_prototype/README.md` porte désormais un bandeau d'archive pointant vers `docs-prism/` et `docs/README.md` : les références à Godot qu'il contient sont historiques.
-- `docs/site/index.md` : la carte PRISM annonce « Visualisation Unreal (plugin PRISM PrismLdk) » au lieu de « Visualisation (Godot) ».
-- `CONTRIBUTING.md` : ajout de la validation de compilation du plugin PRISM-LDK dans l'hôte Unreal de développement **et** dans le projet PRISM final.
-
 ### Added
 - Portail documentaire `docs/README.md` : sépare les documents de référence courants des archives (prototype, Monographie), et pose la hiérarchie des sources de vérité — en cas de divergence, la documentation détaillée et l'implémentation testée du composant priment.
 - **Jalon U8 — Constructions = obstacles statiques (SYNE-071)** :
@@ -48,8 +35,24 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - routes `POST /api/control/start {seed?, config?}` / `pause` / `resume` / `reset {seed?, runId?}` + `GET /status` (contrat API_CONTRACTS §3) — réponses `{ok, action, runId, state, tick, aliveCount, seed}` ;
   - **non-intrusif** (SYNE-081/DETERMINISM §3) : 0 tirage PRNG ajouté ⇒ run piloté == run ininterrompu, vérifié bit-à-bit ; finalise l'interop ECHOS-085 (testé contre le vrai `ControlClient` ECHOS) ;
   - 6 `ControlServerWireTests` (320 Core + **15 Console = 335 tests** au total).
+- Job CI **`Tests (SYNE-MOCK Node)`** (`ci.yml`) : `syne-mock/` rejoint la détection de composants modifiés (sortie `syne_mock`) et la suite `npm test` s'exécute sur le runner à chaque PR touchant le composant, avec `timeout-minutes: 5` en garde-fou contre une régression de type fuite de descripteurs. `CI_CD.md` §2 annonçait déjà ce job.
+- `docs/site/sync-docs.sh` publie `PRISM_UNREAL_IMPLEMENTATION.md` dans `articles/prism/`, et `docs/site/toc.yml` l'expose sous « Intégration Unreal (PRISM-LDK) ». Le guide d'intégration Blueprint du plugin n'était pas accessible sur le site DocFX alors qu'il est référencé par `ARCHITECTURE.md`.
+
+### Changed
+- `docs-pages.yml` se déclenche aussi sur `prism/**` : une modification du plugin ou du projet Unreal ne peut plus laisser le site sans rebuild, alors que la documentation contractuelle est écrite contre ce code.
+- Dossier de documentation PRISM réécrit pour le projet Unreal final et son plugin PRISM-LDK : `world_initialized`, snapshot global par tick, deltas/événements et cycle de contrôle `prepare`/`ready`/`start`/`pause`/`resume`/`stop`/`reset` deviennent la référence du composant ; les instructions d'implémentation Godot sont remplacées par le périmètre réel du plugin, et les spécifications visuelles sont recadrées en objectifs de présentation (elles ne décrivent pas des fonctions déjà livrées).
+- Décision d'architecture actée : **PRISM est le projet Unreal final de LIVEX** et intègre le plugin Unreal **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). L'ADR-002 formalise ce choix et supersède l'ADR-001 (prototype Godot), désormais conservée comme décision historique. SYNE reste le seul moteur décisionnel et l'autorité de l'état simulé ; `prism/LDK/LDK.uproject` est un hôte technique de développement/build du plugin, pas un second produit.
+- ADR-003 (API HTTP) et ADR-004 (WebSocket temps réel) précisent désormais que la liste des routes et des formats qu'elles portaient est celle de la proposition d'origine de la Monographie, et renvoient vers `docs/docs-syne/API_CONTRACTS.md` et `COMMUNICATION.md` pour le contrat courant (diffusion multi-consommateur, cycle `prepare/ready/start/pause/resume/stop/reset`).
+
+- Documentation transverse réalignée sur PRISM, projet Unreal final de LIVEX : `README.md`, `ARCHITECTURE.md` (§2.4 `syne-mock`, §6 arborescence), `VISION.md`, `ROADMAP.md`, `FAQ.md`, `INSTALLATION.md`, `COMMUNICATION.md`, `SECURITY.md`, `CI_CD.md`, `CONTRIBUTING.md` et la Monographie. Les références à Godot et à `godot-renderer/` ne décrivent plus l'implémentation actuelle ; `ARCHITECTURE.md` devient la source de vérité pour les responsabilités, le plugin PRISM, LDK et les projets Unreal.
+- Portée de `syne-mock` cadrée explicitement comme **outil de développement des contrats Unreal, pas un moteur de simulation** : `README.md`, `ARCHITECTURE.md` §2.4, `CONTRIBUTING.md` §4 (checklist `npm test --prefix syne-mock`), `CI_CD.md` §2 et §5, `docs/ETHICS_AND_SCOPE.md` §4.1 et `docs/docs-prism/`. Ses résultats ne doivent pas être présentés comme ceux de SYNE.
+- `docs/docs-echos/{ISSUES,ROADMAP,TESTING}.md` : la validation `ECHOS-091` ne couvre plus « le runtime PRISM qui commence après U8 » mais est explicitement restreinte à SYNE→ECHOS. La validation du plugin PRISM-LDK et du projet Unreal PRISM relève d'un chantier distinct.
+- `docs/docs_prototype/README.md` porte désormais un bandeau d'archive pointant vers `docs-prism/` et `docs/README.md` : les références à Godot qu'il contient sont historiques.
+- `docs/site/index.md` : la carte PRISM annonce « Visualisation Unreal (plugin PRISM PrismLdk) » au lieu de « Visualisation (Godot) ».
+- `CONTRIBUTING.md` : ajout de la validation de compilation du plugin PRISM-LDK dans l'hôte Unreal de développement **et** dans le projet PRISM final.
 
 ### Fixed
+- `CHANGELOG.md` : la section `## [Unreleased]` cumulait des sous-sections dupliquées (`### Changed` ×3, `### Added` ×2) et une ligne blanche parasite coupant une liste en deux, ce qui cassait le rendu de la section et la comparaison d'un release. Sections regroupées et ordonnées `Added` → `Changed` → `Fixed` → `Deprecated`, avec correction de la coquille « L'ADR-002 *formality* ce choix » → « *formalise* ce choix ».
 - Cadrage Jalon U8 (PR cadrage docs) : planche U8 du `ROADMAP` racine recalée sur le backlog réel — plage ECHOS `080…093` fictive remplacée par `080…085` (ph8, livrés U7) + `090…092` (ph9) ;
 - Ajout de la carte manquante **SYNE-113** (serveur de contrôle HTTP :5181, cible réelle du relais `controlClient` ECHOS — absente du backlog) ;
 - `SYNE-110` précisée : hooks `autoSaveEveryNTicks` (défaut 1000) / `maxBackups` (défaut 5) à brancher sur la boucle (aucun consommateur à ce jour) ;
@@ -59,7 +62,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - `syne-mock` : les assertions d'obstacles attendaient un objet `{id, x, y, radius}` alors que `WorldDescription` publie aussi `type`. Les attentes sont alignées sur le contrat réel.
 - `syne-mock` : les agents initiaux pouvaient apparaître sur une case non franchissable. `createInitialAgents` ne testait que les obstacles et ignorait le relief, donc un agent pouvait se poser sur une cellule `sea` (`walkable: false`) ; il contrôlait aussi la position non arrondie alors que le monde publie la position arrondie. Le placement s'appuie désormais sur `cells[].walkable`, l'indicateur que `WorldDescription` expose lui-même, ce qui traite obstacles et mer par la même règle que celle publiée et supprime la divergence entre le test de placement (`isPositionBlocked`, point contre cercle) et la grille (`isCellBlocked`, centre de case). Sur 300 graines × 5 densités × 2 configurations d'obstacles (324 600 positions), 3 452 agents sur case non franchissable avant, 0 après ; la génération reste déterministe pour une graine donnée. Test de non-régression ajouté sur 5 graines.
 
-### Added
 - Documentation technique V0.1 complète du monorepo (phases 0 à 5 du Plan documentation) :
   - générique racine : `VISION`, `ARCHITECTURE`, `COMMUNICATION`, `GLOSSARY`, `ROADMAP`, `FAQ`, `README` ;
   - gouvernance : `GITFLOW`, `CI_CD`, `VERSIONING`, `LICENSE`, `CONTRIBUTING`, `CODE_OF_CONDUCT`, `SECURITY` ;
@@ -76,7 +78,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **ECHOS-1** : structure code ECHOS livrée — paquet `echos` (API FastAPI `create_app()`, registre des **7 moteurs de métriques**, placeholder ingestion), `echos-ui` (Vite + React + TS : lint, build, tests vitest/jsdom), 13 tests pytest couverture 100 %, jobs CI `echos-python` + `echos-ui` actifs ;
   - **ECHOS-2** : contrats d'ingestion SYNE livrés — modèles pydantic `WorldSnapshot`/`ExternalEvent` (JSON camelCase), clients `WsClient` :5180 + `ControlClient` :5181 testés de façon déterministe sur **golden files versionnés** (41 tests pytest, couverture 97 %).
 
-### Changed
 - Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → **FastAPI + web local React/Vite servie par FastAPI pour V0.1**, SQLite/Parquet) ; le **shell Electron est conservé** (implémentation différée à un horizon ultérieur, correction 23/09/2026).
 - **Correction Electron (23/09/2026)** : reformulation « PAS de shell Electron » → « shell Electron **conservé**, implémentation **différée post-V0.1** » dans ADR-001 ECHOS, `ARCHITECTURE.md` (ECHOS + racine), `FRONTEND_VISION.md`, `README.md`, `ROADMAP.md`, `ISSUES.md`, `CHANGELOG.md` (ECHOS), `TRANSPORT_API.md` (PRISM). Monographie non modifiée (snapshot figé).
 - README et INSTALLATION reflètent l'état du socle U0 ; **conteneurisation Docker reportée** au-delà du Jalon U0.

@@ -25,6 +25,7 @@ jobs:
     outputs:
       syne: ${{ steps.diff.outputs.syne }}
       echos: ${{ steps.diff.outputs.echos }}
+      syne_mock: ${{ steps.diff.outputs.syne_mock }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,10 +34,10 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$BASE" ]; then BASE="develop"; fi
-          mkdir -p /tmp/diy
-          for comp in syne echos; do
+          for comp in syne echos syne-mock; do
             count=$(git diff --name-only "$BASE...HEAD" -- "$comp/" 2>/dev/null | wc -l | tr -d ' ')
-            if [ "$count" -gt 0 ]; then echo "$comp=true" >> "$GITHUB_OUTPUT"; else echo "$comp=false" >> "$GITHUB_OUTPUT"; fi
+            key=$(echo "$comp" | tr '-' '_')
+            if [ "$count" -gt 0 ]; then echo "$key=true" >> "$GITHUB_OUTPUT"; else echo "$key=false" >> "$GITHUB_OUTPUT"; fi
           done
           echo "base=$BASE" >> "$GITHUB_OUTPUT"
 
@@ -146,7 +147,33 @@ jobs:
         run: python -m pytest echos/tests/test_syne_echos_integration.py -q --no-cov
 
   # ---------------------------------------------------------------------
-  # ECHOS — UI (React + TypeScript)
+  # SYNE-MOCK - contrat de developpement des mocks Unreal (Node)
+  # ---------------------------------------------------------------------
+  syne-mock-node:
+    name: Tests (SYNE-MOCK Node)
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.syne_mock == 'true'
+    runs-on: ubuntu-latest
+    # Garde-fou : la suite doit rester un test unitaire court. Un run qui traine
+    # signale une fuite de descripteurs, pas un test lent.
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: syne-mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: syne-mock/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Tests
+        run: npm test
+
+  # ---------------------------------------------------------------------
+  # ECHOS - UI (React + TypeScript)
   # ---------------------------------------------------------------------
   echos-ui:
     name: Lint & tests (ECHOS UI)
