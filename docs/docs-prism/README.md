@@ -1,49 +1,63 @@
 # PRISM — Perceptual Rendering & Interactive Simulation Module
 
-[![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
-[![Moteur: Godot 4.7.2](https://img.shields.io/badge/Moteur-Godot%204.7.2-1f7f6f.svg)](ARCHITECTURE.md)
-[![100% procédural](https://img.shields.io/badge/Assets-100%25%20proc%C3%A9dural-1f7f6f.svg)](ASSETS_CONVENTIONS.md)
-
 **Composant** : PRISM
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : la documentation transversale (../)
-**Source Monographie** : Partie 5
+**Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
+**Dernière mise à jour** : 27 septembre 2026
 
 ---
 
-## Rôle
+## Rôle et intégration
 
-Couche qui rend le monde **perceptible et interactif** : il représente graphiquement l'état fourni par SYNE et fournit navigation, caméra, inspection et interaction. **Reflet du monde simulé, jamais co-auteur.**
+**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
+complet. **PRISM** en est le projet Unreal final pour la représentation et
+l'interaction visuelle. PRISM intègre **PRISM-LDK** (*LIVEX Development Kit*),
+le plugin Unreal situé actuellement dans `prism/LDK/Plugins/PrismLdk/`
+(nom de module Unreal : `PrismLdk`). Il expose les types, fonctions et
+événements Blueprint pour se connecter à SYNE et consommer ses contrats.
+LIVEX n'est pas un projet séparé qui viendrait après PRISM.
 
-## Lancement seul
+Dans ce checkout, `prism/LDK/LDK.uproject` est un hôte Unreal technique fourni
+pour compiler et tester PRISM-LDK. Le nom du fichier et du dossier ne désigne
+pas le projet complet LIVEX ni un second projet produit.
 
-```console
-# Projet Godot (édition .NET), matériel C#
-godot --path godot-renderer  # dossier PRISM (monorepo : prism/)
-# Le partenaire SYNE se lance en --headless
-dotnet run --project simulation-core/Simulation.Console -- --headless  # (syne/)
-```
+**SYNE reste l'unique moteur décisionnel et l'autorité de l'état simulé.**
+PrismLdk est un adaptateur d'intégration : il ne décide pas du comportement des
+entités et ne doit pas devenir un moteur de simulation parallèle. Le code C++
+du plugin reste mince et se limite aux contrats, au transport, à leur
+conversion en types Blueprint et à la diffusion d'événements/résultats.
 
-## Dépendances et ports
+## Flux en bref
 
-- **Godot 4.7.2 édition .NET** (C#), [HÉRITÉ] — moteur définitif ouvert.
-- Se connecte à **SYNE** : WebSocket :5180 (données), HTTP :5181 (contrôle relayé).
-- Interface d'analyse **intégrée à ECHOS** :5000.
+- WebSocket `ws://127.0.0.1:5180/` : réception de `world_initialized`, du
+  snapshot global de chaque tick, de `world_delta` et des événements.
+- HTTP `http://127.0.0.1:5181` : commandes de préparation, confirmation,
+  démarrage, pause, reprise, arrêt, réinitialisation et lecture du statut.
+- Les snapshots sont la source de vérité de l'état dynamique ; les événements
+  servent aux notifications et effets ponctuels. Éviter de traiter deux fois
+  une mutation présente dans les deux flux.
 
-## Documentation du composant
+Voir [TRANSPORT_API.md](TRANSPORT_API.md) pour les contrats et
+[PRISM_UNREAL_IMPLEMENTATION.md](PRISM_UNREAL_IMPLEMENTATION.md) pour le guide
+d'intégration Blueprint et les conventions de projection du monde.
+
+## Documents
 
 | Document | Rôle |
 | :-- | :-- |
-| `VISION.md` | Rôle, frontières, principe invariant |
-| `ARCHITECTURE.md` | Choix Godot, scènes, mapping, transport |
-| `SCENE_SPEC.md` | Structure des scènes, meshes |
-| `TRANSPORT_API.md` | WebSocket (données) + HTTP (contrôle) |
-| `RENDERING_SPEC.md` | Rendu des entités et ressources, code couleur |
-| `VISUALIZATION_SPEC.md` | Croyances, social, groupes, communication |
-| `UX_INTERACTION.md` | Caméra, HUD, interface d'analyse |
-| `ASSETS_CONVENTIONS.md` | Primitives procédurales, nommage |
-| `TESTING.md` | Tests unitaires, intégration transport, visuels |
-| `ROADMAP.md` | Roadmap PRISM, évolution future |
-| `CHANGELOG.md` | Versions |
-| `adr/` | ADR locaux + références transverses |
+| `VISION.md` | Rôle, frontières et responsabilité de SYNE |
+| `ARCHITECTURE.md` | Projet PRISM, plugin PRISM-LDK et flux d'intégration |
+| `SCENE_SPEC.md` | Responsabilités de PRISM pour le monde présenté |
+| `TRANSPORT_API.md` | WebSocket et HTTP SYNE |
+| `PRISM_UNREAL_IMPLEMENTATION.md` | Guide d'intégration PRISM-LDK et Blueprint |
+| `RENDERING_SPEC.md` | Objectifs de représentation visuelle |
+| `VISUALIZATION_SPEC.md` | Vues d'inspection, sociales et communication |
+| `UX_INTERACTION.md` | Intentions d'interaction et d'interface |
+| `ASSETS_CONVENTIONS.md` | Principes de présentation des éléments |
+| `TESTING.md` | Validation du plugin et de l'intégration |
+| `ROADMAP.md` | Étapes d'évolution |
+| `CHANGELOG.md` | Historique de cette documentation |
+| `adr/` | Décisions historiques et références transverses |
+
+Les spécifications visuelles décrivent des objectifs de rendu, pas des
+classes Unreal imposées ni des fonctionnalités générées automatiquement par
+le plugin.

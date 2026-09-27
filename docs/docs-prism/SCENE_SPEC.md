@@ -1,70 +1,68 @@
-# SCENE_SPEC.md
+# SCENE_SPEC — Monde présenté par PRISM
 
 **Composant** : PRISM
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `ARCHITECTURE.md`
-**Source Monographie** : §5.3
+**Dernière mise à jour** : 27 septembre 2026
+**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
 
 ---
 
-## 1. Objectif
+## 1. Périmètre
 
-Spécifie la structure des scènes Godot et l'organisation des assets. Les primitives sont **100 % procédurales** (aucun asset externe).
+Ce document décrit les responsabilités de présentation du projet Unreal PRISM,
+qui intègre le plugin PRISM-LDK (`PrismLdk`). Il ne spécifie pas une scène
+livrée par le plugin : **PrismLdk expose les données Blueprint, mais ne génère ni tuiles,
+acteurs, collisions, navigation, ni interface utilisateur**. Le projet PRISM
+choisit la structure de ses niveaux et les objets qui représentent les données
+SYNE.
 
-## 2. Structure des scènes (V1)
+## 2. Flux de construction du monde
 
-```text
-res://
-  main.tscn                        (scène racine)
-  scripts/
-    SimClient.cs                   (client WebSocket)
-    CameraController.cs            (contrôle caméra)
-    Hud.cs                         (interface HUD + contrôles)
-```
+À la réception de `OnWorldInitialized`, PRISM peut préparer sa
+présentation avant de confirmer `Ready` à SYNE. Une organisation de haut
+niveau peut comporter :
 
-| Nœud | Rôle |
+| Élément | Responsabilité de PRISM |
 | :-- | :-- |
-| `main.tscn` | Scène racine, assemble monde + caméra + HUD |
-| `SimClient.cs` | Connexion WebSocket à SYNE, réception snapshot/event, reconnexion 1,5 s |
-| `CameraController.cs` | Orbite, zoom, déplacement ZQSD/WASD, suivre entité |
-| `Hud.cs` | Overlay du HUD (tick, score, contrôle start/pause/resume/reset) |
+| Environnement | Représenter les dimensions et la topologie logique reçues |
+| Obstacles | Représenter les obstacles initiaux et appliquer les mutations |
+| Ressources | Présenter les marqueurs initiaux si le produit le souhaite |
+| Agents | Créer/mettre à jour la présentation, indexée par ID SYNE |
+| Interface | Exposer les contrôles, statuts et vues adaptés au produit |
 
-## 3. Structure enrichie (V2)
+Ces catégories sont des possibilités de conception, pas des objets générés ou
+imposés par le plugin.
 
-La scène V2 enrichit la V1 avec (Monographie §5.3.2) :
-- visualisation des croyances (heatmaps, bulles) ;
-- visualisation sociale (graphe de relations, heatmap de confiance) ;
-- visualisation des groupes (couleurs, GroupPanel) ;
-- communication visuelle (pulsations lumineuses) ;
-- panneau d'inspection (BeliefViewer).
+## 3. Repères et données
 
-## 4. Le mapping 2D → 3D
+SYNE expose un monde logique 2D. Les coordonnées et conversions doivent être
+interprétées selon le type des données :
 
-| Simulation (2D) | Godot (3D) |
-| :-- | :-- |
-| x | x |
-| y | z |
-| — | y (hauteur) |
+- `Cells[].X/Y` et les positions des ressources initiales sont des indices de
+  cellule.
+- Les positions d'agents et d'obstacles sont des coordonnées continues SYNE.
+- Les stocks `Resources[]` des snapshots sont des réserves globales par type,
+  pas des quantités synchronisées pour des acteurs locaux.
+- La projection 3D, les hauteurs, les collisions et la navigation appartiennent
+  à la présentation Unreal ; elles ne deviennent pas pour autant l'état
+  autoritaire de la simulation.
 
-Le sol est un `PlaneMesh` (plan XZ = défaut en Godot 4.7, vérifié via AABB — aucune rotation nécessaire).
+Le plugin et les contrats conservent les dimensions et `CellSize` fournis par
+SYNE. Aucune échelle Unreal universelle n'est imposée par PRISM : le projet
+final choisit sa convention de rendu et doit l'appliquer de façon cohérente.
+Pour les interprétations, conversions et champs des structures exposées,
+consulter [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md).
 
-## 5. Les meshes de base
+## 4. État initial et mises à jour
 
-| Élément | Mesh |
-| :-- | :-- |
-| Sol | `PlaneMesh` |
-| Entité | `CapsuleMesh` |
-| Ressource | `SphereMesh` |
-| Obstacle | `BoxMesh` / `CylinderMesh` |
+1. Recevoir `OnWorldInitialized` et construire la représentation initiale.
+2. N'appeler `Ready` qu'une fois le projet prêt à afficher le monde préparé.
+3. Après `Start`, traiter les snapshots complets sur `OnSnapshot` comme état
+   dynamique autoritaire.
+4. Utiliser `OnWorldDelta` et `OnSyneEvent` pour les notifications et effets
+   ponctuels ; éviter d'appliquer de nouveau les mutations déjà reflétées dans
+   le snapshot.
+5. Utiliser les identifiants SYNE pour faire correspondre les mises à jour aux
+   acteurs visuels.
 
-## 6. Organisation des scènes
-
-- Une scène par type d'objet réutilisable (capsule-entité, sphère-ressource, cube-obstacle) via `PackedScene`.
-- Positionnement des instances par conversion (`x → x`, `y → z`), hauteur constante au-dessus du sol.
-
----
-
-## Points restés ouverts dans ce document
-- Le rendu du monde à grande échelle doit intégrer du culling au-delà de ~1000 entités (§5.14.6) — optimisations PRISM V2.
-- Structure/scènes détaillées V2 à affiner avec les maquettes (références Monographie §5.3.2).
+La liste exhaustive des messages et le cycle des commandes sont dans
+[`TRANSPORT_API.md`](TRANSPORT_API.md).

@@ -1,60 +1,69 @@
-# VISION.md
+# VISION — PRISM
 
 **Composant** : PRISM
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `../VISION.md` (racine)
-**Source Monographie** : §5.1
+**Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
+**Dernière mise à jour** : 27 septembre 2026
+**Dépend de** : [`../../VISION.md`](../../VISION.md)
 
 ---
 
 ## Rôle
 
-**PRISM** — *Perceptual Rendering & Interactive Simulation Module* — est la couche qui rend le monde **perceptible et interactif**. Il représente graphiquement l'état fourni par SYNE et fournit les moyens de navigation, de caméra, d'inspection et d'interaction.
+**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
+complet. **PRISM** (*Perceptual Rendering & Interactive Simulation Module*)
+est son projet Unreal final pour rendre le monde perceptible et interactif.
+PRISM intègre **PRISM-LDK** (*LIVEX Development Kit*), plugin Unreal dont le
+nom technique de module est `PrismLdk`. LDK désigne le plugin, pas un projet
+complet distinct. Le fichier `prism/LDK/LDK.uproject` fourni dans ce checkout
+est un hôte technique de build/test ; il ne représente pas un produit LIVEX
+séparé.
 
-**PRISM est un reflet du monde simulé, jamais un co-auteur de la simulation.** Il observe, il affiche, il permet d'interagir — il ne décide pas.
+PRISM reflète l'état de SYNE ; **il n'est jamais co-auteur de la simulation**.
 
-## Ce que PRISM fait
+## Responsabilités
 
-1. Rendu du monde (sol, obstacles, environnement).
-2. Représentation des entités (entités, ressources).
-3. Caméra et navigation de l'utilisateur.
-4. Représentation des constructions et territoires (futur).
-5. Inspection d'une entité (croyances, besoins, décisions).
-6. Affichage de données ECHOS (métriques, phénomènes).
-7. Outils de debug visuel.
-8. Interaction utilisateur.
-9. Préparation du futur mode joueur-habitant.
+- Se connecter aux interfaces de transport SYNE et convertir les messages en
+  contrats/types Unreal utilisables depuis Blueprint.
+- Exposer l'état de connexion, les commandes de contrôle et les événements de
+  transport en Blueprint.
+- Permettre à PRISM d'afficher le monde et d'inspecter les informations
+  reçues et de présenter les résultats de SYNE.
+- Garder la présentation et les conventions de rendu dans le projet Unreal
+  PRISM, plutôt que de faire du plugin un jeu ou une simulation autonome.
 
-## Ce que PRISM ne doit PAS faire
+## Frontière avec SYNE
 
-- **Posséder l'état canonique** d'une entité.
-- **Calculer les règles sociales**.
-- **Déterminer la vérité d'une croyance**.
-- **Modifier directement le monde** sans passer par les mécanismes prévus par SYNE.
-- **Introduire des comportements** non présents dans le modèle de simulation.
+SYNE reste l'autorité pour l'état canonique du monde, les décisions, les
+actions et l'évolution des entités. Le plugin ne doit pas :
 
-## Pourquoi un framework intermédiaire
+- posséder un état de simulation concurrent ou prendre des décisions à la
+  place de SYNE ;
+- recalculer les règles de comportement, les croyances ou la vérité du monde ;
+- modifier directement le monde simulé : les commandes passent par l'API de
+  contrôle SYNE ;
+- transformer les projections visuelles Unreal (NavMesh, hauteur, animation)
+  en vérité simulée ou les renvoyer comme état autoritaire.
 
-Unreal Engine et Unity ont chacun leur organisation des objets, composants, scènes, physique et logique de gameplay. Si le modèle de simulation était construit sur les abstractions d'un moteur graphique, le projet serait lié à ce moteur pour toujours.
+## Conception du plugin
+
+Le C++ de `PrismLdk` doit rester mince. Il sert de couche d'intégration :
+contrats, `USTRUCT`/`UENUM`, conversion du transport, fonctions Blueprint,
+état de connexion et dispatchers d'événements. Le rendu, les acteurs, les
+widgets, les choix d'expérience et toute logique propre au produit relèvent du
+projet Unreal PRISM. Toute logique de décision et l'état canonique restent
+dans SYNE.
 
 ```text
-Modèle LIVEX (SYNE)
-    ↓ adaptation
-PRISM (framework intermédiaire)
-    ↓ bindings
-Godot / Unity / Unreal (moteur graphique)
+Projet complet LIVEX
+  ├─ SYNE : moteur décisionnel et état autoritaire
+  ├─ ECHOS : observation et analyse
+  └─ PRISM : projet Unreal final
+       ├─ présentation, monde, acteurs, UI et interactions
+       └─ PRISM-LDK / PrismLdk : plugin d'intégration
+            ├─ contrats et types exposés à Blueprint
+            ├─ réception WebSocket SYNE
+            └─ commandes HTTP vers SYNE
 ```
 
-Le moteur graphique **définitif reste volontairement ouvert** : si le moteur change (Godot → Unity → Unreal), seuls les **adaptateurs** changent, pas le modèle de simulation.
-
-## Principe invariant (quel que soit le moteur)
-
-- **Réflexion passive** : PRISM n'expose jamais de décisions, il reflète l'état du moteur.
-- **Commandes relayées** : le contrôle du moteur passe par l'API HTTP de SYNE.
-- **Modèle propre** : LIVEX conserve son propre modèle de données, indépendant du moteur graphique.
-
----
-
-## Points restés ouverts dans ce document
-- Aucun : les interdits et le principe invariant sont des contraintes fermes.
+Les détails d'intégration sont dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et
+[`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md).

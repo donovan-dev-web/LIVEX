@@ -1,54 +1,111 @@
-# TRANSPORT_API.md
+# TRANSPORT_API — PrismLdk ↔ SYNE
 
 **Composant** : PRISM
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `../COMMUNICATION.md`, `../docs-syne/API_CONTRACTS.md`, `../adr/ADR-003-api-http-rest.md`, `../adr/ADR-004-websocket-temps-reel.md`
-**Source Monographie** : §5.4
+**Statut** : documentation d'intégration
+**Dernière mise à jour** : 27 septembre 2026
+**Source de vérité des contrats** : [`../docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md)
 
 ---
 
-## 1. WebSocket (données) — :5180
+## 1. Vue d'ensemble
 
-PRISM se connecte à SYNE via WebSocket (`ws://127.0.0.1:5180/`) avec **reconnexion automatique (1,5 s)**. Deux types de messages (contract partagé avec ECHOS, cf. `../docs-syne/API_CONTRACTS.md`) :
+`PrismLdk` utilise deux transports SYNE distincts :
 
-- **`snapshot`** : état complet du monde (`WorldSnapshot`).
-- **`event`** : événements ponctuels (`ExternalEvent`).
+| Sens | Transport | Adresse locale par défaut | Usage |
+| :-- | :-- | :-- | :-- |
+| SYNE → plugin | WebSocket | `ws://127.0.0.1:5180/` | Monde préparé, snapshots, deltas et événements |
+| Plugin → SYNE | HTTP | `http://127.0.0.1:5181` | Commandes de contrôle et requête de statut |
 
-Les messages sont des trames **texte UTF-8 JSON** (et non des trames binaires).
-Le champ `runId` du snapshot est l'identité canonique et stable du run ; PRISM
-doit le conserver pour corréler ses observations.
+Ce sont les valeurs par défaut configurées par le plugin ; les URLs sont
+remplaçables via `FPrismSyneConnectionOptions`. Le serveur WebSocket SYNE est
+activé avec `--observe` (port par défaut 5180) et le serveur HTTP de contrôle
+avec `--serve` (port par défaut 5181). Les deux serveurs écoutent localement
+par défaut. Le lancement de SYNE est distinct du lancement du projet Unreal.
 
-## 2. HTTP (contrôle) — :5181
+## 2. WebSocket : données SYNE vers Blueprint
 
-PRISM **relaie** les commandes de contrôle à l'API REST de SYNE (`http://127.0.0.1:5181/api/control/`) :
+Les messages sont des trames texte UTF-8 contenant du JSON camelCase, pas des
+trames binaires. Après `Connect`, le plugin expose les types de messages SYNE
+en types Blueprint et déclenche notamment :
 
-| Commande | Action |
-| :-- | :-- |
-| `start` | Démarrer la simulation |
-| `pause` | Mettre en pause |
-| `resume` | Reprendre |
-| `stop` | Arrêter le run sans arrêter le serveur SYNE |
-| `reset` | Réinitialiser (avec seed et run id) |
+| Message SYNE | Événement Blueprint | Contenu / rôle |
+| :-- | :-- | :-- |
+| `world_initialized` | `OnWorldInitialized` | Description du monde préparé, émise avant les snapshots |
+| `snapshot` | `OnSnapshot` | État dynamique complet du monde pour un tick |
+| `world_delta` | `OnWorldDelta` | Deltas de monde, notamment mutations d'obstacles |
+| autres événements typés | `OnSyneEvent` | Notifications de décision, action, communication, groupes et monde |
 
-L'état de SYNE est interrogé toutes les **2 secondes** (polling léger). `stop`
-ramène le run à `Idle` mais laisse les serveurs actifs.
+Un snapshot global est émis par tick. Il contient l'état des agents et des
+systèmes actifs, les ressources globales, les obstacles, ainsi que
+`worldChanges[]` et `actions[]` du tick. La topologie initiale arrive une fois
+dans `world_initialized`. Les détails et les champs versionnés sont définis
+dans [`../docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md).
 
-> ⚠ PRISM relaie, il ne décide pas : tout contrôle passe par l'API HTTP de SYNE (principe invariant, cf. `VISION.md`). Ces endpoints sont documentés par les ADR transverses (ADR-003, ADR-004).
+**Règle de consommation** : utiliser `OnSnapshot` comme source de vérité pour
+réconcilier l'état courant présenté par le projet Unreal. Les événements et
+deltas restent utiles pour le journal ou les effets ponctuels ; ils peuvent
+décrire une modification également agrégée dans le snapshot. Ne pas appliquer
+deux fois la même mutation.
 
-## 3. L'interface TypeScript (intégrée à ECHOS)
+La connexion initiale est déclenchée explicitement par `Connect`. La structure
+des options prévoit la reconnexion automatique après une perte inattendue
+(activée par défaut, délai par défaut de 2 secondes). `Disconnect` annule la
+demande de connexion et sa reconnexion. `OnConnected`, `OnDisconnected` et
+`OnError` exposent le cycle de vie au Blueprint.
 
-Dans le prototype, l'interface ECHOS (application web React + TypeScript) consommait les métriques d'ECHOS **et** le flux WebSocket de SYNE, offrant un tableau de bord complémentaire à PRISM.
+## 3. HTTP : commandes Blueprint vers SYNE
 
-En **V0.1**, cette interface est **intégrée à ECHOS** (web local React/Vite servie par FastAPI — shell Electron conservé, implémentation différée à un horizon ultérieur) et sert aussi de complément d'affichage pour PRISM (liste des interfaces TypeScript : ses composants — voir `UX_INTERACTION.md`).
+Les commandes HTTP sont des POST JSON vers `/api/control/<action>`. Le plugin
+fournit les fonctions Blueprint `Prepare`, `Ready`, `Start`, `Pause`, `Resume`,
+`Stop` et `Reset`. `RequestStatus` effectue un GET sur
+`/api/control/status`. Le résultat asynchrone d'une commande est transmis par
+`OnControlResult` ; les erreurs réseau ou API sont communiquées par `OnError`.
 
-## 4. Alignement des contrats
+| Méthode | Route | Fonction du plugin | Usage |
+| :-- | :-- | :-- | :-- |
+| POST | `/api/control/prepare` | `Prepare(seed, ticksPerSecond)` | Préparer un monde et sa cadence |
+| POST | `/api/control/ready` | `Ready(worldVersion)` | Accuser réception après préparation côté projet |
+| POST | `/api/control/start` | `Start(seed, maxTicks)` | Démarrer le monde préparé |
+| POST | `/api/control/pause` | `Pause()` | Suspendre les ticks |
+| POST | `/api/control/resume` | `Resume()` | Reprendre les ticks |
+| POST | `/api/control/stop` | `Stop()` | Arrêter le run |
+| POST | `/api/control/reset` | `Reset(seed, maxTicks)` | Réinitialiser selon le contrat SYNE |
+| GET | `/api/control/status` | `RequestStatus()` | Lire l'état du run |
 
-- Les schémas `WorldSnapshot`/`ExternalEvent` sont définis une fois dans `../docs-syne/API_CONTRACTS.md` (source de vérité transport).
-- `TRANSPORT_API.md` (PRISM) et `API_REST.md` (ECHOS) déclinent chacun leur face : PRISM consomme données WS + envoie commandes HTTP ; ECHOS observe WS + interroge son API REST :5000.
-- Versionnage compatible : voir `../VERSIONING.md` et `../COMMUNICATION.md`.
+Le cycle de préparation recommandé est :
 
----
+```text
+Connect
+ → Prepare(seed, ticksPerSecond)
+ → OnWorldInitialized
+ → le projet Unreal PRISM construit/prépare sa présentation
+ → Ready(worldVersion)
+ → attendre OnControlResult(ok)
+ → Start(seed, maxTicks)
+ → OnSnapshot
+```
 
-## Points restés ouverts dans ce document
-- Aucun : les contrats sont partagés et référencés. Le polling 2 s de l'état SYNE (prototype) pourrait être remplacé par le `snapshot` temps réel en V0.1 — décision d'implémentation.
+Après un `prepare` explicite, SYNE exige l'accusé `ready` avant `start` ;
+ignorer l'ordre ou réutiliser une seed incompatible peut produire une erreur
+HTTP (par exemple `409 world_not_ready`). La cadence `ticksPerSecond` est celle
+du moteur de simulation, pas le framerate Unreal. Les corps précis, états et
+codes d'erreur suivent le contrat SYNE.
+
+Le plugin ne fait pas de polling périodique automatique documenté de l'état :
+Blueprint peut appeler `RequestStatus()` quand il a besoin de le relire.
+
+## 4. SYNE et syne-mock
+
+SYNE est le moteur décisionnel et l'autorité de production. `syne-mock` est un
+simulateur de développement indépendant qui permet de tester le transport,
+les contrats consommés par `PrismLdk` et les graphes Blueprint sans lancer le
+moteur C#. Il parle les transports attendus et reproduit un sous-ensemble utile
+à l'intégration, mais **n'est pas équivalent à SYNE**.
+
+Ses limites documentées comprennent des approximations de délibération et de
+systèmes sociaux, un détour local autour des obstacles qui ne reproduit pas
+l'A* de SYNE, et l'absence de garantie de trajectoires identiques bit à bit.
+Le mode replay rejoue des messages JSONL sans restaurer l'état interne de SYNE.
+Consulter [`../../syne-mock/README.md`](../../syne-mock/README.md) pour les
+différences à jour. Ne pas utiliser le mock pour valider l'équivalence des
+décisions, trajectoires ou résultats métier.
