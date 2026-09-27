@@ -61,7 +61,7 @@ public class DeterminismRegressionTests
                     log.Append('|');
                 }
 
-                log.AppendLine();
+                log.Append('\n');
             }
         }
 

@@ -58,7 +58,7 @@ public class Ph10DeterminismBaselineTests
             log.Append($"groups={loop.Cognition.Groups.Active.Count};");
             log.Append($"births={loop.Cognition.Birth.LastBirths.Count};");
             log.Append($"deaths={loop.Cognition.Death.LastDeaths.Count}");
-            log.AppendLine();
+            log.Append('\n');
             foreach (Entity entity in loop.World.Entities.OrderBy(entity => entity.Id.Value))
             {
                 Simulation.Core.Cognition.MindState mind = loop.Cognition.MindOf(entity.Id.Value);
@@ -81,7 +81,7 @@ public class Ph10DeterminismBaselineTests
                 log.Append(mind.Trust.Count.ToString(CultureInfo.InvariantCulture));
                 log.Append(';');
                 log.Append(mind.Beliefs.Count.ToString(CultureInfo.InvariantCulture));
-                log.AppendLine();
+                log.Append('\n');
             }
         }
 
