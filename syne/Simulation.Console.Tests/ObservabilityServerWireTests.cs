@@ -60,6 +60,7 @@ public class ObservabilityServerWireTests
 
         var world = new WorldType(new WorldSize(100, 100));
         world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(10, 10), TraitSet.NeutralAll, bornAt: 0));
+        world.AddEntity(new Entity(new EntityId(2), "Entité B", null, new Position(20, 20), TraitSet.NeutralAll, bornAt: 0));
         var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), ConfigLoader.LoadDefaults());
         var emitter = new ObservabilityTickEmitter(loop, seed: 7, server);
         await emitter.RunAsync(3);
@@ -73,6 +74,11 @@ public class ObservabilityServerWireTests
             JsonNode? frame = JsonNode.Parse(await ReceiveTextAsync(client));
             if ((string?)frame!["type"] == "snapshot")
             {
+                Assert.Equal(2, frame!["agents"]!.AsArray().Count);
+                Assert.Equal(2, frame!["actions"]!.AsArray().Count);
+                Assert.NotNull(frame!["worldChanges"]);
+                Assert.NotNull(frame!["resources"]);
+                Assert.NotNull(frame!["obstacles"]);
                 snapshotTicks.Add((uint?)frame!["tick"] ?? 0);
             }
         }

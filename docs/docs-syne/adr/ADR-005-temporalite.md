@@ -1,7 +1,7 @@
 # ADR-005 : Temporalité — tick = minute
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.6 (ADR-005)
@@ -20,7 +20,7 @@ Le temps simulé doit avoir un sens pour l'interprétation des besoins, de l'én
 
 ### Positives
 - Les besoins sont mesurés en unités de temps (ex. +1 soif/tick).
-- Le renderer peut convertir tick en heures de la journée.
+- Un client de présentation externe peut convertir le tick en heure du jour (PRISM est aujourd'hui un plugin Unreal, pas un moteur de rendu autonome).
 - La vitesse de simulation est un paramètre de débogage (10 t/s par défaut).
 
 ### Négatives

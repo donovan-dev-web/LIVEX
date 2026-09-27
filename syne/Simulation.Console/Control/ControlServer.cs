@@ -117,7 +117,14 @@ public sealed class ControlServer : IAsyncDisposable
 
         if (path == "/api/control/status" && method == "GET")
         {
-            return (200, ToJson(StatusJson(_controller.Status())));
+            return (200, ToJson(StatusJson(_controller.Status(), _controller.WorldDescription?.TicksPerSecond)));
+        }
+
+        if (path == "/api/world" && method == "GET")
+        {
+            return _controller.WorldDescription is { } world
+                ? (200, ToJson(world))
+                : (409, ToJson(ErrorJson("world_not_prepared", "Préparez le monde avant de le consulter.")));
         }
 
         if (!path.StartsWith("/api/control/", StringComparison.Ordinal) || method != "POST")
@@ -130,6 +137,14 @@ public sealed class ControlServer : IAsyncDisposable
 
         switch (action)
         {
+            case "prepare":
+                return await PrepareAsync(body);
+            case "ready":
+                string? version = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("worldVersion", out var v)
+                    ? v.GetString() : null;
+                return _controller.AcknowledgeReady(version)
+                    ? (200, ToJson(OkJson("ready")))
+                    : (409, ToJson(ErrorJson("world_not_ready", "Le monde n'est pas préparé ou sa version est incorrecte.")));
             case "start":
                 return await StartAsync(body);
             case "pause":
@@ -146,6 +161,21 @@ public sealed class ControlServer : IAsyncDisposable
             default:
                 return (404, ToJson(ErrorJson("not_found", $"Action de contrôle inconnue : {action}.")));
         }
+    }
+
+    private async Task<(int Status, string Body)> PrepareAsync(JsonElement body)
+    {
+            ulong? seed = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("seed", out var s) ? s.GetUInt64() : null;
+            SimulationOptions? config = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out var c) ? ParseConfig(c) : null;
+            int? ticksPerSecond = null;
+            if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("ticksPerSecond", out var tps))
+            {
+                if (tps.ValueKind != JsonValueKind.Number || !tps.TryGetInt32(out int parsedTicksPerSecond) || parsedTicksPerSecond <= 0)
+                    return (400, ToJson(ErrorJson("invalid_ticks_per_second", "ticksPerSecond doit être un entier strictement positif.")));
+                ticksPerSecond = parsedTicksPerSecond;
+            }
+            var world = await _controller.PrepareAsync(seed, config ?? SimulationProfiles.Reference(), ticksPerSecond);
+            return (200, ToJson(new { ok = true, action = "prepared", ticksPerSecond = world.TicksPerSecond, world }));
     }
 
     private async Task<(int Status, string Body)> StartAsync(JsonElement body)
@@ -168,11 +198,22 @@ public sealed class ControlServer : IAsyncDisposable
 
         // Manual/UI runs use the reviewed reference profile unless the caller
         // supplies an explicit configuration overlay.
-        string runId = await _controller.StartAsync(
-            seed,
-            config ?? SimulationProfiles.Reference(),
-            maxTicks);
-        return (200, ToJson(OkJson("started", runId, _controller.Status())));
+        try
+        {
+            SimulationOptions? effectiveConfig = _controller.WorldPrepared && config is null
+                ? null
+                : config ?? SimulationProfiles.Reference();
+            string runId = await _controller.StartAsync(seed, effectiveConfig, maxTicks);
+            return (200, ToJson(OkJson("started", runId, _controller.Status())));
+        }
+        catch (PreparedWorldMismatchException exception)
+        {
+            return (409, ToJson(ErrorJson(exception.Code, exception.Message)));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return (409, ToJson(ErrorJson("world_not_ready", exception.Message)));
+        }
     }
 
     private async Task<(int Status, string Body)> ResetAsync(JsonElement body)
@@ -260,13 +301,17 @@ public sealed class ControlServer : IAsyncDisposable
         ["detail"] = detail,
     };
 
-    private static Dictionary<string, object?> StatusJson(SimulationStatusSnapshot status) => new()
+    private static Dictionary<string, object?> StatusJson(SimulationStatusSnapshot status, int? ticksPerSecond) => new()
     {
         ["state"] = status.State.ToString().ToLowerInvariant(),
         ["runId"] = status.RunId,
         ["tick"] = status.Tick,
         ["aliveCount"] = status.AliveCount,
         ["seed"] = status.Seed,
+        ["worldPrepared"] = status.WorldPrepared,
+        ["worldVersion"] = status.WorldVersion,
+        ["worldReadyAcknowledged"] = status.WorldReadyAcknowledged,
         ["maxTicks"] = status.MaxTicks,
+        ["ticksPerSecond"] = ticksPerSecond,
     };
 }

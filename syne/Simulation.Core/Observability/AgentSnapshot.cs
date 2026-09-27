@@ -29,6 +29,7 @@ public sealed record AgentSnapshot
         double thirst,
         double fatigue,
         string currentIntention,
+        string currentAction,
         IReadOnlyDictionary<string, double>? traits = null,
         IReadOnlyList<BeliefObservation>? beliefs = null,
         IReadOnlyList<GoalObservation>? goals = null,
@@ -46,6 +47,7 @@ public sealed record AgentSnapshot
         Thirst = thirst;
         Fatigue = fatigue;
         CurrentIntention = currentIntention;
+        CurrentAction = currentAction;
         Traits = traits ?? new Dictionary<string, double>(StringComparer.Ordinal);
         Beliefs = beliefs ?? [];
         Goals = goals ?? [];
@@ -71,6 +73,9 @@ public sealed record AgentSnapshot
 
     /// <summary>Action courante de l'entité (intention <see cref="Cognition.DesireKind"/>).</summary>
     public string CurrentIntention { get; }
+
+    /// <summary>Action atomique exécutée pendant le tick représenté.</summary>
+    public string CurrentAction { get; }
 
     /// <summary>Traits de l'entité (par nom, ordre stable de DATA_MODEL.md §3.2).</summary>
     public IReadOnlyDictionary<string, double> Traits { get; }
@@ -146,6 +151,7 @@ public sealed record AgentSnapshot
             mind.Needs.Thirst,
             mind.Needs.Fatigue,
             mind.Intention?.Kind.ToString() ?? "Idle",
+            mind.LastActionResult?.Kind.ToString() ?? "Idle",
             traits,
             beliefObs,
             goals,

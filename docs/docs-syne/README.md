@@ -12,28 +12,46 @@
 
 ---
 
-## Rôle
+## Rôle actuel
 
-Cœur de simulation de LIVEX (C#/.NET). Il exécute le monde simulé, les entités BDI, la communication, la persistance et le **déterminisme bit-à-bit**. Il émet des données vers ECHOS (analyse) et PRISM (rendu) via les contrats de transport.
+SYNE est le **moteur .NET autoritaire** de simulation et de décision de LIVEX :
+il crée et fait évoluer l'état du monde, exécute les comportements et décisions
+des entités, et définit leurs trajectoires. Il est indépendant de tout moteur
+graphique. PRISM est le projet Unreal final de LIVEX ; il intègre le plugin
+PRISM-LDK (*LIVEX Development Kit*, module technique `PrismLdk`). Ce plugin
+visualise et pilote le moteur au moyen de ses
+contrats, mais ne remplace pas sa logique de simulation.
 
-## Lancement seul
+Le répertoire séparé [`syne-mock`](../../syne-mock/) à la racine contient un
+serveur Node.js destiné au développement et aux tests du plugin sans lancer
+SYNE. Il simule une partie des contrats et flux utiles à cette intégration ;
+ce n'est ni le moteur réel ni une référence d'équivalence algorithmique. Pour
+les résultats et garanties du moteur, la source de vérité est l'implémentation
+.NET de `syne/` et les contrats décrits ici.
+
+## Lancement
 
 ```console
-dotnet run --project simulation-core/Simulation.Console \
+dotnet run --project syne/Simulation.Console \
   -- --seed 12345 --max-ticks 2000 --config config.json
 ```
 
-Flags principaux : `--headless`, `--world-size <w> <h>`, `--seed <s>`, `--max-ticks <n>`, `--config <path>`. (Voir `CONFIGURATION.md`.)
+Flags principaux : `--headless`, `--world-size <w> <h>`, `--seed <s>`,
+`--max-ticks <n>`, `--config <path>`, `--observe` et `--serve`. (Voir
+`CONFIGURATION.md`.) L'observabilité WebSocket et le contrôle HTTP utilisent
+par défaut les ports 5180 et 5181 sur `127.0.0.1`; les ports sont configurables
+et ne doivent pas être supposés fixes.
 
 ## Dépendances
 
 - .NET (C#) — bibliothèque `Simulation.Core` + exécutable `Simulation.Console`.
 - SQLite (NuGet) pour la persistance V2, JSON en V1 (debug).
-- Ports exposés : **5180** (WebSocket temps réel), **5181** (HTTP contrôle).
+- Transports locaux : WebSocket d'observabilité (port par défaut 5180) et HTTP
+  de contrôle (port par défaut 5181), configurables par options CLI.
 
 ## Interfaces
 
-- `API_CONTRACTS.md` — WorldSnapshot (WS) et ExternalEvent (WS) + contrôle HTTP.
+- `API_CONTRACTS.md` — snapshots globaux, événements WebSocket et contrôle HTTP.
 - `COMMUNICATION.md` (../) — transport inter-composants.
 
 ## Documentation du composant

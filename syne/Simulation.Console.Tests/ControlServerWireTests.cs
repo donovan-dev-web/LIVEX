@@ -30,6 +30,93 @@ public class ControlServerWireTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ExplicitPrepareRequiresReadyBeforeStart()
+    {
+        using var invalidPrepare = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/prepare"))
+        {
+            Content = JsonBody("{ \"seed\": 123, \"ticksPerSecond\": 0 }"),
+        };
+        using HttpResponseMessage invalidPrepared = await _http.SendAsync(invalidPrepare);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, invalidPrepared.StatusCode);
+
+        using var prepare = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/prepare"))
+        {
+            Content = JsonBody("""
+                {
+                  "seed": 123,
+                  "ticksPerSecond": 24,
+                  "config": {
+                    "world": {
+                      "obstacles": true,
+                      "obstacleLayout": [
+                        { "id": "initial-rock", "x": 15, "y": 25, "radius": 4 }
+                      ]
+                    }
+                  }
+                }
+                """),
+        };
+        using HttpResponseMessage prepared = await _http.SendAsync(prepare);
+        Assert.Equal(System.Net.HttpStatusCode.OK, prepared.StatusCode);
+
+        using HttpResponseMessage worldResponse = await _http.GetAsync(Url("/api/world"));
+        Assert.Equal(System.Net.HttpStatusCode.OK, worldResponse.StatusCode);
+        JsonNode? worldBody = await ReadJsonAsync(worldResponse);
+        Assert.Equal(24, (int?)worldBody?["ticksPerSecond"]);
+        JsonArray? obstacles = worldBody?["obstacles"]?.AsArray();
+        JsonNode? initialObstacle = Assert.Single(obstacles!);
+        Assert.Equal("initial-rock", (string?)initialObstacle?["id"]);
+        Assert.Equal(15, (double?)initialObstacle?["x"]);
+        Assert.Equal(25, (double?)initialObstacle?["y"]);
+        Assert.Equal(4, (double?)initialObstacle?["radius"]);
+        JsonArray? initialAgents = worldBody?["agents"]?.AsArray();
+        Assert.NotNull(initialAgents);
+        Assert.NotEmpty(initialAgents);
+        Assert.All(initialAgents!, agent =>
+        {
+            Assert.NotNull(agent?["id"]);
+            Assert.NotNull(agent?["species"]);
+            Assert.NotNull(agent?["position"]?["x"]);
+            Assert.NotNull(agent?["position"]?["y"]);
+        });
+
+        using var start = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))
+        {
+            Content = JsonBody("{ \"maxTicks\": 1 }"),
+        };
+        using HttpResponseMessage rejected = await _http.SendAsync(start);
+        Assert.Equal(System.Net.HttpStatusCode.Conflict, rejected.StatusCode);
+        JsonNode? rejectedBody = await ReadJsonAsync(rejected);
+        Assert.Equal("world_not_ready", (string?)rejectedBody!["error"]);
+
+        using var ready = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/ready"))
+        {
+            Content = JsonBody("{ \"worldVersion\": \"1.0\" }"),
+        };
+        using HttpResponseMessage acknowledged = await _http.SendAsync(ready);
+        Assert.Equal(System.Net.HttpStatusCode.OK, acknowledged.StatusCode);
+
+        using var startAfterReady = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))
+        {
+            Content = JsonBody("{ \"seed\": 123, \"maxTicks\": 1 }"),
+        };
+        using var mismatchedStart = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))
+        {
+            Content = JsonBody("{ \"seed\": 124, \"maxTicks\": 1 }"),
+        };
+        using HttpResponseMessage mismatch = await _http.SendAsync(mismatchedStart);
+        Assert.Equal(System.Net.HttpStatusCode.Conflict, mismatch.StatusCode);
+        JsonNode? mismatchBody = await ReadJsonAsync(mismatch);
+        Assert.Equal("prepared_seed_mismatch", (string?)mismatchBody?["error"]);
+
+        using HttpResponseMessage started = await _http.SendAsync(startAfterReady);
+        Assert.Equal(System.Net.HttpStatusCode.OK, started.StatusCode);
+        using HttpResponseMessage statusAfterStart = await _http.GetAsync(Url("/api/control/status"));
+        JsonNode? runningStatus = await ReadJsonAsync(statusAfterStart);
+        Assert.Equal(24, (int?)runningStatus?["ticksPerSecond"]);
+    }
+
+    [Fact]
     public async Task Start_ReturnsRunIdAndStatusShowsRunning()
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))

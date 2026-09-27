@@ -53,6 +53,25 @@ public sealed record BookSnapshot(
     IReadOnlyList<ulong> Readers,
     int ReadCount);
 
+public sealed record WorldChangeSnapshot(
+    string Kind,
+    string Id,
+    double X,
+    double Y,
+    double Radius);
+
+public sealed record ActionSnapshot(
+    string AgentId,
+    string Action,
+    string Outcome,
+    string? Cause,
+    double EnergyDelta,
+    double HungerDelta,
+    double ThirstDelta,
+    double FatigueDelta,
+    string? Reserve,
+    double? ReserveConsumed);
+
 /// <summary>
 /// Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).
 /// Représentation pure, sérialisée en camelCase par <see cref="ObservabilitySerializer"/>.
@@ -70,7 +89,9 @@ public sealed record WorldSnapshot(
     string Season,
     int SeasonIndex,
     IReadOnlyList<TerritorySnapshot> Territories,
-    IReadOnlyList<BookSnapshot> Books)
+    IReadOnlyList<BookSnapshot> Books,
+    IReadOnlyList<WorldChangeSnapshot> WorldChanges,
+    IReadOnlyList<ActionSnapshot> Actions)
 {
     /// <summary>Capte l'état du monde + cognition + réserves après un tick (pipeline BDI exécuté).</summary>
     public static WorldSnapshot Capture(SimulationLoop loop, ulong seed, string? runId = null)
@@ -79,15 +100,31 @@ public sealed record WorldSnapshot(
 
         var entities = loop.World.Entities.OrderBy(entity => entity.Id.Value).ToList();
         var agents = new List<AgentSnapshot>(entities.Count);
+        var actions = new List<ActionSnapshot>(entities.Count);
         foreach (Entity entity in entities)
         {
             if (loop.Cognition.HasMind(entity.Id.Value))
             {
-                agents.Add(AgentSnapshot.From(entity, loop.Cognition.MindOf(entity.Id.Value), loop.CurrentTick));
+                Simulation.Core.Cognition.MindState mind = loop.Cognition.MindOf(entity.Id.Value);
+                agents.Add(AgentSnapshot.From(entity, mind, loop.CurrentTick));
+                if (mind.LastActionResult is { } result)
+                {
+                    actions.Add(new ActionSnapshot(
+                        entity.Id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        result.Kind.ToString(),
+                        result.Outcome.ToString().ToLowerInvariant(),
+                        result.Reason,
+                        Math.Round(result.EnergyDelta, 4),
+                        Math.Round(result.HungerDelta, 4),
+                        Math.Round(result.ThirstDelta, 4),
+                        Math.Round(result.FatigueDelta, 4),
+                        result.ReserveConsumed?.ToString().ToLowerInvariant(),
+                        result.ReserveConsumed is null ? null : Math.Round(result.ReserveConsumedAmount, 4)));
+                }
             }
         }
 
-        var resources = new List<ResourceSnapshot>(3);
+        var resources = new List<ResourceSnapshot>(Enum.GetValues<World.ResourceKind>().Length);
         foreach (World.ResourceKind kind in Enum.GetValues<World.ResourceKind>())
         {
             resources.Add(new ResourceSnapshot(kind.ToString().ToLowerInvariant(), loop.Resources.Stock(kind)));
@@ -150,6 +187,13 @@ public sealed record WorldSnapshot(
                 ? loop.World.Books.Select(book => new BookSnapshot(
                     book.Id, book.AuthorId, book.Title, book.Content, book.WrittenTick,
                     book.Readers.ToArray(), book.ReadCount)).ToArray()
-                : []);
+                : [],
+            loop.World.LastEnvironmentChanges.Select(change => new WorldChangeSnapshot(
+                change.Kind == EnvironmentChangeKind.Added ? "added" : "removed",
+                change.Obstacle.Id,
+                Math.Round(change.Obstacle.Position.X, 4),
+                Math.Round(change.Obstacle.Position.Y, 4),
+                Math.Round(change.Obstacle.Radius, 4))).ToArray(),
+            actions);
     }
 }

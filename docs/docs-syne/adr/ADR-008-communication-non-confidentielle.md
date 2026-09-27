@@ -1,7 +1,7 @@
 # ADR-008 : Communication non confidentielle
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.9 (ADR-008), §3.16
