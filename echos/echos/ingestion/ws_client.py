@@ -77,7 +77,7 @@ class WsClient:
         with WsClient() as client:
             client.connect("ws://127.0.0.1:5180")
             for message in client:
-                ...  # WorldSnapshot | ExternalEvent
+                ...  # WorldInitialized | WorldSnapshot | ExternalEvent
     """
 
     def __init__(self, transport: WsTransport | None = None) -> None:

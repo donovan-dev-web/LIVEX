@@ -1,9 +1,12 @@
 """Consommation du flux SYNE **alignée sur les ticks** (ECHOS-010).
 
-Le contrat d'émission garantit, pour chaque tick : **1 snapshot** puis ses
-événements (``tick_summary`` + ``decision_made``/entité). :func:`aligned_ticks`
-découpe le flux en segments ``TickSegment`` (1 par tick) et refuse toute
-séquence non alignée (événement hors du tick courant → erreur déterministe).
+Le flux peut commencer par ``world_initialized`` ; cette description de monde
+est validée puis ignorée par ECHOS, qui ne consomme que les snapshots et
+événements de tick. Le contrat garantit ensuite, pour chaque tick : **1
+snapshot** puis ses événements (``tick_summary`` + ``decision_made``/entité).
+:func:`aligned_ticks` découpe le flux en segments ``TickSegment`` (1 par tick)
+et refuse toute séquence non alignée (événement hors du tick courant → erreur
+déterministe).
 """
 
 from __future__ import annotations
@@ -14,6 +17,7 @@ from typing import Iterator
 from echos.ingestion.models import (
     ExternalEvent,
     InvalidMessageError,
+    WorldInitialized,
     WorldSnapshot,
 )
 from echos.ingestion.ws_client import WsClient
@@ -64,6 +68,9 @@ def aligned_ticks(client: WsClient) -> Iterator[TickSegment]:
     events: list[ExternalEvent] = []
 
     for message in client:
+        if isinstance(message, WorldInitialized):
+            continue
+
         if isinstance(message, WorldSnapshot):
             if current is not None:
                 yield TickSegment(tick=current.tick, snapshot=current, events=events)
