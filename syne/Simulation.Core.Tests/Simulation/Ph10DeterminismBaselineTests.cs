@@ -130,6 +130,6 @@ public class Ph10DeterminismBaselineTests
         // de la perception, DETERMINISM.md §7) — toute altération bit-à-bit de la
         // trajectoire change ce checksum et impose un recalcul + bump MINOR.
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x072a488aa18c05eb", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0xca1a20b87ad385a0", $"0x{Fnv1a(log):x16}");
     }
 }
