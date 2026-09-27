@@ -38,7 +38,7 @@ Alignée sur la convention de labels racine (`docs/governance/ISSUES.md` §5) et
 | :-- | :-- |
 | `component/syne` | De base — toute issue SYNE porte ce label |
 | `component/echos` | Si l'issue touche l'interface ECHOS (métriques, événements) |
-| `component/prism` | Si l'issue touche l'interface PRISM (rendu, grille) |
+| `component/prism` | Si l'issue touche PRISM, le projet Unreal et son plugin PRISM-LDK (`PrismLdk`; intégration, rendu, grille) |
 
 ### 2.3 Labels de statut / priorité / milestone
 

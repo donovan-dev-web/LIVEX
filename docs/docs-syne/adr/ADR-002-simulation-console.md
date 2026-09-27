@@ -1,7 +1,7 @@
 # ADR-002 : Simulation.Console — un exécutable dédié
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : `../adr/ADR-001-separation.md`
 **Source Monographie** : Annexe F.3 (ADR-002)

@@ -1,7 +1,7 @@
 # ADR-012 : Configuration moteur (JSON Annexe H) — chargement, priorité, flags CLI
 
 **Composant** : SYNE
-**Statut** : Accepted
+**Statut** : Historique — décision acceptée à l'époque
 **Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : ADR-001 (séparation), ADR-006 (PRNG reproductible), `CONFIGURATION.md`
 **Source Monographie** : Annexe H (configuration et paramètres), §3.6.2 (seed)

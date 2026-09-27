@@ -1,7 +1,7 @@
 # ADR-010 : Abandon de la morphologie physique
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.11 (ADR-010)
@@ -24,7 +24,7 @@ Les entités sont des **entités logiques**. Leur « corps » est un ensemble de
 
 ### Négatives
 - **Pas de collisions physiques** : les entités peuvent se chevaucher.
-- Le renderer doit utiliser un modèle standard pour toutes les entités (PRISM).
+- Le consommateur de présentation applique un modèle externe commun aux entités ; le projet Unreal PRISM l'implémente via PRISM-LDK (`PrismLdk`).
 
 ### Risques
 - Le chevauchement peut sembler irréaliste dans le rendu — compensé par une présentation stylisée.

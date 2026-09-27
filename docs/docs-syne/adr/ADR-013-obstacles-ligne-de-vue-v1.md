@@ -1,7 +1,7 @@
 # ADR-013 : Obstacles — ligne de vue en V1 (perception masquée)
 
 **Composant** : SYNE
-**Statut** : Accepted
+**Statut** : Historique — décision acceptée à l'époque
 **Dernière mise à jour** : 21 septembre 2026
 **Dépend de** : ADR-001 (séparation), `DATA_MODEL.md` §2/§4, `COGNITIVE_ARCHITECTURE.md` §3
 **Source Monographie** : §3.5.2 (obstacles), §3.9 (perception), §6.9 (environnement)
@@ -44,7 +44,7 @@ règle de collision simple : annuler le pas si la cible entre dans un disque.
 - SYNE-011 livrée selon son critère d'acceptation (occultation testée : entité
   masquée non perçue, entité dégagée perçue).
 - Contrat de perception complet dès V1 (position + confiance + occultation),
-  ce que pourront consommer ECHOS et PRISM en V0.1.
+  ce que peuvent consommer ECHOS et PRISM (projet Unreal intégrant le plugin PRISM-LDK / `PrismLdk`).
 - Testable et déterministe (géométrie exacte, sans PRNG).
 
 ### Négatives

@@ -10,9 +10,59 @@
 
 ## 1. Objectif
 
-Définit les **contrats de données** exposés par SYNE — ils sont la langue commune entre SYNE, ECHOS et PRISM. Toute évolution est gérée par `../../VERSIONING.md`.
+Définit les **contrats de données** exposés par le moteur .NET SYNE aux
+consommateurs, dont ECHOS et PRISM (projet Unreal) via le plugin PRISM-LDK
+(`PrismLdk`). Les
+consommateurs affichent ou pilotent le moteur ; SYNE reste l'autorité pour la
+simulation et les décisions. Toute évolution est gérée par `../../VERSIONING.md`.
 
-## 2. Contrat temps réel — WebSocket 5180
+Le service séparé `../../syne-mock/` simule une partie de ces contrats et flux
+pour développer le plugin sans démarrer le moteur. Il facilite l'intégration,
+mais n'est ni SYNE ni une référence d'équivalence algorithmique ; il ne définit
+pas les résultats attendus de la simulation réelle.
+
+## 2. Contrat temps réel — WebSocket (5180 par défaut)
+
+Avant tout `snapshot`, SYNE émet `world_initialized` avec `version`, `seed` et
+`world`. La description versionnée contient `width`, `height`, `cellSize`,
+`ticksPerSecond`, `cellCountX`, `cellCountY`, `agents[]`, `cells[]`,
+`obstacles[]`, `resources[]` et `regions[]`. Chaque obstacle initial contient
+`id`, `x`, `y` et `radius`; `cells[].obstacles[]` référence aussi les ID qui
+recouvrent la cellule.
+Chaque agent initial expose `id`, `species` et `position{x,y}` ; ces agents et
+positions sont ceux du monde préparé et sont réutilisés pour le premier tick.
+`world.resources[]` décrit les emplacements initiaux à instancier : trois
+emplacements déterministes par type (`food`, `water`, `wood`, `mineral`) quand
+la grille a au moins trois cellules, avec `id`, `kind`, `x`, `y` (indices de
+cellule) et `quantity`. Ces points de placement ne sont pas des stocks de nœuds
+dynamiques : les ressources simulées restent les réserves globales par type
+exposées dans les snapshots.
+Chaque cellule expose `x`, `y`, `terrainType`, `walkable`, `height`, `movementCost` et
+`obstacles[]`. Le layout est déterministe pour un seed. Les changements
+d'obstacles/saisons/territoires existants restent les deltas applicables par
+Unreal (`world.construction_placed` et `world.construction_removed` compris).
+SYNE n'a actuellement pas de configuration de biomes ou types de terrain :
+`terrainType` vaut `plains` pour toutes les cellules. L'obstacle initial est
+configurable via `world.obstacles` et `world.obstacleLayout`.
+`POST /api/control/prepare` accepte `seed` et le champ optionnel
+`ticksPerSecond` (entier strictement positif). La seed et la cadence sont
+conservées avec le monde préparé ; la cadence est renvoyée dans
+`world.ticksPerSecond` et utilisée pour les ticks du run qui suit. Après un
+prepare explicite, `start` réutilise ce monde : un seed différent ou une
+nouvelle configuration doit être envoyé via un nouveau `prepare`, sinon la
+requête est refusée (409).
+
+Le moteur émet exactement un message global `snapshot` par tick. Ce snapshot
+est l'état dynamique autoritaire complet du tick : tous les agents, les stocks,
+les obstacles, les groupes, les territoires et les livres actifs, plus
+`worldChanges[]` et `actions[]` pour les mutations et actions exécutées pendant
+ce tick. La topologie statique (`cells[]`, terrain et dimensions) est envoyée
+une fois dans `world_initialized` ; les cellules modifiées doivent être
+reconstruites à partir de `worldChanges[]` et des obstacles complets du snapshot.
+Les événements `decision_made`, `action_completed` et `world_delta` restent
+émis séparément pour compatibilité/diagnostic, mais les consommateurs qui
+mettent à jour le monde doivent traiter le snapshot comme source de vérité et
+éviter d'appliquer deux fois ses mutations.
 
 Transport : WebSocket local, **trames texte UTF-8 contenant du JSON** (`camelCase`).
 SYNE envoie `WebSocketMessageType.Text`, jamais une trame binaire. Deux types de
@@ -23,9 +73,9 @@ est opaque et stable pendant le run (le mode batch peut utiliser `run-<seed>`).
 La réponse HTTP à `start`/`status` expose ce même identifiant pour permettre au
 client de corréler le pilotage et le flux.
 
-> **Implémentation V0.1 (SYNE-080, livré avec U1)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
+> **Implémentation actuelle (SYNE-080, contrat 0.2.0)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
 > zéro dépendance) dans `Simulation.Console`, activé par `--observe` (port `--observe-port`, défaut 5180,
-> bind `127.0.0.1`). Chaque tick émet **1 snapshot + 1 `tick_summary` + 1 `decision_made` + 1
+> bind `127.0.0.1`). Chaque tick émet **1 snapshot global complet + 1 `tick_summary` + 1 `decision_made` + 1
 > `action_completed` par entité, + événements de communication dès qu'un message circule**,
 > diffusion à **tous** les consommateurs connectés. L'émission
 > n'ajoute aucun tirage PRNG (déterminisme inchangé, DETERMINISM.md §3).
@@ -40,29 +90,39 @@ client de corréler le pilotage et le flux.
 | `tick` | uint | Numéro de tick courant |
 | `simulatedTimeMinutes` | uint | Temps simulé (minutes) |
 | `aliveCount` | uint | Entités vivantes |
-| `agents[]` | array | État des entités (position, santé, énergie, faim, soif, action courante...) |
-| `resources[]` | array | Réserves globales `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1) |
+| `agents[]` | array | État complet exposé de chaque entité (position, besoins, intention, action exécutée, traits, croyances, objectifs, confiance, mémoire) |
+| `resources[]` | array | Stocks globaux `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1), pas des stocks localisés par nœud |
 | `obstacles[]` | array | Constructions/obstacles statiques `{id, x, y, radius}` — depuis **SYNE ph11d** (SYNE-071), ordre d'insertion (déterminisme) (DATA_MODEL §2) |
+| `groups[]`, `territories[]`, `books[]` | arrays | État complet courant des systèmes activés |
+| `worldChanges[]` | array | Mutations d'obstacle de ce tick `{kind, id, x, y, radius}` ; vide si aucune |
+| `actions[]` | array | Résultat d'action du tick par agent : `{agentId, action, outcome, cause, energyDelta, hungerDelta, thirstDelta, fatigueDelta, reserve?, reserveConsumed?}` ; vide seulement si aucun agent |
 
 Exemple (format condensé) :
 
 ```json
-{ "type": "snapshot", "version": "0.1.0", "engineVersion": "0.11.0", "runId": "run-abc",
+{ "type": "snapshot", "version": "0.2.0", "engineVersion": "0.11.0", "runId": "run-abc",
   "tick": 5010, "simulatedTimeMinutes": 5010, "aliveCount": 98, "season": "spring", "seasonIndex": 0,
-  "agents": [ { "id": "a1", "position": {"x": 53.0, "y": 76.5}, "health": 80,
-                "energy": 60, "hunger": 30, "thirst": 40, "currentAction": "MoveTo" } ],
+  "agents": [ { "id": "1", "species": "Entité A", "position": {"x": 53.0, "y": 76.5},
+                "energy": 60, "hunger": 30, "thirst": 40,
+                "currentIntention": "Explore", "currentAction": "Explore" } ],
   "resources": [ { "type": "food", "quantity": 90 }, { "type": "water", "quantity": 912 },
                   { "type": "wood", "quantity": 50 }, { "type": "mineral", "quantity": 0 } ],
   "obstacles": [ { "id": "maison-1", "x": 100.0, "y": 100.0, "radius": 10.0 } ],
   "territories": [ { "id": "camp", "x": 250.0, "y": 250.0, "radius": 40.0, "memberCount": 12,
                      "members": [1, 2, 3, 4, 5] } ],
-  "groups": [ { "groupId": 1, "members": ["a1", "a2", "a3"], "size": 3,
-                "leaderId": "a1", "bornTick": 5000, "cohesion": 0.42,
-                "decision": "SeekFood", "consensus": 0.80 } ] }
+  "groups": [ { "groupId": 1, "members": [1, 2, 3], "size": 3,
+                "leaderId": 1, "bornTick": 5000, "cohesion": 0.42,
+                "decision": "SeekFood", "consensus": 0.80 } ],
+  "worldChanges": [ { "kind": "added", "id": "maison-1", "x": 100, "y": 100, "radius": 10 } ],
+  "actions": [ { "agentId": "1", "action": "Explore", "outcome": "executed",
+                 "energyDelta": -0.5, "hungerDelta": 0, "thirstDelta": 0,
+                 "fatigueDelta": 0 } ] }
 ```
 
-> V0.1 émet par entité : `id` (uint), `species`, `position{x,y}`, `energy`, `hunger`, `thirst`, `fatigue`,
-> `currentAction` (intention `DesireKind`, ex. `Idle`, `SeekWater`) ; `runId` = `run-<seed>` ;
+> Le contrat `0.2.0` ajoute les champs agrégés `worldChanges[]` et `actions[]` au snapshot (additif).
+> `agents[].id` est sérialisé comme chaîne décimale par SYNE ; `currentIntention` est l'objectif
+> courant et `currentAction` l'action atomique exécutée au tick. Les deux peuvent être `Idle`.
+> `runId` = `run-<seed>` ;
 > `engineVersion` = `0.11.0` (jalon U8 — livres, SYNE-121 : `world.book_written` / `world.book_read` +
 > champ `books[]` du snapshot, **additifs** MINOR ; les ajouts précédents de saisons/territoires restent actifs). Les champs `season`/`seasonIndex`
 > (SYNE-072) donnent la saison courante (nom camelCase + index 0..3, déterministe depuis le tick).
@@ -148,19 +208,35 @@ Exemple :
 
 > **`world.book_written` / `world.book_read` (SYNE-121)** : mutations émises après le snapshot correspondant. Écriture : `agentId` auteur, `targetId` livre, `value = {id, title, writtenTick, cost}`. Lecture : `agentId` lecteur, `targetId` livre, `value = {id, readBenefit}`. Le snapshot `books[]` (seulement si `world.books.enabled`) contient `{id, authorId, title, content, writtenTick, readCount, readers[]}`. Les lecteurs distincts conservent l’ordre de première lecture. Aucun effet cognitif n’est appliqué avant le futur moteur mémoire.
 
-## 3. Contrat de contrôle — HTTP 5181
+## 3. Contrat de contrôle — HTTP (5181 par défaut)
 
-API REST locale de contrôle, relayée par PRISM (Monographie §5.4.2) :
+États : `idle`, `worldPreparing`, `ready`, `running`, `paused`, `finished`.
+`POST /api/control/prepare` prépare le monde; `GET /api/world` le restitue.
+`POST /api/control/ready` accepte `{ "worldVersion": "1.0" }` (optionnel) et
+accuse réception de la préparation; le statut expose
+`worldReadyAcknowledged`. Après un `prepare` explicite, `start` exige cet accusé
+et répond `409 world_not_ready` sinon. Un `start` direct conserve
+l'auto-préparation historique et est implicitement prêt.
+Les mutations d'obstacles sont regroupées dans `world_delta` :
+`{type, runId, tick, changes:[{kind:"added"|"removed",id,x,y,radius}]}`.
+
+API REST locale de contrôle consommée par les clients (dont le plugin PRISM
+dans Unreal ; Monographie §5.4.2) :
 
 | Méthode | Endpoint | Corps |
 | :-- | :-- | :-- |
+| POST | `/api/control/prepare` | `{ seed?, ticksPerSecond?, config? }` |
+| GET | `/api/world` | — |
+| POST | `/api/control/ready` | `{ worldVersion? }` |
 | POST | `/api/control/start` | `{ seed, config }` (optionnel) |
 | POST | `/api/control/pause` | — |
 | POST | `/api/control/resume` | — |
 | POST | `/api/control/reset` | `{ seed, runId }` |
 | GET | `/api/control/status` | — |
 
-- Binding local : `127.0.0.1:5181`.
+- Binding local par défaut : `127.0.0.1:5181`. Le port HTTP se configure avec
+  `--serve-port`; le port WebSocket avec `--observe-port` (défauts 5181 et
+  5180). Vérifier la configuration effective plutôt que supposer des ports fixes.
 - État interrogé par polling (~2 s, [HÉRITÉ]).
 - **Implémentation V0.1 (SYNE-113, livré avec U8)** : serveur BCL (`HttpListener`,
   zéro dépendance, ADR-002/003) dans `Simulation.Console`, activé par `--serve`
