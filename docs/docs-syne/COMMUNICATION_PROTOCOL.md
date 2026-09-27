@@ -8,7 +8,7 @@
 
 ---
 
-> ⚠ Ce document traite de la **communication entre entités dans le monde simulé** (pulsations lumineuses). Pour le transport **entre composants** (SYNE↔ECHOS↔PRISM), voir `../COMMUNICATION.md` et `API_CONTRACTS.md`.
+> ⚠ Ce document traite de la **communication entre entités dans le monde simulé** (pulsations lumineuses). Pour le transport **entre composants** (SYNE↔ECHOS↔PRISM, projet Unreal utilisant le plugin PRISM-LDK / `PrismLdk`), voir `../COMMUNICATION.md` et `API_CONTRACTS.md`.
 
 ## 1. Le principe : pulsations lumineuses
 

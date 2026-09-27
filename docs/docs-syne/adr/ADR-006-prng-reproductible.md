@@ -1,7 +1,7 @@
 # ADR-006 : PRNG reproductible
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.7 (ADR-006), §3.6.2–3.6.4

@@ -67,7 +67,7 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 | Communication (SYNE ph5) | information locale (rayon), interception, relais ≤ 2 sauts | `dotnet test --filter "CommunicationSystemTests"` |
 | Performance | micro-benchmark grille < budget CI ; **débits 50/500/1000 ≥ 120/30/20 t/s (ph9)** | `dotnet test --filter "PerceptionBenchmarkTests|ScaleTargetsTests"` |
 | Tests | **407 tests (385 Core + 22 Console), 94,01 % de couverture** (≥ 80 % requis, SYNE-100) ; jalons T0–T5 activés (SYNE-122) | `dotnet test --collect:"XPlat Code Coverage"` |
-| Déterminisme (SYNE-102) | golden `0x27fad50065d8c4a4` + baseline d'état `0x072a488aa18c05eb` inchangés | `dotnet test --filter "DeterminismRegressionTests|Ph10DeterminismBaselineTests"` |
+| Déterminisme (SYNE-102) | golden `0x27fad50065d8c4a4` + baseline d'état `0x072a488aa18c05eb` (journaux normalisés LF, indépendants de l'OS) | `dotnet test --filter "DeterminismRegressionTests|Ph10DeterminismBaselineTests"` |
 | Intégration (SYNE-101) | 150 ticks chaînés sans perte (contiguïté 1..N) | `dotnet test --filter "ObservabilityChainedLoopTests"` |
 | Contrôle (SYNE-113) | pilotage HTTP :5181 non intrusif (run piloté == ininterrompu) | `dotnet test --filter "ControlServerWireTests"` |
 | Jalons T0–T5 (SYNE-122) | T0 50/1000 sans crash + état valide déterministe ; T1 50/2000 croyances divergentes ; T2 traits → décisions différentes (situation identique) ; T3 info locale ; T4 reproductibilité benchmark ; T5 suite ≥ 160 tests | `dotnet test --filter "MilestoneT0T5Tests"` |
@@ -84,5 +84,8 @@ Garantir — par des tests automatisés — la **correction**, le **déterminism
 
 ## Points restés ouverts dans ce document
 - Répartition numérique exacte des tests (par système) à établir lors de l'implémentation.
-- Outillage exact de tests Godot PRISM (hors SYNE) et outillage de tests front (Vitest) — voir `CI_CD.md`.
+- Les tests du plugin PRISM-LDK (`PrismLdk`) et du projet Unreal PRISM sont
+  hors périmètre SYNE ; voir leurs projets respectifs. Le moteur et
+  `syne-mock` ont des suites distinctes : les tests du mock valident ses
+  contrats simulés, pas l'équivalence de ses algorithmes avec SYNE.
 | Livres (SYNE-121) | Coût d’écriture débité, tick poinçonné, lecteurs distincts, mutation tracée, désactivation par défaut, snapshot et reprise, événements console `world.book_written`/`world.book_read` — `SimulationLoopTests`, `ObservabilityTerritoryTests` | `dotnet test --filter "FullyQualifiedName~Books"` |
