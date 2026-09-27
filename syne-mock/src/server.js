@@ -160,8 +160,13 @@ function createServer(options = {}) {
     }),
     close: () => new Promise(resolve => {
       simulation.stop();
-      websocketServer.close();
-      dataServer.close(() => httpServer.close(resolve));
+      for (const client of clients) client.terminate();
+      clients.clear();
+      websocketServer.close(() => {
+        dataServer.closeAllConnections();
+        httpServer.closeAllConnections();
+        dataServer.close(() => httpServer.close(resolve));
+      });
     })
   };
 }
