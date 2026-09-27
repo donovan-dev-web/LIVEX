@@ -134,6 +134,17 @@ class Book(BaseModel):
     readers: list[int] = Field(default_factory=list)
 
 
+class WorldInitialized(BaseModel):
+    """Initial world description emitted before the first SYNE snapshot."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    type: Literal["world_initialized"]
+    version: str
+    seed: int = Field(ge=0)
+    world: dict[str, Any]
+
+
 class WorldSnapshot(BaseModel):
     """Snapshot de monde — message système ``snapshot`` (API_CONTRACTS.md §2.1)."""
 
@@ -181,7 +192,7 @@ class ExternalEvent(BaseModel):
         return self
 
 
-Message = WorldSnapshot | ExternalEvent
+Message = WorldInitialized | WorldSnapshot | ExternalEvent
 """Union des messages reçus sur le WebSocket :5180."""
 
 
@@ -199,8 +210,8 @@ class InvalidMessageError(ValueError):
 def parse_message(payload: str | bytes) -> Message:
     """Parse un message du WebSocket :5180 de façon déterministe.
 
-    Le wrapper ``snapshot`` (ADR-004) est routé vers :class:`WorldSnapshot`,
-    tout autre ``type`` vers :class:`ExternalEvent`.
+    Les wrappers ``world_initialized`` et ``snapshot`` sont routés vers leurs
+    modèles système ; les autres types sont routés vers :class:`ExternalEvent`.
     """
     from pydantic import ValidationError
 
@@ -222,6 +233,8 @@ def parse_message(payload: str | bytes) -> Message:
         raise InvalidMessageError("json", "le message doit être un objet JSON")
 
     try:
+        if obj.get("type") == "world_initialized":
+            return WorldInitialized.model_validate(obj)
         if obj.get("type") == "snapshot":
             return WorldSnapshot.model_validate(obj)
         return ExternalEvent.model_validate(obj)
