@@ -74,7 +74,7 @@ public class ObservabilityNonIntrusionTests
                     _log.Append('|');
                 }
 
-                _log.AppendLine();
+                _log.Append('\n');
             }
         }
     }
