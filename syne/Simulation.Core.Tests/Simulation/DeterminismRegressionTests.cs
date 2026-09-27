@@ -61,7 +61,7 @@ public class DeterminismRegressionTests
                     log.Append('|');
                 }
 
-                log.AppendLine();
+                log.Append('\n');
             }
         }
 
@@ -108,9 +108,9 @@ public class DeterminismRegressionTests
         // Épinglé au jalon SYNE ph6 (engineVersion 0.5.0) puis ré-épinglé au jalon ph7b
 // (engineVersion 0.6.0) : les fidélités SYNE-074…077 (mortalité, naissance consentie
 // fidèle, décision collective → objectifs, cheminement A* déterministe) n'altèrent pas
-// ce scénario — le checksum est 0x707a374971ff8ec9 — DETERMINISM.md §7 impose recalcul
+// ce scénario — le checksum reste 0x27fad50065d8c4a4 — DETERMINISM.md §7 impose recalcul
 // + bump MINOR à chaque altération bit-à-bit de la trajectoire.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x707a374971ff8ec9", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x27fad50065d8c4a4", $"0x{Fnv1a(log):x16}");
     }
 }

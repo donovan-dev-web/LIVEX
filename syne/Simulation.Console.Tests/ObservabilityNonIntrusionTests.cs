@@ -74,7 +74,7 @@ public class ObservabilityNonIntrusionTests
                     _log.Append('|');
                 }
 
-                _log.AppendLine();
+                _log.Append('\n');
             }
         }
     }
@@ -149,7 +149,7 @@ public class ObservabilityNonIntrusionTests
             rec.Record(loop);
         }
 
-        Assert.Equal("0x707a374971ff8ec9", $"0x{Fnv1a(rec.Text):x16}");
+        Assert.Equal("0x27fad50065d8c4a4", $"0x{Fnv1a(rec.Text):x16}");
     }
 
     [Fact]
