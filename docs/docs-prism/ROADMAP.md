@@ -1,54 +1,42 @@
-# ROADMAP.md
+# ROADMAP — PRISM
 
 **Composant** : PRISM
-**Statut** : [DRAFT]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `../ROADMAP.md` (racine), `TRANSPORT_API.md`
-**Source Monographie** : §5.15 (évolution), §5.14 (limites)
+**Statut** : DRAFT
+**Dernière mise à jour** : 27 septembre 2026
+**Dépend de** : [`../../ROADMAP.md`](../../ROADMAP.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---
 
 ## 1. Principes
 
-- Road map **en ordre, sans dates** (décision utilisateur).
-- PRISM **consomme les contrats SYNE** (WS 5180 / HTTP 5181) et s'**intègre aux vues ECHOS** (interface définitive intégrée à ECHOS).
+- PRISM est le projet Unreal final de LIVEX et intègre le plugin PRISM-LDK
+  (*LIVEX Development Kit*, module technique `PrismLdk`).
+- SYNE conserve les décisions et l'état canonique.
+- Le C++ du plugin expose des contrats, types et événements Blueprint et
+  reste mince. Le projet PRISM porte l'expérience et le rendu.
+- Faire évoluer les contrats en cohérence avec la documentation SYNE et le
+  versionnage transverse.
 
-## 2. Les phases (ordre)
+## 2. Étapes d'évolution
 
-| # | Intitulé | Contenu |
-| :-- | :-- | :-- |
-| 0 | Socle Godot .NET | Scène `main.tscn`, `SimClient.cs` (WS 5180, reconnexion 1,5 s), caméra, HUD de base |
-| 1 | Rendu du monde | Mapping 2D→3D, sol PlaneMesh, obstacles, ressources (sphères, taille normalisée) |
-| 2 | Rendu des entités | Capsules, code couleur santé/action, interpolation, indicateur de cap, animation de mort |
-| 3 | Sélection & inspection | Raycast clic, `CircleShape2D`, `BeliefViewer` |
-| 4 | Intégration ECHOS | Consommer les vues du tableau de bord (intégrées à ECHOS) en complément de PRISM |
-| 5 | Visualisation croyances | Heatmap 50×50, bulles (> 0.8, 2 s) |
-| 6 | Visualisation sociale | Graphe de relations, heatmap confiance 256×256, graphe D3 |
-| 7 | Visualisation des groupes | Couleurs par groupe (hash), GroupPanel |
-| 8 | Communication visuelle | Pulsations lumineuses (éclairs, 0,5 s), file à minuterie |
-| 9 | Robuste & perf | Culling > 1000 entités, limites V1 corrigées (taille du monde transmise), minimap |
-| 10 | Tests & validation | Stratégie `TESTING.md`, checklist visuelle, tests transport |
-
-## 3. Risques et atténuation
-
-| Risque | Atténuation |
+| Étape | Objectif |
 | :-- | :-- |
-| Le choix du moteur définitif change | PRISM = framework intermédiaire : seuls les adaptateurs changent (principe invariant). |
-| Rendu lourd à haute échelle (1000 capsules) | Culling, LOD, minimap (phases 9+). |
-| Dissonance entre interface web ECHOS et rendu Godot | Définition claire du partage via API ECHOS :5000 + contrats partagés. |
+| 1 | Stabiliser les contrats/types Blueprint et l'intégration de PRISM-LDK dans le projet PRISM |
+| 2 | Valider avec SYNE réel le cycle `Prepare` → `world_initialized` → `Ready` → `Start`, puis les snapshots/deltas/événements |
+| 3 | Développer dans PRISM la génération de présentation à partir du monde SYNE et la mise à jour stable par ID |
+| 4 | Ajouter inspection, vues de groupe/relations et indicateurs de run, selon les données réellement exposées |
+| 5 | Mesurer le coût des snapshots, du nombre d'entités et du rendu ; optimiser dans PRISM sans déplacer la logique décisionnelle |
+| 6 | Maintenir les tests interop, les erreurs de transport, la compatibilité de contrat et les valeurs inconnues |
 
-## 4. Évolution future (§5.15)
+Ces étapes sont des objectifs, non une déclaration que les fonctions visuelles
+sont déjà implémentées par le plugin.
 
-- **Mode joueur-habitant** : l'utilisateur pourra incarner une entité dans le monde simulé.
-- Représentation des constructions et territoires.
-- Affichage multi-échelle (zoom région → vue globale).
-- Intégration de données ECHOS directement dans la scène.
-- Effets visuels environnementaux (saisons, météo, jour/nuit).
+## 3. Risques et réponse
 
-Le **moteur graphique définitif** (éventuellement Unreal/Unity) sera choisi après comparaison des besoins de PRISM, du pipeline d'assets, des performances et des contraintes de développement.
-
----
-
-## Points restés ouverts dans ce document
-- Aucune date n'est posée.
-- Le moteur graphique définitif reste ouvert ([OUVERT], §5.2.3) — pivot potentiel documenté.
+| Risque | Réponse |
+| :-- | :-- |
+| PRISM confond état visuel et état simulé | Conserver SYNE comme autorité ; documenter toute projection Unreal comme visuelle |
+| Contrat modifié sans coordination | Aligner les évolutions sur `docs-syne/API_CONTRACTS.md` et le versionnage partagé |
+| Traitement double d'une mutation via snapshot et événement | Utiliser le snapshot comme état courant ; réserver les événements aux notifications |
+| Les tests mock sont pris pour une preuve d'équivalence | Exécuter les vérifications décisionnelles et trajectoires contre SYNE réel |
+| Le plugin devient un moteur de rendu ou de décision | Garder sa frontière limitée à l'intégration C++/Blueprint ; placer expérience et rendu dans PRISM |

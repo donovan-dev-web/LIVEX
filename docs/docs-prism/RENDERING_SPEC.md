@@ -1,61 +1,52 @@
-# RENDERING_SPEC.md
+# RENDERING_SPEC — Objectifs de rendu PRISM
 
 **Composant** : PRISM
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `SCENE_SPEC.md`
-**Source Monographie** : §5.5, §5.6
+**Dernière mise à jour** : 27 septembre 2026
+**Dépend de** : [`SCENE_SPEC.md`](SCENE_SPEC.md)
 
 ---
 
-## 1. Rendu des entités
+## 1. Statut
 
-Chaque entité est représentée par une **capsule 3D** avec :
+Les points ci-dessous sont des objectifs visuels issus des spécifications
+historiques PRISM. Ils ne décrivent pas des fonctionnalités déjà fournies par
+`PrismLdk` et ne prescrivent pas de classes ou d'assets Unreal. Leur
+implémentation relève du projet Unreal PRISM.
 
-- **Couleur** : par santé (vert → rouge) ou par action (touche A pour basculer).
-- **Interpolation** : la position est interpolée entre deux snapshots pour un mouvement fluide.
-- **Animation de mort** : fondu progressif.
-- **Indicateur de cap** : ligne depuis la position jusqu'à `position + heading × 15`.
+## 2. Entités et ressources
 
-## 2. Code couleur des entités
+- Représenter les agents d'une manière lisible et cohérente avec leur état
+  reçu : position, action ou indicateurs de besoin disponibles dans le
+  snapshot.
+- Interpoler visuellement entre états si nécessaire, sans altérer ni retarder
+  l'état autoritaire SYNE.
+- Distinguer les ressources par type et présenter leur quantité avec
+  discernement. Les snapshots donnent des stocks globaux par type ; ne pas
+  les traiter comme des stocks locaux attachés à des objets du décor.
+- Permettre l'identification et l'inspection d'un agent via son identifiant
+  stable SYNE.
 
-| Condition | Couleur |
-| :-- | :-- |
-| Énergie basse (< 20) | Rouge |
-| Faim élevée (> 80) | Orange |
-| En bonne santé | Vert |
-| Dans un groupe | Couleur du groupe (hash HSV) |
-| Sélectionné | Modulation blanche |
-| Non sélectionné | Modulation grise |
+Les valeurs exactes, champs optionnels et extensions du snapshot sont définis
+dans [`../docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md).
 
-## 3. La sélection
+## 3. Principes de lisibilité
 
-- La sélection se fait par **clic** (raycast physique).
-- Un `CircleShape2D` de rayon **5** sert de zone de détection.
-- L'entité sélectionnée ouvre le panneau `BeliefViewer` (cf. `VISUALIZATION_SPEC.md`).
+- Les codes couleur (état, groupe, sélection ou type d'événement) doivent
+  rester distinguables et accompagnés d'un indice accessible lorsque la
+  couleur seule est ambiguë.
+- L'animation et l'interpolation sont des projections de présentation ; elles
+  ne constituent pas une nouvelle trajectoire simulée.
+- La topologie, les obstacles et la taille du monde reçus de SYNE guident la
+  représentation ; PRISM reste responsable du rendu, du culling et
+  des performances.
 
-## 4. Rendu des ressources
+## 4. Limites de données à respecter
 
-Les ressources sont représentées par des **sphères** :
-
-| Type | Couleur |
-| :-- | :-- |
-| Nourriture | Vert |
-| Eau | Bleu |
-
-- **Taille normalisée** par la proportion `quantité / capacité`.
-- Des **taches translucides** sur le sol indiquent les zones de ressource.
-
-## 5. Limites connues du rendu (Monographie §5.14)
-
-1. **V1** : obstacles et taille du monde non transmis par le contrat (sol fixe 500×500, obstacles ignorés) — corrigé en V2.
-2. Pas de sons.
-3. Pas d'animations squelettiques (capsules simples).
-4. Pas de minimap (navigation à grande échelle par zoom).
-5. Pas de rendu LOD des entités distantes (V1).
-6. **Complexité** : 1000 entités = 1000 capsules à rendre (culling nécessaire au-delà).
-
----
-
-## Points restés ouverts dans ce document
-- V0.1 : périmètre de correction des limites (taille du monde transmise, minimap, LOD) à prioriser dans `ROADMAP.md` PRISM.
+- SYNE fournit des coordonnées logiques 2D ; l'altitude et la projection 3D
+  sont des choix de présentation.
+- Les ressources initiales de `WorldDescription` sont des marqueurs de
+  placement ; les quantités des snapshots sont des stocks globaux.
+- Les détails de terrain, hauteur ou navigation ne doivent pas être inventés
+  comme s'ils étaient simulés si le contrat ne les fournit pas.
+- `OnSnapshot` donne l'état courant complet. Les événements/deltas ne doivent
+  pas faire appliquer deux fois les mêmes mutations.
