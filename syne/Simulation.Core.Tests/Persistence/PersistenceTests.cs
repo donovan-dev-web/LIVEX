@@ -98,6 +98,12 @@ public class PersistenceTests
 
     private static string TempDb() => Path.Combine(Path.GetTempPath(), $"livex-persist-{Guid.NewGuid():N}.db");
 
+    private static void DeleteTempDb(string db)
+    {
+        SqliteConnection.ClearAllPools();
+        File.Delete(db);
+    }
+
     /// <summary>
     /// SYNE-111 : sauvegarde à T=100 puis reprise — la trajectoire 101→200 du run
     /// relancé est bit-à-bit identique au run ininterrompu (mémoire, intentions,
@@ -125,17 +131,19 @@ public class PersistenceTests
                 store.SaveTick("run-1", saved);
             }
 
-            using var reloadStore = new SqlitePersistenceStore(db);
-            SimulationLoop resumed = reloadStore.LoadLatestRun();
-            string actual = BuildStateLog(resumed, advance: 100);
+            using (var reloadStore = new SqlitePersistenceStore(db))
+            {
+                SimulationLoop resumed = reloadStore.LoadLatestRun();
+                string actual = BuildStateLog(resumed, advance: 100);
 
-            Assert.Equal(expected, actual);
-            Assert.Equal(Fnv1a(expected), Fnv1a(actual));
-            Assert.Equal((ulong)200, resumed.CurrentTick);
+                Assert.Equal(expected, actual);
+                Assert.Equal(Fnv1a(expected), Fnv1a(actual));
+                Assert.Equal((ulong)200, resumed.CurrentTick);
+            }
         }
         finally
         {
-            File.Delete(db);
+            DeleteTempDb(db);
         }
     }
 
@@ -159,17 +167,19 @@ public class PersistenceTests
                 store.SaveTick("run-rng", loop);
             }
 
-            using var reloadStore = new SqlitePersistenceStore(db);
-            SimulationLoop resumed = reloadStore.LoadLatestRun();
+            using (var reloadStore = new SqlitePersistenceStore(db))
+            {
+                SimulationLoop resumed = reloadStore.LoadLatestRun();
 
-            Assert.Equal(snapshot.Rng.S0, resumed.Rng.State.S0);
-            Assert.Equal(snapshot.Rng.S1, resumed.Rng.State.S1);
-            Assert.Equal(snapshot.Rng.S2, resumed.Rng.State.S2);
-            Assert.Equal(snapshot.Rng.S3, resumed.Rng.State.S3);
+                Assert.Equal(snapshot.Rng.S0, resumed.Rng.State.S0);
+                Assert.Equal(snapshot.Rng.S1, resumed.Rng.State.S1);
+                Assert.Equal(snapshot.Rng.S2, resumed.Rng.State.S2);
+                Assert.Equal(snapshot.Rng.S3, resumed.Rng.State.S3);
+            }
         }
         finally
         {
-            File.Delete(db);
+            DeleteTempDb(db);
         }
     }
 
@@ -197,17 +207,19 @@ public class PersistenceTests
                 }
             }
 
-            using var reloadStore = new SqlitePersistenceStore(db);
-            SimulationLoop resumed = reloadStore.LoadLatestRun();
+            using (var reloadStore = new SqlitePersistenceStore(db))
+            {
+                SimulationLoop resumed = reloadStore.LoadLatestRun();
 
-            Assert.Equal((ulong)150, resumed.CurrentTick);
-            SimulationSnapshot referenceSnapshot = SimulationSnapshotCodec.Capture(loop);
-            SimulationSnapshot resumedSnapshot = SimulationSnapshotCodec.Capture(resumed);
-            Assert.Equal(SimulationSnapshotCodec.Hash(referenceSnapshot), SimulationSnapshotCodec.Hash(resumedSnapshot));
+                Assert.Equal((ulong)150, resumed.CurrentTick);
+                SimulationSnapshot referenceSnapshot = SimulationSnapshotCodec.Capture(loop);
+                SimulationSnapshot resumedSnapshot = SimulationSnapshotCodec.Capture(resumed);
+                Assert.Equal(SimulationSnapshotCodec.Hash(referenceSnapshot), SimulationSnapshotCodec.Hash(resumedSnapshot));
+            }
         }
         finally
         {
-            File.Delete(db);
+            DeleteTempDb(db);
         }
     }
 
@@ -221,20 +233,22 @@ public class PersistenceTests
         string db = TempDb();
         try
         {
-            using var store = new SqlitePersistenceStore(db);
-            const string expected = "runs;tick_states;agents;agent_snapshots;resources;resource_snapshots;groups;group_memberships;events;messages;metrics";
-            List<string> actual = TableNames(db);
-            foreach (string table in expected.Split(';'))
+            using (var store = new SqlitePersistenceStore(db))
             {
-                Assert.Contains(table, actual);
-            }
+                const string expected = "runs;tick_states;agents;agent_snapshots;resources;resource_snapshots;groups;group_memberships;events;messages;metrics";
+                List<string> actual = TableNames(db);
+                foreach (string table in expected.Split(';'))
+                {
+                    Assert.Contains(table, actual);
+                }
 
-            Assert.Equal(11, actual.Count);
-            Assert.Equal(2, StoreVersion(db));
+                Assert.Equal(11, actual.Count);
+                Assert.Equal(2, StoreVersion(db));
+            }
         }
         finally
         {
-            File.Delete(db);
+            DeleteTempDb(db);
         }
     }
 
@@ -260,12 +274,14 @@ public class PersistenceTests
                 store.BeginRun("run-5", "e", 5, config);
             }
 
-            using var reloadStore = new SqlitePersistenceStore(db);
-            Assert.Equal(2, reloadStore.CountRuns());
+            using (var reloadStore = new SqlitePersistenceStore(db))
+            {
+                Assert.Equal(2, reloadStore.CountRuns());
+            }
         }
         finally
         {
-            File.Delete(db);
+            DeleteTempDb(db);
         }
     }
 
@@ -314,28 +330,30 @@ public class PersistenceTests
                 Assert.Equal(snapshot.World.FoodStock, resumed.Resources.Stock(World.ResourceKind.Food), 10);
             }
 
-            using var resourcesConnection = new SqliteConnection($"Data Source={db}");
-            resourcesConnection.Open();
-            using var resourcesCommand = resourcesConnection.CreateCommand();
-            resourcesCommand.CommandText = "SELECT type FROM resources ORDER BY type;";
-            var types = new List<string>();
-            using (var reader = resourcesCommand.ExecuteReader())
+            using (var resourcesConnection = new SqliteConnection($"Data Source={db}"))
             {
-                while (reader.Read())
+                resourcesConnection.Open();
+                using var resourcesCommand = resourcesConnection.CreateCommand();
+                resourcesCommand.CommandText = "SELECT type FROM resources ORDER BY type;";
+                var types = new List<string>();
+                using (var reader = resourcesCommand.ExecuteReader())
                 {
-                    types.Add(reader.GetString(0));
+                    while (reader.Read())
+                    {
+                        types.Add(reader.GetString(0));
+                    }
                 }
-            }
 
-            Assert.Contains("mineral", types);
-            Assert.Contains("food", types);
-            Assert.Contains("water", types);
-            Assert.Contains("wood", types);
-            Assert.Equal(4, types.Count);
+                Assert.Contains("mineral", types);
+                Assert.Contains("food", types);
+                Assert.Contains("water", types);
+                Assert.Contains("wood", types);
+                Assert.Equal(4, types.Count);
+            }
         }
         finally
         {
-            File.Delete(db);
+            DeleteTempDb(db);
         }
     }
 

@@ -53,7 +53,7 @@ public class TickBudgetTests
             log.Append((loop.Cognition.HasMind(entity.Id.Value)
                     ? loop.Cognition.MindOf(entity.Id.Value).Needs.Energy
                     : 0.0).ToString("0.00", CultureInfo.InvariantCulture));
-            log.AppendLine();
+            log.Append('\n');
         }
 
         ulong hash = FnvOffsetBasis;
@@ -126,7 +126,7 @@ public class TickBudgetTests
                     log.Append('|');
                 }
 
-                log.AppendLine();
+                log.Append('\n');
             }
 
             hash = Fnv1a(log.ToString());
