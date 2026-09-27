@@ -58,7 +58,7 @@ public class Ph10DeterminismBaselineTests
             log.Append($"groups={loop.Cognition.Groups.Active.Count};");
             log.Append($"births={loop.Cognition.Birth.LastBirths.Count};");
             log.Append($"deaths={loop.Cognition.Death.LastDeaths.Count}");
-            log.AppendLine();
+            log.Append('\n');
             foreach (Entity entity in loop.World.Entities.OrderBy(entity => entity.Id.Value))
             {
                 Simulation.Core.Cognition.MindState mind = loop.Cognition.MindOf(entity.Id.Value);
@@ -81,7 +81,7 @@ public class Ph10DeterminismBaselineTests
                 log.Append(mind.Trust.Count.ToString(CultureInfo.InvariantCulture));
                 log.Append(';');
                 log.Append(mind.Beliefs.Count.ToString(CultureInfo.InvariantCulture));
-                log.AppendLine();
+                log.Append('\n');
             }
         }
 
@@ -130,6 +130,6 @@ public class Ph10DeterminismBaselineTests
         // de la perception, DETERMINISM.md §7) — toute altération bit-à-bit de la
         // trajectoire change ce checksum et impose un recalcul + bump MINOR.
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0xca1a20b87ad385a0", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x072a488aa18c05eb", $"0x{Fnv1a(log):x16}");
     }
 }
