@@ -1,0 +1,14 @@
+{
+  "name": "syne-mock",
+  "version": "0.1.0",
+  "description": "Deterministic Node.js mock of the SYNE observability and control contracts.",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
