@@ -13,7 +13,7 @@
 > **Historique uniquement.** Cette décision concernait le prototype Godot et
 > n'est plus la direction actuelle de PRISM. Elle est **supersédée par l'ADR-002**
 > (Unreal Engine 5.8 + plugin PRISM-LDK, module technique `PrismLdk`), qui
-> formality ce choix. Voir [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
+> formalise ce choix. Voir [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
 
 ## Contexte
 

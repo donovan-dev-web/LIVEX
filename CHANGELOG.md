@@ -53,6 +53,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - `CONTRIBUTING.md` : ajout de la validation de compilation du plugin PRISM-LDK dans l'hôte Unreal de développement **et** dans le projet PRISM final.
 
 ### Fixed
+- `docs/docs-prism/adr/ADR-001-choix-godot.md` : la coquille « qui *formality* ce choix » est corrigée en « qui *formalise* ce choix ». L'entrée `CHANGELOG.md` qui annonce cette correction décrivait en réalité la coquille de `CHANGELOG.md` lui-même ; le fichier ADR visé n'avait jamais été corrigé. Saut de ligne final ajouté à cet ADR et à `docs/docs-prism/adr/README.md`.
 - `CHANGELOG.md` : la section `## [Unreleased]` cumulait des sous-sections dupliquées (`### Changed` ×3, `### Added` ×2) et une ligne blanche parasite coupant une liste en deux, ce qui cassait le rendu de la section et la comparaison d'un release. Sections regroupées et ordonnées `Added` → `Changed` → `Fixed` → `Deprecated`, avec correction de la coquille « L'ADR-002 *formality* ce choix » → « *formalise* ce choix ».
 - Cadrage Jalon U8 (PR cadrage docs) : planche U8 du `ROADMAP` racine recalée sur le backlog réel — plage ECHOS `080…093` fictive remplacée par `080…085` (ph8, livrés U7) + `090…092` (ph9) ;
 - Ajout de la carte manquante **SYNE-113** (serveur de contrôle HTTP :5181, cible réelle du relais `controlClient` ECHOS — absente du backlog) ;
