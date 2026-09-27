@@ -19,6 +19,31 @@ Ce document décrit le pipeline d'intégration et de déploiement continu de LIV
 - **Échec = blocage** : un job rouge bloque la fusion (protection de branche).
 - **Conteneurisation** : Docker multi-stage ; registre GHCR (GitHub Container Registry).
 
+### 2.1 Protection de branche
+
+`main` et `develop` sont couverts par deux rulesets repository (`mainRules` et
+`developRules`), tous deux en `enforcement: active` et sans acteur de contournement.
+
+| Règle | Effet |
+| :-- | :-- |
+| `pull_request` | aucune modification directe de la branche ; merge par **squash uniquement**, conversations résolues |
+| `required_status_checks` | `Composants modifiés` et `Structure & conventions (transverse)` doivent être vertes |
+| `strict_required_status_checks_policy` | la branche doit être à jour : le dernier commit de la branche est testé |
+| `non_fast_forward` | pas de force-push |
+| `deletion` | pas de suppression de la branche |
+
+Seuls les deux jobs qui s'exécutent **toujours** sont exigés. Les jobs par
+composant sont filtrés par chemin et rapportent `skipped` quand le composant
+n'est pas touché : les exiger ne apporterait rien, tout en couplant la protection
+à la liste des jobs.
+
+`required_signatures` a été retiré de `mainRules` : aucun commit du dépôt n'est
+signé, la règle aurait rendu `main` impossible à mettre à jour. Elle peut être
+réactivée quand la signature de commits sera en place.
+
+> Renommer un des deux jobs exigés, ou changer son `name`, bloque tous les
+> merges jusqu'à ce que le ruleset soit mis à jour.
+
 ## 3. Pipeline d'intégration continue (`ci.yml`)
 
 | Étape | Outil | Critère de succès |
