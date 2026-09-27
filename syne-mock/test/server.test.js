@@ -4,6 +4,20 @@ const http = require('node:http');
 const WebSocket = require('ws');
 const { createServer, Simulation } = require('../src/server');
 
+function openServer(t, options) {
+  const server = createServer(options);
+  t.after(() => server.close());
+  return server;
+}
+
+function closeClient(client) {
+  if (client.readyState === WebSocket.CLOSED) return Promise.resolve();
+  return new Promise(resolve => {
+    client.once('close', resolve);
+    client.close();
+  });
+}
+
 test('generation is deterministic and has the documented population', () => {
   const a = new Simulation({ seed: 7, agents: 50 }); a.start(); a.step(); a.stop();
   const b = new Simulation({ seed: 7, agents: 50 }); b.start(); b.step(); b.stop();
@@ -30,8 +44,8 @@ test('advanced systems are represented in snapshots and events', () => {
   simulation.stop();
 });
 
-test('HTTP control and websocket emit contract messages', async () => {
-  const server = createServer({ agents: 2, ticksPerSecond: 100, maxTicks: 2 });
+test('HTTP control and websocket emit contract messages', async (t) => {
+  const server = openServer(t, { agents: 2, ticksPerSecond: 100, maxTicks: 2 });
   await server.listen(0, 0);
   const controlPort = server.httpServer.address().port;
   const dataPort = server.dataServer.address().port;
@@ -42,11 +56,11 @@ test('HTTP control and websocket emit contract messages', async () => {
   await new Promise(resolve => setTimeout(resolve, 50));
   assert.ok(messages.some(x => x.type === 'snapshot' && x.tick === 1));
   const status = await (await fetch(`http://127.0.0.1:${controlPort}/api/control/status`)).json();
-  assert.equal(status.tick, 1); client.close(); await server.close();
+  assert.equal(status.tick, 1); await closeClient(client);
 });
 
-test('explicit prepare requires ready and exposes the world contract', async () => {
-  const server = createServer({ agents: 0, ticksPerSecond: 100, maxTicks: 1 });
+test('explicit prepare requires ready and exposes the world contract', async (t) => {
+  const server = openServer(t, { agents: 0, ticksPerSecond: 100, maxTicks: 1 });
   await server.listen(0, 0);
   const port = server.httpServer.address().port;
   const post = (path, body = {}) => fetch(`http://127.0.0.1:${port}${path}`, {
@@ -73,7 +87,7 @@ test('explicit prepare requires ready and exposes the world contract', async () 
   const preparedBody = await prepared.json();
   assert.equal(preparedBody.ticksPerSecond, 24);
   assert.deepEqual(preparedBody.world.obstacles, [
-    { id: 'configured-rock', x: 20, y: 20, radius: 3 }
+    { id: 'configured-rock', type: 'circle', x: 20, y: 20, radius: 3 }
   ]);
   const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
   assert.equal(world.version, '1.0');
@@ -90,11 +104,10 @@ test('explicit prepare requires ready and exposes the world contract', async () 
   assert.equal(status.worldPrepared, true);
   assert.equal(status.worldReadyAcknowledged, true);
   assert.equal(status.ticksPerSecond, 24);
-  await server.close();
 });
 
-test('world_initialized precedes a global snapshot and configured obstacles remain authoritative', async () => {
-  const server = createServer({
+test('world_initialized precedes a global snapshot and configured obstacles remain authoritative', async (t) => {
+  const server = openServer(t, {
     agents: 2,
     ticksPerSecond: 100,
     maxTicks: 1,
@@ -122,10 +135,10 @@ test('world_initialized precedes a global snapshot and configured obstacles rema
   assert.equal(snapshots[0].actions.length, 2);
   assert.ok(Array.isArray(snapshots[0].resources));
   assert.ok(Array.isArray(snapshots[0].obstacles));
-  assert.deepEqual(snapshots[0].obstacles, [{ id: 'initial-rock', x: 250, y: 250, radius: 10 }]);
+  assert.deepEqual(snapshots[0].obstacles, [{ id: 'initial-rock', type: 'circle', x: 250, y: 250, radius: 10 }]);
   assert.deepEqual(snapshots[0].worldChanges, []);
   assert.equal(messages.some(x => x.type === 'world_delta'), false);
-  client.close(); await server.close();
+  await closeClient(client);
 });
 
 test('WorldDescription generation is deterministic by seed', () => {
@@ -153,7 +166,7 @@ test('WorldDescription includes configured obstacle geometry and cell references
   });
   simulation.prepare(31);
   const world = simulation.worldDescription();
-  assert.deepEqual(world.obstacles, [{ id: 'initial-rock', x: 15, y: 15, radius: 2 }]);
+  assert.deepEqual(world.obstacles, [{ id: 'initial-rock', type: 'circle', x: 15, y: 15, radius: 2 }]);
   assert.deepEqual(world.cells.find(cell => cell.x === 1 && cell.y === 1).obstacles, ['initial-rock']);
   assert.equal(world.cells.find(cell => cell.x === 1 && cell.y === 1).walkable, false);
 });
