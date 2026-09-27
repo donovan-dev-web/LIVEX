@@ -120,7 +120,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | ECHOS-090 | Suite de tests ECHOS — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-045, ECHOS-027 | ✓ Tests unitaires/API/golden ; couverture mesurée ≥ 80 % (96,01 % sur la suite U8). |
-| ECHOS-091 | Intégration SYNE↔ECHOS — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le vrai SYNE, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Le déterminisme des deux composants est couvert par leurs suites dédiées. PRISM runtime commence après U8 ; le contrat REST ECHOS est vérifié, pas le rendu PRISM.
+| ECHOS-091 | Intégration SYNE↔ECHOS — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le vrai SYNE, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Le déterminisme des deux composants est couvert par leurs suites dédiées. Cette issue ne valide pas PRISM ni son plugin Unreal ; voir la documentation PRISM pour les tests de PRISM-LDK et du projet Unreal PRISM. |
 | ECHOS-092 | Non-régression des indicateurs — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-030 | ✓ Baselines V0.1 et goldens vérifiés par les tests de métriques et API ; score inchangé sur données de référence. |
 
 ## 4. Règles de suivi (Kanban)
