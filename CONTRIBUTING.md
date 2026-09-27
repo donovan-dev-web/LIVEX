@@ -14,7 +14,8 @@ Même en développement solo, ces conventions servent au « futur toi » et à d
 ## 2. Prérequis
 
 - Lire `README.md`, `VISION.md` et `ARCHITECTURE.md`.
-- Comprendre le monorepo : 3 composants (`syne/`, `echos/`, `prism/`) versionnés indépendamment.
+- Comprendre les composants LIVEX : SYNE (`syne/`), ECHOS (`echos/`) et PRISM (projet Unreal final). PRISM intègre le plugin PRISM-LDK (`PrismLdk`). `syne-mock/` est un outil de développement, pas un quatrième moteur.
+- LDK (*LIVEX Development Kit*) désigne le plugin PRISM-LDK, pas un projet complet distinct. Le fichier `prism/LDK/LDK.uproject` est l'hôte technique utilisé pour compiler et tester le plugin. Voir `docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md`.
 - Ne jamais modifier un **contrat de transport** sans relire `COMMUNICATION.md` et `docs/docs-*/API_CONTRACTS.md`/`API_REST.md`/`TRANSPORT_API.md`.
 
 ## 3. Workflow Git
@@ -31,6 +32,8 @@ Suivre `GITFLOW.md` :
 - [ ] Couverture maintenue ≥ 80 % sur le composant touché.
 - [ ] Documentation mise à jour (doc des composants + `CHANGELOG.md` + docs). **Une PR qui modifie le comportement sans MAJ de doc est refusée.**
 - [ ] Style : respecter les conventions du langage (C# .editorconfig / lint TS / format python black, etc. — cf. `CI_CD.md`).
+- [ ] Pour les changements `syne-mock/`, exécuter `npm test --prefix syne-mock` et vérifier que les comportements ajoutés ne sont pas présentés comme équivalents à SYNE.
+- [ ] Pour PRISM-LDK, valider la compilation dans l'hôte Unreal de développement et son intégration dans le projet PRISM final.
 - [ ] Le contrat de transport n'est modifié que selon `VERSIONING.md` (evol adhesion `MINOR`, breaking `MAJOR`).
 
 ## 5. Revue

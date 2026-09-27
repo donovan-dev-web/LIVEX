@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 27 septembre 2026
 **Dépend de** : `ARCHITECTURE.md`
 **Source Monographie** : §2.4 (contrats de transport), Partie 5.4 (PRISM), Partie 4.7 (API ECHOS)
 
@@ -14,38 +14,40 @@ Ce document décrit les **échanges inter-composants** de LIVEX. Il ne doit pas 
 
 ## 2. Principes
 
-- **JSON texte camelCase** pour toutes les charges utiles (contrat hérité du prototype).
-- **Gateways à sens unique** : SYNE émet (WebSocket), ECHOS et PRISM consomment ; le contrôle circule via API HTTP relayée.
-- **Simple consommateur** par défaut sur WebSocket (Monographie ADR-004 §F.5) : un seul consommateur à la fois, sauf évolution future.
+- **JSON texte camelCase** pour les charges utiles observabilité.
+- SYNE est l'autorité : ses consommateurs (ECHOS et PRISM) ne réécrivent pas l'état simulé.
+- Le transport est indépendant du moteur graphique : le plugin Unreal PRISM consomme les mêmes contrats que les autres clients.
 - **Indépendance** : aucun module ne dépend des abstractions des autres (Matrice de dépendances `ARCHITECTURE.md`).
 
 ## 3. Flux réseau
 
 | # | Flux | Transport | Port | Destinataire | Contenu |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| 1 | Snapshots | WebSocket | 5180 | ECHOS, PRISM | `WorldSnapshot` |
-| 2 | Événements | WebSocket | 5180 | ECHOS, PRISM | `ExternalEvent` |
-| 3 | Contrôle | HTTP REST | 5181 | SYNE | start / pause / resume / stop / reset |
+| 1 | Initialisation du monde | WebSocket | 5180 par défaut | ECHOS, PRISM | `world_initialized` |
+| 2 | Snapshot global et événements | WebSocket | 5180 par défaut | ECHOS, PRISM | Un snapshot global par tick, événements typés |
+| 3 | Contrôle | HTTP REST | 5181 par défaut | SYNE | prepare / ready / start / pause / resume / stop / reset / status |
 | 4 | Analyse | HTTP REST | 5000 | ECHOS consumers | runs, métriques, comparaison, export |
 
 Schéma :
 
 ```mermaid
 flowchart LR
-    SYNE -->|"WS 5180"| WS((WebSocket))
+    SYNE -->|"world_initialized + snapshots + événements"| WS((WebSocket))
     WS --> ECHOS
     WS --> PRISM
-    ECHOS -->|"HTTP 5181"| CTL((Contrôle SYNE))
-    PRISM -->|"HTTP 5181 (relay)"| CTL
+    ECHOS -->|"HTTP contrôle"| CTL((Contrôle SYNE))
+    PRISM -->|"HTTP contrôle"| CTL
     CTL --> SYNE
+    MOCK["syne-mock (Node.js)"] -. "émulation locale du protocole" .-> PRISM
     EA[API REST ECHOS] --> ECHOS
 ```
 
 ## 4. WS 5180 — WebSocket temps réel
 
-Source : Monographie ADR-004 (§F.5).
+Le port et le chemin d'écoute sont configurables ; les valeurs ci-dessous sont
+les valeurs locales par défaut.
 
-- URL (local) : `ws://127.0.0.1:5180/`
+- URL par défaut : `ws://127.0.0.1:5180/`
 - Messages : **trames texte UTF-8 contenant du JSON** (camelCase). Le serveur
   WebSocket envoie `WebSocketMessageType.Text`; les clients ne doivent pas
   attendre des trames binaires.
@@ -53,8 +55,12 @@ Source : Monographie ADR-004 (§F.5).
   valeur opaque est stable pour toute la durée du run et doit être propagée
   par ECHOS dans ses réponses et son stockage. Le mode batch peut dériver
   `run-<seed>` ; le serveur contrôlé génère un identifiant opaque.
-- Événements typés : `tick_summary`, `agent_spawned`, `agent_died`, `decision_made` (prototype). En V2/V0.1, la nomenclature s'élargit (perceptions, actions, communications) — cf. `docs/docs-syne/API_CONTRACTS.md`.
-- Politique : **single-consumer** par défaut (un consommateur à la fois) — évolution vers multi-consommateur à trancher.
+- Événements typés : notamment `tick_summary`, `decision_made`,
+  `action_completed`, `world_delta` et les événements de communication. La
+  liste et les schémas effectivement émis sont versionnés dans
+  `docs/docs-syne/API_CONTRACTS.md`.
+- Le flux est diffusé aux clients WebSocket connectés. Les consommateurs doivent gérer les reconnexions et ne pas présumer que les événements remplacent l'état du snapshot.
+- Le premier message de préparation `world_initialized` décrit la topologie et les entités de départ. Ensuite, un snapshot global rassemble l'état des agents et du monde à chaque tick ; voir `docs/docs-syne/API_CONTRACTS.md`.
 
 ## 5. HTTP 5181 — API de contrôle SYNE
 
@@ -62,15 +68,18 @@ Source : Monographie §3.5 (contrôle), Partie 5.4.2.
 
 | Commande | Action |
 | :-- | :-- |
-| `start` | Démarrer la simulation |
+| `prepare` | Préparer le monde avec seed et cadence ticks/seconde |
+| `ready` | Accuser réception du monde initialisé avant son démarrage |
+| `start` | Démarrer la simulation préparée |
 | `pause` | Mettre en pause |
 | `resume` | Reprendre |
 | `stop` | Arrêter le run proprement, sans arrêter le serveur SYNE |
 | `reset` | Réinitialiser (avec seed et run id) |
+| `status` | Lire l'état courant |
 
-- URL (local) : `http://127.0.0.1:5181/api/control/`
-- PRISM relaie les commandes utilisateur vers cette API (réflexion passive, Monographie §5.15.3) ; ECHOS pilote aussi la simulation depuis son interface.
-- L'état de SYNE est interrogé (polling) environ toutes les 2 secondes (valeur prototype, [HÉRITÉ]).
+- URL par défaut : `http://127.0.0.1:5181/api/control/`
+- PRISM commande directement SYNE depuis ses contrôles Unreal ; ECHOS peut aussi piloter le moteur depuis son interface.
+- Un monde préparé explicitement doit être acquitté avant `start`. La cadence et la seed sont attachées à la préparation ; consulter le statut et le contrat SYNE pour les règles complètes.
 - `stop` annule le run courant et ramène son état à `Idle`; il ne ferme ni
   l'API de contrôle ni le serveur WebSocket. Un arrêt de toute la pile reste
   une responsabilité du processus (`Ctrl+C`/arrêt du service).
@@ -97,14 +106,22 @@ Endpoints principaux (prototype) :
 
 Voir `docs/docs-echos/API_REST.md` pour le détail V0.1 (révise stack Python/FastAPI locale).
 
-## 7. Compatibilité ascendante
+## 7. Mock SYNE pour le développement PRISM
+
+[`syne-mock/`](syne-mock/README.md) est un serveur Node.js local qui expose des
+routes HTTP et un WebSocket compatibles avec le flux d'intégration documenté.
+Il permet de développer les connexions, structures Blueprint, événements et
+cycle de vie d'Unreal sans lancer le moteur complet. Il n'est pas la source du
+contrat ni une implémentation de référence des algorithmes de SYNE : ses
+décisions, le déplacement et les systèmes sociaux sont simplifiés.
+
+## 8. Compatibilité ascendante
 
 - Règle V0.1 : les consumers (ECHOS/PRISM) doivent tolérer les champs **ajoutés** (`MINOR`). Tout retrait ou changement de sens d'un champ = `MAJOR` (cf. `VERSIONING.md`).
-- Les structures `WorldSnapshot` / `ExternalEvent` sont des **contrats versionnés** : une entrée `version` est portée par le snapshot.
+- `world_initialized`, les structures de snapshot global et les événements sont des **contrats versionnés**. La documentation SYNE décrit les versions et schémas courants.
 
 ---
 
 ## Points restés ouverts dans ce document
-- Politique multi-consommateur WebSocket : un seul consommateur à la fois en défaut (ADR-004) ; extension à trancher si besoin.
 - Authentification entre composants : non requis en local V0.1 ; à réévaluer si ECHOS n'est plus local.
 - Le port 5000 (API REST ECHOS) et le binding local (`127.0.0.1`) sont confirmés pour V0.1 (cf. `docs/docs-echos/API_REST.md`).
