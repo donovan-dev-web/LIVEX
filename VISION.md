@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 27 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Partie 1 (Préface & Fondements), Partie 2 (Présentation du Projet)
 
@@ -16,7 +16,7 @@ LIVEX — **Systems & Emergent Network EXperiment** — est une plateforme de si
 | :-- | :-- | :-- |
 | **SYNE** | Systems & Emergent Network Engine | Moteur de simulation ; possède la vérité du monde ; indépendant du rendu |
 | **ECHOS** | Emergent Complex Hierarchical Observation System | Système d'observation, d'analyse et de pilotage |
-| **PRISM** | Perceptual Rendering & Interactive Simulation Module | Couche de représentation et d'interaction 3D |
+| **PRISM** | Perceptual Rendering & Interactive Simulation Module | Projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK |
 
 LIVEX propose une **troisième voie** entre deux extrêmes :
 - scripter des comportements prédéfinis, ou
@@ -41,7 +41,22 @@ Trois exigences dominantes structurent le projet :
 3. **Observabilité partielle** — une entité ne connaît qu'une partie du monde ; l'information imparfaite est un moteur de diversité comportementale, d'erreur et d'exploration.
 4. **Émergence par contraintes** — mémoire dégradée, communication non confidentielle, énergie comme monnaie d'action : les comportements collectifs naissent des contraintes, pas des règles globales.
 5. **Déterminisme scientifique** — grâce à un PRNG reproductible (xoshiro256\*\*) et une persistance de l'état complet, LIVEX est un instrument valide pour l'étude de l'émergence.
-6. **Indépendance du rendu** — SYNE fonctionne sans interface graphique ; PRISM est un framework intermédiaire interchangeable.
+6. **Indépendance du rendu** — SYNE fonctionne sans interface graphique ; PRISM communique avec lui par des contrats de transport, sans modifier la source de vérité du moteur.
+
+**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
+complet qui réunit SYNE, ECHOS et PRISM. **PRISM** est son projet Unreal final.
+Il intègre **PRISM-LDK** (*LIVEX Development Kit*), le plugin qui expose les
+contrats SYNE aux Blueprints. LDK désigne le plugin, pas un projet Unreal
+complet distinct. Le dossier `prism/LDK/` contient le plugin et, dans le
+checkout courant, un `LDK.uproject` servant d'hôte technique pour son
+développement/sa compilation ; ce fichier n'est pas le produit final LIVEX.
+Le plugin privilégie les types, acteurs et mécanismes natifs d'Unreal ; le
+C++ est limité aux besoins d'intégration.
+
+Le dépôt inclut aussi `syne-mock/`, un serveur Node.js de développement pour
+tester les contrats et l'intégration PRISM sans démarrer le moteur complet.
+Il simule les échanges et une partie du comportement, mais ne remplace pas SYNE
+et ne garantit pas des décisions ou trajectoires équivalentes.
 
 ## 4. L'ambition scientifique et culturelle
 
@@ -60,7 +75,7 @@ LIVEX est à la fois :
 
 ## 6. Contraintes assumées
 
-LIVEX assume ses limites (détaillées dans la Monographie, Partie 8 et dans `docs/nos docs par composant`) :
+LIVEX assume ses limites (détaillées dans la Monographie, Partie 8 et dans la documentation de chaque composant) :
 - pas de simulation physique morphologique réaliste (entités logiques, pouvant se chevaucher) ;
 - pas d'IA d'apprentissage — la cognition reste explicite et inspectable ;
 - pas d'objectif de « jeu » ou de « réalisme graphique » avant la maturité.

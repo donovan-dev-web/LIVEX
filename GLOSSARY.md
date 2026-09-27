@@ -97,7 +97,10 @@ Sous-système de navigation de SYNE calculant des chemins 2D autour des obstacle
 Première étape de la boucle BDI : transformation de l'état du monde en observations locales, potentiellement inexactes. (Monographie §3.9)
 
 ### PRISM
-Perceptual Rendering & Interactive Simulation Module — couche de représentation 3D et d'interaction, jamais source de vérité. (Monographie §2.3.3)
+Perceptual Rendering & Interactive Simulation Module — projet Unreal final de LIVEX pour la représentation et l'interaction ; il n'est jamais source de vérité de la simulation.
+
+### PRISM-LDK
+Plugin Unreal (*LIVEX Development Kit*) intégré au projet PRISM. Son nom de module/dossier actuel est `PrismLdk`. Il expose le contrat SYNE aux Blueprints et garde le C++ limité à l'intégration.
 
 ### PRNG (xoshiro256\*\*)
 Générateur pseudo-aléatoire rapide et de haute qualité, utilisé pour tous les tirages — initialisation splitmix64(seed). `System.Random` est **interdit**. (Monographie §3.6.3)
@@ -120,6 +123,12 @@ Composant qui exécute les sous-systèmes à des fréquences différentes (élev
 
 ### SYNE
 Systems & Emergent Network Engine — moteur de simulation ; possède la vérité du monde. (Monographie §2.3.1)
+
+### syne-mock
+Serveur Node.js de développement qui émule une partie du protocole et du cycle de simulation de SYNE pour tester les clients, en particulier le plugin Unreal. Ses algorithmes sont simplifiés ; il n'est pas le moteur de simulation et ses résultats ne sont pas interchangeables avec ceux de SYNE.
+
+### LIVEX Development Kit (LDK)
+Nom complet du plugin PRISM-LDK. LDK ne désigne pas le projet complet : celui-ci est LIVEX ; PRISM en est le projet Unreal final. `prism/LDK/LDK.uproject` est un hôte Unreal technique présent pour le développement et la compilation du plugin.
 
 ## T
 

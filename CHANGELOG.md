@@ -9,6 +9,10 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Changed
+- Décision d'architecture actée : **PRISM est le projet Unreal final de LIVEX** et intègre le plugin Unreal **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). L'ADR-002 formality ce choix et supersède l'ADR-001 (prototype Godot), désormais conservée comme décision historique. SYNE reste le seul moteur décisionnel et l'autorité de l'état simulé ; `prism/LDK/LDK.uproject` est un hôte technique de développement/build du plugin, pas un second produit.
+- ADR-003 (API HTTP) et ADR-004 (WebSocket temps réel) précisent désormais que la liste des routes et des formats qu'elles portaient est celle de la proposition d'origine de la Monographie, et renvoient vers `docs/docs-syne/API_CONTRACTS.md` et `COMMUNICATION.md` pour le contrat courant (diffusion multi-consommateur, cycle `prepare/ready/start/pause/resume/stop/reset`).
+
 ### Added
 - **Jalon U8 — Constructions = obstacles statiques (SYNE-071)** :
   - `world.obstacles` réactivé (défaut `false`) + layout initial `world.obstacleLayout[]` (`{id, x, y, radius}`) posé au build des mondes (CLI + serveur de contrôle) ;
