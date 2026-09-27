@@ -1,5 +1,14 @@
 
 
+> **Note de statut — référence conceptuelle, snapshot V0.1.** Ce document
+> conserve la vision et les spécifications de la période de conception
+> initiale. Certaines décisions d'implémentation ont évolué depuis, notamment
+> PRISM : la réalisation actuelle cible Unreal Engine ; PRISM est le projet
+> Unreal final de LIVEX et intègre le plugin PRISM-LDK (`PrismLdk`, LIVEX
+> Development Kit). Les contrats et procédures à jour sont maintenus dans
+> [`docs/README.md`](docs/README.md) et les documentations SYNE/PRISM ; les
+> choix historiques de moteur dans cette monographie ne sont pas prescriptifs.
+
 ---
 
 ---
@@ -22,7 +31,7 @@ Simulation émergente multi-agents persistante
 
  Architecture BDI \- Observabilité partielle \- Visualisation 3D
 
-**Date** : Septembre 2026	**Statut** : Document de référence	**Auteur** : CHARTRAIN Donovan
+**Date** : Septembre 2026	**Statut** : Référence conceptuelle historique (snapshot V0.1)	**Auteur** : CHARTRAIN Donovan
 
 # **Note de l’auteur** {#note-de-l’auteur}
 

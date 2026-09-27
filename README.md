@@ -44,18 +44,24 @@ flowchart LR
     D --> A[API ECHOS<br/>REST :5000]
     A --> U[Interface web<br/>React + Vite]
     S -.->|WebSocket :5180<br/>état temps réel| U
-    C[PRISM<br/>rendu interactif planifié] -.->|phase ultérieure| S
+    S -->|contrats de simulation| P[Projet Unreal PRISM]
+    P -->|intègre le plugin| L[PRISM-LDK<br/>module PrismLdk]
+    M[syne-mock<br/>serveur Node.js de test] -.->|émule les contrats| P
 ```
 
 | Composant | Responsabilité | État |
 |:--|:--|:--|
 | **SYNE** · *Systems & Emergent Network Engine* | Simule le monde et les agents. C’est la source de vérité de l’état simulé. | Moteur .NET 10, observabilité, persistance et contrôle local. |
 | **ECHOS** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI, stockage SQLite/Parquet et interface React/TypeScript. |
-| **PRISM** · *Perceptual Rendering & Interactive Simulation Module* | Doit représenter et rendre le monde interactif. | Documentation et contrats préparatoires ; le runtime vient après U8. |
+| **PRISM** · *Perceptual Rendering & Interactive Simulation Module* | Projet Unreal final de LIVEX, pour représenter le monde SYNE et fournir l'expérience interactive. | Projet Unreal PRISM intégrant le plugin **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). |
+| **syne-mock** | Simule le protocole et un scénario de simulation pour le développement client. | Serveur Node.js local ; comportement incomplet et non équivalent au moteur SYNE. |
 
-> **U8 — Tests & persistance : en validation.** Le flux réel SYNE → ECHOS
-> est couvert par une intégration multi-ticks ; l'acceptation transverse et
-> l'expérience UI restent suivies dans la [feuille de route](ROADMAP.md).
+> **État du dépôt :** SYNE et ECHOS disposent de leur runtime ; **PRISM** est
+> le projet Unreal final de LIVEX et intègre **PRISM-LDK** (*LIVEX Development
+> Kit*, module `PrismLdk`). Le `LDK.uproject` du checkout est un hôte technique
+> de développement/build du plugin, pas un second produit. Consultez les documentations de
+> [PRISM](docs/docs-prism/README.md) et du [mock SYNE](syne-mock/README.md)
+> pour les détails et limites de l'intégration.
 
 ## 🚀 Démarrage rapide
 
@@ -66,7 +72,7 @@ dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
-Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface).
+Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
 
 ## 🗂️ Dans le dépôt
 
@@ -76,6 +82,11 @@ LIVEX/
 ├── echos/
 │   ├── echos/              # API, analyse, ingestion et stockage
 │   └── echos-ui/           # Interface React + TypeScript
+├── prism/
+│   └── LDK/                # Plugin PRISM-LDK + hôte technique de build/test
+│       ├── LDK.uproject    # Hôte, pas le projet LIVEX complet
+│       └── Plugins/PrismLdk/
+├── syne-mock/              # Serveur Node.js de test des contrats SYNE
 ├── docs/
 │   ├── docs-syne/          # Documentation et décisions SYNE
 │   ├── docs-echos/         # Documentation ECHOS
@@ -99,6 +110,7 @@ LIVEX/
 | [FAQ](FAQ.md) | Obtenir des réponses aux questions fréquentes. |
 | [Monographie](LIVEX-Monographie_SnapV0-1.pdf) | Lire les fondements, modèles et choix détaillés. |
 | [Documentation SYNE](docs/docs-syne/README.md) · [ECHOS](docs/docs-echos/README.md) · [PRISM](docs/docs-prism/README.md) | Entrer dans la documentation d’un composant. |
+| [Documentation générale](docs/README.md) | Repérer les sources de vérité, les contrats et les documents historiques. |
 
 ## 🤝 Contribuer
 

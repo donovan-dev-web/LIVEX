@@ -44,7 +44,7 @@ title: LIVEX — moteur de simulation sociale
 <a class="lx-card" href="{{_rel}}articles/prism/README.html">
   <h3>PRISM — rendu</h3>
   <p class="lx-role">Engine de rendu · <strong>statut : socle (U0)</strong></p>
-  <p>Visualisation (Godot) du monde, des croyances et des réseaux observés depuis les
+  <p>Visualisation Unreal (plugin PRISM PrismLdk) du monde, des croyances et des réseaux observés depuis les
   contrats publiés — l'observation ne transforme jamais le monde simulé.</p>
   <span class="lx-more">Lire les docs PRISM →</span>
 </a>
