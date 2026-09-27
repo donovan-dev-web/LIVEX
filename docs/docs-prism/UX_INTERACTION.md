@@ -1,68 +1,48 @@
-# UX_INTERACTION.md
+# UX_INTERACTION — Intentions d'interaction
 
 **Composant** : PRISM
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `VISUALIZATION_SPEC.md`
-**Source Monographie** : §5.11, §5.12, §5.13
+**Dernière mise à jour** : 27 septembre 2026
+**Dépend de** : [`VISUALIZATION_SPEC.md`](VISUALIZATION_SPEC.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---
 
-## 1. Caméra et interaction
+## 1. Périmètre
 
-| Action | Contrôle |
-| :-- | :-- |
-| Rotation | Clic droit + glisser (orbit) |
-| Zoom | Molette (sensible 0.1, borné 0.5 – 5.0) |
-| Déplacement | ZQSD / WASD |
-| Sélection | Clic gauche |
-| Suivre l'entité | Touche F |
-| Ne plus suivre | Échap |
-| Recentrer | Espace (centre monde, zoom 1.0) |
+`PrismLdk` fournit des fonctions et événements Blueprint, pas une caméra, un
+HUD, des widgets ou des interactions préfabriquées. Les choix UX de ce
+document sont des propositions pour le projet Unreal PRISM qui intègre le
+plugin.
 
-## 2. HUD
+## 2. Interactions de monde possibles
 
-Le HUD affiche en superposition :
+PRISM peut proposer des contrôles adaptés à son expérience :
 
-- Tick courant.
-- Nombre d'entités vivantes.
-- Score d'émergence (format F2).
-- Diversité des croyances (format F2).
-- Liste des phénomènes détectés.
-- État du WebSocket (connecté / reconnexion).
-- Temps simulé (jours/heures).
-- FPS.
+- navigation et recentrage de la vue ;
+- sélection d'un agent et accès à ses données de snapshot ;
+- suivi d'un agent sans modifier sa trajectoire simulée ;
+- affichage d'indicateurs de tick, de population et d'état de connexion ;
+- consultation du statut SYNE et des événements récents.
 
-**Contrôles de simulation** accessibles depuis le HUD :
-- Start / Pause / Resume / Reset.
-- Onglets : Paramètres (URL WS, run id, seed), Commandes & légende, Liste des entités, Journal (décès, ressources épuisées).
+Les commandes de simulation doivent être initiées explicitement par
+l'utilisateur ou le Blueprint du projet. Afficher l'état renvoyé par SYNE ;
+ne pas supposer qu'une requête asynchrone a réussi avant `OnControlResult`.
 
-## 3. L'interface d'analyse (intégrée à ECHOS — héritage du prototype)
+## 3. Contrôles de simulation
 
-PRISM n'est pas la seule interface. L'application d'analyse, héritée du prototype web et **intégrée à ECHOS** en V0.1, fournit un tableau de bord complémentaire. Composants hérités :
+Le projet peut fournir des contrôles de connexion et de run qui appellent les
+fonctions Blueprint du plugin. Pour une préparation explicite, respecter
+l'ordre `Prepare` → recevoir `OnWorldInitialized` → préparer l'expérience
+visuelle → `Ready` → attendre le résultat → `Start`. Les boutons pause, reprise,
+arrêt, reset et statut doivent refléter l'état réel rapporté par SYNE.
 
-| Composant | Rôle |
-| :-- | :-- |
-| `DashboardPage` | Vue d'ensemble : métriques en temps réel |
-| `KPICards` | 4 cartes : entités actifs, score émergence, groupes, messages/tick |
-| `MetricsPanel` | Jauges : diversité des croyances, diversité des objectifs, coefficient de clustering, vitesse de diffusion |
-| `TimelineChart` | Évolution des métriques dans le temps |
-| `AgentInspector` | Inspection d'entité (sondage toutes les 500 ms) |
-| `SocialGraph` | Graphe social D3 (sondage toutes les 2 s) |
-| `GroupExplorer` | Liste/détail des groupes |
-| `MessageHeatmap` | Matrice entité×entité des communications |
-| `SimulationControls` | Contrôles play/pause/step |
-| `SpeedControl` | Contrôle de la vitesse |
-| `RecordingPanel` | Panneau d'enregistrement des runs |
+Voir [`TRANSPORT_API.md`](TRANSPORT_API.md) pour les fonctions, routes et
+résultats ; la mécanique d'intégration Blueprint est dans
+[`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md).
 
-## 4. Technologie de l'interface
+## 4. Interface d'analyse
 
-- **Vite + React 18 + TypeScript**.
-- **Recharts** pour les graphiques.
-- **D3.js** pour la visualisation de graphes.
-- **Tailwind CSS** (thème sombre : `bg-gray-900`).
-
----
-
-## Points restés ouverts dans ce document
-- L'assemblage exact PRISM (Godot) ↔ interface web ECHOS (React/Vite servie par FastAPI) en V0.1 (fenêtres séparées, partage de données via API ECHOS :5000) sera précisé à l'implémentation.
+Une interface analytique peut compléter le monde visuel dans PRISM
+ou un outil LIVEX distinct comme ECHOS selon l'architecture produit retenue.
+Les métriques, graphes et inspections doivent identifier leur source et suivre
+les contrats disponibles ; ce dossier ne fixe pas de technologie front-end ni
+ne suppose que l'interface ECHOS est embarquée dans PrismLdk.
