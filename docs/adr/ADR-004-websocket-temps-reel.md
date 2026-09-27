@@ -1,8 +1,8 @@
 # ADR-004 : WebSocket en temps réel
 
 **Composant** : LIVEX (transverse — transport SYNE→ECHOS/PRISM)
-**Statut** : [Accepted]
-**Dernière mise à jour** : 17 septembre 2026
+**Statut** : [Accepted — décision de transport ; détails de l'implémentation mis à jour dans les contrats courants]
+**Dernière mise à jour** : 27 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.5 (ADR-004), §5.4.1
 
@@ -16,12 +16,13 @@ Le moteur doit émettre des événements en temps réel vers des consommateurs e
 
 Utiliser un **WebSocket** sur le port **5180** avec :
 
-- **Messages binaires JSON** notifiés par le moteur ;
+- **Messages texte UTF-8 contenant du JSON** ;
 - **Événements typés** : `tick_summary`, `agent_spawned`, `agent_died`, `decision_made` (nomenclature étendue en V0.1) ;
 - Deux formats de messages : `snapshot` (WorldSnapshot) et `event` (ExternalEvent) ;
-- **Un seul consommateur à la fois par défaut** (single-consumer).
+- Diffusion aux consommateurs connectés (multi-consommateur).
 
-Naturellement supporté par les clients cibles (Godot, Python, JS — côté ECHOS : brut WebSocket).
+Les consommateurs actuels comprennent ECHOS (client Python) et PRISM
+(plugin Unreal `PrismLdk`). Ce protocole reste indépendant du framework client.
 
 ## Conséquences
 
@@ -31,7 +32,7 @@ Naturellement supporté par les clients cibles (Godot, Python, JS — côté ECH
 - Pas de polling — diffusion événementielle.
 
 ### Négatives
-- Single-consumer par défaut : une seule interface (ECHOS ou PRISM) se connecte ; multi-consommation à trancher si besoin.
+- Le serveur diffuse vers les clients connectés ; chaque client doit gérer les reconnexions et son propre état de réception.
 
 ### Risques
 - Perte de messages si le consommateur est en retard (pas de file d'attente illimitée).
@@ -39,11 +40,11 @@ Naturellement supporté par les clients cibles (Godot, Python, JS — côté ECH
 ## Alternatives considérées
 
 - **Polling HTTP** : coûteux, rejeté (cela était l'objet même de la question).
-- **TCP custom** : non interopérable avec les clients cibles.
+- **TCP custom** : non interopérable avec les clients et outils cibles.
 
 ## Validation / rejet
 
-- Réouverture si le besoin de multi-consommateurs simultanés émerge (décision V0.1 : router les flux vers une seule interface à la fois).
+- Les formats actuels `world_initialized`, `snapshot` et `event` sont détaillés dans `docs/docs-syne/API_CONTRACTS.md` ; cette ADR n'est pas la source de vérité des schémas.
 
 ---
 

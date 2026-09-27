@@ -1,18 +1,25 @@
-# ADR-001 : Choix de Godot (édition .NET) pour PRISM
+# ADR-001 : Choix de Godot (édition .NET) pour le prototype PRISM
 
 **Composant** : PRISM
-**Statut** : [Accepted]
-**Dernière mise à jour** : 17 septembre 2026
+**Statut** : [Superseded]
+**Décision historique** : 17 septembre 2026
+**Supersédé le** : 27 septembre 2026
+**Remplacé par** : [`ADR-002-choix-unreal-prism-ldk.md`](ADR-002-choix-unreal-prism-ldk.md)
 **Dépend de** : —
 **Source Monographie** : §5.2.3
 
 ---
 
+> **Historique uniquement.** Cette décision concernait le prototype Godot et
+> n'est plus la direction actuelle de PRISM. Elle est **supersédée par l'ADR-002**
+> (Unreal Engine 5.8 + plugin PRISM-LDK, module technique `PrismLdk`), qui
+> formality ce choix. Voir [`../ARCHITECTURE.md`](../ARCHITECTURE.md).
+
 ## Contexte
 
 Le modèle de simulation ne doit pas être lié à un moteur graphique. PRISM est un **framework intermédiaire** entre le modèle LIVEX (SYNE) et le moteur graphique. Il faut un moteur pour le prototype de visualisation.
 
-## Décision
+## Décision historique
 
 Utiliser **Godot 4.7.2 édition .NET** (piste **[HÉRITÉ]**) avec **C#** comme langage. Le moteur **définitif reste volontairement ouvert** ; le choix interviendra après comparaison des besoins de PRISM, du pipeline d'assets, des performances et des contraintes de développement.
 
@@ -36,9 +43,12 @@ Utiliser **Godot 4.7.2 édition .NET** (piste **[HÉRITÉ]**) avec **C#** comme 
 - **Three.js** : alternative pour un rendu 2D/3D dans l'interface ECHOS ; non retenu pour PRISM.
 - **Unity/Unreal** : surdimensionnés pour un prototype de visualisation.
 
-## Validation / rejet
+## Statut actuel
 
-- Réouverture au moment du choix du moteur graphique définitif (migration via adaptateurs PRISM).
+- Décision **supersédée par l'ADR-002** : PRISM est le projet Unreal final de LIVEX et intègre le plugin PRISM-LDK (`PrismLdk`).
+- L'affirmation « Unity/Unreal surdimensionnés pour un prototype de visualisation » portait sur le périmètre du prototype, pas sur celui du projet final ; elle n'est pas opposable à l'ADR-002.
+- Les choix internes de rendu du projet Unreal PRISM relèvent de ce projet ; ils ne sont pas prescrits par cet ADR historique.
+- Le principe invariant énoncé ici reste valable : le modèle de simulation ne doit pas dépendre du moteur graphique, et seul l'adaptateur change si le moteur change.
 
 ---
 
@@ -46,4 +56,5 @@ Utiliser **Godot 4.7.2 édition .NET** (piste **[HÉRITÉ]**) avec **C#** comme 
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 27 septembre 2026 | Marquée supersédée par l'ADR-002 | Adoption d'Unreal et du plugin PRISM-LDK |
 | 17 septembre 2026 | Création | — |
