@@ -111,10 +111,15 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
 | `--seed 12345` | int | Seed du PRNG |
 | `--max-ticks 2000` | int | Nombre de ticks à exécuter |
 | `--config path/to/config.json` | string | Fichier de configuration |
+| `--serve` | bool | Active l'API HTTP de contrôle et la diffusion WebSocket du run |
+| `--serve-port 5181` | int | Port HTTP de contrôle (défaut : 5181, bind `127.0.0.1`) |
 | `--observe` | bool | Active l'émission WebSocket (SYNE-080, API_CONTRACTS §2) |
 | `--observe-port 5180` | int | Port du serveur WebSocket (défaut : 5180, bind 127.0.0.1) |
 
-(Annexe H.2)
+(Annexe H.2) Ces ports sont des valeurs par défaut configurables, non des
+constantes d'intégration. `--serve` active aussi le flux WebSocket ; utiliser
+`--observe-port` pour le configurer. Ces options concernent le moteur .NET :
+le mock séparé `syne-mock` dispose de sa propre configuration.
 
 ## 4. Configuration par espèce (Monographie §3.12.5)
 
@@ -366,3 +371,15 @@ Les coûts doivent être positifs ou nuls. En V0.1, l’écriture et la lecture 
 ## Points restés ouverts dans ce document
 - Valeurs de calibration (taux de besoins, seuils) issues du prototype [HÉRITÉ] — à consolider en décisions numériques.
 - Clés de configuration par espèce en V0.1 : format final à stabiliser avec le modèle de paramétrages.
+Le monde exporté vers Unreal est discrétisé avec `simulation.worldCellSize`
+(défaut `10`). Cette valeur est déterministe et produit `cellCountX/Y` par
+arrondi supérieur; elle est incluse dans `world_initialized`.
+`world_initialized.world.agents[]` contient les identifiants, espèces et
+positions 2D initiales créés par le même processus déterministe que le moteur
+réutilise au démarrage. SYNE n'expose pas de types de terrain configurables :
+les cellules exportées utilisent pour l'instant `terrainType: "plains"`.
+L'aménagement environnemental configurable se limite aux obstacles
+(`world.obstacles` / `world.obstacleLayout`) et aux territoires.
+`POST /api/control/prepare` peut surcharger la cadence de cette préparation
+avec `ticksPerSecond` (entier strictement positif). La valeur est incluse dans
+`world_initialized.world.ticksPerSecond` et réutilisée par `start`.

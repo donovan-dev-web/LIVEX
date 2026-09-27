@@ -9,6 +9,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Fixed
+- Normalisation des journaux de checksum en LF pour garantir les mêmes baselines sur Windows et Linux ; fermeture des pools SQLite avant suppression des bases temporaires dans les tests Windows.
+
 ### Added
 - **Jalon U8 — Livres (SYNE-121, engineVersion 0.11.0)** : `world.books` désactivé par défaut, écriture explicite avec coût énergétique configurable débité à l’auteur, lectures distinctes et bénéfice de principe tracé ; événements `world.book_written`/`world.book_read`, snapshot `books[]` et reprise persistée. Le bénéfice cognitif est différé au futur moteur mémoire (hors U8) et les valeurs provisoires sont tracées dans ADR-014 (SYNE-120).
 - **Jalon SYNE ph11c — Cycle des ressources (SYNE-070, jalon U8)** :

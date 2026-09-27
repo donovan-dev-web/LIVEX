@@ -9,6 +9,10 @@ public enum SimulationControlState
 {
     /// <summary>Aucun run démarré (état initial).</summary>
     Idle,
+    /// <summary>Le monde est en cours de construction.</summary>
+    WorldPreparing,
+    /// <summary>Le monde est construit et accusé par Unreal, mais le run n'avance pas.</summary>
+    Ready,
 
     /// <summary>Run en cours d'exécution, les ticks avancent.</summary>
     Running,
@@ -27,7 +31,21 @@ public sealed record SimulationStatusSnapshot(
     ulong Tick,
     int AliveCount,
     ulong Seed,
-    int? MaxTicks);
+    int? MaxTicks,
+    bool WorldPrepared = false,
+    string? WorldVersion = null,
+    bool WorldReadyAcknowledged = false);
+
+public sealed class PreparedWorldMismatchException : InvalidOperationException
+{
+    public PreparedWorldMismatchException(string code, string message)
+        : base(message)
+    {
+        Code = code;
+    }
+
+    public string Code { get; }
+}
 
 /// <summary>
 /// Contrôleur du moteur SYNE exposé via HTTP :5181 (SYNE-113, API_CONTRACTS.md §3).
@@ -48,6 +66,10 @@ public sealed class SimulationController : IAsyncDisposable
     private string _runId = string.Empty;
     private int? _maxTicks;
     private CancellationTokenSource? _runCts;
+    private Simulation.Core.World.WorldDescription? _worldDescription;
+    private SimulationOptions? _preparedOptions;
+    private bool _worldReadyAcknowledged;
+    private bool _explicitPreparation;
 
     public SimulationController(IObservabilitySink? observabilitySink = null)
     {
@@ -87,6 +109,85 @@ public sealed class SimulationController : IAsyncDisposable
         }
     }
 
+        public bool WorldPrepared
+            {
+                get { lock (_gate) return _worldDescription is not null && _loop is not null; }
+            }
+
+        public bool WorldReadyAcknowledged
+        {
+            get { lock (_gate) return _worldReadyAcknowledged; }
+        }
+
+        public Simulation.Core.World.WorldDescription? WorldDescription
+            {
+                get { lock (_gate) return _worldDescription; }
+            }
+
+            /// <summary>Construit le monde déterministe et le laisse en état Ready.</summary>
+        public async Task<Simulation.Core.World.WorldDescription> PrepareAsync(
+                ulong? seed, SimulationOptions? config, int? ticksPerSecond = null,
+                CancellationToken cancellationToken = default)
+            => await PrepareCoreAsync(seed, config, ticksPerSecond, autoReady: false, cancellationToken);
+
+        private async Task<Simulation.Core.World.WorldDescription> PrepareCoreAsync(
+                ulong? seed, SimulationOptions? config, int? ticksPerSecond, bool autoReady,
+                CancellationToken cancellationToken)
+            {
+                await CancelCurrentRunSafeAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+                lock (_gate)
+                {
+                    _state = SimulationControlState.WorldPreparing;
+                    _worldDescription = null;
+                    _preparedOptions = null;
+                    _worldReadyAcknowledged = false;
+                    _explicitPreparation = !autoReady;
+                }
+                (SimulationOptions options, ulong effectiveSeed) = SimulationFactory.ResolveOptions(
+                    ConfigLoader.LoadDefaults(), config, seed);
+                if (ticksPerSecond is not null)
+                {
+                    if (ticksPerSecond <= 0)
+                        throw new ArgumentOutOfRangeException(nameof(ticksPerSecond), "ticksPerSecond doit être strictement positif.");
+                    options.Simulation.TicksPerSecond = ticksPerSecond.Value;
+                }
+                var (_, loop) = SimulationFactory.Build(options, effectiveSeed);
+                var description = Simulation.Core.World.WorldDescriptionBuilder.Build(
+                    loop.World, effectiveSeed, options.Simulation.WorldCellSize, options.Simulation.TicksPerSecond);
+                lock (_gate)
+                {
+                    _loop = loop;
+                    _preparedOptions = options;
+                    _seed = effectiveSeed;
+                    _runId = $"run-{effectiveSeed}";
+                    _maxTicks = null;
+                    _worldDescription = description;
+                    _state = SimulationControlState.Ready;
+                    _worldReadyAcknowledged = autoReady;
+                }
+                if (_observabilitySink is not null)
+                {
+                    await _observabilitySink.BroadcastAsync(System.Text.Json.JsonSerializer.Serialize(
+                        new { type = "world_initialized", version = description.Version, seed = effectiveSeed, world = description },
+                        new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+                }
+                return description;
+            }
+
+            /// <summary>Accusé de réception Unreal. L'accusé est idempotent.</summary>
+        public bool AcknowledgeReady(string? version)
+            {
+                lock (_gate)
+                {
+                    if (_state != SimulationControlState.Ready
+                        || (!string.IsNullOrWhiteSpace(version) && version != _worldDescription?.Version))
+                        return false;
+                    _worldReadyAcknowledged = true;
+                    return true;
+                }
+    }
+
     /// <summary>
     /// Démarre un run (SYNE-113) pour <paramref name="seed"/> (défaut : la
     /// configuration) et la surcouche de configuration <paramref name="config"/>
@@ -99,11 +200,30 @@ public sealed class SimulationController : IAsyncDisposable
         int? maxTicks,
         CancellationToken cancellationToken = default)
     {
-        await CancelCurrentRunSafeAsync();
+        if (!WorldPrepared)
+            await PrepareCoreAsync(seed, config, ticksPerSecond: null, autoReady: true, cancellationToken: cancellationToken);
+        else if (!_explicitPreparation && (seed is not null || config is not null))
+            await PrepareAsync(seed, config, cancellationToken: cancellationToken);
+        else if (_explicitPreparation && config is not null)
+            throw new PreparedWorldMismatchException("prepared_config_mismatch", "La configuration du monde préparé ne peut pas être remplacée au démarrage ; appelez Prepare pour générer un nouveau monde.");
+        else if (_explicitPreparation && seed is not null && seed != _seed)
+            throw new PreparedWorldMismatchException("prepared_seed_mismatch", "Le seed de Start doit correspondre au seed du monde préparé ; appelez Prepare pour en générer un nouveau.");
 
-        (SimulationOptions options, ulong effectiveSeed) = SimulationFactory.ResolveOptions(
-            ConfigLoader.LoadDefaults(), config, seed);
-        var (_, loop) = SimulationFactory.Build(options, effectiveSeed);
+        lock (_gate)
+        {
+            if (_explicitPreparation && !_worldReadyAcknowledged)
+                throw new InvalidOperationException("Le monde préparé explicitement doit être accusé via /api/control/ready avant start.");
+        }
+
+        SimulationOptions options;
+        ulong effectiveSeed;
+        SimulationLoop loop;
+        lock (_gate)
+        {
+            options = _preparedOptions ?? ConfigLoader.LoadDefaults();
+            effectiveSeed = _seed;
+            loop = _loop!;
+        }
         var runCts = new CancellationTokenSource();
         string runId = Guid.NewGuid().ToString("N")[..12];
         TimeSpan tickInterval = TimeSpan.FromSeconds(1d / options.Simulation.TicksPerSecond);
@@ -168,6 +288,9 @@ public sealed class SimulationController : IAsyncDisposable
             _loop = null;
             _runId = string.Empty;
             _state = SimulationControlState.Idle;
+            _worldDescription = null;
+            _worldReadyAcknowledged = false;
+            _explicitPreparation = false;
             _maxTicks = null;
         }
 
@@ -189,6 +312,8 @@ public sealed class SimulationController : IAsyncDisposable
             oldCts = _runCts;
             _runCts = null;
             _state = SimulationControlState.Idle;
+            _worldReadyAcknowledged = false;
+            _explicitPreparation = false;
         }
 
         StopRun(oldCts);
@@ -209,7 +334,8 @@ public sealed class SimulationController : IAsyncDisposable
         {
             ulong tick = _loop is null ? 0 : _loop.CurrentTick;
             int alive = _loop is null ? 0 : _loop.World.Entities.Count;
-            return new SimulationStatusSnapshot(_state, _runId, tick, alive, _seed, _maxTicks);
+            return new SimulationStatusSnapshot(_state, _runId, tick, alive, _seed, _maxTicks,
+                _worldDescription is not null, _worldDescription?.Version, _worldReadyAcknowledged);
         }
     }
 

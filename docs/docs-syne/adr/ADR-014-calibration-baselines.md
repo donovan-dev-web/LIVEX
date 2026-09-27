@@ -1,7 +1,7 @@
 # ADR-014 : Baselines de calibration V0.1
 
 **Composant** : SYNE / ECHOS
-**Statut** : Accepted
+**Statut** : Historique — décision acceptée à l'époque
 **Date** : 24 septembre 2026
 **Dépend de** : ADR-009, ADR-010, SYNE-120, SYNE-131
 

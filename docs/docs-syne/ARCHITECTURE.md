@@ -8,13 +8,16 @@
 
 ---
 
-## 1. Vue d'ensemble
+## 1. Vue d'ensemble — rôle actuel
 
-SYNE est organisé en **sous-systèmes** pilotés par un **Runtime/Scheduler** :
+SYNE est le moteur .NET autoritaire de simulation et de décision. PRISM
+consomme ses données dans le projet Unreal PRISM via le plugin
+PRISM-LDK (`PrismLdk`) ; ce plugin n'est
+pas un moteur de simulation parallèle.
 
 ```mermaid
 flowchart TB
-    subgraph SYNE["SYNE — Simulation.Core"]
+    subgraph SYNE["SYNE — moteur .NET"]
         RT[Runtime / Scheduler]
         WORLD[World]
         AGENTS[Agents]
@@ -31,11 +34,18 @@ flowchart TB
         RT --> SPATIAL
         RT --> NAV
     end
-    SYNE -->|"WebSocket 5180"| WS[(WorldSnapshot / ExternalEvent)]
-    SYNE -->|"HTTP 5181"| CTL[(API contrôle)]
-    WS --> ECHOS
+    SYNE -->|"WebSocket observabilité"| WS[(world_initialized / snapshot / events)]
+    PRISM["PRISM — projet Unreal / plugin PRISM-LDK (PrismLdk)"]
+    ECHOS["ECHOS — consommateur"]
     WS --> PRISM
+    WS --> ECHOS
+    PRISM -->|"HTTP contrôle"| SYNE
 ```
+
+Les ports par défaut sont 5180 (WebSocket) et 5181 (HTTP), sur l'interface
+locale `127.0.0.1`. Les options du serveur permettent de les configurer : ce
+sont des valeurs par défaut, pas des numéros à coder en dur chez les
+consommateurs.
 
 ## 2. Sous-systèmes (Monographie §7.3.1)
 
@@ -72,17 +82,24 @@ syne/
 └── Dockerfile                    # à venir — conteneurisation hors périmètre U0
 ```
 
-L'exécutable est en **mode serveur** (WebSocket + HTTP) ou **CLI** (exécution batch) — Monographie §7.1, ADR-002. En U0, le **mode CLI** est implémenté (config résolue → monde + entités + boucle minimale) ; le mode serveur (contrats 5180/5181) arrive en jalon U1+.
+`Simulation.Console` prend en charge l'exécution CLI/batch ainsi que les
+interfaces de contrôle HTTP et d'observabilité WebSocket (`--serve` et
+`--observe`). Le serveur HTTP de contrôle peut aussi diffuser les trames
+d'observabilité du run. Les détails des options et des contrats actuels sont
+décrits dans `CONFIGURATION.md` et `API_CONTRACTS.md`.
 
 ## 5. Interfaces externes
 
 | Interface | Transport | Détail |
 | :-- | :-- | :-- |
-| Sortie temps réel | WebSocket 5180 | `WorldSnapshot`, `ExternalEvent` (JSON camelCase) |
-| Contrôle | HTTP REST 5181 | `start`, `pause`, `resume`, `reset` |
+| Sortie temps réel | WebSocket (5180 par défaut) | `world_initialized`, snapshots globaux et événements (JSON camelCase) |
+| Contrôle | HTTP REST (5181 par défaut) | Préparation du monde et commandes de cycle de vie |
 | Persistance | JSON (V1) / SQLite (V2) | schéma Annexe G |
 
-Voir `API_CONTRACTS.md` et `PERSISTENCE.md`.
+Les ports sont configurables et le bind par défaut est local (`127.0.0.1`).
+PRISM consomme ces interfaces via le plugin Unreal PRISM-LDK (`PrismLdk`) ; le
+contrôle et le rendu ne portent pas la logique de simulation. Voir
+`API_CONTRACTS.md` et `PERSISTENCE.md`.
 
 ## 6. Dépendances
 
@@ -90,7 +107,15 @@ Voir `API_CONTRACTS.md` et `PERSISTENCE.md`.
 - `.NET` SDK 10.0.400 (pinné sur `global.json`, band `latestFeature`) — Monographie §7.1, [HÉRITÉ].
 - Aucune utilisation de `System.Random` (interdite — §3.6.3) : PRNG **xoshiro256\*\*** + **splitmix64** (ADR-006, ADR-012).
 
-## 7. Budget temps & fréquences (repère)
+## 7. Mock d'intégration du plugin
+
+Le répertoire séparé `../../syne-mock/` à la racine du dépôt contient un serveur
+Node.js qui simule certains contrats et flux pour développer/tester
+PRISM-LDK (`PrismLdk`) sans démarrer SYNE. Il n'est ni le moteur réel ni une référence
+d'équivalence algorithmique. Seuls les contrats documentés et implémentés par
+le moteur .NET font autorité pour les règles et résultats de simulation.
+
+## 8. Budget temps & fréquences (repère)
 
 | Fréquence | Sous-systèmes |
 | :-- | :-- |

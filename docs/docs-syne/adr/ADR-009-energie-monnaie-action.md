@@ -1,7 +1,7 @@
 # ADR-009 : Énergie comme monnaie d'action
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.10 (ADR-009)
