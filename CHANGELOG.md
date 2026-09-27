@@ -55,6 +55,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - `SYNE-110` précisée : hooks `autoSaveEveryNTicks` (défaut 1000) / `maxBackups` (défaut 5) à brancher sur la boucle (aucun consommateur à ce jour) ;
 - ECHOS-085 annotée : livrée côté UI, finalisation en U8 contre SYNE-113.
 - `PERSISTENCE.md` §3 recalé sur le modèle réel V0.1 : `agent_snapshots` sans `health` fictive (besoins = `energy, hunger, thirst, fatigue`), implémentation du snapshot bit-à-bit et de la rotation documentée.
+- `syne-mock` : `npm test` ne se terminait plus. `createServer().close()` arrêtait l'écoute sans libérer les ressources : les clients WebSocket restaient connectés et les connexions HTTP en keep-alive n'étaient pas fermées, ce qui laissait 2 serveurs TCP et 3 sockets ouverts et empêchait `node --test` de rendre la main. `close()` termine désormais les clients WebSocket, purge les connexions HTTP et chaîne les rappels de fermeture ; les tests libèrent leur serveur via `t.after()` et attendent la fermeture du client.
+- `syne-mock` : les assertions d'obstacles attendaient un objet `{id, x, y, radius}` alors que `WorldDescription` publie aussi `type`. Les attentes sont alignées sur le contrat réel.
 
 ### Added
 - Documentation technique V0.1 complète du monorepo (phases 0 à 5 du Plan documentation) :
