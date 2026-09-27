@@ -52,7 +52,10 @@ l'implémentation A* de SYNE. La délibération et les systèmes sociaux restent
 des approximations destinées à tester l'intégration Blueprint ; les trajectoires
 ne sont pas garanties bit-à-bit identiques au moteur C#.
 
-Tests ciblés : `npm test`. Ports et paramètres sont configurables dans JSON.
+Tests ciblés : `npm test` (12 tests, moins d'une seconde, sans réseau ni port fixe).
+La suite s'exécute aussi en intégration continue via le job `Tests (SYNE-MOCK Node)`
+de `.github/workflows/ci.yml`, déclenché sur toute modification de `syne-mock/`.
+Ports et paramètres sont configurables dans JSON.
 `replay.file` permet de rejouer un fichier JSONL (un message SYNE par ligne);
 `replay.loop` le répète indéfiniment. Le replay est volontairement un transport
 de messages et ne prétend pas restaurer l'état interne C#.
