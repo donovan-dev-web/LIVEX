@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 27 septembre 2026
 **Dépend de** : `VISION.md`, `FAQ.md`
 **Source Monographie** : Partie 8 (Portée, Risques et Éthique), Annexe A.6 (références éthiques)
 
@@ -81,7 +81,7 @@
 
 - **Ring buffer d'événements** (500 000) : volume à borner et profiler.
 - **Concurrence en EventBus** : perception parallèle séparée de l'écriture des événements.
-- **Interopérabilité Godot** : le C# doit supporter le frontal Godot (DTO JSON sur WS/HTTP exclusivement).
+- **Interopérabilité Unreal** : SYNE reste indépendant du moteur graphique ; le plugin Unreal `PrismLdk` consomme des contrats JSON sur WebSocket/HTTP.
 
 ## 4. Défis scientifiques et techniques
 
@@ -90,7 +90,15 @@
 - **Échantillonnage** : combien de runs pour une conclusion robuste (question ouverte).
 - **Passage à l'échelle déterministe** : parallélisme en lecture seule (grille), séquencement pour Cognition/Actions, JIT sur les benchmarks.
 - **Persistance transactionnelle** : atomique, versionnée, vérifiable (checksum).
-- **Intégration Godot** : dépendances du moteur isolées, communication par DTO uniquement.
+- **Intégration Unreal** : code C++ du plugin limité à l'interopérabilité et aux types exposés ; privilégier les fonctionnalités natives et Blueprint. Les décisions de simulation restent exclusivement dans SYNE.
+
+### 4.1 Mock d'intégration
+
+`syne-mock/` existe pour réduire le coût d'itération sur l'intégration de
+PRISM-LDK dans PRISM et vérifier les contrats sans démarrer le moteur complet.
+C'est un outil de développement, pas un substitut à SYNE : les règles de
+décision, le mouvement et les systèmes sociaux y sont simplifiés. Les résultats du mock ne doivent
+pas être présentés comme des résultats de simulation du moteur réel.
 
 ## 5. Éthique
 

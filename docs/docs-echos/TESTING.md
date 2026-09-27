@@ -321,5 +321,6 @@ observation, consomme un tick complet depuis le WebSocket réel, alimente SQLite
 et Parquet, puis vérifie les décisions, métriques et endpoints REST, dont le
 rapport post-run de calibration. Le test est activé par `LIVEX_SYNE_E2E=1` et
 exécuté par le job CI transverse quand les sources SYNE ou ECHOS changent.
-L’intégration PRISM s’arrête au contrat API ECHOS : le runtime PRISM est prévu
-après U8 (voir ROADMAP racine).
+Ce test valide uniquement SYNE→ECHOS (ingestion, persistance, API et rapport).
+Il ne compile ni ne teste le plugin Unreal PRISM-LDK (`PrismLdk`) ni le projet
+Unreal PRISM qui l'intègre ; voir `../docs-prism/TESTING.md`.

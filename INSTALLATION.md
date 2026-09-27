@@ -5,15 +5,20 @@
 **Dernière mise à jour** : 24 septembre 2026
 **Dépend de** : `ROADMAP.md`, `COMMUNICATION.md`
 
-Ce guide permet de démarrer localement **SYNE**, l’API et l’interface **ECHOS**, ainsi que l’ingestion des données de simulation.
+Ce guide permet de démarrer localement **SYNE**, l’API et l’interface **ECHOS**, l’ingestion, et le mock SYNE utilisé pour développer l’intégration Unreal de PRISM.
 
-> **PRISM** n’a pas encore de runtime. Sa réalisation est planifiée après U8 ; voir la [feuille de route PRISM](docs/docs-prism/ROADMAP.md).
+> **PRISM / Unreal** : PRISM est le projet Unreal final de LIVEX ; il intègre
+> le plugin **PRISM-LDK** (`Plugins/PrismLdk`). Dans le checkout courant,
+> `prism/LDK/LDK.uproject` sert d'hôte technique pour compiler et tester ce
+> plugin, sans être un projet produit distinct. Voir la
+> [documentation PRISM](docs/docs-prism/README.md) pour le workflow Blueprint.
 
 ## Prérequis
 
 - **.NET SDK 10.0.4xx**, conformément à [`syne/global.json`](syne/global.json).
 - **Python 3.11+**.
 - **Node.js 20+** et npm.
+- **Unreal Engine 5.8** et le toolchain Visual Studio adapté, uniquement pour compiler ou utiliser le plugin Unreal.
 - `curl` pour les vérifications de disponibilité du lanceur.
 
 ```bash
@@ -23,6 +28,43 @@ node --version
 npm --version
 curl --version
 ```
+
+## Développer l'intégration PRISM sans SYNE
+
+Pour avancer sur l'intégration Unreal sans démarrer le moteur .NET complet,
+lancez le serveur Node.js de simulation du contrat :
+
+```bash
+cd syne-mock
+npm ci
+npm start -- config.example.json
+```
+
+Le mock écoute par défaut sur `127.0.0.1:5181` (HTTP de contrôle) et
+`127.0.0.1:5180` (WebSocket), avec 50 agents et un maximum de 400 ticks par
+défaut. Ses ports et le scénario sont configurables dans le JSON. Consultez
+[`syne-mock/README.md`](syne-mock/README.md) pour les routes, événements,
+options et commandes de validation.
+
+Le mock est un outil d'intégration : il simule le cycle de contrôle, le monde
+initial et les snapshots, mais simplifie plusieurs comportements du vrai SYNE
+(notamment la délibération et le pathfinding). Il ne doit pas servir à produire
+des résultats scientifiques ni remplacer les tests avec le vrai moteur.
+
+## PRISM et son plugin PRISM-LDK
+
+**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
+complet. **PRISM** est le projet Unreal final de LIVEX ; il intègre le plugin
+**PRISM-LDK** (*LIVEX Development Kit*, nom technique du module `PrismLdk`).
+LDK désigne ce plugin, pas un projet complet distinct.
+
+Le fichier `prism/LDK/LDK.uproject` fourni dans le dépôt est l'hôte Unreal
+technique utilisé pour ouvrir/compiler/tester le plugin. Il n'est ni le projet
+LIVEX complet ni un second produit. PRISM-LDK expose les contrats et événements
+utiles à Blueprint, et garde le C++ au minimum pour la connexion, le transport
+et la conversion des messages. Pour l'ordre d'initialisation du monde et le
+câblage des événements, suivre
+[`docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md`](docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md).
 
 ## Démarrage complet : SYNE, ECHOS et interface
 
@@ -294,6 +336,8 @@ préalable avec `dotnet build syne/Syne.sln --configuration Release` ou lancez
 |:--|:--|:--|
 | SYNE WebSocket | `127.0.0.1:5180` | Snapshots et événements du run piloté par l’UI. |
 | SYNE HTTP | `127.0.0.1:5181` | Contrôle du serveur SYNE et démarrage des runs. |
+| syne-mock WebSocket | `127.0.0.1:5180` par défaut | Initialisation du monde, snapshots globaux et événements ; lancé séparément de SYNE. |
+| syne-mock HTTP | `127.0.0.1:5181` par défaut | Cycle de contrôle ; lancé séparément de SYNE. |
 | API ECHOS | `127.0.0.1:5000` | Runs, métriques, analyses et relais de contrôle. |
 | Interface ECHOS | `127.0.0.1:5173` | Application web Vite. |
 
@@ -327,6 +371,7 @@ npm run build
 ## Documentation complémentaire
 
 - [Architecture globale](ARCHITECTURE.md) · [Contrats inter-composants](COMMUNICATION.md)
-- [Guide SYNE](docs/docs-syne/README.md) · [Guide ECHOS](docs/docs-echos/README.md)
+- [Portail de documentation](docs/README.md) · [Guide SYNE](docs/docs-syne/README.md) · [Guide ECHOS](docs/docs-echos/README.md)
+- [Guide PRISM / Unreal](docs/docs-prism/README.md) · [Guide syne-mock](syne-mock/README.md)
 - [Feuille de route](ROADMAP.md) · [Feuille de route PRISM](docs/docs-prism/ROADMAP.md)
 - [Gitflow](GITFLOW.md) · [Contribuer](CONTRIBUTING.md)

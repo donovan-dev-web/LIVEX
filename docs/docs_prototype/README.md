@@ -1,5 +1,12 @@
 # Emergent Simulation Engine
 
+> **Archive de prototype.** Ce document et les spécifications V1/V2 décrivent
+> des implémentations et choix antérieurs. Les références à Godot et à
+> `godot-renderer/` ne décrivent pas PRISM aujourd'hui. L'implémentation
+> actuelle de PRISM est le projet Unreal final de LIVEX ; il intègre le plugin
+> PRISM-LDK (`PrismLdk`, LIVEX Development Kit) ; voir
+> [`docs-prism/`](../docs-prism/README.md) et [`docs/README.md`](../README.md).
+
 Moteur de simulation systémique émergente, persistante et temps réel. Des agents
 prennent des décisions à partir de leur état interne, de leurs besoins, de leur
 perception, de leur mémoire et de leurs capacités — **aucun scénario global
