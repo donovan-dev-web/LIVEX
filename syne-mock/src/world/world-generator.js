@@ -37,7 +37,7 @@ class WorldGenerator {
     const resources = generateResourceLocations(seed, cellCountX, cellCountY, cells);
     const regions = this.generateRegions(cellCountX, cellCountY);
     const initialAgents = createInitialAgents(
-      seed, config.agentCount, { width, height, cellSize }, config.agentSimulation, obstacles);
+      seed, config.agentCount, { width, height, cellSize }, config.agentSimulation, obstacles, cells);
     const world = {
       version: '1.0',
       width,
