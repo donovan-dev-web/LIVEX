@@ -1,8 +1,8 @@
 # ADR-003 : API HTTP REST légère
 
 **Composant** : LIVEX (transverse — contrôle de SYNE)
-**Statut** : [Accepted]
-**Dernière mise à jour** : 17 septembre 2026
+**Statut** : [Accepted — décision de transport ; routes historiques remplacées par le contrat courant]
+**Dernière mise à jour** : 27 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.4 (ADR-003), §5.4.2
 
@@ -14,7 +14,7 @@ Le moteur doit être contrôlable par des outils externes (scripts, interface EC
 
 ## Décision
 
-Exposer une **API HTTP REST légère** sur le port **5181**, bound local (`127.0.0.1:5181`), avec les endpoints suivants :
+Exposer une **API HTTP légère** sur le port **5181** par défaut, bind local par défaut. La liste ci-dessous retranscrit la proposition d'origine de la Monographie ; elle n'est pas la liste des routes courantes :
 
 | Méthode | Endpoint | Rôle |
 | :-- | :-- | :-- |
@@ -27,6 +27,12 @@ Exposer une **API HTTP REST légère** sur le port **5181**, bound local (`127.0
 | POST | `/reset` | Réinitialiser à un état initial |
 
 ## Conséquences
+
+> **Contrat courant :** les routes supportées et le cycle de contrôle sont
+> `prepare`, `ready`, `start`, `pause`, `resume`, `stop`, `reset` et `status`.
+> Les chemins, payloads, erreurs et règles d'initialisation sont maintenus dans
+> [`docs/docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md) et
+> [`COMMUNICATION.md`](../../COMMUNICATION.md).
 
 ### Positives
 - Contrôle simple et faiblement couplé, consommable par tout client HTTP.
