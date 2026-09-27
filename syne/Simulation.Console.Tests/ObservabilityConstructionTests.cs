@@ -82,6 +82,12 @@ public class ObservabilityConstructionTests
         Assert.Equal((ulong)warmup + 1, placedFrame["tick"]!.GetValue<ulong>());
         Assert.Equal(60.0, (double?)placedFrame["value"]!["x"]);
         Assert.Equal(10.0, (double?)placedFrame["value"]!["radius"]);
+        JsonNode delta = Assert.Single(sink.Frames.Select(ParseFrame),
+            node => node!["type"]!.GetValue<string>() == ObservabilityContract.WorldDelta);
+        Assert.Equal((ulong)warmup + 1, delta["tick"]!.GetValue<ulong>());
+        Assert.Equal("run-7", delta["runId"]!.GetValue<string>());
+        Assert.Equal("added", delta["changes"]![0]!["kind"]!.GetValue<string>());
+        Assert.Equal("maison-1", delta["changes"]![0]!["id"]!.GetValue<string>());
 
         // Le drain consomme les modifications tracées (événement émis une seule fois).
         Assert.Empty(loop.World.LastEnvironmentChanges);
@@ -94,6 +100,8 @@ public class ObservabilityConstructionTests
         JsonArray obstacles = snapshot["obstacles"]!.AsArray();
         Assert.Single(obstacles);
         Assert.Equal("maison-1", (string?)obstacles[0]!["id"]);
+        Assert.Equal("added", (string?)snapshot["worldChanges"]![0]!["kind"]);
+        Assert.Equal("maison-1", (string?)snapshot["worldChanges"]![0]!["id"]);
 
         loop.World.RemoveConstruction("maison-1");
         loop.AdvanceOneTick();

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Simulation.Core.World;
 
 namespace Simulation.Core.Observability;
 
@@ -38,8 +39,53 @@ public static class ObservabilitySerializer
             ["seasonIndex"] = snapshot.SeasonIndex,
             ["territories"] = TerritoriesJson(snapshot.Territories),
             ["books"] = BooksJson(snapshot.Books),
+            ["worldChanges"] = WorldChangesJson(snapshot.WorldChanges),
+            ["actions"] = ActionsJson(snapshot.Actions),
         };
         return message;
+    }
+
+    private static JsonArray WorldChangesJson(IReadOnlyList<WorldChangeSnapshot> changes)
+    {
+        var array = new JsonArray();
+        foreach (WorldChangeSnapshot change in changes)
+        {
+            array.Add(new JsonObject
+            {
+                ["kind"] = change.Kind,
+                ["id"] = change.Id,
+                ["x"] = change.X,
+                ["y"] = change.Y,
+                ["radius"] = change.Radius,
+            });
+        }
+        return array;
+    }
+
+    private static JsonArray ActionsJson(IReadOnlyList<ActionSnapshot> actions)
+    {
+        var array = new JsonArray();
+        foreach (ActionSnapshot action in actions)
+        {
+            var item = new JsonObject
+            {
+                ["agentId"] = action.AgentId,
+                ["action"] = action.Action,
+                ["outcome"] = action.Outcome,
+                ["cause"] = action.Cause,
+                ["energyDelta"] = action.EnergyDelta,
+                ["hungerDelta"] = action.HungerDelta,
+                ["thirstDelta"] = action.ThirstDelta,
+                ["fatigueDelta"] = action.FatigueDelta,
+            };
+            if (action.Reserve is not null)
+            {
+                item["reserve"] = action.Reserve;
+                item["reserveConsumed"] = action.ReserveConsumed;
+            }
+            array.Add(item);
+        }
+        return array;
     }
 
     private static JsonArray TerritoriesJson(IReadOnlyList<TerritorySnapshot> territories)
@@ -205,6 +251,31 @@ public static class ObservabilitySerializer
         return message;
     }
 
+    public static JsonObject WorldDeltaMessage(
+        ulong tick, string runId, IReadOnlyList<EnvironmentChange> changes)
+    {
+        var array = new JsonArray();
+        foreach (EnvironmentChange change in changes)
+        {
+            array.Add(new JsonObject
+            {
+                ["kind"] = change.Kind == EnvironmentChangeKind.Added ? "added" : "removed",
+                ["id"] = change.Obstacle.Id,
+                ["x"] = change.Obstacle.Position.X,
+                ["y"] = change.Obstacle.Position.Y,
+                ["radius"] = change.Obstacle.Radius,
+            });
+        }
+
+        return new JsonObject
+        {
+            ["type"] = ObservabilityContract.WorldDelta,
+            ["runId"] = runId,
+            ["tick"] = tick,
+            ["changes"] = array,
+        };
+    }
+
     public static string ToJsonText(JsonObject message) => message.ToJsonString(Options);
 
     private static JsonObject AgentJson(AgentSnapshot agent)
@@ -261,7 +332,8 @@ public static class ObservabilitySerializer
             ["hunger"] = agent.Hunger,
             ["thirst"] = agent.Thirst,
             ["fatigue"] = agent.Fatigue,
-            ["currentAction"] = agent.CurrentIntention,
+            ["currentAction"] = agent.CurrentAction,
+            ["currentIntention"] = agent.CurrentIntention,
             ["traits"] = traits,
             ["beliefs"] = beliefs,
             ["goals"] = goals,

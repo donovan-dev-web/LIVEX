@@ -63,6 +63,13 @@ public sealed class ObservabilityTickEmitter
             ObservabilitySerializer.ToJsonText(
                 ObservabilitySerializer.EventMessage(EventSensor.TickSummary(_loop.CurrentTick, snapshot.AliveCount))));
 
+        if (_loop.World.LastEnvironmentChanges.Count > 0)
+        {
+            await _sink.BroadcastAsync(ObservabilitySerializer.ToJsonText(
+                ObservabilitySerializer.WorldDeltaMessage(
+                    _loop.CurrentTick, _runId, _loop.World.LastEnvironmentChanges)));
+        }
+
         foreach (Simulation.Core.Entities.Entity entity in _loop.World.Entities.OrderBy(e => e.Id.Value))
         {
             if (_loop.Cognition.HasMind(entity.Id.Value))
