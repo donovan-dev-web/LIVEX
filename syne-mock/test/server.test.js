@@ -141,6 +141,34 @@ test('world_initialized precedes a global snapshot and configured obstacles rema
   await closeClient(client);
 });
 
+test('agent spawning honours published walkable cells across seeds', () => {
+  // Le placement doit suivre cells[].walkable, seul indicateur publie par WorldDescription.
+  // Couvre la mer (relief) et le desaccord historique entre le placement et la grille.
+  const obstacleLayout = [
+    { id: 'centre', x: 250, y: 250, radius: 30 },
+    { id: 'corner', x: 120, y: 120, radius: 8 }
+  ];
+  for (const seed of [1, 2, 7, 56, 123]) {
+    for (const agents of [0, 1, 20, 120]) {
+      for (const withObstacles of [false, true]) {
+        const simulation = new Simulation({
+          seed, agents, world: { obstacles: withObstacles, obstacleLayout: withObstacles ? obstacleLayout : [] }
+        });
+        simulation.prepare(seed);
+        const world = simulation.worldDescription();
+        for (const agent of world.agents) {
+          const x = Math.floor(agent.position.x / world.cellSize);
+          const y = Math.floor(agent.position.y / world.cellSize);
+          const cell = world.cells.find(candidate => candidate.x === x && candidate.y === y);
+          assert.ok(cell, `seed ${seed}/${agents} agents: cell absente pour ${agent.position.x},${agent.position.y}`);
+          assert.equal(cell.walkable, true,
+            `seed ${seed}/${agents} agents/obstacles=${withObstacles}: agent sur une case non walkable`);
+        }
+      }
+    }
+  }
+});
+
 test('WorldDescription generation is deterministic by seed', () => {
   const a = new Simulation({ seed: 123 }); a.prepare(123);
   const b = new Simulation({ seed: 123 }); b.prepare(123);
