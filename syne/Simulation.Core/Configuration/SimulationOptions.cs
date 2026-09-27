@@ -21,6 +21,8 @@ public sealed class SimulationSettings
 {
     public int WorldWidth { get; set; } = 500;
     public int WorldHeight { get; set; } = 500;
+    /// <summary>Taille des cellules de la description Unreal (unités monde).</summary>
+    public double WorldCellSize { get; set; } = 10;
     public int MaxTicks { get; set; } = 1_000_000;
     public int TicksPerSecond { get; set; } = 10;
     public int AutoSaveEveryNTicks { get; set; } = 1000;

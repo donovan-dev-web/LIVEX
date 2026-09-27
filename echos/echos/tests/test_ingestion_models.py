@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from echos.ingestion import (
     ExternalEvent,
     InvalidMessageError,
+    WorldInitialized,
     WorldSnapshot,
     parse_message,
 )
@@ -60,6 +61,27 @@ def test_external_event_preserves_camelcase_contract():
     assert message.model_dump(mode="json", by_alias=True, exclude_none=True) == _load(
         "external_event.json"
     )
+
+
+def test_world_initialized_parse_preserves_the_initial_world_contract():
+    raw = json.dumps(
+        {
+            "type": "world_initialized",
+            "version": "1.0",
+            "seed": 17,
+            "world": {
+                "width": 500,
+                "height": 500,
+                "agents": [{"id": 1, "position": {"x": 2.5, "y": 3.0}}],
+            },
+        }
+    )
+
+    message = parse_message(raw)
+
+    assert isinstance(message, WorldInitialized)
+    assert message.seed == 17
+    assert message.world["agents"][0]["position"] == {"x": 2.5, "y": 3.0}
 
 
 def test_event_optional_fields_default_to_none():

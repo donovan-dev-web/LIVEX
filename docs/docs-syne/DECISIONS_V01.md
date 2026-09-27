@@ -1,12 +1,16 @@
 # DECISIONS_V01.md
 
 **Composant** : SYNE (transversal ECHOS/PRISM)
-**Statut** : [STABLE]
+**Statut** : [HISTORIQUE — registre des décisions de la conception initiale]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : la Monographie §9.6.4, `../docs/systems/SPECS_ECHOS/SYSTEMS_SPEC.md` §10 (décisions reportées)
 **Source Monographie** : §9.6.4 (30 décisions à figer), §1.4.3, §3.16.1, §3.16.9, §3.18.5
 
 ---
+
+> Ce registre conserve les décisions et propositions de la conception initiale.
+> Il n'est pas la référence de l'architecture actuelle ; pour les contrats et
+> le rôle en vigueur, voir `VISION.md`, `ARCHITECTURE.md` et `API_CONTRACTS.md`.
 
 ## 1. Règle appliquée
 
@@ -33,7 +37,7 @@ Chaque décision est ici **soit tranchée** (valeur + justification + source) **
 - **Valeur** : monde **continu**, espace logique 2D, dimensions **500 × 500** unités (configurable), grille spatiale pour la perception.
 - **Justification** : Monographie §3.8 (solution de la grille), §6.1.1. Fixé par la contrainte réelle du prototype (500 × 500) et la persistance (projection logique/rendu).
 - **Source** : Monographie §6.1.1–6.1.2, `ARCHITECTURE.md`.
-- **Représentation logique** : `Position { X, Y }` (coordonnées flottantes), le rendu 3D étant réservé à PRISM.
+- **Représentation logique** : `Position { X, Y }` (coordonnées flottantes) ; la présentation est externe au moteur (aujourd'hui PRISM est le projet Unreal final de LIVEX, utilisant le plugin PRISM-LDK / `PrismLdk`).
 
 ### 2.3 Cycle énergétique exact — **[TRANCHÉE]**
 
@@ -216,7 +220,13 @@ Chaque décision est ici **soit tranchée** (valeur + justification + source) **
 - **Justification** : Monographie §1.7.5, §2.6.3, §3.9.4 (déterminisme), `DETERMINISM.md`.
 - **Source** : Monographie §1.7.5, `DETERMINISM.md`, `SIMULATION_LOOP.md` §4.2.8, ADR-01 (SYNE).
 
-### 2.28 Architecture exacte SYNE/ECHOS/PRISM — **[TRANCHÉE]**
+### 2.28 Architecture SYNE/ECHOS/PRISM — **[HISTORIQUE, REMPLACÉE]**
+
+> L'entrée ci-dessous est conservée comme trace de la proposition d'origine :
+> PRISM n'est plus documenté comme renderer Godot autonome. Il consomme
+> aujourd'hui SYNE dans PRISM via le plugin PRISM-LDK (`PrismLdk`) ; SYNE reste l'autorité de
+> simulation et de décision. Les ports ci-dessous sont des valeurs historiques,
+> pas des valeurs à considérer fixes pour les intégrations actuelles.
 
 - **Valeur** : 3 modules, contrats **fermes** et **documentés** (§9.6.4) : SYNE (vérité du monde, C#/.NET), ECHOS (observation/analyse/pilotage, FastAPI :5000), PRISM (rendu 3D, Godot 4.7.2 .NET). Communication : **WebSocket :5180** (snapshot/event) + **HTTP :5181** (contrôle) + **REST :5000** (ECHOS).
 - **Justification** : Monographie §2.2.3, §4.2.2, ADR-003.

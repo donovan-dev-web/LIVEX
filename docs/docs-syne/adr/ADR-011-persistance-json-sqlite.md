@@ -1,7 +1,7 @@
 # ADR-011 : Persistance JSON → SQLite
 
 **Composant** : SYNE
-**Statut** : [Accepted]
+**Statut** : [Historique — décision acceptée à l'époque]
 **Dernière mise à jour** : 17 septembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe F.12 (ADR-011), Annexe G (Schéma SQLite V2.0)

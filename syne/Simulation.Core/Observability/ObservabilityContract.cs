@@ -8,7 +8,7 @@ namespace Simulation.Core.Observability;
 public static class ObservabilityContract
 {
     /// <summary>Version du contrat d'observabilité (API_CONTRACTS.md §2).</summary>
-    public const string Version = "0.1.0";
+    public const string Version = "0.2.0";
 
     /// <summary>
     /// Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les
@@ -112,6 +112,7 @@ public static class ObservabilityContract
     /// {id, readBenefit}.
     /// </summary>
     public const string BookRead = "world.book_read";
+    public const string WorldDelta = "world_delta";
 
     public static string RunIdFor(ulong seed) => $"run-{seed}";
 }

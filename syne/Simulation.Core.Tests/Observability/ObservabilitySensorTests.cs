@@ -46,6 +46,11 @@ public class ObservabilitySensorTests
         Assert.Equal(3, message["agents"]!.AsArray().Count);
         Assert.NotNull(message["resources"]);
         Assert.NotNull(message["obstacles"]);
+        Assert.NotNull(message["groups"]);
+        Assert.NotNull(message["territories"]);
+        Assert.NotNull(message["books"]);
+        Assert.NotNull(message["worldChanges"]);
+        Assert.NotNull(message["actions"]);
 
         // Agents triés par id croissant (déterminisme d'émission).
         Assert.Equal("1", (string?)message["agents"]![0]!["id"]);
@@ -56,7 +61,9 @@ public class ObservabilitySensorTests
         Assert.Equal(50, (double?)agent["position"]!["x"]);
         Assert.Equal(50, (double?)agent["position"]!["y"]);
         Assert.InRange((double?)agent["energy"] ?? 0, 0, 100);
-        Assert.Equal("Idle", (string?)agent["currentAction"]);
+        Assert.NotNull(agent["currentAction"]);
+        Assert.NotNull(agent["currentIntention"]);
+        Assert.Equal(3, message["actions"]!.AsArray().Count);
 
         // Aucune clé PascalCase (contrat API_CONTRACTS.md §2).
         Assert.DoesNotContain("\"AliveCount\"", json);

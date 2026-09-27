@@ -77,6 +77,23 @@ def test_aligned_ticks_splits_stream_into_segments_in_order():
     assert segments[1].event_types == ["tick_summary", "decision_made", "decision_made"]
 
 
+def test_world_initialized_prelude_is_skipped_before_tick_stream():
+    world = json.dumps(
+        {
+            "type": "world_initialized",
+            "version": "1.0",
+            "seed": 17,
+            "world": {"width": 500, "height": 500, "agents": []},
+        }
+    )
+    client = _client([world, _variant("world_snapshot_v01.json", 1)])
+    client.connect("ws://127.0.0.1:5180")
+
+    segments = list(aligned_ticks(client))
+
+    assert [segment.tick for segment in segments] == [1]
+
+
 def test_first_segment_matches_golden():
     client = _client(
         [
