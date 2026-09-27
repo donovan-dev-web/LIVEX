@@ -1,6 +1,7 @@
 """Ingestion — contrats d'observation et de pilotage de SYNE.
 
-- :mod:`models` : modèles pydantic des contrats `WorldSnapshot` / `ExternalEvent`
+- :mod:`models` : modèles pydantic des contrats `WorldInitialized` /
+  `WorldSnapshot` / `ExternalEvent`
   (JSON camelCase, API_CONTRACTS.md §2) + :func:`parse_message` déterministe.
 - :mod:`ws_client` : consommateur WebSocket :5180 (transport injectable).
 - :mod:`stream` : lecture du flux **alignée par tick** (ECHOS-010).
@@ -16,6 +17,7 @@ from .models import (
     parse_message,
     Position,
     Resource,
+    WorldInitialized,
     WorldSnapshot,
 )
 from .stream import aligned_ticks, TickAlignmentError, TickSegment
@@ -33,6 +35,7 @@ __all__ = [
     "Resource",
     "TickAlignmentError",
     "TickSegment",
+    "WorldInitialized",
     "WorldSnapshot",
     "WsClient",
     "WsTransport",
