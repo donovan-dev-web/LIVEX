@@ -250,10 +250,20 @@ class Simulation {
     }
 
     advanceStocks(this.resources, this.options.resources.regeneration);
+
+    // Les événements du tick sont d'abord réunis dans `events` : le snapshot doit
+    // partir avant eux. SYNE diffuse « le snapshot puis les événements du tick
+    // courant » (ObservabilityTickEmitter, qui cite API_CONTRACTS.md §2), et tout
+    // consommateur qui aligne le flux sur les ticks refuse un événement reçu
+    // avant le premier snapshot ou portant un autre tick — c'est le cas d'ECHOS
+    // (`ingestion.stream.aligned_ticks`), qui rejetait le mock à la première
+    // trame avec « decision_made reçu avant le premier snapshot ».
+    const events = [];
+
     for (const agent of this.agents) {
       const result = this.agentDecisionService.execute(agent, this.tick, this.world, this.obstacles);
       this.tickActions.push(result);
-      this.emit({
+      events.push({
         type: 'decision_made',
         tick: this.tick,
         agentId: String(agent.id),
@@ -266,7 +276,7 @@ class Simulation {
           interrupted: false
         }
       });
-      this.emit({
+      events.push({
         type: 'action_completed',
         tick: this.tick,
         agentId: String(agent.id),
@@ -283,11 +293,21 @@ class Simulation {
       });
     }
 
-    this.emitSocialEvents();
-    this.emitGroupEvents();
-    this.emitBookEvents();
+    this.emitSocialEvents(events);
+    this.emitGroupEvents(events);
+    this.emitBookEvents(events);
+
     this.broadcast(this.snapshot());
-    this.emit({ type: 'tick_summary', tick: this.tick, value: { aliveCount: this.agents.length } });
+
+    // `tick_summary` suit immédiatement le snapshot, comme SYNE, puis viennent
+    // les événements du tick dans leur ordre d'émission.
+    for (const event of [
+      { type: 'tick_summary', tick: this.tick, value: { aliveCount: this.agents.length } },
+      ...events
+    ]) {
+      this.emit(event);
+    }
+
     if (this.tick >= this.options.maxTicks) this.finish();
   }
 
@@ -301,7 +321,11 @@ class Simulation {
     else if (this.tick >= this.options.maxTicks) this.finish();
   }
 
-  emitSocialEvents() {
+  /**
+   * Événements de communication du tick, versés dans `events` : l'ordre de
+   * diffusion est fixé par `step()`, pas ici.
+   */
+  emitSocialEvents(events) {
     if (!this.options.communication.enabled || this.agents.length < 2 || this.tick % 5 !== 0) return;
     const sender = this.agents[0];
     const target = this.agents[1];
@@ -309,31 +333,31 @@ class Simulation {
         this.options.communication.transmissionRange) return;
 
     const messageId = `${this.options.seed}-${this.tick}-1`;
-    this.emit({
+    events.push({
       type: 'message_sent', tick: this.tick, agentId: String(sender.id),
       targetId: String(target.id), action: 'Information',
       value: { messageId, hops: 0, confidence: 1, payloadLength: 0 }
     });
-    this.emit({
+    events.push({
       type: 'message_received', tick: this.tick, agentId: String(target.id),
       targetId: String(sender.id), action: 'Information',
       value: { messageId, hops: 0, confidence: 1, understood: true }
     });
   }
 
-  emitGroupEvents() {
+  emitGroupEvents(events) {
     const interval = Math.max(1, this.options.groups.lodInterval);
     if (!this.options.groups.enabled || !this.groups.length || this.tick % interval !== 0) return;
     const group = this.groups[0];
     group.decision = this.agents[0]?.currentIntention ?? 'Idle';
-    this.emit({
+    events.push({
       type: 'group_decision', tick: this.tick, agentId: String(group.leaderId),
       action: group.decision,
       value: { groupId: group.groupId, decision: group.decision, consensus: group.consensus }
     });
   }
 
-  emitBookEvents() {
+  emitBookEvents(events) {
     if (!this.options.books.enabled || this.tick !== 100 || !this.agents[0]) return;
     const book = {
       id: `book-${this.options.seed}`,
@@ -345,7 +369,7 @@ class Simulation {
       readCount: 0
     };
     this.books.push(book);
-    this.emit({
+    events.push({
       type: 'world.book_written',
       tick: this.tick,
       agentId: String(this.agents[0].id),
