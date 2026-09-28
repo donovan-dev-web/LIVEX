@@ -103,8 +103,15 @@ class AgentDecisionService {
     let reserveConsumed = null;
 
     if (MOVEMENT_ACTIONS.has(action)) {
-      this.movementService.move(agent, tick, action, world, obstacles);
-      agent.energy = clamp(agent.energy - this.settings.moveEnergyCost);
+      // Un deplacement qui n'a pas eu lieu ne coute pas d'energie : facturer le
+      // cout de mouvement sur un pas refuse revenait a vider les agents sans
+      // qu'ils bougent, et a declarer une intention qu'ils ne suivaient pas.
+      const movement = this.movementService.move(agent, tick, action, world, obstacles);
+      if (movement.moved) agent.energy = clamp(agent.energy - this.settings.moveEnergyCost);
+      else if (movement.blocked) {
+        outcome = 'blocked';
+        cause = 'déplacement bloqué';
+      }
     } else if (action === 'Eat') {
       if (consume(this.stocks, 'food', this.settings.reserveConsumption)) {
         reserve = 'food';
