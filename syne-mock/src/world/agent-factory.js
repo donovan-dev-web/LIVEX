@@ -1,6 +1,7 @@
 const { createSeededRandom, round } = require('../simulation/deterministic-random');
+const { cellIndexAt, cellIndexOf } = require('./cell-grid');
 
-function createInitialAgents(seed, count, world, agentSettings, obstacles, cells) {
+function createInitialAgents(seed, count, world, agentSettings) {
   const random = createSeededRandom(seed);
   const agents = [];
   const spacing = Math.max(0.1, Number(agentSettings.spawnSpacing ?? 1));
@@ -8,17 +9,16 @@ function createInitialAgents(seed, count, world, agentSettings, obstacles, cells
   // Le placement s'appuie sur cells[].walkable, l'indicateur que le monde publie lui-même,
   // plutôt que sur un recalcul : obstacles et terrain (mer) sont ainsi traités par la même
   // règle que celle exposée dans WorldDescription, et aucune divergence n'est possible.
-  const cellCountX = Math.ceil(world.width / world.cellSize);
+  // Le déplacement lit la même grille via cell-grid, doncagent et monde ne peuvent pas
+  // diverger sur ce qui est franchissable.
   const blocked = new Set();
-  for (const cell of cells || [])
-    if (!cell.walkable) blocked.add(cell.x * cellCountX + cell.y);
+  for (const cell of world.cells || [])
+    if (!cell.walkable) blocked.add(cellIndexOf(world, cell));
 
   // La position arrondie est celle que le monde publie : c'est donc elle qu'il faut valider.
   const placeable = candidate => {
     const position = { x: round(candidate.x), y: round(candidate.y) };
-    const cellX = Math.floor(position.x / world.cellSize);
-    const cellY = Math.floor(position.y / world.cellSize);
-    if (blocked.has(cellX * cellCountX + cellY)) return null;
+    if (blocked.has(cellIndexAt(world, position.x, position.y))) return null;
     const spaced = agents.every(agent => Math.hypot(agent.x - position.x, agent.y - position.y) >= spacing);
     return spaced ? position : null;
   };
