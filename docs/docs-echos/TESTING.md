@@ -324,3 +324,27 @@ exécuté par le job CI transverse quand les sources SYNE ou ECHOS changent.
 Ce test valide uniquement SYNE→ECHOS (ingestion, persistance, API et rapport).
 Il ne compile ni ne teste le plugin Unreal PRISM-LDK (`PrismLdk`) ni le projet
 Unreal PRISM qui l'intègre ; voir `../docs-prism/TESTING.md`.
+
+### 4.6 Intégration `syne-mock` → ECHOS
+
+`test_syne_mock_integration.py` rejoue exactement le même trajet — contrôle
+HTTP, flux WebSocket, `storage.consume` (SQLite + Parquet), API REST et
+calibration — mais contre `syne-mock` (Node) au lieu du moteur .NET. Le mock
+parle le même contrat, ce qui rend ECHOS testable à chaque PR sans build .NET.
+
+L'invariant que ce test verrouille est l'**ordre des trames** : ECHOS refuse un
+flux dont un événement précède le premier snapshot ou dont le `tick` ne
+correspond pas au snapshot courant (`ingestion/stream.aligned_ticks`, cf.
+`API_CONTRACTS.md` §2). `syne-mock` diffuse donc `snapshot` puis `tick_summary`
+puis les événements du tick, comme `ObservabilityTickEmitter` côté SYNE.
+
+Le test est activé par `LIVEX_MOCK_E2E=1` (`npm ci` dans `syne-mock/` requis) et
+exécuté par le job CI `Intégration mock → ECHOS` quand `syne-mock/` ou `echos/`
+change. Pour travailler sur ECHOS avec le mock, il suffit de pointer
+`SYNE_OBSERVABILITY_URL` et `SYNE_CONTROL_URL` sur les ports du mock (5180 /
+5181 par défaut) — voir `syne-mock/README.md`.
+
+Limites assumées : le mock publie `beliefs[]` et `trust[]` vides et ne produit
+aucune mort, donc les moteurs cognitifs et sociaux d'ECHOS tournent sur des
+données dégénérées. Le test valide le **contrat et la chaîne d'ingestion**, pas
+la qualité d'une simulation.
