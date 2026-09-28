@@ -176,6 +176,41 @@ jobs:
         run: npm test
 
   # ---------------------------------------------------------------------
+  # SYNE-MOCK - le contrat du mock doit rester consommable par ECHOS.
+  # Couvre l'ordre des trames (snapshot avant les evenements du tick), que
+  # ECHOS refuse sinon via `ingestion.stream.aligned_ticks`.
+  # ---------------------------------------------------------------------
+  syne-mock-echos-integration:
+    name: Intégration mock → ECHOS
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.syne_mock == 'true' || needs.changes.outputs.echos == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: syne-mock/package-lock.json
+      - name: Install syne-mock
+        working-directory: syne-mock
+        run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install ECHOS
+        working-directory: echos
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Mock WebSocket → ECHOS storage and API
+        env:
+          LIVEX_MOCK_E2E: "1"
+        working-directory: echos
+        run: python -m pytest echos/tests/test_syne_mock_integration.py -q --no-cov
+
+  # ---------------------------------------------------------------------
   # ECHOS - UI (React + TypeScript)
   # ---------------------------------------------------------------------
   echos-ui:
