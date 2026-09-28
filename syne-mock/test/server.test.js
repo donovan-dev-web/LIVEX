@@ -225,7 +225,13 @@ test('agent decisions use SYNE need thresholds and configured movement speed', (
     seed: 1,
     agents: 1,
     agentSimulation: {
-      needs: { hungerRate: 50, thirstRate: 0, fatigueRate: 0, curiosityDriftRate: 0.3 },
+      // `initial` est fixé explicitement : ce test vérifie le franchissement du
+      // seuil de faim, pas le calibrage par défaut, qui fait explorer les agents
+      // dès le premier tick.
+      needs: {
+        hungerRate: 50, thirstRate: 0, fatigueRate: 0, curiosityDriftRate: 0,
+        initial: { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 }
+      },
       deliberationIntervalTicks: 1,
       traits: { speed: 2 }
     },
@@ -274,4 +280,101 @@ test('simulation finishes only when maxTicks is reached', async () => {
   assert.equal(simulation.tick, 3);
   assert.equal(simulation.state, 'finished');
   simulation.stop();
+});
+
+
+test('agents start with the configured initial needs', () => {
+  const simulation = new Simulation({ seed: 1, agents: 3 }, () => {});
+  simulation.start(1, 1);
+  simulation.stop();
+
+  // `curiosity: 0.3` est le seuil d'exploration : les agents partent explorer
+  // sans attendre que curiosityDriftRate (0.002) l'atteigne 150 ticks plus tard.
+  // Les autres besoins restent à 0 pour que Eat/Drink/Rest surviennent au même
+  // moment qu'une population qui n'a rien fait encore.
+  for (const agent of simulation.agents)
+    assert.deepEqual(
+      { hunger: agent.hunger, thirst: agent.thirst, fatigue: agent.fatigue,
+        safety: agent.safety, social: agent.social, curiosity: agent.curiosity },
+      { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 },
+      `besoins de départ inattendus pour l'agent ${agent.id}`);
+});
+
+test('a run moves on its first tick instead of stalling for 15 seconds', () => {
+  const simulation = new Simulation({ seed: 1, agents: 20 }, () => {});
+  simulation.start(1, 5);
+  const start = new Map(simulation.agents.map(agent => [agent.id, { x: agent.x, y: agent.y }]));
+  simulation.step();
+
+  const moved = simulation.agents.filter(agent => {
+    const before = start.get(agent.id);
+    return agent.x !== before.x || agent.y !== before.y;
+  });
+  assert.ok(moved.length > 0, 'aucun agent ne bouge au premier tick');
+  assert.equal(simulation.tick, 1);
+  simulation.stop();
+});
+
+test('initial needs are configurable and validated per need', () => {
+  const withNeeds = initial => {
+    const simulation = new Simulation({
+      seed: 1, agents: 1,
+      agentSimulation: { needs: { initial } }
+    }, () => {});
+    simulation.start(1, 1);
+    simulation.stop();
+    return simulation.agents[0];
+  };
+
+  const tired = withNeeds({ hunger: 40, thirst: 25, fatigue: 10, safety: 0.8, social: 0.2, curiosity: 0 });
+  assert.deepEqual(
+    { hunger: tired.hunger, thirst: tired.thirst, fatigue: tired.fatigue,
+      safety: tired.safety, social: tired.social, curiosity: tired.curiosity },
+    { hunger: 40, thirst: 25, fatigue: 10, safety: 0.8, social: 0.2, curiosity: 0 });
+
+  // Chaque besoin a son propre domaine : les trois échelles 0-100, les trois
+  // fractions 0-1, parce que `curiosity >= 0.3` est un seuil.
+  for (const [need, value, domain] of [
+    ['hunger', 101, 100], ['fatigue', -1, 100], ['safety', 1.5, 1], ['social', -0.1, 1], ['curiosity', 2, 1]
+  ]) {
+    const initial = { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 };
+    initial[need] = value;
+    const simulation = new Simulation({ seed: 1, agents: 0, agentSimulation: { needs: { initial } } }, () => {});
+    assert.throws(() => simulation.prepare(1, 10, {}),
+      new RegExp(`agents\\.needs\\.initial\\.${need} must be a finite number between 0 and ${domain}`),
+      `${need}=${value} devrait être refusé`);
+  }
+});
+
+test('a missing initial block falls back to the historical agent state', () => {
+  const { initialNeeds } = require('../src/world/agent-factory');
+  assert.deepEqual(initialNeeds({}), { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 });
+  assert.deepEqual(initialNeeds({ needs: { initial: {} } }),
+    { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 });
+});
+
+test('initial needs keep the run deterministic for a given seed', () => {
+  const positions = initial => {
+    const simulation = new Simulation({
+      seed: 42, agents: 8,
+      agentSimulation: { needs: { initial } }
+    }, () => {});
+    simulation.start(42, 3);
+    const placed = simulation.agents.map(agent => [agent.x, agent.y]);
+    simulation.step();
+    const after = simulation.agents.map(agent => [agent.x, agent.y, agent.energy, agent.curiosity]);
+    simulation.stop();
+    return { placed, after };
+  };
+
+  const initial = { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 };
+  assert.deepEqual(positions(initial), positions(initial), 'même graine, même configuration, même run');
+
+  // Le placement ne lit que la graine et le monde : les besoins de départ
+  // décalent la trajectoire d'un agent, pas la où il se réveille. C'est ce qui
+  // permet de comparer deux calibrages sur la même population.
+  assert.deepEqual(positions(initial).placed, positions({ ...initial, curiosity: 0 }).placed,
+    'la répartition des positions ne doit pas dépendre des besoins de départ');
+  assert.notDeepEqual(positions(initial).after, positions({ ...initial, curiosity: 0 }).after,
+    'des besoins de départ différents doivent produire des trajectoires différentes');
 });
