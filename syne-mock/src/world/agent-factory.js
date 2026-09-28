@@ -1,10 +1,37 @@
 const { createSeededRandom, round } = require('../simulation/deterministic-random');
 const { cellIndexAt, cellIndexOf } = require('./cell-grid');
 
+// Domaines des besoins : les trois premiers sont des échelles 0-100, les trois
+// autres des fractions 0-1 utilisées comme seuils et comme multiplicateurs dans
+// `utility()`. `fallback` est l'état d'un agent qui n'a rien fait encore, donc
+// la valeur d'origine du mock : c'est ce repli qui rend l'absence de
+// configuration équivalente au comportement historique. Les valeurs hors
+// domaine sont rejetées en amont par `WorldGenerator.validateConfig`, comme
+// toute autre configuration ; ici on ne fait que completer les cles absentes.
+const NEEDS = {
+  hunger: { range: [0, 100], fallback: 0 },
+  thirst: { range: [0, 100], fallback: 0 },
+  fatigue: { range: [0, 100], fallback: 0 },
+  safety: { range: [0, 1], fallback: 1 },
+  social: { range: [0, 1], fallback: 0 },
+  curiosity: { range: [0, 1], fallback: 0 }
+};
+
+function initialNeeds(agentSettings) {
+  const configured = agentSettings.needs?.initial ?? {};
+  const resolved = {};
+  for (const [need, { fallback }] of Object.entries(NEEDS)) {
+    const value = Number(configured[need]);
+    resolved[need] = Number.isFinite(value) ? value : fallback;
+  }
+  return resolved;
+}
+
 function createInitialAgents(seed, count, world, agentSettings) {
   const random = createSeededRandom(seed);
   const agents = [];
   const spacing = Math.max(0.1, Number(agentSettings.spawnSpacing ?? 1));
+  const needs = initialNeeds(agentSettings);
 
   // Le placement s'appuie sur cells[].walkable, l'indicateur que le monde publie lui-même,
   // plutôt que sur un recalcul : obstacles et terrain (mer) sont ainsi traités par la même
@@ -40,12 +67,12 @@ function createInitialAgents(seed, count, world, agentSettings) {
       x: position.x,
       y: position.y,
       energy: 100,
-      hunger: 0,
-      thirst: 0,
-      fatigue: 0,
-      safety: 1,
-      social: 0,
-      curiosity: 0,
+      hunger: needs.hunger,
+      thirst: needs.thirst,
+      fatigue: needs.fatigue,
+      safety: needs.safety,
+      social: needs.social,
+      curiosity: needs.curiosity,
       traits: { ...agentSettings.traits },
       currentIntention: 'Idle',
       currentAction: 'Idle',
@@ -65,4 +92,4 @@ function cloneAgents(agents) {
   }));
 }
 
-module.exports = { createInitialAgents, cloneAgents };
+module.exports = { createInitialAgents, cloneAgents, initialNeeds, NEEDS };
