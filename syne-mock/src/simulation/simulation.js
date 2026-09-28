@@ -125,10 +125,22 @@ class Simulation {
     if (!this.world || Number(seed) !== this.options.seed || Object.keys(overlay).length)
       this.prepare(seed, this.options.ticksPerSecond, overlay);
 
+    // Tout ce qui précède `loadReplay` est réécritable sans conséquence : un
+    // échec du chargement laisse donc le monde prêt, acquitté, et surtout pas
+    // dans un état actif — un nouvel appel à `start()` se comporte alors comme
+    // le premier.
+    //
+    // `loadReplay` lève sur un fichier absent ou une ligne JSON invalide. Levée
+    // après `state = 'running'` et avant `startTimer()`, elle laissait un run
+    // déclaré actif mais sans timer (state=running, timer=null) : rien ne
+    // tickait, et `start()` rejettait ensuite tout nouvel appel au motif que le
+    // run était déjà actif.
     this.worldReadyAcknowledged = true;
     this.explicitPreparation = false;
     this.options.seed = Number(seed);
     this.options.maxTicks = Number(maxTicks);
+    const replay = this.options.replay.file ? loadReplay(this.options.replay.file) : null;
+
     this.runId = `run-${this.options.seed}`;
     this.tick = 0;
     this.state = 'running';
@@ -141,7 +153,7 @@ class Simulation {
     this.tickWorldChanges = [];
     this.tickActions = [];
     this.replayIndex = 0;
-    this.replay = this.options.replay.file ? loadReplay(this.options.replay.file) : null;
+    this.replay = replay;
     this.agentDecisionService = new AgentDecisionService(
       this.options.agentSimulation, this.resources, this.movementService);
     this.startTimer();
@@ -352,6 +364,21 @@ class Simulation {
   emit(event) {
     this.events.push(event);
     this.broadcast(event);
+    this.trimEvents();
+  }
+
+  /**
+   * Borne `events`, qui garderait deux evenements par agent et par tick sans
+   * limite pendant toute la duree du run. Le flux diffuse reste la source faisant
+   * autorite : ce tampon ne garde que les derniers evenements, pour inspection.
+   *
+   * La troncature vide jusqu'a mi-capacite plutot que d'un seul evenement : un
+   * `splice(0, 1)` par emission deplacerait tout le tampon a chaque evenement.
+   */
+  trimEvents() {
+    const cap = Number(this.options.diagnostics?.maxEvents) || 0;
+    if (cap < 1 || this.events.length <= cap) return;
+    this.events.splice(0, this.events.length - Math.floor(cap / 2));
   }
 
   snapshot() {
