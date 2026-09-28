@@ -101,10 +101,21 @@ class WorldGenerator {
         throw new Error(`agents.traits.${name} must be between 0 and 2`);
     }
     for (const [name, value] of Object.entries(config.agentSimulation.needs)) {
+      // `initial` est un objet de besoins de départ, pas un besoin : il a son
+      // propre domaine, validé juste après.
+      if (name === 'initial') continue;
       if (!Number.isFinite(value) || value < 0)
         throw new Error(`agents.needs.${name} must be a non-negative finite number`);
       if (name.endsWith('TriggerThreshold') && value > 100)
         throw new Error(`agents.needs.${name} must be between 0 and 100`);
+    }
+    // Domaines des besoins de départ, alignés sur ceux qu'ils bornent :
+    // hunger/thirst/fatigue sont des échelles 0-100, safety/social/curiosity des
+    // fractions 0-1, parce que `curiosity >= 0.3` est le trigger d'exploration.
+    for (const [name, max] of Object.entries({ hunger: 100, thirst: 100, fatigue: 100, safety: 1, social: 1, curiosity: 1 })) {
+      const value = config.agentSimulation.needs.initial?.[name];
+      if (!Number.isFinite(value) || value < 0 || value > max)
+        throw new Error(`agents.needs.initial.${name} must be a finite number between 0 and ${max}`);
     }
     if (!Number.isFinite(config.agentSimulation.perceptionRadius) || config.agentSimulation.perceptionRadius < 0)
       throw new Error('agents.perceptionRadius must be a non-negative finite number');

@@ -36,12 +36,26 @@ const DEFAULTS = {
       speed: 1
     },
     needs: {
+      // Besoins de départ, configurables via `agentSimulation.needs.initial`.
+      // Ils décrivent ce qu'un agent hérite du monde à la génération, pas ce que
+      // SYNE considère comme un agent neuf. Seul `curiosity` diffère d'un agent
+      // « à zéro » : à 0.3, exactement le seuil d'exploration, les agents partent
+      // explorer au tick 1 au lieu d'attendre les 150 ticks que met
+      // `curiosityDriftRate` àfranchir. Les autres besoins restent à 0 pour que
+      // Eat/Drink/Rest surviennent au même moment qu'une population qui n'a rien
+      // fait encore.
+      initial: { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 },
       hungerRate: 0.5,
       thirstRate: 0.7,
       fatigueRate: 0.3,
       safetyDriftRate: 0.001,
       socialDriftRate: 0.001,
-      curiosityDriftRate: 0.002,
+      // 0.001 et non 0.002 : explorer dès le tick 1 sature `curiosity` bien plus
+      // tôt, et un besoin saturé garde une utilité supérieure à celle de `Rest`.
+      // Mesuré sur la graine 42 avec 50 agents, 0.002 fait disparaître `Rest`
+      // (jamais produit) alors que 0.001 conserve le répertoire complet :
+      // Explore:1, Drink:72, Eat:100, Rest:234, Socialize:943.
+      curiosityDriftRate: 0.001,
       hungerTriggerThreshold: 50,
       thirstTriggerThreshold: 50,
       fatigueTriggerThreshold: 70

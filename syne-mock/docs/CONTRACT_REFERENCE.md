@@ -123,9 +123,10 @@ mais le mock émet actuellement `Information`.
 ## Actions produites par le mock
 
 Neuf intentions sont connues (`ACTIONS` dans `agent-decision-service.js`), mais
-les besoins qui les déclenchent ne sont pas tous atteignables. Avec les valeurs
-par défaut, les agents partent de `hunger: 0`, `thirst: 0`, `fatigue: 0`,
-`safety: 1`, `social: 0`, `curiosity: 0` :
+les besoins qui les déclenchent ne sont pas tous atteignables. Les besoins de
+départ sont configurables via `agentSimulation.needs.initial` et valent par
+défaut `hunger: 0`, `thirst: 0`, `fatigue: 0`, `safety: 1`, `social: 0`,
+`curiosity: 0.3` :
 
 La colonne indique le **premier tick où l'action est effectivement produite**,
 c'est-à-dire où elle l'emporte sur les autres candidates. Mesuré sur la graine
@@ -133,12 +134,12 @@ c'est-à-dire où elle l'emporte sur les autres candidates. Mesuré sur la grain
 
 | Action | Condition de candidature | 1ᵉʳ tick produit |
 |---|---|---|
-| `Idle` | toujours candidate | 1 |
+| `Explore` | `curiosity >= 0.3` | 1 |
 | `Drink` | `thirst >= 50` et réserve `water > 0` | 72 |
 | `Eat` | `hunger >= 50` et réserve `food > 0` | 100 |
-| `Explore` | `curiosity >= 0.3` | 150 |
 | `Rest` | `fatigue >= 70` | 234 |
 | `Socialize` | `social >= 0.7` | 943 — **hors `maxTicks: 400`** |
+| `Idle` | toujours candidate | jamais produite : l'utilité d'`Explore` la dépasse dès le premier tick |
 | `SeekFood` | `hunger >= 50` et réserve `food == 0` | jamais (réserves à 10 000) |
 | `SeekWater` | `thirst >= 50` et réserve `water == 0` | jamais (réserves à 10 000) |
 | `Flee` | `safety <= 0.5` | **structurellement inatteignable** |
@@ -146,12 +147,22 @@ c'est-à-dire où elle l'emporte sur les autres candidates. Mesuré sur la grain
 Candidature et exécution ne coïncident pas : `Socialize` devient candidate au
 tick 700, mais les autres besoins gardent une utilité supérieure jusqu'au tick
 943. De même, agir recharge le besoin, qui recommence à croître et fait revenir
-l'action périodiquement. Toutes ces valeurs découlent des besoins par défaut, qui
-démarrent à `hunger: 0`, `thirst: 0`, `fatigue: 0`, `safety: 1`, `social: 0`,
-`curiosity: 0` et croissent aux taux `0.5`, `0.7`, `0.3`, `+0.001`, `0.001`,
-`0.002`.
+l'action périodiquement.
 
-Deux limites méritent d'être connues avant de consommer le flux :
+Les besoins par défaut croissent aux taux `0.5`, `0.7`, `0.3`, `+0.001`, `0.001`,
+`0.001`, depuis `hunger: 0`, `thirst: 0`, `fatigue: 0`, `safety: 1`, `social: 0`,
+`curiosity: 0.3`.
+
+`initial.curiosity: 0.3` est exactement le seuil d'exploration : les agents
+partent se déplacer au **tick 1** au lieu d'attendre que `curiosityDriftRate` le
+franchisse. Ce décalage se paie sur la dérive : `curiosityDriftRate` vaut `0.001`
+et non `0.002`, parce qu'un `curiosity` qui sature vite garde une utilité
+supérieure à celle de `Rest` et l'éclipse définitivement. Mesuré sur 2000 ticks,
+`0.002` ne produit plus `Rest` du tout ; `0.001` conserve le répertoire
+complet ci-dessus. Repartir de `curiosity: 0` rétablit les 146 ticks d'`Idle`
+initiaux et un premier mouvement au tick 150 (15 s à `ticksPerSecond: 10`).
+
+Trois limites méritent d'être connues avant de consommer le flux :
 
 - **`Flee` ne peut pas se produire.** `safetyDriftRate` vaut `+0.001` et
   `safety` démarre à `1`, la seule borne étant `[0, 1]` : la valeur ne peut que
@@ -159,6 +170,9 @@ Deux limites méritent d'être connues avant de consommer le flux :
   déclencheur qui baisse la sécurité.
 - **`Socialize` sort du run par défaut.** Il n'est produit qu'au tick 943, alors
   que `maxTicks` vaut 400.
+- **`Rest` disparaît si la dérive de `curiosity` est remontée.** Le tableau
+  ci-dessus vaut pour le jeu de taux livré ; `curiosityDriftRate >= 0.002` suffit
+  à supprimer `Rest` du flux.
 
 Cinq intentions sont des actions de déplacement (`MOVEMENT_ACTIONS` :
 `SeekFood`, `SeekWater`, `Flee`, `Socialize`, `Explore`) ; les quatre autres
