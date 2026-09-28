@@ -77,6 +77,10 @@ const DEFAULTS = {
     zones: [{ id: 'camp', x: 250, y: 250, radius: 40 }]
   },
   books: { enabled: false },
+  // `simulation.events` est un tampon de diagnostic, pas l'historique complet :
+  // le flux faisant autorite reste la diffusion (WebSocket). Sans borne, un run
+  // long accumulait deux evenements par agent et par tick indefiniment.
+  diagnostics: { maxEvents: 2000 },
   replay: { file: null, loop: false },
   engineVersion: '0.11.0',
   contractVersion: '0.2.0'

@@ -137,9 +137,15 @@ class AgentDecisionService {
       agent.fatigue = clamp(agent.fatigue - this.settings.restFatigueRecovery);
     }
 
+    // `age` doit dire depuis combien de ticks l'agent poursuit ce but, et non
+    // quel est le tick courant : `goals` est reconstruit a chaque tick, donc
+    // `age: tick` valait toujours le tick absolu. `intentionSince` suit le
+    // dernier changement d'intention ; il reste interne au mock et n'est pas
+    // publie dans le snapshot, qui n'en expose qu'une liste de champs explicite.
+    if (agent.currentIntention !== action) agent.intentionSince = tick;
     agent.currentIntention = action;
     agent.currentAction = outcome === 'blocked' ? 'Idle' : action;
-    agent.goals = action === 'Idle' ? [] : [{ kind: action, age: tick }];
+    agent.goals = action === 'Idle' ? [] : [{ kind: action, age: tick - agent.intentionSince }];
 
     return {
       action,
