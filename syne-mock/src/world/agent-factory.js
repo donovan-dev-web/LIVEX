@@ -50,6 +50,7 @@ function createInitialAgents(seed, count, world, agentSettings) {
       currentIntention: 'Idle',
       currentAction: 'Idle',
       goals: [],
+      intentionSince: 0,
       memoryCount: 0
     });
   }
