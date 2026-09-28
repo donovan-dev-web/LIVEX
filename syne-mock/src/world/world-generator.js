@@ -8,6 +8,9 @@ class WorldGenerator {
     const { width, height, cellSize } = config.world;
     const cellCountX = Math.ceil(width / cellSize);
     const cellCountY = Math.ceil(height / cellSize);
+    // Grille de reference partagee par le placement et par le deplacement : les
+    // deux lisent `cells[]` via cell-grid, donc les memes cases.
+    const grid = { width, height, cellSize, cellCountX, cellCountY, cells: null };
 
     this.validateConfig(config);
 
@@ -33,11 +36,11 @@ class WorldGenerator {
         });
       }
     }
+    grid.cells = cells;
 
     const resources = generateResourceLocations(seed, cellCountX, cellCountY, cells);
     const regions = this.generateRegions(cellCountX, cellCountY);
-    const initialAgents = createInitialAgents(
-      seed, config.agentCount, { width, height, cellSize }, config.agentSimulation, obstacles, cells);
+    const initialAgents = createInitialAgents(seed, config.agentCount, grid, config.agentSimulation);
     const world = {
       version: '1.0',
       width,
