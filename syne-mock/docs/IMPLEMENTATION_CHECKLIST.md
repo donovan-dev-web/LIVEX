@@ -6,8 +6,9 @@
 - [ ] Vérifier trames texte UTF-8 et rejet d'une trame JSON invalide.
 - [ ] Vérifier `snapshot.tick` monotone et `runId` stable pendant un run.
 - [ ] Vérifier le contenu du snapshot : 50 agents par défaut et quatre ressources.
-- [ ] Vérifier l'ordre `decision_made` → `action_completed` → `snapshot` →
-      `tick_summary` sur un tick.
+- [ ] Vérifier l'ordre `snapshot` → `tick_summary` → `decision_made` →
+      `action_completed` sur un tick, et qu'aucun événement ne précède le premier
+      snapshot (invariant verrouillé par `test/stream-order.test.js`).
 - [ ] Vérifier `message_sent`/`message_received` quand la portée le permet.
 - [ ] Vérifier `group_decision` selon `lodInterval` et `world.book_written` au
       tick 100 quand les options sont activées.

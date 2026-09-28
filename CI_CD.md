@@ -58,6 +58,8 @@ réactivée quand la signature de commits sera en place.
 | Front (interface) | `npm ci` + Vitest/ESLint/Prettier (héritage prototype) | lint + tests |
 | Docker | `docker build` multi-stage par composant | image construite |
 | Mock SYNE | `npm ci` + `npm test` dans `syne-mock/` | tests du contrat et du comportement simulé |
+| Intégration mock → ECHOS | `npm ci` dans `syne-mock/` + `pytest echos/tests/test_syne_mock_integration.py` (gate `LIVEX_MOCK_E2E=1`) | le client ECHOS ingère le flux du mock jusqu'au stockage et à l'API, sans build .NET |
+| Intégration U8 (SYNE → ECHOS) | `dotnet build --configuration Release` (syne) + `pytest echos/tests/test_syne_echos_integration.py` (gate `LIVEX_SYNE_E2E=1`) | le même trajet contre le moteur .NET réel |
 
 Le build du plugin PRISM-LDK dépend de la version d'Unreal Engine et du
 toolchain disponible. Le `LDK.uproject` du checkout sert d'hôte local de

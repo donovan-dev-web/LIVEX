@@ -7,15 +7,28 @@ pas une promesse d'API supplémentaire.
 ## WebSocket et ordre des messages
 
 Le serveur diffuse chaque message à tous les clients connectés sous forme de
-trame texte JSON. Pour un tick normal, l'ordre causal est :
+trame texte JSON. **L'ordre est normatif** : pour un tick, le snapshot d'abord,
+puis les événements de ce même tick. C'est ce qu'émet SYNE — `ObservabilityTickEmitter`
+annonce « Diffuse le snapshot puis les événements du tick courant » et le compte
+dans `API_CONTRACTS.md` §2 (`1 snapshot global complet + 1 tick_summary + 1
+decision_made + 1 action_completed par entité`, le snapshot en tête).
 
-1. pour chaque agent : `decision_made`, puis `action_completed` ;
-2. éventuellement `message_sent` puis `message_received` (tick multiple de 5,
+Pour un tick normal :
+
+1. `snapshot` — l'état du tick, après les mutations ;
+2. `tick_summary` ;
+3. pour chaque agent : `decision_made`, puis `action_completed` ;
+4. éventuellement `message_sent` puis `message_received` (tick multiple de 5,
    si les deux agents sont dans `transmissionRange`) ;
-3. éventuellement `group_decision` (selon `groups.lodInterval`) ;
-4. au tick 100, éventuellement `world.book_written` ;
-5. `snapshot` ;
-6. `tick_summary`.
+5. éventuellement `group_decision` (selon `groups.lodInterval`) ;
+6. au tick 100, éventuellement `world.book_written`.
+
+Tout événement porte le `tick` du snapshot qui le précède, et aucun événement
+ne précède le premier snapshot. Un consommateur peut donc reconstruire le flux
+tick par tick, et c'est ce que fait ECHOS (`ingestion.stream.aligned_ticks`) :
+`syne-mock/test/stream-order.test.js` verrouille cet invariant, et
+`echos/echos/tests/test_syne_mock_integration.py` vérifie que le client d'ECHOS
+ingeste réellement le flux du mock.
 
 Il y a un snapshot par tick, après les mutations. Il n'y a pas de snapshot
 initial automatique à la connexion. Une fin à `maxTicks` arrive après les
