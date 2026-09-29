@@ -580,5 +580,7 @@ Interface `echos-ui` — tests (14, dont 8 nouveaux ou étendus) :
 (préexistants, non modifiés).
 
 Modifications hors ECHOS dans le dépôt (`docs/pages-dist/docs/styles/*.js`) :
-**préexistantes, non touchées**. `syne-mock/node_modules` a été installé pour
-exécuter l'E2E (répertoire ignoré par git).
+**préexistantes, non touchées** au moment de cette revue ; `docs/pages-dist/`,
+`docs/site/` et `docs/landing/` ont depuis été supprimés par un nettoyage
+dédié. `syne-mock/node_modules` a été installé pour exécuter l'E2E (répertoire
+ignoré par git).
