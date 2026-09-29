@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LIVEX</title>
+<meta name="description" content="LIVEX — simulation multi-agents et émergence sociale.">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --panel: #121821;
+    --line: #1f2937;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  main { width: 100%; max-width: 60rem; }
+  header { text-align: center; margin-bottom: 3rem; }
+  h1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    letter-spacing: .3em;
+    margin: 0 0 .75rem;
+    text-indent: .3em;
+  }
+  .tagline { color: var(--muted); font-size: 1.125rem; margin: 0; }
+  .grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+  article {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: .75rem;
+    padding: 1.5rem;
+  }
+  article h2 {
+    margin: 0 0 .5rem;
+    font-size: 1.05rem;
+    letter-spacing: .08em;
+    color: var(--accent);
+  }
+  article p { margin: 0; color: var(--muted); font-size: .95rem; }
+  footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: .85rem;
+  }
+  footer span { color: var(--text); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>LIVEX</h1>
+    <p class="tagline">Simulation multi-agents et émergence sociale</p>
+  </header>
+
+  <div class="grid">
+    <article>
+      <h2>SYNE</h2>
+      <p>Moteur déterministe de simulation : agents, cognition et cycle des ressources.</p>
+    </article>
+    <article>
+      <h2>ECHOS</h2>
+      <p>Ingestion des flux, analyse causale et restitution des dynamiques émergentes.</p>
+    </article>
+    <article>
+      <h2>PRISM</h2>
+      <p>Visualisation temps réel de la simulation dans Unreal Engine.</p>
+    </article>
+  </div>
+
+  <footer>
+    Site officiel en reconstruction — <span id="year"></span>.
+  </footer>
+</main>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
