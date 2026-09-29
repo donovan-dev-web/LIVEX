@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 29 septembre 2026
 **Dépend de** : `VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`livex-vX.Y.Z` = triplet SYNE + ECHOS + PRISM).
@@ -37,12 +37,10 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - 6 `ControlServerWireTests` (320 Core + **15 Console = 335 tests** au total).
 - Job CI **`Intégration mock → ECHOS`** (`ci.yml`) : `echos/echos/tests/test_syne_mock_integration.py` lance `syne-mock` (Node) et vérifie le trajet complet `ControlClient`/`WsClient` → `storage.consume` (SQLite + Parquet) → API REST, sur toute PR touchant `syne-mock/` ou `echos/` (gate `LIVEX_MOCK_E2E=1`). C'est le pendant du job `Intégration U8 (SYNE → ECHOS)`, qui reste réservé au moteur .NET : ECHOS devient donc testable sur chaque PR sans build .NET.
 - Job CI **`Tests (SYNE-MOCK Node)`** (`ci.yml`) : `syne-mock/` rejoint la détection de composants modifiés (sortie `syne_mock`) et la suite `npm test` s'exécute sur le runner à chaque PR touchant le composant, avec `timeout-minutes: 5` en garde-fou contre une régression de type fuite de descripteurs. `CI_CD.md` §2 annonçait déjà ce job.
-- `docs/site/sync-docs.sh` publie `PRISM_UNREAL_IMPLEMENTATION.md` dans `articles/prism/`, et `docs/site/toc.yml` l'expose sous « Intégration Unreal (PRISM-LDK) ». Le guide d'intégration Blueprint du plugin n'était pas accessible sur le site DocFX alors qu'il est référencé par `ARCHITECTURE.md`.
 - **ECHOS — provenance des métriques (`measured`)** : `analysis.provenance(snapshot)` distingue, par couple (moteur, métrique), une valeur réellement mesurée du **repli neutre** du moteur faute de fenêtre. Persisté par tick (`tick_metrics.measured`, **schéma SQLite v5**, migration additive) et publié par `GET /api/runs/{id}/metrics` et `GET /api/runs/{id}`. Sans ce signal, 7 métriques pouvaient rester à 0 sur tout run réel sans que l'interface puisse le voir — c'est ce qui avait permis leur passage inaperçu. Contrat dans `docs/docs-echos/API_REST.md` §3.2-§3.3 et `METRICS_SPEC.md` (annexe). Évol adhésion **MINOR** : champ ajouté, aucun consommateur existant n'est cassé.
 - `echos/ECHOS-REVIEW.md` : rapport de revue du composant (584 lignes) — bugs critiques, moteurs, analyse causale, API, robustesse, tests, interface `echos-ui`, et arbitrage explicite des points restés ouverts (CORS = décision de déploiement, `StarletteDeprecationWarning` = montée de FastAPI, normalisation `/100` = à documenter).
 
 ### Changed
-- `docs-pages.yml` se déclenche aussi sur `prism/**` : une modification du plugin ou du projet Unreal ne peut plus laisser le site sans rebuild, alors que la documentation contractuelle est écrite contre ce code.
 - `ci.yml` se déclenche sur les PR visant `main` autant que `develop`. Sans cela, aucune PR de release ou de hotfix n'aurait produit le moindre check, et la protection « branche à jour + CI verte » de `main` resterait bloquée indéfiniment en attendant un status qui n'arrive jamais.
 - Dossier de documentation PRISM réécrit pour le projet Unreal final et son plugin PRISM-LDK : `world_initialized`, snapshot global par tick, deltas/événements et cycle de contrôle `prepare`/`ready`/`start`/`pause`/`resume`/`stop`/`reset` deviennent la référence du composant ; les instructions d'implémentation Godot sont remplacées par le périmètre réel du plugin, et les spécifications visuelles sont recadrées en objectifs de présentation (elles ne décrivent pas des fonctions déjà livrées).
 - Décision d'architecture actée : **PRISM est le projet Unreal final de LIVEX** et intègre le plugin Unreal **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). L'ADR-002 formalise ce choix et supersède l'ADR-001 (prototype Godot), désormais conservée comme décision historique. SYNE reste le seul moteur décisionnel et l'autorité de l'état simulé ; `prism/LDK/LDK.uproject` est un hôte technique de développement/build du plugin, pas un second produit.
@@ -52,7 +50,6 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - Portée de `syne-mock` cadrée explicitement comme **outil de développement des contrats Unreal, pas un moteur de simulation** : `README.md`, `ARCHITECTURE.md` §2.4, `CONTRIBUTING.md` §4 (checklist `npm test --prefix syne-mock`), `CI_CD.md` §2 et §5, `docs/ETHICS_AND_SCOPE.md` §4.1 et `docs/docs-prism/`. Ses résultats ne doivent pas être présentés comme ceux de SYNE.
 - `docs/docs-echos/{ISSUES,ROADMAP,TESTING}.md` : la validation `ECHOS-091` ne couvre plus « le runtime PRISM qui commence après U8 » mais est explicitement restreinte à SYNE→ECHOS. La validation du plugin PRISM-LDK et du projet Unreal PRISM relève d'un chantier distinct.
 - `docs/docs_prototype/README.md` porte désormais un bandeau d'archive pointant vers `docs-prism/` et `docs/README.md` : les références à Godot qu'il contient sont historiques.
-- `docs/site/index.md` : la carte PRISM annonce « Visualisation Unreal (plugin PRISM PrismLdk) » au lieu de « Visualisation (Godot) ».
 - `CONTRIBUTING.md` : ajout de la validation de compilation du plugin PRISM-LDK dans l'hôte Unreal de développement **et** dans le projet PRISM final.
 
 ### Fixed
@@ -112,6 +109,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - Divergence ECHOS annoncée et documentée (prototype C#/.NET + Django → **FastAPI + web local React/Vite servie par FastAPI pour V0.1**, SQLite/Parquet) ; le **shell Electron est conservé** (implémentation différée à un horizon ultérieur, correction 23/09/2026).
 - **Correction Electron (23/09/2026)** : reformulation « PAS de shell Electron » → « shell Electron **conservé**, implémentation **différée post-V0.1** » dans ADR-001 ECHOS, `ARCHITECTURE.md` (ECHOS + racine), `FRONTEND_VISION.md`, `README.md`, `ROADMAP.md`, `ISSUES.md`, `CHANGELOG.md` (ECHOS), `TRANSPORT_API.md` (PRISM). Monographie non modifiée (snapshot figé).
 - README et INSTALLATION reflètent l'état du socle U0 ; **conteneurisation Docker reportée** au-delà du Jalon U0.
+
+### Removed
+- **Site de documentation DocFX et publication GitHub Pages** : `docs/site/` (source DocFX), `docs/landing/` (landing SaaS), `docs/pages-dist/` (artefact d'assemblage **commité** alors que `.gitignore` l'ignorait, origine des fichiers `styles/*.js` perpétuellement modifiés) et le workflow `.github/workflows/docs-pages.yml`. La branche `gh-pages` est réinitialisée sur une page unique. Le nettoyage supprime 51 fichiers suivis ; l'entrée `docs/pages-dist/` devenue inutile est retirée de `.gitignore`. Les documents markdown écrits à la main (`docs/docs-syne/`, `docs/docs-echos/`, `docs/docs-prism/`, `docs/adr/`, `docs/governance/`) sont conservés : ce sont les sources, pas des artefacts.
 
 ### Deprecated
 - (aucun)
