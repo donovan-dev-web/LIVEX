@@ -23,6 +23,17 @@ METRICS = (
     "LoopTypes",
 )
 
+REQUIRES = {metric: "history" for metric in METRICS if metric != "LoopTypes"}
+"""Toutes les métriques de boucle lisent ``history``.
+
+Ce sont les métriques qui restaient à 0.0 sur tout run tant que le pipeline ne
+publiait pas la fenêtre glissante : sans historique, « aucune boucle détectée »
+et « aucune boucle mesurable » étaient indiscernables.
+
+``LoopTypes`` est exclu car c'est une sortie composite (dict de comptages),
+jamais persistée comme métrique numérique.
+"""
+
 WINDOW_SIZE = 100
 FREQUENCY_THRESHOLD = 2
 AMPLIFICATION_FACTOR = 1.5

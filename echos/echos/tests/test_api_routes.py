@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from echos.analysis import compute_all
+from echos.analysis import compute_all, provenance
 from echos.api.app import create_app
 from echos.api.series import SeriesCache
 from echos.ingestion.models import ExternalEvent
@@ -69,7 +69,7 @@ def _populate(db: AnalyticsStore, run_id: str, ticks: int = 3) -> None:
         )
         db.append_tick(record)
         metrics = compute_all(snap)
-        db.append_tick_metrics(run_id, tick, metrics)
+        db.append_tick_metrics(run_id, tick, metrics, provenance(snap))
         db.append_tick_context(run_id, tick, "agents", agents)
         db.append_tick_context(run_id, tick, "groups", _groups_of(agents))
         trace = build_decision_trace(run_id, tick, decision, snap)
@@ -260,6 +260,52 @@ def test_default_run_is_most_recent(tmp_path):
     assert response["run_id"] == "run-2"
 
 
+def test_default_run_tie_breaks_on_smallest_id(tmp_path):
+    """À dernier tick égal, le run retenu est le plus petit identifiant.
+
+    Régression : le tri portait sur ``(last_tick, run_id)`` via ``max``, ce qui
+    retenait le **plus grand** identifiant, à l'inverse du contrat documenté.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-a", ticks=2)
+    _populate(db, "run-b", ticks=2)
+    _populate(db, "run-c", ticks=2)
+
+    assert _client(db).get("/api/groups").json()["run_id"] == "run-a"
+
+
+def test_default_run_prefers_the_furthest_tick(tmp_path):
+    """Le tick le plus avancé l'emporte sur l'ordre des identifiants."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-z", ticks=1)
+    _populate(db, "run-a", ticks=3)
+
+    assert _client(db).get("/api/groups").json()["run_id"] == "run-a"
+
+
+def test_metrics_series_exposes_metrics_absent_from_the_last_tick(tmp_path):
+    """La découverte de séries porte sur tout le run, pas sur le dernier tick.
+
+    Régression : les couples (moteur, métrique) étaient lus dans
+    ``latest_metrics``. Une métrique présente à un ancien tick et disparue
+    depuis (aucun événement à ce tick) n'était plus servie, alors que sa série
+    existait en base.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-7", "0.1.0", seed="7")
+    db.append_tick_metrics("run-7", 1, {"E": {"Ephemeral": 5.0, "Stable": 1.0}})
+    db.append_tick_metrics("run-7", 2, {"E": {"Stable": 2.0}})
+
+    body = _client(db).get("/api/runs/run-7/metrics", params={"engine": "E"}).json()
+
+    # « Ephemeral » n'est plus au tick 2 mais sa série reste découvrable.
+    assert set(body["values"]["E"]) == {"Ephemeral", "Stable"}
+    assert body["values"]["E"]["Ephemeral"] == [5.0]
+    assert body["values"]["E"]["Stable"] == [1.0, 2.0]
+    # « latest » reste le dernier instant.
+    assert body["latest"]["E"] == {"Stable": 2.0}
+
+
 def test_unknown_run_resolves_to_404_everywhere(tmp_path):
     db = AnalyticsStore(tmp_path / "api.db")
     _populate(db, "run-7")
@@ -432,3 +478,51 @@ def test_control_unavailable_returns_actionable_service_unavailable(monkeypatch)
 
     assert response.status_code == 503
     assert "--serve" in response.json()["detail"]
+
+
+def test_metrics_expose_provenance_alongside_values(tmp_path):
+    """``measured`` accompagne ``latest`` : l'UI peut distinguer les deux."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7")
+    body = _client(db).get("/api/runs/run-7/metrics").json()
+
+    assert set(body["measured"]) == set(body["latest"])
+    # La fixture porte toutes les fenêtres du pipeline : tout est mesuré.
+    assert all(
+        measured
+        for engine_flags in body["measured"].values()
+        for measured in engine_flags.values()
+    )
+    # Les drapeaux sont des booléens, pas des 0/1 numériques.
+    assert all(
+        isinstance(measured, bool)
+        for engine_flags in body["measured"].values()
+        for measured in engine_flags.values()
+    )
+
+    detail = _client(db).get("/api/runs/run-7").json()
+    assert detail["measured"] == body["measured"]
+
+
+def test_metrics_report_a_neutral_fallback_as_unmeasured(tmp_path):
+    """Un run sans fenêtres publie 0.0 **et** ``measured: false``."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-bare", "0.1.0", seed="bare")
+    snap = _snapshot(1, "run-bare")
+    for key in ("history", "communityHistory", "events", "eventWindow"):
+        snap.pop(key, None)
+    record = TickRecord(
+        run_id="run-bare", version="0.1.0", tick=1, simulated_time_minutes=1,
+        alive_count=1, agent_count=1, mean_energy=1.0, mean_hunger=0.0,
+        mean_thirst=0.0, mean_fatigue=0.0, decision_count=0,
+    )
+    db.append_tick(record)
+    metrics = compute_all(snap)
+    db.append_tick_metrics("run-bare", 1, metrics, provenance(snap))
+
+    body = _client(db).get("/api/runs/run-bare/metrics").json()
+    assert body["latest"]["FeedbackLoopDetector"]["LoopStrength"] == 0.0
+    assert body["measured"]["FeedbackLoopDetector"]["LoopStrength"] is False
+    assert body["measured"]["EmergenceIndicators"]["EmergenceScore"] is False
+    # Une métrique instantanée reste mesurée malgré l'absence de fenêtres.
+    assert body["measured"]["CognitiveDiversityMetrics"]["BeliefDiversity"] is True
