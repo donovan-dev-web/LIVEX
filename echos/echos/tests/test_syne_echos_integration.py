@@ -21,7 +21,7 @@ from websockets.sync.client import connect
 
 from echos import storage
 from echos.api.app import create_app
-from echos.ingestion.models import InvalidMessageError
+from echos.ingestion.ws_client import StreamClosed
 from echos.ingestion.ws_client import WsClient
 from echos.storage.sqlite import AnalyticsStore
 
@@ -49,9 +49,7 @@ class _BoundedTransport:
             elif self.ticks_seen >= self.complete_ticks:
                 self.on_stop()
                 self.websocket.close()
-                raise InvalidMessageError(
-                    "transport", "connexion fermée après le segment borné"
-                )
+                raise StreamClosed("connexion fermée après le segment borné")
             self.ticks_seen += 1
         return payload
 
@@ -153,6 +151,26 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
             assert [row[1] for row in summaries] == sorted(row[1] for row in summaries)
             assert [row[1] for row in summaries] == [1, 2, 3]
 
+            # Provenance : le run réel porte les trois fenêtres du pipeline,
+            # donc les métriques fenêtrées doivent être mesurées, pas des replis.
+            measured = store.latest_measured(run_id)
+            latest = store.latest_metrics(run_id)
+            assert set(measured) == set(latest)
+            unmeasured = {
+                engine: sorted(m for m, ok in flags.items() if not ok)
+                for engine, flags in measured.items()
+            }
+            assert {engine: [] for engine in unmeasured} == unmeasured, unmeasured
+
+            # Identifiants de groupe : contre le vrai transport SYNE, les
+            # membres doivent être des chaînes joignables aux ids d'agents.
+            _, agents = store.latest_context(run_id, "agents")
+            agent_ids = {str(agent["id"]) for agent in agents}
+            _, group_list = store.latest_context(run_id, "groups")
+            for group in group_list:
+                assert all(isinstance(member, str) for member in group["members"])
+                assert set(group["members"]) <= agent_ids
+
             # The documented PRISM handoff is ECHOS REST; validate a real run through it.
             with TestClient(create_app(store)) as api:
                 response = api.get(f"/api/runs/{run_id}/metrics")
@@ -161,6 +179,9 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
                 assert body["run_id"] == run_id
                 assert body["ticks"] == [1, 2, 3]
                 assert body["values"]
+                # L'API publie la provenance avec les valeurs.
+                assert body["measured"] == measured
+                assert api.get(f"/api/runs/{run_id}").json()["measured"] == measured
                 calibration = api.get(f"/api/runs/{run_id}/calibration")
                 assert calibration.status_code == 200
                 assert calibration.json()["status"] == "complete"

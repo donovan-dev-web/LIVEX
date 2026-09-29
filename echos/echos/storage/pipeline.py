@@ -25,9 +25,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
 
-from echos.analysis import compute_all
+from echos.analysis import compute_all, provenance
 from echos.analysis.calibration import build_calibration_report
-from echos.analysis._common import label_propagation
+from echos.analysis._common import communities, community_sizes
+from echos.analysis.feedback_loop_detector import WINDOW_SIZE as _HISTORY_TICKS
 from echos.ingestion.stream import TickSegment, aligned_ticks
 from echos.ingestion.ws_client import WsClient
 from echos.instrumentation.decision_traces import build_decision_trace
@@ -39,6 +40,29 @@ from echos.storage.parquet import write_agent_series
 from echos.storage.sqlite import AnalyticsStore
 
 _DECISION_TYPE = "decision_made"
+
+_EVENT_WINDOW_TICKS = _HISTORY_TICKS
+"""Ticks d'événements conservés pour les moteurs (bornes la mémoire du run).
+
+Aligné sur ``FeedbackLoopDetector.WINDOW_SIZE`` (100 ticks) : les trois fenêtres
+du contexte glissant couvrent désormais la même durée, ce qui rend les taux
+« par 1000 ticks » de ``GroupDynamicsMetrics`` comparables d'un run à l'autre.
+
+La borne est en **ticks** et non en nombre d'événements : avec une borne
+d'événements, la durée couverte dépendait de l'activité du monde. Sur un run
+chargé, 1000 événements couvraient ~20 ticks (taux de formation ×5) ; sur un run
+tranquille, 1000 ticks (taux ÷50). Le même nombre d'événements donnait donc un
+taux dépendant de la charge, non du comportement des groupes.
+"""
+
+_EVENT_WINDOW_MAX_EVENTS = 2000
+"""Borne mémoire dure sur la fenêtre d'événements (indépendante des ticks).
+
+La borne en ticks garantit le sens des métriques ; celle-ci garantit la
+mémoire quand un tick unique produit une rafale d'événements (pic de deaths,
+conflicts) : sans plafond, 100 ticks très denses transporteraient autant
+d'événements que 1000 ticks tranquilles.
+"""
 
 
 @dataclass(frozen=True)
@@ -56,6 +80,16 @@ class ConsumeResult:
 def _segments(
     client: WsClient, sample_every: int | None
 ) -> Iterator[tuple[int, TickSegment]]:
+    """Segments indexés du flux, échantillonnés 1 sur N (``sample_every``).
+
+    ``sample_every`` négatif ou nul est rejeté ici : ``index % 0`` levait
+    ``ZeroDivisionError`` au premier tick, et une valeur négative
+    ``index % -3 == 0`` n'est jamais vrai, ce qui faisait ignorer le silence
+    du pipeline au lieu de le signaler. Idem pour
+    ``parquet_flush_every``, validé dans :func:`consume`.
+    """
+    if sample_every is not None and sample_every < 1:
+        raise ValueError("sample_every doit être >= 1")
     for index, segment in enumerate(aligned_ticks(client)):
         if sample_every is not None and index % sample_every != 0:
             continue
@@ -66,36 +100,179 @@ def _seed_of(run_id: str) -> str:
     return run_id[4:] if run_id.startswith("run-") else ""
 
 
-def _snapshot_for_engines(segment: TickSegment) -> dict:
-    """Dict transport camelCase attendu par les moteurs (snapshot + événements).
+def _snapshot_for_engines(
+    segment: TickSegment, events: list[dict], history: list[dict], event_window: dict
+) -> dict:
+    """Dict transport camelCase attendu par les moteurs (snapshot + contexte).
 
     Les moteurs lisent ``agents``/``resources``/``aliveCount`` sur le snapshot
-    et ``events`` (``decision_made``, ``message_sent``, ``group_formed``...)
-    au niveau racine — lisible par ``compute_all`` sans données manquantes.
+    instantané et trois fenêtres glissantes construites par le pipeline :
+
+    - ``events`` : événements des ``_EVENT_WINDOW_TICKS`` derniers ticks, bornés
+      en nombre par ``_EVENT_WINDOW_MAX_EVENTS``, pour ``MessageVolume``, la
+      dynamique des groupes et la consommation ;
+    - ``eventWindow`` : durée réellement couverte par cette fenêtre d'événements
+      (``{"ticks", "from", "to"}``), afin que les taux normalisés utilisent le
+      dénominateur observé du pipeline et non l'étendue accidentelle des
+      événements présents ;
+    - ``history`` : un point par tick (``tick``, ``actions``, ``resources``),
+      pour ``FeedbackLoopDetector`` et ``RecoveryTime`` ;
+    - ``communityHistory`` : tailles de communautés par tick, pour
+      ``CommunityStability``.
+
+    Sans ces fenêtres, ces 7 métriques restaient à leur repli neutre (0.0) sur
+    chaque run réel, le snapshot ne portant que le tick courant.
     """
     snapshot = segment.snapshot.model_dump(mode="json", by_alias=True, exclude_none=True)
-    snapshot["events"] = [
-        event.model_dump(mode="json", by_alias=True, exclude_none=True)
-        for event in segment.events
+    snapshot["events"] = events
+    snapshot["eventWindow"] = event_window
+    snapshot["history"] = history
+    snapshot["communityHistory"] = [
+        {"tick": entry["tick"], "communities": entry["communities"]} for entry in history
     ]
     return snapshot
 
 
+class _RollingContext:
+    """Fenêtres glissantes transmises aux moteurs (bornes en mémoire).
+
+    Chaque tick poussé est tronqué à sa fenêtre : les moteurs qui isolent un
+    événement (``GroupFormationRate``) ou mesurent une durée
+    (``InformationDiffusionSpeed``, ``RecoveryTime``) restent ainsi corrects sur
+    les runs longs, sans jamais lire l'intégralité du flux.
+
+    La fenêtre d'événements est bornée deux fois — en ticks
+    (``_EVENT_WINDOW_TICKS``) puis en nombre (``_EVENT_WINDOW_MAX_EVENTS``) — et
+    sa durée réelle est publiée dans le snapshot (``eventWindow``).
+    """
+
+    def __init__(
+        self,
+        *,
+        event_window: int = _EVENT_WINDOW_TICKS,
+        event_limit: int = _EVENT_WINDOW_MAX_EVENTS,
+        history: int = _HISTORY_TICKS,
+    ):
+        if event_window < 1 or event_limit < 1 or history < 1:
+            raise ValueError("les fenêtres du contexte doivent être >= 1")
+        self._event_window = event_window
+        self._event_limit = event_limit
+        self._history_size = history
+        self._events: list[dict] = []
+        self._entries: list[dict] = []
+        self._first_tick: int | None = None
+        self._last_tick: int | None = None
+
+    def push(
+        self, segment: TickSegment
+    ) -> tuple[list[dict], list[dict], dict]:
+        """Enregistre le tick courant et renvoie (événements, historique, fenêtre).
+
+        Les ticks manquants (échantillonnage ``sample_every``) ne créent pas de
+        trou dans les fenêtres : l'historique est indexé par tick réellement
+        observé, et les fenêtres se bornent par taille.
+        """
+        if self._first_tick is None:
+            self._first_tick = segment.tick
+        self._last_tick = segment.tick
+        self._events.extend(
+            event.model_dump(mode="json", by_alias=True, exclude_none=True)
+            for event in segment.events
+        )
+        floor = segment.tick - self._event_window + 1
+        if self._events and int(self._events[0].get("tick") or 0) < floor:
+            self._events = [
+                event
+                for event in self._events
+                if int(event.get("tick") or 0) >= floor
+            ]
+        del self._events[: -self._event_limit]
+
+        self._entries.append(
+            {
+                "tick": segment.tick,
+                "actions": _actions_of(segment),
+                "resources": _resources_of(segment.snapshot),
+                "communities": _community_sizes_of(segment.snapshot),
+            }
+        )
+        del self._entries[: -self._history_size]
+        return self._events, self._entries, self.event_window()
+
+    def event_window(self) -> dict:
+        """Fenêtre d'observation déclarée, en ticks.
+
+        ``{"ticks", "from", "to"}`` décrit ce que le pipeline a **réellement
+        observé**, pas l'étendue des événements présents : deux runs contenant
+        le même nombre d'événements mais d'activité différente déclarent la
+        même fenêtre dès qu'ils ont la même durée. C'est ce qui rend les taux
+        « par 1000 ticks » de ``GroupDynamicsMetrics`` comparables d'un run à
+        l'autre.
+
+        La fenêtre est bornée par ``_EVENT_WINDOW_TICKS`` et cantonnée au run
+        (``from`` ne précède jamais le premier tick vu). Elle vaut au minimum
+        1 tick : jamais 0, donc jamais de division par zéro en aval.
+        """
+        to = self._last_tick
+        if to is None:
+            return {"ticks": 1, "from": None, "to": None}
+        from_tick = to - self._event_window + 1
+        if self._first_tick is not None:
+            from_tick = max(from_tick, self._first_tick)
+        return {"ticks": max(1, to - from_tick + 1), "from": from_tick, "to": to}
+
+
+def _actions_of(segment: TickSegment) -> dict[str, str]:
+    """Décisions du tick : ``{agentId: action}`` pour le détecteur de boucles."""
+    return {
+        str(event.agent_id): str(event.action)
+        for event in segment.events
+        if event.type == _DECISION_TYPE
+    }
+
+
+def _resources_of(snapshot) -> list[dict]:
+    """Réserves ``{quantity, capacity}`` du tick, pour ``RecoveryTime``."""
+    return [
+        {
+            "type": getattr(resource, "type", None) or resource.id,
+            "quantity": resource.quantity,
+            "capacity": resource.capacity,
+        }
+        for resource in snapshot.resources or []
+    ]
+
+
+def _community_sizes_of(snapshot) -> list[int]:
+    """Tailles des communautés du tick, pour ``CommunityStability``."""
+    return community_sizes(_agents_of(snapshot))
+
+
+def _agents_of(snapshot) -> list[dict]:
+    """Agents du snapshot en dict camelCase, une seule conversion par tick."""
+    return [
+        agent.model_dump(mode="json", by_alias=True, exclude_none=True)
+        for agent in snapshot.agents or []
+    ]
+
+
 def _groups_of(agents: list[dict]) -> list[dict]:
-    """Communautés actives (attribution d'étiquettes) en ordre déterministe.
+    """Communautés actives en ordre déterministe.
 
     Chaque groupe : ``label`` (communauté), ``members`` (ids triés) et
-    ``size``. Aucune liaison de confiance → liste vide (aucun groupe).
+    ``size``. Aucune liaison de confiance → liste vide (aucun groupe). Les
+    singletons sont exclus : une entité isolée n'est pas une communauté, et les
+    compter ici contredisait ``communities()`` côté moteurs.
+
+    Le ``label`` est le plus petit identifiant du groupe, non l'indice renvoyé
+    par la propagation d'étiquettes : celui-ci se décale dès qu'un nœud change
+    de communauté, ce qui faisait bouger les identifiants de groupe affichés par
+    l'UI sans raison observable. Le plus petit membre est, lui, stable tant que
+    le groupe ne se recompose pas.
     """
-    labels = label_propagation(agents)
-    if not labels:
-        return []
-    buckets: dict[str, list[str]] = {}
-    for agent_id in sorted(labels):
-        buckets.setdefault(str(labels[agent_id]), []).append(str(agent_id))
     return [
-        {"label": label, "members": members, "size": len(members)}
-        for label, members in sorted(buckets.items())
+        {"label": members[0], "members": members, "size": len(members)}
+        for members in communities(agents)
     ]
 
 
@@ -122,6 +299,8 @@ def consume(
     """
     if analysis_every < 1:
         raise ValueError("analysis_every doit être >= 1")
+    if parquet_flush_every is not None and parquet_flush_every < 1:
+        raise ValueError("parquet_flush_every doit être >= 1")
     ticks_written = 0
     events_written = 0
     agents_written = 0
@@ -131,6 +310,7 @@ def consume(
     run_known = False
     run_id: str | None = None
     pending_agents: list[AgentSeriesRow] = []
+    context = _RollingContext()
 
     for _index, segment in _segments(client, sample_every):
         snapshot = segment.snapshot
@@ -157,19 +337,28 @@ def consume(
             for event in segment.events
         ]
         has_decision = any(event.type == _DECISION_TYPE for event in segment.events)
+        window_events, window_history, event_window = context.push(segment)
 
         # The engine snapshot is a large JSON dump of the world: build it only
         # when analysis runs on this tick or a decision trace needs its context.
         at_cadence = _index % analysis_every == 0
         engine_snapshot = (
-            _snapshot_for_engines(segment) if (at_cadence or has_decision) else None
+            _snapshot_for_engines(
+                segment, window_events, window_history, event_window
+            )
+            if (at_cadence or has_decision)
+            else None
         )
         metrics: dict[str, dict] = {}
         contexts: dict[str, object] = {}
+        measured: dict[str, dict[str, bool]] = {}
         if at_cadence:
             assert engine_snapshot is not None
             markers = ProfileMarkers()
             metrics = compute_all(engine_snapshot, profile=markers)
+            # Provenance : quelles métriques ont réellement été mesurées plutôt
+            # que retomber sur leur repli neutre faute de données.
+            measured = provenance(engine_snapshot)
             profile = markers.summary()
             emergence = metrics.get("EmergenceIndicators") or {}
             contexts = {
@@ -194,7 +383,9 @@ def consume(
             if event.type == _DECISION_TYPE:
                 trace = build_decision_trace(
                     snapshot.run_id, segment.tick, event,
-                    engine_snapshot or _snapshot_for_engines(segment),
+                    engine_snapshot or _snapshot_for_engines(
+                        segment, window_events, window_history, event_window
+                    ),
                 )
                 traces.append(trace)
                 decision_traces_written += 1
@@ -202,7 +393,7 @@ def consume(
                     logger.decision(trace)
 
         metrics_written += store.append_tick_bundle(
-            tick_record, metrics, contexts, events, traces
+            tick_record, metrics, contexts, events, traces, measured
         )
         ticks_written += 1
 

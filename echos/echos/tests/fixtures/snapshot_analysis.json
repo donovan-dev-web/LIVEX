@@ -67,6 +67,68 @@
     { "id": "r1", "type": "food", "position": { "x": 0.0, "y": 0.0 }, "quantity": 30, "capacity": 100 },
     { "id": "r2", "type": "water", "position": { "x": 0.0, "y": 0.0 }, "quantity": 50, "capacity": 200 }
   ],
+  "communityHistory": [
+    {
+      "tick": 1,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 2,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 3,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 4,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 5,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 6,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 7,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 8,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 9,
+      "communities": [
+        3
+      ]
+    },
+    {
+      "tick": 10,
+      "communities": [
+        3
+      ]
+    }
+  ],
   "events": [
     { "type": "message_sent", "tick": 5, "agentId": "A", "targetId": "B", "value": { "hops": 1, "content": "water" } },
     { "type": "message_sent", "tick": 8, "agentId": "B", "targetId": "C", "value": { "hops": 2, "content": "food" } },

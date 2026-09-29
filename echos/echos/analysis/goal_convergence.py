@@ -9,7 +9,14 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ._common import agents_of, alive_count, keyed, shannon, activity_of
+from ._common import (
+    agents_of,
+    alive_count,
+    goal_kinds,
+    keyed,
+    safe_ratio,
+    shannon,
+)
 
 ENGINE_NAME = "GoalConvergenceMetrics"
 
@@ -21,26 +28,19 @@ METRICS = (
 )
 
 
-def _goal_kinds(agents: list[dict]) -> list[str]:
-    return [activity_of(agent) for agent in agents]
-
-
 def compute(snapshot: dict) -> dict:
     """Calcule les 4 métriques de convergence des objectifs."""
     agents = agents_of(snapshot)
     count = alive_count(snapshot)
-    kinds = _goal_kinds(agents)
-    goal_counter = Counter(kinds)
+    goal_counter = Counter(goal_kinds(agents))
 
-    alignment = (
-        max(goal_counter.values()) / count if count and goal_counter else 0.0
-    )
+    alignment = safe_ratio(max(goal_counter.values()), count) if goal_counter else 0.0
 
     # Coopération : probabilité qu'une paire (a, b) partage au moins un objectif,
     # approchée par Σ p_i² (deux tirages indépendants dans la même distribution).
     total = sum(goal_counter.values())
     cooperation = (
-        sum((value / total) ** 2 for value in goal_counter.values())
+        sum(safe_ratio(value, total) ** 2 for value in goal_counter.values())
         if total and len(agents) > 1
         else 0.0
     )

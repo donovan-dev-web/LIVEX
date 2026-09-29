@@ -25,7 +25,7 @@ from websockets.sync.client import connect
 
 from echos import storage
 from echos.api.app import create_app
-from echos.ingestion.models import InvalidMessageError
+from echos.ingestion.ws_client import StreamClosed
 from echos.ingestion.ws_client import WsClient
 from echos.storage.sqlite import AnalyticsStore
 
@@ -110,11 +110,23 @@ def test_mock_stream_is_ingested_and_served_by_echos(tmp_path):
             assert [row[1] for row in summaries] == [1, 2, 3]
             assert parquet_path.exists(), "the Parquet agent series must be written"
 
+            # Provenance persistée : le mock porte les trois fenêtres du
+            # pipeline, donc rien ne doit être signalé comme repli neutre.
+            measured = store.latest_measured(run_id)
+            assert set(measured) == set(store.latest_metrics(run_id))
+            assert not [
+                (engine, metric)
+                for engine, flags in measured.items()
+                for metric, ok in flags.items()
+                if not ok
+            ]
+
             with TestClient(create_app(store)) as api:
                 response = api.get(f"/api/runs/{run_id}/metrics")
                 assert response.status_code == 200
                 assert response.json()["ticks"] == [1, 2, 3]
                 assert response.json()["values"]
+                assert response.json()["measured"] == measured
                 calibration = api.get(f"/api/runs/{run_id}/calibration")
                 assert calibration.json()["status"] == "complete"
         assert _json_request(f"{control_url}/api/control/status", "GET")["state"] == "idle"
@@ -152,9 +164,7 @@ class _BoundedTransport:
             elif self.ticks_seen >= self.complete_ticks:
                 self.on_stop()
                 self.websocket.close()
-                raise InvalidMessageError(
-                    "transport", "connexion fermée après le segment borné"
-                )
+                raise StreamClosed("connexion fermée après le segment borné")
             self.ticks_seen += 1
         return payload
 

@@ -83,7 +83,7 @@ echos/
 │       └── control_client.py #   ControlClient :5181 (start / pause / resume / reset)
 │   └── storage/              # stockage d'analyse (ECHOS-011 → 013, v2 en ph4)
 │       ├── aggregation.py    #   TickRecord.from_segment / summarize / downsample
-│       ├── sqlite.py         #   AnalyticsStore (SCHEMA_VERSION "2", tables tick_metrics + tick_contexts, thread-safe)
+│       ├── sqlite.py         #   AnalyticsStore (SCHEMA_VERSION "5", tables tick_metrics + tick_contexts, thread-safe)
 │       ├── parquet.py        #   séries lourdes PyArrow + coherence_errors
 │       └── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
 ├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden

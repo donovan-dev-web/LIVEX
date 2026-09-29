@@ -13,10 +13,13 @@ from collections import Counter
 from ._common import (
     agents_of,
     alive_count,
+    belief_facts,
+    decision_actions,
+    goal_kinds,
     mean,
+    safe_ratio,
     shannon,
     variance,
-    activity_of,
 )
 
 ENGINE_NAME = "CognitiveDiversityMetrics"
@@ -32,52 +35,33 @@ METRICS = (
     "TraitExpressionDiversity",
 )
 
-_POSITIVE_ACTIONS = frozenset({"Rest", "Eat", "Socialize", "Explore", "SeekFood"})
-
-
-def _belief_facts(agents: list[dict]) -> list[tuple[str, str, str, float]]:
-    """Croyances agrégées (subject, predicate, value, confidence) par agent."""
-    facts: list[tuple[str, str, str, float]] = []
-    for agent in agents:
-        for belief in agent.get("beliefs") or []:
-            facts.append(
-                (
-                    str(belief.get("subject")),
-                    str(belief.get("predicate")),
-                    str(belief.get("value")),
-                    float(belief.get("confidence") or 0.0),
-                )
-            )
-    return facts
-
 
 def _belief_disagreement(agents: list[dict]) -> float:
     """% moyen d'entités qui divergent sur un même fait.
 
-    Pour chaque (sujet, prédicat) observé par ≥ 2 croyances avec ≥ 2 valeurs
-    distinctes, part des croyances qui s'écartent de la valeur majoritaire,
-    moyennée sur les faits concernés. 0.0 si aucun fait ne prête à divergence.
+    Pour chaque (sujet, prédicat) observé par ≥ 2 valeurs distinctes, part des
+    croyances qui s'écartent de la valeur majoritaire, moyennée sur les faits
+    concernés. 0.0 si aucun fait ne prête à divergence.
+
+    L'ex-aequo est tranché par la valeur lexicographiquement **la plus petite**
+    (et non la plus grande) : le choix majoritaire doit être celui du contrat,
+    pas celui d'un ``max`` sur un tuple arbitraire.
     """
-    by_fact: dict[tuple[str, str], list[tuple[str, float]]] = {}
-    for subject, predicate, value, _confidence in _belief_facts(agents):
-        by_fact.setdefault((subject, predicate), []).append((value, _confidence))
+    by_fact: dict[tuple[str, str], list[str]] = {}
+    for subject, predicate, value, _confidence in belief_facts(agents):
+        by_fact.setdefault((subject, predicate), []).append(value)
 
     disagreements: list[float] = []
     for values in by_fact.values():
-        value_counter = Counter(value for value, _ in values)
+        value_counter = Counter(values)
         if len(value_counter) < 2:
             continue
-        majority = max(value_counter, key=lambda v: (value_counter[v], v))
-        diverging = sum(1 for value, _ in values if value != majority)
-        if len(values) > 0:
-            disagreements.append(diverging / len(values))
+        majority = min(value_counter, key=lambda value: (-value_counter[value], value))
+        disagreements.append(
+            safe_ratio(sum(1 for value in values if value != majority), len(values))
+        )
 
     return mean(disagreements)
-
-
-def _goal_kinds(agents: list[dict]) -> list[str]:
-    """Types d'objectifs actifs (repli sur l'action courante, Idle sinon)."""
-    return [activity_of(agent) for agent in agents]
 
 
 def _goal_ages(agents: list[dict]) -> list[float]:
@@ -108,16 +92,18 @@ def compute(snapshot: dict) -> dict:
     """Calcule les 8 métriques de diversité cognitive sur un snapshot SYNE."""
     agents = agents_of(snapshot)
     count = alive_count(snapshot)
-    facts = _belief_facts(agents)
+    facts = belief_facts(agents)
     belief_counter = Counter((subject, predicate, value) for subject, predicate, value, _ in facts)
 
-    goal_counter = Counter(_goal_kinds(agents))
-    goal_convergence = (
-        max(goal_counter.values()) / count if count and goal_counter else 0.0
-    )
+    goal_counter = Counter(goal_kinds(agents))
+    goal_convergence = safe_ratio(max(goal_counter.values()), count) if goal_counter else 0.0
 
-    actions = [activity_of(agent) for agent in agents]
-    decision_counter = Counter(actions)
+    # DecisionDiversity mesure la diversité des **décisions** (``decision_made``),
+    # pas celle des objectifs : les deux métriques portaient jusqu'ici sur le
+    # même compteur, ce qui rendait l'une redondante de l'autre. Repli sur les
+    # objectifs actifs quand le tick ne porte aucune décision observable.
+    decisions = decision_actions(snapshot)
+    decision_counter = Counter(decisions or goal_kinds(agents))
 
     return {
         "BeliefDiversity": shannon(belief_counter),
@@ -127,9 +113,7 @@ def compute(snapshot: dict) -> dict:
         ),
         "GoalDiversity": shannon(goal_counter),
         "GoalConvergence": goal_convergence,
-        "DecisionDiversity": (
-            len(decision_counter) / count if count else 0.0
-        ),
+        "DecisionDiversity": safe_ratio(len(decision_counter), count),
         "IntentionStability": mean(_goal_ages(agents)),
         "TraitExpressionDiversity": _trait_expression_variance(agents),
     }

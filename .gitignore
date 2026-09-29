@@ -47,7 +47,6 @@ runs/
 
 # Logs
 *.log
-docs/pages-dist/
 
 # Unreal Engine (PRISM-LDK host project)
 prism/**/Binaries/
