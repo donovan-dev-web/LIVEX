@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useLiveStore } from '../store'
-import { useLoadRuns } from '../hooks/useData'
 
 const LIMITS = [
   { domain: 'Affichage', wording: 'L’interface montre, l’analyse démontre — jamais l’inverse.' },
@@ -15,7 +14,6 @@ const LIMITS = [
 type Level = 'structured' | 'traces' | 'text'
 
 export function LogScreen() {
-  useLoadRuns()
   const live = useLiveStore((s) => s.live)
   const wsState = useLiveStore((s) => s.wsState)
   const [level, setLevel] = useState<Level>('structured')

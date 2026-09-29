@@ -3,31 +3,38 @@ import { useState } from 'react'
 import { KPICard } from '../components/kpi/KPICard'
 import { Gauge } from '../components/viz/Gauge'
 import { TimelineChart } from '../components/viz/TimelineChart'
-import { useGroups, useLoadRuns, useMetrics, usePhenomena } from '../hooks/useData'
+import { useGroups, useMetrics, usePhenomena } from '../hooks/useData'
 import { useLiveStore, useRuns, useSelectedRunId } from '../store'
-import type { MetricLatest, MetricValues } from '../api/types'
+import type { MetricLatest, MetricMeasured, MetricValues } from '../api/types'
 import { WorldGrid } from '../components/viz/WorldGrid'
 
 export function DashboardScreen() {
-  useLoadRuns()
   const runs = useRuns()
   const runId = useSelectedRunId()
   const live = useLiveStore((s) => s.live)
 
   const { metrics, error, refreshedAt } = useMetrics(runId, 1)
-  const { groups } = useGroups(runId)
-  const phenomena = usePhenomena(runId)
+  const { groups, error: groupsError } = useGroups(runId)
+  const { phenomena, error: phenomenaError } = usePhenomena(runId)
   const [selectedSeries, setSelectedSeries] = useState<string>()
 
   const latest = metrics?.latest ?? {}
-  const emScore =
-    latest.EmergenceIndicators?.['EmergenceScore'] ?? null
+  const measured = metrics?.measured ?? {}
+  const emScore = pick(latest, 'EmergenceIndicators', 'EmergenceScore')
 
-  const gauges: Array<{ label: string; value: number | null; max: number; warnAbove?: number }> = [
+  const gauges = [
     { label: 'Diversité croyances', value: pick(latest, 'CognitiveDiversityMetrics', 'BeliefDiversity'), max: 1 },
     { label: 'Diversité objectifs', value: pick(latest, 'CognitiveDiversityMetrics', 'GoalDiversity'), max: 1 },
     { label: 'Clustering', value: pick(latest, 'SocialComplexityMetrics', 'ClusteringCoefficient'), max: 1 },
-    { label: 'Vitesse de diffusion', value: pick(latest, 'InformationPropagationMetrics', 'InformationDiffusionSpeed'), max: 100, warnAbove: 50 },
+    // Une diffusion rapide n'est pas un défaut : le signal d'alerte est
+    // l'immobilisation (stagnation), pas la vitesse. L'ancien `warnAbove: 50`
+    // peignait en rouge un monde qui propageait bien.
+    {
+      label: 'Vitesse de diffusion',
+      value: pick(latest, 'InformationPropagationMetrics', 'InformationDiffusionSpeed'),
+      max: 100,
+      warnBelow: 1,
+    },
   ]
 
   const { series } = flattenSeries(metrics?.values ?? {})
@@ -46,10 +53,23 @@ export function DashboardScreen() {
             ? `Métriques rafraîchies ${refreshedAt ? new Date(refreshedAt).toLocaleTimeString() : '…'} · tick ${metricsTick ?? '—'}${metricsLag !== null ? ` · retard ${metricsLag} tick${metricsLag > 1 ? 's' : ''}` : ''}`
             : 'Chargement des métriques…'}
       </div>
+      {groupsError ? (
+        <div className="error banner mb-4" role="status">
+          Groupes indisponibles : {groupsError}
+        </div>
+      ) : null}
 
       <div className="grid grid--kpi mb-4">
         <KPICard title="Entités actives" value={live?.agentCount ?? null} hint="Sondage temps réel (WebSocket)" />
-        <KPICard title="Score émergence" value={emScore !== null ? emScore.toFixed(4) : null} hint="Vue d'analyse, pas une preuve" />
+        <KPICard
+          title="Score émergence"
+          value={emScore !== null ? emScore.toFixed(4) : null}
+          hint={
+            emScore !== null && !isMeasured(measured, 'Score émergence')
+              ? 'Repli neutre — aucune fenêtre observée'
+              : 'Vue d’analyse, pas une preuve'
+          }
+        />
         <KPICard title="Groupes actifs" value={groups?.groups.length ?? null} hint="Communautés détectées" />
         <KPICard title="Messages reçus" value={live?.messageCount ?? null} hint="Événements reçus depuis le dernier snapshot" />
       </div>
@@ -61,7 +81,8 @@ export function DashboardScreen() {
             label={g.label}
             value={g.value}
             max={g.max}
-            warnAbove={g.warnAbove}
+            warnBelow={g.warnBelow}
+            fallback={!isMeasured(measured, g.label)}
           />
         ))}
       </div>
@@ -92,6 +113,11 @@ export function DashboardScreen() {
 
       <div className="card">
         <h3 className="mb-3">Phénomènes détectés</h3>
+        {phenomenaError ? (
+          <div className="error banner mb-3" role="status">
+            Phénomènes indisponibles : {phenomenaError}
+          </div>
+        ) : null}
         {phenomena && phenomena.phenomena.length > 0 ? (
           <ul>
             {phenomena.phenomena.map((p) => (
@@ -131,6 +157,27 @@ function pick(
 ): number | null {
   const value = latest?.[engine]?.[metric]
   return typeof value === 'number' ? value : null
+}
+
+/**
+ * Provenance de la valeur affichée par une jauge. `false` = repli neutre : la
+ * jauge l'affiche sans l'alerte chromatique d'une valeur observée, et le
+ * repli est explicité sous l'aiguille.
+ */
+function isMeasured(measured: MetricMeasured, label: string): boolean {
+  const gauge = GAUGE_SOURCES[label]
+  return measured[gauge.engine]?.[gauge.metric] !== false
+}
+
+const GAUGE_SOURCES: Record<string, { engine: string; metric: string }> = {
+  'Diversité croyances': { engine: 'CognitiveDiversityMetrics', metric: 'BeliefDiversity' },
+  'Diversité objectifs': { engine: 'CognitiveDiversityMetrics', metric: 'GoalDiversity' },
+  Clustering: { engine: 'SocialComplexityMetrics', metric: 'ClusteringCoefficient' },
+  'Vitesse de diffusion': {
+    engine: 'InformationPropagationMetrics',
+    metric: 'InformationDiffusionSpeed',
+  },
+  'Score émergence': { engine: 'EmergenceIndicators', metric: 'EmergenceScore' },
 }
 
 function flattenSeries(values: MetricValues) {

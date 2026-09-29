@@ -16,6 +16,9 @@ export type MetricValues = Record<string, Record<string, number[]>>
 /** Dernières valeurs par moteur/métrique (valeurs scalaires). */
 export type MetricLatest = Record<string, Record<string, number>>
 
+/** Dernière valeur *mesurée* par moteur/métrique (false = repli neutre). */
+export type MetricMeasured = Record<string, Record<string, boolean>>
+
 export interface MetricsResponse {
   run_id: string
   engine: string | null
@@ -24,6 +27,12 @@ export interface MetricsResponse {
   ticks: number[]
   values: MetricValues
   latest: MetricLatest
+  /**
+   * Dernières valeurs par moteur, indicées `false` quand la métrique n'a pas
+   * été calculée sur des données (fenêtre vide) et vaut son repli neutre. Sans
+   * ce drapeau, un 0.0 de repli s'affichait indistinctement d'un 0.0 observé.
+   */
+  measured: MetricMeasured
   /** Highest tick currently persisted in the metrics store, if any. */
   latest_tick?: number | null
 }
@@ -74,6 +83,7 @@ export interface RunDetail {
   first_tick: number
   last_tick: number
   metrics: Record<string, EngineData>
+  measured: MetricMeasured
   phenomena: PhenomenaResponse | null
 }
 
@@ -88,6 +98,16 @@ export interface ExportJsonResponse {
   run_id: string
   format: 'json'
   rows: ExportRow[]
+}
+
+/**
+ * Export CSV transporté en JSON : l'API renvoie toujours du JSON, le CSV est
+ * une chaîne dans ``body`` (pas de ``text/csv`` sur la route).
+ */
+export interface ExportCsvResponse {
+  run_id: string
+  content_type: 'text/csv'
+  body: string
 }
 
 export interface Belief {
@@ -217,6 +237,13 @@ export interface CompareResponse {
   social_diff: number
   series: CompareSeriesRow[]
   format: string
+}
+
+/** Comparaison ``format=csv`` : résumé JSON + corps CSV, comme l'export de run. */
+export interface CompareCsvResponse {
+  summary: Omit<CompareResponse, 'series' | 'format'>
+  content_type: 'text/csv'
+  body: string
 }
 
 export interface ApiErrorPayload {

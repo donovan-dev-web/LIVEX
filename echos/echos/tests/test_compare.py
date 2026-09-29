@@ -100,6 +100,41 @@ def _populate(
         db.append_tick(record)
         metrics = compute_all(snap)
         db.append_tick_metrics(run_id, tick, metrics)
+        # Le journal d'événements doit être alimenté : la comparaison
+        # canonique l'inclut dans son contenu, donc un run sans événement
+        # produisait un contenu différent de celui d'un run réel — sans jamais
+        # que les tests ne le remarquent, puisqu'ils n'écrivaient aucun
+        # événement non plus.
+        for event in events:
+            db.append_event(
+                run_id,
+                tick,
+                str(event.get("type")),
+                agent_id=event.get("agentId"),
+                target_id=event.get("targetId"),
+                action=event.get("action"),
+                cause=event.get("cause"),
+                value=json.dumps(
+                    event.get("value"), sort_keys=True, separators=(",", ":")
+                )
+                if isinstance(event.get("value"), (dict, list))
+                else event.get("value"),
+            )
+        for event in snap.get("groupEvents") or []:
+            db.append_event(
+                run_id,
+                tick,
+                str(event.get("type")),
+                agent_id=event.get("agentId"),
+                target_id=event.get("targetId"),
+                action=event.get("action"),
+                cause=event.get("cause"),
+                value=json.dumps(
+                    event.get("value"), sort_keys=True, separators=(",", ":")
+                )
+                if isinstance(event.get("value"), (dict, list))
+                else event.get("value"),
+            )
         db.append_tick_context(run_id, tick, "agents", agents)
         db.append_tick_context(run_id, tick, "groups", _groups_of(agents))
         trace = build_decision_trace(run_id, tick, decision, snap)
@@ -297,3 +332,45 @@ def test_social_distribution_is_symmetric_for_reciprocal_relations():
     distribution = reproducibility.social_distribution(agents)
     assert distribution == {"A|B": 1.0}
     assert reproducibility.social_distribution([]) == {}
+
+
+def test_compare_raises_on_unknown_run_outside_http(tmp_path):
+    """``compare`` valide ses arguments hors HTTP, pas seulement la route.
+
+    Régression : la route vérifiait l'existence des runs, mais la fonction
+    appelée directement levait un ``KeyError`` sur un run absent.
+    """
+    db = AnalyticsStore(tmp_path / "compare.db")
+    _populate(db, "run-7")
+
+    with pytest.raises(reproducibility.ReproducibilityError):
+        reproducibility.compare(db, "run-7", "run-404")
+
+
+def test_content_fingerprint_ignores_the_run_id(tmp_path):
+    """L'empreinte porte sur le contenu, pas sur l'étiquette du run."""
+    db = AnalyticsStore(tmp_path / "compare.db")
+    _populate(db, "run-7")
+    _populate(db, "run-77", seed="7")
+
+    assert reproducibility.content_fingerprint(db, "run-7") == (
+        reproducibility.content_fingerprint(db, "run-77")
+    )
+
+
+def test_fingerprint_covers_events_and_decisions(tmp_path):
+    """Diverger sur un événement ou une trace doit changer l'empreinte.
+
+    Régression : ``_canonical_content`` décompressait les événements avec
+    ``dict(zip(columns, row))`` alors que la requête en sélectionne six, ce
+    qui levait ``ValueError: not enough values to unpack (expected 7, got 6)``
+    — donc ``/api/compare`` répondait 500 sur tout run contenant un événement.
+    """
+    db = AnalyticsStore(tmp_path / "compare.db")
+    _populate(db, "run-7")
+    baseline = reproducibility.content_fingerprint(db, "run-7")
+    # Le run contient bien des événements : c'est ce qui déclenchait le crash.
+    assert db.events("run-7")
+
+    db.append_event("run-7", 1, "message_sent", agent_id="A", action="Hello")
+    assert reproducibility.content_fingerprint(db, "run-7") != baseline

@@ -26,12 +26,16 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "4"
+SCHEMA_VERSION = "5"
 """Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
 
 v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces``.
 v4 (SYNE-131/U8) : table ``calibration_reports`` — résumé déterministe
 post-run, migration additive sans perte de données.
+v5 : colonne ``tick_metrics.measured`` — provenance des valeurs. Migration
+additive : les bases existantes reçoivent la colonne avec ``DEFAULT 1``, donc
+toutes les valeurs déjà enregistrées restent considérées comme mesurées (elles
+l'étaient : aucun repli neutre n'était distinguable à l'époque).
 """
 
 _DDL = """
@@ -78,6 +82,7 @@ CREATE TABLE IF NOT EXISTS tick_metrics (
     engine TEXT NOT NULL,
     metric TEXT NOT NULL,
     value REAL NOT NULL,
+    measured INTEGER NOT NULL DEFAULT 1 CHECK (measured IN (0, 1)),
     PRIMARY KEY (run_id, tick, engine, metric)
 );
 
@@ -156,11 +161,30 @@ class AnalyticsStore:
     def initialize(self) -> None:
         with self._lock:
             self._conn.executescript(_DDL)
+            self._migrate_measured_column()
             self._conn.execute(
                 "INSERT OR REPLACE INTO _meta (key, value) VALUES ('schema_version', ?)",
                 (SCHEMA_VERSION,),
             )
             self._conn.commit()
+
+    def _migrate_measured_column(self) -> None:
+        """Ajoute ``tick_metrics.measured`` aux bases créées avant la v5.
+
+        ``CREATE TABLE IF NOT EXISTS`` ne modifie pas une table existante : sans
+        ce ``ALTER``, toute base pré-v5 levait ``no such column: measured`` dès
+        la première écriture de métrique. ``DEFAULT 1`` conserve les valeurs
+        déjà enregistrées comme mesurées.
+        """
+        columns = {
+            str(row[1])
+            for row in self._conn.execute("PRAGMA table_info(tick_metrics)").fetchall()
+        }
+        if "measured" not in columns:
+            self._conn.execute(
+                "ALTER TABLE tick_metrics ADD COLUMN measured INTEGER NOT NULL "
+                "DEFAULT 1 CHECK (measured IN (0, 1))"
+            )
 
     def record_run(self, run_id: str, version: str, seed: str | None = None) -> None:
         with self._lock:
@@ -211,7 +235,11 @@ class AnalyticsStore:
             self._bump()
 
     def append_tick_metrics(
-        self, run_id: str, tick: int, metrics: dict[str, dict]
+        self,
+        run_id: str,
+        tick: int,
+        metrics: dict[str, dict],
+        measured: dict[str, dict[str, bool]] | None = None,
     ) -> int:
         """Persiste les métriques calculées d'un tick (ECHOS-040→041).
 
@@ -219,21 +247,35 @@ class AnalyticsStore:
         ``Disclaimer``, compteurs composites...) sont ignorées ici — elles sont
         émissent via :meth:`append_tick_context`. Retourne le nombre de lignes
         écrites (test : couverture du pipeline).
+
+        ``measured`` porte la provenance (``analysis.provenance``) : sans elle,
+        la colonne vaut 1 (mesurée), comportement d'avant la v5.
         """
         written = 0
         with self._lock:
             for engine, values in metrics.items():
+                flags = (measured or {}).get(engine) or {}
                 for metric, value in values.items():
                     if isinstance(value, bool) or not isinstance(value, (int, float)):
                         continue
                     self._conn.execute(
                         """
-                        INSERT INTO tick_metrics (run_id, tick, engine, metric, value)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO tick_metrics
+                            (run_id, tick, engine, metric, value, measured)
+                        VALUES (?, ?, ?, ?, ?, ?)
                         ON CONFLICT(run_id, tick, engine, metric)
-                        DO UPDATE SET value = excluded.value
+                        DO UPDATE SET
+                            value = excluded.value,
+                            measured = excluded.measured
                         """,
-                        (run_id, tick, str(engine), str(metric), float(value)),
+                        (
+                            run_id,
+                            tick,
+                            str(engine),
+                            str(metric),
+                            float(value),
+                            1 if flags.get(metric, True) else 0,
+                        ),
                     )
                     written += 1
             self._conn.commit()
@@ -303,15 +345,24 @@ class AnalyticsStore:
         contexts: dict[str, object],
         events: list[tuple[str, str | None, str | None, str | None, str | None, str | None]],
         decision_traces: list[dict],
+        measured: dict[str, dict[str, bool]] | None = None,
     ) -> int:
         """Write all SQLite rows produced for one tick atomically."""
-        metric_rows: list[tuple[str, int, str, str, float]] = []
+        metric_rows: list[tuple[str, int, str, str, float, int]] = []
         for engine, values in metrics.items():
+            flags = (measured or {}).get(engine) or {}
             for metric, value in values.items():
                 if isinstance(value, bool) or not isinstance(value, (int, float)):
                     continue
                 metric_rows.append(
-                    (record.run_id, record.tick, str(engine), str(metric), float(value))
+                    (
+                        record.run_id,
+                        record.tick,
+                        str(engine),
+                        str(metric),
+                        float(value),
+                        1 if flags.get(metric, True) else 0,
+                    )
                 )
         with self._lock:
             try:
@@ -328,10 +379,13 @@ class AnalyticsStore:
                 if metric_rows:
                     self._conn.executemany(
                         """
-                        INSERT INTO tick_metrics (run_id, tick, engine, metric, value)
-                        VALUES (?, ?, ?, ?, ?)
+                        INSERT INTO tick_metrics
+                            (run_id, tick, engine, metric, value, measured)
+                        VALUES (?, ?, ?, ?, ?, ?)
                         ON CONFLICT(run_id, tick, engine, metric)
-                        DO UPDATE SET value = excluded.value
+                        DO UPDATE SET
+                            value = excluded.value,
+                            measured = excluded.measured
                         """,
                         metric_rows,
                     )
@@ -469,6 +523,8 @@ class AnalyticsStore:
             )
 
     def events(self, run_id: str) -> list[tuple]:
+        """Événements du run en tuple compact ``(tick, type, agent_id, action,
+        cause, value)`` — tri ``(tick, id)`` (ordre d'émission stable)."""
         with self._lock:
             return list(
                 self._conn.execute(
@@ -481,6 +537,71 @@ class AnalyticsStore:
                     (run_id,),
                 ).fetchall()
             )
+
+    def event_records(self, run_id: str) -> list[dict]:
+        """Événements du run en dicts (**tous** les champs, ``target_id`` inclus).
+
+        La forme tuple de :meth:`events` omet ``target_id``, ce qui interdit
+        toute comparaison de contenu exhaustive (empreinte bit-à-bit). Les noms
+        de clés explicites suppriment tout indexage positionnel fragile côté
+        appelants.
+        """
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT tick, type, agent_id, target_id, action, cause, value
+                FROM events_log
+                WHERE run_id = ?
+                ORDER BY tick, id
+                """,
+                (run_id,),
+            ).fetchall()
+        return [
+            {
+                "tick": int(row[0]),
+                "type": row[1],
+                "agent_id": row[2],
+                "target_id": row[3],
+                "action": row[4],
+                "cause": row[5],
+                "value": row[6],
+            }
+            for row in rows
+        ]
+
+    def events_by_type(
+        self, run_id: str, event_type: str, *, max_tick: int | None = None
+    ) -> list[dict]:
+        """Événements d'un type donné, en dicts, triés par ``(tick, id)``.
+
+        ``max_tick`` borne la lecture au tick inclus : l'analyse causale ne
+        consulte ainsi que la fenêtre qui la concerne au lieu de recharger
+        l'intégralité du journal à chaque requête.
+        """
+        query = """
+            SELECT tick, type, agent_id, target_id, action, cause, value
+            FROM events_log
+            WHERE run_id = ? AND type = ?
+        """
+        params: list[object] = [run_id, event_type]
+        if max_tick is not None:
+            query += " AND tick <= ?"
+            params.append(int(max_tick))
+        query += " ORDER BY tick, id"
+        with self._lock:
+            rows = self._conn.execute(query, params).fetchall()
+        return [
+            {
+                "tick": int(row[0]),
+                "type": row[1],
+                "agent_id": row[2],
+                "target_id": row[3],
+                "action": row[4],
+                "cause": row[5],
+                "value": row[6],
+            }
+            for row in rows
+        ]
 
     def save_calibration_report(self, run_id: str, report: dict) -> None:
         """Persist one deterministic post-run calibration report."""
@@ -501,7 +622,14 @@ class AnalyticsStore:
         return json.loads(row[0]) if row is not None else None
 
     def runs(self) -> list[dict]:
-        """Runs enregistrés avec bornes de ticks (ordre déterministe par run_id)."""
+        """Runs enregistrés avec bornes de ticks (ordre déterministe par run_id).
+
+        Un run est créé par ``record_run`` *avant* l'écriture de son premier
+        tick : le LEFT JOIN renvoie donc ``NULL`` sur les bornes. Les runs sans
+        tick exposent ``first_tick``/``last_tick`` à ``None`` (et non 0, qui
+        désignerait un tick réel) pour que les appelants puissent distinguer
+        « aucun tick » de « tick 0 ».
+        """
         with self._lock:
             rows = self._conn.execute(
                 """
@@ -519,8 +647,8 @@ class AnalyticsStore:
                 "version": row[1],
                 "seed": row[2],
                 "ticks_count": int(row[3]),
-                "first_tick": int(row[4]),
-                "last_tick": int(row[5]),
+                "first_tick": int(row[4]) if row[4] is not None else None,
+                "last_tick": int(row[5]) if row[5] is not None else None,
             }
             for row in rows
         ]
@@ -539,6 +667,32 @@ class AnalyticsStore:
                 ).fetchall()
             )
 
+    def metric_names(
+        self,
+        run_id: str,
+        *,
+        engine: str | None = None,
+        metric: str | None = None,
+    ) -> list[tuple[str, str]]:
+        """Couples (moteur, métrique) distincts du run, triés.
+
+        La découverte porte sur l'ensemble des ticks : une métrique présente à
+        un ancien instant mais absente du dernier reste donc découvrable, ce
+        que ``latest_metrics`` ne permettait pas.
+        """
+        query = "SELECT DISTINCT engine, metric FROM tick_metrics WHERE run_id = ?"
+        params: list[object] = [run_id]
+        if engine is not None:
+            query += " AND engine = ?"
+            params.append(engine)
+        if metric is not None:
+            query += " AND metric = ?"
+            params.append(metric)
+        query += " ORDER BY engine, metric"
+        with self._lock:
+            rows = self._conn.execute(query, params).fetchall()
+        return [(str(row[0]), str(row[1])) for row in rows]
+
     def metric_series(
         self, run_id: str, engine: str, metric: str
     ) -> list[tuple[int, float]]:
@@ -556,6 +710,20 @@ class AnalyticsStore:
 
     def latest_metrics(self, run_id: str) -> dict[str, dict[str, float]]:
         """Dernières métriques calculées (tick max de ``tick_metrics``)."""
+        return self._latest_metric_column(run_id, "value")
+
+    def latest_measured(self, run_id: str) -> dict[str, dict[str, bool]]:
+        """Provenance des dernières métriques (drappeaux ``measured``).
+
+        Miroir de :meth:`latest_metrics` sur la colonne ``measured`` : l'API
+        sert ainsi la valeur **et** le fait qu'elle ait été mesurée, ce qui
+        permet à l'UI de distinguer un 0.0 observé d'un repli neutre.
+        """
+        return self._latest_metric_column(run_id, "measured")
+
+    def _latest_metric_column(
+        self, run_id: str, column: str
+    ) -> dict[str, dict[str, float]]:
         with self._lock:
             row = self._conn.execute(
                 "SELECT MAX(tick) FROM tick_metrics WHERE run_id = ?", (run_id,)
@@ -564,16 +732,18 @@ class AnalyticsStore:
             if tick is None:
                 return {}
             rows = self._conn.execute(
-                """
-                SELECT engine, metric, value FROM tick_metrics
+                f"""
+                SELECT engine, metric, {column} FROM tick_metrics
                 WHERE run_id = ? AND tick = ?
                 ORDER BY engine, metric
-                """,
+                """,  # noqa: S608 — colonne d'une liste interne fermée
                 (run_id, tick),
             ).fetchall()
         latest: dict[str, dict[str, float]] = {}
         for engine, metric, value in rows:
-            latest.setdefault(engine, {})[metric] = float(value)
+            latest.setdefault(engine, {})[metric] = (
+                bool(value) if column == "measured" else float(value)
+            )
         return latest
 
     def latest_context(self, run_id: str, context_type: str) -> tuple[int, object] | None:

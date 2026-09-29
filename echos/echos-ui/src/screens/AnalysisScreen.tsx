@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import { TimelineChart } from '../components/viz/TimelineChart'
-import { useLoadRuns, useMetrics } from '../hooks/useData'
+import { useMetrics } from '../hooks/useData'
 import { useRuns, useSelectedRunId } from '../store'
 import { client } from '../api/client'
 import { DEFAULT_DEPTH } from '../config'
+import { triggerDownload } from '../api/download'
 import type { CausalChainResponse, CompareResponse } from '../api/types'
 
 type Tab = 'metrics' | 'causal' | 'compare'
 
 export function AnalysisScreen() {
-  useLoadRuns()
   const runId = useSelectedRunId()
   const runs = useRuns()
   const [tab, setTab] = useState<Tab>('metrics')
@@ -162,14 +162,29 @@ function CompareTab({ runs }: { runs: string[] }) {
   const [b, setB] = useState(runs.length > 1 ? runs[1] ?? runs[0] ?? '' : runs[0] ?? '')
   const [result, setResult] = useState<CompareResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [csvPending, setCsvPending] = useState(false)
 
   const run = async () => {
     if (!a || !b) return
     setError(null)
     try {
-      setResult(await client.compare(a, b))
+      setResult((await client.compare(a, b)) as CompareResponse)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
+    }
+  }
+
+  const downloadCsv = async () => {
+    if (!a || !b) return
+    setCsvPending(true)
+    setError(null)
+    try {
+      const file = await client.compareCsv(a, b)
+      triggerDownload(file.filename, file.mime, file.content)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setCsvPending(false)
     }
   }
 
@@ -204,6 +219,14 @@ function CompareTab({ runs }: { runs: string[] }) {
         </select>
         <button className="btn btn--accent" onClick={() => void run()} type="button" disabled={!a || !b}>
           Comparer
+        </button>
+        <button
+          className="btn"
+          onClick={() => void downloadCsv()}
+          type="button"
+          disabled={!a || !b || csvPending}
+        >
+          {csvPending ? 'Export…' : 'Export CSV'}
         </button>
       </div>
       {error ? <div className="error banner mb-3">{error}</div> : null}

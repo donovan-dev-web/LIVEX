@@ -14,6 +14,16 @@ from typing import Protocol
 from echos.ingestion.models import Message, InvalidMessageError, parse_message
 
 
+class StreamClosed(Exception):
+    """Fin de flux : le transport n'a plus de message à delivers.
+
+    Exception distincte d'``InvalidMessageError`` : la fermeture du flux est un
+    état normal d'itération, pas un message non conforme. Elle remplace la
+    détection par préfixe de chaîne ``"connexion fermée"``, qui faisait
+    dépendre la fin d'itération du libellé d'un message d'erreur.
+    """
+
+
 class WsTransport(Protocol):
     """Interface de transport : connexion WebSocket réelle ou simulée."""
 
@@ -94,7 +104,7 @@ class WsClient:
             raise InvalidMessageError("transport", "client non connecté")
         payload = self._transport.recv(timeout=timeout)
         if payload is None:
-            raise InvalidMessageError("transport", "connexion fermée (None)")
+            raise StreamClosed("connexion fermée (None)")
         return parse_message(payload)
 
     def send(self, payload: str | bytes) -> None:
@@ -114,9 +124,9 @@ class WsClient:
     def __next__(self) -> Message:
         try:
             return self.receive()
-        except InvalidMessageError as exc:
-            if exc.detail.startswith("connexion fermée"):
-                raise StopIteration from exc
+        except StreamClosed as exc:
+            raise StopIteration from exc
+        except InvalidMessageError:
             raise
         except Exception as exc:  # transport réel : fermeture ≙ fin de flux
             try:

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
 
@@ -92,23 +92,65 @@ class Resource(BaseModel):
     capacity: float | None = Field(default=None, ge=0)
 
 
+def _agent_ids(value: Any) -> Any:
+    """Normalise une liste d'identifiants d'agents transportés en entiers.
+
+    SYNE sérialise ``agents[].id`` en **chaîne** (``AgentSnapshot.Id``) mais
+    ``groups[].members``/``leaderId``, ``territories[].members`` et
+    ``books[].authorId``/``readers`` en **entiers** (``ulong``). Les deux
+    désignent pourtant le même agent : sans normalisation, un membre de groupe
+    ne pouvait jamais être joint à son agent (``"3" != 3``), et toute
+    consommation de ``groups`` aurait produit des identifiants d'une autre
+    nature que ceux de ``trust``, ``beliefs`` ou ``events_log.agent_id``.
+
+    ECHOS normalise donc **toute** référence à un agent en ``str``, quel que
+    soit le type de transport. Le contrat de transport reste inchangé côté
+    SYNE ; seule la représentation interne devient homogène.
+    """
+    if not isinstance(value, (list, tuple)):
+        return value
+    return [item if isinstance(item, str) else str(item) for item in value]
+
+
+def _agent_id(value: Any) -> Any:
+    """Variante scalaire de :func:`_agent_ids` (identifiant d'agent unique)."""
+    if value is None or isinstance(value, str):
+        return value
+    if isinstance(value, bool):
+        return value
+    return str(value)
+
+
 class Group(BaseModel):
-    """Groupe observable dans le snapshot SYNE."""
+    """Groupe observable dans le snapshot SYNE.
+
+    ``members`` et ``leader_id`` sont des **identifiants d'agents** : ils sont
+    typés ``str`` comme ``Agent.id``, et normalisés depuis la forme entière
+    émise par SYNE (voir :func:`_agent_ids`). ``group_id`` reste un entier car
+    c'est l'identité du groupe, jamais jointe à un agent.
+    """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     group_id: int
-    members: list[int] = Field(default_factory=list)
+    members: list[str] = Field(default_factory=list)
     size: int = Field(ge=0)
-    leader_id: int | None = None
+    leader_id: str | None = None
     born_tick: int = Field(ge=0)
     cohesion: float
     decision: str | None = None
     consensus: float
 
+    _normalize_members = field_validator("members", mode="before")(
+        lambda value: _agent_ids(value)
+    )
+    _normalize_leader = field_validator("leader_id", mode="before")(
+        lambda value: _agent_id(value)
+    )
+
 
 class Territory(BaseModel):
-    """Zone de territoire (SYNE-073)."""
+    """Zone de territoire (SYNE-073). ``members`` = ids d'agents (``str``)."""
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
@@ -117,21 +159,32 @@ class Territory(BaseModel):
     y: float
     radius: float = Field(ge=0)
     member_count: int = Field(ge=0)
-    members: list[int] = Field(default_factory=list)
+    members: list[str] = Field(default_factory=list)
+
+    _normalize_members = field_validator("members", mode="before")(
+        lambda value: _agent_ids(value)
+    )
 
 
 class Book(BaseModel):
-    """Savoir matérialisé (SYNE-121)."""
+    """Savoir matérialisé (SYNE-121). ``author_id``/``readers`` = ids d'agents."""
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     id: str
-    author_id: int
+    author_id: str
     title: str
     content: str
     written_tick: int = Field(ge=0)
     read_count: int = Field(ge=0)
-    readers: list[int] = Field(default_factory=list)
+    readers: list[str] = Field(default_factory=list)
+
+    _normalize_author = field_validator("author_id", mode="before")(
+        lambda value: _agent_id(value)
+    )
+    _normalize_readers = field_validator("readers", mode="before")(
+        lambda value: _agent_ids(value)
+    )
 
 
 class WorldInitialized(BaseModel):

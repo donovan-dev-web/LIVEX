@@ -8,7 +8,7 @@ optionnel ``history`` alimente le temps de récupération ; sans données → 0.
 
 from __future__ import annotations
 
-from ._common import mean
+from ._common import event_values, mean, safe_ratio
 
 ENGINE_NAME = "ResourceSustainabilityMetrics"
 
@@ -18,17 +18,38 @@ METRICS = (
     "RecoveryTime",
 )
 
+REQUIRES = {
+    "RecoveryTime": "history",
+}
+"""Clés de contexte sans lesquelles la métrique n'est pas mesurée.
+
+``RecoveryTime`` parcourt l'historique des réserves : sans ``history``, il
+retombe sur 0.0 en confondant « aucune chute » et « aucune observation ».
+Les deux autres métriques lisent le snapshot courant, donc toujours mesurées.
+"""
+
 _CRITICAL_RATIO = 0.2
 _RECOVERED_RATIO = 0.8
 
 
 def _availability(quantity: float, capacity: float | None, consumed: float) -> float:
-    """Ratio ressource disponible / consommation (capacité en repli)."""
-    consumption = max(consumed, 1e-9)
-    if capacity is None:
-        return quantity / consumption
-    capacity = max(float(capacity), 1e-9)
-    return (quantity / capacity) if consumed <= 0 else (quantity / consumption)
+    """Taux de disponibilité d'une réserve, borné et défini sur les cas vides.
+
+    Trois régimes, tous définis :
+    - capacité connue et rien consommé → taux de remplissage ``q/c`` ;
+    - capacité connue et consommation observée → ``q / consommé`` ;
+    - capacité inconnue et rien consommé → 1.0 (réserve disponible, aucune
+      tension) au lieu de l'explosion numérique (~1e11) que ``max(c, 1e-9)``
+      produisait et qui contaminait ensuite la moyenne du moteur.
+
+    Sans capacité **et** avec consommation, seul ``q / consommé`` est
+    observable : c'est le seul ratio interprétable.
+    """
+    if consumed > 0.0:
+        return safe_ratio(quantity, consumed)
+    if capacity is not None and capacity > 0.0:
+        return safe_ratio(quantity, capacity)
+    return 1.0
 
 
 def _consumption_by_type(snapshot: dict) -> dict[str, float]:
@@ -37,7 +58,7 @@ def _consumption_by_type(snapshot: dict) -> dict[str, float]:
     for event in snapshot.get("events") or []:
         if event.get("type") != "resource_consumed":
             continue
-        value = event.get("value") or {}
+        value = event_values(event)
         resource_type = str(value.get("type") or "unknown")
         consumed[resource_type] = consumed.get(resource_type, 0.0) + float(
             value.get("amount") or 0.0
@@ -57,14 +78,12 @@ def _recovery_time(snapshot: dict) -> float:
         return 0.0
 
     def ratio_of(entry: dict) -> float | None:
-        resources = entry.get("resources") or []
-        if not resources:
-            return None
-        ratios = [
-            float(resource["quantity"]) / max(float(resource["capacity"]), 1e-9)
-            for resource in resources
-            if resource.get("capacity")
-        ]
+        ratios = []
+        for resource in entry.get("resources") or []:
+            capacity = resource.get("capacity")
+            if not capacity:
+                continue
+            ratios.append(safe_ratio(float(resource.get("quantity") or 0.0), float(capacity)))
         return mean(ratios) if ratios else None
 
     recoveries: list[float] = []

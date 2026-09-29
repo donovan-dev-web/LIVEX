@@ -3,13 +3,35 @@ interface GaugeProps {
   value: number | null
   min?: number
   max?: number
+  /**
+   * Seuil bas : en dessous, la jauge passe en alerte. Utilisé quand une valeur
+   * faible est anormale (vitesse de diffusion, densité sociale).
+   */
+  warnBelow?: number
+  /** Seuil haut : au-dessus, la jauge passe en alerte. */
   warnAbove?: number
+  /** Rendu lorsque la valeur est un repli neutre (API `measured: false`). */
+  fallback?: boolean
 }
 
-export function Gauge({ label, value, min = 0, max = 1, warnAbove }: GaugeProps) {
-  const ratio = value === null ? 0 : Math.max(0, Math.min(1, (value - min) / (max - min)))
-  const isWarn = value !== null && warnAbove !== undefined && value > warnAbove
-  const color = isWarn ? 'var(--danger)' : 'var(--accent)'
+/**
+ * Jauge radiale. Les deux seuils sont optionnels et cumulables : `warnBelow`
+ * pour « trop peu », `warnAbove` pour « trop beaucoup ».
+ *
+ * L'aiguille ne bouge pas pour une valeur non finie : `NaN` vient des ticks
+ * non observés d'une série fusionnée, pas d'une mesure à zéro.
+ */
+export function Gauge({ label, value, min = 0, max = 1, warnBelow, warnAbove, fallback = false }: GaugeProps) {
+  const known = typeof value === 'number' && Number.isFinite(value)
+  const ratio = known ? Math.max(0, Math.min(1, (value - min) / (max - min))) : 0
+  // Un repli neutre ne déclenche jamais une alerte de seuil : sa valeur est
+  // celle du moteur faute de données, pas une observation en dessous du seuil.
+  const isWarn =
+    known &&
+    !fallback &&
+    ((warnBelow !== undefined && value < warnBelow) ||
+      (warnAbove !== undefined && value > warnAbove))
+  const color = isWarn ? 'var(--danger)' : fallback ? 'var(--text-secondary)' : 'var(--accent)'
 
   return (
     <div className="card" style={{ textAlign: 'center' }}>
@@ -43,13 +65,19 @@ export function Gauge({ label, value, min = 0, max = 1, warnAbove }: GaugeProps)
             fontVariantNumeric: 'tabular-nums',
           }}
         >
-          <span className="mono">{value === null ? '—' : value.toFixed(3)}</span>
+          <span className="mono">{known ? value.toFixed(3) : '—'}</span>
         </div>
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
-        {min.toFixed(0)} … {warnAbove !== undefined ? `seuil ${warnAbove} · ` : ''}
-        {max.toFixed(0)}
+        {min.toFixed(0)} … {max.toFixed(0)}
+        {warnBelow !== undefined ? ` · alerte sous ${warnBelow}` : ''}
+        {warnAbove !== undefined ? ` · alerte au-dessus de ${warnAbove}` : ''}
       </div>
+      {fallback ? (
+        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+          Repli neutre — métrique non mesurée sur ce tick
+        </div>
+      ) : null}
     </div>
   )
 }

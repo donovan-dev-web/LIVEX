@@ -168,6 +168,33 @@ entre rejeux (déterminisme ECHOS) :
 
 ---
 
+## Annexe — Provenance des valeurs (`measured`)
+
+Plusieurs métriques dépendent d'une fenêtre que le tick courant ne porte pas
+(`FeedbackLoopDetector`, `RecoveryTime`, `CommunityStability`) et renvoient alors
+leur **repli neutre**. Cette valeur est la bonne réponse du moteur, mais elle
+n'est pas une observation : la confondre avec une mesure réelle est exactement
+ce qui a laissé passer 7 métriques à 0 sur tout run réel.
+
+Le champ `measured` distingue donc les deux cas, par couple
+(moteur, métrique) :
+
+| Valeur | Signification |
+| :-- | :-- |
+| `true` | la métrique a été calculée sur les données du tick |
+| `false` | la valeur servie est le repli neutre du moteur, faute de fenêtre |
+
+Il est produit par `analysis.provenance(snapshot)`, calculé **depuis les mêmes
+entrées** que le calcul lui-même (aucune liste de métriques déclarée à côté du
+code, donc pas de divergence possible), persisté par tick
+(`tick_metrics.measured`, schéma SQLite v5) et publié par l'API
+(`API_REST.md` §3.2-§3.3).
+
+Règle de consommation : un `false` ne doit pas être affiché comme un `0`. C'est
+« non mesuré », pas « mesuré à zéro ».
+
+---
+
 ## Points restés ouverts dans ce document
 - Aucun : les 7 moteurs et leurs métriques proviennent de la Monographie §4.3.
 - Implémentation : fenêtres temporelles et seuils de détection (fenêtre 100 ticks, seuil > 2) restent des valeurs config [HÉRITÉ] à confirmer en calibration.

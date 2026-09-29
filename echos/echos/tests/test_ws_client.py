@@ -3,7 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from echos.ingestion import ExternalEvent, InvalidMessageError, WorldSnapshot, WsClient
+from echos.ingestion import (
+    ExternalEvent,
+    InvalidMessageError,
+    StreamClosed,
+    WorldSnapshot,
+    WsClient,
+)
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 GOLDEN = Path(__file__).resolve().parent / "golden"
@@ -135,3 +141,31 @@ def test_send_without_connect_raises():
 
     with pytest.raises(InvalidMessageError, match="non connecté"):
         client.send("ping")
+
+
+def test_stream_closed_is_its_own_exception_type():
+    """La fin de flux a son propre type, pas un préfixe de message d'erreur.
+
+    Régression : ``__next__`` détectait la fermeture par
+    ``exc.detail.startswith("connexion fermée")``. Toute reformulation du
+    libellé d'erreur faisait silencieusement disparaître la fin d'itération.
+    """
+    transport = FakeTransport([])
+    client = WsClient(transport=transport)
+    client.connect("ws://127.0.0.1:5180")
+
+    with pytest.raises(StreamClosed):
+        client.receive()
+
+    # Et l'itération s'arrête proprement.
+    assert list(WsClient(transport=FakeTransport([]))) == []
+
+
+def test_invalid_message_is_not_swallowed_as_end_of_stream():
+    """Un message invalide doit remonter, jamais clore l'itération."""
+    transport = FakeTransport(["{pas-du-json}"])
+    client = WsClient(transport=transport)
+    client.connect("ws://127.0.0.1:5180")
+
+    with pytest.raises(InvalidMessageError):
+        next(iter(client))

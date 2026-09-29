@@ -1,24 +1,44 @@
-import { useMemo, useState } from 'react'
-import { useGroups, useLoadRuns } from '../hooks/useData'
-import { useRuns, useSelectedRunId } from '../store'
+import { useEffect, useMemo, useState } from 'react'
+import { useGroups } from '../hooks/useData'
+import { useLiveStore, useSelectedRunId } from '../store'
 import { AgentInspector } from '../components/agents/AgentInspector'
 import { EntityBadge, GroupChip } from '../components/agents/badges'
 
 type Tab = 'entities' | 'groups' | 'communications'
 
 export function ExploreScreen() {
-  useLoadRuns()
   const runId = useSelectedRunId()
-  const runs = useRuns()
   const { groups, error } = useGroups(runId)
+  const liveAgents = useLiveStore((s) => s.live?.agents)
   const [tab, setTab] = useState<Tab>('entities')
   const [selected, setSelected] = useState<string | null>(null)
 
-  const memberIds = useMemo<string[]>(() => {
+  /**
+   * Entités affichées = membres de groupe ∪ agents vus dans le flux.
+   *
+   * `_groups_of` (côté ECHOS) exclut volontairement les singletons : une
+   * entité isolée n'est pas une communauté. La liste des entités n'en lisait
+   * que les membres, donc une entité seule n'était pas inspectable — la liste
+   * pouvait afficher « 0 entité » pendant que le tableau de bord en annonçait
+   * 40.
+   */
+  const entityIds = useMemo<string[]>(() => {
     const set = new Set<string>()
     for (const g of groups?.groups ?? []) for (const m of g.members) set.add(m)
-    return [...set].sort()
-  }, [groups])
+    for (const agent of liveAgents ?? []) if (agent?.id != null) set.add(String(agent.id))
+    return [...set].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }))
+  }, [groups, liveAgents])
+
+  const groupedIds = useMemo(
+    () => new Set((groups?.groups ?? []).flatMap((g) => g.members)),
+    [groups],
+  )
+
+  // Une entité qui quitte le run affiché ne doit pas rester ouverte sur des
+  // données devenues hors sujet.
+  useEffect(() => {
+    if (selected && entityIds.length > 0 && !entityIds.includes(selected)) setSelected(null)
+  }, [entityIds, selected])
 
   return (
     <div>
@@ -48,23 +68,34 @@ export function ExploreScreen() {
         <div>
           {tab === 'entities' && (
             <div className="card">
-              <h3 className="mb-3">Entités ({memberIds.length})</h3>
-              <div className="agent-list">
-                {memberIds.length ? (
-                  memberIds.map((id) => (
+              <h3 className="mb-3">
+                Entités ({entityIds.length}) · {entityIds.length - groupedIds.size} isolée(s)
+              </h3>
+              <div className="agent-list" role="listbox" aria-label="Entités observées">
+                {entityIds.length ? (
+                  entityIds.map((id) => (
                     <div
                       key={id}
                       className={`agent-row ${selected === id ? 'agent-row--selected' : ''}`}
                       onClick={() => setSelected(id)}
-                      role="button"
+                      role="option"
+                      aria-selected={selected === id}
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === 'Enter' && setSelected(id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          setSelected(id)
+                        }
+                      }}
                     >
                       <EntityBadge agentId={id} />
+                      {!groupedIds.has(id) ? <span className="tag">isolée</span> : null}
                     </div>
                   ))
                 ) : (
-                  <div className="empty">Aucune entité (groupes vides).</div>
+                  <div className="empty">
+                    Aucune entité observée — flux temps réel déconnecté ou aucun groupe actif.
+                  </div>
                 )}
               </div>
             </div>
@@ -105,16 +136,12 @@ export function ExploreScreen() {
 
         <div>
           {selected ? (
-            <AgentInspector agentId={selected} pollMs={500} />
+            <AgentInspector agentId={selected} runId={runId} pollMs={500} />
           ) : (
             <div className="empty">Sélectionnez une entité pour l'inspecter (sondage 500 ms).</div>
           )}
         </div>
       </div>
-
-      {runs.length === 0 && (
-        <div className="empty mt-4">Aucun run enregistré.</div>
-      )}
     </div>
   )
 }

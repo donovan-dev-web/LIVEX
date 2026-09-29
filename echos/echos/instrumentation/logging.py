@@ -34,18 +34,26 @@ def _append_jsonl(path: Path, payload: dict[str, Any]) -> None:
 
 
 class EchosLogger:
-    """Bâche les trois niveaux de journalisation dans ``log_dir``."""
+    """Bâche les trois niveaux de journalisation dans ``log_dir``.
+
+    Utilisable en ``with`` : le descripteur du fichier texte est alors fermé
+    explicitement. Sans cela, chaque instance conservait son ``FileHandler``
+    ouvert jusqu'au ramasse-miettes, et une boucle de runs (tests, ingestion
+    répétée) épuisait les descripteurs de fichiers du processus.
+    """
 
     def __init__(self, log_dir: str | Path = "logs") -> None:
         self._dir = Path(log_dir)
         self._dir.mkdir(parents=True, exist_ok=True)
         self._text = logging.getLogger(f"{_APP_TAG}.{id(self)}")
-        handler = logging.FileHandler(
+        self._handler = logging.FileHandler(
             self._dir / f"echos-{datetime.now():%Y-%m-%d}.log",
             encoding="utf-8",
         )
-        handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
-        self._text.addHandler(handler)
+        self._handler.setFormatter(
+            logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+        )
+        self._text.addHandler(self._handler)
         self._text.setLevel(logging.DEBUG)
         self._text.propagate = False
 
@@ -57,6 +65,18 @@ class EchosLogger:
     @property
     def log_dir(self) -> Path:
         return self._dir
+
+    def close(self) -> None:
+        """Ferme le fichier texte et détache le handler (idempotent)."""
+        if self._handler in self._text.handlers:
+            self._text.removeHandler(self._handler)
+        self._handler.close()
+
+    def __enter__(self) -> "EchosLogger":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.close()
 
     def structured(self, run_id: str, tick: int, metrics: dict[str, dict]) -> None:
         """Niveau 1 — métriques du tick en JSON Lines (événements structurés)."""
@@ -91,3 +111,9 @@ class EchosLogger:
 
     def info(self, message: str) -> None:
         self._text.info(f"[{_APP_TAG}] {message}")
+
+    def __del__(self) -> None:
+        try:
+            self.close()
+        except Exception:  # pragma: no cover — ramasse-miettes, jamais bloquant
+            pass
