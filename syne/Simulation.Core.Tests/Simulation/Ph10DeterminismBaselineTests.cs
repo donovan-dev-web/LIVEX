@@ -129,7 +129,14 @@ public class Ph10DeterminismBaselineTests
         // populations 25, 200 ticks, seed 12345 — même scénario que le checksum doré
         // de la perception, DETERMINISM.md §7) — toute altération bit-à-bit de la
         // trajectoire change ce checksum et impose un recalcul + bump MINOR.
+        // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x072a488aa18c05eb
+        // → 0x88bbc67950002bab. Même cause unique et isolée que pour
+        // DeterminismRegressionTests.GoldenChecksum_IsPinned : activation du garde
+        // anti-relay de CommunicationSystem.CanRelay, dont la neutralisation isolée
+        // restitue exactement la valeur d'origine. La baseline « d'état » est donc
+        // elle aussi affectée, ce qui confirme que le dérapage touchait bien la
+        // dynamique du monde et pas seulement la couche de communication.
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x072a488aa18c05eb", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x88bbc67950002bab", $"0x{Fnv1a(log):x16}");
     }
 }

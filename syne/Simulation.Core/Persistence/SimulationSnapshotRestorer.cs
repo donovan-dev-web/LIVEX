@@ -27,6 +27,7 @@ public static class SimulationSnapshotRestorer
         ArgumentNullException.ThrowIfNull(options);
 
         WorldNamespace.World world = RestoreWorld(snapshot.World);
+        var territoryMembership = RestoreTerritoryMembership(snapshot.World);
 
         var rng = new Xoshiro256StarStar(
             snapshot.Rng.S0,
@@ -37,6 +38,7 @@ public static class SimulationSnapshotRestorer
         var loop = new SimulationLoop(world, rng, options);
         loop.Resources.RestoreState(snapshot.World.FoodStock, snapshot.World.WaterStock, snapshot.World.WoodStock, snapshot.World.MineralStock);
         loop.RestoreState(snapshot.Tick, rng);
+        loop.RestoreTerritoryMembership(territoryMembership);
 
         RestoreCognition(loop, snapshot, options);
         return loop;
@@ -49,6 +51,14 @@ public static class SimulationSnapshotRestorer
         foreach (ObstacleSnapshotDto obstacle in dto.Obstacles)
         {
             world.AddObstacle(new WorldNamespace.Obstacle(obstacle.Id, new WorldNamespace.Position(obstacle.X, obstacle.Y), obstacle.Radius));
+        }
+
+        foreach (TerritorySnapshotDto territory in dto.Territories ?? [])
+        {
+            world.AddTerritory(new WorldNamespace.Territory(
+                territory.Id,
+                new WorldNamespace.Position(territory.CenterX, territory.CenterY),
+                territory.Radius));
         }
 
         foreach (BookSnapshotDto bookDto in dto.Books ?? [])
@@ -75,6 +85,22 @@ public static class SimulationSnapshotRestorer
         }
 
         return world;
+    }
+
+    /// <summary>
+    /// Appartenance effective par zone au tick T. Alimente l'état précédent du
+    /// suivi de territoire pour que le premier tick restauré ne réémette pas
+    /// d'entrées déjà acquises avant la sauvegarde.
+    /// </summary>
+    private static IReadOnlyDictionary<string, IReadOnlyList<ulong>> RestoreTerritoryMembership(WorldSnapshotDto dto)
+    {
+        var membership = new Dictionary<string, IReadOnlyList<ulong>>(StringComparer.Ordinal);
+        foreach (TerritorySnapshotDto territory in dto.Territories ?? [])
+        {
+            membership[territory.Id] = territory.Members;
+        }
+
+        return membership;
     }
 
     private static void RestoreCognition(SimulationLoop loop, SimulationSnapshot snapshot, SimulationOptions options)

@@ -13,7 +13,7 @@ public sealed class SimulationControllerTests
     public async Task ExplicitPreparationRequiresReadyAcknowledgement()
     {
         await using var controller = new SimulationController();
-        await controller.PrepareAsync(42, new SimulationOptions());
+        await controller.PrepareAsync(42, ConfigLoader.ToJson(new SimulationOptions()));
         Assert.Equal(SimulationControlState.Ready, controller.State);
         Assert.False(controller.Status().WorldReadyAcknowledged);
         await Assert.ThrowsAsync<InvalidOperationException>(() => controller.StartAsync(null, null, 1));
@@ -30,7 +30,7 @@ public sealed class SimulationControllerTests
         var config = new SimulationOptions();
         config.Agents.InitialCount = 0;
 
-        var world = await controller.PrepareAsync(42, config, ticksPerSecond: 2);
+        var world = await controller.PrepareAsync(42, ConfigLoader.ToJson(config), ticksPerSecond: 2);
         Assert.Equal(2, world.TicksPerSecond);
         Assert.True(controller.AcknowledgeReady("1.0"));
         await controller.StartAsync(42, null, 2);
@@ -53,7 +53,7 @@ public sealed class SimulationControllerTests
     public async Task ExplicitPreparationRejectsDifferentStartSeedWithoutReplacingWorld()
     {
         await using var controller = new SimulationController();
-        await controller.PrepareAsync(42, new SimulationOptions(), ticksPerSecond: 3);
+        await controller.PrepareAsync(42, ConfigLoader.ToJson(new SimulationOptions()), ticksPerSecond: 3);
         Assert.True(controller.AcknowledgeReady("1.0"));
 
         var exception = await Assert.ThrowsAsync<PreparedWorldMismatchException>(
@@ -74,7 +74,7 @@ public sealed class SimulationControllerTests
         config.Agents.InitialCount = 1;
         config.Simulation.TicksPerSecond = 2;
 
-        string runId = await controller.StartAsync(seed: 42, config: config, maxTicks: 2);
+        string runId = await controller.StartAsync(seed: 42, configJson: ConfigLoader.ToJson(config), maxTicks: 2);
 
         await Task.Delay(150);
         Assert.InRange(controller.Status().Tick, 1ul, 1ul);

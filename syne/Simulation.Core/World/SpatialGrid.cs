@@ -113,9 +113,9 @@ public sealed class SpatialGrid
 
         var result = new List<Simulation.Core.Entities.Entity>();
         int startX = Math.Max(0, CellIndexLow(center.X - radius));
-        int endX = Math.Min(_cellCountX - 1, CellIndexHigh(center.X + radius));
+        int endX = Math.Max(startX, CellIndexHigh(center.X + radius, _cellCountX));
         int startY = Math.Max(0, CellIndexLow(center.Y - radius));
-        int endY = Math.Min(_cellCountY - 1, CellIndexHigh(center.Y + radius));
+        int endY = Math.Max(startY, CellIndexHigh(center.Y + radius, _cellCountY));
 
         for (int cy = startY; cy <= endY; cy++)
         {
@@ -144,15 +144,20 @@ public sealed class SpatialGrid
     private (int X, int Y) CellOf(Position position)
     {
         Position clamped = Position.Clamp(position, Size);
-        int x = CellIndex(clamped.X);
-        int y = CellIndex(clamped.Y);
+        int x = CellIndex(clamped.X, _cellCountX);
+        int y = CellIndex(clamped.Y, _cellCountY);
         return (x, y);
     }
 
-    private int CellIndex(double coordinate)
+    /// <summary>
+    /// Index de cellule d'une coordonnée borné par <paramref name="cellCount"/> :
+    /// la borne dépend de l'axe (X vs Y) — indispensable pour les mondes
+    /// rectangulaires, où les deux dimensions ont des comptages de cellules distincts.
+    /// </summary>
+    private int CellIndex(double coordinate, int cellCount)
     {
         int index = (int)Math.Floor(coordinate / _cellSize);
-        return Math.Clamp(index, 0, Math.Max(0, _cellCountX - 1));
+        return Math.Clamp(index, 0, Math.Max(0, cellCount - 1));
     }
 
     private int CellIndexLow(double coordinate)
@@ -161,9 +166,10 @@ public sealed class SpatialGrid
         return Math.Max(0, index);
     }
 
-    private int CellIndexHigh(double coordinate)
+    /// <summary>Index de cellule supérieur, borné par le nombre de cellules de l'axe.</summary>
+    private int CellIndexHigh(double coordinate, int cellCount)
     {
         int index = (int)Math.Floor(coordinate / _cellSize);
-        return Math.Min(_cellCountX - 1, index);
+        return Math.Min(cellCount - 1, index);
     }
 }

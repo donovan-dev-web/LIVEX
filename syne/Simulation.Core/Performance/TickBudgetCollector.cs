@@ -36,7 +36,13 @@ public enum TickPhase
 /// </summary>
 public sealed class TickBudgetCollector
 {
-    public const int PhaseCount = 8;
+    /// <summary>
+    /// Nombre de phases mesurées, déduit de <see cref="TickPhase"/> et non
+    /// déclaré à la main : une constante écrite à la main finit par diverger de
+    /// l'énumération (elle valait 8 pour 7 phases), et le décalage se voit
+    /// seulement dans les tableaux de mesures.
+    /// </summary>
+    public static int PhaseCount { get; } = Enum.GetValues<TickPhase>().Length;
 
     private readonly double[] _totalMs = new double[PhaseCount];
     private readonly long[] _started = new long[PhaseCount];
