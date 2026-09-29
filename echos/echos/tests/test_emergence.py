@@ -38,7 +38,7 @@ def _full_metrics() -> dict[str, dict]:
             "DecisionDiversity": 1.0,
         },
         "InformationPropagationMetrics": {
-            "InformationDiffusionSpeed": 10.0,
+            "InformationDiffusionSpeed": 5.0,
             "NetworkCentrality": 1.0,
         },
         "SocialComplexityMetrics": {
@@ -141,9 +141,9 @@ def test_emergence_score_hand_computed_on_fixture():
     result = _score(_full_metrics())
 
     # BeliefDiversity 1.9219280948873623×0.15 + GoalDiversity 1.584962500721156×0.15
-    # + DiffusionSpeed_Norm 0.9×0.10 + Clustering 0.0×0.15 + LoopStrength 0.7×0.20
-    # + (ActiveGroups/100) 0.01×0.25 = 0.7585335893412777
-    assert result["EmergenceScore"] == _APPROX(0.7585335893412777, abs=1e-9)
+    # + DiffusionSpeed_Norm (1 - 5/100) 0.95×0.10 + Clustering 0.0×0.15
+    # + LoopStrength 0.7×0.20 + (ActiveGroups/100) 0.01×0.25 = 0.7635335893412777
+    assert result["EmergenceScore"] == _APPROX(0.7635335893412777, abs=1e-9)
 
 
 def test_emergence_score_weights_sum_to_one():
@@ -266,7 +266,22 @@ def test_phenomena_stable_ordering():
 def test_system_complexity_hand_computed():
     result = _score(_full_metrics())
 
-    assert result["SystemComplexity"] == _APPROX(4.5022968652028394, abs=1e-9)
+    # (BeliefDiversity 1.9219 + GoalDiversity 1.585 + DiffusionSpeed_Norm 0.95) / 3
+    assert result["SystemComplexity"] == _APPROX(1.0, abs=1e-9)
+
+
+def test_system_complexity_is_bounded_by_one():
+    """L'indicateur ne doit pas croître avec la durée du run.
+
+    Régression : la formule intégrait la vitesse de diffusion brute (un nombre
+    de ticks non borné), ce qui produisait 10, 100, 1000… selon la
+    longueur du run et rendait ``SystemComplexity_Norm = 1 - x/100`` négatif.
+    """
+    metrics = _full_metrics()
+    metrics["CognitiveDiversityMetrics"]["BeliefDiversity"] = 50.0
+    metrics["CognitiveDiversityMetrics"]["GoalDiversity"] = 50.0
+
+    assert _score(metrics)["SystemComplexity"] == 1.0
 
 
 def test_unpredictability_index_is_loop_strength_times_decision_diversity():

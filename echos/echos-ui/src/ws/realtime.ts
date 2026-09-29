@@ -6,6 +6,7 @@ const RECONNECT_DELAY_MS = 2000
 
 let socket: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+let shouldReconnect = true
 let pendingSnapshot: { type: 'snapshot'; tick: number; agents: LiveAgent[]; world?: import('../api/types').WorldSnapshot } | null = null
 let pendingEventCount = 0
 let flushScheduled = false
@@ -38,7 +39,8 @@ function scheduleLiveUpdate() {
 }
 
 function scheduleReconnect() {
-  clearTimeout(reconnectTimer!)
+  if (!shouldReconnect) return
+  clearTimeout(reconnectTimer ?? undefined)
   reconnectTimer = setTimeout(connect, RECONNECT_DELAY_MS)
 }
 
@@ -46,27 +48,38 @@ function scheduleReconnect() {
  * Consommation temps réel du flux SYNE (WebSocket :5180). Le client est
  * non-intrusif : il n'écrit rien dans le monde observé (règle d'or) — il
  * alimente les vues live de l'interface (tick courant, comptages d'affichage).
+ *
+ * La reconnexion automatique est armée par `connect()` et désarmée par
+ * `disconnect()` : `close` est émis par le navigateur dans les deux cas, donc
+ * une déconnexion volontaire se reconnectait 2 s plus tard.
  */
 export function connect(): void {
+  shouldReconnect = true
   if (socket && socket.readyState !== WebSocket.CLOSED) return
 
   useLiveStore.getState().setWsState('connecting')
   useLiveStore.getState().setWsError(null)
 
+  let current: WebSocket
   try {
-    socket = new WebSocket(WS_URL)
+    current = new WebSocket(WS_URL)
   } catch (error) {
     useLiveStore.getState().setWsError(error instanceof Error ? error.message : String(error))
     useLiveStore.getState().setWsState('disconnected')
     scheduleReconnect()
     return
   }
+  socket = current
 
-  socket.addEventListener('open', () => {
+  current.addEventListener('open', () => {
+    if (socket !== current) return
     useLiveStore.getState().setWsState('connected')
   })
 
-  socket.addEventListener('message', (event: MessageEvent) => {
+  current.addEventListener('message', (event: MessageEvent) => {
+    // Une socket détruite peut encore émettre des messages pendant sa fermeture :
+    // sans ce garde, un flux sortant continuait d'alimenter l'état affiché.
+    if (socket !== current) return
     try {
       const message = JSON.parse(String(event.data)) as WsMessage
       if (message.type === 'snapshot') {
@@ -93,21 +106,27 @@ export function connect(): void {
     }
   })
 
-  socket.addEventListener('close', () => {
+  current.addEventListener('close', () => {
+    if (socket !== current) return
+    socket = null
     useLiveStore.getState().setWsState('disconnected')
     scheduleReconnect()
   })
 
-  socket.addEventListener('error', () => {
+  current.addEventListener('error', () => {
+    if (socket !== current) return
     useLiveStore.getState().setWsError('Erreur de connexion WebSocket')
   })
 }
 
 export function disconnect(): void {
-  if (reconnectTimer) clearTimeout(reconnectTimer)
-  if (socket) {
-    socket.close()
-    socket = null
-  }
+  shouldReconnect = false
+  clearTimeout(reconnectTimer ?? undefined)
+  reconnectTimer = null
+  const current = socket
+  socket = null
+  if (current) current.close()
+  pendingSnapshot = null
+  pendingEventCount = 0
   useLiveStore.getState().setWsState('disconnected')
 }

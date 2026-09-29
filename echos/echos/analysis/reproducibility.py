@@ -29,6 +29,10 @@ from echos.storage.sqlite import AnalyticsStore
 _DIFF_NORMALIZER = 2.0  # deux distributions → distance L2 maximale = √2
 
 
+class ReproducibilityError(ValueError):
+    """Comparaison demandée sur un run absent du magasin."""
+
+
 def belief_distribution(agents: list[dict]) -> dict[str, float]:
     """Distribution (somme = 1) des croyances de la population, clés triées.
 
@@ -98,11 +102,21 @@ def l2_normalized(distribution_a: dict[str, float], distribution_b: dict[str, fl
     return min(1.0, (squared / _DIFF_NORMALIZER) ** 0.5)
 
 
+_FINGERPRINT_CONTEXTS = ("agents", "groups", "phenomena")
+"""Contextes inclus dans l'empreinte.
+
+``profiling`` est **exclu** à dessein : il contient des durées de calcul, qui
+ne sont pas reproductibles entre deux exécutions sans rendre le contenu
+observé différent. Comparer les deux runs sur cette vue revient à comparer ce
+qui est déterministe.
+"""
+
+
 def _canonical_content(store: AnalyticsStore, run_id: str) -> dict:
     """Vue canonique du contenu d'un run (sans l'identité ``run_id``).
 
-    Deux runs du même protocole ne diffèrent que par leur étiquette ``run_id``
-    : celle-ci est donc exclue afin que l'empreinte reflète le **contenu**
+    Deux runs du même protocole ne diffèrent que par leur étiquette ``run_id`` :
+    celle-ci est donc exclue afin que l'empreinte reflète le **contenu**
     observé (séries de métriques, résumés de tick, événements, contextes,
     traces de décision) — la reproduction bit-à-bit se compare sur cette vue.
     """
@@ -125,26 +139,13 @@ def _canonical_content(store: AnalyticsStore, run_id: str) -> dict:
             }
             for row in store.tick_summaries(run_id)
         ],
-        "events": [
-            {
-                "tick": tick,
-                "type": event_type,
-                "agent_id": agent_id,
-                "target_id": target_id,
-                "action": action,
-                "cause": cause,
-                "value": value,
-            }
-            for tick, event_type, agent_id, target_id, action, cause, value in store.events(
-                run_id
-            )
-        ],
+        "events": store.event_records(run_id),
         "contexts": {
             context_type: [
                 {"tick": tick, "payload": payload}
                 for tick, payload in store.observations_for(run_id, context_type)
             ]
-            for context_type in ("agents", "groups", "phenomena")
+            for context_type in _FINGERPRINT_CONTEXTS
         },
         "decisions": store.decision_traces(run_id),
     }
@@ -163,10 +164,14 @@ def content_fingerprint(store: AnalyticsStore, run_id: str) -> str:
 def compare(store: AnalyticsStore, run_a: str, run_b: str) -> dict:
     """Méta-métriques de reproductibilité entre deux runs.
 
-    Les runs doivent exister (vérifiés côté route) ; l'ordre des deux
-    arguments n'influe pas sur ``is_reproducible`` ni sur les distances.
+    Les deux runs doivent exister (vérifié côté route, revérifié ici pour que
+    la fonction reste utilisable hors HTTP) ; l'ordre des deux arguments
+    n'influe pas sur ``is_reproducible`` ni sur les distances.
     """
     meta = {run["run_id"]: run for run in store.runs()}
+    for run_id in (run_a, run_b):
+        if run_id not in meta:
+            raise ReproducibilityError(f"run inconnu : {run_id}")
     agents_a = store.latest_context(run_a, "agents")
     agents_b = store.latest_context(run_b, "agents")
     cognitive_diff = l2_normalized(

@@ -4,11 +4,13 @@ import type { BeliefsResponse, RelationshipsResponse } from '../../api/types'
 
 interface AgentInspectorProps {
   agentId: string
+  /** Run affiché. Sans lui, l'API résout « le run le plus récent ». */
+  runId?: string | null
   /** Sondage 500 ms — lecture seule (règle d'or : l'interface n'écrit rien). */
   pollMs?: number
 }
 
-export function AgentInspector({ agentId, pollMs }: AgentInspectorProps) {
+export function AgentInspector({ agentId, runId, pollMs }: AgentInspectorProps) {
   const [beliefs, setBeliefs] = useState<BeliefsResponse | null>(null)
   const [relationships, setRelationships] = useState<RelationshipsResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +19,10 @@ export function AgentInspector({ agentId, pollMs }: AgentInspectorProps) {
     let cancelled = false
     const load = async () => {
       try {
-        const [b, r] = await Promise.all([client.beliefs(agentId), client.relationships(agentId)])
+        const [b, r] = await Promise.all([
+          client.beliefs(agentId, runId ?? undefined),
+          client.relationships(agentId, runId ?? undefined),
+        ])
         if (!cancelled) {
           setBeliefs(b)
           setRelationships(r)
@@ -27,6 +32,8 @@ export function AgentInspector({ agentId, pollMs }: AgentInspectorProps) {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err))
       }
     }
+    setBeliefs(null)
+    setRelationships(null)
     load()
     if (pollMs) {
       const timer = setInterval(load, pollMs)
@@ -38,7 +45,7 @@ export function AgentInspector({ agentId, pollMs }: AgentInspectorProps) {
     return () => {
       cancelled = true
     }
-  }, [agentId, pollMs])
+  }, [agentId, runId, pollMs])
 
   return (
     <div className="card">

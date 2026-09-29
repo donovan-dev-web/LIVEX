@@ -21,7 +21,7 @@ from .models import (
     WorldSnapshot,
 )
 from .stream import aligned_ticks, TickAlignmentError, TickSegment
-from .ws_client import WsClient, WsTransport
+from .ws_client import StreamClosed, WsClient, WsTransport
 
 __all__ = [
     "Agent",
@@ -33,6 +33,7 @@ __all__ = [
     "Message",
     "Position",
     "Resource",
+    "StreamClosed",
     "TickAlignmentError",
     "TickSegment",
     "WorldInitialized",

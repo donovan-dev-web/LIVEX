@@ -9,6 +9,10 @@ dependencies = [
     "pydantic>=2.8,<3.0",
     "httpx>=0.27,<1.0",
     "websockets>=13,<16",
+    # Importé par echos.storage.parquet et echos.reporting : absent de cette
+    # liste, un `pip install echos` produisait un paquet qui ne démarrait pas
+    # alors que requirements.txt (dévenv) le déclarait.
+    "pyarrow>=20,<26",
 ]
 
 [project.scripts]

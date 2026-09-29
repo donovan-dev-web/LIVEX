@@ -41,11 +41,11 @@ _AGENT = {
 }
 
 
-def _trace(tick: int, action: str = "SeekFood") -> dict:
+def _trace(tick: int, action: str = "SeekFood", agent_id: str = "A") -> dict:
     return {
         "run_id": "run-7",
         "tick": tick,
-        "agent_id": "A",
+        "agent_id": agent_id,
         "chosen_action": action,
         "utility": 0.75,
         "deliberated": True,
@@ -83,6 +83,11 @@ def _populated(
         store.append_tick(record)
         store.append_tick_context(run_id, tick, "agents", [_AGENT])
         store.append_decision_trace(run_id, tick, _trace(tick, action))
+        # Deux entités décident à chaque tick : « B » faisceau la fenêtre de
+        # récurrence ne doit pas concerner A.
+        store.append_decision_trace(
+            run_id, tick, _trace(tick, "Rest", agent_id="B")
+        )
         store.append_event(
             run_id,
             tick,
@@ -167,6 +172,34 @@ def test_build_chain_depth_truncates(tmp_path):
     assert len(chain["chain"]) == 3
 
 
+def test_build_chain_max_depth_caps_the_served_chain(tmp_path):
+    """``max_depth`` plafonne la profondeur servie, pas seulement validée.
+
+    Régression : le paramètre n'était appliqué nulle part, si bien qu'une
+    ``depth`` de 12 servait la chaîne complète (7 couches) même avec
+    ``max_depth=2``, et ``truncated`` restait ``False``.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populated(db)
+
+    chain = build_chain(db, "run-7", "A", tick=3, depth=12, max_depth=2)
+
+    assert chain["depth_requested"] == 12
+    assert chain["depth_served"] == 2
+    assert chain["truncated"] is True
+    assert [node["layer"] for node in chain["chain"]] == ["Action", "Intention"]
+
+
+def test_build_chain_full_depth_is_not_truncated(tmp_path):
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populated(db)
+
+    chain = build_chain(db, "run-7", "A", tick=3, depth=len(LAYERS))
+
+    assert chain["depth_served"] == len(LAYERS)
+    assert chain["truncated"] is False
+
+
 def test_build_chain_invalid_depth_raises(tmp_path):
     db = AnalyticsStore(tmp_path / "api.db")
     _populated(db)
@@ -174,6 +207,11 @@ def test_build_chain_invalid_depth_raises(tmp_path):
         build_chain(db, "run-7", "A", depth=0)
     with pytest.raises(CausalError):
         build_chain(db, "run-7", "A", max_depth=13)
+    # Un plafond nul ou négatif rendait la fonction silencieusement inerte.
+    with pytest.raises(CausalError):
+        build_chain(db, "run-7", "A", max_depth=0)
+    with pytest.raises(CausalError):
+        build_chain(db, "run-7", "A", max_depth=-1)
 
 
 def test_build_chain_no_trace_raises(tmp_path):
@@ -202,6 +240,27 @@ def test_recurrent_action_marks_cycle(tmp_path):
 
     assert chain["cycle"] is True
     assert chain["cycles"] == [{"layer": "Action", "label": "SeekFood", "ticks": [1, 2]}]
+
+
+def test_recurrence_is_scoped_to_the_entity(tmp_path):
+    """La fenêtre de récurrence est celle de l'entité, pas celle du run.
+
+    Régression : les 16 dernières traces du run étaient retenues **puis**
+    filtrées sur l'entité. Sur un run où d'autres entités décident en dernier,
+    la fenêtre ne contenait aucune trace de l'entité et la récurrence était
+    toujours vide. ``_populated`` ajoute ici une entité « B » à chaque tick.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populated(db, ticks=3)
+
+    # B choisit « Rest » aux 3 ticks : sa récurrence est bien détectée…
+    chain_b = build_chain(db, "run-7", "B", tick=3)
+    assert chain_b["cycle"] is True
+    # … et la fenêtre de A n'est pas polluée par B.
+    chain_a = build_chain(db, "run-7", "A", tick=3)
+    assert chain_a["cycles"] == [
+        {"layer": "Action", "label": "SeekFood", "ticks": [1, 2]}
+    ]
 
 
 def test_first_decision_has_no_cycle(tmp_path):

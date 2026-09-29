@@ -25,20 +25,41 @@ def _load(name: str) -> dict:
     return json.loads((FIXTURES / name).read_text())
 
 
+def _community_history(snapshot: dict) -> list[dict]:
+    """Tailles de communautés par tick, comme le pipeline les transmet.
+
+    Le réseau de confiance de la fixture est stable : une seule communauté de
+    3 agents, présente dès le tick 1. Cela rend ``CommunityStability`` mesurable
+    sur le rejeu au lieu de retomber sur son repli neutre.
+    """
+    from echos.analysis._common import community_sizes
+
+    sizes = community_sizes(snapshot["agents"])
+    return [{"tick": tick, "communities": list(sizes)} for tick in range(1, 11)]
+
+
 def contexts(ticks: int) -> list[dict]:
     """Contexte par tick : snapshot du tick + événements passés + fenêtre
     d'historique accumulée (repli des états du Nostradamus).
+
+    Reproduit le contrat produit par ``storage.pipeline._snapshot_for_engines`` :
+    ``events`` cumulés jusqu'au tick, ``history`` (actions + ressources) et
+    ``communityHistory`` (tailles de communautés) bornés à la fenêtre.
 
     Pure et déterministe : mêmes entrées → mêmes contextes.
     """
     final = _load("snapshot_analysis.json")
     history = final["history"][-WINDOW:]
     events = final["events"]
+    communities = _community_history(final)
     contexts = []
     for tick in range(1, ticks + 1):
         context = deepcopy(final)
         context["history"] = [entry for entry in history if int(entry["tick"]) <= tick]
         context["events"] = [event for event in events if int(event["tick"]) <= tick]
+        context["communityHistory"] = [
+            entry for entry in communities if int(entry["tick"]) <= tick
+        ]
         contexts.append(context)
     return contexts
 

@@ -98,8 +98,42 @@ class TestEchosLogger:
     def test_from_env_uses_echos_log_dir(self, tmp_path, monkeypatch):
         monkeypatch.setenv("ECHOS_LOG_DIR", str(tmp_path / "logs-ci"))
         logger = EchosLogger.from_env()
-        assert logger.log_dir == tmp_path / "logs-ci"
-        assert logger.log_dir.is_dir()
+        try:
+            assert logger.log_dir == tmp_path / "logs-ci"
+            assert logger.log_dir.is_dir()
+        finally:
+            logger.close()
+
+    def test_close_releases_the_file_handler(self, tmp_path):
+        """``close`` détache et ferme le handler ; il est idempotent.
+
+        Régression : aucun ``close`` n'existait, donc chaque instance gardait son
+        ``FileHandler`` ouvert jusqu'au ramasse-miettes. Une boucle de runs
+        (tests, ingestion répétée) épuisait les descripteurs de fichiers.
+        """
+        logger = EchosLogger(tmp_path)
+        handler = logger._handler
+        logger.info("avant fermeture")
+        assert handler.stream is not None
+
+        logger.close()
+
+        assert handler.stream is None
+        assert handler not in logger._text.handlers
+        logger.close()  # idempotent
+
+    def test_context_manager_closes_the_handler(self, tmp_path):
+        with EchosLogger(tmp_path) as logger:
+            handler = logger._handler
+            logger.info("en cours")
+        assert handler.stream is None
+
+    def test_writing_still_works_after_close(self, tmp_path):
+        """``close`` ne doit pas laisser le logger dans un état ambigu."""
+        logger = EchosLogger(tmp_path)
+        logger.close()
+        logger.info("après fermeture")
+        logger.close()
 
 
 def trace(run_id: str) -> dict:

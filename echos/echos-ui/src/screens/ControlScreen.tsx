@@ -1,22 +1,23 @@
 import { useState } from 'react'
-import { controlClient } from '../api/client'
+import { client, controlClient } from '../api/client'
+import { triggerDownload } from '../api/download'
 import { useLiveStore, useRuns, useSelectedRunId } from '../store'
-import { useLoadRuns } from '../hooks/useData'
-import { client } from '../api/client'
 
 export function ControlScreen() {
-  useLoadRuns()
   const runs = useRuns()
   const runId = useSelectedRunId()
   const live = useLiveStore((s) => s.live)
   const wsState = useLiveStore((s) => s.wsState)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [pending, setPending] = useState<string | null>(null)
+  const [seed, setSeed] = useState('12345')
 
   const send = async (action: 'start' | 'pause' | 'resume' | 'stop' | 'reset') => {
     setPending(action)
     setFeedback(null)
     try {
+      // La seed n'est portée que par `start` et `reset` : la valider pour
+      // `pause`/`resume` rejetait des commandes qui ne l'utilisent pas.
       const parsedSeed = Number(seed)
       if ((action === 'start' || action === 'reset') && !Number.isSafeInteger(parsedSeed)) {
         throw new Error('La seed doit être un entier valide.')
@@ -33,8 +34,6 @@ export function ControlScreen() {
     }
   }
 
-  const [seed, setSeed] = useState('12345')
-
   return (
     <div>
       <h2 className="mb-4">Pilotage & calibration</h2>
@@ -45,7 +44,11 @@ export function ControlScreen() {
         {live?.tick ?? '—'}.
       </div>
 
-      {feedback ? <div className="banner mb-4">{feedback}</div> : null}
+      {feedback ? (
+        <div className={`banner mb-4 ${pending ? '' : 'ok'}`} role="status">
+          {feedback}
+        </div>
+      ) : null}
 
       <div className="card mb-4">
         <h3 className="mb-3">SimulationControls</h3>
@@ -118,26 +121,19 @@ export function ControlScreen() {
   )
 }
 
+/**
+ * Export d'un run. Le service renvoie toujours du JSON, y compris pour
+ * ``format=csv`` (le CSV est une chaîne dans ``body``) : sans normalisation,
+ * le fichier ``.csv`` téléchargé contenait du JSON.
+ */
 function ExportButton({ runId, format }: { runId: string; format: 'json' | 'csv' }) {
   const [status, setStatus] = useState<string | null>(null)
 
   const download = async () => {
     setStatus('…')
     try {
-      const data = await client.exportRun(runId, format)
-      if (data instanceof Blob) {
-        const url = URL.createObjectURL(data)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${runId}.${format}`
-        a.click()
-        URL.revokeObjectURL(url)
-      } else {
-        const a = document.createElement('a')
-        a.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`
-        a.download = `${runId}.${format}`
-        a.click()
-      }
+      const file = await client.exportRun(runId, format)
+      triggerDownload(file.filename, file.mime, file.content)
       setStatus('exporté')
     } catch (err) {
       setStatus(err instanceof Error ? err.message : String(err))

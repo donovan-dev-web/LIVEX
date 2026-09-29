@@ -21,6 +21,9 @@ GOLDEN = Path(__file__).resolve().parent / "golden"
 
 _APPROX = pytest.approx
 
+_CONTEXT_KEYS = ("events", "history", "communityHistory")
+"""Clés de fenêtre construites par le pipeline, hors modèle ``WorldSnapshot``."""
+
 
 def _load(name: str) -> dict:
     return json.loads((FIXTURES / name).read_text())
@@ -135,22 +138,26 @@ def test_cognitive_fields_survive_ingestion_roundtrip():
     ids=lambda engine: engine.ENGINE_NAME,
 )
 def test_transport_to_model_snake_case_is_stable(engine):
-    """Résultat identique que le dict vienne du transport ou du modèle."""
+    """Résultat identique que le dict vienne du transport ou du modèle.
+
+    Le modèle pydantic ne porte que l'état du monde ; les fenêtres de contexte
+    (``events``, ``history``, ``communityHistory``) sont construites par le
+    pipeline et lui sont réinjectées après le round-trip. Sans cette
+    réinjection, tout moteur fenêtré retombait sur son repli neutre et le test
+    comparait deux jeux de données différents.
+    """
     raw = _load("snapshot_analysis.json")
-    parsed = parse_message(json.dumps(_load("world_snapshot_u2.json")))
+    modeled = parse_message(json.dumps(raw))
+
+    # Clés de contexte que le transport ajoute au snapshot (hors modèle).
+    context = {key: raw[key] for key in _CONTEXT_KEYS if key in raw}
 
     from_transport = engine.compute(raw)
-    # Modèle → transport : seuls les champs modélisés transitent (moteurs
-    # instantanés) ; les moteurs fenêtrés restent sur le dict de contexte.
-    if engine.ENGINE_NAME in {
-        "CognitiveDiversityMetrics",
-        "SocialComplexityMetrics",
-        "GoalConvergenceMetrics",
-    }:
-        reflected = engine.compute(
-            parsed.model_dump(mode="json", by_alias=True, exclude_none=True)
-        )
-        assert reflected == from_transport
+    reflected = engine.compute(
+        {**modeled.model_dump(mode="json", by_alias=True, exclude_none=True), **context}
+    )
+
+    assert reflected == from_transport
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +188,9 @@ def test_information_propagation_hand_computed_values():
 
     # 1 message au tick courant (10) sur 3 entités ; 3 sources → centralité 1
     assert result["MessageVolume"] == _APPROX(1 / 3, abs=1e-9)
-    assert result["InformationDiffusionSpeed"] == 10.0  # seuil 80 % atteint à t=10
+    # Durée de propagation = amplitude entre le 1er message et le seuil 80 %,
+    # et non le numéro de tick (qui dépendrait de la longueur du run).
+    assert result["InformationDiffusionSpeed"] == 5.0  # seuils atteints à t=5
     assert result["RumorAccuracyDegradation"] == _APPROX(0.13, abs=1e-9)
     assert result["MaxMessageHops"] == 2.0
     assert result["NetworkCentrality"] == 1.0
@@ -196,7 +205,9 @@ def test_social_complexity_hand_computed_values():
     assert result["ClusteringCoefficient"] == 0.0  # pas de triangle
     assert result["AverageCentrality"] == _APPROX(0.5, abs=1e-9)
     assert result["NumberOfCommunities"] == 1  # groupe plein connecté (A-B, A-C)
-    assert result["CommunityStability"] == 0.0  # aucun historique de communautés
+    # La communauté de 3 agents est présente à l'identique au dernier tick de
+    # l'historique de communautés : stabilité totale.
+    assert result["CommunityStability"] == 1.0
 
 
 def test_goal_convergence_hand_computed_values():
@@ -286,12 +297,16 @@ def test_no_trust_graph_isolates_every_agent():
     groups = group_dynamics.compute(snapshot)
 
     assert social["NetworkDensity"] == 0.0
-    assert social["NumberOfCommunities"] == 3  # chaque agent = sa propre île
-    assert groups["ActiveGroups"] == 3.0
-    assert groups["AverageGroupSize"] == 1.0
+    # Aucun lien de confiance → aucune communauté : une entité isolée n'est pas
+    # une communauté. Compter chaque agent comme une île faisait remonter
+    # NumberOfCommunities à 3 et déclenchait à tort CommunityFormation puis
+    # CollectiveCoordination sur un réseau sans aucune relation.
+    assert social["NumberOfCommunities"] == 0
+    assert groups["ActiveGroups"] == 0.0
+    assert groups["AverageGroupSize"] == 0.0
 
 
-def test_self_trust_relation_does_not_break_community_detection():
+def test_self_trust_relation_does_not_create_a_community():
     from echos.analysis import social_complexity
 
     snapshot = _fresh_snapshot()
@@ -300,7 +315,9 @@ def test_self_trust_relation_does_not_break_community_detection():
 
     result = social_complexity.compute(snapshot)
 
-    assert result["NumberOfCommunities"] == 3
+    # Une relation de confiance à soi-même n'est pas une arête : elle ne crée
+    # aucune communauté de taille ≥ 2.
+    assert result["NumberOfCommunities"] == 0
 
 
 def test_feedback_loop_without_history_is_neutral():
@@ -312,6 +329,124 @@ def test_feedback_loop_without_history_is_neutral():
     assert result["LoopStrength"] == 0.0
     assert result["SystemStability"] == 0.0  # aucune décision → neutre
     assert result["LoopTypes"] == {"positive": 0, "negative": 0}
+
+
+def test_resource_availability_is_bounded_without_capacity():
+    """Un ratio de disponibilité ne doit pas être infini quand la donnée manque.
+
+    Régression : ``max(capacity, 1e-9)`` comme dénominateur produisait ~1e11
+    pour une réserve sans capacité et sans consommation, ce qui contaminait
+    ensuite la moyenne du moteur entier.
+    """
+    from echos.analysis.resource_sustainability import _availability
+
+    assert _availability(100.0, None, 0.0) == 1.0
+    assert _availability(100.0, 200.0, 0.0) == 0.5
+    assert _availability(100.0, 200.0, 50.0) == 2.0
+    # Capacité nulle mais consommation observée : seul q/consommé est mesurable.
+    assert _availability(100.0, 0.0, 50.0) == 2.0
+    assert _availability(0.0, None, 0.0) == 1.0
+
+
+def test_resource_engine_stays_bounded_on_incomplete_snapshot():
+    from echos.analysis import resource_sustainability
+
+    snapshot = {
+        "resources": [
+            {"id": "water", "type": "water", "quantity": 100.0},  # sans capacity
+            {"id": "food", "type": "food", "quantity": 10.0, "capacity": 100.0},
+        ],
+    }
+    result = resource_sustainability.compute(snapshot)
+
+    # Ratios 1.0 (sans capacité, sans consommation) et 0.1 (10/100) → 0.55.
+    assert 0.0 <= result["ResourceToConsumptionRatio"] <= 1.0
+    assert result["ResourceToConsumptionRatio"] == _APPROX(0.55, abs=1e-9)
+    # Seule la réserve « food » est sous le seuil critique de 20 %.
+    assert result["CriticalityPoints"] == 1.0
+    assert result["RecoveryTime"] == 0.0  # pas d'historique
+
+
+def test_recovery_time_uses_history_when_present():
+    from echos.analysis import resource_sustainability
+
+    snapshot = {
+        "resources": [{"type": "water", "quantity": 50.0, "capacity": 100.0}],
+        "history": [
+            {"tick": 1, "resources": [{"type": "water", "quantity": 90.0, "capacity": 100.0}]},
+            {"tick": 2, "resources": [{"type": "water", "quantity": 5.0, "capacity": 100.0}]},
+            {"tick": 3, "resources": [{"type": "water", "quantity": 10.0, "capacity": 100.0}]},
+            {"tick": 5, "resources": [{"type": "water", "quantity": 95.0, "capacity": 100.0}]},
+        ],
+    }
+    # Chute sous 20 % au tick 2, rétablissement ≥ 80 % au tick 5 → 3 ticks.
+    assert resource_sustainability.compute(snapshot)["RecoveryTime"] == 3.0
+
+
+def test_decision_diversity_counts_decisions_not_goals():
+    """``DecisionDiversity`` doit varier avec les décisions du tick.
+
+    Régression : elle était calculée sur les types d'objectifs, ce qui la
+    rendait redondante avec ``GoalDiversity`` et insensible aux décisions.
+    """
+    from echos.analysis import cognitive_diversity
+
+    base = {
+        "aliveCount": 2,
+        "agents": [
+            {"id": "A", "goals": [{"kind": "SeekFood"}]},
+            {"id": "B", "goals": [{"kind": "SeekFood"}]},
+        ],
+    }
+    # Aucun événement : repli sur les objectifs, 1 type pour 2 entités → 0.5.
+    assert cognitive_diversity.compute(base)["DecisionDiversity"] == 0.5
+
+    mixed = dict(base)
+    mixed["events"] = [
+        {"type": "decision_made", "agentId": "A", "action": "SeekFood"},
+        {"type": "decision_made", "agentId": "B", "action": "Rest"},
+    ]
+    assert cognitive_diversity.compute(mixed)["DecisionDiversity"] == 1.0
+
+
+def test_single_group_event_does_not_saturate_the_rate():
+    """Un événement isolé ne doit pas valoir « 1000 par 1000 ticks ».
+
+    Régression : la fenêtre de dénominateur était calculée sur les seuls
+    événements de groupe. Un unique ``group_formed`` donnait une fenêtre de
+    1 tick et un taux de 1000, indépendamment de la durée d'observation.
+    """
+    from echos.analysis import group_dynamics
+
+    single = {
+        "agents": [{"id": "A"}, {"id": "B"}],
+        "events": [{"type": "group_formed", "tick": 5, "value": {"size": 2}}],
+    }
+    assert group_dynamics.compute(single)["GroupFormationRate"] == 1000.0
+
+    # Sur une fenêtre d'observation de 20 ticks, le même événement isolé vaut
+    # 50 par 1000 ticks et non 1000.
+    windowed = dict(single)
+    windowed["events"] = single["events"] + [
+        {"type": "message_sent", "tick": tick} for tick in range(1, 21)
+    ]
+    assert group_dynamics.compute(windowed)["GroupFormationRate"] == 50.0
+
+
+def test_group_success_rate_reads_boolean_flags():
+    from echos.analysis import group_dynamics
+
+    snapshot = {
+        "agents": [{"id": "A"}, {"id": "B"}],
+        "events": [
+            {"type": "group_dissolved", "tick": 1, "value": {"success": True, "lifetime": 5}},
+            {"type": "group_dissolved", "tick": 2, "value": {"success": False, "lifetime": 3}},
+        ],
+    }
+    result = group_dynamics.compute(snapshot)
+
+    assert result["GroupObjectiveSuccessRate"] == 0.5
+    assert result["AverageGroupLifetime"] == 4.0
 
 
 # ---------------------------------------------------------------------------
@@ -390,3 +525,78 @@ def _groups():
     from echos.analysis import group_dynamics
 
     return group_dynamics.compute(_fresh_snapshot())
+
+
+# ---------------------------------------------------------------------------
+# Provenance : distinguer une valeur mesurée d'un repli neutre
+# ---------------------------------------------------------------------------
+
+
+def test_provenance_marks_windowed_metrics_as_unmeasured_without_windows():
+    """Sans fenêtres, les métriques fenêtrées sont déclarées non mesurées.
+
+    C'est le défaut structurel que les 7 métriques mortes ont exploité : leur
+    repli 0.0 s'écrivait en base exactement comme un 0.0 observé.
+    """
+    from echos.analysis import provenance
+
+    snapshot = _fresh_snapshot()
+    bare = {
+        key: value
+        for key, value in snapshot.items()
+        if key not in ("history", "communityHistory", "events", "eventWindow")
+    }
+    flags = provenance(bare)
+
+    assert flags["FeedbackLoopDetector"]["LoopStrength"] is False
+    assert flags["ResourceSustainabilityMetrics"]["RecoveryTime"] is False
+    assert flags["SocialComplexityMetrics"]["CommunityStability"] is False
+    assert flags["GroupDynamicsMetrics"]["GroupFormationRate"] is False
+    # Le composite propage : un score d'émergence bâti sur des replis n'est pas
+    # un score mesuré.
+    assert flags["EmergenceIndicators"]["EmergenceScore"] is False
+    # Les moteurs purement instantanés restent mesurés.
+    assert flags["CognitiveDiversityMetrics"]["BeliefDiversity"] is True
+    assert flags["GoalConvergenceMetrics"]["GlobalGoalAlignment"] is True
+    assert flags["SocialComplexityMetrics"]["NetworkDensity"] is True
+
+
+def test_provenance_is_complete_with_the_pipeline_windows():
+    """Avec les fenêtres du pipeline, tout est mesuré et déclaré."""
+    from echos.analysis import provenance
+
+    flags = provenance(_fresh_snapshot())
+    unmeasured = {
+        engine: sorted(m for m, ok in metrics.items() if not ok)
+        for engine, metrics in flags.items()
+    }
+    assert unmeasured == {
+        engine: [] for engine in sorted(flags)
+    }, unmeasured
+
+
+def test_provenance_ignores_a_zero_valued_window():
+    """Une fenêtre présente mais vide n'est pas « observée ».
+
+    Le cas ``CommunityStability`` : sans communautés, l'historique peut contenir
+    des ticks avec des tailles vides. La présence de la clé suffit — c'est la
+    condition pour que la métrique ait été calculée sur des données.
+    """
+    from echos.analysis import provenance
+
+    snapshot = _fresh_snapshot()
+    snapshot["communityHistory"] = []
+    flags = provenance(snapshot)
+    assert flags["SocialComplexityMetrics"]["CommunityStability"] is False
+    # Les autres moteurs ne dépendent pas de cette clé.
+    assert flags["CognitiveDiversityMetrics"]["GoalDiversity"] is True
+
+
+def test_measured_flags_covers_every_declared_metric():
+    """Aucun moteur n'a de métrique sans drapeau : la couverture est totale."""
+    from echos.analysis import provenance
+
+    snapshot = _fresh_snapshot()
+    flags = provenance(snapshot)
+    for engine in ENGINES:
+        assert set(flags[engine.ENGINE_NAME]) == set(engine.METRICS)

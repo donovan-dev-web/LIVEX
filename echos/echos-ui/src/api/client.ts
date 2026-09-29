@@ -2,8 +2,10 @@ import { API_BASE, CONTROL_BASE } from '../config'
 import type {
   BeliefsResponse,
   CausalChainResponse,
+  CompareCsvResponse,
   CompareResponse,
   DecisionsResponse,
+  ExportCsvResponse,
   ExportJsonResponse,
   GroupsResponse,
   MetricsResponse,
@@ -41,6 +43,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /**
+ * Fichier prêt à télécharger, texte normalisé.
+ *
+ * L'API ECHOS renvoie **toujours du JSON**, y compris pour ``format=csv`` : le
+ * CSV est transporté dans une enveloppe ``{content_type, body}``. Le client
+ * convertit cette enveloppe en contenu texte, sinon un fichier ``.csv``
+ * téléchargé contenait du JSON et aucun tableur ne pouvait l'ouvrir.
+ */
+export interface ExportFile {
+  filename: string
+  mime: string
+  content: string
+}
+
+/**
  * API REST ECHOS (:5000, lecture seule). Chaque méthode correspond à un
  * contrat publié dans API_REST.md — l'interface ne calcule jamais de métrique
  * scientifique, elle affiche ce que le service fournit.
@@ -61,11 +77,30 @@ export const client = {
     return request<MetricsResponse>(`/api/runs/${runId}/metrics${query}`)
   },
 
-  exportRun: (runId: string, format: 'json' | 'csv' = 'json') =>
-    request<ExportJsonResponse | Blob>(
+  /**
+   * Export d'un run, normalisé en fichier téléchargeable.
+   *
+   * Aucun en-tête ``Accept: text/csv`` n'est envoyé : la route renvoie du JSON
+   * dans les deux cas, et un ``Accept`` de CSV ne faisait qu'annoncer un
+   * contenu qui n'arrivait jamais.
+   */
+  async exportRun(runId: string, format: 'json' | 'csv' = 'json'): Promise<ExportFile> {
+    const envelope = await request<ExportJsonResponse | ExportCsvResponse>(
       `/api/runs/${runId}/export?format=${format}`,
-      format === 'csv' ? { headers: { Accept: 'text/csv' } } : undefined,
-    ),
+    )
+    if ('body' in envelope) {
+      return {
+        filename: `${runId}.${format}`,
+        mime: envelope.content_type,
+        content: envelope.body,
+      }
+    }
+    return {
+      filename: `${runId}.${format}`,
+      mime: 'application/json',
+      content: JSON.stringify(envelope, null, 2),
+    }
+  },
 
   decisions: (runId: string) => request<DecisionsResponse>(`/api/runs/${runId}/decisions`),
 
@@ -77,19 +112,45 @@ export const client = {
     return request<CausalChainResponse>(`/api/runs/${runId}/causal-chains/${agentId}${query}`)
   },
 
-  beliefs: (agentId: string) => request<BeliefsResponse>(`/api/beliefs/${agentId}`),
+  /**
+   * ``runId`` est obligatoire : sans lui, l'API résout « le run le plus
+   * récent » et l'interface affichait ces données sous le run sélectionné dans
+   * la barre latérale — deux runs confondus sans aucun signal visuel.
+   */
+  beliefs: (agentId: string, runId?: string) =>
+    request<BeliefsResponse>(`/api/beliefs/${agentId}${withRunId(runId)}`),
 
-  relationships: (agentId: string) => request<RelationshipsResponse>(`/api/relationships/${agentId}`),
+  relationships: (agentId: string, runId?: string) =>
+    request<RelationshipsResponse>(`/api/relationships/${agentId}${withRunId(runId)}`),
 
   groups: (opts: { runId?: string } = {}) => {
-    const query = opts.runId ? `?run_id=${opts.runId}` : ''
+    const query = opts.runId ? `?run_id=${encodeURIComponent(opts.runId)}` : ''
     return request<GroupsResponse>(`/api/groups${query}`)
   },
 
-  phenomena: () => request<PhenomenaResponse>('/api/emergent-phenomena'),
+  phenomena: (runId?: string) =>
+    request<PhenomenaResponse>(`/api/emergent-phenomena${withRunId(runId)}`),
 
   compare: (a: string, b: string, format: 'json' | 'csv' = 'json') =>
-    request<CompareResponse>(`/api/compare?run_a=${a}&run_b=${b}&format=${format}`),
+    request<CompareResponse | CompareCsvResponse>(
+      `/api/compare?run_a=${encodeURIComponent(a)}&run_b=${encodeURIComponent(b)}&format=${format}`,
+    ),
+
+  /** Export comparatif CSV, converti en fichier téléchargeable. */
+  async compareCsv(a: string, b: string): Promise<ExportFile> {
+    const envelope = await request<CompareCsvResponse>(
+      `/api/compare?run_a=${encodeURIComponent(a)}&run_b=${encodeURIComponent(b)}&format=csv`,
+    )
+    return {
+      filename: `compare-${a}-${b}.csv`,
+      mime: envelope.content_type ?? 'text/csv',
+      content: envelope.body,
+    }
+  },
+}
+
+function withRunId(runId?: string): string {
+  return runId ? `?run_id=${encodeURIComponent(runId)}` : ''
 }
 
 /**

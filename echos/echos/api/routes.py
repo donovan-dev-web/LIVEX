@@ -45,8 +45,12 @@ def _require_store(store: AnalyticsStore | None) -> AnalyticsStore:
 def _resolve_run(store: AnalyticsStore, run_id: str | None) -> str:
     """Sélectionne un run (id explicite ou run le plus récent).
 
-    « Plus récent » = dernière métrique la plus avancée puis identifiant le
-    plus petit (déterminisme si égalité). 404 si inconnu ou aucun run.
+    « Plus récent » = dernier tick le plus avancé, puis identifiant le **plus
+    petit** (déterminisme si égalité). 404 si inconnu ou aucun run.
+
+    Régression : le tri portait sur ``(last_tick, run_id)`` via ``max``, ce qui
+    choisissait le **plus grand** identifiant à tick égal, à l'inverse de ce
+    qu'annonçait la docstring et de ce que le test attendait.
     """
     runs = store.runs()
     if run_id is not None:
@@ -55,8 +59,27 @@ def _resolve_run(store: AnalyticsStore, run_id: str | None) -> str:
         return run_id
     if not runs:
         raise HTTPException(status_code=404, detail="aucun run enregistré")
-    return max(runs, key=lambda run: (run["last_tick"] or -1, run["run_id"]))[
-        "run_id"
+    # Tri par identifiant croissant puis ``max`` : à tick égal, ``max`` conserve
+    # le **premier** élément rencontré, donc le plus petit identifiant. Un run
+    # sans tick (``last_tick`` nul) passe avant tout run réellement observé.
+    ordered = sorted(runs, key=lambda run: str(run["run_id"]))
+    return max(ordered, key=lambda run: run["last_tick"] or -1)["run_id"]
+
+
+def _metric_pairs(
+    store: AnalyticsStore,
+    run_id: str,
+    engine: str | None,
+    metric: str | None,
+) -> list[tuple[str, str]]:
+    """Couples (moteur, métrique) du run entier, filtrés, en ordre stable.
+
+    ``SELECT DISTINCT`` sur ``tick_metrics`` : la nommenclature découverte est
+    celle de la série disponible, pas celle du dernier instant.
+    """
+    return [
+        (str(eng), str(met))
+        for eng, met in store.metric_names(run_id, engine=engine, metric=metric)
     ]
 
 
@@ -169,6 +192,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         return {
             **_metadata(run),
             "metrics": active.latest_metrics(resolved),
+            "measured": active.latest_measured(resolved),
             "phenomena": {
                 "detected": sorted(detected.values(), key=lambda item: item["identifier"]),
                 "disclaimer": disclaimer,
@@ -199,14 +223,11 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         step = _read_every(every if every is not None else 1)
         latest = active.latest_metrics(resolved)
 
-        pairs = []
-        for eng in sorted(latest):
-            if engine is not None and eng != engine:
-                continue
-            for met in sorted(latest[eng]):
-                if metric is not None and met != metric:
-                    continue
-                pairs.append((eng, met))
+        # Le jeu de couples (moteur, métrique) est découvert sur **tout** le
+        # run, pas seulement sur le dernier tick : une métrique présente à un
+        # ancien tick et disparue du dernier (ex. ``GroupFormationRate`` sur un
+        # tick sans événement) était invisible alors que sa série existait.
+        pairs = _metric_pairs(active, resolved, engine, metric)
 
         by_tick: dict[int, dict[str, dict[str, float]]] = {}
         for eng, met in pairs:
@@ -233,6 +254,9 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             "ticks": out_ticks,
             "values": values,
             "latest": latest,
+            # Provenance : `measured[engine][metric] == false` signale un repli
+            # neutre (fenêtre de données absente), pas une valeur observée nulle.
+            "measured": active.latest_measured(resolved),
             "latest_tick": ticks[-1] if ticks else None,
         }
 
