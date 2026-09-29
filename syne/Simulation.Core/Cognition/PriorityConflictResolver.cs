@@ -1,3 +1,5 @@
+using Simulation.Core.Prng;
+
 namespace Simulation.Core.Cognition;
 
 /// <summary>
@@ -55,14 +57,10 @@ public static class PriorityConflictResolver
     /// <summary>Tirage déterministe (SplitMix64, sans passerelle RNG) dans [0, 1).</summary>
     private static double Draw(ulong entityId, ulong tick, DesireKind a, DesireKind b)
     {
-        ulong h = entityId ^ (tick * 0x9E3779B97F4A7C15UL);
+        ulong h = entityId ^ (tick * SplitMix64.Gamma);
         h ^= (ulong)a * 0xBF58476D1CE4E5B9UL;
         h ^= (ulong)b * 0x94D049BB133111EBUL;
-        h ^= h >> 30;
-        h *= 0xBF58476D1CE4E5B9UL;
-        h ^= h >> 27;
-        h *= 0x94D049BB133111EBUL;
-        h ^= h >> 31;
+        h = SplitMix64.Avalanche(h);
 
         return (h % 10000) / 10000.0;
     }

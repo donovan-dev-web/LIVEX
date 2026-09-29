@@ -97,9 +97,11 @@ public class TickBudgetTests
     public void GoldenChecksum_IsUnaffectedByInstrumentation()
     {
         // La collecte de budgets (et le pooling de perception) ne touchent pas la
-        // trajectoire : le checksum doré épinglé reste 0x27fad50065d8c4a4 même
+        // trajectoire : le checksum doré épinglé reste 0xdb57f58566418f5d même
         // quand la boucle est instrumentée. Scénario = copie exacte de
         // DeterminismRegressionTests (rochers, 25 entités, 200 ticks, same log).
+        // Nouvelle valeur après activation du garde anti-relay (engineVersion 0.12.0) :
+        // voir DeterminismRegressionTests.GoldenChecksum_IsPinned pour l'analyse.
         SimulationLoop instrumented = BuildGolden(seed: 12345, TickBudgetCollector.CreateEnabled());
 
         ulong hash = FnvOffsetBasis;
@@ -132,7 +134,7 @@ public class TickBudgetTests
             hash = Fnv1a(log.ToString());
         }
 
-        Assert.Equal("0x27fad50065d8c4a4", $"0x{hash:x16}");
+        Assert.Equal("0xdb57f58566418f5d", $"0x{hash:x16}");
     }
 
     private static SimulationLoop BuildGolden(ulong seed, TickBudgetCollector? budget)

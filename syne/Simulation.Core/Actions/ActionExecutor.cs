@@ -2,6 +2,7 @@ using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Navigation;
+using Simulation.Core.Prng;
 using Simulation.Core.World;
 
 namespace Simulation.Core.Actions;
@@ -45,8 +46,12 @@ public sealed class ActionExecutor
 
     /// <summary>
     /// Exécute l'action <paramref name="kind"/> pour l'entité : applique les effets
-    /// du catalogue et renvoie le résultat. Les actions à réserve bloquent quand la
-    /// réserve est vide (outcome <see cref="ActionOutcome.Blocked"/>, aucun effet).
+    /// du catalogue et renvoie le résultat. Les actions à réserve sont
+    /// <b>atomiques</b> : la consommation est tentée <i>avant</i> tout effet et
+    /// échoue en <see cref="ActionOutcome.Blocked"/> (aucun effet, aucun mouvement)
+    /// si la réserve ne couvre pas exactement la quantité configurée. Sans cela,
+    /// un agent dont la réserve est inférieure à la consommation obtiendrait le
+    /// bénéfice complet (faim/soif) pour une denrée jamais payée.
     /// </summary>
     public ActionResult Execute(Entity entity, MindState mind, DesireKind kind, ulong currentTick)
     {
@@ -54,11 +59,26 @@ public sealed class ActionExecutor
         ArgumentNullException.ThrowIfNull(mind);
 
         ActionDefinition definition = _catalog[kind];
-        if (definition.RequiresReserve is { } reserve && _stocks.IsEmpty(reserve))
+
+        // 1. Prélèvement atomique de la réserve — avant tout effet observable.
+        ResourceKind? reserveConsumed = null;
+        double consumed = 0.0;
+        if (definition.RequiresReserve is { } reserve)
         {
-            return ActionResult.Blocked(kind, $"réserve {reserve} vide");
+            consumed = definition.ReserveConsumption;
+            if (!_stocks.TryConsume(reserve, consumed))
+            {
+                return ActionResult.Blocked(
+                    kind,
+                    _stocks.IsEmpty(reserve)
+                        ? $"réserve {reserve} vide"
+                        : $"réserve {reserve} insuffisante ({_stocks.Stock(reserve):0.###} < {consumed:0.###})");
+            }
+
+            reserveConsumed = reserve;
         }
 
+        // 2. Effets applicatifs.
         double energyDelta = 0.0;
         double hungerDelta = 0.0;
         double thirstDelta = 0.0;
@@ -101,15 +121,6 @@ public sealed class ActionExecutor
         {
             thirstDelta = -definition.ThirstRecovery;
             mind.Needs.RecoverThirst(definition.ThirstRecovery);
-        }
-
-        ResourceKind? reserveConsumed = null;
-        double consumed = 0.0;
-        if (definition.RequiresReserve is { } reserveKind)
-        {
-            reserveConsumed = reserveKind;
-            consumed = definition.ReserveConsumption;
-            _stocks.TryConsume(reserveKind, consumed);
         }
 
         return new ActionResult(
@@ -204,13 +215,9 @@ public sealed class ActionExecutor
     private (double Dx, double Dy) DeterministicOffset(ulong id, ulong tick, DesireKind kind)
     {
         ulong h = id;
-        h ^= tick * 0x9E3779B97F4A7C15UL;
+        h ^= tick * SplitMix64.Gamma;
         h ^= (ulong)kind * 0xBF58476D1CE4E5B9UL;
-        h ^= h >> 30;
-        h *= 0xBF58476D1CE4E5B9UL;
-        h ^= h >> 27;
-        h *= 0x94D049BB133111EBUL;
-        h ^= h >> 31;
+        h = SplitMix64.Avalanche(h);
 
         double angle = ((h % 10000) / 10000.0) * 2.0 * Math.PI;
         double radius = ((h >> 17) % 100) / 100.0 * _options.Agents.Perception.Radius * 0.5;

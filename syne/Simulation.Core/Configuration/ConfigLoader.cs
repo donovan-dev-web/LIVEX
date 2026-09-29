@@ -19,6 +19,18 @@ public static class ConfigLoader
 
     public static SimulationOptions LoadDefaults() => new();
 
+    /// <summary>
+    /// Sérialise des options vers une <b>surcouche</b> JSON utilisable par
+    /// <see cref="MergeJson(SimulationOptions, string)"/>. Partager exactement les
+    /// mêmes <see cref="JsonSerializerOptions"/> que le chargeur garantit qu'un
+    /// profil sérialisé puis re-fusionné redonne le profil à l'identique.
+    /// </summary>
+    public static string ToJson(SimulationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        return JsonSerializer.Serialize(options, JsonOptions);
+    }
+
     public static SimulationOptions LoadFile(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -38,8 +50,7 @@ public static class ConfigLoader
             JsonDocument merged = MergeObjects(defaults.RootElement, overlay.RootElement);
             using (merged)
             {
-                return JsonSerializer.Deserialize<SimulationOptions>(merged.RootElement.GetRawText(), JsonOptions)
-                    ?? throw new InvalidDataException($"Configuration invalide (JSON vide) : {path}");
+                return Deserialize(merged.RootElement);
             }
         }
         catch (JsonException ex)
@@ -49,19 +60,55 @@ public static class ConfigLoader
     }
 
     /// <summary>
-    /// Superpose <paramref name="overlay"/> sur <paramref name="baseOptions"/> :
-    /// les propriétés présentes dans l'overlay écrasent la base, les autres sont conservées.
+    /// Superpose une surcouche <b>JSON partielle</b> sur <paramref name="baseOptions"/>.
+    ///
+    /// <para>
+    /// C'est la seule fusion qui respecte la règle « un fichier partiel ne
+    /// surcharge que les sections/propriétés présentes » (Annexe H §5). La fusion
+    /// doit se faire sur le <b>JSON brut</b> : désérialiser d'abord la surcouche en
+    /// <see cref="SimulationOptions"/> la rend complète — chaque clé absente prend
+    /// silencieusement la valeur par défaut du type, qui écrase alors la base. Un
+    /// appelant cherchant à surcharger <c>worldWidth</c> seule réinitialiserait
+    /// ainsi <b>tout le reste</b> du profil.
+    /// </para>
     /// </summary>
-    public static SimulationOptions Merge(SimulationOptions baseOptions, SimulationOptions overlay)
+    /// <exception cref="InvalidDataException">Surcouche JSON mal formée.</exception>
+    public static SimulationOptions MergeJson(SimulationOptions baseOptions, string overlayJson)
     {
         ArgumentNullException.ThrowIfNull(baseOptions);
-        ArgumentNullException.ThrowIfNull(overlay);
+        ArgumentException.ThrowIfNullOrWhiteSpace(overlayJson);
 
         using var baseDoc = JsonDocument.Parse(JsonSerializer.Serialize(baseOptions, JsonOptions));
-        using var overlayDoc = JsonDocument.Parse(JsonSerializer.Serialize(overlay, JsonOptions));
-        using var merged = MergeObjects(baseDoc.RootElement, overlayDoc.RootElement);
-        return JsonSerializer.Deserialize<SimulationOptions>(merged.RootElement.GetRawText(), JsonOptions)!;
+        using var overlay = ParseOverlay(overlayJson);
+        using var merged = MergeObjects(baseDoc.RootElement, overlay.RootElement);
+        return Deserialize(merged.RootElement);
     }
+
+    /// <inheritdoc cref="MergeJson(SimulationOptions, string)"/>
+    public static SimulationOptions MergeJson(SimulationOptions baseOptions, JsonElement overlay)
+    {
+        ArgumentNullException.ThrowIfNull(baseOptions);
+
+        using var baseDoc = JsonDocument.Parse(JsonSerializer.Serialize(baseOptions, JsonOptions));
+        using var merged = MergeObjects(baseDoc.RootElement, overlay);
+        return Deserialize(merged.RootElement);
+    }
+
+    private static JsonDocument ParseOverlay(string json)
+    {
+        try
+        {
+            return JsonDocument.Parse(json);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException($"Surcouche de configuration invalide (JSON mal formé) — {ex.Message}", ex);
+        }
+    }
+
+    private static SimulationOptions Deserialize(JsonElement element) =>
+        JsonSerializer.Deserialize<SimulationOptions>(element.GetRawText(), JsonOptions)
+        ?? throw new InvalidDataException("Configuration invalide (JSON vide).");
 
     private static JsonDocument MergeObjects(JsonElement baseElement, JsonElement overlay)
     {

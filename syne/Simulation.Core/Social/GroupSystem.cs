@@ -104,7 +104,8 @@ public sealed class GroupSystem
             return;
         }
 
-        IReadOnlyList<List<ulong>> components = ComputeComponents(minds);
+        Dictionary<ulong, Belief[]> sortedBeliefs = SortedBeliefsOf(minds);
+        IReadOnlyList<List<ulong>> components = ComputeComponents(minds, sortedBeliefs);
         var current = new List<(List<ulong> Members, double MeanCohesion)>(components.Count);
         foreach (List<ulong> members in components)
         {
@@ -113,7 +114,7 @@ public sealed class GroupSystem
                 continue;
             }
 
-            current.Add((members, MeanCohesionOf(members, minds)));
+            current.Add((members, MeanCohesionOf(members, minds, sortedBeliefs)));
         }
 
         var unmatched = new HashSet<int>(Enumerable.Range(0, current.Count));
@@ -126,6 +127,10 @@ public sealed class GroupSystem
             {
                 unmatched.Remove(match);
                 group.UpdateMembers(current[match].Members);
+                // La cohésion doit suivre les membres *et* leur évolution : la
+                // laisser figée à la formation exposait un `meanCohesion` périmé
+                // dans le snapshot et les formations/dissolutions rapportées.
+                group.MeanCohesion = current[match].MeanCohesion;
                 RefreshEmergent(group, minds, tick);
             }
             else
@@ -166,10 +171,30 @@ public sealed class GroupSystem
     }
 
     /// <summary>
+    /// Croyances partagées, indexées par esprit et **pré-triées une seule fois par
+    /// revue**. <see cref="SharedBeliefCount"/> parcourait auparavant
+    /// <c>Beliefs.OrderedByFact()</c> — un tri + une allocation — pour *chaque paire*
+    /// d'entités : le coût de la revue de groupes était O(N² × B log B) au lieu de
+    /// O(N² × B), avec une allocation par paire.
+    /// </summary>
+    private static Dictionary<ulong, Belief[]> SortedBeliefsOf(IReadOnlyDictionary<ulong, MindState> minds)
+    {
+        var sorted = new Dictionary<ulong, Belief[]>(minds.Count);
+        foreach ((ulong id, MindState mind) in minds)
+        {
+            sorted[id] = mind.Beliefs.OrderedByFact().ToArray();
+        }
+
+        return sorted;
+    }
+
+    /// <summary>
     /// Composantes connexes du graphe de cohésion, ordre déterministe (racine
     /// = plus petit identifiant, puis tri par racine). Union-find sans PRNG.
     /// </summary>
-    private IReadOnlyList<List<ulong>> ComputeComponents(IReadOnlyDictionary<ulong, MindState> minds)
+    private IReadOnlyList<List<ulong>> ComputeComponents(
+        IReadOnlyDictionary<ulong, MindState> minds,
+        Dictionary<ulong, Belief[]> sortedBeliefs)
     {
         List<ulong> ordered = minds.Keys.OrderBy(id => id).ToList();
         var parent = new Dictionary<ulong, ulong>(ordered.Count);
@@ -183,7 +208,7 @@ public sealed class GroupSystem
         {
             for (int j = i + 1; j < ordered.Count; j++)
             {
-                if (AreBonded(minds[ordered[i]], ordered[i], minds[ordered[j]], ordered[j]))
+                if (AreBonded(minds[ordered[i]], ordered[i], minds[ordered[j]], ordered[j], sortedBeliefs))
                 {
                     edges.Add((ordered[i], ordered[j]));
                 }
@@ -308,6 +333,7 @@ public sealed class GroupSystem
             else if (survivors.Count != group.Members.Count)
             {
                 group.UpdateMembers(survivors);
+                group.MeanCohesion = MeanCohesionOf(survivors, minds, SortedBeliefsOf(minds));
                 RefreshEmergent(group, minds, tick);
             }
         }
@@ -340,7 +366,12 @@ public sealed class GroupSystem
     /// Lien social (décision n°24) : confiance réciproque ≥ <c>trustThreshold</c>
     /// ET au moins une part commune (croyance partagée ou but partagé).
     /// </summary>
-    private bool AreBonded(MindState self, ulong selfId, MindState other, ulong otherId)
+    private bool AreBonded(
+        MindState self,
+        ulong selfId,
+        MindState other,
+        ulong otherId,
+        Dictionary<ulong, Belief[]> sortedBeliefs)
     {
         double minTrust = Math.Min(self.Trust.TrustWith(otherId), other.Trust.TrustWith(selfId));
         if (minTrust < _settings.TrustThreshold)
@@ -348,11 +379,15 @@ public sealed class GroupSystem
             return false;
         }
 
-        return Affinity(self, other) > 1.0;
+        return Affinity(self, other, selfId, sortedBeliefs) > 1.0;
     }
 
     /// <summary>Affinité = 1 + bonus par but partagé + bonus par croyance partagée (décision n°24).</summary>
-    private double Affinity(MindState self, MindState other)
+    private double Affinity(
+        MindState self,
+        MindState other,
+        ulong selfId,
+        Dictionary<ulong, Belief[]> sortedBeliefs)
     {
         double affinity = 1.0;
 
@@ -364,14 +399,22 @@ public sealed class GroupSystem
             affinity += _settings.GoalAlignmentBonus;
         }
 
-        affinity += SharedBeliefCount(self, other) * _settings.SharedBeliefBonus;
+        affinity += SharedBeliefCount(selfId, other, sortedBeliefs) * _settings.SharedBeliefBonus;
         return affinity;
     }
 
-    private static int SharedBeliefCount(MindState self, MindState other)
+    private static int SharedBeliefCount(
+        ulong selfId,
+        MindState other,
+        Dictionary<ulong, Belief[]> sortedBeliefs)
     {
+        if (!sortedBeliefs.TryGetValue(selfId, out Belief[]? mine))
+        {
+            return 0;
+        }
+
         int shared = 0;
-        foreach (Belief belief in self.Beliefs.OrderedByFact())
+        foreach (Belief belief in mine)
         {
             if (belief.Confidence < 0.5)
             {
@@ -387,7 +430,10 @@ public sealed class GroupSystem
         return shared;
     }
 
-    private double MeanCohesionOf(IReadOnlyList<ulong> members, IReadOnlyDictionary<ulong, MindState> minds)
+    private double MeanCohesionOf(
+        IReadOnlyList<ulong> members,
+        IReadOnlyDictionary<ulong, MindState> minds,
+        Dictionary<ulong, Belief[]> sortedBeliefs)
     {
         if (members.Count < 2)
         {
@@ -400,7 +446,7 @@ public sealed class GroupSystem
         {
             for (int j = i + 1; j < members.Count; j++)
             {
-                sum += CohesionOf(minds[members[i]], members[i], minds[members[j]], members[j]);
+                sum += CohesionOf(minds[members[i]], members[i], minds[members[j]], members[j], sortedBeliefs);
                 count++;
             }
         }
@@ -408,10 +454,15 @@ public sealed class GroupSystem
         return count == 0 ? 0.0 : sum / count;
     }
 
-    private double CohesionOf(MindState self, ulong selfId, MindState other, ulong otherId)
+    private double CohesionOf(
+        MindState self,
+        ulong selfId,
+        MindState other,
+        ulong otherId,
+        Dictionary<ulong, Belief[]> sortedBeliefs)
     {
         double minTrust = Math.Min(self.Trust.TrustWith(otherId), other.Trust.TrustWith(selfId));
-        return minTrust * Affinity(self, other);
+        return minTrust * Affinity(self, other, selfId, sortedBeliefs);
     }
 
     private int FindMemberSet(
@@ -471,11 +522,15 @@ public sealed class GroupSystem
     /// <summary>
     /// Leader émergent (SYNE-061) : membre dont la somme des confiances internes
     /// entrantes est maximale (départage déterministe : identifiant minimal).
+    ///
+    /// L'absence de leader est modélisée par <c>null</c> et non par la sentinelle
+    /// <c>0</c> : avec une sentinelle, l'entité d'identifiant 0 ne pouvait jamais
+    /// être élue (le groupe resterait sans décision ni propagation).
     /// </summary>
     private ulong? EmergentLeader(IReadOnlyList<ulong> members, IReadOnlyDictionary<ulong, MindState> minds)
     {
-        ulong best = 0;
-        double bestScore = double.MinValue;
+        ulong? best = null;
+        double bestScore = double.NegativeInfinity;
         foreach (ulong candidate in members)
         {
             double score = 0.0;
@@ -487,15 +542,15 @@ public sealed class GroupSystem
                 }
             }
 
-            if (score > bestScore ||
-                (Math.Abs(score - bestScore) < 1e-12 && (best == 0 || candidate < best)))
+            if (best is null || score > bestScore ||
+                (Math.Abs(score - bestScore) < 1e-12 && candidate < best.Value))
             {
                 bestScore = score;
                 best = candidate;
             }
         }
 
-        return best == 0 ? null : best;
+        return best;
     }
 
     /// <summary>

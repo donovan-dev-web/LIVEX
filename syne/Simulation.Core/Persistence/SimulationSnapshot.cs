@@ -40,7 +40,21 @@ public sealed record WorldSnapshotDto(
     double WaterStock,
     double WoodStock,
     double MineralStock,
-    IReadOnlyList<BookSnapshotDto>? Books = null);
+    IReadOnlyList<BookSnapshotDto>? Books = null,
+    IReadOnlyList<TerritorySnapshotDto>? Territories = null);
+
+/// <summary>
+/// Zone de territoire et son appartenance effective au tick T (SYNE-073). Sans ce
+/// DTO, une restauration perdait les zones <i>et</i> l'appartenance : le monde
+/// restauré n'en avait aucune, et le premier tick émettait une rafale de faux
+/// événements <c>world.territory_membership_changed</c>.
+/// </summary>
+public sealed record TerritorySnapshotDto(
+    string Id,
+    double CenterX,
+    double CenterY,
+    double Radius,
+    IReadOnlyList<ulong> Members);
 
 public sealed record EntitySnapshotDto(
     ulong Id,

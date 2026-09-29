@@ -24,6 +24,12 @@ public static class Program
         {
             CliOptions cli = CliOptions.Parse(args);
 
+            if (cli.Help)
+            {
+                System.Console.Out.WriteLine(CliOptions.Usage);
+                return 0;
+            }
+
             SimulationOptions options = ConfigLoader.LoadDefaults();
             if (cli.ConfigPath is not null)
             {
@@ -63,9 +69,14 @@ public static class Program
 
             return 0;
         }
-        catch (Exception ex) when (ex is ArgumentException or FileNotFoundException or InvalidDataException)
+        catch (Exception ex) when (ex is ArgumentException or FileNotFoundException
+            or DirectoryNotFoundException or InvalidDataException or FormatException or OverflowException)
         {
+            // FormatException et OverflowException proviennent de l'analyse des
+            // arguments : sans ce filtre, « --seed -1 » ou « --max-ticks abc »
+            // sortaient en trace d'appels au lieu d'un message exploitable.
             System.Console.Error.WriteLine($"Erreur : {ex.Message}");
+            System.Console.Error.WriteLine("Lancez --help pour la liste des options.");
             return 2;
         }
     }
@@ -274,7 +285,7 @@ public static class Program
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
         var world = new Simulation.Core.World.World(
             new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
-            options.Agents.Perception.Radius);
+            options.Agents.Perception.SpatialCellSize);
 
         EntityTemplate template = EntityTemplate.DefaultA;
         for (ulong i = 0; i < population; i++)

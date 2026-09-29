@@ -2,6 +2,7 @@ using System.Globalization;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Performance;
+using Simulation.Core.Prng;
 using Simulation.Core.World;
 
 namespace Simulation.Core.Perception;
@@ -189,16 +190,6 @@ public sealed class PerceptionSystem
     private double ConfidenceAt(double distance) =>
         Math.Clamp(1.0 - ((distance / _settings.Radius) * _settings.ConfidenceFalloff), 0.7, 1.0);
 
-    /// <summary>Identifiant déterministe d'un obstacle (FNV-1a).</summary>
-    private static ulong DeterministicId(string value)
-    {
-        ulong hash = 14695981039346656037UL;
-        foreach (byte b in System.Text.Encoding.UTF8.GetBytes(value))
-        {
-            hash ^= b;
-            hash *= 1099511628211UL;
-        }
-
-        return hash;
-    }
+    /// <summary>Identifiant déterministe d'un obstacle (FNV-1a canonique).</summary>
+    private static ulong DeterministicId(string value) => Fnv1a64.HashUtf8(value);
 }

@@ -39,9 +39,19 @@ public static class ObservabilityContract
     /// world.book_written / world.book_read, champ snapshot books[] (additif) ;
     /// désactivé par défaut ⇒ trajectoire du scénario de référence inchangée,
     /// checksums dorés ré-épinglés inchangés (pin contractuel).
+    /// jalon review/refactor → 0.12.0 : **altération volontaire de trajectoire** —
+    /// activation du garde anti-relay de <c>CommunicationSystem.CanRelay</c> (le
+    /// suivi « déjà relayé » était écrit mais jamais consulté : une même entité
+    /// pouvait relayer indéfiniment un message reçu par des canaux distincts).
+    /// Scénario de référence : 0x27fad50065d8c4a4 → 0xdb57f58566418f5d, cause isolée
+    /// et vérifiée (voir DeterminismRegressionTests.GoldenChecksum_IsPinned) ; bump
+    /// MINOR appliqué conformément à DETERMINISM.md §7. Les autres correctifs de ce
+    /// jalon (atomicité des réserves, file de messages bornée, grille rectangulaire,
+    /// IDs de naissance, persistance des territoires) sont mesurés neutres sur ce
+    /// scénario. Champ snapshot territories[] (additif) et SchemaVersion 3 → 4.
     /// Émise dans chaque snapshot.
     /// </summary>
-    public const string EngineVersion = "0.11.0";
+    public const string EngineVersion = "0.12.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

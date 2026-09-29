@@ -66,6 +66,9 @@ public sealed class SimulationController : IAsyncDisposable
     private string _runId = string.Empty;
     private int? _maxTicks;
     private CancellationTokenSource? _runCts;
+    private Task? _runTask;
+    private ulong _runGeneration;
+    private int _disposed;
     private Simulation.Core.World.WorldDescription? _worldDescription;
     private SimulationOptions? _preparedOptions;
     private bool _worldReadyAcknowledged;
@@ -126,12 +129,12 @@ public sealed class SimulationController : IAsyncDisposable
 
             /// <summary>Construit le monde déterministe et le laisse en état Ready.</summary>
         public async Task<Simulation.Core.World.WorldDescription> PrepareAsync(
-                ulong? seed, SimulationOptions? config, int? ticksPerSecond = null,
+                ulong? seed, string? configJson, int? ticksPerSecond = null,
                 CancellationToken cancellationToken = default)
-            => await PrepareCoreAsync(seed, config, ticksPerSecond, autoReady: false, cancellationToken);
+            => await PrepareCoreAsync(seed, configJson, ticksPerSecond, autoReady: false, cancellationToken);
 
         private async Task<Simulation.Core.World.WorldDescription> PrepareCoreAsync(
-                ulong? seed, SimulationOptions? config, int? ticksPerSecond, bool autoReady,
+                ulong? seed, string? configJson, int? ticksPerSecond, bool autoReady,
                 CancellationToken cancellationToken)
             {
                 await CancelCurrentRunSafeAsync();
@@ -144,8 +147,11 @@ public sealed class SimulationController : IAsyncDisposable
                     _worldReadyAcknowledged = false;
                     _explicitPreparation = !autoReady;
                 }
+                // La surcouche reste en JSON brut jusqu'ici : la désérialiser en
+                // SimulationOptions la rendrait complète et écraserait le profil de
+                // référence avec les valeurs par défaut du type (cf. MergeJson).
                 (SimulationOptions options, ulong effectiveSeed) = SimulationFactory.ResolveOptions(
-                    ConfigLoader.LoadDefaults(), config, seed);
+                    ConfigLoader.LoadDefaults(), configJson, seed);
                 if (ticksPerSecond is not null)
                 {
                     if (ticksPerSecond <= 0)
@@ -189,22 +195,24 @@ public sealed class SimulationController : IAsyncDisposable
     }
 
     /// <summary>
-    /// Démarre un run (SYNE-113) pour <paramref name="seed"/> (défaut : la
-    /// configuration) et la surcouche de configuration <paramref name="config"/>
-    /// (JSON partiel optionnel, fusionné sur les défauts). Construit le monde,
-    /// lance la boucle d'arrière-plan et renvoie l'identifiant du run.
+    /// Démarre un run (SYNE-113) pour <paramref name="seed"/> et la surcouche de
+    /// configuration <paramref name="configJson"/> (JSON partiel optionnel, en
+    /// <b>texte brut</b>, fusionné sur les défauts — cf. <see cref="SimulationFactory.ResolveOptions"/>).
+    /// Construit le monde, lance la boucle d'arrière-plan et renvoie l'identifiant
+    /// du run.
     /// </summary>
     public async Task<string> StartAsync(
         ulong? seed,
-        SimulationOptions? config,
+        string? configJson,
         int? maxTicks,
         CancellationToken cancellationToken = default)
     {
+        bool hasConfig = !string.IsNullOrWhiteSpace(configJson);
         if (!WorldPrepared)
-            await PrepareCoreAsync(seed, config, ticksPerSecond: null, autoReady: true, cancellationToken: cancellationToken);
-        else if (!_explicitPreparation && (seed is not null || config is not null))
-            await PrepareAsync(seed, config, cancellationToken: cancellationToken);
-        else if (_explicitPreparation && config is not null)
+            await PrepareCoreAsync(seed, configJson, ticksPerSecond: null, autoReady: true, cancellationToken: cancellationToken);
+        else if (!_explicitPreparation && (seed is not null || hasConfig))
+            await PrepareAsync(seed, configJson, cancellationToken: cancellationToken);
+        else if (_explicitPreparation && hasConfig)
             throw new PreparedWorldMismatchException("prepared_config_mismatch", "La configuration du monde préparé ne peut pas être remplacée au démarrage ; appelez Prepare pour générer un nouveau monde.");
         else if (_explicitPreparation && seed is not null && seed != _seed)
             throw new PreparedWorldMismatchException("prepared_seed_mismatch", "Le seed de Start doit correspondre au seed du monde préparé ; appelez Prepare pour en générer un nouveau.");
@@ -231,8 +239,22 @@ public sealed class SimulationController : IAsyncDisposable
             ? null
             : new ObservabilityTickEmitter(loop, effectiveSeed, _observabilitySink, runId);
 
+        Task task;
+        ulong generation;
         lock (_gate)
         {
+            // Un second Start sur un run déjé actif est refusé : deux boucles
+            // de tick concurrentes mutileraient le même monde, et l'ancienne
+            // tâche — non référencée par _runCts — continuerait de tourner
+            // après un Stop (qui n'annule que la plus récente).
+            if (IsRunActiveLocked())
+            {
+                runCts.Dispose();
+                throw new InvalidOperationException(
+                    "Un run est déjà actif — utilisez /stop ou /reset avant de redémarrer.");
+            }
+
+            generation = ++_runGeneration;
             _loop = loop;
             _seed = effectiveSeed;
             _maxTicks = maxTicks;
@@ -241,10 +263,27 @@ public sealed class SimulationController : IAsyncDisposable
             _runCts = runCts;
         }
 
-        _ = Task.Run(() => RunLoopAsync(loop, maxTicks, emitter, runCts, tickInterval), CancellationToken.None);
+        // La tâche est conservée : Stop/Reset/Dispose doivent pouvoir l'attendre
+        // réellement au lieu de supposer qu'elle s'est terminée.
+        task = Task.Run(() => RunLoopAsync(loop, maxTicks, emitter, runCts, tickInterval, generation), CancellationToken.None);
+        lock (_gate)
+        {
+            if (ReferenceEquals(_runCts, runCts))
+            {
+                _runTask = task;
+            }
+        }
 
         return runId;
     }
+
+    /// <summary>
+    /// Vrai si une boucle de tick est encore vivante. Doit être appelé sous
+    /// <c>_gate</c> : se fier à l'état <c>Running</c> seul laisserait passer
+    /// un Start juste après la fin naturelle d'un run (la tâche n'a pas encore
+    /// effacé son marqueur).
+    /// </summary>
+    private bool IsRunActiveLocked() => _runCts is not null && _runTask is { IsCompleted: false };
 
     /// <summary>Suspend l'avancement : la boucle gèle au plus vite (au plus un tick après l'appel).</summary>
     public void Pause()
@@ -277,7 +316,12 @@ public sealed class SimulationController : IAsyncDisposable
         }
     }
 
-    /// <summary>Arrête le run courant et remet le serveur à l'état initial.</summary>
+    /// <summary>
+    /// Arrête le run courant et remet le serveur à l'état initial. N'écrit pas
+    /// l'état partagé depuis la boucle de tick : la génération est incrémentée
+    /// pour que la boucle en cours perde immédiatement le droit d'y toucher.
+    /// L'<see cref="StopAsync"/> décharge l'attente complète de la tâche.
+    /// </summary>
     public void Stop()
     {
         CancellationTokenSource? runCts;
@@ -285,6 +329,8 @@ public sealed class SimulationController : IAsyncDisposable
         {
             runCts = _runCts;
             _runCts = null;
+            _runTask = null;
+            _runGeneration++;
             _loop = null;
             _runId = string.Empty;
             _state = SimulationControlState.Idle;
@@ -295,6 +341,33 @@ public sealed class SimulationController : IAsyncDisposable
         }
 
         StopRun(runCts);
+        _runSignal.Reset();
+    }
+
+    /// <summary>Variante asynchrone de <see cref="Stop"/> : attend la fin de la boucle.</summary>
+    public async Task StopAsync()
+    {
+        CancellationTokenSource? runCts;
+        Task? runTask;
+        lock (_gate)
+        {
+            runCts = _runCts;
+            runTask = _runTask;
+            _runCts = null;
+            _runTask = null;
+            _runGeneration++;
+            _loop = null;
+            _runId = string.Empty;
+            _state = SimulationControlState.Idle;
+            _worldDescription = null;
+            _worldReadyAcknowledged = false;
+            _explicitPreparation = false;
+            _maxTicks = null;
+        }
+
+        StopRun(runCts);
+        _runSignal.Reset();
+        await AwaitRunAsync(runTask).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -307,24 +380,25 @@ public sealed class SimulationController : IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         CancellationTokenSource? oldCts;
+        Task? runTask;
         lock (_gate)
         {
             oldCts = _runCts;
+            runTask = _runTask;
             _runCts = null;
+            _runTask = null;
+            _runGeneration++;
             _state = SimulationControlState.Idle;
             _worldReadyAcknowledged = false;
             _explicitPreparation = false;
+            _loop = null;
         }
 
         StopRun(oldCts);
         _runSignal.Reset();
+        await AwaitRunAsync(runTask).ConfigureAwait(false);
 
-        lock (_gate)
-        {
-            _loop = null;
-        }
-
-        return await StartAsync(seed, config: null, maxTicks, cancellationToken);
+        return await StartAsync(seed, configJson: null, maxTicks, cancellationToken);
     }
 
     /// <summary>État courant (API_CONTRACTS.md §3, GET /api/control/status).</summary>
@@ -344,9 +418,10 @@ public sealed class SimulationController : IAsyncDisposable
         int? targetTicks,
         ObservabilityTickEmitter? emitter,
         CancellationTokenSource runCts,
-        TimeSpan tickInterval)
+        TimeSpan tickInterval,
+        ulong generation)
     {
-        using (runCts)
+        try
         {
             CancellationToken token = runCts.Token;
             while (!token.IsCancellationRequested)
@@ -354,6 +429,15 @@ public sealed class SimulationController : IAsyncDisposable
                 SimulationControlState state;
                 lock (_gate)
                 {
+                    // Dès le début d'un nouveau run, l'ancienne boucle perd le
+                    // droit de piloter l'état : sans ce contrôle de génération, elle
+                    // pouvait repasser _state à Finished après que le nouveau run
+                    // démarrait (race sur _state partagé).
+                    if (generation != _runGeneration)
+                    {
+                        return;
+                    }
+
                     state = _state;
                 }
 
@@ -382,7 +466,10 @@ public sealed class SimulationController : IAsyncDisposable
                 {
                     lock (_gate)
                     {
-                        _state = SimulationControlState.Finished;
+                        if (generation == _runGeneration)
+                        {
+                            _state = SimulationControlState.Finished;
+                        }
                     }
 
                     return;
@@ -397,24 +484,73 @@ public sealed class SimulationController : IAsyncDisposable
                 await Task.Delay(tickInterval, token);
             }
         }
+        catch (OperationCanceledException)
+        {
+            // Arrêt attendu (Stop/Reset/Dispose).
+        }
+        finally
+        {
+            lock (_gate)
+            {
+                if (generation == _runGeneration)
+                {
+                    _runTask = null;
+                    _runCts = null;
+                }
+            }
+        }
     }
 
-    private async Task CancelCurrentRunSafeAsync()
+    /// <summary>
+    /// Annule le run courant et <b>attend</b> sa fin. Sans cette attente,
+    /// <c>Stop</c>/<c>Reset</c>/<c>Dispose</c> libéraient le monde pendant que
+    /// l'ancienne boucle pouvait encore avancer d'un tick.
+    /// </summary>
+    private async Task StopAndAwaitRunAsync()
     {
-        CancellationTokenSource? oldCts;
+        CancellationTokenSource? runCts;
+        Task? runTask;
         lock (_gate)
         {
-            oldCts = _runCts;
+            runCts = _runCts;
+            runTask = _runTask;
             _runCts = null;
+            _runTask = null;
+            _runGeneration++;
         }
 
-        if (oldCts is null)
+        StopRun(runCts);
+        await AwaitRunAsync(runTask).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Attend la fin d'une boucle de tick, bornée dans le temps. Ne lèche
+    /// jamais remonter une erreur : un arrêt ne doit pas faire échouer un
+    /// <c>stop</c>/<c>reset</c>/<c>dispose</c> qui a réussi son objectif.
+    /// </summary>
+    private static async Task AwaitRunAsync(Task? runTask)
+    {
+        if (runTask is null)
         {
             return;
         }
 
-        StopRun(oldCts);
+        try
+        {
+            await runTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            // La boucle est restée bloquée (envoi WebSocket lent) : on ne la
+            // laisse pas retenir l'appelant, son jeton est déjà annulé.
+        }
+        catch (OperationCanceledException)
+        {
+            // arrêt attendu
+        }
     }
+
+    private async Task CancelCurrentRunSafeAsync() => await StopAndAwaitRunAsync().ConfigureAwait(false);
 
     private static void StopRun(CancellationTokenSource? runCts)
     {
@@ -435,23 +571,25 @@ public sealed class SimulationController : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         CancellationTokenSource? oldCts;
+        Task? runTask;
         lock (_gate)
         {
             oldCts = _runCts;
+            runTask = _runTask;
             _runCts = null;
+            _runTask = null;
+            _runGeneration++;
             _state = SimulationControlState.Idle;
         }
 
         StopRun(oldCts);
-        try
-        {
-            await Task.Delay(20);
-        }
-        catch (OperationCanceledException)
-        {
-            // arrêt attendu
-        }
+        await AwaitRunAsync(runTask).ConfigureAwait(false);
 
         _runSignal.Dispose();
     }

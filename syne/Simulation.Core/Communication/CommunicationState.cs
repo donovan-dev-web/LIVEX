@@ -56,9 +56,34 @@ public sealed class CommunicationState
     /// <summary>Enregistre une émission (envoi ou relais) au tick courant.</summary>
     public void RecordSent() => SentThisTick++;
 
-    public void Enqueue(Message message)
+    /// <summary>
+    /// Enfile un message en attente d'émission. La file est bornée à
+    /// <paramref name="maxPending"/> : au-delà, le message le plus ancien est
+    /// abandonné (« le plus récent gagne »). Sans cette borne, un esprit qui produit
+    /// plus de <c>maxSendsPerTick</c> messages par tick — cas normal dès qu'un agent
+    /// sociABLE observe plusieurs entités — voit sa file croître indéfiniment :
+    /// <see cref="Drain"/> n'en retire que <c>maxSendsPerTick</c> par tick, donc le
+    /// retard accumule indéfiniment (fuite mémoire + émission d'observations
+    /// périmées des centaines de ticks plus tard).
+    /// </summary>
+    public void Enqueue(Message message, int maxPending = int.MaxValue)
     {
         ArgumentNullException.ThrowIfNull(message);
+        if (maxPending < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxPending), "maxPending doit être >= 0.");
+        }
+
+        if (maxPending == 0)
+        {
+            return;
+        }
+
+        while (_outgoing.Count >= maxPending)
+        {
+            _outgoing.Dequeue();
+        }
+
         _outgoing.Enqueue(message);
     }
 
