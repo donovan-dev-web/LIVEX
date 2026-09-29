@@ -106,11 +106,20 @@ public class DeterminismRegressionTests
     public void GoldenChecksum_IsPinned()
     {
         // Épinglé au jalon SYNE ph6 (engineVersion 0.5.0) puis ré-épinglé au jalon ph7b
-// (engineVersion 0.6.0) : les fidélités SYNE-074…077 (mortalité, naissance consentie
-// fidèle, décision collective → objectifs, cheminement A* déterministe) n'altèrent pas
-// ce scénario — le checksum reste 0x27fad50065d8c4a4 — DETERMINISM.md §7 impose recalcul
-// + bump MINOR à chaque altération bit-à-bit de la trajectoire.
+        // (engineVersion 0.6.0) : les fidélités SYNE-074…077 (mortalité, naissance consentie
+        // fidèle, décision collective → objectifs, cheminement A* déterministe) n'altèrent pas
+        // ce scénario — le checksum reste 0x27fad50065d8c4a4 — DETERMINISM.md §7 impose recalcul
+        // + bump MINOR à chaque altération bit-à-bit de la trajectoire.
+        // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x27fad50065d8c4a4 →
+        // 0xdb57f58566418f5d. SEULE cause mesurée : le garde anti-relay de
+        // CommunicationSystem.CanRelay, désormais relié à CommunicationState.HasRelayed.
+        // Sans lui, un même message était relayé autant de fois que l'agent le rencontrait
+        // via des canaux distincts, épuisant l'énergie et saturant le réseau ; l'état
+        // « déjà relayé » était écrit mais jamais consulté. Vérifié par isolation : la
+        // neutralisation isolée de ce garde restitue exactement 0x27fad50065d8c4a4, et
+        // l'atomicité des réserves (ActionExecutor), la file de messages bornée et la
+        // centralisation des hachages sont bit-à-bit neutres sur ce scénario.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x27fad50065d8c4a4", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0xdb57f58566418f5d", $"0x{Fnv1a(log):x16}");
     }
 }

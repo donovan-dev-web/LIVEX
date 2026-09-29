@@ -426,7 +426,11 @@ public sealed class CognitionPipeline
             payload,
             currentTick,
             sequence: 1);
-        mind.Communication.Enqueue(share);
+
+        // File sortante bornée : au-delà de maxSendsPerTick en attente, la pulsance
+        // la plus ancienne est abandonnée au profit de la plus récente (une
+        // perception périmée n'a plus d'intérêt et la file ne doit pas croître).
+        mind.Communication.Enqueue(share, _options.Communication.MaxSendsPerTick);
     }
 
     private static string FormatContent(Observation observation) =>

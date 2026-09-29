@@ -2,6 +2,7 @@ using System.Globalization;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
+using Simulation.Core.Prng;
 using Simulation.Core.World;
 
 namespace Simulation.Core.Communication;
@@ -31,7 +32,7 @@ namespace Simulation.Core.Communication;
 /// </summary>
 public sealed class CommunicationSystem
 {
-    private const ulong GoldenGamma = 0x9E3779B97F4A7C15UL;
+    private const ulong GoldenGamma = SplitMix64.Gamma;
     private const ulong Mix1 = 0xBF58476D1CE4E5B9UL;
     private const ulong Mix2 = 0x94D049BB133111EBUL;
 
@@ -84,12 +85,13 @@ public sealed class CommunicationSystem
     /// <summary>Crée un message sortant avec identifiant déterministe (hash stable, pas de PRNG).</summary>
     public static Message CreateMessage(ulong senderId, ulong? targetId, MessageType type, string payload, ulong tick, int sequence)
     {
-        ulong messageId = SplitMix(senderId ^ (tick * GoldenGamma) ^ ((ulong)(sequence + 1) * Mix1));
+        ulong messageId = SplitMix64.Finalize(senderId ^ (tick * GoldenGamma) ^ ((ulong)(sequence + 1) * Mix1));
         return new Message(messageId, senderId, targetId, type, payload, confidence: 1.0, hops: 0, tick);
     }
 
     private void DispatchPass(ulong tick, IReadOnlyList<Entity> ordered, IReadOnlyDictionary<ulong, MindState> minds)
     {
+        var deliveryCache = new Dictionary<ulong, IReadOnlyList<(Entity Entity, double Distance)>>();
         foreach (Entity entity in ordered)
         {
             if (!minds.TryGetValue(entity.Id.Value, out MindState? mind))
@@ -100,7 +102,7 @@ public sealed class CommunicationSystem
             IReadOnlyList<Message> outgoing = mind.Communication.Drain(_settings.MaxSendsPerTick);
             foreach (Message message in outgoing)
             {
-                DispatchSingle(tick, entity, message, minds);
+                DispatchSingle(tick, entity, message, minds, deliveryCache);
             }
         }
     }
@@ -112,6 +114,7 @@ public sealed class CommunicationSystem
             return;
         }
 
+        var deliveryCache = new Dictionary<ulong, IReadOnlyList<(Entity Entity, double Distance)>>();
         foreach (Entity entity in ordered)
         {
             if (!minds.TryGetValue(entity.Id.Value, out MindState? mind))
@@ -129,20 +132,29 @@ public sealed class CommunicationSystem
                     break;
                 }
 
-                if (!CanRelay(entity.Id.Value, message, understood))
+                if (!CanRelay(mind, entity.Id.Value, message, understood))
                 {
                     continue;
                 }
 
                 Message relayedMessage = message.Relayed(_settings.HopConfidenceDecay, tick);
-                DispatchSingle(tick, entity, relayedMessage, minds);
+                DispatchSingle(tick, entity, relayedMessage, minds, deliveryCache);
                 mind.Communication.RecordRelayed(message.MessageId);
                 relayed++;
             }
         }
     }
 
-    private bool CanRelay(ulong entityId, Message message, bool understood)
+    /// <summary>
+    /// Éligibilité au relais. Le garde anti-boucle
+    /// (<see cref="CommunicationState.HasRelayed"/>) est ici **effectivement
+    /// appliqué** : sans lui, l'ensemble « déjà relayé » n'était écrit par
+    /// <see cref="CommunicationState.RecordRelayed"/> et jamais consulté, et une
+    /// même entité pouvait relayer deux fois le même message reçu par deux
+    /// canaux distincts dans le tick — le mécanisme anti-boucle documenté
+    /// (COMMUNICATION_PROTOCOL.md §4) était inerte.
+    /// </summary>
+    private bool CanRelay(MindState mind, ulong entityId, Message message, bool understood)
     {
         if (!understood)
         {
@@ -159,10 +171,15 @@ public sealed class CommunicationSystem
             return false;
         }
 
-        return true;
+        return !mind.Communication.HasRelayed(message.MessageId);
     }
 
-    private void DispatchSingle(ulong tick, Entity sender, Message message, IReadOnlyDictionary<ulong, MindState> minds)
+    private void DispatchSingle(
+        ulong tick,
+        Entity sender,
+        Message message,
+        IReadOnlyDictionary<ulong, MindState> minds,
+        Dictionary<ulong, IReadOnlyList<(Entity Entity, double Distance)>> deliveryCache)
     {
         if (minds.TryGetValue(sender.Id.Value, out MindState? senderMind))
         {
@@ -170,23 +187,7 @@ public sealed class CommunicationSystem
             senderMind.Communication.RecordSent();
         }
 
-        var candidates = _world.Grid.QueryCircle(sender.Position, _settings.TransmissionRange, sender.Id.Value)
-            .Select(candidate => (Candidate: candidate, Distance: sender.Position.DistanceTo(candidate.Position)))
-            .ToList();
-        candidates.Sort(static (a, b) =>
-        {
-            int byDistance = a.Distance.CompareTo(b.Distance);
-            return byDistance != 0 ? byDistance : a.Candidate.Id.Value.CompareTo(b.Candidate.Id.Value);
-        });
-
-        var deliverable = new List<(Entity Entity, double Distance)>(candidates.Count);
-        foreach ((Entity candidate, double distance) in candidates)
-        {
-            if (LineOfSight.IsClear(sender.Position, candidate.Position, _world.Obstacles))
-            {
-                deliverable.Add((candidate, distance));
-            }
-        }
+        IReadOnlyList<(Entity Entity, double Distance)> deliverable = DeliveryFor(sender, deliveryCache);
 
         _lastSent.Add(new MessageSent(
             message.MessageId,
@@ -211,6 +212,44 @@ public sealed class CommunicationSystem
 
             Receive(receiverMind, message, receiver.Id.Value);
         }
+    }
+
+    /// <summary>
+    /// Destinataires atteignables d'un émetteur : portée + ligne de vue, triés par
+    /// distance croissante puis identifiant. Mémoïsé par émetteur pour la durée du
+    /// tick — l'ensemble ne dépend que de la position de l'émetteur, alors que
+    /// l'ancien code refaisait la requête spatiale, le tri et le test de ligne de vue
+    /// (O(obstacles) par paire) pour *chaque* message envoyé.
+    /// </summary>
+    private IReadOnlyList<(Entity Entity, double Distance)> DeliveryFor(
+        Entity sender,
+        Dictionary<ulong, IReadOnlyList<(Entity Entity, double Distance)>> cache)
+    {
+        if (cache.TryGetValue(sender.Id.Value, out IReadOnlyList<(Entity, double)>? cached))
+        {
+            return cached;
+        }
+
+        var candidates = _world.Grid.QueryCircle(sender.Position, _settings.TransmissionRange, sender.Id.Value)
+            .Select(candidate => (Candidate: candidate, Distance: sender.Position.DistanceTo(candidate.Position)))
+            .ToList();
+        candidates.Sort(static (a, b) =>
+        {
+            int byDistance = a.Distance.CompareTo(b.Distance);
+            return byDistance != 0 ? byDistance : a.Candidate.Id.Value.CompareTo(b.Candidate.Id.Value);
+        });
+
+        var deliverable = new List<(Entity Entity, double Distance)>(candidates.Count);
+        foreach ((Entity candidate, double distance) in candidates)
+        {
+            if (LineOfSight.IsClear(sender.Position, candidate.Position, _world.Obstacles))
+            {
+                deliverable.Add((candidate, distance));
+            }
+        }
+
+        cache[sender.Id.Value] = deliverable;
+        return deliverable;
     }
 
     private void Receive(MindState receiverMind, Message message, ulong receiverId)
@@ -244,14 +283,7 @@ public sealed class CommunicationSystem
     /// <summary>Tirage déterministe SplitMix64 (doublex) dans [0, 1) — aucun PRNG global.</summary>
     private static double DeterministicDraw(ulong a, ulong b)
     {
-        ulong h = SplitMix(a ^ (b * GoldenGamma));
+        ulong h = SplitMix64.Avalanche(a ^ (b * GoldenGamma));
         return (h % 10000) / 10000.0;
-    }
-
-    private static ulong SplitMix(ulong z)
-    {
-        z = (z ^ (z >> 30)) * Mix1;
-        z = (z ^ (z >> 27)) * Mix2;
-        return z ^ (z >> 31);
     }
 }

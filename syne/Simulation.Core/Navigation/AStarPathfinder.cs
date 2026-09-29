@@ -163,7 +163,16 @@ public sealed class AStarPathfinder
                     continue;
                 }
 
-                double step = (nx != current.X && ny != current.Y) ? DiagonalCost : CardCost;
+                bool diagonal = nx != current.X && ny != current.Y;
+                if (diagonal && !IsDiagonalClear(current.X, current.Y, nx, ny, blocked))
+                {
+                    // Coupe de coin interdite : sans ce test, une diagonale traverse
+                    // le point d'appui entre deux cellules bloquées et l'entité
+                    // « glisse » le long d'un obstacle qu'elle ne peut pas contourner.
+                    continue;
+                }
+
+                double step = diagonal ? DiagonalCost : CardCost;
                 double tentative = gScore[(current.X, current.Y)] + step;
                 var key = (nx, ny);
                 if (!gScore.TryGetValue(key, out double known) || tentative + 1e-12 < known)
@@ -176,6 +185,21 @@ public sealed class AStarPathfinder
         }
 
         return [];
+    }
+
+    /// <summary>
+    /// Une diagonale n'est franchissable que si les deux cellules orthogonales
+    /// intermédiaires sont libres. C'est la règle stricte (pas de coupe de coin) :
+    /// le disque de l'entité ne peut pas passer par le point d'appui que les deux
+    /// cellules bloquées partagent. Autoriser la diagonale dès qu'une seule des
+    /// deux est libre reviendrait à autoriser le passage par un angle solide.
+    /// </summary>
+    private bool IsDiagonalClear(int x, int y, int nx, int ny, bool[] blocked)
+    {
+        int horizontal = Index(nx, y);
+        int vertical = Index(x, ny);
+        return horizontal >= 0 && horizontal < blocked.Length && !blocked[horizontal]
+            && vertical >= 0 && vertical < blocked.Length && !blocked[vertical];
     }
 
     private const double CardCost = 1.0;

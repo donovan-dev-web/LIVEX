@@ -85,6 +85,19 @@ public sealed class BirthSystem
         }
 
         List<Entity> ordered = world.Entities.OrderBy(entity => entity.Id.Value).ToList();
+
+        // Le maximum d'identifiant est suivi incrémentalement : recalculer
+        // `ordered.Aggregate(max) + 1` à chaque naissance réattribuerait le même
+        // childId à tous les nouveau-nés du tick (maxBirthsPerTick >= 2) et
+        // ferait échouer World.AddEntity sur un identifiant déjà pris.
+        ulong nextChildId = 0;
+        foreach (Entity entity in ordered)
+        {
+            nextChildId = Math.Max(nextChildId, entity.Id.Value);
+        }
+
+        nextChildId++;
+
         for (int i = 0; i < ordered.Count - 1 && _lastBirths.Count < reproduction.MaxBirthsPerTick; i++)
         {
             Entity mother = ordered[i];
@@ -106,7 +119,7 @@ public sealed class BirthSystem
                     continue;
                 }
 
-                ulong childId = ordered.Aggregate(0UL, (max, entity) => Math.Max(max, entity.Id.Value)) + 1;
+                ulong childId = nextChildId++;
                 Position position = Midpoint(mother, father, world);
                 TraitSet traits = Inheritance.FuseTraits(
                     mother.Traits,

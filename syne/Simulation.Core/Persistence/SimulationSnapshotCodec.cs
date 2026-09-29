@@ -24,7 +24,17 @@ public static class SimulationSnapshotCodec
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public const int SchemaVersion = 3;
+    /// <summary>
+    /// Version du schéma de snapshot. 3 = books[] (jalon U8). 4 = ajout additif de
+    /// <c>territories[]</c>, chaque territoire portant sa liste <c>members</c>
+    /// (jalon review/refactor) : les territoires n'étaient pas persistés, donc une
+    /// restauration perdait silencieusement toutes les zones et réassignait
+    /// implicitement la terre nominale « Communes ». L'addition est
+    /// rétro-compatible à la lecture : un snapshot v3 se restaure avec des listes
+    /// vides. Bump MAJEUR uniquement pour une rupture de sémantique, pas pour un
+    /// champ additif (PERSISTENCE.md).
+    /// </summary>
+    public const int SchemaVersion = 4;
 
     /// <summary>Capte l'état complet du monde + cognition à l'instant T.</summary>
     public static SimulationSnapshot Capture(SimulationLoop loop)
@@ -75,6 +85,16 @@ public static class SimulationSnapshotCodec
         var books = loop.World.Books.Select(book => new BookSnapshotDto(
             book.Id, book.AuthorId, book.Title, book.Content, book.WrittenTick, book.Readers.ToArray())).ToArray();
 
+        // Ordre de pose des zones (déterministe) ; membres en id croissant.
+        var territories = loop.World.Territories
+            .Select(zone => new TerritorySnapshotDto(
+                zone.Id,
+                zone.Center.X,
+                zone.Center.Y,
+                zone.Radius,
+                loop.MembersOfTerritory(zone.Id)))
+            .ToArray();
+
         IReadOnlyDictionary<World.ResourceKind, double> stocks = loop.Resources.Snapshot();
         var world = new WorldSnapshotDto(
             loop.World.Size.Width,
@@ -86,7 +106,8 @@ public static class SimulationSnapshotCodec
             stocks[World.ResourceKind.Water],
             stocks[World.ResourceKind.Wood],
             stocks[World.ResourceKind.Mineral],
-            books);
+            books,
+            territories);
 
         return new SimulationSnapshot(
             SchemaVersion,
@@ -196,14 +217,6 @@ public static class SimulationSnapshotCodec
     public static ulong Hash(SimulationSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        ulong hash = 14695981039346656037UL;
-        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(ToJson(snapshot));
-        foreach (byte b in bytes)
-        {
-            hash ^= b;
-            hash *= 1099511628211UL;
-        }
-
-        return hash;
+        return Fnv1a64.HashUtf8(ToJson(snapshot));
     }
 }

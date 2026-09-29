@@ -234,12 +234,16 @@ public sealed class MindState
         CollectiveObjective = collectiveObjective;
     }
 
-    /// <summary>Restaure le holdover de délibération (décision du dernier tick délibéré), persistance bit-à-bit.</summary>
+    /// <summary>
+    /// Restaure le holdover de délibération (décision du dernier tick délibéré).
+    /// Un <c>null</c> en entrée efface la décision : laisser l'ancienne décision en
+    /// place après restauration feraitChooser à l'esprit une intention absente du
+    /// snapshot — divergence silencieuse avec l'état sauvegardé.
+    /// </summary>
     internal void RestoreLastDecision(DesireKind? kind)
     {
-        if (kind is { } resolved)
-        {
-            LastDecision = new UtilityScore(resolved, 0, 0, 0, 0, 0, 0, 0);
-        }
+        LastDecision = kind is { } resolved
+            ? new UtilityScore(resolved, 0, 0, 0, 0, 0, 0, 0)
+            : null;
     }
 }

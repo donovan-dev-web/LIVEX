@@ -26,4 +26,13 @@ public static class SimulationProfiles
         options.Agents.Actions.RestFatigueRecovery = 2;
         return options;
     }
+
+    /// <summary>
+    /// Profil de référence sous forme de <b>surcouche JSON</b>, à passer tel quel à
+    /// <see cref="ConfigLoader.MergeJson(SimulationOptions, string)"/>. Utilisé par le lanceur HTTP : il
+    /// transporte le profil comme le ferait un fichier <c>--config</c>, donc avec
+    /// la même sémantique de fusion — et non comme un objet <c>SimulationOptions</c>,
+    /// dont la désérialisation rendrait chaque clé absente destructive.
+    /// </summary>
+    public static string ReferenceJson() => ConfigLoader.ToJson(Reference());
 }

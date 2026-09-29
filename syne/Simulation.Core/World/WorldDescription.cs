@@ -83,6 +83,13 @@ public static class WorldDescriptionBuilder
         ulong seed, IReadOnlyList<string> kinds, int countX, int countY)
     {
         int cellCount = countX * countY;
+        // LCG numérique explicite, distinct du PRNG de simulation
+        // (Xoshiro256**) : la description du monde ne doit consommer aucun tirage
+        // de la simulation (DETERMINISM.md §3, l'observabilité n'a pas le droit
+        // de déplacer la trajectoire). C'est pourquoi ce générateur est local et
+        // documenté plutôt que partagé : les paramètres ci-dessous fixent la
+        // disposition des ressources annoncée au client, et en changer invalide
+        // l'accord entre la description et le monde affiché.
         uint state = unchecked((uint)seed ^ (uint)(seed >> 32) ^ 0xA511E9B3u);
         var resources = new List<WorldResource>(kinds.Count * Math.Min(ResourceLocationsPerType, cellCount));
 
