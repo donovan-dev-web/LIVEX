@@ -39,7 +39,7 @@
     "MemberTurnoverRate": 55.55555555555555
   },
   "InformationPropagationMetrics": {
-    "InformationDiffusionSpeed": 10.0,
+    "InformationDiffusionSpeed": 5.0,
     "MaxMessageHops": 2.0,
     "MessageVolume": 0.3333333333333333,
     "NetworkCentrality": 1.0,
@@ -54,13 +54,13 @@
     "AverageCentrality": 0.5,
     "AverageTrustLevel": 0.5666666666666667,
     "ClusteringCoefficient": 0.0,
-    "CommunityStability": 0.0,
+    "CommunityStability": 1.0,
     "NetworkDensity": 0.3333333333333333,
     "NumberOfCommunities": 1,
     "TrustVariance": 0.01555555555555555
   },
   "EmergenceIndicators": {
-    "EmergenceScore": 0.7585335893412777,
+    "EmergenceScore": 0.7635335893412777,
     "DetectedPhenomena": [
       {
         "identifier": "InformationBottleneck",
@@ -75,7 +75,7 @@
         ]
       }
     ],
-    "SystemComplexity": 4.5022968652028394,
+    "SystemComplexity": 1.0,
     "UnpredictabilityIndex": 0.7,
     "Disclaimer": "ECHOS ne doit jamais transformer une métrique en vérité scientifique : un score d'émergence ou une valeur de centralité reste une mesure particulière d'un phénomène, jamais une preuve de l'existence d'une intelligence ou d'une société (Monographie §4.10.3, ECHOS-032)."
   }

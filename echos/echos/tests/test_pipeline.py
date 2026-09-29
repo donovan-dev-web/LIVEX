@@ -140,3 +140,223 @@ def test_consume_requires_positive_analysis_cadence(tmp_path):
             pass
         else:
             raise AssertionError("analysis_every=0 doit être rejeté")
+
+
+def test_consume_rejects_non_positive_cadences(tmp_path):
+    """``0`` et les valeurs négatives doivent être rejetés, pas acceptés.
+
+    Régression : ``index % 0`` levait ``ZeroDivisionError`` au premier tick, et
+    une valeur négative ne divisait jamais : la cadence était silencieusement
+    ignorée au lieu d'être signalée à l'appelant.
+    """
+    port, thread = _in_process_server(_script(1))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+    with AnalyticsStore(tmp_path / "cadences.db") as store:
+        try:
+            for kwargs in (
+                {"analysis_every": 0},
+                {"analysis_every": -2},
+                {"parquet_flush_every": 0},
+                {"parquet_flush_every": -1},
+            ):
+                try:
+                    storage.consume(client, store, **kwargs)
+                except ValueError:
+                    continue
+                raise AssertionError(f"{kwargs} doit être rejeté")
+        finally:
+            client.close()
+            thread.join(timeout=5)
+
+
+def test_engine_context_carries_rolling_windows(tmp_path):
+    """Les moteurs fenêtrés reçoivent ``events``/``history``/``communityHistory``.
+
+    Régression : le snapshot ne portait que les événements du tick courant, si
+    bien que ``FeedbackLoopDetector`` (5 métriques), ``RecoveryTime`` et
+    ``CommunityStability`` retombaient sur leur repli neutre 0.0 à chaque tick
+    d'un run réel.
+    """
+    port, thread = _in_process_server(_script(3))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+    try:
+        with AnalyticsStore(tmp_path / "context.db") as store:
+            storage.consume(client, store)
+
+            # Le détecteur de boucles a désormais de quoi travailler : les
+            # décisions des 3 ticks sont dans la fenêtre, donc une boucle est
+            # identifiée là où le repli neutre renvoyait 0.
+            metrics = {
+                (str(row[1]), str(row[2])): row[3]
+                for row in store.metrics_all("run-7")
+                if int(row[0]) == 3
+            }
+            assert metrics[("FeedbackLoopDetector", "IdentifiedLoops")] > 0
+            assert metrics[("FeedbackLoopDetector", "SystemStability")] > 0
+    finally:
+        client.close()
+        thread.join(timeout=5)
+
+
+def test_rolling_context_exposes_the_three_engine_windows():
+    """``_snapshot_for_engines`` publie bien ``events``/``history``/``communityHistory``.
+
+    Les clés sont le contrat de transport des moteurs fenêtrés ; sans elles,
+    sept métriques retombent sur 0.0 à chaque tick d'un run réel.
+    """
+    from echos.ingestion.models import ExternalEvent, WorldSnapshot
+    from echos.storage.pipeline import TickSegment, _snapshot_for_engines, _RollingContext
+
+    snapshot = WorldSnapshot.model_validate(
+        json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+    )
+    events = [ExternalEvent.model_validate(
+        json.loads((FIXTURES / "decision_made_v01.json").read_text())
+    )]
+    segment = TickSegment(tick=1, snapshot=snapshot, events=events)
+
+    context = _RollingContext()
+    window_events, history, event_window = context.push(segment)
+    engine_snapshot = _snapshot_for_engines(
+        segment, window_events, history, event_window
+    )
+
+    assert engine_snapshot["events"] == [
+        event.model_dump(mode="json", by_alias=True, exclude_none=True)
+        for event in events
+    ]
+    assert len(engine_snapshot["history"]) == 1
+    assert set(engine_snapshot["history"][0]) == {
+        "tick", "actions", "resources", "communities"
+    }
+    assert engine_snapshot["history"][0]["actions"] == {"1": "SeekWater"}
+    assert engine_snapshot["communityHistory"] == [
+        {"tick": 1, "communities": engine_snapshot["history"][0]["communities"]}
+    ]
+
+    # Les fenêtres sont bornées : sans troncature, la mémoire croîtrait avec
+    # la durée du run et les moteurs liraient tout l'historique à chaque tick.
+    bounded_context = _RollingContext(event_window=2, event_limit=2, history=3)
+    for _ in range(10):
+        window, entries, _ = bounded_context.push(segment)
+    assert len(window) == 2
+    assert len(entries) == 3
+
+    # Une fenêtre de taille nulle est rejetée plutôt que silently inerte.
+    from echos.storage.pipeline import _RollingContext as RollingContext
+
+    for kwargs in ({"event_window": 0}, {"event_limit": 0}, {"history": 0}):
+        try:
+            RollingContext(**kwargs)
+        except ValueError:
+            continue
+        raise AssertionError(f"{kwargs} doit être rejeté")
+
+
+def test_event_window_is_bounded_by_ticks_then_by_events():
+    """La fenêtre d'événements est bornée en **ticks**, puis en nombre.
+
+    Borne en nombre seulement (1000 événements), la durée couverte dépendait de
+    l'activité : sur un tick chargé elle valait ~20 ticks, sur un run calme
+    1000 ticks. Deux runs contenant le même nombre d'événements donnaient donc
+    des taux de formation de groupe non comparables.
+    """
+    from echos.ingestion.models import ExternalEvent, WorldSnapshot
+    from echos.ingestion.stream import TickSegment
+    from echos.storage.pipeline import _RollingContext
+
+    snapshot = WorldSnapshot.model_validate(
+        json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+    )
+
+    def segment(tick: int, events: int) -> TickSegment:
+        return TickSegment(
+            tick=tick,
+            snapshot=snapshot,
+            events=[
+                ExternalEvent(type="group_formed", tick=tick, agent_id="1")
+                for _ in range(events)
+            ],
+        )
+
+    # 50 ticks, 1 événement par tick : la fenêtre en retire 49.
+    tick_bounded = _RollingContext(event_window=10, event_limit=1000)
+    for tick in range(1, 51):
+        tick_bounded.push(segment(tick, 1))
+    events, _, window = tick_bounded.push(segment(51, 1))
+    assert len(events) == 10
+    assert window["ticks"] == 10
+    assert (window["from"], window["to"]) == (42, 51)
+
+    # 5 ticks très denses : la borne mémoire tranche, pas la borne en ticks.
+    count_bounded = _RollingContext(event_window=100, event_limit=7)
+    for tick in range(1, 6):
+        count_bounded.push(segment(tick, 10))
+    events, _, window = count_bounded.push(segment(6, 10))
+    assert len(events) == 7
+    assert window["ticks"] == 6
+
+    # La fenêtre déclarée est bornée par la durée du run : elle ne prétend pas
+    # observer 100 ticks au tick 3.
+    short_run = _RollingContext(event_window=100)
+    for tick in range(1, 4):
+        short_run.push(segment(tick, 0))
+    assert short_run.event_window() == {"ticks": 3, "from": 1, "to": 3}
+
+
+def test_group_rate_denominator_uses_the_observed_window():
+    """Le dénominateur des taux est la fenêtre déclarée, pas l'étendue des events.
+
+    Deux runs de même durée et contenant chacun un ``group_formed`` au dernier
+    tick : la charge du monde diffère, le taux doit être identique. Avant la
+    fenêtre déclarée, le dénominateur valait 1 tick dans un cas et 51 dans
+    l'autre — soit un facteur 51 sur la même métrique.
+    """
+    from echos.analysis.group_dynamics import compute
+
+    def rates(events: list[dict], window: dict) -> tuple[float, float]:
+        result = compute(
+            {"events": events, "eventWindow": window, "agents": []}
+        )
+        return result["GroupFormationRate"], result["GroupDissolutionRate"]
+
+    calm, _ = rates(
+        [{"type": "group_formed", "tick": 51}],
+        {"ticks": 51, "from": 1, "to": 51},
+    )
+    busy, _ = rates(
+        [{"type": "group_formed", "tick": tick} for tick in range(1, 52)],
+        {"ticks": 51, "from": 1, "to": 51},
+    )
+    # Le run chargé a réellement formé 50 groupes de plus : son taux doit rester
+    # plus élevé, mais selon la durée observée et non selon l'étendue des events.
+    assert busy > calm
+    assert round(busy - calm, 6) == round(50 * 1000 / 51, 6)
+
+    # Sans fenêtre déclarée, le repli reste l'étendue des événements présents.
+    fallback, _ = rates([{"type": "group_formed", "tick": 51}], {})
+    assert fallback == 1000.0
+
+
+def test_consume_persists_metric_provenance(tmp_path):
+    """``tick_metrics.measured`` distingue un 0.0 mesuré d'un repli neutre."""
+    from echos.storage.sqlite import AnalyticsStore as Store
+
+    store = Store(tmp_path / "provenance.sqlite")
+    store.record_run("run-p", "0.1.0", "1")
+    store.append_tick_metrics(
+        "run-p",
+        1,
+        {"FeedbackLoopDetector": {"LoopStrength": 0.0},
+         "SocialComplexityMetrics": {"NetworkDensity": 0.5}},
+        {"FeedbackLoopDetector": {"LoopStrength": False},
+         "SocialComplexityMetrics": {"NetworkDensity": True}},
+    )
+    measured = store.latest_measured("run-p")
+    assert measured["FeedbackLoopDetector"]["LoopStrength"] is False
+    assert measured["SocialComplexityMetrics"]["NetworkDensity"] is True
+    # La valeur reste lisible : la provenance s'ajoute, elle ne remplace rien.
+    assert store.latest_metrics("run-p")["FeedbackLoopDetector"]["LoopStrength"] == 0.0
+    store.close()

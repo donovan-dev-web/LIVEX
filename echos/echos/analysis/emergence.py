@@ -12,22 +12,17 @@ Conventions V0.1 (cf. METRICS_SPEC.md §1, ECHOS-006) :
 - ``DiffusionSpeed_Norm = clamp(1 - InformationDiffusionSpeed / 100, 0, 1)`` avec
   neutralité étendue : vitesse non mesurée (absente ou ≤ 0 — « jamais diffusé »)
   → contribution 0.0 plutôt que le max de la formule (diffusion instantanée, non
-  observable). La formule s'applique aux vitesses mesurées (> 0).
+  observable). La formule s'applique aux vitesses mesurées (> 0) ;
+- ``SystemComplexity`` est borné et composé de grandeurs normalisées : la
+  vitesse de diffusion y entre via ``DiffusionSpeed_Norm`` et non en ticks bruts,
+  sans quoi l'indicateur croissait linéairement avec la durée du run.
 """
 
 from __future__ import annotations
 
-from . import (
-    cognitive_diversity,
-    feedback_loop_detector,
-    goal_convergence,
-    group_dynamics,
-    information_propagation,
-    social_complexity,
-)
-from ._common import clamp
+from ._common import COMPOSITE_ENGINE_NAME, clamp, load_engines
 
-ENGINE_NAME = "EmergenceIndicators"
+ENGINE_NAME = COMPOSITE_ENGINE_NAME
 
 METRICS = (
     "EmergenceScore",
@@ -43,6 +38,14 @@ DISCLAIMER = (
     "particulière d'un phénomène, jamais une preuve de l'existence d'une "
     "intelligence ou d'une société (Monographie §4.10.3, ECHOS-032)."
 )
+
+_DIFFUSION_HORIZON = 100.0
+"""Amplitude (ticks) au-delà de laquelle la diffusion est considérée nulle.
+
+``InformationDiffusionSpeed`` mesure une durée en ticks et non un tick absolu :
+la normalisation ``1 - vitesse / horizon`` interpole donc entre « diffusé en
+un tick » (1.0) et « non diffusé dans le contexte observé » (0.0).
+"""
 
 # Moteurs de métriques entrants du score composite et des phénomènes (ordre de
 # première priorité lors de l'aplatissement — ex. ``GoalDiversity`` est fournie
@@ -109,16 +112,31 @@ __all__ = [
 
 
 def _engine_results(snapshot: dict) -> dict[str, dict]:
-    """Résultats des 6 moteurs entrants pour un snapshot (repli neutre absent)."""
-    engines = (
-        cognitive_diversity,
-        information_propagation,
-        social_complexity,
-        goal_convergence,
-        feedback_loop_detector,
-        group_dynamics,
-    )
-    return {engine.ENGINE_NAME: engine.compute(snapshot) for engine in engines}
+    """Résultats des moteurs entrants pour un snapshot (repli neutre absent).
+
+    La liste est dérivée du registre central : la hard-coder ici faisait
+    diverger ``compute`` du chemin normalisé ``compute_all`` dès qu'un moteur
+    était ajouté au registre.
+    """
+    return {
+        engine.ENGINE_NAME: engine.compute(snapshot)
+        for engine in load_engines()
+        if engine.ENGINE_NAME != COMPOSITE_ENGINE_NAME
+    }
+
+
+_COMPOSITE_METRICS = (
+    "EmergenceScore",
+    "SystemComplexity",
+    "UnpredictabilityIndex",
+    "DetectedPhenomena",
+)
+"""Métriques composites dont la valeur dérive d'autres moteurs.
+
+Leur provenance est donc **propagée** : sans ce mécanisme, un ``EmergenceScore``
+calculé sur des moteurs à 0.0 de repli était indiscernable d'un score mesuré
+(voir §Provenance de ``METRICS_SPEC``).
+"""
 
 
 def _flatten(metrics: dict[str, dict]) -> dict[str, float]:
@@ -175,8 +193,10 @@ def compute_from_metrics(metrics: dict[str, dict]) -> dict:
     active_groups = _metric(flat, "ActiveGroups")
     decision_diversity = _metric(flat, "DecisionDiversity")
 
+    # Diffusion normalisée : plus la propagation est rapide (faible amplitude en
+    # ticks), plus la contribution est forte. Non mesurée (0 message) → 0.0.
     diffusion_norm = (
-        clamp(1.0 - diffusion_speed / 100.0) if diffusion_speed > 0.0 else 0.0
+        clamp(1.0 - diffusion_speed / _DIFFUSION_HORIZON) if diffusion_speed > 0.0 else 0.0
     )
     emergence_score = clamp(
         belief_diversity * 0.15
@@ -186,7 +206,13 @@ def compute_from_metrics(metrics: dict[str, dict]) -> dict:
         + loop_strength * 0.20
         + (active_groups / 100.0) * 0.25
     )
-    system_complexity = (belief_diversity + goal_diversity + diffusion_speed) / 3.0
+    # Borné explicitement : cette somme intégrait la vitesse de diffusion
+    # brute, c'est-à-dire un nombre de ticks non borné, si bien que
+    # l'indicateur croissait linéairement avec la longueur du run. On compose
+    # désormais trois grandeurs normalisées.
+    system_complexity = clamp(
+        (belief_diversity + goal_diversity + diffusion_norm) / 3.0
+    )
     unpredictability_index = loop_strength * decision_diversity
 
     return {

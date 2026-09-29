@@ -30,6 +30,7 @@ et invalidés sur ``AnalyticsStore.ingest_version`` (re-run ⇒ re-analyse).
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -49,6 +50,9 @@ LAYERS = (
 DEFAULT_DEPTH = 7
 MAX_DEPTH = 12
 """Profondeur d'affichage par défaut et plafond (ECHOS-062, §4.5.3)."""
+
+RECURRENCE_WINDOW = 16
+"""Occurrences antérieures examinées pour détecter une boucle de rétroaction."""
 
 _IMPERCEPTION = "—"
 """Libellé d'indisponibilité quand la couche n'a pas de donnée persistée."""
@@ -71,32 +75,36 @@ class CausalError(ValueError):
 def _trace_for(
     store: AnalyticsStore, run_id: str, agent_id: str, tick: int
 ) -> dict:
-    traces = store.decision_traces(run_id, tick)
-    for trace in traces:
+    for trace in store.decision_traces(run_id, tick):
         if trace["agent_id"] == agent_id:
             return trace
     raise CausalError(f"aucune trace de décision (run={run_id}, tick={tick}, entité={agent_id})")
 
 
-def _intention_of(store: AnalyticsStore, run_id: str, agent_id: str, tick: int) -> str | None:
-    """Intention de l'événement ``decision_made`` du tick (repli None)."""
-    for event in store.events(run_id):
-        if (
-            event[1] == "decision_made"
-            and str(event[2]) == agent_id
-            and int(event[0]) == tick
-        ):
-            value: dict = event[5]
-            parsed: Any = value
-            if isinstance(value, str):
-                import json  # local : lecture pivot d'un champ optionnel
+def _payload(value: Any) -> dict:
+    """Champ ``value`` d'un événement : JSON décodé, ou dict vide si illisible."""
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except ValueError:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}
 
-                try:
-                    parsed = json.loads(value)
-                except ValueError:
-                    parsed = {}
-            intention = parsed.get("intention") if isinstance(parsed, dict) else None
-            return str(intention) if intention else str(event[3] or "")
+
+def _intention_of(store: AnalyticsStore, run_id: str, agent_id: str, tick: int) -> str | None:
+    """Intention de l'événement ``decision_made`` du tick (repli None).
+
+    Lecture ciblée sur le type d'événement et le tick : la version précédente
+    rechargeait tout le journal du run pour retrouver une seule ligne.
+    """
+    for event in store.events_by_type(run_id, "decision_made", max_tick=tick):
+        if int(event["tick"]) != tick or str(event["agent_id"]) != agent_id:
+            continue
+        intention = _payload(event["value"]).get("intention")
+        return str(intention) if intention else str(event["action"] or "")
     return None
 
 
@@ -121,33 +129,22 @@ def _perceptions(
 ) -> list[dict]:
     """Messages ``message_received`` perçus par l'entité, les plus récents.
 
-    ``store.events`` est trié par (tick, id) : on parcourt la liste complète
-    pour retenir les ``limit`` derniers ≤ tick (ordre stable).
+    ``store.events_by_type`` est trié par (tick, id) : on ne retient que les
+    ``limit`` derniers ≤ tick (ordre stable).
     """
     received: list[dict] = []
-    for event in store.events(run_id):
-        if (
-            event[1] == "message_received"
-            and str(event[2]) == agent_id
-            and int(event[0]) <= tick
-        ):
-            value: Any = event[5]
-            parsed: Any = value
-            if isinstance(value, str):
-                import json
-
-                try:
-                    parsed = json.loads(value)
-                except ValueError:
-                    parsed = {}
-            detail = parsed if isinstance(parsed, dict) else {}
-            received.append(
-                {
-                    "tick": int(event[0]),
-                    "type": str(event[3] or ""),
-                    "detail": {str(k): v for k, v in detail.items()},
-                }
-            )
+    for event in store.events_by_type(run_id, "message_received", max_tick=tick):
+        if str(event["agent_id"]) != agent_id:
+            continue
+        received.append(
+            {
+                "tick": int(event["tick"]),
+                "type": str(event["action"] or ""),
+                "detail": {
+                    str(key): value for key, value in _payload(event["value"]).items()
+                },
+            }
+        )
     return received[-limit:]
 
 
@@ -177,20 +174,24 @@ def _beliefs_of(agent: dict | None) -> list[str]:
 def _recurrence(
     store: AnalyticsStore, run_id: str, agent_id: str, action: str, tick: int
 ) -> list[int]:
-    """Ticks antérieurs où l'entité a déjà choisi la même action.
+    """Ticks antérieurs où l'entité a **elle** déjà choisi la même action.
 
-    Fenêtre bornée (16 dernières occurrences) — boucle de rétroaction
-    (ECHOS-062, §4.5.3 : comportement répété = boucle, affichage borné).
-    Tri stable croissant (déterminisme des exports reproductibles).
+    Fenêtre bornée (16 dernières occurrences de l'entité) — boucle de
+    rétroaction (ECHOS-062, §4.5.3 : comportement répété = boucle, affichage
+    borné). Tri stable croissant (déterminisme des exports reproductibles).
+
+    Régression : la fenêtre était appliquée aux 16 dernières traces du **run**,
+    puis filtrée sur l'entité. Sur un run où d'autres entités décident, la
+    fenêtre était vide et la récurrence toujours fausse.
     """
-    sample = min(16, len(store.decision_traces(run_id)) or 1)
-    return [
+    previous = [
         int(trace["tick"])
-        for trace in store.decision_traces(run_id)[-sample:]
+        for trace in store.decision_traces(run_id)
         if int(trace["tick"]) < tick
         and trace["agent_id"] == agent_id
         and trace["chosen_action"] == action
     ]
+    return previous[-RECURRENCE_WINDOW:]
 
 
 def _find_cycle(nodes: list[Node]) -> tuple[list[tuple[str, str]], int]:
@@ -236,7 +237,9 @@ def build_chain(
     """
     if isinstance(depth, bool) or not isinstance(depth, int) or depth < 1:
         raise CausalError("depth doit être un entier >= 1")
-    if max_depth > 12:
+    if isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1:
+        raise CausalError("max_depth doit être un entier >= 1")
+    if max_depth > MAX_DEPTH:
         raise CausalError("max_depth est plafonné à 12 (CAUSAL_ANALYSIS.md §4.5.3)")
 
     if tick is None:
@@ -314,7 +317,11 @@ def build_chain(
     ]
 
     within_cycles, cutoff = _find_cycle(nodes)
-    available = cutoff
+    # ``max_depth`` plafonne la profondeur servie, et pas seulement la
+    # profondeur demandée : il bornait le paramètre sans jamais être appliqué,
+    # si bien qu'une chaîne complète (7 couches) était servie même avec
+    # ``max_depth=2``.
+    available = min(cutoff, int(max_depth))
 
     # Boucle de rétroaction (ECHOS-062) : la même action ayant déjà été
     # choisie aux ticks précédents marque un comportement qui se répète —
@@ -326,7 +333,7 @@ def build_chain(
     served_depth = max(1, min(int(depth), available))
     chain = [
         {"layer": node.layer, "tick": node.tick, "label": node.label, "detail": node.detail}
-        for node in nodes[: max(1, served_depth)]
+        for node in nodes[:served_depth]
     ]
 
     return {
@@ -349,7 +356,11 @@ def build_chain(
             }
             for layer, label in cycles
         ],
-        "truncated": len(chain) < available or len(nodes) > len(chain),
+        # Une couche existe-t-elle au-delà de ce qui est servi ? La référence est
+        # le nombre de nœuds atteignables avant l'arrêt sur boucle, et non
+        # ``available`` : celui-ci inclut le plafond ``max_depth``, donc
+        # ``len(chain) < available`` était faux dès que le plafond mordait.
+        "truncated": len(chain) < min(len(nodes), cutoff),
     }
 
 

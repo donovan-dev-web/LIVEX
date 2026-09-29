@@ -23,16 +23,31 @@ def _load(name: str) -> dict:
     return json.loads((FIXTURES / name).read_text())
 
 
+def _community_history(snapshot: dict) -> list[dict]:
+    """Tailles de communautés par tick (même source que test_j2_determinism)."""
+    from echos.analysis._common import community_sizes
+
+    sizes = community_sizes(snapshot["agents"])
+    return [{"tick": tick, "communities": list(sizes)} for tick in range(1, 11)]
+
+
 def contexts(ticks: int) -> list[dict]:
-    """Contexte par tick (snapshot du tick + événements/fenêtre accumulés)."""
+    """Contexte par tick (snapshot + événements/fenêtres accumulés).
+
+    Reproduit le contrat de ``storage.pipeline._snapshot_for_engines``.
+    """
     final = _load("snapshot_analysis.json")
     history = final["history"][-WINDOW:]
     events = final["events"]
+    communities = _community_history(final)
     contexts = []
     for tick in range(1, ticks + 1):
         context = deepcopy(final)
         context["history"] = [entry for entry in history if int(entry["tick"]) <= tick]
         context["events"] = [event for event in events if int(event["tick"]) <= tick]
+        context["communityHistory"] = [
+            entry for entry in communities if int(entry["tick"]) <= tick
+        ]
         contexts.append(context)
     return contexts
 

@@ -61,17 +61,21 @@ pour permettre la corrélation avec les données analytiques.
 
 Métadonnées + **dernières métriques** de tous les moteurs (`{engine: {metric: value}}`) + contexte `phenomena` (`detected` + `disclaimer`).
 
+- `measured` : `{engine: {metric: bool}}` — provenance des **dernières** valeurs (voir §3.3).
+
 ### 3.3 `GET /api/runs/{id}/metrics`
 
 ```json
 {"run_id": "run-7", "engine": null, "metric": null, "every": 1,
  "ticks": [1, 2, 3],
  "values": {"EmergenceIndicators": {"EmergenceScore": [0.5, 0.52, 0.51]}},
- "latest": {"EmergenceIndicators": {"EmergenceScore": 0.51}}}
+ "latest": {"EmergenceIndicators": {"EmergenceScore": 0.51}},
+ "measured": {"EmergenceIndicators": {"EmergenceScore": true}}}
 ```
 
 - `ticks` : union des ticks des séries demandées, **sous-échantillonnés** `ticks[::every]` (`?every=N`, `N ≥ 1` — `N = 0` → 422) ; `values` alignées sur `ticks`.
 - `every = 1` (défaut) : série complète ; `?engine=` / `?metric=` restreignent `values`.
+- `measured` : provenance des valeurs du **dernier** tick, `{engine: {metric: bool}}` aligné sur `latest`. `false` signifie que la valeur est le **repli neutre** du moteur, faute de la fenêtre dont il dépend (pas « une mesure égale au neutre »). Un consommateur qui affiche un chiffre doit traiter `false` comme « non mesuré » et non comme `0`.
 - Les séries sont servies par **cache** validé sur `AnalyticsStore.ingest_version` (invalidation à la première écriture post-cache).
 
 ### 3.4 `GET /api/runs/{id}/export?format=json|csv`
