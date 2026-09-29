@@ -22,15 +22,35 @@ public interface IObservabilitySink
 /// messages d'observabilité SYNE sur ws://127.0.0.1:[port]/. Il n'archive rien :
 /// purement de diffusion. Chaque message = une trame texte JSON
 /// (API_CONTRACTS.md §2), diffusion fiable-en-fonction-du-mieux (V0.1).
+///
+/// <para>
+/// Invariant central : <see cref="BroadcastAsync"/> ne doit jamais bloquer ni
+/// faire échouer la boucle de simulation. Elle est donc bornée dans le temps
+/// par client, et ne propage jamais d'exception. Un <see cref="WebSocket"/>
+/// n'acceptant qu'un seul <c>SendAsync</c> à la fois, chaque client porte son
+/// propre sémaphore d'écriture.
+/// </para>
 /// </summary>
-public sealed class ObservabilityServer : IObservabilitySink, IAsyncDisposable
+public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDemand, IAsyncDisposable
 {
     public const int DefaultPort = 5180;
 
+    /// <summary>Envoi borné : au-delà, le client est considéré mort et retiré.</summary>
+    private static readonly TimeSpan SendTimeout = TimeSpan.FromSeconds(2);
+
+    /// <summary>Fermeture bornée pour ne pas retenir <see cref="DisposeAsync"/>.</summary>
+    private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
+
+    /// <summary>Taille du tampon de réception des trames client (trafic entrant réduit).</summary>
+    private static readonly int ReceiveBufferSize = 1024;
+
     private readonly HttpListener _listener;
-    private readonly ConcurrentDictionary<WebSocket, byte> _clients = new();
+    private readonly ConcurrentDictionary<WebSocket, ClientSession> _clients = new();
+    private readonly ConcurrentDictionary<ClientSession, byte> _sessions = new();
     private CancellationTokenSource? _cts;
     private Task? _acceptLoop;
+    private int _started;
+    private int _disposed;
 
     public ObservabilityServer(int port = DefaultPort)
     {
@@ -43,38 +63,72 @@ public sealed class ObservabilityServer : IObservabilitySink, IAsyncDisposable
 
     public int ClientCount => _clients.Count;
 
+    /// <summary>
+    /// Permet à l'émetteur de ne pas construire de snapshot quand personne
+    /// n'écoute (capture O(entités) par tick).
+    /// </summary>
+    public bool HasSubscribers => _clients.Count > 0;
+
     public bool IsListening => _listener.IsListening;
 
     public void Start()
     {
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposed) != 0, this);
+        if (Interlocked.Exchange(ref _started, 1) != 0)
+        {
+            return;
+        }
+
         _listener.Start();
         _cts = new CancellationTokenSource();
         _acceptLoop = Task.Run(() => AcceptLoopAsync(_cts.Token));
     }
 
-    /// <summary>Diffuse une trame texte à tous les clients connectés (meilleur effort V0.1).</summary>
+    /// <summary>
+    /// Diffuse une trame texte à tous les clients connectés (meilleur effort V0.1).
+    /// Ne lève jamais : un client mort ou lent ne doit pas interrompre le run.
+    /// </summary>
     public async Task BroadcastAsync(string text)
     {
+        if (Volatile.Read(ref _disposed) != 0 || _clients.IsEmpty)
+        {
+            return;
+        }
+
         byte[] payload = Encoding.UTF8.GetBytes(text);
-        foreach (WebSocket client in _clients.Keys)
+        foreach ((WebSocket client, ClientSession session) in _clients.ToArray())
         {
             if (client.State != WebSocketState.Open)
             {
-                _clients.TryRemove(client, out _);
+                RemoveClient(client, session);
+                continue;
+            }
+
+            // Un seul SendAsync à la fois par socket : deux diffusions concurrentes
+            // sans ce verrou lèvent InvalidOperationException (« There is already
+            // one outstanding 'SendAsync' call »).
+            if (!await session.SendGate.WaitAsync(SendTimeout).ConfigureAwait(false))
+            {
+                RemoveClient(client, session);
                 continue;
             }
 
             try
             {
-                await client.SendAsync(
-                    new ArraySegment<byte>(payload),
-                    WebSocketMessageType.Text,
-                    endOfMessage: true,
-                    CancellationToken.None);
+                await client
+                    .SendAsync(new ArraySegment<byte>(payload), WebSocketMessageType.Text, true, CancellationToken.None)
+                    .WaitAsync(SendTimeout)
+                    .ConfigureAwait(false);
             }
-            catch (WebSocketException)
+            catch (Exception exception) when (exception is WebSocketException or OperationCanceledException or ObjectDisposedException or InvalidOperationException)
             {
-                _clients.TryRemove(client, out _);
+                // Client mort, trop lent, ou déjà coupé : on le retire, on ne
+                // remonte jamais l'erreur au simulateur.
+                RemoveClient(client, session);
+            }
+            finally
+            {
+                session.SendGate.Release();
             }
         }
     }
@@ -83,65 +137,150 @@ public sealed class ObservabilityServer : IObservabilitySink, IAsyncDisposable
     {
         while (!token.IsCancellationRequested)
         {
+            WebSocket socket;
             try
             {
-                HttpListenerContext context = await _listener.GetContextAsync();
-                WebSocket socket = (await context.AcceptWebSocketAsync(null)).WebSocket;
-                _clients.TryAdd(socket, 0);
-                _ = Task.Run(() => DrainAsync(socket, token));
+                HttpListenerContext context = await _listener.GetContextAsync().ConfigureAwait(false);
+                socket = (await context.AcceptWebSocketAsync(null).ConfigureAwait(false)).WebSocket;
             }
             catch (Exception) when (token.IsCancellationRequested || !_listener.IsListening)
             {
                 break;
             }
+            catch (Exception)
+            {
+                // Requête non-WebSocket (ou upgrade refusé) : on l'ignore et on
+                // continue d'accepter au lieu de tuer la boucle.
+                continue;
+            }
+
+            var session = new ClientSession(socket);
+            if (!_clients.TryAdd(socket, session))
+            {
+                await SafeCloseAsync(socket).ConfigureAwait(false);
+                continue;
+            }
+
+            _sessions.TryAdd(session, 0);
+            _ = Task.Run(() => DrainAsync(session, token), CancellationToken.None);
         }
     }
 
-    private static async Task DrainAsync(WebSocket socket, CancellationToken token)
+    /// <summary>
+    /// Consomme les trames entrantes. Le retrait du client se fait dans le
+    /// <c>finally</c> : auparavant un client déconnecté restait au dictionnaire
+    /// jusqu'à la diffusion suivante, et son socket n'était jamais fermé.
+    /// </summary>
+    private async Task DrainAsync(ClientSession session, CancellationToken token)
     {
-        var buffer = new byte[1024];
+        WebSocket socket = session.Socket;
+        byte[] buffer = new byte[ReceiveBufferSize];
         try
         {
-            while (socket.State == WebSocketState.Open)
+            while (socket.State == WebSocketState.Open && !token.IsCancellationRequested)
             {
-                await socket.ReceiveAsync(buffer, token);
+                await socket.ReceiveAsync(buffer, token).ConfigureAwait(false);
             }
         }
         catch (Exception) when (token.IsCancellationRequested || socket.State != WebSocketState.Open)
         {
-            // client enlevé de façon paresseuse
+            // fermeture attendue ou client parti
+        }
+        catch (WebSocketException)
+        {
+            // reset brutal : même conséquence
+        }
+        finally
+        {
+            RemoveClient(socket, session);
+        }
+    }
+
+    private void RemoveClient(WebSocket socket, ClientSession session)
+    {
+        _clients.TryRemove(socket, out _);
+        if (_sessions.TryRemove(session, out _))
+        {
+            _ = SafeCloseAsync(socket);
+        }
+    }
+
+    private static async Task SafeCloseAsync(WebSocket socket)
+    {
+        if (socket.State is not (WebSocketState.Open or WebSocketState.CloseReceived))
+        {
+            return;
+        }
+
+        try
+        {
+            using CancellationTokenSource cts = new(CloseTimeout);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "arrêt", cts.Token).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            try
+            {
+                socket.Abort();
+            }
+            catch (Exception)
+            {
+                // socket déjà détruit
+            }
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        _cts?.Cancel();
-        foreach (WebSocket client in _clients.Keys)
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
         {
-            try
-            {
-                _ = client.CloseAsync(WebSocketCloseStatus.NormalClosure, "arrêt", CancellationToken.None);
-            }
-            catch (Exception)
-            {
-                // ignoré : fermeture best effort
-            }
+            return;
         }
 
-        _listener.Stop();
-        _listener.Close();
+        CancellationTokenSource? cts = _cts;
+        cts?.Cancel();
+
+        // Fermetures réellement attendues : un CloseAsync en feu et forget pouvait
+        // s'exécuter après la libération du serveur.
+        foreach (ClientSession session in _sessions.Keys)
+        {
+            await SafeCloseAsync(session.Socket).ConfigureAwait(false);
+        }
+
+        _sessions.Clear();
+        _clients.Clear();
+
+        try
+        {
+            _listener.Stop();
+            _listener.Close();
+        }
+        catch (Exception)
+        {
+        }
+
         if (_acceptLoop is not null)
         {
             try
             {
-                await _acceptLoop;
+                await _acceptLoop.WaitAsync(CloseTimeout).ConfigureAwait(false);
             }
             catch (Exception)
             {
-                // boucle d'accept déjà terminée
+                // boucle d'accept déjà terminée ou arrêtée
             }
         }
 
-        _cts?.Dispose();
+        cts?.Dispose();
+        _cts = null;
+        _acceptLoop = null;
+    }
+
+    /// <summary>Client connecté : sémaphore d'écriture sérialisant les diffusions.</summary>
+    private sealed class ClientSession(WebSocket socket)
+    {
+        public WebSocket Socket { get; } = socket;
+
+        public SemaphoreSlim SendGate { get; } = new(initialCount: 1);
     }
 }

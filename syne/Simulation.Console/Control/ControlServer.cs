@@ -93,6 +93,17 @@ public sealed class ControlServer : IAsyncDisposable
             context.Response.ContentLength64 = payload.Length;
             await context.Response.OutputStream.WriteAsync(payload);
         }
+        catch (RequestException exception)
+        {
+            try
+            {
+                await WriteErrorAsync(context, exception.Status, exception.Code, exception.Detail);
+            }
+            catch (Exception)
+            {
+                // best effort : aucune réponse possible
+            }
+        }
         catch (Exception)
         {
             try
@@ -154,7 +165,10 @@ public sealed class ControlServer : IAsyncDisposable
                 _controller.Resume();
                 return (200, ToJson(OkJson("resumed")));
             case "stop":
-                _controller.Stop();
+                // On attend la fin réelle de la boucle : répondre 200 avant
+                // l'arrêt effectif laisserait au client l'impression que le run
+                // est terminé alors qu'il peut encore avancer d'un tick.
+                await _controller.StopAsync();
                 return (200, ToJson(OkJson("stopped")));
             case "reset":
                 return await ResetAsync(body);
@@ -166,7 +180,11 @@ public sealed class ControlServer : IAsyncDisposable
     private async Task<(int Status, string Body)> PrepareAsync(JsonElement body)
     {
             ulong? seed = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("seed", out var s) ? s.GetUInt64() : null;
-            SimulationOptions? config = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out var c) ? ParseConfig(c) : null;
+            if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out var c) && c.ValueKind != JsonValueKind.Object)
+                return (400, ToJson(ErrorJson("invalid_config", "config doit etre un objet JSON.")));
+            string? config = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out var c2)
+                ? c2.GetRawText()
+                : null;
             int? ticksPerSecond = null;
             if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("ticksPerSecond", out var tps))
             {
@@ -174,8 +192,18 @@ public sealed class ControlServer : IAsyncDisposable
                     return (400, ToJson(ErrorJson("invalid_ticks_per_second", "ticksPerSecond doit être un entier strictement positif.")));
                 ticksPerSecond = parsedTicksPerSecond;
             }
-            var world = await _controller.PrepareAsync(seed, config ?? SimulationProfiles.Reference(), ticksPerSecond);
-            return (200, ToJson(new { ok = true, action = "prepared", ticksPerSecond = world.TicksPerSecond, world }));
+            try
+            {
+                var world = await _controller.PrepareAsync(seed, config ?? SimulationProfiles.ReferenceJson(), ticksPerSecond);
+                return (200, ToJson(new { ok = true, action = "prepared", ticksPerSecond = world.TicksPerSecond, world }));
+            }
+            catch (JsonException exception)
+            {
+                // JSON bien formé mais valeurs incompatibles avec le modèle
+                // (mauvais types, nombres hors domaine) : c'est une requête
+                // invalide, pas une erreur interne du serveur.
+                return (400, ToJson(ErrorJson("invalid_config", DescribeJsonError(exception))));
+            }
     }
 
     private async Task<(int Status, string Body)> StartAsync(JsonElement body)
@@ -183,16 +211,20 @@ public sealed class ControlServer : IAsyncDisposable
         ulong? seed = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("seed", out JsonElement seedElement)
             ? seedElement.GetUInt64()
             : null;
-        SimulationOptions? config = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out JsonElement configElement)
-            ? ParseConfig(configElement)
+        if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out JsonElement configRaw) && configRaw.ValueKind != JsonValueKind.Object)
+            return (400, ToJson(ErrorJson("invalid_config", "config doit être un objet JSON.")));
+        // La surcouche est conservée en JSON brut : désérialiser la surcouche
+        // en SimulationOptions la rendrait complète et la fusion
+        // réinitialiserait le profil (cf. ConfigLoader.MergeJson).
+        string? config = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out JsonElement configElement)
+            ? configElement.GetRawText()
             : null;
         int? maxTicks = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("maxTicks", out JsonElement maxTicksElement)
             ? maxTicksElement.GetInt32()
             : null;
 
         // Une commande start sans options ne remplace pas un run actif.
-        if (config is null && seed is null && maxTicks is null && _controller.HasRun)
-        {
+        if (config is null && seed is null && maxTicks is null && _controller.HasRun)        {
             return (409, ToJson(ErrorJson("run_active", "Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.")));
         }
 
@@ -200,9 +232,9 @@ public sealed class ControlServer : IAsyncDisposable
         // supplies an explicit configuration overlay.
         try
         {
-            SimulationOptions? effectiveConfig = _controller.WorldPrepared && config is null
+            string? effectiveConfig = _controller.WorldPrepared && config is null
                 ? null
-                : config ?? SimulationProfiles.Reference();
+                : config ?? SimulationProfiles.ReferenceJson();
             string runId = await _controller.StartAsync(seed, effectiveConfig, maxTicks);
             return (200, ToJson(OkJson("started", runId, _controller.Status())));
         }
@@ -210,10 +242,32 @@ public sealed class ControlServer : IAsyncDisposable
         {
             return (409, ToJson(ErrorJson(exception.Code, exception.Message)));
         }
+        catch (JsonException exception)
+        {
+            return (400, ToJson(ErrorJson("invalid_config", DescribeJsonError(exception))));
+        }
         catch (InvalidOperationException exception)
         {
             return (409, ToJson(ErrorJson("world_not_ready", exception.Message)));
         }
+    }
+
+    /// <summary>
+    /// Traduit une erreur de déserialisation en message utile sans exposer la
+    /// pile d'appels ni un numéro de ligne interne.
+    /// </summary>
+    private static string DescribeJsonError(JsonException exception)
+    {
+        string message = exception.Message;
+        int marker = message.IndexOf(" Path: ", StringComparison.Ordinal);
+        if (marker > 0)
+        {
+            message = message[..marker].Trim();
+        }
+
+        return string.IsNullOrWhiteSpace(message)
+            ? "La configuration contient des valeurs ou des types invalides."
+            : message;
     }
 
     private async Task<(int Status, string Body)> ResetAsync(JsonElement body)
@@ -225,42 +279,114 @@ public sealed class ControlServer : IAsyncDisposable
             ? maxTicksElement.GetInt32()
             : null;
 
-        string runId = await _controller.ResetAsync(seed, maxTicks);
-        return (200, ToJson(OkJson("reset", runId, _controller.Status())));
-    }
-
-    private static SimulationOptions? ParseConfig(JsonElement configElement)
-    {
-        if (configElement.ValueKind != JsonValueKind.Object)
-        {
-            return null;
-        }
-
         try
         {
-            return JsonSerializer.Deserialize(configElement.GetRawText(), typeof(SimulationOptions), JsonOptions) as SimulationOptions;
+            string runId = await _controller.ResetAsync(seed, maxTicks);
+            return (200, ToJson(OkJson("reset", runId, _controller.Status())));
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
-            return null;
+            return (400, ToJson(ErrorJson("invalid_config", DescribeJsonError(exception))));
+        }
+        catch (InvalidOperationException exception)
+        {
+            return (409, ToJson(ErrorJson("run_active", exception.Message)));
         }
     }
+
+    /// <summary>
+    /// Limite de taille du corps de requête. Sans elle, un
+    /// <c>Content-Length</c> (ou un transfert par blocs) arbitrairement grand
+    /// était lu entièrement en mémoire avant tout rejet.
+    /// </summary>
+    private const int MaxBodyBytes = 1 << 20;
 
     private static async Task<JsonElement> ReadBodyAsync(HttpListenerRequest request)
     {
-        if (request.ContentLength64 <= 0)
+        if (request.ContentLength64 == 0)
         {
             return new JsonElement();
         }
 
-        using var reader = new StreamReader(request.InputStream, Encoding.UTF8);
-        string text = await reader.ReadToEndAsync();
+        if (request.ContentLength64 > MaxBodyBytes)
+        {
+            throw new RequestException(413, "payload_too_large",
+                $"Le corps de la requête dépasse la limite de {MaxBodyBytes} octets.");
+        }
+
+        // ContentLength64 est -1 pour un transfert par blocs : la lecture reste
+        // donc bornée par ReadBoundedAsync, qui compte les octets reçus.
+        byte[] raw = await ReadBoundedAsync(request.InputStream, MaxBodyBytes).ConfigureAwait(false);
+        if (raw.Length == 0)
+        {
+            return new JsonElement();
+        }
+
+        string text;
+        try
+        {
+            text = Encoding.UTF8.GetString(raw);
+        }
+        catch (ArgumentException)
+        {
+            throw new RequestException(400, "invalid_json", "Le corps de la requête n'est pas de l'UTF-8 valide.");
+        }
+
         if (string.IsNullOrWhiteSpace(text))
         {
             return new JsonElement();
         }
 
-        return JsonDocument.Parse(text).RootElement;
+        try
+        {
+            // Le RootElement dépend du JsonDocument : sans Clone, il devient
+            // invalide à la dépose et libère la mémoire native gérée
+            // alors que les propriétés sont encore lues par le routeur.
+            using JsonDocument document = JsonDocument.Parse(text);
+            return document.RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            throw new RequestException(400, "invalid_json", "Le corps de la requête n'est pas un JSON valide.");
+        }
+    }
+
+    /// <summary>
+    /// Lit au plus <paramref name="limit"/> octets et détrègue le dépassement,
+    /// même lorsque la longueur déclarée est inconnue (transfert par blocs).
+    /// </summary>
+    private static async Task<byte[]> ReadBoundedAsync(Stream stream, int limit)
+    {
+        using MemoryStream buffer = new(capacity: Math.Min(limit, 8192));
+        byte[] chunk = new byte[8192];
+        while (true)
+        {
+            int read = await stream.ReadAsync(chunk).ConfigureAwait(false);
+            if (read == 0)
+            {
+                break;
+            }
+
+            if (buffer.Length + read > limit)
+            {
+                throw new RequestException(413, "payload_too_large",
+                    $"Le corps de la requête dépasse la limite de {limit} octets.");
+            }
+
+            buffer.Write(chunk, 0, read);
+        }
+
+        return buffer.ToArray();
+    }
+
+    /// <summary>Erreur de requète associée à un code HTTP (4xx) plutôt qu'à une 500.</summary>
+    private sealed class RequestException(int status, string code, string detail) : Exception(detail)
+    {
+        public int Status { get; } = status;
+
+        public string Code { get; } = code;
+
+        public string Detail { get; } = detail;
     }
 
     private static async Task WriteErrorAsync(HttpListenerContext context, int status, string code, string detail)

@@ -1,5 +1,6 @@
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
+using Simulation.Core.Prng;
 
 namespace Simulation.Core.Cognition;
 
@@ -18,7 +19,7 @@ public static class Inheritance
     /// <summary>Seuil de salience par défaut d'un souvenir parent transmis (V0.1, désormais <see cref="InheritanceSettings.SalienceThreshold"/>).</summary>
     public const double DefaultSalienceThreshold = 0.01;
 
-    private const ulong GoldenGamma = 0x9E3779B97F4A7C15UL;
+    private const ulong GoldenGamma = SplitMix64.Gamma;
     private const ulong Mix1 = 0xBF58476D1CE4E5B9UL;
     private const ulong Mix2 = 0x94D049BB133111EBUL;
 
@@ -93,15 +94,8 @@ public static class Inheritance
 
     private static double Draw01(ulong z)
     {
-        ulong h = SplitMix(z);
+        ulong h = SplitMix64.Avalanche(z);
         return (h % 10001) / 10000.0;
-    }
-
-    private static ulong SplitMix(ulong z)
-    {
-        z = (z ^ (z >> 30)) * Mix1;
-        z = (z ^ (z >> 27)) * Mix2;
-        return z ^ (z >> 31);
     }
 
     /// <summary>

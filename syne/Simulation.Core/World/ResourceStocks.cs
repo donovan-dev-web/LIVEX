@@ -37,26 +37,39 @@ public sealed class ResourceStocks
     /// <summary>Quantité courante (jamais négative).</summary>
     public double Stock(ResourceKind kind) => _stocks[kind];
 
-    public bool IsEmpty(ResourceKind kind) => _stocks[kind] <= 0.0;
+    /// <summary>Réserve épuisée : quantité nulle, négative ou corrompue.</summary>
+    public bool IsEmpty(ResourceKind kind) => !(double.IsFinite(_stocks[kind]) && _stocks[kind] > 0.0);
 
     /// <summary>
-    /// Consomme une quantité si disponible : décrémente la réserve et renvoie
-    /// <c>true</c>. Ne descend jamais sous zéro (réserve finie, décision n°4).
+    /// Consomme <paramref name="amount"/> unités de <paramref name="kind"/>
+    /// <b>si et seulement si</b> la réserve couvre exactement cette quantité :
+    /// opération tout-ou-rien. Renvoie <c>false</c> (et n'écrit rien) si la réserve
+    /// est vide ou insuffisante — la sémantique <c>TryConsume</c> est atomique,
+    /// donc un appelant ne peut jamais obtenir le bénéfice d'un achat non payé.
+    /// La quantité est validée (finie, non négative) : un <c>NaN</c> rendrait
+    /// la réserve définitivement <c>NaN</c> et corromprait toutes les comparaisons
+    /// ultérieures.
     /// </summary>
     public bool TryConsume(ResourceKind kind, double amount)
     {
+        if (!double.IsFinite(amount))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(amount), amount, "La consommation doit être une valeur finie.");
+        }
+
         if (amount < 0.0)
         {
             throw new ArgumentOutOfRangeException(nameof(amount), "La consommation ne peut être négative.");
         }
 
         double stock = _stocks[kind];
-        if (stock <= 0.0)
+        if (!double.IsFinite(stock) || stock < amount)
         {
             return false;
         }
 
-        _stocks[kind] = Math.Max(0.0, stock - amount);
+        _stocks[kind] = stock - amount;
         return true;
     }
 
@@ -80,15 +93,20 @@ public sealed class ResourceStocks
         {
             Configuration.ResourceSpec spec = settings.Spec(kind);
             double factor = seasonFactors?.For(kind) ?? 1.0;
-            _stocks[kind] = Math.Max(0.0, _stocks[kind] + (spec.RegenerationRate * factor));
+            double current = double.IsFinite(_stocks[kind]) ? _stocks[kind] : 0.0;
+            double rate = double.IsFinite(spec.RegenerationRate) ? spec.RegenerationRate : 0.0;
+            double next = current + (rate * factor);
 
             if (spec.DegradationTick is { } degradationTick
                 && degradationTick > 0
                 && currentTick % (ulong)degradationTick == 0)
             {
-                double loss = spec.RegenerationRate * degradationTick * factor;
-                _stocks[kind] = Math.Max(0.0, _stocks[kind] - loss);
+                double loss = rate * degradationTick * factor;
+                next -= loss;
             }
+
+            // Un facteur de saison corrompu ne doit pas pouvoir injecter NaN/inf.
+            _stocks[kind] = double.IsFinite(next) ? Math.Max(0.0, next) : 0.0;
         }
     }
 

@@ -281,6 +281,10 @@ public sealed class SimulationLoop
     /// tick précédent est **tracée** (<see cref="LastTerritoryChanges"/>) dans un
     /// ordre déterministe : par zone (ordre de pose), par entité (id croissant),
     /// sorties avant entrées. Cycle inactif : aucun tracé, appartenance nulle.
+    ///
+    /// Coût : une seule passe sur les entités, avec test de zone par entité
+    /// (O(entités × zones) *arithmétiques*, sans allocation par zone) — la version
+    /// précédente construisait un <c>HashSet</c> par zone et par tick.
     /// </summary>
     private void TrackTerritoryMembership()
     {
@@ -291,22 +295,25 @@ public sealed class SimulationLoop
             return;
         }
 
+        IReadOnlyList<World.Territory> zones = World.Territories;
         var current = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<ulong>>(System.StringComparer.Ordinal);
-        foreach (World.Territory zone in World.Territories)
+        foreach (World.Territory zone in zones)
         {
-            var members = new System.Collections.Generic.HashSet<ulong>();
-            foreach (Simulation.Core.Entities.Entity entity in World.Entities)
+            current[zone.Id] = [];
+        }
+
+        foreach (Simulation.Core.Entities.Entity entity in World.Entities)
+        {
+            foreach (World.Territory zone in zones)
             {
                 if (zone.Contains(entity.Position))
                 {
-                    members.Add(entity.Id.Value);
+                    current[zone.Id].Add(entity.Id.Value);
                 }
             }
-
-            current[zone.Id] = members;
         }
 
-        foreach (World.Territory zone in World.Territories)
+        foreach (World.Territory zone in zones)
         {
             System.Collections.Generic.HashSet<ulong> previous =
                 _territoryMembership.TryGetValue(zone.Id, out System.Collections.Generic.HashSet<ulong>? prev) ? prev : [];
@@ -326,6 +333,23 @@ public sealed class SimulationLoop
         }
 
         _territoryMembership = current;
+    }
+
+    /// <summary>
+    /// Restauration (SYNE-111/112) de l'appartenance effective au tick T. Sans cet
+    /// amorçage, le premier tick restauré comparerait l'appartenance sauvegardée à
+    /// un état vide et réémettrait une rafale de faux événements
+    /// <c>entered</c> pour des entités déjà dans la zone avant la sauvegarde.
+    /// </summary>
+    internal void RestoreTerritoryMembership(IReadOnlyDictionary<string, IReadOnlyList<ulong>> membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        _territoryMembership = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<ulong>>(
+            membership.ToDictionary(
+                pair => pair.Key,
+                pair => (System.Collections.Generic.HashSet<ulong>)[.. pair.Value],
+                System.StringComparer.Ordinal));
+        _territoryChanges.Clear();
     }
 
     /// <summary>
