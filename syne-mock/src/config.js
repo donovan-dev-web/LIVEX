@@ -96,8 +96,12 @@ const DEFAULTS = {
   // long accumulait deux evenements par agent et par tick indefiniment.
   diagnostics: { maxEvents: 2000 },
   replay: { file: null, loop: false },
-  engineVersion: '0.11.0',
-  contractVersion: '0.2.0'
+  // Parité de contrat avec SYNE (ObservabilityContract.cs) : la version du
+  // contrat d'observabilité (0.3.0 : champs additifs inventory/commitments) et
+  // la version moteur (0.14.0 : ADR cognitifs D7/D8/D5/D3/D2) annoncées sont
+  // celles du moteur réel que le mock émule.
+  engineVersion: '0.14.0',
+  contractVersion: '0.3.0'
 };
 
 function merge(base, overlay) {

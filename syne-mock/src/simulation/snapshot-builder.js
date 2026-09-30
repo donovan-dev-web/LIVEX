@@ -1,7 +1,7 @@
 const { round } = require('./deterministic-random');
 
 class SnapshotBuilder {
-  build({ config, runId, seed, tick, agents, stocks, obstacles, worldChanges, actions, groups, books }) {
+  build({ config, runId, seed, tick, simulatedTimeMinutes, agents, stocks, obstacles, worldChanges, actions, groups, books }) {
     const seasonIndex = Math.floor(tick / 90) % 4;
     const seasons = ['spring', 'summer', 'autumn', 'winter'];
     const territories = config.territories.enabled
@@ -22,7 +22,9 @@ class SnapshotBuilder {
       // le snapshot — ECHOS n'a plus à le dériver du runId.
       seed,
       tick,
-      simulatedTimeMinutes: tick,
+      // Parité de contrat (API_CONTRACTS.md §2.1) : minutes simulées, comme
+      // SimulationTime.ToSimulatedMinutes (1 minute = 1 tick à la cadence 1x).
+      simulatedTimeMinutes: simulatedTimeMinutes ?? tick,
       aliveCount: agents.length,
       season: seasons[seasonIndex],
       seasonIndex,
@@ -45,10 +47,14 @@ class SnapshotBuilder {
       resources: Object.entries(stocks).map(([type, quantity]) => ({
         type, quantity: round(quantity)
       })),
-      obstacles: obstacles.map(obstacle => ({ ...obstacle })),
+      // Parité de contrat (API_CONTRACTS.md §2.1) : les obstacles du snapshot
+      // portent la géométrie du monde {id, x, y, radius}, sans les détails de
+      // forme interne (SYNE sérialise ObstacleSnapshot(Id, X, Y, Radius)). Les
+      // formes multi-cellules, sans rayon, gardent leur ancre avec un rayon nul.
+      obstacles: obstacles.map(({ id, x, y, radius }) => ({ id, x, y, radius: radius ?? 0 })),
       territories,
       groups: groups.map(group => ({ ...group, members: [...group.members] })),
-      books: books.map(book => ({ ...book, readers: [...book.readers] })),
+      books: books.map(({ cost, ...book }) => ({ ...book, readers: [...book.readers] })),
       worldChanges: worldChanges.map(change => ({ ...change })),
       actions: actions.map(action => ({ ...action }))
     };

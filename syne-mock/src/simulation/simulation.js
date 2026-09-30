@@ -83,6 +83,13 @@ class Simulation {
     this.explicitPreparation = true;
     this.state = 'ready';
 
+    // Format canonique run-<seed>-<12hex> (parité SYNE, API_CONTRACTS.md §2/§3) :
+    // SYNE pince déjà son runId sur ce format dès le prepare du monde
+    // (SimulationController.PrepareCoreAsync) ; le mock doit porter la même
+    // identité pour que les consommateurs lisent un seed cohérent avec celui
+    // du world_initialized qui précède le premier snapshot.
+    this.runId = `run-${this.options.seed}-${randomHex12()}`;
+
     this.broadcast({
       type: 'world_initialized',
       version: this.worldVersion,
@@ -124,6 +131,12 @@ class Simulation {
 
     if (!this.world || Number(seed) !== this.options.seed || Object.keys(overlay).length)
       this.prepare(seed, this.options.ticksPerSecond, overlay);
+
+    // Run « finished » : le monde est prêt mais n'avancera plus — même réponse
+    // que SYNE (API_CONTRACTS.md §3), qui oriente le client vers /reset plutôt
+    // que vers /prepare (code 409 run_finished, testé côté SYNE).
+    if (this.state === 'finished')
+      throw Object.assign(new Error('run_finished'), { code: 'run_finished' });
 
     // Tout ce qui précède `loadReplay` est réécritable sans conséquence : un
     // échec du chargement laisse donc le monde prêt, acquitté, et surtout pas
@@ -369,15 +382,20 @@ class Simulation {
       title: 'Observations',
       content: 'A deterministic observation.',
       writtenTick: this.tick,
+      cost: 20,
       readers: [],
       readCount: 0
     };
     this.books.push(book);
+    // Charge utile de SYNE (EventSensor.BookWritten) : {id, title, writtenTick,
+    // cost} — le coût par défaut du profil moteur (world.books.writeCostEnergy)
+    // accompagne le titre, comme l'événement réel.
     events.push({
       type: 'world.book_written',
       tick: this.tick,
       agentId: String(this.agents[0].id),
-      value: { ...book }
+      targetId: book.id,
+      value: { id: book.id, title: book.title, writtenTick: book.writtenTick, cost: book.cost }
     });
   }
 
@@ -409,12 +427,17 @@ class Simulation {
     this.events.splice(0, this.events.length - Math.floor(cap / 2));
   }
 
+  simulatedMinutes(tick) {
+    return Math.round(tick / this.options.ticksPerSecond);
+  }
+
   snapshot() {
     return this.snapshotBuilder.build({
       config: this.options,
       runId: this.runId,
       seed: this.options.seed,
       tick: this.tick,
+      simulatedTimeMinutes: this.simulatedMinutes(this.tick),
       agents: this.agents,
       stocks: this.resources,
       obstacles: this.obstacles,
