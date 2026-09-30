@@ -27,7 +27,7 @@
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export | **LIVRÉ (ECHOS-070 → 072, jalon ph7, U7)** : `GET /api/compare` (`is_reproducible` seed×version×SHA-256, `ReproducibilityScore = 1 − (CognitiveDiff+SocialDiff)/2`, L2 normalisées sur croyances/confiance — `echos/analysis/reproducibility.py`), exports `json`/`csv` (séries alignées `tick,engine,metric,run_a_value,run_b_value,diff`), 11 tests (`test_compare.py`), couverture 97,97 % |
 | 8 | Interface intégrée | Écrans ECHOS (web local React/Vite servie par FastAPI) : vues de métriques, croyances, réseaux, calibration |
 | 9 | Tests & couverture | **LIVRÉ (U8, ECHOS-090→092)** : suite pytest + goldens, couverture 96,01 %, test d’intégration réel SYNE→ECHOS en CI, rapport de calibration déterministe. Cette validation ne couvre pas PRISM ; PRISM-LDK (`PrismLdk`) et le projet Unreal PRISM doivent être validés séparément contre SYNE réel. |
-| 10 | Shell Electron (horizon ultérieur) | Packaging natif de bureau de `echos-ui` via **Electron** — **conservé** (non abandonné), implémentation **différée post-V0.1** (correction décision 23/09/2026, `ADR-001`) ; coordonné avec PRISM (`../docs-prism/`) |
+| 10 | Shell Electron | Packaging natif de bureau d'ECHOS via **Electron** — **LIVRÉ** : `echos-desktop/` (backend Python empaqueté PyInstaller *onedir*, interface `echos-ui` servie par FastAPI sur la même origine), cibles `.deb` (Linux) et NSIS `.exe` (Windows), CI matrice `ubuntu`/`windows` sur tag `echos-v*` (`ADR-003`). La coordination avec PRISM (`../docs-prism/`) reste un chantier distinct. |
 
 ## 3. Jalons de validation
 

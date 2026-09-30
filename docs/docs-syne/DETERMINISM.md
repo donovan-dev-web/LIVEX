@@ -77,8 +77,35 @@
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion` (0.10.0 au jalon U8 — Saisons + Territoires ; 0.8.0 au jalon SYNE ph11d ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
+  - mise à jour de `engineVersion` (0.14.0 au jalon ADR cognitifs — implémentation des 5 ADR acceptés du 30/09/2026 sous drapeaux désactivés par défaut : trajectoire de référence inchangée, checksums conservés ; 0.13.0 à la calibration D1 — rééquilibrage utilitaire + bilan énergétique du profil de référence, ADR-015 ; 0.12.0 au jalon review/refactor ; 0.10.0 au jalon U8 — Saisons + Territoires ; 0.8.0 au jalon SYNE ph11d ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
+
+**Jalon calibration D1 (engineVersion 0.13.0)** : la calibration de survie du
+scénario de référence (ADR-015 — `BenefitOf` Eat/Drink `min(need,100) × 0.6`,
+`EnergyRecovery` eat 2.0 / drink 1.0 portés par le profil de référence) est une
+**altération volontaire de trajectoire**. Checksums dorés re-calés et assumés
+(procédure du plan campagne-runs §8, même commit que l'ADR) :
+
+| Empreinte | Avant (0.12.0) | Après (0.13.0) | Test épinglé |
+| :-- | :-- | :-- | :-- |
+| Golden de perception (25 entités, 200 ticks, seed 12345) | `0xdb57f58566418f5d` | `0x46769cfb11c8b3a7` | `DeterminismRegressionTests.GoldenChecksum_IsPinned`, `TickBudgetTests.GoldenChecksum_IsUnaffectedByInstrumentation`, `ObservabilityNonIntrusionTests` |
+| Baseline d'état complet (25 entités, 200 ticks, seed 12345) | `0x88bbc67950002bab` | `0xe62395429b50b7c1` | `Ph10DeterminismBaselineTests.FullPipeline_StateBaseline_IsPinned` |
+
+Cause isolée et vérifiée : les agents mangent/boivent **plus tôt et plus
+souvent** (bénéfice monotone + récupération d'énergie), la trajectoire diverge
+dès les premières délibérations. Le déterminisme bit-à-bit à seed et version
+fixées reste garanti : deux runs 0.13.0 de même seed → empreintes identiques
+(re-vérifié par `FullPipeline_SameSeed_IsBitForBitReproducible`).
+
+**Jalon ADR cognitifs (engineVersion 0.14.0)** : implémentation des 5 ADR acceptés
+(D7 primitives, D8 inventaire, D3 bibliothèque de plans, D5 engagements, D2 saillance)
+uniquement sous drapeaux **désactivés par défaut** — convention des jalons U8
+(saisons/territoires/livres) : **aucune altération de trajectoire**, checksums dorés
+et baseline d'état inchangés (`0x46769cfb11c8b3a7` / `0xe62395429b50b7c1`), seule
+l'épinglage de version a bougé. Inertie vérifiée par
+`AdrDeterminismNeutralTests` (drapeaux éteints : aucun esprit n'adopte les nouveaux
+désirs, inventaire null, engagements vides, saillance inactive ; drapeaux allumés :
+trajectoire différente et reproductible).
 
 ---
 

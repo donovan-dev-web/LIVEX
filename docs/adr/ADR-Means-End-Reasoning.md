@@ -1,6 +1,13 @@
 # ADR — Means-End Reasoning (Plans Alternatifs par Objectif)
 
-**Statut :** [OUVERT] — piste documentée, non implémentée
+**Statut :** [Accepté] — décision du 30/09/2026, en deux temps : (1) réintroduction d'`Attack` au catalogue ; (2) bibliothèque de plans candidats par objectif. `Buy` suit les ADR Primitives d'actions et Inventaire (acceptés le même jour) ; `Steal` sera arbitré avec `docs/ETHICS_AND_SCOPE.md` avant tout ajout.
+**Implémentation (30/09/2026, engineVersion 0.14.0)** : temps 1 fait (`Attack` au
+catalogue, jamais généré en V0.1) ; temps 2 fait (`PlanLibrary.GenerateCandidates` :
+candidats `Take` modulés par greed et capacité, `Trade` vers un pair de confiance > 0.5,
+pour les objectifs de faim/soif) — la formule d'utilité est inchangée (`benefitOverride`
+pour les candidats dérivés d'engagement). `Steal` non implémenté (point 6 de l'ADR :
+progressivité + arbitrage éthique en attente). Drapeau : `agents.actions.plans.enabled`
+(inerte par défaut, trajectoire de référence inchangée).
 **Portée :** Extension du Système d'Objectifs (§3.13) et du Système d'Actions (§3.15), sans modification du Système de Décision (§3.14)
 **Auteur :** Donovan Chartrain
 **Document parent :** LIVEX — Monographie Générale (Partie 3)
@@ -88,4 +95,7 @@ Chaque plan candidat alimente Benefit/Cost/Risk/Confidence/Urgency (§3.14) avec
 
 ## 8. Statut de la décision
 
-[OUVERTE] — documentée pour V3, introduction recommandée en deux temps (`Gather`/`Trade` d'abord, `Steal`/`Attack` ensuite) pour respecter la doctrine de progressivité (§9.6.2).
+[Acceptée et implémentée le 30/09/2026 — engineVersion 0.14.0] : temps 1 (`Attack` au
+catalogue, jamais généré en V0.1) et temps 2 (`PlanLibrary` : candidats `Take`/`Trade`)
+réalisés ; la formule d'utilité est inchangée, seule le volume de candidats augmente.
+`Steal` reste en attente de son arbitrage avec `docs/ETHICS_AND_SCOPE.md`.

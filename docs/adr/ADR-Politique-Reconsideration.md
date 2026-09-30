@@ -1,10 +1,19 @@
 # ADR — Politique de Reconsidération (Contrôle de Saillance)
 
-**Statut :** [OUVERT] — piste documentée, non implémentée
+**Statut :** [Accepté] — décision du 30/09/2026 : le filtre de saillance pré-délibération est retenu ; l'implémentation est planifiée **après** la calibration de survie (itération B1 du plan de correctifs campagne-runs).
+**Implémentation (30/09/2026, engineVersion 0.14.0)** : étape 3bis « Contrôle de
+Saillance » — entre deux délibérations planifiées, l'intention est poursuivie sauf
+saillance (franchissement de seuil de besoin depuis la dernière délibération, poids
+configurable) ou condition critique (reconsidération forcée = SEUIL_MAX, généralisation
+des 4 conditions de §3.15.6) ou filet de sécurité périodique (50 ticks par défaut). O(k)
+sur les deltas des étapes 1-3 ; traçabilité ECHOS (`lastSalienceScore`, `skippedBySalience`
+côté esprit). Drapeau : `agents.actions.salience.enabled` (inerte par défaut,
+trajectoire de référence inchangée). Le LOD spatial reste le plafond de fréquence (point
+3 de l'ADR : mécanismes cumulatifs).
 **Portée :** Nouvelle étape dans la Boucle Cognitive V2 (§3.8.1), en amont du Système de Décision (§3.14)
 **Auteur :** Donovan Chartrain
 **Document parent :** LIVEX — Monographie Générale (Partie 3)
-**Dépend de :** ADR — Perception des Événements
+**Dépend de :** ~~ADR — Perception des Événements~~ [Rejeté le 30/09/2026] — la saillance s'appuiera donc sur les signaux internes (besoins, objectifs, décisions interrompues) et les observations standard, sans observation `Event` dédiée
 
 ---
 
@@ -88,4 +97,4 @@ Cette fonction ne recalcule pas les besoins ni ne relance l'évaluation d'utilit
 
 ## 7. Statut de la décision
 
-[OUVERTE] — dépend de l'ADR « Perception des Événements » pour disposer du flux d'observations nécessaire au calcul de saillance. Prévue pour V3.
+[Acceptée] — décision du 30/09/2026. L'ADR « Perception des Événements » dont elle dépendait a été **rejeté** le même jour : la saillance s'appuiera donc sur les signaux internes (besoins, objectifs, décisions interrompues) et les observations standard, sans observation `Event` dédiée. Implémentation planifiée après la calibration de survie (itération B1 du plan de correctifs campagne-runs).

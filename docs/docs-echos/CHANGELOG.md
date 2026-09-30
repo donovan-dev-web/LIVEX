@@ -2,14 +2,38 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 23 septembre 2026
+**Dernière mise à jour** : 29 septembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
 
 ## [Unreleased]
 
+### Fixed
+- **Cache de séries jamais invalidé entre processus (retard croissant des graphiques)** : `AnalyticsStore.ingest_version` était un compteur **en mémoire du processus** — or l'API et l'ingestion sont deux processus séparés (shell bureau, ADR-003). Les écritures de l'ingestion n'incrémentaient donc jamais la version vue par l'API : les séries de `/api/runs/{id}/metrics` restaient figées sur leur premier chargement, et le tableau de bord affichait un « retard N ticks » croissant malgré des rafraîchissements normaux. Correctif : la version combine désormais `PRAGMA data_version` (réflète les écritures de **toutes** les connexions, y compris inter-processus) et le compteur local. Suite ECHOS verte (304+ tests, couverture 93 %).
+- **Écrans d'analyse gelés pendant un run lancé depuis l'interface** : la liste des runs (`useLoadRuns`) n'était chargée qu'une seule fois au montage de l'app et le flux WebSocket SYNE ne transporte pas de `run_id` d'analyse — un run démarré après l'ouverture de la fenêtre n'apparaissait jamais dans le sélecteur, et tous les écrans alimentés par l'API (tableau de bord, graphes, phénomènes) restaient sur le run précédent pendant que les vues temps réel (2D, ticks) vivaient. Correctif : re-poll périodique de `/api/runs` (5 s, propriété d'`AppShell`) + après Start/Reset, l'écran de pilotage recharge la liste (boucle bornée, 10 × 500 ms) et sélectionne le `runId` renvoyé par le relais de contrôle. Le repli de première sélection prend le run **le plus avancé** (dernier tick max), pas le dernier de la liste (l'ordre de l'API n'est ni chronologique ni alphabétiquement significatif).
+- **Tempête de requêtes `/metrics` pendant les runs longs** : les hooks d'analyse refetchaient le payload **complet** des séries à chaque tick WebSocket (10×/s) — les réponses s'empilaient plus vite qu'elles n'aboutissaient, l'affichage décrochait et le rendu se figeait. Correctif : cadence minimale de 2 s entre deux requêtes (une seule en vol, le surplus est sauté) ; le flux WS reste le détecteur d'activité.
+
 ### Added
+- **Contrôles de rafraîchissement du tableau de bord** : bouton « Actualiser » (rechargement immédiat des métriques, groupes et phénomènes) et bascule « Live » (rafraîchissement automatique cadré) / « Figé » (gel manuel pour lire un instant précis).
+
+### Added
+- **Plan campagne-runs — axes A/B/C/D ECHOS réalisés (J-C1 → J-C4)** : réalisation du plan `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (décisions D1/D2/D3 du 29/09/2026).
+  - **A1** : champ `seed` transporté (`WorldSnapshot.seed`, contrat SYNE 0.2.1 additif) — `consume()` enregistre le seed du snapshot et ne dérive depuis `run_id` qu'en **repli** (`_seed_of` étendu à `run-<seed>-<12hex>`) ; seed introuvable des deux côtés → `seed: ""` + avertissement d'ingestion, jamais une erreur fatale (observe-only).
+  - **A2** : changement de `run_id` détecté en flux — run enregistré avant son premier tick (zéro FK error), fenêtres glissantes réinitialisées, série Parquet flushée, rapport de calibration bâti à la fin de **chaque** run (y compris interrompu par un reset).
+  - **A3** : `outcome`/`extinctionTick` dans le rapport de calibration + `population_outcome()` en SQL (disponible pendant l'ingestion) + exposition `/api/runs` et `/api/runs/{id}`.
+  - **B2** : bloc `viability` du rapport (`energySlopePerTick`, `actionSharesWhenHungry`, `resourceRegime` — colonnes `mean_food`/`mean_water`, **schéma v6**, migration additive) — `schemaVersion 2`.
+  - **C1** : `/api/runs/{id}` et `/api/emergent-phenomena` lisent `observations_for(…, "phenomena")` au lieu de `contexts()` (fin des timeouts > 20 s / OOM).
+  - **C2** : cadence `context_every` du contexte `agents` (défaut 20, `ECHOS_CONTEXT_EVERY`) + dernier tick toujours écrit ; empreinte de comparabilité documentée dans `EXPERIMENT_COMPARISON.md`.
+  - **C3** : `/api/compare?light=1` — summary sans empreinte (`bit_identical`/`is_reproducible` = `null`) ; l'UI l'utilise par défaut.
+  - **D3** : trous de ticks journalisés (`ConsumeResult.gaps_detected` + log structuré) — signalés, pas masqués.
+  - **D4** : badge « éteint à tN » / « vivant » sur la liste des runs (`echos-ui`), consommant `outcome`.
+  - Tests : suite **304 passed, 2 skipped** (dont 10 nouveaux : seed transporté/repli/absent, deux runs en une connexion, fenêtres réinitialisées, cadence `agents`, outcome API, light sans empreinte, extinction/viabilité/stabilité du rapport).
+- **ECHOS ph10 — Shell de bureau Electron (ECHOS-100 → ECHOS-103, `ADR-003`)** :
+  - **backend sert l'interface** : `create_app(store, ui_dist)` monte le build `echos-ui` à la racine via un `StaticFiles` à repli SPA (routeur React), routes `/api/*` prioritaires ; `echos/server.py` (`echos-serve`, script `pyproject`) lance uvicorn API + UI (env `ECHOS_UI_DIST`/`ECHOS_HOST`/`ECHOS_PORT`/`ECHOS_LOG_LEVEL`). Interface et API partagent la **même origine** → aucun CORS.
+  - **paquet `echos/echos-desktop/`** : `electron/main.js` (port local libre, backend Python en processus enfant, attente de `/health`, arrêt du backend à la fermeture, `contextIsolation`/`sandbox`), `backend/echos-server.spec` (PyInstaller **onedir**, `pyarrow` collecté), `electron-builder.yml` (`.deb` Linux + NSIS `.exe` Windows, `extraResources` backend+UI), `scripts/build-backend.mjs` + `scripts/make-icon.mjs`.
+  - **CI** `echos-desktop.yml` : matrice `ubuntu`/`windows`, build du paquet, smoke test `/health` du binaire packagé, artefacts attachés à la release sur tag `echos-v*`.
+  - Tests : `tests/test_server.py` (8 tests, service statique/SPA/priorité API) ; suite ECHOS **291 passed, 2 skipped**, couverture **92,8 %**.
 - Documentation technique V0.1 complète du composant (VISION, ARCHITECTURE, METRICS_SPEC, EMERGENCE_INDICATORS, CAUSAL_ANALYSIS, EXPERIMENT_COMPARISON, API_REST, LOGGING_INSTRUMENTATION, LIMITATIONS, TESTING, ROADMAP).
 - ADR-001 (stack FastAPI + React/Vite web local pour V0.1 — **shell Electron conservé**, implémentation différée à un horizon ultérieur) et ADR-002 (mode de calcul causal hors ligne).
 - ECHOS-1 : structure du monorepo — `echos/` (paquet Python `echos` : API FastAPI `create_app()`, `/health`, squelette des **7 moteurs de métriques** avec registre `known_engines()`, placeholder `ingestion`), `echos-ui/` (Vite + React + TypeScript : lint, build, tests vitest/jsdom), tests pytest (13 tests, couverture 100 %), CI `echos-python`/`echos-ui` activées.
