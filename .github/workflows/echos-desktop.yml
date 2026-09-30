@@ -1,0 +1,109 @@
+name: ECHOS Desktop (Electron)
+
+# Empaquette ECHOS en application de bureau : backend Python (PyInstaller,
+# onedir) + interface echos-ui, assemblés par electron-builder en .deb (Linux)
+# et .exe/NSIS (Windows). ADR-003 ECHOS.
+#
+# PyInstaller ne cross-compile pas : chaque OS produit son propre binaire, d'où
+# la matrice. Sur PR, le paquet est construit et le backend packagé est
+# smoke-testé (aucun artefact publié) ; sur tag echos-v*, les paquets sont
+# attachés à la release.
+
+on:
+  pull_request:
+    paths:
+      - "echos/**"
+      - ".github/workflows/echos-desktop.yml"
+  push:
+    tags:
+      - "echos-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+concurrency:
+  group: echos-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Paquet (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: dist:linux
+            artifact: echos-desktop-linux
+            assets: echos/echos-desktop/release/*.deb
+          - os: windows-latest
+            target: dist:win
+            artifact: echos-desktop-windows
+            assets: echos/echos-desktop/release/*.exe
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            echos/echos-ui/package-lock.json
+            echos/echos-desktop/package-lock.json
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Dépendances Python (backend + PyInstaller)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r echos/echos-desktop/backend/requirements-build.txt
+
+      - name: Dépendances Node (ui + desktop)
+        run: |
+          npm ci --prefix echos/echos-ui
+          npm ci --prefix echos/echos-desktop
+
+      - name: Build du paquet (${{ matrix.target }})
+        env:
+          ECHOS_PYTHON: python
+        run: npm --prefix echos/echos-desktop run ${{ matrix.target }}
+
+      - name: Smoke test du backend packagé
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN="echos/echos-desktop/resources/backend/echos-server/echos-server"
+          if [ ! -f "$BIN" ]; then BIN="$BIN.exe"; fi
+          test -f "$BIN" || { echo "::error::binaire backend absent : $BIN"; exit 1; }
+          ECHOS_HOST=127.0.0.1 ECHOS_PORT=5099 "$BIN" &
+          PID=$!
+          ok=0
+          for _ in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:5099/health >/dev/null; then ok=1; break; fi
+            sleep 0.5
+          done
+          kill "$PID" 2>/dev/null || true
+          wait "$PID" 2>/dev/null || true
+          if [ "$ok" != "1" ]; then echo "::error::/health n'a pas répondu"; exit 1; fi
+          echo "backend packagé : /health OK"
+
+      - name: Artefact du paquet
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.assets }}
+          if-no-files-found: error
+
+      - name: Attacher à la release (tag echos-v*)
+        if: startsWith(github.ref, 'refs/tags/echos-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.assets }}
