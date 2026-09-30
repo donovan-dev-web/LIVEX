@@ -21,6 +21,7 @@ historiques conservées pour leur valeur d'archive.
 | [SYNE](docs-syne/README.md) | Moteur autoritaire, simulation, configuration et contrats de données. |
 | [ECHOS](docs-echos/README.md) | Ingestion, analyse, stockage, API et interface d'observation. |
 | [PRISM](docs-prism/README.md) | Projet Unreal final de LIVEX et plugin PRISM-LDK (`PrismLdk`), API Blueprint et intégration. |
+| [Launcher](docs-launcher/README.md) | Orchestrateur de la pile : matrice des modes, campagnes, supervision à six niveaux, réseau et Gateway, flux de données et format de paquet `.livexp`. |
 | [syne-mock](../syne-mock/README.md) | Serveur Node.js de développement, ses scénarios, contrats et limites. |
 
 ## LIVEX, PRISM et PRISM-LDK

@@ -56,6 +56,7 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 | Analyse causale | Reconstruction des chaînes | `CAUSAL_ANALYSIS.md` |
 | Comparaison expérimentale | Runs contrôlés, reproductibilité | `EXPERIMENT_COMPARISON.md` |
 | API REST | Endpoints d'interrogation lecture seule (port 5000) — `api/app.py` (factory + `ECHOS_ANALYTICS_DB`), `api/routes.py` (ECHOS-040→044), `api/series.py` (cache LRU) | `API_REST.md` |
+| Shell de bureau | Application Electron (`echos-desktop/`) : lance le backend Python (PyInstaller *onedir*) comme enfant, ouvre une fenêtre sur l'origine locale ; FastAPI sert aussi le build `echos-ui` (même origine, sans CORS) | `adr/ADR-003-shell-electron-desktop.md` |
 | Logging & instrumentation | 3 niveaux (structuré, traces, texte) | `LOGGING_INSTRUMENTATION.md` |
 
 ---
@@ -70,8 +71,9 @@ echos/
 ├── .flake8                   # flake8 (max-line-length=100)
 ├── echos/
 │   ├── __init__.py           # __version__ (synchro pyproject)
+│   ├── server.py             #   echos-serve : uvicorn API + UI statique (repli SPA), ECHOS_UI_DIST
 │   ├── api/                  # API REST (ECHOS-040 → 045)
-│   │   ├── app.py            #   create_app(store) FastAPI + ECHOS_ANALYTICS_DB, /health
+│   │   ├── app.py            #   create_app(store, ui_dist) FastAPI + ECHOS_ANALYTICS_DB, /health
 │   │   ├── routes.py         #   /api/runs*, /metrics, /export, /beliefs, /relationships, /groups, /emergent-phenomena
 │   │   └── series.py         #   SeriesCache LRU invalide par ingest_version
 │   ├── analysis/             # 8 moteurs (7 métriques + EmergenceIndicators)
@@ -87,7 +89,12 @@ echos/
 │       ├── parquet.py        #   séries lourdes PyArrow + coherence_errors
 │       └── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
 ├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
-└── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
+├── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
+└── echos-desktop/            # shell Electron (ADR-003 ECHOS)
+    ├── electron/main.js      #   lance le backend, attend /health, ouvre la fenêtre
+    ├── backend/              #   spec PyInstaller (onedir) + point d'entrée
+    ├── electron-builder.yml  #   cibles .deb (Linux) / NSIS .exe (Windows)
+    └── scripts/              #   build-backend.mjs, make-icon.mjs
 ```
 
 - `echos` est le composant **Application + Analyse** ; `echos-ui` le composant **Interface** (§1).
@@ -97,5 +104,8 @@ echos/
 ---
 
 ## Points restés ouverts dans ce document
-- La divergence FastAPI/Django et la place du shell Electron (conservé, implémentation différée post-V0.1) sont tranchées et documentées — aucun reste ouvert.
+- La divergence FastAPI/Django est tranchée et documentée. Le shell Electron,
+  **conservé** par l'`ADR-001`, est désormais **implémenté** (`echos-desktop/`,
+  `ADR-003`) : application de bureau `.exe`/`.deb`, backend Python empaqueté
+  PyInstaller et interface servie par FastAPI sur la même origine.
 - Choix des bibliothèques de visualisation (ECharts vs Plotly) par vue : à affiner à l'implémentation.

@@ -48,7 +48,7 @@ Cette décision est formalisée dans `adr/ADR-002-mode-calcul-causal.md` **[Acce
 - **Sources par couche** (hors ligne, ADR-002) :
   - `Action`/`Besoin`/`Mémoire` — ligne `decision_traces` du tick (action choisie, besoins, compteur mémoire) ;
   - `Intention` — événement `decision_made` correspondant (`value.intention`, repli action) ;
-  - `Objectif`/`Croyance` — contexte `agents` du tick ≤ tick le plus récent (buts `goals[].kind`, sujets de croyances triés) ;
+  - `Objectif`/`Croyance` — contexte `agents` du tick ≤ tick le plus récent (buts `goals[].kind`, sujets de croyances triés) ; **fraîcheur** (C2) : le contexte `agents` est persisté 1 tick sur `context_every` (défaut 20, `ECHOS_CONTEXT_EVERY`) plus le dernier tick du flux — `context_before` sert donc le contexte le plus récent **disponible**, âgé d'au plus `context_every − 1` ticks ; `context_every=1` rétablit la fraîcheur tick-par-tick ;
   - `Perception` — derniers `message_received` de l'entité ≤ tick (jusqu'à 3, tri (tick, id)).
 - **Une couche = un nœud** : les multiples (croyances, perceptions) sont agrégés dans `detail` ; couche sans donnée → libellé `—` (chaîne « tronquée » signalée, ADR-002 — négatives).
 - **Déterminisme** (ECHOS-041) : ordres stables (besoins par (valeur, clé), croyances/sujets triés, perceptions (tick, id)), aucun tirage, aucune écriture.

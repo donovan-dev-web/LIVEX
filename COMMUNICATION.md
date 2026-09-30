@@ -51,10 +51,13 @@ les valeurs locales par défaut.
 - Messages : **trames texte UTF-8 contenant du JSON** (camelCase). Le serveur
   WebSocket envoie `WebSocketMessageType.Text`; les clients ne doivent pas
   attendre des trames binaires.
-- Chaque `snapshot` porte l'identité canonique du run dans `runId`. Cette
-  valeur opaque est stable pour toute la durée du run et doit être propagée
-  par ECHOS dans ses réponses et son stockage. Le mode batch peut dériver
-  `run-<seed>` ; le serveur contrôlé génère un identifiant opaque.
+- Chaque `snapshot` porte l'identité canonique du run dans `runId` et, depuis
+  le contrat **0.2.1**, le **seed effectif** du run (champ additif `seed`).
+  Ces valeurs sont stables pour toute la durée du run et doivent être
+  propagées par ECHOS dans ses réponses et son stockage. Le mode batch peut
+  dériver `run-<seed>` ; le serveur contrôlé génère l'identifiant canonique
+  **`run-<seed>-<12hex>`** — le seed reste lisible dans l'identifiant et le
+  suffixe garantit l'unicité entre deux runs de même seed.
 - Événements typés : notamment `tick_summary`, `decision_made`,
   `action_completed`, `world_delta` et les événements de communication. La
   liste et les schémas effectivement émis sont versionnés dans
@@ -80,6 +83,10 @@ Source : Monographie §3.5 (contrôle), Partie 5.4.2.
 - URL par défaut : `http://127.0.0.1:5181/api/control/`
 - PRISM commande directement SYNE depuis ses contrôles Unreal ; ECHOS peut aussi piloter le moteur depuis son interface.
 - Un monde préparé explicitement doit être acquitté avant `start`. La cadence et la seed sont attachées à la préparation ; consulter le statut et le contrat SYNE pour les règles complètes.
+- Depuis **SYNE 0.13.0** : un `start` alors que le run est arrivé à son
+  `maxTicks` (état `finished`) répond **`409 run_finished`** (« run terminé —
+  appelez /api/control/reset avant de redémarrer ») au lieu du générique
+  `world_not_ready`.
 - `stop` annule le run courant et ramène son état à `Idle`; il ne ferme ni
   l'API de contrôle ni le serveur WebSocket. Un arrêt de toute la pile reste
   une responsabilité du processus (`Ctrl+C`/arrêt du service).

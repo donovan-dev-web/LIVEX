@@ -1,6 +1,6 @@
 # Note — Couche Affective Transitoire (États Émotionnels)
 
-**Statut :** [OUVERT] — piste notée pour mémoire, non détaillée en ADR
+**Statut :** [Écartée] — décision du 30/09/2026 : l'état affectif transitoire n'entrera pas dans le moteur. La modulation risque/urgence reste portée par les traits de personnalité statiques et les besoins ; cette note est conservée pour mémoire et traçabilité de la décision.
 **Portée potentielle :** Système de Besoins (§3.12), Système de Décision (§3.14), Système de Mémoire (§3.10)
 **Document parent :** LIVEX — Monographie Générale (Partie 3)
 
@@ -42,4 +42,4 @@ Un seul affect (peur/alerte) suffirait comme première itération — pas besoin
 
 ## Statut
 
-Non prioritaire par rapport aux 6 ADR déjà formalisées — noté ici pour ne pas perdre l'idée, à détailler en ADR complète si le projet en vient à vouloir enrichir la crédibilité comportementale au-delà de la coordination sociale déjà couverte.
+**Écartée** — décision du 30/09/2026 : l'état affectif transitoire n'entrera pas dans le moteur. La modulation risque/urgence reste portée par les traits de personnalité statiques (§3.7.4) et les besoins ; cette note est conservée pour mémoire et traçabilité de la décision.

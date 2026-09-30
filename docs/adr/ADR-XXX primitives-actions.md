@@ -1,5 +1,14 @@
 ADR-XXX — Refonte du système d'actions vers des primitives atomiques
-Statut : Proposé
+Statut : Accepté (30/09/2026) — **implémenté le 30/09/2026 (engineVersion 0.14.0)** : les 5
+primitives atomiques `Take`/`Give`/`Trade`/`Attack`/`Defend` sont ajoutées EN QUEUE de
+`DesireKind` (l'ordre historique 0-8 ne change pas — départage déterministe conservé) et
+exécutées atomiquement par `ActionExecutor.ExecutePrimitive` (échec = `Blocked`, aucun
+effet partiel). Portée V0.1 assumée : les composites `Eat`/`Drink` restent des actions
+terminales existantes (recettes fixes de `SeekFood`/`SeekWater`) — la refonte complète en
+recettes d'objectifs reste du travail ultérieur ; `Attaquer` est présent au catalogue mais
+jamais généré par la délibération (doctrine §9.6.3 point 13) ; `Steal` n'est pas implémenté
+(arbitrage ETHICS_AND_SCOPE requis). Drapeaux : `agents.actions.inventory.enabled` (D8) —
+inerte par défaut, trajectoire de référence inchangée.
 
 Contexte
 --------
