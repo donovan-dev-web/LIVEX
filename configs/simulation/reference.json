@@ -26,7 +26,11 @@
     "actions": {
       "moveEnergyCost": 0.05,
       "restEnergyGain": 1.5,
-      "restFatigueRecovery": 2
+      "restFatigueRecovery": 2,
+      "catalog": {
+        "eat": { "energyRecovery": 2.0 },
+        "drink": { "energyRecovery": 1.0 }
+      }
     }
   }
 }

@@ -134,7 +134,7 @@ public class TickBudgetTests
             hash = Fnv1a(log.ToString());
         }
 
-        Assert.Equal("0xdb57f58566418f5d", $"0x{hash:x16}");
+        Assert.Equal("0x46769cfb11c8b3a7", $"0x{hash:x16}");
     }
 
     private static SimulationLoop BuildGolden(ulong seed, TickBudgetCollector? budget)

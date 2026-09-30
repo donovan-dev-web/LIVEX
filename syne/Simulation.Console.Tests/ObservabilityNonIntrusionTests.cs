@@ -142,7 +142,7 @@ public class ObservabilityNonIntrusionTests
         // Garde-fou transverse : la preuve d'anti-intrusion s'appuie sur un journal
         // identique à celui de DeterminismRegressionTests ; vérifie la cohérence.
         // Doit rester aligné sur DeterminismRegressionTests.GoldenChecksum_IsPinned
-        // (0xdb57f58566418f5d depuis l'activation du garde anti-relay,
+        // (0x46769cfb11c8b3a7 depuis la calibration D1 ; 0xdb57f58566418f5d auparavant,
         // engineVersion 0.12.0) : toute divergence entre les deux est un signal
         // que l'observabilité a réintroduit de l'intrusion dans la trajectoire.
         SimulationLoop loop = BuildScenario(12345, entityCount: 25);
@@ -153,7 +153,7 @@ public class ObservabilityNonIntrusionTests
             rec.Record(loop);
         }
 
-        Assert.Equal("0xdb57f58566418f5d", $"0x{Fnv1a(rec.Text):x16}");
+        Assert.Equal("0x46769cfb11c8b3a7", $"0x{Fnv1a(rec.Text):x16}");
     }
 
     [Fact]

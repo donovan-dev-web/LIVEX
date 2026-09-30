@@ -9,10 +9,15 @@ namespace Simulation.Core.Cognition;
 /// besoin Eat/Drink (SYNE-042, décision n°4). Chaque désir découle d'un besoin
 /// non satisfait (objectif = état recherché, COGNITIVE_ARCHITECTURE.md §5).
 /// <list type="bullet">
-///   <item>Les valeurs existantes (0-6) ne changent jamais : l'ordre du catalogue
+///   <item>Les valeurs existantes (0-8) ne changent jamais : l'ordre du catalogue
 ///    est stable pour le départage déterministe (décision n°22, DETERMINISM.md §5).</item>
 ///   <item>Eat/Drink (7-8) : actions terminales immédiates, non persistantes
 ///    (exécutées tant que le besoin est déclenché, jamais en holdover).</item>
+///   <item>Take…Defend (9-13, jalon primitives D7/D8 — engineVersion 0.14.0) :
+///    primitives atomiques de manipulation de l'inventaire et d'interaction,
+///    ajoutées EN QUEUE (jamais réordonnées). Elles ne sont générées que via la
+///    bibliothèque de plans (agents.actions.plans.enabled, D3) et ne font rien
+///    hors inventaire actif (agents.inventory.enabled, D8).</item>
 /// </list>
 /// </summary>
 public enum DesireKind
@@ -26,6 +31,21 @@ public enum DesireKind
     Explore = 6,
     Eat = 7,
     Drink = 8,
+
+    /// <summary>Prendre (D7) : transfert réserve mondiale → inventaire, sous capacité.</summary>
+    Take = 9,
+
+    /// <summary>Donner (D7) : transfert inventaire → autre entité, sans contrepartie.</summary>
+    Give = 10,
+
+    /// <summary>Échanger (D7) : transfert bidirectionnel conditionné (1 Food ↔ 1 Water V0.1).</summary>
+    Trade = 11,
+
+    /// <summary>Attaquer (D7/D3 temps 1) : inflige un dégât d'énergie (§3.15.4 : −5 × agressivité).</summary>
+    Attack = 12,
+
+    /// <summary>Se défendre (D7) : réduit de moitié le dégât d'une attaque subie.</summary>
+    Defend = 13,
 }
 
 /// <summary>État recherché (objectif) né d'un besoin non satisfait (COGNITIVE_ARCHITECTURE.md §5).</summary>
@@ -63,8 +83,14 @@ public static class DesireFactory
         {
             // Les actions terminales Eat/Drink (SYNE-042) ne sont jamais générées
             // directement : elles sont résolues depuis SeekFood/SeekWater via
-            // ResolveTerminal (sinon doublons d'objectifs).
-            if (kind is DesireKind.Idle or DesireKind.Eat or DesireKind.Drink)
+            // ResolveTerminal (sinon doublons d'objectifs). Les primitives D7
+            // (Take/Give/Trade/Attack/Defend) ne sont jamais générées ici non plus :
+            // elles proviennent uniquement de la bibliothèque de plans (D3,
+            // PlanLibrary.GenerateCandidates) quand elle est activée.
+            if (kind is DesireKind.Idle
+                or DesireKind.Eat or DesireKind.Drink
+                or DesireKind.Take or DesireKind.Give or DesireKind.Trade
+                or DesireKind.Attack or DesireKind.Defend)
             {
                 continue;
             }
