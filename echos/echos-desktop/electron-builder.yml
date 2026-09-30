@@ -1,0 +1,53 @@
+# Configuration electron-builder — shell ECHOS (ADR-003 ECHOS).
+#
+# Cibles : .deb (Linux) et NSIS .exe (Windows). Le binaire backend PyInstaller
+# et le build de l'interface sont embarqués en ressources de l'application :
+#   resources/backend/echos-server/  (backend Python, onedir)
+#   resources/ui/                    (echos-ui/dist)
+# Les chemins sont lus par electron/main.js via process.resourcesPath.
+
+appId: org.livex.echos
+productName: ECHOS
+copyright: LIVEX
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - electron/**/*
+  - package.json
+
+extraResources:
+  - from: resources/backend
+    to: backend
+  - from: ../echos-ui/dist
+    to: ui
+
+asar: true
+
+linux:
+  target:
+    - deb
+  category: Science
+  icon: build/icon.png
+  maintainer: LIVEX <maintainers@livex.local>
+  synopsis: Observatoire LIVEX — analyse et observation de SYNE
+  description: ECHOS réunit le backend d'analyse Python et l'interface d'observation dans une application de bureau locale.
+
+deb:
+  # Le helper de sandbox Chromium doit être root:setuid (4755) — sinon Chromium
+  # refuse de démarrer (« The SUID sandbox helper binary was found, but is not
+  # configured correctly »). fpm exécute ce script en root après installation.
+  afterInstall: build/deb-after-install.sh
+
+win:
+  target:
+    - nsis
+  icon: build/icon.png
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: ECHOS
