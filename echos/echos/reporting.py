@@ -54,10 +54,16 @@ def _tick(row: tuple) -> dict[str, Any]:
     keys = (
         "runId", "tick", "simulatedTimeMinutes", "aliveCount", "agentCount",
         "meanEnergy", "meanHunger", "meanThirst", "meanFatigue", "decisionCount",
+        "meanFood", "meanWater",
     )
-    return dict(zip(keys, (row[0], int(row[1]), int(row[2]), int(row[3]),
-                           int(row[4]), float(row[5]), float(row[6]),
-                           float(row[7]), float(row[8]), int(row[9]))))
+    values = (
+        row[0], int(row[1]), int(row[2]), int(row[3]), int(row[4]),
+        float(row[5]), float(row[6]), float(row[7]), float(row[8]), int(row[9]),
+        # Colonnes v6 : absentes des lignes legacy (10 colonnes) → ``None``.
+        float(row[10]) if len(row) > 10 else None,
+        float(row[11]) if len(row) > 11 else None,
+    )
+    return dict(zip(keys, values))
 
 
 def _detected_phenomena(contexts: list[dict[str, Any]]) -> list[dict[str, Any]]:
