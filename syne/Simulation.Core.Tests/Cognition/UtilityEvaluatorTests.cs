@@ -23,16 +23,18 @@ public class UtilityEvaluatorTests
             goalAge: 0,
             actions);
 
-        // benefit = Min(80, 30) = 30 ; cost = 0.5 ; risk = 0.15 ;
+        // benefit = Min(80, 100) × 0.6 = 48 (calibration D1 : plafond monotone 60,
+        // croissant avec le besoin — l'ancien plafond 30 écrasait Eat/Drink) ;
+        // cost = 0.5 ; risk = 0.15 ;
         // confidence = 0.5 × (0.5 + 0.7×0.5) = 0.425 ; personality = 0.5 + greed(1.0) = 1.5 ;
         // urgency = sigmoid(0.1×(80−50)) × 20 ≈ 0.9526 × 20 ≈ 19.05.
-        Assert.Equal(30.0, score.Benefit, 10);
+        Assert.Equal(48.0, score.Benefit, 10);
         Assert.Equal(0.5, score.Cost, 10);
         Assert.Equal(0.15, score.Risk, 10);
         Assert.Equal(0.425, score.Confidence, 10);
         Assert.Equal(1.5, score.PersonalityModifier, 10);
         Assert.True(score.Urgency > 18.9 && score.Urgency < 19.2);
-        Assert.Equal(((30.0 - 0.5 - 0.15) * 0.425 * 1.5) + score.Urgency, score.Utility, 10);
+        Assert.Equal(((48.0 - 0.5 - 0.15) * 0.425 * 1.5) + score.Urgency, score.Utility, 10);
     }
 
     [Fact]
@@ -110,8 +112,8 @@ public class UtilityEvaluatorTests
         UtilityScore otherwise = UtilityEvaluator.Evaluate(
             DesireKind.SeekFood, needs, Neutral(), successRate: 0.7, goalAge: 0, actions, currentIntention: DesireKind.SeekWater);
 
-        Assert.Equal(30.0 * 1.2, aligned.Benefit, 10);
-        Assert.Equal(30.0, otherwise.Benefit, 10);
+        Assert.Equal(48.0 * 1.2, aligned.Benefit, 10);
+        Assert.Equal(48.0, otherwise.Benefit, 10);
         Assert.True(aligned.Utility > otherwise.Utility);
     }
 
@@ -138,10 +140,12 @@ public class UtilityEvaluatorTests
             DesireKind.SeekWater, needs, Neutral(), successRate: 0.7, goalAge: 0, actions,
             currentIntention: null, collectiveObjective: full);
 
-        // 30 × 1.2 (plein) ; 30 × (1 + 0.2 × 0.5) = 33 (moitié) ; 30 (non conforme).
-        Assert.Equal(36.0, aligned.Benefit, 10);
-        Assert.Equal(33.0, partial.Benefit, 10);
-        Assert.Equal(30.0, nonConforming.Benefit, 10);
+        // 48 × 1.2 (plein) ; 48 × (1 + 0.2 × 0.5) = 52,8 (moitié) ; 42 (non conforme :
+        // SeekWater lit la soif 70 → min(70,100) × 0.6 = 42) — bénéfices recalés par
+        // la calibration D1 (plafond monotone 60, croissant avec le besoin).
+        Assert.Equal(57.6, aligned.Benefit, 10);
+        Assert.Equal(52.8, partial.Benefit, 10);
+        Assert.Equal(42.0, nonConforming.Benefit, 10);
         Assert.True(aligned.Utility > partial.Utility);
         Assert.True(partial.Utility > nonConforming.Utility);
     }

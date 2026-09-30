@@ -70,9 +70,28 @@ public sealed class Relationships
     /// plancher 0.0. Le pair reste marqué comme « interagi » ce cycle : une
     /// tromperie constitue bien une interaction.
     /// </summary>
-    public double ObserveDeception(ulong peerId)
+    public double ObserveDeception(ulong peerId) => Penalize(peerId, Settings.LiePenalty);
+
+    /// <summary>
+    /// Pénalité générique de confiance (plancher 0.0) — support de
+    /// <see cref="ObserveDeception"/> et des ruptures d'engagement (D5 :
+    /// <c>agents.trust.commitmentPenalty</c>). Le pair est marqué « interagi ».
+    /// </summary>
+    public double Penalize(ulong peerId, double amount)
     {
-        double updated = Math.Max(0.0, TrustWith(peerId) - Settings.LiePenalty);
+        double updated = Math.Max(0.0, TrustWith(peerId) - amount);
+        _byPeer[peerId] = updated;
+        _interactedThisCycle.Add(peerId);
+        return updated;
+    }
+
+    /// <summary>
+    /// Récompense générique de confiance (plafond 1.0) — engagement tenu (D5 :
+    /// <c>agents.trust.commitmentBonus</c>). Le pair est marqué « interagi ».
+    /// </summary>
+    public double Reward(ulong peerId, double amount)
+    {
+        double updated = Math.Min(1.0, TrustWith(peerId) + amount);
         _byPeer[peerId] = updated;
         _interactedThisCycle.Add(peerId);
         return updated;

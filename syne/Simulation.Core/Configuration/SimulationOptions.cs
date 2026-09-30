@@ -138,6 +138,12 @@ public sealed class TrustSettings
 
     /// <summary>Pénalité de confiance après un mensonge constaté (plancher 0.0).</summary>
     public double LiePenalty { get; set; } = 0.2;
+
+    /// <summary>Bonus de confiance quand un engagement est tenu (D5, CommitmentStatus.Fulfilled).</summary>
+    public double CommitmentBonus { get; set; } = 0.10;
+
+    /// <summary>Pénalité de confiance quand un engagement est rompu (D5, CommitmentStatus.Broken) — distincte du mensonge factuel.</summary>
+    public double CommitmentPenalty { get; set; } = 0.15;
 }
 
 public sealed class ActionSettings
@@ -147,6 +153,18 @@ public sealed class ActionSettings
     public double RestFatigueRecovery { get; set; } = 1.0;
     public DeliberationSettings Deliberation { get; set; } = new();
     public InterruptionSettings Interruption { get; set; } = new();
+
+    /// <summary>Bibliothèque de plans candidats par objectif (D3, ADR « Means-End Reasoning » — désactivée par défaut, trajectoire de référence inchangée).</summary>
+    public PlansSettings Plans { get; set; } = new();
+
+    /// <summary>Inventaire des entités (D8, ADR « Système d'inventaire » — désactivé par défaut).</summary>
+    public InventorySettings Inventory { get; set; } = new();
+
+    /// <summary>Contrôle de saillance (D2, ADR « Politique de Reconsidération » — désactivé par défaut).</summary>
+    public SalienceSettings Salience { get; set; } = new();
+
+    /// <summary>Engagements communicationnels (D5, ADR « Engagements Communicationnels » — désactivés par défaut).</summary>
+    public CommitmentSettings Commitments { get; set; } = new();
 
     /// <summary>Catalogue déclaratif des actions (SYNE-040, CONFIGURATION.md §6.2).</summary>
     public ActionCatalogSettings Catalog { get; set; } = new();
@@ -166,6 +184,15 @@ public sealed class ActionCatalogSettings
         ["flee"] = new ActionEntrySettings { Movement = true },
         ["socialize"] = new ActionEntrySettings { Movement = true },
         ["explore"] = new ActionEntrySettings { Movement = true },
+        // Primitives atomiques D7 (ADR « Primitives d'actions », engineVersion 0.14.0) :
+        // déclarées pour la complétude du catalogue (chaque DesireKind DOIT avoir une
+        // entrée), mais inertes tant que agents.actions.plans.enabled = false (D3) —
+        // elles ne sont jamais générées par la délibération par défaut.
+        ["take"] = new ActionEntrySettings { EnergyCost = 0.2 },
+        ["give"] = new ActionEntrySettings { EnergyCost = 0.2 },
+        ["trade"] = new ActionEntrySettings { EnergyCost = 0.2 },
+        ["attack"] = new ActionEntrySettings { EnergyCost = 0.5 },
+        ["defend"] = new ActionEntrySettings(),
     };
 }
 
@@ -227,6 +254,82 @@ public sealed class InterruptionSettings
 
     /// <summary>Seuil d'énergie critique (défaut 10).</summary>
     public double CriticalEnergy { get; set; } = 10.0;
+}
+
+/// <summary>
+/// Bibliothèque de plans candidats par objectif (ADR « Means-End Reasoning », D3,
+/// engineVersion 0.14.0). Désactivée par défaut : la délibération ne voit que les
+/// objectifs de besoin (comportement historique). Activée, elle reçoit aussi des
+/// candidats de manipulation (Prendre/Donner/Échanger) — see DesireFactory.ResolveTerminal.
+/// </summary>
+public sealed class PlansSettings
+{
+    /// <summary>Bibliothèque de plans active (D3).</summary>
+    public bool Enabled { get; set; }
+}
+
+/// <summary>
+/// Inventaire des entités (ADR « Système d'inventaire », D8, engineVersion 0.14.0).
+/// Désactivé par défaut : Eat/Drink consomment directement les réserves mondiales
+/// (comportement historique), la trajectoire du scénario de référence est préservée.
+/// Activé, les primitives Prendre/Donner/Échanger (D7) opèrent sur une capacité de
+/// poids par entité, et Consommer a un rendement dégradé hors stock (règle d'incitation).
+/// </summary>
+public sealed class InventorySettings
+{
+    /// <summary>Inventaire actif (D8) — les primitives Take/Give/Trade opèrent dessus.</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Capacité de poids par entité (capacitePoids de l'ADR — défaut posé, calibrable).</summary>
+    public double CapacityWeight { get; set; } = 20.0;
+
+    /// <summary>Quantité par primitive Prendre (transfert réserve → inventaire).</summary>
+    public double TakeAmount { get; set; } = 5.0;
+
+    /// <summary>Quantité par primitive Donner (transfert inventaire → cible, don sans contrepartie).</summary>
+    public double GiveAmount { get; set; } = 1.0;
+
+    /// <summary>Quantité par primitive Échanger (1 contre 1, Food ↔ Water V0.1).</summary>
+    public double TradeAmount { get; set; } = 1.0;
+}
+
+/// <summary>
+/// Contrôle de saillance (ADR « Politique de Reconsidération », D2, engineVersion
+/// 0.14.0) : étape 3bis de la boucle cognitive — entre deux délibérations, une
+/// entité poursuit son intention sauf saillance (besoin franchi, condition
+/// d'interruption) ou filet de sécurité périodique. Désactivé par défaut.
+/// </summary>
+public sealed class SalienceSettings
+{
+    /// <summary>Contrôle de saillance actif (D2).</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Seuil de score déclenchant la délibération complète.</summary>
+    public double ReconsiderThreshold { get; set; } = 1.0;
+
+    /// <summary>Poids d'un franchissement de seuil de besoin depuis la dernière délibération.</summary>
+    public double NeedThresholdWeight { get; set; } = 1.0;
+
+    /// <summary>Poids d'une condition d'interruption remplie (généralisation §3.15.6).</summary>
+    public double InterruptionConditionWeight { get; set; } = 2.0;
+
+    /// <summary>Filet de sécurité : reconsidération forcée tous les N ticks sans saillance (0 = désactivé).</summary>
+    public int ForcedReconsiderationTicks { get; set; } = 50;
+}
+
+/// <summary>
+/// Engagements communicationnels (ADR « Engagements Communicationnels », D5,
+/// engineVersion 0.14.0) : structure Commitment créée à la réception d'une réponse
+/// positive à une requête, objectif candidat, impact distinct sur la confiance.
+/// Désactivé par défaut.
+/// </summary>
+public sealed class CommitmentSettings
+{
+    /// <summary>Engagements actifs (D5).</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Durée de validité d'un engagement : non honoré au-delà → Broken (expiryTick de l'ADR).</summary>
+    public ulong ExpiryTicks { get; set; } = 100;
 }
 
 public sealed class ResourceSettings
