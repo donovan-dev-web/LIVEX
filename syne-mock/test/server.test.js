@@ -97,8 +97,10 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
   assert.equal(prepared.status, 200);
   const preparedBody = await prepared.json();
   assert.equal(preparedBody.ticksPerSecond, 24);
+  // Parité de contrat WorldDescription : obstacles = géométrie {id, x, y, radius}
+  // (SYNE sérialise WorldObstacle sans champ type).
   assert.deepEqual(preparedBody.world.obstacles, [
-    { id: 'configured-rock', type: 'circle', x: 20, y: 20, radius: 3 }
+    { id: 'configured-rock', x: 20, y: 20, radius: 3 }
   ]);
   const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
   assert.equal(world.version, '1.0');
@@ -146,7 +148,7 @@ test('world_initialized precedes a global snapshot and configured obstacles rema
   assert.equal(snapshots[0].actions.length, 2);
   assert.ok(Array.isArray(snapshots[0].resources));
   assert.ok(Array.isArray(snapshots[0].obstacles));
-  assert.deepEqual(snapshots[0].obstacles, [{ id: 'initial-rock', type: 'circle', x: 250, y: 250, radius: 10 }]);
+  assert.deepEqual(snapshots[0].obstacles, [{ id: 'initial-rock', x: 250, y: 250, radius: 10 }]);
   assert.deepEqual(snapshots[0].worldChanges, []);
   assert.equal(messages.some(x => x.type === 'world_delta'), false);
   await closeClient(client);

@@ -3,6 +3,25 @@ const { WebSocketServer } = require('ws');
 const { DEFAULTS, merge, resolveConfig } = require('./config');
 const { Simulation, log } = require('./simulation/simulation');
 
+/** Erreurs JSON du contrat SYNE : { ok, error, detail } (ControlServer.ErrorJson). */
+function errorJson(error, detail) {
+  return { ok: false, error, detail: detail ?? error };
+}
+
+/** Enveloppe les commandes de contrôle : réponse 200 au format SYNE, erreurs 409 codées. */
+function controlOutcome(simulation, action) {
+  const status = simulation.status();
+  return {
+    ok: true,
+    action,
+    runId: simulation.runId || null,
+    state: status.state,
+    tick: status.tick,
+    aliveCount: status.aliveCount,
+    seed: status.seed
+  };
+}
+
 function createServer(options = {}) {
   const config = resolveConfig(options);
   const clients = new Set();
@@ -31,14 +50,14 @@ function createServer(options = {}) {
     if (request.method === 'GET' && url.pathname === '/api/world') {
       if (!simulation.worldDescription()) {
         log('HTTP response GET world -> 409 world_not_prepared');
-        return send(409, { ok: false, error: 'world_not_prepared' });
+        return send(409, errorJson('world_not_prepared', 'Préparez le monde avant de le consulter.'));
       }
       log('HTTP response GET world -> 200');
-      return send(200, simulation.worldDescription());
+      return send(200, worldDescriptionGeometry(simulation.worldDescription()));
     }
     if (request.method !== 'POST' || !url.pathname.startsWith('/api/control/')) {
       log('HTTP response -> 404 not_found');
-      return send(404, { ok: false, error: 'not_found' });
+      return send(404, errorJson('not_found', 'Endpoint inconnu.'));
     }
 
     let body;
@@ -46,7 +65,7 @@ function createServer(options = {}) {
       body = await readJsonBody(request);
     } catch (error) {
       log('HTTP response -> 400 invalid_json (%s)', error.message);
-      return send(400, { ok: false, error: 'invalid_json' });
+      return send(400, errorJson('invalid_json', 'Le corps de la requête n\'est pas un JSON valide.'));
     }
     const action = url.pathname.slice('/api/control/'.length);
     log('CONTROL request action=%s body=%j', action, body);
@@ -56,33 +75,43 @@ function createServer(options = {}) {
         const ticksPerSecond = body.ticksPerSecond ?? config.ticksPerSecond;
         if (!Number.isInteger(ticksPerSecond) || ticksPerSecond <= 0) {
           log('CONTROL response action=prepare -> 400 invalid_ticks_per_second');
-          return send(400, { ok: false, error: 'invalid_ticks_per_second' });
+          return send(400, errorJson('invalid_ticks_per_second', 'ticksPerSecond doit être un entier strictement positif.'));
         }
         if (!simulation.prepare(
           body.seed ?? config.seed,
           ticksPerSecond,
           body.config ?? {}))
-          return send(409, { ok: false, error: 'run_active' });
+          return send(409, errorJson('run_active',
+            'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'));
         return send(200, {
           ok: true,
           action: 'prepared',
           ticksPerSecond: simulation.options.ticksPerSecond,
-          world: simulation.worldDescription(),
+          world: worldDescriptionGeometry(simulation.worldDescription()),
           ...simulation.status()
         });
       }
       if (action === 'ready') {
         if (!simulation.acknowledgeReady(body.worldVersion)) {
           log('CONTROL response action=ready -> 409 world_not_ready');
-          return send(409, { ok: false, error: 'world_not_ready' });
+          return send(409, errorJson('world_not_ready',
+            'Le monde n\'est pas préparé ou sa version est incorrecte.'));
         }
         log('CONTROL response action=ready -> 200');
-        return send(200, { ok: true, action: 'ready', ...simulation.status() });
+        return send(200, controlOutcome(simulation, 'ready'));
       }
       if (action === 'start') {
         if (simulation.state === 'running' || simulation.state === 'paused') {
           log('CONTROL response action=start -> 409 run_active');
-          return send(409, { ok: false, error: 'run_active' });
+          return send(409, errorJson('run_active',
+            'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'));
+        }
+        if (simulation.state === 'finished') {
+          // Parité SYNE (API_CONTRACTS.md §3) : un run « finished » a atteint
+          // maxTicks — le remède est /reset, pas /prepare (code run_finished).
+          log('CONTROL response action=start -> 409 run_finished');
+          return send(409, errorJson('run_finished',
+            'Run terminé — appelez /api/control/reset avant de redémarrer.'));
         }
         simulation.start(body.seed ?? config.seed, body.maxTicks ?? config.maxTicks, body.config ?? {});
       } else if (action === 'pause') simulation.pause();
@@ -91,27 +120,27 @@ function createServer(options = {}) {
       else if (action === 'reset') simulation.reset(body.seed ?? config.seed, body.maxTicks ?? config.maxTicks);
       else {
         log('CONTROL response action=%s -> 404 not_found', action);
-        return send(404, { ok: false, error: 'not_found' });
+        return send(404, errorJson('not_found', `Action de contrôle inconnue : ${action}.`));
       }
     } catch (error) {
       const conflictErrors = new Set([
-        'world_not_ready', 'prepared_seed_mismatch', 'prepared_config_mismatch'
+        'world_not_ready', 'prepared_seed_mismatch', 'prepared_config_mismatch', 'run_finished'
       ]);
       if (conflictErrors.has(error.code)) {
         log('CONTROL response action=%s -> 409 %s', action, error.code);
-        return send(409, { ok: false, error: error.code });
+        return send(409, errorJson(error.code, error.message));
       }
       if (/^(seed|ticksPerSecond|maxTicks|world\.|agents(?:[ .]|$)|resources\.|Unable to place agent)/.test(error.message)) {
         log('CONTROL response action=%s -> 400 invalid_configuration (%s)', action, error.message);
-        return send(400, { ok: false, error: 'invalid_configuration', message: error.message });
+        return send(400, errorJson('invalid_configuration', error.message));
       }
       log('CONTROL failed action=%s: %s', action, error.stack || error.message);
-      return send(500, { ok: false, error: 'internal_error' });
+      return send(500, errorJson('internal_error', 'Erreur interne du serveur de contrôle.'));
     }
 
     log('CONTROL response action=%s -> 200 (state=%s, tick=%s)',
       action, simulation.state, simulation.tick);
-    return send(200, { ok: true, action, runId: simulation.runId, ...simulation.status() });
+    return send(200, controlOutcome(simulation, action));
   });
 
   const websocketServer = new WebSocketServer({ noServer: true });
@@ -126,7 +155,10 @@ function createServer(options = {}) {
         type: 'world_initialized',
         version: simulation.worldVersion,
         seed: simulation.options.seed,
-        world: simulation.worldDescription()
+        // Géométrie du monde, comme WorldDescription (ObstacleSnapshot sans
+        // type/shape/cells) : les consommateurs PRISM/ECHOS n'ont pas à connaître
+        // la représentation interne des obstacles du mock.
+        world: worldDescriptionGeometry(simulation.worldDescription())
       }));
     }
     client.on('error', error =>
@@ -179,6 +211,14 @@ async function readJsonBody(request) {
   if (!body || typeof body !== 'object' || Array.isArray(body))
     throw new TypeError('request body must be a JSON object');
   return body;
+}
+
+/** Projette les obstacles sur leur géométrie {id, x, y, radius}, comme WorldDescription. */
+function worldDescriptionGeometry(world) {
+  return {
+    ...world,
+    obstacles: (world.obstacles ?? []).map(({ id, x, y, radius }) => ({ id, x, y, radius: radius ?? 0 }))
+  };
 }
 
 module.exports = { createServer, Simulation, DEFAULTS, merge };
