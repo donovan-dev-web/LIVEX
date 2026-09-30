@@ -8,7 +8,8 @@
 
 [![Licence MIT](https://img.shields.io/badge/Licence-MIT-216e5a?style=for-the-badge)](LICENSE)
 [![Version V0.1](https://img.shields.io/badge/Version-V0.1-315c9b?style=for-the-badge)](VERSIONING.md)
-[![Jalon U8](https://img.shields.io/badge/Jalon-U8%20en%20validation-d97706?style=for-the-badge)](ROADMAP.md)
+[![SYNE 0.13.0](https://img.shields.io/badge/SYNE-0.13.0-1f7f6f?style=for-the-badge)](docs/docs-syne/DETERMINISM.md)
+[![Contrat obs. 0.2.1](https://img.shields.io/badge/Contrat%20obs.-0.2.1-315c9b?style=for-the-badge)](docs/docs-syne/API_CONTRACTS.md)
 [![Documentation](https://img.shields.io/badge/Docs-en%20fran%C3%A7ais-6b7280?style=for-the-badge)](GLOSSARY.md)
 
 [Découvrir le projet](#-le-projet) · [Architecture](#-architecture) · [Démarrage](#-démarrage-rapide) · [Documentation](#-documentation) · [Contribuer](#-contribuer)
@@ -29,7 +30,7 @@ LIVEX est un projet de recherche et d’expérimentation en vie artificielle et 
 
 | Principe | Application dans LIVEX |
 |:--|:--|
-| **Déterminisme** | Une même graine, configuration et version du moteur permettent de reproduire une trajectoire. |
+| **Déterminisme** | Une même graine, configuration et version du moteur permettent de reproduire une trajectoire. Toute altération volontaire (ex. la calibration de survie 0.13.0) impose un bump MINOR et le re-calage assumé des checksums dorés. |
 | **Décisions explicables** | Les décisions BDI produisent des traces consultables et analysables. |
 | **Information locale** | Les entités agissent à partir de ce qu’elles perçoivent et mémorisent, pas d’une vérité globale. |
 | **Observation indépendante** | L’analyse mesure le monde sans en devenir la source de vérité. |
@@ -51,10 +52,10 @@ flowchart LR
 
 | Composant | Responsabilité | État |
 |:--|:--|:--|
-| **SYNE** · *Systems & Emergent Network Engine* | Simule le monde et les agents. C’est la source de vérité de l’état simulé. | Moteur .NET 10, observabilité, persistance et contrôle local. |
-| **ECHOS** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI, stockage SQLite/Parquet et interface React/TypeScript. |
+| **SYNE 0.13.0** · *Systems & Emergent Network Engine* | Simule le monde et les agents. C’est la source de vérité de l’état simulé. | Moteur .NET 10 (`engineVersion 0.13.0`, profil de référence calibré — ADR-015), observabilité (contrat 0.2.1), persistance et contrôle local. |
+| **ECHOS 0.1.0** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI, stockage SQLite/Parquet (schéma v6), signaux de viabilité et interface React/TypeScript. |
 | **PRISM** · *Perceptual Rendering & Interactive Simulation Module* | Projet Unreal final de LIVEX, pour représenter le monde SYNE et fournir l'expérience interactive. | Projet Unreal PRISM intégrant le plugin **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). |
-| **syne-mock** | Simule le protocole et un scénario de simulation pour le développement client. | Serveur Node.js local ; comportement incomplet et non équivalent au moteur SYNE. |
+| **syne-mock** | Simule le protocole et un scénario de simulation pour le développement client. | Serveur Node.js local ; comportement incomplet et non équivalent au moteur SYNE (contrat aligné 0.2.1). |
 
 > **État du dépôt :** SYNE et ECHOS disposent de leur runtime ; **PRISM** est
 > le projet Unreal final de LIVEX et intègre **PRISM-LDK** (*LIVEX Development
@@ -72,7 +73,7 @@ dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
-Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
+Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Variante bureau : `./scripts/dev-stack-electron.sh` démarre la même pile (SYNE + ingestion) mais affiche l’interface dans la **fenêtre Electron** (shell `echos-desktop`, ADR-003) au lieu du navigateur. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
 
 ## 🗂️ Dans le dépôt
 
