@@ -113,6 +113,13 @@ public class DeterminismRegressionTests
         // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x27fad50065d8c4a4 →
         // 0xdb57f58566418f5d. SEULE cause mesurée : le garde anti-relay de
         // CommunicationSystem.CanRelay, désormais relié à CommunicationState.HasRelayed.
+        // Ré-épinglé au jalon calibration D1 (engineVersion 0.13.0) : 0xdb57f58566418f5d →
+        // 0x46769cfb11c8b3a7. Cause unique et isolée : rééquilibrage de l'arbitrage
+        // utilitaire (BenefitOf Eat/Drink = min(need,100)×0.6) et du bilan énergétique
+        // (EnergyRecovery eat 2.0 / drink 1.0) portés par le profil de référence —
+        // les agents mangent plus tôt, la trajectoire diverge à partir des premières
+        // délibérations. Scénario de DEFAULTS (non passé par le profil) : l'effet
+        // porte sur la formule d'utilité, partagée par toutes les configurations.
         // Sans lui, un même message était relayé autant de fois que l'agent le rencontrait
         // via des canaux distincts, épuisant l'énergie et saturant le réseau ; l'état
         // « déjà relayé » était écrit mais jamais consulté. Vérifié par isolation : la
@@ -120,6 +127,6 @@ public class DeterminismRegressionTests
         // l'atomicité des réserves (ActionExecutor), la file de messages bornée et la
         // centralisation des hachages sont bit-à-bit neutres sur ce scénario.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0xdb57f58566418f5d", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x46769cfb11c8b3a7", $"0x{Fnv1a(log):x16}");
     }
 }

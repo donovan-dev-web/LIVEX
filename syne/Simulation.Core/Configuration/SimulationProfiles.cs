@@ -7,6 +7,14 @@ public static class SimulationProfiles
     /// Profil de référence V0.1 : ressources suffisantes et coûts énergétiques
     /// auxiliaires neutres pour éviter une extinction artificielle.
     /// </summary>
+    /// <remarks>
+    /// Calibration de survie (décision D1 du 29/09/2026, ADR de calibration —
+    /// campagne 3 × 1200 ticks) : manger/boire compense désormais le coût
+    /// métabolique du déplacement vers la ressource (EnergyRecovery 2.0 / 1.0).
+    /// Sans ce gain, l'énergie moyenne décroissait continûment (mort lente :
+    /// 69 → 49 entre t800 et t1200) car seul Rest rapportait de l'énergie.
+    /// Le reste du profil est inchangé (isolation des causes).
+    /// </remarks>
     public static SimulationOptions Reference()
     {
         var options = new SimulationOptions();
@@ -24,6 +32,8 @@ public static class SimulationProfiles
         options.Agents.Actions.MoveEnergyCost = 0.05;
         options.Agents.Actions.RestEnergyGain = 1.5;
         options.Agents.Actions.RestFatigueRecovery = 2;
+        options.Agents.Actions.Catalog.Entries["eat"].EnergyRecovery = 2.0;
+        options.Agents.Actions.Catalog.Entries["drink"].EnergyRecovery = 1.0;
         return options;
     }
 

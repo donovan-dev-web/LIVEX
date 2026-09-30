@@ -118,6 +118,13 @@ public sealed class BodyNeeds
 
     public void SetCuriosityElapsed(double amount) => Curiosity = Clamp01(Curiosity + amount);
 
+    /// <summary>
+    /// Dégradation de la sécurité par une menace perçue (D7 : cible d'une attaque —
+    /// le besoin Safety glissait déjà vers le bas dans le prototype, ce mutateur
+    /// rend la cause explicite ; l'objectif Flee existe déjà en §3.13.1).
+    /// </summary>
+    public void ThreatenSafety(double amount) => Safety = Clamp01(Safety - amount);
+
     /// <summary>État de calibration (tests et V0.1) — accès interne.</summary>
     internal static BodyNeeds FromState(
         double hunger = 0.0,
