@@ -2,8 +2,15 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 30 septembre 2026
 **Dépend de** : `ROADMAP.md`, `COMMUNICATION.md`
+
+> **Versions courantes** : moteur **SYNE 0.13.0** (profil de référence calibré,
+> ADR-015 — voir `docs/docs-syne/adr/ADR-015-calibration-survie-reference.md`),
+> contrat d'observabilité SYNE **0.2.1** (champ `seed` additif dans le snapshot,
+> format canonique des runs pilotés `run-<seed>-<12hex>`), stockage d'analyse
+> ECHOS **schéma v6**. Les versions évoluent indépendamment par composant
+> (`VERSIONING.md`).
 
 Ce guide permet de démarrer localement **SYNE**, l’API et l’interface **ECHOS**, l’ingestion, et le mock SYNE utilisé pour développer l’intégration Unreal de PRISM.
 
@@ -66,7 +73,25 @@ et la conversion des messages. Pour l'ordre d'initialisation du monde et le
 câblage des événements, suivre
 [`docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md`](docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md).
 
-## Démarrage complet : SYNE, ECHOS et interface
+### Démarrage complet : SYNE, ECHOS et interface
+
+#### Mode bureau (fenêtre Electron)
+
+```bash
+./scripts/dev-stack-electron.sh
+```
+
+Le script compile SYNE, démarre le serveur et l'ingestion, puis ouvre la **fenêtre ECHOS**
+(shell `echos-desktop`, ADR-003) : le backend Python est un enfant du shell, sur un port
+libre choisi automatiquement, et l'interface est servie par ce backend. La base d'analyse
+est partagée (`echos/data/livex-analytics.sqlite`) : ce que l'ingestion écrit est ce que la
+fenêtre affiche. Fermez la fenêtre ou `Ctrl+C` pour arrêter toute la pile.
+
+> En développement, le script passe `--no-sandbox` à Electron : dans `node_modules`, le
+> helper `chrome-sandbox` n'est pas setuid root. Le paquet installé (`.deb`) n'a pas
+> besoin de cette parade — son script `postinst` pose `root:root 4755` sur le helper.
+
+#### Mode navigateur (web)
 
 Depuis la racine du dépôt, lancez :
 
@@ -83,7 +108,14 @@ Le script prépare automatiquement l’environnement Python ECHOS et les dépend
 
 Ouvrez ensuite <http://127.0.0.1:5173>. L’API et sa documentation se trouvent sur <http://127.0.0.1:5000> et <http://127.0.0.1:5000/docs>. Les runs ingérés sont stockés dans `echos/data/livex-analytics.sqlite`.
 
-Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à ce que vous cliquiez sur `Start` dans l’interface. Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
+Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à ce que vous cliquiez sur `Start` dans l’interface (fenêtre Electron ou navigateur selon le mode choisi). Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
+
+> **À noter (calibration D1, SYNE 0.13.0)** : le profil de référence est
+> désormais calibré pour la survie (récupération d'énergie à manger/boire,
+> bénéfice Eat/Drink monotone) — un run de référence n'est plus condamné à la
+> mort lente. Si vous relancez `Start` alors qu'un run a atteint son
+> `maxTicks` (état `finished`), SYNE répond `409 run_finished` : appelez
+> `Reset` avant de redémarrer.
 
 ### Boutons de pilotage
 
@@ -199,9 +231,10 @@ Pour économiser CPU/RAM sur les runs longs, planifiez l'analyse 1 tick sur N
 ```
 
 Les mêmes réglages sont exposés par variables d'environnement, y compris pour
-l'ingestion manuelle : `ECHOS_ANALYSIS_EVERY`, `ECHOS_PARQUET_FLUSH_EVERY`
-(flush bufferisé de la série agents, en nombre de ticks) et
-`ECHOS_PARQUET_PATH` (chemin de la série agents).
+l'ingestion manuelle : `ECHOS_ANALYSIS_EVERY`, `ECHOS_CONTEXT_EVERY` (cadence
+du contexte `agents`, défaut 20 — 1 rétablit le contexte à chaque tick),
+`ECHOS_PARQUET_FLUSH_EVERY` (flush bufferisé de la série agents, en nombre de
+ticks) et `ECHOS_PARQUET_PATH` (chemin de la série agents).
 
 La cadence batch est de 10 ticks/s par défaut, comme le mode contrôlé normal.
 Elle peut être augmentée si les mesures montrent qu'ECHOS suit le flux :
@@ -328,7 +361,8 @@ contient plus le phénomène.
 
 Le lanceur suppose que le binaire Release de SYNE existe. Compilez-le au
 préalable avec `dotnet build syne/Syne.sln --configuration Release` ou lancez
-`./scripts/dev-stack.sh` une première fois.
+`./scripts/dev-stack.sh` (mode navigateur) ou `./scripts/dev-stack-electron.sh` (mode
+bureau) une première fois.
 
 ## Ports utilisés
 
