@@ -62,6 +62,24 @@ public sealed class SimulationControllerRunLifecycleTests
     }
 
     [Fact]
+    public async Task RunId_CarriesTheEffectiveSeed_WithAUniqueSuffix()
+    {
+        // A1 (format canonique run-<seed>-<12hex>) : ECHOS peut dériver le seed du
+        // run_id en repli (flux V0.2.0) et deux runs de même seed restent distincts.
+        await using var controller = new SimulationController();
+        string runId = await controller.StartAsync(seed: 12345, configJson: SlowProfile(), maxTicks: 1);
+
+        Assert.StartsWith("run-12345-", runId);
+        Assert.Matches("^run-12345-[0-9a-f]{12}$", runId);
+        await controller.StopAsync();
+
+        // Deux runs de même seed → identifiants distincts (suffixe unique).
+        string second = await controller.StartAsync(seed: 12345, configJson: SlowProfile(), maxTicks: 1);
+        Assert.NotEqual(runId, second);
+        await controller.StopAsync();
+    }
+
+    [Fact]
     public async Task Start_IsPossibleAgain_AfterStop()
     {
         await using var controller = new SimulationController();

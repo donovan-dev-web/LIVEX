@@ -176,12 +176,27 @@ public class ObservabilitySensorTests
     }
 
     [Fact]
+    public void Snapshot_CarriesTheSeed()
+    {
+        // A1 (contrat V0.2.1, champ additif) : le seed voyage dans le snapshot —
+        // ECHOS n'a plus à le dériver du run_id, dérivation qui perdait le seed
+        // des runs pilotés (run_id généré par le contrôleur).
+        (_, SimulationLoop loop) = BuildLoop();
+        loop.Run(1);
+        WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 424242);
+        JsonObject message = ObservabilitySerializer.SnapshotMessage(snapshot);
+
+        Assert.Equal(424242ul, (ulong?)message["seed"]);
+        Assert.Equal(424242ul, snapshot.Seed);
+    }
+
+    [Fact]
     public void Snapshot_CarriesEngineVersion()
     {
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
         // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
         // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
-        Assert.Equal("0.12.0", ObservabilityContract.EngineVersion);
+        Assert.Equal("0.14.0", ObservabilityContract.EngineVersion); // jalon ADR cognitifs 0.14.0 : drapeaux défaut-faux, trajectoire inchangée
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

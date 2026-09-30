@@ -195,6 +195,19 @@ public sealed class SimulationController : IAsyncDisposable
     }
 
     /// <summary>
+    /// Format canonique du run_id piloté : <c>run-&lt;seed&gt;-&lt;12hex&gt;</c>.
+    /// Le seed reste lisible dans l'identifiant (contrat ECHOS, repli ``_seed_of``
+    /// sur les flux V0.2.0) et le suffixe aléatoire conserve l'unicité entre deux
+    /// runs de même seed — l'ancien format <c>run-&lt;seed&gt;</c> du monde préparé
+    /// collisionnait les runs successifs d'un même seed côté stockage ECHOS.
+    /// </summary>
+    internal static string RunIdFor(ulong seed)
+    {
+        string hex = Guid.NewGuid().ToString("N")[..12];
+        return $"run-{seed}-{hex}";
+    }
+
+    /// <summary>
     /// Démarre un run (SYNE-113) pour <paramref name="seed"/> et la surcouche de
     /// configuration <paramref name="configJson"/> (JSON partiel optionnel, en
     /// <b>texte brut</b>, fusionné sur les défauts — cf. <see cref="SimulationFactory.ResolveOptions"/>).
@@ -233,7 +246,7 @@ public sealed class SimulationController : IAsyncDisposable
             loop = _loop!;
         }
         var runCts = new CancellationTokenSource();
-        string runId = Guid.NewGuid().ToString("N")[..12];
+        string runId = RunIdFor(effectiveSeed);
         TimeSpan tickInterval = TimeSpan.FromSeconds(1d / options.Simulation.TicksPerSecond);
         var emitter = _observabilitySink is null
             ? null

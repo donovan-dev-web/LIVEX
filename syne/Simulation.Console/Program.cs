@@ -107,13 +107,14 @@ public static class Program
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
         (_, var world, SimulationLoop loop, EntityTemplate template) = BuildSimulation(options);
+        int initialEntityCount = world.Entities.Count;
         loop.Run(options.Simulation.MaxTicks);
 
         sw.Stop();
 
         if (!headless)
         {
-            PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
+            PrintSummary(options, loop, template, sw.ElapsedMilliseconds, initialEntityCount);
         }
     }
 
@@ -217,6 +218,7 @@ public static class Program
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
         (_, var world, SimulationLoop loop, EntityTemplate template) = BuildSimulation(options);
+        int initialEntityCount = world.Entities.Count;
 
         int port = cli.ObservePort ?? Observability.ObservabilityServer.DefaultPort;
         await using var server = new Observability.ObservabilityServer(port);
@@ -228,7 +230,7 @@ public static class Program
 
         if (cli.Headless != true)
         {
-            PrintSummary(options, loop, template, sw.ElapsedMilliseconds);
+            PrintSummary(options, loop, template, sw.ElapsedMilliseconds, initialEntityCount);
             System.Console.WriteLine($"  observabilité : ws://127.0.0.1:{server.Port}/ | {emitter.TicksEmitted} ticks diffusés | {server.ClientCount} client(s)");
         }
     }
@@ -300,7 +302,12 @@ public static class Program
         return (rng, world, loop, template);
     }
 
-    private static void PrintSummary(SimulationOptions options, SimulationLoop loop, EntityTemplate template, long elapsedMs)
+    private static void PrintSummary(
+        SimulationOptions options,
+        SimulationLoop loop,
+        EntityTemplate template,
+        long elapsedMs,
+        int initialEntityCount)
     {
         var summary = new System.Text.StringBuilder();
         summary.AppendLine($"SYNE — boucle minimale ({template.Species}) :");
@@ -309,7 +316,11 @@ public static class Program
 
         if (loop.CurrentTick > 0)
         {
-            var head = BuildTickLine(1UL, loop.World.Entities.Count);
+            // La ligne « (tête) » décrit le tick 1 : les entités ne meurent qu'en
+            // cours de run, son compte est donc le compte initial capturé avant la
+            // boucle — pas le compteur final, qui faisait lire « tick 1 … 42 entités »
+            // après une extinction.
+            var head = BuildTickLine(1UL, initialEntityCount);
             var tail = BuildTickLine(loop.CurrentTick, loop.World.Entities.Count);
             summary.AppendLine("(tête) " + head);
             summary.AppendLine("  …    …");

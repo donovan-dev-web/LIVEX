@@ -117,6 +117,30 @@ public class ControlServerWireTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Start_AfterFinished_ReturnsRunFinishedInsteadOfWorldNotReady()
+    {
+        // D2 : après un run terminé naturellement, le monde est prêt mais le run
+        // n'avancera plus. Le 409 générique world_not_ready orientait le client
+        // vers /prepare au lieu de /reset.
+        using var start = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))
+        {
+            Content = JsonBody("{ \"seed\": 21, \"maxTicks\": 1 }"),
+        };
+        using var _ = await _http.SendAsync(start);
+        await WaitUntilAsync(() => _server.Controller.State == SimulationControlState.Finished);
+
+        using var restart = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))
+        {
+            Content = JsonBody("{ \"seed\": 21, \"maxTicks\": 1 }"),
+        };
+        using HttpResponseMessage response = await _http.SendAsync(restart);
+
+        Assert.Equal(System.Net.HttpStatusCode.Conflict, response.StatusCode);
+        JsonNode? body = await ReadJsonAsync(response);
+        Assert.Equal("run_finished", (string?)body!["error"]);
+    }
+
+    [Fact]
     public async Task Start_ReturnsRunIdAndStatusShowsRunning()
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/start"))

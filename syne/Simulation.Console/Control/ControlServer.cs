@@ -228,6 +228,14 @@ public sealed class ControlServer : IAsyncDisposable
             return (409, ToJson(ErrorJson("run_active", "Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.")));
         }
 
+        // Un run « finished » a atteint son nombre de ticks cible : le monde est
+        // prêt mais le run n'avancera plus. Le 409 world_not_ready générique
+        // orientait le client vers /prepare alors que le remède est /reset.
+        if (_controller.State == SimulationControlState.Finished)
+        {
+            return (409, ToJson(ErrorJson("run_finished", "Run terminé — appelez /api/control/reset avant de redémarrer.")));
+        }
+
         // Manual/UI runs use the reviewed reference profile unless the caller
         // supplies an explicit configuration overlay.
         try
