@@ -168,6 +168,9 @@ function CompareTab({ runs }: { runs: string[] }) {
     if (!a || !b) return
     setError(null)
     try {
+      // ``light=1`` par défaut (C3) : l'affichage n'a pas besoin de l'empreinte
+      // bit-à-bit (lourde par conception). Le verdict reproductible reste
+      // affiché sur la base seed/version ; les KPI bit-à-bit montrent "—".
       setResult((await client.compare(a, b)) as CompareResponse)
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -235,11 +238,23 @@ function CompareTab({ runs }: { runs: string[] }) {
           <div className="grid grid--kpi mb-4">
             <div className="kpi">
               <div className="kpi__title">Reproductible</div>
-              <div className="kpi__value">{result.is_reproducible ? 'OUI' : 'NON'}</div>
+              <div className="kpi__value">
+                {result.is_reproducible === null || result.is_reproducible === undefined
+                  ? '—'
+                  : result.is_reproducible
+                    ? 'OUI'
+                    : 'NON'}
+              </div>
             </div>
             <div className="kpi">
               <div className="kpi__title">Bit-à-bit</div>
-              <div className="kpi__value">{result.bit_identical ? 'OUI' : 'NON'}</div>
+              <div className="kpi__value">
+                {result.bit_identical === null || result.bit_identical === undefined
+                  ? '—'
+                  : result.bit_identical
+                    ? 'OUI'
+                    : 'NON'}
+              </div>
             </div>
             <div className="kpi">
               <div className="kpi__title">Score reproductibilité</div>
@@ -255,7 +270,7 @@ function CompareTab({ runs }: { runs: string[] }) {
             </div>
           </div>
           <h4 className="tag mb-3">Séries comparatives (alignées)</h4>
-          {result.series.length > 0 ? (
+          {(result.series?.length ?? 0) > 0 ? (
             <table className="table">
               <thead>
                 <tr>
@@ -268,7 +283,7 @@ function CompareTab({ runs }: { runs: string[] }) {
                 </tr>
               </thead>
               <tbody>
-                {result.series.slice(0, 200).map((row, i) => (
+                {result.series!.slice(0, 200).map((row, i) => (
                   <tr key={i}>
                     <td>{row.tick}</td>
                     <td className="mono">{row.engine}</td>

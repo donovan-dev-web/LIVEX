@@ -65,7 +65,9 @@ describe('AppShell', () => {
     const picker = await screen.findByLabelText('Run affiché')
 
     await waitFor(() => expect(useRunsStore.getState().runs).toHaveLength(2))
-    expect((picker as HTMLSelectElement).value).toBe('run-2')
+    // Repli initial : le run le plus avancé (run-1, 100 ticks), pas le dernier
+    // de la liste — l'ordre de l'API n'est ni chronologique ni significatif.
+    expect((picker as HTMLSelectElement).value).toBe('run-1')
 
     await user.selectOptions(picker, 'run-1')
     expect(useRunsStore.getState().selectedRunId).toBe('run-1')
