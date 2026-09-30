@@ -60,6 +60,16 @@ sont des participants, pas des dépendances.
 - `../../COMMUNICATION.md` — transport inter-composants.
 - `../../VERSIONING.md` — versionnage et compatibilité.
 
+## Maquettes
+
+| Fichier | Rôle |
+| :-- | :-- |
+| `maquettes/Interface futuriste du launcher LIVEX.png` | **Source de vérité** — 1536 × 1024 |
+| `maquettes/livex-launcher.html` | Prototype interactif, référence de comportement |
+
+L'interface se lit dans deux documents : `USER_INTERFACE.md` pour ce qu'elle
+permet, `GUI.md` pour ce à quoi elle ressemble. Voir `GUI.md` §1.
+
 ## Documentation du composant
 
 | Document | Rôle |
@@ -73,7 +83,8 @@ sont des participants, pas des dépendances.
 | `EXPERIMENTS.md` | Campagnes, runs, planification, échecs, reprise |
 | `OBSERVABILITY.md` | **Six niveaux L0 à L5**, états, agrégation, catalogue de métriques, santé, journaux, alertes |
 | `NETWORK.md` | **Adaptateur de protocole**, plan contrôle/données, topologies T0-T3, registre, Node Agent, Gateway, sécurité |
-| `USER_INTERFACE.md` | Design, mise en page, navigation par modes |
+| `USER_INTERFACE.md` | Design fonctionnel, navigation, principes, accessibilité |
+| `GUI.md` | **Spécification pixel** — grille, positions, couleurs, typographie |
 | `PACKAGING.md` | Installation, premier démarrage, détection |
 | `TESTING.md` | Stratégie, niveaux, matrice de tests |
 | `ROADMAP.md` | Phases, jalons, portes de passage |
