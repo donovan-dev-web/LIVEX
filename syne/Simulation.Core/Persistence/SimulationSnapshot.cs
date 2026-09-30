@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Simulation.Core.Cognition;
 using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
@@ -68,7 +69,9 @@ public sealed record EntitySnapshotDto(
 public sealed record ObstacleSnapshotDto(string Id, double X, double Y, double Radius);
 public sealed record BookSnapshotDto(string Id, ulong AuthorId, string Title, string Content, ulong WrittenTick, IReadOnlyList<ulong> Readers);
 
-/// <summary>État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).</summary>
+/// <summary>État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).
+/// Les champs inventory/commitments/salience sont additifs (SchemaVersion 4 conservé,
+/// hash inchangé quand désactivés — conditions WhenWritingDefault, jalon ADR 0.14.0).</summary>
 public sealed record MindSnapshotDto(
     ulong EntityId,
     NeedsSnapshotDto Needs,
@@ -80,7 +83,27 @@ public sealed record MindSnapshotDto(
     IReadOnlyDictionary<int, double> SuccessRates,
     GoalSnapshotDto? Intention,
     GroupObjectiveSnapshotDto? CollectiveObjective,
-    int? LastDecisionKind);
+    int? LastDecisionKind,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    InventorySnapshotDto? Inventory = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<CommitmentSnapshotDto>? Commitments = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    ulong LastDeliberationTick = 0,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<int>? TriggeredAtLastDeliberation = null);
+
+/// <summary>Inventaire persisté (D8) — quantité par type (ordre stable du type).</summary>
+public sealed record InventorySnapshotDto(IReadOnlyDictionary<int, double> Amounts);
+
+/// <summary>Engagement persisté (D5) — statut résolu inclus.</summary>
+public sealed record CommitmentSnapshotDto(
+    ulong ToEntityId,
+    string RequestType,
+    ulong CreatedTick,
+    ulong ExpiryTick,
+    int Status,
+    ulong ResolvedTick);
 
 public sealed record NeedsSnapshotDto(
     double Hunger,

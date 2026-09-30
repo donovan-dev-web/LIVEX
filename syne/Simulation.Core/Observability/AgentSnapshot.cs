@@ -12,6 +12,18 @@ public sealed record GoalObservation(string Kind, ulong Age);
 public sealed record TrustObservation(string PeerId, double Trust);
 
 /// <summary>
+/// Observation d'un engagement (D5, ADR « Engagements Communicationnels ») —
+/// champ additif du snapshot agent (contrat 0.3.0), émis sous drapeau
+/// <c>agents.actions.commitments.enabled</c>.
+/// </summary>
+public sealed record CommitmentObservation(
+    string ToEntityId,
+    string RequestType,
+    string Status,
+    ulong CreatedTick,
+    ulong ExpiryTick);
+
+/// <summary>
 /// État d'une entité dans un <see cref="WorldSnapshot"/> (API_CONTRACTS.md §2.1).
 /// V0.1 : identité, espèce, position, besoins, intention, et cognition observable
 /// (traits, croyances, objectifs, relations de confiance, volume mémoire) —
@@ -34,7 +46,9 @@ public sealed record AgentSnapshot
         IReadOnlyList<BeliefObservation>? beliefs = null,
         IReadOnlyList<GoalObservation>? goals = null,
         IReadOnlyList<TrustObservation>? trust = null,
-        int memoryCount = 0)
+        int memoryCount = 0,
+        IReadOnlyDictionary<string, double>? inventory = null,
+        IReadOnlyList<CommitmentObservation>? commitments = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(species);
@@ -53,6 +67,8 @@ public sealed record AgentSnapshot
         Goals = goals ?? [];
         Trust = trust ?? [];
         MemoryCount = memoryCount;
+        Inventory = inventory ?? new Dictionary<string, double>(StringComparer.Ordinal);
+        Commitments = commitments ?? [];
     }
 
     public string Id { get; }
@@ -91,6 +107,16 @@ public sealed record AgentSnapshot
 
     /// <summary>Nombre de souvenirs en mémoire (décision n°11).</summary>
     public int MemoryCount { get; }
+
+    /// <summary>
+    /// Inventaire (D8) : quantité par type de ressource détenu (clé = type
+    /// camelCase minuscule, ordre stable du type). Vide si l'inventaire est
+    /// désactivé — l'ADR « Inventaire » porte les quantités, poids = somme.
+    /// </summary>
+    public IReadOnlyDictionary<string, double> Inventory { get; }
+
+    /// <summary>Engagements actifs ou résolus récents (D5) — ordre de création.</summary>
+    public IReadOnlyList<CommitmentObservation> Commitments { get; }
 
     public static AgentSnapshot From(
         Simulation.Core.Entities.Entity entity,
@@ -141,6 +167,26 @@ public sealed record AgentSnapshot
             }
         }
 
+        var inventoryObs = new Dictionary<string, double>(StringComparer.Ordinal);
+        if (mind.Inventory is { } inventory)
+        {
+            foreach ((Simulation.Core.World.ResourceKind kind, double amount) in inventory.Snapshot())
+            {
+                inventoryObs[kind.ToString().ToLowerInvariant()] = amount;
+            }
+        }
+
+        var commitmentObs = new List<CommitmentObservation>(mind.Commitments.Count);
+        foreach (Cognition.Commitment commitment in mind.Commitments)
+        {
+            commitmentObs.Add(new CommitmentObservation(
+                commitment.ToEntityId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                commitment.RequestType,
+                commitment.Status.ToString(),
+                commitment.CreatedTick,
+                commitment.ExpiryTick));
+        }
+
         return new AgentSnapshot(
             entity.Id.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
             entity.Species,
@@ -156,6 +202,8 @@ public sealed record AgentSnapshot
             beliefObs,
             goals,
             trustObs,
-            mind.Memory.Count);
+            mind.Memory.Count,
+            inventoryObs,
+            commitmentObs);
     }
 }
