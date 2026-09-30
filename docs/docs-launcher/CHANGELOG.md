@@ -34,8 +34,17 @@ l'architecture sont spécifiés ; l'implémentation n'a pas commencé.
 - **Six ADR** — pile technique .NET et Avalonia, égalité des deux modes, propriété
   de l'analyse par ECHOS, format de paquet, exécution séquentielle et mono-espace,
   verrouillage de PRISM.
+- **`GUI.md`** — spécification pixel de l'interface, établie par mesure directe de
+  la maquette de référence 1536 × 1024 : grille à trois colonnes, bornes de chaque
+  zone, palette, typographie, composants, états et interactions, plus l'écart
+  mesuré entre la maquette et le prototype HTML.
 
 ### Changed
+- **`USER_INTERFACE.md` réconcilié avec la maquette** — la maquette montre une
+  navigation à sept entrées et non les trois modes du document ; les deux
+  découpages sont désormais explicités et la décision de réconciliation est
+  signalée comme point ouvert. Le principe « aucun dégradé » est révisé : la
+  maquette repose sur des dégradés de fond, qui ne portent jamais d'information.
 - **Réécriture complète de la documentation du Launcher** — le monolithe
   le monolithe `LIVEX_Launcher.md` et les six documents annexes de l'ancien
   répertoire de brouillon sont remplacés par le présent jeu de documents.

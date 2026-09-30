@@ -3,8 +3,25 @@
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
 **Dernière mise à jour** : 30 septembre 2026
-**Dépend de** : `VISION.md`, `COMPONENTS.md`, `ARCHITECTURE.md`
+**Dépend de** : `VISION.md`, `COMPONENTS.md`, `ARCHITECTURE.md`, `GUI.md`
 **Source Monographie** : —
+
+---
+
+## 0. Portée de ce document
+
+Ce document décrit **ce que l'interface permet et quelles règles elle respecte**.
+Il ne donne aucune dimension. Les positions, les tailles, les couleurs et la
+typographie sont spécifiés dans **`GUI.md`**.
+
+| Document | Question |
+| :-- | :-- |
+| `USER_INTERFACE.md` | Que fait l'interface, et sous quelles contraintes |
+| `GUI.md` | À quoi ressemble-t-elle, au pixel près |
+
+La maquette de référence est `maquettes/Interface futuriste du launcher LIVEX.png`,
+en 1536 × 1024. Quand ce document et cette image semblent en désaccord, c'est
+**l'image qui fait foi** pour tout ce qui est visible.
 
 ---
 
@@ -23,37 +40,84 @@ de comprendre l'état de la pile et d'agir dessus, et rien de plus.
 
 ## 2. Organisation générale
 
-La navigation est organisée par **modes d'utilisation**, pas par couches techniques.
-Les deux modes scientifique sont de poids égal ; le mode Contrôle est le socle.
+### 2.1 Ce que montre la maquette
+
+La maquette de référence ne présente pas une navigation à trois modes, mais une
+navigation à **sept entrées**, dans une sidebar de 222 px :
 
 ```text
-┌────────────────────────────────────────────────────────────────┐
-│  livex-launcher          Profil : Analyse          [État global] │
-├───────────────┬────────────────────────────────────────────────┤
-│  Modes        │                                                │
-│               │                                                │
-│  ● Contrôle   │                                                │
-│  ● Analyse    │             Zone de contenu                   │
-│  ○ Immersion  │                                                │
-│    (verrouillé)          de la vue sélectionnée                │
-│               │                                                │
-├───────────────┴────────────────────────────────────────────────┤
-│  Composants   SYNE ●   ECHOS ●   PRISM ○ verrouillé            │
-├────────────────────────────────────────────────────────────────┤
-│  Campagne   calibration-saison-3   5/12   ██████░░░░░          │
-└────────────────────────────────────────────────────────────────┘
+┌───────────────┬────────────────────────────────────────────────┐
+│  LIVEX        │  UN MONDE VIRTUEL          Mode  [Standard]    │
+│               ├───────────────┬──────────────────────────────┤
+│  ▌Accueil     │               │                              │
+│   Expériences │   Hero        │   État du système            │
+│   Campagnes   │               │   ────────────────           │
+│   Analyse     │  COMPOSANTS   │   SYNE    Démarré  PID 4821   │
+│   Rapports    │  ┌────┬────┬──┤   ECHOS   Démarré  PID 4937   │
+│   Configuration│ │SYNE│ECHOS│PR│   PRISM   Arrêté              │
+│   Logs        │  └────┴────┴──┤   ────────────────           │
+│               │  Expériences  │   Ressources                 │
+│               │  ┌──────────┐│   RAM ▓▓▓░░ 42 %             │
+│               │  │ tableau  ││   CPU ▓▓░░░ 28 %             │
+│               │  └──────────┘│   ────────────────           │
+│  ▌LIVEX       │               │   Logs récents               │
+│  Des entités… │               │   INFO  SYNE démarré        │
+└───────────────┴───────────────┴──────────────────────────────┘
+   LIVEX Launcher │ v0.3.0 │ Mode:Standard      ● Système prêt
 ```
+
+Trois zones, toujours visibles : **sidebar** à gauche, **contenu** au centre,
+**colonnes d'état** à droite. La disposition exacte est dans `GUI.md` §2.
+
+### 2.2 Deux organizing concepts, un seul écran
+
+La maquette fait apparaître une tension réelle, qu'il ne faut pas passer sous
+silence : ce document raisonne en **trois modes**, la maquette en **sept entrées**.
+
+| Les trois modes de ce document | Les sept entrées de la maquette |
+| :-- | :-- |
+| Contrôle | Accueil, Expériences, Configuration |
+| Analyse | Campagnes, Analyse, Rapports |
+| Immersion | PRISM dans l'état de la pile, pas une entrée |
+
+Les deux ne décrivent pas le même niveau. Les **modes** sont un découpage
+conceptuel du produit, largement repris dans `VISION.md` et
+`adr/ADR-002-modes-analyse-et-immersion-de-poids-egal.md`. Les **entrées de la
+sidebar** sont un découpage écran.
+
+Correspondance proposée :
+
+| Entrée | Contenu | Mode conceptual |
+| :-- | :-- | :-- |
+| Accueil | Synthèse de la pile | Transverse |
+| Expériences | Liste des runs | Contrôle |
+| Campagnes | Liste des campagnes | Analyse |
+| Analyse | Lecture des rapports | Analyse |
+| Rapports | Rapports exportés | Analyse |
+| Configuration | Profil, moteur, session | Contrôle |
+| Logs | Journaux de session | Contrôle |
+
+**Décision à trancher.** Soit la navigation à sept entrées est retenue et les
+modes restent un concept de documentation, soit la navigation à trois modes est
+retenue et la maquette est à refaire. Le statu quo — deux découpages concurrents
+non réconciliés — n'est pas tenable. Voir §12.
+
+### 2.3 Zones et persistance
 
 | Zone | Rôle | Persistance |
 | :-- | :-- | :-- |
-| **Barre de titre** | Identité, profil actif, état global | Non |
-| **Navigation des modes** | Les trois modes, avec verrouillage visible | Non |
-| **Zone de contenu** | Vue du mode sélectionné | Non |
-| **Barre des composants** | État synthétique de chaque composant | Non |
-| **Barre de campagne** | Campagne active et progression, le cas échéant | Non |
+| **Barre de titre** | Identité, mode, état global | Non |
+| **Sidebar** | Navigation, identité en pied | Non |
+| **Contenu** | Vue sélectionnée | Non |
+| **Colonne d'état** | État du système, ressources, journaux | Non |
 
-La barre des composants et la barre de campagne sont **toujours visibles**. L'état
-de la pile ne doit jamais nécessiter une navigation pour être connu.
+La colonne d'état est **toujours visible**. L'état de la pile ne doit jamais
+nécessiter une navigation pour être connu.
+
+La maquette ne comporte pas de barre de composants ni de barre de campagne
+dédiées comme dans le schéma initial : ces informations sont **portées par la
+colonne d'état** et par la section COMPOSANTS du contenu. C'est une équivalence
+de fait, à confirmer.
 
 ## 3. Les trois modes
 
@@ -150,20 +214,22 @@ L'interface ne doit jamais laisser croire que le mode est abandonné.
 
 ## 4. Mise en page de la zone de contenu
 
-La mise en page est identique pour tous les modes, afin que l'utilisateur n'ait
-rien à réapprendre.
+La mise en page est identique pour toutes les vues, afin que l'utilisateur n'ait
+rien à réapprendre : la sidebar et la colonne d'état ne changent jamais, seule la
+zone centrale est remplacée.
+
+Le gabarit commun, tel que la maquette le montre pour l'accueil :
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
-│  Titre de la vue                          Actions à droite  │
+│  Bandeau — titre de la vue, actions à droite                │
 ├────────────────────────────────────────────────────────────┤
 │                                                            │
 │   Contenu principal                                        │
-│   (listes, panneaux, formulaires)                          │
-│                                                            │
+│   (liste, panneau, tableau, formulaire)                     │
 │                                                            │
 ├────────────────────────────────────────────────────────────┤
-│  Détail de la sélection          │  Actions contextuelles │
+│  Action primaire                    Actions contextuelles  │
 └────────────────────────────────────────────────────────────┘
 ```
 
@@ -176,6 +242,11 @@ rien à réapprendre.
 
 La sélection dans le contenu pilote le panneau de détail. Sans sélection, le
 panneau propose un contenu d'attente, jamais un espace vide.
+
+L'accueil de la maquette **empile** deux blocs dans cette zone : un panneau
+COMPOSANTS avec ses trois cartes, puis un panneau des dernières expériences avec
+son tableau. C'est le seul écran documenté ; les autres suivent le même gabarit
+mais leur composition interne reste à écrire. Voir `GUI.md` §14.
 
 ## 5. Conception des vues
 
@@ -227,18 +298,49 @@ prédiction de résultat. Voir `EXPERIMENTS.md` §8.
 
 | Principe | Application |
 | :-- | :-- |
-| **L'état est visible en permanence** | La barre des composants est toujours présente |
+| **L'état est visible en permanence** | La colonne d'état et la section COMPOSANTS sont toujours présentes |
 | **Une couleur par état** | Vert, ambre, orange, rouge, gris, avec un libellé textuel |
 | **La couleur ne suffit jamais** | Chaque état porte aussi un texte, pour l'accessibilité |
 | **Densité d'outil** | Information dense, sans espace superflu |
 | **Hiérarchie en trois niveaux** | En-tête de vue, contenu, détail |
-| **Aucun effet décoratif** | Pas d'animation permanente, pas de dégradé |
+| **Le décor ne porte jamais d'information** | Halos, ombres et dégradés sont ambiants, jamais significatifs |
 | **Action destructive explicitée** | Suppression, annulation et réinitialisation sont distinguées |
 | **Locus du verrouillage** | Un cadenas avec son motif, à l'entrée du mode |
 
 L'interface ne comporte **aucun rendu temps réel**. Elle affiche des états et des
 progressions échantillonnées, ce qui évite toute promesse de fluidité qu'elle ne
 pourrait pas tenir.
+
+### 6.1 Réconciliation avec la maquette
+
+La maquette contredit deux formulations historiques de ce document. Les principes
+sont maintenus, leur expression est révisée.
+
+| Ancien principe | Position de la maquette | Décision |
+| :-- | :-- | :-- |
+| « Aucun effet décoratif — pas de dégradé » | Fond en dégradé radial, dégradés de panneaux, halos par carte, halo du hero | **Révisé** : les dégradés sont admis comme traitement de fond, jamais comme signal |
+| « Pas d'animation permanente » | Jauges de ressources animées sur 0.8 s | **Confirmé** : l'animation existante est une transition de valeur, pas une animation permanente |
+
+La distinction qui tient : **un dégradé ne dit rien**. Il donne de la profondeur
+au fond et sépare deux plans. Ce qui dit quelque chose — vert, ambre, bleu,
+« En cours », « Arrêté » — reste strictement réservé à l'état, et toujours
+accompagné d'un libellé.
+
+Aucun détail de ces traitements n'est normatif ici ; il est spécifié dans
+`GUI.md` §3.
+
+## 6.2 Typographie
+
+La maquette utilise deux familles, jamais une seule :
+
+| Famille | Rôle | Traitement |
+| :-- | :-- | :-- |
+| **Montserrat** | Marque, titres de composant, mentions capitales | Interlettrage large, jusqu'à 0.42 em |
+| **Inter** | Tout le reste | Interlettrage normal |
+
+Les mentions en capitales très espacées sont une **signature assumée** et ne
+doivent pas être resserrées pour suivre une convention. Les tailles et
+interlettrages sont dans `GUI.md` §3.2.
 
 ## 7. États vides et cas limites
 
@@ -294,16 +396,22 @@ centralisées pour qu'une deuxième langue soit ajoutable sans refonte.
 
 ## 11. Références
 
+- `GUI.md` — **spécification pixel** : grille, positions, couleurs, typographie
 - `VISION.md` — intentions, non-objectifs, égalité des modes
 - `COMPONENTS.md` — états, causes, profils
 - `OBSERVABILITY.md` — compte-rendus, alertes, métriques
 - `EXPERIMENTS.md` — campagnes, progression
 - `adr/ADR-002-modes-analyse-et-immersion-de-poids-egal.md` — égalité des modes
+- `maquettes/Interface futuriste du launcher LIVEX.png` — maquette de référence
 
 ---
 
 ## Points restés ouverts dans ce document
 
+- **Navigation à sept entrées ou à trois modes.** C'est le point le plus lourd.
+  Ce document raisonne en trois modes, la maquette en sept entrées, et les deux
+  découpages ne se recouvrent pas. Il faut choisir, puis aligner l'autre. Voir
+  §2.2.
 - **Panneau de mesures.** La forme du panneau de mesures et sa visibilité par
   défaut ne sont pas tranchées. Voir `OBSERVABILITY.md` §9.
 - **Personnalisation.** La réorganisation des panneaux et la taille des colonnes
@@ -312,8 +420,14 @@ centralisées pour qu'une deuxième langue soit ajoutable sans refonte.
   `recoverable` doit être spécifié avec `PACKAGE_FORMAT.md`.
 - **Échelle de densité.** La densité d'information est qualifiée ici mais aucun
   budget de lignes par vue n'est fixé.
-- **Thème sombre.** Aucun thème sombre n'est prévu en V0.1. La décision doit être
+- **Thème sombre.** Aucun thème clair n'est prévu en V0.1. La décision doit être
   prise avant l'implémentation de l'interface.
 - **Ordre des modes.** L'ordre Contrôle, Analyse, Immersion est retenu. Il faut
   confirmer qu'il ne suggère pas de hiérarchie entre les deux modes, alors même
   que la documentation les déclare égaux.
+- **Vues non documentées.** Une seule vue est spécifiée dans `GUI.md`, parce
+  qu'une seule est documentée. Les six autres entrées de navigation restent à
+  écrire.
+- **Écart maquette / prototype.** Le rendu du prototype HTML ne correspond pas à
+  la maquette sur le fond, le hero et le grain. Il faut décider lequel des deux
+  sert de référence de production. Voir `GUI.md` §12.
