@@ -150,7 +150,7 @@ le mock séparé `syne-mock` dispose de sa propre configuration.
   - `actions.deliberation.intervalTicks` ≥ 1 ; `alignBonus` > 0 ; `actionSwitchMargin`/`conflictTieMargin` ≥ 0 ;
   - `actions.interruption.utilityExcessMargin` ≥ 0 ; `criticalHunger` ∈ (0, 100] ; `criticalEnergy` ∈ [0, 100) ;
   - `needs.hungerTriggerThreshold`/`thirstTriggerThreshold`/`fatigueTriggerThreshold` ∈ (0, 100] ;
-  - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`) — échec déclaratif si une clé manque.
+  - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`, `take`, `give`, `trade`, `attack`, `defend` — les 5 primitives atomiques D7 depuis engineVersion 0.14.0) — échec déclaratif si une clé manque.
   - `communication.transmissionRange` ∈ (0, 70] ; `maxSendsPerTick`/`maxReceivesPerTick` ≥ 0 ; `maxHops` ≥ 1 ; `incomprehensionRate`/`hopConfidenceDecay`/`trustDecay` ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053) ; `transmissionRange` > `perceptionRange` invalide (la perception doit rester strictement supérieure).
    - `groups.enabled`/`reproduction.enabled` booléens ; `reviewIntervalTicks`/`intervalTicks` ≥ 1 ; `trustThreshold`/`consensusThreshold`/`consentTrustThreshold` ∈ [0, 1] ; `minGroupSize` ≥ 2 ; `maxBirthsPerTick` ≥ 1 ; `agents.inheritance.salienceThreshold` > 0.
   - `resources.<type>.initial` ≥ 0 ; `regenerationRate` ≥ 0 ; `degradationTick` > 0 ou absent (SYNE-070).
@@ -188,7 +188,40 @@ le mock séparé `syne-mock` dispose de sa propre configuration.
 
 Chaque action du catalogue doit être déclarée (liste fermée §6) ; `Eat`/`Drink` sont les
 **actions terminales** résolues depuis SeekFood/SeekWater quand la réserve est disponible
-(SYNE-042, DATA_MODEL.md §7).
+(SYNE-042, DATA_MODEL.md §7). Le catalogue inclut depuis engineVersion 0.14.0 les
+primitives atomiques D7 (`take`, `give`, `trade`, `attack`, `defend`) — déclarées pour
+la complétude (liste fermée), inertes tant que les drapeaux ci-dessous sont éteints.
+
+**Nouvelles clés du jalon ADR cognitifs (engineVersion 0.14.0 — ADR acceptés du
+30/09/2026, tous désactivés par défaut : trajectoire de référence et checksums dorés
+inchangés)** :
+
+| Clé | Défaut | ADR | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.actions.plans.enabled` | false | D3 | Bibliothèque de plans candidats par objectif (candidats Take/Trade ajoutés à la délibération) |
+| `agents.actions.inventory.enabled` | false | D8 | Inventaire des entités (poids/slots) — les primitives Take/Give/Trade opèrent dessus |
+| `agents.actions.inventory.capacityWeight` | 20.0 | D8 | Capacité de poids par entité (`capacitePoids` de l'ADR) |
+| `agents.actions.inventory.takeAmount` | 5.0 | D7/D8 | Quantité par primitive Prendre (réserve → inventaire) |
+| `agents.actions.inventory.giveAmount` | 1.0 | D7 | Quantité par primitive Donner (inventaire → pair) |
+| `agents.actions.inventory.tradeAmount` | 1.0 | D7 | Quantité par côté de l'échange fixe 1 Food ↔ 1 Water |
+| `agents.actions.salience.enabled` | false | D2 | Contrôle de saillance (étape 3bis) : entre deux délibérations, poursuite de l'intention sauf saillance ou filet de sécurité |
+| `agents.actions.salience.reconsiderThreshold` | 1.0 | D2 | Seuil de score déclenchant la délibération complète |
+| `agents.actions.salience.needThresholdWeight` | 1.0 | D2 | Poids d'un franchissement de seuil de besoin depuis la dernière délibération |
+| `agents.actions.salience.interruptionConditionWeight` | 2.0 | D2 | Poids d'une condition d'interruption remplie (réservé, la condition critique force déjà SEUIL_MAX) |
+| `agents.actions.salience.forcedReconsiderationTicks` | 50 | D2 | Filet de sécurité : reconsidération forcée tous les N ticks sans saillance (0 = désactivé) |
+| `agents.actions.commitments.enabled` | false | D5 | Engagements communicationnels : Request/Response → `Commitment` → objectif candidat pondéré par la confiance |
+| `agents.actions.commitments.expiryTicks` | 100 | D5 | Durée de validité : non honoré au-delà → Broken (pénalité de confiance) |
+| `agents.trust.commitmentBonus` | 0.10 | D5 | Bonus de confiance d'un engagement tenu (`Fulfilled`) |
+| `agents.trust.commitmentPenalty` | 0.15 | D5 | Pénalité de confiance d'un engagement rompu/expiré — distincte du mensonge factuel (`liePenalty`) |
+
+**Profil de référence recalé (calibration D1, engineVersion 0.13.0 — ADR-015)** :
+`configs/simulation/reference.json` et `SimulationProfiles.Reference()` portent
+`catalog.eat.energyRecovery = 2.0` et `catalog.drink.energyRecovery = 1.0` —
+manger/boire compense le coût métabolique du déplacement vers la ressource (sans
+cela : mort lente, énergie moyenne 69 → 49 entre t800 et t1200). Le bénéfice
+Eat/Drink de la formule d'utilité est déplafonné (`min(need, 100) × 0.6`, plafond
+60, monotone). Les défauts intégrés (`ActionCatalogSettings`) restent inchangés :
+la calibration ne vit que dans le profil de référence, jamais en dur dans la boucle.
 
 ### 6.3 Clés de communication (jalon SYNE ph5)
 

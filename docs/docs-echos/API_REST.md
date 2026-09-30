@@ -48,14 +48,26 @@ Ordres **déterministes** (aucun PRNG, aucun horodatage d'émission) : runs tri�
 
 ```json
 {"runs": [{"run_id": "run-7", "version": "0.1.0", "seed": "7",
-           "ticks_count": 1200, "first_tick": 1, "last_tick": 1200}]}
+           "ticks_count": 1200, "first_tick": 1, "last_tick": 1200,
+           "outcome": "surviving", "extinction_tick": null}]}
 ```
+
+Depuis la **viabilité A3** : chaque run expose son résultat de population —
+`outcome` ∈ {`surviving`, `extinct`, `unknown`} et `extinction_tick` (premier
+tick où `alive_count = 0`, `null` sinon ; `unknown`/`null` sur un run sans
+tick). Le résultat est calculé en SQL sur `tick_summaries` (aucune migration
+supplémentaire), disponible **pendant** l'ingestion — un observateur peut
+drapper « run fini avec écosystème mort » sans recalculer lui-même depuis les
+séries. Idem sur `GET /api/runs/{id}`.
 
 Sans paramètre `run_id` sur les endpoints suivants, le **run par défaut** est le plus récent (`last_tick` maximal, départage `run_id`).
 
-L'identité persistée par ECHOS est le `runId` du snapshot SYNE. Elle est opaque
-et stable pendant le run ; le contrôle HTTP SYNE renvoie ce même identifiant
-pour permettre la corrélation avec les données analytiques.
+L'identité persistée par ECHOS est le `runId` du snapshot SYNE. Depuis le
+contrat SYNE **0.2.1**, les runs pilotés portent le format canonique
+`run-<seed>-<12hex>` et le champ snapshot `seed` ; ECHOS enregistre le seed
+transporté et ne dérive plus depuis `run_id` que **en repli** (flux ≤ 0.2.0).
+Seed introuvable des deux côtés → `seed: ""` + avertissement d'ingestion
+(jamais une erreur fatale, observe-only).
 
 ### 3.2 `GET /api/runs/{id}`
 
@@ -163,6 +175,7 @@ Comparaison de deux runs contrôlés (EXPERIMENT_COMPARISON.md §2, METRICS_SPEC
 ```
 
 - `?run_a=` / `?run_b=` (obligatoires) : identifiants de runs ; `format` ∈ {`json`, `csv`} (défaut `json`).
+- `?light=1` (**C3**) : renvoie le seul résumé (seed/version/score/diffs), **sans** `series` ni calcul d'empreinte — `bit_identical` et `is_reproducible` valent `null` (le verdict exige l'empreinte). Utile pour l'affichage : l'empreinte charge séries + événements + contextes + traces des deux runs, lourd par conception. Défaut sans `light` : comportement complet conservé. `light` n'affecte pas `format=csv` (l'export a besoin des séries).
 - `bit_identical` : empreinte **SHA-256** du contenu canonique du run (séries de métriques, résumés de tick, événements, contextes `agents`/`groups`/`phenomena`, traces de décision — sans l'étiquette `run_id`), `echos/analysis/reproducibility.py`.
 - `is_reproducible` = même **seed** ∩ même **version** du moteur ∩ contenu **bit-à-bit identique** ; `reproducibility_score` = `1.0` si reproductible, sinon `1.0 − (cognitive_diff + social_diff)/2` (définition EXPERIMENT_COMPARISON.md §2.3).
 - `cognitive_diff` / `social_diff` : distances **L2 normalisées** (borne [0, 1]) entre les distributions de croyances, resp. de confiance, de la population au dernier contexte `agents`.
@@ -178,14 +191,42 @@ pour garantir un corps reproductible. Le rapport ne contient pas d'horodatage,
 ne modifie pas la configuration ou le monde, et ne déclenche aucun recalibrage
 automatique. Run sans tick ou inconnu : 404.
 
-### 3.11 Erreurs
+Depuis la **viabilité B2 (schemaVersion 2)**, le rapport expose en plus :
+
+- `outcome` ∈ {`surviving`, `extinct`} et `extinctionTick` (premier tick où
+  `alive_count = 0`, `null` sinon) — le rapport reste déterministe, fonction
+  pure des résumés existants ;
+- bloc `viability` : `energySlopePerTick` (pente moindres carrés de
+  `mean_energy` sur les 200 derniers ticks — détecte la **mort lente** même
+  sans extinction), `actionSharesWhenHungry` (distribution des actions des
+  `decision_made` sur les ticks où `mean_hunger > 70`, avec compteur
+  `hungryDecisions`), `resourceRegime` (min/moy/max des séries `food`/`water`
+  — `null` sur les bases antérieures aux colonnes `mean_food`/`mean_water`,
+  schéma v6) ;
+- depuis **A2** : le rapport est bâti à la fin de **chaque** run observé, y
+  compris ceux interrompus par un `reset` SYNE en pleine connexion (changement
+  de `run_id` en flux), et pas seulement pour le dernier run du flux.
+
+### 3.11 Cadence du contexte `agents` (C2)
+
+Le contexte `agents` (~208 Ko/tick — croyances, relations) est persisté 1 tick
+sur `context_every` (défaut **20**, environnement `ECHOS_CONTEXT_EVERY`, min 1
+= comportement historique) **plus le dernier tick du flux**. Les contextes
+`groups`/`phenomena`/`profiling` suivent la cadence `analysis_every`
+(inchangée). `latest_context`, `context_before`, `/beliefs` et
+`/relationships` lisent « le plus récent disponible » : le contexte servi peut
+dater de ≤ `context_every` ticks (documenté dans CAUSAL_ANALYSIS.md §4).
+L'empreinte de reproductibilité n'en est pas affectée : la cadence fait partie
+du protocole expérimental et deux runs comparés l'utilisent (EXPERIMENT_COMPARISON.md).
+
+### 3.12 Erreurs
 
 - `404` : run inconnu (explicite ou aucun run) ; entité absente du tick le plus récent ; entité sans trace de décision (`causal-chains`).
 - `400` : `format` d'export inconnu ou `format` de `/api/compare` hors {`json`, `csv`}.
 - `422` : `every < 1`, `depth` hors [1, 12], `run_a`/`run_b` manquants (validation OpenAPI).
 - `503` : aucun store configuré (`ECHOS_ANALYTICS_DB` non défini).
 
-### 3.12 Relais de contrôle SYNE
+### 3.13 Relais de contrôle SYNE
 
 `POST /api/control/{action}` relaie les actions `start`, `pause`, `resume`, `stop`
 et `reset` vers le client HTTP SYNE. Les payloads `seed`, `config`, `maxTicks` et
@@ -215,12 +256,3 @@ une commande `pause`, `stop`, `reset` ou l'arrêt du processus SYNE.
 ## Points restés ouverts dans ce document
 - `/api/communication-heatmap` (périmètre UI) n'est pas implémenté en V0.1.
 - Compatibilité de versionnage des réponses à aligner sur `VERSIONING.md` (évolutions additives = MINOR).
-
-### 3.10 `GET /api/runs/{id}/calibration` (SYNE-131, U8)
-
-Retourne le rapport post-run persisté dans `calibration_reports` (schéma SQLite v4).
-Le JSON contient les résumés de ticks, statistiques de population et besoins,
-comptes d'événements et statistiques par moteur. Les clés et listes sont triées
-pour garantir un corps reproductible. Le rapport ne contient pas d'horodatage,
-ne modifie pas la configuration ou le monde, et ne déclenche aucun recalibrage
-automatique. Run sans tick ou inconnu : 404.

@@ -104,4 +104,4 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 - Détails chiffrés de résolution des conflits (probabilités, dégâts) — à documentation quand elle sera tranchée.
 - Modèle d'héritage (fusion consentie) : logique cognitive exacte à détailler.
 - Coûts des livres (décisions n°18/19) : modèles économiques — **[tranchés] au niveau hérité/prototype** (coûts héritables, budgets par fusion §6.6.3).
-- Mécanique V2 du monde (saisons, événements globaux) : non activée en V0.1.
+- Cycle des saisons : **livré** (SYNE-072, jalon U8, engineVersion 0.9.0 — fonction pure du tick, `world.seasons`, événement `world.season_changed`) mais **désactivé par défaut** en V0.1 (`world.seasons.enabled: false`, scénario de référence intact). Les événements globaux du monde (type sécheresse/épidémie) restent une mécanique V2. *(réaligné le 30/09/2026 — ce point indiquait auparavant « non activée en V0.1 » sans distinguer le livré du défaut)*

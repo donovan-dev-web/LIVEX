@@ -9,6 +9,58 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Added
+- **Jalon ADR cognitifs (engineVersion 0.14.0)** : implémentation des 5 ADR acceptés le
+  30/09/2026, tous portés par des drapeaux **désactivés par défaut** — la trajectoire du
+  scénario de référence et les checksums dorés restent inchangés (pin contractuel
+  0x46769cfb11c8b3a7 conservé, `DeterminismRegressionTests` vert) :
+  - **D7 — Primitives d'actions** : 5 primitives atomiques ajoutées EN QUEUE de
+    `DesireKind` (`Take`/`Give`/`Trade`/`Attack`/`Defend`, valeurs 9-13 — l'ordre
+    historique 0-8 ne change jamais, départage déterministe préservé). `Take` transfère
+    réserve → inventaire sous capacité ; `Give` (don) et `Trade` (échange fixe
+    1 Food ↔ 1 Water) opèrent entre entités avec interaction sociale positive
+    réciproque ; `Attack` inflige `5 × aggressivité` de dégât d'énergie (§3.15.4)
+    et dégrade la sécurité de la cible (déclenche `Flee` existant) ; `Defend` réduit
+    de moitié le dégât subi pendant le tick. Toutes échouent en `Blocked` sans effet
+    partiel (atomicité). `Attack` n'est **jamais généré** par la délibération en V0.1
+    (doctrine de progressivité §9.6.3 point 13 — réintroduction catalogale D3 temps 1).
+  - **D8 — Inventaire** : structure `Inventory` (une entrée par type de ressource,
+    capacité de poids `capaciteWeight` = 20, slots différés en V2 — alternative 3 de
+    l'ADR) ; opérations tout-ou-rien 0 PRNG ; exposé dans le snapshot agent (champ
+    additif `inventory`, émis sous drapeau) et persisté bit-à-bit (DTO additif,
+    `SchemaVersion` 4 conservé, hash inchangé quand désactivé).
+  - **D3 — Means-End Reasoning** : bibliothèque de plans (`PlanLibrary`) — pour un
+    objectif de faim/soif, candidats `Take` (constitution de stock, modulée par le
+    trait `greed` ≥ 1.0 et la capacité restante) et `Trade` (pair connu avec confiance
+    > 0.5) ajoutés à la délibération ; la formule d'utilité est **inchangée** (elle
+    reçoit plus de candidats). `Steal` non implémenté (arbitrage ETHICS_AND_SCOPE
+    requis par l'ADR) ; `Buy` couvert par l'échange fixe.
+  - **D5 — Engagements communicationnels** : structure `Commitment` (cycle Pending →
+    Fulfilled/Broken/Expired, `expiryTicks` = 100) créé chez le demandeur à la
+    réception d'une `Response` positive ; les entités très sociables (facteur ≥ 1.0)
+    répondent aux `Request` comprises (production réelle de `Request`/`Response` —
+    la file n'est plus consommée comme simple trace) ; un engagement actif ajoute un
+    objectif candidat d'aide dont le bénéfice dérive de la confiance envers le
+    demandeur (40 × confiance, `benefitOverride` — la formule d'utilité reste
+    inchangée) ; `TrustLevel += commitmentBonus` si tenu, `−= commitmentPenalty`
+    (0.15) si rompu/expiré — **une promesse rompue n'est plus sans effet** et reste
+    distincte du mensonge factuel (`liePenalty`). Version minimale : un seul type
+    d'engagement, pas de propagation sociale de la rupture (ADR §2).
+  - **D2 — Politique de reconsidération** : étape 3bis « Contrôle de Saillance » —
+    entre deux délibérations planifiées, l'intention est poursuivie sauf saillance
+    (besoin franchi depuis la dernière délibération, pondération configurable) ou
+    condition critique (reconsidération forcée = SEUIL_MAX, généralisation des 4
+    conditions de §3.15.6) ou filet de sécurité périodique (`forcedReconsiderationTicks`
+    = 50). O(k) sur les deltas des étapes 1-3, aucune reconsidération partielle.
+    Fonctionne sur les signaux internes (l'ADR « Perception des Événements » dont
+    elle dépendait a été rejeté le même jour).
+- **Contrat d'observabilité 0.2.1 → 0.3.0** : champs snapshot additifs
+  `agents[].inventory` et `agents[].commitments`, émis **seulement sous drapeaux**
+  (sortie bit-à-bit identique sinon) — rétro-compatibles à la lecture.
+- **13 tests** (`AdrCognitivePrimitivesTests`, `AdrDeterminismNeutralTests`) : atomicité
+  des primitives, capacity-bound de l'inventaire, échange bidirectionnel atomique,
+  dégât/défense, inertie des drapeaux éteints, reproductibilité drapeaux allumés.
+
 ### Fixed
 - Normalisation des journaux de checksum en LF pour garantir les mêmes baselines sur Windows et Linux ; fermeture des pools SQLite avant suppression des bases temporaires dans les tests Windows.
 

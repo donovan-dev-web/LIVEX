@@ -1,5 +1,12 @@
 ADR-XXX — Système d'inventaire (capacité poids/slots, ressources stockables)
-Statut : Proposé
+Statut : Accepté (30/09/2026) — **implémenté le 30/09/2026 (engineVersion 0.14.0)** :
+structure `Inventory` (une entrée par type de ressource, capacité de poids
+capaciteWeight = 20), opérations tout-ou-rien 0 PRNG (`TryTake`/`TryGive`), exposé dans le
+snapshot agent (champ additif `inventory` sous drapeau) et persisté bit-à-bit (DTO additif,
+SchemaVersion 4 conservé, hash inchangé quand désactivé). Points ouverts tranchés par
+défaut assumé : capacitePoids = 20 (calibrable, jamais figé) ; slots différés en V2
+(alternative 3 de l'ADR) ; Wood/Mineral inclus (toutes les réserves sont stockables).
+Drapeau : `agents.actions.inventory.enabled` — inerte par défaut.
 
 Contexte
 --------

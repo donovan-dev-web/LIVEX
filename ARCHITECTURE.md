@@ -85,9 +85,9 @@ Détaillé dans `COMMUNICATION.md`. Résumé contractuel :
 
 | Flux | Transport | Port | Payload (JSON camelCase) |
 | :-- | :-- | :-- | :-- |
-| SYNE → ECHOS/PRISM | WebSocket | 5180 par défaut | `world_initialized`, snapshot global par tick et événements |
-| Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état |
-| ECHOS API | HTTP REST | 5000 (V0.1 FastAPI) | runs, métriques, export, comparaison |
+| SYNE → ECHOS/PRISM | WebSocket | 5180 par défaut | `world_initialized`, snapshot global par tick (contrat **0.2.1** — champ `seed` additif) et événements |
+| Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état (moteur **0.13.0** — `409 run_finished` sur relance après fin) |
+| ECHOS API | HTTP REST | 5000 (V0.1 FastAPI) | runs (avec `outcome` de population), métriques, export, comparaison (`?light=1`) |
 
 Les valeurs par défaut ne remplacent pas la configuration du serveur. Le détail
 des schémas et du cycle de préparation est dans

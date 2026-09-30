@@ -3,11 +3,12 @@
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
 [![7 moteurs](https://img.shields.io/badge/Moteurs-7-1f7f6f.svg)](METRICS_SPEC.md)
 [![API: REST 5000](https://img.shields.io/badge/API-REST%205000-1f7f6f.svg)](API_REST.md)
+[![Tests: 304](https://img.shields.io/badge/Tests-304-1f7f6f.svg)](TESTING.md)
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : la documentation transversale (../)
+**Dernière mise à jour** : 30 septembre 2026
+**Dépend de** : la documentation transversale (../), SYNE ≥ 0.13.0 (contrat d'observabilité 0.2.1)
 **Source Monographie** : Partie 4
 
 ---
