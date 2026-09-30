@@ -1,6 +1,6 @@
 # ADR — Perception des Événements
 
-**Statut :** [OUVERT] — piste documentée, non implémentée
+**Statut :** [Rejeté] — décision du 30/09/2026 : l'application directe des événements localisés est **assumée comme exception** au principe d'observabilité partielle (§6.11). Les pistes de classification ambiant/localisé et d'observation `Event` ne seront pas implémentées.
 **Portée :** Extension du Système de Perception (§3.9) et du Système d'Environnement (§3.21)
 **Auteur :** Donovan Chartrain
 **Document parent :** LIVEX — Monographie Générale (Partie 3)
@@ -65,4 +65,4 @@ Cette ADR est un prérequis direct pour l'**ADR — Politique de Reconsidératio
 
 ## 7. Statut de la décision
 
-[OUVERTE] — documentée comme prérequis architectural pour V3, non implémentée.
+[Rejetée] — décision du 30/09/2026. L'application directe des événements est assumée comme exception doctrinale ; la piste d'observation `Event` n'est pas retenue. Conséquence enregistrée : l'ADR Politique de Reconsidération (accepté le même jour) fondera sa saillance sur les signaux internes (besoins, objectifs) et les observations standard, sans observation `Event` dédiée.

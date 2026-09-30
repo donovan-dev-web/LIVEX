@@ -64,6 +64,21 @@ Le versionnement est déclenché par les évènements suivants :
 - Toute libération composant visible publiquement incrémente au minimum `PATCH`.
 - Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `ROADMAP.md`.
 
+## 8. État courant des versions (septembre 2026)
+
+> Synoptique de référence après la campagne de correctifs
+> `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (ADR-015). L'état détaillé et les
+> matrice de compatibilité par composant vivent dans `docs/docs-syne/ROADMAP.md`
+> et `docs/docs-echos/ROADMAP.md`.
+
+| Composant / contrat | Version | Évolution |
+| :-- | :-- | :-- |
+| **SYNE** | **0.13.0** | MINOR : calibration de survie D1 (plafond monotone `min(need,100)×0.6` sur les bénéfices Eat/Drink, `EnergyRecovery` eat 2.0 / drink 1.0) — trajectoire recalée, goldens re-épinglés (`ADR-015`) |
+| Contrat d'observabilité (snapshot) | **0.2.1** | Champ additif `seed` dans `WorldSnapshot`, rétrocompatible 0.2.x |
+| Format `run_id` | `run-<seed>-<12hex>` | Seed explicite dans l'identifiant ; ECHOS ne dérive plus le seed de l'id (repli `_seed_of` conservé) |
+| ECHOS (stockage/calibration) | schéma SQLite **v6** | Migration additive `mean_food`/`mean_water`, rapport de calibration par run avec bloc `viability` |
+| echos-ui | suit l'API ECHOS | Consomme `outcome`/`extinctionTick` (badge extinction) et `/api/compare?light=1` |
+
 ---
 
 ## Points restés ouverts dans ce document

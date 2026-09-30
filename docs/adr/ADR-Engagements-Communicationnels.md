@@ -1,6 +1,15 @@
 # ADR — Engagements Communicationnels (Promesses)
 
-**Statut :** [OUVERT] — piste documentée, non implémentée
+**Statut :** [Accepté] — décision du 30/09/2026 : la structure `Commitment` et son impact sur `TrustLevel` sont retenus ; l'implémentation suit les ADR socle (Primitives d'actions, Inventaire, Means-End Reasoning).
+**Implémentation (30/09/2026, engineVersion 0.14.0)** : version minimale de l'ADR —
+`Commitment` (cycle Pending → Fulfilled/Broken/Expired, expiryTicks = 100) créé chez le
+demandeur à la réception d'une `Response` positive (borné à 3 engagements actifs, un par
+pair) ; les entités très sociables répondent aux `Request` comprises (production réelle de
+Request/Response) ; objectif candidat d'aide avec bénéfice = 40 × confiance envers le
+demandeur (pas un besoin physiologique — la formule d'utilité est inchangée) ;
+`TrustLevel ± commitmentBonus/commitmentPenalty` (0.10/0.15, distincts de `liePenalty`).
+Pas de propagation sociale de la rupture (visibilité A↔B). Drapeau :
+`agents.actions.commitments.enabled` (inerte par défaut).
 **Portée :** Extension du Système de Communication (§3.16), du Système d'Objectifs (§3.13) et du Système de Relations (§3.19)
 **Auteur :** Donovan Chartrain
 **Document parent :** LIVEX — Monographie Générale (Partie 3)
@@ -70,4 +79,8 @@ Modifications aux systèmes existants :
 
 ## 7. Statut de la décision
 
-[OUVERTE] — prévue pour V3, à introduire après stabilisation des Systèmes de Communication et de Relations, en version minimale (un seul type de `Commitment`, pas de propagation sociale de la rupture) avant extension.
+[Acceptée et implémentée le 30/09/2026 — engineVersion 0.14.0] : version minimale de
+l'ADR (un seul type d'engagement, pas de propagation sociale de la rupture) —
+`Commitment` créé à la réception d'une `Response` positive, objectif candidat d'aide
+pondéré par la confiance, `TrustLevel` impacté par `commitmentBonus`/`commitmentPenalty`.
+Drapeau `agents.actions.commitments.enabled` (inerte par défaut).

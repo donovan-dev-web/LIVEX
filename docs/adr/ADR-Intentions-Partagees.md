@@ -1,6 +1,6 @@
 # ADR — Intentions Partagées (Coordination de Groupe)
 
-**Statut :** [OUVERT] — piste documentée, non implémentée
+**Statut :** [Reporté V2] — décision du 30/09/2026 : chantier social lourd, à rouvrir après une calibration validée (plan de correctifs campagne-runs §7) et la réalisation des ADR socle (Primitives d'actions, Inventaire, Means-End Reasoning, Engagements Communicationnels)
 **Portée :** Extension du Système de Groupes (§3.17), sans modification du Système de Décision individuel (§3.14)
 **Auteur :** Donovan Chartrain
 **Document parent :** LIVEX — Monographie Générale (Partie 3)
@@ -86,4 +86,4 @@ Ce mécanisme réutilise entièrement l'infrastructure existante : le Système d
 
 ## 7. Statut de la décision
 
-[OUVERTE] — prévue pour V3, à introduire après stabilisation du Système de Groupes existant, en version minimale d'abord (doctrine §9.6.3, point 13 : ne pas introduire trop tôt des systèmes sociaux complexes).
+[Reportée V2] — décision du 30/09/2026 : chantier social lourd, à rouvrir après une calibration validée (plan de correctifs campagne-runs §7) et la réalisation des ADR socle (Primitives d'actions, Inventaire, Means-End Reasoning, Engagements Communicationnels).
