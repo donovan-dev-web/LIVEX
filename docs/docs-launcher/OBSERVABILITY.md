@@ -13,7 +13,7 @@
 Ce document spécifie la supervision de LIVEX à quatre emboîtements :
 
 - **globale** : LIVEX dans son ensemble ;
-- **par composant** : SYNE, ECHOS, PRISM, Launcher, Gateway ;
+- **par composant** : SYNE, ECHOS, PRISM, Launcher (et Gateway — **forme de sortie, non planifiée**, `NETWORK.md` §4.3) ;
 - **par simulation** : un run en cours ;
 - **par campagne** : une expérience multi-run.
 
@@ -117,7 +117,7 @@ Exemple de réponse `/health/details` :
 | SYNE | API de contrôle en écoute **et** simulation chargée ou chargeable |
 | ECHOS | API d'analyse en écoute ; la connexion à SYNE est un état de lien, pas une condition de `ready` |
 | PRISM | Processus vivant et, si son moteur l'expose, scène chargée |
-| Gateway | Routes chargées et registre accessible |
+| Gateway *(forme de sortie, non planifiée — sans objet en V0.1)* | Routes chargées et registre accessible |
 
 > Si le moteur de PRISM ne permet pas d'exposer HTTP simplement, l'alternative est
 > un fichier de statut plus un battement de cœur sur le WebSocket. **[À CONFIRMER
@@ -180,7 +180,12 @@ et ferait tomber la collecte.
 | `livex_launcher_run_duration_seconds` | Base des alertes de durée et de l'ETA |
 | `livex_launcher_disk_free_bytes{path}` | Espace disponible pour les runs |
 
-### 5.5 Gateway
+### 5.5 Gateway *(forme de sortie — non planifiée)*
+
+> **Sans objet en V0.1.** La Gateway n'est pas construite et n'a pas d'usage tant
+> que LIVEX tient sur une machine (`NETWORK.md` §3-§4.3). Cette section est
+> conservée pour le jour où une répartition multi-machine serait décidée ; elle
+> n'ajoute aucune exigence au périmètre courant.
 
 Requêtes par route, connexions WebSocket ouvertes, latence de relais, refus
 d'authentification ou d'origine, erreurs amont. Voir `NETWORK.md`.

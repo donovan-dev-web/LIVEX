@@ -45,13 +45,16 @@ perdu. La section « Points restés ouverts » de chaque document alimente ce fi
 | O-22 | Position du Launcher dans la feuille de route racine | `ROADMAP.md` §2 | Basse | G0 |
 | O-23 | Granularité du jalon d'interface G4 | `ROADMAP.md` §2 | Basse | G0 |
 | O-24 | Stratégies de graines au-delà de `derived` | `EXPERIMENTS.md` §13 | Basse | G3 |
-| O-25 | Support IPv6 et double pile | `NETWORK.md` §10 | Basse | Hors V0.1 |
+| O-25 | Support IPv6 et double pile | `NETWORK.md` §6.2, §12 | Basse | Hors V0.1 |
 | O-26 | Réouverture éventuelle de macOS | `ARCHITECTURE.md` §9 | Basse | Hors V0.1 |
 | O-27 | Conservation du type de composant utilitaire | `COMPONENTS.md` §12 | Basse | G0 |
+| O-35 | Mécanisme de l'espace d'adressage interne LIVEX : plage de ports réservée ou interface loopback dédiée (spike Windows/Linux) | `NETWORK.md` §12 | **Haute** | G0 |
+| O-36 | Bornes exactes de l'espace interne et migration des ports par défaut (5180/5181/5000) | `NETWORK.md` §12, §6.2 | Haute | G1 |
+| O-37 | Mécanisme de mesure des flux par composant (compteurs socket, `/proc`, eBPF léger) | `NETWORK.md` §12, `OBSERVABILITY.md` §5 | Moyenne | G1 |
 | O-28 | Comportement à l'installation de deux composants identiques | `COMPONENTS.md` §12 | Moyenne | G2 |
 | O-29 | **SYNE sait-il tourner seul et se terminer ?** `--seed`, `--ticks`, `--export-dir`, sortie automatique | `INTEGRATION_CONTRACT.md` §3.3 | **Bloquante** | Porte P2 |
 | O-30 | **ECHOS est-il pilotable sans son interface ?** `AnalyzeRun`, `AnalyzeExperiment`, `GenerateReport` | `INTEGRATION_CONTRACT.md` §10 | **Bloquante** | Porte P3 |
-| O-31 | Décision n°28 sur le protocole des messages `snapshot` et `event` | `NETWORK.md` §2.1 | Haute | Porte P1 |
+| O-31 | Décision n°28 sur le protocole des messages `snapshot` et `event` | `NETWORK.md` §2.5 | Haute | Porte P1 |
 | O-32 | ECHOS fonctionne-t-il sous Linux, exécutable et interface | `PACKAGING.md` | **Bloquante** | Porte P4 |
 | O-33 | Le déterminisme tient-il entre deux runs identiques, et entre plateformes | `INTEGRATION_CONTRACT.md` §12 | Haute | Porte P5 |
 | O-34 | Arrêt propre d'un processus sans console sous Windows : HTTP ou signal | `INTEGRATION_CONTRACT.md` §5.1 | Haute | G2 |
@@ -73,7 +76,7 @@ subsistent, le Launcher se limite au mode Contrôle et à la supervision.
 Leurs contreparties sont les portes **P1 à P5** de `ROADMAP.md`, et les spikes
 **S1 à S8**.
 
-## 4. Détail des points bloquants
+## 4. Détail de quelques points ouverts
 
 ### 4.1 O-01 — Politique de redémarrage
 
@@ -155,26 +158,25 @@ arbitrables, donc la porte G6 ne peut pas être franchie objectivement.
 
 | Jalon | Points à trancher |
 | :-- | :-- |
-| **G0** | O-07, O-22, O-23, O-27 |
-| **G1** | O-03, O-05, O-06, O-12, O-21 |
-| **G2** | O-02, O-10, O-14, O-28 |
+| **G0** | O-07, O-22, O-23, O-27, O-35 |
+| **G1** | O-03, O-05, O-06, O-12, O-21, O-36, O-37 |
+| **G2** | O-02, O-10, O-14, O-28, O-34 |
 | **G3** | O-01, O-09, O-13, O-20, O-24 |
 | **G4** | O-15, O-18, O-19 |
 | **G5** | — |
 | **G6** | O-11, O-16, O-17 |
 | **Hors V0.1** | O-04, O-08, O-25, O-26 |
+| **Portes P1–P5** | O-29, O-30, O-31, O-32, O-33 |
 
-## 6. Points sans échéance de jalon
+## 6. Points en attente d'affectation
 
-Ces points n'appartiennent à aucune porte, et sont traités à la demande.
+Tous les points ouverts ont désormais une échéance, renseignée en §5. Cette
+section ne contient donc plus de point en attente ; elle est conservée pour
+recueillir les points futurs avant qu'ils ne reçoivent une échéance.
 
 | # | Question |
 | :-- | :-- |
-| O-11 | Critères de détection et seuils de ressources |
-| O-13 | Stratégie d'estimation de durée |
-| O-15 | Niveau d'accessibilité de référence |
-| O-18 | Interface de référence en cas d'adoption multiple |
-| O-21 | Outil de génération de cas |
+| — | Aucun point en attente à ce jour. |
 
 ## 7. Conventions de suivi
 

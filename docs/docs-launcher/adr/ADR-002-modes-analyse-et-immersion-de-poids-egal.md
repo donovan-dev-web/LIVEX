@@ -14,7 +14,7 @@ SYNE est le moteur unique de LIVEX. Deux composants consomment ce moteur pour de
 objectifs sans rapport : ECHOS pour l'analyse, la reproductibilité et la
 calibration ; PRISM pour la représentation temps réel du monde simulé.
 
-Cette dualité Creates une ambiguïté de conception pour l'orchestrateur. Sans
+Cette dualité crée une ambiguïté de conception pour l'orchestrateur. Sans
 décision explicite, deux dérives sont également plausibles.
 
 1. **La dérive hiérarchique.** PRISM devient le produit visible, et ECHOS un outil
@@ -36,7 +36,7 @@ par l'utilisateur et activables simultanément.**
 
 Les éléments structurants :
 
-- **Égalité de poids.** Aucun mode n'est principal, secondaire, accessory ou de
+- **Égalité de poids.** Aucun mode n'est principal, secondaire, accessoire ou de
   démonstration. Cette égalité est structurelle, pas éditoriale.
 - **Sélection par l'utilisateur.** Le Launcher propose des profils, mais
   l'utilisateur peut combiner librement les modes et enregistrer sa combinaison.
@@ -67,10 +67,10 @@ Les éléments structurants :
 
 ### Négatives
 - Deux modes à parts égales obligent à maintenir deux jeux de vues, deux contrats
-  et deux Medication de déverrouillage. Le coût de surface est réel.
+  et deux mécanismes de déverrouillage. Le coût de surface est réel.
 - Le mode Contrôle, bien que socle, peut être perçu comme un troisième mode de même
   poids, ce qui brouille la distinction entre orchestration et utilisation.
-- La symétrie impose de traiter PRISM avec la même rigueur documentaire que ECHOS
+- La symétrie impose de traiter PRISM avec la même rigueur documentaire qu'ECHOS
   alors qu'il n'est pas encore disponible.
 
 ### Risques

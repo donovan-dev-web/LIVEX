@@ -145,10 +145,11 @@ produit, sans rien recalculer.
 | :-- | :-- |
 | **Campagnes** | Liste des campagnes, création, progression, actions de cycle de vie |
 | **Paquet** | Ouverture d'un `.livexp`, état, scellement, reprise |
-| **Rapport** | **Visualisation du rapport d'émergence**, navigation par section |
+| **Rapport** | **Visualisation du rapport d'émergence** rendu depuis son Markdown, navigation par section |
+| **Documentation** | Consultation de la documentation embarquée, rendue par le **même lecteur Markdown** |
 | **Télémétrie** | Ouverture de l'interface d'ECHOS dans le navigateur, facultative |
 
-#### Le lecteur de rapport
+#### Le lecteur Markdown
 
 La visualisation du rapport d'émergence dans le Launcher est une fonctionnalité de
 premier plan. L'utilisateur lit son résultat **dans l'outil qui a lancé la
@@ -156,11 +157,22 @@ campagne**, sans changer d'application.
 
 | Règle | Comportement |
 | :-- | :-- |
+| **Technologie unique** | Un seul composant de rendu Markdown, un seul rendu visuel : il sert le **rapport d'émergence** et la **documentation embarquée**. Deux technologies de rendu pour deux contenus serait une dérive de conception. |
 | **Source unique** | Le lecteur affiche `analysis/emergence_report.md`, écrit par ECHOS. |
 | **Fidélité** | L'affichage rend le contenu produit par ECHOS. Toute présentation ajoutée doit être signalée comme telle. |
 | **Navigation** | Le rapport est découpé selon ses sections : Expérience, Configuration, Simulation, Runs, Analyse individuelle, Analyse agrégée, Motifs émergents, Synthèse statistique, Variance entre runs, Anomalies, Conclusion, Reproductibilité. |
 | **Provenance** | Chaque section affiche son horodatage et la version d'ECHOS qui l'a produite. |
 | **Absence** | Sans ECHOS, aucun rapport n'est produit. L'absence est affichée, jamais remplacée par une approximation locale. |
+| **Documentation** | La documentation embarquée est rendue par le même lecteur, sans interprétation du contenu ; elle ne remplace jamais un rapport absent. |
+
+Le choix de la bibliothèque de rendu Markdown reste à trancher à l'implémentation
+(critères : fidélité du rendu, tableaux, ancrages de section, coût d'intégration
+Avalonia) — le **contrat** ci-dessus, lui, est fixé.
+
+La documentation ainsi consultable est celle **embarquée dans l'installation**
+(dossier `docs/` de l'arborescence, `ARCHITECTURE.md` §10.2) : guides du paquet,
+référence des profils, aide au diagnostic. Le lecteur ne modifie jamais les
+fichiers qu'il affiche, rapport comme documentation.
 
 La distinction tient en une règle : **le Launcher ne calcule rien de scientifique,
 mais il sait afficher un résultat**. Voir `adr/ADR-003-analyse-propriete-de-echos.md`.
@@ -412,8 +424,11 @@ centralisées pour qu'une deuxième langue soit ajoutable sans refonte.
   Ce document raisonne en trois modes, la maquette en sept entrées, et les deux
   découpages ne se recouvrent pas. Il faut choisir, puis aligner l'autre. Voir
   §2.2.
+- **Bibliothèque de rendu Markdown.** Le lecteur de rapport et de documentation
+  (§3.2) exige un seul composant de rendu ; le choix de la bibliothèque et son
+  intégration Avalonia restent à trancher à l'implémentation.
 - **Panneau de mesures.** La forme du panneau de mesures et sa visibilité par
-  défaut ne sont pas tranchées. Voir `OBSERVABILITY.md` §9.
+  défaut ne sont pas tranchées. Voir `OBSERVABILITY.md` §10.
 - **Personnalisation.** La réorganisation des panneaux et la taille des colonnes
   sont fixées en V0.1, mais la manière de les rendre persistants reste à définir.
 - **Dialogue de reprise.** Le contenu exact du dialogue proposé pour un paquet
