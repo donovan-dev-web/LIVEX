@@ -59,3 +59,5 @@ prism/LDK/.vs/
 prism/LDK/Plugins/VisualStudioTools/
 prism/LDK/*.sln
 prism/LDK/*.slnx
+docs/campaign-runs/
+echos/data/

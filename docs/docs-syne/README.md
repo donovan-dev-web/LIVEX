@@ -1,12 +1,14 @@
 # SYNE — Systems & Emergent Network Engine
 
+[![Version: 0.13.0](https://img.shields.io/badge/Version-0.13.0-1f7f6f.svg)](CHANGELOG.md)
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
-[![Tests: 160+](https://img.shields.io/badge/Tests-160+-1f7f6f.svg)](TESTING.md)
+[![Tests: 556](https://img.shields.io/badge/Tests-556-1f7f6f.svg)](TESTING.md)
 [![Coverage: ≥80%](https://img.shields.io/badge/Coverage-%E2%89%A580%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Version moteur** : 0.13.0 (contrat d'observabilité 0.2.1)
+**Dernière mise à jour** : 30 septembre 2026
 **Dépend de** : la documentation transversale (../)
 **Source Monographie** : Partie 3, 7.2, 7.3.1
 
@@ -70,7 +72,7 @@ et ne doivent pas être supposés fixes.
 | `CONFIGURATION.md` | Config, flags, paramétrages |
 | `API_CONTRACTS.md` | Contrats de transport (WS/HTTP) |
 | `PERFORMANCE.md` | Scalabilité, budget de tick, benchmarks |
-| `TESTING.md` | Plan de tests (160+ tests, ≥ 80 %) |
+| `TESTING.md` | Plan de tests (556 tests, ≥ 80 %) |
 | `ROADMAP.md` | Roadmap SYNE |
 | `CHANGELOG.md` | Versions |
 | `adr/` | Décisions d'architecture |

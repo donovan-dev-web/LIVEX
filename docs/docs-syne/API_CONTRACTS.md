@@ -69,11 +69,15 @@ SYNE envoie `WebSocketMessageType.Text`, jamais une trame binaire. Deux types de
 messages (Monographie §5.4.1) :
 
 `runId` dans les snapshots est l'identité de contenu consommée par ECHOS. Elle
-est opaque et stable pendant le run (le mode batch peut utiliser `run-<seed>`).
+est opaque et stable pendant le run. Depuis la **calibration D1 (contrat 0.2.1)**,
+les runs pilotés utilisent le **format canonique `run-<seed>-<12hex>`** : le seed
+reste lisible dans l'identifiant (repli de dérivation ECHOS sur les flux ≤ 0.2.0)
+et le suffixe hexadécimal garantit l'unicité entre deux runs de même seed (le
+format `run-<seed>` collisionnait les runs successifs côté stockage ECHOS).
 La réponse HTTP à `start`/`status` expose ce même identifiant pour permettre au
 client de corréler le pilotage et le flux.
 
-> **Implémentation actuelle (SYNE-080, contrat 0.2.0)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
+> **Implémentation actuelle (SYNE-080, contrat 0.2.1)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
 > zéro dépendance) dans `Simulation.Console`, activé par `--observe` (port `--observe-port`, défaut 5180,
 > bind `127.0.0.1`). Chaque tick émet **1 snapshot global complet + 1 `tick_summary` + 1 `decision_made` + 1
 > `action_completed` par entité, + événements de communication dès qu'un message circule**,
@@ -86,11 +90,12 @@ client de corréler le pilotage et le flux.
 | :-- | :-- | :-- |
 | `version` | string | Version du contrat (SemVer) |
 | `engineVersion` | string | Version du moteur (DETERMINISM.md §3.6.2) — identifie les règles du run |
-| `runId` | string | Identifiant du run |
+| `runId` | string | Identifiant du run (format canonique piloté : `run-<seed>-<12hex>`) |
+| `seed` | uint | **0.2.1 (additif, rétro-compatible)** — seed effectif du run. ECHOS n'a plus à dériver le seed du `runId` (dérivation qui perdait le seed des runs pilotés et invalidait `same_seed` dans `/api/compare`) |
 | `tick` | uint | Numéro de tick courant |
 | `simulatedTimeMinutes` | uint | Temps simulé (minutes) |
 | `aliveCount` | uint | Entités vivantes |
-| `agents[]` | array | État complet exposé de chaque entité (position, besoins, intention, action exécutée, traits, croyances, objectifs, confiance, mémoire) |
+| `agents[]` | array | État complet exposé de chaque entité (position, besoins, intention, action exécutée, traits, croyances, objectifs, confiance, mémoire) — **0.3.0 (additif, sous drapeaux)** : `agents[].inventory` (quantités par type de ressource, D8) et `agents[].commitments` (engagements actifs/résolus, D5) sont émis **seulement** quand `agents.actions.inventory.enabled` / `agents.actions.commitments.enabled` sont actifs ; sortie bit-à-bit identique sinon (rétro-compatible à la lecture) |
 | `resources[]` | array | Stocks globaux `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1), pas des stocks localisés par nœud |
 | `obstacles[]` | array | Constructions/obstacles statiques `{id, x, y, radius}` — depuis **SYNE ph11d** (SYNE-071), ordre d'insertion (déterminisme) (DATA_MODEL §2) |
 | `groups[]`, `territories[]`, `books[]` | arrays | État complet courant des systèmes activés |
@@ -217,6 +222,10 @@ accuse réception de la préparation; le statut expose
 `worldReadyAcknowledged`. Après un `prepare` explicite, `start` exige cet accusé
 et répond `409 world_not_ready` sinon. Un `start` direct conserve
 l'auto-préparation historique et est implicitement prêt.
+Depuis la **calibration D1** : un `start` alors que l'état est `finished`
+(run arrivé à son `maxTicks`) répond **`409 run_finished`** — « run terminé —
+appelez /api/control/reset avant de redémarrer » — au lieu du `world_not_ready`
+générique, qui orientait le client vers `prepare` au lieu de `reset`.
 Les mutations d'obstacles sont regroupées dans `world_delta` :
 `{type, runId, tick, changes:[{kind:"added"|"removed",id,x,y,radius}]}`.
 
@@ -266,6 +275,6 @@ Le schéma SQLite (Annexe G) sert de **contrat de persistance** — voir `PERSIS
 ---
 
 ## Points restés ouverts dans ce document
-- Extension exacte du `WorldSnapshot` V0.1 (beliefs/goals/relations/groups) à figer lors de l'implémentation.
-- Nomenclature exhaustive des types d'`ExternalEvent` V0.1 (alignée sur les événements du système).
+- Extension du `WorldSnapshot` : **clos de fait (constaté le 30/09/2026)** — le snapshot V0.1 expose agents, stocks, obstacles, groupes, territoires et livres actifs plus `worldChanges[]`/`actions[]` (cf. §2) ; les croyances/goals/relations ne sont **pas** exposées dans le snapshot (conformité à l'observabilité partielle §6.11) et transitent par les traces de décision et le contexte ECHOS. Toute extension future suit la règle MINOR/BREAKING ci-dessus.
+- Nomenclature des types d'`ExternalEvent` : **clos de fait (constaté le 30/09/2026)** — la nomenclature est fixée par le code (`ExternalEvent.cs`) et verrouillée par `ObservabilitySensorTests` (capteurs `message_sent`/`received`, `agent_died`, `agent_spawned`, `action_completed`) ; les événements `world.season_changed`, `world.territory_membership_changed` et `world.construction_placed/removed` sont documentés en §2. Toute extension suit la règle MINOR/BREAKING ci-dessus.
 - Multi-consommateur : **tranché en V0.1** — diffusion à tous les clients connectés (pas de règle single-consumer).

@@ -44,6 +44,25 @@ cd echos-ui && npm install && npm run dev            # Vite
 npm run lint && npm run build && npm test -- --run   # vérification CI
 ```
 
+## Application de bureau (echos-desktop)
+
+Shell **Electron** (`echos-desktop/`, `ADR-003`) : il lance le backend Python
+(empaqueté PyInstaller *onedir*) comme processus enfant, attend `/health`, puis
+ouvre une fenêtre sur l'origine locale. FastAPI sert **aussi** le build `echos-ui`
+à la racine : interface et API partagent la même origine, donc **pas de CORS**.
+
+```bash
+cd echos-ui     && npm install && npm run build      # build de l'interface (dist/)
+cd ../echos-desktop && npm install
+ECHOS_PYTHON=../.venv/bin/python npm run start        # dev : lance Electron + backend
+npm run dist:linux                                    # .deb (Linux) ; dist:win → NSIS .exe
+```
+
+- Le binaire backend (`resources/backend/echos-server/`) et l'interface
+  (`resources/ui/`) sont produits par `scripts/build-backend.mjs` et `build:ui`.
+- La CI `echos-desktop.yml` construit chaque plateforme sur son runner (matrice
+  `ubuntu`/`windows`) et attache les paquets à la release sur tag `echos-v*`.
+
 ## Jalons
 
 - **U0** : structure monorepo buildable/testable, API FastAPI + squelette des 8 moteurs, interface Vite/React, contrats d'ingestion (`WorldSnapshot`/`ExternalEvent` camelCase) + clients `WsClient` :5180 / `ControlClient` :5181 testés sur golden files.

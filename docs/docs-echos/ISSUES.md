@@ -123,6 +123,15 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ECHOS-091 | Intégration SYNE↔ECHOS — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le vrai SYNE, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Le déterminisme des deux composants est couvert par leurs suites dédiées. Cette issue ne valide pas PRISM ni son plugin Unreal ; voir la documentation PRISM pour les tests de PRISM-LDK et du projet Unreal PRISM. |
 | ECHOS-092 | Non-régression des indicateurs — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-030 | ✓ Baselines V0.1 et goldens vérifiés par les tests de métriques et API ; score inchangé sur données de référence. |
 
+### Milestone ph10 (echos) — Shell de bureau (Electron)
+
+| ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| ECHOS-100 | Shell Electron — processus principal — **LIVRÉ** | `type/feature`, `component/echos` | P0 | ECHOS-080, ECHOS-045 | ✓ `echos-desktop/electron/main.js` : port local libre, backend Python lancé en enfant, attente de `/health`, fenêtre ouverte sur l'origine locale, arrêt du backend à la fermeture, `contextIsolation`/`sandbox` actifs. |
+| ECHOS-101 | Interface servie par FastAPI (repli SPA) — **LIVRÉ** | `type/feature`, `component/echos` | P0 | ECHOS-100 | ✓ `create_app(ui_dist=…)` + `echos/server.py` (`echos-serve`) : build `echos-ui/dist` monté à la racine avec repli `index.html` (routeur React), routes `/api/*` prioritaires ; mêmes origine, sans CORS. |
+| ECHOS-102 | Empaquetage PyInstaller du backend (*onedir*) — **LIVRÉ** | `type/build`, `component/echos` | P0 | ECHOS-101 | ✓ `echos-desktop/backend/echos-server.spec` + `scripts/build-backend.mjs` : binaire `echos-server` autonome (uvicorn/websockets/pyarrow collectés), smoke test `/health` en CI. |
+| ECHOS-103 | Packaging `.deb`/`.exe` (electron-builder) + CI — **LIVRÉ** | `type/build`, `component/echos` | P0 | ECHOS-102 | ✓ `electron-builder.yml` (deb + NSIS), `extraResources` backend+UI, workflow `echos-desktop.yml` matrice `ubuntu`/`windows`, artefacts attachés sur tag `echos-v*` (`ADR-003`). |
+
 ## 4. Règles de suivi (Kanban)
 
 - Toute carte `ECHOS-*` doit avoir **exactement 1 milestone** (`milestone/echos-ph0`…`ph9`, `milestone/v0.1`, `milestone/v1`) et **≥ 1 label de type** (`type/*`).

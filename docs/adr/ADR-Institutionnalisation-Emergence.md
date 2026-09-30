@@ -1,6 +1,6 @@
 # ADR — Institutionnalisation de l'Émergence (Boucle de Second Ordre)
 
-**Statut :** [OUVERT] — piste documentée, non implémentée
+**Statut :** [Reporté V2] — décision du 30/09/2026 : le plus ambitieux des ADR ouverts (touche SYNE + ECHOS) ; à rouvrir sur une base calibrée, après la réalisation des ADR socle et une campagne de validation conforme au plan §7
 **Portée :** Extension d'ECHOS (Partie 4) et du Système de Croyances (§3.11), avec un point d'entrée dans SYNE
 **Auteur :** Donovan Chartrain
 **Document parent :** LIVEX — Monographie Générale (Partie 4, Partie 6)
@@ -77,4 +77,4 @@ C'est l'équivalent d'un panneau planté dans le monde plutôt que d'un message 
 
 ## 7. Statut de la décision
 
-[OUVERTE] — la plus structurante et la plus tardive des pistes V3 proposées à ce jour ; recommandé de l'introduire après stabilisation des ADR Perception des Événements et Means-End Reasoning, dont elle dépend directement.
+[Reportée V2] — décision du 30/09/2026 : la plus structurante des pistes restantes, à rouvrir sur une base calibrée, après la réalisation des ADR socle et une campagne de validation conforme au plan §7. La dépendance à l'ADR « Perception des Événements » (rejeté le même jour) disparaît ; elle repose désormais sur Means-End Reasoning et sur l'économie (`Trade`/`Buy`) rendue possible par les ADR Primitives d'actions + Inventaire.
