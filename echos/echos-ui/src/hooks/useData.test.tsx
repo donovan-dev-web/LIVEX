@@ -41,11 +41,55 @@ describe('useMetrics', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
 
     await act(async () => {
-      vi.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(2000)
       await Promise.resolve()
     })
     expect(fetch).toHaveBeenCalledTimes(2)
     expect(screen.getByRole('status')).toHaveTextContent('1')
+  })
+
+  it('pauses automatic refresh in manual mode and resumes on demand', async () => {
+    function ModeProbe() {
+      const { metrics, error, mode, setMode, refresh } = useMetrics('run-1')
+      return (
+        <>
+          <output>{error ?? metrics?.latest_tick ?? 'loading'}</output>
+          <button onClick={() => setMode(mode === 'live' ? 'manual' : 'live')}>toggle</button>
+          <button onClick={refresh}>refresh</button>
+        </>
+      )
+    }
+    render(<ModeProbe />)
+    await act(async () => {})
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    // Mode manuel : le timer interne ne déclenche plus aucune requête.
+    // (Flush d'abord le re-rendu : le ref de mode est synchronisé dans un effet.)
+    await act(async () => {
+      screen.getByText('toggle').click()
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(10000)
+      await Promise.resolve()
+    })
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    // Actualisation manuelle explicite.
+    await act(async () => {
+      screen.getByText('refresh').click()
+      await Promise.resolve()
+    })
+    expect(fetch).toHaveBeenCalledTimes(2)
+
+    // Retour au live : le cadencement reprend.
+    await act(async () => {
+      screen.getByText('toggle').click()
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(2000)
+      await Promise.resolve()
+    })
+    expect(fetch).toHaveBeenCalledTimes(3)
   })
 
   it('exposes the last request error and clears it after recovery', async () => {
@@ -71,7 +115,7 @@ describe('useMetrics', () => {
     expect(screen.getByRole('status')).toHaveTextContent('API indisponible')
 
     await act(async () => {
-      vi.advanceTimersByTime(1000)
+      vi.advanceTimersByTime(2000)
       await Promise.resolve()
     })
     expect(screen.getByRole('status')).toHaveTextContent('2')

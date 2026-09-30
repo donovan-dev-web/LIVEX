@@ -13,10 +13,16 @@ export function DashboardScreen() {
   const runId = useSelectedRunId()
   const live = useLiveStore((s) => s.live)
 
-  const { metrics, error, refreshedAt } = useMetrics(runId, 1)
-  const { groups, error: groupsError } = useGroups(runId)
-  const { phenomena, error: phenomenaError } = usePhenomena(runId)
+  const { metrics, error, refreshedAt, mode, setMode, refresh } = useMetrics(runId, 1)
+  const { groups, error: groupsError, refresh: refreshGroups } = useGroups(runId, mode)
+  const { phenomena, error: phenomenaError, refresh: refreshPhenomena } = usePhenomena(runId, mode)
   const [selectedSeries, setSelectedSeries] = useState<string>()
+
+  const manualRefresh = () => {
+    refresh()
+    refreshGroups()
+    refreshPhenomena()
+  }
 
   const latest = metrics?.latest ?? {}
   const measured = metrics?.measured ?? {}
@@ -52,6 +58,29 @@ export function DashboardScreen() {
           : metrics
             ? `Métriques rafraîchies ${refreshedAt ? new Date(refreshedAt).toLocaleTimeString() : '…'} · tick ${metricsTick ?? '—'}${metricsLag !== null ? ` · retard ${metricsLag} tick${metricsLag > 1 ? 's' : ''}` : ''}`
             : 'Chargement des métriques…'}
+        <span className="banner__actions" style={{ display: 'inline-flex', gap: 6, marginLeft: 10 }}>
+          <button
+            className="btn"
+            type="button"
+            title="Recharger maintenant les métriques, groupes et phénomènes"
+            onClick={manualRefresh}
+          >
+            ⟳ Actualiser
+          </button>
+          <button
+            className={`btn ${mode === 'live' ? 'btn--accent' : ''}`}
+            type="button"
+            aria-pressed={mode === 'live'}
+            title={
+              mode === 'live'
+                ? 'Live actif : rafraîchissement automatique cadré (toutes les 2 s). Cliquez pour figer l’affichage.'
+                : 'Affichage figé : cliquez pour reprendre le rafraîchissement automatique'
+            }
+            onClick={() => setMode(mode === 'live' ? 'manual' : 'live')}
+          >
+            {mode === 'live' ? '● Live' : '○ Figé'}
+          </button>
+        </span>
       </div>
       {groupsError ? (
         <div className="error banner mb-4" role="status">
