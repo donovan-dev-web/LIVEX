@@ -18,6 +18,9 @@ public sealed class AgentFactors
         Greed = traits["greed"];
         Strength = traits["strength"];
         Speed = traits["speed"];
+        // Le trait s'appelle « aggression » dans TraitSet (DATA_MODEL.md §3.2) —
+        // la clé de configuration « aggressiveness » est mappée par EntityFactory.
+        Aggressiveness = traits["aggression"];
     }
 
     public double Bravery { get; }
@@ -31,6 +34,9 @@ public sealed class AgentFactors
     public double Strength { get; }
 
     public double Speed { get; }
+
+    /// <summary>Agressivité (D7 : dégât d'Attack = 5 × agressivité, §3.15.4).</summary>
+    public double Aggressiveness { get; }
 }
 
 /// <summary>Score d'utilité d'une action candidate (décision n°13, SYNE-010).</summary>
@@ -60,7 +66,8 @@ public static class UtilityEvaluator
         ulong goalAge,
         ActionSettings actions,
         DesireKind? currentIntention = null,
-        GroupObjective? collectiveObjective = null)
+        GroupObjective? collectiveObjective = null,
+        double? benefitOverride = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -70,7 +77,13 @@ public static class UtilityEvaluator
             throw new ArgumentOutOfRangeException(nameof(successRate), "Le taux de succès doit être dans [0, 1].");
         }
 
-        double benefit = BenefitOf(kind, needs, actions);
+        // D5 (engagements) : l'objectif dérivé d'un engagement n'est pas porté par
+        // un besoin physiologique — son bénéfice est fourni par l'appelant, calculé
+        // depuis la confiance envers le demandeur (ADR : priorité « non pas depuis
+        // un besoin physiologique mais depuis le niveau de confiance »). La formule
+        // U = (benefit − cost − risk) × confidence × personality + urgency reste
+        // strictement identique.
+        double benefit = benefitOverride ?? BenefitOf(kind, needs, actions);
         if (currentIntention is { } current && current == kind)
         {
             benefit *= actions.Deliberation.AlignBonus;
@@ -98,7 +111,19 @@ public static class UtilityEvaluator
         return new UtilityScore(kind, benefit, cost, risk, confidence, personality, urgency, utility);
     }
 
-    /// <summary>Bénéfice : satisfaction potentielle d'un besoin (COGNITIVE_ARCHITECTURE.md §6).</summary>
+    /// <summary>
+    /// Bénéfice : satisfaction potentielle d'un besoin (COGNITIVE_ARCHITECTURE.md §6).
+    /// <para>
+    /// Calibration D1 (29/09/2026) : le bénéfice Eat/Drink était plafonné à 30
+    /// (``min(need, 30)``) — à faim saturée, l'urgence (sigmoïde ×20, +10 critique)
+    /// ne compensait jamais un bénéfice capé et Eat perdait systématiquement contre
+    /// Socialize (60) / Explore : utilité moyenne 13,9 vs 83,7 sur la campagne.
+    /// Le plafond devient ``min(need, 100) × 0.6`` (plafond 60, monotone avec le
+    /// besoin) : SeekFood ≡ Eat en bénéfice n'incite plus à boucler sur le déplacement,
+    /// et l'urgence relative peut basculer l'arbitrage vers l'action qui résout le
+    /// besoin. Valeurs constantes posées ici (formule paramétrable par seuils en V0.2).
+    /// </para>
+    /// </summary>
     public static double BenefitOf(DesireKind kind, BodyNeeds needs, ActionSettings actions)
     {
         ArgumentNullException.ThrowIfNull(needs);
@@ -106,12 +131,28 @@ public static class UtilityEvaluator
 
         return kind switch
         {
-            DesireKind.SeekFood or DesireKind.Eat => Math.Min(needs.Hunger, 30.0),
-            DesireKind.SeekWater or DesireKind.Drink => Math.Min(needs.Thirst, 30.0),
+            DesireKind.SeekFood or DesireKind.Eat => Math.Min(needs.Hunger, 100.0) * 0.6,
+            DesireKind.SeekWater or DesireKind.Drink => Math.Min(needs.Thirst, 100.0) * 0.6,
             DesireKind.Rest => Math.Min(needs.Fatigue, 40.0),
             DesireKind.Flee => (1.0 - needs.Safety) * 60.0,
             DesireKind.Socialize => needs.Social * 60.0,
             DesireKind.Explore => Math.Min(needs.Curiosity * 100.0, 30.0),
+
+            // Primitives D7 (engineVersion 0.14.0) : bénéfices dérivés des besoins
+            // existants — aucune nouvelle formule d'utilité (ADR D3 : la fonction
+            // est inchangée, elle reçoit plus de candidats).
+            // Take = pulsion de constitution de stock, PORTÉE PAR L'AVARICE et non
+            // par la faim (ADR Inventaire : « un agent avare continue Prendre
+            // au-delà de son besoin immédiat tant que poidsActuel < capacitePoids »)
+            // — constant, modulé par greed via PersonalityModifierOf : l'agent
+            // stocke quand il n'a pas faim, consomme quand la faim l'emporte.
+            DesireKind.Take => 15.0,
+            // Give = acte social pur (même bénéfice que Socialize).
+            DesireKind.Give => needs.Social * 60.0,
+            // Trade = résolution différée du besoin (coûte une ressource → ×0.9).
+            DesireKind.Trade => Math.Max(needs.Hunger, needs.Thirst) * 0.54,
+            // Attack/Defend ne portent aucun besoin en V0.1 (jamais générés —
+            // doctrine §9.6.3 point 13) : présents au catalogue (D3 temps 1).
             _ => 0.0,
         };
     }
@@ -126,19 +167,27 @@ public static class UtilityEvaluator
                 => actions.MoveEnergyCost,
             DesireKind.Eat => actions.Catalog.Entries["eat"].EnergyCost ?? actions.MoveEnergyCost,
             DesireKind.Drink => actions.Catalog.Entries["drink"].EnergyCost ?? actions.MoveEnergyCost,
+            DesireKind.Take => actions.Catalog.Entries["take"].EnergyCost ?? actions.MoveEnergyCost,
+            DesireKind.Give => actions.Catalog.Entries["give"].EnergyCost ?? actions.MoveEnergyCost,
+            DesireKind.Trade => actions.Catalog.Entries["trade"].EnergyCost ?? actions.MoveEnergyCost,
+            DesireKind.Attack => actions.Catalog.Entries["attack"].EnergyCost ?? actions.MoveEnergyCost,
             _ => 0.0,
         };
     }
 
-    /// <summary>Risque de l'action (aucun danger modélisé en V0.1 — valeurs statiques par type).</summary>
+    /// <summary>Risque de l'action (valeurs statiques par type — V0.1 : aucun danger modélisé hors primitives D7).</summary>
     public static double RiskOf(DesireKind kind) => kind switch
     {
+        DesireKind.Attack => 0.60,
         DesireKind.Flee => 0.30,
         DesireKind.Explore => 0.25,
         DesireKind.SeekFood or DesireKind.SeekWater => 0.15,
+        DesireKind.Give or DesireKind.Trade => 0.15,
         DesireKind.Socialize => 0.10,
         DesireKind.Eat or DesireKind.Drink => 0.10,
+        DesireKind.Take => 0.10,
         DesireKind.Rest => 0.05,
+        DesireKind.Defend => 0.0,
         _ => 0.0,
     };
 
@@ -151,8 +200,10 @@ public static class UtilityEvaluator
         double modifier = kind switch
         {
             DesireKind.SeekFood or DesireKind.SeekWater or DesireKind.Eat or DesireKind.Drink => 0.5 + factors.Greed,
+            DesireKind.Take => 0.5 + factors.Greed,
             DesireKind.Explore => 0.5 + factors.Curiosity,
             DesireKind.Socialize => 0.5 + factors.Sociability,
+            DesireKind.Give => 0.5 + factors.Sociability,
             DesireKind.Flee => 0.5 + (2.0 - factors.Bravery),
             _ => 1.0,
         };

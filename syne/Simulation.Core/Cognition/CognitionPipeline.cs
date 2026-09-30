@@ -113,6 +113,15 @@ public sealed class CognitionPipeline
         using (TickPhaseScope communicationScope = _budget?.Begin(TickPhase.Communication) ?? TickPhaseScope.Noop)
         {
             _communication.Step(currentTick, _minds);
+
+            // Engagements (D5, ADR « Engagements Communicationnels ») : après la
+            // diffusion — création d'engagement à la réception d'une Response
+            // positive, réponse des entités très sociables aux Request comprises.
+            // Désactivé par défaut (trajectoire de référence).
+            if (_options.Agents.Actions.Commitments.Enabled)
+            {
+                ProcessCommitmentMessages(currentTick);
+            }
         }
 
         using (TickPhaseScope eventsScope = _budget?.Begin(TickPhase.EventsGroupsPopulation) ?? TickPhaseScope.Noop)
@@ -121,6 +130,15 @@ public sealed class CognitionPipeline
             {
                 mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
                 mind.Trust.Tick();
+            }
+
+            // Engagements (D5) : résolution du cycle — honororation (le prometteur
+            // a porté aide/échange/socialisation ce tick) ou expiration (pénalité
+            // de confiance, distincte du mensonge factuel). Ordre : identifiants
+            // croissants (DETERMINISM.md §5).
+            if (_options.Agents.Actions.Commitments.Enabled)
+            {
+                ResolveCommitments(currentTick);
             }
 
             // Groupes émergents (SYNE-060/061) puis naissances (SYNE-062) : après la
@@ -186,12 +204,44 @@ public sealed class CognitionPipeline
 
         ActionSettings actions = _options.Agents.Actions;
         DesireKind chosenKind;
+        mind.DefendingThisTick = false;
+        mind.SkippedBySalience = false;
+
+        // Demandes d'aide (D5) : émission d'une Request quand la faim est critique
+        // — la réponse des pairs crée l'engagement (voir ProcessCommitmentMessages).
+        if (_options.Agents.Actions.Commitments.Enabled)
+        {
+            EnqueueHelpRequest(entity, mind, currentTick);
+        }
 
         using (TickPhaseScope decisionScope = _budget?.Begin(TickPhase.NeedsGoals) ?? TickPhaseScope.Noop)
         {
+            // Contrôle de saillance (D2, ADR « Politique de Reconsidération », étape
+            // 3bis) : entre deux délibérations planifiées, l'intention est poursuivie
+            // SAUF saillance (besoin franchi / condition d'interruption) ou filet de
+            // sécurité périodique. Désactivé par défaut (trajectoire de référence).
+            bool deliberate = ShouldDeliberate(entity, currentTick);
+            if (!deliberate && actions.Salience.Enabled)
+            {
+                double salience = ComputeSalience(mind, actions);
+                mind.LastSalienceScore = salience;
+                bool forced = actions.Salience.ForcedReconsiderationTicks > 0
+                    && currentTick - mind.LastDeliberationTick >= (ulong)actions.Salience.ForcedReconsiderationTicks;
+                if (salience < actions.Salience.ReconsiderThreshold && !forced)
+                {
+                    mind.SkippedBySalience = true;
+                    deliberate = false;
+                }
+                else
+                {
+                    mind.SkippedBySalience = false;
+                    deliberate = true;
+                }
+            }
+
             // Délibération à fréquence configurable (décision n°14) : entre deux
             // délibérations, l'intention est conservée (holdover) telle quelle.
-            if (ShouldDeliberate(entity, currentTick))
+            if (deliberate)
             {
                 IReadOnlyList<Goal> active = ActiveGoals(mind, currentTick);
                 IReadOnlyList<Goal> generated = DesireFactory.Generate(mind.Needs, currentTick, active.Select(goal => goal.Kind), _catalog, _stocks);
@@ -199,9 +249,18 @@ public sealed class CognitionPipeline
                 candidates.AddRange(active);
                 candidates.AddRange(generated);
 
+                // Bibliothèque de plans (D3, ADR « Means-End Reasoning ») : ajoute
+                // des candidats de manipulation (Take/Trade) pour les objectifs de
+                // besoin — désactivée par défaut (trajectoire de référence).
+                IReadOnlyList<Goal> planCandidates = PlanLibrary.GenerateCandidates(
+                    candidates, mind, entity, _catalog, _stocks,
+                    actions.Inventory, actions.Plans, currentTick);
+                candidates.AddRange(planCandidates);
+
                 (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(mind, candidates, currentTick, entity.Id.Value);
                 mind.RecordDecision(scores, best, deliberated: true, interrupted: false, currentTick, entity.Id.Value);
                 mind.DeliberatedThisTick = true;
+                mind.RecordDeliberationState(currentTick, TriggeredNeeds(mind, _options.Agents.Needs));
                 chosenKind = best.Kind;
             }
             else
@@ -256,14 +315,186 @@ public sealed class CognitionPipeline
 
         using (TickPhaseScope actionScope = _budget?.Begin(TickPhase.ActionsMovement) ?? TickPhaseScope.Noop)
         {
-            ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick);
+            ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick, MindOf);
             mind.RecordAction(result);
         }
+    }
+
+    /// <summary>
+    /// Score de saillance (D2) : généralisation O(k) des conditions d'interruption
+    /// — lit les deltas déjà produits par les étapes 1-3 sans recalculer la boucle
+    /// cognitive. Une condition d'interruption remplie déclenche la reconsidération
+    /// indépendamment du seuil (RETOURNER SEUIL_MAX de l'ADR, invalidation incluse).
+    /// </summary>
+    private double ComputeSalience(MindState mind, ActionSettings actions)
+    {
+        double score = 0.0;
+        IReadOnlyList<DesireKind> triggered = TriggeredNeeds(mind, _options.Agents.Needs);
+        foreach (DesireKind kind in triggered)
+        {
+            if (!mind.TriggeredAtLastDeliberation.Contains(kind))
+            {
+                score += actions.Salience.NeedThresholdWeight;
+            }
+        }
+
+        // Condition d'interruption remplie (critique) : reconsidération forcée.
+        if (mind.Needs.IsCriticalFor(actions.Interruption))
+        {
+            return double.MaxValue;
+        }
+
+        return score;
+    }
+
+    private IReadOnlyList<DesireKind> TriggeredNeeds(MindState mind, NeedsSettings needs)
+    {
+        var triggered = new List<DesireKind>();
+        foreach (DesireKind kind in Enum.GetValues<DesireKind>())
+        {
+            if (kind is DesireKind.Idle or DesireKind.Take or DesireKind.Give or DesireKind.Trade
+                or DesireKind.Attack or DesireKind.Defend)
+            {
+                continue;
+            }
+
+            if (mind.Needs.IsTriggered(kind, needs))
+            {
+                triggered.Add(kind);
+            }
+        }
+
+        return triggered;
     }
 
     /// <summary>Fréquence de délibération configurable (décalée par entité pour lisser la charge).</summary>
     private bool ShouldDeliberate(Entity entity, ulong currentTick) =>
         (currentTick + entity.Id.Value) % (ulong)_options.Agents.Actions.Deliberation.IntervalTicks == 0;
+
+    /// <summary>
+    /// Demandes d'aide (D5, version minimale) : une entité en faim critique, sans
+    /// engagement en attente, émet une pulsation <c>Request</c> publique « help-food »
+    /// au plus une fois par 20 ticks (cooldown déterministe par identifiant — la
+    /// production réelle de Request remplace la consommation passive de la file).
+    /// </summary>
+    private void EnqueueHelpRequest(Entity entity, MindState mind, ulong currentTick)
+    {
+        if (mind.Needs.Hunger <= _options.Agents.Actions.Interruption.CriticalHunger
+            || mind.Commitments.Any(commitment => commitment.Status == CommitmentStatus.Pending)
+            || (currentTick + entity.Id.Value) % 20 != 0)
+        {
+            return;
+        }
+
+        Message request = CommunicationSystem.CreateMessage(
+            entity.Id.Value,
+            targetId: null,
+            MessageType.Request,
+            "help-food",
+            currentTick,
+            sequence: 2);
+        mind.Communication.Enqueue(request, _options.Communication.MaxSendsPerTick);
+    }
+
+    /// <summary>
+    /// Cycle des messages d'engagement (D5) : création d'un <see cref="Commitment"/>
+    /// chez le demandeur qui reçoit une <c>Response</c> positive (borné : au plus un
+    /// engagement actif par pair, au plus 3 engagements actifs — impact mémoire
+    /// borné, cf. ADR §6), puis réponse positive des entités très sociables
+    /// (facteur ≥ 1.0) à la première <c>Request</c> comprise du tick.
+    /// </summary>
+    private void ProcessCommitmentMessages(ulong currentTick)
+    {
+        foreach ((ulong entityId, MindState mind) in _minds.OrderBy(pair => pair.Key))
+        {
+            foreach ((Message message, bool understood) in mind.Communication.ReceivedThisTick())
+            {
+                if (!understood || message.SenderId == entityId)
+                {
+                    continue;
+                }
+
+                if (message.Type == MessageType.Response
+                    && !mind.Commitments.Any(commitment =>
+                        commitment.ToEntityId == message.SenderId && commitment.Status == CommitmentStatus.Pending)
+                    && mind.Commitments.Count < 3)
+                {
+                    mind.Commitments.Add(new Commitment(
+                        message.SenderId,
+                        "survival",
+                        currentTick,
+                        currentTick + _options.Agents.Actions.Commitments.ExpiryTicks));
+                }
+            }
+        }
+
+        foreach ((ulong entityId, MindState mind) in _minds.OrderBy(pair => pair.Key))
+        {
+            if ((mind.Factors?.Sociability ?? 0.0) < 1.0)
+            {
+                continue;
+            }
+
+            foreach ((Message message, bool understood) in mind.Communication.ReceivedThisTick())
+            {
+                if (!understood || message.SenderId == entityId || message.Type != MessageType.Request)
+                {
+                    continue;
+                }
+
+                Message response = CommunicationSystem.CreateMessage(
+                    entityId,
+                    message.SenderId,
+                    MessageType.Response,
+                    "yes",
+                    currentTick,
+                    sequence: 3);
+                mind.Communication.Enqueue(response, _options.Communication.MaxSendsPerTick);
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Résolution des engagements (D5) : honoré si le prometteur a exécuté
+    /// Give/Trade/Socialize ce tick (l'aide promises s'est matérialisée) →
+    /// <c>TrustLevel += commitmentBonus</c> ; expiré sans honororation →
+    /// <c>TrustLevel -= commitmentPenalty</c> (traité comme rompu, ADR §2.2).
+    /// Les engagements résolus sont purgés (suivi borné). Identifiants croissants.
+    /// </summary>
+    private void ResolveCommitments(ulong currentTick)
+    {
+        foreach ((ulong _, MindState mind) in _minds.OrderBy(pair => pair.Key))
+        {
+            for (int i = mind.Commitments.Count - 1; i >= 0; i--)
+            {
+                Commitment commitment = mind.Commitments[i];
+                if (commitment.Status != CommitmentStatus.Pending)
+                {
+                    mind.Commitments.RemoveAt(i);
+                    continue;
+                }
+
+                if (currentTick >= commitment.ExpiryTick)
+                {
+                    commitment.Expire(currentTick);
+                    mind.Trust.Penalize(commitment.ToEntityId, _options.Agents.Trust.CommitmentPenalty);
+                    mind.Commitments.RemoveAt(i);
+                    continue;
+                }
+
+                if (_minds.TryGetValue(commitment.ToEntityId, out MindState? responder)
+                    && responder.LastActionResult is { } action
+                    && action.Outcome == ActionOutcome.Executed
+                    && action.Kind is DesireKind.Give or DesireKind.Trade or DesireKind.Socialize)
+                {
+                    commitment.Fulfill(currentTick);
+                    mind.Trust.Reward(commitment.ToEntityId, _options.Agents.Trust.CommitmentBonus);
+                    mind.Commitments.RemoveAt(i);
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Objectifs encore actifs : besoin encore déclenché ou objectif récemment
@@ -338,6 +569,33 @@ public sealed class CognitionPipeline
                 actions,
                 mind.Intention?.Kind,
                 mind.CollectiveObjective));
+        }
+
+        // Engagements (D5) : chaque engagement actif ajoute un candidat d'aide
+        // (Socialize) dont le bénéfice dérive de la confiance envers le demandeur
+        // (40 × confiance — jusqu'à 40, comparable à Socialize saturé) au lieu d'un
+        // besoin physiologique. La formule d'utilité est inchangée (benefitOverride).
+        if (_options.Agents.Actions.Commitments.Enabled)
+        {
+            foreach (Commitment commitment in mind.Commitments)
+            {
+                if (!commitment.IsActive(currentTick))
+                {
+                    continue;
+                }
+
+                double trust = mind.Trust.TrustWith(commitment.ToEntityId);
+                scores.Add(UtilityEvaluator.Evaluate(
+                    DesireKind.Socialize,
+                    mind.Needs,
+                    factors,
+                    mind.SuccessRate(DesireKind.Socialize),
+                    goalAge: 0,
+                    actions,
+                    mind.Intention?.Kind,
+                    mind.CollectiveObjective,
+                    benefitOverride: 40.0 * trust));
+            }
         }
 
         double maximum = scores.Max(score => score.Utility);

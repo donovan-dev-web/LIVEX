@@ -1,6 +1,7 @@
 using Simulation.Core.Actions;
 using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
+using Simulation.Core.World;
 
 namespace Simulation.Core.Cognition;
 
@@ -28,6 +29,11 @@ public readonly record struct GroupObjective(
 /// État cognitif d'une entité (DATA_MODEL.md §3.1 : perception, mémoire,
 /// croyances, décision) : mémoire, croyances, besoins, intention et trace de
 /// décision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md §7).
+/// <para>
+/// Depuis engineVersion 0.14.0 : inventaire (D8, si <c>agents.inventory.enabled</c>),
+/// engagements (D5, si <c>agents.commitments.enabled</c>) et état de saillance
+/// (D2 : besoins déclenchés à la dernière délibération, tick de celle-ci).
+/// </para>
 /// </summary>
 public sealed class MindState
 {
@@ -41,6 +47,9 @@ public sealed class MindState
         Trust = new Relationships(options.Agents.Trust);
         Needs = new BodyNeeds();
         Communication = new CommunicationState();
+        Inventory = options.Agents.Actions.Inventory.Enabled
+            ? new Inventory(options.Agents.Actions.Inventory.CapacityWeight)
+            : null;
     }
 
     private MindState(SimulationOptions options, Memory memory, BeliefSet beliefs, Relationships trust)
@@ -51,6 +60,9 @@ public sealed class MindState
         Trust = trust;
         Needs = new BodyNeeds();
         Communication = new CommunicationState();
+        Inventory = options.Agents.Actions.Inventory.Enabled
+            ? new Inventory(options.Agents.Actions.Inventory.CapacityWeight)
+            : null;
     }
 
     public Memory Memory { get; }
@@ -61,6 +73,28 @@ public sealed class MindState
 
     /// <summary>État de communication (files sortante/entrante, relais — SYNE-050 → 054).</summary>
     public CommunicationState Communication { get; }
+
+    /// <summary>
+    /// Inventaire de l'entité (D8, ADR « Système d'inventaire ») — <c>null</c> tant
+    /// que <c>agents.inventory.enabled</c> est faux (comportement historique :
+    /// Eat/Drink consomment directement les réserves mondiales).
+    /// </summary>
+    public Inventory? Inventory { get; }
+
+    /// <summary>Engagements communicationnels actifs (D5, version minimale — au plus un par pair).</summary>
+    public List<Commitment> Commitments { get; } = new();
+
+    /// <summary>Besoins dont le seuil était franchi à la dernière délibération (contrôle de saillance D2).</summary>
+    internal IReadOnlyList<DesireKind> TriggeredAtLastDeliberation { get; private set; } = [];
+
+    /// <summary>Tick de la dernière délibération complète (D2 : filet de sécurité périodique).</summary>
+    internal ulong LastDeliberationTick { get; private set; }
+
+    /// <summary>Score de saillance du dernier contrôle (D2 : traçabilité ECHOS).</summary>
+    public double LastSalienceScore { get; internal set; }
+
+    /// <summary>Vrai si la dernière itération a sauté la délibération faute de saillance (D2 : traçabilité ECHOS).</summary>
+    public bool SkippedBySalience { get; internal set; }
 
     public BodyNeeds Needs { get; }
 
@@ -95,10 +129,24 @@ public sealed class MindState
     /// <summary>Vrai si un tick a interrompu l'action en cours (besoin critique, décision n°15).</summary>
     internal bool InterruptedThisTick { get; set; }
 
+    /// <summary>
+    /// Vrai pendant le tick où l'entité exécute <see cref="DesireKind.Defend"/>
+    /// (D7) : le dégât d'une attaque subie ce tick est réduit de moitié. Réinitialisé
+    /// à chaque itération du pipeline (comme <c>DeliberatedThisTick</c>).
+    /// </summary>
+    public bool DefendingThisTick { get; internal set; }
+
     internal void RecordAction(Actions.ActionResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         LastActionResult = result;
+    }
+
+    /// <summary>Enregistre l'état des besoins à la délibération (D2 : base de comparaison de saillance).</summary>
+    internal void RecordDeliberationState(ulong tick, IReadOnlyList<DesireKind> triggered)
+    {
+        LastDeliberationTick = tick;
+        TriggeredAtLastDeliberation = triggered;
     }
 
     internal void RecordDecision(
@@ -212,7 +260,11 @@ public sealed class MindState
         IReadOnlyDictionary<DesireKind, double> successRates,
         AgentFactors? factors,
         Goal? intention,
-        GroupObjective? collectiveObjective)
+        GroupObjective? collectiveObjective,
+        IReadOnlyDictionary<World.ResourceKind, double>? inventoryAmounts = null,
+        IReadOnlyList<Commitment>? commitments = null,
+        ulong lastDeliberationTick = 0,
+        IReadOnlyList<DesireKind>? triggeredAtLastDeliberation = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(memory);
@@ -232,6 +284,19 @@ public sealed class MindState
         Factors = factors;
         Intention = intention;
         CollectiveObjective = collectiveObjective;
+        if (inventoryAmounts is { } amounts && Inventory is { } inventory)
+        {
+            inventory.RestoreState(amounts);
+        }
+
+        if (commitments is { } restoredCommitments)
+        {
+            Commitments.Clear();
+            Commitments.AddRange(restoredCommitments);
+        }
+
+        LastDeliberationTick = lastDeliberationTick;
+        TriggeredAtLastDeliberation = triggeredAtLastDeliberation ?? [];
     }
 
     /// <summary>
