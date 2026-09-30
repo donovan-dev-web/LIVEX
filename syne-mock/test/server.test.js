@@ -21,7 +21,18 @@ function closeClient(client) {
 test('generation is deterministic and has the documented population', () => {
   const a = new Simulation({ seed: 7, agents: 50 }); a.start(); a.step(); a.stop();
   const b = new Simulation({ seed: 7, agents: 50 }); b.start(); b.step(); b.stop();
-  assert.deepEqual(a.snapshot(), b.snapshot()); assert.equal(a.agents.length, 50);
+  // Format canonique run-<seed>-<12hex> (parité SYNE, A1) : le suffixe du runId
+  // est généré par run pour garantir l'unicité entre deux runs de même seed —
+  // c'est une étiquette d'identité, pas du contenu du monde. Le déterminisme de
+  // génération porte sur tout le reste du snapshot.
+  const stripRunId = ({ runId, ...rest }) => rest;
+  assert.deepEqual(stripRunId(a.snapshot()), stripRunId(b.snapshot()));
+  assert.match(a.snapshot().runId, /^run-7-[0-9a-f]{12}$/);
+  assert.notEqual(a.snapshot().runId, b.snapshot().runId);
+  // Parité de contrat V0.2.1 (A1) : le seed voyage dans le snapshot, comme SYNE.
+  assert.equal(a.snapshot().seed, 7);
+  assert.equal(b.snapshot().seed, 7);
+  assert.equal(a.agents.length, 50);
 });
 
 test('advanced systems are represented in snapshots and events', () => {

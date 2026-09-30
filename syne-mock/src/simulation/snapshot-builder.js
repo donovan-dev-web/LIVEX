@@ -1,7 +1,7 @@
 const { round } = require('./deterministic-random');
 
 class SnapshotBuilder {
-  build({ config, runId, tick, agents, stocks, obstacles, worldChanges, actions, groups, books }) {
+  build({ config, runId, seed, tick, agents, stocks, obstacles, worldChanges, actions, groups, books }) {
     const seasonIndex = Math.floor(tick / 90) % 4;
     const seasons = ['spring', 'summer', 'autumn', 'winter'];
     const territories = config.territories.enabled
@@ -18,6 +18,9 @@ class SnapshotBuilder {
       version: config.contractVersion,
       engineVersion: config.engineVersion,
       runId,
+      // Parité de contrat V0.2.1 (API_CONTRACTS.md §2.1) : le seed voyage dans
+      // le snapshot — ECHOS n'a plus à le dériver du runId.
+      seed,
       tick,
       simulatedTimeMinutes: tick,
       aliveCount: agents.length,
