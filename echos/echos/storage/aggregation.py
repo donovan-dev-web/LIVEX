@@ -19,7 +19,12 @@ from echos.ingestion.ws_client import WsClient
 
 @dataclass(frozen=True)
 class TickRecord:
-    """Résumé déterministe d'un tick (1 ligne par tick en SQLite)."""
+    """Résumé déterministe d'un tick (1 ligne par tick en SQLite).
+
+    ``mean_food``/``mean_water`` (schéma v6) : moyenne des réserves du monde
+    au snapshot — alimente le bloc ``viability`` du rapport de calibration
+    (régime des ressources). Défauts à 0.0 pour les constructeurs historiques.
+    """
 
     run_id: str
     version: str
@@ -33,6 +38,8 @@ class TickRecord:
     mean_fatigue: float
     decision_count: int
     actions: tuple[tuple[str, int], ...] = ()
+    mean_food: float = 0.0
+    mean_water: float = 0.0
 
     @classmethod
     def from_segment(cls, segment: TickSegment) -> "TickRecord":
@@ -47,6 +54,10 @@ class TickRecord:
         actions = Counter(
             agent.current_action or "Idle" for agent in agents
         )
+        stocks = {
+            str(resource.type or resource.id or "").lower(): float(resource.quantity)
+            for resource in snapshot.resources or []
+        }
 
         return cls(
             run_id=snapshot.run_id,
@@ -61,6 +72,8 @@ class TickRecord:
             mean_fatigue=_mean(fatigue),
             decision_count=len(decisions),
             actions=tuple(sorted(actions.items())),
+            mean_food=stocks.get("food", 0.0),
+            mean_water=stocks.get("water", 0.0),
         )
 
     def to_row(self) -> tuple:
@@ -76,6 +89,8 @@ class TickRecord:
             self.mean_thirst,
             self.mean_fatigue,
             self.decision_count,
+            self.mean_food,
+            self.mean_water,
         )
 
 

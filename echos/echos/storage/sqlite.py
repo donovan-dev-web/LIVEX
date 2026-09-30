@@ -26,7 +26,7 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "5"
+SCHEMA_VERSION = "6"
 """Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
 
 v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces``.
@@ -36,6 +36,10 @@ v5 : colonne ``tick_metrics.measured`` — provenance des valeurs. Migration
 additive : les bases existantes reçoivent la colonne avec ``DEFAULT 1``, donc
 toutes les valeurs déjà enregistrées restent considérées comme mesurées (elles
 l'étaient : aucun repli neutre n'était distinguable à l'époque).
+v6 (viabilité B2, campagne-runs) : colonnes ``tick_summaries.mean_food``/
+``mean_water`` — régime des ressources du monde (moyenne des réserves du
+snapshot). Migration additive ``DEFAULT 0.0`` : les lignes antérieures exposent
+un régime vide (0.0) et le rapport de calibration les signale comme absentes.
 """
 
 _DDL = """
@@ -61,6 +65,8 @@ CREATE TABLE IF NOT EXISTS tick_summaries (
     mean_thirst REAL NOT NULL,
     mean_fatigue REAL NOT NULL,
     decision_count INTEGER NOT NULL CHECK (decision_count >= 0),
+    mean_food REAL NOT NULL DEFAULT 0,
+    mean_water REAL NOT NULL DEFAULT 0,
     PRIMARY KEY (run_id, tick)
 );
 
@@ -151,9 +157,18 @@ class AnalyticsStore:
         L'API REST s'en sert pour valider le **cache de séries** (ECHOS-044) :
         une série mise en cache n'est réutilisée que si la version n'a pas bougé
         (l'invalidation ne repose donc ni sur le temps ni sur un recalcul).
+
+        Le compteur n'est fiable que **dans le processus qui écrit**. Quand
+        l'API et l'ingestion sont deux processus séparés (shell bureau, ADR-003),
+        les écritures de l'un sont invisibles au compteur de l'autre : les
+        séries restaient figées sur leur premier chargement (le « retard N
+        ticks » croissant du tableau de bord). ``PRAGMA data_version`` reflète
+        les changements de la base **par n'importe quelle connexion** — il
+        détecte donc aussi les écritures des autres processus.
         """
         with self._lock:
-            return self._ingest_version
+            external = self._conn.execute("PRAGMA data_version").fetchone()[0]
+            return self._ingest_version + external * 1_000_000
 
     def _bump(self) -> None:
         self._ingest_version += 1
@@ -162,6 +177,7 @@ class AnalyticsStore:
         with self._lock:
             self._conn.executescript(_DDL)
             self._migrate_measured_column()
+            self._migrate_resource_columns()
             self._conn.execute(
                 "INSERT OR REPLACE INTO _meta (key, value) VALUES ('schema_version', ?)",
                 (SCHEMA_VERSION,),
@@ -186,6 +202,24 @@ class AnalyticsStore:
                 "DEFAULT 1 CHECK (measured IN (0, 1))"
             )
 
+    def _migrate_resource_columns(self) -> None:
+        """Ajoute ``tick_summaries.mean_food``/``mean_water`` aux bases pré-v6.
+
+        Même mécanisme que la migration v5 : ``CREATE TABLE IF NOT EXISTS`` ne
+        touche pas une table existante, et une base de campagne doit rester
+        lisible (le bloc ``viability`` de son rapport renvoie alors ``null``
+        sur le régime des ressources plutôt que de lever).
+        """
+        columns = {
+            str(row[1])
+            for row in self._conn.execute("PRAGMA table_info(tick_summaries)").fetchall()
+        }
+        for name in ("mean_food", "mean_water"):
+            if name not in columns:
+                self._conn.execute(
+                    f"ALTER TABLE tick_summaries ADD COLUMN {name} REAL NOT NULL DEFAULT 0"
+                )
+
     def record_run(self, run_id: str, version: str, seed: str | None = None) -> None:
         with self._lock:
             self._conn.execute(
@@ -202,8 +236,8 @@ class AnalyticsStore:
                 INSERT OR REPLACE INTO tick_summaries (
                     run_id, tick, simulated_time_minutes, alive_count,
                     agent_count, mean_energy, mean_hunger, mean_thirst,
-                    mean_fatigue, decision_count
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    mean_fatigue, decision_count, mean_food, mean_water
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 record.to_row(),
             )
@@ -304,6 +338,33 @@ class AnalyticsStore:
             ).fetchone()
         return int(row[0]) if row else 0
 
+    def population_outcome(self, run_id: str) -> dict:
+        """Résultat de population d'un run (A3, calculé en SQL sur ``tick_summaries``).
+
+        ``outcome`` ∈ ``{"extinct", "surviving", "unknown"}`` et
+        ``extinction_tick`` = premier tick où ``alive_count = 0`` (``None``
+        sinon). Aucune migration de schéma : la méthode lit les données déjà
+        écrites, donc reste disponible **pendant** l'ingestion — pas seulement
+        après. ``unknown`` sur un run sans tick (rien d'observable).
+        """
+        with self._lock:
+            last = self._conn.execute(
+                """
+                SELECT alive_count FROM tick_summaries
+                WHERE run_id = ? ORDER BY tick DESC LIMIT 1
+                """,
+                (run_id,),
+            ).fetchone()
+            extinct = self._conn.execute(
+                "SELECT MIN(tick) FROM tick_summaries WHERE run_id = ? AND alive_count = 0",
+                (run_id,),
+            ).fetchone()
+        if last is None:
+            return {"outcome": "unknown", "extinction_tick": None}
+        if extinct is not None and extinct[0] is not None:
+            return {"outcome": "extinct", "extinction_tick": int(extinct[0])}
+        return {"outcome": "surviving", "extinction_tick": None}
+
     def append_decision_trace(self, run_id: str, tick: int, trace: dict) -> None:
         """Persiste la trace de décision d'une entité au tick (ECHOS-051).
 
@@ -371,8 +432,8 @@ class AnalyticsStore:
                     INSERT OR REPLACE INTO tick_summaries (
                         run_id, tick, simulated_time_minutes, alive_count,
                         agent_count, mean_energy, mean_hunger, mean_thirst,
-                        mean_fatigue, decision_count
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        mean_fatigue, decision_count, mean_food, mean_water
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     record.to_row(),
                 )
@@ -507,13 +568,18 @@ class AnalyticsStore:
         return int(row[0]) if row and row[0] is not None else None
 
     def tick_summaries(self, run_id: str) -> list[tuple]:
+        """Résumés du run, triés par tick (12 colonnes, schéma v6).
+
+        Colonnes 10/11 (``mean_food``/``mean_water``) : régime des ressources
+        du monde — alimente le bloc ``viability`` du rapport de calibration.
+        """
         with self._lock:
             return list(
                 self._conn.execute(
                     """
                     SELECT run_id, tick, simulated_time_minutes, alive_count,
                            agent_count, mean_energy, mean_hunger, mean_thirst,
-                           mean_fatigue, decision_count
+                           mean_fatigue, decision_count, mean_food, mean_water
                     FROM tick_summaries
                     WHERE run_id = ?
                     ORDER BY tick

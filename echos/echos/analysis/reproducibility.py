@@ -136,6 +136,8 @@ def _canonical_content(store: AnalyticsStore, run_id: str) -> dict:
                 "mean_thirst": row[7],
                 "mean_fatigue": row[8],
                 "decision_count": row[9],
+                "mean_food": row[10],
+                "mean_water": row[11],
             }
             for row in store.tick_summaries(run_id)
         ],
@@ -159,6 +161,48 @@ def content_fingerprint(store: AnalyticsStore, run_id: str) -> str:
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()
+
+
+def summary(store: AnalyticsStore, run_a: str, run_b: str) -> dict:
+    """Résumé de comparaison **sans** empreinte bit-à-bit (C3, ``light=1``).
+
+    Compare seed/version et distributions cognitives/sociales (dernier
+    contexte ``agents``, donc léger), sans charger les séries, événements,
+    contextes et traces complets que ``content_fingerprint`` exige. Les
+    champs ``bit_identical``/``is_reproducible`` sont rapportés à ``None`` :
+    ils ne peuvent pas être affirmés sans l'empreinte, et un ``false``
+    incidental prêterait à une conclusion fausse.
+    """
+    meta = {run["run_id"]: run for run in store.runs()}
+    for run_id in (run_a, run_b):
+        if run_id not in meta:
+            raise ReproducibilityError(f"run inconnu : {run_id}")
+    agents_a = store.latest_context(run_a, "agents")
+    agents_b = store.latest_context(run_b, "agents")
+    cognitive_diff = l2_normalized(
+        belief_distribution(agents_a[1] if agents_a else []),
+        belief_distribution(agents_b[1] if agents_b else []),
+    )
+    social_diff = l2_normalized(
+        social_distribution(agents_a[1] if agents_a else []),
+        social_distribution(agents_b[1] if agents_b else []),
+    )
+    same_seed = meta[run_a]["seed"] == meta[run_b]["seed"]
+    same_version = meta[run_a]["version"] == meta[run_b]["version"]
+    return {
+        "run_a": meta[run_a],
+        "run_b": meta[run_b],
+        "same_seed": same_seed,
+        "same_version": same_version,
+        "bit_identical": None,
+        "is_reproducible": None,
+        "reproducibility_score": (
+            1.0 if (same_seed and same_version) else
+            round(1.0 - (cognitive_diff + social_diff) / _DIFF_NORMALIZER, 6)
+        ),
+        "cognitive_diff": round(cognitive_diff, 6),
+        "social_diff": round(social_diff, 6),
+    }
 
 
 def compare(store: AnalyticsStore, run_a: str, run_b: str) -> dict:

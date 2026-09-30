@@ -10,6 +10,7 @@ from websockets.sync.server import serve
 
 from echos import storage
 from echos.ingestion import WsClient
+from echos.instrumentation.logging import EchosLogger
 from echos.storage.sqlite import AnalyticsStore
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
@@ -53,7 +54,7 @@ def _in_process_server(frames: list) -> tuple[int, threading.Thread]:
     return slot[0].socket.getsockname()[1], thread
 
 
-def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
+def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path, monkeypatch):
     port, thread = _in_process_server(_script(3))
     client = WsClient()
     client.connect(f"ws://127.0.0.1:{port}/")
@@ -71,9 +72,11 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
         assert result.events_written == 6  # 2 événements par tick
         assert result.agents_written == 6  # 2 agents × 3 ticks
         assert result.metrics_written > 0  # métriques des 8 moteurs par tick
+        # C2 : ``agents`` suit sa cadence (ticks 1 et 3) ; phenomena/profiling
+        # restent à l'analyse (3) et ``groups`` suit ``agents`` → 2×2 + 3 + 2 = 9.
         assert (
-            result.contexts_written == 12
-        )  # 3 ticks × (agents, groups, phenomena, profiling)
+            result.contexts_written == 9
+        )  # (agents+groups) 2 ticks + phenomena 3 + profiling 3
         assert (
             result.decision_traces_written == 3
         )  # 1 décision decision_made par tick
@@ -105,7 +108,7 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path):
     assert storage.coherence_errors(series, indexed_ticks) == []
 
 
-def test_consume_analysis_cadence_schedule(tmp_path):
+def test_consume_analysis_cadence_schedule(tmp_path, monkeypatch):
     """analysis_every>1 planifie les moteurs/contextes mais garde l'ingestion complète."""
     port, thread = _in_process_server(_script(3))
     client = WsClient()
@@ -117,7 +120,10 @@ def test_consume_analysis_cadence_schedule(tmp_path):
         assert result.ticks_written == 3
         assert result.events_written == 6
         assert result.decision_traces_written == 3
-        assert result.contexts_written == 8  # 2 ticks analysés × 4 contextes
+        # Ticks analysés 1 et 3. ``agents``+``groups`` au tick 1 (cadence 20),
+        # phenomena+profiling aux ticks 1 et 3, plus ``agents`` du dernier tick
+        # (3) toujours écrit → 4 + 2 + 1 = 7.
+        assert result.contexts_written == 7
         assert result.metrics_written > 0
         assert store.count_ticks("run-7") == 3
         assert len(store.events("run-7")) == 6
@@ -127,6 +133,166 @@ def test_consume_analysis_cadence_schedule(tmp_path):
 
     with storage.AnalyticsStore(db_path) as reopened:
         assert reopened.tick_summaries("run-7")[1][1] == 2  # résumé du tick 2 conservé
+
+
+def test_consume_records_seed_carried_by_the_snapshot(tmp_path):
+    """A1 : le seed transporté (contrat V0.2.1) gagne sur la dérivation ``_seed_of``."""
+    frames = []
+    for tick in range(1, 3):
+        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        snapshot["tick"] = tick
+        snapshot["runId"] = "run-12345-0a1b2c3d4e5f"
+        snapshot["seed"] = 12345
+        frames.append(json.dumps(snapshot))
+        frames.append(_variant("tick_summary_v01.json", tick))
+        frames.append(_variant("decision_made_v01.json", tick))
+    port, thread = _in_process_server(frames)
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "seed.db") as store:
+        storage.consume(client, store)
+        runs = {run["run_id"]: run for run in store.runs()}
+        assert runs["run-12345-0a1b2c3d4e5f"]["seed"] == "12345"
+
+
+def test_consume_falls_back_to_seed_of_new_run_id_format(tmp_path):
+    """A1 : flux V0.8 (format ``run-<seed>-<12hex>`` sans champ seed) → seed dérivé."""
+    frames = []
+    for tick in range(1, 3):
+        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        snapshot["tick"] = tick
+        snapshot["runId"] = "run-999-123456789abc"
+        frames.append(json.dumps(snapshot))
+        frames.append(_variant("tick_summary_v01.json", tick))
+        frames.append(_variant("decision_made_v01.json", tick))
+    port, thread = _in_process_server(frames)
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "fallback.db") as store:
+        storage.consume(client, store)
+        runs = {run["run_id"]: run for run in store.runs()}
+        assert runs["run-999-123456789abc"]["seed"] == "999"
+
+
+def test_consume_survives_a_missing_seed_with_a_warning(tmp_path, caplog):
+    """A1 : ni snapshot ni run_id porteurs → seed vide, jamais une erreur fatale."""
+    frames = []
+    for tick in range(1, 3):
+        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        snapshot["tick"] = tick
+        snapshot["runId"] = "not-a-run-format"
+        frames.append(json.dumps(snapshot))
+        frames.append(_variant("tick_summary_v01.json", tick))
+        frames.append(_variant("decision_made_v01.json", tick))
+    port, thread = _in_process_server(frames)
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "noseed.db") as store:
+        logger = EchosLogger(tmp_path / "logs")
+        try:
+            storage.consume(client, store, logger=logger)
+        finally:
+            logger.close()
+        runs = {run["run_id"]: run for run in store.runs()}
+        assert runs["not-a-run-format"]["seed"] == ""
+
+
+def test_consume_two_successive_runs_in_one_connection(tmp_path):
+    """A2 : reset SYNE dans la même connexion → zéro FK error, deux rapports.
+
+    Régression : ``consume`` n'enregistrait le run qu'au premier snapshot du
+    flux (``run_known`` jamais réinitialisé). Un reset change le ``run_id`` en
+    pleine connexion : les ticks du nouveau run levaient ``FOREIGN KEY
+    constraint failed`` (perte des ticks 1..n jusqu'à la reconnexion) et le
+    rapport de calibration des runs interrompus n'était jamais écrit.
+    """
+    frames = []
+    for run_id in ("run-7", "run-8"):
+        for tick in range(1, 3):
+            snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+            snapshot["tick"] = tick
+            snapshot["runId"] = run_id
+            frames.append(json.dumps(snapshot))
+            frames.append(_variant("tick_summary_v01.json", tick))
+            frames.append(_variant("decision_made_v01.json", tick))
+    port, thread = _in_process_server(frames)
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    db_path = tmp_path / "reset.db"
+    with AnalyticsStore(db_path) as store:
+        result = storage.consume(client, store)
+        assert result.ticks_written == 4
+        # Chaque run redémarre au tick 1 : vu du pipeline, c'est un trou (le
+        # run N redémarre au lieu de continuer run N-1) — signalé, pas masqué.
+        assert result.gaps_detected >= 1
+        for run_id in ("run-7", "run-8"):
+            assert store.count_ticks(run_id) == 2  # 0 tick perdu
+            report = store.calibration_report(run_id)
+            assert report is not None
+            assert report["ticks"] == {"count": 2, "first": 1, "last": 2}
+            assert report["outcome"] in {"extinct", "surviving"}
+
+
+def test_rolling_contexts_are_reset_between_runs(tmp_path):
+    """A2 : les fenêtres glissantes ne contaminent pas le run suivant.
+
+    Sans réinitialisation au changement de ``run_id``, l'historique du run 1
+    entre dans les métriques fenêtrées du run 2 : les décisions des ticks 1–2
+    de deux runs successifs se lisaient comme une boucle de rétroaction d'un
+    seul monde. Ici, chaque run redémarre au tick 1 avec la même décision —
+    les fenêtres réinitialisées produisent exactement les mêmes métriques
+    fenêtrées que le premier run.
+    """
+    frames = []
+    for run_id in ("run-a", "run-b"):
+        for tick in range(1, 3):
+            snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+            snapshot["tick"] = tick
+            snapshot["runId"] = run_id
+            frames.append(json.dumps(snapshot))
+            frames.append(_variant("decision_made_v01.json", tick))
+    port, thread = _in_process_server(frames)
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "windows.db") as store:
+        storage.consume(client, store)
+
+        def loop_metrics(run_id: str) -> tuple[float, float]:
+            values = {
+                (str(row[1]), str(row[2])): row[3]
+                for row in store.metrics_all(run_id)
+                if int(row[0]) == 2  # dernier tick du run
+            }
+            return (
+                values[("FeedbackLoopDetector", "IdentifiedLoops")],
+                values[("FeedbackLoopDetector", "SystemStability")],
+            )
+
+        # Le run b rejoue exactement le run a : ses métriques fenêtrées doivent
+        # être identiques — preuve que l'historique du run a n'y entre pas.
+        assert loop_metrics("run-b") == loop_metrics("run-a")
+
+
+def test_consume_agents_context_follows_its_own_cadence(tmp_path, monkeypatch):
+    """C2 : ``agents`` écrit 1 tick sur N ; le dernier tick est toujours écrit."""
+    monkeypatch.setenv("ECHOS_CONTEXT_EVERY", "2")
+    port, thread = _in_process_server(_script(4))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "cadence.db") as store:
+        result = storage.consume(client, store)
+        # Ticks en cadence : 1, 3 (+ tick 4, dernier du flux, hors cadence).
+        agent_ticks = [row[0] for row in store.observations_for("run-7", "agents")]
+        assert agent_ticks == [1, 3, 4]
+        # 4 ticks analysés × (phenomena + profiling) + agents/groups (1, 3)
+        # = 8 + 4, plus l'``agents`` du dernier tick (4) = 13.
+        assert result.contexts_written == 13
 
 
 def test_consume_requires_positive_analysis_cadence(tmp_path):

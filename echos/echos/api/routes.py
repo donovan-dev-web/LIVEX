@@ -88,7 +88,14 @@ def _downsample(items: list, every: int) -> list:
     return items if every <= 1 else items[::every]
 
 
-def _metadata(run: dict) -> dict:
+def _metadata(store: AnalyticsStore, run: dict) -> dict:
+    """Métadonnées d'un run, enrichies du résultat de population (A3).
+
+    ``outcome``/``extinction_tick`` permettent à un observateur (UI, campagne)
+    de draper « run fini avec écosystème mort » sans recalculer lui-même le
+    résultat depuis les séries. ``unknown``/``null`` sur un run sans tick.
+    """
+    outcome = store.population_outcome(run["run_id"])
     return {
         "run_id": run["run_id"],
         "version": run["version"],
@@ -96,6 +103,8 @@ def _metadata(run: dict) -> dict:
         "ticks_count": run["ticks_count"],
         "first_tick": run["first_tick"],
         "last_tick": run["last_tick"],
+        "outcome": outcome["outcome"],
+        "extinction_tick": outcome["extinction_tick"],
     }
 
 
@@ -155,8 +164,8 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
 
     @app.get("/api/runs", tags=["api"])
     def list_runs() -> dict:
-        _require_store(store)
-        return {"runs": [_metadata(run) for run in store.runs()]}
+        active = _require_store(store)
+        return {"runs": [_metadata(active, run) for run in active.runs()]}
 
     @app.get("/api/runs/{run_id}", tags=["api"])
     def run_full(run_id: str) -> dict:
@@ -164,7 +173,10 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         resolved = _resolve_run(active, run_id)
         runs = {run["run_id"]: run for run in active.runs()}
         run = runs[resolved]
-        observations = active.contexts(resolved).get("phenomena", [])
+        # C1 — seuls les phénomènes sont consommés ici : charger tous les
+        # contextes (dont ``agents`` ≈ 208 Ko/tick) provoquait des timeouts
+        # > 20 s, voire des OOM-kills, sur un run complet.
+        observations = active.observations_for(resolved, "phenomena")
         detected: dict[str, dict] = {}
         disclaimer = ""
         first_tick = -1
@@ -190,7 +202,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
                 item["lastTick"] = max(item["lastTick"], tick)
                 item["occurrences"] += 1
         return {
-            **_metadata(run),
+            **_metadata(active, run),
             "metrics": active.latest_metrics(resolved),
             "measured": active.latest_measured(resolved),
             "phenomena": {
@@ -309,6 +321,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         run_a: str = Query(...),
         run_b: str = Query(...),
         format: str = Query(default="json"),
+        light: bool = Query(default=False),
     ) -> dict:
         """Comparaison de runs contrôlés (ECHOS-070→072, EXPERIMENT_COMPARISON.md).
 
@@ -316,7 +329,12 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         version ET contenu bit-à-bit identique ⇒ ``is_reproducible`` ; score de
         reproductibilité ``1.0 - (CognitiveDiff + SocialDiff) / 2`` sinon.
         ``format=csv`` produit l'export comparatif aligné (ECHOS-072).
-        Réponses déterministes : aucune horodatation d'émission, tris stables.
+        ``light=1`` (C3) renvoie le seul ``summary`` — sans séries ni empreinte
+        bit-à-bit — : l'empreinte charge séries + événements + contextes +
+        traces des deux runs, ce qui est lourd **par conception** ; l'UI
+        l'utilise par défaut. Défaut sans ``light`` : comportement complet
+        conservé. Réponses déterministes : aucune horodatation d'émission,
+        tris stables.
         """
         active = _require_store(store)
         if format not in _VALID_FORMATS:
@@ -328,6 +346,11 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         for run_id in (run_a, run_b):
             if run_id not in known:
                 raise HTTPException(status_code=404, detail=f"run inconnu : {run_id}")
+
+        if light and format == "json":
+            # ``light`` ne concerne que la réponse JSON : l'export CSV a besoin
+            # des séries alignées par construction.
+            return {**reproducibility.summary(active, run_a, run_b), "format": "light"}
 
         summary = reproducibility.compare(active, run_a, run_b)
         if format == "csv":
@@ -464,7 +487,8 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
     def emergent_phenomena(run_id: str | None = Query(default=None)) -> dict:
         active = _require_store(store)
         resolved = _resolve_run(active, run_id)
-        observations = active.contexts(resolved).get("phenomena", [])
+        # C1 — lecture ciblée (voir run_full) : fin des timeouts/OOM sur run dense.
+        observations = active.observations_for(resolved, "phenomena")
         if not observations:
             return {
                 "run_id": resolved,
