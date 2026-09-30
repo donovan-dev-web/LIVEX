@@ -79,6 +79,9 @@ public sealed record ActionSnapshot(
 public sealed record WorldSnapshot(
     string Version,
     string RunId,
+    // Seed effectif du run — champ additif V0.2.1 du contrat (API_CONTRACTS.md §2.1) : ECHOS n'a
+    // plus à dériver le seed du run_id, ce qui invalidait same_seed sur les runs pilotés.
+    ulong Seed,
     ulong Tick,
     long SimulatedTimeMinutes,
     int AliveCount,
@@ -173,6 +176,7 @@ public sealed record WorldSnapshot(
         return new WorldSnapshot(
             ObservabilityContract.Version,
             runId ?? ObservabilityContract.RunIdFor(seed),
+            seed,
             loop.CurrentTick,
             SimulationTime.ToSimulatedMinutes(loop.CurrentTick),
             agents.Count,

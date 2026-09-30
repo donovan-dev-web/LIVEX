@@ -194,6 +194,41 @@ public static class SimulationSnapshotRestorer
             successRates[(DesireKind)kind] = rate;
         }
 
+        // Champs additifs jalon ADR (0.14.0) — absents des snapshots antérieurs.
+        IReadOnlyDictionary<WorldNamespace.ResourceKind, double>? inventoryAmounts = null;
+        if (dto.Inventory is { } inventoryDto)
+        {
+            var amounts = new Dictionary<WorldNamespace.ResourceKind, double>();
+            foreach ((int kind, double amount) in inventoryDto.Amounts)
+            {
+                amounts[(WorldNamespace.ResourceKind)kind] = amount;
+            }
+
+            inventoryAmounts = amounts;
+        }
+
+        IReadOnlyList<Commitment>? commitments = null;
+        if (dto.Commitments is { } commitmentDtos)
+        {
+            var restored = new List<Commitment>(commitmentDtos.Count);
+            foreach (CommitmentSnapshotDto commitmentDto in commitmentDtos)
+            {
+                restored.Add(Commitment.Restore(
+                    commitmentDto.ToEntityId,
+                    commitmentDto.RequestType,
+                    commitmentDto.CreatedTick,
+                    commitmentDto.ExpiryTick,
+                    (CommitmentStatus)commitmentDto.Status,
+                    commitmentDto.ResolvedTick));
+            }
+
+            commitments = restored;
+        }
+
+        IReadOnlyList<DesireKind>? triggered = dto.TriggeredAtLastDeliberation is { } triggeredDtos
+            ? triggeredDtos.Select(kind => (DesireKind)kind).ToList()
+            : null;
+
         var needs = BodyNeeds.FromState(
             dto.Needs.Hunger,
             dto.Needs.Thirst,
@@ -221,7 +256,11 @@ public static class SimulationSnapshotRestorer
             successRates,
             factors: null,
             mind.Intention,
-            mind.CollectiveObjective);
+            mind.CollectiveObjective,
+            inventoryAmounts,
+            commitments,
+            dto.LastDeliberationTick,
+            triggered);
         mind.RestoreLastDecision(dto.LastDecisionKind is { } lastKind ? (DesireKind)lastKind : null);
 
         return mind;

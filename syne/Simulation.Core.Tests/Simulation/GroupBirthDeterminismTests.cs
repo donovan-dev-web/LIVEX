@@ -99,6 +99,6 @@ public class GroupBirthDeterminismTests
         Assert.Equal("group_dissolved", ObservabilityContract.GroupDissolved);
         Assert.Equal("group_decision", ObservabilityContract.GroupDecision);
         Assert.Equal("agent_spawned", ObservabilityContract.AgentSpawned);
-        Assert.Equal("0.12.0", ObservabilityContract.EngineVersion);
+        Assert.Equal("0.14.0", ObservabilityContract.EngineVersion); // jalon ADR cognitifs 0.14.0 : drapeaux défaut-faux, trajectoire inchangée
     }
 }
