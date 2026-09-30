@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { client } from '../api/client'
 import { useRunsStore, useLiveStore } from '../store'
-import type { MetricsResponse, PhenomenaResponse } from '../api/types'
+import type { MetricsResponse, PhenomenaResponse, RunsResponse } from '../api/types'
 
 /**
  * Cache de lecture, borné au navigateur.
@@ -14,6 +14,14 @@ import type { MetricsResponse, PhenomenaResponse } from '../api/types'
  */
 const cacheKey = (kind: string, id: string, variant = '') =>
   `echos:${kind}:${id}${variant ? `:${variant}` : ''}`
+
+/**
+ * Cadence de rafraîchissement de la liste des runs (ms). Un run d'analyse
+ * n'existe dans la base qu'après le premier message ingéré — il ne peut pas
+ * être connu au montage : sans re-poll, la liste restait figée sur l'état
+ * initial et aucun écran d'analyse ne montrait jamais le run en cours.
+ */
+const RUNS_REFRESH_MS = 5000
 
 function readCache<T>(key: string): T | null {
   try { return JSON.parse(localStorage.getItem(key) ?? 'null') as T | null } catch { return null }
@@ -72,19 +80,46 @@ function mergeMetrics(previous: MetricsResponse | null, next: MetricsResponse): 
 }
 
 /**
- * Charge la liste des runs. Appelé une seule fois par `AppShell` : appelé dans
- * chaque écran, il déclenchait une requête `/api/runs` par écran monté, et le
- * sélecteur de run ne pouvait pas exister avant que chaque écran ait fini de
- * charger.
+ * Charge la liste des runs et la maintient à jour.
+ *
+ * Le premier chargement a lieu au montage d'`AppShell` (une seule requête
+ * partagée : appeler le hook dans chaque écran déclenchait une requête
+ * `/api/runs` par écran monté, et le sélecteur de run ne pouvait pas exister
+ * avant que chaque écran ait fini de charger). Ensuite, la liste est re-pollée
+ * périodiquement : un run lancé **après** l'ouverture de l'application (cas
+ * normal du shell bureau, où l'utilisateur démarre SYNE depuis l'écran de
+ * pilotage) doit apparaître dans le sélecteur sans rechargement manuel —
+ * `setRuns` conserve la sélection courante tant qu'elle existe toujours.
  */
 export function useLoadRuns() {
+  const refresh = useRunsRefresh()
+
+  useEffect(() => {
+    void refresh()
+    const timer = window.setInterval(() => void refresh(), RUNS_REFRESH_MS)
+    return () => window.clearInterval(timer)
+  }, [refresh])
+
+  return { refresh }
+}
+
+/**
+ * Callback de rafraîchissement sans cycle de vie : pour les écrans qui doivent
+ * provoquer un rechargement immédiat (démarrage d'un run depuis le pilotage)
+ * sans monter leur propre timer — le polling périodique reste la propriété
+ * exclusive d'`AppShell` via `useLoadRuns`. La promesse résout avec la réponse
+ * (void en cas d'échec) pour que l'appelant puisse exploiter les données qu'il
+ * vient de faire charger dans le store.
+ */
+export function useRunsRefresh() {
   const setRuns = useRunsStore((s) => s.setRuns)
   const setLoading = useRunsStore((s) => s.setLoading)
   const setError = useRunsStore((s) => s.setError)
-  const inFlight = useRef<Promise<unknown> | null>(null)
+  const inFlight = useRef<Promise<RunsResponse | undefined> | null>(null)
 
   const refresh = useCallback(() => {
-    // Requêtes concurrentes partagées : un re-rendu ne relance pas la requête.
+    // Requêtes concurrentes partagées : un re-rendu ou un tick de timer ne
+    // relance pas la requête si la précédente n'est pas terminée.
     if (inFlight.current) return inFlight.current
     setLoading(true)
     const request = client
@@ -92,8 +127,12 @@ export function useLoadRuns() {
       .then((res) => {
         setRuns(res.runs)
         setError(null)
+        return res
       })
-      .catch((err) => setError(message(err)))
+      .catch((err) => {
+        setError(message(err))
+        return undefined
+      })
       .finally(() => {
         inFlight.current = null
         setLoading(false)
@@ -102,11 +141,7 @@ export function useLoadRuns() {
     return request
   }, [setRuns, setError, setLoading])
 
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
-
-  return { refresh }
+  return refresh
 }
 
 export function useRunDetail(runId: string | null) {
@@ -130,6 +165,18 @@ export function useRunDetail(runId: string | null) {
   return { detail, error }
 }
 
+export type MetricsMode = 'live' | 'manual'
+
+/**
+ * Cadence minimale entre deux requêtes `/metrics` en mode live (ms). Les
+ * séries sont servies **en entier** à chaque appel : à 10 rafraîchissements par
+ * seconde (un par tick), les réponses s'empilaient plus vite qu'elles
+ * n'aboutissaient, l'affichage décrochait du run (« retard N ticks ») et le
+ * rendu des graphes se figeait. Le flux WS reste le détecteur d'activité ; la
+ * cadence API, elle, reste lisible par le service.
+ */
+const METRICS_THROTTLE_MS = 2000
+
 export function useMetrics(runId: string | null, every = 1) {
   const key = runId ? cacheKey('metrics', runId, `every-${every}`) : null
   const [metrics, setMetrics] = useState<MetricsResponse | null>(() =>
@@ -137,6 +184,17 @@ export function useMetrics(runId: string | null, every = 1) {
   )
   const [error, setError] = useState<string | null>(null)
   const [refreshedAt, setRefreshedAt] = useState<number | null>(null)
+  const [mode, setMode] = useState<MetricsMode>('live')
+  // Le mode vit dans un ref : le basculer ne doit ni re-monter l'effet (qui
+  // rafraîchirait immédiatement, annulant le gel demandé) ni relancer la
+  // souscription — il ne change que la politique de déclenchement.
+  const modeRef = useRef<MetricsMode>('live')
+  useEffect(() => {
+    modeRef.current = mode
+  }, [mode])
+  // Handle de la dernière fermeture de rafraîchissement : exposé à l'appelant
+  // pour l'actualisation manuelle (le `refresh` interne vit dans l'effet).
+  const refreshRef = useRef<() => void>(() => {})
 
   useEffect(() => {
     if (!runId || !key) {
@@ -146,7 +204,14 @@ export function useMetrics(runId: string | null, every = 1) {
       return
     }
     let cancelled = false
+    let lastFetch = 0
+    let inFlight = false
     const refresh = () => {
+      // Une seule requête à la fois : en cas de saturation, on saute un tour
+      // plutôt que d'empiler des réponses périmées.
+      if (cancelled || inFlight) return
+      inFlight = true
+      lastFetch = Date.now()
       client
         .metrics(runId, { every })
         .then((m) => {
@@ -162,15 +227,22 @@ export function useMetrics(runId: string | null, every = 1) {
         .catch((err) => {
           if (!cancelled) setError(message(err))
         })
+        .finally(() => {
+          inFlight = false
+        })
     }
     setMetrics(readCache<MetricsResponse>(key))
+    refreshRef.current = refresh
     refresh()
     const unsubscribe = useLiveStore.subscribe((state, previous) => {
-      if (state.live?.tick !== previous.live?.tick) refresh()
+      if (modeRef.current === 'manual') return
+      if (state.live?.tick !== previous.live?.tick && Date.now() - lastFetch >= METRICS_THROTTLE_MS) refresh()
     })
-    // Keep a bounded fallback for runs whose stream is temporarily quiet;
-    // tick notifications remain the primary refresh trigger.
-    const timer = window.setInterval(refresh, 1000)
+    // Filet de sécurité pour les runs dont le flux WS est momentanément
+    // silencieux ; en mode live uniquement — un gel manuel doit rester gelé.
+    const timer = window.setInterval(() => {
+      if (modeRef.current === 'live') refresh()
+    }, METRICS_THROTTLE_MS)
     return () => {
       cancelled = true
       unsubscribe()
@@ -178,12 +250,17 @@ export function useMetrics(runId: string | null, every = 1) {
     }
   }, [runId, key, every])
 
-  return { metrics, error, refreshedAt }
+  return { metrics, error, refreshedAt, mode, setMode, refresh: () => refreshRef.current() }
 }
 
-export function useGroups(runId: string | null) {
+export function useGroups(runId: string | null, live: MetricsMode = 'live') {
   const [groups, setGroups] = useState<Awaited<ReturnType<typeof client.groups>> | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const refreshRef = useRef<() => void>(() => {})
+  const liveRef = useRef<MetricsMode>('live')
+  useEffect(() => {
+    liveRef.current = live
+  }, [live])
 
   useEffect(() => {
     if (!runId) {
@@ -192,7 +269,12 @@ export function useGroups(runId: string | null) {
       return
     }
     let cancelled = false
-    const refresh = () =>
+    let lastFetch = 0
+    let inFlight = false
+    const refresh = () => {
+      if (cancelled || inFlight) return
+      inFlight = true
+      lastFetch = Date.now()
       client
         .groups({ runId })
         .then((g) => {
@@ -203,12 +285,18 @@ export function useGroups(runId: string | null) {
         .catch((err) => {
           if (!cancelled) setError(message(err))
         })
+        .finally(() => {
+          inFlight = false
+        })
+    }
     // Le groupe affiché doit suivre le tick observé : sans rafraîchissement, le
     // compteur « Groupes actifs » restait figé sur le tick du montage.
     setGroups(null)
+    refreshRef.current = refresh
     refresh()
     const unsubscribe = useLiveStore.subscribe((state, previous) => {
-      if (state.live?.tick !== previous.live?.tick) refresh()
+      if (liveRef.current === 'manual') return
+      if (state.live?.tick !== previous.live?.tick && Date.now() - lastFetch >= METRICS_THROTTLE_MS) refresh()
     })
     return () => {
       cancelled = true
@@ -216,15 +304,20 @@ export function useGroups(runId: string | null) {
     }
   }, [runId])
 
-  return { groups, error }
+  return { groups, error, refresh: () => refreshRef.current() }
 }
 
-export function usePhenomena(runId: string | null) {
+export function usePhenomena(runId: string | null, live: MetricsMode = 'live') {
   const key = runId ? cacheKey('phenomena', runId) : null
   const [phenomena, setPhenomena] = useState<PhenomenaResponse | null>(() =>
     key ? readCache<PhenomenaResponse>(key) : null,
   )
   const [error, setError] = useState<string | null>(null)
+  const refreshRef = useRef<() => void>(() => {})
+  const liveRef = useRef<MetricsMode>('live')
+  useEffect(() => {
+    liveRef.current = live
+  }, [live])
 
   useEffect(() => {
     if (!runId || !key) {
@@ -233,7 +326,12 @@ export function usePhenomena(runId: string | null) {
       return
     }
     let cancelled = false
-    const refresh = () =>
+    let lastFetch = 0
+    let inFlight = false
+    const refresh = () => {
+      if (cancelled || inFlight) return
+      inFlight = true
+      lastFetch = Date.now()
       client
         .phenomena(runId)
         .then((next) => {
@@ -259,9 +357,15 @@ export function usePhenomena(runId: string | null) {
           // détecté », soit un constat faux présenté comme une observation.
           if (!cancelled) setError(message(err))
         })
+        .finally(() => {
+          inFlight = false
+        })
+    }
+    refreshRef.current = refresh
     refresh()
     const unsubscribe = useLiveStore.subscribe((state, previous) => {
-      if (state.live?.tick !== previous.live?.tick) refresh()
+      if (liveRef.current === 'manual') return
+      if (state.live?.tick !== previous.live?.tick && Date.now() - lastFetch >= METRICS_THROTTLE_MS) refresh()
     })
     return () => {
       cancelled = true
@@ -269,5 +373,5 @@ export function usePhenomena(runId: string | null) {
     }
   }, [runId, key])
 
-  return { phenomena, error }
+  return { phenomena, error, refresh: () => refreshRef.current() }
 }

@@ -335,6 +335,13 @@ a:hover {
   color: var(--text);
 }
 
+/* Badge d'extinction (D4, A3) : un run dont l'écosystème est mort doit se
+   voir au premier coup d'œil sur la liste des runs. */
+.badge--danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 .chip {
   border-radius: 999px;
   padding: 2px 10px;
