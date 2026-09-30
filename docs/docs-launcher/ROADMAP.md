@@ -39,15 +39,14 @@ contrats de SYNE et d'ECHOS, dont il dépend pour piloter, et il accompagne PRIS
 
 | # | Jalon | Contenu | Livrables | Condition de franchissement |
 | :-- | :-- | :-- | :-- | :-- |
-| **G0** | Socle de conception | Vision, architecture, modèle de composants, contrat d'intégration, ADR | `VISION.md`, `ARCHITECTURE.md`, `COMPONENTS.md`, `INTEGRATION_CONTRACT.md`, `adr/ADR-001` à `ADR-006` | Les six ADR sont écrites, cinq acceptées |
+| **G0** | Socle de conception | Vision, architecture, modèle de composants, contrat d'intégration, schémas JSON figés, ADR | `VISION.md`, `ARCHITECTURE.md`, `COMPONENTS.md`, `INTEGRATION_CONTRACT.md`, `adr/ADR-001` à `ADR-006` | Les six ADR sont écrites, cinq acceptées |
 | **G1** | Format de paquet | Lecture, écriture, cycle de vie, sécurité, déterminisme | `Launcher.Package`, `PACKAGE_FORMAT.md` | Les dix propriétés de `TESTING.md` §5 sont vérifiées |
-| **G0** | Includes P0 : contrat d'intégration et schémas JSON figés | | | |
 | **G2** | Orchestration sans interface | Machine à états, registre, résolution de profil, sondes | `Launcher.Domain`, `Launcher.Infrastructure` | Couverture du domaine ≥ 85 %, analyse statique verte |
 | **G3** | Campagnes | Planification, dérivation des graines, politiques d'échec, reprise, scellement | `Launcher.Application`, `EXPERIMENTS.md` | Scénarios de bout en bout « campagne nominale » et « pause et reprise » verts |
 | **G4** | Interface d'orchestration | Navigation par modes, vues, états vides, accessibilité | `Launcher.Presentation`, `USER_INTERFACE.md` | Tests d'interface de `TESTING.md` §10 verts, symétrie des modes vérifiée |
 | **G5** | Session complète avec ECHOS | Détection, profil, demande d'analyse, **présentation du rapport d'émergence** | `PACKAGING.md`, session de bout en bout | Scénario « session complète » vert contre un ECHOS réel, rapport affiché conforme au fichier produit |
 | **G6** | Livraison | Installation, premier démarrage, diagnostic, désinstallation | Installation Windows et Linux | `--check` correct sur les deux plateformes, cible de 72 h tenue |
-| **G7** | Déverrouillage du mode Immersion | Intégration de PRISM selon ses exigences publiées | Mode Immersion sélectionnable | `INTEGRATION_CONTRACT.md` §5 entièrement satisfaite par PRISM |
+| **G7** | Déverrouillage du mode Immersion | Intégration de PRISM selon ses exigences publiées | Mode Immersion sélectionnable | `INTEGRATION_CONTRACT.md` §11 entièrement satisfaite par PRISM |
 
 ## 4. Portes de dépendance externe
 
@@ -175,8 +174,8 @@ Ces éléments sont conçus et annoncés, et volontairement absents de la V0.1.
 | :-- | :-- | :-- |
 | **Exécution parallèle** | `ADR-005` | Besoin réel documenté |
 | **Multi-espace** | `ADR-005` | Besoin réel documenté |
-| **Accès à un poste distant** | `NETWORK.md` §7.1 | Décision de sécurité |
-| **Passerelle multi-composants** | `NETWORK.md` §7.2 | Décision de sécurité |
+| **Accès à un poste distant** | `NETWORK.md` §3 (topologie T3) | Décision de sécurité |
+| **Passerelle multi-composants** | `NETWORK.md` §4.3 | Décision de sécurité |
 | **Chiffrement des paquets** | `PACKAGE_FORMAT.md` §11 | Besoin de confidentialité |
 | **Signature des paquets** | `PACKAGE_FORMAT.md` §11 | Autorité de signature définie |
 | **Installation par composant** | `PACKAGING.md` §12 | Modèle de sécurité |

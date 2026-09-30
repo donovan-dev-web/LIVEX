@@ -79,10 +79,10 @@ permet, `GUI.md` pour ce à quoi elle ressemble. Voir `GUI.md` §1.
 | `COMPONENTS.md` | Modèle de composants, cycle de vie, états, **matrice des modes** |
 | `INTEGRATION_CONTRACT.md` | Manifeste, CLI, codes de sortie, arrêt propre, endpoints, stubs |
 | `PACKAGE_FORMAT.md` | Format de paquet `.livexp` — architecture complète |
-| `DATA_FLOW.md` | Arborescence, flux de bout en bout, schémas, volumétrie |
+| `DATA_FLOW.md` | Arborescence, **cartographie des flux (direct vs via le Launcher)**, schémas, volumétrie |
 | `EXPERIMENTS.md` | Campagnes, runs, planification, échecs, reprise |
 | `OBSERVABILITY.md` | **Six niveaux L0 à L5**, états, agrégation, catalogue de métriques, santé, journaux, alertes |
-| `NETWORK.md` | **Adaptateur de protocole**, plan contrôle/données, topologies T0-T3, registre, Node Agent, Gateway, sécurité |
+| `NETWORK.md` | **Cartographie des flux** (contrôle, données directes, restitution), **adaptateur de protocole**, plan contrôle/données, **espace d'adressage interne LIVEX**, topologies T0-T3, registre, Node Agent, Gateway (forme de sortie), sécurité |
 | `USER_INTERFACE.md` | Design fonctionnel, navigation, principes, accessibilité |
 | `GUI.md` | **Spécification pixel** — grille, positions, couleurs, typographie |
 | `PACKAGING.md` | Installation, premier démarrage, détection |

@@ -10,7 +10,7 @@
 
 ## Contexte
 
-Une campagne comporte plusieurs runs reproductibles. Deux dimensions de freedom
+Une campagne comporte plusieurs runs reproductibles. Deux dimensions de liberté
 structurent leur exécution : le nombre de runs menés **en parallèle**, et le nombre
 d'espaces de travail **vivant simultanément**.
 
@@ -23,7 +23,7 @@ besoin réel est qu'une campagne de plusieurs runs soit reproductible, reprenabl
 partageable. La parallélisation et le multi-espace sont des commodités
 d'utilisation, non des exigences scientifiques.
 
-LeLauncher est par ailleurs un composant neuf, dont le format de paquet n'est pas
+Le Launcher est par ailleurs un composant neuf, dont le format de paquet n'est pas
 encore éprouvé. Construire simultanément la générique de l'exécution parallèle et
 le format de données rendrait les deux difficiles à valider.
 

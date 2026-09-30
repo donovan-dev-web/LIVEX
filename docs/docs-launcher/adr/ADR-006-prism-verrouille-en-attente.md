@@ -20,7 +20,7 @@ les deux.
 1. **Concevoir par omission.** Écrire la documentation du Launcher en traitant
    PRISM comme un composant futur lointain, avec des exigences vagues. Au moment où
    PRISM arrive, l'orchestrateur n'est pas prêt, et l'égalité de principe se révèle
-   être une égalité de facade.
+   être une égalité de façade.
 2. **Concevoir par fiction.** Documenter PRISM comme s'il était livré, et faire
    porter au Launcher l'illusion d'une capacité qui n'existe pas. L'utilisateur
    découvre le verrou au moment de l'usage, ce qui est la pire manière de le
@@ -39,7 +39,7 @@ disponible.**
 Les éléments structurants :
 
 - **Conception complète.** PRISM a un type de composant, un manifeste, des exigences
-  d'intégration publiées (`INTEGRATION_CONTRACT.md` §5), des états, un cycle de
+  d'intégration publiées (`INTEGRATION_CONTRACT.md` §11), des états, un cycle de
   vie, un profil et une vue spécifiée (`USER_INTERFACE.md` §3.3).
 - **Verrouillage d'accès, pas de non-conception.** Le verrou concerne la
   sélection du mode, pas la conception. `COMPONENTS.md` §7.3 décrit le mode
@@ -78,7 +78,7 @@ Les éléments structurants :
   conditionné, non daté, pour que la condition reste la seule voie de sortie.
 - **La conception de PRISM diverge de son implémentation réelle.** Le modèle
   documenté pourrait ne pas correspondre à ce que PRISM offrira.
-  Mitigation : les exigences de `INTEGRATION_CONTRACT.md` §5 sont des exigences
+  Mitigation : les exigences de `INTEGRATION_CONTRACT.md` §11 sont des exigences
   d'orchestration, techniquement minimales, à rejouer à l'arrivée de PRISM plutôt
   qu'à supposer sa forme finale.
 - **Le mode Immersion est perçu comme un simple placeholder.** Mitigation :
@@ -102,8 +102,8 @@ Les éléments structurants :
 
 ## Validation / rejet
 
-- **Complétude de conception** : PRISM dispose d'un profil (`COMPONENTS.md` §8), de
-  exigences (`INTEGRATION_CONTRACT.md` §5), d'une vue (`USER_INTERFACE.md` §3.3) et
+- **Complétude de conception** : PRISM dispose d'un profil (`COMPONENTS.md` §9), de
+  exigences (`INTEGRATION_CONTRACT.md` §11), d'une vue (`USER_INTERFACE.md` §3.3) et
   d'une matrice de tests (`TESTING.md` §7). Ces quatre éléments sont revus à chaque
   évolution du Launcher.
 - **Verrou motivé** : l'interface affiche la raison et le jalon attendu. Le test
