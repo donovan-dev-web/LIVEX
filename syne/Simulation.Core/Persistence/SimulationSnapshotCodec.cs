@@ -174,6 +174,45 @@ public static class SimulationSnapshotCodec
             successRates[(int)kind] = rate;
         }
 
+        // Champs additifs jalon ADR (0.14.0) : émis seulement quand les drapeaux
+        // correspondants sont actifs (sinon null — hash inchangé).
+        InventorySnapshotDto? inventoryDto = null;
+        if (mind.Inventory is { } inventory)
+        {
+            var amounts = new Dictionary<int, double>();
+            foreach ((World.ResourceKind kind, double amount) in inventory.StateSnapshot())
+            {
+                if (amount > 0.0)
+                {
+                    amounts[(int)kind] = amount;
+                }
+            }
+
+            inventoryDto = new InventorySnapshotDto(amounts);
+        }
+
+        IReadOnlyList<CommitmentSnapshotDto>? commitmentDtos = null;
+        if (mind.Commitments.Count > 0)
+        {
+            var commitmentList = new List<CommitmentSnapshotDto>(mind.Commitments.Count);
+            foreach (Cognition.Commitment commitment in mind.Commitments)
+            {
+                commitmentList.Add(new CommitmentSnapshotDto(
+                    commitment.ToEntityId,
+                    commitment.RequestType,
+                    commitment.CreatedTick,
+                    commitment.ExpiryTick,
+                    (int)commitment.Status,
+                    commitment.ResolvedTick));
+            }
+
+            commitmentDtos = commitmentList;
+        }
+
+        IReadOnlyList<int>? triggeredDtos = mind.TriggeredAtLastDeliberation.Count > 0
+            ? mind.TriggeredAtLastDeliberation.Select(kind => (int)kind).ToList()
+            : null;
+
         return new MindSnapshotDto(
             entityId,
             new NeedsSnapshotDto(
@@ -202,7 +241,11 @@ public static class SimulationSnapshotCodec
                     objective.AdoptedTick,
                     objective.ExpiresTick)
                 : null,
-            mind.LastDecision is { } last ? (int)last.Kind : null);
+            mind.LastDecision is { } last ? (int)last.Kind : null,
+            inventoryDto,
+            commitmentDtos,
+            mind.LastDeliberationTick,
+            triggeredDtos);
     }
 
     /// <summary>Sérialise le snapshot en JSON déterministe (PERSISTENCE.md §3 : <c>tick_states.state</c>).</summary>
