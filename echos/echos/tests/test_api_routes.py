@@ -15,6 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from echos.analysis import compute_all, provenance
+from echos.analysis import reproducibility
 from echos.api.app import create_app
 from echos.api.series import SeriesCache
 from echos.ingestion.models import ExternalEvent
@@ -103,6 +104,68 @@ def test_list_runs_returns_metadata(tmp_path):
     assert run["ticks_count"] == 3
     assert run["first_tick"] == 1
     assert run["last_tick"] == 3
+    # A3 : le résultat de population voyage avec les métadonnées.
+    assert run["outcome"] == "surviving"
+    assert run["extinction_tick"] is None
+
+
+def test_run_metadata_expose_extinction(tmp_path):
+    """A3 : un run dont une série observe alive_count = 0 est drapé « extinct »."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-dead", "0.1.0", seed="9")
+    db.append_tick(
+        TickRecord(
+            run_id="run-dead", version="0.1.0", tick=1, simulated_time_minutes=1,
+            alive_count=2, agent_count=2, mean_energy=40.0, mean_hunger=30.0,
+            mean_thirst=20.0, mean_fatigue=5.0, decision_count=1,
+        )
+    )
+    db.append_tick(
+        TickRecord(
+            run_id="run-dead", version="0.1.0", tick=2, simulated_time_minutes=2,
+            alive_count=0, agent_count=0, mean_energy=0.0, mean_hunger=0.0,
+            mean_thirst=0.0, mean_fatigue=0.0, decision_count=0,
+        )
+    )
+
+    body = _client(db).get("/api/runs/run-dead").json()
+
+    assert body["outcome"] == "extinct"
+    assert body["extinction_tick"] == 2
+
+
+def test_compare_light_mode_skips_the_fingerprint(tmp_path, monkeypatch):
+    """C3 : ``light=1`` renvoie le summary sans calculer l'empreinte bit-à-bit."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7")
+    _populate(db, "run-77")
+
+    called = []
+    original = reproducibility.content_fingerprint
+    monkeypatch.setattr(
+        reproducibility,
+        "content_fingerprint",
+        lambda *args, **kwargs: (called.append(1), original(*args, **kwargs))[1],
+    )
+
+    light = _client(db).get(
+        "/api/compare", params={"run_a": "run-7", "run_b": "run-77", "light": 1}
+    ).json()
+
+    assert called == []  # l'empreinte (lourde par conception) n'a pas été chargée
+    assert light["same_seed"] is False  # seeds dérivés des ids, volontairement différents
+    assert light["bit_identical"] is None
+    assert light["is_reproducible"] is None
+    assert "series" not in light
+    assert light["format"] == "light"
+
+    # Défaut conservé : sans ``light``, l'empreinte est calculée.
+    full = _client(db).get(
+        "/api/compare", params={"run_a": "run-7", "run_b": "run-77"}
+    ).json()
+    assert called  # la comparaison complète passe bien par l'empreinte
+    assert full["bit_identical"] is True
+    assert full["is_reproducible"] is False  # seeds différents (77 ≠ 7)
 
 
 def test_run_full_returns_latest_metrics_and_phenomena(tmp_path):
