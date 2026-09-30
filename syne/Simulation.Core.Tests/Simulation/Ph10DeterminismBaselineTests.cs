@@ -136,7 +136,11 @@ public class Ph10DeterminismBaselineTests
         // restitue exactement la valeur d'origine. La baseline « d'état » est donc
         // elle aussi affectée, ce qui confirme que le dérapage touchait bien la
         // dynamique du monde et pas seulement la couche de communication.
+        // Ré-épinglé au jalon calibration D1 (engineVersion 0.13.0) : 0x88bbc67950002bab
+        // → 0xe62395429b50b7c1. Même cause unique que le checksum doré de perception :
+        // rééquilibrage de l'arbitrage utilitaire + bilan énergétique (profil de
+        // référence, décision D1) — les agents mangent/boivent plus tôt et plus souvent.
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x88bbc67950002bab", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0xe62395429b50b7c1", $"0x{Fnv1a(log):x16}");
     }
 }
