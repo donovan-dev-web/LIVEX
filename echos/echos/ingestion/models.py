@@ -52,6 +52,22 @@ class Trust(BaseModel):
     trust: float = Field(ge=0, le=1)
 
 
+class Commitment(BaseModel):
+    """Engagement communicationnel observable (contrat 0.3.0, ADR D5 — snapshot agent).
+
+    Émis par SYNE seulement quand ``agents.actions.commitments.enabled`` est actif.
+    ``status`` ∈ {Pending, Fulfilled, Broken, Expired} (cycle de vie de l'ADR).
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    to_entity_id: str = Field(alias="toEntityId")
+    request_type: str
+    status: str
+    created_tick: int = Field(ge=0)
+    expiry_tick: int = Field(ge=0)
+
+
 class Agent(BaseModel):
     """Entité observée (API_CONTRACTS.md §2.1).
 
@@ -78,6 +94,10 @@ class Agent(BaseModel):
     goals: list[Goal] | None = None
     trust: list[Trust] | None = None
     memory_count: int | None = Field(default=None, alias="memoryCount", ge=0)
+    # Contrat 0.3.0 (jalon ADR cognitifs) — émis sous drapeaux SYNE, optionnels
+    # ici pour la rétro-compatibilité avec les flux 0.2.x :
+    inventory: dict[str, float] | None = None
+    commitments: list[Commitment] | None = None
 
 
 class Resource(BaseModel):
@@ -199,7 +219,13 @@ class WorldInitialized(BaseModel):
 
 
 class WorldSnapshot(BaseModel):
-    """Snapshot de monde — message système ``snapshot`` (API_CONTRACTS.md §2.1)."""
+    """Snapshot de monde — message système ``snapshot`` (API_CONTRACTS.md §2.1).
+
+    ``seed`` (additif, contrat V0.2.1) : le seed effectif du run transporté par
+    SYNE. Il reste optionnel pour la rétro-compatibilité des flux V0.2.0, où
+    ECHOS le dérivait du ``run_id`` (``_seed_of``) — dérivation qui perdait le
+    seed des runs pilotés (``run_id`` généré, format ``run-<seed>-<12hex>``).
+    """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
@@ -207,6 +233,7 @@ class WorldSnapshot(BaseModel):
     version: str
     run_id: str
     engine_version: str | None = None
+    seed: int | None = Field(default=None, ge=0)
     tick: int = Field(ge=0)
     simulated_time_minutes: int = Field(ge=0)
     alive_count: int = Field(ge=0)

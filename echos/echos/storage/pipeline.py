@@ -14,13 +14,24 @@ sont donc **calculées à l'ingestion, jamais recalculées à la lecture**
 écrit métriques/contextes 1 tick sur N (déterminisme : indiciel, N stable).
 Les données d'ingestion (``tick_summaries``, ``events_log``,
 ``decision_traces``, Parquet agents) restent écrites **à chaque tick**.
+Le contexte ``agents`` suit sa propre cadence ``context_every`` (défaut 20,
+environnement ``ECHOS_CONTEXT_EVERY`` — axe C2) : il est de loin le plus lourd
+(~208 Ko/tick) et n'est utile en lecture que « le plus récent disponible ».
 ``parquet_flush_every`` borne la mémoire de la série Parquet : écriture
 cumulée toutes les N ticks (au lieu de réécrire le fichier entier à chaque
 tick), vidée automatiquement en fin de flux.
+
+**Changement de run en flux** (A2) : un ``reset`` SYNE continue le flux avec
+un nouveau ``run_id`` dans la même connexion. Le pipeline détecte le nouveau
+``run_id``, enregistre le run **avant** son premier tick (sinon FK error et
+ticks perdus), réinitialise les fenêtres glissantes et bâtit le rapport de
+calibration du run terminé — chaque run a donc son rapport, pas seulement le
+dernier.
 """
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
@@ -64,10 +75,39 @@ conflicts) : sans plafond, 100 ticks très denses transporteraient autant
 d'événements que 1000 ticks tranquilles.
 """
 
+DEFAULT_CONTEXT_EVERY = 20
+"""Cadence par défaut du contexte ``agents`` (axe C2, campagne-runs).
+
+Le contexte ``agents`` coûte ~208 Ko/tick (croyances, relations) : à chaque
+tick, une campagne de 3129 ticks produisait 649 Mo. La cadence ``context_every``
+borne cette écriture : ``agents`` n'est persisté que 1 tick sur N (défaut 20,
+environnement ``ECHOS_CONTEXT_EVERY``, 1 = comportement historique) plus le
+dernier tick du flux. ``groups``/``phenomena``/``profiling`` suivent la cadence
+``analysis_every`` (inchangée) — la fraîcheur du contexte servi est documentée
+dans CAUSAL_ANALYSIS.md §4 (≤ ``context_every`` ticks).
+"""
+
+
+def _context_every() -> int:
+    """Résout ``ECHOS_CONTEXT_EVERY`` (défaut 20, minimum 1)."""
+    raw = os.environ.get("ECHOS_CONTEXT_EVERY")
+    if not raw:
+        return DEFAULT_CONTEXT_EVERY
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_CONTEXT_EVERY
+    return max(1, value)
+
 
 @dataclass(frozen=True)
 class ConsumeResult:
-    """Compteurs d'écriture du pipeline (test : idempotence et couverture)."""
+    """Compteurs d'écriture du pipeline (test : idempotence et couverture).
+
+    ``gaps_detected`` (D3) compte les discontinuités de ticks détectées entre
+    le dernier tick écrit d'un run et le tick reçu ensuite : elles signalent
+    les pertes à la reconnexion ou au reset, sans jamais les masquer.
+    """
 
     ticks_written: int
     events_written: int
@@ -75,6 +115,7 @@ class ConsumeResult:
     metrics_written: int = 0
     contexts_written: int = 0
     decision_traces_written: int = 0
+    gaps_detected: int = 0
 
 
 def _segments(
@@ -97,7 +138,18 @@ def _segments(
 
 
 def _seed_of(run_id: str) -> str:
-    return run_id[4:] if run_id.startswith("run-") else ""
+    """Dérive le seed du ``run_id`` (repli des flux V0.8/V0.2.0).
+
+    Formats reconnus : ``run-<seed>`` (monde préparé, contrats ≤ V0.2.0) et
+    ``run-<seed>-<12hex>`` (format canonique des runs pilotés, contrat V0.2.1).
+    Chaîne vide si ni le snapshot ni le ``run_id`` ne portent le seed — jamais
+    une erreur fatale (observe-only), signalée par un avertissement d'ingestion.
+    """
+    if not run_id.startswith("run-"):
+        return ""
+    body = run_id[4:]
+    seed = body.split("-", 1)[0]
+    return seed if seed.isdigit() else ""
 
 
 def _snapshot_for_engines(
@@ -288,8 +340,9 @@ def consume(
 ) -> ConsumeResult:
     """Consomme le flux :5180 et peuple le stockage d'analyse.
 
-    Métadonnées (``run_id``, ``version``, ``seed``) dérivées du premier
-    snapshot ; l'écriture Parquet est optionnelle via ``parquet_path``.
+    Métadonnées (``run_id``, ``version``, ``seed``) portées par le snapshot
+    (seed transporté, contrat V0.2.1) avec repli de dérivation depuis le
+    ``run_id`` ; l'écriture Parquet est optionnelle via ``parquet_path``.
     ``analysis_every`` (scheduler, défaut 1) planifie les 8 moteurs et les
     contextes sur 1 tick sur N — le reste du pipeline (résumés, événements,
     traces de décision, série Parquet) reste écrit à chaque tick. Depuis le
@@ -301,27 +354,91 @@ def consume(
         raise ValueError("analysis_every doit être >= 1")
     if parquet_flush_every is not None and parquet_flush_every < 1:
         raise ValueError("parquet_flush_every doit être >= 1")
+    context_every = _context_every()
     ticks_written = 0
     events_written = 0
     agents_written = 0
     metrics_written = 0
     contexts_written = 0
     decision_traces_written = 0
+    gaps_detected = 0
     run_known = False
     run_id: str | None = None
+    last_tick_seen: int | None = None
     pending_agents: list[AgentSeriesRow] = []
     context = _RollingContext()
+    last_segment: TickSegment | None = None
+    last_agents_written = False
+
+    def _seed_from(snapshot) -> str:
+        """Seed du snapshot (transporté, contrat V0.2.1) ou repli ``_seed_of``.
+
+        Ni l'un ni l'autre : chaîne vide **et** avertissement d'ingestion —
+        jamais une erreur fatale (ECHOS reste observe-only).
+        """
+        if snapshot.seed is not None:
+            return str(snapshot.seed)
+        seed = _seed_of(snapshot.run_id)
+        if not seed and logger is not None:
+            logger.info(
+                f"ingestion: seed absent du snapshot et du run_id "
+                f"{snapshot.run_id!r} — comparabilité inter-runs limitée"
+            )
+        return seed
+
+    def _close_run(finished_run_id: str) -> None:
+        """Bâtit et sauvegarde le rapport de calibration d'un run terminé (A2).
+
+        Appelé à chaque changement de run_id **et** en fin de flux : un run
+        interrompu par un reset SYNE doit lui aussi produire son rapport, là où
+        l'ancien bloc final ne couvrait que le dernier run_id vu (le rapport de
+        calibration des runs 1..n-1 n'était jamais écrit).
+        """
+        report = build_calibration_report(
+            finished_run_id,
+            store.tick_summaries(finished_run_id),
+            store.events(finished_run_id),
+            store.metrics_all(finished_run_id),
+        )
+        if report is not None:
+            store.save_calibration_report(finished_run_id, report)
 
     for _index, segment in _segments(client, sample_every):
         snapshot = segment.snapshot
-        if not run_known:
+
+        # A2 — changement de run_id détecté en flux (reset SYNE dans la même
+        # connexion) : le nouveau run est enregistré **avant** son premier tick
+        # (sinon append_tick_bundle lève FOREIGN KEY constraint failed et les
+        # ticks du run sont perdus jusqu'à la reconnexion), les fenêtres
+        # glissantes sont réinitialisées (sinon elles contaminent les métriques
+        # du nouveau run) et le rapport de calibration du run terminé est écrit.
+        if not run_known or snapshot.run_id != run_id:
+            if run_known and run_id is not None:
+                _close_run(run_id)
             run_id = snapshot.run_id
             store.record_run(
                 snapshot.run_id,
                 snapshot.version,
-                _seed_of(snapshot.run_id),
+                _seed_from(snapshot),
             )
             run_known = True
+            context = _RollingContext()
+            if parquet_path is not None and pending_agents:
+                _flush_agent_series(parquet_path, pending_agents)
+                pending_agents = []
+
+        # D3 — trou de ticks détecté (reconnexion, reset inter-run, échantillonnage
+        # amont) : le dernier tick vu du flux ne précède pas le tick reçu de 1.
+        # Le rattrapage (replay SYNE) reste hors périmètre V0.1, mais la perte
+        # est comptée (``ConsumeResult.gaps_detected``) et journalisée quand un
+        # logger est fourni — jamais masquée.
+        if last_tick_seen is not None and segment.tick != last_tick_seen + 1:
+            gaps_detected += 1
+            if logger is not None:
+                logger.info(
+                    f"ingestion: trou de ticks détecté sur {snapshot.run_id} : "
+                    f"attendu {last_tick_seen + 1}, reçu {segment.tick}"
+                )
 
         tick_record = TickRecord.from_segment(segment)
 
@@ -361,16 +478,32 @@ def consume(
             measured = provenance(engine_snapshot)
             profile = markers.summary()
             emergence = metrics.get("EmergenceIndicators") or {}
-            contexts = {
-                "phenomena": {
-                    "detected": emergence.get("DetectedPhenomena", []),
-                    "disclaimer": emergence.get("Disclaimer", ""),
-                },
-                "agents": engine_snapshot.get("agents") or [],
-                "groups": _groups_of(engine_snapshot.get("agents") or []),
-                "profiling": profile,
-            }
-            contexts_written += 4
+            # C2 — cadence du contexte ``agents`` : ~208 Ko/tick en font de loin
+            # le contexte le plus lourd. Il n'est persisté que 1 tick sur
+            # ``context_every`` (plus le dernier tick du flux), là où les autres
+            # contextes suivent ``analysis_every``. ``context_every=1`` (env
+            # ``ECHOS_CONTEXT_EVERY=1``) rétablit le comportement historique.
+            at_context_cadence = _index % context_every == 0
+            last_agents_written = at_context_cadence
+            if at_context_cadence:
+                contexts = {
+                    "phenomena": {
+                        "detected": emergence.get("DetectedPhenomena", []),
+                        "disclaimer": emergence.get("Disclaimer", ""),
+                    },
+                    "agents": engine_snapshot.get("agents") or [],
+                    "groups": _groups_of(engine_snapshot.get("agents") or []),
+                    "profiling": profile,
+                }
+            else:
+                contexts = {
+                    "phenomena": {
+                        "detected": emergence.get("DetectedPhenomena", []),
+                        "disclaimer": emergence.get("Disclaimer", ""),
+                    },
+                    "profiling": profile,
+                }
+            contexts_written += len(contexts)
 
             if logger is not None:
                 logger.structured(snapshot.run_id, segment.tick, metrics)
@@ -396,6 +529,8 @@ def consume(
             tick_record, metrics, contexts, events, traces, measured
         )
         ticks_written += 1
+        last_tick_seen = segment.tick
+        last_segment = segment
 
         if parquet_path is not None:
             rows = agent_rows(segment)
@@ -414,16 +549,21 @@ def consume(
     if parquet_path is not None and pending_agents:
         _flush_agent_series(parquet_path, pending_agents)
 
-    if ticks_written:
-        assert run_id is not None
-        report = build_calibration_report(
+    # C2 — le dernier tick du flux porte **toujours** son contexte ``agents`` :
+    # les lectures « le plus récent disponible » (``/beliefs``,
+    # ``/relationships``, analyse causale) ne reculent jamais d'une cadence
+    # quand le flux s'arrête sur un tick hors cadence.
+    if run_known and run_id is not None and not last_agents_written and last_segment is not None:
+        store.append_tick_context(
             run_id,
-            store.tick_summaries(run_id),
-            store.events(run_id),
-            store.metrics_all(run_id),
+            last_segment.tick,
+            "agents",
+            _agents_of(last_segment.snapshot),
         )
-        if report is not None:
-            store.save_calibration_report(run_id, report)
+        contexts_written += 1
+
+    if ticks_written and run_id is not None:
+        _close_run(run_id)
 
     return ConsumeResult(
         ticks_written,
@@ -432,6 +572,7 @@ def consume(
         metrics_written,
         contexts_written,
         decision_traces_written,
+        gaps_detected,
     )
 
 

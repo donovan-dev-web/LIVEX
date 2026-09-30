@@ -13,7 +13,7 @@ from websockets.exceptions import WebSocketException
 from echos.ingestion import WsClient
 from echos.ingestion.models import InvalidMessageError
 from echos.ingestion.stream import TickAlignmentError
-from echos.storage import AnalyticsStore, consume
+from echos.storage import DEFAULT_CONTEXT_EVERY, AnalyticsStore, consume
 
 _RECONNECT_BASE_DELAY = 0.5
 """Premier délai de reconnexion (s). 0,1 s saturait la console de tentatives."""
@@ -66,7 +66,7 @@ def read_config(environ: dict[str, str] | None = None) -> dict:
     documentées pour l'utilisateur, ce qui rend la correspondance
     environnement ↔ configuration directe. Retourne ``database``, ``ws_url``,
     ``parquet_path``, ``analysis_every``, ``parquet_flush_every``,
-    ``started_file`` et ``stop_after_disconnect``.
+    ``context_every``, ``started_file`` et ``stop_after_disconnect``.
     """
     if environ is not None:
         previous = dict(os.environ)
@@ -84,6 +84,10 @@ def read_config(environ: dict[str, str] | None = None) -> dict:
         "ws_url": os.environ.get("SYNE_OBSERVABILITY_URL", "ws://127.0.0.1:5180/"),
         "parquet_path": os.environ.get("ECHOS_PARQUET_PATH") or None,
         "analysis_every": _env_int("ECHOS_ANALYSIS_EVERY", 1),
+        # ``context_every`` (C2) : la cadence du contexte ``agents`` est validée
+        # ici comme les autres (rejet bruyant avant connexion), puis relue par
+        # le pipeline au moment de consommer.
+        "context_every": _env_int("ECHOS_CONTEXT_EVERY", DEFAULT_CONTEXT_EVERY),
         "parquet_flush_every": _env_int("ECHOS_PARQUET_FLUSH_EVERY", None),
         "started_file": os.environ.get("LIVEX_WS_STARTED_FILE"),
         "stop_after_disconnect": os.environ.get("LIVEX_INGEST_ONCE") == "1",
@@ -129,14 +133,25 @@ def main() -> int:
                 if stop_after_disconnect:
                     print(
                         "Ingestion terminée : "
-                        f"{result.ticks_written} ticks, {result.events_written} événements.",
+                        f"{result.ticks_written} ticks, {result.events_written} événements"
+                        + (
+                            f", {result.gaps_detected} trou(s) de ticks détecté(s)"
+                            if result.gaps_detected
+                            else ""
+                        )
+                        + ".",
                         flush=True,
                     )
                     break
                 print(
                     "Ingestion interrompue : "
-                    f"{result.ticks_written} ticks, {result.events_written} événements; "
-                    "reconnexion...",
+                    f"{result.ticks_written} ticks, {result.events_written} événements"
+                    + (
+                        f", {result.gaps_detected} trou(s) de ticks détecté(s)"
+                        if result.gaps_detected
+                        else ""
+                    )
+                    + "; reconnexion...",
                     flush=True,
                 )
             except (
