@@ -7,8 +7,12 @@ namespace Simulation.Core.Observability;
 /// </summary>
 public static class ObservabilityContract
 {
-    /// <summary>Version du contrat d'observabilité (API_CONTRACTS.md §2).</summary>
-    public const string Version = "0.2.0";
+    /// <summary>
+    /// Version du contrat d'observabilité (API_CONTRACTS.md §2). 0.2.0 → 0.2.1 :
+    /// champ snapshot ``seed`` (additif, rétro-compatible) — le seed voyage dans
+    /// le snapshot au lieu d'être dérivé du ``run_id`` par ECHOS.
+    /// </summary>
+    public const string Version = "0.3.0";
 
     /// <summary>
     /// Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les
@@ -50,8 +54,28 @@ public static class ObservabilityContract
     /// IDs de naissance, persistance des territoires) sont mesurés neutres sur ce
     /// scénario. Champ snapshot territories[] (additif) et SchemaVersion 3 → 4.
     /// Émise dans chaque snapshot.
+    /// jalon calibration D1 → 0.13.0 : **altération volontaire de trajectoire** —
+    /// rééquilibrage de l'arbitrage utilitaire (bénéfice Eat/Drink déplafonné :
+    /// min(need, 100) × 0.6, monotone jusqu'à 60) et bilan énergétique compensé
+    /// (catalog eat.energyRecovery 2.0, drink 1.0) portés par le profil de
+    /// référence (SimulationProfiles.Reference + configs/simulation/reference.json).
+    /// Sans cela : mort lente (énergie moyenne 69 → 49 entre t800 et t1200,
+    /// 2 extinctions sur 3) et Eat/Drink écrasés par Socialize/Explore faim
+    /// saturée (utilité moyenne 13,9 vs 83,7). ADR de calibration en référence
+    /// (docs/docs-syne/adr/), checksums dorés et fixtures analysis_golden.json
+    /// re-calés dans le même commit (procédure DETERMINISM.md §7).
+    /// jalon ADR cognitifs → 0.14.0 : implémentation des ADR acceptés du 30/09/2026,
+    /// tous portés par des drapeaux désactivés par défaut (trajectoire du scénario
+    /// de référence et checksums dorés inchangés — pin contractuel conservé) :
+    /// D7 primitives d'actions (Take/Give/Trade/Attack/Defend, ajoutés EN QUEUE de
+    /// DesireKind), D8 inventaire (capacité poids par entité), D3 bibliothèque de
+    /// plans (candidats Take/Trade par objectif de besoin), D5 engagements
+    /// communicationnels (Commitment + TrustLevel) et D2 contrôle de saillance
+    /// (étape 3bis, reconsidération déclenchée + filet de sécurité). Contrat
+    /// d'observabilité 0.2.1 → 0.3.0 (champs snapshot additifs émis sous drapeaux,
+    /// rétro-compatibles à la lecture).
     /// </summary>
-    public const string EngineVersion = "0.12.0";
+    public const string EngineVersion = "0.14.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

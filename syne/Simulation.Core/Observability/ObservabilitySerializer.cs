@@ -28,6 +28,9 @@ public static class ObservabilitySerializer
             ["version"] = snapshot.Version,
             ["engineVersion"] = ObservabilityContract.EngineVersion,
             ["runId"] = snapshot.RunId,
+            // Champ additif V0.2 : le seed voyage dans le snapshot, ECHOS n'a plus à
+            // le dériver du runId (les runs pilotés portaient seed: "" côté ECHOS).
+            ["seed"] = (ulong)snapshot.Seed,
             ["tick"] = (ulong)snapshot.Tick,
             ["simulatedTimeMinutes"] = snapshot.SimulatedTimeMinutes,
             ["aliveCount"] = snapshot.AliveCount,
@@ -323,7 +326,7 @@ public static class ObservabilitySerializer
             });
         }
 
-        return new System.Text.Json.Nodes.JsonObject
+        var json = new System.Text.Json.Nodes.JsonObject
         {
             ["id"] = agent.Id,
             ["species"] = agent.Species,
@@ -340,5 +343,39 @@ public static class ObservabilitySerializer
             ["trust"] = trust,
             ["memoryCount"] = agent.MemoryCount,
         };
+
+        // Champs additifs du contrat 0.3.0 (D7/D8/D5) : émis seulement quand les
+        // drapeaux correspondants sont actifs — sortie bit-à-bit identique sinon.
+        if (agent.Inventory.Count > 0)
+        {
+            var inventory = new System.Text.Json.Nodes.JsonObject();
+            foreach (System.Collections.Generic.KeyValuePair<string, double> entry in
+                     agent.Inventory.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+            {
+                inventory[entry.Key] = entry.Value;
+            }
+
+            json["inventory"] = inventory;
+        }
+
+        if (agent.Commitments.Count > 0)
+        {
+            var commitments = new JsonArray();
+            foreach (CommitmentObservation commitment in agent.Commitments)
+            {
+                commitments.Add(new System.Text.Json.Nodes.JsonObject
+                {
+                    ["toEntityId"] = commitment.ToEntityId,
+                    ["requestType"] = commitment.RequestType,
+                    ["status"] = commitment.Status,
+                    ["createdTick"] = commitment.CreatedTick,
+                    ["expiryTick"] = commitment.ExpiryTick,
+                });
+            }
+
+            json["commitments"] = commitments;
+        }
+
+        return json;
     }
 }
