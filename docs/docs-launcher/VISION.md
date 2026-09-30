@@ -27,7 +27,7 @@ et PRISM. Le Launcher ne fait que les coordonner.
 | Orchestration | **Launcher** | Cycle de vie, modes, campagnes, supervision, archivage |
 
 Le Launcher est un composant **de poids égal** à SYNE, ECHOS et PRISM dans
-l'architecture de LIVEX, et non une simple utilitaire. Il possède son modèle de
+l'architecture de LIVEX, et non un simple utilitaire. Il possède son modèle de
 données, son format d'échange et ses propres invariants.
 
 ## 2. Le problème adressé
@@ -147,7 +147,7 @@ Le Launcher couvre les capacités suivantes.
 
 ## 6. Non-objectifs
 
-Les exclusions suivants sont explicites. Toute fonction qui en découle est **hors
+Les exclusions suivantes sont explicites. Toute fonction qui en découle est **hors
 périmètre**.
 
 | Non-objectif | Raison |

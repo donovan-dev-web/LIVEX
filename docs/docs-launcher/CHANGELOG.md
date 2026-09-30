@@ -45,8 +45,18 @@ l'architecture sont spécifiés ; l'implémentation n'a pas commencé.
   découpages sont désormais explicités et la décision de réconciliation est
   signalée comme point ouvert. Le principe « aucun dégradé » est révisé : la
   maquette repose sur des dégradés de fond, qui ne portent jamais d'information.
+- **Correction et cartographie des flux** — `NETWORK.md` reçoit une cartographie
+  complète des flux en Mermaid (contrôle, données directes, restitution) et une
+  cartographie des sous-espaces d'adressage internes orchestrés par le Launcher ;
+  `DATA_FLOW.md` reçoit un schéma de bout en bout distinguant lien direct et lien
+  transitant par le Launcher. Le faux flux `SYNE → Launcher` de la séquence de run
+  est corrigé. La taxonomie des modes de `NETWORK.md` §9 est alignée sur
+  `COMPONENTS.md` §8, et « analyse hors ligne » y est requalifiée en absence de
+  moteur. La Gateway est marquée « forme de sortie, non planifiée » dans
+  `OBSERVABILITY.md`, `INTEGRATION_CONTRACT.md` et `TESTING.md`. Références de
+  sections erronées et coquilles corrigées dans l'ensemble du corpus.
 - **Réécriture complète de la documentation du Launcher** — le monolithe
-  le monolithe `LIVEX_Launcher.md` et les six documents annexes de l'ancien
+  `LIVEX_Launcher.md` et les six documents annexes de l'ancien
   répertoire de brouillon sont remplacés par le présent jeu de documents.
 - **Suppression des documents de comparaison de version** — l'historique de révision
   est désormais porté par ce journal, sans appareil de comparaison dans les

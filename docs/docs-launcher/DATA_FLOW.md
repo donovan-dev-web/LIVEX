@@ -3,7 +3,7 @@
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
 **Dernière mise à jour** : 30 septembre 2026
-**Dépend de** : `COMPONENTS.md`, `PACKAGE_FORMAT.md`, `EXPERIMENTS.md`, `INTEGRATION_CONTRACT.md`
+**Dépend de** : `COMPONENTS.md`, `NETWORK.md`, `PACKAGE_FORMAT.md`, `EXPERIMENTS.md`, `INTEGRATION_CONTRACT.md`
 **Source Monographie** : —
 
 ---
@@ -14,7 +14,7 @@ Ce document décrit **où vivent les données** et **comment elles circulent** :
 configuration au paquet archivé, en passant par les données de run, les métriques et
 le rapport.
 
-Il répond à trois points distincts, souvent confondues :
+Il répond à trois points distincts, souvent confondus :
 
 1. **Où** sont stockées les données, et laquelle des deux hiérarchies fait foi.
 2. **Quand** chaque producteur écrit, et dans quel périmètre.
@@ -37,7 +37,7 @@ Il existe une règle unique, à retenir :
 | `Logs/` | Journaux par composant | Oui |
 | `State/` | État de session du Launcher | Oui |
 
-`Data/` ne contient donc **que** du contenu dont la perte n'a aucune perte
+`Data/` ne contient donc **que** du contenu dont la perte n'a aucune conséquence
 scientifique :
 
 ```text
@@ -196,7 +196,77 @@ mise à jour rendrait une campagne de 100 runs irrécupérable.
                                    .livexp (archivage)
 ```
 
-### 6.1 Ce qui traverse quel canal
+### 6.1 Cartographie des flux
+
+La cartographie ci-dessus est exacte mais ne dit pas **une chose essentielle** :
+la nature de chaque lien. Un lien qui traverse le Launcher et un lien direct ne
+sont pas équivalents — le premier est sous le contrôle de l'orchestrateur, le
+second ne l'est pas.
+
+La version ci-dessous fait apparaître cette distinction.
+
+```mermaid
+flowchart TB
+    classDef lancent fill:#1f3a5f,stroke:#0d1f33,stroke-width:2px,color:#fff
+    classDef moteur fill:#2d6a4f,stroke:#1b4332,stroke-width:2px,color:#fff
+    classDef modes fill:#7a4e00,stroke:#4a2f00,stroke-width:2px,color:#fff
+    classDef disque fill:#3d3d46,stroke:#1f1f24,stroke-width:2px,color:#fff
+
+    CFG["<b>Config/*.json</b><br/>profil, campagne, réseau"]:::disque
+
+    subgraph WS["<b>workspace/</b> — une seule hiérarchie fait foi"]
+        direction TB
+        EXP["<b>Experiments/EXP-2026-001/</b><br/>experiment.json · experiment.log"]
+        RUN["<b>runs/RUN-0042/</b><br/>run.json · config.resolved.json<br/>data/ · metrics.jsonl · logs/ · integrity.json"]
+        ANA["<b>analysis/</b><br/>individual/ · aggregate/<br/>emergence_report.md"]
+        TMP["<b>Data/ · Logs/ · State/</b><br/>régénérable uniquement"]
+    end
+
+    L["<b>Launcher</b><br/>orchestrateur"]:::lancent
+    S["<b>SYNE</b><br/>moteur<br/>:5180 · :5181"]:::moteur
+    E["<b>ECHOS</b><br/>analyse<br/>:5000"]:::modes
+    P["<b>PRISM</b><br/>immersion<br/>verrouillé"]:::modes
+
+    %% --- amont : tout passe par le Launcher ---
+    CFG -- "résolution + validation" --> EXP
+    L -- "écrit config.resolved.json<br/>lance le run, applique la seed" --> S
+    L -- "copie config.resolved.json" --> RUN
+
+    %% --- donnees temps reel : DIRECT, le Launcher n'est pas sur le chemin ---
+    S -- "snapshot + event<br/><b>DIRECT · :5180 — sans passer par le Launcher</b>" --> E
+    S -. "snapshot + event<br/><b>DIRECT · :5180</b>" .-> P
+
+    %% --- sorties sur disque ---
+    S -- "data/" --> RUN
+    L -- "metrics.jsonl · run.json · integrity.json" --> RUN
+    L -- "demande AnalyzeRun → AnalyzeExperiment → GenerateReport" --> E
+    E -- "analysis/individual/ · aggregate/<br/>emergence_report.md" --> ANA
+    L -- ".livexp (archivage) · Reports/" --> WS
+
+    EXP -. "journal de transitions d'état" .- RUN
+    RUN -. "remplissage" .- ANA
+    L -. "écrit" .-> TMP
+
+    linkStyle 1,2,6,7,9,12 stroke:#2b6cb0,stroke-width:2px
+    linkStyle 3,4 stroke:#c1121f,stroke-width:3px
+```
+
+**Ce que le schéma établit :**
+
+| Lien | Passe par le Launcher ? | Conséquence |
+| :-- | :-- | :-- |
+| `CFG → EXP` | Non | La résolution de configuration est une lecture, pas un transit. |
+| `L → S` | **Oui** | Le Launcher est seul à pouvoir lancer et arrêter le moteur. |
+| `S → E` (rouge) | **Non** | La télémétrie d'ECHOS survit à un arrêt du Launcher. |
+| `S → P` (rouge) | **Non** | L'immersion survit à un arrêt du Launcher. |
+| `S → data/` | Non | SYNE écrit ses propres sorties ; le Launcher ne les relaie pas. |
+| `E → analysis/` | Non | ECHOS écrit ses propres résultats dans le dossier du run. |
+| `L → WS` | **Oui** | Le Launcher est le seul écrivain de `run.json`, `metrics.jsonl` et du paquet. |
+
+Le trait commun : **le Launcher est sur le chemin de tout ce qu'il doit
+contrôler ou archiver, et sur le chemin d'aucun flux de données temps réel.**
+
+### 6.2 Ce qui traverse quel canal
 
 | Émetteur | Destinataire | Canal | Volume | Fréquence |
 | :-- | :-- | :-- | :-- | :-- |
@@ -211,7 +281,28 @@ mise à jour rendrait une campagne de 100 runs irrécupérable.
 Le constat central : **le flux de données est volumineux et direct**, tandis que le
 flux de contrôle est faible et centralisé. C'est le fondement de `NETWORK.md` §2.
 
-### 6.2 Le flux au fil d'un run
+> **Cohérence avec `COMMUNICATION.md`.** Les ports et chemins de ce tableau
+> correspondent au transport transverse du projet : WebSocket `:5180` pour les
+> snapshots et événements, HTTP `:5181/api/control/` pour le contrôle SYNE, HTTP
+> `:5000` pour l'API REST d'ECHOS. Voir `../../COMMUNICATION.md` §3.
+
+### 6.3 Qui écrit quoi — le principe d'un seul écrivain
+
+| Artefact | Écrivain unique | Le Launcher peut-il l'écrire aussi ? |
+| :-- | :-- | :-- |
+| `experiment.json` | Launcher | — c'est lui |
+| `config.resolved.json` | Launcher | — c'est lui |
+| `run.json` | Launcher pour le statut | Oui — enrichi par le composant pour les résultats |
+| `data/` | SYNE | **Non** — jamais |
+| `analysis/individual/`, `analysis/aggregate/` | ECHOS | **Non** — jamais |
+| `emergence_report.md` | ECHOS, sur demande du Launcher | **Non** — il le demande, il ne le rédige pas |
+| `metrics.jsonl`, `integrity.json` | Launcher | — c'est lui |
+
+Cette table est la version exécutable de la règle « un run n'écrit que dans son
+dossier » (§3) et de la frontière de `ARCHITECTURE.md` §3 : le Launcher **ne
+dégrade pas** un composant en écrivant à sa place.
+
+### 6.4 Le flux au fil d'un run
 
 1. Le Launcher alloue une instance, un port et un dossier de run, puis écrit
    `config.resolved.json`.
@@ -236,19 +327,51 @@ sequenceDiagram
     participant L as Launcher
     participant S as SYNE
     participant E as ECHOS
+    participant P as PRISM
     participant D as Disque
 
-    L->>D: écrit config.resolved.json, experiment.json
+    rect rgb(235, 242, 250)
+    note over L,D: Préparation — tout transite par le Launcher
+    L->>D: écrit experiment.json, config.resolved.json
     L->>S: charge la simulation, applique la seed, lance
-    S-->>L: instantanés et événements (WebSocket)
+    end
+
+    rect rgb(252, 242, 235)
+    note over S,P: Run — flux DIRECT, le Launcher n'est pas sur le chemin
+    S-->>E: instantanés et événements (WebSocket :5180)
+    S-->>P: instantanés et événements (WebSocket :5180)
+    E->>S: contrôle HTTP :5181
+    P->>S: contrôle HTTP :5181
+    end
+
+    rect rgb(240, 248, 240)
+    note over L,D: Mesure et clôture — par le Launcher
+    L->>S: /metrics, /health (pas de snapshot)
+    S-->>L: métriques techniques
+    L->>D: écrit metrics.jsonl
     S->>D: écrit data/
-    L->>D: écrit metrics.jsonl, run.json, integrity.json
+    L->>D: écrit run.json, integrity.json
+    end
+
+    rect rgb(248, 240, 245)
+    note over L,E: Restitution — ECHOS écrit, le Launcher archive
     L->>E: AnalyzeRun(dossier du run)
     E->>D: écrit analysis/individual/
     L->>E: AnalyzeExperiment puis GenerateReport
     E->>D: écrit analysis/aggregate/ et emergence_report.md
     L->>D: archive en .livexp
+    end
 ```
+
+> **Correction de fond.** Ce diagramme montrait auparavant une flèche
+> `SYNE → Launcher : instantanés et événements (WebSocket)`. Elle était fausse et
+> contredisait §6.4, `NETWORK.md` §2 et `ARCHITECTURE.md` §2-3, qui pose tous trois
+> que **le flux de données ne transite jamais par le Launcher**. Ce que le Launcher
+> prélève pendant un run, ce sont des **métriques techniques** via `/metrics` — un
+> échantillon faible et lent, pas le flux temps réel.
+>
+> PRISM apparaît ici en pointillés conceptuels : il est verrouillé en V0.1
+> (`adr/ADR-006`). Sa place dans la séquence est documentée, pas implémentée.
 
 ## 8. Transport des métriques
 

@@ -34,6 +34,7 @@ livex/
 ├── launcher/
 │   ├── livex-launcher            # exécutable principal
 │   ├── *.dll                    # dépendances managées
+│   ├── docs/                    # documentation embarquée — rendue par le lecteur Markdown du Launcher (USER_INTERFACE §3.2)
 │   └── components/
 │       ├── syne/
 │       │   ├── component.json   # manifeste
@@ -50,7 +51,7 @@ livex/
 ```
 
 Le Launcher est installé **sans** ses composants. Il détecte ceux qui sont présents
-et signale ceux qui manquent, conformément à `COMPONENTS.md` §11.
+et signale ceux qui manquent, conformément à `COMPONENTS.md` §12.
 
 ### 2.2 Répertoire de données utilisateur
 
@@ -236,5 +237,5 @@ présentation.
 - **Seuil d'espace disque.** Le seuil de la vérification d'environnement n'est pas
   chiffré. Il dépend du volume attendu d'une campagne.
 - **Signature des livraisons.** Les paquets de distribution ne sont pas signés. Une
-  authority de signature pour les livraisons reste à définir, comme pour les paquets
-  de données. Voir `PACKAGE_FORMAT.md` §11.
+  autorité de signature pour les livraisons reste à définir, comme pour les paquets
+  de données. Voir `PACKAGE_FORMAT.md` §8.

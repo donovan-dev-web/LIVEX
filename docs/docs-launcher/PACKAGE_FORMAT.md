@@ -266,7 +266,7 @@ l'utilisateur, et jamais sans avoir vérifié qu'aucune autre session ne l'ouvre
 
 - `EXPERIMENTS.md` — campagnes, runs, politique d'échec, reprise
 - `ARCHITECTURE.md` §6 — persistance de l'orchestration
-- `INTEGRATION_CONTRACT.md` §2.5 — contrat d'archivage
+- `INTEGRATION_CONTRACT.md` §5, §12 — arrêt propre avant scellement, et empreinte de résultat stable
 - `adr/ADR-004-format-de-paquet-livexp.md` — décision sur le format
 
 ---

@@ -86,7 +86,7 @@ Les éléments structurants :
 - Écrire en incrément dans un ZIP impose de maintenir un index central d'entrées en
   mémoire, ce qui consomme de la mémoire à proportion du paquet.
 - La normalisation des horodatages d'entrées est un travail de fond, souvent
-  neglect, et qui détermine le déterminisme.
+  négligé, et qui conditionne le déterminisme.
 - Le double nature rend la gestion des cas d'erreur plus riche : un paquet peut
   être valide, vivant, scellé ou récupérable, et chaque cas a un comportement
   distinct.
@@ -102,7 +102,7 @@ Les éléments structurants :
   dans `TESTING.md` §5.
 - **Un paquet volumineux devient un piège.** Un paquet très volumineux, non
   particionnable, est peu partageable. Mitigation : le sujet est explicitement ouvert
-  dans `PACKAGE_FORMAT.md` §11, avec la stratégie d'index comme piste.
+  dans `PACKAGE_FORMAT.md` §9, avec la stratégie d'index comme piste.
 - **Sécurité différée.** Ni chiffrement ni signature ne sont prévus, alors qu'un
   paquet destiné au partage peut contenir des données sensibles. Mitigation : le
   sujet est tracé et non oublié, et le refus d'écoute hors boucle locale évite la
