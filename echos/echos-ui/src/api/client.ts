@@ -131,9 +131,16 @@ export const client = {
   phenomena: (runId?: string) =>
     request<PhenomenaResponse>(`/api/emergent-phenomena${withRunId(runId)}`),
 
-  compare: (a: string, b: string, format: 'json' | 'csv' = 'json') =>
+  /**
+   * Comparaison en mode ``light`` par défaut (C3) : le seul résumé suffit à
+   * l'affichage ; l'empreinte bit-à-bit (séries + événements + contextes +
+   * traces des deux runs) reste disponible hors ligne via ``light: false``.
+   */
+  compare: (a: string, b: string, format: 'json' | 'csv' = 'json', light = true) =>
     request<CompareResponse | CompareCsvResponse>(
-      `/api/compare?run_a=${encodeURIComponent(a)}&run_b=${encodeURIComponent(b)}&format=${format}`,
+      `/api/compare?run_a=${encodeURIComponent(a)}&run_b=${encodeURIComponent(b)}` +
+        `&format=${format}` +
+        (light && format === 'json' ? '&light=1' : ''),
     ),
 
   /** Export comparatif CSV, converti en fichier téléchargeable. */

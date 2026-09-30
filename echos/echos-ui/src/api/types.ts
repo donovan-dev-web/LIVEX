@@ -5,6 +5,10 @@ export interface RunMeta {
   ticks_count: number
   first_tick: number
   last_tick: number
+  /** Résultat de population (A3) : extinct | surviving | unknown. */
+  outcome?: 'extinct' | 'surviving' | 'unknown'
+  /** Premier tick où alive_count = 0 (null si l'écosystème a survécu). */
+  extinction_tick?: number | null
 }
 
 export interface RunsResponse {
@@ -230,12 +234,15 @@ export interface CompareResponse {
   run_b: CompareRunMeta
   same_seed: boolean
   same_version: boolean
-  bit_identical: boolean
-  is_reproducible: boolean
+  /** ``null`` en mode ``light=1`` : le verdict exige l'empreinte bit-à-bit. */
+  bit_identical: boolean | null
+  /** ``null`` en mode ``light=1`` : le verdict exige l'empreinte bit-à-bit. */
+  is_reproducible: boolean | null
   reproducibility_score: number
   cognitive_diff: number
   social_diff: number
-  series: CompareSeriesRow[]
+  /** Absent en mode ``light=1`` (résumé seul). */
+  series?: CompareSeriesRow[]
   format: string
 }
 
