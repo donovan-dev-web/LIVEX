@@ -141,7 +141,11 @@ class Simulation {
     this.options.maxTicks = Number(maxTicks);
     const replay = this.options.replay.file ? loadReplay(this.options.replay.file) : null;
 
-    this.runId = `run-${this.options.seed}`;
+    // Format canonique run-<seed>-<12hex> (parité SYNE, API_CONTRACTS.md §3) :
+    // le seed reste lisible dans l'identifiant et le suffixe garantit l'unicité
+    // entre deux runs de même seed (les runs successifs se partageaient le même
+    // run_id côté stockage ECHOS).
+    this.runId = `run-${this.options.seed}-${randomHex12()}`;
     this.tick = 0;
     this.state = 'running';
     this.agents = cloneAgents(this.initialAgents);
@@ -409,6 +413,7 @@ class Simulation {
     return this.snapshotBuilder.build({
       config: this.options,
       runId: this.runId,
+      seed: this.options.seed,
       tick: this.tick,
       agents: this.agents,
       stocks: this.resources,
@@ -438,6 +443,15 @@ class Simulation {
       worldReadyAcknowledged: this.worldReadyAcknowledged
     };
   }
+}
+
+function randomHex12() {
+  const digits = '0123456789abcdef';
+  let out = '';
+  for (let i = 0; i < 12; i++) {
+    out += digits[Math.floor(Math.random() * 16)];
+  }
+  return out;
 }
 
 function loadReplay(file) {
