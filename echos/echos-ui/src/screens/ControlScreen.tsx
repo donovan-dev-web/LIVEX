@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { client, controlClient } from '../api/client'
 import { triggerDownload } from '../api/download'
-import { useLiveStore, useRuns, useSelectedRunId } from '../store'
+import { useRunsRefresh } from '../hooks/useData'
+import { useLiveStore, useRuns, useRunsStore, useSelectedRunId } from '../store'
 
 export function ControlScreen() {
   const runs = useRuns()
@@ -11,6 +12,9 @@ export function ControlScreen() {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [pending, setPending] = useState<string | null>(null)
   const [seed, setSeed] = useState('12345')
+
+  const refreshRuns = useRunsRefresh()
+  const selectRun = useRunsStore((s) => s.selectRun)
 
   const send = async (action: 'start' | 'pause' | 'resume' | 'stop' | 'reset') => {
     setPending(action)
@@ -22,11 +26,42 @@ export function ControlScreen() {
       if ((action === 'start' || action === 'reset') && !Number.isSafeInteger(parsedSeed)) {
         throw new Error('La seed doit être un entier valide.')
       }
-      await controlClient.command(
+      const response = (await controlClient.command(
         action,
         action === 'start' || action === 'reset' ? { seed: parsedSeed } : {},
-      )
+      ).then((r) => r.json())) as { runId?: string }
       setFeedback(`Commande « ${action} » relayée à SYNE (:5181).`)
+      // Un run d'analyse n'apparaît dans la base qu'après le premier tick
+      // ingéré : le Start répond avant, donc on recharge la liste et on attend
+      // (borné) que le run démarré soit visible avant de le sélectionner —
+      // sinon tous les écrans d'analyse restaient sur le run précédent, le
+      // sélecteur ne listant jamais le nouveau run sans rechargement manuel.
+      if (action === 'start' || action === 'reset') {
+        const started = response.runId
+        // Repli si le run démarré n'apparaît jamais (ingestion arrêtée) : le run
+        // le plus avancé, jamais « le dernier de la liste » (ordre alphabétique
+        // de l'API ≠ plus récent).
+        const mostAdvanced = (runs: { run_id: string; last_tick: number }[]) =>
+          runs.length > 0 ? runs.reduce((a, b) => (b.last_tick > a.last_tick ? b : a)) : undefined
+        let selected = false
+        for (let attempt = 0; attempt < 10 && !selected; attempt++) {
+          const runsResponse = await refreshRuns()
+          const known = started
+            ? runsResponse?.runs.find((r) => r.run_id === started)
+            : undefined
+          if (known) {
+            selectRun(known.run_id)
+            selected = true
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 500))
+          }
+        }
+        if (!selected) {
+          const runsResponse = await refreshRuns()
+          const fallback = runsResponse ? mostAdvanced(runsResponse.runs) : undefined
+          if (fallback) selectRun(fallback.run_id)
+        }
+      }
     } catch (err) {
       setFeedback(err instanceof Error ? err.message : String(err))
     } finally {
@@ -92,6 +127,7 @@ export function ControlScreen() {
                 <th>version</th>
                 <th>seed</th>
                 <th>ticks</th>
+                <th>issue</th>
                 <th>export</th>
               </tr>
             </thead>
@@ -103,6 +139,9 @@ export function ControlScreen() {
                   <td className="mono">{r.seed}</td>
                   <td className="mono">
                     {r.first_tick} … {r.last_tick} ({r.ticks_count})
+                  </td>
+                  <td>
+                    <OutcomeBadge outcome={r.outcome} extinctionTick={r.extinction_tick} />
                   </td>
                   <td>
                     <ExportButton runId={r.run_id} format="json" />
@@ -119,6 +158,32 @@ export function ControlScreen() {
       </div>
     </div>
   )
+}
+
+/**
+ * Badge du résultat de population (A3/D4) : « éteint à tN » sur la liste des
+ * runs, sans recalcul côté interface. ``unknown`` (run sans tick) s'affiche
+ * neutre ; l'absence du champ (API antérieure) vaut ``surviving`` inconnu →
+ * aussi neutre.
+ */
+function OutcomeBadge({
+  outcome,
+  extinctionTick,
+}: {
+  outcome?: 'extinct' | 'surviving' | 'unknown'
+  extinctionTick?: number | null
+}) {
+  if (outcome === 'extinct') {
+    return (
+      <span className="badge badge--danger" title={`Extinction au tick ${extinctionTick ?? '—'}`}>
+        éteint{extinctionTick != null ? ` à t${extinctionTick}` : ''}
+      </span>
+    )
+  }
+  if (outcome === 'surviving') {
+    return <span className="badge" title="Population vivante au dernier tick observé">vivant</span>
+  }
+  return <span className="tag">—</span>
 }
 
 /**

@@ -54,7 +54,11 @@ export const useRunsStore = create<RunsState>((set) => ({
         state.selectedRunId && runs.some((r) => r.run_id === state.selectedRunId)
           ? state.selectedRunId
           : runs.length > 0
-            ? runs[runs.length - 1].run_id
+            ? // Repli (première liste reçue) : le run le plus avancé, pas le
+              // dernier de la liste — l'ordre de l'API n'est ni chronologique ni
+              // alphabétiquement significatif, et « dernier id » pouvait
+              // sélectionner un vieux run pendant qu'un nouveau s'ingérait.
+              runs.reduce((a, b) => (b.last_tick > a.last_tick ? b : a)).run_id
             : null,
     })),
   selectRun: (runId) => set({ selectedRunId: runId }),
