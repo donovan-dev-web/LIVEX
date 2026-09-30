@@ -14,7 +14,7 @@ Ce document spécifie **comment le Launcher doit être validé**. Il décrit les
 de test, la matrice de couverture et les propriétés qui doivent être vérifiées.
 
 Les tests du Launcher sont d'un type particulier : la majorité des composants
-existent déjà et ne sont pas son objet. LeLauncher est donc testé **par
+existent déjà et ne sont pas son objet. Le Launcher est donc testé **par
 observation de composants simulés**, et par ses **propriétés structurelles**.
 
 ## 2. Niveaux de test
@@ -210,7 +210,7 @@ Ces scénarios ne se déduisent pas du code : ils consistent à **casser** la pi
 | Jeton invalide ou absent | Commande de contrôle refusée |
 | Origine non autorisée sur le WebSocket | Connexion refusée |
 | Nœud distant perdu pendant un run | Nœud Injoignable, run traité par la politique |
-| Gateway arrêtée en cours de simulation | Simulation poursuivie, visualisation interrompue |
+| Gateway arrêtée en cours de simulation *(forme de sortie, non planifiée — test conditionné à une future répartition, sans objet en V0.1)* | Simulation poursuivie, visualisation interrompue |
 | Campagne longue, plusieurs heures | Aucune fuite mémoire du tampon de métriques |
 
 ## 14. Tests de reproductibilité
@@ -235,7 +235,7 @@ désinstallation.
 - `ARCHITECTURE.md` §5 — découpage des projets testables
 - `PACKAGE_FORMAT.md` — format, propriétés, cycle de vie
 - `COMPONENTS.md` — machine à états, profils
-- `INTEGRATION_CONTRACT.md` §7 — effets du refus d'un composant
+- `INTEGRATION_CONTRACT.md` §5, §8 — arrêt propre et effets du refus ou du silence d'un composant
 
 ---
 

@@ -168,8 +168,8 @@ launcher/
 ├── Launcher.Infrastructure/      Processus, registre, flux, stockage, horloge
 ├── Launcher.Protocol/            Types de contrat versionnés, sans dépendance
 ├── Launcher.Package/             Lecture et écriture du format .livexp
-├── Launcher.Gateway/             V1.x — routage, authentification, santé agrégée
-├── Launcher.Agent/               V1.x — relais sur machine distante
+├── Launcher.Gateway/             forme de sortie — routage, authentification, santé agrégée (non planifié)
+├── Launcher.Agent/               forme de sortie — relais sur machine distante (non planifié)
 ├── Launcher.Tests.Unit/
 ├── Launcher.Tests.Integration/
 └── Launcher.Tests.EndToEnd/
@@ -190,10 +190,13 @@ launcher/
 `Launcher.Protocol` porte les types de contrat, et **l'adaptateur de protocole** qui
 isole le Launcher de la décision encore ouverte sur le format des messages
 `snapshot` et `event`. Seul cet assembly connaît le protocole ; `Launcher.Domain`
-n'en dépend pas. Voir `NETWORK.md` §2.1.
+n'en dépend pas. Voir `NETWORK.md` §2.5.
 
-`Launcher.Gateway` et `Launcher.Agent` sont des processus **séparés**, en V1.x. La
-Gateway doit pouvoir tourner sans interface graphique, sur une machine dédiée.
+`Launcher.Gateway` et `Launcher.Agent` sont des **formes de sortie** : des processus
+séparés qui ne seraient construits que si une répartition multi-machine était un
+jour décidée — aucune n'est planifiée (`NETWORK.md` §3, §4.2–4.3). La Gateway, le jour où
+elle existerait, doit pouvoir tourner sans interface graphique, sur une machine
+dédiée.
 
 `Launcher.Package` est isolé : c'est lui qui lit et écrit le format `.livexp`, et
 il doit pouvoir être testé sans démarrer un seul composant.
@@ -249,6 +252,120 @@ Les décisions structurantes de cette architecture sont consignées dans `adr/`.
 - `PACKAGE_FORMAT.md` — structure du paquet `.livexp`
 - `INTEGRATION_CONTRACT.md` — exigences d'intégration
 - `TESTING.md` — stratégie de validation de ces règles de dépendance
+
+## 10. Arbre hiérarchique et structure de dossiers à terme
+
+Cette section réunit, en une vue unique, la hiérarchie des couches du Launcher et
+l'arborescence de dossiers complète d'une installation — sources de détail :
+§5 pour les projets .NET, `PACKAGING.md` §2 pour la livraison, `DATA_FLOW.md` §2
+pour l'espace de travail.
+
+### 10.1 Arbre hiérarchique des couches
+
+La dépendance est strictement descendante : une couche ne connaît que celles
+au-dessous d'elle. Le flux d'exécution monte (l'utilisateur agit sur la
+présentation), les dépendances descendent (la présentation dépend de tout, le
+protocole ne dépend de rien).
+
+```text
+Launcher.App                     point d'entrée, composition Avalonia
+└── Launcher.Presentation        vues, mise en page
+    └── Launcher.Application     cas d'usage, intentions utilisateur
+        └── Launcher.Domain      orchestration, campagnes, paquet, santé
+            ├── Launcher.Protocol        types de contrat, adaptateur (aucune dépendance)
+            └── Launcher.Infrastructure  processus, registre, flux, stockage
+                └── (implémente les interfaces de Domain)
+
+Processus séparés (V0.1 : absents — formes de sortie) :
+Launcher.Gateway, Launcher.Agent      dépendent de Protocol uniquement
+
+Bancs de tests : Launcher.Tests.Unit / Integration / EndToEnd
+```
+
+| Règle de l'arbre | Portée |
+| :-- | :-- |
+| Une flèche = une référence d'assembly autorisée | Toute autre référence est interdite et vérifiée par analyse statique (`TESTING.md`) |
+| `Domain` au sommet des règles | Ne référence ni Avalonia, ni processus, ni réseau — uniquement `Protocol` |
+| `Protocol` sans dépendance | Porté par tous, ne dépend de personne ; isolé de la décision de protocole |
+
+### 10.2 Structure de dossiers finale
+
+Deux hiérarchies, **séparées par construction** : l'installation (remplaçable) et
+les données (durables). Les formes de paquet par plateforme — `.exe` installateur
+Windows, `.deb`/AppImage ou archive Linux — sont l'affaire de `PACKAGING.md` §3 ;
+l'arborescence interne, elle, est identique partout.
+
+```text
+livex/                                   # INSTALLATION (racine choisie à l'installation)
+├── launcher/                            # le Launcher
+│   ├── livex-launcher(.exe)             # exécutable principal (Avalonia)
+│   ├── Launcher.*.dll                   # couches + dépendances managées .NET
+│   ├── docs/                            # documentation embarquée, rendue par le lecteur Markdown
+│   │   ├── guide-paquet.md
+│   │   ├── profils.md
+│   │   └── diagnostic.md
+│   ├── templates/                       # modèles de paquet, de campagne, de profil
+│   └── components/                      # composants détectés (PACKAGING §2.1)
+│       ├── syne/
+│       │   ├── component.json          # manifeste (INTEGRATION_CONTRACT §2)
+│       │   ├── Simulation.Console(.exe) # hôte du moteur (--serve :5181 / --observe :5180)
+│       │   ├── Simulation.Core.dll      # moteur + contrats d'observabilité
+│       │   └── *.dll                    # dépendances managées
+│       ├── echos/
+│       │   ├── component.json
+│       │   ├── echos-server             # backend API (sert l'interface)
+│       │   └── echos-ui/                # build React servi par l'API
+│       └── prism/                       # livré quand PRISM sera prêt (ADR-006)
+│           ├── component.json
+│           └── ...
+├── templates/                           # alias racine des modèles (PACKAGING §2.1)
+├── LICENSE
+└── VERSION
+
+<données utilisateur>/                   # DONNÉES — hors installation (PACKAGING §2.2)
+├── preferences/                          # profils, préférences réseau (network.json)
+├── sessions/                             # journaux de session (rotation quotidienne)
+├── packages/                             # paquets .livexp de campagnes vivantes
+├── archives/                             # paquets scellés conservés
+├── cache/                                # jetable
+└── workspace/                            # espace de travail Launcher (DATA_FLOW §2)
+    ├── Config/                           # configuration Launcher et profils, network.json (NETWORK §6.3)
+    ├── Simulations/                      # simulations installées par l'utilisateur
+    ├── Experiments/
+    │   └── EXP-2026-001/
+    │       ├── experiment.json
+    │       ├── experiment.log
+    │       ├── runs/
+    │       │   └── RUN-0042/
+    │       │       ├── run.json
+    │       │       ├── config.resolved.json
+    │       │       ├── data/             # sorties SYNE du run
+    │       │       ├── metrics.jsonl
+    │       │       ├── logs/
+    │       │       └── integrity.json
+    │       └── analysis/
+    │           ├── individual/           # analyses ECHOS par run
+    │           ├── aggregate/            # analyses ECHOS agrégées
+    │           └── emergence_report.md   # rapport de référence — rendu par le lecteur Markdown
+    ├── Reports/                          # exports volontaires (copies)
+    ├── Data/
+    │   └── Cache/
+    ├── Logs/                             # journaux par composant
+    └── State/                            # état de session du Launcher
+```
+
+| Règle de structure | Source |
+| :-- | :-- |
+| Installation remplaçable sans perte de données | `PACKAGING.md` §2.2 |
+| Le Launcher s'installe **sans** composants ; il détecte ceux présents | `PACKAGING.md` §2.1, §4 |
+| Un run n'écrit que dans son dossier | `DATA_FLOW.md` §3 |
+| `Experiments/` porte la valeur métier ; `Data/` ne porte que du régénérable | `DATA_FLOW.md` §2 |
+| Le rapport a **un seul** emplacement de référence | `DATA_FLOW.md` §3.1 |
+| `Launcher.Gateway`/`Launcher.Agent` ont leurs propres répertoires le jour où ils existent | §5 — formes de sortie |
+
+> **Emplacements système exacts** (racine des données utilisateur par OS, variable
+> `LIVEX_HOME`) : points ouverts `PACKAGING.md` §12 et `ISSUES.md` O-17. La
+> structure interne, elle, ne dépend pas de ces choix.
 
 ---
 

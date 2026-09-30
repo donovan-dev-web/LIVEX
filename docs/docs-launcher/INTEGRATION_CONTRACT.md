@@ -135,7 +135,7 @@ campagne ne peut pas appliquer sa politique d'échec.
 ### 5.3 Instance unique et pré-vol
 
 - Un seul Launcher peut opérer une installation à la fois ; le second doit le dire
-  explicitement au lieu d'êtremer en silence.
+  explicitement au lieu d'échouer en silence.
 - Avant tout démarrage, le Launcher **teste la disponibilité des ports** et échoue
   avec une erreur nommant le processus occupant s'il est identifiable.
 
@@ -165,7 +165,7 @@ protocole.
 | SYNE | API de contrôle en écoute **et** simulation chargée ou chargeable |
 | ECHOS | API d'analyse en écoute ; la connexion à SYNE est un état de lien, pas une condition de `ready` |
 | PRISM | Processus vivant et, si son moteur l'expose, scène chargée **[À CONFIRMER]** |
-| Gateway | Routes chargées et registre accessible |
+| Gateway *(forme de sortie, non planifiée — hors V0.1)* | Routes chargées et registre accessible |
 
 ## 8. Exigences communes
 
@@ -262,13 +262,20 @@ la matrice des modes de `COMPONENTS.md`.
 
 ## 15. Matrice d'exigences
 
-| Exigence | SYNE | ECHOS | PRISM | Gateway | Launcher |
+> Les colonnes **Gateway** et **Launcher** sont tenues à titre de forme de sortie :
+> la Gateway n'est **pas planifiée** en V0.1 et n'a pas d'usage tant que LIVEX tient
+> sur une machine (`NETWORK.md` §4.3). Les ✓ de sa colonne décrivent ce qu'elle
+> devrait satisfaire **si** elle était construite, pas des exigences courantes.
+> Le Launcher n'est pas un composant piloté : il est « responsable » des règles
+> qu'il applique aux autres.
+
+| Exigence | SYNE | ECHOS | PRISM | Gateway* | Launcher |
 | :-- | :--: | :--: | :--: | :--: | :--: |
 | Manifeste `component.json` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Démarrage explicite | ✓ | ✓ | ✓ | ✓ | — |
 | Arrêt propre | ✓ | ✓ | ✓ | ✓ | — |
 | Aucun orphelin | ✓ | ✓ | ✓ | ✓ | responsable |
-| `/health/live|ready|details` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `/health/live\|ready\|details` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `/info`, `/metrics` | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Jeton sur les commandes | ✓ | ✓ | ✓ | ✓ | — |
 | Codes de sortie §4 | ✓ | ✓ | ✓ | ✓ | — |
