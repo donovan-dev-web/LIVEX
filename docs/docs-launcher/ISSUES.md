@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 2 octobre 2026
 **Dépend de** : `ROADMAP.md`, `TESTING.md`, `adr/`
 **Source Monographie** : —
 
@@ -51,13 +51,15 @@ perdu. La section « Points restés ouverts » de chaque document alimente ce fi
 | O-35 | Mécanisme de l'espace d'adressage interne LIVEX : plage de ports réservée ou interface loopback dédiée (spike Windows/Linux) | `NETWORK.md` §12 | **Haute** | G0 |
 | O-36 | Bornes exactes de l'espace interne et migration des ports par défaut (5180/5181/5000) | `NETWORK.md` §12, §6.2 | Haute | G1 |
 | O-37 | Mécanisme de mesure des flux par composant (compteurs socket, `/proc`, eBPF léger) | `NETWORK.md` §12, `OBSERVABILITY.md` §5 | Moyenne | G1 |
-| O-28 | Comportement à l'installation de deux composants identiques | `COMPONENTS.md` §12 | Moyenne | G2 |
 | O-29 | **SYNE sait-il tourner seul et se terminer ?** `--seed`, `--ticks`, `--export-dir`, sortie automatique | `INTEGRATION_CONTRACT.md` §3.3 | **Bloquante** | Porte P2 |
 | O-30 | **ECHOS est-il pilotable sans son interface ?** `AnalyzeRun`, `AnalyzeExperiment`, `GenerateReport` | `INTEGRATION_CONTRACT.md` §10 | **Bloquante** | Porte P3 |
 | O-31 | Décision n°28 sur le protocole des messages `snapshot` et `event` | `NETWORK.md` §2.5 | Haute | Porte P1 |
 | O-32 | ECHOS fonctionne-t-il sous Linux, exécutable et interface | `PACKAGING.md` | **Bloquante** | Porte P4 |
 | O-33 | Le déterminisme tient-il entre deux runs identiques, et entre plateformes | `INTEGRATION_CONTRACT.md` §12 | Haute | Porte P5 |
 | O-34 | Arrêt propre d'un processus sans console sous Windows : HTTP ou signal | `INTEGRATION_CONTRACT.md` §5.1 | Haute | G2 |
+| O-38 | **SYNE réel rejette les arguments communs et de campagne du §3.1/§3.3** : `--headless`, `--instance-id`, `--control-port`, `--work-dir`, `--log-dir`, `--correlation-id`, `--simulation`, `--ticks` et `--autostart` ne sont pas tous pris en charge. Vérifié sur `syne/Simulation.Core/Configuration/CliArgs.cs` | `INTEGRATION_CONTRACT.md` §3.1/§3.3 | **Haute** | G5 |
+| O-39 | **SYNE n'expose pas le cycle de vie HTTP commun** (`/health/ready`, `POST /control/shutdown`) et son mode `--serve` attend Ctrl+C ; démarrage/supervision/arrêt Launcher ne sont pas compatibles. ECHOS expose ces deux routes via son adaptateur et le mock expose son endpoint authentifié d'arrêt, avec health déclarée dans leurs manifestes. | `INTEGRATION_CONTRACT.md` §6 | **Haute** | G5 |
+| O-41 | **SYNE seul ne fournit pas de `component.json` Launcher** : aucun paquet SYNE détectable depuis une installation standard et aucun contrat de lancement déclarable. ECHOS et `syne-mock` fournissent désormais des manifestes Linux. | `INTEGRATION_CONTRACT.md` §2, `COMPONENTS.md` §12 | **Haute** | G5 |
 
 ## 3. Points bloquants sur des composants externes
 
@@ -68,13 +70,20 @@ subsistent, le Launcher se limite au mode Contrôle et à la supervision.
 | # | Question | Ce qui est bloqué |
 | :-- | :-- | :-- |
 | **O-29** | SYNE en mode batch | Toute campagne automatique multi-run |
-| **O-30** | ECHOS pilotable sans interface | Tout rapport, donc le jalon G5 |
+| **O-30** | ECHOS implémente les opérations `AnalyzeRun` / `AnalyzeExperiment` / `GenerateReport` et chemins du §10.1 | Tout rapport de campagne réel, donc le jalon G5 |
 | **O-31** | Protocole `snapshot` et `event` | L'adaptateur de protocole, donc l'immersion |
 | **O-32** | ECHOS sous Linux | Le paquet Linux, donc le jalon G6 |
 | **O-33** | Déterminisme du moteur | Toute campagne à valeur scientifique |
 
 Leurs contreparties sont les portes **P1 à P5** de `ROADMAP.md`, et les spikes
 **S1 à S8**.
+
+Les adaptateurs de service Linux ECHOS et `syne-mock` réduisent les écarts de
+démarrage et d'arrêt, mais ne remplacent pas une intégration bout en bout du
+pipeline scientifique. Les écarts O-38, O-39 et O-41 restent propres à SYNE ;
+O-30 reste ouvert car l'API réelle d'ECHOS n'implémente pas les endpoints
+`/analysis/*` du Launcher. Les portes batch O-29 et déterminisme O-33 restent
+également des blockers des campagnes sur composants réels.
 
 ## 4. Détail de quelques points ouverts
 
@@ -213,4 +222,3 @@ la mémoire de la décision.
 - **Volume.** Vingt-huit points ouverts pour un composant non implémenté est un
   nombre attendu pour une phase de conception, mais il faut fixer un seuil au-delà
   duquel la phase de conception est jugée insuffisamment aboutie.
-

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "syne-mock",
+  "name": "SYNE mock",
+  "version": "0.1.0",
+  "type": "utility",
+  "runtime": "script",
+  "executable": {
+    "linux": "src/cli.js"
+  },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": {
+      "transport": "http",
+      "port": 5181,
+      "enabled": true
+    },
+    "ws": {
+      "transport": "websocket",
+      "port": 5180,
+      "enabled": true,
+      "launchArgument": "--data-port"
+    }
+  },
+  "capabilities": [
+    "headless",
+    "control",
+    "observability"
+  ],
+  "health": {
+    "probe": "http",
+    "path": "/api/control/status",
+    "intervalMs": 1000
+  },
+  "timeouts": {
+    "startupMs": 10000,
+    "shutdownMs": 5000
+  }
+}

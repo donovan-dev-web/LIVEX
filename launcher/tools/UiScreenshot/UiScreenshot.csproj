@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Outil de capture visuelle (hors Launcher.sln, hors CI) : rend la MainWindow
+    en headless Skia et écrit un PNG, pour comparer l'interface à la maquette
+    (docs/docs-launcher/GUI.md). Aucun processus de la pile n'est démarré.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>UiScreenshot</AssemblyName>
+    <RootNamespace>UiScreenshot</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Headless" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Launcher.App\Launcher.App.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -32,8 +32,8 @@ de comprendre l'état de la pile et d'agir dessus, et rien de plus.
 
 | Elle doit | Elle ne doit pas |
 | :-- | :-- |
-| Montrer ce qui tourne, ce qui manque, ce qui est cassé | Montrer des résultats scientifiques |
-| Permettre de démarrer, arrêter, suspendre | Remplacer l'interface d'ECHOS |
+| Montrer ce qui tourne, ce qui manque, ce qui est cassé | Calculer des résultats scientifiques |
+| Permettre de démarrer et arrêter | Remplacer l'interface d'ECHOS |
 | Permettre de créer et suivre une campagne | Analyser une campagne |
 | Donner accès aux journaux et aux diagnostics | Servir d'explorateur de fichiers |
 | Rester lisible en un coup d'œil | Recomposer la pile à chaque session |
@@ -42,8 +42,8 @@ de comprendre l'état de la pile et d'agir dessus, et rien de plus.
 
 ### 2.1 Ce que montre la maquette
 
-La maquette de référence ne présente pas une navigation à trois modes, mais une
-navigation à **sept entrées**, dans une sidebar de 222 px :
+La maquette de référence montre une sidebar de **sept entrées**, dans une largeur
+de 222 px :
 
 ```text
 ┌───────────────┬────────────────────────────────────────────────┐
@@ -69,38 +69,37 @@ navigation à **sept entrées**, dans une sidebar de 222 px :
 Trois zones, toujours visibles : **sidebar** à gauche, **contenu** au centre,
 **colonnes d'état** à droite. La disposition exacte est dans `GUI.md` §2.
 
-### 2.2 Deux organizing concepts, un seul écran
+### 2.2 Modes de lancement et écrans
 
-La maquette fait apparaître une tension réelle, qu'il ne faut pas passer sous
-silence : ce document raisonne en **trois modes**, la maquette en **sept entrées**.
+Le sélecteur supérieur choisit un **mode de lancement**, pas un écran. La sidebar
+reste disponible dans les quatre modes et contient neuf écrans :
 
-| Les trois modes de ce document | Les sept entrées de la maquette |
+La pile affichée comporte trois rôles : SYNE, ECHOS et PRISM. `syne-mock` reste
+détecté comme une installation distincte, mais il n'est pas une quatrième carte :
+c'est le mode « Émulé » du rôle SYNE. L'état du système regroupe le moteur réel et
+son émulateur sous une seule ligne SYNE ; ils ne peuvent pas être démarrés
+simultanément.
+
+| Écran | Contenu livré |
 | :-- | :-- |
-| Contrôle | Accueil, Expériences, Configuration |
-| Analyse | Campagnes, Analyse, Rapports |
-| Immersion | PRISM dans l'état de la pile, pas une entrée |
+| Accueil | État des composants, actions de démarrage/arrêt, expériences récentes |
+| Expériences | Liste des paquets `.livexp` connus et ouverture |
+| Campagnes | Paramètres d'une campagne, progression, annulation et reprise |
+| Analyse | Rapport d'émergence ECHOS du paquet ouvert, s'il existe |
+| Rapports | Même rapport source et export Markdown non modifié |
+| Configuration | Mode, profils, sélection de composants, installations/version actives et ajout d'un dossier de composant portant un manifeste valide |
+| Logs | Dernières entrées du journal de session, ouverture du dossier et export de l'historique de session en NDJSON ; ouverture d'un paquet, consultation et export individuel des journaux de run. |
+| Monitoring | Santé, PID, version et ressources locales échantillonnées ; les métriques détaillées des flux ne sont pas encore exposées. |
+| Documentation | Documents Markdown du projet distribués avec l'application |
 
-Les deux ne décrivent pas le même niveau. Les **modes** sont un découpage
-conceptuel du produit, largement repris dans `VISION.md` et
-`adr/ADR-002-modes-analyse-et-immersion-de-poids-egal.md`. Les **entrées de la
-sidebar** sont un découpage écran.
+Les quatre modes (`Console`, `Standard`, `Développement`, `Personnaliser`)
+déterminent les composants demandés et leur rôle. Ils ne remplacent pas les écrans.
+PRISM est un composant de la pile, pas une entrée de navigation ; son profil reste
+verrouillé tant que son manifeste ne satisfait pas `INTEGRATION_CONTRACT.md` §11.1.
 
-Correspondance proposée :
-
-| Entrée | Contenu | Mode conceptual |
-| :-- | :-- | :-- |
-| Accueil | Synthèse de la pile | Transverse |
-| Expériences | Liste des runs | Contrôle |
-| Campagnes | Liste des campagnes | Analyse |
-| Analyse | Lecture des rapports | Analyse |
-| Rapports | Rapports exportés | Analyse |
-| Configuration | Profil, moteur, session | Contrôle |
-| Logs | Journaux de session | Contrôle |
-
-**Décision à trancher.** Soit la navigation à sept entrées est retenue et les
-modes restent un concept de documentation, soit la navigation à trois modes est
-retenue et la maquette est à refaire. Le statu quo — deux découpages concurrents
-non réconciliés — n'est pas tenable. Voir §12.
+La maquette historique représente sept écrans. La navigation applicative est
+étendue à neuf entrées : Monitoring et Documentation sont ajoutés pour répondre
+au périmètre V1. La maquette n'est donc plus exhaustive sur ce point.
 
 ### 2.3 Zones et persistance
 
@@ -114,40 +113,54 @@ non réconciliés — n'est pas tenable. Voir §12.
 La colonne d'état est **toujours visible**. L'état de la pile ne doit jamais
 nécessiter une navigation pour être connu.
 
+La V1 expose les dernières entrées du journal Launcher et permet d'exporter ce
+journal de session. Depuis Logs, un paquet `.livexp` peut être ouvert pour
+consulter ou exporter les journaux stdout/stderr associés à ses runs. Les entrées
+sont lues sans extraction ; l'affichage est limité à 16 Mio et l'export à 256 Mio
+par fichier.
+Les commandes de pause restent hors périmètre.
+
 La maquette ne comporte pas de barre de composants ni de barre de campagne
 dédiées comme dans le schéma initial : ces informations sont **portées par la
-colonne d'état** et par la section COMPOSANTS du contenu. C'est une équivalence
-de fait, à confirmer.
+colonne d'état** et par la section COMPOSANTS du contenu.
 
-## 3. Les trois modes
+## 3. Modes de lancement V1
 
-### 3.1 Mode Contrôle
+Le mode `Standard` est la valeur par défaut. Le mode choisit un profil ; les
+composants peuvent aussi être démarrés individuellement depuis leurs cartes.
 
-Mode **socle**, disponible dès que SYNE est présent. Il ne dépend d'aucun autre
-composant et reste accessible même si les deux autres modes sont dégradés.
+| Mode | Profil demandé | Comportement et limites |
+| :-- | :-- | :-- |
+| **Console** | Expérience (`syne` + `echos`) | Cible les runs sans PRISM. La campagne du Launcher tourne en arrière-plan de l'interface. Le moteur SYNE réel est sélectionné par défaut ; les adaptateurs headless ECHOS et syne-mock sont disponibles sous Linux, mais SYNE réel ne satisfait pas encore le contrat de lancement batch. |
+| **Standard** | Simulation seule par défaut | Utilisation interactive avec SYNE réel par défaut ; l'utilisateur peut choisir « Émulé » dans Configuration et démarrer les composants manuellement ou choisir un profil. |
+| **Développement** | SYNE émulé + `echos` | Impose le mode émulation de SYNE et démarre les services Linux déclarés par manifeste, dont le contrôle HTTP et le WebSocket du mock. L'émulateur n'est pas un exécuteur de campagne `.livexp` compatible avec `ProcessRunExecutor`. |
+| **Personnaliser** | Sélection explicite | Sélection des rôles par composant ; SYNE est une seule option avec le choix « Réel / Émulé ». Les installations valides et leurs versions restent détectables et sélectionnables dans Configuration. Les manifestes réels ne publient pas encore plusieurs variantes UI/headless sélectionnables. |
 
-| Élément | Rôle |
-| :-- | :-- |
-| **Pile** | Composants installés, versions, états, actions de cycle de vie |
-| **Profil** | Sélection des modes, validation des capacités, profils enregistrés |
-| **Configuration** | Configuration du moteur, paramètres de session |
-| **Diagnostics** | Journaux de session, mesures d'orchestration, points d'accès |
+Les manifestes de composants réels fournis dans le dépôt sont actuellement des
+adaptateurs Linux ; les exécutables Windows ne sont pas encore empaquetés. Le
+bouton « Ajouter un dossier de composant » inspecte `component.json`, refuse
+les manifestes invalides, les exécutions absentes et les types inconnus, puis
+enregistre le dossier pour les prochaines détections dans
+`~/.livex/components.registry`. Le choix de l'installation active est mémorisé
+dans `~/.livex/active-components.json` et réappliqué quand cette installation
+est à nouveau détectée.
 
-C'est la vue par défaut au démarrage, et la seule qui reste complète quand un
-mode scientifique est indisponible.
+La résolution affiche les composants manquants et refuse un profil non
+satisfaisable. Dans le code livré, l'intégration bout en bout est vérifiée avec les
+stubs du Launcher. Cela ne prouve pas que SYNE, ECHOS ou `syne-mock` réels
+respectent déjà le contrat : voir `INTEGRATION_CONTRACT.md` et `ISSUES.md`.
 
-### 3.2 Mode Analyse
+### 3.1 Campagnes et rapports
 
-Mode porté par ECHOS, qui **calcule**. Le Launcher y **présente** ce qu'ECHOS a
-produit, sans rien recalculer.
+Une campagne peut configurer son titre, simulation, nombre de runs, horizon en
+ticks, nombre initial d'agents et graine de base. Les graines sont dérivées de
+façon reproductible ; la politique d'échec reste celle du domaine. Le Launcher
+affiche la progression, permet l'annulation et propose la reprise d'un paquet
+récupérable.
 
-| Élément | Rôle |
-| :-- | :-- |
-| **Campagnes** | Liste des campagnes, création, progression, actions de cycle de vie |
-| **Paquet** | Ouverture d'un `.livexp`, état, scellement, reprise |
-| **Rapport** | **Visualisation du rapport d'émergence** rendu depuis son Markdown, navigation par section |
-| **Documentation** | Consultation de la documentation embarquée, rendue par le **même lecteur Markdown** |
-| **Télémétrie** | Ouverture de l'interface d'ECHOS dans le navigateur, facultative |
+Le lecteur Markdown montre sans recalcul le rapport `analysis/emergence_report.md`
+stocké dans le paquet. L'export écrit le contenu Markdown original à l'emplacement
+choisi. L'absence de rapport est signalée explicitement.
 
 #### Le lecteur Markdown
 
@@ -165,9 +178,7 @@ campagne**, sans changer d'application.
 | **Absence** | Sans ECHOS, aucun rapport n'est produit. L'absence est affichée, jamais remplacée par une approximation locale. |
 | **Documentation** | La documentation embarquée est rendue par le même lecteur, sans interprétation du contenu ; elle ne remplace jamais un rapport absent. |
 
-Le choix de la bibliothèque de rendu Markdown reste à trancher à l'implémentation
-(critères : fidélité du rendu, tableaux, ancrages de section, coût d'intégration
-Avalonia) — le **contrat** ci-dessus, lui, est fixé.
+Le rendu Markdown utilise `Markdown.Avalonia` pour le rapport et la documentation.
 
 La documentation ainsi consultable est celle **embarquée dans l'installation**
 (dossier `docs/` de l'arborescence, `ARCHITECTURE.md` §10.2) : guides du paquet,
@@ -177,52 +188,17 @@ fichiers qu'il affiche, rapport comme documentation.
 La distinction tient en une règle : **le Launcher ne calcule rien de scientifique,
 mais il sait afficher un résultat**. Voir `adr/ADR-003-analyse-propriete-de-echos.md`.
 
-#### La télémétrie facultative
+L'interface d'ECHOS dans un navigateur n'est pas encore déclenchable depuis les
+écrans V1. L'analyse et la production du rapport nécessitent les opérations
+headless documentées dans `INTEGRATION_CONTRACT.md` §10, encore à valider contre
+ECHOS réel.
 
-L'interface web d'ECHOS peut être ouverte à tout moment depuis le mode Analyse pour
-observer l'analyse en direct pendant une simulation. C'est un **complément**, pas un
-prérequis : aucune campagne ne dépend d'une fenêtre de navigateur, et le Launcher
-reste complet si elle n'est jamais ouverte.
+### 3.2 PRISM et le verrou Immersion
 
-Ouvrir l'interface d'ECHOS est une **délégation** : le Launcher ouvre le
-navigateur, ECHOS reste propriétaire de son rendu interactif.
-
-### 3.3 Mode Immersion
-
-Mode porté par PRISM, conçu sur le même modèle que le mode Analyse, avec ses propres
-éléments.
-
-| Élément | Rôle |
-| :-- | :-- |
-| **Scène** | Connexion à la scène PRISM, état du monde, commandes de vol |
-| **Session** | Contrôle de la session PRISM, pause, reprise, capture |
-| **Aperçu** | Vignette de la scène, hors de tout rendu temps réel dans le Launcher |
-
-Le Launcher n'affiche pas de scène temps réel : il n'a pas vocation à être une
-surface d'animation continue, comme le rappelle `VISION.md` §6. Il expose l'état
-de la session et les commandes, et laisse PRISM rendre le monde.
-
-### 3.4 Le mode verrouillé
-
-L'entrée **Immersion** est visible, marquée verrouillée, et non sélectionnable. Un
-clic explique la raison et le jalon attendu, au lieu d'être simplement inerte.
-
-```text
-┌──────────────────────────────────────────────┐
-│  Mode Immersion                              │
-│                                              │
-│  PRISM n'est pas encore implémenté.           │
-│  Ce mode sera disponible quand PRISM sera    │
-│  livré.                                     │
-│                                              │
-│  Jalon attendu : G4 — voir ROADMAP.md        │
-│                                              │
-│           [ Compris ]                        │
-└──────────────────────────────────────────────┘
-```
-
-Le verrouillage est un **état de conception**, pas une fonctionnalité manquante.
-L'interface ne doit jamais laisser croire que le mode est abandonné.
+PRISM apparaît dans la pile et peut être demandé par un profil. Sa sélection n'est
+possible que si une installation détectée fournit un manifeste conforme aux
+exigences publiées. Sinon, le profil est refusé avec la cause et le jalon G7. Le
+Launcher n'héberge aucun rendu 3D : PRISM reste propriétaire de cette surface.
 
 ## 4. Mise en page de la zone de contenu
 
@@ -362,7 +338,7 @@ interlettrages sont dans `GUI.md` §3.2.
 | Composant absent | Ligne présente, état **Absent**, emplacement attendu |
 | Aucun profil enregistré | Le profil par défaut est proposé, avec la liste des profils disponibles |
 | Aucune campagne | Explication du mode, avec création en action principale |
-| Paquet corrompu | Erreur nommant l'entrée fautive, avec ouverture en lecture partielle |
+| Paquet corrompu | Erreur de lecture explicite ; aucune ouverture partielle n'est prétendue |
 | Campagne en cours | Bandeau persistant indiquant qu'un paquet est vivant |
 | Composant en incidence | Bandeau d'alerte avec cause et action, non bloquant pour les autres modes |
 
@@ -379,7 +355,10 @@ interlettrages sont dans `GUI.md` §3.2.
 | **Focus visible** | Indicateur de focus permanent sur le contrôle actif |
 | **Ordre de tabulation** | Suit l'ordre visuel, sans piège de focus |
 
-## 9. Ouverture de l'interface d'ECHOS
+## 9. Ouverture de l'interface d'ECHOS (à réaliser)
+
+Ce parcours est une cible documentée, pas une commande disponible dans l'interface
+V1 actuelle.
 
 | Règle | Comportement |
 | :-- | :-- |
@@ -420,29 +399,19 @@ centralisées pour qu'une deuxième langue soit ajoutable sans refonte.
 
 ## Points restés ouverts dans ce document
 
-- **Navigation à sept entrées ou à trois modes.** C'est le point le plus lourd.
-  Ce document raisonne en trois modes, la maquette en sept entrées, et les deux
-  découpages ne se recouvrent pas. Il faut choisir, puis aligner l'autre. Voir
-  §2.2.
-- **Bibliothèque de rendu Markdown.** Le lecteur de rapport et de documentation
-  (§3.2) exige un seul composant de rendu ; le choix de la bibliothèque et son
-  intégration Avalonia restent à trancher à l'implémentation.
+- **Navigation étendue.** Les deux entrées V1 ajoutées à la maquette historique
+  n'ont pas encore de spécification pixel dédiée dans `GUI.md`.
+- **Variantes de composants.** SYNE réel/émulé et les installations actives sont
+  sélectionnables ; les manifestes réels ne déclarent pas encore les variantes
+  UI/headless sélectionnables.
 - **Panneau de mesures.** La forme du panneau de mesures et sa visibilité par
   défaut ne sont pas tranchées. Voir `OBSERVABILITY.md` §10.
-- **Personnalisation.** La réorganisation des panneaux et la taille des colonnes
-  sont fixées en V0.1, mais la manière de les rendre persistants reste à définir.
-- **Dialogue de reprise.** Le contenu exact du dialogue proposé pour un paquet
-  `recoverable` doit être spécifié avec `PACKAGE_FORMAT.md`.
+- **Journaux.** L'écran expose l'historique du journal Launcher. La navigation
+  unifiée vers les journaux stdout/stderr de chaque run reste à spécifier.
 - **Échelle de densité.** La densité d'information est qualifiée ici mais aucun
   budget de lignes par vue n'est fixé.
-- **Thème sombre.** Aucun thème clair n'est prévu en V0.1. La décision doit être
-  prise avant l'implémentation de l'interface.
-- **Ordre des modes.** L'ordre Contrôle, Analyse, Immersion est retenu. Il faut
-  confirmer qu'il ne suggère pas de hiérarchie entre les deux modes, alors même
-  que la documentation les déclare égaux.
-- **Vues non documentées.** Une seule vue est spécifiée dans `GUI.md`, parce
-  qu'une seule est documentée. Les six autres entrées de navigation restent à
-  écrire.
+- **Accessibilité et adaptativité.** Les exigences du §8 doivent être vérifiées
+  sur l'application rendue et les tailles de fenêtre supportées.
 - **Écart maquette / prototype.** Le rendu du prototype HTML ne correspond pas à
   la maquette sur le fond, le hero et le grain. Il faut décider lequel des deux
   sert de référence de production. Voir `GUI.md` §12.

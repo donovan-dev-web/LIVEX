@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.Presentation — vues, mise en page, liaison aux cas d'usage.
+    Référence Application et Domain. Aucun accès processus, réseau, disque (ARCHITECTURE.md §5).
+  -->
+
+  <PropertyGroup>
+    <Description>Interface du LIVEX Launcher (Avalonia, MVVM)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Markdown.Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Application\Launcher.Application.csproj" />
+    <ProjectReference Include="..\Launcher.Domain\Launcher.Domain.csproj" />
+    <ProjectReference Include="..\Launcher.Protocol\Launcher.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Stub.Echos (INTEGRATION_CONTRACT.md §13) : API d'analyse factice, produit un
+    résultat déterministe à partir d'un run, génère un rapport d'émergence.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Stub.Echos</AssemblyName>
+    <RootNamespace>Stub.Echos</RootNamespace>
+  </PropertyGroup>
+
+</Project>

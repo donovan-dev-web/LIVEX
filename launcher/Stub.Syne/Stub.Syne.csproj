@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Stub.Syne — composant simulé (INTEGRATION_CONTRACT.md §13) : écoute les ports,
+    expose /health et /metrics, avance les ticks à cadence réglable, écrit un dossier
+    de run, respecte les arguments de graine et de ticks, quitte avec les codes du §4.
+    Pannes injectables : crash-at-tick, freeze-at-tick, slow-factor, exit-code,
+    refuse-shutdown.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Stub.Syne</AssemblyName>
+    <RootNamespace>Stub.Syne</RootNamespace>
+  </PropertyGroup>
+
+</Project>
