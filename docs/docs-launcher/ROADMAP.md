@@ -81,7 +81,7 @@ que l'architecture ne dépende de sa réponse.
 | **S5** | Déterminisme : deux runs identiques donnent-ils la même empreinte, et quel écart entre Windows et Linux | Niveau de reproductibilité, P5 |
 | **S6** | ECHOS, exécutable et interface, sous Linux | P4, format de paquet |
 | **S7** | YARP relaie-t-il le flux d'instantanés au débit réel de SYNE | Gateway, hors V0.1 |
-| **S8** | Ouverture de l'interface d'ECHOS : navigateur externe ou vue intégrée | `USER_INTERFACE.md` §3.2 |
+| **S8** | Ouverture de l'interface d'ECHOS : navigateur externe ou vue intégrée | `USER_INTERFACE.md` §9 |
 
 S1, S3 et S5 doivent être lancés en premier : ce sont celles qui peuvent remettre en
 cause l'architecture.
@@ -126,10 +126,18 @@ démarrer SYNE, ECHOS ni PRISM.
 
 ### 6.5 G4 — Interface d'orchestration
 
-- Navigation par modes, mode Contrôle en vue par défaut.
-- Mode Analyse minimal, avec délégation au navigateur pour l'interface d'ECHOS.
-- Mode Immersion visible et verrouillé, avec raison et jalon.
-- États vides, causes lisibles, accessibilité, absence de mouvement.
+- Sélecteur des quatre modes de lancement : Console, Standard, Développement et Personnaliser.
+- Navigation par neuf écrans : Accueil, Expériences, Campagnes, Analyse, Rapports, Configuration, Logs, Monitoring et Documentation.
+- Cycle de vie des composants depuis les cartes et profils configurables.
+- Rapport Markdown fidèle à ECHOS et documentation embarquée dans le même lecteur.
+- Suivi d'état, causes, ressources locales et progression de campagne.
+
+Le socle Avalonia et ces parcours sont implémentés. L'écran Logs ouvre le dossier
+et exporte l'historique NDJSON de session ; G4 n'est pas considéré terminé tant
+que les journaux des processus par run ne sont pas intégrés à cette vue, que la
+configuration détaillée, l'accessibilité et le rendu visuel ne sont pas validés.
+Le mode Console est un profil de lancement, pas une preuve que les composants réels
+fonctionnent sans interface.
 
 ### 6.6 G5 — Session complète
 
@@ -152,8 +160,12 @@ démarrer SYNE, ECHOS ni PRISM.
 - Cycle de vie de PRISM piloté comme tout autre composant.
 - Retrait du verrou, la conception et l'interface étant déjà en place.
 
-## 7. Définition de terminé pour V0.1
+## 7. Définition de terminé pour V1
 
+- [ ] Tous les écrans V1 et les quatre modes sont documentés et testés selon leur contrat.
+- [x] Les journaux globaux, de session et de processus par run sont consultables et exportables depuis l'interface.
+- [x] La configuration permet d'ajouter des installations valides et de choisir explicitement l'installation/version active d'un composant.
+- [ ] La configuration permet de choisir les variantes UI/headless lorsque les composants les déclarent dans leurs manifestes.
 - [ ] Le contrat d'intégration est respecté par les trois composants, checklist de `INTEGRATION_CONTRACT.md` §14.
 - [ ] L'intégration continue est verte sous Windows et Linux.
 - [ ] Aucun processus orphelin après arrêt brutal du Launcher.
@@ -223,4 +235,3 @@ et impose une adaptation du Launcher, non une adaptation rétroactive du composa
 - **Jalon de la politique de redémarrage.** La décision est en attente
   (`OBSERVABILITY.md` §8). Elle doit être prise avant G3, où la gestion des incidents
   devient visible.
-

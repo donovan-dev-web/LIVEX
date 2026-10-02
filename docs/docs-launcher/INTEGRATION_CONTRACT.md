@@ -51,6 +51,7 @@ Chaque composant installe un fichier `component.json` à sa racine.
 | **Versionner le manifeste** | Le champ `schema` est obligatoire et croît uniquement par ajout de champs optionnels. |
 | **Être lisible sans lancer** | Le Launcher détecte et vérifie la compatibilité **sans démarrer** le composant. |
 | **Déclarer ses capacités** | `capabilities` permet d'activer ou de désactiver une fonction du Launcher selon ce que la version installée sait faire. |
+| **Déclarer les arguments d'endpoints** | Un endpoint avec port peut optionnellement définir `launchArgument` (ex. `--data-port`) ; le Launcher réserve le port puis passe cette option au composant. |
 | **Ne pas dépendre de l'environnement** | Aucun chemin absolu, aucune variable d'environnement non déclarée. |
 
 ## 3. Ligne de commande
@@ -91,6 +92,12 @@ Indispensables pour l'exécution autonome, donc pour les campagnes.
 > **[À CONFIRMER]** : SYNE sait-il déjà tourner sans interaction et se terminer seul à
 > la fin des ticks ? Sinon c'est un prérequis bloquant pour toute campagne
 > multi-run. C'est la porte **G2** de `ROADMAP.md`.
+
+Les adaptateurs Linux livrés pour ECHOS et `syne-mock` acceptent les arguments
+communs du Launcher. ECHOS mappe `--control-port` vers `ECHOS_PORT` ;
+`syne-mock` transmet le port de son endpoint WebSocket via `launchArgument:
+"--data-port"` dans `component.json`. Ces adaptations de service ne déclarent
+pas SYNE conforme au mode batch décrit ci-dessus.
 
 ## 4. Codes de sortie
 
@@ -203,6 +210,26 @@ protocole.
 | **Définir les métriques scientifiques** | Le Launcher ne définit aucune métrique ; il transporte et organise. |
 | **Exposer son interface à titre de télémétrie** | L'interface web reste accessible pour l'observation en direct, sans être un prérequis. |
 
+### 10.1 Forme opérante — demandes d'analyse
+
+Les trois opérations du §10 sont invoquées par HTTP sur le **port de contrôle**
+d'ECHOS (canal 1 de `NETWORK.md` §2), en `POST`, corps JSON en UTF-8, réponse
+JSON. Chemins stables, versionnés avec le présent contrat :
+
+| Opération | Chemin | Corps de la demande | Réponse `200` |
+| :-- | :-- | :-- | :-- |
+| `AnalyzeRun` | `POST /analysis/run` | `{ "experimentId", "runId", "runPath" }` | `{ "files": [ { "name", "content" } ] }` — `content` en base64 |
+| `AnalyzeExperiment` | `POST /analysis/experiment` | `{ "experimentId", "experimentPath" }` | `{ "files": [ { "name", "content" } ] }` |
+| `GenerateReport` | `POST /analysis/report` | `{ "experimentId", "experimentPath" }` | `{ "report": "<Markdown>" }` |
+
+| Règle | Précision |
+| :-- | :-- |
+| **Joignabilité** | Si l'instance ECHOS tourne, son port résolu fait foi ; sinon le port déclaré au manifeste, sinon la valeur par défaut `5000` (`NETWORK.md` §6.2). |
+| **Échec** | Tout code hors `2xx`, tout délai dépassé ou toute réponse malformée produit une erreur côté Launcher : l'absence d'analyse est **consignée**, jamais un résultat approximatif. |
+| **Authentification** | Aucun jeton sur ces chemins : ils n'ordonnent ni le démarrage ni l'arrêt d'un composant. Le jeton reste exigé sur `/control/*` (§6). |
+| **Déterminisme** | Le contenu rendu par ECHOS est déterministe pour un dossier d'entrée donné ; le Launcher le transporte tel quel (`ADR-003`). |
+| **Isolation** | Une demande d'analyse qui échoue ne fait échouer ni le run ni la campagne (`EXPERIMENTS.md` §11). |
+
 ## 11. Exigences propres à PRISM
 
 | Exigence | Précision |
@@ -210,6 +237,27 @@ protocole.
 | **Consommer le flux de simulation** | Sans modifier la simulation. |
 | **Déclarer sa cadence de rendu** | Images par seconde et temps par image. |
 | **Rester découplé** | Son indisponibilité n'interrompt pas la simulation. |
+
+### 11.1 Vérification au manifeste (jalon G7)
+
+Le verrou du mode Immersion (`adr/ADR-006`) est une condition **évaluée**, jamais
+codée en dur. Le Launcher vérifie les exigences ci-dessus là où elles sont
+lisibles sans démarrer PRISM — dans son `component.json` :
+
+| Exigence | Vérification au manifeste | Cause en cas d'échec |
+| :-- | :-- | :-- |
+| Se déclarer porteur du mode | `type` = `immersion`, ou `contributesTo` contenant `immersion` | `PRISM ne se déclare pas porteur du mode Immersion` |
+| Consommer le flux de simulation | `capabilities` contient `snapshotStream` | `capacité « snapshotStream » absente du manifeste` |
+| Déclarer sa cadence de rendu | `capabilities` contient `renderCadence` | `capacité « renderCadence » absente du manifeste` |
+| Être pilotable (§6) | `endpoints` déclare `control` | `point d'accès de contrôle non déclaré` |
+
+La troisième exigence du tableau normatif — **rester découplé** — n'est pas
+lisible au manifeste : elle se vérifie par le test de cycle de vie (un PRISM
+arrêté n'interrompt ni le moteur ni une campagne, `TESTING.md` §6).
+
+Tant qu'une seule vérification échoue, le mode Immersion reste verrouillé, avec
+**la cause exacte** affichée (§3.4 de `USER_INTERFACE.md`). Le déverrouillage est
+la conséquence d'un manifeste conforme, jamais d'une constante de code.
 
 ## 12. Reproductibilité — engagements des composants
 

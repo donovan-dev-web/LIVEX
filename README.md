@@ -88,6 +88,7 @@ LIVEX/
 │       ├── LDK.uproject    # Hôte, pas le projet LIVEX complet
 │       └── Plugins/PrismLdk/
 ├── syne-mock/              # Serveur Node.js de test des contrats SYNE
+├── launcher/               # Orchestrateur Avalonia, paquets et tests du Launcher
 ├── docs/
 │   ├── docs-syne/          # Documentation et décisions SYNE
 │   ├── docs-echos/         # Documentation ECHOS
@@ -109,6 +110,7 @@ LIVEX/
 | [Communication](COMMUNICATION.md) | Consulter les protocoles et ports inter-composants. |
 | [Glossaire](GLOSSARY.md) | Retrouver le vocabulaire du projet. |
 | [FAQ](FAQ.md) | Obtenir des réponses aux questions fréquentes. |
+| [Launcher LIVEX](launcher/README.md) · [spécification complète](docs/docs-launcher/README.md) | Comprendre l'état V1, les modes de lancement, l'interface et les limites d'intégration. |
 | [Monographie](LIVEX-Monographie_SnapV0-1.pdf) | Lire les fondements, modèles et choix détaillés. |
 | [Documentation SYNE](docs/docs-syne/README.md) · [ECHOS](docs/docs-echos/README.md) · [PRISM](docs/docs-prism/README.md) | Entrer dans la documentation d’un composant. |
 | [Documentation générale](docs/README.md) | Repérer les sources de vérité, les contrats et les documents historiques. |

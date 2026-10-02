@@ -34,7 +34,7 @@ livex/
 ├── launcher/
 │   ├── livex-launcher            # exécutable principal
 │   ├── *.dll                    # dépendances managées
-│   ├── docs/                    # documentation embarquée — rendue par le lecteur Markdown du Launcher (USER_INTERFACE §3.2)
+│   ├── docs/                    # documentation embarquée — rendue par le lecteur Markdown du Launcher (USER_INTERFACE §3.1)
 │   └── components/
 │       ├── syne/
 │       │   ├── component.json   # manifeste
