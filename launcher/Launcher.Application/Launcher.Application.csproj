@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.Application — cas d'usage, validation des intentions utilisateur.
+    Référence Domain et Protocol. Ni Avalonia, ni types d'infrastructure.
+  -->
+
+  <PropertyGroup>
+    <Description>Cas d'usage du LIVEX Launcher (campagnes, sessions)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Domain\Launcher.Domain.csproj" />
+    <ProjectReference Include="..\Launcher.Protocol\Launcher.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>

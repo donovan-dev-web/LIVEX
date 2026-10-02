@@ -31,6 +31,23 @@ curl "http://127.0.0.1:5000/api/runs/{id}/metrics?every=10"  # séries sous-éch
 
 Sans `ECHOS_ANALYTICS_DB`, les routes de donnée répondent 503 (contrat publié).
 
+## Intégration au Launcher LIVEX
+
+`component.json` déclare l'adaptateur Linux `echos-launcher`, qui utilise
+`.venv/bin/python` lorsqu'il existe et sinon `python3`. Il accepte les arguments
+communs du Launcher, mappe `--control-port` sur `ECHOS_PORT`, et lie le serveur
+à `127.0.0.1`. `/health` mesure la vivacité HTTP ; la sonde déclarée
+`/health/ready` ne réussit que si une base `ECHOS_ANALYTICS_DB` est configurée,
+afin de ne pas annoncer comme prêt un service dont les API d'analyse répondent
+503. L'arrêt propre `POST /control/shutdown` exige
+`Authorization: Bearer $LIVEX_SESSION_TOKEN` et demande la fermeture d'Uvicorn.
+
+Le Launcher transmet le jeton par variable d'environnement. Pour une session
+avec ECHOS, configurer `ECHOS_ANALYTICS_DB` dans l'environnement de lancement.
+L'API `echos-serve` et `python -m echos.server` conservent leur interface
+existante ; l'adaptateur n'accepte que les arguments communs explicitement
+déclarés et refuse les autres.
+
 ## Tests
 
 ```bash

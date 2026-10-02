@@ -1,4 +1,5 @@
 const http = require('node:http');
+const { timingSafeEqual } = require('node:crypto');
 const { WebSocketServer } = require('ws');
 const { DEFAULTS, merge, resolveConfig } = require('./config');
 const { Simulation, log } = require('./simulation/simulation');
@@ -24,6 +25,7 @@ function controlOutcome(simulation, action) {
 
 function createServer(options = {}) {
   const config = resolveConfig(options);
+  const shutdownToken = options.sessionToken ?? process.env.LIVEX_SESSION_TOKEN;
   const clients = new Set();
   const simulation = new Simulation(config, message => {
     const text = JSON.stringify(message);
@@ -46,6 +48,19 @@ function createServer(options = {}) {
     if (request.method === 'GET' && url.pathname === '/api/control/status') {
       log('HTTP response GET status -> 200 (state=%s)', simulation.state);
       return send(200, simulation.status());
+    }
+    if (request.method === 'POST' && url.pathname === '/control/shutdown') {
+      const authorization = request.headers.authorization ?? '';
+      const expected = shutdownToken ? `Bearer ${shutdownToken}` : '';
+      const authorized = expected.length > 0
+        && Buffer.byteLength(authorization) === Buffer.byteLength(expected)
+        && timingSafeEqual(Buffer.from(authorization), Buffer.from(expected));
+      if (!authorized) {
+        return send(401, errorJson('unauthorized', 'Jeton de session absent ou invalide.'));
+      }
+      send(202, { ok: true, action: 'shutdown' });
+      setImmediate(() => void server.close());
+      return;
     }
     if (request.method === 'GET' && url.pathname === '/api/world') {
       if (!simulation.worldDescription()) {
@@ -175,7 +190,8 @@ function createServer(options = {}) {
     websocketServer.handleUpgrade(request, socket, head,
       client => websocketServer.emit('connection', client, request)));
 
-  return {
+  let closePromise;
+  const server = {
     simulation,
     httpServer,
     dataServer,
@@ -190,7 +206,7 @@ function createServer(options = {}) {
           });
         }));
     }),
-    close: () => new Promise(resolve => {
+    close: () => closePromise ??= new Promise(resolve => {
       simulation.stop();
       for (const client of clients) client.terminate();
       clients.clear();
@@ -201,6 +217,8 @@ function createServer(options = {}) {
       });
     })
   };
+
+  return server;
 }
 
 async function readJsonBody(request) {

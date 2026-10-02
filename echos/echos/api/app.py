@@ -10,9 +10,10 @@ L'API reste **lecture seule** : aucune écriture dans le monde observé
 
 from __future__ import annotations
 
+import hmac
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -22,6 +23,8 @@ from echos.storage.sqlite import AnalyticsStore
 
 _ENDPOINTS = [
     "/health",
+    "/health/ready",
+    "/control/shutdown",
     "/api/runs",
     "/api/control/status",
     "/api/control/{action}",
@@ -65,6 +68,31 @@ def create_app(
     @app.get("/health", tags=["system"])
     def health() -> dict:
         return {"status": "ok", "component": "echos", "version": __version__}
+
+    @app.get("/health/ready", tags=["system"])
+    def ready() -> dict:
+        if store is None:
+            raise HTTPException(
+                status_code=503,
+                detail="base d'analyse non configurée (variable ECHOS_ANALYTICS_DB)",
+            )
+        return {"status": "ok", "component": "echos", "analytics": "ready"}
+
+    @app.post("/control/shutdown", tags=["system"])
+    def shutdown(request: Request) -> dict:
+        expected = os.environ.get("LIVEX_SESSION_TOKEN")
+        authorization = request.headers.get("authorization", "")
+        supplied = authorization.removeprefix("Bearer ")
+        authorized = authorization.startswith("Bearer ") and hmac.compare_digest(
+            supplied, expected or ""
+        )
+        if not authorized:
+            raise HTTPException(status_code=401, detail="Jeton de session absent ou invalide.")
+        server = getattr(request.app.state, "uvicorn_server", None)
+        if server is None:
+            raise HTTPException(status_code=503, detail="Serveur ASGI sans contrôleur d'arrêt.")
+        server.should_exit = True
+        return {"status": "shutting_down"}
 
     if ui_dist and os.path.isdir(ui_dist):
         _mount_ui(app, ui_dist)

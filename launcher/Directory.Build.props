@@ -1,0 +1,23 @@
+<Project>
+  <!--
+    Conventions de build du Launcher (docs/docs-launcher/ARCHITECTURE.md).
+    - Identifiants de code en anglais, commentaires en français.
+    - Avertissements = erreurs : la CI de SYNE fait de même.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors></WarningsNotAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <Version>0.1.0</Version>
+    <Company>LIVEX</Company>
+    <Product>LIVEX Launcher</Product>
+    <NeutralLanguage>fr</NeutralLanguage>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

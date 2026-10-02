@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.Infrastructure — processus, registre, flux, stockage, horloge.
+    Implémente les interfaces du domaine. Aucune référence Avalonia.
+  -->
+
+  <PropertyGroup>
+    <Description>Infrastructure du LIVEX Launcher (processus, sondes, stockage, journaux)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Domain\Launcher.Domain.csproj" />
+    <ProjectReference Include="..\Launcher.Protocol\Launcher.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>

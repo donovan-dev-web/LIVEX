@@ -191,6 +191,8 @@ padding gauche 20 px, gap 22 px entre icône (26 × 26) et libellé.
 | Rapports | 353 | — |
 | Configuration | 413 | — |
 | Logs | 469 | — |
+| Monitoring | — | Ajout V1, sans coordonnées dans la maquette historique |
+| Documentation | — | Ajout V1, sans coordonnées dans la maquette historique |
 
 L'entrée sélectionnée se distingue par **trois** signes cumulés, jamais par la
 couleur seule :
@@ -253,6 +255,11 @@ Trois colonnes égales, gouttière **19 px**, padding `12px 14px 14px`.
 | SYNE | 268 | 292 | Cyan `#1fa8e8` |
 | ECHOS | 580 | 288 | Violet `#a04cf0` |
 | PRISM | 887 | 280 | Orange `#f0902d` |
+
+La maquette et l'application affichent trois cartes de rôle. `syne-mock` est
+détecté et configuré comme le mode « Émulé » de la carte SYNE, jamais comme une
+quatrième carte ; la ligne SYNE de l'état système représente l'instance réelle
+ou émulée, et ces variantes sont exclusives.
 
 Chaque carte : rayon 6 px, bordure **1.5 px** à sa couleur, ombre portée colorée
 diffusée, dégradé d'angle en la couleur du composant, plus un halo radial en haut
@@ -475,8 +482,9 @@ mais **faux sur le rendu**. C'est la structure qu'on lui vole, pas ses pixels.
 - **Dégradé du footer.** Sa teinteambre est nettement plus marquée dans le PNG
   que dans le prototype. La valeur cible n'est pas tranchée.
 - **Autres écrans.** Une seule vue est spécifiée ici, parce qu'une seule est
-  documentée. Les vues Expériences, Campagnes, Analyse, Rapports, Configuration
-  et Logs restent à écrire sur le même gabarit.
+  documentée. Les écrans V1 sont plus nombreux que la maquette de référence ;
+  les deux entrées ajoutées, Monitoring et Documentation, n'ont pas encore de
+  coordonnées pixel spécifiées.
 - **Redimensionnement.** Le PNG ne fixe qu'une résolution. Les largeurs fixes
   (222, 321, 134) supposent un seul gabarit ; le comportement en dessous de
   1280 px n'est pas spécifié.

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.Package — lecture et écriture du format .livexp.
+    Isolé : testable sans démarrer un seul composant (ARCHITECTURE.md §5).
+  -->
+
+  <PropertyGroup>
+    <Description>Format de paquet .livexp du LIVEX Launcher</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Domain\Launcher.Domain.csproj" />
+    <ProjectReference Include="..\Launcher.Protocol\Launcher.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>
