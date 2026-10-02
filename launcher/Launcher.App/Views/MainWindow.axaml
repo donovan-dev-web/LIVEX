@@ -1,0 +1,1076 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Launcher.Presentation.ViewModel"
+        xmlns:svg="clr-namespace:Avalonia.Svg;assembly=Avalonia.Svg"
+        xmlns:md="using:Markdown.Avalonia"
+        x:Class="Launcher.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="LIVEX Launcher"
+        Width="1480" Height="1024"
+        MinWidth="1280" MinHeight="720"
+        SystemDecorations="None"
+        TransparencyLevelHint="Transparent"
+        FontFamily="Inter, Segoe UI, Ubuntu, sans-serif"
+        Background="transparent">
+
+  <!-- Fond de page : dégradé radial sombre, signature de la maquette (GUI.md §3.1). -->
+  <Window.Styles>
+    <Style Selector="TextBlock.brand">
+      <Setter Property="FontFamily">Montserrat, Inter, Segoe UI</Setter>
+      <Setter Property="FontSize">29</Setter>
+      <Setter Property="FontWeight">Medium</Setter>
+      <Setter Property="Foreground">#e8e6e1</Setter>
+      <Setter Property="LetterSpacing">9</Setter>
+    </Style>
+    <Style Selector="TextBlock.brand-sub">
+      <Setter Property="FontFamily">Montserrat, Inter, Segoe UI</Setter>
+      <Setter Property="FontSize">11</Setter>
+      <Setter Property="FontWeight">Medium</Setter>
+      <Setter Property="Foreground">#9aa0aa</Setter>
+      <Setter Property="LetterSpacing">4.6</Setter>
+    </Style>
+    <Style Selector="TextBlock.tagline-top">
+      <Setter Property="FontSize">10</Setter>
+      <Setter Property="FontWeight">Medium</Setter>
+      <Setter Property="Foreground">#9aa0aa</Setter>
+      <Setter Property="LetterSpacing">2.8</Setter>
+    </Style>
+    <Style Selector="TextBlock.tagline-bottom">
+      <Setter Property="FontSize">12</Setter>
+      <Setter Property="FontWeight">Medium</Setter>
+      <Setter Property="Foreground">#e0a25a</Setter>
+      <Setter Property="LetterSpacing">3.4</Setter>
+    </Style>
+    <Style Selector="TextBlock.panel-title">
+      <Setter Property="FontSize">15</Setter>
+      <Setter Property="FontWeight">Medium</Setter>
+      <Setter Property="Foreground">#e8e6e1</Setter>
+      <Setter Property="LetterSpacing">2.2</Setter>
+    </Style>
+    <Style Selector="TextBlock.h-gold">
+      <Setter Property="Foreground">#e0a25a</Setter>
+      <Setter Property="FontSize">10</Setter>
+      <Setter Property="FontWeight">Medium</Setter>
+      <Setter Property="LetterSpacing">2.4</Setter>
+    </Style>
+    <Style Selector="TextBlock.h-comp">
+      <Setter Property="FontFamily">Montserrat, Inter, Segoe UI</Setter>
+      <Setter Property="FontSize">17</Setter>
+      <Setter Property="FontWeight">SemiBold</Setter>
+      <Setter Property="Foreground">#e8e6e1</Setter>
+      <Setter Property="LetterSpacing">2.4</Setter>
+    </Style>
+    <Style Selector="TextBlock.body">
+      <Setter Property="Foreground">#e8e6e1</Setter>
+      <Setter Property="FontSize">12.5</Setter>
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground">#9aa0aa</Setter>
+      <Setter Property="FontSize">12</Setter>
+    </Style>
+    <Style Selector="TextBlock.small">
+      <Setter Property="Foreground">#9aa0aa</Setter>
+      <Setter Property="FontSize">11.5</Setter>
+    </Style>
+    <Style Selector="TextBlock.link">
+      <Setter Property="Foreground">#e0a25a</Setter>
+      <Setter Property="FontSize">12.5</Setter>
+    </Style>
+    <Style Selector="Button.link-button">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Foreground" Value="#e0a25a"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="Padding" Value="4,2"/>
+      <Setter Property="MinHeight" Value="28"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- Panneaux (GUI.md §3.3 : rayon 12, bordure 1 px) -->
+    <Style Selector="Border.panel">
+      <Setter Property="Background">
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+          <GradientStop Color="#0d1016" Offset="0"/>
+          <GradientStop Color="#0a0d12" Offset="1"/>
+        </LinearGradientBrush>
+      </Setter>
+      <Setter Property="BorderBrush">#262b34</Setter>
+      <Setter Property="BorderThickness">1</Setter>
+      <Setter Property="CornerRadius">12</Setter>
+      <Setter Property="Padding">16</Setter>
+    </Style>
+
+    <!-- Navigation (GUI.md §5.1 : sélection = dégradé or + filet gauche 3 px + blanc) -->
+    <Style Selector="ListBox.nav">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="MinHeight" Value="51"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#10141b"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem Border.navbg">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected Border.navbg">
+      <Setter Property="Background">
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+          <GradientStop Color="#4a3822" Offset="0"/>
+          <GradientStop Color="#2a2119" Offset="0.8"/>
+        </LinearGradientBrush>
+      </Setter>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem Border.filet">
+      <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected Border.filet">
+      <Setter Property="Background" Value="#e0a25a"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem TextBlock.nav-label">
+      <Setter Property="Foreground" Value="#c7cbd3"/>
+      <Setter Property="FontSize" Value="14.5"/>
+    </Style>
+    <Style Selector="ListBox.nav ListBoxItem:selected TextBlock.nav-label">
+      <Setter Property="Foreground" Value="#ffffff"/>
+    </Style>
+
+    <!-- Boutons (GUI.md §3.3, §7.1) -->
+    <!--
+      Le thème Fluent impose HorizontalAlignment=Left / VerticalAlignment=Center aux boutons :
+      sans ce rappel, un bouton dans une colonne « * » se réduit à son contenu et sort de
+      sa colonne. On rétablit l'étirement pour nos classes de boutons.
+    -->
+    <Style Selector="Button.btn">
+      <Setter Property="Background" Value="#12151d"/>
+      <Setter Property="BorderBrush">#3a3f4a</Setter>
+      <Setter Property="BorderThickness">1</Setter>
+      <Setter Property="CornerRadius">6</Setter>
+      <Setter Property="Foreground">#e8e6e1</Setter>
+      <Setter Property="FontSize">12.5</Setter>
+      <Setter Property="Height">38</Setter>
+      <Setter Property="HorizontalAlignment">Stretch</Setter>
+      <Setter Property="VerticalAlignment">Stretch</Setter>
+    </Style>
+    <Style Selector="Button.btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1a1f29"/>
+    </Style>
+    <Style Selector="Button.btn:disabled">
+      <Setter Property="Opacity" Value="0.42"/>
+    </Style>
+    <Style Selector="Button.btn-primary">
+      <Setter Property="Background">
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+          <GradientStop Color="#e0a25a" Offset="0"/>
+          <GradientStop Color="#c98a3f" Offset="1"/>
+        </LinearGradientBrush>
+      </Setter>
+      <Setter Property="BorderThickness">0</Setter>
+      <Setter Property="CornerRadius">6</Setter>
+      <Setter Property="Foreground">#16130c</Setter>
+      <Setter Property="FontWeight">SemiBold</Setter>
+      <Setter Property="FontSize">12.5</Setter>
+      <Setter Property="Height">38</Setter>
+      <Setter Property="Padding">18,0</Setter>
+      <Setter Property="HorizontalAlignment">Stretch</Setter>
+      <Setter Property="VerticalAlignment">Stretch</Setter>
+    </Style>
+    <!-- Commandes de fenêtre : cellules fixes, icônes vectorielles centrées (GUI.md §4). -->
+    <Style Selector="Button.window-command">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Setter Property="Foreground" Value="#d7dbe2"/>
+      <Setter Property="Width" Value="40"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.window-command:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#272c34"/>
+    </Style>
+    <Style Selector="Button.window-command.close:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#b83b3b"/>
+    </Style>
+
+    <!-- Pastilles d'état (GUI.md §7.1, §8.1) : capsule avec libellé, jamais la couleur seule -->
+    <Style Selector="Border.pill">
+      <Setter Property="CornerRadius">13</Setter>
+      <Setter Property="Height">26</Setter>
+      <Setter Property="Padding">12,0</Setter>
+    </Style>
+    <Style Selector="Border.pill-table">
+      <Setter Property="CornerRadius">5</Setter>
+      <Setter Property="Height">24</Setter>
+      <Setter Property="Width">96</Setter>
+      <Setter Property="Padding">3,0</Setter>
+    </Style>
+
+    <!-- Jauges (GUI.md §9.2 : plates, 6 px, dégradé bleu) -->
+    <Style Selector="ProgressBar.gauge">
+      <Setter Property="Height">6</Setter>
+      <Setter Property="MinHeight">6</Setter>
+      <Setter Property="Background">#2a2e37</Setter>
+      <Setter Property="Foreground">
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+          <GradientStop Color="#2d8fe6" Offset="0"/>
+          <GradientStop Color="#5cc4ff" Offset="1"/>
+        </LinearGradientBrush>
+      </Setter>
+      <Setter Property="Maximum">100</Setter>
+    </Style>
+
+    <!-- Cartes de composants (GUI.md §7.1 : rayon 6, bordure 1.5 px à la couleur) -->
+    <Style Selector="Border.comp-card">
+      <Setter Property="CornerRadius">6</Setter>
+      <Setter Property="BorderThickness">1.5</Setter>
+      <Setter Property="Background">#0a0d12</Setter>
+      <Setter Property="Padding">0</Setter>
+      <Setter Property="MinHeight">272</Setter>
+      <Setter Property="Margin">0,0,19,0</Setter>
+    </Style>
+    <Style Selector="Border.table">
+      <Setter Property="Background">#0b0e13</Setter>
+      <Setter Property="CornerRadius">8</Setter>
+      <Setter Property="BorderBrush">#262b34</Setter>
+      <Setter Property="BorderThickness">1</Setter>
+    </Style>
+    <Style Selector="Border.log-entry">
+      <Setter Property="BorderBrush">#1c2028</Setter>
+      <Setter Property="BorderThickness">0,0,0,1</Setter>
+      <Setter Property="Padding">0,11,0,10</Setter>
+    </Style>
+    <Style Selector="Border.row-sep">
+      <Setter Property="BorderBrush">#1a1e26</Setter>
+      <Setter Property="BorderThickness">0,0,0,1</Setter>
+    </Style>
+  </Window.Styles>
+
+  <!-- Fond en dégradé radial (GUI.md §3.1 : pic #141821 en haut) -->
+  <Window.Background>
+    <RadialGradientBrush Center="0.5,0.0" GradientOrigin="0.5,0.0" RadiusX="0.95" RadiusY="0.85">
+      <GradientStop Color="#141821" Offset="0"/>
+      <GradientStop Color="#0a1017" Offset="0.45"/>
+      <GradientStop Color="#07090d" Offset="1"/>
+    </RadialGradientBrush>
+  </Window.Background>
+
+  <!-- Surface arrondie sans chrome natif : les commandes de fenêtre sont dans la topbar. -->
+  <Border Background="#07090d" BorderBrush="#303640" BorderThickness="1" CornerRadius="14" ClipToBounds="True">
+  <!--
+    Colonnes et rangées explicites partout : une colonne implicite se dimensionne au contenu
+    et fait déborder les enfants. L'image de fond vit dans un Panel (jamais en cellule
+    « RowSpan » d'une grille à étoiles) : sinon la résolution des étoiles bascule en « auto ».
+  -->
+  <Panel>
+    <Image Source="avares://livex-launcher/Assets/sidebar-landscape.png"
+           Stretch="UniformToFill" Opacity="0.10" IsHitTestVisible="False"/>
+    <Grid RowDefinitions="85,*,48" ColumnDefinitions="*">
+
+    <!-- ==================== TOPBAR — 85 px (GUI.md §4) ==================== -->
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Background="Transparent"
+          PointerPressed="OnTitleBarPointerPressed">
+      <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="34,0,0,0">
+        <svg:Svg Path="avares://livex-launcher/Assets/livex-mark.svg" Width="68" Height="68" Stretch="Uniform" VerticalAlignment="Center"/>
+        <StackPanel Margin="24,0,0,0" VerticalAlignment="Center">
+          <TextBlock Text="LIVEX" Classes="brand"/>
+          <TextBlock Text="LAUNCHER" Classes="brand-sub" Margin="2,2,0,0"/>
+        </StackPanel>
+        <Border Width="1" Height="44" Background="#2a2f3a" Margin="26,0,26,0" VerticalAlignment="Center"/>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="UN MONDE VIRTUEL" Classes="tagline-top"/>
+          <TextBlock Text="EN EVOLUTION" Classes="tagline-bottom" Margin="0,4,0,0"/>
+        </StackPanel>
+      </StackPanel>
+
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="14" Margin="0,0,19,0">
+        <TextBlock Text="Mode" Classes="muted" FontSize="12.5" Margin="18,0,0,0" VerticalAlignment="Center"/>
+        <ComboBox ItemsSource="{Binding SessionKinds}" SelectedItem="{Binding SelectedMode}"
+                  Width="134" Height="34" CornerRadius="8" FontSize="13" VerticalAlignment="Center"/>
+        <Button Classes="btn" Width="36" Height="34" Padding="0" VerticalAlignment="Center" ToolTip.Tip="Configuration"
+                Command="{Binding NavigateCommand}" CommandParameter="configuration">
+          <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Width="20" Height="20" Stretch="Uniform"/>
+        </Button>
+        <Border Width="1" Height="28" Background="#303640" VerticalAlignment="Center"/>
+        <!-- Commandes de fenêtre : mêmes cellules, mêmes icônes vectorielles 11 × 11. -->
+        <Button Classes="window-command" Click="OnMinimizeClick" ToolTip.Tip="Réduire">
+          <Path Data="M0,5.5 L11,5.5" Stretch="None"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1"/>
+        </Button>
+        <Button Classes="window-command" Click="OnMaximizeClick" ToolTip.Tip="Agrandir">
+          <Path Data="M0.5,0.5 H10.5 V10.5 H0.5 Z" Stretch="None"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1"/>
+        </Button>
+        <Button Classes="window-command close" Click="OnCloseClick" ToolTip.Tip="Fermer">
+          <Path Data="M0,0 L11,11 M11,0 L0,11" Stretch="None"
+                Stroke="{Binding $parent[Button].Foreground}" StrokeThickness="1"/>
+        </Button>
+      </StackPanel>
+    </Grid>
+
+    <!-- ==================== CORPS — 3 colonnes (GUI.md §2.1) ==================== -->
+    <Grid Grid.Row="1" ColumnDefinitions="222,*,321" Margin="16,0,19,14">
+
+      <!-- ·Sidebar 222 px (GUI.md §5) ·-->
+      <Border Grid.Column="0" Classes="panel" Padding="0">
+        <Grid ClipToBounds="True" ColumnDefinitions="*">
+          <Image Source="avares://livex-launcher/Assets/sidebar-landscape.png" Stretch="UniformToFill"
+                 Height="430" VerticalAlignment="Bottom" Opacity="0.50" IsHitTestVisible="False"/>
+          <Border IsHitTestVisible="False">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#00070b10" Offset="0"/>
+                <GradientStop Color="#28070b10" Offset="0.48"/>
+                <GradientStop Color="#c9070b10" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Bottom" Margin="20,12,20,20">
+            <svg:Svg Path="avares://livex-launcher/Assets/livex-mark.svg" Width="52" Height="52" Stretch="Uniform" HorizontalAlignment="Left"/>
+            <TextBlock Text="LIVEX" FontFamily="Montserrat, Inter, Segoe UI" FontSize="15" FontWeight="Medium"
+                       Foreground="#e8e6e1" LetterSpacing="5.2" Margin="0,8,0,8"/>
+            <TextBlock Text="Des entités autonomes." Classes="small"/>
+            <TextBlock Text="Des comportements émergents." Classes="small" Margin="0,3,0,0"/>
+            <TextBlock Text="Un monde qui évolue." Classes="small" Margin="0,3,0,0"/>
+          </StackPanel>
+
+          <ListBox Classes="nav" Margin="0,26,0,0" ItemsSource="{Binding NavItems}"
+                   SelectedIndex="{Binding SelectedNavIndex}"
+                   ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NavItemViewModel">
+                <Border Classes="navbg" Height="51" Margin="2,0,8,4" CornerRadius="4">
+                  <Grid ColumnDefinitions="3,48,*">
+                    <Border Grid.Column="0" Classes="filet"/>
+                    <Panel Grid.Column="1" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-home.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=accueil}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-experience.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=experiences}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-campagne.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=campagnes}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-analyse.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=analyse}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-report.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=rapports}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=configuration}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-log.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=logs}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-cpu.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=monitoring}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-report.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=documentation}"/>
+                    </Panel>
+                    <TextBlock Grid.Column="2" Text="{Binding Title}" Classes="nav-label"
+                               VerticalAlignment="Center" Margin="17,0,0,0"/>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+        </Grid>
+      </Border>
+
+      <!-- ·Colonne centrale (GUI.md §6-§8) ·-->
+      <Grid Grid.Column="1" RowDefinitions="Auto,*" ColumnDefinitions="*" Margin="17,0">
+        <!-- Hero : remonte de 22 px dans la topbar, arrondi bas-droit seulement (GUI.md §6) -->
+        <Border Grid.Row="0" Height="150" Margin="0,0,0,5" ZIndex="2" CornerRadius="12"
+                ClipToBounds="True">
+          <Panel>
+            <!-- Dégradé vertical chaud de la maquette (GUI.md §6). -->
+            <Panel.Background>
+              <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#5a4a3a" Offset="0"/>
+                <GradientStop Color="#3b3a48" Offset="0.3"/>
+                <GradientStop Color="#1d2330" Offset="0.7"/>
+                <GradientStop Color="#0c0f16" Offset="1"/>
+              </LinearGradientBrush>
+            </Panel.Background>
+            <!-- Panorama : le visuel de la maquette occupe les 70 % de droite (GUI.md §6). -->
+            <Grid ColumnDefinitions="0.3*,0.7*">
+              <Image Grid.Column="1" Source="avares://livex-launcher/Assets/hero-panorama.png"
+                     Stretch="UniformToFill" Height="150"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Margin="24,56,0,0" VerticalAlignment="Top">
+              <Border Width="2" Height="120" Background="#e0a25a" Margin="0,0,50,0"/>
+              <StackPanel>
+                <TextBlock Text="LIVEX" Classes="brand"/>
+                <TextBlock Text="LAUNCHER" Classes="brand-sub" Margin="2,8,0,0"/>
+              </StackPanel>
+            </StackPanel>
+            <StackPanel VerticalAlignment="Bottom" Margin="29,0,0,12">
+              <TextBlock Text="Orchestrez, explorez, analysez." FontSize="14" Foreground="#c9cdd4"/>
+              <TextBlock Text="Un monde en évolution." FontSize="14" Foreground="#c9cdd4" Margin="0,2,0,0"/>
+            </StackPanel>
+          </Panel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Margin="0,15,0,0" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="15">
+
+            <!-- ·Vue ACCUEIL : COMPOSANTS + Dernières expériences (GUI.md §7, §8) ·-->
+            <StackPanel Spacing="15" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=accueil}">
+
+              <Border Classes="panel" Padding="16,17,14,14">
+                <StackPanel Spacing="14">
+                  <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="◈" Foreground="#e0a25a" FontSize="16" VerticalAlignment="Center"/>
+                    <StackPanel>
+                      <TextBlock Text="COMPOSANTS" Classes="panel-title"/>
+                      <TextBlock Text="Pile détectée sur cette machine — état, cause, action" Classes="muted" FontSize="12.5" Margin="0,3,0,0"/>
+                    </StackPanel>
+                  </StackPanel>
+
+                  <ItemsControl ItemsSource="{Binding Components}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <UniformGrid Columns="3"/>
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ComponentRowViewModel">
+                        <Border Classes="comp-card" BorderBrush="{Binding Accent}" ClipToBounds="True">
+                            <Border Background="#090d13" CornerRadius="4.5" ClipToBounds="True">
+                              <Panel>
+                                <!-- Visuel de fond : chaque carte a sa propre image plein cadre. -->
+                                <Image Source="avares://livex-launcher/Assets/component-syne.png" Stretch="UniformToFill" Opacity="0.82"
+                                       IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=syne}"/>
+                                <Image Source="avares://livex-launcher/Assets/component-echos.png" Stretch="UniformToFill" Opacity="0.82"
+                                       IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=echos}"/>
+                                <Image Source="avares://livex-launcher/Assets/component-prism.png" Stretch="UniformToFill" Opacity="0.82"
+                                       IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}"/>
+                                <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
+                                <!-- Grid et non StackPanel : un StackPanel horizontal mesure ses enfants
+                                     à l'infini, leurs dimensions naturelles gonflent alors la colonne « * »
+                                     de la grille parente et font déborder la carte. -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="14" Margin="14,12,12,0" VerticalAlignment="Center">
+                                  <Panel Width="66" Height="66">
+                                    <Ellipse Stroke="{Binding Accent}" StrokeThickness="1.5" Fill="#10141c"/>
+                                    <svg:Svg Path="avares://livex-launcher/Assets/syne-mark.svg" Width="44" Height="44" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=syne}"/>
+                                    <svg:Svg Path="avares://livex-launcher/Assets/echos-mark.svg" Width="44" Height="44" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=echos}"/>
+                                    <svg:Svg Path="avares://livex-launcher/Assets/prism-mark.svg" Width="44" Height="44" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                             IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}"/>
+                                  </Panel>
+                                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                    <TextBlock Text="{Binding Name}" Classes="h-comp"/>
+                                    <TextBlock Text="{Binding Subtitle}" FontSize="12" Foreground="#c7cbd3" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Technology}" Classes="small" TextWrapping="Wrap"/>
+                                  </StackPanel>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="12.5" Foreground="#d0d4dc"
+                                           Margin="16,8,16,8" TextWrapping="Wrap" VerticalAlignment="Center"/>
+
+                                <Border Grid.Row="2" Classes="pill" HorizontalAlignment="Left" Margin="14,0,0,9"
+                                        Background="#101820" BorderBrush="{Binding StateColor}" BorderThickness="1">
+                                  <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="8" Height="8" Fill="{Binding StateColor}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding StateLabel}" Foreground="{Binding StateColor}" FontSize="11.5" VerticalAlignment="Center"/>
+                                  </StackPanel>
+                                </Border>
+
+                                <Grid Grid.Row="3" ColumnDefinitions="*,14,*" Margin="14,0,14,12">
+                                  <!-- Bascule démarrer/arrêter : le libellé et l'icône changent avec l'état (GUI.md §7.1). -->
+                                  <Button Grid.Column="0" Classes="btn" Padding="6,0"
+                                          IsEnabled="{Binding CanToggle}"
+                                          Command="{Binding $parent[Window].DataContext.ToggleComponentCommand}" CommandParameter="{Binding Id}">
+                                    <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-play.svg" Width="15" Height="15" Stretch="Uniform"
+                                               IsVisible="{Binding !IsRunning}"/>
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-stop.svg" Width="15" Height="15" Stretch="Uniform"
+                                               IsVisible="{Binding IsRunning}"/>
+                                      <TextBlock Text="{Binding ToggleLabel}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Button>
+                                  <!-- Secondaire : ouvre l'écran Configuration. -->
+                                  <Button Grid.Column="2" Classes="btn" Padding="6,0"
+                                          Command="{Binding $parent[Window].DataContext.NavigateCommand}" CommandParameter="configuration">
+                                    <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Width="15" Height="15" Stretch="Uniform"/>
+                                      <TextBlock Text="Configurer" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Button>
+                                </Grid>                                </Grid>
+                              </Panel>
+                            </Border>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Border>
+
+              <Border Classes="panel" Padding="16,14,16,14">
+                <StackPanel Spacing="12">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="⊕" Foreground="#e0a25a" FontSize="22" VerticalAlignment="Center"/>
+                      <StackPanel>
+                        <TextBlock Text="DERNIÈRES EXPÉRIENCES" Classes="panel-title"/>
+                        <TextBlock Text="Paquets .livexp de la racine des campagnes" Classes="muted" FontSize="12.5" Margin="0,3,0,0"/>
+                      </StackPanel>
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="link-button" Content="Voir toutes les expériences" VerticalAlignment="Center"
+                            Command="{Binding NavigateCommand}" CommandParameter="experiences"/>
+                  </Grid>
+
+                  <Border Classes="table" Padding="0,6,0,0">
+                    <StackPanel>
+                      <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,1.1*" Margin="20,0,16,8">
+                        <TextBlock Text="NOM" Classes="h-gold"/>
+                        <TextBlock Grid.Column="1" Text="DATE" Classes="h-gold"/>
+                        <TextBlock Grid.Column="2" Text="DURÉE" Classes="h-gold"/>
+                        <TextBlock Grid.Column="3" Text="STATUT" Classes="h-gold"/>
+                        <TextBlock Grid.Column="4" Text="ACTIONS" Classes="h-gold" HorizontalAlignment="Right"/>
+                      </Grid>
+                      <ItemsControl ItemsSource="{Binding Experiences}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:ExperienceRowViewModel">
+                            <Border Classes="row-sep">
+                              <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,1.1*" Height="33" Margin="20,0,16,0">
+                                <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                                  <TextBlock Text="▣" Foreground="#e0a25a" FontSize="12" VerticalAlignment="Center"/>
+                                  <TextBlock Text="{Binding Name}" Classes="body" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding Date}" Classes="small" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Duration}" Classes="small" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                  <Border Classes="pill-table" Background="#12281c" BorderBrush="#2ecc71" BorderThickness="1" IsVisible="{Binding IsDone}">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                      <Ellipse Width="9" Height="9" Fill="#2ecc71" VerticalAlignment="Center"/>
+                                      <TextBlock Text="Terminée" Foreground="#2ecc71" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Border>
+                                  <Border Classes="pill-table" Background="#14273a" BorderBrush="#2d9bf0" BorderThickness="1" IsVisible="{Binding IsRunning}">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                      <Ellipse Width="9" Height="9" Fill="#2d9bf0" VerticalAlignment="Center"/>
+                                      <TextBlock Text="En cours" Foreground="#2d9bf0" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Border>
+                                  <Border Classes="pill-table" Background="#2b2419" BorderBrush="#e8b46a" BorderThickness="1" IsVisible="{Binding IsRecoverable}">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                      <Ellipse Width="9" Height="9" Fill="#e8b46a" VerticalAlignment="Center"/>
+                                      <TextBlock Text="Récupérable" Foreground="#e8b46a" FontSize="11" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="18" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                  <TextBlock Text="⤓" Classes="muted" FontSize="14"/>
+                                  <TextBlock Text="✕" Classes="muted" FontSize="14"/>
+                                </StackPanel>
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <TextBlock Text="Aucune expérience pour l'instant — créez-en une ci-dessous." Classes="small"
+                                 Margin="20,10,0,10"
+                                 IsVisible="{Binding Experiences.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                    </StackPanel>
+                  </Border>
+
+                  <Grid ColumnDefinitions="*,Auto">
+                    <Button Classes="btn-primary" Content="Nouvelle expérience" HorizontalAlignment="Left"
+                            Command="{Binding NavigateCommand}" CommandParameter="campagnes"/>
+                    <Button Grid.Column="1" Classes="link-button" Content="Gérer les expériences" VerticalAlignment="Center"
+                            Command="{Binding NavigateCommand}" CommandParameter="experiences"/>
+                  </Grid>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+
+            <!-- ·Vue EXPÉRIENCES : ouverture directe des paquets ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=experiences}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="EXPÉRIENCES" Classes="panel-title"/>
+                <TextBlock Text="Chaque expérience est un paquet .livexp : vivant pendant la campagne, scellé à la fin (PACKAGE_FORMAT.md §4)." Classes="muted" TextWrapping="Wrap"/>
+                <Border Classes="table" Padding="0,6,0,0">
+                  <StackPanel>
+                    <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,Auto" Margin="20,0,16,8">
+                      <TextBlock Text="NOM" Classes="h-gold"/>
+                      <TextBlock Grid.Column="1" Text="DATE" Classes="h-gold"/>
+                      <TextBlock Grid.Column="2" Text="DURÉE" Classes="h-gold"/>
+                      <TextBlock Grid.Column="3" Text="STATUT" Classes="h-gold"/>
+                      <TextBlock Grid.Column="4" Text="ACTION" Classes="h-gold"/>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Experiences}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ExperienceRowViewModel">
+                          <Border Classes="row-sep">
+                            <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,Auto" Height="38" Margin="20,0,16,0">
+                              <TextBlock Text="{Binding Name}" Classes="body" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                              <TextBlock Grid.Column="1" Text="{Binding Date}" Classes="small" VerticalAlignment="Center"/>
+                              <TextBlock Grid.Column="2" Text="{Binding Duration}" Classes="small" VerticalAlignment="Center"/>
+                              <TextBlock Grid.Column="3" Text="{Binding Status}" Classes="small" VerticalAlignment="Center"/>
+                              <Button Grid.Column="4" Classes="link-button" Content="Ouvrir" VerticalAlignment="Center"
+                                      Command="{Binding $parent[Window].DataContext.OpenExperienceCommand}"
+                                      CommandParameter="{Binding PackagePath}"/>
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Aucune expérience." Classes="small" Margin="20,10,0,10"
+                               IsVisible="{Binding Experiences.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <!-- ·Vue CAMPAGNES : saisie et lancement d'une campagne ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=campagnes}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="NOUVELLE EXPÉRIENCE / CAMPAGNE" Classes="panel-title"/>
+                <TextBlock Text="Une expérience est archivée dans un paquet .livexp. Les runs sont séquentiels, leurs graines sont dérivées de la graine de base et les résultats sont scellés à la fin." Classes="muted" TextWrapping="Wrap"/>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto,Auto">
+                  <StackPanel Spacing="5">
+                    <TextBlock Text="Nom de l'expérience" Classes="small"/>
+                    <TextBox Text="{Binding CampaignTitle}" Watermark="Ex. Écosystème — saison 1"/>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="5">
+                    <TextBlock Text="Simulation" Classes="small"/>
+                    <TextBox Text="{Binding SimulationId}" Watermark="ecosystem_01"/>
+                  </StackPanel>
+                  <StackPanel Grid.Row="1" Spacing="5">
+                    <TextBlock Text="Nombre de runs" Classes="small"/>
+                    <TextBox Text="{Binding RunCountInput}" Watermark="1"/>
+                  </StackPanel>
+                  <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                    <TextBlock Text="Ticks par run" Classes="small"/>
+                    <TextBox Text="{Binding TickCountInput}" Watermark="1000"/>
+                  </StackPanel>
+                  <StackPanel Grid.Row="2" Spacing="5">
+                    <TextBlock Text="Agents initiaux" Classes="small"/>
+                    <TextBox Text="{Binding AgentCountInput}" Watermark="50"/>
+                  </StackPanel>
+                  <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                    <TextBlock Text="Graine de base" Classes="small"/>
+                    <TextBox Text="{Binding BaseSeedInput}" Watermark="42"/>
+                  </StackPanel>
+                  <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                    <Button Classes="btn-primary" Content="Créer et démarrer" Command="{Binding CreateCampaignCommand}"
+                            CommandParameter="start" IsEnabled="{Binding CanCreateCampaign}"/>
+                    <Button Classes="btn" Content="Annuler la campagne" Command="{Binding CancelCampaignCommand}"
+                            CommandParameter="cancel" IsVisible="{Binding IsCampaignRunning}"/>
+                    <Button Classes="btn" Content="Parcourir les paquets" Click="OnOpenPackageClick"/>
+                  </StackPanel>
+                </Grid>
+                <TextBlock Text="{Binding CampaignStatus}" Classes="body" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding CampaignProgressText}" Classes="muted" TextWrapping="Wrap"/>
+                <TextBlock Text="EXPÉRIENCES / CAMPAGNES EXISTANTES" Classes="panel-title" Margin="0,10,0,0"/>
+                <ItemsControl ItemsSource="{Binding Experiences}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ExperienceRowViewModel">
+                      <Border Classes="row-sep">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="8">
+                          <StackPanel>
+                            <TextBlock Text="{Binding Name}" Classes="body"/>
+                            <TextBlock Text="{Binding Date}" Classes="small"/>
+                          </StackPanel>
+                          <TextBlock Grid.Column="1" Text="{Binding Status}" Classes="small" VerticalAlignment="Center" Margin="8,0"/>
+                          <Button Grid.Column="2" Classes="link-button" Content="Ouvrir"
+                                  Command="{Binding $parent[Window].DataContext.OpenExperienceCommand}"
+                                  CommandParameter="{Binding PackagePath}"/>
+                          <Button Grid.Column="3" Classes="link-button" Content="Reprendre"
+                                  IsVisible="{Binding IsRecoverable}"
+                                  Command="{Binding $parent[Window].DataContext.ResumeCampaignCommand}"
+                                  CommandParameter="{Binding PackagePath}"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+
+            <!-- ·Vue ANALYSE : rapport d'émergence (USER_INTERFACE.md §3.2, ADR-003) ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=analyse}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="RAPPORT D'ÉMERGENCE" Classes="panel-title"/>
+                <Button Classes="btn" Content="Ouvrir un paquet .livexp" HorizontalAlignment="Left" Click="OnOpenPackageClick"/>
+                <TextBlock Text="{Binding ReportStatus}" Classes="muted" TextWrapping="Wrap"/>
+                <md:MarkdownScrollViewer
+                  Markdown="{Binding EmergenceReport}"
+                  IsVisible="{Binding EmergenceReport, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
+                <TextBlock Text="Sans ECHOS, aucun rapport n'est produit : l'absence est affichée, jamais remplacée par une approximation locale (ADR-003)."
+                           Classes="muted" TextWrapping="Wrap"
+                           IsVisible="{Binding EmergenceReport, Converter={x:Static vm:StringConverters.Empty}}"/>
+              </StackPanel>
+            </Border>
+
+            <!-- ·Vue RAPPORTS ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=rapports}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="RAPPORTS" Classes="panel-title"/>
+                <TextBlock Text="Ouvrez un paquet .livexp pour consulter le rapport produit par ECHOS, puis exportez le Markdown original hors du paquet." Classes="muted" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="btn" Content="Ouvrir un paquet .livexp" Click="OnOpenPackageClick"/>
+                  <Button Classes="btn-primary" Content="Enregistrer le rapport sous…" Click="OnSaveReportClick"
+                          IsEnabled="{Binding EmergenceReport, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ReportStatus}" Classes="small" TextWrapping="Wrap"/>
+                <md:MarkdownScrollViewer Markdown="{Binding EmergenceReport}"
+                                         IsVisible="{Binding EmergenceReport, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
+              </StackPanel>
+            </Border>
+
+            <!-- ·Vue CONFIGURATION : profils et session (COMPONENTS.md §8) ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=configuration}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="CONFIGURATION" Classes="panel-title"/>
+                <!-- Profil sélectionnable (COMPONENTS.md §9, G7) : l'état, la cause du verrou et le
+                     jalon sont affichés tels qu'évalués au manifeste (ADR-006, USER_INTERFACE §3.4). -->
+                <TextBlock Text="Profil d'exécution (COMPONENTS.md §9) :" Classes="body"/>
+                <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="240" CornerRadius="8"/>
+                <TextBlock Text="{Binding ProfileStatus}" Classes="muted" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="btn-primary" Content="Démarrer le profil" IsEnabled="{Binding CanStartProfile}"
+                          Command="{Binding StartProfileCommand}" CommandParameter="{Binding SelectedProfile}"/>
+                  <Button Classes="btn" Padding="10,6" Content="Arrêter le profil" IsEnabled="{Binding CanStopProfile}"
+                          Command="{Binding StopProfileCommand}" CommandParameter="{Binding SelectedProfile}"/>
+                </StackPanel>
+                <TextBlock Text="Type de session courant (COMPONENTS.md §8.2) :" Classes="body" Margin="0,6,0,0"/>
+                <ComboBox ItemsSource="{Binding SessionKinds}" SelectedItem="{Binding SelectedMode}" Width="240" CornerRadius="8"/>
+                <TextBlock Text="Console exécute les expériences en arrière-plan et sans PRISM. Standard laisse le démarrage manuel. Développement impose l'émulation SYNE. Personnaliser permet de choisir la pile et le moteur SYNE." Classes="small" TextWrapping="Wrap"/>
+                <TextBlock Text="Moteur SYNE :" Classes="body" Margin="0,6,0,0"/>
+                <ComboBox ItemsSource="{Binding SyneEngineModes}" SelectedItem="{Binding SelectedSyneEngineMode}"
+                          IsEnabled="{Binding CanChooseSyneEngineMode}" Width="240" CornerRadius="8"/>
+                <TextBlock Text="Le moteur réel et son émulateur occupent le même rôle ; un seul peut être actif à la fois." Classes="small" TextWrapping="Wrap"/>
+                <StackPanel IsVisible="{Binding SelectedMode, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=Personnaliser}" Spacing="6">
+                  <TextBlock Text="Composants sélectionnés :" Classes="body"/>
+                  <ItemsControl ItemsSource="{Binding CustomComponents}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:CustomComponentSelectionViewModel">
+                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}"/>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+                <TextBlock Text="Installations et versions détectées :" Classes="body" Margin="0,8,0,0"/>
+                <ItemsControl ItemsSource="{Binding ComponentInstallations}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ComponentInstallationSelectionViewModel">
+                      <StackPanel Spacing="4" Margin="0,4">
+                        <TextBlock Text="{Binding Name}" Classes="small"/>
+                        <ComboBox ItemsSource="{Binding Options}" SelectedItem="{Binding Selected}" HorizontalAlignment="Stretch">
+                          <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:ComponentInstallationOption">
+                              <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Version}"/>
+                                <TextBlock Text="{Binding Location}" Classes="small"/>
+                              </StackPanel>
+                            </DataTemplate>
+                          </ComboBox.ItemTemplate>
+                        </ComboBox>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Aucune installation valide avec manifeste n'a été détectée."
+                           Classes="small" IsVisible="{Binding ComponentInstallations.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                <Button Classes="btn" Content="Ajouter un dossier de composant…" Click="OnAddComponentInstallationClick"
+                        HorizontalAlignment="Left"/>
+                <TextBlock Text="{Binding LogStatus}" Classes="small" TextWrapping="Wrap"/>
+                <TextBlock Text="Les variantes UI/headless doivent être déclarées explicitement par chaque manifeste ; elles ne sont pas fournies par les installations réelles actuelles."
+                           Classes="small" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+
+            <!-- ·Vue MONITORING : état détaillé des composants et ressources ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=monitoring}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="MONITORING" Classes="panel-title"/>
+                <TextBlock Text="{Binding GlobalState}" Classes="body"/>
+                <TextBlock Text="{Binding GlobalCause}" Classes="muted" TextWrapping="Wrap"/>
+                <TextBlock Text="COMPOSANTS" Classes="panel-title" Margin="0,8,0,0"/>
+                <ItemsControl ItemsSource="{Binding Components}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ComponentRowViewModel">
+                      <Border Classes="row-sep" Padding="10">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="3">
+                            <TextBlock Text="{Binding Name}" Classes="body"/>
+                            <TextBlock Text="{Binding Subtitle}" Classes="small"/>
+                            <TextBlock Text="{Binding Description}" Classes="small" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Cause}" Classes="small" TextWrapping="Wrap"/>
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding StateLabel}" Foreground="{Binding StateColor}" Classes="body"/>
+                            <TextBlock Text="{Binding Version}" Classes="small"/>
+                            <TextBlock Text="{Binding ProcessId, Converter={x:Static vm:StringConverters.PidOrDash}}" Classes="small"/>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{Binding RamPercent, StringFormat='RAM — {0}'}" Classes="small"/>
+                <ProgressBar Classes="gauge" Value="{Binding RamValue}"/>
+                <TextBlock Text="{Binding CpuPercent, StringFormat='CPU — {0}'}" Classes="small"/>
+                <ProgressBar Classes="gauge" Value="{Binding CpuValue}"/>
+                <TextBlock Text="{Binding StoragePercent, StringFormat='Stockage — {0}'}" Classes="small"/>
+                <ProgressBar Classes="gauge" Value="{Binding StorageValue}"/>
+                <TextBlock Text="Mesure des flux SYNE → ECHOS/PRISM indisponible : aucun endpoint de métriques compatible n'est déclaré par les composants réels."
+                           Classes="small" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+
+            <!-- ·Vue DOCUMENTATION : Markdown embarqué, global et par composant ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=documentation}">
+              <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
+                <TextBlock Text="DOCUMENTATION LIVEX" Classes="panel-title"/>
+                <ComboBox Grid.Row="1" ItemsSource="{Binding DocumentationItems}" SelectedItem="{Binding SelectedDocumentation}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DocumentationItemViewModel">
+                      <TextBlock Text="{Binding RelativePath}" TextTrimming="CharacterEllipsis"/>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <DockPanel Grid.Row="2">
+                  <TextBlock DockPanel.Dock="Top" Text="{Binding DocumentationStatus}" Classes="small" Margin="0,0,0,8"/>
+                  <md:MarkdownScrollViewer Markdown="{Binding DocumentationContent}"/>
+                </DockPanel>
+              </Grid>
+            </Border>
+
+            <!-- ·Vue LOGS : journal de session complet (OBSERVABILITY.md §7) ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=logs}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="JOURNAL DE SESSION" Classes="panel-title"/>
+                <TextBlock Text="Historique des journaux de session au format JSON Lines. Les dernières entrées sont également visibles dans la colonne d'état." Classes="muted" TextWrapping="Wrap"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="btn" Content="Ouvrir l'emplacement" Click="OnOpenLogsDirectoryClick"/>
+                  <Button Classes="btn" Content="Exporter les journaux…" Click="OnExportLogsClick"/>
+                  <Button Classes="btn" Content="Journaux d'un paquet…" Click="OnOpenRunLogsClick"/>
+                </StackPanel>
+                <TextBlock Text="{Binding LogStatus}" Classes="small" TextWrapping="Wrap"/>
+                <ComboBox ItemsSource="{Binding RunLogFiles}" SelectedItem="{Binding SelectedRunLog}"
+                          IsVisible="{Binding RunLogFiles.Count, Converter={x:Static vm:StringConverters.NotZero}}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PackageLogFileViewModel">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding RunId}"/>
+                        <TextBlock Text="—"/>
+                        <TextBlock Text="{Binding Name}"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBox Text="{Binding RunLogContent}" IsReadOnly="True" AcceptsReturn="True"
+                         TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                         MinHeight="150" IsVisible="{Binding RunLogContent, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
+                <Button Classes="btn" Content="Exporter le journal sélectionné…" Click="OnExportRunLogClick"
+                        IsEnabled="{Binding CanExportRunLog}"/>
+                <ItemsControl ItemsSource="{Binding Logs}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LogEntryViewModel">
+                      <Border Classes="log-entry">
+                        <StackPanel>
+                          <Grid ColumnDefinitions="Auto,44,*" ColumnSpacing="10">
+                            <Ellipse Width="9" Height="9" Fill="{Binding LevelColor}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Level}" Foreground="{Binding LevelColor}" FontSize="11" FontWeight="Medium" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="12" Foreground="#c9cdd4" TextWrapping="Wrap"/>
+                          </Grid>
+                          <TextBlock Text="{Binding Timestamp}" Classes="small" FontSize="11" Margin="0,3,0,0"/>
+                        </StackPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Journal vide." Classes="small" IsVisible="{Binding Logs.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
+      <!-- ·Colonne droite 321 px (GUI.md §9) ·-->
+      <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*" ColumnDefinitions="*">
+
+        <!-- État du système (GUI.md §9.1) -->
+        <Border Grid.Row="0" Classes="panel" Padding="16,14,16,14" Margin="0,0,0,14">
+          <StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <TextBlock Text="◉" Foreground="#e0a25a" FontSize="16" VerticalAlignment="Center"/>
+              <TextBlock Text="ÉTAT DU SYSTÈME" Classes="panel-title" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Border Height="1" Background="#1a1e26" Margin="0,10,0,0"/>
+            <ItemsControl ItemsSource="{Binding Components}" Margin="0,4,0,0">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ComponentRowViewModel">
+                  <Grid ColumnDefinitions="48,*,Auto" Height="69">
+                  <Panel Grid.Column="0" Height="48" Width="48" VerticalAlignment="Center">
+                    <Ellipse Stroke="{Binding Accent}" StrokeThickness="1.2" Fill="#10141c"/>
+                    <svg:Svg Path="avares://livex-launcher/Assets/syne-mark.svg" Width="30" Height="30" Stretch="Uniform"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=syne}"/>
+                    <svg:Svg Path="avares://livex-launcher/Assets/echos-mark.svg" Width="30" Height="30" Stretch="Uniform"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=echos}"/>
+                    <svg:Svg Path="avares://livex-launcher/Assets/prism-mark.svg" Width="30" Height="30" Stretch="Uniform"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}"/>
+                    </Panel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                      <TextBlock Text="{Binding Name}" FontSize="14.5" FontWeight="Medium" Foreground="#e8e6e1"/>
+                      <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,5,0,0">
+                        <Ellipse Width="9" Height="9" Fill="{Binding StateColor}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding StateLabel}" Foreground="{Binding StateColor}" FontSize="12" VerticalAlignment="Center"/>
+                      </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+                      <TextBlock Text="{Binding ProcessId, Converter={x:Static vm:StringConverters.PidOrDash}}" Classes="small"/>
+                      <TextBlock Text="›" Classes="muted" FontSize="13"/>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border Height="1" Background="#1a1e26" Margin="0,4,0,8"/>
+            <TextBlock Text="{Binding GlobalCause}" Classes="small" TextWrapping="Wrap"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Ressources (GUI.md §9.2) -->
+        <Border Grid.Row="1" Classes="panel" Padding="16,14,16,16" Margin="0,0,0,14">
+          <StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <TextBlock Text="≣" Foreground="#e0a25a" FontSize="16" VerticalAlignment="Center"/>
+              <TextBlock Text="RESSOURCES" Classes="panel-title" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Border Height="1" Background="#1a1e26" Margin="0,10,0,0"/>
+            <StackPanel Margin="0,12,0,0" Spacing="14">
+              <StackPanel>
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-ram.svg" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                    <TextBlock Text="Mémoire (RAM)" Classes="small" VerticalAlignment="Center"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding RamPercent}" Classes="body" FontSize="12" Width="46" TextAlignment="Right"/>
+                </Grid>
+                <ProgressBar Classes="gauge" Value="{Binding RamValue}" Margin="0,8,0,0"/>
+              </StackPanel>
+              <StackPanel>
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-cpu.svg" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                    <TextBlock Text="CPU" Classes="small" VerticalAlignment="Center"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding CpuPercent}" Classes="body" FontSize="12" Width="46" TextAlignment="Right"/>
+                </Grid>
+                <ProgressBar Classes="gauge" Value="{Binding CpuValue}" Margin="0,8,0,0"/>
+              </StackPanel>
+              <StackPanel>
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-storage.svg" Width="18" Height="18" Stretch="Uniform" VerticalAlignment="Center"/>
+                    <TextBlock Text="Stockage" Classes="small" VerticalAlignment="Center"/>
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding StoragePercent}" Classes="body" FontSize="12" Width="46" TextAlignment="Right"/>
+                </Grid>
+                <ProgressBar Classes="gauge" Value="{Binding StorageValue}" Margin="0,8,0,0"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- Logs récents (GUI.md §9.3) : seul panneau élastique -->
+        <Border Grid.Row="2" Classes="panel" Padding="16,14,16,12">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+              <Border Height="1" Background="#1a1e26" Margin="0,0,0,10"/>
+              <Button Classes="link-button" Content="Voir tous les logs →"
+                      Command="{Binding NavigateCommand}" CommandParameter="logs"/>
+            </StackPanel>
+            <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*">
+              <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
+                <TextBlock Text="≣" Foreground="#e0a25a" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock Text="LOGS RÉCENTS" Classes="panel-title" VerticalAlignment="Center"/>
+              </StackPanel>
+              <Border Grid.Row="1" Height="1" Background="#1a1e26" Margin="0,10,0,0"/>
+              <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,4,0,0">
+                <ItemsControl ItemsSource="{Binding Logs}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:LogEntryViewModel">
+                      <Border Classes="log-entry">
+                        <StackPanel>
+                          <Grid ColumnDefinitions="Auto,44,*" ColumnSpacing="10">
+                            <Ellipse Width="9" Height="9" Fill="{Binding LevelColor}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Level}" Foreground="{Binding LevelColor}" FontSize="11" FontWeight="Medium"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="11.5" Foreground="#c9cdd4"
+                                       TextWrapping="Wrap" VerticalAlignment="Center"/>
+                          </Grid>
+                          <TextBlock Text="{Binding Timestamp}" Classes="small" FontSize="11" Margin="0,3,0,0"/>
+                        </StackPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+          </DockPanel>
+        </Border>
+      </Grid>
+    </Grid>
+
+    <!-- ==================== FOOTER — 48 px (GUI.md §10) ==================== -->
+    <Border Grid.Row="2" Height="48" Padding="32,0" BorderBrush="#2b2419" BorderThickness="0,1,0,0">
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+          <GradientStop Color="#0b0d12" Offset="0"/>
+          <GradientStop Color="#151109" Offset="0.5"/>
+          <GradientStop Color="#0b0d12" Offset="1"/>
+        </LinearGradientBrush>
+      </Border.Background>
+      <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <TextBlock Text="LIVEX Launcher" Classes="small"/>
+          <Border Width="1" Height="16" Background="#2a2f3a"/>
+          <TextBlock Text="v0.1.0" Classes="small"/>
+          <Border Width="1" Height="16" Background="#2a2f3a"/>
+          <TextBlock Text="{Binding ModeLabel}" Classes="small" Foreground="#c9cdd4"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <Ellipse Width="11" Height="11" Fill="{Binding SystemDotColor}"/>
+          <TextBlock Text="{Binding SystemStatusText}" Foreground="{Binding SystemTextColor}" FontSize="11.5" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!--
+      Poignées de redimensionnement : SystemDecorations=None supprime le cadre natif,
+      on redonne donc les 8 poignées (bords + coins) via BeginResizeDrag (WindowEdge).
+      Les bandes sont transparentes et restent dans les marges de la grille (16/19 px),
+      jamais au-dessus d'un contrôle interactif.
+    -->
+    <Panel Grid.RowSpan="3" ZIndex="100">
+      <Border Height="6" VerticalAlignment="Top" Tag="North" Cursor="TopSide"
+              PointerPressed="OnResizeHandlePressed"/>
+      <Border Height="6" VerticalAlignment="Bottom" Tag="South" Cursor="BottomSide"
+              PointerPressed="OnResizeHandlePressed"/>
+      <Border Width="6" HorizontalAlignment="Left" Tag="West" Cursor="LeftSide"
+              PointerPressed="OnResizeHandlePressed"/>
+      <Border Width="6" HorizontalAlignment="Right" Tag="East" Cursor="RightSide"
+              PointerPressed="OnResizeHandlePressed"/>
+      <Border Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+              Tag="NorthWest" Cursor="TopLeftCorner" PointerPressed="OnResizeHandlePressed"/>
+      <Border Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top"
+              Tag="NorthEast" Cursor="TopRightCorner" PointerPressed="OnResizeHandlePressed"/>
+      <Border Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+              Tag="SouthWest" Cursor="BottomLeftCorner" PointerPressed="OnResizeHandlePressed"/>
+      <Border Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Tag="SouthEast" Cursor="BottomRightCorner" PointerPressed="OnResizeHandlePressed"/>
+    </Panel>
+    </Grid>
+  </Panel>
+  </Border>
+</Window>

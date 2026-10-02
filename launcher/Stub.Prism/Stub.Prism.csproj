@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Stub.Prism (INTEGRATION_CONTRACT.md §13) : processus vivant et client WebSocket factice.
+    Expose les endpoints standard §6 pour que le cycle de vie de PRISM soit piloté
+    comme tout autre composant (ROADMAP.md G7).
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Stub.Prism</AssemblyName>
+    <RootNamespace>Stub.Prism</RootNamespace>
+  </PropertyGroup>
+
+</Project>

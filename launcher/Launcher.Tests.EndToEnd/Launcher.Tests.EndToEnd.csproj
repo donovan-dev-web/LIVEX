@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests bout en bout : scénarios d'orchestration complets (TESTING.md §8),
+    exécutés contre les composants simulés du banc.
+  -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.App\Launcher.App.csproj" />
+    <ProjectReference Include="..\Launcher.Infrastructure\Launcher.Infrastructure.csproj" />
+    <ProjectReference Include="..\Launcher.Application\Launcher.Application.csproj" />
+    <ProjectReference Include="..\Launcher.Package\Launcher.Package.csproj" />
+    <ProjectReference Include="..\Stub.Syne\Stub.Syne.csproj" />
+    <ProjectReference Include="..\Stub.Echos\Stub.Echos.csproj" />
+    <ProjectReference Include="..\Stub.Prism\Stub.Prism.csproj" />
+    <!-- Réutilise le banc d'intégration : localisateur de stubs et journal en mémoire. -->
+    <ProjectReference Include="..\Launcher.Tests.Integration\Launcher.Tests.Integration.csproj" />
+  </ItemGroup>
+
+</Project>

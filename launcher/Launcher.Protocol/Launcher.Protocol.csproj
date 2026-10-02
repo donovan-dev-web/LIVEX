@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.Protocol — types de contrat versionnés.
+    Aucune dépendance, aucun autre projet du Launcher (ARCHITECTURE.md §5).
+    C'est le seul assembly porté par tous les autres.
+  -->
+
+  <PropertyGroup>
+    <Description>Types de contrat versionnés du LIVEX Launcher (manifestes, paquet, santé)</Description>
+  </PropertyGroup>
+
+</Project>

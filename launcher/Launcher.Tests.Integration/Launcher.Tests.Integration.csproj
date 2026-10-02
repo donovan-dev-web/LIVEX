@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests d'intégration : infrastructure contre composants simulés (TESTING.md §2, §4).
+    Démarre réellement les stubs en tant que processus.
+  -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Infrastructure\Launcher.Infrastructure.csproj" />
+    <ProjectReference Include="..\Launcher.Application\Launcher.Application.csproj" />
+    <ProjectReference Include="..\Launcher.Package\Launcher.Package.csproj" />
+    <ProjectReference Include="..\Stub.Syne\Stub.Syne.csproj" />
+    <ProjectReference Include="..\Stub.Echos\Stub.Echos.csproj" />
+  </ItemGroup>
+
+</Project>
