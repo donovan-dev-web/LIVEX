@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Tests unitaires : domaine, paquet, protocole (TESTING.md §2).
+    Aucun processus démarré : frontière garantie par les références de ce projet.
+  -->
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Application\Launcher.Application.csproj" />
+    <ProjectReference Include="..\Launcher.Domain\Launcher.Domain.csproj" />
+    <ProjectReference Include="..\Launcher.Package\Launcher.Package.csproj" />
+    <ProjectReference Include="..\Launcher.Protocol\Launcher.Protocol.csproj" />
+    <!-- Vues modèles testées sans interface rendue (TESTING.md §3 : « Rendu de l'interface : Oui, sur un modèle de données »). -->
+    <ProjectReference Include="..\Launcher.Presentation\Launcher.Presentation.csproj" />
+  </ItemGroup>
+
+</Project>

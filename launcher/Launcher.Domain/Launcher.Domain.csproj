@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Launcher.Domain — règles d'orchestration, campagnes, modèle de paquet, santé.
+    Référence uniquement Launcher.Protocol. Ni Avalonia, ni System.Diagnostics, ni System.Net
+    (interdit vérifié par le test d'analyse statique du banc).
+  -->
+
+  <PropertyGroup>
+    <Description>Règles d'orchestration du LIVEX Launcher (domaine)</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Launcher.Protocol\Launcher.Protocol.csproj" />
+  </ItemGroup>
+
+</Project>

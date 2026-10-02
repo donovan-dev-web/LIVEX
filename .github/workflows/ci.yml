@@ -29,6 +29,7 @@ jobs:
       syne: ${{ steps.diff.outputs.syne }}
       echos: ${{ steps.diff.outputs.echos }}
       syne_mock: ${{ steps.diff.outputs.syne_mock }}
+      launcher: ${{ steps.diff.outputs.launcher }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +38,7 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$BASE" ]; then BASE="develop"; fi
-          for comp in syne echos syne-mock; do
+          for comp in syne echos syne-mock launcher; do
             count=$(git diff --name-only "$BASE...HEAD" -- "$comp/" 2>/dev/null | wc -l | tr -d ' ')
             key=$(echo "$comp" | tr '-' '_')
             if [ "$count" -gt 0 ]; then echo "$key=true" >> "$GITHUB_OUTPUT"; else echo "$key=false" >> "$GITHUB_OUTPUT"; fi
@@ -209,6 +210,41 @@ jobs:
           LIVEX_MOCK_E2E: "1"
         working-directory: echos
         run: python -m pytest echos/tests/test_syne_mock_integration.py -q --no-cov
+
+  # ---------------------------------------------------------------------
+  # LAUNCHER - .NET (build + tests unitaires, intégration et bout en bout)
+  # ---------------------------------------------------------------------
+  launcher-dotnet:
+    name: Build & tests (Launcher .NET)
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.launcher == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: launcher/global.json
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build Launcher.sln --no-restore --configuration Release --warnaserror
+      - name: Tests unitaires
+        run: dotnet test Launcher.Tests.Unit --no-build --configuration Release --logger "trx;LogFileName=unit.trx" --results-directory TestResults
+      - name: Tests d'intégration (stubs réels)
+        run: dotnet test Launcher.Tests.Integration --no-build --configuration Release --logger "trx;LogFileName=integration.trx" --results-directory TestResults
+      - name: Tests bout en bout (campagne complète)
+        run: dotnet test Launcher.Tests.EndToEnd --no-build --configuration Release --logger "trx;LogFileName=e2e.trx" --results-directory TestResults
+      - name: Upload résultats
+        uses: actions/upload-artifact@v4
+        with:
+          name: launcher-test-results
+          path: launcher/TestResults
+          retention-days: 7
+          if-no-files-found: error
 
   # ---------------------------------------------------------------------
   # ECHOS - UI (React + TypeScript)

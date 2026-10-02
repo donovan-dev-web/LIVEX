@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "echos",
+  "name": "ECHOS",
+  "version": "0.1.0",
+  "type": "analysis",
+  "runtime": "script",
+  "executable": {
+    "linux": "echos-launcher"
+  },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": {
+      "transport": "http",
+      "port": 5000,
+      "enabled": true
+    }
+  },
+  "capabilities": [
+    "headless",
+    "analytics"
+  ],
+  "health": {
+    "probe": "http",
+    "path": "/health/ready",
+    "intervalMs": 1000
+  },
+  "timeouts": {
+    "startupMs": 30000,
+    "shutdownMs": 5000
+  }
+}
