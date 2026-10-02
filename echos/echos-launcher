@@ -1,0 +1,6 @@
+#!/bin/sh
+component_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -x "$component_dir/.venv/bin/python" ]; then
+  exec "$component_dir/.venv/bin/python" "$component_dir/echos/launcher.py" "$@"
+fi
+exec python3 "$component_dir/echos/launcher.py" "$@"

@@ -1,12 +1,23 @@
 # syne-mock
 
 Mini-serveur Node.js déterministe pour intégrer Unreal au contrat SYNE. `npm install`
-puis `npm start -- config.example.json`. Le WebSocket texte JSON camelCase est sur
+puis `npm start -- config_example.json`. Le WebSocket texte JSON camelCase est sur
 `ws://127.0.0.1:5180/`; le contrôle HTTP est sur `http://127.0.0.1:5181`.
 
 Le terminal affiche le suivi avec le préfixe `[SYNE-MOCK ...]` : démarrage des
 ports, connexions/déconnexions WebSocket, requêtes/réponses HTTP et transitions
 `PREPARE`, `READY`, `START`, `PAUSE`, `RESUME`, `STOP` et `RESET`.
+
+## Intégration au Launcher LIVEX
+
+`component.json` déclare le démarrage Linux direct par `src/cli.js`. L'adaptateur
+accepte les arguments de service communs du Launcher et applique son
+`--control-port` au serveur HTTP ; le WebSocket reste au port `dataPort` du
+fichier JSON (5180 par défaut). La sonde `/api/control/status` ne démarre ni ne
+modifie un run. `POST /control/shutdown` exige le jeton `LIVEX_SESSION_TOKEN`
+fourni par le Launcher, puis ferme les serveurs HTTP/WebSocket. SIGINT et
+SIGTERM utilisent la même fermeture propre. Les arguments inconnus sont
+refusés ; le mock ne déclare pas les capacités de campagnes SYNE.
 
 ## Documentation d'intégration Unreal
 
@@ -52,8 +63,8 @@ l'implémentation A* de SYNE. La délibération et les systèmes sociaux restent
 des approximations destinées à tester l'intégration Blueprint ; les trajectoires
 ne sont pas garanties bit-à-bit identiques au moteur C#.
 
-Tests ciblés : `npm test` (39 tests, moins d'une seconde, sans réseau ni port
-fixe). La suite s'exécute aussi en intégration continue via le job `Tests
+Tests ciblés : `npm test` (44 tests, sans dépendance à un
+port fixe). La suite s'exécute aussi en intégration continue via le job `Tests
 (SYNE-MOCK Node)` de `.github/workflows/ci.yml`, déclenché sur toute
 modification de `syne-mock/`. Ports et paramètres sont configurables en JSON.
 `replay.file` permet de rejouer un fichier JSONL (un message SYNE par ligne) ;

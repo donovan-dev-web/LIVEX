@@ -42,7 +42,11 @@ def main() -> None:
     log_level = os.environ.get("ECHOS_LOG_LEVEL", "info")
 
     app = create_app(ui_dist=default_ui_dist())
-    uvicorn.run(app, host=host, port=port, log_level=log_level)
+    server = uvicorn.Server(
+        uvicorn.Config(app, host=host, port=port, log_level=log_level)
+    )
+    app.state.uvicorn_server = server
+    server.run()
 
 
 if __name__ == "__main__":
