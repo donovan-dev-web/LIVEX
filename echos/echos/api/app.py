@@ -12,10 +12,9 @@ from __future__ import annotations
 
 import hmac
 import os
+import sqlite3
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.staticfiles import StaticFiles
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from echos import __version__
 from echos.api.routes import register_routes
@@ -25,6 +24,9 @@ _ENDPOINTS = [
     "/health",
     "/health/ready",
     "/control/shutdown",
+    "/analysis/run",
+    "/analysis/experiment",
+    "/analysis/report",
     "/api/runs",
     "/api/control/status",
     "/api/control/{action}",
@@ -42,15 +44,12 @@ _ENDPOINTS = [
 ]
 
 
-def create_app(
-    store: AnalyticsStore | None = None, ui_dist: str | None = None
-) -> FastAPI:
+def create_app(store: AnalyticsStore | None = None) -> FastAPI:
     """Construit l'application ECHOS (sans effet de bord d'import).
 
-    ``ui_dist`` (chemin du build ``echos-ui/dist``) active le service de
-    l'interface statique : c'est le mode production, utilisé par le shell
-    Electron. Sans ``ui_dist``, l'application reste une API seule et ``/``
-    répond la liste des endpoints (mode tests / intégration).
+    L'application est une **API seule** : ECHOS ne porte aucune interface, aucun
+    conteneur de page (ADR-003 ECHOS révisé, ADR-007 Launcher). ``/`` répond la
+    liste des endpoints, et le présentatif — le Launcher — consomme ces routes.
     """
     if store is None:
         db_path = os.environ.get("ECHOS_ANALYTICS_DB")
@@ -76,6 +75,13 @@ def create_app(
                 status_code=503,
                 detail="base d'analyse non configurée (variable ECHOS_ANALYTICS_DB)",
             )
+        try:
+            store.runs()
+        except sqlite3.Error as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="base d'analyse indisponible ou schéma invalide",
+            ) from exc
         return {"status": "ok", "component": "echos", "analytics": "ready"}
 
     @app.post("/control/shutdown", tags=["system"])
@@ -94,55 +100,15 @@ def create_app(
         server.should_exit = True
         return {"status": "shutting_down"}
 
-    if ui_dist and os.path.isdir(ui_dist):
-        _mount_ui(app, ui_dist)
-    else:
-
-        @app.get("/", tags=["system"])
-        def root() -> dict:
-            return {
-                "component": "echos",
-                "message": "API ECHOS (FastAPI) — observation & pilotage de SYNE",
-                "endpoints": list(_ENDPOINTS),
-            }
+    @app.get("/", tags=["system"])
+    def root() -> dict:
+        return {
+            "component": "echos",
+            "message": "API ECHOS (FastAPI) — observation & pilotage de SYNE",
+            "endpoints": list(_ENDPOINTS),
+        }
 
     return app
-
-
-class SpaStaticFiles(StaticFiles):
-    """Fichiers statiques avec repli *SPA* vers ``index.html``.
-
-    Le routeur de l'interface est côté client (React Router) : une URL comme
-    ``/analysis`` n'existe pas sur le disque et doit servir ``index.html``
-    pour que le routeur prenne le relais. Le repli est restreint :
-
-    - **chemins sans extension** : un ``.js``/``.css`` manquant renvoie un 404
-      franc plutôt que du HTML déguisé en script ;
-    - **hors préfixes de l'API** (``api``, ``health``) : une route API inconnue
-      doit rester un 404, pas servir l'index.
-    """
-
-    _RESERVED = ("api", "health")
-
-    async def get_response(self, path, scope):
-        try:
-            return await super().get_response(path, scope)
-        except StarletteHTTPException as exc:
-            last_segment = path.rsplit("/", 1)[-1]
-            reserved = path.split("/", 1)[0] in self._RESERVED
-            if exc.status_code == 404 and not reserved and "." not in last_segment:
-                return await super().get_response("index.html", scope)
-            raise
-
-
-def _mount_ui(app: FastAPI, ui_dist: str) -> None:
-    """Monte le build de l'interface à la racine (monté en dernier).
-
-    Les routes API sont enregistrées avant le montage : Starlette résout dans
-    l'ordre, donc ``/health`` et ``/api/*`` gardent la priorité sur le
-    service statique monté sur ``/``.
-    """
-    app.mount("/", SpaStaticFiles(directory=ui_dist, html=True), name="ui")
 
 
 app = create_app()

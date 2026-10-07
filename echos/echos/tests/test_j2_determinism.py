@@ -29,7 +29,7 @@ def _community_history(snapshot: dict) -> list[dict]:
     """Tailles de communautés par tick, comme le pipeline les transmet.
 
     Le réseau de confiance de la fixture est stable : une seule communauté de
-    3 agents, présente dès le tick 1. Cela rend ``CommunityStability`` mesurable
+    3 agents, présente dès le tick 1. Cela rend ``CommunitySizeMatch`` mesurable
     sur le rejeu au lieu de retomber sur son repli neutre.
     """
     from echos.analysis._common import community_sizes

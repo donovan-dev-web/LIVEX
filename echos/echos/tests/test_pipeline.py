@@ -73,10 +73,13 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path, monkeypatc
         assert result.agents_written == 6  # 2 agents × 3 ticks
         assert result.metrics_written > 0  # métriques des 8 moteurs par tick
         # C2 : ``agents`` suit sa cadence (ticks 1 et 3) ; phenomena/profiling
-        # restent à l'analyse (3) et ``groups`` suit ``agents`` → 2×2 + 3 + 2 = 9.
-        assert (
-            result.contexts_written == 9
-        )  # (agents+groups) 2 ticks + phenomena 3 + profiling 3
+        # restent à l'analyse (3) et ``groups`` suit ``agents`` → 2×3 + 3 + 2 = 11,
+        # moins l'``agents`` écrit par le dernier tick hors cadence (1 sur 3,
+        # déjà compté) : 10 avec ``resources`` au même rythme que ``agents``,
+        # plus le contexte ``conservation`` écrit une fois par run (P1).
+        # 10 + conservation (P1) : (agents+groups+resources) 1 tick,
+        # phenomena 3, profiling 3, agents final.
+        assert result.contexts_written == 11
         assert (
             result.decision_traces_written == 3
         )  # 1 décision decision_made par tick
@@ -88,6 +91,17 @@ def test_consume_from_real_server_writes_sqlite_and_parquet(tmp_path, monkeypatc
         assert store.latest_context("run-7", "phenomena") is not None
         assert store.latest_context("run-7", "groups") is not None
         assert store.latest_context("run-7", "profiling") is not None
+        # P1 — le niveau de conservation réellement employé est persisté par run
+        # (métadonnées de complétude lues par l'interface, jamais inventées).
+        conservation = store.latest_context("run-7", "conservation")
+        assert conservation is not None
+        assert conservation[0] == 0
+        payload = conservation[1]
+        assert payload["level"] == "sampled_details"
+        assert payload["sampledDetails"]["agentContextEvery"] == 20
+        assert payload["sampledDetails"]["agentContext"] == "sampled"
+        assert payload["highFidelityReplay"] is False
+        assert payload["base"]["tickMetrics"] is True
         report = store.calibration_report("run-7")
         assert report is not None
         assert report["status"] == "complete"
@@ -120,10 +134,10 @@ def test_consume_analysis_cadence_schedule(tmp_path, monkeypatch):
         assert result.ticks_written == 3
         assert result.events_written == 6
         assert result.decision_traces_written == 3
-        # Ticks analysés 1 et 3. ``agents``+``groups`` au tick 1 (cadence 20),
-        # phenomena+profiling aux ticks 1 et 3, plus ``agents`` du dernier tick
-        # (3) toujours écrit → 4 + 2 + 1 = 7.
-        assert result.contexts_written == 7
+        # Ticks analysés 1 et 3. ``agents``+``groups``+``resources`` au tick 1
+        # (cadence 20), phenomena+profiling aux ticks 1 et 3, plus ``agents`` du
+        # dernier tick (3) toujours écrit → 5 + 2 + 1 = 8, + ``conservation`` (P1).
+        assert result.contexts_written == 9
         assert result.metrics_written > 0
         assert store.count_ticks("run-7") == 3
         assert len(store.events("run-7")) == 6
@@ -269,8 +283,8 @@ def test_rolling_contexts_are_reset_between_runs(tmp_path):
                 if int(row[0]) == 2  # dernier tick du run
             }
             return (
-                values[("FeedbackLoopDetector", "IdentifiedLoops")],
-                values[("FeedbackLoopDetector", "SystemStability")],
+                values[("FeedbackLoopDetector", "RepeatedActionPairs")],
+                values[("FeedbackLoopDetector", "ActionDistributionBalance")],
             )
 
         # Le run b rejoue exactement le run a : ses métriques fenêtrées doivent
@@ -290,9 +304,10 @@ def test_consume_agents_context_follows_its_own_cadence(tmp_path, monkeypatch):
         # Ticks en cadence : 1, 3 (+ tick 4, dernier du flux, hors cadence).
         agent_ticks = [row[0] for row in store.observations_for("run-7", "agents")]
         assert agent_ticks == [1, 3, 4]
-        # 4 ticks analysés × (phenomena + profiling) + agents/groups (1, 3)
-        # = 8 + 4, plus l'``agents`` du dernier tick (4) = 13.
-        assert result.contexts_written == 13
+        # 4 ticks analysés × (phenomena + profiling) + agents/groups/resources
+        # (1, 3) = 8 + 6, plus l'``agents`` du dernier tick (4) = 15, + le
+        # contexte ``conservation`` (P1) = 16.
+        assert result.contexts_written == 16
 
 
 def test_consume_requires_positive_analysis_cadence(tmp_path):
@@ -341,7 +356,7 @@ def test_engine_context_carries_rolling_windows(tmp_path):
 
     Régression : le snapshot ne portait que les événements du tick courant, si
     bien que ``FeedbackLoopDetector`` (5 métriques), ``RecoveryTime`` et
-    ``CommunityStability`` retombaient sur leur repli neutre 0.0 à chaque tick
+    ``CommunitySizeMatch`` retombaient sur leur repli neutre 0.0 à chaque tick
     d'un run réel.
     """
     port, thread = _in_process_server(_script(3))
@@ -359,8 +374,8 @@ def test_engine_context_carries_rolling_windows(tmp_path):
                 for row in store.metrics_all("run-7")
                 if int(row[0]) == 3
             }
-            assert metrics[("FeedbackLoopDetector", "IdentifiedLoops")] > 0
-            assert metrics[("FeedbackLoopDetector", "SystemStability")] > 0
+            assert metrics[("FeedbackLoopDetector", "RepeatedActionPairs")] > 0
+            assert metrics[("FeedbackLoopDetector", "ActionDistributionBalance")] > 0
     finally:
         client.close()
         thread.join(timeout=5)
@@ -515,14 +530,103 @@ def test_consume_persists_metric_provenance(tmp_path):
     store.append_tick_metrics(
         "run-p",
         1,
-        {"FeedbackLoopDetector": {"LoopStrength": 0.0},
+        {"FeedbackLoopDetector": {"RepeatedActionShare": 0.0},
          "SocialComplexityMetrics": {"NetworkDensity": 0.5}},
-        {"FeedbackLoopDetector": {"LoopStrength": False},
+        {"FeedbackLoopDetector": {"RepeatedActionShare": False},
          "SocialComplexityMetrics": {"NetworkDensity": True}},
     )
     measured = store.latest_measured("run-p")
-    assert measured["FeedbackLoopDetector"]["LoopStrength"] is False
+    assert measured["FeedbackLoopDetector"]["RepeatedActionShare"] is False
     assert measured["SocialComplexityMetrics"]["NetworkDensity"] is True
     # La valeur reste lisible : la provenance s'ajoute, elle ne remplace rien.
-    assert store.latest_metrics("run-p")["FeedbackLoopDetector"]["LoopStrength"] == 0.0
+    assert store.latest_metrics("run-p")["FeedbackLoopDetector"]["RepeatedActionShare"] == 0.0
     store.close()
+
+
+def test_consume_persists_world_description_for_the_2d_view(tmp_path):
+    """La description de monde du prélude est écrite en contexte ``world`` (tick 0).
+
+    Vue 2D de l'observation (ADR-007) : terrain, obstacles, ressources et
+    régions ne sont publiés qu'une fois, dans ``world_initialized`` ; les
+    perdre rendrait la carte irrémédiablement incomplète.
+    """
+    world = {
+        "version": "1.0",
+        "width": 500,
+        "height": 500,
+        "cellSize": 10.0,
+        "cells": [
+            {
+                "x": 0,
+                "y": 0,
+                "terrainType": "grass",
+                "walkable": True,
+                "height": 0.0,
+                "movementCost": 1.0,
+                "obstacles": [],
+            }
+        ],
+        "obstacles": [{"id": "o-1", "x": 12.0, "y": 24.0, "radius": 4.0}],
+        "resources": [
+            {"id": "r-1", "kind": "food", "x": 3, "y": 4, "quantity": 10.0}
+        ],
+        "regions": [{"id": "spawn", "x": 0, "y": 0, "width": 4, "height": 4}],
+    }
+    header = json.dumps(
+        {"type": "world_initialized", "version": "1.0", "seed": 7, "world": world}
+    )
+    port, thread = _in_process_server([header] + _script(2))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "world.db") as store:
+        storage.consume(client, store)
+        stored = store.latest_context("run-7", "world")
+
+        assert stored is not None
+        tick, payload = stored
+        assert tick == 0  # publié avant le premier tick observé
+        assert payload["obstacles"][0]["id"] == "o-1"
+        assert payload["resources"][0]["kind"] == "food"
+        assert payload["regions"][0]["width"] == 4
+        # Une seule écriture : la description ne change pas en cours de run.
+        assert len(store.observations_for("run-7", "world")) == 1
+
+
+def test_consume_keeps_a_world_description_arriving_after_the_run_started(tmp_path):
+    """Description reçue APRÈS le premier tick : elle est écrite à réception.
+
+    Consommateur live (analyse temps réel) : `world_initialized` peut arriver
+    après l'enregistrement du run si le consommateur s'est connecté en cours de
+    trajet. L'écriture n'ayant lieu qu'au changement de run, la description
+    serait sinon perdue — la vue 2D n'aurait plus jamais de terrain ni de grille.
+    """
+    world = {
+        "version": "1.0",
+        "width": 500,
+        "height": 500,
+        "cellSize": 10.0,
+        "cells": [],
+        "obstacles": [],
+        "resources": [],
+        "regions": [],
+    }
+    header = json.dumps(
+        {"type": "world_initialized", "version": "1.0", "seed": 7, "world": world}
+    )
+    frames = _script(3)
+    # Le prélude arrive au milieu du tick 2, pas avant le tick 1.
+    port, thread = _in_process_server(frames[:6] + [header] + frames[6:])
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "late-world.db") as store:
+        storage.consume(client, store)
+        stored = store.latest_context("run-7", "world")
+
+        assert stored is not None
+        tick, payload = stored
+        assert tick == 0
+        assert payload["width"] == 500
+        # Idempotent : une seconde description (rejeu éventuel) ne double rien.
+        assert len(store.observations_for("run-7", "world")) == 1

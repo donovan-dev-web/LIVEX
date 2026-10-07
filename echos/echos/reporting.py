@@ -96,6 +96,17 @@ def _detected_phenomena(contexts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(by_identifier.values(), key=lambda item: item["identifier"])
 
 
+#: Contextes exclus du rapport déterministe.
+#:
+#: ``profiling`` contient des durées de calcul (``avgMs``/``totalMs``) : deux
+#: ingérations du **même** flux archivé donneraient donc des octets différents,
+#: et le rapport d'un paquet ne serait plus comparable à une réanalyse faite plus
+#: tard à partir de ce même paquet. Ces durées restent disponibles par la voie
+#: d'instrumentation (``echos.instrumentation.profiling``) ; seul le contenu
+#: scientifique doit être reproductible.
+NON_DETERMINISTIC_CONTEXTS = frozenset({"profiling"})
+
+
 def build_report(
     store: AnalyticsStore, run_id: str, *, seed_override: int | str | None = None
 ) -> dict[str, Any]:
@@ -122,6 +133,7 @@ def build_report(
             for tick, payload in observations
         ]
         for context_type, observations in store.contexts(run_id).items()
+        if context_type not in NON_DETERMINISTIC_CONTEXTS
     }
     calibration = store.calibration_report(run_id)
     if calibration is None:
@@ -200,7 +212,7 @@ def markdown_report(
         ("Complexité système", "EmergenceIndicators", "SystemComplexity"),
         ("Diversité croyances", "CognitiveDiversityMetrics", "BeliefDiversity"),
         ("Diversité objectifs", "CognitiveDiversityMetrics", "GoalDiversity"),
-        ("Groupes actifs", "GroupDynamicsMetrics", "ActiveGroups"),
+        ("Communautés inférées", "GroupDynamicsMetrics", "InferredCommunities"),
         ("Volume messages", "InformationPropagationMetrics", "MessageVolume"),
         ("Confiance moyenne", "SocialComplexityMetrics", "AverageTrustLevel"),
     ]
@@ -262,7 +274,7 @@ def markdown_report(
         "",
         "## Évolution par tick",
         "",
-        "| Tick | Vivants | Énergie | Émergence | Groupes | Messages |",
+        "| Tick | Vivants | Énergie | Émergence | Communautés | Messages |",
         "|---:|---:|---:|---:|---:|---:|",
     ]
     series = report["metrics"]["series"]
@@ -279,7 +291,7 @@ def markdown_report(
         lines.append(
             f"| {tick['tick']} | {tick['aliveCount']} | {tick['meanEnergy']:.4g} | "
             f"{series_value('EmergenceIndicators', 'EmergenceScore')} | "
-            f"{series_value('GroupDynamicsMetrics', 'ActiveGroups')} | "
+            f"{series_value('GroupDynamicsMetrics', 'InferredCommunities')} | "
             f"{series_value('InformationPropagationMetrics', 'MessageVolume')} |"
         )
     lines += [
