@@ -4,24 +4,35 @@ namespace Simulation.Core.Configuration;
 public static class SimulationProfiles
 {
     /// <summary>
-    /// Profil de référence V0.1 : ressources suffisantes et coûts énergétiques
-    /// auxiliaires neutres pour éviter une extinction artificielle.
+    /// Profil de référence : scénario de survie calibré.
     /// </summary>
     /// <remarks>
-    /// Calibration de survie (décision D1 du 29/09/2026, ADR de calibration —
-    /// campagne 3 × 1200 ticks) : manger/boire compense désormais le coût
-    /// métabolique du déplacement vers la ressource (EnergyRecovery 2.0 / 1.0).
-    /// Sans ce gain, l'énergie moyenne décroissait continûment (mort lente :
-    /// 69 → 49 entre t800 et t1200) car seul Rest rapportait de l'énergie.
-    /// Le reste du profil est inchangé (isolation des causes).
+    /// <b>Calibration B1 (ADR-016, horizon 2500 ticks)</b> : les valeurs calibrées
+    /// sont désormais portées par les **défauts intégrés** (tout run sans surcouche
+    /// — dont le chemin Launcher `--simulation reference` — tourne sur le profil
+    /// calibré) et ce profil les rejoue **explicitement**, parce que le chemin HTTP
+    /// (`config ?? ReferenceJson()`) ne doit jamais dépendre d'un défaut qu'on
+    /// pourrait oublier de recaler. Leviers B1 :
+    /// <list type="bullet">
+    /// <item>énergie : `moveEnergyCost` 0,03, `restEnergyGain` 1,5, Eat/Drink
+    /// `energyRecovery` 2,0 / 1,0 (hérité de D1) ;</item>
+    /// <item>besoins sociaux : `socialDriftRate` 0,0002, `curiosityDriftRate`
+    /// 0,0005 — un besoin sans mécanisme de satisfaction finissait par saturer
+    /// Socialize/Explore (96 % des décisions en fin de run) ;</item>
+    /// <item>ressources : nourriture 20 000 + 20/tick nets (dégradation
+    /// neutralisée), eau 20 000 + 10/tick ;</item>
+    /// <item>communication : coûts énergétiques neutres, relais coupé, 1 envoi /
+    /// 1 réception par tick (hérité de D1).</item>
+    /// </list>
     /// </remarks>
     public static SimulationOptions Reference()
     {
         var options = new SimulationOptions();
-        options.Resources.Food.Initial = 10_000;
-        options.Resources.Food.RegenerationRate = 5;
-        options.Resources.Water.Initial = 10_000;
-        options.Resources.Water.RegenerationRate = 5;
+        options.Resources.Food.Initial = 20_000;
+        options.Resources.Food.RegenerationRate = 20;
+        options.Resources.Food.DegradationTick = null;
+        options.Resources.Water.Initial = 20_000;
+        options.Resources.Water.RegenerationRate = 10;
         options.Communication.RelayEnabled = false;
         options.Communication.SendEnergyCost = 0;
         options.Communication.SendEnergyPayloadFactor = 0;
@@ -29,7 +40,9 @@ public static class SimulationProfiles
         options.Communication.ReceiveEnergyPayloadFactor = 0;
         options.Communication.MaxSendsPerTick = 1;
         options.Communication.MaxReceivesPerTick = 1;
-        options.Agents.Actions.MoveEnergyCost = 0.05;
+        options.Agents.Needs.SocialDriftRate = 0.0002;
+        options.Agents.Needs.CuriosityDriftRate = 0.0005;
+        options.Agents.Actions.MoveEnergyCost = 0.03;
         options.Agents.Actions.RestEnergyGain = 1.5;
         options.Agents.Actions.RestFatigueRecovery = 2;
         options.Agents.Actions.Catalog.Entries["eat"].EnergyRecovery = 2.0;

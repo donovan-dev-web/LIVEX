@@ -69,7 +69,11 @@ public sealed class JournalLine
 /// </summary>
 public sealed class LivexPackageReader : IDisposable
 {
-    private const long MaxUncompressedBytes = 4L * 1024 * 1024 * 1024;
+    // Plafond d'entrée relevé de 4 à 16 Gio : une donnée de campagne réelle pèse
+    // ~2,34 Gio pour 50 agents × 2500 ticks et ~4,7 Gio pour 100 — le plafond d'entrée
+    // du format (PACKAGE_FORMAT.md §9) est une garde-fou zip-bomb, pas une borne ZIP.
+    // Le ratio 100:1 reste en place : un vrai stream.jsonl reste très loin dedans.
+    private const long MaxUncompressedBytes = 16L * 1024 * 1024 * 1024;
     private const long MaxCompressionRatio = 100;
     private const long MaxTextLogBytes = 16L * 1024 * 1024;
     private const long MaxRunLogExportBytes = 256L * 1024 * 1024;
@@ -147,7 +151,12 @@ public sealed class LivexPackageReader : IDisposable
         return reader.ReadToEnd();
     }
 
-    /// <summary>Lit une entrée du paquet par son nom.</summary>
+    /// <summary>
+    /// Lit une entrée du paquet par son nom. Réservé aux entrées courtes (métadonnées,
+    /// journaux, analyses) : la taille retombe dans un <c>byte[]</c> borné à 2 Gio —
+    /// les données de run volumineuses se vérifient (<see cref="VerifyRunIntegrity"/>)
+    /// ou se copient en flux, jamais ainsi.
+    /// </summary>
     public byte[]? ReadEntry(string entryName)
     {
         var entry = _archive.GetEntry(entryName);
@@ -210,27 +219,48 @@ public sealed class LivexPackageReader : IDisposable
             ?? throw new CorruptedPackageException(entryName, "entrée de journal absente");
     }
 
-    /// <summary>Vérifie l'intégrité d'un run : recalcul des empreintes contre integrity.json.</summary>
+    /// <summary>
+    /// Vérifie l'intégrité d'un run : recalcul des empreintes contre integrity.json.
+    /// Hachage en flux, entrée par entrée : une donnée de campagne dépasse les 2 Gio
+    /// d'un <c>byte[]</c> et ne doit jamais être chargée en mémoire pour être vérifiée.
+    /// </summary>
     public bool VerifyRunIntegrity(string runId, out IReadOnlyList<string> problems)
     {
         var problemsList = new List<string>();
         var integrityEntry = ReadJson<RunIntegrity>($"runs/{runId}/{PackageConstants.RunIntegrityEntry}");
         foreach (var expected in integrityEntry.Files)
         {
-            var actual = ReadEntry(expected.Path);
-            if (actual is null)
+            var entry = _archive.GetEntry(expected.Path);
+            if (entry is null)
             {
                 problemsList.Add($"entrée manquante : {expected.Path}");
                 continue;
             }
 
-            if (actual.Length != expected.SizeBytes)
+            string digest;
+            long size;
+            using (var source = entry.Open())
+            {
+                using var hash = System.Security.Cryptography.IncrementalHash.CreateHash(
+                    System.Security.Cryptography.HashAlgorithmName.SHA256);
+                var buffer = new byte[81920];
+                size = 0;
+                int read;
+                while ((read = source.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    hash.AppendData(buffer, 0, read);
+                    size += read;
+                }
+
+                digest = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+            }
+
+            if (size != expected.SizeBytes)
             {
                 problemsList.Add($"taille incohérente : {expected.Path}");
                 continue;
             }
 
-            var digest = Convert.ToHexString(SHA256.HashData(actual)).ToLowerInvariant();
             if (!string.Equals(digest, expected.Sha256, StringComparison.Ordinal))
             {
                 problemsList.Add($"empreinte incohérente : {expected.Path}");

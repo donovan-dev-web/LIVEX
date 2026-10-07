@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : index à jour
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 7 octobre 2026
 
 Ce dossier contient les ADR spécifiques à PRISM.
 
@@ -10,6 +10,7 @@ Ce dossier contient les ADR spécifiques à PRISM.
 
 | ADR | Sujet | Statut |
 | :-- | :-- | :-- |
+| `ADR-003-echelle-cadence-syne-unreal.md` | Échelle et cadence SYNE ↔ Unreal (`k = 100`, TPS 6, monde ≈ 5 km²) | [Proposed] |
 | `ADR-002-choix-unreal-prism-ldk.md` | Unreal Engine 5.8 et plugin PRISM-LDK pour PRISM | [Accepted] |
 | `ADR-001-choix-godot.md` | Choix historique du prototype Godot (édition .NET) | [Superseded] par l'ADR-002 |
 
@@ -28,5 +29,6 @@ Références transverses : `TRANSPORT_API.md` et `../../COMMUNICATION.md`.
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 7 octobre 2026 | ADR-003 (échelle et cadence SYNE ↔ Unreal) | Trancher l'échelle, la cadence et la taille du monde |
 | 27 septembre 2026 | ADR-002 (Unreal + plugin PRISM-LDK) ; ADR-001 marquée supersédée | Trancher le choix du moteur définitif |
 | 17 septembre 2026 | Création | — |

@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 7 octobre 2026
 
 ---
 
@@ -47,6 +47,7 @@ d'intégration Blueprint et les conventions de projection du monde.
 | `VISION.md` | Rôle, frontières et responsabilité de SYNE |
 | `ARCHITECTURE.md` | Projet PRISM, plugin PRISM-LDK et flux d'intégration |
 | `SCENE_SPEC.md` | Responsabilités de PRISM pour le monde présenté |
+| `SCALE_AND_CADENCE_SPEC.md` | Échelle SYNE ↔ Unreal, cadence et profil de monde |
 | `TRANSPORT_API.md` | WebSocket et HTTP SYNE |
 | `PRISM_UNREAL_IMPLEMENTATION.md` | Guide d'intégration PRISM-LDK et Blueprint |
 | `RENDERING_SPEC.md` | Objectifs de représentation visuelle |

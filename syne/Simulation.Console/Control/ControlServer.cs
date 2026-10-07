@@ -39,7 +39,7 @@ public sealed class ControlServer : IAsyncDisposable
         ObservabilityServer? observability = null,
         string? sessionToken = null,
         string instanceId = "syne",
-        string version = "0.14.0",
+        string version = "0.15.0",
         bool initiallyReady = true)
     {
         _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
@@ -388,6 +388,14 @@ public sealed class ControlServer : IAsyncDisposable
     /// </summary>
     private const int MaxBodyBytes = 1 << 20;
 
+    /// <summary>
+    /// Plafond de vidage (16 Mio) avant de répondre 413 sur un
+    /// <c>Content-Length</c> déclaré trop grand : fermer la socket alors que des
+    /// octets du corps sont encore non lus émet un RST et le client reçoit
+    /// « broken pipe » au lieu du 413 (course observée en parallélisme).
+    /// </summary>
+    private const int DrainCapBytes = 16 * MaxBodyBytes;
+
     private static async Task<JsonElement> ReadBodyAsync(HttpListenerRequest request)
     {
         if (request.ContentLength64 == 0)
@@ -397,6 +405,12 @@ public sealed class ControlServer : IAsyncDisposable
 
         if (request.ContentLength64 > MaxBodyBytes)
         {
+            // Vidage best effort, borné en taille, dans un tampon jetable de
+            // 8 Kio (le corps n'est jamais accumulé en mémoire — la garantie
+            // « not buffered » tient) : le client termine son envoi et peut
+            // lire la réponse 413 au lieu d'être coupé en pleine écriture.
+            await DiscardAsync(request.InputStream,
+                Math.Min(request.ContentLength64, DrainCapBytes)).ConfigureAwait(false);
             throw new RequestException(413, "payload_too_large",
                 $"Le corps de la requête dépasse la limite de {MaxBodyBytes} octets.");
         }
@@ -435,6 +449,34 @@ public sealed class ControlServer : IAsyncDisposable
         catch (JsonException)
         {
             throw new RequestException(400, "invalid_json", "Le corps de la requête n'est pas un JSON valide.");
+        }
+    }
+
+    /// <summary>
+    /// Vide jusqu'à <paramref name="maxBytes"/> octets sans les conserver.
+    /// Best effort : toute erreur (client déconnecté) est ignorée, la réponse
+    /// 413 part de toute façon.
+    /// </summary>
+    private static async Task DiscardAsync(Stream stream, long maxBytes)
+    {
+        byte[] scratch = new byte[8192];
+        try
+        {
+            long discarded = 0;
+            while (discarded < maxBytes)
+            {
+                int read = await stream.ReadAsync(scratch).ConfigureAwait(false);
+                if (read == 0)
+                {
+                    break;
+                }
+
+                discarded += read;
+            }
+        }
+        catch (Exception)
+        {
+            // best effort : aucune requête à servir au-delà du rejet
         }
     }
 

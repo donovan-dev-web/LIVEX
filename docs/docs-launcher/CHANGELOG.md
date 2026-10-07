@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 6 octobre 2026
+**Dernière mise à jour** : 7 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement :
@@ -13,6 +13,31 @@ jalons : G1 → G4 livrés, G5 → G7 réalisés côté Launcher contre le banc 
 portes externes P1 – P5 restant de côté des composants.
 
 ## [Unreleased]
+
+### Fixed
+- **Archivage d'une donnée de run au-delà de 2 Gio (« The file is too long »)** :
+  trois bornes `byte[]`/`MemoryStream` (2 147 483 647 o) bloquaient la chaîne —
+  `File.ReadAllBytes` dans `ProcessRunExecutor.CollectFiles`, le `MemoryStream` du
+  mode Update dans `LivexPackageWriter.CompleteRun`, le `SortedDictionary<string,
+  byte[]>` de `Seal`. Un vrai `stream.jsonl` de campagne mesure 2 337 158 145 o
+  (50 agents × 2500 ticks, ~4,7 Gio à 100 agents) : le run échouait après exécution,
+  le manifeste restait sans `runIds` et ECHOS refusait le rapport (422).
+  Correction de bout en bout : type `RunDataFile` (source fichier ou octets, jamais
+  lu en mémoire), `CompleteRun` réécrit l'archive en mode **Create** (flux direct,
+  échange atomique par temporaire, ordre normatif §5.2 et déterminisme inchangés),
+  empreintes calculées **en flux pendant la copie**, `Seal` relit en **Read** puis
+  réécrit en **Create**, `VerifyRunIntegrity` hache en flux. Plafond d'entrée du
+  lecteur relevé de 4 à **16 Gio** (`PACKAGE_FORMAT.md` §9), ratio zip-bomb 100:1
+  inchangé ; compteur `runIds` vide désormais détecté côté Launcher avec un
+  avertissement explicite. Preuves : test de régression > 2 Gio, archivage du vrai
+  flux 2,34 Gio (intégrité vérifiée) — **206 tests verts**.
+- **Délai d'analyse ECHOS porté à 30 min pour les opérations lourdes** : le client
+  HTTP plafonnait à 30 s, alors que l'ingestion d'un flux réel de 2,34 Gio prend
+  **5 min 30 s** mesurées (~11 min à 100 agents) — ingestion coupée, run inconnu à
+  l'analyse expérimentale, rapport jamais produit. Délai posé par requête : 30 s au
+  quotidien (5 s pour l'ingestion live), **30 min** pour `ingest/run`,
+  `analysis/run`, `analysis/experiment` et `analysis/report` — ces deux derniers
+  mesurés à 8,6 s et 6,4 s sur le même flux (`EXPERIMENTS.md` §11).
 
 ### Changed
 - **Refonte P3 de la fenêtre d'analyse — la viabilité devient le premier écran

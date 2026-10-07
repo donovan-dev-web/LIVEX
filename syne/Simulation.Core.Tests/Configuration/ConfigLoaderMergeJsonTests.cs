@@ -37,7 +37,7 @@ public class ConfigLoaderMergeJsonTests
         Assert.Equal(800, merged.Simulation.WorldWidth);
         // …et tout le reste du profil est conservé.
         Assert.Equal(7, merged.Communication.MaxSendsPerTick);
-        Assert.Equal(10_000, merged.Resources.Food.Initial);
+        Assert.Equal(20_000, merged.Resources.Food.Initial);
         Assert.False(merged.Communication.RelayEnabled);
         Assert.Equal(1.5, merged.Agents.Actions.RestEnergyGain, 10);
     }
@@ -54,7 +54,7 @@ public class ConfigLoaderMergeJsonTests
         Assert.Equal(1.5, merged.Agents.Actions.RestEnergyGain, 10);
         Assert.Equal(2.0, merged.Agents.Actions.RestFatigueRecovery, 10);
         Assert.Equal(@base.Agents.Perception.Radius, merged.Agents.Perception.Radius);
-        Assert.Equal(10_000, merged.Resources.Water.Initial);
+        Assert.Equal(20_000, merged.Resources.Water.Initial);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class ConfigLoaderMergeJsonTests
         SimulationOptions @base = SimulationProfiles.Reference();
         SimulationOptions merged = ConfigLoader.MergeJson(@base, "{}");
 
-        Assert.Equal(10_000, merged.Resources.Food.Initial);
+        Assert.Equal(20_000, merged.Resources.Food.Initial);
         Assert.False(merged.Communication.RelayEnabled);
         Assert.Equal(@base.Simulation.WorldWidth, merged.Simulation.WorldWidth);
     }
@@ -101,7 +101,7 @@ public class ConfigLoaderMergeJsonTests
         SimulationOptions merged = ConfigLoader.MergeJson(@base, document.RootElement);
 
         Assert.Equal(640, merged.Simulation.WorldWidth);
-        Assert.Equal(10_000, merged.Resources.Food.Initial);
+        Assert.Equal(20_000, merged.Resources.Food.Initial);
     }
 
     [Fact]
@@ -160,17 +160,17 @@ public class ConfigLoaderMergeJsonTests
 
         // La clé demandée est là…
         Assert.Equal(800, deserialized.Simulation.WorldWidth);
-        // …mais tout le reste a été rempli par défaut, y compris ce que le
-        // profil de référence avait personnalisé.
-        Assert.Equal(
-            ConfigLoader.LoadDefaults().Resources.Food.Initial,
-            deserialized.Resources.Food.Initial);
-        Assert.True(deserialized.Communication.RelayEnabled);
+        // …mais tout le reste a été rempli par la valeur par défaut du type — ici
+        // comparaison au défaut AMENÉ de la même surcouche, donc strictement égale :
+        // la désérialisation seule n'est jamais un profil, d'où la fusion JSON.
+        SimulationOptions expected = ConfigLoader.LoadDefaults();
+        expected.Simulation.WorldWidth = 800;
+        Assert.Equal(ConfigLoader.ToJson(expected), ConfigLoader.ToJson(deserialized));
 
         // D'où la fusion sur le JSON brut : MergeJson ne voit que les clés
         // réellement présentes.
         SimulationOptions merged = ConfigLoader.MergeJson(SimulationProfiles.Reference(), partial);
-        Assert.Equal(10_000, merged.Resources.Food.Initial);
+        Assert.Equal(20_000, merged.Resources.Food.Initial);
         Assert.False(merged.Communication.RelayEnabled);
     }
 }

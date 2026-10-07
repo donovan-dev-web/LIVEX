@@ -36,7 +36,7 @@ public sealed record RunResult(
     string Status,
     int Attempt,
     string? Cause,
-    IReadOnlyDictionary<string, byte[]> DataFiles,
+    IReadOnlyDictionary<string, RunDataFile> DataFiles,
     IReadOnlyList<(string Name, byte[] Content)> LogFiles,
     long TicksReached,
     TimeSpan Duration,
@@ -60,8 +60,10 @@ public sealed class RunCompletion
     /// <summary>Contenu de config.resolved.json.</summary>
     public string ConfigResolvedJson { get; init; } = string.Empty;
 
-    /// <summary>Fichiers de données du run, collectés depuis les composants.</summary>
-    public IReadOnlyDictionary<string, byte[]> DataFiles { get; init; } = new Dictionary<string, byte[]>();
+    /// <summary>Fichiers de données du run, collectés depuis les composants.
+    /// Source fichier (jamais chargée en mémoire) : un <c>stream.jsonl</c> dépasse
+    /// les 2 Gio d'un <c>byte[]</c> — voir <see cref="RunDataFile"/>.</summary>
+    public IReadOnlyDictionary<string, RunDataFile> DataFiles { get; init; } = new Dictionary<string, RunDataFile>();
 
     /// <summary>Journaux corrélés au run.</summary>
     public IReadOnlyList<(string Name, byte[] Content)> LogFiles { get; init; } = Array.Empty<(string, byte[])>();

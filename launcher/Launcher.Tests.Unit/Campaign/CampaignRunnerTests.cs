@@ -156,7 +156,7 @@ public sealed class CampaignRunnerTests : IDisposable
 
     private RunResult Success(RunSpec spec) => new(
         spec.RunId, spec.Seed, RunStatuses.Termine, spec.Attempt, null,
-        new Dictionary<string, byte[]> { ["data/result.json"] = System.Text.Encoding.UTF8.GetBytes($"{{\"seed\":{spec.Seed}}}") },
+        new Dictionary<string, RunDataFile> { ["data/result.json"] = System.Text.Encoding.UTF8.GetBytes($"{{\"seed\":{spec.Seed}}}") },
         Array.Empty<(string, byte[])>(), spec.Ticks, TimeSpan.FromMilliseconds(10));
 
 // ------------------------------------------------------------------

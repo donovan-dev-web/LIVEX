@@ -42,13 +42,16 @@ dette explicite non tracée).
 | Fonctionnalités — moteur SYNE | **6** | Moyen |
 | Fonctionnalités — ECHOS / API / UI | **6** | Faible à moyen |
 | Fonctionnalités — PRISM / Unreal | **2 chantiers** (6 étapes) | Très lourd |
-| Validations à exécuter (campagnes de runs, jalons) | V1 **exécutée et validée** ; V2 **exécutée** (critères 1/4 ✓, 2/3 ✗ → itération B1) ; restent V3–V6 | Moyen |
+| Validations à exécuter (campagnes de runs, jalons) | V1 **exécutée et validée** ; V2 **exécutée** (critères 1/4 ✓, 2/3 ✗ → itération B1) ; **V2' exécutée** le 07/10 (ADR-016 : défauts B1 validés 50 et 100 agents × 2500 ticks, 6/6 ✓) ; restent V3–V6 | Moyen |
 | Questions de fond permanentes (éthique/science) | **3 familles** | Hors cycle |
 
 Les campagnes de runs de validation (§5) ont été **exécutées le 30/09/2026** (§5.1) :
 le contrat SYNE↔ECHOS corrigé est prouvé en conditions réelles (seeds, ticks, rapports),
 le déterminisme bit-à-bit est confirmé à l'échelle 1200 ticks, et la calibration B1
-doit être **itérée** (critères 2 et 3 non atteints au seuil strict).
+devait être **itérée** (critères 2 et 3 non atteints au seuil strict) — **iterée le
+07/10/2026 sur les défauts intégrés du moteur** (ADR-016, `engineVersion` 0.15.0) :
+critère d'énergie atteint sur 2500 ticks (6/6 runs, 50 et 100 agents), critère Eat/Drink
+requalifié (faim moyenne jamais > 70).
 
 ---
 
@@ -256,7 +259,7 @@ correctif du chemin `reset` et l'itération B1.
 
 | # | Validation | Critère | Source |
 | :-- | :-- | :-- | :-- |
-| V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | Critères §4-B1 non atteints : énergie stable (< 0,005/tick), part Eat/Drink ≥ 15 % | Plan §4-B1/§7 |
+| V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | **EXÉCUTÉE le 07/10/2026 en périmètre élargi** (ADR-016) : défauts intégrés recalibrés B1, 50 **et** 100 agents × **2500 ticks** × 3 seeds — énergie stable **✓** (|pente| ≤ 0,0037/tick < 0,005, 0 extinction, 0 mort, population = initiale sur 6/6) ; part Eat/Drink ≥ 15 % **vide, pas remplie** : la faim moyenne ne dépasse jamais 70 avec ces défauts (critère requalifié, voir ADR-016 §Validation (c)). Reste à rejouer V2' sur le chemin `reset` une fois le correctif §5.1-D1 fait | Plan §4-B1/§7 ; `ADR-016` |
 | V3 | **Jalons U7/U8 comme jalons transverses** | Cadence contrôlée, backpressure, lag, parcours UI complets ; stabilité long-run, reprise worker | `ROADMAP.md` §6 (U7 « validation produit partielle », U8 « non accepté comme jalon transverse ») |
 | V4 | Ingestion **réelle** de deux runs SYNE en CI (preuve J2/J3 ECHOS) | Les 2 tests skippés (binaire SYNE Release / serveur syne-mock) passent en continu | `docs/docs-echos/TESTING.md` §315 ; suite ECHOS : 2 skipped |
 | V5 | Recalibrage complet des benchmarks | Refaits après implémentation, aux jalons ph10 (T4) et avant validation v0.1 | `docs/docs-syne/PERFORMANCE.md` §118-124 |

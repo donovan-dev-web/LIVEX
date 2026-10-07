@@ -140,7 +140,11 @@ public class Ph10DeterminismBaselineTests
         // → 0xe62395429b50b7c1. Même cause unique que le checksum doré de perception :
         // rééquilibrage de l'arbitrage utilitaire + bilan énergétique (profil de
         // référence, décision D1) — les agents mangent/boivent plus tôt et plus souvent.
+        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0, ADR-016) :
+        // 0xe62395429b50b7c1 → 0x954b8e0e70c0af5f. Cause unique : recalage des défauts
+        // intégrés (coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives des
+        // besoins sociaux, réserves et coûts de communication) — ADR-016, re-pin assumé.
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0xe62395429b50b7c1", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x954b8e0e70c0af5f", $"0x{Fnv1a(log):x16}");
     }
 }

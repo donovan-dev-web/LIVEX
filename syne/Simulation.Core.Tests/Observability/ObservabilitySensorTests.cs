@@ -17,13 +17,13 @@ namespace Simulation.Core.Tests;
 
 public class ObservabilitySensorTests
 {
-    private static (WorldType World, SimulationLoop Loop) BuildLoop()
+    private static (WorldType World, SimulationLoop Loop) BuildLoop(SimulationOptions? options = null)
     {
         var world = new WorldType(new WorldSize(500, 500));
         world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(50, 50), TraitSet.NeutralAll, bornAt: 0));
         world.AddEntity(new Entity(new EntityId(2), "Entité A", null, new Position(80, 50), TraitSet.NeutralAll, bornAt: 0));
         world.AddEntity(new Entity(new EntityId(3), "Entité A", null, new Position(300, 300), TraitSet.NeutralAll, bornAt: 0));
-        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), ConfigLoader.LoadDefaults());
+        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options ?? ConfigLoader.LoadDefaults());
         return (world, loop);
     }
 
@@ -127,7 +127,12 @@ public class ObservabilitySensorTests
     {
         // SYNE-042 : le snapshot porte les réserves (DATA_MODEL.md §8) —
         // les actions terminales les mettent à jour.
-        (_, SimulationLoop loop) = BuildLoop();
+        // Régénération rendue inerte ici : avec les défauts calibrés (ADR-016,
+        // +10 eau/+20 nourriture par tick) l'apport net masquerait la consommation.
+        SimulationOptions options = ConfigLoader.LoadDefaults();
+        options.Resources.Water.RegenerationRate = 0;
+        options.Resources.Food.RegenerationRate = 0;
+        (_, SimulationLoop loop) = BuildLoop(options);
         loop.Run(500);
 
         WorldSnapshot snapshot = WorldSnapshot.Capture(loop, seed: 7);
@@ -137,13 +142,11 @@ public class ObservabilitySensorTests
         double water = message["resources"]!.AsArray().First(r => (string?)r!["type"] == "water")!["quantity"]!.GetValue<double>();
         double food = message["resources"]!.AsArray().First(r => (string?)r!["type"] == "food")!["quantity"]!.GetValue<double>();
 
-        // Avec le cycle de vie (SYNE-070), l'eau régénère +5/tick : la réserve courante
-        // peut repasser au-dessus de 1000 sans contredire la consommation — sans
-        // consommation elle vaudrait exactement initial + 5 × tick. Food (régénération
-        // nulle) reste strictement décroissante : invariant du snapshot(bornes).
-        double waterCeiling = 1000.0 + 5.0 * loop.CurrentTick;
+        // Cycle de vie rendu inerte (cf. plus haut) : sans régénération, la réserve
+        // ne peut que baisser — toute consommation la passe sous le stock initial.
+        double waterCeiling = 20_000.0;
         Assert.True(water >= 0.0 && water < waterCeiling, "La réserve d'eau a été consommée par Drink.");
-        Assert.True(food >= 0.0 && food < 100.0, "La réserve de nourriture a été consommée par Eat.");
+        Assert.True(food >= 0.0 && food < 20_000.0, "La réserve de nourriture a été consommée par Eat.");
     }
 
     [Fact]
@@ -196,7 +199,7 @@ public class ObservabilitySensorTests
         // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
         // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
         // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
-        Assert.Equal("0.14.0", ObservabilityContract.EngineVersion); // jalon ADR cognitifs 0.14.0 : drapeaux défaut-faux, trajectoire inchangée
+        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 (ADR-016) : défauts intégrés recalés, goldens ré-épinglés
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);
