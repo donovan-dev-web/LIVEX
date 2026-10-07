@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : `VISION.md`, `CI_CD.md`
 **Source Monographie** : Partie 2 (Présentation du Projet), §7.1–7.3 (monorepo, diagrammes, contrats)
 
@@ -22,18 +22,21 @@ flowchart TB
     subgraph ECHOS["ECHOS — Observation & analyse"]
         ACORE[Analyzer.Core — 7 moteurs de métriques]
         AAPI[Analyzer API REST]
-        UI[Interface React + TypeScript]
     end
     subgraph PRISM["PRISM — Projet Unreal final de LIVEX"]
         APP["PRISM<br/>projet Unreal final"]
         PLUGIN["PRISM-LDK<br/>plugin Unreal (module PrismLdk)"]
         APP -->|"intègre"| PLUGIN
     end
+    subgraph LAUNCHER["Launcher — orchestration et présentation"]
+        LUI[Fenêtres natives : consoles de logs + fenêtre d'analyse]
+    end
     MOCK["syne-mock<br/>serveur Node.js de développement"]
     SYNE -- "WebSocket 5180 + HTTP 5181" --> ECHOS
     SYNE -- "WebSocket 5180 (snapshots/events)" --> PRISM
     MOCK -. "contrats simulés pour intégration" .-> PLUGIN
     ECHOS -- "contrôle (HTTP relayé)" --> SYNE
+    ECHOS -- "API REST 5000 (séries, métriques, rapport)" --> LUI
 ```
 
 ## 2. Les trois composants
@@ -54,11 +57,11 @@ Voir `docs/docs-syne/ARCHITECTURE.md`.
 Source : Monographie Partie 4.
 
 - **Rôle** : observe, analyse et pilote la simulation ; expose des métriques, un score d'émergence, une analyse causale et la comparaison d'expériences.
-- **Implémentation V0.1** : interface **web locale React + TypeScript servie par FastAPI** (`echos-ui`, Vite — shell Electron conservé, implémentation différée à un horizon ultérieur), backend d'analyse **Python (FastAPI, API locale)** sur la base des moteurs de métriques ; stockage SQLite / fichiers Parquet.
+- **Implémentation V0.1** : backend d'analyse **Python (FastAPI, API locale)** sur la base des moteurs de métriques ; stockage SQLite / fichiers Parquet. **Moteur sans interface** : aucune page web, aucun shell de bureau (ADR-007) ; les séries et le rapport sont présentés par le Launcher, dans ses fenêtres natives.
 - **Contrats d'entrée** : consomme le flux WebSocket 5180 de SYNE (snapshots + événements).
-- **Contrats de sortie** : API REST (liste des runs, métriques, comparaison, export), interface d'analyse intégrée.
+- **Contrats de sortie** : API REST (liste des runs, métriques, comparaison, export). Aucune interface n'est exposée par ECHOS.
 
-> Divergence documentée : la Monographie (§7.1) décrit un prototype ECHOS en **C#/.NET (Analyzer.Core + ASP.NET) avec interface web React TS**. **Décision V0.1 (utilisateur, 23/09/2026)** : ECHOS a une interface **web locale React/Vite servie par FastAPI** avec backend **Python FastAPI** (analyse NumPy/Pandas/SciPy, graphes NetworkX, graphiques ECharts/Plotly) et stockage **SQLite/Parquet**. Le **shell Electron est conservé** (non abandonné) : son implémentation est **différée à un horizon ultérieur (post-V0.1)** (correction 23/09/2026, `ADR-001` ECHOS). La logique métier reste calquée sur les 7 moteurs de métriques de la Monographie.
+> Divergence documentée : la Monographie (§7.1) décrit un prototype ECHOS en **C#/.NET (Analyzer.Core + ASP.NET) avec interface web React TS**. **Décision V0.1 (utilisateur, 23/09/2026)** : backend **Python FastAPI** (analyse NumPy/Pandas/SciPy, graphes NetworkX) et stockage **SQLite/Parquet**. **Décision du 5 octobre 2026 (`ADR-007`)** : l'interface React et le shell Electron sont **retirés** — ECHOS est un moteur sans interface, et la présentation (consoles de logs, fenêtre d'analyse) est portée par le Launcher en Avalonia. La logique métier reste calquée sur les 7 moteurs de métriques de la Monographie.
 
 Voir `docs/docs-echos/ARCHITECTURE.md`.
 
@@ -115,11 +118,11 @@ rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
 | :-- | :-- |
 | Moteur de simulation | C#/.NET, SDK 10.0.400 (pinné `global.json`) — [HÉRITÉ] |
 | Analyse ECHOS | Prototype C#/.NET ; **V0.1 : Python (FastAPI)** |
-| Interface ECHOS | React + TypeScript (intégrée à ECHOS) |
+| Interface ECHOS | **Retirée** — présentation portée par le Launcher (Avalonia, ADR-007) |
 | PRISM | Projet Unreal final de LIVEX, intégrant PRISM-LDK (`PrismLdk`) |
 | Mock SYNE | Node.js ; outil de développement, non moteur scientifique |
 | Tests C# | xUnit + Moq |
-| Tests interface | Vitest + ESLint + Prettier |
+| Tests interface | Avalonia headless + xUnit (Launcher) ; Vitest + ESLint + Prettier **retirés** avec `echos-ui` |
 | CI/CD | GitHub Actions |
 | Conteneurisation | Docker multi-stage |
 | Registre d'images | GHCR |
@@ -129,7 +132,7 @@ rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
 ```text
 LIVEX/
 ├── syne/                  # Moteur de simulation (C#/.NET)
-├── echos/                 # Observation & analyse (Python/FastAPI + React/TS)
+├── echos/                 # Observation & analyse (Python/FastAPI, API seule)
 ├── prism/                 # Projet Unreal PRISM et plugin PRISM-LDK
 │   └── LDK/               # Emplacement actuel du plugin et de son hôte technique
 │       ├── LDK.uproject   # Hôte de développement/build, pas le produit LIVEX complet

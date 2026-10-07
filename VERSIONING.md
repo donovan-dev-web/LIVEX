@@ -77,7 +77,7 @@ Le versionnement est déclenché par les évènements suivants :
 | Contrat d'observabilité (snapshot) | **0.2.1** | Champ additif `seed` dans `WorldSnapshot`, rétrocompatible 0.2.x |
 | Format `run_id` | `run-<seed>-<12hex>` | Seed explicite dans l'identifiant ; ECHOS ne dérive plus le seed de l'id (repli `_seed_of` conservé) |
 | ECHOS (stockage/calibration) | schéma SQLite **v6** | Migration additive `mean_food`/`mean_water`, rapport de calibration par run avec bloc `viability` |
-| echos-ui | suit l'API ECHOS | Consomme `outcome`/`extinctionTick` (badge extinction) et `/api/compare?light=1` |
+| Présentation d'ECHOS | **retirée** (oct. 2026) | `echos-ui` supprimé (ADR-007) : la fenêtre d'analyse du Launcher consomme `outcome`/`extinctionTick` et `/api/compare?light=1` |
 
 ---
 
