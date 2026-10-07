@@ -5,11 +5,12 @@ Ces tests utilisent un flux écrit par le vrai binaire SYNE
 rejouable par ECHOS avec le contrat du flux live, et non qu'un jeu de données
 imaginé par les tests est accepted.
 
-Les tests du ``syne_run`` supposent le moteur réel (``dotnet build Syne.sln
---configuration Release``) : sans ``LIVEX_SYNE_E2E=1`` la fixture est sautée,
-comme l'intégration WebSocket, ce qui laisse le job Python pur tourner sans
-binaire .NET. Les tests qui n'ont pas besoin du moteur (lecture de flux,
-``inspect``, routes de refus) tournent dans tous les cas.
+Les tests du ``syne_run`` et ceux qui écrivent un run moteur supposent le
+moteur réel (``dotnet build Syne.sln --configuration Release``) : sans
+``LIVEX_SYNE_E2E=1``, ``_write_run`` est sautée, comme l'intégration
+WebSocket, ce qui laisse le job Python pur tourner sans binaire .NET. Les
+tests qui n'ont pas besoin du moteur (lecture de flux, ``inspect``, routes
+de refus) tournent dans tous les cas.
 """
 
 from __future__ import annotations
@@ -51,6 +52,11 @@ def _write_run(
     truncate_last_segment: bool = False,
 ) -> Path:
     """Lance un vrai run SYNE supervisé et renvoie son répertoire de données."""
+    if os.getenv("LIVEX_SYNE_E2E") != "1":
+        pytest.skip(
+            "requires the real SYNE engine and its Release build; "
+            "enabled in the U8 integration CI job"
+        )
     data_directory = directory / "data"
     logs_directory = directory / "logs"
     logs_directory.mkdir(parents=True, exist_ok=True)
@@ -106,11 +112,6 @@ def _write_run(
 
 @pytest.fixture(scope="module")
 def syne_run(tmp_path_factory):
-    if os.getenv("LIVEX_SYNE_E2E") != "1":
-        pytest.skip(
-            "requires the real SYNE engine and its Release build; "
-            "enabled in the U8 integration CI job"
-        )
     directory = tmp_path_factory.mktemp("syne-batch")
     _write_run(directory)
     yield directory
