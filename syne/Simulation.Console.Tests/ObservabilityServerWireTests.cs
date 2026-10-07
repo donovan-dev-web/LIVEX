@@ -119,6 +119,30 @@ public class ObservabilityServerWireTests
         Assert.NotNull(loop.Cognition.MindOf(1).LastActionResult);
     }
 
+    [Fact]
+    public async Task WorldInitializedFrame_IsReplayedToClientsConnectingAfterwards()
+    {
+        // Analyse temps réel : le consommateur ECHOS se connecte souvent APRÈS la
+        // préparation, et la description de monde n'est diffusée qu'une fois —
+        // sans rejeu, il ne verrait jamais le terrain ni la grille du monde.
+        await using var server = new ObservabilityServer(FreePort());
+        server.Start();
+
+        await server.BroadcastAsync(
+            "{\"type\":\"world_initialized\",\"version\":\"1.0\",\"world\":{\"width\":100}}");
+
+        using var client = new ClientWebSocket();
+        await client.ConnectAsync(new Uri($"ws://127.0.0.1:{server.Port}/"), CancellationToken.None);
+        await WaitForClient(server);
+
+        JsonNode? json = JsonNode.Parse(
+            await ReceiveTextAsync(client).WaitAsync(TimeSpan.FromSeconds(5)));
+
+        Assert.NotNull(json);
+        Assert.Equal("world_initialized", (string?)json!["type"]);
+        Assert.Equal(100, (int?)json!["world"]!["width"]);
+    }
+
     private static async Task WaitForClient(ObservabilityServer server)
     {
         for (int i = 0; i < 50 && server.ClientCount == 0; i++)
