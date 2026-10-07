@@ -18,10 +18,9 @@ namespace Launcher.Package;
 /// </summary>
 public sealed class LivexPackageWriter : IDisposable
 {
-    private readonly FileStream _fileStream;
-    private readonly ZipArchive _archive;
+    private FileStream _fileStream;
+    private ZipArchive _archive;
     private readonly object _gate = new();
-    private readonly SortedDictionary<string, byte[]?> _pendingEntries = new(StringComparer.Ordinal);
     private readonly HashSet<string> _writtenEntries = new(StringComparer.Ordinal);
     private readonly List<JournalLine> _journal = new();
     private RunIndex _runIndex = new();
@@ -132,33 +131,41 @@ public sealed class LivexPackageWriter : IDisposable
     public RunIndex RunIndex => _runIndex;
 
     /// <summary>Écrit ou remplace une entrée de métadonnées (JSON).</summary>
-    public void WriteEntry(string entryName, string content) => WriteEntry(entryName, Encoding.UTF8.GetBytes(content));
-
-    /// <summary>Écrit ou remplace une entrée binaire.</summary>
+    public void WriteEntry(string entryName, string content) => WriteEntry(entryName, Encoding.UTF8.GetBytes(content));    /// <summary>Écrit ou remplace une entrée binaire.</summary>
     public void WriteEntry(string entryName, byte[] content)
     {
         ThrowIfSealed();
+
         PackageEntryRules.EnsureSafe(entryName);
         lock (_gate)
         {
-            _pendingEntries[entryName] = content;
-            FlushPendingLocked();
+            WriteEntryLocked(entryName, RunDataFile.FromBytes(content));
         }
     }
 
     /// <summary>
     /// Clôture un run selon la séquence normative §5.2 : métadonnées et données du run,
     /// integrity.json, runs/index.json, journal.ndjson, manifest.json en dernier.
-    /// « dataFiles » porte les fichiers de données collectés (chemin d'entrée → contenu).
+    /// « dataFiles » porte les fichiers de données collectés (chemin d'entrée → source),
+    /// copiés en flux depuis le disque sans jamais être chargés en mémoire — une donnée
+    /// de campagne dépasse les 2 Gio d'un byte[].
     /// « analysisFiles » porte l'analyse individuelle d'ECHOS pour ce run (PACKAGE_FORMAT.md §3),
     /// écrite sous analysis/individual/ ; elle peut être vide si ECHOS est indisponible.
+    ///
+    /// <para><b>Pourquoi une réécriture complète</b> : le mode Update de
+    /// <see cref="ZipArchive"/> bufferise toute entrée écrite dans un
+    /// <c>MemoryStream</c> (borné à <c>int.MaxValue</c> o) — un run réel de campagne
+    /// (« The file is too long ») échouait à cet endroit. Chaque clôture réécrit donc
+    /// l'archive en mode <c>Create</c>, qui compresse directement dans le fichier :
+    /// aucun plafond, aucun contenu en mémoire. L'ordre normatif §5.2, l'horodatage
+    /// d'époque et le niveau de compression sont identiques à l'ancien chemin.</para>
     /// </summary>
     public void CompleteRun(
         string runId,
         RunIndexEntry indexEntry,
         string runJson,
         string configResolvedJson,
-        IReadOnlyDictionary<string, byte[]> dataFiles,
+        IReadOnlyDictionary<string, RunDataFile> dataFiles,
         IReadOnlyList<(string Name, byte[] Content)> logFiles,
         JournalLine completionEvent,
         IReadOnlyDictionary<string, byte[]>? analysisFiles = null)
@@ -168,53 +175,141 @@ public sealed class LivexPackageWriter : IDisposable
         {
             var prefix = $"runs/{runId}/";
 
-            // 1a. Métadonnées du run.
-            WriteEntryLocked($"{prefix}run.json", Encoding.UTF8.GetBytes(runJson));
-            WriteEntryLocked($"{prefix}config.resolved.json", Encoding.UTF8.GetBytes(configResolvedJson));
-
-            // 1b. Données du run, écrites par les composants, collectées par le Launcher.
-            foreach (var (entryName, content) in dataFiles)
-            {
-                WriteEntryLocked($"{prefix}{entryName}", content);
-            }
-
-            foreach (var (name, content) in logFiles)
-            {
-                WriteEntryLocked($"{prefix}logs/{name}", content);
-            }
-
-            // 1c. Analyse individuelle d'ECHOS (canal 3 — restitution), rangée à sa place de référence.
-            foreach (var (entryName, content) in analysisFiles ?? new Dictionary<string, byte[]>())
-            {
-                WriteEntryLocked($"analysis/individual/{entryName}", content);
-            }
-
-            // 2. integrity.json : empreintes SHA-256 des entrées du run.
-            var integrity = new RunIntegrity();
-            foreach (var (entryName, content) in EnumerateRunEntries(prefix))
-            {
-                integrity.Files.Add(new IntegrityEntry
-                {
-                    Path = entryName,
-                    SizeBytes = content.Length,
-                    Sha256 = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
-                });
-            }
-
-            WriteEntryLocked($"{prefix}{PackageConstants.RunIntegrityEntry}", ContractJson.Serialize(integrity));
-
-            // 3. runs/index.json : mise à jour de l'état du run.
+            // 0. Mutations mémoire (identiques à l'ancien chemin) : index, journal et
+            //    manifeste sont sérialisés en fin de séquence, le manifeste en dernier.
             UpsertRunIndexLocked(indexEntry);
-            WriteEntryLocked(PackageConstants.RunsIndexEntry, ContractJson.Serialize(_runIndex));
-
-            // 4. journal.ndjson : une ligne d'événement.
             _journal.Add(completionEvent);
-            WriteEntryLocked(PackageConstants.JournalEntry, Encoding.UTF8.GetBytes(string.Join("\n", _journal.Select(j => j.ToJsonLine())) + "\n"));
-
-            // 5. manifest.json : recomptage et nouvelle empreinte. Point de commit.
             RecomputeCountsLocked();
-            WriteEntryLocked(PackageConstants.ManifestEntry, ContractJson.Serialize(_manifest));
+
+            // Noms réécrits : ceux du run (toutes tentives antérieures comprises), les
+            // métadonnées systématiquement remplacées, et l'analyse individuelle écrasée.
+            var rewritten = new HashSet<string>(StringComparer.Ordinal)
+            {
+                $"{prefix}run.json",
+                $"{prefix}config.resolved.json",
+                $"{prefix}{PackageConstants.RunIntegrityEntry}",
+                PackageConstants.RunsIndexEntry,
+                PackageConstants.JournalEntry,
+                PackageConstants.ManifestEntry,
+            };
+            foreach (var entryName in dataFiles.Keys)
+            {
+                rewritten.Add($"{prefix}{entryName}");
+            }
+
+            foreach (var (name, _) in logFiles)
+            {
+                rewritten.Add($"{prefix}logs/{name}");
+            }
+
+            foreach (var entryName in analysisFiles?.Keys ?? Array.Empty<string>())
+            {
+                rewritten.Add($"analysis/individual/{entryName}");
+            }
+
+            var temporaryPath = $"{_path}.{Guid.NewGuid():N}.complete.tmp";
+            _archive.Dispose();
+            _fileStream.Dispose();
+            try
+            {
+                WriteCompleteRunEntries(temporaryPath, prefix, rewritten, runJson, configResolvedJson,
+                    dataFiles, logFiles, analysisFiles);
+
+                // Échange atomique : le paquet existant n'est écrasé qu'après l'écriture
+                // complète du temporaire (même garantie que le scellement §5.3).
+                File.Move(temporaryPath, _path, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+
+                // Réouverture dans tous les cas : sur échec, le paquet d'origine est intact.
+                ReopenForUpdateLocked();
+            }
         }
+    }
+
+    /// <summary>
+    /// Écrit le répertoire du run et les métadonnées dans une archive temporaire ouverte
+    /// en mode <c>Create</c> (compression directe dans le fichier, aucun tampon en
+    /// mémoire). À la retour, l'archive temporaire est complète et peut être échangée
+    /// avec le paquet. L'ordre normatif §5.2 est respecté : données, integrity, index,
+    /// journal, manifeste en dernier (point de commit).
+    /// </summary>
+    private void WriteCompleteRunEntries(
+        string temporaryPath,
+        string prefix,
+        HashSet<string> rewritten,
+        string runJson,
+        string configResolvedJson,
+        IReadOnlyDictionary<string, RunDataFile> dataFiles,
+        IReadOnlyList<(string Name, byte[] Content)> logFiles,
+        IReadOnlyDictionary<string, byte[]>? analysisFiles)
+    {
+        using var source = new ZipArchive(
+            new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.Read),
+            ZipArchiveMode.Read);
+        using var output = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        using var fresh = new ZipArchive(output, ZipArchiveMode.Create);
+
+        // 1. Entrées existantes conservées, dans l'ordre du répertoire central
+        //    (l'ancien chemin Update supprimait puis réajoutait, ce qui laissait
+        //    exactement les mêmes entrées à leur même place).
+        foreach (var entry in source.Entries)
+        {
+            if (rewritten.Contains(entry.FullName)
+                || entry.FullName.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            WriteStreamEntry(fresh, entry.FullName, entry.Open());
+        }
+
+        var integrity = new RunIntegrity();
+
+        // 2a. Métadonnées du run.
+        AddBytesEntry(fresh, integrity, $"{prefix}run.json", Encoding.UTF8.GetBytes(runJson));
+        AddBytesEntry(fresh, integrity, $"{prefix}config.resolved.json", Encoding.UTF8.GetBytes(configResolvedJson));
+
+        // 2b. Données du run, écrites par les composants, collectées par le Launcher :
+        //     copie et empreinte en une seule passe sur le flux.
+        foreach (var (entryName, dataFile) in dataFiles)
+        {
+            var fullName = $"{prefix}{entryName}";
+            PackageEntryRules.EnsureSafe(fullName);
+            using var content = dataFile.OpenRead();
+            var entry = fresh.CreateEntry(fullName, CompressionLevel.SmallestSize);
+            entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
+            using var target = entry.Open();
+            var (sizeBytes, sha256) = CopyWithHash(content, target);
+            integrity.Files.Add(new IntegrityEntry { Path = fullName, SizeBytes = sizeBytes, Sha256 = sha256 });
+        }
+
+        foreach (var (name, content) in logFiles)
+        {
+            AddBytesEntry(fresh, integrity, $"{prefix}logs/{name}", content);
+        }
+
+        // 2c. Analyse individuelle d'ECHOS (canal 3 — restitution), hors préfixe du run.
+        foreach (var (entryName, content) in analysisFiles ?? new Dictionary<string, byte[]>())
+        {
+            WriteBytesEntry(fresh, $"analysis/individual/{entryName}", content);
+        }
+
+        // 3. integrity.json (tri ordinal, comme l'ancien balayage des entrées).
+        integrity.Files.Sort((a, b) => string.CompareOrdinal(a.Path, b.Path));
+        WriteBytesEntry(fresh, $"{prefix}{PackageConstants.RunIntegrityEntry}", ContractJson.Serialize(integrity));
+
+        // 4. runs/index.json, journal.ndjson, manifest.json — dans cet ordre,
+        //    le manifeste en dernier : point de commit §5.2.
+        WriteBytesEntry(fresh, PackageConstants.RunsIndexEntry, ContractJson.Serialize(_runIndex));
+        WriteBytesEntry(fresh, PackageConstants.JournalEntry,
+            Encoding.UTF8.GetBytes(string.Join("\n", _journal.Select(j => j.ToJsonLine())) + "\n"));
+        WriteBytesEntry(fresh, PackageConstants.ManifestEntry, ContractJson.Serialize(_manifest));
     }
 
     /// <summary>Scelle le paquet : immuable, empreinte pleine, horodatages normalisés (§5.3).</summary>
@@ -242,30 +337,41 @@ public sealed class LivexPackageWriter : IDisposable
         // et reprise.
         lock (_gate)
         {
-            var allEntries = new SortedDictionary<string, byte[]>(StringComparer.Ordinal);
-            foreach (var entry in _archive.Entries.ToList())
-            {
-                using var source = entry.Open();
-                using var buffer = new MemoryStream();
-                source.CopyTo(buffer);
-                allEntries[entry.FullName] = buffer.ToArray();
-            }
+            // Recompactage en flux, entrée par entrée (même ordre trié, même niveau de
+            // compression, même horodatage) : aucune entrée n'est mise en mémoire —
+            // une donnée de run dépasse les 2 Gio d'un byte[] et d'un MemoryStream.
+            var names = _archive.Entries
+                .Select(entry => entry.FullName)
+                .OrderBy(name => name, StringComparer.Ordinal)
+                .ToList();
 
+            // Fermeture puis relecture en mode Read : une lecture Update bufferiserait
+            // chaque entrée dans un MemoryStream — impossible au-delà de 2 Gio.
             _archive.Dispose();
             _fileStream.Dispose();
 
             var temporaryPath = $"{_path}.{Guid.NewGuid():N}.sealing.tmp";
             try
             {
+                using (var source = new ZipArchive(
+                           new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.Read),
+                           ZipArchiveMode.Read))
                 using (var output = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
                 using (var fresh = new ZipArchive(output, ZipArchiveMode.Create))
                 {
-                    foreach (var (name, content) in allEntries)
+                    foreach (var name in names)
                     {
+                        var existing = source.GetEntry(name);
+                        if (existing is null)
+                        {
+                            continue;
+                        }
+
                         var entry = fresh.CreateEntry(name, CompressionLevel.SmallestSize);
                         entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
+                        using var sourceStream = existing.Open();
                         using var target = entry.Open();
-                        target.Write(content);
+                        sourceStream.CopyTo(target);
                     }
                 }
 
@@ -327,16 +433,103 @@ public sealed class LivexPackageWriter : IDisposable
         }
     }
 
-    private void WriteEntryLocked(string entryName, byte[] content)
+    private void WriteEntryLocked(string entryName, byte[] content) => WriteEntryLocked(entryName, RunDataFile.FromBytes(content));
+
+    private void WriteEntryLocked(string entryName, string content) => WriteEntryLocked(entryName, Encoding.UTF8.GetBytes(content));
+
+    /// <summary>
+    /// Écrit une entrée en recopiant sa source en flux : un fichier de données de run
+    /// (jusqu'à plusieurs Gio) transite du disque vers l'archive sans jamais être
+    /// stocké en mémoire — la borne « byte[] < 2 Gio » ne s'applique donc jamais ici.
+    /// </summary>
+    private void WriteEntryLocked(string entryName, RunDataFile source)
     {
         // Toute écriture passe par la règle §8, y compris les noms venant d'un composant
         // (données d'un run, analyse ECHOS) : le producteur ne choisit pas le chemin écrit.
         PackageEntryRules.EnsureSafe(entryName);
-        _pendingEntries[entryName] = content;
-        FlushPendingLocked();
+        var existing = _archive.GetEntry(entryName);
+        existing?.Delete();
+        var entry = _archive.CreateEntry(entryName, CompressionLevel.SmallestSize);
+        entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
+        using (var content = source.OpenRead())
+        using (var target = entry.Open())
+        {
+            content.CopyTo(target);
+        }
+
+        _writtenEntries.Add(entryName);
+        _fileStream.Flush();
     }
 
-    private void WriteEntryLocked(string entryName, string content) => WriteEntryLocked(entryName, Encoding.UTF8.GetBytes(content));
+    /// <summary>Copie un flux vers une entrée d'archive et le hache en une seule passe.</summary>
+    private static (long SizeBytes, string Sha256) CopyWithHash(Stream source, Stream target)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var buffer = new byte[81920];
+        long size = 0;
+        int read;
+        while ((read = source.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            target.Write(buffer, 0, read);
+            hash.AppendData(buffer, 0, read);
+            size += read;
+        }
+
+        return (size, Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant());
+    }
+
+    /// <summary>Écrit un contenu textuel UTF-8 dans une entrée (mode Create).</summary>
+    private static void WriteBytesEntry(ZipArchive archive, string entryName, string content) =>
+        WriteBytesEntry(archive, entryName, Encoding.UTF8.GetBytes(content));
+
+    /// <summary>Écrit un contenu en mémoire dans une entrée (mode Create, flux fermé ici).</summary>
+    private static void WriteBytesEntry(ZipArchive archive, string entryName, byte[] content)
+    {
+        PackageEntryRules.EnsureSafe(entryName);
+        var entry = archive.CreateEntry(entryName, CompressionLevel.SmallestSize);
+        entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
+        using var target = entry.Open();
+        target.Write(content);
+    }
+
+    /// <summary>Écrit un contenu en mémoire et enregistre son empreinte (entrée sous le préfixe du run).</summary>
+    private static void AddBytesEntry(ZipArchive archive, RunIntegrity integrity, string entryName, byte[] content)
+    {
+        WriteBytesEntry(archive, entryName, content);
+        integrity.Files.Add(new IntegrityEntry
+        {
+            Path = entryName,
+            SizeBytes = content.LongLength,
+            Sha256 = Convert.ToHexString(SHA256.HashData(content)).ToLowerInvariant(),
+        });
+    }
+
+    /// <summary>Copie un contenu existant (flux fourni, fermé ici) dans une entrée.</summary>
+    private static void WriteStreamEntry(ZipArchive archive, string entryName, Stream content)
+    {
+        PackageEntryRules.EnsureSafe(entryName);
+        var entry = archive.CreateEntry(entryName, CompressionLevel.SmallestSize);
+        entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
+        using (content)
+        using (var target = entry.Open())
+        {
+            content.CopyTo(target);
+        }
+    }
+
+    /// <summary>Réouvre le paquet en mode Update après une réécriture de fichier complet.</summary>
+    private void ReopenForUpdateLocked()
+    {
+        _fileStream = new FileStream(
+            _path,
+            new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.ReadWrite, Share = FileShare.Read });
+        _archive = new ZipArchive(_fileStream, ZipArchiveMode.Update);
+        _writtenEntries.Clear();
+        foreach (var entry in _archive.Entries)
+        {
+            _writtenEntries.Add(entry.FullName);
+        }
+    }
 
     /// <summary>Écrit le journal et le manifeste : séquence de création (PACKAGE_FORMAT.md §5.1).</summary>
     private void WriteJournalAndManifest()
@@ -346,40 +539,6 @@ public sealed class LivexPackageWriter : IDisposable
             WriteEntryLocked(PackageConstants.JournalEntry, string.Join("\n", _journal.Select(j => j.ToJsonLine())) + "\n");
             RecomputeCountsLocked();
             WriteEntryLocked(PackageConstants.ManifestEntry, ContractJson.Serialize(_manifest));
-        }
-    }
-
-    private void FlushPendingLocked()
-    {
-        foreach (var (name, content) in _pendingEntries)
-        {
-            var existing = _archive.GetEntry(name);
-            existing?.Delete();
-            var entry = _archive.CreateEntry(name, CompressionLevel.SmallestSize);
-            entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
-            using var target = entry.Open();
-            target.Write(content);
-            _writtenEntries.Add(name);
-        }
-
-        _pendingEntries.Clear();
-        _fileStream.Flush();
-    }
-
-    private IEnumerable<(string Name, byte[] Content)> EnumerateRunEntries(string prefix)
-    {
-        foreach (var name in _writtenEntries.Where(n => n.StartsWith(prefix, StringComparison.Ordinal)).OrderBy(n => n, StringComparer.Ordinal))
-        {
-            var entry = _archive.GetEntry(name);
-            if (entry is null)
-            {
-                continue;
-            }
-
-            using var source = entry.Open();
-            using var buffer = new MemoryStream();
-            source.CopyTo(buffer);
-            yield return (name, buffer.ToArray());
         }
     }
 

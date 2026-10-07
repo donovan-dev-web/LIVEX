@@ -175,7 +175,8 @@ public sealed class ProcessRunExecutor : IRunExecutor
                 throw new InvalidOperationException($"le moteur s'est terminé avec le code {exited.ExitCode} ({exited.Outcome})");
             }
 
-            // Collecte : le Launcher reçoit, vérifie la présence, ne lit pas le contenu scientifique.
+            // Collecte : le Launcher reçoit, vérifie la présence, ne lit pas le contenu
+            // scientifique — chaque fichier est référencé par son chemin (RunDataFile).
             var dataFiles = CollectFiles(dataDirectory, runDirectory);
             var logFiles = CollectLogFiles(logsDirectory);
 
@@ -294,9 +295,9 @@ public sealed class ProcessRunExecutor : IRunExecutor
 #pragma warning restore CA1031
     }
 
-    private static IReadOnlyDictionary<string, byte[]> CollectFiles(string dataDirectory, string runDirectory)
+    private static IReadOnlyDictionary<string, RunDataFile> CollectFiles(string dataDirectory, string runDirectory)
     {
-        var files = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        var files = new Dictionary<string, RunDataFile>(StringComparer.Ordinal);
         if (!Directory.Exists(dataDirectory))
         {
             return files;
@@ -305,7 +306,9 @@ public sealed class ProcessRunExecutor : IRunExecutor
         foreach (var file in Directory.EnumerateFiles(dataDirectory, "*", SearchOption.AllDirectories))
         {
             var entryName = Path.GetRelativePath(runDirectory, file).Replace('\\', '/');
-            files[entryName] = File.ReadAllBytes(file);
+            // Source fichier, jamais lue ici : un stream.jsonl de campagne dépasse
+            // les 2 Gio d'un byte[] et plombait l'archivage (« The file is too long »).
+            files[entryName] = RunDataFile.FromFile(file);
         }
 
         return files;

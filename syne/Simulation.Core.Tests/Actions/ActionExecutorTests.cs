@@ -38,6 +38,9 @@ public class ActionExecutorTests
     public void Eat_AppliesCatalogEffectsAndConsumesFoodReserve()
     {
         // SYNE-042 : Eat consomme la réserve Food et applique les effets du catalogue.
+        // Calibration B1 (ADR-016) : Eat rapporte +2,0 d'énergie pour −0,2 de coût
+        // (net +1,8) — on écarte d'abord l'énergie du plafond 100 pour observer le gain.
+        _mind.Needs.ExertEnergy(20.0);
         double energyBefore = _mind.Needs.Energy;
         double foodBefore = _stocks.Stock(ResourceKind.Food);
 
@@ -45,13 +48,13 @@ public class ActionExecutorTests
 
         Assert.Equal(ActionOutcome.Executed, result.Outcome);
         Assert.Equal(-30.0, result.HungerDelta);
-        Assert.Equal(-0.2, result.EnergyDelta);
+        Assert.Equal(1.8, result.EnergyDelta, 10);
         Assert.Equal(ResourceKind.Food, result.ReserveConsumed);
         Assert.Equal(1.0, result.ReserveConsumedAmount);
         Assert.Equal(foodBefore - 1.0, _stocks.Stock(ResourceKind.Food), 10);
-        Assert.Equal(energyBefore - 0.2, _mind.Needs.Energy, 10);
+        Assert.Equal(energyBefore + 1.8, _mind.Needs.Energy, 10);
         // L'eau n'est pas touchée par Eat.
-        Assert.Equal(1000.0, _stocks.Stock(ResourceKind.Water));
+        Assert.Equal(20_000.0, _stocks.Stock(ResourceKind.Water));
     }
 
     [Fact]
@@ -74,7 +77,7 @@ public class ActionExecutorTests
     public void Eat_WithEmptyReserve_IsBlockedWithNoEffect()
     {
         // SYNE-042 : réserve vide → action bloquée, aucun effet appliqué.
-        _stocks.TryConsume(ResourceKind.Food, 100.0);
+        _stocks.TryConsume(ResourceKind.Food, _stocks.Stock(ResourceKind.Food));
         double energyBefore = _mind.Needs.Energy;
 
         ActionResult result = _executor.Execute(_entity, _mind, DesireKind.Eat, currentTick: 10);
@@ -97,10 +100,10 @@ public class ActionExecutorTests
         ActionResult result = _executor.Execute(_entity, _mind, DesireKind.SeekFood, currentTick: 10);
 
         Assert.Equal(ActionOutcome.Executed, result.Outcome);
-        Assert.Equal(-0.5, result.EnergyDelta);
-        Assert.Equal(energyBefore - 0.5, _mind.Needs.Energy, 10);
+        Assert.Equal(-0.03, result.EnergyDelta, 10);
+        Assert.Equal(energyBefore - 0.03, _mind.Needs.Energy, 10);
         Assert.NotEqual(before, _entity.Position);
-        Assert.Equal(100.0, _stocks.Stock(ResourceKind.Food), 10);
+        Assert.Equal(20_000.0, _stocks.Stock(ResourceKind.Food), 10);
     }
 
     [Fact]
@@ -168,8 +171,8 @@ public class ActionExecutorTests
         ActionResult result = _executor.Execute(_entity, _mind, DesireKind.Rest, currentTick: 5);
 
         Assert.Equal(ActionOutcome.Executed, result.Outcome);
-        Assert.Equal(0.5, result.EnergyDelta);
-        Assert.Equal(-1.0, result.FatigueDelta);
+        Assert.Equal(1.5, result.EnergyDelta, 10);
+        Assert.Equal(-2.0, result.FatigueDelta, 10);
         Assert.Equal(before, _entity.Position);
     }
 }

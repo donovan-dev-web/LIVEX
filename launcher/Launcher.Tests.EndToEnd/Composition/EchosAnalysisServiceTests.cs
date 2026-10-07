@@ -6,6 +6,7 @@ using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Launcher.Infrastructure;
+using Launcher.Protocol.Model;
 using Launcher.Tests.Integration.Infrastructure;
 using Xunit;
 
@@ -148,7 +149,7 @@ public sealed class EchosAnalysisServiceTests : IDisposable
 
     private static RunResult Run(string runId) => new(
         runId, 42, "Terminé", 1, null,
-        new Dictionary<string, byte[]>(),
+        new Dictionary<string, RunDataFile>(),
         Array.Empty<(string, byte[])>(),
         4, TimeSpan.FromSeconds(1));
 

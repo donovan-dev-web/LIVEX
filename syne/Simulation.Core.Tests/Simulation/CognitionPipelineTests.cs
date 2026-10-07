@@ -71,6 +71,9 @@ public class CognitionPipelineTests
         // (mortalité désactivée : le scénario teste la soif, pas le cycle de vie)
         SimulationOptions options = Options();
         options.Agents.Life.DeathEnabled = false;
+        // Régénération inerte pour que la consommation reste observable (les défauts
+        // calibrés ADR-016 régénèrent +10/tick, apport net supérieur à la boisson).
+        options.Resources.Water.RegenerationRate = 0;
         var world = new WorldType(new WorldSize(500, 500));
         world.AddEntity(MakeEntity(1, new Position(50, 50)));
         world.AddEntity(MakeEntity(2, new Position(80, 50)));
@@ -83,12 +86,12 @@ public class CognitionPipelineTests
         Assert.NotNull(mind.LastDecision);
 
         // La soif a été éteinte par Drink (réserve mise à jour, décision n°4) :
-        // la réserve globale d'eau a été consommée mais reste non vide. Avec le cycle
-        // de vie (SYNE-070), l'eau régénère +5/tick ; sans consommation elle vaudrait
-        // exactement initial + 5 × tick — toute consommation la passe sous la borne.
+        // la réserve globale d'eau a été consommée mais reste non vide. Régénération
+        // rendue inerte au-dessus : sans consommation la réserve vaudrait exactement
+        // son stock initial (20 000) — toute consommation la passe sous la borne.
         Assert.True(loop.Resources.Stock(World.ResourceKind.Water) >= 0.0);
         Assert.True(
-            loop.Resources.Stock(World.ResourceKind.Water) < 1000.0 + 5.0 * loop.CurrentTick,
+            loop.Resources.Stock(World.ResourceKind.Water) < 20_000.0,
             "La réserve d'eau aurait dû être consommée au moins une fois par Drink.");
     }
 
@@ -267,6 +270,9 @@ public class CognitionPipelineTests
         options.Agents.Needs.SocialDriftRate = 0;
         options.Agents.Needs.CuriosityDriftRate = 0;
         options.Resources.Food.Initial = 0;
+        // Sans cet apport nul, la régénération nourriture des défauts calibrés
+        // (ADR-016, +20/tick) remplirait la réserve avant l'interruption testée.
+        options.Resources.Food.RegenerationRate = 0;
 
         (_, SimulationLoop loop) = BuildSingleLoop(options);
         for (int tick = 1; tick <= 18; tick++)

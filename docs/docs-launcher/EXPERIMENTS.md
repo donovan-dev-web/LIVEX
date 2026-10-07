@@ -227,6 +227,14 @@ intégrité, leur provenance et leur rattachement à un run, rien de plus. Toute
 interprétation d'un résultat est hors périmètre, conformément à
 `adr/ADR-003-analyse-propriete-de-echos.md`.
 
+**Délais** (mesurés le 07/10/2026 sur un flux réel) : l'ingestion d'un run de
+2500 ticks × 50 agents (2,34 Gio) prend environ **5 min 30 s** côté ECHOS — de
+l'ordre de 11 min pour 100 agents. Les appels d'analyse (`ingest/run`,
+`analysis/run`, `analysis/experiment`, `analysis/report`) sont donc budgétés à
+**30 min** chacun ; les appels ordinaires (santé, état) restent à 30 s. Sans ce
+budget, l'ancien plafond de 30 s coupait l'ingestion et le rapport de campagne
+n'était jamais produit. Le reste des appels vit dans `EchosAnalysisService`.
+
 ## 12. Reproductibilité d'une campagne
 
 Une campagne est reproductible si, et seulement si :

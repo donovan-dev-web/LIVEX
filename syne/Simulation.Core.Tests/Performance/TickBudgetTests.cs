@@ -100,7 +100,8 @@ public class TickBudgetTests
         // trajectoire : le checksum doré épinglé reste 0xdb57f58566418f5d même
         // quand la boucle est instrumentée. Scénario = copie exacte de
         // DeterminismRegressionTests (rochers, 25 entités, 200 ticks, same log).
-        // Nouvelle valeur après activation du garde anti-relay (engineVersion 0.12.0) :
+        // Nouvelle valeur après activation du garde anti-relay (engineVersion 0.12.0)
+        // puis ré-épinglage calibration B1 (engineVersion 0.15.0, ADR-016) :
         // voir DeterminismRegressionTests.GoldenChecksum_IsPinned pour l'analyse.
         SimulationLoop instrumented = BuildGolden(seed: 12345, TickBudgetCollector.CreateEnabled());
 
@@ -134,7 +135,7 @@ public class TickBudgetTests
             hash = Fnv1a(log.ToString());
         }
 
-        Assert.Equal("0x46769cfb11c8b3a7", $"0x{hash:x16}");
+        Assert.Equal("0xf4aaa2733e491935", $"0x{hash:x16}");
     }
 
     private static SimulationLoop BuildGolden(ulong seed, TickBudgetCollector? budget)

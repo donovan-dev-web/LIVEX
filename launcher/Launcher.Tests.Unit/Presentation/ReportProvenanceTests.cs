@@ -470,7 +470,7 @@ public sealed class ReportProvenanceTests : IDisposable
             new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 7 },
             "{\"runId\":\"RUN-0001\"}",
             "{\"config\":\"resolved\"}",
-            new Dictionary<string, byte[]>(),
+            new Dictionary<string, RunDataFile>(),
             Array.Empty<(string, byte[])>(),
             JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         if (reportContent is not null)

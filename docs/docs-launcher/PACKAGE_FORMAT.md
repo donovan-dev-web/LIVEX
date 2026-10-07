@@ -266,8 +266,8 @@ Launcher. Une règle de correspondance entre les deux doit être établie avec
 | :-- | :-- | :-- |
 | Taille d'un paquet | 4 Go sans ZIP64, illimitée avec | Conteneur ZIP64 obligatoire |
 | Nombre de runs | 65 535 par paquet | `RUN-nnnn` sur quatre chiffres |
-| Taille d'une entrée | 4 Go | Limite d'une entrée ZIP |
-| Ratio de décompression | Plafonné à 100:1 | Protection zip-bomb |
+| Taille d'une entrée | 16 Gio | Garde-fou zip-bomb en lecture (pas une borne ZIP : ZIP64 porte bien au-delà). Relevé de 4 à 16 Gio le 07/10/2026 — une donnée de campagne réelle mesure ~2,34 Gio (50 agents × 2500 ticks) et ~4,7 Gio (100 agents) |
+| Ratio de décompression | Plafonné à 100:1 | Protection zip-bomb — un `stream.jsonl` réel reste très en deçà |
 | Entrées d'un paquet | Illimité | Pas de limite de count |
 
 Le plafond de taille d'hébergement d'un artefact volumineux dans le paquet, et la
