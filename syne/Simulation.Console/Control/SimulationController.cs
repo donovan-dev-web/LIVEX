@@ -112,6 +112,17 @@ public sealed class SimulationController : IAsyncDisposable
         }
     }
 
+    public SimulationLoop? CurrentLoop
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _loop;
+            }
+        }
+    }
+
         public bool WorldPrepared
             {
                 get { lock (_gate) return _worldDescription is not null && _loop is not null; }
@@ -208,6 +219,16 @@ public sealed class SimulationController : IAsyncDisposable
     }
 
     /// <summary>
+    /// Identité du run à archiver dans le flux d'observabilité. Un identifiant
+    /// demandé par l'appelant est retenu tel quel : il est alors déterministe,
+    /// ce qu'exige l'export batch (deux runs de même graine doivent produire
+    /// le même fichier <c>stream.jsonl</c>). Sans demande, on retombe sur le
+    /// format généré, qui garantit l'unicité des runs observés en direct.
+    /// </summary>
+    private static string ResolveRunId(ulong seed, string? requestedRunId) =>
+        string.IsNullOrWhiteSpace(requestedRunId) ? RunIdFor(seed) : requestedRunId;
+
+    /// <summary>
     /// Démarre un run (SYNE-113) pour <paramref name="seed"/> et la surcouche de
     /// configuration <paramref name="configJson"/> (JSON partiel optionnel, en
     /// <b>texte brut</b>, fusionné sur les défauts — cf. <see cref="SimulationFactory.ResolveOptions"/>).
@@ -218,7 +239,8 @@ public sealed class SimulationController : IAsyncDisposable
         ulong? seed,
         string? configJson,
         int? maxTicks,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? requestedRunId = null)
     {
         bool hasConfig = !string.IsNullOrWhiteSpace(configJson);
         if (!WorldPrepared)
@@ -246,7 +268,7 @@ public sealed class SimulationController : IAsyncDisposable
             loop = _loop!;
         }
         var runCts = new CancellationTokenSource();
-        string runId = RunIdFor(effectiveSeed);
+        string runId = ResolveRunId(effectiveSeed, requestedRunId);
         TimeSpan tickInterval = TimeSpan.FromSeconds(1d / options.Simulation.TicksPerSecond);
         var emitter = _observabilitySink is null
             ? null

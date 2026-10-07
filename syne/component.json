@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "id": "syne",
+  "name": "SYNE",
+  "type": "simulation",
+  "version": "0.14.0",
+  "protocolVersion": 1,
+  "runtime": "dotnet",
+  "executable": {
+    "linux": "Simulation.Console/bin/Release/net10.0/publish/Simulation.Console"
+  },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": {
+      "transport": "http",
+      "port": 5181,
+      "enabled": true,
+      "launchArgument": "--control-port"
+    },
+    "ws": {
+      "transport": "websocket",
+      "port": 5180,
+      "enabled": true,
+      "launchArgument": "--observe-port"
+    }
+  },
+  "capabilities": [
+    "headless",
+    "control",
+    "observability",
+    "batch"
+  ],
+  "health": {
+    "probe": "http",
+    "path": "/health/ready",
+    "intervalMs": 500
+  },
+  "timeouts": {
+    "startupMs": 30000,
+    "shutdownMs": 15000
+  }
+}

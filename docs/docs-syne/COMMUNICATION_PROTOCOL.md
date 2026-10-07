@@ -94,7 +94,7 @@ Les coûts sont appliqués via `BodyNeeds.ExertEnergy` (émetteur à l'émission
 
 ## 8. Suivi et observabilité
 
-- Activité exposée par `MessageSent`/`MessageReceived` (id, émetteur d'origine, cible, type, payload, hops, confiance effective) — alimente l'observabilité et les traces pour ECHOS (heatmap de communication, `NetworkCentrality`...).
+- Activité exposée par `MessageSent`/`MessageReceived` (id, émetteur d'origine, cible, type, payload, hops, confiance effective) — alimente l'observabilité et les traces pour ECHOS (heatmap de communication, `SenderConcentration`...).
 - Événements typés `message_sent` / `message_received` (`ExternalEvent`, `ObservabilityContract` 0.4.0) diffusés sur WebSocket (SYNE-054) — ingestion ECHOS générique.
 
 ---
