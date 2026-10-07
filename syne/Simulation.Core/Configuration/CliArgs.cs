@@ -18,12 +18,33 @@ public sealed record CliOptions(
     string? BenchmarkPopulations = null,
     bool? Serve = null,
     int? ServePort = null,
-    bool Help = false)
+    bool Help = false,
+    string? Simulation = null,
+    int? Ticks = null,
+    string? ExportDirectory = null,
+    string? RunId = null,
+    bool ExportStream = false,
+    bool AutoStart = false,
+    string? InstanceId = null,
+    int? ControlPort = null,
+    string? WorkDirectory = null,
+    string? LogDirectory = null,
+    string? CorrelationId = null)
 {
     /// <summary>Ports d'écoute acceptés par les écouteurs BCL.</summary>
     public const int MinPort = 1;
 
     public const int MaxPort = 65535;
+
+    /// <summary>
+    /// Identifiant de run accepté par <c>--run-id</c> : mêmes caractères que
+    /// l'identifiant d'un run dans le flux d'observabilité et que ceux retenus
+    /// par le contrat d'intégration v1. Le run exporté doit pouvoir être
+    /// enregistré tel quel dans le magasin analytique ECHOS, donc aucune
+    /// séparation de chemin ni espace.
+    /// </summary>
+    private static readonly System.Text.RegularExpressions.Regex RunIdPattern =
+        new("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
     /// <summary>Texte d'usage affiché par <c>--help</c>.</summary>
     public const string Usage = """
@@ -35,14 +56,28 @@ public sealed record CliOptions(
         Options de simulation :
           --seed <ulong>                  Graine du PRNG (xoshiro256**).
           --max-ticks <int>               Nombre maximal de ticks.
+          --simulation <id>               Scénario batch pris en charge : reference.
+          --ticks <int>                   Horizon batch strictement positif.
+          --export-dir <chemin>           Dossier des artefacts batch (result.json).
+          --run-id <id>                   Identité du run écrite dans le flux exporté.
+          --export-stream                 Écrit le flux d'observabilité (stream.jsonl)
+                                         dans le dossier d'export.
+          --autostart                     Démarre le batch après préparation.
           --world-size <largeur> <hauteur> Dimensions du monde en unités monde.
           --headless                      Exécute sans rapport de progression.
           --config <chemin>               Fichier de configuration JSON.
 
+        Service supervisé :
+          --instance-id <id>              Identité de cette instance.
+          --control-port <port>           Port HTTP de contrôle et readiness.
+          --work-dir <chemin>             Espace de travail de l'instance.
+          --log-dir <chemin>              Dossier des journaux de l'instance.
+          --correlation-id <id>           Identifiant de corrélation.
+
         Observabilité :
           --observe                       Diffuse les trames sur WebSocket.
           --observe-port <port>           Port d'écoute (défaut 5180), avec
-                                        --observe ou --serve.
+                                        --observe, --serve ou --control-port.
 
         Serveur de contrôle :
           --serve                         Démarre le serveur HTTP de contrôle.
@@ -64,7 +99,7 @@ public sealed record CliOptions(
     /// <summary>Drapeaux qui ne prennent pas de valeur.</summary>
     private static readonly HashSet<string> ValuelessFlags = new(StringComparer.Ordinal)
     {
-        "--headless", "--observe", "--benchmark", "--serve", "--help", "-h",
+        "--headless", "--observe", "--benchmark", "--serve", "--autostart", "--export-stream", "--help", "-h",
     };
 
     /// <summary>
@@ -97,6 +132,17 @@ public sealed record CliOptions(
         bool? serve = null;
         int? servePort = null;
         bool help = false;
+        string? simulation = null;
+        int? ticks = null;
+        string? exportDirectory = null;
+        string? runId = null;
+        bool exportStream = false;
+        bool autoStart = false;
+        string? instanceId = null;
+        int? controlPort = null;
+        string? workDirectory = null;
+        string? logDirectory = null;
+        string? correlationId = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -107,6 +153,39 @@ public sealed record CliOptions(
                     break;
                 case "--max-ticks":
                     maxTicks = ParseInt(RequireValue(args, ref i, "--max-ticks"), "--max-ticks");
+                    break;
+                case "--simulation":
+                    simulation = RequireValue(args, ref i, "--simulation");
+                    break;
+                case "--ticks":
+                    ticks = ParseInt(RequireValue(args, ref i, "--ticks"), "--ticks");
+                    break;
+                case "--export-dir":
+                    exportDirectory = RequireValue(args, ref i, "--export-dir");
+                    break;
+                case "--run-id":
+                    runId = RequireValue(args, ref i, "--run-id");
+                    break;
+                case "--export-stream":
+                    exportStream = true;
+                    break;
+                case "--autostart":
+                    autoStart = true;
+                    break;
+                case "--instance-id":
+                    instanceId = RequireValue(args, ref i, "--instance-id");
+                    break;
+                case "--control-port":
+                    controlPort = ParsePort(RequireValue(args, ref i, "--control-port"), "--control-port");
+                    break;
+                case "--work-dir":
+                    workDirectory = RequireValue(args, ref i, "--work-dir");
+                    break;
+                case "--log-dir":
+                    logDirectory = RequireValue(args, ref i, "--log-dir");
+                    break;
+                case "--correlation-id":
+                    correlationId = RequireValue(args, ref i, "--correlation-id");
                     break;
                 case "--world-size":
                     // Deux valeurs : les lire d'un coup. Appeler RequireValue deux
@@ -164,12 +243,62 @@ public sealed record CliOptions(
             }
         }
 
-        ValidateMode(observe, observePort, "--observe", "--observe-port", serve, servePort, "--serve", "--serve-port");
+        ValidateMode(observe, observePort, "--observe", "--observe-port", serve, servePort, "--serve", "--serve-port",
+            controlPort is not null);
+
+        if (simulation is not null && simulation != "reference")
+        {
+            throw new ArgumentException($"Scénario batch non pris en charge : \"{simulation}\". Valeur acceptée : reference.");
+        }
+
+        if (ticks is <= 0)
+        {
+            throw new ArgumentException("--ticks doit être strictement positif.");
+        }
+
+        if (ticks is not null && maxTicks is not null && ticks != maxTicks)
+        {
+            throw new ArgumentException("--ticks et --max-ticks ne peuvent pas définir des horizons différents.");
+        }
+
+        if (runId is not null && !RunIdPattern.IsMatch(runId))
+        {
+            throw new ArgumentException(
+                "--run-id doit commencer par une lettre ou un chiffre et n'utiliser que lettres, chiffres, point, tiret ou souligné (128 caractères max).");
+        }
+
+        if (exportStream && exportDirectory is null && !autoStart)
+        {
+            throw new ArgumentException("--export-stream exige --export-dir.");
+        }
+
+        if (controlPort is not null)
+        {
+            if (serve == true)
+            {
+                throw new ArgumentException("--control-port et --serve ne peuvent pas être combinés.");
+            }
+
+            if (observe == true || benchmark == true)
+            {
+                throw new ArgumentException("--observe et --benchmark ne peuvent pas être combinés avec --control-port.");
+            }
+
+            RequireSupervisedValue(instanceId, "--instance-id");
+            RequireSupervisedValue(workDirectory, "--work-dir");
+            RequireSupervisedValue(logDirectory, "--log-dir");
+            RequireSupervisedValue(correlationId, "--correlation-id");
+        }
+        else if (instanceId is not null || workDirectory is not null || logDirectory is not null || correlationId is not null)
+        {
+            throw new ArgumentException("--instance-id, --work-dir, --log-dir et --correlation-id exigent --control-port.");
+        }
 
         return new CliOptions(
             seed, maxTicks, worldSize, headless, configPath,
             observe, observePort, benchmark, benchmarkTicks, benchmarkPopulations,
-            serve, servePort, help);
+            serve, servePort, help, simulation, ticks, exportDirectory, runId, exportStream, autoStart,
+            instanceId, controlPort, workDirectory, logDirectory, correlationId);
     }
 
     /// <summary>
@@ -188,9 +317,10 @@ public sealed record CliOptions(
     /// </summary>
     private static void ValidateMode(
         bool? observe, int? observePort, string observeFlag, string observePortFlag,
-        bool? serve, int? servePort, string serveFlag, string servePortFlag)
+        bool? serve, int? servePort, string serveFlag, string servePortFlag,
+        bool supervised)
     {
-        if (observePort is not null && observe != true && serve != true)
+        if (observePort is not null && observe != true && serve != true && !supervised)
         {
             throw new ArgumentException(
                 $"{observePortFlag} exige {observeFlag} ou {serveFlag}.");
@@ -199,6 +329,14 @@ public sealed record CliOptions(
         if (servePort is not null && serve != true)
         {
             throw new ArgumentException($"{servePortFlag} exige {serveFlag}.");
+        }
+    }
+
+    private static void RequireSupervisedValue(string? value, string flag)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException($"{flag} est obligatoire avec --control-port.");
         }
     }
 
