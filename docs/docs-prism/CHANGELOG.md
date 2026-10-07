@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 7 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 **Format** : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`prism-vX.Y.Z`).
 
@@ -16,6 +16,8 @@
 - Guide d'intégration Blueprint du plugin : `PRISM_UNREAL_IMPLEMENTATION.md`.
 - Règles de normalisation des fins de ligne et de traitement des binaires Unreal (`.uasset`, `.umap`) dans `.gitattributes`.
 - **ADR-002** — Unreal Engine 5.8 et plugin PRISM-LDK pour PRISM ([Accepted]).
+- **`SCALE_AND_CADENCE_SPEC.md`** — correspondance spatiale et temporelle SYNE ↔ Unreal : échelle `k = 100 uu/unité` (1 unité = 1 m), cadence `ticksPerSecond = 6` (parité vitesse joueur/agent aux défauts Unreal), monde `2 240 × 2 240` unités (≈ 5 km²) en cases de 32 (cellule World Partition 3200 uu par défaut), densité sociale, environnement complet (forêt/rivière/montagne/côte) et checklist de validation.
+- **ADR-003** — Échelle et cadence SYNE ↔ Unreal (k = 100, TPS 6, monde ≈ 5 km²) ([Proposed]).
 
 ### Changed
 - Dossier de documentation réaligné sur PRISM, projet Unreal final de LIVEX, et son plugin PRISM-LDK.
@@ -25,6 +27,7 @@
 - Rôle et limites de `syne-mock` documentés : outil de développement des contrats, sans équivalence avec le moteur SYNE.
 - **ADR-001** (choix Godot) conservée comme décision historique et marquée [Superseded] par l'ADR-002.
 - Feuille de route PRISM réécrite en étapes d'évolution orientées intégration et validation, avec une section de risques explicite.
+- `PRISM_UNREAL_IMPLEMENTATION.md` : la conversion de positions et la grille de tuiles renvoient à `SCALE_AND_CADENCE_SPEC.md` (convention retenue `k = 100`, tuile 3200 uu) au lieu de l'échelle illustrative de 100 uu ; le tableau de cadence ajoute la ligne d'immersion `TPS = 6`.
 
 ### Historical
 - Les versions antérieures de ces documents décrivaient un prototype Godot et des intentions de rendu. Elles ne décrivent plus la plateforme ni l'implémentation actuelles. Le prototype est archivé dans `../docs_prototype/`.
@@ -39,6 +42,7 @@ Version initiale (prototype Godot V1/V2 de la Monographie, [HÉRITÉ]).
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 7 octobre 2026 | `SCALE_AND_CADENCE_SPEC.md` + ADR-003 ([Proposed]) ; conventions de conversion et de cadence dans `PRISM_UNREAL_IMPLEMENTATION.md` | Parité vitesse joueur/agent sur un monde ≈ 5 km² |
 | 27 septembre 2026 | Dossier PRISM réaligné sur Unreal + PRISM-LDK ; ADR-002 créée | Adoption d'Unreal (étape 1 de la feuille de route) |
 | 27 septembre 2026 | Plugin PRISM-LDK et hôte technique de build | Première implémentation exécutable |
 | 17 septembre 2026 | Création | Documentation V0.1 |

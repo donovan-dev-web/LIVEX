@@ -183,24 +183,26 @@ SYNE est un plan logique 2D. Il faut distinguer trois repères :
    d'un agent (`Position.X/Y`) reste continue en unités SYNE, pas un numéro de
    cellule. Pour retrouver sa cellule : `CellX = floor(X / CellSize)` et
    `CellY = floor(Y / CellSize)`, bornés aux dimensions du monde.
-3. **Grille de tuiles Unreal** : pour l'exemple de conversion utilisé dans ce
-   guide, une cellule logique correspond à une tuile de **100 × 100 Unreal
-   Units (uu)**. Cette échelle est une convention illustrative, non imposée
-   par PRISM-LDK ou SYNE ; le projet PRISM peut en choisir une autre et
-   adapter ses conversions. Les
-   coordonnées de la tuile sont `TileOrigin = (CellX * 100, CellY * 100)` et
-   son centre `(CellX * 100 + 50, CellY * 100 + 50)`. Cela donne une échelle
-   `100 uu / CellSize` par unité SYNE ; avec `CellSize = 10`, une unité SYNE
-   vaut donc 10 uu. Pour le monde par défaut (500 unités SYNE, CellSize 10),
-   les 50 × 50 tuiles couvrent 5000 × 5000 uu, soit 50 × 50 mètres en UE
-   (1 uu = 1 cm).
+3. **Grille de tuiles Unreal** : l'échelle est fixée par
+   [`SCALE_AND_CADENCE_SPEC.md`](SCALE_AND_CADENCE_SPEC.md) (ADR-003) —
+   **`k = 100 uu` par unité SYNE, soit 1 unité = 1 m**, et une tuile de
+   `CellSize × k` uu. Pour le profil retenu (`CellSize = 32`, monde
+   `2 240 × 2 240`), une cellule logique correspond à une tuile de
+   **3200 × 3200 uu**, c'est-à-dire la cellule World Partition par défaut. Les
+   coordonnées de la tuile sont `TileOrigin = (CellX * 3200, CellY * 3200)` et
+   son centre `(CellX * 3200 + 1600, CellY * 3200 + 1600)` ; les 70 × 70 tuiles
+   couvrent 224 000 × 224 000 uu, soit 2 240 × 2 240 mètres (1 uu = 1 cm).
+   En toute généralité : `TileOrigin = (CellX * CellSize * k, CellY * CellSize * k)`.
+   Le reste de ce document prend pour exemple `CellSize = 10` et une tuile de
+   100 uu (`k = 10`) : garder le calcul `k = taille_tuile / CellSize` plutôt que
+   les nombres de l'exemple.
 
 Interpréter les coordonnées selon leur type de donnée, pas seulement selon le
 nom `X/Y` :
 
 | Donnée | Repère des coordonnées | Conversion/usage Unreal |
 |---|---|---|
-| `Cells[].X/Y` | Indices entiers de cellule | Tuile `(X,Y)` ; origine `(100X,100Y)` uu dans l'exemple |
+| `Cells[].X/Y` | Indices entiers de cellule | Tuile `(X,Y)` ; origine `(3200X, 3200Y)` uu au profil retenu (`k = 100`) |
 | `Resources[]` de `WorldDescription` | Indices entiers de cellule | Marqueur initial à instancier dans cette tuile |
 | `Obstacles[]` de `WorldDescription` | Position continue SYNE + rayon | Centre à convertir en position monde ; utiliser le rayon pour dimensionner la collision |
 | `Regions[].X/Y` | Indices entiers de cellule (origine de région) | Découpage/cluster, pas une position d'Actor |
@@ -215,14 +217,17 @@ Ne pas utiliser ces stocks de snapshot pour replacer les acteurs de ressource.
 Les snapshots SYNE peuvent dépasser 2 milliards de ticks : les champs `Tick`
 exposés par le plugin sont des entiers 64 bits.
 
-Pour convertir directement une position continue en unités Unreal, utiliser
-`UnrealX = SyneX * 100 / CellSize` et
-`UnrealY = SyneY * 100 / CellSize` (origine du monde à `(0,0)`). Avec
-`CellSize = 10`, l'agent en `(12.5, 23.0)` est dans la cellule `(1,2)` et son
-point XY théorique est `(125,230)` uu. Pour placer l'acteur sur le terrain réel,
+Pour convertir directement une position continue en unités Unreal, appliquer
+l'échelle retenue : `UnrealX = SyneX * k` et `UnrealY = SyneY * k` avec
+`k = taille_tuile / CellSize` (origine du monde à `(0,0)`). Au profil retenu,
+`k = 3200 / 32 = 100`, ce qui est le cas particulier de la forme générale
+`SyneX * taille_tuile / CellSize`. Exemple avec `CellSize = 10` et une tuile de
+100 uu : l'agent en `(12.5, 23.0)` est dans la cellule `(1,2)` et son point XY
+théorique est `(125,230)` uu. Pour placer l'acteur sur le terrain réel,
 utiliser la cellule calculée puis projeter/choisir un point du NavMesh dans les
 limites de cette tuile ; le point Unreal projeté n'a pas à reproduire exactement
-la position SYNE.
+la position SYNE. Le rattrapage exact de la position autoritaire par les agents
+dépend aussi de leur `MaxWalkSpeed` (voir `SCALE_AND_CADENCE_SPEC.md` §8.5).
 
 ### Pourquoi `World.Obstacles` peut être vide
 
@@ -347,6 +352,7 @@ le jeu vise 60 FPS.
 |---:|---:|---:|---:|---:|
 | 1 | 1 s | 60 | 1 min | 60× |
 | 5 | 200 ms | 12 | 5 min | 300× |
+| **6 (profil PRISM retenu)** | **166,7 ms** | **10** | **6 min** | **360×** |
 | 10 (défaut) | 100 ms | 6 | 10 min | 600× |
 | 15 | 66,7 ms | 4 | 15 min | 900× |
 | 30 | 33,3 ms | 2 | 30 min | 1 800× |
@@ -355,7 +361,9 @@ le jeu vise 60 FPS.
 
 Exemple d'appel depuis le GameInstance : `Prepare(42, 10)` demande 10 ticks de
 simulation par seconde ; laisser `TicksPerSecond` à 10 (valeur par défaut)
-produit le même réglage. `world.ticksPerSecond` confirme la valeur préparée.
+produit le même réglage. Le profil retenu pour l'immersion temps de jeu est
+**6** (`SCALE_AND_CADENCE_SPEC.md`, ADR-003) : `Prepare(42, 6)`.
+`world.ticksPerSecond` confirme la valeur préparée.
 `Start` doit réutiliser le seed déjà préparé ; il ne reconstruit pas un monde
 explicitement préparé et refuse un seed différent. Pour changer seed ou cadence,
 relancer `Prepare`, reconstruire la scène, puis accuser `Ready`.
@@ -375,9 +383,15 @@ les cibles et les décisions peuvent réduire ou annuler ce déplacement.
 |---:|---:|---:|---:|---:|
 | 1 tick/s | 1 | N | 0,5–1,5 unités SYNE/s | 5–15 uu/s (0,05–0,15 m/s) |
 | 5 ticks/s | 5 | 5N | 2,5–7,5 unités SYNE/s | 25–75 uu/s (0,25–0,75 m/s) |
+| 6 ticks/s (profil PRISM retenu, `k = 100`) | 6 | 6N | 3–9 unités SYNE/s | 300–900 uu/s (3–9 m/s) |
 | 10 ticks/s (défaut) | 10 | 10N | 5–15 unités SYNE/s | 50–150 uu/s (0,5–1,5 m/s) |
 | 30 ticks/s | 30 | 30N | 15–45 unités SYNE/s | 150–450 uu/s (1,5–4,5 m/s) |
 | 60 ticks/s | 60 | 60N | 30–90 unités SYNE/s | 300–900 uu/s (3–9 m/s) |
+
+Le profil PRISM retenu (`TPS = 6`, `k = 100 uu/unité`, voir
+[`SCALE_AND_CADENCE_SPEC.md`](SCALE_AND_CADENCE_SPEC.md)) donne **3 à 9 unités
+SYNE/s = 300 à 900 uu/s**, soit 600 uu/s (le `MaxWalkSpeed` par défaut d'Unreal)
+pour l'agent médian.
 
 À `CellSize=10`, traverser une tuile logique de 10 unités demande environ
 7–20 ticks de mouvement réussi selon le trait `speed`, soit environ 0,67–2 s
