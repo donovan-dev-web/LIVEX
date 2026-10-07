@@ -160,6 +160,34 @@ public sealed class CampaignEndToEndTests : IDisposable
         await Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Une composition construite avec des racines explicites reste hermétique après une
+    /// redétection : aucun composant hors de sa racine n'entre dans le registre. Sans cette
+    /// règle, DetectComponents() lisait les sources standard de la machine (~/.livex, registre
+    /// utilisateur) et un composant installé ailleurs rendait un profil satisfiable là où la
+    /// composition ne contient que le moteur simulé.
+    /// </summary>
+    [Fact]
+    public void Redetection_reste_hermétique_à_la_racine_explicite()
+    {
+        var (composition, _, _) = BuildComposition();
+        try
+        {
+            composition.DetectComponents();
+
+            foreach (var componentId in new[] { "syne", "syne-mock", "echos", "prism" })
+            {
+                Assert.All(
+                    composition.Orchestration.Registry.GetInstallations(componentId),
+                    installation => Assert.StartsWith(_componentsParent, installation.Location));
+            }
+        }
+        finally
+        {
+            composition.Dispose();
+        }
+    }
+
     /// <summary>La vérification d'environnement --check passe sur un poste où le composant simulé est installé.</summary>
     [Fact]
     public async Task Verification_environnement_detecte_le_composant_simule()

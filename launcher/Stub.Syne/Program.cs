@@ -17,13 +17,16 @@ internal static class Program
     private static int Main(string[] args)
     {
         var options = ParseArguments(args);
-        Console.WriteLine($"[Stub.Syne] instance={options.InstanceId} seed={options.Seed} ticks={options.Ticks} workDir={options.WorkDirectory}");
+        Console.WriteLine($"[Stub.Syne] instance={options.InstanceId} simulation={options.Simulation} seed={options.Seed} ticks={options.Ticks} workDir={options.WorkDirectory}");
 
         if (!string.IsNullOrEmpty(options.WorkDirectory))
         {
             Directory.CreateDirectory(options.WorkDirectory);
             Directory.CreateDirectory(Path.Combine(options.WorkDirectory, "data"));
             Directory.CreateDirectory(Path.Combine(options.WorkDirectory, "logs"));
+            File.WriteAllText(
+                Path.Combine(options.WorkDirectory, "launch.json"),
+                JsonSerializer.Serialize(new { simulation = options.Simulation }));
         }
 
         var server = new MiniHttpServer(options.ControlPort);
@@ -75,15 +78,41 @@ internal static class Program
         // Fin de l'horizon : écrit ses sorties dans le dossier du run, puis sort (mode batch).
         if (!string.IsNullOrEmpty(options.WorkDirectory))
         {
-            File.WriteAllText(Path.Combine(options.WorkDirectory, "data", "result.json"),
-                $"{{\"seed\":{options.Seed},\"ticks\":{_tick},\"agents\":{options.AgentCount},\"fingerprint\":\"stub-{options.Seed:D12}\"}}");
+            var dataDirectory = Path.Combine(options.WorkDirectory, "data");
+            var runId = options.RunId.Length > 0 ? options.RunId : $"run-{options.Seed:D12}";
+
+            File.WriteAllText(Path.Combine(dataDirectory, "result.json"),
+                $"{{\"seed\":{options.Seed},\"ticks\":{_tick},\"agents\":{options.AgentCount},\"runId\":{JsonSerializer.Serialize(runId)},\"fingerprint\":\"stub-{options.Seed:D12}\"}}");
             File.WriteAllText(Path.Combine(options.WorkDirectory, "logs", "syne-stub.log"),
                 $"stub run seed={options.Seed} ticks={_tick}\n");
+
+            // --export-stream : un segment par tick, dans l'ordre émis par le vrai
+            // moteur (world_initialized, puis snapshot + tick_summary par tick).
+            if (options.ExportStream)
+            {
+                File.WriteAllLines(
+                    Path.Combine(dataDirectory, "stream.jsonl"),
+                    BuildStream(runId, _tick, options.AgentCount));
+            }
         }
 
         Console.WriteLine($"[Stub.Syne] horizon atteint ({_tick} ticks), sortie normale");
         _exitCode = options.ExitCode ?? 0;
         return _exitCode;
+    }
+
+    /// <summary>
+    /// Flux d'observabilité déterministe du stub : la forme importe, pas la
+    /// science. Un snapshot et un tick_summary par tick, comme SYNE.
+    /// </summary>
+    private static IEnumerable<string> BuildStream(string runId, int ticks, int agentCount)
+    {
+        yield return $"{{\"type\":\"world_initialized\",\"version\":\"0.0.0-stub\",\"runId\":{JsonSerializer.Serialize(runId)},\"seed\":0,\"worldSize\":{{\"width\":64,\"height\":64}}}}";
+        for (var tick = 1; tick <= ticks; tick++)
+        {
+            yield return $"{{\"type\":\"snapshot\",\"version\":\"0.0.0-stub\",\"runId\":{JsonSerializer.Serialize(runId)},\"tick\":{tick},\"simulatedTimeMinutes\":{tick},\"aliveCount\":{agentCount}}}";
+            yield return $"{{\"type\":\"tick_summary\",\"version\":\"0.0.0-stub\",\"runId\":{JsonSerializer.Serialize(runId)},\"tick\":{tick},\"aliveCount\":{agentCount},\"agentCount\":{agentCount},\"decisionCount\":{agentCount}}}";
+        }
     }
 
     private static StubOptions ParseArguments(string[] args)
@@ -100,11 +129,20 @@ internal static class Program
                 case "--instance-id" when i + 1 < args.Length:
                     options.InstanceId = args[++i];
                     break;
+                case "--run-id" when i + 1 < args.Length:
+                    options.RunId = args[++i];
+                    break;
+                case "--export-stream":
+                    options.ExportStream = true;
+                    break;
                 case "--control-port" when i + 1 < args.Length:
                     options.ControlPort = int.Parse(args[++i], CultureInfo.InvariantCulture);
                     break;
                 case "--work-dir" when i + 1 < args.Length:
                     options.WorkDirectory = args[++i];
+                    break;
+                case "--simulation" when i + 1 < args.Length:
+                    options.Simulation = args[++i];
                     break;
                 case "--log-dir" when i + 1 < args.Length:
                     options.LogDirectory = args[++i];
@@ -150,8 +188,11 @@ internal static class Program
     private sealed class StubOptions
     {
         public string InstanceId { get; set; } = "syne-0001";
+        public string RunId { get; set; } = string.Empty;
+        public bool ExportStream { get; set; }
         public int ControlPort { get; set; }
         public string WorkDirectory { get; set; } = string.Empty;
+        public string Simulation { get; set; } = "reference";
         public string LogDirectory { get; set; } = string.Empty;
         public long Seed { get; set; }
         public int Ticks { get; set; } = 10;

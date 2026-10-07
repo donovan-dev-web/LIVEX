@@ -152,6 +152,16 @@ résultats.
 | Durée écoulée | Horloge du Launcher | Contexte |
 | Durée moyenne par run | Historique de la campagne | Estimation de fin |
 
+La progression du run vient de `GET /api/control/status` sur le port de contrôle du
+moteur (`tick`, `maxTicks`, `aliveCount`, `state`), sondé par le Launcher toutes les
+200 ms pendant l'exécution. La sonde est *best-effort* : un moteur qui n'expose pas
+cette route laisse la barre vide et n'entrave en rien le run — c'est l'affichage qui
+est conditionnel, jamais l'exécution.
+
+**Aucun pourcentage n'est affiché sans horizon.** Si le moteur ne rapporte pas
+`maxTicks`, l'interface montre le tic atteint et le nombre d'agents vivants, pas un
+ratio : une barre à 0 % pour un moteur muet afficherait une progression inexistante.
+
 L'estimation de fin est une **moyenne des runs terminés**, jamais une
 extrapolation scientifique. Le Launcher n'a pas qualité pour estimer un résultat.
 
@@ -228,6 +238,30 @@ Une campagne est reproductible si, et seulement si :
 | Les versions des composants sont écrites | `manifest.json` |
 | La plateforme et l'environnement sont décrits | `provenance.json` |
 | L'ordre d'exécution est inscrit | `journal.ndjson` |
+
+`config.resolved.json` porte les trois niveaux qui pourraient diverger — ce
+que la condition ci-dessus exclut précisément :
+
+| Bloc | Contenu |
+| :-- | :-- |
+| `campaign` | la définition demandée par l'opérateur |
+| `run` | les paramètres résolus du run : `runId`, tentative, **graine dérivée**, `ticks`, `agentCount`, `simulation` |
+| `engine` | ce que le Launcher a transmis : la surcouche `configOverlay` effectivement remise au moteur, le mode `headless`/`autoStart`/`exportStream`, et l'identité analytique du run |
+
+La surcouche écrite dans `launcher-config.json` et celle archivée dans
+`config.resolved.json` sont produites par le même type (`RunEngineProfile`) à partir
+du seul `RunSpec` : le paquet ne peut donc pas attester une configuration différente
+de celle qui a été appliquée.
+
+Les valeurs de transport — port de contrôle, jeton de session, identifiant de
+corrélation, horodatages, chemins — sont **délibérément absentes** : elles varient
+à chaque exécution, et les inscrire rendrait deux runs de la même campagne
+différents là où le paquet se compare octet pour octet. Elles ne sont pas de la
+configuration.
+
+Ce document n'a pas qualité pour décrire les réglages internes du moteur : ceux-ci
+restent la propriété du composant (DATA_FLOW.md §6.3). Il n'enregistre que ce que le
+Launcher a décidé et transmis.
 
 Un paquet scellé est donc **auto-porteur pour la ré-exécution**, et déterministe à
 la comparaison octet pour octet. Voir `PACKAGE_FORMAT.md` §6.

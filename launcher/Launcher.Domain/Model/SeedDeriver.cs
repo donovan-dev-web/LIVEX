@@ -19,8 +19,14 @@ public static class SeedDeriver
                 ? explicitSeeds[runNumber]
                 : throw new ArgumentException($"stratégie « explicit » : aucune graine fournie pour le run {runNumber}"),
             SeedStrategy.DerivedHashed => Hash(baseSeed, runNumber),
-            SeedStrategy.Random => throw new ArgumentException(
-                "la stratégie « random » n'est pas dérivable : les graines tirées doivent être enregistrées dans la définition (DATA_FLOW.md §4.3)"),
+            // « random » n'est dérivable que par la liste tirée puis enregistrée dans la
+            // définition (DATA_FLOW.md §4.3) : c'est elle qui rend le run rejouable à graines
+            // identiques. Sans elle, il n'y a rien à dériver et la campagne est invalide —
+            // refusée à la création par ExperimentDefinition.Validate, jamais en pleine boucle.
+            SeedStrategy.Random => explicitSeeds is not null && runNumber < explicitSeeds.Count
+                ? explicitSeeds[runNumber]
+                : throw new ArgumentException(
+                    "la stratégie « random » exige les graines tirées enregistrées dans la définition (DATA_FLOW.md §4.3)"),
             _ => throw new ArgumentException($"stratégie de graine inconnue : {strategy}"),
         };
     }

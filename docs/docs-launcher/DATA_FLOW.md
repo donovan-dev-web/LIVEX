@@ -60,7 +60,7 @@ Experiments/
     │   └── RUN-0042/
     │       ├── run.json           # métadonnées, statut, empreinte
     │       ├── config.resolved.json   # configuration effective complète
-    │       ├── data/              # données produites par SYNE
+    │       ├── data/              # données produites par SYNE (result.json, stream.jsonl)
     │       ├── metrics.jsonl      # métriques techniques échantillonnées
     │       ├── logs/              # extraits de journaux corrélés au run
     │       └── integrity.json     # tailles et empreintes des fichiers de data/
@@ -100,7 +100,7 @@ explicitement, jamais tolérée en silence.
   "schema": 1,
   "id": "EXP-2026-001",
   "name": "Emergence Test",
-  "simulation": "ecosystem_01",
+  "simulation": "reference",
   "runs": 100,
   "ticks": 50000,
   "seed": { "strategy": "derived", "masterSeed": 20260930 },
@@ -128,7 +128,7 @@ explicitement, jamais tolérée en silence.
   "exitCode": 0,
   "versions": { "livex": "0.1.0", "syne": "0.1.0", "protocol": 1 },
   "platform": { "os": "linux", "arch": "x64", "dotnet": "…" },
-  "simulation": "ecosystem_01",
+  "simulation": "reference",
   "resultFingerprint": "sha256:…"
 }
 ```
@@ -305,19 +305,32 @@ dégrade pas** un composant en écrivant à sa place.
 ### 6.4 Le flux au fil d'un run
 
 1. Le Launcher alloue une instance, un port et un dossier de run, puis écrit
-   `config.resolved.json`.
+   `config.resolved.json` — qui atteste la configuration réellement transmise, pas
+   seulement la définition demandée (EXPERIMENTS.md §12).
 2. Le Launcher demande à SYNE de charger la simulation, applique la seed, puis lance
    le run.
 3. Pendant le run, SYNE émet le flux d'instantanés et d'événements vers les clients
    connectés. PRISM le consomme pour l'affichage ; ECHOS le consomme pour l'analyse
-   en direct, s'il est en mode analyse.
+   en direct, s'il est en mode analyse. Le Launcher, lui, ne consomme rien de ce flux :
+   il sonde `GET /api/control/status` toutes les 200 ms pour lire le tic et piloter
+   la barre d'avancement (EXPERIMENTS.md §8) — une lecture de supervision, qui ne
+   modifie jamais l'état du moteur.
 4. Le Launcher échantillonne des métriques techniques et les écrit dans
    `metrics.jsonl`, et rattache les journaux du run.
-5. À la fin, SYNE écrit ses données dans `data/`. Le Launcher écrit `run.json` avec
-   le statut, le code de sortie et l'empreinte de résultat.
-6. Le Launcher demande l'analyse du run à ECHOS, qui écrit dans `analysis/`.
+5. À la fin, SYNE écrit ses données dans `data/` : `result.json` et, avec
+   `--export-stream`, le flux `stream.jsonl` qui a servi à produire ces données.
+   Le Launcher écrit `run.json` avec le statut, le code de sortie et l'empreinte
+   de résultat.
+6. Le Launcher ingère le flux archivé dans la base analytique d'ECHOS
+   (`POST /ingest/run`), puis demande l'analyse du run à ECHOS, qui écrit dans
+   `analysis/`. Sans cette ingestion préalable, l'analyse porterait sur un run
+   qu'ECHOS n'a jamais vu.
 7. Le Launcher demande le rapport, qui est écrit dans `analysis/emergence_report.md`.
 8. `integrity.json` est écrit et vérifié.
+
+> `stream.jsonl` est ce qui rend le paquet rejouable : ECHOS peut le relire
+> plus tard, SYNE éteint, et rendre l'analyse à l'identique
+> (`INTEGRATION_CONTRACT.md` §10.2).
 
 ## 7. Séquence d'un run
 

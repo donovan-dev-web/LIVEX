@@ -160,8 +160,8 @@ Launcher**, et échouent si un composant ne tient pas ses engagements.
 | **Mise en page** | Rendu correct à différentes tailles de fenêtre et jusqu'à 200 % de zoom |
 | **États vides** | Chaque vue vide a un contenu explicite |
 | **Mode verrouillé** | La raison du verrouillage est visible et exacte |
-| **Absence de mouvement** | Aucune animation permanente, aucun rendu temps réel |
-| **Ouverture d'ECHOS** | Ouverture dans le navigateur, sans vue embarquée, sans secret en URL |
+| **Absence de mouvement** | Aucune animation permanente, aucun rendu temps réel parasite |
+| **Consoles et fenêtre d'analyse** | Ouverture en fenêtre native du Launcher, sans navigateur, sans webview, sans secret en URL (`USER_INTERFACE.md` §9, ADR-007) |
 
 ## 11. Tests de performance
 

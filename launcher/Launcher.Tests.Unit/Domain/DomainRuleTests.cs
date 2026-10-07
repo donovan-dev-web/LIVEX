@@ -51,6 +51,19 @@ public sealed class ServiceRegistryInstallationSelectionTests
             registry.SetActiveInstallation("echos", second));
     }
 
+    [Fact]
+    public void Le_delai_d_arret_gracieux_vient_du_manifeste()
+    {
+        // « timeouts.shutdownMs » n'est pas décoratif : c'est lui qui donne au composant le
+        // temps de terminer l'état courant et d'écrire ses exports avant l'arrêt forcé.
+        var declared = ValidInstallation("/components/syne-1");
+        declared.Manifest!.Timeouts = new JsonTimeouts { StartupMs = 30_000, ShutdownMs = 12_000 };
+        Assert.Equal(TimeSpan.FromMilliseconds(12_000), declared.ShutdownGrace);
+
+        // Installation sans manifeste exploitable : valeur contractuelle, jamais un délai improvisé.
+        Assert.Equal(TimeSpan.FromSeconds(15), new ComponentInstallation().ShutdownGrace);
+    }
+
     private static ComponentInstallation ValidInstallation(string location) => new()
     {
         ComponentId = "syne",
@@ -112,6 +125,50 @@ public sealed class SeedDeriverTests
     public void Random_est_refuse_car_non_dérivable()
     {
         Assert.Throws<ArgumentException>(() => SeedDeriver.Derive(SeedStrategy.Random, 1, 0, null));
+    }
+
+    [Fact]
+    public void Random_avec_graines_tirées_enregistrées_rejoue_les_mêmes_graines()
+    {
+        // La stratégie « random » n'est dérivable que par la liste enregistrée dans la
+        // définition (DATA_FLOW.md §4.3) : c'est elle qui rend le run rejouable.
+        Assert.Equal(7, SeedDeriver.Derive(SeedStrategy.Random, 1, 0, [7, 9]));
+        Assert.Equal(9, SeedDeriver.Derive(SeedStrategy.Random, 1, 1, [7, 9]));
+    }
+
+    [Fact]
+    public void Définition_random_sans_graines_enregistrées_est_refusée_à_la_création()
+    {
+        // Sans ce refus, la campagne serait créée puis échouerait en pleine boucle de runs,
+        // après l'ouverture du paquet — le pire moment pour découvrir la configuration.
+        var definition = new ExperimentDefinition
+        {
+            Id = "EXP-RANDOM-001",
+            Title = "Campagne aléatoire",
+            Simulation = "reference",
+            RunCount = 3,
+            Ticks = 10,
+            SeedStrategy = SeedStrategy.Random,
+        };
+
+        Assert.Contains(definition.Validate(), problem => problem.Contains("random", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Définition_random_couvrant_tous_les_runs_est_valide()
+    {
+        var definition = new ExperimentDefinition
+        {
+            Id = "EXP-RANDOM-002",
+            Title = "Campagne aléatoire",
+            Simulation = "reference",
+            RunCount = 2,
+            Ticks = 10,
+            SeedStrategy = SeedStrategy.Random,
+            ExplicitSeeds = [11, 23],
+        };
+
+        Assert.Empty(definition.Validate());
     }
 }
 
@@ -203,6 +260,32 @@ public sealed class PortAllocatorTests
     {
         var allocator = new PortAllocator(5200, 5399, port => port != 5181);
         Assert.Throws<PortUnavailableException>(() => allocator.Resolve("syne", "syne-0001", "control", 5181));
+    }
+
+    [Fact]
+    public void Port_declare_deja_pris_par_une_autre_instance_replie_sur_la_plage_interne()
+    {
+        // Le multi-instance est la raison d'être de la plage interne (NETWORK.md §6.2,
+        // §9.3) : une campagne lancée pendant qu'une instance interactive tient le port
+        // déclaré doit obtenir une autre adresse, pas échouer.
+        var allocator = new PortAllocator(5200, 5399, _ => true);
+        var interactive = allocator.Resolve("syne", "syne-0001", "control", 5181);
+        var run = allocator.Resolve("syne", "run-RUN-0001", "control", 5181);
+
+        Assert.Equal(5181, interactive.Port);
+        Assert.NotEqual(5181, run.Port);
+        Assert.InRange(run.Port, 5200, 5399);
+    }
+
+    [Fact]
+    public void Port_declare_resolu_pour_la_meme_instance_conserve_son_adresse()
+    {
+        var allocator = new PortAllocator(5200, 5399, _ => true);
+        var first = allocator.Resolve("syne", "syne-0001", "control", 5181);
+        var again = allocator.Resolve("syne", "syne-0001", "control", 5181);
+
+        Assert.Equal(first.Port, again.Port);
+        Assert.Equal(first.Url, again.Url);
     }
 
     [Fact]

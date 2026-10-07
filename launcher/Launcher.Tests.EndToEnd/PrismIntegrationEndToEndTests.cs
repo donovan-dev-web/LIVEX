@@ -47,6 +47,7 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
         var instance = composition.Orchestration.Registry.FindByComponent("prism");
         Assert.NotNull(instance);
         Assert.Equal(_prismPort, instance!.Endpoints["control"].Port);
+        Assert.Equal("ws", new Uri(instance.Endpoints["ws"].Url).Scheme);
         await StubInstall.WaitForHealthyAsync(instance.Endpoints["control"].Url);
 
         // Arguments : communs du §3.1 seulement — aucun argument de lot SYNE (§3.3) sur PRISM.
@@ -54,6 +55,7 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
         var args = File.ReadAllLines(argsFile);
         Assert.Contains("--instance-id", args);
         Assert.Contains("--control-port", args);
+        Assert.Contains("--data-port", args);
         Assert.Contains("--headless", args);
         Assert.DoesNotContain("--seed", args);
         Assert.DoesNotContain("--ticks", args);
@@ -142,6 +144,8 @@ internal static class Manifests
           "executable": { "windows": "Stub.Syne.exe", "linux": "Stub.Syne", "path": "Stub.Syne" },
           "capabilities": ["headless", "seed", "tickLimit", "export", "pause"],
           "endpoints": { "control": { "transport": "http" } },
+          "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
+          "timeouts": { "startupMs": 30000, "shutdownMs": 15000 },
           "contributesTo": ["analyse", "immersion"]
         }
         """;
@@ -157,7 +161,12 @@ internal static class Manifests
           "version": "0.1.0-stub",
           "executable": { "windows": "Stub.Prism.exe", "linux": "Stub.Prism", "path": "Stub.Prism" },
           "capabilities": ["headless", "snapshotStream", "renderCadence"],
-          "endpoints": { "control": { "transport": "http", "port": {{port}} } },
+          "endpoints": {
+            "control": { "transport": "http", "port": {{port}} },
+            "ws": { "transport": "websocket", "launchArgument": "--data-port" }
+          },
+          "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
+          "timeouts": { "startupMs": 30000, "shutdownMs": 15000 },
           "contributesTo": ["immersion"]
         }
         """;
@@ -174,6 +183,8 @@ internal static class Manifests
           "executable": { "windows": "Stub.Prism.exe", "linux": "Stub.Prism", "path": "Stub.Prism" },
           "capabilities": ["headless"],
           "endpoints": { "control": { "transport": "http" } },
+          "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
+          "timeouts": { "startupMs": 30000, "shutdownMs": 15000 },
           "contributesTo": ["analyse"]
         }
         """;

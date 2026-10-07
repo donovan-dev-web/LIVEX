@@ -122,6 +122,64 @@ public sealed class ProcessManagerTests : IAsyncLifetime
         Assert.Equal(markerBefore, Directory.GetFileSystemEntries(otherDirectory).Length);
     }
 
+    /// <summary>
+    /// Les lignes de sortie sont publiées en direct vers les consoles (USER_INTERFACE.md §9) :
+    /// même instance, même canal, séquence strictement croissante.
+    /// </summary>
+    [Fact]
+    public async Task Les_lignes_sont_publiees_vers_les_consoles()
+    {
+        var workDirectory = Path.Combine(_workRoot, "console-scope");
+        var published = new List<ComponentLogLine>();
+        var gate = new object();
+        void OnLine(object? sender, ComponentLogLineEventArgs args)
+        {
+            lock (gate)
+            {
+                published.Add(args.Line);
+            }
+        }
+
+        _manager.LineEmitted += OnLine;
+        try
+        {
+            await StartAndWaitAsync(workDirectory, spec => spec.Arguments.AddRange(["--ticks", "2"]));
+
+            // La pompe termine après le processus : attendre la première ligne plutôt que de
+            // supposer que la fin du processus a déjà vidé le tube.
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (DateTime.UtcNow < deadline)
+            {
+                lock (gate)
+                {
+                    if (published.Count > 0)
+                    {
+                        break;
+                    }
+                }
+
+                await Task.Delay(50);
+            }
+        }
+        finally
+        {
+            _manager.LineEmitted -= OnLine;
+        }
+
+        Assert.NotEmpty(published);
+        Assert.All(published, line =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(line.InstanceId));
+            Assert.True(line.Stream is "stdout" or "stderr");
+            Assert.False(string.IsNullOrEmpty(line.Text));
+        });
+        Assert.Single(published.Select(line => line.InstanceId).Distinct());
+        for (var index = 1; index < published.Count; index++)
+        {
+            Assert.True(published[index - 1].Sequence < published[index].Sequence);
+        }
+    }
+
     private async Task<ProcessExitedEventArgs> StartAndWaitAsync(string workDirectory, Action<ProcessLaunchSpec> configure)
     {
         Directory.CreateDirectory(workDirectory);

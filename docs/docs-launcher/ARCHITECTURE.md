@@ -313,8 +313,7 @@ livex/                                   # INSTALLATION (racine choisie à l'ins
 │       │   └── *.dll                    # dépendances managées
 │       ├── echos/
 │       │   ├── component.json
-│       │   ├── echos-server             # backend API (sert l'interface)
-│       │   └── echos-ui/                # build React servi par l'API
+│       │   └── echos-launcher       # adaptateur Python de l'API ECHOS (API seule, ADR-007)
 │       └── prism/                       # livré quand PRISM sera prêt (ADR-006)
 │           ├── component.json
 │           └── ...

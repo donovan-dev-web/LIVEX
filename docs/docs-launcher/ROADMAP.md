@@ -37,6 +37,17 @@ contrats de SYNE et d'ECHOS, dont il dépend pour piloter, et il accompagne PRIS
 
 ## 3. Les jalons
 
+> **État de réalisation observé :** les sections ci-dessous décrivent la cible
+> et les portes de conception ; elles ne signifient pas que le jalon est livré.
+> Au 2 octobre 2026, G1 et G2 sont présents dans le code, G3 est testé contre
+> des composants simulés mais pas contre SYNE/ECHOS réels, G4 a ses parcours
+> principaux (les variantes UI/headless et la validation complète restent
+> ouvertes), G5 n'est pas franchi, G6 ne dispose pas encore des installateurs du
+> Launcher et G7 reste verrouillé faute de PRISM conforme. La matrice factuelle
+> et le plan d'exécution à jour sont dans
+> [`../../launcher/V1-CAPABILITY-MATRIX.md`](../../launcher/V1-CAPABILITY-MATRIX.md)
+> et [`../../launcher/ROADMAP-V1.md`](../../launcher/ROADMAP-V1.md).
+
 | # | Jalon | Contenu | Livrables | Condition de franchissement |
 | :-- | :-- | :-- | :-- | :-- |
 | **G0** | Socle de conception | Vision, architecture, modèle de composants, contrat d'intégration, schémas JSON figés, ADR | `VISION.md`, `ARCHITECTURE.md`, `COMPONENTS.md`, `INTEGRATION_CONTRACT.md`, `adr/ADR-001` à `ADR-006` | Les six ADR sont écrites, cinq acceptées |
@@ -79,9 +90,9 @@ que l'architecture ne dépende de sa réponse.
 | **S3** | Job Object sous Windows, groupe de processus sous Linux : aucun orphelin après arrêt brutal du Launcher | Robustesse du confinement |
 | **S4** | Surcoût de l'instrumentation sur la boucle de tick | `OBSERVABILITY.md` §9 |
 | **S5** | Déterminisme : deux runs identiques donnent-ils la même empreinte, et quel écart entre Windows et Linux | Niveau de reproductibilité, P5 |
-| **S6** | ECHOS, exécutable et interface, sous Linux | P4, format de paquet |
+| **S6** | ECHOS, exécutable et API, sous Linux (plus d'interface — ADR-007) | P4, format de paquet |
 | **S7** | YARP relaie-t-il le flux d'instantanés au débit réel de SYNE | Gateway, hors V0.1 |
-| **S8** | Ouverture de l'interface d'ECHOS : navigateur externe ou vue intégrée | `USER_INTERFACE.md` §9 |
+| **S8** | **Remplacé** : consoles de logs et fenêtre d'analyse natives, ouvertes depuis le Launcher | `USER_INTERFACE.md` §9, ADR-007 |
 
 S1, S3 et S5 doivent être lancés en premier : ce sont celles qui peuvent remettre en
 cause l'architecture.
@@ -132,12 +143,14 @@ démarrer SYNE, ECHOS ni PRISM.
 - Rapport Markdown fidèle à ECHOS et documentation embarquée dans le même lecteur.
 - Suivi d'état, causes, ressources locales et progression de campagne.
 
-Le socle Avalonia et ces parcours sont implémentés. L'écran Logs ouvre le dossier
-et exporte l'historique NDJSON de session ; G4 n'est pas considéré terminé tant
-que les journaux des processus par run ne sont pas intégrés à cette vue, que la
-configuration détaillée, l'accessibilité et le rendu visuel ne sont pas validés.
-Le mode Console est un profil de lancement, pas une preuve que les composants réels
-fonctionnent sans interface.
+Le socle Avalonia et les parcours principaux sont implémentés. L'écran Logs
+permet d'ouvrir un paquet, de consulter/exporter les journaux stdout/stderr de
+ses runs ainsi que le journal de session. La configuration permet d'ajouter des
+installations valides et de choisir l'installation/version active. G4 n'est
+pas considéré terminé tant que les variantes UI/headless déclarées, les
+parcours d'accessibilité, les états vides/erreur et le rendu visuel n'ont pas
+été acceptés. Le mode Console est un profil de lancement, pas une preuve que les
+composants réels fonctionnent sans interface.
 
 ### 6.6 G5 — Session complète
 
@@ -176,7 +189,7 @@ fonctionnent sans interface.
 - [ ] Monitoring activé et désactivé donnent des résultats identiques.
 - [ ] Les schémas JSON sont validés au chargement, et un schéma inconnu est refusé.
 - [ ] La visualisation du rapport d'émergence affiche le contenu produit par ECHOS.
-- [ ] L'interface d'ECHOS peut rester fermée pendant une campagne complète.
+- [ ] Les fenêtres d'observation (consoles, analyse) peuvent rester fermées pendant une campagne complète.
 
 ## 8. Hors V0.1
 

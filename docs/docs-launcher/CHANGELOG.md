@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 2 octobre 2026
+**Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement :
@@ -14,7 +14,250 @@ portes externes P1 – P5 restant de côté des composants.
 
 ## [Unreleased]
 
+### Changed
+- **Refonte P3 de la fenêtre d'analyse — la viabilité devient le premier écran
+  (USER_INTERFACE.md §9.2, ADR-007)** : réponse au plan `RAPPORT-ANALYSE-ECHOS-LAUNCHER.md`
+  (P0 → P3).
+  - *Sous-écrans réorganisés autour des questions* : **Viabilité** (défaut : issue,
+    populations initiale/finales/minimum, premier tick nul, ticks manquants,
+    conservation, pente d'énergie et décisions sous faim > 70 étiquetées « rapport
+    post-run », chronologie d'extinction), **Comportements**, **Statistiques exactes**,
+    **Comparer**, **Relations et groupes**, **Monde et territoires**, **Entités**.
+  - *Courbes en ticks réels* : axe sur les ticks publiés (plus d'axe d'index), trous
+    visibles (`null` + `measured_by_tick`), panneaux séparés par unité (population,
+    besoins, réserves ne partagent jamais un axe).
+  - *Radar et histogramme retirés* de la vue principale (normalisation implicite et
+    comparabilité non garanties) ; `RadarChartControl` supprimé. Valeurs exactes en
+    cartes numériques et tableau.
+  - *Barre de relecture* : curseur de tick, lecture/pause, précédent/suivant, retour
+    au direct, vitesse en ticks/seconde (aucun effet sur SYNE) ; la relecture tronque
+    les séries publiées sans nouvelle lecture et synchronise les panneaux monde/entités
+    sur le tick du curseur (« Suivre le direct » ≠ « Relire ce run »).
+  - *Catalogue, viabilité et comparaison consommés* : port `IEchosTelemetrySource`
+    élargi (`ReadCatalogAsync`, `ReadViabilityAsync`, `ReadExperimentSummaryAsync`) ;
+    libellés, unités, plages, statuts et avertissements viennent d'ECHOS ; comparaison
+    refusée explicitement avec moins de 2 runs et plafonnée à 6.
+  - Chaque phénomène affiche « signal selon la règle X » (valeur observée + seuil) ;
+    les mesures publiées portent unité, fenêtre, statut et provenance, et
+    « non mesuré » n'est jamais rendu comme `0`.
+  - Tests : 20 tests unitaires de la fenêtre d'analyse (viabilité, trous de données,
+    relecture, synchronisation 2D, comparaison, signaux, catalogue) — suite unitaire
+    **153/153** ; captures headless des 7 écrans via `tools/UiScreenshot --analysis <section>`.
+- **Derniers manques P3 comblés (B1 → B4, `RAPPORT-ANALYSE-ECHOS-LAUNCHER.md`)** —
+  quatre ajouts de **rendu** uniquement, aucun calcul scientifique (ADR-003) :
+  - *B1 — Marqueurs d'événements* : case à cocher sous la courbe ; une ligne
+    verticale par tick portant au moins un événement (`ReadEventsAsync` sur le port
+    `IEchosTelemetrySource`, nouvel endpoint ECHOS `/api/runs/{id}/events`), couleur
+    par type (mort = rouge, groupe = violet, reste = gris), **bornée à 16 marqueurs**
+    et à la fenêtre affichée, groupée par tick. Compte-rendu « N marqueur(s) affiché(s)
+    sur M événement(s) publié(s) · types » — une borne de rendu n'est jamais présentée
+    comme l'intégralité ; le journal d'un autre run n'est jamais reporté.
+  - *B2 — Âge des contextes échantillonnés* : la fiche d'entité affiche la cadence
+    publiée (`conservation.sampledDetails.agentContextEvery`, port `AgentContextEvery`)
+    et le nombre de ticks derrière le dernier tick observé — métadonnées côte à côte,
+    jamais interpolées en donnée mesurée.
+  - *B3 — État du run* : ligne « État du run » de l'écran Viabilité décrite depuis
+    les faits publiés (`outcome`, `extinction_tick`, `last_tick`, `missing_tick_count`)
+    : terminé/extinction, « possiblement en cours », incomplet si ticks manquants —
+    avec la note « ECHOS ne distingue pas en cours d'interrompu ».
+  - *B4 — Outil de distribution* : sous Statistiques, après le retrait de
+    l'histogramme — ComboBox de métrique + distribution en **intervalles explicites**
+    (règle de Sturges `⌈log₂ n⌉+1`, bornée [2, 12]) avec effectif publié par intervalle ;
+    `null` et `measured = false` exclus et comptés (« N valeur(s) exclue(s) »), zéro
+    remplacement par 0, zéro extrapolation. Comptage de classe = transformation de
+    rendu bornée (ADR-003).
+  - *Correction de relecture* : le curseur **suit le direct** quand il était au bord
+    du flux et que de nouveaux ticks sont publiés (au lieu de rester figé sur
+    l'ancien dernier tick, ce qui gelait la fenêtre d'affichage).
+  - Port : `ReadEventsAsync` → `EchosEventFeed` (record `RunId/Total/Limit/Types/Events`),
+    `EchosViability.LastTick`, `EchosRunSummary/EchosRunOption.AgentContextEvery`.
+  - Tests : 4 tests unitaires supplémentaires (état du run, âge de contexte,
+    distribution, marqueurs bornés/désactivables) — suite unitaire **157/157** ;
+    2 tests d'endpoint côté ECHOS (`test_api_routes.py`).
+
 ### Added
+- **Consoles de logs natives par composant (USER_INTERFACE.md §9, ADR-007)** : le
+  gestionnaire de processus publie chaque ligne de `stdout`/`stderr` (séquence globale)
+  en plus du fichier de journal — désormais écrit avec `AutoFlush`, donc suivable en direct.
+  Un tampon mémoire borné (20 000 lignes par instance) les conserve pour l'affichage.
+  Chaque composant démarré ouvre sa **console native** (fenêtre Avalonia par instance) :
+  SYNE réel ou émulé selon le moteur choisi, plus ECHOS. Bouton « Console » sur les cartes
+  et dans Monitoring pour une ouverture à la demande. Horodatage, canal, texte — sans
+  interprétation ; pause, filtres `stdout`/`stderr`, effacement, défilement automatique,
+  ouverture du dossier des journaux. Les consoles ne prolongent pas la vie de l'application.
+- **Fenêtre d'analyse native du Launcher (USER_INTERFACE.md §9.2, ADR-007)** :
+  seconde fenêtre du Launcher, ouverte par le bouton « Ouvrir la fenêtre d'analyse » de
+  la vue Analyse, qui sonde l'API REST d'ECHOS (≈1 s, direct activable) et présente
+  l'analyse en direct : choix du run et du pas de lecture, courbes et histogrammes
+  (LiveCharts2), radar et graphe relationnel **dessinés nativement** (LiveCharts2 2.0.5
+  n'offre pas de radar), métriques sélectionnables avec leur dernière valeur, tableau des
+  phénomènes émergents et disclaimer méthodologique affiché tel quel. Aucune valeur n'est
+  recalculée : le comptage d'histogramme et l'échelle du radar sont des transformations de
+  rendu bornées (ADR-003). ECHOS injoignable est affiché, jamais approximé.
+- **Menu de sous-écrans de la fenêtre d'analyse (USER_INTERFACE.md §9.2)** : la fenêtre
+  propose désormais cinq écrans — vue d'ensemble, **statistiques exactes**, **confiance**,
+  **monde 2D**, **fiches d'entités** — un relevé ciblé étant lancé pour l'écran actif.
+  - *Statistiques exactes* : métadonnées du run (graine, ticks, issue, extinction) et
+    tableau moteur/métrique/valeur **telles que publiées**, provenance comprise
+    (« repli neutre » pour un repli, jamais présenté comme une mesure).
+  - *Confiance* : graphe natif des entités à leur position publiée, arêtes = relations
+    `trust` rendues avec épaisseur/opacité proportionnelles au niveau publié, plus le
+    tableau source/cible/confiance (affichage borné à 200 lignes).
+  - *Monde 2D* : rendu natif de la description publiée à l'initialisation (cellules de
+    terrain, obstacles, ressources initiales, régions) + entités et réserves du tick
+    choisi via `GET /api/world`.
+  - *Fiches d'entités* : liste des entités observées, puis croyances, relations de
+    confiance et 12 dernières décisions publiées pour l'entité sélectionnée — une fiche
+    indisponible est affichée sans vider l'écran.
+  - Port `IEchosTelemetrySource` élargi (`ReadWorldAsync`, `ReadTrustGraphAsync`,
+    `ReadRunDetailAsync`, `ReadAgentProfileAsync`, `ReadDecisionsAsync`) — le Launcher
+    ne fait que rendre (ADR-003). 5 tests unitaires supplémentaires, captures headless
+    des 5 écrans via `tools/UiScreenshot --analysis`.
+
+### Removed
+- **Interface web et shell Electron d'ECHOS retirés (ADR-007)** : `echos-ui/` et
+  `echos-desktop/` supprimés, montage statique de FastAPI (`ui_dist`, `SpaStaticFiles`,
+  `ECHOS_UI_DIST`) supprimé, job CI `echos-ui` et workflow `echos-desktop.yml` retirés,
+  `scripts/dev-stack-electron.sh` supprimé. ECHOS est une **API seule** : le Launcher
+  présente, y compris en direct. Voir `adr/ADR-007-consoles-et-fenetre-analyse-natives.md`.
+
+### Added
+- **Chaîne batch rejouable SYNE → ECHOS → Launcher (J2B)** : chaque run supervisé est
+  lancé avec `--run-id {campagne}-{run}` et `--export-stream`, ce qui produit
+  `data/stream.jsonl` à côté de `result.json` ; le flux est archivé dans le `.livexp`.
+  ECHOS expose `POST /ingest/run` pour enregistrer un run archivé, et le Launcher l'appelle
+  avant `AnalyzeRun` : l'analyse porte donc sur des données réellement produites. L'identité
+  `{campagne}-{run}` évite que deux campagnes se chevauchent dans la base analytique ;
+  l'ingestion est idempotente par refus et vérifie l'intégrité du flux contre
+  `result.json`. La réanalyse faite plus tard depuis le seul paquet produit les mêmes
+  octets que celle de la campagne, ce qui a exigé d'exclure le contexte `profiling`
+  (durées de calcul) du rapport déterministe côté ECHOS.
+- **Progression de run lue depuis le moteur** : `ProcessRunExecutor` sonde
+  `GET /api/control/status` sur le port de contrôle toutes les 200 ms et publie
+  `IRunExecutor.TickProgress` (`tick`, `maxTicks`, `aliveCount`, `state`). `CampaignRunner`
+  relaie l'événement avec le contexte de campagne, et l'interface affiche une barre
+  d'avancement. Le contrat documentaire annonçait cette progression depuis le tic de
+  simulation, mais rien ne la_branchait : elle était affichée nulle part.
+
+  La sonde est *best-effort* et ne fait jamais échouer un run. Aucun pourcentage n'est
+  affiché sans `maxTicks` rapporté : une barre à 0 % pour un moteur muet afficherait une
+  progression qui n'existe pas. À l'inverse, si le moteur n'expose pas la route, l'interface
+  reste vide plutôt que d'inventer une mesure. La lecture ne modifie jamais l'état du
+  moteur : c'est de la supervision, pas une commande.
+
+### Fixed
+- **Revue de correction du cœur du Launcher (6 octobre 2026)** — douze correctifs, revérifiés
+  par `Launcher.sln` (**0 avertissement / 0 erreur**), **148 tests unitaires, 15 tests
+  d'intégration et 28 tests bout en bout** verts, et `livex-launcher --check` en sortie 0 :
+  - **Détection hermétique réellement fermée** : `DetectComponents()` appelait `Detect()`, qui
+    consulte les sources standard de la machine (application, `LIVEX_HOME`, profil utilisateur,
+    registre) même lorsque la composition est construite sur une racine explicite — c'était
+    l'échec réel du test `Profils_resolus_et_verrou_immersion`. Construction et redétection
+    passent désormais par une même méthode qui ne consulte les sources standard que si la
+    composition les autorise ; `Redetection_reste_hermétique_à_la_racine_explicite` verrouille
+    la non-régression.
+  - **Course démarrage/sortie d'un composant** : l'abonnement à `Exited` avait lieu après
+    `StartAsync`, si bien qu'un composant mourant immédiatement laissait une instance fantôme
+    et un port verrouillé pour le reste de la session. L'abonnement précède le démarrage et
+    l'état de sortie est partagé et traité une seule fois (`EarlyExitEndToEndTests`).
+  - **Délai de grâce à l'arrêt** : `ComponentInstallation.ShutdownGrace` lit
+    `timeouts.shutdownMs` du manifeste (défaut 15 s) et borne désormais l'arrêt manuel,
+    l'annulation d'un run (`ProcessRunExecutor`) et la fermeture de l'application — le
+    `Dispose()` de la façade arrête les instances en parallèle, borné au plus long délai
+    majoré de 2 s.
+  - **Reprise d'une campagne** : `CampaignRunner.RunLoopAsync` recomptait les runs déjà
+    terminés à zéro (progression 4/5 affichée 0/5) ; le compteur part désormais de
+    `doneRunIds.Count`.
+  - **Stratégie de graines `random`** : `ExperimentDefinition.Validate()` refuse
+    `SeedStrategy.Random` sans liste `ExplicitSeeds`, et `SeedDeriver.Derive` lit les graines
+    enregistrées au lieu de planter en boucle.
+  - **Écran bloqué sur « Reprise de la campagne… »** : `MainWindowViewModel.RunCampaignAsync`
+    ne traitait ni `CampaignStoppedException` ni les erreurs imprévues ; les deux branches
+    existent désormais, l'interface ne peut plus rester figée sur cette mention.
+  - **Sécurité des paquets `.livexp`** : `PackageEntryRules` (`IsSafe`/`EnsureSafe`) refuse les
+    noms à extension exécutable, à l'écriture (`LivexPackageWriter.WriteEntry` et
+    `WriteEntryLocked`) comme à la lecture (`LivexPackageReader`) ; `EchosAnalysisService`
+    écarte un tel nom dans `DecodeFiles` et annonce « analyse indisponible ».
+  - **Scellement atomique** : `LivexPackageWriter.Seal` écrit dans un fichier temporaire
+    `.sealing.tmp` puis déplace, au lieu d'ouvrir le paquet vivant en `FileMode.Create` — une
+    interruption pendant le scellement ne détruit plus le paquet. Le champ mort `GlobalLocks`
+    a été supprimé.
+  - **Surface HTTP du Launcher** : `MiniHttpServer` lit le corps en boucle (plafond 1 Mo →
+    413), tolère les paramètres de query répétés, ne partage plus `contentType` entre requêtes
+    et enferme ses handlers dans un `try/catch` (500 via `WriteResponseAsync`) — une requête
+    malformée ne tue plus le serveur d'observabilité.
+  - **Détection des manifestes** : dans `ManifestDetector.DetectFromRoots`, une installation
+    invalide ne masque plus une installation valide du même type (avec journal Warn).
+  - **`OrchestrationService.Adopt`** : une seule énumération de la session, et parenthèses
+    explicites sur la condition mêlant `allowStubs` et l'usage du moteur émulé.
+  - **Charge de l'interface** : `OrchestrationFacade.ListExperiences` a un statut par défaut
+    unique (« En cours »), et `RecentLogs` cache par signature (chemin + taille) au lieu de
+    relire trois fichiers entiers toutes les 800 ms.
+
+  Tests de non-régression ajoutés : `EarlyExitEndToEndTests` (course démarrage/sortie),
+  graines `random` tirées/enregistrées et définition `random` sans graines refusée, refus en
+  lecture d'un paquet contenant un exécutable (`P8_lecture_refuse_un_paquet_contenant_un_exécutable`),
+  progression de reprise comptant les runs déjà terminés, corps de requête POST reçu entier,
+  requête au-delà du plafond → 413 (réécrite en `TcpClient` brut), délai de grâce venu du
+  manifeste, redétection hermétique à la racine explicite.
+
+- **`config.resolved.json` n'attestait plus la configuration appliquée** : le document
+  écrit dans chaque `.livexp` ne contenait que la définition sérialisée de l'expérience,
+  dupliquée par `experiment.json`. Rien n'y attestait la graine dérivée, ni la surcouche
+  réellement transmise au moteur : deux runs de la même campagne étaient indiscernables,
+  alors que la reproductibilité est la raison d'être du fichier.
+
+  Le document porte désormais les trois niveaux qui pourraient diverger — la définition
+  demandée (`campaign`), les paramètres résolus du run (`run`, avec la graine dérivée
+  effective) et ce que le Launcher a transmis (`engine`, avec la surcouche
+  `configOverlay`). La surcouche archivée et celle écrite dans `launcher-config.json`
+  sortent désormais du même type (`RunEngineProfile`) construit à partir du seul
+  `RunSpec` : le paquet ne peut plus attester une configuration différente de celle qui a
+  été appliquée. Les valeurs de transport — port, jeton, corrélation, horodatages,
+  chemins — restent volontairement absentes, sans quoi deux paquets d'une même campagne
+  cesseraient d'être identiques octet pour octet.
+
+- **Une campagne ne rejouait plus ses runs en temps réel** : le moteur cadence ses ticks
+  par `Task.Delay(1s / TicksPerSecond)` (`SimulationController`), et le Launcher ne
+  surcouhait que `agents.initialCount` — donc le défaut de 10 ticks/s s'appliquait, soit un
+  plancher de `ticks / 10` secondes : la campagne de référence à 1000 ticks durait 100 s,
+  pendant lesquelles l'interface n'affichait aucune progression (mode `--headless`) et le
+  processus dormait 99 % du temps. Un run batch n'a pas d'observateur : rien ne justifie
+  de le rejouer en temps réel. `ProcessRunExecutor` écrit désormais
+  `simulation.ticksPerSecond = 1000` dans la surcouche `launcher-config.json`, que
+  `ConfigLoader` fusionne sur les défauts intégrés sans toucher au reste du profil. La
+  cadence seule change : même campagne, même graine ⇒ `stateChecksum` identique
+  (`0x8b3fc2fb7f5b4b95` sur le profil de référence à 1000 ticks) et `stream.jsonl`
+  identique à la ligne près, la seule divergence étant la valeur de `ticksPerSecond`
+  recopiée dans l'enregistrement de provenance `world_initialized`. Mesuré sur la campagne
+  de référence : 100,55 s → 1,96 s. Au-delà de 1000 ticks/s le gain devient marginal, la
+  résolution du timer plafonnant le délai aux alentours de 1 ms.
+- **Une campagne peut s'exécuter pendant qu'une instance interactive tourne** : le port
+  déclaré au manifeste était refusé dès qu'une autre instance de la session le détenait
+  (« port déclaré 5181 du manifeste déjà alloué dans cette session »), alors que le
+  multi-instance est précisément ce que l'espace d'adressage interne doit absorber
+  (`NETWORK.md` §6.2, §9.3). Le repli sur la plage interne, promis par `Resolve` et jamais
+  atteint, est appliqué : un port déclaré libre reste prioritaire, un port déjà pris par
+  une instance de la session bascule dans la plage, et seul un occupant étranger reste un
+  refus explicite — l'opérateur doit pouvoir l'identifier. Résoudre deux fois le même
+  point pour la même instance rend désormais la même adresse au lieu d'échouer au
+  pré-vol. Toute campagne lancée depuis l'interface, où l'opérateur a laissé SYNE et ECHOS
+  démarrés, échouait ainsi à son premier run.
+- **Une ingestion d'archive échouée ne condamne plus l'archive** : ECHOS valide et
+  commite chaque tick séparément, donc un flux invalidé à mi-parcours laissait les
+  segments déjà écrits en base. Le run se retrouvait à la fois tronqué et protégé par la
+  garde anti-doublon : la réingestion de l'archive valide était refusée pour une base ne
+  contenant que la moitié du run. Une ingestion en échec purge maintenant ce qu'elle a
+  écrit, sans toucher un run réellement peuplé — un flux du service direct peut partager
+  la même base.
+- **Un `tick_summary` répété est refusé** : il trahit un flux réécrit ou fusionné à tort, et
+  le résumé était écrasé sans trace. Le contrôle portait sur un ensemble de ticks, qui
+  fusionnait silencieusement les doublons.
+- **L'identité enregistrée est constatée, pas supposée** : ECHOS fait autorité sur
+  l'identité du flux, et le Launcher vérifie désormais que c'est bien celle qu'il va
+  analyser. Un dossier de run mal apparié est nommé au lieu de ressortir plus tard comme
+  un « run inconnu » opaque. Le stub ECHOS lit lui aussi l'identité dans le flux : il
+  renvoyait le `runId` demandé, ce qui aurait masqué précisément ce défaut.
 - **Configuration et journaux de run** : sélection explicite de l'installation/version active ;
   ajout d'un dossier via inspection de `component.json`, persistance des racines et des
   choix actifs dans `~/.livex/` ; au démarrage standard, détection des racines déclarées et
@@ -29,15 +272,21 @@ portes externes P1 – P5 restant de côté des composants.
   adaptent leurs paramètres au port alloué. Les deux déclarent une readiness réelle ; ECHOS
   reste non prêt sans sa base analytique. L'arrêt des deux services exige le jeton de
   session et ferme proprement les serveurs. `syne-mock` ferme ses serveurs aussi sur
-  SIGINT/SIGTERM. SYNE reste volontairement sans manifeste : ses arguments de campagne,
-  son cycle de service, ses sorties et son arrêt ne sont pas compatibles sans évolution
-  du contrat scientifique.
+  SIGINT/SIGTERM. SYNE dispose maintenant d'un manifeste Linux, d'un service supervisé,
+  d'un batch `reference` et d'un export déterministe ; ses tests de processus valident le
+  batch, l'arrêt authentifié et le conflit de port. Le défaut du Launcher est maintenant
+  aligné sur `reference` et les autres identifiants sont refusés dans le formulaire ;
+  l'acceptation depuis une installation publiée et l'intégration de collecte restent
+  ouvertes. L'analyse d'expérience transmet à ECHOS un `experiment.json` atomiquement écrit
+  qui ne liste que les runs terminés ; l'ingestion analytique elle-même reste à intégrer.
 - L'état global du monitoring agrège maintenant les composants réellement requis par le
   profil actif (dont `syne-mock` en Développement), et non SYNE par défaut.
-- Bancs verts après ces changements : **81 tests unitaires + 7 d'intégration + 11 bout en
-  bout côté Launcher, 309 tests ECHOS (2 ignorés) et 44 tests syne-mock**. La compatibilité
+- Bancs verts après ces changements : **86 tests unitaires + 7 d'intégration + 19 bout en
+  bout côté Launcher, 310 tests ECHOS (2 ignorés) et 46 tests syne-mock**. La compatibilité
   scientifique SYNE/ECHOS/syne-mock reste une porte distincte
   des tests contre les stubs.
+- Suite SYNE complète Release : **514 tests Core + 67 tests Console** ; un test de processus
+  confirme qu'un `--export-dir` extérieur au workspace est refusé avant toute écriture.
 - **Réalisation G5 → G7 — session complète, diagnostic de livraison, déverrouillage Immersion**
   (composants simulés ; les portes P1 – P5 restent externes) :
   - **G5 — session complète avec ECHOS** : `EchosAnalysisService` réalise `IAnalysisService`
@@ -74,11 +323,12 @@ portes externes P1 – P5 restant de côté des composants.
     démarrage selon `timeouts.startupMs`) — les états transitaient réellement ; `health.path`
     et `health.intervalMs` du manifeste honorés (un ECHOS réel déclarant `/health` est
     sondable) ; les stubs sortent en code 3 sur port occupé (§4) au lieu d'un crash 134 ;
-    un run échoué libère systématiquement son port et son entrée de registre. Audit de
-    compatibilité stubs ↔ composants réels codés (`syne`, `echos`, `syne-mock`) : écarts
-    consignés en `ISSUES.md` **O-38 à O-41** (arguments communs §3.1 rejetés par SYNE,
-    endpoints standard §6 absents de SYNE/ECHOS/syne-mock, ECHOS sans argument de ligne de
-    commande, aucun `component.json` livré).
+    un run échoué libère systématiquement son port et son entrée de registre. L'audit initial
+    de compatibilité stubs ↔ composants réels avait consigné les écarts en `ISSUES.md`
+    **O-38 à O-41**. Depuis, J2 a ajouté le manifeste Linux et le cycle de service SYNE ainsi
+    que les arguments communs ; le défaut `reference` est aligné et les autres scénarios
+    sont refusés dans le formulaire. Restent l'acceptation d'une installation publiée et
+    l'intégration des données d'analyse.
   - Bancs verts à cette étape : **63 unitaires + 7 intégration + 10 bout en bout = 80 tests** — dont
     analyse HTTP, isolation de fin de campagne, huit vérifications `--check`, exigences
     PRISM, sélection de profil, session complète E2E et déverrouillage E2E. Les classes de

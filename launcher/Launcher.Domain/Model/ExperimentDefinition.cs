@@ -29,6 +29,13 @@ public sealed class ExperimentDefinition : ISchemaVersioned
     /// <summary>Horizon de ticks par run.</summary>
     public long Ticks { get; set; }
 
+    /// <summary>
+    /// Vitesse d'exécution transmise au moteur (ticks par seconde) : 10 pour un run
+    /// regardable en direct, 1000 pour l'exécution batch la plus rapide. Archivée
+    /// dans le paquet (config.resolved.json) — le run atteste de sa cadence réelle.
+    /// </summary>
+    public int TicksPerSecond { get; set; } = 1_000;
+
     /// <summary>Nombre d'agents initiaux demandé au moteur.</summary>
     public int AgentCount { get; set; } = 50;
 
@@ -73,6 +80,11 @@ public sealed class ExperimentDefinition : ISchemaVersioned
             problems.Add("horizon de ticks doit être strictement positif");
         }
 
+        if (TicksPerSecond <= 0 || TicksPerSecond > 100_000)
+        {
+            problems.Add("ticks par seconde doit être dans [1, 100000] (10 = direct, 1000 = batch)");
+        }
+
         if (AgentCount < 0)
         {
             problems.Add("nombre d'agents doit être positif ou nul");
@@ -91,9 +103,12 @@ public sealed class ExperimentDefinition : ISchemaVersioned
             problems.Add("identifiant de campagne invalide (lettres, chiffres, point, tiret ou souligné uniquement)");
         }
 
-        if (SeedStrategy == SeedStrategy.Explicit && (ExplicitSeeds is null || ExplicitSeeds.Count < RunCount))
+        if (SeedStrategy is SeedStrategy.Explicit or SeedStrategy.Random
+            && (ExplicitSeeds is null || ExplicitSeeds.Count < RunCount))
         {
-            problems.Add("stratégie « explicit » : la liste de graines doit couvrir tous les runs");
+            problems.Add(SeedStrategy == SeedStrategy.Explicit
+                ? "stratégie « explicit » : la liste de graines doit couvrir tous les runs"
+                : "stratégie « random » : les graines tirées doivent être enregistrées et couvrir tous les runs (DATA_FLOW.md §4.3)");
         }
 
         if (FailurePolicy == FailurePolicy.Retry && MaxRetries < 1)

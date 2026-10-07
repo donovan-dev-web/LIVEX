@@ -13,6 +13,7 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Markdown.Avalonia" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Avalonia" />
   </ItemGroup>
 
   <ItemGroup>
