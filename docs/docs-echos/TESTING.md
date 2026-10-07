@@ -2,8 +2,8 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 24 septembre 2026
-**Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`
+**Dernière mise à jour** : 6 octobre 2026
+**Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`, `REFERENCE_SCENARIOS.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
 ---
@@ -146,13 +146,16 @@ flake8 sans alerte.
 `test_emergence.py` (moteur composite `EmergenceIndicators`, 8ᵉ moteur du
 registre) : contrat (pureté/déterminisme, entrée non mutée, **données absentes →
 score 0.0 / phénomènes vides**), **score composite vérifié à la main**
-(0.7585336 sur `snapshot_analysis.json`, poids Σ=1.0), **bornes [0,1]**
-(entropies pouvant excéder 1 → clamp), **`DiffusionSpeed_Norm`** (diminue avec
-les ticks, neutralité à vitesse non mesurée), **auto-détection des 5
-phénomènes** par seuils (> 2 / > 5 / > 0.7 / > 0.3 / > 5 ET > 0.1) avec trace
-des signaux déclencheurs, **`SystemComplexity` et `UnpredictabilityIndex`
-(=`LoopStrength × DecisionDiversity`)** vérifiés à la main, **disclaimer §4.10.3
-invariant** (ECHOS-032). `compute(snapshot) ≡ compute_from_metrics(moteurs)`.
+(0,5 sur six composantes à 0,5 ; **golden 0,7791446071170001** sur
+`snapshot_analysis.json`, poids Σ=1.0), **contributions `Contribution*`
+sommant exactement au score**, **bornes [0,1]** (entropies brutes n'influent
+jamais le score → grandeurs `*Norm`), **`CoverageDelay_Norm`** (diminue avec
+les ticks, neutralité à délai non mesuré), **auto-détection des 5
+phénomènes** par seuils (> 2 / > 5 / > 0.7 / > 0.3 / > 5 ET > 1) avec trace
+des signaux déclencheurs et libellés requalifiés, **`SystemComplexity`
+bornée et non croissante avec la durée du run** (l'`UnpredictabilityIndex` a
+été **retiré** — test `test_unpredictability_index_was_removed`), **disclaimer
+§4.10.3 invariant** (ECHOS-032). `compute(snapshot) ≡ compute_from_metrics(moteurs)`.
 
 **Preuve J3** : `test_j3_determinism.py` rejoue deux fois le scénario de
 référence (même contexte par tick qu'en J2) — séries d'indicateurs
@@ -303,6 +306,35 @@ cd echos && python -m pytest echos/tests/test_compare.py -q
     `content_type text/csv`, lignes déterministes.
 Suite : **208 tests** (197 → +11), couverture **97,97 %** (pytest
 `--cov-fail-under=80`), flake8 sans alerte.
+
+### 4.11 Contrat des mesures & scénarios de référence (P0 → P2)
+
+Le refonte sémantique (`RAPPORT-ANALYSE-ECHOS-LAUNCHER.md` P0 → P2) est verrouillée
+par deux suites dédiées :
+
+- **`test_catalog.py` (12 tests)** : chaque métrique publiée possède une fiche et
+  **aucune fiche orpheline** (dérivation des deux sens depuis le registre),
+  fiches complètes et typées, `renamedFrom` traçable pour migrer les séries
+  historiques, `CATALOG_VERSION` sémantique et déterministe, contrat de
+  `GET /api/metrics/catalog` ; côté viabilité : séries sources **sans score
+  synthétique**, chronologie d'extinction descriptive (et absente sans extinction),
+  lacunes de tick et colonnes absentes signalées ; côté comparaison : contexte de
+  contrôle publié et **refus à moins de deux runs**.
+- **`test_reference_scenarios.py` (12 tests)** — sept situations synthétiques connues
+  avec critères d'acceptation interprétables (`REFERENCE_SCENARIOS.md`) : zéro
+  observé **vs** non mesuré, hub unique / diffusion répartie, couverture partielle,
+  réseau complet (dénominateur `n(n−1)/2`) et isolé, stabilité de tailles **sans**
+  stabilité d'identité, épisode de récupération complet et crise censurée,
+  routine vs cycle alterné, « aucune décision » vs « une décision ».
+- Provenance par tick (`measured_by_tick`), trous de série et dernier contrat
+  d'`EmergenceScore` (contributions sommant au score) sont couverts par
+  `test_api_routes.py`, `test_analysis.py` et `test_emergence.py`.
+- **Journal d'événements (`GET /api/runs/{id}/events`, P3)** : journal borné et
+  déterministe, filtre `?type=`, bornes `limit` (défaut 500, plafond 2000),
+  run inconnu → `404` — `test_api_routes.py`.
+
+Suite globale : **367 tests**, couverture **93,97 %** (pytest
+`--cov-fail-under=80`), `flake8` sans alerte.
 
 ## 5. Critères de non-régression
 
