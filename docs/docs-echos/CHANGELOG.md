@@ -2,14 +2,144 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 29 septembre 2026
+**Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
 
 ## [Unreleased]
 
+### Changed
+- **Équations mathématiques rendues en KaTeX/LaTeX** : tous les blocs
+  d'équations des documents ECHOS (`ANALYSIS_FOUNDATIONS.md`,
+  `DYNAMIC_VIABILITY_INDEX.md`, `EMERGENCE_INDICATORS.md`, `METRICS_SPEC.md`)
+  sont désormais écrits en LaTeX dans des blocs ` ```math `, rendus
+  nativement par GitHub (MathJax/KaTeX) — fractions `\frac`, sommes
+  `\sum_{i=1}^{k}`, exponentielles `\exp`, cas `\begin{cases}`. Remplace les
+  blocs ` ```text ` en notation compacte Unicode qui ne se rendaient pas
+  comme des équations scientifiques.
+- **Contrat scientifique des métriques (P0 → P2, `RAPPORT-ANALYSE-ECHOS-LAUNCHER.md`)** :
+  - **Registre versionné** (P1) : `echos/analysis/catalog.py` + `GET /api/metrics/catalog`
+    — **61 fiches** en `CATALOG_VERSION 2.0.0` (identifiant, moteur, libellé français,
+    unité, domaine, définition, formule, dénominateur, fenêtre, direction, statut,
+    états de données, avertissement, forme visuelle, `renamedFrom`) + `HISTORY`
+    (toute modification de formule ou d'unité augmente la version).
+  - **Renommages P0/P1** (anciens noms conservés dans `renamedFrom` pour la migration
+    des séries historiques) : `NetworkCentrality → SenderConcentration`,
+    `InformationDiffusionSpeed → EmitterCoverageDelay`,
+    `RumorAccuracyDegradation → TheoreticalHopDecay` (exploratoire),
+    `CooperationPotential → GoalCategoryConcordance`, `DecisionDiversity →
+    ActionDiversity` (+ `DecisionCount`), `IntentionStability → AverageGoalAge`,
+    `IdentifiedLoops/LoopStrength/CriticalLoops/SystemStability/LoopTypes →
+    RepeatedActionPairs/RepeatedActionShare/AmplifiedRepetitions/ActionDistributionBalance/
+    RepeatedActionCounts`, `ActiveGroups/AverageGroupSize → InferredCommunities/
+    AverageCommunitySize`, `GroupObjectiveSuccessRate → DissolvedGroupSuccessShare`,
+    `MemberTurnoverRate → MemberExitsPerDissolution`, `ResourceToConsumptionRatio →
+    ResourceFillRatio`, `CriticalityPoints → CriticalResourceCount`, `AverageCentrality →
+    AverageOutDegree`, `CommunityStability → CommunitySizeMatch` ;
+    `UnpredictabilityIndex` **retiré**.
+  - **Corrections de formule** : `NetworkDensity` (dénominateur `n(n−1)/2` — le plafond
+    à 0,5 disparaît), `SenderConcentration` (part du principal émetteur),
+    `SystemComplexity` (moyenne de trois grandeurs normalisées, bornée [0,1] et non plus
+    croissante avec la durée du run), `EmergenceScore` (composantes normalisées sur des
+    bases défendables, contributions publiées, provenance par dépendances réelles),
+    catégories normatives « positives/négatives » des boucles retirées.
+  - **Statuts et états de données** : `measured` / `exploratory` / `suspended` et le
+    vocabulaire `observed_zero`, `window_empty`, `insufficient_coverage`, `absent`,
+    `unmeasured`, `censored` — distingués dans les fiches et affichés tels quels.
+  - **Nouvelles mesures** : `BeliefDiversityNorm`, `GoalDiversityNorm`, `GoalCoverage`,
+    `SenderCoverage`, `ResourceCoverage`, `ConsumptionPerTick`, `RecoveryEpisodes`,
+    `UnresolvedCrisisCount`, `FormationCount`, `DissolutionCount`, `CommunityCoverage`.
+  - **Phénomènes requalifiés** : identifiants stables, libellés/descriptions ramenés à
+    ce qui est observé (comptage, répétitions, concordance, émissions) ; seuils restés
+    hérités et signalés comme tels (absence de détection ≠ absence de phénomène).
+  - **Provenance par tick** : `measured_by_tick` aligné sur `ticks` dans
+    `GET /api/runs/{id}/metrics` (+ `missing_ticks`, `missing_ticks_count`,
+    `latest_tick`) — trous publiés, jamais comblés ; `measured` (dernier tick) conservé
+    pour compatibilité.
+
+### Added
+- **Fondements scientifiques et mathématiques de l'analyse** : `ANALYSIS_FOUNDATIONS.md` —
+  documentation unique du **cœur analytique** (pas du composant) : outils partagés
+  (entropie de Shannon, variance, rapports bornés), équations des 7 moteurs + composite
+  (11 sections), reproductibilité (empreinte SHA-256, distances L2 normalisées), méthodes
+  post-run (statistiques descriptives, pente par moindres carrés, viabilité) et analyse
+  causale. Chaque équation suit la trame Nom · Explication globale · Expression
+  mathématique · Pourquoi cette équation · Usage dans le projet (fichier:ligne) ·
+  Interprétation. Aligné sur le code `echos/analysis/` et le catalogue 2.0.0 ; le code
+  fait foi en cas d'écart. Renvois croisés ajoutés dans `METRICS_SPEC.md` (§1, §13) et
+  `EMERGENCE_INDICATORS.md`.
+- **Spécification de l'Indice de Viabilité Dynamique (DVI)** : `DYNAMIC_VIABILITY_INDEX.md`
+  (**[DRAFT]**, non implémenté) — cadre mathématique unique pour estimer si une simulation
+  est dans un **régime dynamique viable** (ni figé, ni chaotique). Deux couches : **moteur**
+  (fenêtre ≤ 100 ticks, `ViabilityIndicators` à créer) et **post-run** (trajectoire OLS +
+  marges aux seuils de crise, sans multiplicateur opaque du score). Sept composantes
+  (activité optimale, diversité, structure, renouvellement, résilience, persistance,
+  stabilité) agrégées par **moyenne géométrique pondérée** (aucune compensation entre
+  composantes) avec couverture κ ; drapeaux STATIC/CHAOTIC ; constantes `[HÉRITÉ]`
+  publiées, calibration sans ML en phase 3. Successeur conceptuel d'`EmergenceScore`
+  (cohabitation, décision 1A) — `EmergenceScore` inchangé, le DVI ne le consomme pas.
+  Renvois croisés ajoutés dans `README.md`, `EMERGENCE_INDICATORS.md` et
+  `ANALYSIS_FOUNDATIONS.md` (table §1.1).
+- **Journal d'événements publié (P3, manque B1)** : `GET /api/runs/{id}/events` —
+  lecture du journal `events_log` **bornée** (`limit` défaut 500, plafond 2000,
+  `total` donnant le réel), filtre `?type=`, comptage `types` déterministe, ordre
+  `(tick, ordre d'émission)`. Sert les annotations de courbe de la fenêtre d'analyse :
+  le marqueur signale *qu'un* événement existe à ce tick, jamais ce qu'il signifie
+  (`API_REST.md` §3.19, tests bornes/filtre/404 dans `test_api_routes.py`).
+- **Profil de viabilité et comparaison multi-runs (P1/P3)** : `GET /api/runs/{id}/viability`
+  (populations initiale/finales/minimum, séries de besoins/réserves/décisions issues des
+  résumés de tick, `completeness`, rapport post-run, chronologie d'extinction bornée à 50
+  observations — sans cause racine inférée) et `GET /api/experiments/summary`
+  (contexte de contrôle : version, graine, issue, conservation — + dispersion publiée
+  `min`/`max`/`mean`/`spread` et dénominateurs, 2 à 12 runs, « un écart entre runs n'est
+  pas un effet »).
+- **Niveau de conservation persisté par run** : contexte `conservation` écrit au tick 0
+  (`base` / `sampled_details` / `high_fidelity`) et publié avec les métadonnées du run :
+  la fidélité réellement configurée est annoncée avant toute lecture.
+- **Scénarios de référence (P2)** : `tests/test_reference_scenarios.py` — sept situations
+  synthétiques connues (aucune communication, hub unique, diffusion répartie, couverture
+  partielle, réseau complet/isolé, communauté stable en tailles mais changeante en
+  identité, épuisement/récupération et crise censurée, routine vs cycle alterné) avec
+  critères d'acceptation interprétables avant tout ajustement de seuil.
+- **Documentation** : `REFERENCE_SCENARIOS.md` (baselines + exemples de rapports
+  interprétés, dont cas non mesurés et résultats contradictoires),
+  `METRICS_DICTIONARY.md` (dictionnaire des unités, conventions d'échelle, matrice
+  métrique → API → vue), refonte de `METRICS_SPEC.md` (registre, statuts, **revue de
+  changement de métrique**) et de `EMERGENCE_INDICATORS.md` (composantes normalisées,
+  contributions), `API_REST.md` §3.15–§3.18 (catalogue, viabilité, synthèse, bornes de
+  lecture).
+
+### Added
+- **Vue 2D et graphe de confiance : `GET /api/world` et `GET /api/trust-graph` (ADR-007)** :
+  deux endpoints **lecture seule** qui alimentent la fenêtre d'analyse native du Launcher.
+  - `world_initialized` n'est plus ignoré à l'ingestion : la description de monde (largeur,
+    hauteur, cellules de terrain, obstacles, ressources initiales, régions) est persistée en
+    contexte `world` au **tick 0**, une seule fois, pour le flux live comme pour l'archive
+    `stream.jsonl` — elle ne peut pas être reconstituée après coup. Nouveau callback optionnel
+    `on_world` de `aligned_ticks` : sans lui, le comportement historique est conservé.
+  - Nouveau contexte `resources` (réserves du tick **avec position**), écrit à la cadence de
+    `agents` : c'est la couche évolutive de la carte.
+  - `/api/world?run_id=&tick=` renvoie `{world, agents, groups, resources, tick, world_tick}`
+    au tick demandé (défaut : dernier observé), `tick: -1` en l'absence d'observation.
+  - `/api/trust-graph?run_id=&tick=` assemble la **forme** du graphe : nœuds
+    `{id, x, y, energy, hunger, thirst, action, group}` et arêtes
+    `{source, target, weight}` où `weight` est le `trust` publié par l'entité — aucun
+    agrégat, aucune moyenne (ADR-003).
+  - Tests : persistance de `world_initialized`, cadence de `resources`, les deux endpoints
+    (déterminisme, repli vide, 404), callback `on_world` — `flake8` sans avertissement,
+    suite verte, couverture **93,5 %**.
+
+### Removed
+- **Interface web et shell Electron supprimés — ECHOS devient un moteur sans interface (ADR-007, 05/10/2026)** :
+  - suppression de `echos-ui/` (React + Vite + TypeScript, 6 écrans) et de `echos-desktop/` (shell Electron, backend PyInstaller *onedir*, cibles `.deb`/NSIS, scripts de build) ;
+  - suppression du montage statique de FastAPI : `create_app(store)` n'accepte plus `ui_dist`, `SpaStaticFiles` et `_mount_ui` disparaissent, `echos/server.py` n'expose plus `ECHOS_UI_DIST` ni `default_ui_dist()` — `/` publie la liste des endpoints et une route de navigateur répond 404 JSON (`test_no_interface_is_served`) ;
+  - suppression du job CI `echos-ui` et du workflow `echos-desktop.yml`, du `setup-node` de `release.yml` et de `scripts/dev-stack-electron.sh` ; `scripts/dev-stack.sh` ne lance plus Vite ;
+  - le présentatif est le **Launcher** : consoles de logs natifs par composant et fenêtre d'analyse (LiveCharts2) sondant l'API REST en 1 s — voir `../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`.
+  - Tests : `test_server.py` réécrit (4 tests d'API seule) ; suite **329 passed, 2 skipped**, couverture **93,4 %**, `flake8` sans avertissement.
+
 ### Fixed
+- **ECHOS ne démarre plus « Défaillant » depuis le Launcher** : `/health/ready` exige une base d'analyse interrogeable et répond 503 sans `ECHOS_ANALYTICS_DB` — c'est voulu, pour ne pas annoncer prêt un service dont les API d'analyse répondent 503. Mais le Launcher ne démarre ses composants qu'avec un environnement minimal (jeton de session, corrélation, racine d'installation) : cette variable devait être héritée du processus Launcher, et un lancement en binaire ne l'a jamais fournie. Le composant devenait donc `Défaillant` au bout du délai de démarrage, alors que le shell Electron, lui, appliquait déjà un défaut. L'adaptateur Linux applique désormais la même idée : à défaut d'une base imposée par l'opérateur, il crée et utilise `$LIVEX_DATA/echos/analytics.sqlite` (sinon `~/.livex-data/echos/analytics.sqlite`) — racine des données, donc partagée par toutes les instances et durable, là où `--work-dir` est propre à chaque instance et fragmenterait l'analyse. Une base par défaut inutilisable est signalée sur stderr et laisse la sonde publier son 503 explicite. Le mode manuel (`echos-serve`, `python -m echos.server`) garde son contrat inchangé.
 - **Cache de séries jamais invalidé entre processus (retard croissant des graphiques)** : `AnalyticsStore.ingest_version` était un compteur **en mémoire du processus** — or l'API et l'ingestion sont deux processus séparés (shell bureau, ADR-003). Les écritures de l'ingestion n'incrémentaient donc jamais la version vue par l'API : les séries de `/api/runs/{id}/metrics` restaient figées sur leur premier chargement, et le tableau de bord affichait un « retard N ticks » croissant malgré des rafraîchissements normaux. Correctif : la version combine désormais `PRAGMA data_version` (réflète les écritures de **toutes** les connexions, y compris inter-processus) et le compteur local. Suite ECHOS verte (304+ tests, couverture 93 %).
 - **Écrans d'analyse gelés pendant un run lancé depuis l'interface** : la liste des runs (`useLoadRuns`) n'était chargée qu'une seule fois au montage de l'app et le flux WebSocket SYNE ne transporte pas de `run_id` d'analyse — un run démarré après l'ouverture de la fenêtre n'apparaissait jamais dans le sélecteur, et tous les écrans alimentés par l'API (tableau de bord, graphes, phénomènes) restaient sur le run précédent pendant que les vues temps réel (2D, ticks) vivaient. Correctif : re-poll périodique de `/api/runs` (5 s, propriété d'`AppShell`) + après Start/Reset, l'écran de pilotage recharge la liste (boucle bornée, 10 × 500 ms) et sélectionne le `runId` renvoyé par le relais de contrôle. Le repli de première sélection prend le run **le plus avancé** (dernier tick max), pas le dernier de la liste (l'ordre de l'API n'est ni chronologique ni alphabétiquement significatif).
 - **Tempête de requêtes `/metrics` pendant les runs longs** : les hooks d'analyse refetchaient le payload **complet** des séries à chaque tick WebSocket (10×/s) — les réponses s'empilaient plus vite qu'elles n'aboutissaient, l'affichage décrochait et le rendu se figeait. Correctif : cadence minimale de 2 s entre deux requêtes (une seule en vol, le surplus est sauté) ; le flux WS reste le détecteur d'activité.

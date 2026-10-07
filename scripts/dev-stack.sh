@@ -4,7 +4,7 @@ set -Eeuo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-for tool in dotnet python3 node npm curl; do
+for tool in dotnet python3 curl; do
   command -v "$tool" >/dev/null || { echo "Outil manquant : $tool" >&2; exit 1; }
 done
 
@@ -23,10 +23,6 @@ if ! "$VENV/bin/python" -c 'import fastapi, uvicorn, websockets, pyarrow' >/dev/
   echo "Installation des dépendances ECHOS…"
   "$VENV/bin/python" -m pip install --upgrade pip
   "$VENV/bin/python" -m pip install -r echos/requirements-dev.txt
-fi
-if [[ ! -x echos/echos-ui/node_modules/.bin/vite ]]; then
-  echo "Installation des dépendances de l'interface…"
-  (cd echos/echos-ui && npm ci)
 fi
 
 echo "Compilation Release de SYNE…"
@@ -78,13 +74,6 @@ setsid "$VENV/bin/python" -m uvicorn echos.api.app:app --app-dir echos \
 PIDS+=("$!")
 wait_for_url "http://127.0.0.1:5000/health" "API ECHOS" "${PIDS[-1]}"
 
-(
-  cd echos/echos-ui
-  exec setsid npm run dev -- --host 127.0.0.1
-) &
-PIDS+=("$!")
-wait_for_url "http://127.0.0.1:5173/" "Interface ECHOS" "${PIDS[-1]}"
-
 setsid "$SYNE_BIN" \
   --serve &
 CONTROL_PID="$!"
@@ -112,9 +101,10 @@ if [[ ! -f "$INGEST_STARTED_FILE" ]]; then
 fi
 
 echo
-echo "Interface : http://127.0.0.1:5173"
 echo "API ECHOS : http://127.0.0.1:5000/docs"
 echo "Contrôle SYNE : http://127.0.0.1:5181/api/control/status"
-echo "SYNE est en attente d'une commande Start de l'interface."
+echo "ECHOS ne sert aucune interface (ADR-007) : ouvrez la fenêtre Analyse du Launcher"
+echo "pour visualiser les séries en direct."
+echo "SYNE attend une commande Start."
 echo "Arrêtez l'ensemble avec Ctrl+C."
 wait "$CONTROL_PID"

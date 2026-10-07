@@ -1,10 +1,20 @@
 # ADR-003 : Shell Electron et empaquetage de bureau (.exe / .deb)
 
 **Composant** : ECHOS
-**Statut** : [Accepted]
-**Dernière mise à jour** : 29 septembre 2026
+**Statut** : [Superseded] — 5 octobre 2026
+**Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : `ADR-001-stack-applicative.md`
+**Annulé et remplacé par** : `../../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`
 **Source Monographie** : §4.2.1 (application de bureau), Annexe K (feuille de route V2)
+
+> **Décision retirée (5 octobre 2026).** ECHOS est désormais un **moteur sans
+> interface** : `echos-ui` (React + Vite) et `echos-desktop` (Electron,
+> PyInstaller, electron-builder) ont été supprimés, de même que le montage
+> statique de FastAPI (`ui_dist`, `ECHOS_UI_DIST`) et les workflows CI associés.
+> La présentation — y compris les consoles de logs et l'analyse en direct — vit
+> dans des fenêtres natives du Launcher. Voir l'ADR-007 du Launcher pour la
+> décision, ses conséquences et ses alternatives. Ce document est conservé pour
+> l'historique : il décrit une architecture qui n'existe plus.
 
 ---
 
@@ -91,3 +101,4 @@ Node ni des API Electron, tout passe par HTTP.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 29 septembre 2026 | Création — implémentation du shell Electron (p.10 ROADMAP) | ECHOS doit être distribuable en `.exe`/`.deb` |
+| 5 octobre 2026 | **[Superseded]** — suppression de `echos-ui`, `echos-desktop` et du montage statique | ECHOS est un moteur sans interface ; le Launcher présente, y compris en direct (ADR-007) |

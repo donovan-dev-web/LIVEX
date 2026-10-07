@@ -107,6 +107,29 @@ def test_list_runs_returns_metadata(tmp_path):
     # A3 : le résultat de population voyage avec les métadonnées.
     assert run["outcome"] == "surviving"
     assert run["extinction_tick"] is None
+    # P1 : le niveau de conservation du run est publiée avec lui (absente des
+    # bases écrites avant son introduction → ``null``, jamais inventée).
+    assert run["conservation"] is None
+
+
+def test_run_metadata_publishes_the_conservation_level(tmp_path):
+    """P1 : fidélité de conservation lue dans le run, pas déduite par l'UI."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-c", ticks=1)
+    db.append_tick_context(
+        "run-c", 0, "conservation",
+        {
+            "level": "high_fidelity",
+            "base": {"tickMetrics": True},
+            "sampledDetails": {"agentContextEvery": 1, "agentContext": "every_tick"},
+            "highFidelityReplay": True,
+        },
+    )
+
+    run = _client(db).get("/api/runs").json()["runs"][0]
+
+    assert run["conservation"]["level"] == "high_fidelity"
+    assert run["conservation"]["highFidelityReplay"] is True
 
 
 def test_run_metadata_expose_extinction(tmp_path):
@@ -361,12 +384,62 @@ def test_metrics_series_exposes_metrics_absent_from_the_last_tick(tmp_path):
 
     body = _client(db).get("/api/runs/run-7/metrics", params={"engine": "E"}).json()
 
-    # « Ephemeral » n'est plus au tick 2 mais sa série reste découvrable.
+    # « Ephemeral » n'est plus au tick 2 mais sa série reste découvrable :
+    # le tableau est aligné sur ``ticks`` et le tick absent est un trou (null),
+    # jamais une valeur décalée.
     assert set(body["values"]["E"]) == {"Ephemeral", "Stable"}
-    assert body["values"]["E"]["Ephemeral"] == [5.0]
+    assert body["ticks"] == [1, 2]
+    assert body["values"]["E"]["Ephemeral"] == [5.0, None]
     assert body["values"]["E"]["Stable"] == [1.0, 2.0]
+    # Masque de provenance aligné sur la même longueur que chaque série.
+    assert body["measured_by_tick"]["E"]["Ephemeral"] == [True, None]
+    assert body["measured_by_tick"]["E"]["Stable"] == [True, True]
     # « latest » reste le dernier instant.
     assert body["latest"]["E"] == {"Stable": 2.0}
+
+
+def test_metrics_publish_gaps_and_per_tick_provenance(tmp_path):
+    """P0 : trous de ticks **et** provenance alignée sur la série.
+
+    Un drapeau ``measured`` au dernier tick ne prouve pas que les ticks
+    antérieurs étaient mesurés : la réponse publie désormais le masque par
+    tick (même longueur que chaque série) et la liste des ticks manquants,
+    sans jamais combler un trou.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-gaps", "0.1.0", seed="7")
+    db.append_tick_metrics("run-gaps", 1, {"E": {"M": 1.0}}, {"E": {"M": True}})
+    db.append_tick_metrics("run-gaps", 2, {"E": {"M": 0.0}}, {"E": {"M": False}})
+    db.append_tick_metrics("run-gaps", 5, {"E": {"M": 2.0}}, {"E": {"M": True}})
+
+    body = _client(db).get("/api/runs/run-gaps/metrics").json()
+
+    assert body["ticks"] == [1, 2, 5]
+    assert body["values"]["E"]["M"] == [1.0, 0.0, 2.0]
+    # Le tick 2 est un repli neutre **observé comme tel**, pas un zéro mesuré.
+    assert body["measured_by_tick"]["E"]["M"] == [True, False, True]
+    assert body["missing_ticks"] == [3, 4]
+    assert body["missing_ticks_count"] == 2
+    assert body["latest_tick"] == 5
+    # Chaque tableau de provenance a la même longueur que l'axe des ticks.
+    assert len(body["measured_by_tick"]["E"]["M"]) == len(body["ticks"])
+
+
+def test_metrics_keep_real_tick_coordinates_under_downsampling(tmp_path):
+    """``every`` conserve les numéros de ticks réels (coordonnées x)."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-steps", "0.1.0", seed="7")
+    for tick in (1, 2, 4, 8):
+        db.append_tick_metrics("run-steps", tick, {"E": {"M": float(tick)}})
+
+    body = _client(db).get(
+        "/api/runs/run-steps/metrics", params={"every": 2}
+    ).json()
+
+    # Sous-échantillonnage index-based : les ticks servis restent les ticks réels.
+    assert body["ticks"] == [1, 4]
+    assert body["values"]["E"]["M"] == [1.0, 4.0]
+    assert body["missing_ticks"] == [3, 5, 6, 7]
 
 
 def test_unknown_run_resolves_to_404_everywhere(tmp_path):
@@ -584,8 +657,285 @@ def test_metrics_report_a_neutral_fallback_as_unmeasured(tmp_path):
     db.append_tick_metrics("run-bare", 1, metrics, provenance(snap))
 
     body = _client(db).get("/api/runs/run-bare/metrics").json()
-    assert body["latest"]["FeedbackLoopDetector"]["LoopStrength"] == 0.0
-    assert body["measured"]["FeedbackLoopDetector"]["LoopStrength"] is False
+    assert body["latest"]["FeedbackLoopDetector"]["RepeatedActionShare"] == 0.0
+    assert body["measured"]["FeedbackLoopDetector"]["RepeatedActionShare"] is False
     assert body["measured"]["EmergenceIndicators"]["EmergenceScore"] is False
     # Une métrique instantanée reste mesurée malgré l'absence de fenêtres.
     assert body["measured"]["CognitiveDiversityMetrics"]["BeliefDiversity"] is True
+
+
+def test_world_endpoint_publishes_description_and_observation(tmp_path):
+    """Vue 2D : description publiée au démarrage + observation au tick choisi.
+
+    Lecture seule (ADR-003) : chaque champ vient d'un contexte persisté à
+    l'ingestion ; l'endpoint n'agrège et n'estime rien.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=3)
+    db.append_tick_context(
+        "run-7",
+        0,
+        "world",
+        {
+            "width": 500,
+            "height": 500,
+            "cellSize": 10.0,
+            "obstacles": [{"id": "o-1", "x": 12.0, "y": 24.0, "radius": 4.0}],
+            "resources": [
+                {"id": "r-1", "kind": "food", "x": 3, "y": 4, "quantity": 10.0}
+            ],
+        },
+    )
+    db.append_tick_context(
+        "run-7",
+        2,
+        "resources",
+        [{"type": "food", "position": {"x": 5.0, "y": 6.0}, "quantity": 8.0}],
+    )
+    client = _client(db)
+
+    body = client.get("/api/world").json()
+    assert body["run_id"] == "run-7"
+    assert body["tick"] == 3  # dernier tick observé par défaut
+    assert body["world_tick"] == 0
+    assert body["world"]["obstacles"][0]["id"] == "o-1"
+    assert body["agents"]
+    assert body["groups"]
+
+    at_two = client.get("/api/world", params={"tick": 2}).json()
+    assert at_two["tick"] == 2
+    # Couche évolutive : les réserves du tick sont celles publiées à l'ingestion.
+    assert at_two["resources"][0]["position"]["x"] == 5.0
+
+    # Repli honnête : sans observation, le vide est publié, jamais inventé.
+    db.record_run("run-empty", "0.1.0", seed="empty")
+    empty = client.get("/api/world", params={"run_id": "run-empty"}).json()
+    assert empty["tick"] == -1
+    assert empty["world"] is None
+    assert empty["agents"] == []
+
+    assert client.get("/api/world", params={"run_id": "ghost"}).status_code == 404
+
+
+def test_trust_graph_publishes_nodes_and_edges_as_observed(tmp_path):
+    """Graphe de confiance : nœuds et arêtes publiés tels qu'observés.
+
+    ``weight`` est le ``trust`` déclaré par l'entité (0–1), sans agrégation ni
+    moyenne : seule la forme du graphe est assemblée (ADR-003).
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    client = _client(db)
+
+    body = client.get("/api/trust-graph").json()
+    assert body["run_id"] == "run-7"
+    assert body["tick"] == 2
+    assert body["nodes"]
+    assert {"id", "x", "y", "energy", "group"} <= set(body["nodes"][0])
+    assert body["edges"]
+    identifiers = {node["id"] for node in body["nodes"]}
+    assert all(edge["source"] in identifiers for edge in body["edges"])
+    assert all(0.0 <= edge["weight"] <= 1.0 for edge in body["edges"])
+    # Reproductible : deux lectures, la même réponse.
+    assert body == client.get("/api/trust-graph").json()
+
+    at_one = client.get("/api/trust-graph", params={"tick": 1}).json()
+    assert at_one["tick"] == 1
+
+    db.record_run("run-empty", "0.1.0", seed="empty")
+    empty = client.get("/api/trust-graph", params={"run_id": "run-empty"}).json()
+    assert empty == {"run_id": "run-empty", "tick": -1, "nodes": [], "edges": []}
+
+
+def _populate_events(db: AnalyticsStore, run_id: str) -> None:
+    """Trois événements publiés, dont deux au même tick (ordre d'émission)."""
+    db.append_event(
+        run_id, 1, "decision_made",
+        agent_id="A", action="SeekFood", cause="hunger=71",
+    )
+    db.append_event(run_id, 2, "agent_died", agent_id="B", cause="energy=0")
+    db.append_event(run_id, 3, "group_formed", agent_id=None)
+
+
+def test_events_endpoint_publishes_a_bounded_deterministic_journal(tmp_path):
+    """P3 : journal d'événements borné, trié et reproductible.
+
+    Les annotations de la vue temporelle lisent ce journal. Le service ne
+    publie ni cause déduite ni priorisation : type, entité, action et cause
+    telles qu'émises, avec ``total`` pour ne jamais faire passer la troncature
+    pour l'intégralité du journal.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    _populate_events(db, "run-7")
+    client = _client(db)
+
+    body = client.get("/api/runs/run-7/events").json()
+
+    assert body["run_id"] == "run-7"
+    assert body["total"] == 3
+    assert len(body["events"]) == 3 <= body["limit"]
+    ticks = [event["tick"] for event in body["events"]]
+    assert ticks == sorted(ticks)
+    assert {"tick", "type", "agent_id", "action", "cause"} <= set(body["events"][0])
+    # Types triés, avec comptage — la vue peut proposer un filtre sans deviner.
+    assert [entry["type"] for entry in body["types"]] == [
+        "agent_died", "decision_made", "group_formed",
+    ]
+    assert [entry["count"] for entry in body["types"]] == [1, 1, 1]
+    # Déterminisme : deux lectures, la même réponse.
+    assert body == client.get("/api/runs/run-7/events").json()
+
+
+def test_events_endpoint_filters_by_type_and_bounds_the_limit(tmp_path):
+    """Filtre de type, plafond de lecture et erreurs — jamais de journal fantôme."""
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    _populate_events(db, "run-7")
+    client = _client(db)
+
+    filtered = client.get(
+        "/api/runs/run-7/events", params={"type": "decision_made"}
+    ).json()
+    assert filtered["total"] == 1
+    assert {event["type"] for event in filtered["events"]} == {"decision_made"}
+    assert filtered["events"][0]["action"] == "SeekFood"
+
+    truncated = client.get("/api/runs/run-7/events", params={"limit": 1}).json()
+    assert len(truncated["events"]) == 1
+    assert truncated["total"] > truncated["limit"]
+
+    # Bornes : limit hors plage → 422 ; run inconnu → 404.
+    assert client.get("/api/runs/run-7/events", params={"limit": 0}).status_code == 422
+    assert client.get("/api/runs/run-nope/events").status_code == 404
+
+
+def test_entity_views_recede_when_the_last_context_is_empty(tmp_path):
+    """Le dernier contexte d'un run éteint est vide : on recule d'une cadence.
+
+    Le pipeline écrit toujours le contexte du dernier tick du flux — extinction
+    comprise (population nulle). Sans repli, ``/trust-graph``, ``/groups``,
+    ``/world``, ``/beliefs`` et ``/relationships`` publient « aucune entité »
+    alors que le run en a observé (lecture « le plus récent disponible »).
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    # Extinction : contexte du dernier tick, sans entité ni communauté.
+    db.append_tick_context("run-7", 9, "agents", [])
+    db.append_tick_context("run-7", 9, "groups", [])
+    client = _client(db)
+
+    graph = client.get("/api/trust-graph", params={"run_id": "run-7"}).json()
+    assert graph["tick"] == 2  # tick d'observation réel, pas le tick vide
+    assert graph["nodes"]
+    assert all(edge["source"] in {n["id"] for n in graph["nodes"]}
+               for edge in graph["edges"])
+
+    groups = client.get("/api/groups", params={"run_id": "run-7"}).json()
+    assert groups["tick"] == 2
+    assert groups["groups"]
+
+    world = client.get("/api/world", params={"run_id": "run-7"}).json()
+    assert world["tick"] == 2
+    assert world["agents"]
+    assert world["groups"]
+
+    beliefs = client.get("/api/beliefs/A", params={"run_id": "run-7"}).json()
+    assert beliefs["tick"] == 2
+    assert beliefs["beliefs"]
+    relations = client.get(
+        "/api/relationships/A", params={"run_id": "run-7"}
+    ).json()
+    assert relations["tick"] == 2
+
+
+def test_beliefs_recede_to_a_context_that_still_contains_the_entity(tmp_path):
+    """Une entité morte avant le dernier contexte peuplé reste lisible.
+
+    Le repli s'arrête au contexte qui **contient** l'entité : jamais de
+    croyances inventées, jamais un 404 alors que le run les a publiées.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7", ticks=2)
+    # Contexte peuplé mais sans A : A est mort avant le dernier échantillon.
+    survivors = [
+        agent for agent in (db.latest_context("run-7", "agents") or (0, []))[1]
+        if str(agent.get("id")) != "A"
+    ]
+    assert survivors  # le fixture observe d'autres entités que A
+    db.append_tick_context("run-7", 5, "agents", survivors)
+    client = _client(db)
+
+    beliefs = client.get("/api/beliefs/A", params={"run_id": "run-7"}).json()
+    assert beliefs["tick"] == 2  # dernier contexte portant A
+    assert beliefs["beliefs"]
+    alive = client.get("/api/beliefs/B", params={"run_id": "run-7"}).json()
+    assert alive["tick"] == 5  # toujours vivante : contexte le plus récent
+
+    # Entité jamais observée sur ce run → 404 explicite, jamais un repli.
+    missing = client.get("/api/beliefs/ghost", params={"run_id": "run-7"})
+    assert missing.status_code == 404
+    assert "introuvable" in missing.json()["detail"]
+
+
+def test_live_ingest_starts_a_background_consumer(tmp_path, monkeypatch):
+    """POST /ingest/live démarre le consommateur du flux SYNE en tâche de fond.
+
+    C'est ce chemin qui rend l'analyse **temps réel** possible : sans lui, un
+    run piloté par le Launcher n'apparaît dans /api/runs qu'à la fin de la
+    campagne (ingestion d'archive). Même adresse = no-op explicite.
+    """
+    import threading
+    from types import SimpleNamespace
+
+    from echos.api import routes as routes_module
+
+    db = AnalyticsStore(tmp_path / "live.db")
+    consumed = threading.Event()
+    release = threading.Event()
+
+    class _FakeClient:
+        def connect(self, url):
+            self.url = url
+
+        def close(self):
+            pass
+
+    def _fake_consume(client, store, **kwargs):
+        consumed.set()
+        release.wait(5.0)
+        return SimpleNamespace(ticks_written=1, events_written=0)
+
+    monkeypatch.setattr(routes_module, "WsClient", _FakeClient)
+    monkeypatch.setattr(routes_module, "consume", _fake_consume)
+
+    client = _client(db)
+    try:
+        response = client.post(
+            "/ingest/live", json={"wsUrl": "ws://127.0.0.1:5199/"}
+        )
+
+        assert response.status_code == 200
+        assert response.json()["started"] is True
+        assert consumed.wait(2.0), "le consommateur de fond doit démarrer"
+
+        again = client.post(
+            "/ingest/live", json={"wsUrl": "ws://127.0.0.1:5199/"}
+        )
+        assert again.status_code == 200
+        assert again.json()["started"] is False
+    finally:
+        release.set()
+
+
+def test_live_ingest_refuses_non_local_streams(tmp_path):
+    """Seul un WebSocket local est accepté : la route ne consomme pas l'extérieur."""
+    db = AnalyticsStore(tmp_path / "live-guard.db")
+    client = _client(db)
+
+    response = client.post(
+        "/ingest/live", json={"wsUrl": "http://example.com/stream"}
+    )
+
+    assert response.status_code == 400
+    assert "local" in response.json()["detail"]

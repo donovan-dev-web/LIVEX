@@ -32,6 +32,7 @@ dernier.
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
@@ -119,7 +120,7 @@ class ConsumeResult:
 
 
 def _segments(
-    client: WsClient, sample_every: int | None
+    client: WsClient, sample_every: int | None, on_world: Callable[[dict], None] | None = None
 ) -> Iterator[tuple[int, TickSegment]]:
     """Segments indexés du flux, échantillonnés 1 sur N (``sample_every``).
 
@@ -131,7 +132,7 @@ def _segments(
     """
     if sample_every is not None and sample_every < 1:
         raise ValueError("sample_every doit être >= 1")
-    for index, segment in enumerate(aligned_ticks(client)):
+    for index, segment in enumerate(aligned_ticks(client, on_world=on_world)):
         if sample_every is not None and index % sample_every != 0:
             continue
         yield index, segment
@@ -170,7 +171,7 @@ def _snapshot_for_engines(
     - ``history`` : un point par tick (``tick``, ``actions``, ``resources``),
       pour ``FeedbackLoopDetector`` et ``RecoveryTime`` ;
     - ``communityHistory`` : tailles de communautés par tick, pour
-      ``CommunityStability``.
+      ``CommunitySizeMatch``.
 
     Sans ces fenêtres, ces 7 métriques restaient à leur repli neutre (0.0) sur
     chaque run réel, le snapshot ne portant que le tick courant.
@@ -190,7 +191,7 @@ class _RollingContext:
 
     Chaque tick poussé est tronqué à sa fenêtre : les moteurs qui isolent un
     événement (``GroupFormationRate``) ou mesurent une durée
-    (``InformationDiffusionSpeed``, ``RecoveryTime``) restent ainsi corrects sur
+    (``EmitterCoverageDelay``, ``RecoveryTime``) restent ainsi corrects sur
     les runs longs, sans jamais lire l'intégralité du flux.
 
     La fenêtre d'événements est bornée deux fois — en ticks
@@ -296,7 +297,7 @@ def _resources_of(snapshot) -> list[dict]:
 
 
 def _community_sizes_of(snapshot) -> list[int]:
-    """Tailles des communautés du tick, pour ``CommunityStability``."""
+    """Tailles des communautés du tick, pour ``CommunitySizeMatch``."""
     return community_sizes(_agents_of(snapshot))
 
 
@@ -326,6 +327,49 @@ def _groups_of(agents: list[dict]) -> list[dict]:
         {"label": members[0], "members": members, "size": len(members)}
         for members in communities(agents)
     ]
+
+
+def _conservation_payload(
+    *, analysis_every: int, context_every: int, sample_every: int | None
+) -> dict:
+    """Niveau de conservation **réellement configuré** pour un run (P1).
+
+    Trois niveaux explicites (RAPPORT §4.1) :
+
+    - ``base`` — métriques, résumés et événements : écrits à chaque tick
+      analysé (toujours) ;
+    - ``sampled_details`` — contextes détaillés (``agents``, ``groups``,
+      ``resources``) écrits 1 tick sur ``context_every`` : c'est le niveau par
+      défaut ;
+    - ``high_fidelity`` — contextes à chaque tick (``context_every == 1``),
+      seul régime qui permette un rejeu haute fidélité.
+
+    Le payload est **lu** par l'interface pour annoncer les limites du run :
+    jamais interpoler un contexte échantillonné comme s'il était complet.
+    """
+    high_fidelity = context_every <= 1 and analysis_every <= 1
+    return {
+        "level": "high_fidelity" if high_fidelity else "sampled_details",
+        "base": {
+            "tickMetrics": True,
+            "tickSummaries": True,
+            "events": True,
+            "decisionTraces": True,
+            "analysisEvery": analysis_every,
+        },
+        "sampledDetails": {
+            "agentContextEvery": context_every,
+            "sampleEvery": sample_every,
+            "agentContext": "every_tick" if context_every <= 1 else "sampled",
+            "lastAgentContextAlwaysWritten": True,
+        },
+        "highFidelityReplay": high_fidelity,
+        "windows": {
+            "eventWindowTicks": _EVENT_WINDOW_TICKS,
+            "eventWindowMaxEvents": _EVENT_WINDOW_MAX_EVENTS,
+            "historyTicks": _HISTORY_TICKS,
+        },
+    }
 
 
 def consume(
@@ -369,6 +413,27 @@ def consume(
     context = _RollingContext()
     last_segment: TickSegment | None = None
     last_agents_written = False
+    world_payload: dict | None = None
+
+    def _capture_world(payload: dict) -> None:
+        """Conserve la description de monde du flux (la première vue : terrain,
+        obstacles, ressources et régions) pour la vue 2D de l'observation.
+
+        Elle est persistée comme contexte ``world`` au tick 0 dès que le run est
+        connu — jamais recalculée, jamais estimée après coup. Si elle arrive
+        **après** l'enregistrement du run (consommateur live connecté en cours
+        de trajet), elle est écrite à réception : sinon elle serait perdue,
+        l'écriture n'ayant lieu qu'au changement de run.
+        """
+        nonlocal world_payload
+        if world_payload is None:
+            world_payload = payload
+        if (
+            run_known
+            and run_id is not None
+            and store.latest_context(run_id, "world") is None
+        ):
+            store.append_tick_context(run_id, 0, "world", world_payload)
 
     def _seed_from(snapshot) -> str:
         """Seed du snapshot (transporté, contrat V0.2.1) ou repli ``_seed_of``.
@@ -403,7 +468,7 @@ def consume(
         if report is not None:
             store.save_calibration_report(finished_run_id, report)
 
-    for _index, segment in _segments(client, sample_every):
+    for _index, segment in _segments(client, sample_every, on_world=_capture_world):
         snapshot = segment.snapshot
 
         # A2 — changement de run_id détecté en flux (reset SYNE dans la même
@@ -423,6 +488,28 @@ def consume(
             )
             run_known = True
             context = _RollingContext()
+            # Description de monde : écrite une seule fois, au tick 0 du run.
+            if world_payload is not None and store.latest_context(run_id, "world") is None:
+                store.append_tick_context(run_id, 0, "world", world_payload)
+                contexts_written += 1
+            # P1 — niveau de conservation réellement employé pour ce run :
+            # métriques/résumés/événements à chaque tick analysé, détails
+            # ``agents`` échantillonnés (``context_every``), replay haute
+            # fidélité possible seulement si la cadence vaut 1. Persisté une
+            # fois par run pour que l'interface puisse annoncer la limite
+            # **avant** toute lecture, sans jamais l'inventer.
+            if store.latest_context(run_id, "conservation") is None:
+                store.append_tick_context(
+                    run_id,
+                    0,
+                    "conservation",
+                    _conservation_payload(
+                        analysis_every=analysis_every,
+                        context_every=context_every,
+                        sample_every=sample_every,
+                    ),
+                )
+                contexts_written += 1
             if parquet_path is not None and pending_agents:
                 _flush_agent_series(parquet_path, pending_agents)
                 pending_agents = []
@@ -493,6 +580,13 @@ def consume(
                     },
                     "agents": engine_snapshot.get("agents") or [],
                     "groups": _groups_of(engine_snapshot.get("agents") or []),
+                    # Réserves du tick **avec position** : c'est la couche évolutive
+                    # de la vue 2D (la description de monde porte les positions
+                    # initiales, celles-ci suivent le monde vivant).
+                    "resources": [
+                        resource.model_dump(mode="json", by_alias=True, exclude_none=True)
+                        for resource in snapshot.resources
+                    ],
                     "profiling": profile,
                 }
             else:

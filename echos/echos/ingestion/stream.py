@@ -11,6 +11,7 @@ déterministe).
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Iterator
 
@@ -57,18 +58,30 @@ class TickSegment:
         }
 
 
-def aligned_ticks(client: WsClient) -> Iterator[TickSegment]:
+def aligned_ticks(
+    client: WsClient,
+    *,
+    on_world: Callable[[dict], None] | None = None,
+) -> Iterator[TickSegment]:
     """Itère les segments par tick (le snapshot déclenche le segment suivant).
 
     Un événement arrivant avant tout snapshot, ou avec un tick différent du
     snapshot courant, est refusé (``TickAlignmentError``) : le flux doit être
     strictement aligné sur la boucle SYNE (1 snapshot + événements du même tick).
+
+    ``world_initialized`` reste consigné par le contrat mais **transmis** à
+    l'appelant via ``on_world`` : la description de monde (terrain, obstacles,
+    ressources, régions) sert à la vue 2D de l'observation (ADR-007) et ne peut
+    plus être reconstituée après coup — sans callback, elle reste ignorée comme
+    par le passé.
     """
     current: WorldSnapshot | None = None
     events: list[ExternalEvent] = []
 
     for message in client:
         if isinstance(message, WorldInitialized):
+            if on_world is not None:
+                on_world(message.world)
             continue
 
         if isinstance(message, WorldSnapshot):

@@ -17,7 +17,7 @@
 
 | # | Intitulé | Contenu |
 | :-- | :-- | :-- |
-| 0 | Fondation & stack | Choix FastAPI + React/Vite web local (tranché pour V0.1 ; **shell Electron conservé**, implémentation **différée à un horizon ultérieur** — décision 23/09/2026), structure monorepo `echos/`, outillage (pytest, CI) |
+| 0 | Fondation & stack | Choix FastAPI + SQLite/Parquet, structure monorepo `echos/`, outillage (pytest, CI). *(L'interface React/Vite et le shell Electron prévus à ce jalon ont été retirés — ADR-007, 05/10/2026.)* |
 | 1 | Ingestion & stockage | Consommateur WebSocket :5180, agrégation incrémentale, SQLite + Parquet (stockage d'analyse séparé) — **LIVRÉ (ECHOS-010 → 013, jalon U1)** |
 | 2 | Moteurs de métriques | Implémentation des 7 moteurs (`METRICS_SPEC.md`), golden files, tests unitaires — **LIVRÉ (ECHOS-020 → 027, jalon U2)** |
 | 3 | Indicateurs d'émergence | Score composite, auto-détection des phénomènes, complexité, indice d'imprévisibilité — **LIVRÉ (ECHOS-030 → 033, jalon U3)** |
@@ -25,9 +25,9 @@
 | 5 | Logging & instrumentation | 3 niveaux (structuré/traces/texte), profilage, console de débogage, export CSV/JSON — **LIVRÉ (ECHOS-050 → 052, jalon U5)** : package `echos/instrumentation/` (JSONL déterministe + tag `SSE-V2`), traces `decision_traces` (schéma v3) accessibles via `/api/runs/{id}/decisions`, profilage bit-à-bit des 8 moteurs (budgets V0.1 en garde-fou CI) ; console de débogage hors périmètre ECHOS (spécif. monographie, console SYNE) |
 | 6 | Analyse causale | Reconstruction des chaînes causales depuis `decision_traces`, outillage de navigation — **LIVRÉ (ECHOS-060 → 063, jalon ph6, issues #215 → #218)** : ADR-002 [Accepted] (calcul hors ligne), `causal.build_chain` (7 couches), cycle/récurrence + profondeur bornée, `CausalCache` invalidé sur version, endpoint `GET /api/runs/{id}/causal-chains/{agentId}` |
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export | **LIVRÉ (ECHOS-070 → 072, jalon ph7, U7)** : `GET /api/compare` (`is_reproducible` seed×version×SHA-256, `ReproducibilityScore = 1 − (CognitiveDiff+SocialDiff)/2`, L2 normalisées sur croyances/confiance — `echos/analysis/reproducibility.py`), exports `json`/`csv` (séries alignées `tick,engine,metric,run_a_value,run_b_value,diff`), 11 tests (`test_compare.py`), couverture 97,97 % |
-| 8 | Interface intégrée | Écrans ECHOS (web local React/Vite servie par FastAPI) : vues de métriques, croyances, réseaux, calibration |
+| 8 | Interface intégrée | Écrans d'observation — **RETRAIT côté ECHOS (ADR-007, 05/10/2026)** : l'interface React/Vite a été supprimée ; la présentation est portée par les fenêtres natives du Launcher (consoles de logs, fenêtre d'analyse) |
 | 9 | Tests & couverture | **LIVRÉ (U8, ECHOS-090→092)** : suite pytest + goldens, couverture 96,01 %, test d’intégration réel SYNE→ECHOS en CI, rapport de calibration déterministe. Cette validation ne couvre pas PRISM ; PRISM-LDK (`PrismLdk`) et le projet Unreal PRISM doivent être validés séparément contre SYNE réel. |
-| 10 | Shell Electron | Packaging natif de bureau d'ECHOS via **Electron** — **LIVRÉ** : `echos-desktop/` (backend Python empaqueté PyInstaller *onedir*, interface `echos-ui` servie par FastAPI sur la même origine), cibles `.deb` (Linux) et NSIS `.exe` (Windows), CI matrice `ubuntu`/`windows` sur tag `echos-v*` (`ADR-003`). La coordination avec PRISM (`../docs-prism/`) reste un chantier distinct. |
+| 10 | Shell Electron | **RETRAIT (ADR-007, 05/10/2026)** : le packaging `.deb`/`.exe` livré (backend PyInstaller + interface FastAPI, CI matrice sur tag `echos-v*`) a été **supprimé** — ECHOS n'a plus d'interface ni de shell de bureau. Voir `../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md` |
 
 ## 3. Jalons de validation
 

@@ -1,4 +1,9 @@
-"""Linux Launcher adapter for ECHOS' environment-configured server."""
+"""Linux Launcher adapter for ECHOS' environment-configured server.
+
+Maps the shared Launcher arguments onto ECHOS' environment, and applies a
+default analytics database when the operator imposes none — the Launcher
+environment is minimal, and a probe answering 503 would fail the startup.
+"""
 
 from __future__ import annotations
 
@@ -23,6 +28,43 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def data_root() -> Path:
+    """Racine des données LIVEX : ``LIVEX_DATA``, sinon le profil utilisateur.
+
+    Même règle que celle du Launcher : les deux processus doivent désigner le
+    même emplacement, faute de quoi ils ne verraient pas les mêmes analyses.
+    """
+    configured = os.environ.get("LIVEX_DATA")
+    if configured and configured.strip():
+        return Path(configured)
+    return Path.home() / ".livex-data"
+
+
+def ensure_analytics_db() -> None:
+    """Impose la base d'analyse par défaut quand l'opérateur n'en fournit aucune.
+
+    Le Launcher démarre ses composants avec un environnement minimal (jeton de
+    session, corrélation, racine d'installation) : sans ``ECHOS_ANALYTICS_DB``, la
+    sonde ``/health/ready`` répond 503 et le Launcher déclare ECHOS « Défaillant »
+    une fois le délai de démarrage dépassé. La base par défaut vit dans la racine
+    des données, **hors du répertoire de travail** : celui-ci est propre à chaque
+    instance, une base par instance fragmenterait l'analyse. Une valeur imposée par
+    l'opérateur reste prioritaire ; une base par défaut inutilisable laisse la
+    variable absente, donc la sonde publie son 503 explicite au lieu d'un échec muet.
+    """
+    if os.environ.get("ECHOS_ANALYTICS_DB"):
+        return
+
+    database = data_root() / "echos" / "analytics.sqlite"
+    try:
+        database.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        print(f"base d'analyse par défaut inutilisable : {exc}", file=sys.stderr)
+        return
+
+    os.environ["ECHOS_ANALYTICS_DB"] = str(database)
+
+
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
     os.environ["ECHOS_HOST"] = "127.0.0.1"
@@ -30,6 +72,7 @@ def main(argv: list[str] | None = None) -> None:
         if not 1 <= args.control_port <= 65535:
             raise SystemExit("--control-port must be between 1 and 65535")
         os.environ["ECHOS_PORT"] = str(args.control_port)
+    ensure_analytics_db()
     from echos.server import main as serve
 
     serve()

@@ -338,6 +338,51 @@ class AnalyticsStore:
             ).fetchone()
         return int(row[0]) if row else 0
 
+    def count_events(self, run_id: str) -> int:
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT COUNT(*) FROM events_log WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        return int(row[0]) if row else 0
+
+    def has_run(self, run_id: str) -> bool:
+        """Le run est-il déjà connu de la base, même sans tick ?
+
+        Distinct de :meth:`count_ticks` : une ingestion interrompue laisse un run
+        sans tick mais **présent** dans ``runs``. Cette distinction permet à
+        :func:`echos.ingestion.batch.ingest_run_stream` de ne purger que les
+        résidus dont il est lui-même l'auteur, et de laisser en place une
+        inscription préexistante.
+        """
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT 1 FROM runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        return row is not None
+
+    def discard_run(self, run_id: str) -> None:
+        """Supprime un run et toutes ses lignes dérivées, en une transaction.
+
+        Toutes les tables enfants déclarent ``ON DELETE CASCADE`` sur
+        ``runs(run_id)`` : une seule instruction suffit donc à purger les ticks,
+        événements, métriques, contextes, traces et rapport de calibration.
+
+        Réservé à l'annulation d'une ingestion **que l'appelant vient d'échouer** :
+        ``consume`` valide chaque tick séparément, donc un flux invalidé en cours
+        de route laisse des lignes pour les segments déjà écrits. Sans ce purge,
+        le run resterait à moitié enregistré à jamais — l'ingestion de l'archive
+        valide serait alors refusée par la garde anti-doublon alors que la base ne
+        contient que la moitié du run.
+        """
+        with self._lock:
+            try:
+                self._conn.execute("DELETE FROM runs WHERE run_id = ?", (run_id,))
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
+            self._bump()
+
     def population_outcome(self, run_id: str) -> dict:
         """Résultat de population d'un run (A3, calculé en SQL sur ``tick_summaries``).
 
@@ -773,6 +818,28 @@ class AnalyticsStore:
                     (run_id, engine, metric),
                 ).fetchall()
             )
+
+    def measured_series(
+        self, run_id: str, engine: str, metric: str
+    ) -> list[tuple[int, bool]]:
+        """Provenance **par tick** d'une série (P0 — alignée sur la série).
+
+        L'API ne publiait que les drapeaux du dernier tick, alors que la courbe
+        dessine toute l'histoire : un ``true`` final ne prouve pas que les ticks
+        antérieurs étaient mesurés. Ce couple (tick, drapeau) permet de marquer
+        chaque point — et donc de rompre la courbe au lieu de tracer un repli
+        neutre comme un zéro observé.
+        """
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT tick, measured FROM tick_metrics
+                WHERE run_id = ? AND engine = ? AND metric = ?
+                ORDER BY tick
+                """,
+                (run_id, engine, metric),
+            ).fetchall()
+        return [(int(tick), bool(measured)) for tick, measured in rows]
 
     def latest_metrics(self, run_id: str) -> dict[str, dict[str, float]]:
         """Dernières métriques calculées (tick max de ``tick_metrics``)."""

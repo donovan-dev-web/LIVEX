@@ -1,10 +1,18 @@
 # ADR-001 : Choix de la stack applicative ECHOS (FastAPI + React/Vite web local)
 
 **Composant** : ECHOS
-**Statut** : [Accepted]
-**Dernière mise à jour** : 23 septembre 2026
+**Statut** : [Accepted] — volet interface **remplacé** le 5 octobre 2026
+**Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : —
+**Remplacé (volet interface) par** : `../../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`
 **Source Monographie** : §4.2.1 (architecture cible prototype)
+
+> **Volet interface retiré (5 octobre 2026, ADR-007).** Le volet **Python de cette
+> décision reste en vigueur** : FastAPI local (PAS Django), NumPy/Pandas/SciPy/NetworkX,
+> SQLite/Parquet. En revanche, l'interface React/Vite servie par FastAPI et le shell
+> Electron **n'existent plus** : `echos-ui/` et `echos-desktop/` ont été supprimés,
+> de même que le montage statique. ECHOS est un moteur sans interface, et la
+> présentation vit dans des fenêtres natives du Launcher.
 
 ---
 
@@ -53,3 +61,4 @@ C'est une **divergence assumée** vs la Monographie, documentée dans `ARCHITECT
 | 17 septembre 2026 | Création | — |
 | 23 septembre 2026 | Décision « web local pour V0.1 » : React/Vite **servi par FastAPI** en V0.1 | Décision utilisateur (interface web locale React/Vite pour V0.1) ; aligne ADR sur `echos-ui` réel |
 | 23 septembre 2026 | **Correction** : le shell Electron est **conservé**, implémentation **différée à un horizon ultérieur (post-V0.1)** | La lecture initiale « PAS de shell Electron » était une reformulation erronée — ECHOS garde Electron, implémenté plus tard. Docs alignées (ADR, `ARCHITECTURE.md`, `FRONTEND_VISION.md`, `ROADMAP.md`, `ISSUES.md`, `CHANGELOG.md`, docs racine). La Monographie reste un snapshot figé. |
+| 5 octobre 2026 | **Volet interface remplacé** : suppression de React/Vite et d'Electron ; ECHOS devient un moteur sans interface, présentation portée par le Launcher | Décision utilisateur (ADR-007) : une instance Chromium pour afficher des séries, deux chaînes de build et deux présentations du même résultat n'étaient plus tenables |

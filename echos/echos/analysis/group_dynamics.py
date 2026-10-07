@@ -1,15 +1,41 @@
 """Moteur 7 — GroupDynamicsMetrics (dynamique des groupes).
 
-Mesure la formation, la stabilité et la rotation des groupes (METRICS_SPEC.md
-§8) à partir des communautés du graphe de confiance (``trust``, U2) et des
-événements ``group_formed`` / ``group_dissolved``. Repli neutre 0.0 quand les
-données font défaut.
+Mesure deux choses **distinctes** et le dit (METRICS_SPEC.md §8, RAPPORT §3.6) :
+
+1. les **communautés inférées** — communautés du graphe de confiance
+   (propagation d'étiquettes sur ``trust``, U2). Ce ne sont pas des groupes
+   déclarés par SYNE : elles portent désormais les noms ``InferredCommunities``
+   et ``AverageCommunitySize`` pour ne plus être confondues avec les événements
+   ``group_formed`` / ``group_dissolved`` ;
+2. les **événements de groupes natifs** — ``group_formed`` /
+   ``group_dissolved``, avec leurs dénominateurs bruts publiés à côté des taux
+   (``FormationCount`` / ``DissolutionCount``) : normaliser une petite fenêtre
+   « par 1000 ticks » amplifie mécaniquement les valeurs, d'où l'affichage du
+   nombre brut et de la fenêtre observée.
+
+Décisions P1 (registre des métriques) :
+
+- ``GroupObjectiveSuccessRate`` → **``DissolvedGroupSuccessShare``** : la
+  moyenne des booléens ``success`` ne porte que sur les groupes **dissous et
+  observés**, pas sur tous les groupes — biais de sélection assumé, dénominateur
+  (``DissolutionCount``) publié et provenance ``false`` sans dissolution ;
+- ``MemberTurnoverRate`` → **``MemberExitsPerDissolution``** : l'ancienne
+  mesure appariait ``membersOut`` et ``membersIn`` par ``zip`` (listes non
+  garanties alignées), divisait par un dénominateur pouvant être nul puis
+  annualisait sur 1000 ticks. Le contrat ne fournit pas l'effectif exposé en
+  membres-temps : on publie donc la moyenne **observée** des sorties par
+  dissolution plutôt qu'un taux inventé.
+
+Repli neutre 0.0 quand les données font défaut (``measured = false``).
 """
 
 from __future__ import annotations
 
 from ._common import (
+    alive_count,
     community_sizes,
+    communities,
+    event_window_published,
     event_values,
     events_of,
     mean,
@@ -19,28 +45,44 @@ from ._common import (
 ENGINE_NAME = "GroupDynamicsMetrics"
 
 METRICS = (
-    "ActiveGroups",
-    "AverageGroupSize",
+    "InferredCommunities",
+    "AverageCommunitySize",
+    "CommunityCoverage",
     "AverageGroupLifetime",
     "GroupFormationRate",
     "GroupDissolutionRate",
-    "GroupObjectiveSuccessRate",
-    "MemberTurnoverRate",
+    "FormationCount",
+    "DissolutionCount",
+    "DissolvedGroupSuccessShare",
+    "MemberExitsPerDissolution",
 )
+
+
+def _dissolution_published(snapshot: dict) -> bool:
+    """Une dissolution est-elle observée dans la fenêtre d'événements ?"""
+    return any(
+        event.get("type") == "group_dissolved"
+        for event in snapshot.get("events") or []
+    )
+
 
 REQUIRES = {
     "AverageGroupLifetime": "events",
-    "GroupFormationRate": "events",
-    "GroupDissolutionRate": "events",
-    "GroupObjectiveSuccessRate": "events",
-    "MemberTurnoverRate": "events",
+    "GroupFormationRate": event_window_published,
+    "GroupDissolutionRate": event_window_published,
+    "FormationCount": event_window_published,
+    "DissolutionCount": event_window_published,
+    "DissolvedGroupSuccessShare": _dissolution_published,
+    "MemberExitsPerDissolution": _dissolution_published,
 }
 """Métriques dérivées des événements de groupe.
 
-``ActiveGroups``/``AverageGroupSize`` lisent les communautés du tick courant :
-soumises à la règle des singletons, 0 est une mesure réelle (aucune
-communauté). Les cinq autres reposent sur ``group_formed``/``group_dissolved``
-et retombaient sur 0.0 — un taux de formation nul observable, pas un repli.
+``InferredCommunities``/``AverageCommunitySize`` lisent les communautés du tick
+courant : soumises à la règle des singletons, 0 est une mesure réelle (aucune
+communauté). Les taux et comptages sont mesurés dès qu'une **fenêtre** est
+publiée — 0 formation dans une fenêtre réelle est un zéro observé. Les deux
+mesures par dissolution exigent au moins une dissolution : sans dénominateur,
+0.0 serait non interprétable.
 """
 
 _RATE_WINDOW_TICKS = 1000
@@ -48,7 +90,9 @@ _RATE_WINDOW_TICKS = 1000
 
 Les taux de formation/dissolution sont exprimés « par 1000 ticks » : ils
 divisent par la durée **réellement observée**, jamais par une constante, afin
-qu'un unique événement isolé ne vaille pas 1000.
+qu'un unique événement isolé ne vaille pas 1000. Le dénominateur brut
+(``FormationCount``/``DissolutionCount``) et la fenêtre restent à afficher
+à côté : l'amplification d'une fenêtre courte est réelle.
 """
 
 
@@ -77,10 +121,6 @@ def _window_ticks(snapshot: dict) -> int:
        construit hors pipeline (tests, rejeu), où aucun ``eventWindow`` n'est
        publié.
     3. ``1`` — aucun événement : dénominateur minimal, jamais 0.
-
-    Le repli 2 est celui qui rendait le taux dépendant de la charge : sur un
-    tick très chargé, l'étendue des événements tombait à 1 tick et chaque
-    formation valait 1000, alors que l'observation couvrait une hundred ticks.
     """
     published = snapshot.get("eventWindow") or {}
     if isinstance(published, dict) and published.get("ticks"):
@@ -104,36 +144,40 @@ def _values_of(events: list[dict], key: str) -> list[float]:
 
 
 def compute(snapshot: dict) -> dict:
-    """Calcule les 7 métriques de dynamique des groupes sur un snapshot."""
+    """Calcule les 9 métriques de dynamique des groupes sur un snapshot."""
     sizes = community_sizes(snapshot.get("agents") or [])
+    members = sum(len(group) for group in communities(snapshot.get("agents") or []))
+    population = alive_count(snapshot)
 
-    # Lecture unique par type : ``events_of`` trie et copie, l'appeler quatre
-    # fois (dont deux via _group_events) quadruplait le coût sans rien ajouter.
+    # Lecture unique par type : ``events_of`` trie et copie.
     formed = events_of(snapshot, event_type="group_formed")
     dissolved = events_of(snapshot, event_type="group_dissolved")
     window = _window_ticks(snapshot)
 
     lifetimes = _values_of(dissolved, "lifetime")
     success_rate = mean(_values_of(dissolved, "success"))
-
-    # Rotation : sortants rapportés aux membres, normalisé sur la fenêtre.
-    members_out = _values_of(dissolved, "membersOut")
-    members_in = _values_of(dissolved, "membersIn")
-    turnover = mean(
-        [
-            out / max(members, 1e-9) * safe_ratio(float(_RATE_WINDOW_TICKS), float(window))
-            for out, members in zip(members_out, members_in)
-        ]
-    )
+    exits = _values_of(dissolved, "membersOut")
 
     return {
-        "ActiveGroups": float(len(sizes)),
-        "AverageGroupSize": mean(sizes) if sizes else 0.0,
+        # Communautés **inférées** du graphe de confiance (pas des groupes
+        # natifs SYNE) : le nom le dit, la confusion était structurelle.
+        "InferredCommunities": float(len(sizes)),
+        "AverageCommunitySize": mean(sizes) if sizes else 0.0,
+        # Part de la population rattachée à une communauté de taille ≥ 2 :
+        # base défendable et bornée [0,1] pour les indices composites
+        # (elle remplace l'ancien terme ``ActiveGroups / 100``).
+        "CommunityCoverage": safe_ratio(members, population),
+        # Événements de groupes natifs.
         "AverageGroupLifetime": mean(lifetimes) if lifetimes else 0.0,
         "GroupFormationRate": _rate(len(formed), window),
         "GroupDissolutionRate": _rate(len(dissolved), window),
-        "GroupObjectiveSuccessRate": success_rate,
-        "MemberTurnoverRate": turnover,
+        "FormationCount": float(len(formed)),
+        "DissolutionCount": float(len(dissolved)),
+        # Part des dissolutions observées marquées ``success`` : dénominateur =
+        # nombre de dissolutions dans la fenêtre, biais de sélection assumé.
+        "DissolvedGroupSuccessShare": success_rate,
+        # Sorties moyennes par dissolution observée — pas un taux annualisé.
+        "MemberExitsPerDissolution": mean(exits),
     }
 
 
