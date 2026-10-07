@@ -1,27 +1,58 @@
 {
   "CognitiveDiversityMetrics": {
+    "ActionDiversity": 0.0,
+    "AverageGoalAge": 7.0,
     "BeliefConfidenceVariance": 0.020000000000000004,
     "BeliefDisagreement": 0.41666666666666663,
     "BeliefDiversity": 1.9219280948873623,
-    "DecisionDiversity": 1.0,
+    "BeliefDiversityNorm": 0.9609640474436811,
+    "DecisionCount": 0.0,
     "GoalConvergence": 0.3333333333333333,
+    "GoalCoverage": 0.6666666666666666,
     "GoalDiversity": 1.584962500721156,
-    "IntentionStability": 7.0,
+    "GoalDiversityNorm": 1.0,
     "TraitExpressionDiversity": 0.01277777777777778
   },
+  "EmergenceIndicators": {
+    "ContributionBeliefDiversity": 0.144144607117,
+    "ContributionClustering": 0.0,
+    "ContributionCommunityCoverage": 0.25,
+    "ContributionEmitterCoverage": 0.095,
+    "ContributionGoalDiversity": 0.15,
+    "ContributionRepeatedActions": 0.14,
+    "DetectedPhenomena": [
+      {
+        "description": "Un émetteur concentre plus de 30 % des messages observés dans la fenêtre. Seuil non calibré ; la mesure porte sur les émissions, jamais sur les réceptions.",
+        "identifier": "InformationBottleneck",
+        "label": "Concentration des émetteurs",
+        "signals": [
+          {
+            "metric": "SenderConcentration",
+            "threshold": 0.3,
+            "value": 0.3333333333333333
+          }
+        ]
+      }
+    ],
+    "Disclaimer": "ECHOS ne doit jamais transformer une métrique en vérité scientifique : un score d'émergence ou une valeur de centralité reste une mesure particulière d'un phénomène, jamais une preuve de l'existence d'une intelligence ou d'une société (Monographie §4.10.3, ECHOS-032).",
+    "EmergenceScore": 0.7791446071170001,
+    "SystemComplexity": 0.9703213491478936
+  },
   "FeedbackLoopDetector": {
-    "CriticalLoops": 4,
-    "IdentifiedLoops": 4,
-    "LoopStrength": 0.7,
-    "LoopTypes": {
-      "negative": 2,
-      "positive": 2
+    "ActionDistributionBalance": 0.33333333333333337,
+    "AmplifiedRepetitions": 4,
+    "RepeatedActionCounts": {
+      "Idle": 1,
+      "SeekFood": 1,
+      "SeekWater": 1,
+      "Sleep": 1
     },
-    "SystemStability": 0.33333333333333337
+    "RepeatedActionPairs": 4,
+    "RepeatedActionShare": 0.7
   },
   "GoalConvergenceMetrics": {
-    "CooperationPotential": 0.3333333333333333,
     "GlobalGoalAlignment": 0.3333333333333333,
+    "GoalCategoryConcordance": 0.3333333333333333,
     "GoalDiversity": 1.584962500721156,
     "GoalTypeCounts": {
       "Idle": 1,
@@ -30,53 +61,41 @@
     }
   },
   "GroupDynamicsMetrics": {
-    "ActiveGroups": 1.0,
+    "AverageCommunitySize": 3.0,
     "AverageGroupLifetime": 15.0,
-    "AverageGroupSize": 3.0,
+    "CommunityCoverage": 1.0,
+    "DissolutionCount": 1.0,
+    "DissolvedGroupSuccessShare": 1.0,
+    "FormationCount": 1.0,
     "GroupDissolutionRate": 166.66666666666666,
     "GroupFormationRate": 166.66666666666666,
-    "GroupObjectiveSuccessRate": 1.0,
-    "MemberTurnoverRate": 55.55555555555555
+    "InferredCommunities": 1.0,
+    "MemberExitsPerDissolution": 1.0
   },
   "InformationPropagationMetrics": {
-    "InformationDiffusionSpeed": 5.0,
+    "EmitterCoverageDelay": 5.0,
     "MaxMessageHops": 2.0,
     "MessageVolume": 0.3333333333333333,
-    "NetworkCentrality": 1.0,
-    "RumorAccuracyDegradation": 0.12999999999999998
+    "SenderConcentration": 0.3333333333333333,
+    "SenderCoverage": 1.0,
+    "TheoreticalHopDecay": 0.12999999999999998
   },
   "ResourceSustainabilityMetrics": {
-    "CriticalityPoints": 0.0,
+    "ConsumptionPerTick": 5.833333333333333,
+    "CriticalResourceCount": 0.0,
+    "RecoveryEpisodes": 2.0,
     "RecoveryTime": 2.0,
-    "ResourceToConsumptionRatio": 2.5
+    "ResourceCoverage": 1.0,
+    "ResourceFillRatio": 0.275,
+    "UnresolvedCrisisCount": 0.0
   },
   "SocialComplexityMetrics": {
-    "AverageCentrality": 0.5,
+    "AverageOutDegree": 0.5,
     "AverageTrustLevel": 0.5666666666666667,
     "ClusteringCoefficient": 0.0,
-    "CommunityStability": 1.0,
-    "NetworkDensity": 0.3333333333333333,
+    "CommunitySizeMatch": 1.0,
+    "NetworkDensity": 0.6666666666666666,
     "NumberOfCommunities": 1,
     "TrustVariance": 0.01555555555555555
-  },
-  "EmergenceIndicators": {
-    "EmergenceScore": 0.7635335893412777,
-    "DetectedPhenomena": [
-      {
-        "identifier": "InformationBottleneck",
-        "label": "Goulot d'information",
-        "description": "Une part dominante de la communication transite par peu d'émetteurs.",
-        "signals": [
-          {
-            "metric": "NetworkCentrality",
-            "value": 1.0,
-            "threshold": 0.3
-          }
-        ]
-      }
-    ],
-    "SystemComplexity": 1.0,
-    "UnpredictabilityIndex": 0.7,
-    "Disclaimer": "ECHOS ne doit jamais transformer une métrique en vérité scientifique : un score d'émergence ou une valeur de centralité reste une mesure particulière d'un phénomène, jamais une preuve de l'existence d'une intelligence ou d'une société (Monographie §4.10.3, ECHOS-032)."
   }
 }

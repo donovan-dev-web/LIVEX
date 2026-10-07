@@ -24,6 +24,7 @@ from echos.api.app import create_app
 from echos.ingestion.ws_client import StreamClosed
 from echos.ingestion.ws_client import WsClient
 from echos.storage.sqlite import AnalyticsStore
+from echos.tests.provenance_expectations import unexpected_unmeasured
 
 ROOT = Path(__file__).resolve().parents[3]
 SYNE_DLL = ROOT / "syne/Simulation.Console/bin/Release/net10.0/Simulation.Console.dll"
@@ -152,15 +153,14 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
             assert [row[1] for row in summaries] == [1, 2, 3]
 
             # Provenance : le run réel porte les trois fenêtres du pipeline,
-            # donc les métriques fenêtrées doivent être mesurées, pas des replis.
+            # donc les métriques fenêtrées doivent être mesurées, pas des
+            # replis — hors liste blanche explicite, et documentée, de celles
+            # que 3 ticks / 9 agents ne permettent pas de mesurer.
             measured = store.latest_measured(run_id)
             latest = store.latest_metrics(run_id)
             assert set(measured) == set(latest)
-            unmeasured = {
-                engine: sorted(m for m, ok in flags.items() if not ok)
-                for engine, flags in measured.items()
-            }
-            assert {engine: [] for engine in unmeasured} == unmeasured, unmeasured
+            surprises = unexpected_unmeasured(measured)
+            assert not surprises, surprises
 
             # Identifiants de groupe : contre le vrai transport SYNE, les
             # membres doivent être des chaînes joignables aux ids d'agents.

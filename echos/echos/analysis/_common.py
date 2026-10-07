@@ -78,14 +78,44 @@ def measured_flags(snapshot: dict, engine: object) -> dict[str, bool]:
     Cette déclaration est la structure qui manquait pour distinguer une valeur
     calculée d'un repli neutre : sans elle, une métrique fenêtrée absente des
     données s'écrivait en base exactement comme une métrique réellement nulle,
-    et l'UI ne pouvait rien afficher de.plus.
+    et l'UI ne pouvait rien afficher de plus.
+
+    Deux formes de condition sont acceptées :
+
+    - une **chaîne** : clé de contexte dont la présence *non vide* conditionne
+      la mesure (``history``, ``communityHistory``) ;
+    - un **appelable** : prédicat ``snapshot -> bool`` pour les cas où la
+      présence brute ne suffit pas. Exemple : une fenêtre d'événements
+      **publiée mais vide** (``eventWindow``) est une observation réelle
+      (« zéro observé »), là où une fenêtre absente est « non mesuré ».
+      C'est la distinction que le plan de tâches P1 impose entre
+      *aucune occurrence dans la fenêtre* et *pas assez de couverture*.
     """
     requires = getattr(engine, "REQUIRES", None) or {}
     metrics = tuple(getattr(engine, "METRICS", ()))
-    return {
-        metric: bool(snapshot.get(requires[metric])) if metric in requires else True
-        for metric in metrics
-    }
+    flags: dict[str, bool] = {}
+    for metric in metrics:
+        if metric not in requires:
+            flags[metric] = True
+            continue
+        condition = requires[metric]
+        flags[metric] = bool(condition(snapshot)) if callable(condition) else bool(
+            snapshot.get(condition)
+        )
+    return flags
+
+
+def event_window_published(snapshot: dict) -> bool:
+    """Vrai si le pipeline a publié une fenêtre d'événements pour ce tick.
+
+    Une fenêtre **vide** est une observation (« aucune occurrence dans la
+    fenêtre » = zéro observé) ; l'absence de fenêtre est « non mesuré ».
+    C'est la distinction que la présence brute de la clé ``events`` ne faisait
+    pas : elle confondait un run silencieux avec un run non instrumenté.
+    """
+    return isinstance(snapshot.get("eventWindow"), dict) or bool(
+        snapshot.get("events")
+    )
 
 
 def shannon(counter: Counter) -> float:
@@ -99,6 +129,25 @@ def shannon(counter: Counter) -> float:
     return -sum(
         (count / total) * log2(count / total) for count in counter.values() if count > 0
     )
+
+
+def shannon_normalized(counter: Counter) -> float:
+    """Entropie de Shannon **normalisée** : H(P) / log₂(k), donc bornée [0, 1].
+
+    ``k`` = nombre de catégories observées (``len(counter)``). Une entropie
+    brute n'est **pas** bornée à 1 : elle croît avec le nombre de catégories,
+    ce qui rendait impossible d'additionner des entropies hétérogènes dans un
+    indice composite (le ``clamp`` final saturait et détruisait toute
+    discrimination dans la partie haute). Une seule catégorie → 0.0 ; aucun
+    échantillon → 0.0 (aucune diversité observée).
+
+    La normalisation porte sur les catégories **observées** : elle mesure la
+    répartition effective, pas le nombre de catégories possibles (non connu du
+    moteur).
+    """
+    if len(counter) < 2:
+        return 0.0
+    return clamp(shannon(counter) / log2(len(counter)))
 
 
 def mean(values: list[float]) -> float:
