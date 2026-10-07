@@ -250,11 +250,15 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build Launcher.sln --no-restore --configuration Release --warnaserror
+      - name: Publish SYNE for real Launcher acceptance
+        run: dotnet publish ../syne/Simulation.Console/Simulation.Console.csproj --configuration Release --output ../syne/Simulation.Console/bin/Release/net10.0/publish
       - name: Tests unitaires
         run: dotnet test Launcher.Tests.Unit --no-build --configuration Release --logger "trx;LogFileName=unit.trx" --results-directory TestResults
       - name: Tests d'intégration (stubs réels)
         run: dotnet test Launcher.Tests.Integration --no-build --configuration Release --logger "trx;LogFileName=integration.trx" --results-directory TestResults
       - name: Tests bout en bout (campagne complète)
+        env:
+          LIVEX_SYNE_PUBLISHED_ROOT: ${{ github.workspace }}/syne
         run: dotnet test Launcher.Tests.EndToEnd --no-build --configuration Release --logger "trx;LogFileName=e2e.trx" --results-directory TestResults
       - name: Upload résultats
         uses: actions/upload-artifact@v4
