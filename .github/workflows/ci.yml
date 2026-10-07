@@ -166,7 +166,7 @@ jobs:
         env:
           LIVEX_SYNE_E2E: "1"
         working-directory: echos
-        run: python -m pytest echos/tests/test_syne_echos_integration.py -q --no-cov
+        run: python -m pytest echos/tests/test_syne_echos_integration.py echos/tests/test_batch_ingestion.py -q --no-cov
 
   # ---------------------------------------------------------------------
   # SYNE-MOCK - contrat de developpement des mocks Unreal (Node)
