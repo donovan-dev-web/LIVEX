@@ -39,17 +39,28 @@ public sealed record TickBudgetSnapshot
     /// total du tick computationnel (cible ≥ 30 %, PERFORMANCE.md §9 — le reste
     /// est de l'allocation/GC/overhead).
     /// </summary>
+    /// <remarks>
+    /// <b>Correction calibration B1 (ADR-016)</b> : la somme se faisait sur
+    /// <see cref="MeanMs(TickPhase)"/>, c'est-à-dire du temps <i>par échantillon</i>
+    /// — or les phases intra-entité (perception, mémoire, besoins, actions) sont
+    /// échantillonnées à chaque entité × tick quand les phases réseau/monde le sont
+    /// une fois par tick. Mélanger les deux sous-estimait les phases intra-entité
+    /// d'un facteur ≈ population : la part affichée revenait à
+    /// (communication + événements) / tick. On rapporte désormais, comme le dit la
+    /// documentation, le temps **par tick** de chaque phase (Σ des temps totaux ÷
+    /// nombre de ticks), seule lecture dimensionnellement cohérente.
+    /// </remarks>
     public double ComputationShare()
     {
-        if (MeanPipelineMs <= 0.0)
+        if (MeanPipelineMs <= 0.0 || PipelineSamples <= 0)
         {
             return 0.0;
         }
 
         double phasesMs = 0.0;
-        foreach (TickPhase phase in Enum.GetValues<TickPhase>())
+        for (int index = 0; index < _totalMs.Length; index++)
         {
-            phasesMs += MeanMs(phase);
+            phasesMs += _totalMs[index] / PipelineSamples;
         }
 
         return phasesMs / MeanPipelineMs;

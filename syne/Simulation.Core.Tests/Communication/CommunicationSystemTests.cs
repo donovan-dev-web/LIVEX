@@ -104,6 +104,9 @@ public class CommunicationSystemTests
     public void SendAndReceiveCosts_FollowDecision9(int payloadLength)
     {
         // Décision n°9 : envoi 0.5 + p×0.1 ; réception 0.2 + p×0.05.
+        // Les coûts sont **posés ici** : la calibration B1 (ADR-016) a neutralisé
+        // les défauts (0) pour que l'envoi ne pénalise pas l'énergie — le test
+        // porte la formule de la décision n°9, pas la valeur du profil.
         // Relais désactivé : pas de rebond du message vers l'émetteur.
         string payload = new string('x', payloadLength);
         double expectedSend = 0.5 + (payloadLength * 0.1);
@@ -114,6 +117,10 @@ public class CommunicationSystemTests
             {
                 s.TransmissionRange = 30;
                 s.RelayEnabled = false;
+                s.SendEnergyCost = 0.5;
+                s.SendEnergyPayloadFactor = 0.1;
+                s.ReceiveEnergyCost = 0.2;
+                s.ReceiveEnergyPayloadFactor = 0.05;
             }),
             (1, new Position(10, 10), 1.0),
             (2, new Position(12, 10), 1.0));
@@ -245,8 +252,14 @@ public class CommunicationSystemTests
         // Décision n°10 : × 0.9 par saut (10 %/hop). Les relais préservent
         // l'identifiant de l'émetteur d'origine et se voient dans LastSent avec
         // Hops+1 et Confidence×0.9 ; MaxHops=2 borne la chaîne.
+        // Le relais est **activé ici** : la calibration B1 (ADR-016) le coupe par
+        // défaut (coûts énergétiques neutres) — le test porte le mécanisme n°10.
         (_, CommunicationSystem system, Dictionary<ulong, MindState> minds) = Build(
-            Settings(s => s.TransmissionRange = 15),
+            Settings(s =>
+            {
+                s.TransmissionRange = 15;
+                s.RelayEnabled = true;
+            }),
             (1, new Position(10, 10), 1.0),  // A
             (2, new Position(25, 10), 1.0),  // B (relais)
             (3, new Position(40, 10), 1.0),  // C (relais secondaire)

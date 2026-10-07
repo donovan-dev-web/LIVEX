@@ -25,16 +25,16 @@ public class UtilityEvaluatorTests
 
         // benefit = Min(80, 100) × 0.6 = 48 (calibration D1 : plafond monotone 60,
         // croissant avec le besoin — l'ancien plafond 30 écrasait Eat/Drink) ;
-        // cost = 0.5 ; risk = 0.15 ;
+        // cost = moveEnergyCost = 0,03 (calibration B1, ADR-016) ; risk = 0.15 ;
         // confidence = 0.5 × (0.5 + 0.7×0.5) = 0.425 ; personality = 0.5 + greed(1.0) = 1.5 ;
         // urgency = sigmoid(0.1×(80−50)) × 20 ≈ 0.9526 × 20 ≈ 19.05.
         Assert.Equal(48.0, score.Benefit, 10);
-        Assert.Equal(0.5, score.Cost, 10);
+        Assert.Equal(0.03, score.Cost, 10);
         Assert.Equal(0.15, score.Risk, 10);
         Assert.Equal(0.425, score.Confidence, 10);
         Assert.Equal(1.5, score.PersonalityModifier, 10);
         Assert.True(score.Urgency > 18.9 && score.Urgency < 19.2);
-        Assert.Equal(((48.0 - 0.5 - 0.15) * 0.425 * 1.5) + score.Urgency, score.Utility, 10);
+        Assert.Equal(((48.0 - 0.03 - 0.15) * 0.425 * 1.5) + score.Urgency, score.Utility, 10);
     }
 
     [Fact]

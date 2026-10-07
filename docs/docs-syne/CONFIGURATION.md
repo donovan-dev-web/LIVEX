@@ -29,14 +29,14 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "traits": { "bravery": 1.0, "curiosity": 1.0, "sociability": 1.0, "greed": 1.0,
                  "pessimism": 1.0, "aggressiveness": 1.0, "strength": 1.0, "speed": 1.0 },
     "needs": { "hungerRate": 0.5, "thirstRate": 0.7, "fatigueRate": 0.3,
-               "safetyDriftRate": 0.001, "socialDriftRate": 0.001, "curiosityDriftRate": 0.002,
+               "safetyDriftRate": 0.001, "socialDriftRate": 0.0002, "curiosityDriftRate": 0.0005,
                "hungerTriggerThreshold": 50, "thirstTriggerThreshold": 50, "fatigueTriggerThreshold": 70 },
     "perception": { "radius": 50, "confidenceFalloff": 0.3, "rotationInterval": 4, "lineOfSight": true },
     "memory": { "maxCapacity": 1000, "recallThreshold": 0.01,
                 "observationDecayRate": 0.01, "eventDecayRate": 0.005, "interactionDecayRate": 0.002 },
     "beliefs": { "updateStrength": 0.3, "maxChangePerSnap": 0.5, "alignBonus": 0.2,
                  "conflictPenalty": 0.1, "expiryTicks": 100, "expiredCap": 0.4, "timeDecayPerTick": 0.999 },
-    "actions": { "moveEnergyCost": 0.5, "restEnergyGain": 0.5, "restFatigueRecovery": 1.0,
+    "actions": { "moveEnergyCost": 0.03, "restEnergyGain": 1.5, "restFatigueRecovery": 2.0,
                  "deliberation": { "intervalTicks": 10, "alignBonus": 1.2,
                                    "actionSwitchMargin": 0.05, "conflictTieMargin": 0.5 },
                  "interruption": { "enabled": true, "utilityExcessMargin": 10.0,
@@ -45,8 +45,8 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
                    "idle": { },
                    "seekFood": { "movement": true },
                    "seekWater": { "movement": true },
-                   "eat": { "energyCost": 0.2, "hungerRecovery": 30.0, "reserve": "food" },
-                   "drink": { "energyCost": 0.2, "thirstRecovery": 30.0, "reserve": "water" },
+                   "eat": { "energyCost": 0.2, "hungerRecovery": 30.0, "reserve": "food", "energyRecovery": 2.0 },
+                   "drink": { "energyCost": 0.2, "thirstRecovery": 30.0, "reserve": "water", "energyRecovery": 1.0 },
                    "rest": { },
                    "flee": { "movement": true },
                    "socialize": { "movement": true },
@@ -54,24 +54,24 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
                  } }
   },
   "resources": {
-    "food": { "initial": 100, "regenerationRate": 0, "degradationTick": 100 },
-    "water": { "initial": 1000, "regenerationRate": 5 },
+    "food": { "initial": 20000, "regenerationRate": 20 },
+    "water": { "initial": 20000, "regenerationRate": 10 },
     "wood": { "initial": 50, "regenerationRate": 0.1 },
     "mineral": { "initial": 0, "regenerationRate": 0 }
   },
   "communication": {
     "transmissionRange": 55,
-    "relayEnabled": true,
+    "relayEnabled": false,
     "maxHops": 2,
-    "maxSendsPerTick": 5,
-    "maxReceivesPerTick": 3,
+    "maxSendsPerTick": 1,
+    "maxReceivesPerTick": 1,
     "incomprehensionRate": 0.05,
     "trustDecay": 0.9,
     "hopConfidenceDecay": 0.9,
-    "sendEnergyCost": 0.5,
-    "sendEnergyPayloadFactor": 0.1,
-    "receiveEnergyCost": 0.2,
-    "receiveEnergyPayloadFactor": 0.05
+    "sendEnergyCost": 0,
+    "sendEnergyPayloadFactor": 0,
+    "receiveEnergyCost": 0,
+    "receiveEnergyPayloadFactor": 0
   },
   "world": { "seasons": { "enabled": false }, "territories": { "enabled": false }, "books": { "enabled": false, "writeCostEnergy": 20.0, "readBenefit": 1.0 }, "events": false, "obstacles": false },
   "groups": {
@@ -178,9 +178,9 @@ le mock séparé `syne-mock` dispose de sa propre configuration.
 | `agents.needs.thirstTriggerThreshold` | 50 | n°4 | Déclenchement du besoin de soif (≥) |
 | `agents.needs.fatigueTriggerThreshold` | 70 | n°4 | Déclenchement du besoin de repos (>) |
 | `agents.actions.catalog.<action>.movement` | false | n°4 | Action de déplacement (pas déterministe + coût d'énergie) |
-| `agents.actions.catalog.<action>.energyCost` | 0.5 (mouvement) / 0 | n°4 | Coût énergétique par exécution |
-| `agents.actions.catalog.<action>.energyRecovery` | 0.5 (rest) / 0 | n°4 | Énergie récupérée (ex. rest) |
-| `agents.actions.catalog.<action>.fatigueRecovery` | 1.0 (rest) / 0 | n°4 | Fatigue récupérée |
+| `agents.actions.catalog.<action>.energyCost` | 0.03 (mouvement) / 0 | n°4, ADR-016 | Coût énergétique par exécution (défaut mouvement = `agents.actions.moveEnergyCost`) |
+| `agents.actions.catalog.<action>.energyRecovery` | 1.5 (rest) / **2.0 (eat)** / **1.0 (drink)** / 0 | n°4, ADR-016 | Énergie récupérée — levier de survie D1/B1 : manger/boire rapporte plus qu'il ne coûte |
+| `agents.actions.catalog.<action>.fatigueRecovery` | 2.0 (rest) / 0 | n°4, ADR-016 | Fatigue récupérée |
 | `agents.actions.catalog.<action>.hungerRecovery` | 0 | n°4 | Faim réduite (ex. eat : 30) |
 | `agents.actions.catalog.<action>.thirstRecovery` | 0 | n°4 | Soif réduite (ex. drink : 30) |
 | `agents.actions.catalog.<action>.reserve` | — | n°4 | Réserve globale requise/consommée (ex. eat → `food`, drink → `water`) |
@@ -220,25 +220,47 @@ inchangés)** :
 manger/boire compense le coût métabolique du déplacement vers la ressource (sans
 cela : mort lente, énergie moyenne 69 → 49 entre t800 et t1200). Le bénéfice
 Eat/Drink de la formule d'utilité est déplafonné (`min(need, 100) × 0.6`, plafond
-60, monotone). Les défauts intégrés (`ActionCatalogSettings`) restent inchangés :
-la calibration ne vit que dans le profil de référence, jamais en dur dans la boucle.
+60, monotone). Les défauts intégrés (`ActionCatalogSettings`) restaient inchangés
+à ce jalon : la calibration ne vivait que dans le profil de référence.
+
+**Calibration B1 des défauts (engineVersion 0.15.0 — ADR-016)** : les valeurs
+intégrant les défauts **eux-mêmes**, pour qu'un run lancé sans surcouche (dont le
+chemin Launcher `--simulation reference`, qui ne fait que pousser
+`agents.initialCount` + `ticksPerSecond`) soit viable à horizon 2500 ticks :
+
+| Levier | Avant (0.14.0) | Après (0.15.0) | Pourquoi |
+| :-- | :-- | :-- | :-- |
+| `agents.actions.moveEnergyCost` | 0,5 | **0,03** | mouvement = 75 à 98 % des ticks en régime établi : à 0,5 (puis 0,05 en D1) son coût dépasse le revenu amorti de Eat/Drink |
+| `agents.needs.socialDriftRate` | 0,001 | **0,0002** | besoin **sans mécanisme de satisfaction** : franchissait 0,7 au tick ~700 et déclenchait Socialize en permanence (96 % des décisions en fin de run) |
+| `agents.needs.curiosityDriftRate` | 0,002 | **0,0005** | idem (seuil 0,3 franchi au tick ~600 au lieu de ~150) |
+| `resources.food` | 100, régén 0, dégrad. 100 | **20 000, régén 20, pas de dégradation** | la dégradation annulait la régénération en fin de période : réserve réduite à sa valeur initiale, épuisée avant t2000 à 100 agents |
+| `resources.water` | 1 000, régén 5 | **20 000, régén 10** | idem sans dégradation |
+| coûts de communication | 0,5 / 0,2 (+payload), relais, 5/3 | **0, relais coupé, 1/1** | ~0,12 énergie/tick d'envoi, soit 4× le coût de déplacement recalibré |
+| `catalog.eat/drink.energyRecovery` | 0 / 0 | **2,0 / 1,0** | hérité de D1 (déjà porté par le profil de référence) |
+| `restEnergyGain` / `restFatigueRecovery` | 0,5 / 1 | **1,5 / 2** | hérité de D1 |
+
+`configs/simulation/reference.json` rejoue explicitement les mêmes valeurs (le
+chemin HTTP `config ?? ReferenceJson()` ne doit pas dépendre d'un défaut qu'on
+oublierait de recaler) ; `configs/simulation/raw.json` reste le **jalon
+historique non calibré**, qui reproduit l'ancien comportement — il s'éteint aux
+alentours du tick 300, c'est mesuré et documenté (ADR-016).
 
 ### 6.3 Clés de communication (jalon SYNE ph5)
 
 | Clé | Défaut | Décision | Rôle |
 | :-- | :-- | :-- | :-- |
 | `communication.transmissionRange` | 55 | n°7 | Portée effective d'une pulsation (recalibrée au jalon ph6 ; bornes [1, 70] indépendantes de la perception [20, 70]) |
-| `communication.relayEnabled` | true | n°10 | Relais des messages compris au-delà du rayon |
+| `communication.relayEnabled` | false (B1) | n°10, ADR-016 | Relais des messages compris au-delà du rayon — coupé en B1 avec les coûts énergétiques |
 | `communication.maxHops` | 2 | n°10 | Nombre maximal de sauts avant abandon du relais |
-| `communication.maxSendsPerTick` | 5 | Annexe H | Cap d'émission (envois + relais) par entité et par tick |
-| `communication.maxReceivesPerTick` | 3 | Annexe H | Cap de réception traitée par tick |
+| `communication.maxSendsPerTick` | 1 | Annexe H, ADR-016 | Cap d'émission (envois + relais) par entité et par tick |
+| `communication.maxReceivesPerTick` | 1 | Annexe H, ADR-016 | Cap de réception traitée par tick |
 | `communication.incomprehensionRate` | 0.05 | Annexe H | Probabilité d'incompréhension (tirage déterministe) |
 | `communication.trustDecay` | 0.9 | n°10 | Décroissance de confiance par tick sans interaction |
 | `communication.hopConfidenceDecay` | 0.9 | n°10 | Dégradation de confiance par hop (× 0.9) |
-| `communication.sendEnergyCost` | 0.5 | n°9 | Coût d'émission d'une pulsation (SYNE-052) |
-| `communication.sendEnergyPayloadFactor` | 0.1 | n°9 | Coût d'émission par caractère de payload |
-| `communication.receiveEnergyCost` | 0.2 | n°9 | Coût de réception d'une pulsation |
-| `communication.receiveEnergyPayloadFactor` | 0.05 | n°9 | Coût de réception par caractère de payload |
+| `communication.sendEnergyCost` | 0 (B1) | n°9, ADR-016 | Coût d'émission d'une pulsation (SYNE-052) — **neutre** depuis B1 : à ~0,2 envoi/agent/tick l'envoi coûtait ~0,12 énergie/tick, soit 4× le coût de déplacement recalibré |
+| `communication.sendEnergyPayloadFactor` | 0 (B1) | n°9, ADR-016 | Coût d'émission par caractère de payload |
+| `communication.receiveEnergyCost` | 0 (B1) | n°9, ADR-016 | Coût de réception d'une pulsation |
+| `communication.receiveEnergyPayloadFactor` | 0 (B1) | n°9, ADR-016 | Coût de réception par caractère de payload |
 
 > `transmissionRange` défaut **55** depuis le jalon SYNE ph6 (calibration : à 20 u. les pulsations
 > du scénario défaut n'atteignaient aucune entité — aucun tapis de confiance ne se formait
@@ -280,11 +302,11 @@ la calibration ne vit que dans le profil de référence, jamais en dur dans la b
 
 | Clé | Défaut | Décision | Rôle |
 | :-- | :-- | :-- | :-- |
-| `resources.food.initial` | 100 | n°4 | Réserve initiale de nourriture (Eat : −1.0 / exécution) |
-| `resources.food.regenerationRate` | 0 | n°4 | Régénération par tick |
-| `resources.food.degradationTick` | 100 | n°4 | Période de dégradation (perte de `rate × période` ; inerte sans taux) |
-| `resources.water.initial` | 1000 | n°4 | Réserve initiale d'eau (Drink : −1.0 / exécution) |
-| `resources.water.regenerationRate` | 5 | n°4 | Régénération par tick |
+| `resources.food.initial` | 20 000 | n°4, ADR-016 | Réserve initiale de nourriture (Eat : −1.0 / exécution) |
+| `resources.food.regenerationRate` | 20 | n°4, ADR-016 | Régénération par tick (**apport net**) |
+| `resources.food.degradationTick` | absent (inerte) | ADR-016 | Période de dégradation (perte de `rate × période`) — **neutralisée** en B1 : avec une dégradation de période, la régénération est intégralement annulée en fin de période et la réserve se réduit à sa valeur initiale |
+| `resources.water.initial` | 20 000 | n°4, ADR-016 | Réserve initiale d'eau (Drink : −1.0 / exécution) |
+| `resources.water.regenerationRate` | 10 | n°4, ADR-016 | Régénération par tick |
 | `resources.wood.initial` | 50 | n°4 | Réserve initiale de bois (consommation à la mécanique agentique des constructions — **ouverte**, §6.8) |
 | `resources.wood.regenerationRate` | 0.1 | n°4 | Régénération par tick |
 | `resources.mineral.initial` | 0 | n°2.4 | Réserve initiale de minéraux (4ᵉ type, SYNE-070) |

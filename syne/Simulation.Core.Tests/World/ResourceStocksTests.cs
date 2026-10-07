@@ -88,8 +88,9 @@ public class ResourceStocksTests
     [Fact]
     public void ApplyLifecycle_RegeneratesPerTickWithinBounds()
     {
-        // SYNE-070 : la régénération ajoute regenerationRate par tick (Water +5, Wood +0.1),
-        // les stocks restent bornés à zéro. 0 tirage PRNG (DETERMINISM.md §3).
+        // SYNE-070 : la régénération ajoute regenerationRate par tick (Water +10,
+        // Food +20 — calibration B1 ADR-016, sans dégradation), les stocks restent
+        // bornés à zéro. 0 tirage PRNG (DETERMINISM.md §3).
         var settings = new ResourceSettings();
         var stocks = new ResourceStocks(settings);
 
@@ -98,9 +99,9 @@ public class ResourceStocksTests
             stocks.ApplyLifecycle(tick, settings);
         }
 
-        Assert.Equal(1000.0 + 10 * 5.0, stocks.Stock(ResourceKind.Water), 10);
+        Assert.Equal(20_000.0 + 10 * 10.0, stocks.Stock(ResourceKind.Water), 10);
         Assert.Equal(50.0 + 10 * 0.1, stocks.Stock(ResourceKind.Wood), 8);
-        Assert.Equal(100.0, stocks.Stock(ResourceKind.Food), 10);
+        Assert.Equal(20_000.0 + 10 * 20.0, stocks.Stock(ResourceKind.Food), 10);
         Assert.Equal(0.0, stocks.Stock(ResourceKind.Mineral), 10);
     }
 
@@ -114,6 +115,10 @@ public class ResourceStocksTests
         var settings = new ResourceSettings
         {
             Water = new ResourceSpec { Initial = 1000, RegenerationRate = 5, DegradationTick = 10 },
+            // Figé ici (et non pris aux défauts) : la calibration B1 (ADR-016) a
+            // neutralisé la dégradation de la nourriture pour que la régénération
+            // soit un apport net — le mécanisme reste testé par Water ci-dessus.
+            Food = new ResourceSpec { Initial = 100, RegenerationRate = 0, DegradationTick = 100 },
         };
         var stocks = new ResourceStocks(settings);
 

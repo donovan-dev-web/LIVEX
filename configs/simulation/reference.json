@@ -4,13 +4,12 @@
   },
   "resources": {
     "food": {
-      "initial": 10000,
-      "regenerationRate": 5,
-      "degradationTick": 100
+      "initial": 20000,
+      "regenerationRate": 20
     },
     "water": {
-      "initial": 10000,
-      "regenerationRate": 5
+      "initial": 20000,
+      "regenerationRate": 10
     }
   },
   "communication": {
@@ -23,13 +22,19 @@
     "receiveEnergyPayloadFactor": 0
   },
   "agents": {
+    "needs": {
+      "socialDriftRate": 0.0002,
+      "curiosityDriftRate": 0.0005
+    },
     "actions": {
-      "moveEnergyCost": 0.05,
+      "moveEnergyCost": 0.03,
       "restEnergyGain": 1.5,
       "restFatigueRecovery": 2,
       "catalog": {
-        "eat": { "energyRecovery": 2.0 },
-        "drink": { "energyRecovery": 1.0 }
+        "entries": {
+          "eat": { "energyRecovery": 2.0 },
+          "drink": { "energyRecovery": 1.0 }
+        }
       }
     }
   }

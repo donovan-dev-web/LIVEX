@@ -93,12 +93,23 @@ Pour **regarder l’analyse en direct**, lancez le Launcher : chaque composant d
 
 Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à la commande `Start`. Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
 
-> **À noter (calibration D1, SYNE 0.13.0)** : le profil de référence est
-> désormais calibré pour la survie (récupération d'énergie à manger/boire,
-> bénéfice Eat/Drink monotone) — un run de référence n'est plus condamné à la
-> mort lente. Si vous relancez `Start` alors qu'un run a atteint son
-> `maxTicks` (état `finished`), SYNE répond `409 run_finished` : appelez
-> `Reset` avant de redémarrer.
+> **À noter (calibration B1, SYNE 0.15.0)** : les **défauts intégrés** du moteur
+> sont désormais le scénario calibré (ADR-016) — un run lancé **sans surcouche**
+> (dont les runs du Launcher, qui ne poussent que `agents.initialCount`) est stable
+> sur 2500 ticks à 50 et 100 agents : récupération d'énergie à manger/boire, coût de
+> déplacement abaissé, réserves et régénération dimensionnées pour l'horizon, dérives
+> des besoins sociaux ralenties. Le profil `reference.json` rejoue les mêmes valeurs.
+> `raw.json` reste le jalon historique **non calibré** (extinction ~t300), utile comme
+> point de comparaison — ne le présentez pas comme un scénario viable.
+> **Le Launcher exécute le binaire publié** (`Simulation.Console/bin/Release/net10.0/publish`,
+> chemin déclaré par `syne/component.json`) : après tout changement des défauts,
+> relancez `dotnet publish syne/Simulation.Console/Simulation.Console.csproj -c Release
+> --output syne/Simulation.Console/bin/Release/net10.0/publish` — sinon les runs du
+> Launcher continuent d'utiliser l'ancien binaire et s'éteignent (~t300) malgré un
+> source corrigé. Reproductible en 500 ticks : `result.json` doit afficher `aliveCount`
+> égal à la population initiale.
+> Si vous relancez `Start` alors qu'un run a atteint son `maxTicks` (état `finished`),
+> SYNE répond `409 run_finished` : appelez `Reset` avant de redémarrer.
 
 ### Boutons de pilotage
 

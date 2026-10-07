@@ -111,32 +111,43 @@ public sealed class CampaignRunner
         // Restitution : demande d'analyse agrégée et du rapport d'émergence à ECHOS (EXPERIMENTS.md §11).
         if (_analysis is not null)
         {
-            try
+            var completedRunIds = _packages.ReadState(packagePath).Index.Runs
+                .Where(run => run.Status == RunStatuses.Termine)
+                .Select(run => run.RunId)
+                .OrderBy(runId => runId, StringComparer.Ordinal)
+                .ToArray();
+            if (completedRunIds.Length == 0)
             {
-                var completedRunIds = _packages.ReadState(packagePath).Index.Runs
-                    .Where(run => run.Status == RunStatuses.Termine)
-                    .Select(run => run.RunId)
-                    .OrderBy(runId => runId, StringComparer.Ordinal)
-                    .ToArray();
-                var (aggregateFiles, report) = await _analysis.AnalyzeExperimentAsync(
-                    definition.Id,
-                    completedRunIds,
-                    cancellationToken).ConfigureAwait(false);
-                if (report is not null)
-                {
-                    _packages.WriteAnalysisReport(packagePath, report, aggregateFiles);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                // Isolation (INTEGRATION_CONTRACT.md §10.1) : une analyse expérimentale qui échoue
-                // ne fait ni échouer ni rouvrir la campagne. L'absence est consignée, jamais approximée.
+                // Demander un rapport sans aucun run terminé est un 422 garanti côté ECHOS :
+                // l'absence est consignée avec sa cause exacte plutôt qu'un rejet opaque.
                 _journal.Warn("AnalysisUnavailable",
-                    $"fin de campagne : rapport d'émergence indisponible — {exception.Message}");
+                    "fin de campagne : rapport d'émergence non demandé — aucun run terminé " +
+                    "(l'analyse expérimentale exige au moins un run réussi)");
+            }
+            else
+            {
+                try
+                {
+                    var (aggregateFiles, report) = await _analysis.AnalyzeExperimentAsync(
+                        definition.Id,
+                        completedRunIds,
+                        cancellationToken).ConfigureAwait(false);
+                    if (report is not null)
+                    {
+                        _packages.WriteAnalysisReport(packagePath, report, aggregateFiles);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    // Isolation (INTEGRATION_CONTRACT.md §10.1) : une analyse expérimentale qui échoue
+                    // ne fait ni échouer ni rouvrir la campagne. L'absence est consignée, jamais approximée.
+                    _journal.Warn("AnalysisUnavailable",
+                        $"fin de campagne : rapport d'émergence indisponible — {exception.Message}");
+                }
             }
         }
 

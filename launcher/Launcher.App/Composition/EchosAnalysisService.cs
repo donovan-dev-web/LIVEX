@@ -30,12 +30,25 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
     private readonly string _packagesRoot;
     private readonly HttpClient _client;
 
+    /// <summary>Délai ordinaire (santé, état, lecture) — l'ancien délai du client.</summary>
+    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Délai réservé aux opérations d'analyse lourdes. Mesuré le 07/10/2026 sur un flux
+    /// réel : ingérer un run de 2500 ticks × 50 agents (2,34 Gio) prend <b>5 m 30 s</b>
+    /// côté ECHOS — ~11 min à 100 agents. Avec l'ancien plafond de 30 s, l'ingestion
+    /// était systématiquement coupée et le rapport de campagne jamais produit.
+    /// </summary>
+    private static readonly TimeSpan AnalysisTimeout = TimeSpan.FromMinutes(30);
+
     /// <summary>Initialise le service sur la composition et la racine des paquets.</summary>
     public EchosAnalysisService(OrchestrationService orchestration, string packagesRoot)
     {
         _orchestration = orchestration;
         _packagesRoot = packagesRoot;
-        _client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        // Le délai est posé par requête (DefaultTimeout, AnalysisTimeout, timeout vif de
+        // l'ingestion live) : un Timeout global de 30 s écrêterait les appels longs.
+        _client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
     }
 
     /// <inheritdoc />
@@ -52,7 +65,7 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
 
         var body = await PostJsonAsync("analysis/run",
             new AnalysisRequest { ExperimentId = experimentId, RunId = identity, RunPath = runPath },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken, AnalysisTimeout).ConfigureAwait(false);
         return DecodeFiles(body);
     }
 
@@ -63,7 +76,7 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
         {
             body = await PostJsonAsync("ingest/run",
                 new AnalysisRequest { RunId = identity, RunPath = runPath },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken, AnalysisTimeout).ConfigureAwait(false);
         }
         catch (InvalidOperationException exception) when (
             exception.Message.Contains("(409)", StringComparison.Ordinal)
@@ -120,13 +133,17 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
         var baseUri = ResolveControlBase();
         var path = $"api/runs/{Uri.EscapeDataString(identity)}";
         HttpResponseMessage response;
-        try
+        using (var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
         {
-            response = await _client.GetAsync(new Uri(baseUri, path), cancellationToken).ConfigureAwait(false);
-        }
-        catch (HttpRequestException exception)
-        {
-            throw new InvalidOperationException($"ECHOS injoignable sur {baseUri} — {exception.Message}");
+            deadline.CancelAfter(DefaultTimeout);
+            try
+            {
+                response = await _client.GetAsync(new Uri(baseUri, path), deadline.Token).ConfigureAwait(false);
+            }
+            catch (HttpRequestException exception)
+            {
+                throw new InvalidOperationException($"ECHOS injoignable sur {baseUri} — {exception.Message}");
+            }
         }
 
         using (response)
@@ -152,12 +169,12 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
             .ConfigureAwait(false);
         var filesBody = await PostJsonAsync("analysis/experiment",
             new AnalysisRequest { ExperimentId = experimentId, ExperimentPath = experimentPath },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken, AnalysisTimeout).ConfigureAwait(false);
         var aggregateFiles = DecodeFiles(filesBody);
 
         var reportBody = await PostJsonAsync("analysis/report",
             new AnalysisRequest { ExperimentId = experimentId, ExperimentPath = experimentPath },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken, AnalysisTimeout).ConfigureAwait(false);
         var report = Deserialize<ReportPayload>(reportBody)?.Report
             ?? throw Malformed("rapport d'émergence absent de la réponse");
 
@@ -216,18 +233,24 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
         return new Uri($"http://127.0.0.1:{declaredPort ?? DefaultControlPort}/", UriKind.Absolute);
     }
 
-    private async Task<string> PostJsonAsync(string path, object payload, CancellationToken cancellationToken)
+    private async Task<string> PostJsonAsync(
+        string path,
+        object payload,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null)
     {
         var baseUri = ResolveControlBase();
         var json = JsonSerializer.Serialize(payload, JsonOptions);
 
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var message = new HttpRequestMessage(HttpMethod.Post, new Uri(baseUri, path)) { Content = content };
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(timeout ?? DefaultTimeout);
 
         HttpResponseMessage response;
         try
         {
-            response = await _client.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            response = await _client.SendAsync(message, deadline.Token).ConfigureAwait(false);
         }
         catch (HttpRequestException exception)
         {
@@ -235,7 +258,9 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
         }
         catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new InvalidOperationException($"ECHOS n'a pas répondu dans le délai accordé ({path})");
+            var granted = timeout ?? DefaultTimeout;
+            throw new InvalidOperationException(
+                $"ECHOS n'a pas répondu dans le délai accordé ({path}, {granted.TotalMinutes:0.#} min)");
         }
 
         using (response)

@@ -67,8 +67,22 @@ public sealed class NeedsSettings
     public double FatigueRate { get; set; } = 0.3;
     /// <summary>Dérive d'élan des besoins sociaux (V0.1, calibration prototype).</summary>
     public double SafetyDriftRate { get; set; } = 0.001;
-    public double SocialDriftRate { get; set; } = 0.001;
-    public double CuriosityDriftRate { get; set; } = 0.002;
+
+    /// <summary>
+    /// Dérive du besoin social — <b>calibration B1 (ADR-016)</b> : 0,001 → 0,0002.
+    /// Ce besoin n'a aucun mécanisme de satisfaction (aucun action ne le décrémente) :
+    /// à 0,001/tick il franchit son seuil de déclenchement (0,7) au tick ~700 et
+    /// déclenche <c>Socialize</c> <b>en permanence</b> — jusqu'à 96 % des décisions
+    /// en fin de run, mouvement payé sans gain d'énergie compensé (mort lente).
+    /// </summary>
+    public double SocialDriftRate { get; set; } = 0.0002;
+
+    /// <summary>
+    /// Dérive du besoin de curiosité — <b>calibration B1 (ADR-016)</b> : 0,002 →
+    /// 0,0005, même cause que <see cref="SocialDriftRate"/> (seuil 0,3 franchi au
+    /// tick ~600 au lieu de ~150).
+    /// </summary>
+    public double CuriosityDriftRate { get; set; } = 0.0005;
 
     /// <summary>Seuil de déclenchement : un besoin non satisfait lance une action dès ce niveau (décision n°4 : « ≥ 50 »).</summary>
     public double HungerTriggerThreshold { get; set; } = 50.0;
@@ -148,9 +162,20 @@ public sealed class TrustSettings
 
 public sealed class ActionSettings
 {
-    public double MoveEnergyCost { get; set; } = 0.5;
-    public double RestEnergyGain { get; set; } = 0.5;
-    public double RestFatigueRecovery { get; set; } = 1.0;
+    /// <summary>
+    /// Coût énergétique d'un déplacement — <b>calibration B1 (ADR-016)</b> :
+    /// 0,5 → 0,03. Le mouvement est l'action majoritaire (75 à 98 % des ticks en
+    /// régime établi) : à 0,5 (puis 0,05 en D1) son coût dépasse le revenu
+    /// amorti de Eat/Drink (≈ 0,057/tick) et l'énergie moyenne décroît sans borne
+    /// jusqu'à l'épuisement (extinction lente).
+    /// </summary>
+    public double MoveEnergyCost { get; set; } = 0.03;
+
+    /// <summary>Énergie regagnée par Repos — calibration B1 (ADR-016, hérité de D1).</summary>
+    public double RestEnergyGain { get; set; } = 1.5;
+
+    /// <summary>Fatigue récupérée par Repos — calibration B1 (ADR-016, hérité de D1).</summary>
+    public double RestFatigueRecovery { get; set; } = 2.0;
     public DeliberationSettings Deliberation { get; set; } = new();
     public InterruptionSettings Interruption { get; set; } = new();
 
@@ -178,8 +203,8 @@ public sealed class ActionCatalogSettings
         ["idle"] = new ActionEntrySettings(),
         ["seekFood"] = new ActionEntrySettings { Movement = true },
         ["seekWater"] = new ActionEntrySettings { Movement = true },
-        ["eat"] = new ActionEntrySettings { EnergyCost = 0.2, HungerRecovery = 30.0, Reserve = World.ResourceKind.Food },
-        ["drink"] = new ActionEntrySettings { EnergyCost = 0.2, ThirstRecovery = 30.0, Reserve = World.ResourceKind.Water },
+        ["eat"] = new ActionEntrySettings { EnergyCost = 0.2, HungerRecovery = 30.0, Reserve = World.ResourceKind.Food, EnergyRecovery = 2.0 },
+        ["drink"] = new ActionEntrySettings { EnergyCost = 0.2, ThirstRecovery = 30.0, Reserve = World.ResourceKind.Water, EnergyRecovery = 1.0 },
         ["rest"] = new ActionEntrySettings(),
         ["flee"] = new ActionEntrySettings { Movement = true },
         ["socialize"] = new ActionEntrySettings { Movement = true },
@@ -334,8 +359,18 @@ public sealed class CommitmentSettings
 
 public sealed class ResourceSettings
 {
-    public ResourceSpec Food { get; set; } = new() { Initial = 100, RegenerationRate = 0, DegradationTick = 100 };
-    public ResourceSpec Water { get; set; } = new() { Initial = 1000, RegenerationRate = 5 };
+    /// <summary>
+    /// Nourriture — <b>calibration B1 (ADR-016)</b> : réserve initiale 20 000 et
+    /// régénération nette 20/tick, **sans** dégradation (« degradationTick »
+    /// neutralisé) : avec une dégradation de période, la régénération est
+    /// intégralement annulée en fin de période (apport net nul) et la réserve se
+    /// réduit à sa valeur initiale — 100 agents épuisent alors les 10 000 de D1
+    /// avant t2000. L'horizon de calibration est 2500 ticks (ADR-016).
+    /// </summary>
+    public ResourceSpec Food { get; set; } = new() { Initial = 20_000, RegenerationRate = 20, DegradationTick = null };
+
+    /// <summary>Eau — calibration B1 : réserve 20 000, régénération nette 10/tick.</summary>
+    public ResourceSpec Water { get; set; } = new() { Initial = 20_000, RegenerationRate = 10 };
     public ResourceSpec Wood { get; set; } = new() { Initial = 50, RegenerationRate = 0.1 };
     public ResourceSpec Mineral { get; set; } = new() { Initial = 0, RegenerationRate = 0 };
 
@@ -374,11 +409,11 @@ public sealed class ResourceSpec
 
 public sealed class CommunicationSettings
 {
-    /// <summary>Max d'envois par entité et par tick (Annexe H : 5).</summary>
-    public int MaxSendsPerTick { get; set; } = 5;
+    /// <summary>Max d'envois par entité et par tick (Annexe H : 5 ; calibration B1 : 1).</summary>
+    public int MaxSendsPerTick { get; set; } = 1;
 
-    /// <summary>Max de réceptions traitées par tick et par entité (Annexe H : 3).</summary>
-    public int MaxReceivesPerTick { get; set; } = 3;
+    /// <summary>Max de réceptions traitées par tick et par entité (Annexe H : 3 ; calibration B1 : 1).</summary>
+    public int MaxReceivesPerTick { get; set; } = 1;
 
     /// <summary>Probabilité d'incompréhension d'un message reçu (Annexe H : 0.05).</summary>
     public double IncomprehensionRate { get; set; } = 0.05;
@@ -389,21 +424,25 @@ public sealed class CommunicationSettings
     /// <summary>Portée effective de transmission d'une pulsation (décision n°7 : 20 u. héritées du prototype, configurable).</summary>
     public int TransmissionRange { get; set; } = 55;
 
-    /// <summary>Relais entité-à-entité actif (SYNE-050, COMMUNICATION_PROTOCOL.md §4).</summary>
-    public bool RelayEnabled { get; set; } = true;
+    /// <summary>Relais entité-à-entité actif (SYNE-050, COMMUNICATION_PROTOCOL.md §4) — neutralisé en calibration B1 (ADR-016) avec les coûts énergétiques.</summary>
+    public bool RelayEnabled { get; set; } = false;
 
     /// <summary>Nombre maximal de sauts d'un message relayé (anti-boucle, borne de dégradation).</summary>
     public int MaxHops { get; set; } = 2;
 
-    /// <summary>Coût énergétique d'émission — décision n°9 : <c>sendEnergyCost + payload × sendEnergyPayloadFactor</c> (0.5 + p×0.1).</summary>
-    public double SendEnergyCost { get; set; } = 0.5;
+    /// <summary>
+    /// Coût énergétique d'émission — décision n°9 : <c>sendEnergyCost + payload × sendEnergyPayloadFactor</c>
+    /// (0.5 + p×0.1 hérités ; **neutres depuis la calibration B1**, ADR-016 : à ~0,2 envoi/agent/tick
+    /// l'envoi coûtait ~0,12 énergie/tick, soit 4× le coût de déplacement recalibré).
+    /// </summary>
+    public double SendEnergyCost { get; set; } = 0;
 
-    public double SendEnergyPayloadFactor { get; set; } = 0.1;
+    public double SendEnergyPayloadFactor { get; set; } = 0;
 
-    /// <summary>Coût énergétique de réception — décision n°9 : <c>receiveEnergyCost + payload × receiveEnergyPayloadFactor</c> (0.2 + p×0.05).</summary>
-    public double ReceiveEnergyCost { get; set; } = 0.2;
+    /// <summary>Coût énergétique de réception — décision n°9 (neutre depuis la calibration B1, ADR-016).</summary>
+    public double ReceiveEnergyCost { get; set; } = 0;
 
-    public double ReceiveEnergyPayloadFactor { get; set; } = 0.05;
+    public double ReceiveEnergyPayloadFactor { get; set; } = 0;
 
     /// <summary>Décroissance de confiance par relais — décision n°10 : <c>confidence × hopConfidenceDecay</c> (0.9, ≈ 10 %/hop).</summary>
     public double HopConfidenceDecay { get; set; } = 0.9;

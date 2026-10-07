@@ -46,7 +46,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = $"RUN-{i + 1:D4}", Status = RunStatuses.Termine, Seed = definition.SeedFor(i) },
                 $"{{\"runId\":\"RUN-{i + 1:D4}\"}}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]> { [$"data/{payload}-{i}.json"] = Encoding.UTF8.GetBytes($"{{\"v\":{i}}}") },
+                new Dictionary<string, RunDataFile> { [$"data/{payload}-{i}.json"] = Encoding.UTF8.GetBytes($"{{\"v\":{i}}}") },
                 Array.Empty<(string, byte[])>(),
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", $"run {i} terminé", $"RUN-{i + 1:D4}"));
         }
@@ -84,7 +84,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]>(),
+                new Dictionary<string, RunDataFile>(),
                 Array.Empty<(string, byte[])>(),
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }
@@ -158,7 +158,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = $"RUN-{i + 1:D4}", Status = RunStatuses.Termine, Seed = definition.SeedFor(i) },
                 $"{{\"runId\":\"RUN-{i + 1:D4}\",\"seed\":{definition.SeedFor(i)}}}",
                 "{\"schema\":1,\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]> { ["data/result.json"] = Encoding.UTF8.GetBytes($"{{\"v\":{i}}}") },
+                new Dictionary<string, RunDataFile> { ["data/result.json"] = Encoding.UTF8.GetBytes($"{{\"v\":{i}}}") },
                 Array.Empty<(string, byte[])>(),
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", $"run {i}", $"RUN-{i + 1:D4}"));
         }
@@ -182,7 +182,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]> { ["data/result.json"] = Encoding.UTF8.GetBytes("{\"v\":1}") },
+                new Dictionary<string, RunDataFile> { ["data/result.json"] = Encoding.UTF8.GetBytes("{\"v\":1}") },
                 Array.Empty<(string, byte[])>(),
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }
@@ -237,7 +237,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\",\"experimentId\":\"EXP-TEST-001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]> { ["data/result.json"] = Encoding.UTF8.GetBytes("{\"v\":1}") },
+                new Dictionary<string, RunDataFile> { ["data/result.json"] = Encoding.UTF8.GetBytes("{\"v\":1}") },
                 new List<(string, byte[])> { ("syne.log", Encoding.UTF8.GetBytes("journal du run")) },
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }
@@ -297,7 +297,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]>(),
+                new Dictionary<string, RunDataFile>(),
                 Array.Empty<(string, byte[])>(),
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }
@@ -351,7 +351,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]> { ["data/result.json"] = Encoding.UTF8.GetBytes("{\"v\":1}") },
+                new Dictionary<string, RunDataFile> { ["data/result.json"] = Encoding.UTF8.GetBytes("{\"v\":1}") },
                 Array.Empty<(string, byte[])>(),
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }
@@ -372,7 +372,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]>(),
+                new Dictionary<string, RunDataFile>(),
                 [("stdout.log", Encoding.UTF8.GetBytes("sortie du run\n")), ("stderr.log", Encoding.UTF8.GetBytes("erreur du run\n"))],
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }
@@ -397,7 +397,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
                 new RunIndexEntry { RunId = "RUN-0001", Status = RunStatuses.Termine, Seed = 1000 },
                 "{\"runId\":\"RUN-0001\"}",
                 "{\"config\":\"resolved\"}",
-                new Dictionary<string, byte[]>(),
+                new Dictionary<string, RunDataFile>(),
                 [("large.log", oversizedLog)],
                 JournalLine.Pack(DateTimeOffset.UnixEpoch, "run_completed", "run terminé", "RUN-0001"));
         }

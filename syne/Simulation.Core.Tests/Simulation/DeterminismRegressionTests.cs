@@ -126,7 +126,12 @@ public class DeterminismRegressionTests
         // neutralisation isolée de ce garde restitue exactement 0x27fad50065d8c4a4, et
         // l'atomicité des réserves (ActionExecutor), la file de messages bornée et la
         // centralisation des hachages sont bit-à-bit neutres sur ce scénario.
+        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0, ADR-016) :
+        // 0x46769cfb11c8b3a7 → 0xf4aaa2733e491935. Cause unique et isolée : recalage des
+        // DÉFAUTS intégrés (coût de déplacement 0,5 → 0,03, gains Eat/Drink 0/0 → 2,0/1,0,
+        // dérives social/curiosité, réserves et coûts de communication) — cette fois
+        // porté par les défauts eux-mêmes et non par le profil ; re-pin assumé (ADR-016).
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x46769cfb11c8b3a7", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0xf4aaa2733e491935", $"0x{Fnv1a(log):x16}");
     }
 }
