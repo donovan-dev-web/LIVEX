@@ -37,7 +37,7 @@ jobs:
           dotnet build --no-restore --configuration Release --warnaserror
           dotnet test --no-build --configuration Release
 
-      # --- ECHOS (Python + UI) ---
+      # --- ECHOS (Python, API seule : aucune interface, ADR-007) ---
       - name: Setup Python
         if: hashFiles('echos/requirements-dev.txt') != ''
         uses: actions/setup-python@v5
@@ -50,21 +50,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           python -m pytest -q
-      - name: Setup Node
-        if: hashFiles('echos/echos-ui/package.json') != ''
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: echos/echos-ui/package-lock.json
-      - name: UI ECHOS (ci + lint + test)
-        if: hashFiles('echos/echos-ui/package.json') != ''
-        working-directory: echos/echos-ui
-        run: |
-          npm ci
-          npm run lint
-          npm test -- --run
-
       # --- GitHub Release ---
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
@@ -73,6 +58,6 @@ jobs:
           generate_release_notes: true
 
       # TODO (conteneurisation — hors périmètre U0) :
-      #   - renvoyer la re-vérification + build images Docker multi-stage (syne, echos, echos-ui)
+      #   - renvoyer la re-vérification + build images Docker multi-stage (syne, echos)
       #   - publication GHCR avec retag `latest` (registre ghcr.io/${{ github.repository_owner_lowercase }})
       #   - réactivation sur les tags composants (CI_CD.md §4)

@@ -267,30 +267,3 @@ jobs:
           path: launcher/TestResults
           retention-days: 7
           if-no-files-found: error
-
-  # ---------------------------------------------------------------------
-  # ECHOS - UI (React + TypeScript)
-  # ---------------------------------------------------------------------
-  echos-ui:
-    name: Lint & tests (ECHOS UI)
-    needs: [changes, repo-check]
-    if: needs.changes.outputs.echos == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: echos/echos-ui
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: echos/echos-ui/package-lock.json
-      - name: Install
-        run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Tests
-        run: npm test -- --run
-      - name: Build
-        run: npm run build
