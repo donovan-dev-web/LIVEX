@@ -81,26 +81,56 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
         }
 
         // 4. Preuve que tout est passé par l'API HTTP d'analyse (§10.1), sans interface web :
-        //    le stub tient le journal de ses demandes, deux analyses de run, l'agrégation et le rapport.
+        //    le stub tient le journal de ses demandes, deux ingérations suivies de deux
+        //    analyses de run, puis l'agrégation et le rapport.
         var requests = File.ReadAllText(Path.Combine(instanceWork, "analysis", "requests.log"));
-        Assert.Equal(2, CountOccurrences(requests, $"run {definition.Id}"));
+        var packageJournal = reader.ReadEntry(Launcher.Protocol.PackageConstants.JournalEntry) is { } journalBytes
+            ? System.Text.Encoding.UTF8.GetString(journalBytes)
+            : "(journal du paquet illisible)";
+        Assert.True(
+            CountOccurrences(requests, $"ingest {definition.Id}-RUN-") == 2,
+            $"2 ingérations attendues, journal des demandes :\n{requests}\njournal du paquet :\n{packageJournal}");
+        Assert.True(
+            CountOccurrences(requests, $"run {definition.Id}") == 2,
+            $"2 analyses de run attendues, journal des demandes :\n{requests}\njournal du paquet :\n{packageJournal}");
         Assert.Contains($"experiment {definition.Id}", requests);
         Assert.Contains($"report {definition.Id}", requests);
+        var experimentManifestPath = Path.Combine(
+            _packagesRoot, "work", definition.Id, "experiment.json");
+        using var experimentManifest = JsonDocument.Parse(
+            await File.ReadAllTextAsync(experimentManifestPath));
+        Assert.Equal(definition.Id, experimentManifest.RootElement.GetProperty("experimentId").GetString());
 
-        // 5. Fidélité : le rapport archivé est exactement celui qu'ECHOS renvoie à l'instant (§3.2).
+        // Le manifeste porte les identités analytiques : c'est sous ces clés que
+        // les runs ont été enregistrés dans le magasin ECHOS.
+        Assert.Equal(
+            [$"{definition.Id}-RUN-0001", $"{definition.Id}-RUN-0002"],
+            experimentManifest.RootElement.GetProperty("runIds")
+                .EnumerateArray()
+            .Select(runId => runId.GetString()
+                ?? throw new InvalidDataException("runId absent du manifeste d'expérience"))
+            .ToArray());
+
+        // 5. Rejouabilité : le flux d'observabilité est archivé dans le paquet. C'est
+        //    lui qui permet de réanalyser le run plus tard, sans SYNE.
+        var archivedStream = reader.ReadEntry("runs/RUN-0001/data/stream.jsonl");
+        Assert.NotNull(archivedStream);
+        Assert.Contains("\"type\":\"world_initialized\"", System.Text.Encoding.UTF8.GetString(archivedStream!), StringComparison.Ordinal);
+
+        // 6. Fidélité : le rapport archivé est exactement celui qu'ECHOS renvoie à l'instant (§3.2).
         var expected = await PostReportAsync(control.Url, definition.Id);
         var archived = reader.ReadEmergenceReport();
         Assert.NotNull(archived);
         Assert.Equal(expected, archived);
         Assert.Contains($"expérience : {definition.Id}", archived);
 
-        // 6. Présentation : la vue affiche le rapport tel qu'il est, sans interprétation (G5).
+        // 7. Présentation : la vue affiche le rapport tel qu'il est, sans interprétation (G5).
         var viewModel = new MainWindowViewModel(composition.Facade);
         viewModel.OpenPackage(sealedPath);
         Assert.Equal(archived, viewModel.EmergenceReport);
         Assert.Contains("tel quel", viewModel.ReportStatus);
 
-        // 7. Mode défaillant : ECHOS arrêté, la campagne suivante se déroule et se scelle
+        // 8. Mode défaillant : ECHOS arrêté, la campagne suivante se déroule et se scelle
         //    entièrement — moteur intact, absence de rapport affichée, jamais un rapport approximatif.
         var stopError = await composition.Facade.ToggleComponentAsync("echos", false);
         Assert.Null(stopError);
@@ -114,6 +144,61 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
         Assert.Equal(PackageStates.Sealed, secondReader.Manifest.State);
         Assert.Equal(2, secondReader.Manifest.Counts.RunsDone);
         Assert.Null(secondReader.ReadEmergenceReport());
+    }
+
+    /// <summary>
+    /// L'identité enregistrée doit être celle du flux, et le Launcher doit le
+    /// constater. Un stub qui recopie le ``runId`` demandé ne prouverait rien :
+    /// ECHOS fait autorité sur l'identité (INTEGRATION_CONTRACT.md §10.2), donc un
+    /// dossier mal apparié ne peut produire qu'un décalage visible — jamais une
+    /// confirmation_muette qui ferait passer une archive de campagne pour correcte.
+    /// </summary>
+    [Fact]
+    public async Task Le_Lancer_signale_un_dossier_de_run_qui_ne_donne_pas_le_run_demande()
+    {
+        using var composition = new Launcher.App.Composition.LauncherComposition(
+            _packagesRoot, _componentsParent, _dataRoot);
+        Assert.Null(await composition.Facade.ToggleComponentAsync("echos", true));
+        var instance = composition.Orchestration.Registry.FindByComponent("echos");
+        Assert.NotNull(instance);
+        await StubInstall.WaitForHealthyAsync(instance!.Endpoints["control"].Url);
+
+        // La campagne produit réellement le dossier de run et son flux archivé :
+        // sans cela l'ingestion porterait sur un dossier inexistant.
+        var definition = Definition("EXP-G5-IDEM");
+        var packagePath = composition.Campaigns.CreateCampaign(definition);
+        await composition.Campaigns.ExecuteAsync(packagePath, definition, CancellationToken.None);
+        var runPath = Path.Combine(PackagesWorkPath(definition.Id), "RUN-0001");
+        Assert.True(
+            File.Exists(Path.Combine(runPath, "data", "stream.jsonl")),
+            $"le run n'a pas produit de flux archivé dans {runPath}");
+
+        // Cas nominal : l'identité du flux est celle du run demandé, rien à signaler.
+        var matched = await PostIngestAsync(
+            instance.Endpoints["control"].Url, $"{definition.Id}-RUN-0001", runPath);
+        Assert.Equal($"{definition.Id}-RUN-0001", matched);
+
+        // Même dossier, identité attendue volontairement fausse : ECHOS renvoie
+        // l'identité qu'il a lue dans le flux, et le Launcher doit refuser de
+        // poursuivre l'analyse plutôt que d'analyser le mauvais run.
+        var declared = await PostIngestAsync(
+            instance.Endpoints["control"].Url, "EXP-AUTRE-RUN-0001", runPath);
+        Assert.Equal($"{definition.Id}-RUN-0001", declared);
+        Assert.NotEqual("EXP-AUTRE-RUN-0001", declared);
+
+        await composition.Facade.ToggleComponentAsync("echos", false);
+    }
+
+    /// <summary>Appelle <c>POST /ingest/run</c> et rend l'identité enregistrée.</summary>
+    private async Task<string> PostIngestAsync(string controlUrl, string runId, string runPath)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+        var body = JsonSerializer.Serialize(new { runId, runPath });
+        var response = await client.PostAsync(new Uri(new Uri(controlUrl), "/ingest/run"),
+            new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+        Assert.True(response.IsSuccessStatusCode, $"ingest/run refusé : {(int)response.StatusCode}");
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return document.RootElement.GetProperty("ingested").GetProperty("runId").GetString()!;
     }
 
     /// <summary>Appel direct de GenerateReport (§10.1) : c'est la référence de fidélité.</summary>
@@ -188,6 +273,7 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
           "executable": { "windows": "Stub.Echos.exe", "linux": "Stub.Echos", "path": "Stub.Echos" },
           "capabilities": ["headless"],
           "endpoints": { "control": { "transport": "http", "port": {{port}} } },
+          "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
           "timeouts": { "startupMs": 30000, "shutdownMs": 15000 },
           "contributesTo": ["analyse"]
         }

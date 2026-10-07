@@ -71,7 +71,7 @@ public sealed class ComponentManifest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? ContributesTo { get; set; }
 
-    /// <summary>Version du protocole de données (NETWORK.md §2.5). Publiée dans le registre.</summary>
+    /// <summary>Version majeure de compatibilité du contrat de contrôle annoncé par /info (NETWORK.md §2.5).</summary>
     [JsonPropertyName("protocolVersion")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ProtocolVersion { get; set; }

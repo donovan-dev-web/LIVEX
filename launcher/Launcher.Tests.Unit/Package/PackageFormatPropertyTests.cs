@@ -264,6 +264,24 @@ public sealed class LivexPackagePropertyTests : IDisposable
     }
 
     // ------------------------------------------------------------------
+    // P8 (lecture) : un paquet contenant une entrée exécutable est refusé à l'ouverture,
+    // donc jamais extrait (PACKAGE_FORMAT.md §8 : « refusée à l'écriture et à la extraction »).
+    // ------------------------------------------------------------------
+    [Fact]
+    public void P8_lecture_refuse_un_paquet_contenant_un_exécutable()
+    {
+        var path = PathFor("P8-lecture.livexp");
+        using (var stream = File.Create(path))
+        using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
+        {
+            using var writer = new StreamWriter(archive.CreateEntry("data/payload.sh").Open());
+            writer.Write("#!/bin/sh");
+        }
+
+        Assert.Throws<UnsafeEntryPathException>(() => new LivexPackageReader(path));
+    }
+
+    // ------------------------------------------------------------------
     // P9. Atomicité des artefacts : un artefact n'est jamais visible à moitié écrit.
     // ------------------------------------------------------------------
     [Fact]

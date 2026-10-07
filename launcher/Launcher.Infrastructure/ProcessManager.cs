@@ -18,6 +18,7 @@ public sealed class ProcessManager : IProcessManager
     private readonly ISessionJournal _journal;
     private readonly HttpClient _httpClient;
     private readonly Dictionary<string, Process> _processes = new(StringComparer.Ordinal);
+    private long _sequence;
 
     /// <summary>Initialise le gestionnaire avec l'horloge et le journal du domaine.</summary>
     public ProcessManager(IClock clock, ISessionJournal journal)
@@ -32,6 +33,9 @@ public sealed class ProcessManager : IProcessManager
 
     /// <inheritdoc />
     public event EventHandler<ProcessExitedEventArgs>? Exited;
+
+    /// <inheritdoc />
+    public event EventHandler<ComponentLogLineEventArgs>? LineEmitted;
 
     /// <inheritdoc />
     public async Task<int> StartAsync(ProcessLaunchSpec spec, CancellationToken cancellationToken)
@@ -116,14 +120,20 @@ public sealed class ProcessManager : IProcessManager
         return process.Id;
     }
 
-    private static async Task PumpAsync(StreamReader reader, string logPath, string instanceId, string stream, CancellationToken cancellationToken)
+    private async Task PumpAsync(StreamReader reader, string logPath, string instanceId, string stream, CancellationToken cancellationToken)
     {
         try
         {
-            await using var writer = new StreamWriter(logPath, append: false, Encoding.UTF8);
+            await using var writer = new StreamWriter(logPath, append: false, Encoding.UTF8)
+            {
+                // Fichier suivable en direct (tail -f) : la ligne est écrite au fil de l'eau,
+                // et non relâchée par paquets au profit du tampon du flux.
+                AutoFlush = true,
+            };
             while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
             {
                 await writer.WriteLineAsync(line.AsMemory(), cancellationToken).ConfigureAwait(false);
+                Publish(instanceId, stream, line);
             }
         }
         catch (OperationCanceledException)
@@ -133,6 +143,36 @@ public sealed class ProcessManager : IProcessManager
         {
             // Une perte de flux ne doit jamais arrêter la supervision.
             Console.Error.WriteLine($"[{instanceId}] {stream} : {exception.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Publie une ligne vers les consoles temps réel. Une exception d'observateur ne doit
+    /// jamais interrompre la pompe : le fichier de journal reste la source durable.
+    /// </summary>
+    private void Publish(string instanceId, string stream, string line)
+    {
+        var handlers = LineEmitted;
+        if (handlers is null)
+        {
+            return;
+        }
+
+        var record = new ComponentLogLine
+        {
+            Sequence = Interlocked.Increment(ref _sequence),
+            Timestamp = DateTimeOffset.UtcNow,
+            InstanceId = instanceId,
+            Stream = stream,
+            Text = line,
+        };
+        try
+        {
+            handlers(this, new ComponentLogLineEventArgs { Line = record });
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"[{instanceId}] console : {exception.Message}");
         }
     }
 

@@ -162,7 +162,9 @@ public sealed class EnvironmentCheckerTests : IDisposable
               "version": "0.1.0-fake",
               "executable": { "windows": "Stub.Syne.exe", "linux": "Stub.Syne", "path": "Stub.Syne" },
               "capabilities": ["headless", "seed", "tickLimit"],
-              "endpoints": { "control": { "transport": "http", "port": {{controlPort}} } }
+              "endpoints": { "control": { "transport": "http", "port": {{controlPort}} } },
+              "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
+              "timeouts": { "startupMs": 30000, "shutdownMs": 15000 }
             }
             """);
         File.WriteAllText(Path.Combine(location, "Stub.Syne"), "binaire factice");

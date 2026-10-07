@@ -29,12 +29,15 @@ public sealed class OrchestrationService
     /// <summary>Installe les installations détectées dans le registre.</summary>
     public void Adopt(IEnumerable<ComponentInstallation> installations)
     {
-        foreach (var installation in installations)
+        // Une seule énumération : « installations » peut être paresseuse (détection disque),
+        // la compter après coup relancerait la détection et pourrait compter autre chose.
+        var detected = installations as IReadOnlyList<ComponentInstallation> ?? installations.ToList();
+        foreach (var installation in detected)
         {
             _registry.RegisterInstallation(installation);
         }
 
-        _journal.Info("Detection", $"{installations.Count()} installation(s) enregistrée(s) dans le registre");
+        _journal.Info("Detection", $"{detected.Count} installation(s) enregistrée(s) dans le registre");
     }
 
     /// <summary>
@@ -99,8 +102,11 @@ public sealed class OrchestrationService
 
         var distinct = requested.Distinct().ToList();
 
-        // Le moteur peut être remplacé par un stub en type Développement (COMPONENTS.md §8.3).
-        if (allowStubs && sessionKind == SessionKind.Developpement || usesMockEngine)
+        // Le moteur peut être remplacé par un stub en type Développement (COMPONENTS.md §8.3),
+        // soit parce que l'appelant autorise les stubs sur une session Développement, soit parce
+        // que l'opérateur a explicitement choisi l'émulation. Les deux conditions sont distinctes :
+        // sans parenthèses, « && » l'emporterait sur « || » par simple priorité d'opérateur.
+        if ((allowStubs && sessionKind == SessionKind.Developpement) || usesMockEngine)
         {
             resolution.StubsAllowed = true;
         }

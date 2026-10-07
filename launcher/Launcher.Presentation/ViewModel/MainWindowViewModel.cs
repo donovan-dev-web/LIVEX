@@ -34,13 +34,18 @@ public sealed class MainWindowViewModel : ObservableObject
     private double _cpuValue;
     private double _storageValue;
     private string _campaignTitle = "Nouvelle expérience";
-    private string _simulationId = "ecosystem_01";
+    private string _simulationId = WellKnownSimulations.Reference;
     private string _runCountInput = "1";
+    private string _selectedRunMode = "Mono";
+    private int _selectedTicksPerSecond = DirectTicksPerSecond;
     private string _tickCountInput = "1000";
     private string _agentCountInput = "50";
     private string _baseSeedInput = "42";
     private string _campaignStatus = "Configurez les paramètres puis démarrez la campagne.";
     private string _campaignProgressText = "Aucune campagne en cours.";
+    private double _runTickPercent;
+    private bool _hasRunTickProgress;
+    private string _runTickText = string.Empty;
     private string _documentationContent = string.Empty;
     private string _documentationStatus = "Aucune documentation embarquée.";
     private string _logStatus = string.Empty;
@@ -58,6 +63,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
         NavigateCommand = new RelayCommand<string>(Navigate);
         ToggleComponentCommand = new RelayCommand<string>(ToggleComponent);
+        OpenConsoleCommand = new RelayCommand<string>(OpenConsole);
+        OpenAnalysisCommand = new RelayCommand<string>(_ => _analysis?.Invoke());
         StartProfileCommand = new RelayCommand<string>(
             _ => StartSelectedProfile(),
             _ => CanStartProfile);
@@ -106,6 +113,8 @@ public sealed class MainWindowViewModel : ObservableObject
     }
 
     private Action<string, bool>? _lifecycle;
+    private Action<string>? _console;
+    private Action? _analysis;
 
     /// <summary>Identifiants stables des entrées de navigation.</summary>
     public const string NavAccueilId = "accueil";
@@ -178,7 +187,6 @@ public sealed class MainWindowViewModel : ObservableObject
     [
         new(NavAccueilId, "Accueil", true),
         new(NavExperiencesId, "Expériences", false),
-        new(NavCampagnesId, "Campagnes", false),
         new(NavAnalyseId, "Analyse", false),
         new(NavRapportsId, "Rapports", false),
         new(NavConfigurationId, "Configuration", false),
@@ -189,6 +197,28 @@ public sealed class MainWindowViewModel : ObservableObject
 
     /// <summary>Commande de cycle de vie d'une carte : démarre si arrêté, arrête si démarré.</summary>
     public RelayCommand<string> ToggleComponentCommand { get; }
+
+    /// <summary>
+    /// Commande d'ouverture de la console d'un composant (USER_INTERFACE.md §9) : le paramètre est
+    /// l'identifiant d'instance, absent si le composant n'est pas démarré.
+    /// </summary>
+    public RelayCommand<string> OpenConsoleCommand { get; }
+
+    /// <summary>
+    /// Commande d'ouverture de la fenêtre d'analyse native (USER_INTERFACE.md §9.2, ADR-007) :
+    /// le Launcher présente l'analyse produite par ECHOS, sans interface web.
+    /// </summary>
+    public RelayCommand<string> OpenAnalysisCommand { get; }
+
+    private void OpenConsole(string? instanceId)
+    {
+        if (string.IsNullOrWhiteSpace(instanceId))
+        {
+            return;
+        }
+
+        _console?.Invoke(instanceId);
+    }
 
     private void ToggleComponent(string? componentId)
     {
@@ -287,14 +317,55 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Installations disponibles et sélection active par composant.</summary>
     public ObservableCollection<ComponentInstallationSelectionViewModel> ComponentInstallations { get; }
 
-    /// <summary>Nom de la campagne à créer.</summary>
+    /// <summary>Nom de l'expérience à créer.</summary>
     public string CampaignTitle { get => _campaignTitle; set => UpdateCampaignField(ref _campaignTitle, value); }
     /// <summary>Identifiant de simulation communiqué au moteur.</summary>
     public string SimulationId { get => _simulationId; set => UpdateCampaignField(ref _simulationId, value); }
-    /// <summary>Nombre de runs demandé.</summary>
+    /// <summary>Nombre de runs demandé (mode MultiRun ; le mode Mono force 1).</summary>
     public string RunCountInput { get => _runCountInput; set => UpdateCampaignField(ref _runCountInput, value); }
     /// <summary>Horizon en ticks par run.</summary>
     public string TickCountInput { get => _tickCountInput; set => UpdateCampaignField(ref _tickCountInput, value); }
+
+    /// <summary>Nombre maximal de runs du format (RUN-nnnn sur quatre chiffres).</summary>
+    private const int MaxRunCount = 65_535;
+
+    /// <summary>Cadence « direct » : un run Mono se regarde en fenêtre analytique.</summary>
+    public const int DirectTicksPerSecond = 10;
+
+    /// <summary>Modes de création d'une expérience (un seul écran, deux rythmes).</summary>
+    public IReadOnlyList<string> RunModeOptions { get; } = ["Mono", "MultiRun"];
+
+    /// <summary>Mode choisi : Mono = un run regardable en direct, MultiRun = série batch.</summary>
+    public string SelectedRunMode
+    {
+        get => _selectedRunMode;
+        set
+        {
+            if (SetProperty(ref _selectedRunMode, value))
+            {
+                OnPropertyChanged(nameof(IsMultiRun));
+                // Cadence par défaut du mode : Mono se regarde, MultiRun s'exécute au
+                // plus vite. Le choix reste modifiable ensuite dans le même écran.
+                SelectedTicksPerSecond = IsMultiRun ? RunEngineProfile.BatchTicksPerSecond : DirectTicksPerSecond;
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    /// <summary>Vrai en mode MultiRun : le champ « Nombre de runs » n'a de sens que là.</summary>
+    public bool IsMultiRun => string.Equals(SelectedRunMode, "MultiRun", StringComparison.Ordinal);
+
+    /// <summary>Vitesses proposées (ticks par seconde) : direct regardable → batch.</summary>
+    public IReadOnlyList<int> TicksPerSecondOptions { get; } =
+        [DirectTicksPerSecond, 100, RunEngineProfile.BatchTicksPerSecond];
+
+    /// <summary>Vitesse d'exécution choisie, transmise au moteur et archivée dans le paquet.</summary>
+    public int SelectedTicksPerSecond
+    {
+        get => _selectedTicksPerSecond;
+        set => SetProperty(ref _selectedTicksPerSecond, value);
+    }
+
     /// <summary>Nombre initial d'agents simulés.</summary>
     public string AgentCountInput { get => _agentCountInput; set => UpdateCampaignField(ref _agentCountInput, value); }
     /// <summary>Graine de base utilisée pour la dérivation reproductible.</summary>
@@ -303,6 +374,23 @@ public sealed class MainWindowViewModel : ObservableObject
     public string CampaignStatus { get => _campaignStatus; private set => SetProperty(ref _campaignStatus, value); }
     /// <summary>Progression détaillée de la campagne courante.</summary>
     public string CampaignProgressText { get => _campaignProgressText; private set => SetProperty(ref _campaignProgressText, value); }
+    /// <summary>Avancement du run en cours, en pourcentage des ticks (0 à 100).</summary>
+    public double RunTickPercent { get => _runTickPercent; private set => SetProperty(ref _runTickPercent, value); }
+    /// <summary>Vrai quand le moteur a rapporté un horizon : sans lui, aucun pourcentage n'est affiché.</summary>
+    public bool HasRunTickProgress { get => _hasRunTickProgress; private set => SetProperty(ref _hasRunTickProgress, value); }
+    /// <summary>Avancement du run en cours en ticks, tel que rapporté par le moteur.</summary>
+    public string RunTickText { get => _runTickText; private set => SetProperty(ref _runTickText, value); }
+
+    /// <summary>
+    /// Masque l'avancement du run. Appelé à chaque changement d'état de campagne :
+    /// une barre restée du run précédent afficherait un pourcentage trompeur.
+    /// </summary>
+    private void ResetRunTickProgress()
+    {
+        HasRunTickProgress = false;
+        RunTickPercent = 0;
+        RunTickText = string.Empty;
+    }
     /// <summary>Commande de création puis d'exécution d'une campagne.</summary>
     public RelayCommand<string> CreateCampaignCommand { get; }
     /// <summary>Commande de reprise d'un paquet récupérable.</summary>
@@ -357,11 +445,15 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool CanCreateCampaign =>
         !IsCampaignRunning
         && !string.IsNullOrWhiteSpace(CampaignTitle)
-        && !string.IsNullOrWhiteSpace(SimulationId)
-        && int.TryParse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture, out var runs) && runs is > 0 and <= 65535
+        && IsSupportedSimulation
+        && int.TryParse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture, out var runs) && runs is > 0 and <= MaxRunCount
         && long.TryParse(TickCountInput, NumberStyles.None, CultureInfo.InvariantCulture, out var ticks) && ticks > 0
         && int.TryParse(AgentCountInput, NumberStyles.None, CultureInfo.InvariantCulture, out var agents) && agents >= 0
-        && long.TryParse(BaseSeedInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+        && long.TryParse(BaseSeedInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
+        && SelectedTicksPerSecond is > 0 and <= 100_000;
+
+    private bool IsSupportedSimulation =>
+        string.Equals(SimulationId.Trim(), WellKnownSimulations.Reference, StringComparison.Ordinal);
 
     /// <summary>Profil sélectionné dans la vue Configuration.</summary>
     public string SelectedProfile
@@ -600,6 +692,7 @@ public sealed class MainWindowViewModel : ObservableObject
             {
                 Id = "syne",
                 RuntimeComponentId = engine.Id,
+                InstanceId = engine.InstanceId,
                 Name = "SYNE",
                 Version = engine.Version,
                 Subtitle = engine.Id == "syne-mock" ? "Moteur — émulation" : "Moteur — réel",
@@ -655,6 +748,28 @@ public sealed class MainWindowViewModel : ObservableObject
     public void UpdateCampaignProgress(CampaignProgress progress)
     {
         CampaignProgressText = $"{progress.CurrentRunId} — graine {progress.CurrentSeed} — {progress.RunsDone}/{progress.RunsTotal} terminé(s), {progress.RunsFailed} échec(s)";
+
+        // Avancement du run, rapporté par le moteur (§8). Sans horizon rapporté, on ne
+        // montre aucun pourcentage : une barre à 0 % pour un moteur muet serait un mensonge.
+        if (progress.CurrentRunProgress is not { } tick)
+        {
+            ResetRunTickProgress();
+            return;
+        }
+
+        RunTickText = tick.MaxTicks is { } reportedMax && reportedMax > 0
+            ? $"tick {tick.Tick} / {reportedMax} — {tick.AliveCount} agent(s) vivant(s) — {tick.State}"
+            : $"tick {tick.Tick} — {tick.AliveCount} agent(s) vivant(s) — {tick.State}";
+        if (tick.MaxTicks is { } total && total > 0)
+        {
+            RunTickPercent = Math.Clamp(tick.Tick * 100d / total, 0d, 100d);
+            HasRunTickProgress = true;
+        }
+        else
+        {
+            RunTickPercent = 0;
+            HasRunTickProgress = false;
+        }
     }
 
     /// <summary>Navigue vers une entrée de la sidebar.</summary>
@@ -750,6 +865,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private async Task RunCampaignAsync(string? resumePackagePath = null)
     {
+        if (resumePackagePath is null && !IsSupportedSimulation)
+        {
+            CampaignStatus = $"Scénario non pris en charge : SYNE V1 accepte uniquement « {WellKnownSimulations.Reference} ».";
+            return;
+        }
+
         if (resumePackagePath is null && !CanCreateCampaign)
         {
             CampaignStatus = "Paramètres invalides : vérifiez le nom, la simulation, le nombre de runs, les ticks, les agents et la graine.";
@@ -765,8 +886,14 @@ public sealed class MainWindowViewModel : ObservableObject
                 Title = CampaignTitle.Trim(),
                 Profile = WellKnownProfiles.Experience,
                 Simulation = SimulationId.Trim(),
-                RunCount = int.Parse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture),
+                // Mono = un run, toujours : le champ « Nombre de runs » ne sert qu'en MultiRun.
+                RunCount = IsMultiRun
+                    ? int.Parse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture)
+                    : 1,
                 Ticks = long.Parse(TickCountInput, NumberStyles.None, CultureInfo.InvariantCulture),
+                // Cadence d'exécution demandée au moteur (10 = direct regardable,
+                // 1000 = batch) — archivée dans config.resolved.json du paquet.
+                TicksPerSecond = SelectedTicksPerSecond,
                 AgentCount = int.Parse(AgentCountInput, NumberStyles.None, CultureInfo.InvariantCulture),
                 BaseSeed = long.Parse(BaseSeedInput, NumberStyles.Integer, CultureInfo.InvariantCulture),
                 SeedStrategy = SeedStrategy.Derived,
@@ -779,6 +906,7 @@ public sealed class MainWindowViewModel : ObservableObject
         IsCampaignRunning = true;
         CampaignStatus = resumePackagePath is null ? "Création et exécution de la campagne…" : "Reprise de la campagne…";
         CampaignProgressText = "Préparation du premier run…";
+        ResetRunTickProgress();
         try
         {
             var packagePath = resumePackagePath is null
@@ -788,23 +916,33 @@ public sealed class MainWindowViewModel : ObservableObject
                 : await _orchestration.ResumeCampaignAsync(resumePackagePath, cancellation.Token).ConfigureAwait(true);
             CampaignStatus = $"Campagne terminée et scellée : {Path.GetFileName(packagePath)}";
             CampaignProgressText = "Tous les runs sont terminés.";
+            ResetRunTickProgress();
             RefreshExperiences();
         }
         catch (OperationCanceledException)
         {
             CampaignStatus = "Campagne annulée ; le paquet reste récupérable et peut être repris.";
             CampaignProgressText = "La reprise relancera uniquement les runs non terminés.";
+            ResetRunTickProgress();
             RefreshExperiences();
         }
-        catch (Exception exception) when (exception is ArgumentException
-            or InvalidOperationException
-            or InvalidDataException
-            or IOException
-            or UnauthorizedAccessException
-            or HttpRequestException)
+        catch (CampaignStoppedException stopped)
         {
+            // Politique « stop » : le runner a déjà marqué le paquet récupérable et nommé le
+            // run fautif. Sans cette branche, l'exception traverserait la commande et laisserait
+            // l'écran afficher « Reprise de la campagne… » indéfiniment.
+            CampaignStatus = $"Campagne interrompue : {stopped.Message}";
+            CampaignProgressText = $"Paquet récupérable {Path.GetFileName(stopped.PackagePath)} — la reprise relancera le run fautif.";
+            ResetRunTickProgress();
+            RefreshExperiences();
+        }
+        catch (Exception exception)
+        {
+            // Filet : aucun type d'incident ne doit rester silencieux, y compris ceux que le
+            // filtre de cas prévus ne couvrait pas — une fin de campagne muette se lit comme un gel.
             CampaignStatus = $"Campagne interrompue : {exception.Message}";
             CampaignProgressText = "Consultez le paquet récupérable et les journaux pour reprendre ou diagnostiquer.";
+            ResetRunTickProgress();
             RefreshExperiences();
         }
         finally
@@ -916,6 +1054,12 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Branche les actions de cycle de vie réalisées par l'application (G5 : session complète).</summary>
     public void SetLifecycleHandler(Action<string, bool>? handler) => _lifecycle = handler;
 
+    /// <summary>Branche l'ouverture de console réalisée par l'application (USER_INTERFACE.md §9).</summary>
+    public void SetConsoleHandler(Action<string>? handler) => _console = handler;
+
+    /// <summary>Branche l'ouverture de la fenêtre d'analyse réalisée par l'application (ADR-007).</summary>
+    public void SetAnalysisHandler(Action? handler) => _analysis = handler;
+
     private static string FormatPercent(double value) => double.IsNaN(value) ? "—" : $"{value:0} %";
 }
 
@@ -977,6 +1121,12 @@ public sealed class ComponentRowViewModel : ObservableObject
 
     /// <summary>Identifiant réel du processus contrôlé ; peut être SYNE ou son émulateur.</summary>
     public string RuntimeComponentId { get; init; } = string.Empty;
+
+    /// <summary>Identifiant d'instance en cours, null si le composant n'est pas démarré ; ouvre la console.</summary>
+    public string? InstanceId { get; init; }
+
+    /// <summary>Vrai si une console peut être ouverte : il faut une instance vivante.</summary>
+    public bool CanOpenConsole => !string.IsNullOrEmpty(InstanceId);
 
     /// <summary>Nom affichable du composant.</summary>
     public string Name { get; init; } = string.Empty;
