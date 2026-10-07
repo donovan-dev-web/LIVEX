@@ -65,6 +65,24 @@ jobs:
           fi
 
   # ---------------------------------------------------------------------
+  # Contrats composant (manifests JSON Schema v1)
+  # ---------------------------------------------------------------------
+  component-manifests:
+    name: Validation des manifests composants
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.syne == 'true' || needs.changes.outputs.echos == 'true' || needs.changes.outputs.syne_mock == 'true' || needs.changes.outputs.launcher == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Validate component manifest schema
+        run: |
+          python -m pip install -r launcher/contracts/requirements-validation.txt
+          python launcher/contracts/validate_manifests.py
+
+  # ---------------------------------------------------------------------
   # SYNE — .NET (build + tests xUnit)
   # ---------------------------------------------------------------------
   syne-dotnet:
