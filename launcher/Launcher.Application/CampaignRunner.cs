@@ -21,6 +21,14 @@ public sealed class CampaignRunner
     private readonly IClock _clock;
     private readonly ISessionJournal _journal;
 
+    /// <summary>
+    /// Contexte de campagne courant, mémorisé pour republier l'avancement du run avec
+    /// la même position dans la campagne (§8). Les runs étant séquentiels (§4), un seul
+    /// run est en cours à la fois.
+    /// </summary>
+    private (string ExperimentId, string RunId, int Done, int Failed, int Total, long Seed) _current =
+        (string.Empty, string.Empty, 0, 0, 0, 0L);
+
     /// <summary>Initialise le cas d'usage campagne.</summary>
     public CampaignRunner(IPackageService packages, IRunExecutor executor, IAnalysisService? analysis, IClock clock, ISessionJournal journal)
     {
@@ -78,7 +86,19 @@ public sealed class CampaignRunner
 
         try
         {
-            await RunLoopAsync(packagePath, definition, cancellationToken, doneRunIds, failedByRunId, durations).ConfigureAwait(false);
+            // L'avancement du run est relayé tant que la boucle tourne (EXPERIMENTS.md §8) :
+            // l'événement du moteur ne porte que l'état du run, la position dans la
+            // campagne est celle déjà publiée.
+            void OnTickProgress(object? sender, RunTickProgress progress) => PublishTickProgress(progress);
+            _executor.TickProgress += OnTickProgress;
+            try
+            {
+                await RunLoopAsync(packagePath, definition, cancellationToken, doneRunIds, failedByRunId, durations).ConfigureAwait(false);
+            }
+            finally
+            {
+                _executor.TickProgress -= OnTickProgress;
+            }
         }
         catch (OperationCanceledException)
         {
@@ -93,7 +113,15 @@ public sealed class CampaignRunner
         {
             try
             {
-                var (aggregateFiles, report) = await _analysis.AnalyzeExperimentAsync(definition.Id, cancellationToken).ConfigureAwait(false);
+                var completedRunIds = _packages.ReadState(packagePath).Index.Runs
+                    .Where(run => run.Status == RunStatuses.Termine)
+                    .Select(run => run.RunId)
+                    .OrderBy(runId => runId, StringComparer.Ordinal)
+                    .ToArray();
+                var (aggregateFiles, report) = await _analysis.AnalyzeExperimentAsync(
+                    definition.Id,
+                    completedRunIds,
+                    cancellationToken).ConfigureAwait(false);
                 if (report is not null)
                 {
                     _packages.WriteAnalysisReport(packagePath, report, aggregateFiles);
@@ -125,7 +153,10 @@ public sealed class CampaignRunner
         Dictionary<string, RunIndexEntry> failedByRunId,
         List<TimeSpan> durations)
     {
-        var runsDone = 0;
+        // Reprise : les runs déjà terminés comptent immédiatement comme terminés. Sans cela,
+        // une campagne reprise à 4/5 afficherait 0/5 puis 1/5 — une progression fausse est
+        // pire qu'absente, l'opérateur croirait un run rejoué alors qu'il est sauté.
+        var runsDone = doneRunIds.Count;
         var runsFailed = 0;
 
         for (var runNumber = 0; runNumber < definition.RunCount; runNumber++)
@@ -157,6 +188,7 @@ public sealed class CampaignRunner
                     RunId = runId,
                     Seed = seed,
                     Ticks = definition.Ticks,
+                    TicksPerSecond = definition.TicksPerSecond,
                     AgentCount = definition.AgentCount,
                     Simulation = definition.Simulation,
                     Attempt = attempt,
@@ -186,7 +218,7 @@ public sealed class CampaignRunner
                         RunId = runId,
                         IndexEntry = cancelledEntry,
                         RunJson = BuildRunJson(definition, runId, seed, attempt, RunStatuses.Annule, cancelledEntry.Cause),
-                        ConfigResolvedJson = ContractJson.Serialize(definition),
+                        ConfigResolvedJson = RunEngineProfile.SerializeResolved(spec, definition),
                         CompletionEvent = new RunJournalEvent(_clock.UtcNow, "run_cancelled", $"run {runId} annulé — campagne récupérable", runId),
                     });
                     _packages.MarkRecoverable(packagePath);
@@ -257,7 +289,7 @@ public sealed class CampaignRunner
                     RunId = runId,
                     IndexEntry = entry,
                     RunJson = BuildRunJson(definition, runId, seed, result.Attempt, RunStatuses.Termine, null, result),
-                    ConfigResolvedJson = ContractJson.Serialize(definition),
+                    ConfigResolvedJson = RunEngineProfile.SerializeResolved(spec, definition),
                     DataFiles = result.DataFiles,
                     LogFiles = result.LogFiles,
                     AnalysisFiles = analysisFiles,
@@ -276,7 +308,7 @@ public sealed class CampaignRunner
                     RunId = runId,
                     IndexEntry = entry,
                     RunJson = BuildRunJson(definition, runId, seed, maxAttempts, RunStatuses.Echoue, cause),
-                    ConfigResolvedJson = ContractJson.Serialize(definition),
+                    ConfigResolvedJson = RunEngineProfile.SerializeResolved(spec, definition),
                     LogFiles = failedLogs,
                     CompletionEvent = new RunJournalEvent(endedAt, "run_failed", $"run {runId} en échec — {cause}", runId),
                 });
@@ -336,7 +368,11 @@ public sealed class CampaignRunner
         return logs;
     }
 
-    private void Publish(string experimentId, string runId, int done, int failed, int total, long seed) =>
+    private void Publish(string experimentId, string runId, int done, int failed, int total, long seed)
+    {
+        // Mémorisé pour que l'avancement rapporté par le moteur puisse être republié
+        // avec le même contexte de campagne (§8).
+        _current = (experimentId, runId, done, failed, total, seed);
         Progress?.Invoke(this, new CampaignProgress
         {
             ExperimentId = experimentId,
@@ -346,6 +382,28 @@ public sealed class CampaignRunner
             RunsFailed = failed,
             RunsTotal = total,
         });
+    }
+
+    /// <summary>Republie l'avancement du run avec le contexte de campagne courant.</summary>
+    private void PublishTickProgress(RunTickProgress progress)
+    {
+        var (experimentId, runId, done, failed, total, seed) = _current;
+        if (runId.Length == 0)
+        {
+            return; // Aucun run en cours : rien à progresser.
+        }
+
+        Progress?.Invoke(this, new CampaignProgress
+        {
+            ExperimentId = experimentId,
+            CurrentRunId = runId,
+            CurrentSeed = seed,
+            RunsDone = done,
+            RunsFailed = failed,
+            RunsTotal = total,
+            CurrentRunProgress = progress,
+        });
+    }
 
     private static string FormatUtc(DateTimeOffset moment) => moment.ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", System.Globalization.CultureInfo.InvariantCulture);
 
@@ -393,6 +451,13 @@ public sealed class CampaignProgress : EventArgs
 
     /// <summary>Runs total.</summary>
     public int RunsTotal { get; init; }
+
+    /// <summary>
+    /// Avancement du run en cours, rapporté par le moteur (§8). Nul quand le moteur
+    /// ne publie pas d'état : l'interface montre alors la progression de campagne
+    /// seule, plutôt qu'un pourcentage inventé.
+    /// </summary>
+    public RunTickProgress? CurrentRunProgress { get; init; }
 }
 
 /// <summary>Politique « stop » : le premier échec interrompt la campagne, paquet récupérable.</summary>

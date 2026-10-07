@@ -185,8 +185,9 @@ Le format est spécifié dans `PACKAGE_FORMAT.md`.
   composants qu'il supervise. Un composant lancé manuellement reste détectable,
   mais sa durée de vie n'est pas pilotée.
 - **Interface d'orchestration.** L'interface du Launcher reste focalisée sur
-  l'orchestration. L'exploration scientifique appartient à l'interface d'ECHOS,
-  ouverte dans un navigateur.
+  l'orchestration. L'exploration scientifique reste le rôle d'ECHOS : le
+  Launcher en **présente** les résultats dans ses fenêtres natives (consoles de
+  logs, fenêtre d'analyse) sans jamais les calculer (ADR-003, ADR-007).
 
 ## 9. Références
 

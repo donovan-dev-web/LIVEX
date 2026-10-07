@@ -29,9 +29,6 @@ public sealed class LivexPackageWriter : IDisposable
     private readonly string _path;
     private bool _sealed;
 
-    /// <summary>Verrou d'écriture exclusive : un seul processus écrit dans un paquet (PACKAGE_FORMAT.md §8).</summary>
-    private static readonly Dictionary<string, object> GlobalLocks = new(StringComparer.OrdinalIgnoreCase);
-
     private LivexPackageWriter(string path, FileStream stream, PackageManifest manifest, RunIndex runIndex, List<JournalLine> journal)
     {
         _path = path;
@@ -141,7 +138,7 @@ public sealed class LivexPackageWriter : IDisposable
     public void WriteEntry(string entryName, byte[] content)
     {
         ThrowIfSealed();
-        EnsureSafeEntryName(entryName);
+        PackageEntryRules.EnsureSafe(entryName);
         lock (_gate)
         {
             _pendingEntries[entryName] = content;
@@ -237,6 +234,12 @@ public sealed class LivexPackageWriter : IDisposable
         // Recompactage déterministe : relit toutes les entrées dans l'ordre trié,
         // puis réécrit un paquet neuf : compression deflate à niveau fixé,
         // horodatage d'époque du format, attributs normalisés (PACKAGE_FORMAT.md §6).
+        //
+        // Écriture atomique : le paquet existant n'est écrasé qu'après la réussite complète
+        // de la réécriture dans un fichier temporaire. Un plantage en cours de scellement
+        // laissait un .livexp tronqué — la perte d'une campagne déjà exécutée n'est pas un
+        // prix acceptable pour un scellement ; dans le pire des cas, le paquet reste vivant
+        // et reprise.
         lock (_gate)
         {
             var allEntries = new SortedDictionary<string, byte[]>(StringComparer.Ordinal);
@@ -251,15 +254,28 @@ public sealed class LivexPackageWriter : IDisposable
             _archive.Dispose();
             _fileStream.Dispose();
 
-            using (var output = new FileStream(_path, FileMode.Create, FileAccess.Write, FileShare.None))
-            using (var fresh = new ZipArchive(output, ZipArchiveMode.Create))
+            var temporaryPath = $"{_path}.{Guid.NewGuid():N}.sealing.tmp";
+            try
             {
-                foreach (var (name, content) in allEntries)
+                using (var output = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                using (var fresh = new ZipArchive(output, ZipArchiveMode.Create))
                 {
-                    var entry = fresh.CreateEntry(name, CompressionLevel.SmallestSize);
-                    entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
-                    using var target = entry.Open();
-                    target.Write(content);
+                    foreach (var (name, content) in allEntries)
+                    {
+                        var entry = fresh.CreateEntry(name, CompressionLevel.SmallestSize);
+                        entry.LastWriteTime = DateTimeOffset.FromUnixTimeSeconds(PackageConstants.ZipEpochTimestamp).UtcDateTime;
+                        using var target = entry.Open();
+                        target.Write(content);
+                    }
+                }
+
+                File.Move(temporaryPath, _path, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
                 }
             }
 
@@ -313,6 +329,9 @@ public sealed class LivexPackageWriter : IDisposable
 
     private void WriteEntryLocked(string entryName, byte[] content)
     {
+        // Toute écriture passe par la règle §8, y compris les noms venant d'un composant
+        // (données d'un run, analyse ECHOS) : le producteur ne choisit pas le chemin écrit.
+        PackageEntryRules.EnsureSafe(entryName);
         _pendingEntries[entryName] = content;
         FlushPendingLocked();
     }
@@ -391,28 +410,6 @@ public sealed class LivexPackageWriter : IDisposable
         }
     }
 
-    private static void EnsureSafeEntryName(string entryName)
-    {
-        if (Path.IsPathRooted(entryName)
-            || entryName.Contains("..", StringComparison.Ordinal)
-            || entryName.Contains(':')
-            || entryName.StartsWith("/", StringComparison.Ordinal)
-            || entryName.StartsWith("\\", StringComparison.Ordinal))
-        {
-            throw new UnsafeEntryPathException(entryName);
-        }
-
-        var extension = Path.GetExtension(entryName);
-        if (ExecutableExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
-        {
-            throw new UnsafeEntryPathException(entryName);
-        }
-    }
-
-    private static readonly string[] ExecutableExtensions =
-    {
-        ".exe", ".dll", ".so", ".dylib", ".bat", ".cmd", ".sh", ".ps1", ".msi", ".com", ".scr", ".bin",
-    };
 
     private static T ReadJson<T>(ZipArchive archive, string entryName)
         where T : ISchemaVersioned

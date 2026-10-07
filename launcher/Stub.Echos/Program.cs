@@ -56,6 +56,14 @@ internal static class Program
         server.Post("/analysis/run", (_, body) => Analyze("run", body));
         server.Post("/analysis/experiment", (_, body) => Analyze("experiment", body));
         server.Post("/analysis/report", (_, body) => Report(body));
+
+        // Ingestion d'un run archivé (J2B) : le stub vérifie la présence du flux
+        // exporté par SYNE et refuse (404) un dossier de run sans artefact —
+        // c'est la seule chose qu'un stub puisse honnêtement trancher.
+        // Il ne sait pas, contrairement au vrai ECHOS, renvoyer 409 sur une
+        // seconde ingestion d'un même run : le MiniHttpServer ne connaît que
+        // 200 et 404.
+        server.Post("/ingest/run", (_, body) => Ingest(body));
         try
         {
             server.Start();
@@ -105,6 +113,101 @@ internal static class Program
         var content = Convert.ToBase64String(Encoding.UTF8.GetBytes(builder.ToString()));
         LogRequest($"{kind} {experimentId} {folder}");
         return $"{{\"files\":[{{\"name\":\"{fileName}\",\"content\":\"{content}\"}}]}}";
+    }
+
+    /// <summary>
+    /// Enregistre le flux archivé d'un run. Renvoie les compteurs que le vrai
+    /// ECHOS renvoie, déduits des artefacts du run : l'identité et les ticks
+    /// viennent du **flux**, pas de la demande.
+    ///
+    /// Refléter ce choix est ce qui rend le stub un double honnête du contrat
+    /// (§10.2) : ECHOS fait autorité sur l'identité, donc un stub qui recopie le
+    /// ``runId`` demandé ne détecterait jamais un dossier de run mal apparié — il
+    /// renverrait justement l'identité attendue, masquant le défaut.
+    /// </summary>
+    private static string? Ingest(string? body)
+    {
+        var requested = Field(body, "runId");
+        var runPath = Field(body, "runPath");
+        if (requested is null || runPath is null)
+        {
+            return null;
+        }
+
+        var streamPath = Path.Combine(runPath, "data", "stream.jsonl");
+        if (!File.Exists(streamPath))
+        {
+            return null;
+        }
+
+        var declared = RunIdFromStream(streamPath) ?? requested;
+        var ticks = TicksFromResult(Path.Combine(runPath, "data", "result.json"));
+        LogRequest($"ingest {declared} {runPath} (demandé {requested})");
+        return $"{{\"ingested\":{{\"runId\":{JsonSerializer.Serialize(declared)},\"ticks\":{ticks}}}}}";
+    }
+
+    /// <summary>
+    /// Identité déclarée par le premier snapshot du flux, ou ``null`` si le flux
+    /// n'en porte pas. Le vrai ECHOS lit la même source et refuse le dossier si
+    /// elle diverge de l'identité demandée ; le stub s'arrête au premier snapshot
+    /// et renvoie l'identité qu'il a lue.
+    /// </summary>
+    private static string? RunIdFromStream(string streamPath)
+    {
+        try
+        {
+            using var reader = new StreamReader(streamPath);
+            for (var line = reader.ReadLine(); line is not null; line = reader.ReadLine())
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                using var document = JsonDocument.Parse(line);
+                if (document.RootElement.GetProperty("type").GetString() != "snapshot")
+                {
+                    continue;
+                }
+                return document.RootElement.TryGetProperty("runId", out var runId)
+                    ? runId.GetString()
+                    : null;
+            }
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+
+        return null;
+    }
+
+    /// <summary>Ticks annoncés par le résumé de run ; 0 si le résumé est absent.</summary>
+    private static int TicksFromResult(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+            {
+                return 0;
+            }
+
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            return document.RootElement.TryGetProperty("ticks", out var value)
+                && value.TryGetInt32(out var ticks) ? ticks : 0;
+        }
+        catch (JsonException)
+        {
+            return 0;
+        }
+        catch (IOException)
+        {
+            return 0;
+        }
     }
 
     /// <summary>Rapport d'émergence : Markdown déterministe pour un dossier d'entrée donné.</summary>

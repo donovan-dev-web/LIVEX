@@ -55,11 +55,13 @@ présente.**
   dans n'importe quel outil. Ils ne portent aucun sens scientifique.
 - **Aucune interprétation.** Le Launcher ne classe pas, ne note pas, ne conclut pas.
   Le tri d'une liste est une tris d'affichage, jamais un jugement.
-- **L'interface d'ECHOS est une télémétrie optionnelle.** Pendant une simulation,
-  l'utilisateur peut ouvrir l'interface web d'ECHOS pour observer l'analyse en
-  direct. C'est un complément, pas un prérequis : le Launcher reste pleinement
-  fonctionnel si elle n'est jamais ouverte, et la campagne ne dépend d'aucune
-  fenêtre de navigateur.
+- **La télémétrie est une fenêtre native du Launcher.** Pendant une simulation,
+  l'utilisateur peut ouvrir les **consoles de logs** et la **fenêtre d'analyse**
+  du Launcher pour observer l'analyse en direct. C'est un complément, pas un
+  prérequis : le Launcher reste pleinement fonctionnel si aucune fenêtre n'est
+  ouverte, et la campagne ne dépend d'aucune fenêtre de navigateur — ECHOS n'en
+  expose plus (ADR-007). La fenêtre d'analyse **présente** les séries d'ECHOS,
+  elle ne les calcule pas.
 
 ### Ce que cela implique concrètement
 
@@ -84,7 +86,7 @@ présente.**
 - La frontière est testable : un test peut vérifier qu'aucune vue du Launcher ne
   calcule de valeur scientifique, et que le rapport affiché provient bien d'un
   fichier écrit par ECHOS.
-- L'interface d'ECHOS devient un **plus** de télémétrie, pas une dépendance.
+- L'observation devient un plus natif, pas une dépendance : consoles de logs et fenêtre d'analyse sont des fenêtres du Launcher, sans navigateur ni webview (ADR-007).
 
 ### Négatives
 - Le Launcher dépend d'ECHOS pour tout contenu de rapport. Sans ECHOS, le Launcher
@@ -153,3 +155,4 @@ présente.**
 | :-- | :-- | :-- |
 | 30 septembre 2026 | Création initiale : ECHOS seul propriétaire de l'analyse, aucun affichage dans le Launcher | Garantir une seule sémantique des résultats |
 | 30 septembre 2026 | **Réécriture** : la frontière porte sur le calcul, pas sur l'affichage. Le Launcher présente le rapport d'émergence ; l'interface ECHOS devient une télémétrie optionnelle. | La version précédente interdisait la visualisation des rapports dans le Launcher, ce qui contredit le rôle du Launcher comme porteur du livrable de campagne |
+| 5 octobre 2026 | **Télémétrie native** : l'interface web d'ECHOS est supprimée (ADR-007) ; consoles de logs et fenêtre d'analyse sont des fenêtres du Launcher qui présentent les séries d'ECHOS | Finir la contradiction avec l'ADR-001 (« aucune page web ») et lever le refus ancien d'une vue embarquée : il n'y a plus d'interface d'ECHOS à héberger |

@@ -17,6 +17,15 @@ Le Launcher est l'unique point d'entrée de LIVEX sur le poste de travail. Sa
 distribution conditionne l'accès à tous les autres composants, ce qui en fait le
 lieu naturel d'une arborescence de composants cohérente.
 
+> **État d'implémentation :** ce document spécifie la cible de packaging ; il
+> ne signifie pas que les installateurs Launcher ou tous les composants sont
+> déjà distribués selon cette arborescence. À la référence du
+> 2 octobre 2026, ECHOS et `syne-mock` fournissent un manifeste Launcher Linux,
+> SYNE réel et PRISM n'en fournissent pas de compatible, et les installateurs
+> Launcher Windows/Linux restent à produire et tester. Le statut par plateforme
+> est détaillé dans la
+> [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md).
+
 ## 2. Forme de la livraison
 
 | Caractéristique | Choix | Justification |

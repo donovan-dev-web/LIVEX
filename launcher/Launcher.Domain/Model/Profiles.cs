@@ -1,5 +1,12 @@
 namespace Launcher.Domain.Model;
 
+/// <summary>Identifiants de simulation pris en charge par la configuration V1.</summary>
+public static class WellKnownSimulations
+{
+    /// <summary>Profil batch de référence actuellement disponible dans SYNE réel.</summary>
+    public const string Reference = "reference";
+}
+
 /// <summary>Profils d'exécution prédéfinis (COMPONENTS.md §9).</summary>
 public static class WellKnownProfiles
 {

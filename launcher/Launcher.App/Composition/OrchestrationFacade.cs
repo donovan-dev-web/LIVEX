@@ -39,6 +39,9 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
     private readonly Dictionary<string, ManagedInstance> _managed = new(StringComparer.Ordinal);
     private readonly HashSet<string> _stopping = new(StringComparer.Ordinal);
     private readonly HashSet<string> _starting = new(StringComparer.Ordinal);
+    private readonly object _recentLogsGate = new();
+    private string? _recentLogsSignature;
+    private IReadOnlyList<LogEntryViewModel> _recentLogs = Array.Empty<LogEntryViewModel>();
 
     // Échantillonnage CPU : delta de temps processeur entre deux appels.
     private TimeSpan _lastProcessorTime = TimeSpan.Zero;
@@ -46,6 +49,12 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
     /// <summary>Journalise l'opération de cycle de vie la plus récente, pour la vue et le journal.</summary>
     public event EventHandler<string>? LifecycleReported;
+
+    /// <summary>
+    /// Levé quand une instance de composant vient de démarrer : c'est le signal d'ouverture
+    /// automatique de sa console de logs (USER_INTERFACE.md §9).
+    /// </summary>
+    public event EventHandler<ComponentStartedEventArgs>? ComponentStarted;
 
     /// <summary>Initialise la façade avec les dépendances concrètes de la composition.</summary>
     public OrchestrationFacade(
@@ -186,6 +195,22 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
     public async Task<string?> ToggleComponentAsync(string componentId, bool start) =>
         start ? await StartComponentAsync(componentId).ConfigureAwait(false) : await StopComponentAsync(componentId).ConfigureAwait(false);
 
+    /// <summary>
+    /// Dossier des journaux stdout/stderr d'une instance (sessions/&lt;instance&gt;/logs), celui
+    /// que la fenêtre console propose d'ouvrir. Chemin construit, non lu : il n'est pas
+    /// exigé que le dossier existe déjà.
+    /// </summary>
+    public string LogsDirectoryFor(string instanceId)
+    {
+        if (string.IsNullOrWhiteSpace(instanceId) || instanceId.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+            || instanceId.Contains("..", StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
+        return Path.Combine(_workspaceRoot, "sessions", instanceId, "logs");
+    }
+
     /// <inheritdoc />
     public ResourceSnapshot SampleResources()
     {
@@ -198,49 +223,69 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
     /// <inheritdoc />
     public IReadOnlyList<LogEntryViewModel> RecentLogs()
     {
-        var entries = new List<(DateTimeOffset Ts, SessionEvent Event)>();
-        try
+        // Le sampler de l'interface relit ce journal toutes les 800 ms : sans mémoire de la
+        // dernière lecture, chaque cycle relirait en entier les fichiers d'une journée entière
+        // et désérialiserait des milliers d'événements inchangés. La signature (chemin + taille)
+        // suffit : le journal de session ne fait qu'ajouter des lignes.
+        lock (_recentLogsGate)
         {
-            var root = _journalDirectory;
-            if (!Directory.Exists(root))
+            try
             {
-                return [];
-            }
-
-            foreach (var file in Directory.EnumerateFiles(root, "launcher-session-*.ndjson")
-                         .OrderDescending(StringComparer.Ordinal)
-                         .Take(3))
-            {
-                foreach (var line in File.ReadLines(file))
+                var root = _journalDirectory;
+                if (!Directory.Exists(root))
                 {
-                    try
+                    return _recentLogs;
+                }
+
+                var files = Directory.EnumerateFiles(root, "launcher-session-*.ndjson")
+                    .OrderDescending(StringComparer.Ordinal)
+                    .Take(3)
+                    .Select(path => (Path: path, Length: new FileInfo(path).Length))
+                    .ToList();
+                var signature = string.Join('|', files.Select(file => $"{file.Path}:{file.Length}"));
+                if (string.Equals(signature, _recentLogsSignature, StringComparison.Ordinal))
+                {
+                    return _recentLogs;
+                }
+
+                var entries = new List<(DateTimeOffset Ts, SessionEvent Event)>();
+                foreach (var (path, _) in files)
+                {
+                    foreach (var line in File.ReadLines(path))
                     {
-                        var @event = System.Text.Json.JsonSerializer.Deserialize<SessionEvent>(line, ContractJson.Compact);
-                        if (@event is not null && DateTimeOffset.TryParse(@event.Ts, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var ts))
+                        try
                         {
-                            entries.Add((ts, @event));
+                            var @event = System.Text.Json.JsonSerializer.Deserialize<SessionEvent>(line, ContractJson.Compact);
+                            if (@event is not null && DateTimeOffset.TryParse(@event.Ts, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var ts))
+                            {
+                                entries.Add((ts, @event));
+                            }
+                        }
+                        catch (System.Text.Json.JsonException)
+                        {
                         }
                     }
-                    catch (System.Text.Json.JsonException)
-                    {
-                    }
                 }
+
+                _recentLogs = entries
+                    .OrderByDescending(entry => entry.Ts)
+                    .Take(RecentLogCount)
+                    .Select(entry => new LogEntryViewModel
+                    {
+                        Level = entry.Event.Level,
+                        Message = entry.Event.Message,
+                        Timestamp = entry.Ts.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss", System.Globalization.CultureInfo.CurrentCulture),
+                    })
+                    .ToList();
+                _recentLogsSignature = signature;
+                return _recentLogs;
+            }
+            catch (IOException)
+            {
+                // Un fichier momentanément illisible ne vide pas le panneau : la dernière vue reste.
+                return _recentLogs;
             }
         }
-        catch (IOException)
-        {
-        }
-
-        return entries
-            .OrderByDescending(entry => entry.Ts)
-            .Take(RecentLogCount)
-            .Select(entry => new LogEntryViewModel
-            {
-                Level = entry.Event.Level,
-                Message = entry.Event.Message,
-                Timestamp = entry.Ts.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss", System.Globalization.CultureInfo.CurrentCulture),
-            })
-            .ToList();
     }
 
     /// <inheritdoc />
@@ -517,11 +562,14 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
                     var created = DateTimeOffset.TryParse(manifest.CreatedAt, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed)
                         ? parsed
                         : DateTimeOffset.MinValue;
+                    // La condition d'une campagne vivante est toujours « En cours » : aucun run
+                    // exécuté encore, runs en cours, ou tous exécutés en attente d'analyse et de
+                    // scellement. Seul le scellement fait « Terminée » (GUI.md §8).
                     var status = manifest.State switch
                     {
                         PackageStates.Sealed => "Terminée",
                         PackageStates.Recoverable => "Récupérable",
-                        _ => index.Runs.Count > 0 && index.Runs.Count >= manifest.Counts.Runs && manifest.Counts.Runs > 0 ? "En cours" : "En cours",
+                        _ => "En cours",
                     };
                     rows.Add((created, new ExperienceRowViewModel
                     {
@@ -562,16 +610,33 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
             managed = _managed.Values.ToList();
         }
 
-        foreach (var instance in managed)
+        if (managed.Count == 0)
         {
-            try
+            return;
+        }
+
+        try
+        {
+            // Arrêt simultané : chaque composant reçoit son propre délai de grâce déclaré au
+            // manifeste, et la fermeture attend le plus long des délais — jamais leur somme.
+            var stops = managed.Select(instance => Task.Run(async () =>
             {
-                _processes.StopAsync(instance.InstanceId, instance.ProcessId, instance.Control, _sessionToken, TimeSpan.FromSeconds(3), CancellationToken.None)
-                    .Wait(TimeSpan.FromSeconds(6));
-            }
-            catch (Exception)
-            {
-            }
+                try
+                {
+                    await _processes.StopAsync(instance.InstanceId, instance.ProcessId, instance.Control, _sessionToken,
+                        instance.Installation.ShutdownGrace, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Fermeture en cours : l'échec d'un arrêt gracieux ne doit pas empêcher les autres.
+                }
+            })).ToArray();
+            var bound = TimeSpan.FromMilliseconds(
+                managed.Max(instance => instance.Installation.ShutdownGrace.TotalMilliseconds) + 2000);
+            Task.WhenAll(stops).Wait(bound);
+        }
+        catch (AggregateException)
+        {
         }
     }
 
@@ -639,7 +704,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
             resolvedEndpoints.Add("control", control);
             foreach (var (kind, endpoint) in endpointDefinitions)
             {
-                if (kind == "control" || endpoint.Enabled == false || endpoint.Port is not { } port)
+                if (kind == "control" || endpoint.Enabled == false)
                 {
                     continue;
                 }
@@ -651,7 +716,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
                     throw new InvalidOperationException($"argument de lancement invalide pour le point d'accès « {kind} »");
                 }
 
-                var resolved = _ports.Resolve(componentId, instanceId, kind, port);
+                var resolved = _ports.Resolve(componentId, instanceId, kind, endpoint.Port);
                 if (string.Equals(endpoint.Transport, "websocket", StringComparison.OrdinalIgnoreCase))
                 {
                     resolved = resolved with { Url = $"ws://127.0.0.1:{resolved.Port}/" };
@@ -713,12 +778,82 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         {
             var seed = DateTimeOffset.UtcNow.ToUnixTimeSeconds() & 0x7FFFFFFF;
             arguments.AddRange([
-                "--simulation", "ecosystem_01",
+                "--simulation", WellKnownSimulations.Reference,
                 "--seed", seed.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 "--ticks", "1000000",
                 "--autostart",
             ]);
         }
+
+        // État de sortie partagé entre le thread de démarrage et la publication de fin de
+        // processus : la notification est asynchrone et peut arriver avant que l'instance
+        // existe pour le registre.
+        ProcessExitedEventArgs? observedExit = null;
+        var exitRegistered = false;
+        var exitProcessed = false;
+
+        void OnExited(object? sender, ProcessExitedEventArgs args)
+        {
+            if (args.InstanceId != instanceId)
+            {
+                return;
+            }
+
+            lock (_gate)
+            {
+                observedExit = args;
+            }
+
+            FinishExit();
+        }
+
+        // Nettoyage d'une fin de processus, exactement une fois : publié par l'événement
+        // quand l'instance est enregistrée, sinon pris en charge par le thread de démarrage.
+        void FinishExit()
+        {
+            ProcessExitedEventArgs exit;
+            lock (_gate)
+            {
+                if (exitProcessed || observedExit is null || !exitRegistered)
+                {
+                    return;
+                }
+
+                exitProcessed = true;
+                exit = observedExit;
+            }
+
+            _processes.Exited -= OnExited;
+            _orchestration.Registry.Remove(instanceId);
+            _ports.Release(instanceId);
+            lock (_gate)
+            {
+                if (_managed.TryGetValue(componentId, out var current) && current.InstanceId == instanceId)
+                {
+                    _managed.Remove(componentId);
+                }
+            }
+
+            var stoppingNow = false;
+            lock (_gate)
+            {
+                stoppingNow = _stopping.Contains(instanceId);
+            }
+
+            if (!stoppingNow)
+            {
+                // Fin non demandée : le composant passe Défaillant avec la cause normalisée (COMPONENTS.md §4.1).
+                var at = DateTimeOffset.UtcNow;
+                _orchestration.ApplyHealth(instanceId, StateRules.ProcessLost(at, exit.ExitCode, exit.Outcome));
+                LifecycleReported?.Invoke(this, $"{DisplayName(componentId)} terminé de façon inattendue (code {exit.ExitCode})");
+            }
+        }
+
+        // Abonnement avant StartAsync : un composant qui s'arrête dans la foulée (port repris
+        // entre le pré-vol et le bind, exécutable défaillant) publie sa fin de façon
+        // asynchrone — un abonnement postérieur perd cette unique notification et laisse
+        // l'instance bloquée en « Démarrage » jusqu'au délai de démarrage du manifeste.
+        _processes.Exited += OnExited;
 
         var startedAt = DateTimeOffset.UtcNow;
         int processId;
@@ -742,6 +877,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         }
         catch (Exception exception)
         {
+            _processes.Exited -= OnExited;
             _ports.Release(instanceId);
             return $"démarrage impossible : {exception.Message}";
         }
@@ -770,43 +906,40 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
             _managed[componentId] = managed;
         }
 
-        void OnExited(object? sender, ProcessExitedEventArgs args)
+        ProcessExitedEventArgs? earlyExit;
+        lock (_gate)
         {
-            if (args.InstanceId != instanceId)
-            {
-                return;
-            }
-
-            _processes.Exited -= OnExited;
-            _orchestration.Registry.Remove(instanceId);
-            _ports.Release(instanceId);
-            lock (_gate)
-            {
-                if (_managed.TryGetValue(componentId, out var current) && current.InstanceId == instanceId)
-                {
-                    _managed.Remove(componentId);
-                }
-            }
-
-            var stoppingNow = false;
-            lock (_gate)
-            {
-                stoppingNow = _stopping.Contains(instanceId);
-            }
-
-            if (!stoppingNow)
-            {
-                // Fin non demandée : le composant passe Défaillant avec la cause normalisée (COMPONENTS.md §4.1).
-                var at = DateTimeOffset.UtcNow;
-                _orchestration.ApplyHealth(instanceId, StateRules.ProcessLost(at, args.ExitCode, args.Outcome));
-                LifecycleReported?.Invoke(this, $"{DisplayName(componentId)} terminé de façon inattendue (code {args.ExitCode})");
-            }
+            exitRegistered = true;
+            earlyExit = observedExit;
         }
 
-        _processes.Exited += OnExited;
+        // Sortie survenue pendant le lancement : le nettoyage est mené ici (le thread de
+        // démarrage est le seul à pouvoir le faire à ce stade) et le démarrage est refusé
+        // explicitement — sans cela l'interface afficherait une carte « Démarrage » qui ne
+        // finirait jamais, et le port resterait réservé.
+        FinishExit();
+        if (earlyExit is not null)
+        {
+            return $"{DisplayName(componentId)} s'est arrêté immédiatement après le lancement (code {earlyExit.ExitCode}, {earlyExit.Outcome})";
+        }
 
         _journal.Info("ComponentStart", $"{instanceId} démarré (PID {processId})", correlationId, instanceId);
         LifecycleReported?.Invoke(this, $"{DisplayName(componentId)} démarré (PID {processId})");
+        try
+        {
+            ComponentStarted?.Invoke(this, new ComponentStartedEventArgs
+            {
+                InstanceId = instanceId,
+                ComponentId = componentId,
+                DisplayName = DisplayName(componentId),
+            });
+        }
+        catch (Exception exception)
+        {
+            // Un observateur (ouverture de console) en échec ne condamne pas le démarrage.
+            _journal.Warn("ComponentStart", $"{instanceId} : observateur de démarrage en échec — {exception.Message}", correlationId, instanceId);
+        }
+
         return null;
     }
 
@@ -830,7 +963,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
         try
         {
-            var exit = await _processes.StopAsync(managed.InstanceId, managed.ProcessId, managed.Control, _sessionToken, TimeSpan.FromSeconds(5), CancellationToken.None)
+            var exit = await _processes.StopAsync(managed.InstanceId, managed.ProcessId, managed.Control, _sessionToken, managed.Installation.ShutdownGrace, CancellationToken.None)
                 .ConfigureAwait(false);
 
             // Nettoyage assuré même si l'événement de sortie a déjà consommé l'instance.
@@ -865,6 +998,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         var row = new ComponentRowViewModel
         {
             Id = componentId,
+            InstanceId = instance?.InstanceId,
             Name = DisplayName(componentId),
             Version = instance?.Installation.Manifest?.Version ?? installation?.Manifest?.Version ?? "—",
             Subtitle = SubtitleOf(componentId),
@@ -1074,4 +1208,17 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
     };
 
     private sealed record ManagedInstance(string InstanceId, int ProcessId, Uri Control, ComponentInstallation Installation, DateTimeOffset StartedAt);
+}
+
+/// <summary>Démarrage observé d'une instance de composant (USER_INTERFACE.md §9 : ouverture de console).</summary>
+public sealed class ComponentStartedEventArgs : EventArgs
+{
+    /// <summary>Identifiant d'instance démarrée.</summary>
+    public string InstanceId { get; init; } = string.Empty;
+
+    /// <summary>Identifiant de type de composant.</summary>
+    public string ComponentId { get; init; } = string.Empty;
+
+    /// <summary>Nom affichable du composant.</summary>
+    public string DisplayName { get; init; } = string.Empty;
 }

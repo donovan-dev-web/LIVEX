@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : index à jour
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 5 octobre 2026
 
 Ce dossier contient les ADR spécifiques au Launcher.
 
@@ -16,6 +16,7 @@ Ce dossier contient les ADR spécifiques au Launcher.
 | `ADR-004-format-de-paquet-livexp.md` | Format unique `.livexp`, vivant puis scellé | [Accepted] |
 | `ADR-005-execution-sequentielle-mono-espace.md` | Exécution séquentielle et mono-espace en V0.1 | [Accepted] |
 | `ADR-006-prism-verrouille-en-attente.md` | PRISM conçu au niveau du modèle, accès verrouillé | [Accepted] |
+| `ADR-007-consoles-et-fenetre-analyse-natives.md` | Consoles natives par composant, ECHOS sans interface, fenêtre d'analyse dans le Launcher | [Accepted] |
 
 ## ADR transverses référencés
 
@@ -41,3 +42,4 @@ modèle des autres composants. Les ADR sont **numérotés à partir de 1** ; le 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 30 septembre 2026 | Création des ADR-001 à ADR-006 | Consigner les décisions structurantes du Launcher |
+| 5 octobre 2026 | Création de l'ADR-007 ; l'ADR-003 d'ECHOS (shell Electron) passe en [Superseded] | Centraliser la présentation dans le Launcher et supprimer Chromium d'ECHOS |

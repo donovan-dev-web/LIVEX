@@ -107,8 +107,14 @@ public sealed class FakeOrchestrationFacade : IOrchestrationFacade
         },
     ];
 
-    public Task<string> RunCampaignAsync(ExperimentDefinition definition, CancellationToken cancellationToken) =>
-        Task.FromResult(string.Empty);
+    /// <summary>Dernière définition soumise à la création — vérifie Mono/MultiRun et la cadence.</summary>
+    public ExperimentDefinition? LastDefinition { get; private set; }
+
+    public Task<string> RunCampaignAsync(ExperimentDefinition definition, CancellationToken cancellationToken)
+    {
+        LastDefinition = definition;
+        return Task.FromResult(string.Empty);
+    }
 
     public Task<string> ResumeCampaignAsync(string packagePath, CancellationToken cancellationToken) =>
         Task.FromResult(packagePath);
@@ -183,23 +189,90 @@ public sealed class ReportProvenanceTests : IDisposable
         Assert.Contains("paquet corrompu", viewModel.ReportStatus);
     }
 
-    /// <summary>La navigation expose les écrans V1 dans leur ordre (USER_INTERFACE.md).</summary>
+    /// <summary>
+    /// La navigation expose les écrans V1 dans leur ordre (USER_INTERFACE.md).
+    /// « Campagnes » n'existe plus : expériences et campagnes ne font qu'un écran,
+    /// avec le mode Mono/MultiRun (voir la vue Expériences).
+    /// </summary>
     [Fact]
-    public void Navigation_neuf_entrees_dans_l_ordre_v1()
+    public void Navigation_huit_entrees_dans_l_ordre_v1()
     {
         var viewModel = new MainWindowViewModel(new FakeOrchestrationFacade());
 
-        Assert.Equal(9, viewModel.NavItems.Count);
+        Assert.Equal(8, viewModel.NavItems.Count);
         Assert.Equal(
-            ["Accueil", "Expériences", "Campagnes", "Analyse", "Rapports", "Configuration", "Logs", "Monitoring", "Documentation"],
+            ["Accueil", "Expériences", "Analyse", "Rapports", "Configuration", "Logs", "Monitoring", "Documentation"],
             viewModel.NavItems.Select(item => item.Title).ToList());
+        Assert.DoesNotContain(viewModel.NavItems, item => item.Id == MainWindowViewModel.NavCampagnesId);
 
         Assert.Equal(MainWindowViewModel.NavAccueilId, viewModel.SelectedNavId);
         Assert.Equal(0, viewModel.SelectedNavIndex);
         viewModel.NavigateCommand.Execute(MainWindowViewModel.NavAnalyseId);
         Assert.Equal(MainWindowViewModel.NavAnalyseId, viewModel.SelectedNavId);
-        Assert.Equal(3, viewModel.SelectedNavIndex);
+        Assert.Equal(2, viewModel.SelectedNavIndex);
         Assert.Equal("Analyse", viewModel.SelectedNavTitle);
+    }
+
+    /// <summary>
+    /// Un seul écran de création, deux rythmes : Mono impose un run et la cadence
+    /// directe (10 ticks/s, regardable en fenêtre d'analyse) ; MultiRun autorise la
+    /// série et passe en batch (1000 ticks/s). La cadence choisie part dans la
+    /// définition — donc dans le `config.resolved.json` du paquet.
+    /// </summary>
+    [Fact]
+    public async Task Creation_Mono_force_un_seul_run_et_la_cadence_directe()
+    {
+        var facade = new FakeOrchestrationFacade();
+        var viewModel = new MainWindowViewModel(facade) { CampaignTitle = "Essai direct" };
+
+        Assert.Equal("Mono", viewModel.SelectedRunMode);
+        Assert.False(viewModel.IsMultiRun);
+        Assert.Equal(MainWindowViewModel.DirectTicksPerSecond, viewModel.SelectedTicksPerSecond);
+        Assert.True(viewModel.CanCreateCampaign);
+
+        // Le champ « Nombre de runs » n'existe pas en Mono : un run, toujours.
+        viewModel.RunCountInput = "7";
+        viewModel.CreateCampaignCommand.Execute("start");
+        await Task.Delay(1);
+
+        var definition = Assert.IsType<ExperimentDefinition>(facade.LastDefinition);
+        Assert.Equal(1, definition.RunCount);
+        Assert.Equal(MainWindowViewModel.DirectTicksPerSecond, definition.TicksPerSecond);
+
+        // MultiRun : la série redevient possible et le rythme passe en batch.
+        viewModel.SelectedRunMode = "MultiRun";
+        Assert.True(viewModel.IsMultiRun);
+        Assert.Equal(Launcher.Application.RunEngineProfile.BatchTicksPerSecond, viewModel.SelectedTicksPerSecond);
+
+        viewModel.RunCountInput = "3";
+        viewModel.CreateCampaignCommand.Execute("start");
+        await Task.Delay(1);
+
+        definition = Assert.IsType<ExperimentDefinition>(facade.LastDefinition);
+        Assert.Equal(3, definition.RunCount);
+        Assert.Equal(Launcher.Application.RunEngineProfile.BatchTicksPerSecond, definition.TicksPerSecond);
+        Assert.Empty(definition.Validate());
+    }
+
+    /// <summary>La vitesse reste libre : on peut regarder un MultiRun, accélérer un Mono.</summary>
+    [Fact]
+    public void La_cadence_de_lexecution_est_choisissable_independamment_du_mode()
+    {
+        var viewModel = new MainWindowViewModel(new FakeOrchestrationFacade());
+
+        Assert.Equal([10, 100, 1000], viewModel.TicksPerSecondOptions);
+        viewModel.SelectedTicksPerSecond = 100;
+        Assert.Equal(100, viewModel.SelectedTicksPerSecond);
+        Assert.True(viewModel.CanCreateCampaign);
+
+        // Changement de mode : le défaut du mode s'applique, puis reste modifiable.
+        viewModel.SelectedRunMode = "MultiRun";
+        Assert.Equal(1000, viewModel.SelectedTicksPerSecond);
+        viewModel.SelectedRunMode = "Mono";
+        Assert.Equal(MainWindowViewModel.DirectTicksPerSecond, viewModel.SelectedTicksPerSecond);
+        viewModel.SelectedTicksPerSecond = 1000;
+        Assert.Equal(1000, viewModel.SelectedTicksPerSecond);
+        Assert.True(viewModel.CanCreateCampaign);
     }
 
     /// <summary>
