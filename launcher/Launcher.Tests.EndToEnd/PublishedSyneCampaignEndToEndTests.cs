@@ -136,8 +136,13 @@ public sealed class PublishedSyneCampaignEndToEndTests : IDisposable
         // pendant le run, seulement qu'elle a interrogé le moteur une fois.
         Assert.True(observed.Count >= 3,
             $"la sonde d'avancement doit accompagner le run ; {observed.Count} échantillon(s) pour 1000 ticks");
-        // L'horizon est connu : la barre peut donc afficher un pourcentage honnête.
-        Assert.All(observed, progress => Assert.Equal(1000, progress.MaxTicks));
+        // L'horizon est connu dès que le run tourne : la barre peut donc afficher un
+        // pourcentage honnête. Un échantillon pris pendant que le moteur attend encore
+        // (état « ready », aucun tic, aucun horizon) ne prétend pas l'avoir — il signale
+        // l'indétermination plutôt que de publier un faux dénominateur.
+        var inFlight = observed.Where(progress => progress.Tick > 0).ToArray();
+        Assert.NotEmpty(inFlight);
+        Assert.All(inFlight, progress => Assert.Equal(1000, progress.MaxTicks));
         Assert.Contains(observed, progress => progress.Tick > 0);
         // L'avancement est monotone : une barre qui recule serait un défaut d'affichage.
         Assert.Equal(
