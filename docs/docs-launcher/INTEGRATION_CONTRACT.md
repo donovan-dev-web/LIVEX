@@ -20,6 +20,19 @@ format des messages `snapshot` et `event` n'est **pas** traité ici.
 Règle d'or : un composant respectant ce contrat **fonctionne sans Launcher**. Le
 contrat ne crée aucune dépendance.
 
+> **Important — contrat cible, conformité non présumée :** les exigences
+> « doit » ci-dessous définissent la cible d'intégration ; elles ne certifient
+> pas que les composants du dépôt les respectent. Au 3 octobre 2026, SYNE
+> possède un manifeste Linux et un batch `reference` avec cycle supervisé
+> testé au niveau du processus ; le défaut Launcher est aligné sur `reference`,
+> mais le parcours paquet complet n'est pas accepté. ECHOS expose les trois
+> routes headless du §10.1 contre sa base analytique ; le Launcher prépare
+> `experiment.json`, mais la chaîne d'ingestion reste à valider.
+> `syne-mock` reste une émulation de développement Linux non scientifique ;
+> PRISM n'a pas de manifeste Launcher accepté. Les statuts et portes par rôle
+> sont suivis dans la [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md)
+> et la [roadmap de réalisation](../../launcher/ROADMAP-V1.md).
+
 Ce document a deux lectures :
 
 - les **exigences normatives**, en « doit », qui engagent les composants ;
@@ -29,6 +42,10 @@ Ce document a deux lectures :
 ## 2. Manifeste de composant
 
 Chaque composant installe un fichier `component.json` à sa racine.
+La structure versionnée et machine-readable pour `schema: 1` est définie dans
+[`../../launcher/contracts/component-manifest-v1.schema.json`](../../launcher/contracts/component-manifest-v1.schema.json).
+Le versionnement opérationnel des arguments et du cycle de vie est récapitulé
+dans [`../../launcher/contracts/INTEGRATION-CONTRACT-v1.md`](../../launcher/contracts/INTEGRATION-CONTRACT-v1.md).
 
 ```json
 {
@@ -89,9 +106,11 @@ Indispensables pour l'exécution autonome, donc pour les campagnes.
 | `--export-dir <path>` | Répertoire de destination des résultats |
 | `--autostart` | Démarre sans attendre une commande, mode batch |
 
-> **[À CONFIRMER]** : SYNE sait-il déjà tourner sans interaction et se terminer seul à
-> la fin des ticks ? Sinon c'est un prérequis bloquant pour toute campagne
-> multi-run. C'est la porte **G2** de `ROADMAP.md`.
+> **État observé :** le CLI SYNE sait exécuter localement une simulation avec
+> `--max-ticks`, mais ne fournit pas encore le contrat batch Launcher
+> `--simulation`, `--seed`, `--ticks`, `--export-dir`, `--autostart`, readiness
+> et arrêt propre. Ce n'est donc pas encore une intégration de campagne
+> acceptée. Voir les portes **P2** et **J2A**.
 
 Les adaptateurs Linux livrés pour ECHOS et `syne-mock` acceptent les arguments
 communs du Launcher. ECHOS mappe `--control-port` vers `ECHOS_PORT` ;
@@ -206,9 +225,9 @@ protocole.
 | **Analyser un run** | `AnalyzeRun(runPath)` produit l'analyse individuelle. |
 | **Analyser une expérience** | `AnalyzeExperiment(experimentPath)` produit l'analyse agrégée. |
 | **Générer un rapport** | `GenerateReport(experimentPath)` écrit le rapport d'émergence. |
-| **Être pilotable sans interface** | Ces opérations doivent être invocables sans passer par l'interface web. |
+| **Être pilotable sans interface** | Ces opérations doivent être invocables par la seule API — ECHOS **n'expose aucune interface** (ADR-007). |
 | **Définir les métriques scientifiques** | Le Launcher ne définit aucune métrique ; il transporte et organise. |
-| **Exposer son interface à titre de télémétrie** | L'interface web reste accessible pour l'observation en direct, sans être un prérequis. |
+| **Exposer ses séries à titre de télémétrie** | L'API REST (`/api/runs`, `/api/runs/{id}`, `/api/runs/{id}/metrics`, `/api/runs/{id}/decisions`, `/api/beliefs`, `/api/relationships`, `/api/groups`, `/api/world`, `/api/trust-graph`, `/api/emergent-phenomena`, `/api/compare`) alimente la **fenêtre d'analyse native** du Launcher et ses sous-écrans (statistiques, confiance, monde 2D, fiches d'entités), sondée environ chaque seconde. L'observation reste optionnelle : aucune campagne ne dépend de l'ouverture d'une fenêtre. |
 
 ### 10.1 Forme opérante — demandes d'analyse
 
@@ -218,6 +237,7 @@ JSON. Chemins stables, versionnés avec le présent contrat :
 
 | Opération | Chemin | Corps de la demande | Réponse `200` |
 | :-- | :-- | :-- | :-- |
+| `IngestRun` | `POST /ingest/run` | `{ "runId", "runPath" }` | `{ "ingested": { "runId", "ticks", "events", "metrics", "contexts", "decisionTraces", "gaps" } }` |
 | `AnalyzeRun` | `POST /analysis/run` | `{ "experimentId", "runId", "runPath" }` | `{ "files": [ { "name", "content" } ] }` — `content` en base64 |
 | `AnalyzeExperiment` | `POST /analysis/experiment` | `{ "experimentId", "experimentPath" }` | `{ "files": [ { "name", "content" } ] }` |
 | `GenerateReport` | `POST /analysis/report` | `{ "experimentId", "experimentPath" }` | `{ "report": "<Markdown>" }` |
@@ -229,6 +249,26 @@ JSON. Chemins stables, versionnés avec le présent contrat :
 | **Authentification** | Aucun jeton sur ces chemins : ils n'ordonnent ni le démarrage ni l'arrêt d'un composant. Le jeton reste exigé sur `/control/*` (§6). |
 | **Déterminisme** | Le contenu rendu par ECHOS est déterministe pour un dossier d'entrée donné ; le Launcher le transporte tel quel (`ADR-003`). |
 | **Isolation** | Une demande d'analyse qui échoue ne fait échouer ni le run ni la campagne (`EXPERIMENTS.md` §11). |
+
+### 10.2 Alimentation de la base analytique — `IngestRun`
+
+L'analyse ne calcule rien : elle lit des runs déjà enregistrés. `IngestRun` est le
+chemin qui enregistre un run batch, et il est **préalable** à toute analyse :
+le Launcher l'appelle avant `AnalyzeRun` sur le même `runPath`.
+
+| Sujet | Précision |
+| :-- | :-- |
+| **`runPath`** | Le répertoire de travail reçu par SYNE (`--work-dir`). Le flux est cherché dans `<runPath>/data/stream.jsonl`, à côté de `<runPath>/data/result.json`. |
+| **`runId` analytique** | `{experimentId}-{runId}` (`RUN-0001` n'est unique que dans sa campagne). Le Launcher le passe à SYNE via `--run-id`, il est écrit dans le flux, et c'est la clé d'enregistrement. |
+| **Autorité de l'identité** | Le `runId` de la demande est une **vérification** : s'il diffère de celui du flux, la demande est refusée `409` avant toute écriture. L'identité du fichier fait foi. En retour, ECHOS renvoie l'identité qu'il a enregistrée et le Launcher **constate** qu'elle est celle qu'il va demander à analyser : un dossier de run mal apparié est nommé comme tel, pas découvert plus tard comme un « run inconnu » opaque. |
+| **Idempotence** | Par **refus** : un run déjà enregistré renvoie `409` au lieu d'être réécrit. `events_log` n'a pas de clé d'idempotence, donc une réécriture doublerait les événements et produirait un rapport silencieusement faux. |
+| **Intégrité** | Le flux doit avoir des ticks de snapshot strictement croissants et **exactement un** `tick_summary` par snapshot. Si `result.json` accompagne le flux, ses `ticks` et son `runId` doivent correspondre — c'est le seul contrôle qui détecte une troncature entre deux segments. |
+| **Atomicité** | Une ingestion qui échoue purge les lignes qu'elle a écrites. Le pipeline valide chaque tick séparément : sans cette purge, un flux invalidé à mi-parcours laisserait un run à la fois tronqué et protégé par la garde anti-doublon, et l'archive valide ne pourrait plus jamais être ingérée. |
+| **Erreurs** | `404` flux absent, `409` run déjà enregistré ou identité divergente ou archive tronquée, `422` flux non conforme, `503` base analytique non configurée. |
+
+Le Launcher archive `stream.jsonl` dans le `.livexp` : c'est cet artefact, et lui
+seul, qui permet de réanalyser un run plus tard, SYNE éteint. La réanalyse depuis
+le paquet produit les **mêmes octets** que celle faite pendant la campagne.
 
 ## 11. Exigences propres à PRISM
 
@@ -343,9 +383,13 @@ la matrice des modes de `COMPONENTS.md`.
 
 ## Points restés ouverts dans ce document
 
-- Le mode batch de SYNE (`--seed`, `--ticks`, `--export-dir`) n'est pas confirmé
-  comme existant. C'est une porte bloquante pour les campagnes, voir `ROADMAP.md`.
-- Le mécanisme d'arrêt propre sous Windows sans console n'est pas validé.
+- SYNE ne prend en charge à ce stade que le scénario `reference` sur Linux ;
+  le Launcher le sélectionne par défaut, mais les scénarios saisis
+  manuellement ne sont pas encore validés à partir d'une liste déclarée au
+  manifeste. Le collecteur de paquet et le parcours campagne avec l'installation
+  publiée doivent encore être testés.
+- Le mécanisme d'arrêt propre sous Windows sans console n'est pas validé ;
+  le manifeste SYNE ne déclare pas Windows.
 - La capacité de PRISM à exposer des endpoints HTTP n'est pas confirmée. À défaut,
   un fichier de statut et un battement de cœur sur le WebSocket.
 - Les formats d'export de SYNE ne sont pas figés.

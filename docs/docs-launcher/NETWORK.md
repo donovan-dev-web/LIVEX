@@ -118,7 +118,7 @@ disponibilité.
 | Raison | Conséquence si le Launcher relaisait |
 | :-- | :-- |
 | **Volume** | Un snapshot par tick sur un monde de plusieurs milliers d'agents. Le Launcher ferait un travail qu'aucun de ses composants ne lui demande. |
-| **Disponibilité** | Un bug, un ralentissement ou un plantage de l'interface interromprait la télémétrie **pendant que la simulation continue**. Le mode Immersion casserait sans raison. |
+| **Disponibilité** | Un bug, un ralentissement ou un plantage de la fenêtre d'analyse interromprait la télémétrie **pendant que la simulation continue**. Le mode Immersion casserait sans raison. |
 | **Modèle de couches** | Le Launcher ne détient aucune copie de l'état simulé (`ARCHITECTURE.md` §3). Relayer suppose d'être au courant de l'état, donc de le posséder. |
 | **Mesure** | Le flux direct reste attribuable à une paire de composants par son bloc d'adresses (§12). Un relais le confondrait avec le trafic du canal 1. |
 
@@ -155,6 +155,10 @@ commandes de cycle de vie**, pas du point de vue des octets.
 
 Le protocole de données — le format des messages `snapshot` et `event` — est une
 décision encore ouverte. Le Launcher ne doit pas en dépendre pour fonctionner.
+Le champ `protocolVersion` publié par `/info` et utilisé par le registre
+versionne le plan de contrôle ; il ne ferme pas cette décision et ne versionne
+pas les messages de données. Ceux-ci devront annoncer leur compatibilité par
+le contrat de données lorsqu'il sera arbitré (P1).
 
 Un **adaptateur de protocole** est donc la couche qui isole cette décision. Il
 traduit le protocole courant vers les types internes du Launcher, et rien d'autre.
@@ -164,7 +168,7 @@ traduit le protocole courant vers les types internes du Launcher, et rien d'autr
 | **Isolation** | `Launcher.Domain` ne référence aucun type du protocole. Seul `Launcher.Integration` le connaît. |
 | **Remplacement** | Changer de protocole revient à remplacer l'adaptateur, sans toucher au domaine ni à l'interface. |
 | **Indépendance du contrôle** | Le plan de contrôle — santé, infos, métriques, registre, arrêt — ne dépend **jamais** de l'adaptateur. C'est ce qui permet de développer le Launcher avant la décision. |
-| **Version déclarée** | Chaque instance publie son `protocolVersion` dans le registre. Une incompatibilité est détectée à l'enregistrement. |
+| **Compatibilité du contrôle** | `protocolVersion` dans `/info` désigne la version majeure du contrat de contrôle et de registre. La version du flux snapshot/event est indépendante et reste définie par son propre contrat ; une incompatibilité du flux ne doit pas être inférée de ce seul nombre. |
 | **Adaptateur minimal** | Si aucun protocole n'est résolu, l'adaptateur minimal suffit : le Launcher pilote le plan de contrôle et ne consomme aucun flux de données. |
 
 Cette séparation a une conséquence concrète : **le Launcher peut être développé,
@@ -391,7 +395,7 @@ exemples à arrêter.*
 | **Bind local par défaut** | Tous les composants écoutent sur `127.0.0.1`. L'écoute sur le réseau local est une option explicite, jamais implicite. |
 | **Jeton de session** | Généré par le Launcher à chaque démarrage, transmis par variable d'environnement — jamais en argument de ligne de commande, visible dans la liste des processus. Exigé sur toutes les commandes de contrôle. |
 | **Lecture et écriture** | `/health` et `/info` peuvent rester en lecture sans jeton en local ; toute commande exige le jeton. |
-| **Origine navigateur** | L'interface ECHOS appelle SYNE et l'API ECHOS depuis un navigateur : liste blanche d'origines et vérification de l'en-tête `Origin` à l'ouverture du WebSocket. |
+| **Origine navigateur** | Sans interface web, il n'y a **plus d'origine navigateur** à blanchir : la fenêtre d'analyse est un client HTTP natif du Launcher, sur `127.0.0.1` uniquement. |
 | **TLS** | Non requis en T0. Obligatoire dès qu'on quitte la boucle locale. Gestion des certificats à spécifier. |
 | **Pare-feu** | L'installeur ne modifie pas le pare-feu sans confirmation ; les ports à ouvrir sont documentés. |
 | **Validation** | Les arguments envoyés à un Node Agent respectent les règles de chemins connus et de paramètres validés. |
@@ -425,8 +429,8 @@ n'y figure pas — ce n'est pas un mode, mais l'absence de moteur (voir §9.2).
 | Mode d'usage (`COMPONENTS.md` §8.2) | Composants | Réseau requis |
 | :-- | :-- | :-- |
 | **Simulation seule** | SYNE | Canal 1 seulement : Launcher → SYNE, :5181 |
-| **Analyse pur** | SYNE + ECHOS, sans interface | + canal 2 : ECHOS ⇄ SYNE sur :5180, en direct |
-| **Analyse et télémétrie** | SYNE + ECHOS complet | + interface ECHOS ouverte sur :5000, même flux |
+| **Analyse pur** | SYNE + ECHOS | + canal 2 : ECHOS ⇄ SYNE sur :5180, en direct |
+| **Analyse et télémétrie** | SYNE + ECHOS + fenêtres natives | + sondage Launcher → ECHOS sur :5000 (fenêtre d'analyse), même flux |
 | **Immersif** | SYNE + PRISM | + canal 2 : PRISM ⇄ SYNE sur :5180, en direct |
 | **Expérience** | SYNE + ECHOS + PRISM | Tous les canaux, plus N instances SYNE |
 | **Personnalisé** | au choix | Le strict nécessaire aux composants retenus |

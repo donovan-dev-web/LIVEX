@@ -209,6 +209,31 @@ Cette propriété est vérifiable : deux paquets scellés se comparent avec
 `cmp` sans différence. Elle fait du paquet un support de reproductibilité au même
 titre que la graine.
 
+C'est aussi la raison pour laquelle `config.resolved.json` **exclut les valeurs de
+transport** — port de contrôle, jeton de session, identifiant de corrélation,
+horodatages, chemins. Ces valeurs changent à chaque exécution ; les inscrire ferait
+diverger deux paquets d'une même campagne qui doivent rester identiques.
+
+### 6.1 `config.resolved.json`
+
+Le document porte un `schema`, puis quatre blocs :
+
+| Bloc | Contenu |
+| :-- | :-- |
+| `campaign` | la définition demandée par l'opérateur, telle que rejouée |
+| `run` | les paramètres résolus du run : `runId`, `attempt`, `seed` (dérivée, effective), `ticks`, `agentCount`, `simulation` |
+| `engine` | ce que le Launcher a transmis : `component`, `profile`, `headless`, `autoStart`, `exportStream`, `analyticsRunId`, et `configOverlay` — la surcouche de configuration effectivement remise au moteur |
+| `schema` | version du format, alignée sur celle du manifeste |
+
+`configOverlay` n'est pas une reformulation de `campaign` : c'est le document que le
+Launcher a réellement écrit dans `launcher-config.json` avant le lancement. Le même
+type (`RunEngineProfile`) produit les deux à partir du seul `RunSpec`, si bien que le
+paquet ne peut pas attester une configuration différente de celle qui a été appliquée.
+
+Le document enregistre les décisions du Launcher. Il ne décrit pas les réglages
+internes du moteur, qui restent la propriété du composant : le Launcher ne les
+connaît pas et ne les invente pas. Voir `DATA_FLOW.md` §6.3.
+
 ## 7. Versionnage et compatibilité
 
 | Règle | Contenu |
