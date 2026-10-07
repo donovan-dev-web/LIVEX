@@ -44,6 +44,41 @@ public sealed class HealthProber : IHealthProbe
     }
 
     /// <inheritdoc />
+    public async Task<RunTickProgress?> FetchRunProgressAsync(Uri controlEndpoint, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var json = await _httpClient.GetStringAsync(
+                new Uri(controlEndpoint, "/api/control/status"), cancellationToken).ConfigureAwait(false);
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("tick", out var tickElement) || tickElement.ValueKind != JsonValueKind.Number)
+            {
+                return null;
+            }
+
+            long? maxTicks = root.TryGetProperty("maxTicks", out var maxElement)
+                             && maxElement.ValueKind == JsonValueKind.Number
+                ? maxElement.GetInt64()
+                : null;
+            int alive = root.TryGetProperty("aliveCount", out var aliveElement)
+                        && aliveElement.ValueKind == JsonValueKind.Number
+                ? aliveElement.GetInt32()
+                : 0;
+            string state = root.TryGetProperty("state", out var stateElement)
+                ? stateElement.GetString() ?? string.Empty
+                : string.Empty;
+            return new RunTickProgress(tickElement.GetInt64(), maxTicks, alive, state);
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or JsonException)
+        {
+            // Un moteur qui n'expose pas cet état ne doit pas faire échouer le run :
+            // l'avancement est un confort d'affichage, pas une condition d'exécution.
+            return null;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<ComponentInfo?> FetchInfoAsync(Uri controlEndpoint, CancellationToken cancellationToken)
     {
         try

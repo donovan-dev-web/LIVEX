@@ -20,6 +20,51 @@ public interface IProcessManager
 
     /// <summary>Événement levé quand un processus se termine de lui-même.</summary>
     event EventHandler<ProcessExitedEventArgs> Exited;
+
+    /// <summary>Événement levé pour chaque ligne de sortie produite par un composant, en direct.</summary>
+    event EventHandler<ComponentLogLineEventArgs> LineEmitted;
+}
+
+/// <summary>Ligne brute de sortie d'un composant, diffusée en direct vers les consoles (USER_INTERFACE.md §9).</summary>
+public sealed class ComponentLogLineEventArgs : EventArgs
+{
+    /// <summary>Ligne publiée.</summary>
+    public ComponentLogLine Line { get; init; } = new();
+}
+
+/// <summary>
+/// Une ligne de sortie d'instance, séquencée globalement : la séquence impose l'ordre
+/// d'affichage quand deux composants publient en même temps.
+/// </summary>
+public sealed class ComponentLogLine
+{
+    /// <summary>Séquence globale croissante, ordre d'affichage.</summary>
+    public long Sequence { get; init; }
+
+    /// <summary>Horodatage de réception de la ligne.</summary>
+    public DateTimeOffset Timestamp { get; init; }
+
+    /// <summary>Instance émettrice.</summary>
+    public string InstanceId { get; init; } = string.Empty;
+
+    /// <summary>Canal : « stdout » ou « stderr ».</summary>
+    public string Stream { get; init; } = string.Empty;
+
+    /// <summary>Texte de la ligne, tel que produit par le composant.</summary>
+    public string Text { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Source de lecture des lignes de composant pour les consoles (USER_INTERFACE.md §9). Réalisée par le
+/// tampon d'infrastructure ; la présentation ne connaît que cette abstraction.
+/// </summary>
+public interface IComponentLogSource
+{
+    /// <summary>Lignes d'une instance publiées après <paramref name="afterSequence"/>, dans l'ordre.</summary>
+    IReadOnlyList<ComponentLogLine> ReadSince(string instanceId, long afterSequence);
+
+    /// <summary>Dernière séquence connue pour l'instance ; 0 si aucune ligne n'a jamais été publiée.</summary>
+    long LatestSequence(string instanceId);
 }
 
 /// <summary>Spécification de lancement préparée par le domaine, exécutée par l'infrastructure.</summary>
@@ -75,10 +120,25 @@ public interface IHealthProbe
 
     /// <summary>Interroge /info pour vérifier identité et version.</summary>
     Task<ComponentInfo?> FetchInfoAsync(Uri controlEndpoint, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Interroge l'avancement du run en cours. Lecture seule comme les autres sondes
+    /// (EXPERIMENTS.md §8 : la progression vient du tic rapporté par le moteur).
+    /// Renvoie <see langword="null"/> si le moteur ne publie pas d'état — l'absence
+    /// d'avancement ne doit jamais faire échouer un run.
+    /// </summary>
+    Task<RunTickProgress?> FetchRunProgressAsync(Uri controlEndpoint, CancellationToken cancellationToken);
 }
 
 /// <summary>Contenu de /info d'un composant.</summary>
 public sealed record ComponentInfo(string ComponentId, string Version, int? ProtocolVersion);
+
+/// <summary>
+/// Avancement d'un run tel que rapporté par le moteur. <see cref="MaxTicks"/> est nul
+/// quand le moteur ne l'a pas communiqué : la barre d'avancement reste alors indéterminée
+/// plutôt que d'afficher un pourcentage faux.
+/// </summary>
+public sealed record RunTickProgress(long Tick, long? MaxTicks, int AliveCount, string State);
 
 /// <summary>Horloge injectable, pour les tests.</summary>
 public interface IClock

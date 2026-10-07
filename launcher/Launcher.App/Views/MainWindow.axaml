@@ -295,9 +295,8 @@
       </StackPanel>
 
       <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Spacing="14" Margin="0,0,19,0">
-        <TextBlock Text="Mode" Classes="muted" FontSize="12.5" Margin="18,0,0,0" VerticalAlignment="Center"/>
-        <ComboBox ItemsSource="{Binding SessionKinds}" SelectedItem="{Binding SelectedMode}"
-                  Width="134" Height="34" CornerRadius="8" FontSize="13" VerticalAlignment="Center"/>
+        <!-- Le sélecteur « Mode » de la topbar est supprimé : il n'avait aucun effet
+             sur l'exécution (voir Configuration) et encombrait une barre d'action. -->
         <Button Classes="btn" Width="36" Height="34" Padding="0" VerticalAlignment="Center" ToolTip.Tip="Configuration"
                 Command="{Binding NavigateCommand}" CommandParameter="configuration">
           <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Width="20" Height="20" Stretch="Uniform"/>
@@ -357,7 +356,6 @@
                     <Panel Grid.Column="1" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-home.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=accueil}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-experience.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=experiences}"/>
-                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-campagne.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=campagnes}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-analyse.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=analyse}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-report.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=rapports}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=configuration}"/>
@@ -476,7 +474,7 @@
                                   </StackPanel>
                                 </Border>
 
-                                <Grid Grid.Row="3" ColumnDefinitions="*,14,*" Margin="14,0,14,12">
+                                <Grid Grid.Row="3" ColumnDefinitions="*,10,*,10,*" Margin="14,0,14,12">
                                   <!-- Bascule démarrer/arrêter : le libellé et l'icône changent avec l'état (GUI.md §7.1). -->
                                   <Button Grid.Column="0" Classes="btn" Padding="6,0"
                                           IsEnabled="{Binding CanToggle}"
@@ -489,8 +487,18 @@
                                       <TextBlock Text="{Binding ToggleLabel}" VerticalAlignment="Center"/>
                                     </StackPanel>
                                   </Button>
-                                  <!-- Secondaire : ouvre l'écran Configuration. -->
+                                  <!-- Console de logs du composant (USER_INTERFACE.md §9) : instance vivante requise. -->
                                   <Button Grid.Column="2" Classes="btn" Padding="6,0"
+                                          IsEnabled="{Binding CanOpenConsole}"
+                                          ToolTip.Tip="Ouvrir la console de logs du composant"
+                                          Command="{Binding $parent[Window].DataContext.OpenConsoleCommand}" CommandParameter="{Binding InstanceId}">
+                                    <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-log.svg" Width="15" Height="15" Stretch="Uniform"/>
+                                      <TextBlock Text="Console" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Button>
+                                  <!-- Secondaire : ouvre l'écran Configuration. -->
+                                  <Button Grid.Column="4" Classes="btn" Padding="6,0"
                                           Command="{Binding $parent[Window].DataContext.NavigateCommand}" CommandParameter="configuration">
                                     <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
                                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Width="15" Height="15" Stretch="Uniform"/>
@@ -514,7 +522,7 @@
                     <TextBlock Text="⊕" Foreground="#e0a25a" FontSize="22" VerticalAlignment="Center"/>
                       <StackPanel>
                         <TextBlock Text="DERNIÈRES EXPÉRIENCES" Classes="panel-title"/>
-                        <TextBlock Text="Paquets .livexp de la racine des campagnes" Classes="muted" FontSize="12.5" Margin="0,3,0,0"/>
+                        <TextBlock Text="Paquets .livexp des expériences créées" Classes="muted" FontSize="12.5" Margin="0,3,0,0"/>
                       </StackPanel>
                     </StackPanel>
                     <Button Grid.Column="1" Classes="link-button" Content="Voir toutes les expériences" VerticalAlignment="Center"
@@ -578,7 +586,7 @@
 
                   <Grid ColumnDefinitions="*,Auto">
                     <Button Classes="btn-primary" Content="Nouvelle expérience" HorizontalAlignment="Left"
-                            Command="{Binding NavigateCommand}" CommandParameter="campagnes"/>
+                            Command="{Binding NavigateCommand}" CommandParameter="experiences"/>
                     <Button Grid.Column="1" Classes="link-button" Content="Gérer les expériences" VerticalAlignment="Center"
                             Command="{Binding NavigateCommand}" CommandParameter="experiences"/>
                   </Grid>
@@ -586,107 +594,111 @@
               </Border>
             </StackPanel>
 
-            <!-- ·Vue EXPÉRIENCES : ouverture directe des paquets ·-->
+            <!-- ·Vue EXPÉRIENCES : création Mono/MultiRun + ouverture des paquets (un seul écran) ·-->
             <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=experiences}">
               <StackPanel Spacing="12">
                 <TextBlock Text="EXPÉRIENCES" Classes="panel-title"/>
-                <TextBlock Text="Chaque expérience est un paquet .livexp : vivant pendant la campagne, scellé à la fin (PACKAGE_FORMAT.md §4)." Classes="muted" TextWrapping="Wrap"/>
+                <TextBlock Text="Une expérience = un paquet .livexp : créé ci-dessous, vivant pendant l'exécution, scellé à la fin (PACKAGE_FORMAT.md §4). Mode Mono : un seul run, à observer en direct dans la fenêtre d'analyse. Mode MultiRun : plusieurs runs batch, graines dérivées de la graine de base. SYNE V1 accepte actuellement uniquement le scénario « reference »." Classes="muted" TextWrapping="Wrap"/>
+
+                <!-- Création : un seul formulaire, deux rythmes (Mono/MultiRun). -->
+                <Border Background="#0b0e13" BorderBrush="#262b34" BorderThickness="1" CornerRadius="8" Padding="12">
+                  <StackPanel Spacing="10">
+                    <TextBlock Text="NOUVELLE EXPÉRIENCE" Classes="h-gold"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="12">
+                      <StackPanel Spacing="5">
+                        <TextBlock Text="Nom de l'expérience" Classes="small"/>
+                        <TextBox Text="{Binding CampaignTitle}" Watermark="Ex. Écosystème — saison 1"/>
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Spacing="5">
+                        <TextBlock Text="Simulation" Classes="small"/>
+                        <TextBox Text="{Binding SimulationId}" Watermark="reference"/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="1" Spacing="5">
+                        <TextBlock Text="Mode" Classes="small"/>
+                        <ComboBox ItemsSource="{Binding RunModeOptions}" SelectedItem="{Binding SelectedRunMode}"
+                                  ToolTip.Tip="Mono : un run à observer en direct · MultiRun : série de runs exécutée au plus vite"/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="Vitesse d'exécution (ticks par seconde)" Classes="small"/>
+                        <ComboBox ItemsSource="{Binding TicksPerSecondOptions}" SelectedItem="{Binding SelectedTicksPerSecond}"
+                                  ToolTip.Tip="10 = direct regardable dans la fenêtre d'analyse · 100 = compromise · 1000 = exécution batch la plus rapide. Valeur archivée dans config.resolved.json du paquet."/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="2" Spacing="5" IsVisible="{Binding IsMultiRun}">
+                        <TextBlock Text="Nombre de runs" Classes="small"/>
+                        <TextBox Text="{Binding RunCountInput}" Watermark="3"/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="Ticks par run" Classes="small"/>
+                        <TextBox Text="{Binding TickCountInput}" Watermark="1000"/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="3" Spacing="5">
+                        <TextBlock Text="Agents initiaux" Classes="small"/>
+                        <TextBox Text="{Binding AgentCountInput}" Watermark="50"/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5">
+                        <TextBlock Text="Graine de base" Classes="small"/>
+                        <TextBox Text="{Binding BaseSeedInput}" Watermark="42"/>
+                      </StackPanel>
+                      <StackPanel Grid.Row="4" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                        <Button Classes="btn-primary" Content="Créer et démarrer" Command="{Binding CreateCampaignCommand}"
+                                CommandParameter="start" IsEnabled="{Binding CanCreateCampaign}"/>
+                        <Button Classes="btn" Content="Annuler l'exécution" Command="{Binding CancelCampaignCommand}"
+                                CommandParameter="cancel" IsVisible="{Binding IsCampaignRunning}"/>
+                        <Button Classes="btn" Content="Parcourir les paquets" Click="OnOpenPackageClick"/>
+                      </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{Binding CampaignStatus}" Classes="body" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding CampaignProgressText}" Classes="muted" TextWrapping="Wrap"/>
+                    <!-- Avancement du run, rapporté par le moteur (EXPERIMENTS.md §8). Masqué
+                         tant que le moteur n'a pas d'horizon : un pourcentage supposé mentirait. -->
+                    <StackPanel IsVisible="{Binding HasRunTickProgress}" Spacing="4">
+                      <ProgressBar Classes="gauge" Value="{Binding RunTickPercent}"/>
+                      <TextBlock Text="{Binding RunTickText}" Classes="small"/>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+
+                <TextBlock Text="EXPÉRIENCES EXISTANTES" Classes="panel-title" Margin="0,6,0,0"/>
                 <Border Classes="table" Padding="0,6,0,0">
                   <StackPanel>
-                    <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,Auto" Margin="20,0,16,8">
+                    <!-- Colonne ACTION en largeur fixe (et non Auto) : sinon chaque ligne qui
+                         affiche « Reprendre » élargit sa colonne et décale ses boutons par
+                         rapport à l'en-tête et aux autres lignes. -->
+                    <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,170" Margin="20,0,16,8">
                       <TextBlock Text="NOM" Classes="h-gold"/>
                       <TextBlock Grid.Column="1" Text="DATE" Classes="h-gold"/>
                       <TextBlock Grid.Column="2" Text="DURÉE" Classes="h-gold"/>
                       <TextBlock Grid.Column="3" Text="STATUT" Classes="h-gold"/>
-                      <TextBlock Grid.Column="4" Text="ACTION" Classes="h-gold"/>
+                      <TextBlock Grid.Column="4" Text="ACTION" Classes="h-gold" HorizontalAlignment="Right"/>
                     </Grid>
                     <ItemsControl ItemsSource="{Binding Experiences}">
                       <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:ExperienceRowViewModel">
                           <Border Classes="row-sep">
-                            <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,Auto" Height="38" Margin="20,0,16,0">
+                            <Grid ColumnDefinitions="2.3*,1.9*,1.5*,2.1*,170" Height="38" Margin="20,0,16,0">
                               <TextBlock Text="{Binding Name}" Classes="body" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                               <TextBlock Grid.Column="1" Text="{Binding Date}" Classes="small" VerticalAlignment="Center"/>
                               <TextBlock Grid.Column="2" Text="{Binding Duration}" Classes="small" VerticalAlignment="Center"/>
                               <TextBlock Grid.Column="3" Text="{Binding Status}" Classes="small" VerticalAlignment="Center"/>
-                              <Button Grid.Column="4" Classes="link-button" Content="Ouvrir" VerticalAlignment="Center"
-                                      Command="{Binding $parent[Window].DataContext.OpenExperienceCommand}"
-                                      CommandParameter="{Binding PackagePath}"/>
+                              <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="14" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <Button Classes="link-button" Content="Ouvrir"
+                                        Command="{Binding $parent[Window].DataContext.OpenExperienceCommand}"
+                                        CommandParameter="{Binding PackagePath}"/>
+                                <Button Classes="link-button" Content="Reprendre"
+                                        IsVisible="{Binding IsRecoverable}"
+                                        ToolTip.Tip="Reprendre la campagne interrompue : seuls les runs non terminés sont relancés"
+                                        Command="{Binding $parent[Window].DataContext.ResumeCampaignCommand}"
+                                        CommandParameter="{Binding PackagePath}"/>
+                              </StackPanel>
                             </Grid>
                           </Border>
                         </DataTemplate>
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="Aucune expérience." Classes="small" Margin="20,10,0,10"
+                    <TextBlock Text="Aucune expérience pour l'instant — créez-en une ci-dessus." Classes="small" Margin="20,10,0,10"
                                IsVisible="{Binding Experiences.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
                   </StackPanel>
                 </Border>
-              </StackPanel>
-            </Border>
-
-            <!-- ·Vue CAMPAGNES : saisie et lancement d'une campagne ·-->
-            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=campagnes}">
-              <StackPanel Spacing="12">
-                <TextBlock Text="NOUVELLE EXPÉRIENCE / CAMPAGNE" Classes="panel-title"/>
-                <TextBlock Text="Une expérience est archivée dans un paquet .livexp. Les runs sont séquentiels, leurs graines sont dérivées de la graine de base et les résultats sont scellés à la fin." Classes="muted" TextWrapping="Wrap"/>
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="14" RowDefinitions="Auto,Auto,Auto,Auto">
-                  <StackPanel Spacing="5">
-                    <TextBlock Text="Nom de l'expérience" Classes="small"/>
-                    <TextBox Text="{Binding CampaignTitle}" Watermark="Ex. Écosystème — saison 1"/>
-                  </StackPanel>
-                  <StackPanel Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Simulation" Classes="small"/>
-                    <TextBox Text="{Binding SimulationId}" Watermark="ecosystem_01"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Spacing="5">
-                    <TextBlock Text="Nombre de runs" Classes="small"/>
-                    <TextBox Text="{Binding RunCountInput}" Watermark="1"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Ticks par run" Classes="small"/>
-                    <TextBox Text="{Binding TickCountInput}" Watermark="1000"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="2" Spacing="5">
-                    <TextBlock Text="Agents initiaux" Classes="small"/>
-                    <TextBox Text="{Binding AgentCountInput}" Watermark="50"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
-                    <TextBlock Text="Graine de base" Classes="small"/>
-                    <TextBox Text="{Binding BaseSeedInput}" Watermark="42"/>
-                  </StackPanel>
-                  <StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
-                    <Button Classes="btn-primary" Content="Créer et démarrer" Command="{Binding CreateCampaignCommand}"
-                            CommandParameter="start" IsEnabled="{Binding CanCreateCampaign}"/>
-                    <Button Classes="btn" Content="Annuler la campagne" Command="{Binding CancelCampaignCommand}"
-                            CommandParameter="cancel" IsVisible="{Binding IsCampaignRunning}"/>
-                    <Button Classes="btn" Content="Parcourir les paquets" Click="OnOpenPackageClick"/>
-                  </StackPanel>
-                </Grid>
-                <TextBlock Text="{Binding CampaignStatus}" Classes="body" TextWrapping="Wrap"/>
-                <TextBlock Text="{Binding CampaignProgressText}" Classes="muted" TextWrapping="Wrap"/>
-                <TextBlock Text="EXPÉRIENCES / CAMPAGNES EXISTANTES" Classes="panel-title" Margin="0,10,0,0"/>
-                <ItemsControl ItemsSource="{Binding Experiences}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ExperienceRowViewModel">
-                      <Border Classes="row-sep">
-                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="8">
-                          <StackPanel>
-                            <TextBlock Text="{Binding Name}" Classes="body"/>
-                            <TextBlock Text="{Binding Date}" Classes="small"/>
-                          </StackPanel>
-                          <TextBlock Grid.Column="1" Text="{Binding Status}" Classes="small" VerticalAlignment="Center" Margin="8,0"/>
-                          <Button Grid.Column="2" Classes="link-button" Content="Ouvrir"
-                                  Command="{Binding $parent[Window].DataContext.OpenExperienceCommand}"
-                                  CommandParameter="{Binding PackagePath}"/>
-                          <Button Grid.Column="3" Classes="link-button" Content="Reprendre"
-                                  IsVisible="{Binding IsRecoverable}"
-                                  Command="{Binding $parent[Window].DataContext.ResumeCampaignCommand}"
-                                  CommandParameter="{Binding PackagePath}"/>
-                        </Grid>
-                      </Border>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
               </StackPanel>
             </Border>
 
@@ -694,6 +706,12 @@
             <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=analyse}">
               <StackPanel Spacing="12">
                 <TextBlock Text="RAPPORT D'ÉMERGENCE" Classes="panel-title"/>
+                <!-- Fenêtre d'analyse native (ADR-007) : séries, histogramme, radar et
+                     communautés lus directement sur l'API REST d'ECHOS. -->
+                <Button Classes="btn-primary" Content="Ouvrir la fenêtre d'analyse"
+                        HorizontalAlignment="Left"
+                        ToolTip.Tip="Fenêtre native de suivi en direct — remplace l'interface web d'ECHOS (ADR-007)"
+                        Command="{Binding OpenAnalysisCommand}" CommandParameter="analyse"/>
                 <Button Classes="btn" Content="Ouvrir un paquet .livexp" HorizontalAlignment="Left" Click="OnOpenPackageClick"/>
                 <TextBlock Text="{Binding ReportStatus}" Classes="muted" TextWrapping="Wrap"/>
                 <md:MarkdownScrollViewer
@@ -721,38 +739,18 @@
               </StackPanel>
             </Border>
 
-            <!-- ·Vue CONFIGURATION : profils et session (COMPONENTS.md §8) ·-->
+            <!-- ·Vue CONFIGURATION : moteur et installations (COMPONENTS.md §8) ·
+                 Les sélecteurs « Mode », « Profil d'exécution » et « Type de session »
+                 ont été supprimés : sans impact sur l'exécution (les cartes de
+                 l'accueil démarrent et arrêtent chaque composant), ils encombraient
+                 cet écran. Le moteur SYNE et les installations restent choisis ici. ·-->
             <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=configuration}">
               <StackPanel Spacing="12">
                 <TextBlock Text="CONFIGURATION" Classes="panel-title"/>
-                <!-- Profil sélectionnable (COMPONENTS.md §9, G7) : l'état, la cause du verrou et le
-                     jalon sont affichés tels qu'évalués au manifeste (ADR-006, USER_INTERFACE §3.4). -->
-                <TextBlock Text="Profil d'exécution (COMPONENTS.md §9) :" Classes="body"/>
-                <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="240" CornerRadius="8"/>
-                <TextBlock Text="{Binding ProfileStatus}" Classes="muted" TextWrapping="Wrap"/>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <Button Classes="btn-primary" Content="Démarrer le profil" IsEnabled="{Binding CanStartProfile}"
-                          Command="{Binding StartProfileCommand}" CommandParameter="{Binding SelectedProfile}"/>
-                  <Button Classes="btn" Padding="10,6" Content="Arrêter le profil" IsEnabled="{Binding CanStopProfile}"
-                          Command="{Binding StopProfileCommand}" CommandParameter="{Binding SelectedProfile}"/>
-                </StackPanel>
-                <TextBlock Text="Type de session courant (COMPONENTS.md §8.2) :" Classes="body" Margin="0,6,0,0"/>
-                <ComboBox ItemsSource="{Binding SessionKinds}" SelectedItem="{Binding SelectedMode}" Width="240" CornerRadius="8"/>
-                <TextBlock Text="Console exécute les expériences en arrière-plan et sans PRISM. Standard laisse le démarrage manuel. Développement impose l'émulation SYNE. Personnaliser permet de choisir la pile et le moteur SYNE." Classes="small" TextWrapping="Wrap"/>
-                <TextBlock Text="Moteur SYNE :" Classes="body" Margin="0,6,0,0"/>
+                <TextBlock Text="Moteur SYNE :" Classes="body"/>
                 <ComboBox ItemsSource="{Binding SyneEngineModes}" SelectedItem="{Binding SelectedSyneEngineMode}"
                           IsEnabled="{Binding CanChooseSyneEngineMode}" Width="240" CornerRadius="8"/>
                 <TextBlock Text="Le moteur réel et son émulateur occupent le même rôle ; un seul peut être actif à la fois." Classes="small" TextWrapping="Wrap"/>
-                <StackPanel IsVisible="{Binding SelectedMode, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=Personnaliser}" Spacing="6">
-                  <TextBlock Text="Composants sélectionnés :" Classes="body"/>
-                  <ItemsControl ItemsSource="{Binding CustomComponents}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate x:DataType="vm:CustomComponentSelectionViewModel">
-                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}"/>
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </StackPanel>
                 <TextBlock Text="Installations et versions détectées :" Classes="body" Margin="0,8,0,0"/>
                 <ItemsControl ItemsSource="{Binding ComponentInstallations}">
                   <ItemsControl.ItemTemplate>
@@ -805,6 +803,13 @@
                             <TextBlock Text="{Binding StateLabel}" Foreground="{Binding StateColor}" Classes="body"/>
                             <TextBlock Text="{Binding Version}" Classes="small"/>
                             <TextBlock Text="{Binding ProcessId, Converter={x:Static vm:StringConverters.PidOrDash}}" Classes="small"/>
+                            <!-- Console de logs de l'instance (USER_INTERFACE.md §9). -->
+                            <Button Classes="btn" Padding="8,2" Height="24" HorizontalAlignment="Right"
+                                    IsEnabled="{Binding CanOpenConsole}"
+                                    ToolTip.Tip="Ouvrir la console de logs du composant"
+                                    Command="{Binding $parent[Window].DataContext.OpenConsoleCommand}" CommandParameter="{Binding InstanceId}">
+                              <TextBlock Text="Console" FontSize="11.5" VerticalAlignment="Center"/>
+                            </Button>
                           </StackPanel>
                         </Grid>
                       </Border>
@@ -1036,8 +1041,6 @@
           <TextBlock Text="LIVEX Launcher" Classes="small"/>
           <Border Width="1" Height="16" Background="#2a2f3a"/>
           <TextBlock Text="v0.1.0" Classes="small"/>
-          <Border Width="1" Height="16" Background="#2a2f3a"/>
-          <TextBlock Text="{Binding ModeLabel}" Classes="small" Foreground="#c9cdd4"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
           <Ellipse Width="11" Height="11" Fill="{Binding SystemDotColor}"/>

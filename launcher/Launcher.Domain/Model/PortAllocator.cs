@@ -13,6 +13,8 @@ public interface IEndpointResolver
 /// <summary>
 /// Allocation des adresses dans la plage interne LIVEX (NETWORK.md §6.2, §12).
 /// - Priorité au manifeste : un port déclaré libre n'est jamais réattribué ailleurs (TESTING.md §6).
+/// - Repli sur la plage interne : un port déclaré déjà pris par une autre instance de la
+///   session n'est pas une erreur, c'est le multi-instance attendu (§6.2, §9.3).
 /// - Pré-vol : chaque candidat est testé avant attribution ; un occupant est signalé.
 /// - Aucune instance ne choisit seule une adresse.
 /// </summary>
@@ -44,19 +46,29 @@ public sealed class PortAllocator : IEndpointResolver
         {
             if (declaredPort is { } declared)
             {
-                if (_reserved.Contains(declared) && !_reservationsByKind.ContainsKey((instanceId, endpointKind)))
+                // Résolution idempotente : la même instance et le même point conservent
+                // l'adresse déjà attribuée, sans nouveau pré-vol — l'instance la détient.
+                if (_reservationsByKind.TryGetValue((instanceId, endpointKind), out var own) && own == declared)
                 {
-                    throw new PortUnavailableException(declared, $"port déclaré {declared} du manifeste déjà alloué dans cette session");
+                    return new ResolvedEndpoint(endpointKind, $"http://127.0.0.1:{declared}/", declared);
                 }
 
-                if (!_isFree(declared))
+                // Un port déclaré déjà détenu par une autre instance de la session est le
+                // fonctionnement normal du multi-instance (NETWORK.md §6.2, §9.3) : c'est
+                // précisément ce que l'espace d'adressage interne existe pour absorber, et
+                // non une erreur de configuration. Seul un occupant étranger — absent des
+                // réservations — reste un refus : l'opérateur doit l'identifier (§6.2).
+                if (!_reserved.Contains(declared))
                 {
-                    throw new PortUnavailableException(declared, "port déclaré occupé (pré-vol) — processus occupant à identifier");
-                }
+                    if (!_isFree(declared))
+                    {
+                        throw new PortUnavailableException(declared, "port déclaré occupé (pré-vol) — processus occupant à identifier");
+                    }
 
-                _reserved.Add(declared);
-                _reservationsByKind[(instanceId, endpointKind)] = declared;
-                return new ResolvedEndpoint(endpointKind, $"http://127.0.0.1:{declared}/", declared);
+                    _reserved.Add(declared);
+                    _reservationsByKind[(instanceId, endpointKind)] = declared;
+                    return new ResolvedEndpoint(endpointKind, $"http://127.0.0.1:{declared}/", declared);
+                }
             }
 
             for (var port = _rangeFrom; port <= _rangeTo; port++)

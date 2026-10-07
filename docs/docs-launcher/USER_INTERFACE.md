@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `VISION.md`, `COMPONENTS.md`, `ARCHITECTURE.md`, `GUI.md`
 **Source Monographie** : —
 
@@ -131,7 +131,7 @@ composants peuvent aussi être démarrés individuellement depuis leurs cartes.
 
 | Mode | Profil demandé | Comportement et limites |
 | :-- | :-- | :-- |
-| **Console** | Expérience (`syne` + `echos`) | Cible les runs sans PRISM. La campagne du Launcher tourne en arrière-plan de l'interface. Le moteur SYNE réel est sélectionné par défaut ; les adaptateurs headless ECHOS et syne-mock sont disponibles sous Linux, mais SYNE réel ne satisfait pas encore le contrat de lancement batch. |
+| **Console** | Expérience (`syne` + `echos`) | Cible les runs sans PRISM. La campagne du Launcher tourne en arrière-plan de l'interface. Le scénario batch `reference` est sélectionné par défaut et la campagne SYNE réelle est acceptée depuis une installation publiée Linux avec collecte dans `.livexp` ; le pipeline de données vers ECHOS reste à valider. Les adaptateurs headless ECHOS et syne-mock sont disponibles sous Linux. |
 | **Standard** | Simulation seule par défaut | Utilisation interactive avec SYNE réel par défaut ; l'utilisateur peut choisir « Émulé » dans Configuration et démarrer les composants manuellement ou choisir un profil. |
 | **Développement** | SYNE émulé + `echos` | Impose le mode émulation de SYNE et démarre les services Linux déclarés par manifeste, dont le contrôle HTTP et le WebSocket du mock. L'émulateur n'est pas un exécuteur de campagne `.livexp` compatible avec `ProcessRunExecutor`. |
 | **Personnaliser** | Sélection explicite | Sélection des rôles par composant ; SYNE est une seule option avec le choix « Réel / Émulé ». Les installations valides et leurs versions restent détectables et sélectionnables dans Configuration. Les manifestes réels ne publient pas encore plusieurs variantes UI/headless sélectionnables. |
@@ -188,10 +188,13 @@ fichiers qu'il affiche, rapport comme documentation.
 La distinction tient en une règle : **le Launcher ne calcule rien de scientifique,
 mais il sait afficher un résultat**. Voir `adr/ADR-003-analyse-propriete-de-echos.md`.
 
-L'interface d'ECHOS dans un navigateur n'est pas encore déclenchable depuis les
-écrans V1. L'analyse et la production du rapport nécessitent les opérations
-headless documentées dans `INTEGRATION_CONTRACT.md` §10, encore à valider contre
-ECHOS réel.
+L'interface d'ECHOS n'existe plus : ECHOS est un moteur sans interface
+(`adr/ADR-007-consoles-et-fenetre-analyse-natives.md`). Ce que le Launcher
+présente — séries, statistiques, phénomènes — provient des opérations headless
+et de l'API REST documentées dans `INTEGRATION_CONTRACT.md` §10 ; l'analyse et
+la production du rapport nécessitent ces opérations, encore à valider contre
+ECHOS réel. Les **consoles de logs** et la **fenêtre d'analyse** (§9) sont les
+surfaces natives d'observation.
 
 ### 3.2 PRISM et le verrou Immersion
 
@@ -355,22 +358,55 @@ interlettrages sont dans `GUI.md` §3.2.
 | **Focus visible** | Indicateur de focus permanent sur le contrôle actif |
 | **Ordre de tabulation** | Suit l'ordre visuel, sans piège de focus |
 
-## 9. Ouverture de l'interface d'ECHOS (à réaliser)
+## 9. Fenêtres natives : consoles de composant et fenêtre d'analyse
 
-Ce parcours est une cible documentée, pas une commande disponible dans l'interface
-V1 actuelle.
+Le Launcher est **multi-fenêtre** : au-delà de la fenêtre principale, il ouvre
+des fenêtres dédiées qui partagent sa composition et son cycle de vie
+(`adr/ADR-007-consoles-et-fenetre-analyse-natives.md`).
+
+### 9.1 Consoles de logs (une par composant)
 
 | Règle | Comportement |
 | :-- | :-- |
-| **Navigateur externe** | Ouverture dans le navigateur par défaut de l'utilisateur |
-| **Aucune vue embarquée** | Pas de webview, pas de rendu interne du contenu d'ECHOS |
-| **Aucun secret en URL** | Aucun jeton d'accès dans la ligne d'adresse |
-| **Contexte transmis** | Identifiant de campagne, de paquet et de port, par les seules voies prévues par ECHOS |
-| **Perte de focus** | L'utilisateur peut continuer à utiliser le Launcher pendant que le navigateur est ouvert |
-| **Échec d'ouverture** | Si aucun navigateur n'est disponible, l'adresse est proposée à la copie |
+| **Ouverture automatique** | Chaque composant que le Launcher démarre ouvre sa console — SYNE réel ou émulé selon le moteur choisi, plus ECHOS |
+| **Ouverture à la demande** | Bouton « Console » sur la carte du composant et dans Monitoring ; inactif si le composant n'est pas démarré |
+| **Une fenêtre par instance** | Rouvrir une console déjà ouverte la ramène au premier plan, sans doublon |
+| **Flux direct** | Lignes lues toutes les 250 ms depuis le tampon ; `stderr` en rouge, `stdout` en clair |
+| **Pause sans perte** | La pause gèle l'affichage, pas la collecte : la reprise montre le flux accumulé |
+| **Filtres** | Canaux `stdout` / `stderr` indépendants, rétablissables avec l'historique retenu |
+| **Bornes** | 5 000 lignes affichées, 2 000 par relevé, 20 000 conservées par instance |
+| **Aucune interprétation** | Horodatage, canal, texte — la console montre la sortie, elle ne la commente pas |
+| **Journaux** | Le bouton « Journaux » ouvre le dossier persistant de l'instance (source durable) |
+| **Fermeture** | Les consoles ne prolongent pas la vie de l'application : la fermeture de la fenêtre principale arrête tout |
 
-Le Launcher ne **réplique** aucun élément de l'interface d'ECHOS. Toute fonction
-d'analyse visible dans le Launcher serait une violation de la frontière.
+### 9.2 Fenêtre d'analyse
+
+| Règle | Comportement |
+| :-- | :-- |
+| **Déclencheur** | Bouton dédié du Launcher ; fenêtre indépendante, réductible et redimensionnable |
+| **Source unique** | API REST d'ECHOS sondée toutes les secondes — aucune donnée n'est produite localement |
+| **Menu de sous-écrans** | **Viabilité** (issue, population, besoins, ressources, complétude), **Comportements** (courbes par tick, communautés, phénomènes), **Statistiques exactes**, **Comparer**, **Relations et groupes**, **Monde et territoires**, **Entités** — un relevé ciblé par écran actif |
+| **Parcours** | « Viabilité » est l'écran par défaut : la question « ce run a-t-il survécu, et avec quels faits ? » précède toute courbe |
+| **Graphiques** | Courbes LiveCharts2 en **ticks réels** (les trous se voient, aucun axe d'index), **panneaux par unité** (population, besoins, réserves ne partagent jamais un axe). Radar et histogramme **retirés** : les valeurs sont rendues en cartes numériques et tableau (ADR-007) |
+| **Relecture** | Barre basse : curseur de tick, lecture/pause, précédent/suivant, retour au direct, vitesse (ticks/seconde) sans effet sur SYNE ; les panneaux monde/entités suivent le tick choisi — « Suivre le direct » et « Relire ce run » sont deux états distincts |
+| **Viabilité** | Chiffres publiés par `GET /api/runs/{id}/viability` : populations initiale/finales/minimum, premier tick nul, ticks manquants, conservation, pente d'énergie et décisions sous faim > 70 étiquetées « rapport post-run », chronologie d'extinction (observations, pas de cause racine) |
+| **État du run** | Ligne d'en-tête de Viabilité décrivant l'état depuis les faits publiés : « terminé — extinction observée au tick N », « aucune extinction observée jusqu'au tick N — possiblement en cours », « incomplet : N tick(s) manquant(s) ». ECHOS ne distingue pas « en cours » d'« interrompu » — la mention l'annonce, jamais l'état n'est déduit |
+| **Comparaison** | `GET /api/experiments/summary` : contexte de contrôle (version, graine, issue, conservation) et dispersion publiée (min/max/écart) — refus affiché avec moins de 2 runs, plafond de 6 runs côté interface |
+| **Mesures** | Libellés français, unité, plage, fenêtre, statut et avertissement proviennent du **catalogue ECHOS** (`GET /api/metrics/catalog`) — affichés en info-bulle, jamais redéfinis |
+| **Phénomènes** | Chaque détection affiche « signal selon la règle X » avec valeur observée et seuil ; une liste vide n'est pas l'absence du phénomène |
+| **Monde 2D** | Description publiée à l'initialisation (terrain, obstacles, réserves, régions) + entités et réserves du tick demandé (`GET /api/world`) |
+| **Fiche d'entité** | Croyances, relations de confiance et dernières décisions publiés par ECHOS pour l'entité choisie + **âge de l'observation** : cadence de publication du contexte (`conservation.sampledDetails.agentContextEvery`) et nombre de ticks derrière le dernier tick observé — deux métadonnées affichées, jamais interpolées |
+| **Marqueurs d'événements** | Case à cocher sous la courbe (Comportements) : une ligne verticale par tick portant au moins un événement publié (`GET /api/runs/{id}/events`), couleur par type, bornée à 16 marqueurs et à la fenêtre affichée. Le marqueur dit *qu'un* événement existe, pas ce qu'il signifie — le compte-rendu annonce « N marqueur(s) affiché(s) sur M événement(s) publié(s) » pour qu'une borne ne passe pas pour l'intégralité |
+| **Outil de distribution** | Sous-écran Statistiques : distribution de la métrique choisie en **intervalles explicites** (2 à 12 classes, règle de Sturges) avec l'effectif publié par intervalle. `null` et `measured = false` exclus et comptés (« N valeur(s) exclue(s) ») — aucun remplacement par 0, **aucune extrapolation** ; comptage de rendu seul, jamais une densité ni une probabilité (ADR-003) |
+| **Provenance** | Chaque valeur affichée vient d'un champ de la réponse ECHOS ; pas de moyenne ni d'écart calculé par le Launcher (ADR-003) |
+| **Lacunes** | Trous de série, `measured_by_tick` et compteur de ticks manquants affichés : « non mesuré » n'est jamais rendu comme `0` |
+| **Absence explicite** | ECHOS absent ou injoignable : l'état est affiché, jamais comblé par une approximation |
+| **Pilotage** | Aucun : la fenêtre d'analyse lit, elle ne commande pas la simulation |
+| **Aucune vue web** | Pas de webview, pas de navigateur embarqué, aucun secret en URL |
+
+Le Launcher ne **réplique** aucune fonction d'analyse : il présente ce qu'ECHOS
+a calculé. Une valeur scientifique produite dans le Launcher serait une violation
+de la frontière (ADR-003).
 
 ## 10. Localisation
 
@@ -393,6 +429,7 @@ centralisées pour qu'une deuxième langue soit ajoutable sans refonte.
 - `OBSERVABILITY.md` — compte-rendus, alertes, métriques
 - `EXPERIMENTS.md` — campagnes, progression
 - `adr/ADR-002-modes-analyse-et-immersion-de-poids-egal.md` — égalité des modes
+- `adr/ADR-007-consoles-et-fenetre-analyse-natives.md` — consoles de logs et fenêtre d'analyse (§9)
 - `maquettes/Interface futuriste du launcher LIVEX.png` — maquette de référence
 
 ---

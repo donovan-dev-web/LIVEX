@@ -67,6 +67,18 @@ public sealed class App : Avalonia.Application
             facade.CampaignProgressChanged += (_, progress) =>
                 Dispatcher.UIThread.Post(() => viewModel.UpdateCampaignProgress(progress));
 
+            // Consoles de composant (USER_INTERFACE.md §9) : une fenêtre native par instance supervisée,
+            // ouverte automatiquement au démarrage et à la demande depuis les cartes.
+            var consoles = new ConsoleWindowHost(_composition.Logs, facade.LogsDirectoryFor);
+            facade.ComponentStarted += (_, started) =>
+                Dispatcher.UIThread.Post(() => consoles.Open(started.InstanceId));
+            viewModel.SetConsoleHandler(instanceId => consoles.Open(instanceId));
+
+            // Fenêtre d'analyse native (ADR-007) : une seule fenêtre, alimentée par l'API
+            // REST d'ECHOS — l'interface web/Electron d'ECHOS a été supprimée.
+            var analysis = new AnalysisWindowHost(_composition.EchosTelemetry);
+            viewModel.SetAnalysisHandler(analysis.Open);
+
             // Cycle de vie réel des cartes (INTEGRATION_CONTRACT.md §5) : l'erreur éventuelle
             // est journalisée puis rafraîchie, jamais masquée. Le rafraîchissement revient
             // toujours sur le fil d'interface (Avalonia : collections liées non thread-safe).
@@ -105,6 +117,10 @@ public sealed class App : Avalonia.Application
                 DataContext = viewModel,
             };
 
+            // Une console ouverte ne doit pas prolonger la vie de l'application après la
+            // fermeture de la fenêtre principale.
+            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
             viewModel.RefreshFromRegistry();
             viewModel.RefreshExperiences();
 
@@ -121,7 +137,12 @@ public sealed class App : Avalonia.Application
             }
 
             // La surface HTTP et les processus lancés sont libérés à la fermeture (NETWORK.md §4.1).
-            desktop.ShutdownRequested += (_, _) => _composition.Dispose();
+            desktop.ShutdownRequested += (_, _) =>
+            {
+                analysis.Dispose();
+                consoles.Dispose();
+                _composition.Dispose();
+            };
         }
 
         base.OnFrameworkInitializationCompleted();

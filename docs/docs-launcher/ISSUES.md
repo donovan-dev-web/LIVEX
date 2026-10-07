@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 2 octobre 2026
+**Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `ROADMAP.md`, `TESTING.md`, `adr/`
 **Source Monographie** : —
 
@@ -51,26 +51,30 @@ perdu. La section « Points restés ouverts » de chaque document alimente ce fi
 | O-35 | Mécanisme de l'espace d'adressage interne LIVEX : plage de ports réservée ou interface loopback dédiée (spike Windows/Linux) | `NETWORK.md` §12 | **Haute** | G0 |
 | O-36 | Bornes exactes de l'espace interne et migration des ports par défaut (5180/5181/5000) | `NETWORK.md` §12, §6.2 | Haute | G1 |
 | O-37 | Mécanisme de mesure des flux par composant (compteurs socket, `/proc`, eBPF léger) | `NETWORK.md` §12, `OBSERVABILITY.md` §5 | Moyenne | G1 |
-| O-29 | **SYNE sait-il tourner seul et se terminer ?** `--seed`, `--ticks`, `--export-dir`, sortie automatique | `INTEGRATION_CONTRACT.md` §3.3 | **Bloquante** | Porte P2 |
-| O-30 | **ECHOS est-il pilotable sans son interface ?** `AnalyzeRun`, `AnalyzeExperiment`, `GenerateReport` | `INTEGRATION_CONTRACT.md` §10 | **Bloquante** | Porte P3 |
+| O-29 | **SYNE batch Linux accepté par le Launcher** : un test E2E lance une copie isolée du publish réel par `ProcessRunExecutor`, puis vérifie `result.json`, les journaux, la version composant et le `.livexp` scellé. Un véritable installateur multi-OS reste hors du support déclaré | `INTEGRATION_CONTRACT.md` §3.3, `launcher/ROADMAP-V1.md` J2A | Résolu pour Linux publié | J2A |
+| O-30 | **ECHOS headless** : les trois routes d'analyse et l'ingestion `POST /ingest/run` sont implémentées ; chaque run SYNE archivé expose son `stream.jsonl` et est enregistré sous l'identité `{campagne}-{run}` avant analyse. La réanalyse depuis le paquet archivé produit les mêmes octets. Reste l'acceptation pilotée depuis l'interface du Launcher contre un service ECHOS réel | `INTEGRATION_CONTRACT.md` §10.1/§10.2, `launcher/ROADMAP-V1.md` J2B | Résolu côté backend | Porte J2B / P3 |
 | O-31 | Décision n°28 sur le protocole des messages `snapshot` et `event` | `NETWORK.md` §2.5 | Haute | Porte P1 |
-| O-32 | ECHOS fonctionne-t-il sous Linux, exécutable et interface | `PACKAGING.md` | **Bloquante** | Porte P4 |
+| O-32 | Acceptation d'une installation ECHOS Linux complète avec le Launcher (adaptateur, API analytique, UI distribuée et chemins de données) | `PACKAGING.md` | Haute | Porte P4 / J2B |
 | O-33 | Le déterminisme tient-il entre deux runs identiques, et entre plateformes | `INTEGRATION_CONTRACT.md` §12 | Haute | Porte P5 |
 | O-34 | Arrêt propre d'un processus sans console sous Windows : HTTP ou signal | `INTEGRATION_CONTRACT.md` §5.1 | Haute | G2 |
-| O-38 | **SYNE réel rejette les arguments communs et de campagne du §3.1/§3.3** : `--headless`, `--instance-id`, `--control-port`, `--work-dir`, `--log-dir`, `--correlation-id`, `--simulation`, `--ticks` et `--autostart` ne sont pas tous pris en charge. Vérifié sur `syne/Simulation.Core/Configuration/CliArgs.cs` | `INTEGRATION_CONTRACT.md` §3.1/§3.3 | **Haute** | G5 |
-| O-39 | **SYNE n'expose pas le cycle de vie HTTP commun** (`/health/ready`, `POST /control/shutdown`) et son mode `--serve` attend Ctrl+C ; démarrage/supervision/arrêt Launcher ne sont pas compatibles. ECHOS expose ces deux routes via son adaptateur et le mock expose son endpoint authentifié d'arrêt, avec health déclarée dans leurs manifestes. | `INTEGRATION_CONTRACT.md` §6 | **Haute** | G5 |
-| O-41 | **SYNE seul ne fournit pas de `component.json` Launcher** : aucun paquet SYNE détectable depuis une installation standard et aucun contrat de lancement déclarable. ECHOS et `syne-mock` fournissent désormais des manifestes Linux. | `INTEGRATION_CONTRACT.md` §2, `COMPONENTS.md` §12 | **Haute** | G5 |
+| O-38 | **Validation des scénarios batch** : SYNE accepte les arguments communs et le scénario `reference`, utilisé désormais comme valeur par défaut du Launcher ; les scénarios saisis manuellement ne sont pas encore énumérés/validés par les manifestes | `INTEGRATION_CONTRACT.md` §3.1/§3.3 | **Haute** | J2A / G5 |
+| O-39 | **Acceptation du cycle de vie SYNE** : `/health/ready`, `POST /control/shutdown` authentifié et service supervisé présents ; l'intégration d'installation et la validation Windows restent absentes | `INTEGRATION_CONTRACT.md` §6 | **Haute** | J2A / G5 |
+| O-41 | **Distribution du manifeste SYNE** : `syne/component.json` et le chemin Linux publié sont déclarés ; un paquet d'installation propre contenant manifeste et exécutable n'a pas encore passé l'acceptation Launcher | `INTEGRATION_CONTRACT.md` §2, `COMPONENTS.md` §12 | **Haute** | J2A / G5 |
+| O-42 | **Instabilité de `ControlServerHardeningTests.OversizedBody_IsRejected_With413_AndNotBuffered`** : le test passe isolé mais échoue par intermittence dans la suite complète du contrôleur. Cause probable : course entre temporisations d'un test et du serveur ; à traiter avant de faire de la suite Console une porte | `INTEGRATION_CONTRACT.md` §6 | Moyenne | J5 |
+| O-43 | **Revue complète des deux grandes fenêtres natives** : `EchosTelemetryService.cs` (889 lignes) et `AnalysisWindowViewModel.cs` (1087 lignes), les deux fichiers les plus grands du Launcher, n'ont été relus qu'en partie lors de la revue de correction du 6 octobre 2026, leur comportement n'étant borné que par leurs tests | `USER_INTERFACE.md` §9, §9.2 | Moyenne | G5 |
+| O-44 | **Tenue du délai de grâce à l'arrêt sur les composants réels** : `ComponentInstallation.ShutdownGrace` lit `timeouts.shutdownMs` (défaut 15 s) et borne l'arrêt manuel, l'annulation de run et la fermeture de l'application ; il reste à mesurer que SYNE et ECHOS réels sortent dans ce délai avant l'arrêt forcé, la valeur par défaut ne s'appliquant qu'à une installation sans manifeste | `INTEGRATION_CONTRACT.md` §5.1 | Moyenne | G2 |
+| O-45 | **Périmètre exact de l'hermétisme** : une composition à racines explicites ne consulte plus les sources standard à la construction ni à la redétection, mais les autres emplacements partagés (journal de sessions, plage de ports interne 5200–5399, racines persistées dans `~/.livex/`) restent ouverts à la machine | `COMPONENTS.md` §12, `PACKAGING.md` §4 | Moyenne | G6 |
 
 ## 3. Points bloquants sur des composants externes
 
-Cinq points ne dépendent pas du Launcher. Ils ne peuvent pas être tranchés par la
-documentation, seulement par une vérification sur le composant réel. Tant qu'ils
-subsistent, le Launcher se limite au mode Contrôle et à la supervision.
+Ces points mêlent désormais le travail des composants et leur raccordement au
+Launcher. Ils ne peuvent pas être clos par la seule présence de code ou de
+documentation : une acceptation réelle reste nécessaire.
 
 | # | Question | Ce qui est bloqué |
 | :-- | :-- | :-- |
-| **O-29** | SYNE en mode batch | Toute campagne automatique multi-run |
-| **O-30** | ECHOS implémente les opérations `AnalyzeRun` / `AnalyzeExperiment` / `GenerateReport` et chemins du §10.1 | Tout rapport de campagne réel, donc le jalon G5 |
+| **O-29** | SYNE batch pour le scénario demandé et acceptation depuis une installation propre | Toute campagne automatique multi-run sur les scénarios du Launcher |
+| **O-30** | ECHOS consomme les runs réels produits par SYNE/Launcher et réussit les trois opérations du §10.1 depuis le Launcher | Résolu côté backend : ingestion, analyse et rapport vérifiés sur SYNE et ECHOS réels. Reste l'acceptation depuis l'interface du Launcher |
 | **O-31** | Protocole `snapshot` et `event` | L'adaptateur de protocole, donc l'immersion |
 | **O-32** | ECHOS sous Linux | Le paquet Linux, donc le jalon G6 |
 | **O-33** | Déterminisme du moteur | Toute campagne à valeur scientifique |
@@ -80,10 +84,24 @@ Leurs contreparties sont les portes **P1 à P5** de `ROADMAP.md`, et les spikes
 
 Les adaptateurs de service Linux ECHOS et `syne-mock` réduisent les écarts de
 démarrage et d'arrêt, mais ne remplacent pas une intégration bout en bout du
-pipeline scientifique. Les écarts O-38, O-39 et O-41 restent propres à SYNE ;
-O-30 reste ouvert car l'API réelle d'ECHOS n'implémente pas les endpoints
-`/analysis/*` du Launcher. Les portes batch O-29 et déterminisme O-33 restent
-également des blockers des campagnes sur composants réels.
+pipeline scientifique. **O-32 ne signifie plus qu'aucun code Linux ECHOS
+n'existe** : ECHOS et son UI disposent de builds Linux/Windows, et le Launcher
+a un adaptateur de service Linux. La porte reste ouverte pour valider une
+installation complète et son parcours d'acceptation avec le Launcher ; les
+manifestes Launcher actuels ne déclarent que Linux pour ECHOS et le mock. Les
+écarts O-38, O-39 et O-41 sont partiellement résolus côté SYNE ; la valeur par
+défaut du scénario est maintenant compatible, mais la validation des choix et
+l'acceptation d'installation restent ouvertes. L'API réelle ECHOS implémente
+maintenant les routes `/analysis/*`, et le Launcher produit `experiment.json`
+pour les agrégats ; O-30 reste ouvert car la base n'est pas encore alimentée
+par les runs réels et les appels aux trois routes réelles ne sont pas acceptés
+bout en bout. Les portes d'intégration et de déterminisme O-33 restent des
+blockers des campagnes sur composants réels.
+
+La synthèse par rôle, mode et plateforme, avec critères de sortie, est
+maintenue dans [`../../launcher/V1-CAPABILITY-MATRIX.md`](../../launcher/V1-CAPABILITY-MATRIX.md).
+La séquence exécutable des tâches est dans
+[`../../launcher/ROADMAP-V1.md`](../../launcher/ROADMAP-V1.md).
 
 ## 4. Détail de quelques points ouverts
 
@@ -163,17 +181,66 @@ arbitrables, donc la porte G6 ne peut pas être franchie objectivement.
 
 **Impact.** Bloque G6, et fragilise G2 et G3, dont les tests de charge en dépendent.
 
+### 4.7 O-43 — Revue complète des fenêtres natives
+
+**Question.** Les 889 lignes de `EchosTelemetryService.cs` et les 1087 lignes de
+`AnalysisWindowViewModel.cs` ont-elles été relues intégralement ?
+
+**Enjeu.** Ce sont les deux fichiers les plus grands du Launcher, ajoutés récemment
+(fenêtre d'analyse native, ADR-007) et rarement touchés depuis. La revue de correction
+du 6 octobre 2026 ne les a parcourus qu'en partie, chaque passage étant arrêté par
+leur taille : une logique que les tests n'exercent pas peut y rester intacte.
+
+**Position actuelle.** Revue partielle, comportement contracté par les tests
+unitaires existants (lecture de la télémétrie ECHOS, écrans de la fenêtre d'analyse).
+Une passe complète, fichier par fichier, reste à faire.
+
+### 4.8 O-44 — Tenue du délai de grâce sur composants réels
+
+**Question.** Le délai déclaré au manifeste suffit-il à arrêter réellement SYNE et
+ECHOS, et que devient l'application quand il expire ?
+
+**Enjeu.** Trop court, l'arrêt forcé interrompt un arrêt propre qui allait réussir
+(données non refermées) ; trop long, la fermeture du Launcher paraît bloquée. Le
+`Dispose()` de la façade borne désormais la fermeture au plus long délai majoré de
+2 s, ce qui rend la borne visible pour l'opérateur.
+
+**Position actuelle.** `timeouts.shutdownMs` du manifeste (défaut 15 s, exigé par la
+validation du manifeste) appliqué aux trois chemins d'arrêt — manuel, annulation de
+run, fermeture de l'application — et couvert par le test
+`Le_delai_d_arret_gracieux_vient_du_manifeste`. La valeur réellement nécessaire par
+composant n'a pas été mesurée sur des services réels ; elle se rattache à la séquence
+d'arrêt de `INTEGRATION_CONTRACT.md` §5.1 et au point O-34.
+
+### 4.9 O-45 — Périmètre de l'hermétisme
+
+**Question.** Une composition construite sur des racines explicites est-elle
+hermétique au-delà de la détection des installations ?
+
+**Enjeu.** Après correction, construction et redétection ne consultent plus les
+sources standard (application, `LIVEX_HOME`, profil utilisateur, registre), ce qui
+garantit qu'un rafraîchissement ne fait pas apparaître ni disparaître de composants
+hors de la racine. En revanche, le journal de sessions, la plage de ports interne
+5200–5399 et les racines persistées dans `~/.livex/` restent partagés avec la
+machine : deux bancs ou deux installations portables peuvent encore se voir sur ces
+points.
+
+**Position actuelle.** Hermétisme garanti pour la détection (tests
+`Redetection_reste_hermétique_à_la_racine_explicite` et composition à racines
+explicites), partiel pour le reste. Le seuil d'hermétisme attendu par banc n'est pas
+énoncé.
+
 ## 5. Points par échéance de jalon
 
 | Jalon | Points à trancher |
 | :-- | :-- |
 | **G0** | O-07, O-22, O-23, O-27, O-35 |
 | **G1** | O-03, O-05, O-06, O-12, O-21, O-36, O-37 |
-| **G2** | O-02, O-10, O-14, O-28, O-34 |
+| **G2** | O-02, O-10, O-14, O-28, O-34, O-44 |
 | **G3** | O-01, O-09, O-13, O-20, O-24 |
 | **G4** | O-15, O-18, O-19 |
-| **G5** | — |
-| **G6** | O-11, O-16, O-17 |
+| **G5** | O-43 |
+| **G6** | O-11, O-16, O-17, O-45 |
 | **Hors V0.1** | O-04, O-08, O-25, O-26 |
 | **Portes P1–P5** | O-29, O-30, O-31, O-32, O-33 |
 

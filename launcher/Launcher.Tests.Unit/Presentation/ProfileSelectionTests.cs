@@ -28,6 +28,19 @@ public sealed class ProfileSelectionTests
     }
 
     [Fact]
+    public void Campagne_utilise_par_defaut_le_scenario_batch_SYNE_supporte()
+    {
+        var viewModel = new MainWindowViewModel(new ScriptedProfileFacade());
+
+        Assert.Equal(WellKnownSimulations.Reference, viewModel.SimulationId);
+        Assert.True(viewModel.CanCreateCampaign);
+
+        viewModel.SimulationId = "ecosystem_01";
+
+        Assert.False(viewModel.CanCreateCampaign);
+    }
+
+    [Fact]
     public void Verrou_immersion_affiche_la_cause_exacte_et_le_jalon()
     {
         var facade = new ScriptedProfileFacade();

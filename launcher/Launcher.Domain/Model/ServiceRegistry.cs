@@ -44,6 +44,15 @@ public sealed class ComponentInstallation
 
     /// <summary>Le manifeste est valide et de schéma connu.</summary>
     public bool ManifestValid => Manifest is not null && DetectionCause is null;
+
+    /// <summary>
+    /// Délai de grâce que le manifeste déclare pour l'arrêt (« timeouts.shutdownMs »,
+    /// COMPONENTS.md §3) : au-delà, l'arrêt forcé (INTEGRATION_CONTRACT.md §5.1). C'est ce
+    /// délai qui laisse au composant le temps de terminer l'état courant, de vider ses
+    /// exports et d'écrire son marqueur d'arrêt propre — un délai plus court tronque ces
+    /// écritures et fait lire un arrêt sain comme un incident.
+    /// </summary>
+    public TimeSpan ShutdownGrace => TimeSpan.FromMilliseconds(Manifest?.Timeouts?.ShutdownMs ?? 15_000);
 }
 
 /// <summary>
@@ -98,6 +107,15 @@ public sealed class ServiceRegistry
 {
     private readonly object _gate = new();
     private readonly Dictionary<string, ComponentInstance> _instances = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Ordre d'enregistrement des instances. L'énumération d'un Dictionary n'a pas
+    /// d'ordre garanti, et l'ajout puis le retrait d'une instance en perturbe la
+    /// disposition interne : « la première instance d'un composant » doit rester
+    /// stable, sinon l'interface bascule d'une instance à l'autre et présente un
+    /// redémarrage qui n'a pas eu lieu.
+    /// </summary>
+    private readonly List<string> _instanceOrder = new();
     private readonly Dictionary<string, List<ComponentInstallation>> _installations = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ComponentInstallation> _activeByType = new(StringComparer.Ordinal);
 
@@ -197,6 +215,10 @@ public sealed class ServiceRegistry
         lock (_gate)
         {
             _instances[instance.InstanceId] = instance;
+            if (!_instanceOrder.Contains(instance.InstanceId, StringComparer.Ordinal))
+            {
+                _instanceOrder.Add(instance.InstanceId);
+            }
         }
     }
 
@@ -205,6 +227,7 @@ public sealed class ServiceRegistry
     {
         lock (_gate)
         {
+            _instanceOrder.RemoveAll(id => string.Equals(id, instanceId, StringComparison.Ordinal));
             return _instances.Remove(instanceId);
         }
     }
@@ -218,21 +241,45 @@ public sealed class ServiceRegistry
         }
     }
 
-    /// <summary>Retrouve une instance d'un composant donné, par son identifiant de type.</summary>
+    /// <summary>
+    /// Retrouve la plus ancienne instance encore vivante d'un composant. L'ordre est
+    /// celui de l'enregistrement : une instance de run, ajoutée puis retirée autour de
+    /// l'exécution, ne doit pas supplanter le service que l'opérateur a démarré — sans
+    /// cela la ligne du composant dans l'interface saute d'une instance à l'autre, ce
+    /// qui se lit comme un redémarrage alors que rien n'a été arrêté.
+    /// </summary>
     public ComponentInstance? FindByComponent(string componentId)
     {
         lock (_gate)
         {
-            return _instances.Values.FirstOrDefault(i => i.ComponentId == componentId);
+            foreach (var instanceId in _instanceOrder)
+            {
+                if (_instances.TryGetValue(instanceId, out var instance)
+                    && string.Equals(instance.ComponentId, componentId, StringComparison.Ordinal))
+                {
+                    return instance;
+                }
+            }
+
+            return null;
         }
     }
 
-    /// <summary>Toutes les instances vivantes.</summary>
+    /// <summary>Toutes les instances vivantes, dans l'ordre d'enregistrement.</summary>
     public IReadOnlyList<ComponentInstance> All()
     {
         lock (_gate)
         {
-            return _instances.Values.ToList();
+            var live = new List<ComponentInstance>(_instanceOrder.Count);
+            foreach (var instanceId in _instanceOrder)
+            {
+                if (_instances.TryGetValue(instanceId, out var instance))
+                {
+                    live.Add(instance);
+                }
+            }
+
+            return live;
         }
     }
 }

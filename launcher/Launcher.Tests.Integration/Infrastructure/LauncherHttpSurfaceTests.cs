@@ -1,4 +1,7 @@
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Launcher.Infrastructure;
@@ -58,6 +61,53 @@ public sealed class LauncherHttpSurfaceTests
 
         var unknown = await client.GetAsync("/unknown");
         Assert.Equal(System.Net.HttpStatusCode.NotFound, unknown.StatusCode);
+    }
+
+    [Fact]
+    public async Task Requete_post_reçoit_le_corps_entier_même_avec_plusieurs_paquets()
+    {
+        // Un seul ReadAsync ne garantit pas de recevoir tout le corps : il arrive par paquets.
+        // Au-delà de 200 ko, l'ancienne lecture tronquait et le routeur recevait un JSON incomplet.
+        var port = FreePort();
+        using var server = new MiniHttpServer(port);
+        string? received = null;
+        server.Post("/echo", (_, body) =>
+        {
+            received = body;
+            return "{\"ok\":true}";
+        });
+        server.Start();
+
+        using var client = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}/") };
+        var payload = new string('x', 200_000);
+        var response = await client.PostAsync("/echo", new StringContent(payload, Encoding.UTF8, "application/json"));
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(payload, received);
+    }
+
+    [Fact]
+    public async Task Requete_au_delà_du_plafond_reçoit_413()
+    {
+        // Client brut : le serveur répond 413 sans lire le corps, donc un client HTTP qui
+        // tenterait de finir l'envoi verrait sa connexion fermée avant la réponse. La règle
+        // testée est le refus annoncé, pas la capacité à téléverser un corps refusé.
+        var port = FreePort();
+        using var server = new MiniHttpServer(port);
+        server.Post("/big", (_, _) => "{\"ok\":true}");
+        server.Start();
+
+        using var client = new TcpClient();
+        await client.ConnectAsync(IPAddress.Loopback, port);
+        var stream = client.GetStream();
+        var request = Encoding.ASCII.GetBytes(
+            $"POST /big HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Length: {1024 * 1024 + 1}\r\nContent-Type: application/json\r\n\r\n");
+        await stream.WriteAsync(request);
+
+        using var reader = new StreamReader(stream, Encoding.ASCII);
+        var statusLine = await reader.ReadLineAsync();
+
+        Assert.Equal("HTTP/1.1 413 Payload Too Large", statusLine);
     }
 
     [Fact]

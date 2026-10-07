@@ -252,17 +252,9 @@ public sealed class LivexPackageReader : IDisposable
         return ContractJson.DeserializeWithSchema<T>(json, PackageConstants.SchemaVersion, entryName);
     }
 
-    private static void EnsureSafeEntryName(string entryName)
-    {
-        if (Path.IsPathRooted(entryName)
-            || entryName.Contains("..", StringComparison.Ordinal)
-            || entryName.Contains(':')
-            || entryName.StartsWith("/", StringComparison.Ordinal)
-            || entryName.StartsWith("\\", StringComparison.Ordinal))
-        {
-            throw new UnsafeEntryPathException(entryName);
-        }
-    }
+    // Même règle qu'à l'écriture (PACKAGE_FORMAT.md §8) : le refus d'un nom non conforme —
+    // chemin ou extension exécutable — vaut à l'ouverture, donc aussi à l'extraction.
+    private static void EnsureSafeEntryName(string entryName) => PackageEntryRules.EnsureSafe(entryName);
 
     /// <inheritdoc />
     public void Dispose() => _archive.Dispose();

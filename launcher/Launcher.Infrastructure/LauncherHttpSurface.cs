@@ -108,6 +108,9 @@ public sealed record LauncherRegistryEntry(
 /// <summary>Serveur HTTP minimal partagé par la surface du Launcher et les stubs.</summary>
 public sealed class MiniHttpServer : IDisposable
 {
+    /// <summary>Plafond d'un corps de requête : au-delà, 413 sans jamais allouer le tampon.</summary>
+    private const int MaxRequestBodyBytes = 1024 * 1024;
+
     private readonly TcpListener _listener;
     private readonly Dictionary<string, Func<Dictionary<string, string>, string?>> _routes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Func<Dictionary<string, string>, string?, string?>> _postRoutes = new(StringComparer.Ordinal);
@@ -190,70 +193,107 @@ public sealed class MiniHttpServer : IDisposable
             {
                 headers[headerLine[..separator].Trim()] = headerLine[(separator + 1)..].Trim();
             }
-        }
+                }
 
         string? body = null;
         if (headers.TryGetValue("Content-Length", out var lengthValue) && int.TryParse(lengthValue, out var length) && length > 0)
         {
+            if (length > MaxRequestBodyBytes)
+            {
+                await WriteResponseAsync(stream, 413, "Payload Too Large", "{\"error\":\"payload_too_large\"}", "application/json").ConfigureAwait(false);
+                return;
+            }
+
+            // Lecture complète : un seul ReadAsync ne garantit pas de recevoir tout le corps
+            // (il arrive par paquets), et un corps tronqué se lit comme une requête malformée.
             var buffer = new char[length];
-            var read = await reader.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+            var read = 0;
+            while (read < length)
+            {
+                var chunk = await reader.ReadAsync(buffer.AsMemory(read, length - read), cancellationToken).ConfigureAwait(false);
+                if (chunk == 0)
+                {
+                    break; // Flux fermé avant la fin annoncée : corps partiel, jamais une attente infinie.
+                }
+
+                read += chunk;
+            }
+
             body = new string(buffer, 0, read);
         }
 
         var query = rawPath.Contains('?') ? rawPath[(rawPath.IndexOf('?') + 1)..] : string.Empty;
-        var queryParameters = query
-            .Split('&', StringSplitOptions.RemoveEmptyEntries)
-            .Select(pair => pair.Split('=', 2))
-            .Where(pair => pair.Length == 2)
-            .ToDictionary(pair => Uri.UnescapeDataString(pair[0]), pair => Uri.UnescapeDataString(pair[1]), StringComparer.Ordinal);
+        // Dictionnaire tolérant : « ?a=1&a=2 » est répété, pas invalide — ne pas lever ici,
+        // sinon la requête meurt sans réponse et le client attend jusqu'à son délai.
+        var queryParameters = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var segments = pair.Split('=', 2);
+            if (segments.Length == 2)
+            {
+                queryParameters[Uri.UnescapeDataString(segments[0])] = Uri.UnescapeDataString(segments[1]);
+            }
+        }
 
         string? payload;
         var status = 200;
-        if (method == "GET" && _routes.TryGetValue(path, out var handler))
+        try
         {
-            payload = handler(queryParameters);
-            if (payload is null)
+            if (method == "GET" && _routes.TryGetValue(path, out var handler))
             {
-                status = 404;
-                payload = "{\"error\":\"not_found\"}";
+                payload = handler(queryParameters);
+            }
+            else if (method == "POST" && _postRoutes.TryGetValue(path, out var postHandler))
+            {
+                payload = postHandler(queryParameters, body);
+            }
+            else
+            {
+                payload = null;
             }
         }
-        else if (method == "POST" && _postRoutes.TryGetValue(path, out var postHandler))
+        catch (Exception)
         {
-            payload = postHandler(queryParameters, body);
-            if (payload is null)
-            {
-                status = 404;
-                payload = "{\"error\":\"not_found\"}";
-            }
+            // Un gestionnaire en échec doit répondre, pas laisser la connexion suspendue.
+            status = 500;
+            payload = "{\"error\":\"internal\"}";
+            await WriteResponseAsync(stream, status, "Internal Server Error", payload, "application/json").ConfigureAwait(false);
+            return;
         }
-        else
+
+        if (payload is null)
         {
             status = 404;
             payload = "{\"error\":\"not_found\"}";
         }
 
-        if (status != 200)
-        {
-            _contentTypes[path] = "application/json";
-        }
-
-        var bodyBytes = Encoding.UTF8.GetBytes(payload);
-        var reason = status switch
+        // Le type de contenu est celui de la route, jamais muté par la réponse : écrire dans
+        // un dictionnaire partagé ici corromprait des réponses concurrentes et ferait croître
+        // le tableau à chaque chemin inconnu servi en 404.
+        var contentType = status == 200
+            ? _contentTypes.GetValueOrDefault(path, "application/json")
+            : "application/json";
+        await WriteResponseAsync(stream, status, status switch
         {
             200 => "OK",
             404 => "Not Found",
+            413 => "Payload Too Large",
             _ => "Error",
-        };
+        }, payload, contentType).ConfigureAwait(false);
+    }
+
+    private static async Task WriteResponseAsync(NetworkStream stream, int status, string reason, string payload, string contentType)
+    {
+        var bodyBytes = Encoding.UTF8.GetBytes(payload);
         var response = new StringBuilder();
         response.Append("HTTP/1.1 ").Append(status).Append(' ').Append(reason).Append("\r\n");
-        response.Append("Content-Type: ").Append(_contentTypes.GetValueOrDefault(path, "application/json")).Append("\r\n");
+        response.Append("Content-Type: ").Append(contentType).Append("\r\n");
         response.Append("Content-Length: ").Append(bodyBytes.Length).Append("\r\n");
         response.Append("Connection: close\r\n\r\n");
         var head = Encoding.UTF8.GetBytes(response.ToString());
-        await stream.WriteAsync(head, cancellationToken).ConfigureAwait(false);
-        await stream.WriteAsync(bodyBytes, cancellationToken).ConfigureAwait(false);
-        await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        await stream.WriteAsync(head).ConfigureAwait(false);
+        await stream.WriteAsync(bodyBytes).ConfigureAwait(false);
+        await stream.FlushAsync().ConfigureAwait(false);
     }
 
     /// <inheritdoc />

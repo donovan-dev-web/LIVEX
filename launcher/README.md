@@ -7,6 +7,11 @@ unique, le paquet `.livexp`.
 La spécification complète vit dans [`../docs/docs-launcher/`](../docs/docs-launcher/README.md) :
 vision, architecture, modèle de composants, contrat d'intégration, format de paquet,
 campagnes, observabilité, interface, empaquetage, tests, feuille de route et six ADR.
+La liste ordonnée et vérifiable des travaux restant pour finaliser V1 est dans
+[`ROADMAP-V1.md`](ROADMAP-V1.md).
+Le contrat versionné du manifeste et du cycle de vie est dans
+[`contracts/INTEGRATION-CONTRACT-v1.md`](contracts/INTEGRATION-CONTRACT-v1.md),
+avec le [`schéma JSON v1`](contracts/component-manifest-v1.schema.json).
 
 ## État de la réalisation (cible V1)
 
@@ -14,18 +19,21 @@ campagnes, observabilité, interface, empaquetage, tests, feuille de route et si
 | :-- | :-- | :-- |
 | **G1** | Format de paquet `.livexp` : ZIP64 vivant puis scellé, ordre d'écriture normatif, déterminisme octet pour octet, contre-mesures de sécurité | Livré, 10 propriétés testées |
 | **G2** | Orchestration sans interface : machine à états, registre, profils, sondes de santé câblées (Démarrage → Prêt, perte de contact), gestion de processus, détection par manifeste | Livré |
-| **G3** | Campagnes : planification séquentielle, graines dérivées, politiques d'échec, reprise exacte, annulation, scellement | Implémenté et testé contre les stubs ; intégration SYNE/ECHOS réels à valider |
-| **G4** | Interface d'orchestration : quatre modes de lancement, neuf écrans, cartes COMPOSANTS avec cycle de vie, monitoring, lecteur Markdown et CLI `--check` | Parcours principaux implémentés ; consultation centralisée des logs par run, configuration détaillée et validation visuelle restent à terminer |
-| **G5** | Session complète : demande d'analyse à ECHOS (§10.1), rapport archivé puis affiché fidèlement, campagne sans interface web, analyste défaillant isolé | Scénarios exercés contre `Stub.Echos` ; la porte **P3** (ECHOS réel) reste ouverte |
-| **G6** | Livraison : `--check` complet (les huit vérifications de `PACKAGING.md` §6), sortie textuelle stable | Diagnostic livré ; installation multi-plateformes et cible 72 h restantes |
-| **G7** | Déverrouillage Immersion : exigences §11.1 évaluées au manifeste PRISM, cycle de vie piloté comme un autre composant, mode sélectionnable dans Configuration | Livré côté Launcher ; conditionné par un PRISM conforme |
+| **G3** | Campagnes : planification séquentielle, graines dérivées, politiques d'échec, reprise exacte, annulation, scellement | Implémenté et testé contre les stubs ; le défaut SYNE réel `reference` est aligné, mais les campagnes et la collecte restent à accepter contre une installation publiée |
+| **G4** | Interface d'orchestration : quatre modes, neuf écrans, cycle de vie, monitoring, lecteur Markdown et CLI `--check` | Parcours principaux, consultation/export des logs de run et gestion des installations présents ; variantes UI/headless et validation complète des états visuels restent à faire |
+| **G5** | Session complète : run réel, analyse headless ECHOS, rapport archivé et relu, reprise sans rejouer les runs terminés | Non franchi : SYNE batch et les opérations d'analyse ECHOS attendues ne sont pas disponibles |
+| **G6** | Livraison : diagnostic, installation propre et mise à jour | `--check` existe ; installateurs Launcher Windows/Linux et validation sur machines propres restent à faire |
+| **G7** | Déverrouillage Immersion selon manifeste et acceptation PRISM | Verrouillé : aucun manifeste PRISM Launcher ni parcours de rendu accepté |
 | — | Portes externes P1 – P5 (protocole, batch SYNE, ECHOS pilotable, Linux, déterminisme) | Hors du Launcher (`ROADMAP.md`, `ISSUES.md`) |
 
 Les modes `Console`, `Standard`, `Développement` et `Personnaliser` sont
-sélectionnables dans l'application. La sélection personnalisée ne choisit pas
-encore les versions installées ni la variante UI/headless de chaque composant.
-Les tests de campagne emploient les stubs du Launcher ; les écarts de contrat
-des composants réels sont recensés dans `../docs/docs-launcher/ISSUES.md`.
+sélectionnables dans l'application. Configuration permet d'ajouter des
+installations et de choisir l'installation active ; la sélection explicite
+des variantes UI/headless selon les capacités des manifestes reste à faire.
+Les campagnes ont été validées contre les stubs, pas contre SYNE réel et les
+opérations d'analyse ECHOS réelles. L'état observé et la séquence de travail
+sont détaillés dans [`ROADMAP-V1.md`](ROADMAP-V1.md) et la
+[`matrice des capacités`](V1-CAPABILITY-MATRIX.md).
 
 ## Arborescence
 
