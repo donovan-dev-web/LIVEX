@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "example-worker",
+  "name": "Example worker",
+  "type": "utility",
+  "version": "1.0.0",
+  "executable": {
+    "path": "../outside"
+  },
+  "endpoints": {
+    "control": {
+      "transport": "http"
+    }
+  },
+  "capabilities": [
+    "headless"
+  ],
+  "health": {
+    "probe": "http",
+    "path": "/health/ready",
+    "intervalMs": 1000
+  },
+  "timeouts": {
+    "startupMs": 30000,
+    "shutdownMs": 5000
+  }
+}
