@@ -102,9 +102,26 @@ public sealed class ScriptedRunExecutor : IRunExecutor
     }
 
     /// <inheritdoc />
+    public event EventHandler<RunTickProgress>? TickProgress;
+
+    /// <summary>Avancement publié avant chaque run, pour vérifier la propagation (§8).</summary>
+    public Func<RunSpec, IEnumerable<RunTickProgress>>? ProgressScript { get; init; }
+
+    /// <summary>Publie un avancement comme le ferait le moteur.</summary>
+    public void EmitProgress(RunTickProgress progress) => TickProgress?.Invoke(this, progress);
+
+    /// <inheritdoc />
     public Task<RunResult> ExecuteAsync(RunSpec spec, CancellationToken cancellationToken)
     {
         Executed.Add(spec.RunId);
+        if (ProgressScript is { } script)
+        {
+            foreach (var progress in script(spec))
+            {
+                TickProgress?.Invoke(this, progress);
+            }
+        }
+
         return Task.FromResult(_script(spec));
     }
 }
@@ -142,10 +159,90 @@ public sealed class CampaignRunnerTests : IDisposable
         new Dictionary<string, byte[]> { ["data/result.json"] = System.Text.Encoding.UTF8.GetBytes($"{{\"seed\":{spec.Seed}}}") },
         Array.Empty<(string, byte[])>(), spec.Ticks, TimeSpan.FromMilliseconds(10));
 
-    // ------------------------------------------------------------------
-    // Scénario « campagne nominale » : création, exécution de tous les runs,
-    // scellement, relecture (TESTING.md §8).
-    // ------------------------------------------------------------------
+// ------------------------------------------------------------------
+// Progression du run relayée depuis le moteur (EXPERIMENTS.md §8).
+// ------------------------------------------------------------------
+[Fact]
+public async Task La_progression_du_moteur_est_republiée_avec_le_contexte_de_campagne()
+{
+    var packages = new TestPackageService(_directory);
+    var reported = new List<RunTickProgress>
+    {
+        new(250, 1000, 50, "running"),
+        new(750, 1000, 12, "running"),
+    };
+    var executor = new ScriptedRunExecutor(Success)
+    {
+        ProgressScript = _ => reported,
+    };
+    var runner = new CampaignRunner(packages, executor, null, new SystemClock(), _journal);
+    var definition = Definition(1);
+    var observed = new List<CampaignProgress>();
+    runner.Progress += (_, progress) => observed.Add(progress);
+
+    var packagePath = runner.CreateCampaign(definition);
+    await runner.ExecuteAsync(packagePath, definition, CancellationToken.None);
+
+    var ticks = observed.Where(p => p.CurrentRunProgress is not null).ToList();
+    Assert.Equal(2, ticks.Count);
+    // Le contexte de campagne accompagne l'avancement : c'est lui qui dit où l'on en est.
+    Assert.All(ticks, p =>
+    {
+        Assert.Equal("EXP-CAMP-001", p.ExperimentId);
+        Assert.Equal("RUN-0001", p.CurrentRunId);
+        Assert.Equal(1, p.RunsTotal);
+        Assert.Equal(500, p.CurrentSeed);
+    });
+    Assert.Equal(250, ticks[0].CurrentRunProgress!.Tick);
+    Assert.Equal(750, ticks[1].CurrentRunProgress!.Tick);
+}
+
+[Fact]
+public async Task Aucun_avancement_n_est_republié_quand_le_moteur_rest_muet()
+{
+    var packages = new TestPackageService(_directory);
+    var executor = new ScriptedRunExecutor(Success); // aucun ProgressScript
+    var runner = new CampaignRunner(packages, executor, null, new SystemClock(), _journal);
+    var definition = Definition(1);
+    var observed = new List<CampaignProgress>();
+    runner.Progress += (_, progress) => observed.Add(progress);
+
+    var packagePath = runner.CreateCampaign(definition);
+    await runner.ExecuteAsync(packagePath, definition, CancellationToken.None);
+
+    // La progression de campagne reste publiée ; l'avancement de run reste nul, jamais un 0 % fabriqué.
+    Assert.NotEmpty(observed);
+    Assert.All(observed, p => Assert.Null(p.CurrentRunProgress));
+}
+
+[Fact]
+public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_campagne()
+{
+    var packages = new TestPackageService(_directory);
+    var executor = new ScriptedRunExecutor(Success)
+    {
+        ProgressScript = _ => new[] { new RunTickProgress(500, 1000, 50, "running") },
+    };
+    var runner = new CampaignRunner(packages, executor, null, new SystemClock(), _journal);
+    var definition = Definition(1);
+    var observed = new List<CampaignProgress>();
+    runner.Progress += (_, progress) => observed.Add(progress);
+
+    var packagePath = runner.CreateCampaign(definition);
+    await runner.ExecuteAsync(packagePath, definition, CancellationToken.None);
+    var duringCampaign = observed.Count(p => p.CurrentRunProgress is not null);
+    Assert.Equal(1, duringCampaign);
+
+    // Hors campagne, l'exécuteur ne doit plus rien relayer : un abonnement résiduel
+    // ferait avancer une campagne déjà terminée.
+    executor.EmitProgress(new RunTickProgress(900, 1000, 1, "running"));
+    Assert.Equal(duringCampaign, observed.Count(p => p.CurrentRunProgress is not null));
+}
+
+// ------------------------------------------------------------------
+// Scénario « campagne nominale » : création, exécution de tous les runs,
+// scellement, relecture (TESTING.md §8).
+// ------------------------------------------------------------------
     [Fact]
     public async Task Campagne_nominale_produit_paquet_scelle_relisible()
     {
@@ -167,7 +264,20 @@ public sealed class CampaignRunnerTests : IDisposable
         Assert.Equal(500, reader.RunIndex.Runs[0].Seed);
         Assert.Equal(502, reader.RunIndex.Runs[2].Seed);
         // La configuration résolue est écrite pour chaque run.
-        Assert.NotNull(reader.ReadEntry("runs/RUN-0001/config.resolved.json"));
+        var resolvedBytes = reader.ReadEntry("runs/RUN-0001/config.resolved.json");
+        Assert.NotNull(resolvedBytes);
+        // ... et elle atteste la configuration effective, pas seulement la définition
+        // de campagne : sans la cadence archivée, le paquet ne prouverait pas que le
+        // run n'a pas été rejoué en temps réel (EXPERIMENTS.md §12).
+        using var resolved = System.Text.Json.JsonDocument.Parse(resolvedBytes!);
+        var engine = resolved.RootElement.GetProperty("engine");
+        Assert.Equal(
+            RunEngineProfile.BatchTicksPerSecond,
+            engine.GetProperty("configOverlay").GetProperty("simulation").GetProperty("ticksPerSecond").GetInt32());
+        Assert.Equal(
+            definition.AgentCount,
+            engine.GetProperty("configOverlay").GetProperty("agents").GetProperty("initialCount").GetInt32());
+        Assert.Equal(500, resolved.RootElement.GetProperty("run").GetProperty("seed").GetInt64());
         // Un paquet scellé refuse toute réexécution.
         await Assert.ThrowsAsync<InvalidOperationException>(() => runner.ExecuteAsync(sealedPath, definition, CancellationToken.None));
     }
@@ -277,6 +387,46 @@ public sealed class CampaignRunnerTests : IDisposable
     }
 
     // ------------------------------------------------------------------
+    // Reprise : la progression publiée compte les runs déjà terminés au lieu de repartir
+    // de zéro — afficher 0/3 sur une campagne reprise à 1/3 se lit comme un run rejoué.
+    // ------------------------------------------------------------------
+    [Fact]
+    public async Task Reprise_publie_une_progression_comptant_les_runs_deja_termines()
+    {
+        var packages = new TestPackageService(_directory);
+        var definition = Definition(3);
+        var creator = new CampaignRunner(packages, new ScriptedRunExecutor(Success), null, new SystemClock(), _journal);
+        var packagePath = creator.CreateCampaign(definition);
+
+        using (var source = new CancellationTokenSource())
+        {
+            var interruptible = new CampaignRunner(packages, new ScriptedRunExecutor(spec =>
+            {
+                if (spec.RunId == "RUN-0002")
+                {
+                    source.Cancel();
+                    throw new OperationCanceledException(source.Token);
+                }
+
+                return Success(spec);
+            }), null, new SystemClock(), _journal);
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(
+                () => interruptible.ExecuteAsync(packagePath, definition, source.Token));
+        }
+
+        var observed = new List<CampaignProgress>();
+        var resuming = new CampaignRunner(packages, new ScriptedRunExecutor(Success), null, new SystemClock(), _journal);
+        resuming.Progress += (_, progress) => observed.Add(progress);
+        await resuming.ExecuteAsync(packagePath, definition, CancellationToken.None);
+
+        // RUN-0001 est sauté mais compte dès la première publication : 1/3, pas 0/3.
+        Assert.NotEmpty(observed);
+        Assert.Equal(1, observed.First().RunsDone);
+        Assert.Equal(3, observed.First().RunsTotal);
+        Assert.Equal(3, observed.Last().RunsDone);
+    }
+
+    // ------------------------------------------------------------------
     // Restitution : le rapport d'émergence d'ECHOS est archivé au scellement (canal 3).
     // ------------------------------------------------------------------
     [Fact]
@@ -293,8 +443,27 @@ public sealed class CampaignRunnerTests : IDisposable
         var sealedPath = await runner.ExecuteAsync(packagePath, definition, CancellationToken.None);
 
         Assert.Equal(1, analysisCalls);
+        Assert.Equal(["RUN-0001"], analysis.LastExperimentRunIds);
         using var reader = new LivexPackageReader(sealedPath);
         Assert.Contains("Rapport d'émergence", reader.ReadEmergenceReport());
+    }
+
+    [Fact]
+    public async Task Analyse_experimentale_recoit_uniquement_les_runs_termines()
+    {
+        var packages = new TestPackageService(_directory);
+        var executor = new ScriptedRunExecutor(spec =>
+            spec.RunId == "RUN-0001"
+                ? throw new InvalidOperationException("échec simulé")
+                : Success(spec));
+        var analysis = new RecordingAnalysisService(() => 0, "# Rapport");
+        var runner = new CampaignRunner(packages, executor, analysis, new SystemClock(), _journal);
+        var definition = Definition(2);
+
+        var packagePath = runner.CreateCampaign(definition);
+        await runner.ExecuteAsync(packagePath, definition, CancellationToken.None);
+
+        Assert.Equal(["RUN-0002"], analysis.LastExperimentRunIds);
     }
 
     // ------------------------------------------------------------------
@@ -426,6 +595,7 @@ public sealed class RecordingAnalysisService : IAnalysisService
     private readonly string? _report;
     private readonly Func<int>? _onAnalyzeRun;
     private readonly IReadOnlyDictionary<string, byte[]>? _runFiles;
+    public IReadOnlyList<string> LastExperimentRunIds { get; private set; } = [];
 
     /// <summary>Initialise l'analyste de test.</summary>
     public RecordingAnalysisService(Func<int> onAnalyzeExperiment, string? report, Func<int>? onAnalyzeRun = null, IReadOnlyDictionary<string, byte[]>? runFiles = null)
@@ -444,9 +614,13 @@ public sealed class RecordingAnalysisService : IAnalysisService
     }
 
     /// <inheritdoc />
-    public Task<(IReadOnlyDictionary<string, byte[]> AggregateFiles, string? EmergenceReport)> AnalyzeExperimentAsync(string experimentId, CancellationToken cancellationToken)
+    public Task<(IReadOnlyDictionary<string, byte[]> AggregateFiles, string? EmergenceReport)> AnalyzeExperimentAsync(
+        string experimentId,
+        IReadOnlyList<string> runIds,
+        CancellationToken cancellationToken)
     {
         _onAnalyzeExperiment();
+        LastExperimentRunIds = runIds;
         return Task.FromResult<(IReadOnlyDictionary<string, byte[]>, string?)>(
             (new Dictionary<string, byte[]> { ["aggregate.json"] = System.Text.Encoding.UTF8.GetBytes("{}") }, _report));
     }
