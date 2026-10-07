@@ -3,6 +3,11 @@
 Mesure l'alignement ou la divergence des objectifs (METRICS_SPEC.md §5).
 Les 4 métriques sont déterministes sur la distribution des types d'objectifs
 actifs des agents (``goals[].kind``, repli ``currentAction`` / ``Idle``).
+
+Décision P1 : ``CooperationPotential`` → **``GoalCategoryConcordance``**. Le
+calcul (Σ p²) est la probabilité que deux tirages indépendants partagent une
+catégorie ; il ne teste aucune compatibilité de buts ni aucun acte de
+coopération, et la doc affirmait l'inverse (« compatibilité par paire »).
 """
 
 from __future__ import annotations
@@ -23,9 +28,27 @@ ENGINE_NAME = "GoalConvergenceMetrics"
 METRICS = (
     "GlobalGoalAlignment",
     "GoalDiversity",
-    "CooperationPotential",
+    "GoalCategoryConcordance",
     "GoalTypeCounts",
 )
+
+
+def _goal_observed(snapshot: dict) -> bool:
+    """Vrai si au moins une entité déclare un objectif à ce tick.
+
+    Sans objectif, ``goal_kinds`` retombe sur ``currentAction``/``Idle`` : les
+    métriques décriraient alors des **actions**. Non mesuré plutôt qu'un repli
+    présenté comme une distribution de buts.
+    """
+    return any(agent.get("goals") for agent in agents_of(snapshot))
+
+
+REQUIRES = {
+    "GlobalGoalAlignment": _goal_observed,
+    "GoalDiversity": _goal_observed,
+    "GoalCategoryConcordance": _goal_observed,
+}
+"""Provenance : une distribution sans aucun objectif déclaré n'est pas mesurée."""
 
 
 def compute(snapshot: dict) -> dict:
@@ -36,10 +59,13 @@ def compute(snapshot: dict) -> dict:
 
     alignment = safe_ratio(max(goal_counter.values()), count) if goal_counter else 0.0
 
-    # Coopération : probabilité qu'une paire (a, b) partage au moins un objectif,
-    # approchée par Σ p_i² (deux tirages indépendants dans la même distribution).
+    # Concordance attendue des catégories : probabilité que deux tirages
+    # indépendants tombent sur la même catégorie de buts, Σ p_i².
+    # **Ce n'est pas une coopération** : aucune compatibilité par paire n'est
+    # testée, aucun comportement de coopération n'est observé (P1 : renommé
+    # pour dire ce qu'il calcule réellement).
     total = sum(goal_counter.values())
-    cooperation = (
+    concordance = (
         sum(safe_ratio(value, total) ** 2 for value in goal_counter.values())
         if total and len(agents) > 1
         else 0.0
@@ -48,7 +74,7 @@ def compute(snapshot: dict) -> dict:
     return {
         "GlobalGoalAlignment": alignment,
         "GoalDiversity": shannon(goal_counter),
-        "CooperationPotential": cooperation,
+        "GoalCategoryConcordance": concordance,
         "GoalTypeCounts": keyed(goal_counter),
     }
 

@@ -94,6 +94,33 @@ def test_world_initialized_prelude_is_skipped_before_tick_stream():
     assert [segment.tick for segment in segments] == [1]
 
 
+def test_world_initialized_prelude_is_forwarded_to_the_callback():
+    """La description de monde est transmise à l'appelant (vue 2D, ADR-007).
+
+    Sans ``on_world``, elle reste ignorée comme par le passé : le contrat de
+    découpage des ticks ne change pas, seule l'information devient récupérable.
+    """
+    payload = {
+        "type": "world_initialized",
+        "version": "1.0",
+        "seed": 17,
+        "world": {
+            "width": 500,
+            "height": 500,
+            "obstacles": [{"id": "o-1", "x": 12.0, "y": 24.0, "radius": 4.0}],
+            "resources": [{"id": "r-1", "kind": "food", "x": 3, "y": 4, "quantity": 10.0}],
+        },
+    }
+    client = _client([json.dumps(payload), _variant("world_snapshot_v01.json", 1)])
+    client.connect("ws://127.0.0.1:5180")
+
+    captured: list[dict] = []
+    segments = list(aligned_ticks(client, on_world=captured.append))
+
+    assert [segment.tick for segment in segments] == [1]
+    assert captured == [payload["world"]]
+
+
 def test_first_segment_matches_golden():
     client = _client(
         [

@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_ECHOS.md`, `ROADMAP.md` ECHOS
 **Source Monographie** : Annexe K (feuille de route V2), §4.10.3 (règle d'or), §9.6.4 (issues ADR)
 
@@ -10,7 +10,13 @@
 
 ## 1. Objectif
 
-Ce document est le **backlog complet des issues du composant ECHOS**, conçu pour être la **source unique de création des cartes du tableau Kanban** (`docs/governance/KANBAN.md`). Il couvre la réalisation **de A à Z** d'ECHOS : consommation des contrats SYNE, ingestion, les 7 moteurs de métriques, indicateurs d'émergence, API REST, logging, analyse causale, comparaison expérimentale, interface Écrans (web local React/Vite pour V0.1 ; shell Electron conservé, implémentation différée à un horizon ultérieur) et tests.
+Ce document est le **backlog complet des issues du composant ECHOS**, conçu pour être la **source unique de création des cartes du tableau Kanban** (`docs/governance/KANBAN.md`). Il couvre la réalisation **de A à Z** d'ECHOS : consommation des contrats SYNE, ingestion, les 7 moteurs de métriques, indicateurs d'émergence, API REST, logging, analyse causale, comparaison expérimentale et tests.
+
+> **Périmètre mis à jour (5 octobre 2026, ADR-007)** : les issues d'**interface
+> Écrans** (React/Vite) et de **shell Electron** ne font plus partie du composant
+> ECHOS — elles sont **retirées**, et les cartes livrées ci-dessous sont conservées
+> comme historique. La présentation appartient désormais au Launcher (consoles de
+> logs, fenêtre d'analyse) et se suit dans `../docs-launcher/ISSUES.md`.
 
 Chaque issue est **prête à être copiée** dans un système d'issues (GitHub/GitLab) avec son **titre**, son **label**, son **milestone**, sa **priorité**, ses **dépendances** et son **critère d'acceptation** — conformément aux règles de `docs/governance/ISSUES.md` (types, cycle de vie) et aux colonnes du Kanban.
 
@@ -123,7 +129,10 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ECHOS-091 | Intégration SYNE↔ECHOS — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le vrai SYNE, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Le déterminisme des deux composants est couvert par leurs suites dédiées. Cette issue ne valide pas PRISM ni son plugin Unreal ; voir la documentation PRISM pour les tests de PRISM-LDK et du projet Unreal PRISM. |
 | ECHOS-092 | Non-régression des indicateurs — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-030 | ✓ Baselines V0.1 et goldens vérifiés par les tests de métriques et API ; score inchangé sur données de référence. |
 
-### Milestone ph10 (echos) — Shell de bureau (Electron)
+### Milestone ph10 (echos) — Shell de bureau (Electron) — **RETRAITÉ (ADR-007, 05/10/2026)**
+
+> Ce qui suit est **historique** : `echos-desktop/`, `echos-ui/` et le workflow
+> `echos-desktop.yml` ont été supprimés le 5 octobre 2026.
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |

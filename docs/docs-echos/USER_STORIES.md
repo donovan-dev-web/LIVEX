@@ -1,10 +1,17 @@
 # USER_STORIES.md
 
 **Composant** : ECHOS
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Statut** : [RETRAIT] — document historique
+**Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `FRONTEND_VISION.md`, `API_REST.md`
 **Source Monographie** : §4.2.2, §4.6–4.7, §5.13
+
+> **Retrait de l'interface (5 octobre 2026, ADR-007).** Les personas et les
+> user stories ci-dessous décrivent l'interface web retirée. Les **besoins**
+> d'observation qu'ils portent restent valides ; leur réalisation est désormais
+> celle des fenêtres natives du Launcher (`../docs-launcher/USER_INTERFACE.md`
+> §9.2 : viabilité, comparaison, relecture) et non d'écrans React. Ce document
+> reste une trace de l'intention, pas un cahier des charges à implémenter.
 
 ---
 

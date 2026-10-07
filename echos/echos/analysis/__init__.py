@@ -66,26 +66,44 @@ def provenance(snapshot: dict) -> dict[str, dict[str, bool]]:
     ``CommunityStability``) de rester à 0 sur *tout* run réel, faute de
     contrepartie visible.
 
-    Le composite ``EmergenceIndicators`` propage : ses métriques ne sont
-    mesurées que si **toutes** celles des moteurs entrants le sont. Un score
-    d'émergence calculé sur une fenêtre vide n'est pas un score mesuré.
+    Le composite ``EmergenceIndicators`` propage depuis ses **dépendances
+    réelles** (``emergence.COMPOSITE_DEPENDENCIES``) : chaque sortie n'exige
+    que les métriques qui entrent dans sa formule. L'ancienne règle (exiger
+    *toutes* les métriques de *tous* les moteurs entrants) marquait « non
+    mesuré » un score entier à cause d'une métrique incidente qui n'entrait
+    pas dans sa formule. Un score d'émergence calculé sur une fenêtre vide
+    reste non mesuré ; une contribution isolée reste mesurée si **sa** source
+    l'est.
 
     Contrat des moteurs inchangé : ``compute`` retourne les mêmes valeurs ;
     ``measured_flags`` lit la déclaration ``REQUIRES`` de chaque moteur.
     """
+    from .emergence import COMPOSITE_DEPENDENCIES
+
     flags: dict[str, dict[str, bool]] = {}
     for engine in ENGINES:
         if engine.ENGINE_NAME == COMPOSITE_ENGINE_NAME:
             continue
         flags[engine.ENGINE_NAME] = measured_flags(snapshot, engine)
-    all_measured = all(
-        metric_measured
-        for engine_flags in flags.values()
-        for metric_measured in engine_flags.values()
-    )
-    flags[COMPOSITE_ENGINE_NAME] = {
-        metric: all_measured for metric in COMPOSITE_ENGINE.METRICS
-    }
+
+    flat_measured: dict[str, bool] = {}
+    for engine_flags in flags.values():
+        flat_measured.update(engine_flags)
+
+    composite_flags: dict[str, bool] = {}
+    for metric in COMPOSITE_ENGINE.METRICS:
+        if metric == "Disclaimer":
+            # Constante textuelle publiée telle quelle : toujours disponible.
+            composite_flags[metric] = True
+            continue
+        dependencies = COMPOSITE_DEPENDENCIES.get(metric)
+        if dependencies is None:
+            composite_flags[metric] = flat_measured.get(metric, False)
+            continue
+        composite_flags[metric] = all(
+            flat_measured.get(dependency, False) for dependency in dependencies
+        )
+    flags[COMPOSITE_ENGINE_NAME] = composite_flags
     return flags
 
 

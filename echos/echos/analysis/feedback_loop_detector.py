@@ -1,10 +1,33 @@
-"""Moteur 5 — FeedbackLoopDetector (boucles de rétroaction).
+"""Moteur 5 — FeedbackLoopDetector (répétitions d'action).
 
-Identifie les cycles où ``action → conséquence → décision`` se répètent
-(METRICS_SPEC.md §6). Heuristique de détection : une boucle = une action
-d'un agent répétée **plus de 2 fois** dans une fenêtre glissante (défaut 100
-ticks), lue dans la clé optionnelle ``history`` du snapshot (série des
-décisions par tick). Champs/historique absents → repli neutre 0.0.
+**Portée réelle (P1, RAPPORT §3.5)** : le moteur compte des paires
+``(agent, action)`` répétées dans une fenêtre glissante de décisions. Il
+n'observe ni conséquence, ni relation action → conséquence, ni retour de la
+conséquence sur la décision : ce n'est **pas** une boucle causale. Les mots
+« boucle », « amplification », « critique » et « stabilité » ont été retirés
+de la nomenclature publique ; le nom du moteur est conservé pour stabilité de
+contrat, sa nomenclature décrit ce qui est compté.
+
+Décisions P1 (registre des métriques) :
+
+- ``IdentifiedLoops`` → **``RepeatedActionPairs``** : nombre de paires
+  (agent, action) répétées plus de ``FREQUENCY_THRESHOLD`` fois ;
+- ``LoopStrength`` → **``RepeatedActionShare``** : part moyenne de la fenêtre
+  occupée par ces répétitions (fréquence / taille de fenêtre), pas un facteur
+  d'amplification mesuré ;
+- ``CriticalLoops`` → **``AmplifiedRepetitions``** : paires dont la fréquence
+  dépasse de ``AMPLIFICATION_FACTOR`` la fréquence uniforme attendue — un
+  écart à une référence théorique, pas un danger observé ;
+- ``SystemStability`` → **``ActionDistributionBalance``** : 1 − divergence
+  (écart absolu total) à la distribution uniforme. Ce n'est pas une stabilité
+  temporelle : la distribution uniforme n'est pas un état d'équilibre établi ;
+- ``LoopTypes`` → **``RepeatedActionCounts``** : comptage des actions
+  répétées par nom. Les catégories normalisées « positive / négative »,
+  codées en dur sans mesure d'effet, sont **retirées** (P2).
+
+Champs/historique absents → repli neutre 0.0 (``measured = false``). Pour une
+analyse causale réelle (contexte → option → action → conséquence → récidive),
+voir ``echos.analysis.causal`` (ECHOS-061) et `CAUSAL_ANALYSIS.md`.
 """
 
 from __future__ import annotations
@@ -16,31 +39,31 @@ from ._common import clamp, mean
 ENGINE_NAME = "FeedbackLoopDetector"
 
 METRICS = (
-    "IdentifiedLoops",
-    "LoopStrength",
-    "SystemStability",
-    "CriticalLoops",
-    "LoopTypes",
+    "RepeatedActionPairs",
+    "RepeatedActionShare",
+    "ActionDistributionBalance",
+    "AmplifiedRepetitions",
+    "RepeatedActionCounts",
 )
 
-REQUIRES = {metric: "history" for metric in METRICS if metric != "LoopTypes"}
-"""Toutes les métriques de boucle lisent ``history``.
+REQUIRES = {
+    metric: "history"
+    for metric in METRICS
+    if metric != "RepeatedActionCounts"
+}
+"""Toutes les métriques numériques lisent ``history``.
 
 Ce sont les métriques qui restaient à 0.0 sur tout run tant que le pipeline ne
-publiait pas la fenêtre glissante : sans historique, « aucune boucle détectée »
-et « aucune boucle mesurable » étaient indiscernables.
+publiait pas la fenêtre glissante : sans historique, « aucune répétition
+détectée » et « aucune répétition mesurable » étaient indiscernables.
 
-``LoopTypes`` est exclu car c'est une sortie composite (dict de comptages),
-jamais persistée comme métrique numérique.
+``RepeatedActionCounts`` est exclu car c'est une sortie composite (dict de
+comptages), jamais persistée comme métrique numérique.
 """
 
 WINDOW_SIZE = 100
 FREQUENCY_THRESHOLD = 2
 AMPLIFICATION_FACTOR = 1.5
-
-_POSITIVE_ACTIONS = frozenset(
-    {"Rest", "Eat", "SeekFood", "SeekWater", "Socialize", "Explore"}
-)
 
 
 def _window(snapshot: dict) -> list[dict]:
@@ -54,7 +77,7 @@ def _window(snapshot: dict) -> list[dict]:
 
 
 def _loop_counts(history: list[dict]) -> Counter[tuple[str, str]]:
-    """Comptages (agent, action) sur la fenêtre — couvre la détection des boucles."""
+    """Comptages (agent, action) sur la fenêtre — couvre la détection."""
     counts: Counter[tuple[str, str]] = Counter()
     for entry in history:
         for agent_id, action in (entry.get("actions") or {}).items():
@@ -63,11 +86,11 @@ def _loop_counts(history: list[dict]) -> Counter[tuple[str, str]]:
 
 
 def compute(snapshot: dict) -> dict:
-    """Calcule les 5 métriques de détection des boucles de rétroaction."""
+    """Calcule les 5 sorties de répétition d'action sur une fenêtre."""
     history = _window(snapshot)
     counts = _loop_counts(history)
 
-    # Boucles : (agent, action) répété > FREQUENCY_THRESHOLD fois.
+    # Paires (agent, action) répétées > FREQUENCY_THRESHOLD fois.
     loops = {
         key: frequency for key, frequency in counts.items()
         if frequency > FREQUENCY_THRESHOLD
@@ -80,7 +103,8 @@ def compute(snapshot: dict) -> dict:
         else 0.0
     )
 
-    # Facteur d'amplification : fréquence observée / fréquence uniforme attendue.
+    # Écart à la fréquence uniforme théorique (référence théorique, pas un
+    # risque observé) : fréquence observée > AMPLIFICATION_FACTOR × attendue.
     distinct = len(counts)
     expected = window_size / distinct if distinct else window_size
     critical = sum(
@@ -89,28 +113,31 @@ def compute(snapshot: dict) -> dict:
         if expected and (frequency / expected) > AMPLIFICATION_FACTOR
     )
 
-    # Stabilité : 1 - divergence par rapport à l'équilibre (distribution uniforme).
-    # Historique vide → aucune décision observée → neutre 0.0 (METRICS_SPEC §6).
+    # Équilibre de la distribution observée : 1 − Σ|pᵢ − 1/k|, clampé [0,1].
+    # Historique vide → aucune décision observée → neutre 0.0.
     if counts:
         total = sum(counts.values())
         probabilities = [count / total for count in counts.values()]
         uniform = 1.0 / distinct
         divergence = sum(abs(prob - uniform) for prob in probabilities)
-        system_stability = clamp(1.0 - divergence)
+        balance = clamp(1.0 - divergence)
     else:
-        system_stability = 0.0
+        balance = 0.0
 
-    loop_types = {
-        "positive": sum(1 for (_, action) in loops if action in _POSITIVE_ACTIONS),
-        "negative": sum(1 for (_, action) in loops if action not in _POSITIVE_ACTIONS),
-    }
+    # Comptage des actions répétées, par nom — sans catégorie normative.
+    # Invariant vérifié par test : Σ valeurs == RepeatedActionPairs.
+    repeated_actions: Counter[str] = Counter()
+    for (_agent_id, action) in loops:
+        repeated_actions[action] += 1
 
     return {
-        "IdentifiedLoops": len(loops),
-        "LoopStrength": loop_strength,
-        "SystemStability": system_stability,
-        "CriticalLoops": critical,
-        "LoopTypes": loop_types,
+        "RepeatedActionPairs": len(loops),
+        "RepeatedActionShare": loop_strength,
+        "ActionDistributionBalance": balance,
+        "AmplifiedRepetitions": critical,
+        "RepeatedActionCounts": {
+            action: repeated_actions[action] for action in sorted(repeated_actions)
+        },
     }
 
 

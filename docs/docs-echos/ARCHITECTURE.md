@@ -14,13 +14,13 @@
 | :-- | :-- | :-- |
 | **Analyse** | Calculs scientifiques, traitement des données, métriques | Python (FastAPI) |
 | **Application** | Couche applicative, API REST, pilotage | FastAPI local |
-| **Interface** | Vues d'observation, contrôle, calibration (**intégrée à ECHOS**) | React/TypeScript — web local servie par FastAPI (`echos-ui`, Vite) |
+| **Interface** | Vues d'observation, contrôle, calibration | **Retirée d'ECHOS** (ADR-007) : présentation native portée par le Launcher (consoles de logs + fenêtre d'analyse Avalonia) |
 | **Stockage** | Données d'analyse (séparé de la donnée SYNE) | SQLite + Parquet |
 | **Source** | SYNE — production d'événements | WebSocket :5180 |
 
 ### ⚠ Divergence annoncée vs prototype
 
-L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Application) et un **shell Electron** avec interface web React (prototype C#/.NET). **Décision V0.1 (décision utilisateur, 23/09/2026)** : la stack ECHOS est **React/TypeScript web local servie par FastAPI + FastAPI local (PAS Django)**, avec **NumPy/Pandas/SciPy/NetworkX** pour le calcul et **ECharts/Plotly** pour la visualisation, et **SQLite/Parquet** pour le stockage d'analyse. L'interface `echos-ui` (Vite) est servie par FastAPI (dev `npm run dev`, build statique en production), sans wrapper de bureau **en V0.1**. Le **shell Electron n'est pas abandonné** : il est **conservé**, son implémentation étant **différée à un horizon ultérieur (post-V0.1)** (correction 23/09/2026, cf. `adr/ADR-001-stack-applicative.md`). Cette divergence est assumée et documentée (cf. `../ARCHITECTURE.md` racine, `adr/ADR-001-stack-applicative.md`).
+L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Application) et un **shell Electron** avec interface web React (prototype C#/.NET). **Décision V0.1 (décision utilisateur, 23/09/2026)** : la stack ECHOS est **FastAPI local (PAS Django)**, avec **NumPy/Pandas/SciPy/NetworkX** pour le calcul et **SQLite/Parquet** pour le stockage d'analyse. **Décision du 5 octobre 2026 (ADR-007, utilisateur)** : ECHOS est un **moteur sans interface** — l'interface `echos-ui` (React/Vite) et le shell `echos-desktop` (Electron) ont été **supprimés**, de même que le montage statique de FastAPI. Les vues d'observation et d'analyse sont portées par le **Launcher** (Avalonia), qui consomme l'API REST. Cette divergence est assumée et documentée (cf. `../ARCHITECTURE.md` racine, `adr/ADR-001-stack-applicative.md`, `../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`).
 
 ## 2. Intégration avec SYNE
 
@@ -35,7 +35,7 @@ flowchart LR
 ```
 
 - ECHOS **observe** SYNE (contrat de transport, WebSocket :5180) et **pilote** SYNE (contrôle, calibration) — Monographie §4.2.2.
-- L'interface étant **intégrée à ECHOS** en V0.1, la diffusion temps réel des métriques (prototype `ws://localhost:5180/metrics`) alimente directement les vues d'analyse.
+- Le **présentatif est le Launcher** (ADR-007) : il sonde l'API REST :5000 (1 s) et affiche les séries dans sa fenêtre d'analyse. Aucune diffusion WebSocket de métriques n'est servie par ECHOS à ce jour.
 
 ## 3. Séparation des données
 
@@ -56,7 +56,7 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 | Analyse causale | Reconstruction des chaînes | `CAUSAL_ANALYSIS.md` |
 | Comparaison expérimentale | Runs contrôlés, reproductibilité | `EXPERIMENT_COMPARISON.md` |
 | API REST | Endpoints d'interrogation lecture seule (port 5000) — `api/app.py` (factory + `ECHOS_ANALYTICS_DB`), `api/routes.py` (ECHOS-040→044), `api/series.py` (cache LRU) | `API_REST.md` |
-| Shell de bureau | Application Electron (`echos-desktop/`) : lance le backend Python (PyInstaller *onedir*) comme enfant, ouvre une fenêtre sur l'origine locale ; FastAPI sert aussi le build `echos-ui` (même origine, sans CORS) | `adr/ADR-003-shell-electron-desktop.md` |
+| Shell de bureau | **Supprimé** (ADR-007) : plus d'Electron, plus de montage statique — `create_app()` est une API seule | `../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md` |
 | Logging & instrumentation | 3 niveaux (structuré, traces, texte) | `LOGGING_INSTRUMENTATION.md` |
 
 ---
@@ -71,9 +71,9 @@ echos/
 ├── .flake8                   # flake8 (max-line-length=100)
 ├── echos/
 │   ├── __init__.py           # __version__ (synchro pyproject)
-│   ├── server.py             #   echos-serve : uvicorn API + UI statique (repli SPA), ECHOS_UI_DIST
+│   ├── server.py             #   echos-serve : uvicorn API seule (aucune page servie)
 │   ├── api/                  # API REST (ECHOS-040 → 045)
-│   │   ├── app.py            #   create_app(store, ui_dist) FastAPI + ECHOS_ANALYTICS_DB, /health
+│   │   ├── app.py            #   create_app(store) FastAPI + ECHOS_ANALYTICS_DB, /health
 │   │   ├── routes.py         #   /api/runs*, /metrics, /export, /beliefs, /relationships, /groups, /emergent-phenomena
 │   │   └── series.py         #   SeriesCache LRU invalide par ingest_version
 │   ├── analysis/             # 8 moteurs (7 métriques + EmergenceIndicators)
@@ -89,23 +89,18 @@ echos/
 │       ├── parquet.py        #   séries lourdes PyArrow + coherence_errors
 │       └── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
 ├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
-├── echos-ui/                 # interface React + TypeScript (Vite, vitest/jsdom)
-└── echos-desktop/            # shell Electron (ADR-003 ECHOS)
-    ├── electron/main.js      #   lance le backend, attend /health, ouvre la fenêtre
-    ├── backend/              #   spec PyInstaller (onedir) + point d'entrée
-    ├── electron-builder.yml  #   cibles .deb (Linux) / NSIS .exe (Windows)
-    └── scripts/              #   build-backend.mjs, make-icon.mjs
 ```
 
-- `echos` est le composant **Application + Analyse** ; `echos-ui` le composant **Interface** (§1).
+- `echos` est le composant **Application + Analyse** : il n'a **pas** de composant Interface (ADR-007).
 - Les moteurs exposent le contrat `ENGINE_NAME` / `METRICS` / `compute(snapshot)` ; implémentation au jalon U1.
 - Les contrats d'ingestion (`WorldSnapshot`/`ExternalEvent`) sont des modèles pydantic camelCase validés ; le client WebSocket et le client de contrôle sont testés de façon **déterministe sur fixtures** (E2E réel SYNE = jalon U1).
 
 ---
 
 ## Points restés ouverts dans ce document
-- La divergence FastAPI/Django est tranchée et documentée. Le shell Electron,
-  **conservé** par l'`ADR-001`, est désormais **implémenté** (`echos-desktop/`,
-  `ADR-003`) : application de bureau `.exe`/`.deb`, backend Python empaqueté
-  PyInstaller et interface servie par FastAPI sur la même origine.
-- Choix des bibliothèques de visualisation (ECharts vs Plotly) par vue : à affiner à l'implémentation.
+- La divergence FastAPI/Django est tranchée et documentée. L'interface web et le
+  shell Electron, livrés en V0.1, ont été **retirés le 5 octobre 2026** (ADR-007) :
+  ECHOS est une API Python seule, et le Launcher porte les fenêtres natives de
+  présentation (consoles de logs, fenêtre d'analyse).
+- Choix des bibliothèques de visualisation : **sans objet pour ECHOS** — le
+  rendu appartient au Launcher (LiveCharts2).

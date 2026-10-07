@@ -1,10 +1,26 @@
 # UI_DESIGN.md
 
 **Composant** : ECHOS
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Statut** : [RETRAIT] — document historique
+**Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `FRONTEND_VISION.md`, `USER_STORIES.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.2.2, §4.7, §5.13 (interface intégrée)
+
+> **Retrait de l'interface (5 octobre 2026, ADR-007).** `echos-ui` et le shell
+> `echos-desktop` ont été supprimés : ECHOS est un **moteur sans interface**.
+> Ce design system et la navigation qu'il décrit s'appliquaient à l'interface web
+> React retirée ; ils ne sont **plus une prescription**. Les besoins d'observation
+> sont portés par les **fenêtres natives du Launcher** (consoles de logs et fenêtre
+> d'analyse — `../docs-launcher/USER_INTERFACE.md` §9 et
+> `../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`), qui
+> héritent des intentions (thème sombre, chiffres tabulaires, densité) sans reprendre
+> cette spécification pixel.
+>
+> **Ce qui reste valable** : les principes d'affichage honnête (valeurs publiées telles
+> quelles, états vides explicites, pas de calcul local) — repris et durcis dans
+> `METRICS_SPEC.md` §12 et `METRICS_DICTIONARY.md`.
+> **Ce qui est obsolète** : les écrans, le routage, les composants React et les
+> contrôles de pilotage décrits ci-dessous.
 
 ---
 

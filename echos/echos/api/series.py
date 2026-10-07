@@ -19,13 +19,18 @@ from echos.storage.sqlite import AnalyticsStore
 
 
 class SeriesCache:
-    """Cache LRU de séries par ``(run_id, engine, metric)``, borné et thread-safe."""
+    """Cache LRU de séries par ``(namespace, run_id, engine, metric)``.
+
+    Deux namespaces : ``value`` (séries de valeurs) et ``measured`` (séries de
+    provenance par tick). Borné et thread-safe (FastAPI sert plusieurs requêtes
+    de front).
+    """
 
     def __init__(self, capacity: int = 256) -> None:
         if capacity <= 0:
             raise ValueError("capacity doit être > 0")
         self._capacity = capacity
-        self._entries: "OrderedDict[tuple[str, str, str], tuple[int, object]]" = (
+        self._entries: "OrderedDict[tuple[str, str, str, str], tuple[int, object]]" = (
             OrderedDict()
         )
         self._lock = Lock()
@@ -44,22 +49,51 @@ class SeriesCache:
         La série est invalidée si ``store.ingest_version`` a changé depuis sa
         mise en cache (écriture d'un nouveau tick, d'un contexte, etc.).
         """
-        key = (run_id, engine, metric)
+        return self._cached(
+            (run_id, engine, metric),
+            store,
+            loader or (lambda: store.metric_series(run_id, engine, metric)),
+        )
+
+    def provenance(
+        self,
+        store: AnalyticsStore,
+        run_id: str,
+        engine: str,
+        metric: str,
+    ) -> object:
+        """Série de provenance ``(tick, measured)`` en cache (P0).
+
+        Même politique d'invalidation que :meth:`series` ; l'entrée est disjointe
+        (préfixe de clé) pour ne jamais confondre valeurs et drapeaux.
+        """
+        return self._cached(
+            (run_id, engine, metric),
+            store,
+            lambda: store.measured_series(run_id, engine, metric),
+            namespace="measured",
+        )
+
+    def _cached(
+        self,
+        key: tuple[str, str, str],
+        store: AnalyticsStore,
+        loader: Callable[[], object],
+        namespace: str = "value",
+    ) -> object:
+        cache_key = (namespace, *key)
         version = store.ingest_version
         with self._lock:
-            entry = self._entries.pop(key, None)
+            entry = self._entries.pop(cache_key, None)
             if entry is not None and entry[0] == version:
-                self._entries[key] = entry
+                self._entries[cache_key] = entry
                 return entry[1]
 
-        if loader is None:
-            value: object = store.metric_series(run_id, engine, metric)
-        else:
-            value = loader()
+        value = loader()
 
         with self._lock:
-            self._entries[key] = (version, value)
-            self._entries.move_to_end(key)
+            self._entries[cache_key] = (version, value)
+            self._entries.move_to_end(cache_key)
             while len(self._entries) > self._capacity:
                 self._entries.popitem(last=False)
         return value

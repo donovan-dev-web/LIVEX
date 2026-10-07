@@ -28,18 +28,32 @@ METRICS = (
     "TrustVariance",
     "NetworkDensity",
     "ClusteringCoefficient",
-    "AverageCentrality",
+    "AverageOutDegree",
     "NumberOfCommunities",
-    "CommunityStability",
+    "CommunitySizeMatch",
 )
 
-REQUIRES = {"CommunityStability": "communityHistory"}
-"""``CommunityStability`` compare la taille des communautés dans le temps.
+
+def _community_history_published(snapshot: dict) -> bool:
+    """Fenêtre de communautés réellement publiée (même vide = observation)."""
+    history = snapshot.get("communityHistory")
+    return isinstance(history, list) and bool(history)
+
+
+REQUIRES = {"CommunitySizeMatch": _community_history_published}
+"""``CommunitySizeMatch`` compare la taille des communautés dans le temps.
 
 Elle dépend donc de ``communityHistory``, absent du snapshot instantané : sans
 fenêtre, elle retombait sur 1.0 (stabilité parfaite par défaut) et déclenchait
 faux sur un monde sans aucune communauté. Les six autres métriques lisent le
 graphe de confiance du tick courant.
+
+**Nom retenu (P1)** : la mesure compare des **tailles**, jamais des membres :
+deux communautés disjointes de même taille sont comptées « stables ». Elle
+porte donc un nom qui décrivait ce qu'elle mesure réellement ; une stabilité
+**d'identité** (Jaccard entre partitions consécutives) exigerait que le
+contrat de ``communityHistory`` publie les membres — lacune tracée dans
+l'inventaire dimension → contrat → vue.
 """
 
 
@@ -83,35 +97,44 @@ def compute(snapshot: dict) -> dict:
 
     levels = trust_levels(agents)
     edges = trust_edges(agents)
-    density = safe_ratio(len(edges), count * (count - 1))
+    # Densité d'un graphe **non orienté** simple : le dénominateur est le nombre
+    # de paires unordered n(n-1)/2, pas n(n-1). L'ancienne formule bornait la
+    # densité à 0.5 sur un graphe complet, ce qui conditionnait toute
+    # interprétation d'une comparaison entre runs.
+    density = safe_ratio(len(edges), count * (count - 1) / 2.0)
 
     # Une seule construction du voisinage, réutilisée par le clustering et
-    # les centralités (elles observaient auparavant deux copies divergentes).
+    # les degrés (elles observaient auparavant deux copies divergentes).
     neighbors = neighbors_of(agents)
-    centralities = [
+    # Degré sortant normalisé par n-1 : c'est un degré moyen, **pas** une
+    # centralité intermédiaire (betweenness) — la spec ancienne le laissait
+    # croire. Sur un graphe non orienté, cette moyenne est équivalente à la
+    # densité (facteur de normalisation mis à part) : redondance documentée.
+    out_degrees = [
         safe_ratio(len(neighbors.get(agent_id, ())), count - 1) for agent_id in agent_ids(agents)
     ]
 
     community_sizes_list = community_sizes(agents)
 
-    # Stabilité : part des communautés réapparues dans le dernier historique
-    # (clé ``communityHistory``, ordre chronologique) — 0.0 sans historique.
-    community_stability = 0.0
+    # Part des communautés de l'historique dont la taille est présente dans le
+    # partition courant (clé ``communityHistory``, ordre chronologique) — 0.0
+    # sans historique. Comparaison de **tailles**, pas de membres.
+    community_size_match = 0.0
     history = snapshot.get("communityHistory") or []
     if community_sizes_list and history:
         last = history[-1].get("communities") or []
         current = set(community_sizes_list)
         overlap = sum(1 for size in last if int(size) in current)
-        community_stability = safe_ratio(overlap, len(last))
+        community_size_match = safe_ratio(overlap, len(last))
 
     return {
         "AverageTrustLevel": mean(levels) if levels else 0.0,
         "TrustVariance": variance(levels) if levels else 0.0,
         "NetworkDensity": density,
         "ClusteringCoefficient": _local_clustering(neighbors),
-        "AverageCentrality": mean(centralities) if centralities else 0.0,
+        "AverageOutDegree": mean(out_degrees) if out_degrees else 0.0,
         "NumberOfCommunities": len(community_sizes_list),
-        "CommunityStability": community_stability,
+        "CommunitySizeMatch": community_size_match,
     }
 
 

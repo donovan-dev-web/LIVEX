@@ -5,16 +5,20 @@ title: FRONTEND_VISION — vision du frontend ECHOS
 # FRONTEND_VISION.md
 
 **Composant** : ECHOS
-**Statut** : [LIVRÉ]
+**Statut** : [RETRAIT] — document historique
 
-> **Jalon ph8 (U7)** : la vision est désormais **implémentée** par `echos-ui`
-> (PR UI #441, les 6 Écrans A→F). Les dispositions figurant dans ce document
-> sont appliquées telles quelles (contrats §3.9, décision locale, relais de
-> pilotage, design system §4/§5).
+> **Retrait de l'interface (5 octobre 2026, ADR-007).** `echos-ui` et le shell
+> `echos-desktop` ont été supprimés : ECHOS est un **moteur sans interface**.
+> Ce document reste comme spécification de référence des **besoins** d'observation
+> (écrans, contrats de pilotage, règles d'affichage), mais son implémentation
+> React/Vite n'existe plus. La réalisation est reportée dans les **fenêtres
+> natives du Launcher** — consoles de logs et fenêtre d'analyse
+> (`../docs-launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`).
 >
-> **Résumé du livrable** : étape cible « pas de coquille Electron » reformulée
-> en « **implémentation différée post-V0.1** » (décision 23/09/2026) — voir
-> `ADR-001-stack-applicative.md` log correctif et `LIVEX/CHANGELOG.md`.
+> **Historique** : implémentée par `echos-ui` (PR UI #441, les 6 Écrans A→F) du
+> jalon ph8 (U7) jusqu'au retrait ; l'étape cible « pas de coquille Electron »
+> avait été reformulée en « implémentation différée post-V0.1 » (23/09/2026),
+> puis abandonnée en faveur de la suppression complète.
 **Dépend de** : `VISION.md`, `ARCHITECTURE.md`, `../docs-syne/API_CONTRACTS.md`
 **Source Monographie** : §4.2.2, §4.7, §5.13 (interface d'analyse)
 

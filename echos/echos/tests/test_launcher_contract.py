@@ -12,7 +12,7 @@ import httpx
 from fastapi.testclient import TestClient
 
 from echos.api.app import create_app
-from echos.launcher import parse_args
+from echos.launcher import data_root, ensure_analytics_db, parse_args
 from echos.storage.sqlite import AnalyticsStore
 
 
@@ -20,6 +20,14 @@ def _free_port() -> int:
     with socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         return listener.getsockname()[1]
+
+
+def _ready_status_for(database: str) -> int:
+    store = AnalyticsStore(database)
+    try:
+        return TestClient(create_app(store=store)).get("/health/ready").status_code
+    finally:
+        store.close()
 
 
 def test_launcher_adapter_accepts_shared_arguments():
@@ -84,6 +92,95 @@ def test_readiness_and_authenticated_shutdown_require_live_launcher_capabilities
     assert response.json() == {"status": "shutting_down"}
     assert server.should_exit is True
     store.close()
+
+
+def test_adapter_default_database_lives_in_the_livex_data_root(monkeypatch, tmp_path):
+    monkeypatch.delenv("ECHOS_ANALYTICS_DB", raising=False)
+    monkeypatch.setenv("LIVEX_DATA", str(tmp_path))
+
+    assert data_root() == tmp_path
+
+    ensure_analytics_db()
+
+    database = tmp_path / "echos" / "analytics.sqlite"
+    assert os.environ["ECHOS_ANALYTICS_DB"] == str(database)
+    assert database.parent.is_dir()
+    assert _ready_status_for(os.environ["ECHOS_ANALYTICS_DB"]) == 200
+
+
+def test_adapter_keeps_the_database_imposed_by_the_operator(monkeypatch, tmp_path):
+    imposed = tmp_path / "imposed.sqlite"
+    monkeypatch.setenv("ECHOS_ANALYTICS_DB", str(imposed))
+    monkeypatch.setenv("LIVEX_DATA", str(tmp_path / "unused"))
+
+    ensure_analytics_db()
+
+    assert os.environ["ECHOS_ANALYTICS_DB"] == str(imposed)
+
+
+def test_adapter_without_a_usable_data_root_keeps_the_readiness_503(
+    monkeypatch, tmp_path, capsys
+):
+    monkeypatch.delenv("ECHOS_ANALYTICS_DB", raising=False)
+    blocker = tmp_path / "blocked"
+    blocker.write_text("not a directory")
+    monkeypatch.setenv("LIVEX_DATA", str(blocker))
+
+    ensure_analytics_db()
+
+    assert "ECHOS_ANALYTICS_DB" not in os.environ
+    assert "base d'analyse par défaut inutilisable" in capsys.readouterr().err
+    assert TestClient(create_app()).get("/health/ready").status_code == 503
+
+
+def test_launcher_adapter_becomes_ready_without_any_database_in_the_environment(tmp_path):
+    """The Launcher's own environment is minimal : readiness must still succeed.
+
+    This is the Launcher session itself — the process is handed nothing but the
+    session token, and a probe answering 503 would fail the startup deadline.
+    """
+    port = _free_port()
+    token = "echos-launcher-default-db"
+    root = Path(__file__).resolve().parents[2]
+    environment = {**os.environ, "LIVEX_SESSION_TOKEN": token, "LIVEX_DATA": str(tmp_path)}
+    environment.pop("ECHOS_ANALYTICS_DB", None)
+    process = subprocess.Popen(
+        [
+            str(root / "echos-launcher"),
+            "--headless",
+            "--instance-id",
+            "echos-test",
+            "--control-port",
+            str(port),
+            "--work-dir",
+            "unused",
+            "--log-dir",
+            "unused",
+            "--correlation-id",
+            "test-correlation",
+        ],
+        env=environment,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        assert _await_ready(port), "adapter should apply a default database and become ready"
+        assert (tmp_path / "echos" / "analytics.sqlite").exists()
+    finally:
+        if process.poll() is None:
+            process.terminate()
+            process.wait(timeout=5)
+
+
+def _await_ready(port: int, timeout: float = 10) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            if httpx.get(f"http://127.0.0.1:{port}/health/ready", timeout=0.25).status_code == 200:
+                return True
+        except httpx.HTTPError:
+            time.sleep(0.05)
+    return False
 
 
 def test_launcher_adapter_starts_on_allocated_port_and_shuts_down():
