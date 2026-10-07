@@ -11,6 +11,8 @@
     <PackageVersion Include="Avalonia.Headless.XUnit" Version="11.3.22" />
     <PackageVersion Include="Avalonia.Headless" Version="11.3.22" />
     <PackageVersion Include="Markdown.Avalonia" Version="11.0.3" />
+    <!-- Graphiques de la fenêtre d'analyse (ADR-007) : bibliothèque de présentation uniquement. -->
+    <PackageVersion Include="LiveChartsCore.SkiaSharpView.Avalonia" Version="2.0.5" />
     <PackageVersion Include="System.IO.Hashing" Version="9.0.0" />
     <!-- Dépendance transitive d'Avalonia : remontée au-delà de la version vulnérable (GHSA-xrw6-gwf8-vvr9). -->
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.95.1" />
