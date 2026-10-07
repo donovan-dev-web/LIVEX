@@ -6,6 +6,18 @@
 **Dépend de** : `ARCHITECTURE.md`, `INTEGRATION_CONTRACT.md`, `../../COMMUNICATION.md`
 **Source Monographie** : —
 
+> **Cible contractuelle et état du code :** les exemples de ce document
+> décrivent le modèle visé, pas la preuve qu'un composant le respecte déjà.
+> À la référence du 2 octobre 2026, SYNE réel, ECHOS headless et `syne-mock`
+> fournissent chacun un manifeste limité à Linux. Le batch SYNE ne connaît que
+> `reference` et son intégration au collecteur de paquets n'est pas acceptée ;
+> les opérations d'analyse ECHOS lisent des runs déjà présents dans la base
+> analytique, dont le flux d'ingestion depuis le Launcher n'est pas validé.
+> PRISM n'a pas de manifeste Launcher. Le mock remplace le rôle SYNE, il n'est
+> pas un quatrième rôle. Voir la
+> [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md) pour l'état
+> observé et les critères d'acceptation.
+
 ---
 
 ## 1. Principes du modèle
@@ -233,9 +245,12 @@ La frontière porte sur le **calcul**, pas sur l'affichage :
   avec l'expérience ;
 - le Launcher ne calcule **aucune** statistique et n'interprète **aucune** donnée.
 
-L'interface web d'ECHOS est une **télémétrie optionnelle** : l'utilisateur peut
-l'ouvrir pendant une simulation pour observer l'analyse en direct, mais aucune
-fenêtre de navigateur n'est nécessaire au bon fonctionnement d'une campagne.
+L'observation en direct est assurée par les **fenêtres natives du Launcher**
+(`USER_INTERFACE.md` §9) : les consoles de logs, ouvertes au démarrage de chaque
+composant, et la fenêtre d'analyse qui sonde l'API REST d'ECHOS. Aucune fenêtre
+de navigateur n'est nécessaire — et ECHOS n'en expose plus (ADR-007) : la
+télémétrie est optionnelle au sens où aucune campagne ne dépend de l'ouverture
+d'une fenêtre quelconque.
 
 Voir `adr/ADR-003-analyse-propriete-de-echos.md`.
 
@@ -300,8 +315,8 @@ flowchart LR
 
 | Mode | Composants lancés | Ce qu'il apporte |
 | :-- | :-- | :-- |
-| **Analyse pur** | SYNE + ECHOS, **sans interface** | Analyse et rapport, sans interface web |
-| **Analyse et télémétrie** | SYNE + ECHOS **complet**, interface comprise | L'interface d'ECHOS est ouverte et sert de télémétrie pendant la simulation |
+| **Analyse pur** | SYNE + ECHOS | Analyse et rapport ; aucune fenêtre d'observation ouverte |
+| **Analyse et télémétrie** | SYNE + ECHOS + fenêtres natives | Consoles de logs et fenêtre d'analyse du Launcher ouvertes pendant la simulation |
 | **Immersif** | SYNE + PRISM | Représentation temps réel du monde |
 | **Expérience** | SYNE + ECHOS + PRISM | Campagne multi-run, analyse, rapports, immersion |
 | **Personnalisé** | Choisis manuellement | Composants, fonctionnalités et services sélectionnés à la main |
@@ -358,7 +373,7 @@ enregistrée d'une combinaison de la matrice.
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | **Simulation seule** | Production | ✓ | — | verrouillé | Exécuter sans analyser, sans observer |
 | **Analyse** | Production | ✓ | ✓ | verrouillé | Analyse et rapport |
-| **Analyse avec télémétrie** | Production | ✓ | ✓ | verrouillé | Idem, interface d'ECHOS ouverte |
+| **Analyse avec télémétrie** | Production | ✓ | ✓ | verrouillé | Idem, fenêtre d'analyse du Launcher ouverte |
 | **Immersion** | Production | ✓ | — | verrouillé | Observer le monde en temps réel |
 | **Expérience** | Expérience | ✓ | ✓ | verrouillé | Campagne multi-run et rapports |
 | **Développement** | Développement | stub possible | stub possible | stub possible | Diagnostic et injection de panne |
