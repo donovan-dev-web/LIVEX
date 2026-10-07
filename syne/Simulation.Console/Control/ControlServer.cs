@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Simulation.Core.Configuration;
@@ -25,17 +26,30 @@ public sealed class ControlServer : IAsyncDisposable
     private readonly HttpListener _listener = new();
     private readonly SimulationController _controller;
     private readonly ObservabilityServer? _observability;
+    private readonly string? _sessionToken;
+    private readonly string _instanceId;
+    private readonly string _version;
+    private readonly TaskCompletionSource _shutdownRequested = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _running;
+    private volatile bool _ready;
 
     public ControlServer(
         int port = DefaultPort,
         SimulationController? controller = null,
-        ObservabilityServer? observability = null)
+        ObservabilityServer? observability = null,
+        string? sessionToken = null,
+        string instanceId = "syne",
+        string version = "0.14.0",
+        bool initiallyReady = true)
     {
         _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
         Port = port;
         _observability = observability;
         _controller = controller ?? new SimulationController(observability);
+        _sessionToken = sessionToken;
+        _instanceId = instanceId;
+        _version = version;
+        _ready = initiallyReady;
     }
 
     public int Port { get; }
@@ -43,6 +57,10 @@ public sealed class ControlServer : IAsyncDisposable
     public SimulationController Controller => _controller;
 
     public bool IsListening => _listener.IsListening;
+
+    public Task ShutdownRequested => _shutdownRequested.Task;
+
+    public void MarkReady() => _ready = true;
 
     public void Start()
     {
@@ -118,6 +136,12 @@ public sealed class ControlServer : IAsyncDisposable
         finally
         {
             context.Response.Close();
+            if (context.Request.Url?.AbsolutePath == "/control/shutdown"
+                && context.Request.HttpMethod == "POST"
+                && context.Response.StatusCode == 200)
+            {
+                _shutdownRequested.TrySetResult();
+            }
         }
     }
 
@@ -125,6 +149,36 @@ public sealed class ControlServer : IAsyncDisposable
     {
         string path = request.Url?.AbsolutePath ?? string.Empty;
         string method = request.HttpMethod;
+
+        if (method == "GET" && path is "/health/live" or "/health/ready" or "/health/details")
+        {
+            if (path == "/health/ready" && !_ready)
+            {
+                return (503, ToJson(ErrorJson("not_ready", "Le service n'a pas terminé sa préparation.")));
+            }
+
+            if (path == "/health/details" && !_ready)
+            {
+                return (503, ToJson(new { status = "NotReady", readiness = false }));
+            }
+
+            return (200, ToJson(new { status = "Healthy" }));
+        }
+
+        if (method == "GET" && path == "/info")
+        {
+            return (200, ToJson(new { id = "syne", version = _version, protocolVersion = 1, instanceId = _instanceId }));
+        }
+
+        if (path == "/control/shutdown" && method == "POST")
+        {
+            if (!IsAuthorized(request))
+            {
+                return (401, ToJson(ErrorJson("unauthorized", "Un jeton de session valide est requis.")));
+            }
+
+            return (200, ToJson(OkJson("shutdown")));
+        }
 
         if (path == "/api/control/status" && method == "GET")
         {
@@ -141,6 +195,11 @@ public sealed class ControlServer : IAsyncDisposable
         if (!path.StartsWith("/api/control/", StringComparison.Ordinal) || method != "POST")
         {
             return (404, ToJson(ErrorJson("not_found", "Endpoint inconnu.")));
+        }
+
+        if (_sessionToken is not null && !IsAuthorized(request))
+        {
+            return (401, ToJson(ErrorJson("unauthorized", "Un jeton de session valide est requis.")));
         }
 
         string action = path["/api/control/".Length..];
@@ -175,6 +234,26 @@ public sealed class ControlServer : IAsyncDisposable
             default:
                 return (404, ToJson(ErrorJson("not_found", $"Action de contrôle inconnue : {action}.")));
         }
+
+    }
+
+    private bool IsAuthorized(HttpListenerRequest request)
+    {
+        if (string.IsNullOrEmpty(_sessionToken))
+        {
+            return false;
+        }
+
+        string? header = request.Headers["Authorization"];
+        string[] authorization = header?.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries) ?? [];
+        if (authorization.Length != 2 || !authorization[0].Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        byte[] supplied = Encoding.UTF8.GetBytes(authorization[1]);
+        byte[] expected = Encoding.UTF8.GetBytes(_sessionToken);
+        return supplied.Length == expected.Length && CryptographicOperations.FixedTimeEquals(supplied, expected);
     }
 
     private async Task<(int Status, string Body)> PrepareAsync(JsonElement body)

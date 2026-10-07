@@ -52,6 +52,14 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
     private int _started;
     private int _disposed;
 
+    /// <summary>
+    /// Dernière trame <c>world_initialized</c> diffusée. La description de monde
+    /// n'est émise qu'une fois par préparation : un consommateur qui se connecte
+    /// après (analyse temps réel depuis le Launcher) ne pourrait jamais la
+    /// reconstituer — le serveur la rejoue donc à chaque nouvelle connexion.
+    /// </summary>
+    private volatile string? _worldFrame;
+
     public ObservabilityServer(int port = DefaultPort)
     {
         _listener = new HttpListener();
@@ -90,46 +98,63 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
     /// </summary>
     public async Task BroadcastAsync(string text)
     {
+        if (text.Contains("\"world_initialized\"", StringComparison.Ordinal))
+        {
+            _worldFrame = text;
+        }
+
         if (Volatile.Read(ref _disposed) != 0 || _clients.IsEmpty)
         {
             return;
         }
 
-        byte[] payload = Encoding.UTF8.GetBytes(text);
-        foreach ((WebSocket client, ClientSession session) in _clients.ToArray())
+        foreach ((WebSocket _client, ClientSession session) in _clients.ToArray())
         {
-            if (client.State != WebSocketState.Open)
-            {
-                RemoveClient(client, session);
-                continue;
-            }
+            await SendTextAsync(session, text).ConfigureAwait(false);
+        }
+    }
 
-            // Un seul SendAsync à la fois par socket : deux diffusions concurrentes
-            // sans ce verrou lèvent InvalidOperationException (« There is already
-            // one outstanding 'SendAsync' call »).
-            if (!await session.SendGate.WaitAsync(SendTimeout).ConfigureAwait(false))
-            {
-                RemoveClient(client, session);
-                continue;
-            }
+    /// <summary>
+    /// Envoie une trame à un client sous son sémaphore d'écriture. Renvoie faux si
+    /// le client est mort ou trop lent (il est alors retiré). Ne lève jamais.
+    /// </summary>
+    private async Task<bool> SendTextAsync(ClientSession session, string text)
+    {
+        WebSocket client = session.Socket;
+        if (client.State != WebSocketState.Open)
+        {
+            RemoveClient(client, session);
+            return false;
+        }
 
-            try
-            {
-                await client
-                    .SendAsync(new ArraySegment<byte>(payload), WebSocketMessageType.Text, true, CancellationToken.None)
-                    .WaitAsync(SendTimeout)
-                    .ConfigureAwait(false);
-            }
-            catch (Exception exception) when (exception is WebSocketException or OperationCanceledException or ObjectDisposedException or InvalidOperationException)
-            {
-                // Client mort, trop lent, ou déjà coupé : on le retire, on ne
-                // remonte jamais l'erreur au simulateur.
-                RemoveClient(client, session);
-            }
-            finally
-            {
-                session.SendGate.Release();
-            }
+        // Un seul SendAsync à la fois par socket : deux diffusions concurrentes
+        // sans ce verrou lèvent InvalidOperationException (« There is already
+        // one outstanding 'SendAsync' call »).
+        if (!await session.SendGate.WaitAsync(SendTimeout).ConfigureAwait(false))
+        {
+            RemoveClient(client, session);
+            return false;
+        }
+
+        try
+        {
+            byte[] payload = Encoding.UTF8.GetBytes(text);
+            await client
+                .SendAsync(new ArraySegment<byte>(payload), WebSocketMessageType.Text, true, CancellationToken.None)
+                .WaitAsync(SendTimeout)
+                .ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception exception) when (exception is WebSocketException or OperationCanceledException or ObjectDisposedException or InvalidOperationException)
+        {
+            // Client mort, trop lent, ou déjà coupé : on le retire, on ne
+            // remonte jamais l'erreur au simulateur.
+            RemoveClient(client, session);
+            return false;
+        }
+        finally
+        {
+            session.SendGate.Release();
         }
     }
 
@@ -155,6 +180,17 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
             }
 
             var session = new ClientSession(socket);
+
+            // Rejeu de la description de monde AVANT l'inscription du client :
+            // ainsi aucune trame de snapshot ne peut lui parvenir avant, et un
+            // consommateur tardif reçoit le monde même après la préparation.
+            string? replay = _worldFrame;
+            if (replay is not null && !await SendTextAsync(session, replay).ConfigureAwait(false))
+            {
+                await SafeCloseAsync(socket).ConfigureAwait(false);
+                continue;
+            }
+
             if (!_clients.TryAdd(socket, session))
             {
                 await SafeCloseAsync(socket).ConfigureAwait(false);
@@ -162,6 +198,15 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
             }
 
             _sessions.TryAdd(session, 0);
+
+            // Fenêtre minime : la diffusion a pu produire la trame pendant l'envoi
+            // initial — un second envoi est inoffensif (le monde est idempotent).
+            string? late = _worldFrame;
+            if (late is not null && !ReferenceEquals(late, replay))
+            {
+                _ = SendTextAsync(session, late).ConfigureAwait(false);
+            }
+
             _ = Task.Run(() => DrainAsync(session, token), CancellationToken.None);
         }
     }
