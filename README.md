@@ -43,8 +43,7 @@ flowchart LR
     S[SYNE<br/>Simulation et monde] -->|WebSocket :5180<br/>snapshots et événements| I[Ingestion ECHOS]
     I --> D[(SQLite + Parquet)]
     D --> A[API ECHOS<br/>REST :5000]
-    A --> U[Interface web<br/>React + Vite]
-    S -.->|WebSocket :5180<br/>état temps réel| U
+    A --> U[Launcher<br/>consoles de logs + fenêtre d'analyse<br/>fenêtres natives Avalonia]
     S -->|contrats de simulation| P[Projet Unreal PRISM]
     P -->|intègre le plugin| L[PRISM-LDK<br/>module PrismLdk]
     M[syne-mock<br/>serveur Node.js de test] -.->|émule les contrats| P
@@ -53,7 +52,7 @@ flowchart LR
 | Composant | Responsabilité | État |
 |:--|:--|:--|
 | **SYNE 0.13.0** · *Systems & Emergent Network Engine* | Simule le monde et les agents. C’est la source de vérité de l’état simulé. | Moteur .NET 10 (`engineVersion 0.13.0`, profil de référence calibré — ADR-015), observabilité (contrat 0.2.1), persistance et contrôle local. |
-| **ECHOS 0.1.0** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI, stockage SQLite/Parquet (schéma v6), signaux de viabilité et interface React/TypeScript. |
+| **ECHOS 0.1.0** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI **sans interface** (ADR-007), stockage SQLite/Parquet (schéma v6), signaux de viabilité ; la présentation vit dans le Launcher. |
 | **PRISM** · *Perceptual Rendering & Interactive Simulation Module* | Projet Unreal final de LIVEX, pour représenter le monde SYNE et fournir l'expérience interactive. | Projet Unreal PRISM intégrant le plugin **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). |
 | **syne-mock** | Simule le protocole et un scénario de simulation pour le développement client. | Serveur Node.js local ; comportement incomplet et non équivalent au moteur SYNE (contrat aligné 0.2.1). |
 
@@ -73,7 +72,7 @@ dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
-Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface web** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. Variante bureau : `./scripts/dev-stack-electron.sh` démarre la même pile (SYNE + ingestion) mais affiche l’interface dans la **fenêtre Electron** (shell `echos-desktop`, ADR-003) au lieu du navigateur. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos-et-interface). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
+Pour démarrer **SYNE, l’ingestion et l’API ECHOS** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. L’API ne sert aucune page : pour observer l’analyse en direct, ouvrez la **fenêtre Analyse du Launcher** (bouton dédié) et les **consoles de logs** de chaque composant. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
 
 ## 🗂️ Dans le dépôt
 
@@ -81,8 +80,7 @@ Pour démarrer **SYNE, l’ingestion et l’API ECHOS, ainsi que l’interface w
 LIVEX/
 ├── syne/                   # Moteur de simulation C#/.NET
 ├── echos/
-│   ├── echos/              # API, analyse, ingestion et stockage
-│   └── echos-ui/           # Interface React + TypeScript
+│   └── echos/              # API, analyse, ingestion et stockage (sans interface)
 ├── prism/
 │   └── LDK/                # Plugin PRISM-LDK + hôte technique de build/test
 │       ├── LDK.uproject    # Hôte, pas le projet LIVEX complet

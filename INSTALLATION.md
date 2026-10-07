@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : `ROADMAP.md`, `COMMUNICATION.md`
 
 > **Versions courantes** : moteur **SYNE 0.13.0** (profil de référence calibré,
@@ -12,7 +12,7 @@
 > ECHOS **schéma v6**. Les versions évoluent indépendamment par composant
 > (`VERSIONING.md`).
 
-Ce guide permet de démarrer localement **SYNE**, l’API et l’interface **ECHOS**, l’ingestion, et le mock SYNE utilisé pour développer l’intégration Unreal de PRISM.
+Ce guide permet de démarrer localement **SYNE**, l’API **ECHOS** (sans interface), l’ingestion, le mock SYNE utilisé pour développer l’intégration Unreal de PRISM, et le **Launcher**, qui porte les fenêtres d’observation (consoles de logs, fenêtre d’analyse).
 
 > **PRISM / Unreal** : PRISM est le projet Unreal final de LIVEX ; il intègre
 > le plugin **PRISM-LDK** (`Plugins/PrismLdk`). Dans le checkout courant,
@@ -73,25 +73,7 @@ et la conversion des messages. Pour l'ordre d'initialisation du monde et le
 câblage des événements, suivre
 [`docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md`](docs/docs-prism/PRISM_UNREAL_IMPLEMENTATION.md).
 
-### Démarrage complet : SYNE, ECHOS et interface
-
-#### Mode bureau (fenêtre Electron)
-
-```bash
-./scripts/dev-stack-electron.sh
-```
-
-Le script compile SYNE, démarre le serveur et l'ingestion, puis ouvre la **fenêtre ECHOS**
-(shell `echos-desktop`, ADR-003) : le backend Python est un enfant du shell, sur un port
-libre choisi automatiquement, et l'interface est servie par ce backend. La base d'analyse
-est partagée (`echos/data/livex-analytics.sqlite`) : ce que l'ingestion écrit est ce que la
-fenêtre affiche. Fermez la fenêtre ou `Ctrl+C` pour arrêter toute la pile.
-
-> En développement, le script passe `--no-sandbox` à Electron : dans `node_modules`, le
-> helper `chrome-sandbox` n'est pas setuid root. Le paquet installé (`.deb`) n'a pas
-> besoin de cette parade — son script `postinst` pose `root:root 4755` sur le helper.
-
-#### Mode navigateur (web)
+### Démarrage complet : SYNE, ECHOS et interface d’analyse
 
 Depuis la racine du dépôt, lancez :
 
@@ -99,16 +81,17 @@ Depuis la racine du dépôt, lancez :
 ./scripts/dev-stack.sh
 ```
 
-Le script prépare automatiquement l’environnement Python ECHOS et les dépendances npm s’ils manquent, compile SYNE, puis démarre dans le bon ordre :
+Le script prépare automatiquement l’environnement Python ECHOS s’il manque, compile SYNE, puis démarre dans le bon ordre :
 
-1. l’API ECHOS sur le port `5000` ;
-2. l’interface web sur le port `5173` ;
-3. SYNE en mode serveur, avec contrôle HTTP sur `5181` et WebSocket sur `5180` ;
-4. le consommateur ECHOS, connecté au WebSocket et en attente d’un run.
+1. l’API ECHOS sur le port `5000` (aucune page n’y est servie — ADR-007) ;
+2. SYNE en mode serveur, avec contrôle HTTP sur `5181` et WebSocket sur `5180` ;
+3. le consommateur ECHOS, connecté au WebSocket et en attente d’un run.
 
-Ouvrez ensuite <http://127.0.0.1:5173>. L’API et sa documentation se trouvent sur <http://127.0.0.1:5000> et <http://127.0.0.1:5000/docs>. Les runs ingérés sont stockés dans `echos/data/livex-analytics.sqlite`.
+La documentation de l’API est sur <http://127.0.0.1:5000/docs>. Les runs ingérés sont stockés dans `echos/data/livex-analytics.sqlite`.
 
-Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à ce que vous cliquiez sur `Start` dans l’interface (fenêtre Electron ou navigateur selon le mode choisi). Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
+Pour **regarder l’analyse en direct**, lancez le Launcher : chaque composant démarré ouvre sa **console de logs**, et le bouton d’analyse ouvre la **fenêtre d’analyse** (séries, histogrammes, radar, graphe relationnel) qui sonde l’API ECHOS.
+
+Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à la commande `Start`. Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
 
 > **À noter (calibration D1, SYNE 0.13.0)** : le profil de référence est
 > désormais calibré pour la survie (récupération d'énergie à manger/boire,
@@ -119,13 +102,13 @@ Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusq
 
 ### Boutons de pilotage
 
-L’interface relaie ses commandes à l’API ECHOS, qui contacte ensuite le serveur de contrôle SYNE sur le port `5181`. Le même processus SYNE expose aussi le WebSocket sur le port `5180` : dès que `Start` est envoyé, les snapshots et événements du run sont diffusés vers ECHOS pour analyse. Son état peut être vérifié avec :
+L’API ECHOS relaie les commandes au serveur de contrôle SYNE sur le port `5181`. Le même processus SYNE expose aussi le WebSocket sur le port `5180` : dès que `Start` est envoyé, les snapshots et événements du run sont diffusés vers ECHOS pour analyse. Son état peut être vérifié avec :
 
 ```bash
 curl http://127.0.0.1:5181/api/control/status
 ```
 
-La seed est facultative dans le comportement conceptuel de l’UI : la valeur affichée par défaut est `12345`. La durée est également facultative. Si `maxTicks` n’est pas fourni, le run continue jusqu’à `Pause`, `Reset`, l’arrêt du processus SYNE ou `Ctrl+C`. Un `Start` ultérieur après `Reset` crée un nouveau run.
+La seed est facultative dans le comportement conceptuel de l’API : la valeur affichée par défaut est `12345`. La durée est également facultative. Si `maxTicks` n’est pas fourni, le run continue jusqu’à `Pause`, `Reset`, l’arrêt du processus SYNE ou `Ctrl+C`. Un `Start` ultérieur après `Reset` crée un nouveau run.
 
 ## Préparation manuelle (facultative)
 
@@ -136,16 +119,12 @@ python3 -m venv echos/.venv
 echos/.venv/bin/python -m pip install --upgrade pip
 echos/.venv/bin/pip install -r echos/requirements-dev.txt
 
-cd echos/echos-ui
-npm ci
-cd ../..
-
 dotnet build syne/Syne.sln --configuration Release
 ```
 
 ## Démarrage manuel, service par service
 
-Si vous ne souhaitez pas utiliser le lanceur, préparez d’abord l’environnement avec la section précédente. Ouvrez quatre terminaux depuis la racine du dépôt et démarrez les services dans cet ordre.
+Si vous ne souhaitez pas utiliser le lanceur, préparez d’abord l’environnement avec la section précédente. Ouvrez trois terminaux depuis la racine du dépôt et démarrez les services dans cet ordre.
 
 ### Terminal 1 — API ECHOS
 
@@ -165,14 +144,7 @@ PYTHONPATH="$PWD/echos" echos/.venv/bin/python -m echos.dev_ingest
 
 Le consommateur attend le serveur WebSocket SYNE. Laissez ce terminal ouvert.
 
-### Terminal 3 — Interface web
-
-```bash
-cd echos/echos-ui
-npm run dev -- --host 127.0.0.1
-```
-
-### Terminal 4 — SYNE contrôle + observabilité
+### Terminal 3 — SYNE contrôle + observabilité
 
 SYNE démarre en attente, sans lancer de simulation :
 
@@ -180,7 +152,7 @@ SYNE démarre en attente, sans lancer de simulation :
 dotnet run --project syne/Simulation.Console --configuration Release -- --serve
 ```
 
-Il écoute sur `127.0.0.1:5181` et `127.0.0.1:5180`. Le run est ensuite démarré depuis l’écran de pilotage ECHOS. Ne passez pas `maxTicks` dans la requête si vous souhaitez une durée illimitée ; utilisez `Pause`, `Resume`, `Stop` ou `Reset` depuis l’UI.
+Il écoute sur `127.0.0.1:5181` et `127.0.0.1:5180`. Le run est ensuite démarré par la commande `Start` de l’API ECHOS. Ne passez pas `maxTicks` dans la requête si vous souhaitez une durée illimitée ; utilisez `Pause`, `Resume`, `Stop` ou `Reset` depuis la même API.
 
 ### Démarrer uniquement SYNE
 
@@ -347,7 +319,8 @@ réduit fortement la taille disque, mais ne rend pas l'analyse instantanée :
 après un run rapide, ECHOS peut encore devoir drainer les ticks en attente.
 
 Pour vérifier qu'un run long est réellement analysé, contrôlez que le nombre de
-ticks persistés atteint `last_tick` dans l'UI ou via `/api/runs/{runId}`. Un
+ticks persistés atteint `last_tick` dans la fenêtre d’analyse du Launcher ou via
+`/api/runs/{runId}`. Un
 run SYNE arrivé à 800 ticks alors qu'ECHOS n'en a persisté que 722 est terminé
 côté simulation, mais incomplet côté analyse ; le rapport ne doit être généré
 qu'après ce drainage.
@@ -355,14 +328,13 @@ qu'après ce drainage.
 Le JSON conserve les contextes phénomènes à chaque tick dans
 `contexts.phenomena`. Le rapport Markdown ajoute une synthèse des phénomènes
 uniques détectés, avec leur identifiant, description, première et dernière
-détection et nombre d'occurrences. L'endpoint `/api/emergent-phenomena` et
-l'interface affichent cette même vue historique, même si le dernier tick ne
+détection et nombre d'occurrences. L'endpoint `/api/emergent-phenomena` rend
+cette même vue historique, même si le dernier tick ne
 contient plus le phénomène.
 
 Le lanceur suppose que le binaire Release de SYNE existe. Compilez-le au
 préalable avec `dotnet build syne/Syne.sln --configuration Release` ou lancez
-`./scripts/dev-stack.sh` (mode navigateur) ou `./scripts/dev-stack-electron.sh` (mode
-bureau) une première fois.
+`./scripts/dev-stack.sh` une première fois.
 
 ## Ports utilisés
 
@@ -372,8 +344,8 @@ bureau) une première fois.
 | SYNE HTTP | `127.0.0.1:5181` | Contrôle du serveur SYNE et démarrage des runs. |
 | syne-mock WebSocket | `127.0.0.1:5180` par défaut | Initialisation du monde, snapshots globaux et événements ; lancé séparément de SYNE. |
 | syne-mock HTTP | `127.0.0.1:5181` par défaut | Cycle de contrôle ; lancé séparément de SYNE. |
-| API ECHOS | `127.0.0.1:5000` | Runs, métriques, analyses et relais de contrôle. |
-| Interface ECHOS | `127.0.0.1:5173` | Application web Vite. |
+| API ECHOS | `127.0.0.1:5000` | Runs, métriques, analyses et relais de contrôle (API seule, aucune page). |
+| Fenêtre d’analyse du Launcher | — | Fenêtre native consommant l’API ECHOS ; aucun port propre. |
 
 ## Données, arrêt et vérifications
 
@@ -395,11 +367,8 @@ cd syne && dotnet test Syne.sln --configuration Release
 echos/.venv/bin/python -m pytest -q
 echos/.venv/bin/python -m flake8 echos/echos
 
-# Interface
-cd echos/echos-ui
-npm run lint
-npm test -- --run
-npm run build
+# Launcher — interfaces natives (consoles, fenêtre d’analyse)
+cd launcher && dotnet test Launcher.Tests.Unit
 ```
 
 ## Documentation complémentaire
