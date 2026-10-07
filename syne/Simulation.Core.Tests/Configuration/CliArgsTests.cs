@@ -46,6 +46,60 @@ public sealed class CliArgsTests
         }
     }
 
+    [Fact]
+    public void LauncherBatchArguments_AreParsedAndTicksBecomeAnExplicitHorizon()
+    {
+        CliOptions cli = CliOptions.Parse([
+            "--simulation", "reference",
+            "--seed", "42",
+            "--ticks", "12",
+            "--export-dir", "data",
+            "--autostart",
+        ]);
+
+        Assert.Equal("reference", cli.Simulation);
+        Assert.Equal(42ul, cli.Seed);
+        Assert.Equal(12, cli.Ticks);
+        Assert.Equal("data", cli.ExportDirectory);
+        Assert.True(cli.AutoStart);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    [InlineData("not-a-number")]
+    public void LauncherTicks_MustBeStrictlyPositiveInteger(string value)
+    {
+        Assert.Throws<ArgumentException>(() => CliOptions.Parse(["--simulation", "reference", "--ticks", value]));
+    }
+
+    [Fact]
+    public void UnsupportedSimulationId_IsRejectedRatherThanIgnored()
+    {
+        ArgumentException error = Assert.Throws<ArgumentException>(
+            () => CliOptions.Parse(["--simulation", "unimplemented-scenario"]));
+
+        Assert.Contains("non pris en charge", error.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SupervisedServiceArguments_AreParsed()
+    {
+        CliOptions cli = CliOptions.Parse([
+            "--instance-id", "instance-123",
+            "--control-port", "5300",
+            "--work-dir", "work",
+            "--log-dir", "logs",
+            "--correlation-id", "corr-123",
+        ]);
+
+        Assert.Equal("instance-123", cli.InstanceId);
+        Assert.Equal(5300, cli.ControlPort);
+        Assert.Equal("work", cli.WorkDirectory);
+        Assert.Equal("logs", cli.LogDirectory);
+        Assert.Equal("corr-123", cli.CorrelationId);
+    }
+
     [Theory]
     [InlineData("--seed", "abc")]
     [InlineData("--seed", "")]
