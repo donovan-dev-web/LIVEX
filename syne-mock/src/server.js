@@ -195,17 +195,21 @@ function createServer(options = {}) {
     simulation,
     httpServer,
     dataServer,
-    listen: (controlPort = 5181, dataPort = 5180) => new Promise(resolve => {
-      httpServer.listen(controlPort, '127.0.0.1', () =>
-        dataServer.listen(dataPort, '127.0.0.1', () => {
-          log('SERVER listening (http=127.0.0.1:%s, websocket=127.0.0.1:%s)',
-            httpServer.address().port, dataServer.address().port);
-          resolve({
-            controlPort: httpServer.address().port,
-            dataPort: dataServer.address().port
-          });
-        }));
-    }),
+    listen: async (controlPort = 5181, dataPort = 5180) => {
+      await listenOnLoopback(httpServer, controlPort);
+      try {
+        await listenOnLoopback(dataServer, dataPort);
+      } catch (error) {
+        await new Promise(resolve => httpServer.close(resolve));
+        throw error;
+      }
+      log('SERVER listening (http=127.0.0.1:%s, websocket=127.0.0.1:%s)',
+        httpServer.address().port, dataServer.address().port);
+      return {
+        controlPort: httpServer.address().port,
+        dataPort: dataServer.address().port
+      };
+    },
     close: () => closePromise ??= new Promise(resolve => {
       simulation.stop();
       for (const client of clients) client.terminate();
@@ -219,6 +223,22 @@ function createServer(options = {}) {
   };
 
   return server;
+}
+
+function listenOnLoopback(server, port) {
+  return new Promise((resolve, reject) => {
+    const onError = error => {
+      server.off('listening', onListening);
+      reject(error);
+    };
+    const onListening = () => {
+      server.off('error', onError);
+      resolve();
+    };
+    server.once('error', onError);
+    server.once('listening', onListening);
+    server.listen(port, '127.0.0.1');
+  });
 }
 
 async function readJsonBody(request) {

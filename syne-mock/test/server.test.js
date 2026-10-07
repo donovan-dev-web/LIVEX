@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
+const net = require('node:net');
 const WebSocket = require('ws');
 const { createServer, Simulation } = require('../src/server');
 
@@ -17,6 +18,21 @@ function closeClient(client) {
     client.close();
   });
 }
+
+test('a data-port conflict rejects startup and releases the control port', async t => {
+  const occupiedPort = net.createServer();
+  await new Promise((resolve, reject) => {
+    occupiedPort.once('error', reject);
+    occupiedPort.listen(0, '127.0.0.1', resolve);
+  });
+  t.after(() => new Promise((resolve, reject) => {
+    occupiedPort.close(error => error ? reject(error) : resolve());
+  }));
+
+  const server = createServer();
+  await assert.rejects(server.listen(0, occupiedPort.address().port), { code: 'EADDRINUSE' });
+  assert.equal(server.httpServer.listening, false);
+});
 
 test('generation is deterministic and has the documented population', () => {
   const a = new Simulation({ seed: 7, agents: 50 }); a.start(); a.step(); a.stop();

@@ -63,7 +63,7 @@ l'implémentation A* de SYNE. La délibération et les systèmes sociaux restent
 des approximations destinées à tester l'intégration Blueprint ; les trajectoires
 ne sont pas garanties bit-à-bit identiques au moteur C#.
 
-Tests ciblés : `npm test` (44 tests, sans dépendance à un
+Tests ciblés : `npm test` (46 tests, sans dépendance à un
 port fixe). La suite s'exécute aussi en intégration continue via le job `Tests
 (SYNE-MOCK Node)` de `.github/workflows/ci.yml`, déclenché sur toute
 modification de `syne-mock/`. Ports et paramètres sont configurables en JSON.
@@ -88,7 +88,10 @@ dès qu'il écoute. Le test
 (contrôle HTTP → flux WebSocket → ingestion → stockage) sur le job
 `Intégration mock → ECHOS` de `.github/workflows/ci.yml`.
 
-Ce que le mock ne couvre pas, et qu'il ne faut pas attendre de lui :
+Le mock est une émulation de développement, pas une implémentation
+scientifiquement équivalente à SYNE. Il ne prend pas en charge les campagnes
+scientifiques et ses résultats ne doivent pas être comparés à ceux du moteur
+réel. Ce qu'il ne couvre pas, et qu'il ne faut pas attendre de lui :
 `beliefs[]` et `trust[]` sont publiés vides, donc les moteurs cognitifs et sociaux
 d'ECHOS tournent sur des données dégénérées ; `Flee` est inatteignable ; la
 mémoire, les livres, la perception et la mort sont décoratifs. Voir

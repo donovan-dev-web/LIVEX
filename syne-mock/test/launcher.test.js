@@ -4,6 +4,7 @@ const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const net = require('node:net');
 const path = require('node:path');
+const WebSocket = require('ws');
 const { parseArgs, readConfig } = require('../src/cli');
 
 async function freePort() {
@@ -68,7 +69,7 @@ async function startMock(t) {
     }
   }
   assert.equal(ready, true, 'status endpoint should become ready');
-  return { child, endpoint, exit, token };
+  return { child, endpoint, dataPort, exit, token };
 }
 
 test('launcher arguments select the allocated control port without hiding unknown options', () => {
@@ -97,7 +98,13 @@ test('Launcher manifest points to the executable and truthful readiness endpoint
 });
 
 test('launcher shutdown is authenticated and exits cleanly', async t => {
-  const { endpoint, exit, token } = await startMock(t);
+  const { endpoint, dataPort, exit, token } = await startMock(t);
+  const client = new WebSocket(`ws://127.0.0.1:${dataPort}`);
+  await new Promise((resolve, reject) => {
+    client.once('error', reject);
+    client.once('open', resolve);
+  });
+  const clientClosed = new Promise(resolve => client.once('close', resolve));
   assert.equal((await fetch(`${endpoint}/control/shutdown`, { method: 'POST' })).status, 401);
   const response = await fetch(`${endpoint}/control/shutdown`, {
     method: 'POST',
@@ -106,12 +113,21 @@ test('launcher shutdown is authenticated and exits cleanly', async t => {
   assert.equal(response.status, 202);
   assert.deepEqual(await response.json(), { ok: true, action: 'shutdown' });
   assert.deepEqual(await exit, { code: 0, signal: null });
+  await clientClosed;
 });
 
 test('SIGTERM closes both servers and exits cleanly', async t => {
   const { child, exit } = await startMock(t);
 
   child.kill('SIGTERM');
+
+  assert.deepEqual(await exit, { code: 0, signal: null });
+});
+
+test('SIGINT closes both servers and exits cleanly', async t => {
+  const { child, exit } = await startMock(t);
+
+  child.kill('SIGINT');
 
   assert.deepEqual(await exit, { code: 0, signal: null });
 });
