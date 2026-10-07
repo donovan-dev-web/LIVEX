@@ -26,9 +26,11 @@ public class ConfigLoaderTests
         Assert.Equal(0.3, options.Agents.Beliefs.UpdateStrength);
         Assert.Equal(12_345UL, options.Random.Seed);
         Assert.Equal("xoshiro256**", options.Random.Engine);
-        Assert.Equal(100, options.Resources.Food.Initial);
-        Assert.Equal(100, options.Resources.Food.DegradationTick);
-        Assert.Equal(5.0, options.Resources.Water.RegenerationRate);
+        Assert.Equal(20_000, options.Resources.Food.Initial);
+        Assert.Null(options.Resources.Food.DegradationTick);
+        Assert.Equal(20.0, options.Resources.Food.RegenerationRate);
+        Assert.Equal(20_000, options.Resources.Water.Initial);
+        Assert.Equal(10.0, options.Resources.Water.RegenerationRate);
         Assert.Equal(0, options.Resources.Mineral.Initial);
         Assert.Equal(0.0, options.Resources.Mineral.RegenerationRate);
         Assert.False(options.World.Obstacles);
@@ -65,9 +67,9 @@ public class ConfigLoaderTests
         var options = ConfigLoader.LoadFile(path);
 
         Assert.Equal(2000, options.Resources.Water.Initial);
-        Assert.Equal(5.0, options.Resources.Water.RegenerationRate);
-        Assert.Equal(100, options.Resources.Food.Initial);
-        Assert.Equal(100, options.Resources.Food.DegradationTick);
+        Assert.Equal(10.0, options.Resources.Water.RegenerationRate);
+        Assert.Equal(20_000, options.Resources.Food.Initial);
+        Assert.Null(options.Resources.Food.DegradationTick);
         Assert.Equal(0, options.Resources.Mineral.Initial);
     }
 

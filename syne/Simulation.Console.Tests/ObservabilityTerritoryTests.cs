@@ -102,7 +102,7 @@ public class ObservabilityTerritoryTests
         Assert.Equal(3, zone["memberCount"]!.GetValue<int>());
         var members = (JsonArray)zone["members"]!;
         Assert.Equal([1UL, 2UL, 3UL], members.Select(member => member!.GetValue<ulong>()));
-        Assert.Equal("0.14.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.15.0", (string?)snapshot["engineVersion"]);
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public class ObservabilityTerritoryTests
         Assert.Equal("2", (string?)read["agentId"]);
         Assert.Equal(1.5, (double?)read["value"]!["readBenefit"]);
         Assert.Empty(loop.LastBookChanges);
-        Assert.Equal("0.14.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.15.0", (string?)snapshot["engineVersion"]);
     }
 
 }

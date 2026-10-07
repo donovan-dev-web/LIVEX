@@ -77,7 +77,7 @@
 
 - Toute modification qui altère la trajectoire à seed identique impose :
   - incrément `MINOR`/`MAJOR` (cf. `../../VERSIONING.md`) ;
-  - mise à jour de `engineVersion` (0.14.0 au jalon ADR cognitifs — implémentation des 5 ADR acceptés du 30/09/2026 sous drapeaux désactivés par défaut : trajectoire de référence inchangée, checksums conservés ; 0.13.0 à la calibration D1 — rééquilibrage utilitaire + bilan énergétique du profil de référence, ADR-015 ; 0.12.0 au jalon review/refactor ; 0.10.0 au jalon U8 — Saisons + Territoires ; 0.8.0 au jalon SYNE ph11d ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
+  - mise à jour de `engineVersion` (0.15.0 à la calibration B1 — défauts intégrés recalés pour la stabilité 2500 ticks, ADR-016 ; 0.14.0 au jalon ADR cognitifs — implémentation des 5 ADR acceptés du 30/09/2026 sous drapeaux désactivés par défaut : trajectoire de référence inchangée, checksums conservés ; 0.13.0 à la calibration D1 — rééquilibrage utilitaire + bilan énergétique du profil de référence, ADR-015 ; 0.12.0 au jalon review/refactor ; 0.10.0 au jalon U8 — Saisons + Territoires ; 0.8.0 au jalon SYNE ph11d ; émise dans chaque snapshot, `ObservabilityContract.EngineVersion`).
 - Les benchmarks (Annexe I) vérifient le déterminisme via checksum.
 
 **Jalon calibration D1 (engineVersion 0.13.0)** : la calibration de survie du
@@ -106,6 +106,25 @@ l'épinglage de version a bougé. Inertie vérifiée par
 `AdrDeterminismNeutralTests` (drapeaux éteints : aucun esprit n'adopte les nouveaux
 désirs, inventaire null, engagements vides, saillance inactive ; drapeaux allumés :
 trajectoire différente et reproductible).
+
+**Jalon calibration B1 (engineVersion 0.15.0)** : les **défauts intégrés** deviennent
+le profil calibré (ADR-016 — coût de déplacement 0,5 → 0,03, gains Eat/Drink 0/0 →
+2,0/1,0, dérives social/curiosité abaissées, réserves et coûts de communication
+recalés). Altération **volontaire** de trajectoire : checksums dorés re-calés et
+assumés, même commit que l'ADR (procédure §7) :
+
+| Empreinte | Avant (0.14.0) | Après (0.15.0) | Test épinglé |
+| :-- | :-- | :-- | :-- |
+| Golden de perception (25 entités, 200 ticks, seed 12345) | `0x46769cfb11c8b3a7` | `0xf4aaa2733e491935` | `DeterminismRegressionTests.GoldenChecksum_IsPinned`, `TickBudgetTests.GoldenChecksum_IsUnaffectedByInstrumentation`, `ObservabilityNonIntrusionTests` |
+| Baseline d'état complet (25 entités, 200 ticks, seed 12345) | `0xe62395429b50b7c1` | `0x954b8e0e70c0af5f` | `Ph10DeterminismBaselineTests.FullPipeline_StateBaseline_IsPinned` |
+
+Cause isolée et vérifiée : cette fois le recalage porte sur les **défauts** (et non
+sur le profil), donc le scénario de référence du test — construit avec
+`ConfigLoader.LoadDefaults()` — change de trajectoire dès les premières
+délibérations (les agents se déplacent moins cher et mangent/boivent pour gagner
+de l'énergie). Le déterminisme bit-à-bit à seed et version fixées reste garanti :
+deux runs 0.15.0 de même seed → empreintes identiques (`FullPipeline_SameSeed_…`
++ campagne multi-seeds ADR-016).
 
 ---
 

@@ -153,6 +153,17 @@ sécurité très large. La part de computation (Σ des sept sous-systèmes / tem
 de l'allocation/GC/overhead (à optimiser au ph10). Le goulot actuel est la passe de
 **communication** (`batchCommunication`), suivie des événements/groupe/population.
 
+> **Correction de la métrique (calibration B1, engineVersion 0.15.0, ADR-016).** Le calcul de
+> `TickBudgetSnapshot.ComputationShare()` sommait `MeanMs(phase)`, c'est-à-dire du temps **par
+> échantillon** — or les phases intra-entité (perception, mémoire, besoins, actions) sont
+> échantillonnées à chaque entité × tick quand communication/événements le sont une fois par
+> tick. La part affichée revenait donc à (communication + événements) / tick, sous-estimant les
+> phases intra-entité d'un facteur ≈ population (les mesures ci-dessus, obtenues avec un défaut
+> qui laissait mourir la majorité des entités en cours de run, en héritaient). La part est
+> désormais le temps **par tick** de chaque phase ÷ temps de tick : mesures de l'ordre de 90–98 %
+> sur les mêmes scénarios, le complément restant le travail hors scopes (tri de l'ordre causal,
+> allocations, GC). Le seuil **≥ 30 %** de la décision n°30 reste inchangé et toujours tenu.
+
 ### 9.3 Déterminisme performance (SYNE-093)
 
 `--benchmark` affiche un **checksum FNV-1a canonique** de l'état (préfixe `population=N;ticks=T`,

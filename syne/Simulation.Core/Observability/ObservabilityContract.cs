@@ -74,8 +74,18 @@ public static class ObservabilityContract
     /// (étape 3bis, reconsidération déclenchée + filet de sécurité). Contrat
     /// d'observabilité 0.2.1 → 0.3.0 (champs snapshot additifs émis sous drapeaux,
     /// rétro-compatibles à la lecture).
+    /// jalon calibration B1 → 0.15.0 : **altération volontaire de trajectoire** —
+    /// les défauts intégrés deviennent le profil calibré (ADR-016) : coût de
+    /// déplacement 0,5 → 0,03, gains Eat/Drink 0/0 → 2,0/1,0, Rest 0,5/1 → 1,5/2,
+    /// dérives social/curiosité 0,001/0,002 → 0,0002/0,0005 (un besoin sans
+    /// satisfaction finissait par monopoliser Socialize/Explore), réserves
+    /// nourriture/eau 100/1 000 → 20 000/20 000 avec régénération nette 20/10
+    /// (dégradation de la nourriture neutralisée) et coûts de communication
+    /// neutres (relais coupé, 1 envoi/1 réception). Objectif : 0 extinction et
+    /// énergie stable sur 2500 ticks à 50 et 100 agents. Checksums dorés
+    /// re-calés dans le même commit (DETERMINISM.md §7).
     /// </summary>
-    public const string EngineVersion = "0.14.0";
+    public const string EngineVersion = "0.15.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

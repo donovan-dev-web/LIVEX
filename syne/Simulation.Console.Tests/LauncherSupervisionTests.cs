@@ -31,7 +31,7 @@ public sealed class LauncherSupervisionTests
         Assert.Equal(HttpStatusCode.OK, ready.StatusCode);
         using JsonDocument info = JsonDocument.Parse(await client.GetStringAsync("info"));
         Assert.Equal("syne", info.RootElement.GetProperty("id").GetString());
-        Assert.Equal("0.14.0", info.RootElement.GetProperty("version").GetString());
+        Assert.Equal("0.15.0", info.RootElement.GetProperty("version").GetString());
         Assert.Equal(1, info.RootElement.GetProperty("protocolVersion").GetInt32());
         Assert.Equal("syne-instance", info.RootElement.GetProperty("instanceId").GetString());
 
