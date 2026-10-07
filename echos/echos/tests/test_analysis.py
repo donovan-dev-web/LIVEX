@@ -174,26 +174,37 @@ def test_cognitive_diversity_hand_computed_values():
     assert result["BeliefDiversity"] == _APPROX(
         1.9219280948873623, abs=1e-9
     )  # H sur 4 faits (2× true, 2× unique)
+    # Version normalisée [0,1] : H / log₂(4 catégories distinctes).
+    assert result["BeliefDiversityNorm"] == _APPROX(0.9609640474436811, abs=1e-9)
     assert result["BeliefDisagreement"] == _APPROX(0.41666666666666663, abs=1e-9)
     assert result["BeliefConfidenceVariance"] == _APPROX(0.02, abs=1e-9)
     assert result["GoalDiversity"] == _APPROX(1.584962500721156, abs=1e-9)
+    # 3 catégories observées → entropie normalisée à sa valeur maximale.
+    assert result["GoalDiversityNorm"] == _APPROX(1.0, abs=1e-9)
     assert result["GoalConvergence"] == _APPROX(1 / 3, abs=1e-9)
-    assert result["DecisionDiversity"] == 1.0  # 3 actions distinctes / 3 agents
-    assert result["IntentionStability"] == 7.0  # Âges moyens : (10 + 4) / 2
+    # A et B déclarent un objectif, C non : la couverture expose le repli.
+    assert result["GoalCoverage"] == _APPROX(2 / 3, abs=1e-9)
+    # Aucune décision dans la fenêtre du fixture : zéro observé, mesuré.
+    assert result["ActionDiversity"] == 0.0
+    assert result["DecisionCount"] == 0.0
+    assert result["AverageGoalAge"] == 7.0  # Âges moyens : (10 + 4) / 2
     assert result["TraitExpressionDiversity"] == _APPROX(0.01277777777777778, abs=1e-12)
 
 
 def test_information_propagation_hand_computed_values():
     result = _information()
 
-    # 1 message au tick courant (10) sur 3 entités ; 3 sources → centralité 1
+    # 1 message au tick courant (10) sur 3 entités ; couverture émetteurs 3/3
     assert result["MessageVolume"] == _APPROX(1 / 3, abs=1e-9)
-    # Durée de propagation = amplitude entre le 1er message et le seuil 80 %,
-    # et non le numéro de tick (qui dépendrait de la longueur du run).
-    assert result["InformationDiffusionSpeed"] == 5.0  # seuils atteints à t=5
-    assert result["RumorAccuracyDegradation"] == _APPROX(0.13, abs=1e-9)
+    # Délai de couverture des émetteurs = amplitude entre le 1er message et le
+    # seuil 80 %, et non le numéro de tick (qui dépendrait de la longueur du run).
+    assert result["EmitterCoverageDelay"] == 5.0  # seuils atteints à t=5
+    # Transformation théorique sous hypothèse 10 %/saut — pas une précision.
+    assert result["TheoreticalHopDecay"] == _APPROX(0.13, abs=1e-9)
     assert result["MaxMessageHops"] == 2.0
-    assert result["NetworkCentrality"] == 1.0
+    # 3 messages, 3 émetteurs distincts → part du premier émetteur = 1/3.
+    assert result["SenderConcentration"] == _APPROX(1 / 3, abs=1e-9)
+    assert result["SenderCoverage"] == _APPROX(1.0, abs=1e-9)
 
 
 def test_social_complexity_hand_computed_values():
@@ -201,13 +212,16 @@ def test_social_complexity_hand_computed_values():
 
     assert result["AverageTrustLevel"] == _APPROX(0.5666666666666667, abs=1e-9)
     assert result["TrustVariance"] == _APPROX(0.01555555555555555, abs=1e-9)
-    assert result["NetworkDensity"] == _APPROX(1 / 3, abs=1e-9)  # 2 arêtes / 6 paires
+    # Densité non orientée : 2 arêtes sur les 3 paires possibles de 3 entités
+    # (l'ancien dénominateur n(n-1) = 6 bornait artificiellement à 0,5 max).
+    assert result["NetworkDensity"] == _APPROX(2 / 3, abs=1e-9)
     assert result["ClusteringCoefficient"] == 0.0  # pas de triangle
-    assert result["AverageCentrality"] == _APPROX(0.5, abs=1e-9)
+    # Degré sortant moyen normalisé par n-1 — pas une centralité intermédiaire.
+    assert result["AverageOutDegree"] == _APPROX(0.5, abs=1e-9)
     assert result["NumberOfCommunities"] == 1  # groupe plein connecté (A-B, A-C)
     # La communauté de 3 agents est présente à l'identique au dernier tick de
-    # l'historique de communautés : stabilité totale.
-    assert result["CommunityStability"] == 1.0
+    # l'historique de communautés : tailles identiques (comparaison de tailles).
+    assert result["CommunitySizeMatch"] == 1.0
 
 
 def test_goal_convergence_hand_computed_values():
@@ -215,39 +229,63 @@ def test_goal_convergence_hand_computed_values():
 
     assert result["GlobalGoalAlignment"] == _APPROX(1 / 3, abs=1e-9)
     assert result["GoalDiversity"] == _APPROX(1.584962500721156, abs=1e-9)
-    assert result["CooperationPotential"] == _APPROX(1 / 3, abs=1e-9)  # Σ p², 3 types
+    # Σ p² sur 3 catégories équivalentes : concordance attendue, pas coopération.
+    assert result["GoalCategoryConcordance"] == _APPROX(1 / 3, abs=1e-9)
     assert result["GoalTypeCounts"] == {"Idle": 1, "SeekFood": 1, "SeekWater": 1}
 
 
 def test_feedback_loop_hand_computed_values():
     result = _loops()
 
-    # 4 boucles distinctes : A/SeekFood (9×), B/SeekWater (9×), C/Idle (7×), C/Sleep (3×)
-    assert result["IdentifiedLoops"] == 4
-    assert result["LoopStrength"] == _APPROX(0.7, abs=1e-9)
-    assert result["SystemStability"] == _APPROX(1 / 3, abs=1e-9)
-    assert result["CriticalLoops"] == 4  # toutes amplifiées > 1,5×
-    assert result["LoopTypes"] == {"positive": 2, "negative": 2}
+    # 4 paires (agent, action) répétées : A/SeekFood (9×), B/SeekWater (9×),
+    # C/Idle (7×), C/Sleep (3×) — des répétitions, pas des boucles causales.
+    assert result["RepeatedActionPairs"] == 4
+    assert result["RepeatedActionShare"] == _APPROX(0.7, abs=1e-9)
+    assert result["ActionDistributionBalance"] == _APPROX(1 / 3, abs=1e-9)
+    assert result["AmplifiedRepetitions"] == 4  # toutes > 1,5× la fréquence uniforme
+    # Comptage par nom d'action, sans catégorie normative positive/négative ;
+    # invariant : la somme vaut RepeatedActionPairs.
+    assert result["RepeatedActionCounts"] == {
+        "Idle": 1,
+        "SeekFood": 1,
+        "SeekWater": 1,
+        "Sleep": 1,
+    }
+    assert sum(result["RepeatedActionCounts"].values()) == result["RepeatedActionPairs"]
 
 
 def test_resource_sustainability_hand_computed_values():
     result = _resources()
 
-    assert result["ResourceToConsumptionRatio"] == _APPROX(2.5, abs=1e-9)
-    assert result["CriticalityPoints"] == 0.0  # aucune réserve sous 20 %
+    # Part de capacité restante : food 30/100 = 0,3 et water 50/200 = 0,25.
+    assert result["ResourceFillRatio"] == _APPROX(0.275, abs=1e-9)
+    assert result["CriticalResourceCount"] == 0.0  # aucune réserve sous 20 %
+    # Les deux réserves publient leur capacité → couverture totale.
+    assert result["ResourceCoverage"] == _APPROX(1.0, abs=1e-9)
+    # Flux : consommation cumulée rapportée à la fenêtre réellement observée.
+    assert result["ConsumptionPerTick"] == _APPROX(35 / 6, abs=1e-9)
     assert result["RecoveryTime"] == 2.0  # 2 chutes rétablies en 2 ticks en moyenne
+    assert result["RecoveryEpisodes"] == 2.0  # les deux crises sont complètes
+    assert result["UnresolvedCrisisCount"] == 0.0  # aucune crise ouverte en fin
 
 
 def test_group_dynamics_hand_computed_values():
     result = _groups()
 
-    assert result["ActiveGroups"] == 1.0
-    assert result["AverageGroupSize"] == 3.0
+    # Communautés **inférées** du graphe de confiance, pas groupes déclarés.
+    assert result["InferredCommunities"] == 1.0
+    assert result["AverageCommunitySize"] == 3.0
+    # Les 3 entités vivantes appartiennent à la communauté → couverture 1,0.
+    assert result["CommunityCoverage"] == 1.0
+    # Événements de groupes natifs, avec leurs dénominateurs bruts publiés.
     assert result["AverageGroupLifetime"] == 15.0
     assert result["GroupFormationRate"] == _APPROX(166.66666666666666, abs=1e-9)  # 1/6 ticks × 1000
     assert result["GroupDissolutionRate"] == _APPROX(166.66666666666666, abs=1e-9)
-    assert result["GroupObjectiveSuccessRate"] == 1.0  # dissolution réussie
-    assert result["MemberTurnoverRate"] == _APPROX(55.55555555555555, abs=1e-9)
+    assert result["FormationCount"] == 1.0
+    assert result["DissolutionCount"] == 1.0
+    assert result["DissolvedGroupSuccessShare"] == 1.0  # dissolution réussie
+    # 1 sortie pour 1 dissolution observée — pas un taux annualisé.
+    assert result["MemberExitsPerDissolution"] == 1.0
 
 
 # ---------------------------------------------------------------------------
@@ -302,8 +340,9 @@ def test_no_trust_graph_isolates_every_agent():
     # NumberOfCommunities à 3 et déclenchait à tort CommunityFormation puis
     # CollectiveCoordination sur un réseau sans aucune relation.
     assert social["NumberOfCommunities"] == 0
-    assert groups["ActiveGroups"] == 0.0
-    assert groups["AverageGroupSize"] == 0.0
+    assert groups["InferredCommunities"] == 0.0
+    assert groups["AverageCommunitySize"] == 0.0
+    assert groups["CommunityCoverage"] == 0.0
 
 
 def test_self_trust_relation_does_not_create_a_community():
@@ -325,27 +364,28 @@ def test_feedback_loop_without_history_is_neutral():
 
     result = feedback_loop_detector.compute({})
 
-    assert result["IdentifiedLoops"] == 0
-    assert result["LoopStrength"] == 0.0
-    assert result["SystemStability"] == 0.0  # aucune décision → neutre
-    assert result["LoopTypes"] == {"positive": 0, "negative": 0}
+    assert result["RepeatedActionPairs"] == 0
+    assert result["RepeatedActionShare"] == 0.0
+    assert result["ActionDistributionBalance"] == 0.0  # aucune décision → neutre
+    assert result["RepeatedActionCounts"] == {}
 
 
 def test_resource_availability_is_bounded_without_capacity():
-    """Un ratio de disponibilité ne doit pas être infini quand la donnée manque.
+    """Une part de capacité ne doit jamais sortir de [0, 1].
 
-    Régression : ``max(capacity, 1e-9)`` comme dénominateur produisait ~1e11
-    pour une réserve sans capacité et sans consommation, ce qui contaminait
-    ensuite la moyenne du moteur entier.
+    Régression : ``quantity / consumed`` (sans borne, dénominateur de nature
+    différente) était mélangée à ``quantity / capacity`` puis comparée à 0,2 :
+    le seuil n'avait aucun sens uniforme. La mesure de remplissage ne porte
+    que sur la **capacité** ; la consommation a sa propre mesure de flux.
     """
-    from echos.analysis.resource_sustainability import _availability
+    from echos.analysis.resource_sustainability import _capacity_ratio
 
-    assert _availability(100.0, None, 0.0) == 1.0
-    assert _availability(100.0, 200.0, 0.0) == 0.5
-    assert _availability(100.0, 200.0, 50.0) == 2.0
-    # Capacité nulle mais consommation observée : seul q/consommé est mesurable.
-    assert _availability(100.0, 0.0, 50.0) == 2.0
-    assert _availability(0.0, None, 0.0) == 1.0
+    assert _capacity_ratio(100.0, None) is None  # capacité non publiée
+    assert _capacity_ratio(100.0, 200.0) == 0.5
+    # Une réserve au-delà de sa capacité publiée est saturée, pas « à 300 % ».
+    assert _capacity_ratio(300.0, 100.0) == 1.0
+    assert _capacity_ratio(100.0, 0.0) is None
+    assert _capacity_ratio(0.0, None) is None
 
 
 def test_resource_engine_stays_bounded_on_incomplete_snapshot():
@@ -359,12 +399,16 @@ def test_resource_engine_stays_bounded_on_incomplete_snapshot():
     }
     result = resource_sustainability.compute(snapshot)
 
-    # Ratios 1.0 (sans capacité, sans consommation) et 0.1 (10/100) → 0.55.
-    assert 0.0 <= result["ResourceToConsumptionRatio"] <= 1.0
-    assert result["ResourceToConsumptionRatio"] == _APPROX(0.55, abs=1e-9)
+    # Seule la réserve « food » a une capacité publiée : 10/100 = 0,1.
+    assert 0.0 <= result["ResourceFillRatio"] <= 1.0
+    assert result["ResourceFillRatio"] == _APPROX(0.1, abs=1e-9)
+    # La couverture dit explicitement qu'une réserve sur deux est exploitable.
+    assert result["ResourceCoverage"] == _APPROX(0.5, abs=1e-9)
     # Seule la réserve « food » est sous le seuil critique de 20 %.
-    assert result["CriticalityPoints"] == 1.0
+    assert result["CriticalResourceCount"] == 1.0
     assert result["RecoveryTime"] == 0.0  # pas d'historique
+    assert result["RecoveryEpisodes"] == 0.0
+    assert result["UnresolvedCrisisCount"] == 0.0
 
 
 def test_recovery_time_uses_history_when_present():
@@ -380,14 +424,61 @@ def test_recovery_time_uses_history_when_present():
         ],
     }
     # Chute sous 20 % au tick 2, rétablissement ≥ 80 % au tick 5 → 3 ticks.
-    assert resource_sustainability.compute(snapshot)["RecoveryTime"] == 3.0
+    result = resource_sustainability.compute(snapshot)
+    assert result["RecoveryTime"] == 3.0
+    assert result["RecoveryEpisodes"] == 1.0
+    assert result["UnresolvedCrisisCount"] == 0.0
 
 
-def test_decision_diversity_counts_decisions_not_goals():
-    """``DecisionDiversity`` doit varier avec les décisions du tick.
+def test_unresolved_crisis_is_counted_separately_from_recovered_ones():
+    """Une crise encore ouverte en fin de fenêtre n'est ni durée 0 ni ignorée.
 
-    Régression : elle était calculée sur les types d'objectifs, ce qui la
-    rendait redondante avec ``GoalDiversity`` et insensible aux décisions.
+    Le zéro de ``RecoveryTime`` confondait « aucune crise » et « crise non
+    rétablie » (censure) : les deux sont désormais publiés séparément.
+    """
+    from echos.analysis import resource_sustainability
+
+    snapshot = {
+        "resources": [{"type": "water", "quantity": 5.0, "capacity": 100.0}],
+        "history": [
+            {"tick": 1, "resources": [{"type": "water", "quantity": 90.0, "capacity": 100.0}]},
+            {"tick": 2, "resources": [{"type": "water", "quantity": 5.0, "capacity": 100.0}]},
+            {"tick": 3, "resources": [{"type": "water", "quantity": 8.0, "capacity": 100.0}]},
+        ],
+    }
+    result = resource_sustainability.compute(snapshot)
+
+    assert result["RecoveryTime"] == 0.0  # aucun cycle complet
+    assert result["RecoveryEpisodes"] == 0.0
+    assert result["UnresolvedCrisisCount"] == 1.0  # crise ouverte au dernier tick
+
+
+def test_consumption_per_tick_uses_the_observed_window():
+    """Le flux est rapporté à la durée observée, pas cumulé indéfiniment."""
+    from echos.analysis import resource_sustainability
+
+    snapshot = {
+        "resources": [],
+        "eventWindow": {"ticks": 10, "from": 1, "to": 10},
+        "events": [
+            {"type": "resource_consumed", "tick": 3, "value": {"type": "food", "amount": 4}},
+            {"type": "resource_consumed", "tick": 8, "value": {"type": "food", "amount": 6}},
+        ],
+    }
+    result = resource_sustainability.compute(snapshot)
+
+    assert result["ConsumptionPerTick"] == _APPROX(1.0, abs=1e-9)  # 10 / 10 ticks
+    # Ressources absentes → couverture 0, et non « tout va bien ».
+    assert result["ResourceCoverage"] == 0.0
+
+
+def test_action_diversity_counts_decisions_not_goals():
+    """``ActionDiversity`` doit varier avec les décisions observées.
+
+    Régression : ``DecisionDiversity`` était calculée sur les types
+    d'objectifs, ce qui la rendait redondante avec ``GoalDiversity`` et
+    insensible aux décisions ; l'ancien repli silencieux sur les buts est
+    désormais un état « non mesuré » distinct.
     """
     from echos.analysis import cognitive_diversity
 
@@ -398,15 +489,21 @@ def test_decision_diversity_counts_decisions_not_goals():
             {"id": "B", "goals": [{"kind": "SeekFood"}]},
         ],
     }
-    # Aucun événement : repli sur les objectifs, 1 type pour 2 entités → 0.5.
-    assert cognitive_diversity.compute(base)["DecisionDiversity"] == 0.5
+    # Aucune fenêtre d'événements : rien à mesurer (l'ancien repli donnait 0.5
+    # sur les objectifs, c'est-à-dire une mesure de buts sous un nom d'action).
+    assert cognitive_diversity.compute(base)["ActionDiversity"] == 0.0
+    from echos.analysis._common import measured_flags
+
+    assert measured_flags(base, cognitive_diversity)["ActionDiversity"] is False
 
     mixed = dict(base)
     mixed["events"] = [
         {"type": "decision_made", "agentId": "A", "action": "SeekFood"},
         {"type": "decision_made", "agentId": "B", "action": "Rest"},
     ]
-    assert cognitive_diversity.compute(mixed)["DecisionDiversity"] == 1.0
+    # Deux décisions, deux actions distinctes → entropie normalisée maximale.
+    assert cognitive_diversity.compute(mixed)["ActionDiversity"] == 1.0
+    assert cognitive_diversity.compute(mixed)["DecisionCount"] == 2.0
 
 
 def test_single_group_event_does_not_saturate_the_rate():
@@ -445,8 +542,10 @@ def test_group_success_rate_reads_boolean_flags():
     }
     result = group_dynamics.compute(snapshot)
 
-    assert result["GroupObjectiveSuccessRate"] == 0.5
+    assert result["DissolvedGroupSuccessShare"] == 0.5
     assert result["AverageGroupLifetime"] == 4.0
+    assert result["DissolutionCount"] == 2.0
+    assert result["MemberExitsPerDissolution"] == 0.0  # memberOut absent du contrat
 
 
 # ---------------------------------------------------------------------------
@@ -548,9 +647,9 @@ def test_provenance_marks_windowed_metrics_as_unmeasured_without_windows():
     }
     flags = provenance(bare)
 
-    assert flags["FeedbackLoopDetector"]["LoopStrength"] is False
+    assert flags["FeedbackLoopDetector"]["RepeatedActionShare"] is False
     assert flags["ResourceSustainabilityMetrics"]["RecoveryTime"] is False
-    assert flags["SocialComplexityMetrics"]["CommunityStability"] is False
+    assert flags["SocialComplexityMetrics"]["CommunitySizeMatch"] is False
     assert flags["GroupDynamicsMetrics"]["GroupFormationRate"] is False
     # Le composite propage : un score d'émergence bâti sur des replis n'est pas
     # un score mesuré.
@@ -578,16 +677,16 @@ def test_provenance_is_complete_with_the_pipeline_windows():
 def test_provenance_ignores_a_zero_valued_window():
     """Une fenêtre présente mais vide n'est pas « observée ».
 
-    Le cas ``CommunityStability`` : sans communautés, l'historique peut contenir
-    des ticks avec des tailles vides. La présence de la clé suffit — c'est la
-    condition pour que la métrique ait été calculée sur des données.
+    Le cas ``CommunitySizeMatch`` : sans communautés, l'historique peut contenir
+    des ticks avec des tailles vides. La fenêtre est vide — c'est la condition
+    pour que la métrique ait été calculée sur des données.
     """
     from echos.analysis import provenance
 
     snapshot = _fresh_snapshot()
     snapshot["communityHistory"] = []
     flags = provenance(snapshot)
-    assert flags["SocialComplexityMetrics"]["CommunityStability"] is False
+    assert flags["SocialComplexityMetrics"]["CommunitySizeMatch"] is False
     # Les autres moteurs ne dépendent pas de cette clé.
     assert flags["CognitiveDiversityMetrics"]["GoalDiversity"] is True
 

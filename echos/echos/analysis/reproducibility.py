@@ -108,7 +108,9 @@ _FINGERPRINT_CONTEXTS = ("agents", "groups", "phenomena")
 ``profiling`` est **exclu** à dessein : il contient des durées de calcul, qui
 ne sont pas reproductibles entre deux exécutions sans rendre le contenu
 observé différent. Comparer les deux runs sur cette vue revient à comparer ce
-qui est déterministe.
+qui est déterministe. Même exclusion que
+:data:`echos.reporting.NON_DETERMINISTIC_CONTEXTS`, qui écarte ces durées du
+rapport pour la même raison.
 """
 
 
