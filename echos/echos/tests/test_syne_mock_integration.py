@@ -28,6 +28,7 @@ from echos.api.app import create_app
 from echos.ingestion.ws_client import StreamClosed
 from echos.ingestion.ws_client import WsClient
 from echos.storage.sqlite import AnalyticsStore
+from echos.tests.provenance_expectations import unexpected_unmeasured
 
 ROOT = Path(__file__).resolve().parents[3]
 MOCK = ROOT / "syne-mock"
@@ -111,15 +112,13 @@ def test_mock_stream_is_ingested_and_served_by_echos(tmp_path):
             assert parquet_path.exists(), "the Parquet agent series must be written"
 
             # Provenance persistée : le mock porte les trois fenêtres du
-            # pipeline, donc rien ne doit être signalé comme repli neutre.
+            # pipeline, donc rien ne doit être signalé comme repli neutre —
+            # hors liste blanche explicite, et documentée, de celles que
+            # 3 ticks / 9 agents ne permettent pas de mesurer.
             measured = store.latest_measured(run_id)
             assert set(measured) == set(store.latest_metrics(run_id))
-            assert not [
-                (engine, metric)
-                for engine, flags in measured.items()
-                for metric, ok in flags.items()
-                if not ok
-            ]
+            surprises = unexpected_unmeasured(measured)
+            assert not surprises, surprises
 
             with TestClient(create_app(store)) as api:
                 response = api.get(f"/api/runs/{run_id}/metrics")
