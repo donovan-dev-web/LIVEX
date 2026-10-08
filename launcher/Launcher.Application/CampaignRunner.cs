@@ -135,6 +135,18 @@ public sealed class CampaignRunner
                     if (report is not null)
                     {
                         _packages.WriteAnalysisReport(packagePath, report, aggregateFiles);
+
+                        // Version du composant d'analyse consignée au paquet (J3) : c'est
+                        // ECHOS qui a produit le rapport, le manifeste en fait foi — jamais
+                        // supposée côté Launcher, lue sur l'instance qui a répondu.
+                        var analysisVersion = _analysis.AnalysisComponentVersion;
+                        if (!string.IsNullOrWhiteSpace(analysisVersion))
+                        {
+                            _packages.RegisterComponents(packagePath,
+                            [
+                                new JsonComponentRef { Id = "echos", Version = analysisVersion },
+                            ]);
+                        }
                     }
                 }
                 catch (OperationCanceledException)

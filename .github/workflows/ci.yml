@@ -252,6 +252,15 @@ jobs:
         run: dotnet build Launcher.sln --no-restore --configuration Release --warnaserror
       - name: Publish SYNE for real Launcher acceptance
         run: dotnet publish ../syne/Simulation.Console/Simulation.Console.csproj --configuration Release --output ../syne/Simulation.Console/bin/Release/net10.0/publish
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install ECHOS (banc réel du parcours J3)
+        working-directory: echos
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/pip install -r requirements.txt
       - name: Tests unitaires
         run: dotnet test Launcher.Tests.Unit --no-build --configuration Release --logger "trx;LogFileName=unit.trx" --results-directory TestResults
       - name: Tests d'intégration (stubs réels)

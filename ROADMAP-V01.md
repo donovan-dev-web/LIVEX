@@ -167,19 +167,41 @@ PR #502.
 
 Items encore ouverts de `launcher/ROADMAP-V1.md` Jalon 3 :
 
-- [ ] Reprise de campagne **sans rejouer un run réussi** (reconnaissance et
-      diagnostic des runs interrompus).
-- [ ] Archivage des artefacts d'analyse et du rapport retournés dans le paquet.
-- [ ] Collecte des artefacts uniquement depuis les chemins autorisés.
-- [ ] Contrôle des erreurs composant par composant (échec ECHOS ne supprime
-      pas les données de simulation).
-- [ ] E2E réel complet : SYNE publié + ECHOS réel + rapport relu à l'identique
-      depuis le paquet (au-delà de `PublishedSyneCampaignEndToEndTests.cs`).
+- [x] Reprise de campagne **sans rejouer un run réussi** (reconnaissance et
+      diagnostic des runs interrompus) — preuves : tests unitaires
+      `CampaignRunnerTests` + parcours réel `J3RealComponentsEndToEndTests`
+      (entrée RUN-0001 identique avant/après reprise, journal « jamais
+      rejoué(s) »), **08/10/2026**.
+- [x] Archivage des artefacts d'analyse et du rapport retournés dans le
+      paquet — analyses individuelles, agrégats et `analysis/emergence_report.md`
+      archivés puis relus à l'identique contre l'API ECHOS réelle ; version
+      d'ECHOS consignée au manifeste du paquet
+      (`IAnalysisService.AnalysisComponentVersion`).
+- [x] Collecte des artefacts uniquement depuis les chemins autorisés —
+      `CollectFiles` n'énumère que `data/`/`logs/` du dossier de run, et le
+      test J3 contrôle chaque entrée du paquet scellé (empreintes
+      `VerifyRunIntegrity`, aucune entrée hors `runs/RUN-xxxx/`).
+- [x] Contrôle des erreurs composant par composant (échec ECHOS ne supprime
+      pas les données de simulation) — `J3_echec_ECHOS_ne_supprime_rien_et_laisse_la_campagne_se_terminer` :
+      ECHOS arrêté entre deux runs, second run terminé, empreintes valides,
+      analyse marquée « indisponible », paquet scellé sans rapport.
+- [x] E2E réel complet : SYNE publié + ECHOS réel + rapport relu à l'identique
+      depuis le paquet (au-delà de `PublishedSyneCampaignEndToEndTests.cs`) —
+      `J3_SYNE_publie_et_ECHOS_reel_interruption_reprise_analyse_et_rapport`
+      : 3 runs, interruption après run 1, reprise, `/api/runs` porte les 3
+      identités, rapport octet à octet, versions SYNE/ECHOS au manifeste.
 
 **Critère de sortie** :
 - [ ] E2E vert en CI Linux **et** en CI Windows (dépend de l'étape 5) sur le
       parcours : campagne → interruption → reprise → analyse → paquet.
-- [ ] Cases du Jalon 3 cochées avec preuves liées dans `ROADMAP-V1.md`.
+      **Avancement 08/10** : vert en local sur Linux (2 tests, suite E2E
+      complète 31/31) ; job CI Linux câblé (venv ECHOS + SYNE publié dans
+      `ci.yml`), exécution CI à constater au prochain push (A4 : pas de push
+      sans demande) ; Windows à l'étape 5.
+- [x] Cases du Jalon 3 cochées avec preuves liées dans `ROADMAP-V1.md` —
+      reprise, archivage, chemins autorisés, erreurs composant et Porte J3
+      cochées le 08/10/2026 (la case « processus toujours actif » reste ouverte
+      et hors liste de cette étape).
 
 ### Étape 5 — Support Windows (cible Linux + Windows) — **L → W**
 

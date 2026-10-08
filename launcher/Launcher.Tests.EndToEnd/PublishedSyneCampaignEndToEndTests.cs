@@ -191,44 +191,8 @@ internal sealed class PublishedSyneHarness : IDisposable
             throw SkipException.ForSkip("Requires LIVEX_SYNE_PUBLISHED_ROOT pointing to the published SYNE component.");
         }
 
-        var sourceRoot = Path.GetFullPath(publishedSyneRoot);
-        var manifestPath = Path.Combine(sourceRoot, "component.json");
-        Assert.True(File.Exists(manifestPath), $"SYNE manifest is missing: {manifestPath}");
-
         var componentRoot = Path.Combine(root, "components", "syne");
-        Directory.CreateDirectory(componentRoot);
-        File.Copy(manifestPath, Path.Combine(componentRoot, "component.json"));
-
-        using var manifestDocument = JsonDocument.Parse(File.ReadAllText(manifestPath));
-        var executableRelativePath = manifestDocument.RootElement
-            .GetProperty("executable")
-            .GetProperty("linux")
-            .GetString();
-        var manifestVersion = manifestDocument.RootElement.GetProperty("version").GetString();
-        Assert.False(string.IsNullOrWhiteSpace(executableRelativePath));
-        var sourceExecutableDirectory = Path.GetDirectoryName(
-            Path.GetFullPath(Path.Combine(sourceRoot, executableRelativePath!)))!;
-        Assert.True(Directory.Exists(sourceExecutableDirectory),
-            $"SYNE publish directory is missing: {sourceExecutableDirectory}");
-
-        var executableDirectoryRelativePath = Path.GetRelativePath(sourceRoot, sourceExecutableDirectory);
-        var installedExecutableDirectory = Path.Combine(componentRoot, executableDirectoryRelativePath);
-        Directory.CreateDirectory(installedExecutableDirectory);
-        foreach (var sourceFile in Directory.EnumerateFiles(sourceExecutableDirectory))
-        {
-            var installedFile = Path.Combine(installedExecutableDirectory, Path.GetFileName(sourceFile));
-            File.Copy(sourceFile, installedFile);
-            if (!OperatingSystem.IsWindows()
-                && string.Equals(Path.GetFileName(sourceFile), Path.GetFileName(executableRelativePath), StringComparison.Ordinal))
-            {
-                File.SetUnixFileMode(installedFile,
-                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
-                    | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
-                    | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
-            }
-        }
-
-        harness.ManifestVersion = manifestVersion ?? string.Empty;
+        harness.ManifestVersion = PublishedSyneInstaller.Install(publishedSyneRoot, componentRoot);
 
         var journal = new SessionFileJournal(Path.Combine(root, "sessions"));
         var clock = new SystemClock();
@@ -255,5 +219,55 @@ internal sealed class PublishedSyneHarness : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+    }
+}
+
+/// <summary>
+/// Installe (par copie) un SYNE publié dans une racine de composant de test :
+/// manifeste à la racine, répertoire de l'exécutable reconstitué, droits
+/// d'exécution posés. Partagé par les bancs qui ont besoin du vrai moteur.
+/// </summary>
+internal static class PublishedSyneInstaller
+{
+    /// <summary>Copie le composant SYNE publié et rend la version déclarée au manifeste.</summary>
+    public static string Install(string publishedSourceRoot, string componentRoot)
+    {
+        var sourceRoot = Path.GetFullPath(publishedSourceRoot);
+        var manifestPath = Path.Combine(sourceRoot, "component.json");
+        Assert.True(File.Exists(manifestPath), $"SYNE manifest is missing: {manifestPath}");
+
+        Directory.CreateDirectory(componentRoot);
+        File.Copy(manifestPath, Path.Combine(componentRoot, "component.json"), overwrite: true);
+
+        using var manifestDocument = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        var executableRelativePath = manifestDocument.RootElement
+            .GetProperty("executable")
+            .GetProperty("linux")
+            .GetString();
+        var manifestVersion = manifestDocument.RootElement.GetProperty("version").GetString();
+        Assert.False(string.IsNullOrWhiteSpace(executableRelativePath));
+        var sourceExecutableDirectory = Path.GetDirectoryName(
+            Path.GetFullPath(Path.Combine(sourceRoot, executableRelativePath!)))!;
+        Assert.True(Directory.Exists(sourceExecutableDirectory),
+            $"SYNE publish directory is missing: {sourceExecutableDirectory}");
+
+        var executableDirectoryRelativePath = Path.GetRelativePath(sourceRoot, sourceExecutableDirectory);
+        var installedExecutableDirectory = Path.Combine(componentRoot, executableDirectoryRelativePath);
+        Directory.CreateDirectory(installedExecutableDirectory);
+        foreach (var sourceFile in Directory.EnumerateFiles(sourceExecutableDirectory))
+        {
+            var installedFile = Path.Combine(installedExecutableDirectory, Path.GetFileName(sourceFile));
+            File.Copy(sourceFile, installedFile, overwrite: true);
+            if (!OperatingSystem.IsWindows()
+                && string.Equals(Path.GetFileName(sourceFile), Path.GetFileName(executableRelativePath), StringComparison.Ordinal))
+            {
+                File.SetUnixFileMode(installedFile,
+                    UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                    | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
+                    | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            }
+        }
+
+        return manifestVersion ?? string.Empty;
     }
 }
