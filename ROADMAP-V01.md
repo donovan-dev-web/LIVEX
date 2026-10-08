@@ -549,7 +549,15 @@ CI, invisibles tant que ces jobs n'avaient jamais tourné, ont été corrigés p
 revalidés : glob shell non étendu par PowerShell (`npm test`), saut dynamique
 xunit non converti en « ignoré », verrou mortel `CloseAsync`/`ReceiveAsync` du
 serveur d'observabilité SYNE, banc de cadence et plancher de débit mesurés sous
-contention entre assemblées de tests. Le merge se fait en squash & merge.
+contention entre assemblées de tests. Un **cinquième défaut, réel celui-là** (pas
+un banc), est apparu au passage suivant sur le même job : l'archivage des
+journaux d'un run se faisait avec `File.ReadAllBytes` **pendant que la pompe du
+moteur tient encore `stdout.log`** — un run réussi devenait Échoué puis la
+lecture de secours levait à son tour, l'exception remplaçant la cause réelle à
+la reprise J3. Corrigé par la lecture partagée (`RunLogArchive.Collect`,
+`FileShare.ReadWrite` — même règle que `SessionFileJournal.ReadShared*`), un
+journal illisible étant désormais consigné au lieu d'être fatal. Le merge se
+fait en squash & merge.
 
 Ce qui **reste faisable sur Linux** : le suivi des workflows CI
 (`windows-latest` tourne sur GitHub, pas sur la machine Windows) et les
@@ -567,8 +575,9 @@ locales étant faites.
   l'apphost `livex-launcher.exe` ne démarrait pas (manifeste `app.manifest`
   invalide) et l'export / l'affichage des journaux de session échouaient en
   violation de partage — les deux corrigés et **couverts par un test dédié**
-  (`AppHostLaunchTests`, `SessionFileJournalTests` — ajoutés le 08/10/2026,
-  211 tests Launcher au total).
+  (`AppHostLaunchTests`, `SessionFileJournalTests` — ajoutés le 08/10/2026), puis
+  l'archivage des journaux de run, trouvé en CI le 08/10/2026 et couvert par
+  `RunLogArchiveTests` — **214 tests Launcher au total**).
 - **Suite complète rejouée sous Windows le 08/10/2026** (avant la PR) — trois
   défauts supplémentaires trouvés et corrigés, tous invisibles sur Linux :
   1. **SYNE** : verrou mortel dans `ObservabilityServer` — `DisposeAsync`
