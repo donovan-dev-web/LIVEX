@@ -426,10 +426,13 @@ public sealed class SimulationController : IAsyncDisposable
     /// <summary>
     /// Réinitialise le run : arrête la boucle courante puis démarre un nouveau run
     /// pour <paramref name="seed"/> (ou la configuration de départ).
+    /// Sans surcouche, le nouveau monde est construit sur le profil de référence
+    /// (cf. <see cref="PrepareCoreAsync"/>), au même titre que <c>prepare</c>.
     /// </summary>
     public async Task<string> ResetAsync(
         ulong? seed,
         int? maxTicks,
+        string? configJson = null,
         CancellationToken cancellationToken = default)
     {
         CancellationTokenSource? oldCts;
@@ -451,7 +454,7 @@ public sealed class SimulationController : IAsyncDisposable
         _runSignal.Reset();
         await AwaitRunAsync(runTask).ConfigureAwait(false);
 
-        return await StartAsync(seed, configJson: null, maxTicks, cancellationToken);
+        return await StartAsync(seed, configJson, maxTicks, cancellationToken);
     }
 
     /// <summary>État courant (API_CONTRACTS.md §3, GET /api/control/status).</summary>

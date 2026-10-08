@@ -111,11 +111,20 @@ extinction t300 par `reset` vs survie 1200/1200 par `prepare`).
 que le chemin `prepare` + `start`.
 
 **Critère de sortie** :
-- [ ] Re-campagne 50 **et** 100 agents × 2500 ticks × 3 seeds, enchaînant les
-      runs **via `POST /api/control/reset`**.
-- [ ] Critères ADR-016 inchangés : |pente| énergie ≤ 0,005/tick, 0 extinction,
-      population = initiale sur 6/6.
-- [ ] Résultats consolidés versés dans `RAPPORT-ELEMENTS-OUVERTS.md` §5.1.
+- [x] Re-campagne 50 **et** 100 agents × 2500 ticks × 3 seeds, enchaînant les
+      runs **via `POST /api/control/reset`** — **exécutée le 08/10/2026** :
+      `start:50/12345 → reset ×5` enchaînant jusqu'à `reset:100/999`
+      (`scripts/reset-campaign.py`, session `--serve` unique).
+- [x] Critères ADR-016 inchangés : |pente| énergie ≤ 0,005/tick, 0 extinction,
+      population = initiale sur 6/6 — **obtenus 6/6** (|pente| ≤ 0,0037/tick,
+      0 mort).
+- [x] Résultats consolidés versés dans `RAPPORT-ELEMENTS-OUVERTS.md` §5.1 bis
+      (**preuve : commit du lot étape 2**, campagne 6/6 avec pentes identiques
+      à ADR-016 sur les 6 couples pop/seed).
+
+**Prérequis couvert au passage** : `reset` accepte une surcouche `config`
+(contrat `API_CONTRACTS.md` §3) — sans elle, aucune campagne chaînée ne peut
+changer de population entre deux runs.
 
 ### Étape 3 — Lot de cohérence documentaire — **Lot L**
 

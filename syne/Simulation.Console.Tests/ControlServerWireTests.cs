@@ -239,6 +239,44 @@ public class ControlServerWireTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Reset_WithConfig_BuildsTheNewRunWithThatSurcouche()
+    {
+        // Le reset doit accepter une surcouche comme start/prepare : sans elle,
+        // une campagne chaînée par reset ne peut pas changer de population
+        // (défaut initialCount=100) et rejouerait toujours le même scénario.
+        using var reset = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/reset"))
+        {
+            Content = JsonBody("{ \"seed\": 7, \"maxTicks\": 1, \"config\": { \"agents\": { \"initialCount\": 7 } } }"),
+        };
+
+        using HttpResponseMessage response = await _http.SendAsync(reset);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        JsonNode? body = await ReadJsonAsync(response);
+        Assert.Equal("reset", (string?)body!["action"]);
+        Assert.Equal(7, (int?)body["aliveCount"]);
+        Assert.Equal(7ul, (ulong?)body["seed"]);
+        await _server.Controller.StopAsync();
+    }
+
+    [Fact]
+    public async Task Reset_WithNonObjectConfig_IsRejected()
+    {
+        // Mêmes garde-fous que start/prepare : un type invalide doit produire un
+        // 400 explicite, jamais un repli silencieux sur le profil de référence.
+        using var reset = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/reset"))
+        {
+            Content = JsonBody("{ \"config\": \"pas-un-objet\" }"),
+        };
+
+        using HttpResponseMessage response = await _http.SendAsync(reset);
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+        JsonNode? body = await ReadJsonAsync(response);
+        Assert.Equal("invalid_config", (string?)body!["error"]);
+    }
+
+    [Fact]
     public async Task ControlledRun_MatchesBatchRun_TickForTick()
     {
         // SYNE-113/081 : le contrôle HTTP ne doit pas altérer la trajectoire.

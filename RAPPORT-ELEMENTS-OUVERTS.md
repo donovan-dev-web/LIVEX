@@ -236,13 +236,15 @@ seeds 12345 / 424242 / 999 + un second run 12345 pour le déterminisme.
 
 **Défauts résiduels découverts pendant les campagnes** :
 
-1. 🔴 **Le chemin `POST /api/control/reset` n'applique pas le profil de référence** :
-   `ResetAsync` appelle `StartAsync(seed, configJson: null)` → `PrepareCoreAsync` avec
-   `ConfigLoader.LoadDefaults()` (sans Eat/Drink recovery) — alors que `prepare` applique
-   `SimulationProfiles.ReferenceJson()`. Effet mesuré : seed 424242 → extinction t300 par
-   `reset` vs survie 1200/1200 par `prepare`. Tout run piloté long doit passer par
-   `prepare`+`start` en attendant correctif (proposer : même défaut de profil que
-   `prepare` dans `PrepareCoreAsync` quand `configJson` est null).
+1. ✅ **CLOS le 08/10/2026 — le chemin `POST /api/control/reset` appliquait le défaut
+   `ConfigLoader.LoadDefaults()` au lieu du profil de référence** (`ResetAsync` →
+   `StartAsync(seed, configJson: null)` → `PrepareCoreAsync`), alors que `prepare`
+   appliquait `SimulationProfiles.ReferenceJson()`. Effet mesuré le 30/09 : seed 424242 →
+   extinction t300 par `reset` vs survie 1200/1200 par `prepare`. **Correctif `ef878f21`** :
+   `PrepareCoreAsync` applique `ReferenceJson()` quand la surcouche est nulle ; `reset`
+   accepte en plus une surcouche `config` (contrat aligné, API_CONTRACTS §3). **Preuve** :
+   test `Reset_WithoutConfig_BuildsTheSameReferenceProfileAsPrepare` + campagne V2′
+   rejouée **par reset** le 08/10/2026 : 6/6 ✓ (voir §5.1 bis).
 2. 🟠 **Aucun flush au `finished`** : la fin d'un run ne flushera pas le dernier segment ni
    le rapport ; tout atterrit à la fermeture du flux (arrêt SYNE / reconnexion). Cohérent
    avec le §4.3, mais la lecture « rapport écrit à la fin de chaque run » du plan A2 ne
@@ -252,15 +254,42 @@ seeds 12345 / 424242 / 999 + un second run 12345 pour le déterminisme.
 
 **V3–V6 restent à exécuter** (voir table ci-dessous).
 
+### 5.1 bis — Campagne V2′ **par le chemin `reset`** (08/10/2026) : VALIDÉE 6/6
+
+Suite du correctif `ef878f21` (défaut 1 ci-dessus clos), la campagne ADR-016 a été
+rejouée **enchaînant les runs par `POST /api/control/reset`** (une seule session
+`--serve`, pop50 → pop100 portées par la surcouche `config` du reset) :
+`start:50/12345 → reset:50/424242 → reset:50/999 → reset:100/12345 →
+reset:100/424242 → reset:100/999`, 2500 ticks, critères ADR-016 inchangés.
+Métriques : flux WS segmenté par `runId` (2500 snapshots/run, décisions exactes
+125 000/250 000), outillage rejouable `scripts/reset-campaign.py`, artefacts
+`docs/campaign-runs/v2r-reset/campaign.json` (hors git).
+
+| Pop | Seed | Vivants (fin/init) | Extinction | Pente énergie (200 t) | Morts | Identique au chemin `prepare` (ADR-016) |
+| --: | --: | :-- | :-- | :-- | :-- | :-- |
+| 50 | 12345 | 50 / 50 | — | −0,0014/tick | 0 | ✓ (−0,0014) |
+| 50 | 424242 | 50 / 50 | — | −0,0037/tick | 0 | ✓ (−0,0037) |
+| 50 | 999 | 50 / 50 | — | −0,0027/tick | 0 | ✓ (−0,0027) |
+| 100 | 12345 | 100 / 100 | — | −0,0018/tick | 0 | ✓ (−0,0018) |
+| 100 | 424242 | 100 / 100 | — | −0,0028/tick | 0 | ✓ (−0,0028) |
+| 100 | 999 | 100 / 100 | — | −0,0025/tick | 0 | ✓ (−0,0025) |
+
+**6/6 : 0 extinction, 0 mort, |pente| ≤ 0,0037/tick < 0,005, population finale =
+initiale — le chemin piloté `reset` reproduit exactement le chemin `prepare`**
+(égalité bit à bit des critères ADR-016 sur les 6 couples pop/seed).
+
+**V3–V6 restent à exécuter** (voir table ci-dessous ; long-run retiré de la V0.1,
+arbitrage A2 de `ROADMAP-V01.md`).
+
 ### 5.2 Validations restantes
 
 Ces chantiers ne demandent **pas de décision ni de nouveau code** (ou très peu).
-V1 et V2 ont été exécutées le 30/09/2026 (§5.1) ; V2 devra être **rejouée** après le
-correctif du chemin `reset` et l'itération B1.
+V1 et V2 ont été exécutées le 30/09/2026 (§5.1), V2′ le 07/10 (ADR-016) et **V2′
+par `reset` le 08/10/2026 (§5.1 bis)** — restent V3, V4, V5, V6.
 
 | # | Validation | Critère | Source |
 | :-- | :-- | :-- | :-- |
-| V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | **EXÉCUTÉE le 07/10/2026 en périmètre élargi** (ADR-016) : défauts intégrés recalibrés B1, 50 **et** 100 agents × **2500 ticks** × 3 seeds — énergie stable **✓** (|pente| ≤ 0,0037/tick < 0,005, 0 extinction, 0 mort, population = initiale sur 6/6) ; part Eat/Drink ≥ 15 % **vide, pas remplie** : la faim moyenne ne dépasse jamais 70 avec ces défauts (critère requalifié, voir ADR-016 §Validation (c)). Reste à rejouer V2' sur le chemin `reset` une fois le correctif §5.1-D1 fait | Plan §4-B1/§7 ; `ADR-016` |
+| V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | **EXÉCUTÉE le 07/10/2026 en périmètre élargi** (ADR-016) : défauts intégrés recalibrés B1, 50 **et** 100 agents × **2500 ticks** × 3 seeds — énergie stable **✓** (|pente| ≤ 0,0037/tick < 0,005, 0 extinction, 0 mort, population = initiale sur 6/6) ; part Eat/Drink ≥ 15 % **vide, pas remplie** : la faim moyenne ne dépasse jamais 70 avec ces défauts (critère requalifié, voir ADR-016 §Validation (c)). **REJOUÉE par le chemin `reset` le 08/10/2026 : 6/6 ✓** — mêmes pentes que le chemin `prepare`, voir §5.1 bis | Plan §4-B1/§7 ; `ADR-016` |
 | V3 | **Jalons U7/U8 comme jalons transverses** | Cadence contrôlée, backpressure, lag, parcours UI complets ; stabilité long-run, reprise worker | `ROADMAP.md` §6 (U7 « validation produit partielle », U8 « non accepté comme jalon transverse ») |
 | V4 | Ingestion **réelle** de deux runs SYNE en CI (preuve J2/J3 ECHOS) | Les 2 tests skippés (binaire SYNE Release / serveur syne-mock) passent en continu | `docs/docs-echos/TESTING.md` §315 ; suite ECHOS : 2 skipped |
 | V5 | Recalibrage complet des benchmarks | Refaits après implémentation, aux jalons ph10 (T4) et avant validation v0.1 | `docs/docs-syne/PERFORMANCE.md` §118-124 |
