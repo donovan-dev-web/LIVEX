@@ -62,10 +62,10 @@ scientifiques (V2′ rejouée par le chemin `reset`, 6/6 conforme à ADR-016 ;
 benchmarks V5 refaits sur la machine de référence), le parcours J3 de bout en
 bout contre les composants réels et la validation transverse V3 (hors long-run)
 sont validés ; le support Windows est validé localement depuis le 08/10/2026
-(Lot W : manifestes, bancs portables, E2E 31/31, `--check`, exécutable natif),
-il reste à constater la CI `windows-latest`. Aucune release, publication ni tag
-avant que tout ne soit validé. L’expérience de rendu PRISM reste hors périmètre
-V0.1.
+(Lot W : manifestes, bancs portables, E2E 31/31, `--check`, exécutable natif)
+et constaté en CI le 08/10/2026 : **PR #527, 13/13 jobs verts** Linux +
+`windows-latest`. Aucune release, publication ni tag avant que tout ne soit
+validé. L’expérience de rendu PRISM reste hors périmètre V0.1.
 
 ## 2. Périmètre et méthode
 
@@ -306,10 +306,10 @@ Les chemins d’analyse du Launcher sont raccordés aux opérations headless de
 l’API ECHOS (J2B accepté). L’installation ECHOS Linux est validée (étape 9 de
 `ROADMAP-V01.md`, procédure en `docs/docs-launcher/INTEGRATION_CONTRACT.md`
 §10.3). Le parcours J3 de bout en bout contre les composants réels est acquis
-(étape 4, `J3RealComponentsEndToEndTests`). **Reste ouvert avant clôture : le
-constat CI `windows-latest`** — les validations locales Windows (étape 5,
-Lot W) sont faites et cochées au 08/10/2026 (208 tests verts, `--check`,
-exécutable natif).
+(étape 4, `J3RealComponentsEndToEndTests`). **Constat CI `windows-latest` : fait
+le 08/10/2026** (PR #527, 13/13 jobs verts) — les validations locales Windows
+(étape 5, Lot W) sont faites et cochées au 08/10/2026 (208 tests verts,
+`--check`, exécutable natif).
 
 ### SYNE — moteur réel
 
@@ -382,16 +382,17 @@ les écarts restants sont :
    la machine Windows** — `ManifestDetector`, `ProcessTreeKiller`,
    `ProcessRunExecutor`, `--check` validés (208 tests verts, aucun orphelin),
    avec trois défauts corrigés (apphost `livex-launcher.exe`, Job Object,
-   lecture du journal de session sous verrou). **Reste le constat des jobs CI
-   `windows-latest`**, E2E de campagne compris — il exige un push explicite
-   (arbitrage A4).
+   lecture du journal de session sous verrou). **Constat des jobs CI
+   `windows-latest`** : **fait le 08/10/2026** (PR #527, 13/13 jobs verts,
+   E2E de campagne compris).
 2. **PRISM** : rendu interactif Unreal et validation d’intégration — hors
    périmètre V0.1, porte d’intégration séparée.
-3. **Fiabilité des preuves** : un test de débit (§5) fragile sous charge
-   machine, une couverture mesurée avec deux classes exclues, et 13 tests
-   d’intégration qui ne dépendent que de la CI : ces réserves doivent rester
-   explicites tant qu’elles ne sont pas levées par des jobs CI ou des
-   correctifs dédiés.
+3. **Fiabilité des preuves** : le test de débit (§5) **n’est plus fragile** —
+   meilleur de 5 essais et deux assemblées SYNE exécutées en étapes
+   séquentielles en CI (`PERFORMANCE.md` §9.4), correctif validé par 13/13 jobs
+   verts ; restent explicites, tant qu’aucun job dédié ne les lève, une couverture
+   mesurée avec deux classes exclues et 13 tests d’intégration qui ne dépendent
+   que de la CI.
 
 ### ConclusionLe dépôt contient une base logicielle substantielle et testée pour le Launcher,
 SYNE, ECHOS et `syne-mock` (suites vertes, 0 échec, couvertures au-dessus

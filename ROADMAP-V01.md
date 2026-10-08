@@ -203,10 +203,9 @@ Items encore ouverts de `launcher/ROADMAP-V1.md` Jalon 3 :
       (venv `.venv\Scripts`), parcours campagne → interruption → reprise →
       analyse → paquet `.livexp` vérifié ; **aucun processus orphelin** après
       la suite (arbre de processus confiné).
-      *Reste le constat CI (Linux **et** Windows) : la branche
-      `feature/windows-validation-v01` n'a encore **aucun** run GitHub Actions
-      (API : `total_count = 0` au 08/10) — les jobs `windows-latest` n'ont jamais
-      tourné, ils s'exécuteront au prochain push (A4).*
+      *Constat CI **fait** le 08/10/2026 (PR #527 vers `develop`) : les 13 jobs
+      du workflow — dont les 4 `windows-latest` — sont **13/13 verts** (run
+      `37843436072`).*
 - [x] **Correctifs Lot W** apportés au parcours (preuve : commit du Lot W) —
       tous découverts par la suite E2E Windows :
   - `StubInstall.WaitForHealthyAsync` ne traitait que `HttpRequestException` :
@@ -305,15 +304,13 @@ Node 25.9.0, Python 3.12.10)* :
       expire. Conséquence traitée : banc de sonde (`Sonde_health_ready_repond`)
       maintenu vivant au-delà du délai de sondage ; assertions inchangées.
 
-**Critère de sortie** : [ ] CI verte sur `ubuntu-latest` **et**
+**Critère de sortie** : [x] CI verte sur `ubuntu-latest` **et**
 `windows-latest`, y compris l'E2E de campagne, **et** validations locales
 Windows ci-dessus effectuées. *(Validations locales **Lot W faites** le
 08/10/2026 : build `--warnaserror` 0 avertissement + **162 unit + 15 intégration
-+ 31 E2E = 208 tests, 0 échec** + `--check` + exécutable natif. **Reste le
-constat CI** : aucun run GitHub Actions n'existe pour la branche
-`feature/windows-validation-v01` (API `total_count = 0`) ; les jobs
-`windows-latest` s'exécuteront au prochain push — A4 : pas de push sans demande
-explicite.)*
++ 31 E2E = 208 tests, 0 échec** + `--check` + exécutable natif. **Constat CI fait
+le 08/10/2026** : PR #527, **13/13 jobs verts** sur les deux plateformes, E2E de
+campagne compris.)*
 
 ### Étape 6 — Validation transverse V3 (stabilité) — **Lot L**
 
@@ -539,16 +536,20 @@ La V0.1 peut être annoncée si et seulement si :
    paquet `.livexp` contre SYNE publié `win-x64` — **fait** : E2E **31/31**
    (correctifs de banc : attente de santé Windows, manifeste `executable.windows`,
    libération des compositions).
-4. [ ] Cocher les étapes 5 et 4 avec les preuves CI `windows-latest` —
-   **bloqué sur un push explicite (A4)** : aucun run GitHub Actions n'existe
-   encore pour cette branche (API : `total_count = 0`), donc les jobs
-   `windows-latest` n'ont jamais tourné. Les validations locales sont faites et
-   cochées ; il reste à constater la CI après push.
+4. [x] Cocher les étapes 5 et 4 avec les preuves CI `windows-latest` —
+   **fait le 08/10/2026** : la PR #527 vers `develop` a déclenché les 13 jobs du
+   workflow, **13/13 verts** (run `37843436072`, commit `270e586`), dont les 4
+   jobs `windows-latest` (`syne-dotnet-windows`, `echos-python-windows`,
+   `syne-mock-node-windows`, `launcher-dotnet-windows` avec l'E2E de campagne)
+   et leurs homologues Linux.
 
-Suite immédiate (Lot W) : demander le **push** de
-`feature/windows-validation-v01`, constater les 4 jobs `windows-latest`
-(`syne-dotnet-windows`, `echos-python-windows`, `syne-mock-node-windows`,
-`launcher-dotnet-windows`) et le job Linux, puis traiter toute régression CI.
+Suite immédiate (Lot W) : **effectuée** — push de la branche et PR #527 ouverte,
+les 4 jobs `windows-latest` **et** les 9 jobs Linux ont tourné. Quatre défauts de
+CI, invisibles tant que ces jobs n'avaient jamais tourné, ont été corrigés puis
+revalidés : glob shell non étendu par PowerShell (`npm test`), saut dynamique
+xunit non converti en « ignoré », verrou mortel `CloseAsync`/`ReceiveAsync` du
+serveur d'observabilité SYNE, banc de cadence et plancher de débit mesurés sous
+contention entre assemblées de tests. Le merge se fait en squash & merge.
 
 Ce qui **reste faisable sur Linux** : le suivi des workflows CI
 (`windows-latest` tourne sur GitHub, pas sur la machine Windows) et les
@@ -560,9 +561,8 @@ locales étant faites.
 ## Points restés ouverts dans ce document
 
 - **Bascule Windows** : **effectuée le 08/10/2026** (§8) — validations locales
-  Lot W terminées et cochées (étapes 4 et 5) ; il reste à constater la CI
-  `windows-latest`, ce qui exige un **push** de la branche, autorisé seulement
-  sur demande explicite (A4).
+  Lot W terminées et cochées (étapes 4 et 5), **constat CI vert le 08/10/2026**
+  : PR #527, **13/13 jobs** Linux + `windows-latest`.
 - **Défauts trouvés uniquement sur Windows** (corriger avant toute release) :
   l'apphost `livex-launcher.exe` ne démarrait pas (manifeste `app.manifest`
   invalide) et l'export / l'affichage des journaux de session échouaient en
