@@ -3,7 +3,7 @@
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
 **Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `GITFLOW.md`, `VERSIONING.md`, `CI_CD.md`, `docs/governance/*`
+**Dépend de** : `GITFLOW.md`, `VERSIONING.md`, `CI_CD.md`, `NAMING_CONVENTIONS.md`, `docs/governance/*`
 
 ---
 
@@ -31,7 +31,7 @@ Suivre `GITFLOW.md` :
 - [ ] Tests : nouveaux tests unitaires pour toute fonctionnalité ; **le déterminisme de SYNE n'est jamais cassé**.
 - [ ] Couverture maintenue ≥ 80 % sur le composant touché.
 - [ ] Documentation mise à jour (doc des composants + `CHANGELOG.md` + docs). **Une PR qui modifie le comportement sans MAJ de doc est refusée.**
-- [ ] Style : respecter les conventions du langage (C# .editorconfig / lint TS / format python black, etc. — cf. `CI_CD.md`).
+- [ ] Style : respecter `NAMING_CONVENTIONS.md` (identifiants en anglais, commentaires en français, règles par langage) et les outils du langage (C# .editorconfig / lint TS / format python black, etc. — cf. `CI_CD.md`).
 - [ ] Pour les changements `syne-mock/`, exécuter `npm test --prefix syne-mock` et vérifier que les comportements ajoutés ne sont pas présentés comme équivalents à SYNE.
 - [ ] Pour PRISM-LDK, valider la compilation dans l'hôte Unreal de développement et son intégration dans le projet PRISM final.
 - [ ] Le contrat de transport n'est modifié que selon `VERSIONING.md` (evol adhesion `MINOR`, breaking `MAJOR`).
@@ -63,4 +63,5 @@ Suivre `GITFLOW.md` :
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 8 octobre 2026 | Référence à `NAMING_CONVENTIONS.md` (dépendance + checklist PR) | Formalisation des conventions de nommage |
 | 17 septembre 2026 | Création | — |

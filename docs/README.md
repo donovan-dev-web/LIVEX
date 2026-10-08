@@ -13,6 +13,9 @@ historiques conservées pour leur valeur d'archive.
   projets Unreal.
 - [Vision](../VISION.md) · [Feuille de route](../ROADMAP.md) ·
   [Glossaire](../GLOSSARY.md).
+- [Convention de nommage](../NAMING_CONVENTIONS.md) — identifiants en anglais,
+  commentaires en français, règles par langage (C#, Python, JS, C++/Unreal) et
+  structure des commentaires dans le code.
 
 ## Documentation par composant
 
