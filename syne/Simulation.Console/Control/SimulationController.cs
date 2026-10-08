@@ -138,6 +138,17 @@ public sealed class SimulationController : IAsyncDisposable
                 get { lock (_gate) return _worldDescription; }
             }
 
+            /// <summary>
+            /// Options effectives du monde préparé (null tant qu'aucun monde n'est
+            /// préparé). Exposées pour que les tests puissent vérifier que deux
+            /// chemins de préparation (prepare, reset) construisent exactement le
+            /// même profil — cf. défaut 1 du RAPPORT-ELEMENTS-OUVERTS §5.1.
+            /// </summary>
+        public SimulationOptions? PreparedOptions
+            {
+                get { lock (_gate) return _preparedOptions; }
+            }
+
             /// <summary>Construit le monde déterministe et le laisse en état Ready.</summary>
         public async Task<Simulation.Core.World.WorldDescription> PrepareAsync(
                 ulong? seed, string? configJson, int? ticksPerSecond = null,
@@ -161,8 +172,15 @@ public sealed class SimulationController : IAsyncDisposable
                 // La surcouche reste en JSON brut jusqu'ici : la désérialiser en
                 // SimulationOptions la rendrait complète et écraserait le profil de
                 // référence avec les valeurs par défaut du type (cf. MergeJson).
+                // Sans surcouche, le profil de référence est appliqué explicitement :
+                // le chemin reset (configJson null) doit produire exactement le même
+                // monde que prepare, sans jamais dépendre des défauts intégrés
+                // (défaut 1, RAPPORT-ELEMENTS-OUVERTS §5.1 ; doctrine ADR-016).
+                string effectiveConfig = string.IsNullOrWhiteSpace(configJson)
+                    ? SimulationProfiles.ReferenceJson()
+                    : configJson;
                 (SimulationOptions options, ulong effectiveSeed) = SimulationFactory.ResolveOptions(
-                    ConfigLoader.LoadDefaults(), configJson, seed);
+                    ConfigLoader.LoadDefaults(), effectiveConfig, seed);
                 if (ticksPerSecond is not null)
                 {
                     if (ticksPerSecond <= 0)
