@@ -294,21 +294,6 @@ checksums identiques). **Écart constaté** : N=1000 à ~6 t/s vs cible 10
 (≈ 1,7×) documenté comme chantier d'optimisation (perception), hors
 blocage V0.1 (scénarios ≤ 100 agents ~45× au-dessus de la cible).
 
-### Étape 8 — Publication multiplateforme — **L → W**
-
-**Rédigeable sur Linux (Lot L)** :
-- [ ] Artefacts `linux-x64` et `win-x64` produits en CI pour SYNE, ECHOS,
-      `syne-mock` et le Launcher (aujourd'hui `release.yml` : ubuntu seul).
-- [ ] Publication des manifestes alignés sur les artefacts produits.
-- [ ] Tags composants posés selon `VERSIONING.md` §4.
-
-**À valider sur Windows (Lot W)** :
-- [ ] Installation des artefacts `win-x64` à partir des artefacts de CI sur la
-      machine Windows propre.
-
-**Critère de sortie** : [ ] Release candidate installable sur les deux OS à
-partir des artefacts de CI.
-
 ---
 
 ## 4. P1 — Avant annonce (fortement recommandé)
@@ -395,7 +380,7 @@ tombstones annotés et mentions négatives) — **preuve : commit du lot étape
 | Sujet | Source | Raison du report |
 | :-- | :-- | :-- |
 | PRISM & mode Immersion | `docs/docs-prism/ROADMAP.md` (6 étapes), V6 | Porte d'intégration séparée, chantier très lourd |
-| Installateur graphique, mise à jour auto, `--check` exhaustif | `ROADMAP-V1.md` J6 | Les artefacts de l'étape 8 suffisent à la V0.1 |
+| Installateur graphique, mise à jour auto, `--check` exhaustif | `ROADMAP-V1.md` J6 | Reporté : aucune release, tag ni publication avant validation complète |
 | Stabilité long-run 12 h **et** 72 h | Arbitrage A2 (ex-étape 6), `ROADMAP-V1.md` J5 | **Hors périmètre V0.1** — éventuellement pour une V1 stable |
 | Docker compose / jalon T6 | Arbitrage A1 (ex-étape 10) | **Supprimé définitivement** — plus de Docker, le Launcher couvre l'installation |
 | ADR D4 (intentions partagées), D6 (institutionnalisation) | `RAPPORT §3.1` | Arbitrés reportés V2 |
@@ -431,7 +416,7 @@ Ordre obligatoire — sans dates fermes — tags de machine
         v                                        [W] validations locales
 [L] P0-7 V5 benchmarks (machine i7-8750H)        [W] P0-5 validation + CI
         │                                        [W] P0-4 E2E Windows
-        └──────────────> [L+W] P0-8 publication multiplateforme
+        └────────────────────────────────────────┘
                                   │
                                   v
                        DÉCLARATION « LIVEX V0.1 »
@@ -475,12 +460,10 @@ La V0.1 peut être annoncée si et seulement si :
    `--check` / `EnvironmentChecker`, build + tests Launcher sous Windows.
 3. **Étape 4 (E2E Windows)** : campagne → interruption → reprise → analyse →
    paquet `.livexp` contre SYNE publié `win-x64`.
-4. **Étape 8 (installation)** : installer la release candidate `win-x64`
-   à partir des artefacts de CI et vérifier le parcours complet.
-5. Cocher les étapes 5, 4 et 8 avec les preuves CI `windows-latest`.
+4. Cocher les étapes 5 et 4 avec les preuves CI `windows-latest`.
 
 Ce qui **reste faisable sur Linux** pendant que la machine Windows travaille :
-toute la partie rédactionnelle des étapes 5 et 8, le suivi des workflows CI
+la partie rédactionnelle restante de l'étape 5, le suivi des workflows CI
 (`windows-latest` tourne sur GitHub, pas sur ta machine) et les correctifs de
 bugs remontés.
 

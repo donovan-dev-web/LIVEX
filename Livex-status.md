@@ -59,11 +59,12 @@ de 80 % requis.
 **Ces résultats ne signifient pas que toutes les capacités prévues de LIVEX
 sont livrées.** Le plan de sortie fait foi : `ROADMAP-V01.md`. Les campagnes
 scientifiques (V2′ rejouée par le chemin `reset`, 6/6 conforme à ADR-016 ;
-benchmarks V5 refaits sur la machine de référence) sont validées, mais il
-reste à prouver le parcours J3 de bout en bout contre les composants réels, à
-ajouter le support Windows (manifestes et CI), à exécuter la validation
-transverse V3 (hors long-run) et à publier les artefacts multiplateformes.
-L’expérience de rendu PRISM reste hors périmètre V0.1.
+benchmarks V5 refaits sur la machine de référence), le parcours J3 de bout en
+bout contre les composants réels et la validation transverse V3 (hors long-run)
+sont validés ; il reste à valider sous Windows le support rédigé (manifestes,
+bancs portables et CI `windows-latest`). Aucune release, publication ni tag
+avant que tout ne soit validé. L’expérience de rendu PRISM reste hors périmètre
+V0.1.
 
 ## 2. Périmètre et méthode
 
@@ -276,8 +277,9 @@ ci-dessus.
   ne démontrent pas que leurs simulations sont scientifiquement équivalentes.
 - Les tests du Launcher couvrent les règles du Launcher, l’infrastructure et
   les parcours E2E contre un SYNE publié ; la preuve de bout en bout complète
-  (campagne → interruption → reprise → analyse → paquet, J3) reste à établir
-  hors de ces tests.
+  (campagne → interruption → reprise → analyse → paquet, J3) est automatisée
+  par `J3RealComponentsEndToEndTests` contre SYNE publié et ECHOS réel
+  (étape 4) — le banc est aussi déclaré sur `windows-latest` (constat à faire).
 - Aucun résultat automatisé PRISM ne doit être déduit de la réussite des tests
   des autres composants.
 
@@ -300,8 +302,9 @@ supervisé + batch `reference`, J2A accepté — `launcher/V1-CAPABILITY-MATRIX.
 Les chemins d’analyse du Launcher sont raccordés aux opérations headless de
 l’API ECHOS (J2B accepté). L’installation ECHOS Linux est validée (étape 9 de
 `ROADMAP-V01.md`, procédure en `docs/docs-launcher/INTEGRATION_CONTRACT.md`
-§10.3). **Reste ouvert avant clôture : le parcours J3 de bout en bout contre
-les composants réels** (étape 4) et les validations Windows (étape 5).
+§10.3). Le parcours J3 de bout en bout contre les composants réels est acquis
+(étape 4, `J3RealComponentsEndToEndTests`). **Reste ouvert avant clôture : les
+validations Windows** (étape 5 — Lot W et constat CI `windows-latest`).
 
 ### SYNE — moteur réel
 
@@ -316,11 +319,11 @@ manifeste `component.json` et le contrat batch (arguments, readiness, arrêt
 authentifié) sont publiés et acceptés (J2A), et la campagne V2′ rejouée
 **par le chemin `reset`** est conforme aux critères ADR-016 sur 6/6 couples
 population/graine (`RAPPORT-ELEMENTS-OUVERTS.md` §5.1 bis). Lancer le service
-de contrôle équivaut désormais au contrat attendu par le Launcher, sous
-réserve de la preuve d’extrémité J3.
+de contrôle équivaut désormais au contrat attendu par le Launcher ; la preuve
+d’extrémité J3 est fournie par le parcours automatisé de l’étape 4.
 
-**Limite résiduelle.** La preuve reste à répéter dans le parcours complet du
-Launcher (étape 4), et les benchmarks V5 de référence sont ceux de
+**Limite résiduelle.** La preuve est répétée dans le parcours complet du
+Launcher (étape 4) ; les benchmarks V5 de référence sont ceux de
 `docs/docs-syne/PERFORMANCE.md` §9 (machine i7-8750H, 08/10/2026).
 
 ### ECHOS
@@ -336,8 +339,9 @@ démarrer, sonder et arrêter le service ECHOS.
 par le service d’analyse du Launcher (`/analysis/run`, `/analysis/experiment`
 et `/analysis/report`, J2B accepté). L’installation Linux est validée sur
 machine propre (venv vierge, 212 Mo, imports et tests verts — étape 9).
-**Reste ouvert : l’acceptation pilotée depuis l’interface du Launcher** dans
-le parcours J3 (étape 4).
+L’acceptation pilotée depuis l’interface du Launcher est couverte par le
+parcours J3 (étape 4 : analyses individuelles et rapport archivé contre ECHOS
+réel).
 
 ### `syne-mock`
 
@@ -365,42 +369,31 @@ périmètre V0.1** (portes d’intégration séparées,
 
 ## 7. Limites et travaux encore nécessaires
 
-Le plan de sortie fait foi : **`ROADMAP-V01.md`**. Les étapes 1, 2, 3, 7, 9,
-10 et 11 y sont cochées avec leurs preuves ; les écarts restants sont :
+Le plan de sortie fait foi : **`ROADMAP-V01.md`**. Les étapes 1, 2, 3, 4, 6,
+7, 9, 10 et 11 y sont cochées avec leurs preuves (étape 5 : Lot L committé) ;
+les écarts restants sont :
 
-1. **Parcours J3 de bout en bout (étape 4)** : campagne Console réelle avec
-   interruption → reprise sans rejouer un run réussi, archivage des artefacts
-   d’analyse dans le paquet, contrôle des erreurs composant par composant, et
-   E2E complet au-delà de `PublishedSyneCampaignEndToEndTests.cs` — en CI Linux
-   puis CI Windows.
-2. **Support Windows (étape 5)** : manifestes sans clé `executable.windows`,
-   CI 100 % `ubuntu-latest` — rédiger les clés par OS et les jobs
-   `windows-latest`, puis valider localement sous Windows `ManifestDetector`,
-   `ProcessTreeKiller`, `ProcessRunExecutor` et `--check`.
-3. **Validation transverse V3 (étape 6, hors long-run — arbitrage A2)** :
-   cadence contrôlée, backpressure et lag mesurés (sinon affichage « non
-   fourni »), reprise du worker ECHOS après mort violente du flux SYNE, parcours
-   UI complets du Launcher.
-4. **Publication multiplateforme (étape 8)** : artefacts `linux-x64` et
-   `win-x64` produits en CI pour SYNE, ECHOS, `syne-mock` et le Launcher,
-   manifestes alignés et tags composants selon `VERSIONING.md`.
-5. **PRISM** : rendu interactif Unreal et validation d’intégration — hors
+1. **Validation Windows de l'étape 5 (Lot W)** : les manifestes déclarent les
+   clés `executable.windows`, les bancs sont portables et les jobs
+   `windows-latest` sont en place — reste la validation locale sous Windows
+   (`ManifestDetector`, `ProcessTreeKiller`, `ProcessRunExecutor`, `--check`)
+   et le constat des jobs CI `windows-latest`, E2E de campagne compris.
+2. **PRISM** : rendu interactif Unreal et validation d’intégration — hors
    périmètre V0.1, porte d’intégration séparée.
-6. **Fiabilité des preuves** : un test de débit (§5) fragile sous charge
+3. **Fiabilité des preuves** : un test de débit (§5) fragile sous charge
    machine, une couverture mesurée avec deux classes exclues, et 13 tests
    d’intégration qui ne dépendent que de la CI : ces réserves doivent rester
    explicites tant qu’elles ne sont pas levées par des jobs CI ou des
    correctifs dédiés.
 
-### Conclusion
-
-Le dépôt contient une base logicielle substantielle et testée pour le Launcher,
-SYNE, ECHOS et `syne-mock` (1 205 tests verts, 0 échec, couvertures au-dessus
+### ConclusionLe dépôt contient une base logicielle substantielle et testée pour le Launcher,
+SYNE, ECHOS et `syne-mock` (suites vertes, 0 échec, couvertures au-dessus
 de 80 %), ainsi qu’un plugin PRISM hors périmètre de sortie. Les contrats
-inter-composants (J2A, J2B), l’installation ECHOS Linux et les campagnes
-scientifiques rejouées par `reset` sont désormais établis ; ce qui manque pour
-déclarer **LIVEX V0.1** tient aux preuves d’extrémité (J3), au support
-Windows, à la validation V3 et à la publication multiplateforme, toutes
-inscrites dans `ROADMAP-V01.md`. Ce rapport décrit **l’état du code versionné
+inter-composants (J2A, J2B), l’installation ECHOS Linux, les campagnes
+scientifiques rejouées par `reset`, le parcours J3 de bout en bout et la
+validation V3 sont établis ; ce qui manque pour déclarer **LIVEX V0.1** tient
+à la validation Windows (Lot W et CI `windows-latest`) inscrite dans
+`ROADMAP-V01.md`. Aucune release, tag ni publication n’est programmé avant
+validation complète. Ce rapport décrit **l’état du code versionné
 et des validations réalisées au 08/10/2026**, et non une certification que
 toutes les fonctionnalités V1 prévues sont opérationnelles.
