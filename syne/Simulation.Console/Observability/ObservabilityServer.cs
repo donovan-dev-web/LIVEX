@@ -211,7 +211,7 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
                 _ = SendTextAsync(session, late).ConfigureAwait(false);
             }
 
-            _ = Task.Run(() => DrainAsync(session, token), CancellationToken.None);
+            session.Drain = Task.Run(() => DrainAsync(session, token), CancellationToken.None);
         }
     }
 
@@ -224,14 +224,15 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
     {
         WebSocket socket = session.Socket;
         byte[] buffer = new byte[ReceiveBufferSize];
+        using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(token, session.Stop.Token);
         try
         {
-            while (socket.State == WebSocketState.Open && !token.IsCancellationRequested)
+            while (socket.State == WebSocketState.Open && !linked.IsCancellationRequested)
             {
-                await socket.ReceiveAsync(buffer, token).ConfigureAwait(false);
+                await socket.ReceiveAsync(buffer, linked.Token).ConfigureAwait(false);
             }
         }
-        catch (Exception) when (token.IsCancellationRequested || socket.State != WebSocketState.Open)
+        catch (Exception) when (linked.IsCancellationRequested || socket.State != WebSocketState.Open)
         {
             // fermeture attendue ou client parti
         }
@@ -242,6 +243,11 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
         finally
         {
             RemoveClient(socket, session);
+            // La réception est terminée : c'est le seul endroit sûr pour fermer.
+            // Sur Windows, un CloseAsync lancé pendant qu'une ReceiveAsync est en
+            // vol se mort avec elle (WebSocketBase.TakeLocks / Monitor.Enter) et
+            // fige l'appelant — d'où cet ordre strict, jamais l'inverse.
+            await SafeCloseAsync(socket).ConfigureAwait(false);
         }
     }
 
@@ -250,7 +256,18 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
         _clients.TryRemove(socket, out _);
         if (_sessions.TryRemove(session, out _))
         {
-            _ = SafeCloseAsync(socket);
+            // On termine d'abord la réception en vol ; la fermeture viendra du
+            // `finally` de DrainAsync (réception finie) ou de DisposeAsync.
+            // Fermer ici, tant que la réception tourne, reproduirait le verrou
+            // mortel Windows décrit dans DrainAsync.
+            try
+            {
+                session.Stop.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Session déjà démontée
+            }
         }
     }
 
@@ -289,10 +306,37 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
         CancellationTokenSource? cts = _cts;
         cts?.Cancel();
 
-        // Fermetures réellement attendues : un CloseAsync en feu et forget pouvait
-        // s'exécuter après la libération du serveur.
+        // Ordre strict : on laisse chaque réception en vol se terminer AVANT de
+        // fermer son socket (voir DrainAsync). Fermer d'abord figerait l'appelant
+        // sur Windows, où CloseAsync et ReceiveAsync concurrents se disputent le
+        // même verrou interne au WebSocket.
         foreach (ClientSession session in _sessions.Keys)
         {
+            try
+            {
+                session.Stop.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Session déjà démontée
+            }
+
+            Task? drain = session.Drain;
+            if (drain is not null)
+            {
+                try
+                {
+                    await drain.WaitAsync(CloseTimeout).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Réception toujours en vol au-delà du délai : on ne ferme PAS
+                    // (fermer avec une réception en vol est justement ce qui fige
+                    // Windows). Le socket est abandonné à la fin du processus.
+                    continue;
+                }
+            }
+
             await SafeCloseAsync(session.Socket).ConfigureAwait(false);
         }
 
@@ -331,5 +375,11 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
         public WebSocket Socket { get; } = socket;
 
         public SemaphoreSlim SendGate { get; } = new(initialCount: 1);
+
+        /// <summary>Arrêt propre de la réception de ce client (retrait ou démontage).</summary>
+        public CancellationTokenSource Stop { get; } = new();
+
+        /// <summary>Boucle de réception du client : à terminer avant toute fermeture.</summary>
+        public Task? Drain { get; set; }
     }
 }

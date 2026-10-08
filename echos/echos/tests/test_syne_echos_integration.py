@@ -86,7 +86,7 @@ def _json_request(url: str, method: str, body: dict | None = None) -> dict:
 def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
     assert SYNE_DLL.exists(), f"Build the SYNE Release console first: {SYNE_DLL}"
     config_path = tmp_path / "syne-e2e.json"
-    config_path.write_text(json.dumps({"agents": {"initialCount": 3}}))
+    config_path.write_text(json.dumps({"agents": {"initialCount": 3}}), encoding="utf-8")
     port = _free_port()
     control_port = _free_port()
     process = subprocess.Popen(
@@ -123,7 +123,7 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
             {
                 "seed": 17,
                 "maxTicks": 200000,
-                "config": json.loads(config_path.read_text()),
+                "config": json.loads(config_path.read_text(encoding="utf-8")),
             },
         )
         assert started["runId"]

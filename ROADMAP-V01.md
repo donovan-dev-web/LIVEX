@@ -566,9 +566,25 @@ locales étant faites.
 - **Défauts trouvés uniquement sur Windows** (corriger avant toute release) :
   l'apphost `livex-launcher.exe` ne démarrait pas (manifeste `app.manifest`
   invalide) et l'export / l'affichage des journaux de session échouaient en
-  violation de partage — les deux corrigés et couverts par les suites du Lot W,
-  mais **non couverts par un test dédié** : ajouter un test qui lance
-  l'apphost publié et un test d'export du journal pendant l'écriture.
+  violation de partage — les deux corrigés et **couverts par un test dédié**
+  (`AppHostLaunchTests`, `SessionFileJournalTests` — ajoutés le 08/10/2026,
+  211 tests Launcher au total).
+- **Suite complète rejouée sous Windows le 08/10/2026** (avant la PR) — trois
+  défauts supplémentaires trouvés et corrigés, tous invisibles sur Linux :
+  1. **SYNE** : verrou mortel dans `ObservabilityServer` — `DisposeAsync`
+     fermait le socket pendant qu'une `ReceiveAsync` était en vol ; sur Windows
+     (`WebSocketBase.TakeLocks` / `Monitor.Enter`) les deux fils s'attendaient
+     sans fin et **2 tests sur 4 de la classe WebSocket pétaient**, le testhost
+     restant bloqué. Fermeture ordonnée : annuler la réception → attendre la
+     boucle → fermer. Vérifié **10/10 exécutions** puis 79 + 514 tests SYNE verts.
+  2. **ECHOS** : 10 tests échouaient sous Windows — lectures de fixtures UTF-8
+     sans `encoding="utf-8"` (lues en ANSI cp1252) et 3 contrats d'adaptateur
+     purement POSIX (bit d'exécution, lancement du script sans `cmd /c`).
+     43 appels d'I/O rendus explicites + adaptateur `.cmd` via `COMSPEC`.
+  3. **syne-mock** : 2 tests de fermeture gracieuse inapplicables (Windows ne
+     livre pas `SIGTERM`/`SIGINT` : `child.kill` équivaut à `TerminateProcess`)
+     → ajournés avec motif ; le contrôle du bit d'exécution POSIX est désormais
+     conditionné à la plateforme. **44 pass / 0 fail / 2 skip**.
 - Ce document est un plan, pas un constat : chaque case passe à
   `[x]` uniquement avec sa preuve (workflow, test ou décision) et un commit
   local (A4).

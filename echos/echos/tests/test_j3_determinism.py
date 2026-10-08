@@ -20,7 +20,7 @@ WINDOW = 100
 
 
 def _load(name: str) -> dict:
-    return json.loads((FIXTURES / name).read_text())
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
 def _community_history(snapshot: dict) -> list[dict]:
@@ -72,7 +72,7 @@ def test_emergence_score_is_stable_and_bounded_on_replay():
 
 
 def test_last_emergence_frame_matches_golden():
-    golden = json.loads((GOLDEN / "analysis_golden.json").read_text())
+    golden = json.loads((GOLDEN / "analysis_golden.json").read_text(encoding="utf-8"))
     last = run(ticks=10)[-1]
 
     assert last == golden["EmergenceIndicators"]
