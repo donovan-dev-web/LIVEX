@@ -233,16 +233,34 @@ Windows ci-dessus effectuées.
 Couvre les critères `ROADMAP.md` U7/U8 encore « non acceptés comme preuves de
 release ». **La stabilité long-run est exclue** (arbitrage A2) :
 
-- [ ] Cadence contrôlée, backpressure et lag mesurés (sinon affichage
-      « non fourni », jamais de mesure fabriquée).
-- [ ] Reprise du worker ECHOS après mort violente du flux SYNE
-      (défaut résiduel 3 du `RAPPORT-ELEMENTS-OUVERTS.md` §5.1).
-- [ ] Parcours UI complets du Launcher (états vides, erreurs, verrouillages).
+- [x] Cadence contrôlée, backpressure et lag mesurés (sinon affichage
+      « non fourni », jamais de mesure fabriquée) — **fait le 08/10/2026** :
+      `scripts/v3-campaign.py`, 3 phases × 2 passes (100 et 50 t/s), artefacts
+      `docs/campaign-runs/v3/results-{100,50}tps.json` + rapport `RAPPORT-ELEMENTS-OUVERTS.md` §5.3.
+      Résultats : cadence 44–77 t/s (0,76–0,96×), base figée pendant le gel du
+      consommateur puis rattrapage (19 ticks de retard final à 100 t/s),
+      0 trou à 50 t/s / 1 à 100 t/s. **Défaut découvert et corrigé** : le moteur
+      tombait à 1,5 t/s avec un client lent (`TimeoutException` non filtrée →
+      client jamais retiré) — §5.1 défaut 4, test
+      `ObservabilityServer_ClientThatStopsReading_IsRemovedAndBroadcastKeepsWorking`,
+      suite SYNE 593/593.
+- [x] Reprise du worker ECHOS après mort violente du flux SYNE
+      (défaut résiduel 3 du `RAPPORT-ELEMENTS-OUVERTS.md` §5.1) — **fait le
+      08/10/2026** : test automatisé
+      `test_worker_reconnects_after_violent_syne_death` (suite U8), 3/3 :
+      constat 0,01 s, reconnexion 0,55–0,60 s, second run réingéré.
+      *Le défaut 3 lui-même (détection bloquée en `recv` sans trame) reste ouvert
+      et est confirmé par la campagne V3.*
+- [x] Parcours UI complets du Launcher (états vides, erreurs, verrouillages) —
+      **couvert le 08/10/2026** par les 66 tests ViewModel de
+      `launcher/Launcher.Tests.Unit/Presentation/` (5 fichiers) ; la revue
+      visuelle des écrans reste au Jalon 4 (`launcher/ROADMAP-V1.md`).
 
 ~~Stabilité long-run ≥ 12 h~~ → **retirée du périmètre V0.1** (A2), voir P2.
 
-**Critère de sortie** : [ ] Rapport de campagne V3 avec résultats attachés
-(hors long-run).
+**Critère de sortie** : [x] Rapport de campagne V3 avec résultats attachés
+(hors long-run) — **`RAPPORT-ELEMENTS-OUVERTS.md` §5.3 +
+`docs/campaign-runs/v3/results-{100,50}tps.json` (08/10/2026)**.
 
 ### Étape 7 — Recalibrage des benchmarks (V5) — **Lot L**
 

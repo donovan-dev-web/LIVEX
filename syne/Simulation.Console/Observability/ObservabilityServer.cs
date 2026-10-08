@@ -145,10 +145,14 @@ public sealed class ObservabilityServer : IObservabilitySink, IObservabilityDema
                 .ConfigureAwait(false);
             return true;
         }
-        catch (Exception exception) when (exception is WebSocketException or OperationCanceledException or ObjectDisposedException or InvalidOperationException)
+        catch (Exception exception) when (exception is WebSocketException or OperationCanceledException or ObjectDisposedException or InvalidOperationException or TimeoutException)
         {
             // Client mort, trop lent, ou déjà coupé : on le retire, on ne
-            // remonte jamais l'erreur au simulateur.
+            // remonte jamais l'erreur au simulateur. TimeoutException est
+            // celle de WaitAsync(SendTimeout) (V3, 08/10/2026) : sans elle dans
+            // le filtre, un client figé n'était jamais retiré, chaque trame
+            // rebloquait 2 s et la cadence moteur se couplait au consommateur —
+            // le run devait continuer, pas le client.
             RemoveClient(client, session);
             return false;
         }
