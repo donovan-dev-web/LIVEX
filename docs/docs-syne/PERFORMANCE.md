@@ -113,15 +113,14 @@ marge très large (≈ 500× le budget perception 20 ms) pour rester **détermin
 Le balayage est borné : une requête de rayon R ne visite que la **fenêtre de 3×3 cellules**
 qui l'intersecte (jamais la population entière) — cf. `QueryCircle_ScanWindowIsCellBounded`.
 
----
-
-## Points restés ouverts dans ce document
+---## Points restés ouverts dans ce document
 - Benchmarks V1 conservés comme référence historique [HÉRITÉ] — les chiffres V0.1 seront refaits après implémentation.
-  - **V0.1 partiel (jalon ph9, §9)** : les débits mesurés au jalon ph9 (définitifs à l'échelle ≥ 500 sur la
-    machine de référence) dépassent largement les cibles V2 ; un recalibrage complet est prévu au jalon
-    ph10 (T4) et avant la validation v0.1.
+  - **V0.1 refait le 08/10/2026 (V5, §9.2)** : mesures honnêtes à charge complète sur la
+    machine de référence — cibles V2 atteintes à 50 et 500, **écart ~1,7× à 1000**
+    (≈ 6 t/s vs ≥ 10) documenté comme chantier d'optimisation (perception), hors
+    blocage V0.1 (scénarios ≤ 100 agents).
 - Machine de référence de la performance V0.1 à définir (processeur/coeurs utilisés) — impacte les budgets de tick.
-  - **Définie au jalon ph9 (§9)** pour le benchmark `--benchmark` (Linux, x86-64).
+  - **FIGÉE le 08/10/2026 (§9.1)** : i7-8750H (6c/12t), 14 Gio, Ubuntu x86-64, .NET 10.0.401 — arbitrage A3 de `ROADMAP-V01.md`.
 - L'impact des optimisations (pooling, interning) sur le déterminisme reste à valider lors du codage.
   - **Validé au jalon ph9** : pooling (`ObjectPool`, buffer de tri de perception) et instrumentation
     (`TickBudgetCollector`) sont déterministes — checksum doré inchangé, tests d'égalité trajectoire.
@@ -132,26 +131,43 @@ qui l'intersecte (jamais la population entière) — cf. `QueryCircle_ScanWindow
 
 ### 9.1 Machine de référence
 
+**Machine de référence V0.1 (figée le 08/10/2026, arbitrage A3 de `ROADMAP-V01.md`)** :
+Intel Core **i7-8750H** (6 cœurs / 12 threads, 2,2–4,1 GHz), **14 Gio** de RAM,
+Ubuntu x86-64 (noyau 7.0.0-34), SDK **.NET 10.0.401**, alimentation sur secteur.
+
 Benchmark exécuté en **Release**, monde **500×500**, cellule spatiale **50**, config par défaut,
-**300 ticks**, seeds {12345, 999, 7} — en une seule passe mono-thread (déterminisme). Machine :
-Linux x86-64 (poste de dev), .NET 10.0.400.
+**300 ticks**, seeds {12345, 999, 7} — en une seule passe mono-thread (déterminisme).
 
 Commande : `dotnet run -c Release --project syne/Simulation.Console -- --benchmark`
 (ticks/populations ajustables via `--benchmark-ticks`, `--benchmark-populations`).
 
-### 9.2 Résultats mesurés
+Protocole identique à la mesure ph9 ; **deux passes consécutives du 08/10/2026**
+(reproductibilité : checksums FNV-1a identiques d'une passe à l'autre, débits à ±3 %).
 
-| Population | t/s min (3 seeds) | tick moyen min | part computation | Cible V2 (Decision n°30) |
+### 9.2 Résultats mesurés (refaits le 08/10/2026 — V5)
+
+| Population | t/s (2 passes, 3 seeds) | tick moyen | Cible V2 (décision n°30) | Verdict |
 | :-- | :-- | :-- | :-- | :-- |
-| 50 | ≥ 2720 | 0.13 ms | 39–44 % | ≥ 30 t/s |
-| 500 | ≥ 1187 | 0.56 ms | 39–68 % | ≥ 20 t/s |
-| 1000 | ≥ 505 | 0.98 ms | 35–53 % | ≥ 10 t/s |
+| 50 | **1354 – 2257** | 0,44 – 0,73 ms | ≥ 30 t/s | ✓ ~45× au-dessus |
+| 500 | **42,8 – 53,9** | 18,5 – 23,3 ms | ≥ 20 t/s | ✓ ~2,1× au-dessus |
+| 1000 | **5,9 – 6,5** | 153 – 169 ms | ≥ 10 t/s | **✗ écart : ~1,7× en deçà** |
 
-Les **cibles sont dépassées de ~30× (50), ~60× (500) et ~50× (1000)** avec une marge de
-sécurité très large. La part de computation (Σ des sept sous-systèmes / temps de tick) reste
-≥ 35 % tout au long — l'objectif **≥ 30 %** (décision n°30) est respecté ; le reste du tick est
-de l'allocation/GC/overhead (à optimiser au ph10). Le goulot actuel est la passe de
-**communication** (`batchCommunication`), suivie des événements/groupe/population.
+La part de computation mesurée est de **92–99,8 %** selon les cellules — le seuil
+**≥ 30 %** (décision n°30) est respecté partout. Sur les paliers ≥ 500, la phase
+**perception** domine (0,03–0,12 ms par entité-tick, soit l'essentiel du tick
+pondéré), suivie des **événements** (~15 ms/tick à N=1000) et de la
+**communication** (~3 ms/tick) ; l'allocation/GC n'apparaît plus qu'en queue.
+
+> **Écart à documenter (V5, ouvert).** Les chiffres ph9 publiés ici (`≥ 1187` à
+> N=500, `≥ 505` à N=1000) ont été mesurés sur des runs **dont la population
+> mourait en cours de route** par défaut de calibration : les ticks devenaient
+> quasi nuls en fin de run. Depuis ADR-016 les populations survivent (0 mort),
+> les mesures ci-dessus sont donc les **premières mesures honnêtes à charge
+> complète**. À N=1000 le débit réel (≈ 6 t/s) reste **~1,7× sous la cible V2** :
+> l'optimisation de la passe de perception (et le traitement par lots des
+> événements) devient le chantier d'optimisation — suivi en ouverture de
+> `RAPPORT-ELEMENTS-OUVERTS.md` §3.4/§4.2, hors blocage V0.1 (les scénarios
+> V0.1 tournent à ≤ 100 agents, ~45× au-dessus de la cible).
 
 > **Correction de la métrique (calibration B1, engineVersion 0.15.0, ADR-016).** Le calcul de
 > `TickBudgetSnapshot.ComputationShare()` sommait `MeanMs(phase)`, c'est-à-dire du temps **par

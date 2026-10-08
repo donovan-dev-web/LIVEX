@@ -233,8 +233,12 @@ Linux** (arbitrage A3) — Intel Core i7-8750H, 12 cœurs, 14 Gio, Ubuntu.
 - [ ] Refaire les benchmarks aux jalons ph10 (T4), en Release.
 - [ ] Comparer aux budgets de tick et documenter les écarts.
 
-**Critère de sortie** : [ ] Section « Résultats V0.1 » de `PERFORMANCE.md`
-mise à jour avec la machine et les mesures.
+**Critère de sortie** : [x] Section « Résultats V0.1 » de `PERFORMANCE.md`
+mise à jour avec la machine et les mesures — **preuve : commit du lot
+étape 7** (§9.1 machine figée i7-8750H, §9.2 deux passes du 08/10/2026,
+checksums identiques). **Écart constaté** : N=1000 à ~6 t/s vs cible 10
+(≈ 1,7×) documenté comme chantier d'optimisation (perception), hors
+blocage V0.1 (scénarios ≤ 100 agents ~45× au-dessus de la cible).
 
 ### Étape 8 — Publication multiplateforme — **L → W**
 
