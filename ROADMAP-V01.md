@@ -556,8 +556,9 @@ moteur tient encore `stdout.log`** — un run réussi devenait Échoué puis la
 lecture de secours levait à son tour, l'exception remplaçant la cause réelle à
 la reprise J3. Corrigé par la lecture partagée (`RunLogArchive.Collect`,
 `FileShare.ReadWrite` — même règle que `SessionFileJournal.ReadShared*`), un
-journal illisible étant désormais consigné au lieu d'être fatal. Le merge se
-fait en squash & merge.
+journal illisible étant désormais consigné au lieu d'être fatal — puis
+**revalidé 13/13** (run `37850315626`, commit `bcace8a`). Le merge se fait en
+squash & merge.
 
 Ce qui **reste faisable sur Linux** : le suivi des workflows CI
 (`windows-latest` tourne sur GitHub, pas sur la machine Windows) et les
