@@ -67,7 +67,7 @@ Ces pistes sont documentées dans les ROADMAP de chaque composant ; elles ne son
 
 ## 6. Backlog unifié SYNE + ECHOS (jalons croisés)
 
-Section de **backlog consolidé** qui référence les issues des deux composants déjà réalisés et aligne la validation croisée (`docs/docs-syne/ISSUES.md`, `docs/docs-echos/ISSUES.md`). Elle sert de **base unique** pour la création des issues GitHub et du Kanban LIVEX (cf. `ISSUES.md` racine §5.1, `KANBAN.md` racine).
+Section de **backlog consolidé** qui référence les issues des deux composants déjà réalisés et aligne la validation croisée (`docs/docs-syne/ISSUES.md`, `docs/docs-echos/ISSUES.md`). Elle sert de **base unique** pour la création des issues GitHub et du Kanban LIVEX (cf. `docs/governance/ISSUES.md`, `docs/governance/KANBAN.md`).
 
 | Jalon unifié | Couvre (SYNE) | Couvre (ECHOS) | Issues de référence | Critère de validation croisée |
 | :-- | :-- | :-- | :-- | :-- |
@@ -79,7 +79,7 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 | **U5** — Groupes | ph6 (`SYNE-060…063`) | ph5 (`ECHOS-050…054`) | ph6 SYNE, ph5 ECHOS | Groupes BDI ; logging & instrumentation ; jalons J2/J3 |
 | **U6** — Observabilité & fidélités | ph8 (`SYNE-080…082`) + ph7b (`SYNE-074…077`) | ph6 (`ECHOS-060…063`) | ph8+ph7b SYNE, ph6 ECHOS | Événements typés ; analyse causale ; 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe) |
 | **U7** — Performance & comparaison | ph9–10 (`SYNE-090…102`) | ph7 (`ECHOS-070…072`) | **Implémentation avancée — validation produit partielle** — budgets et benchmarks du moteur présents ; ECHOS `/api/compare`, reproductibilité et exports présents. La cadence contrôlée, le backpressure, le lag et le parcours UI ne sont pas encore des preuves de release. | Budgets tick ; comparaison de runs (seed 12345) ; T4 benchmarks ; mesure pipeline à ajouter |
-| **U8** — Tests & persistance (V0.1 → V1) | ph7 (`SYNE-070…073`) + ph11 (`SYNE-110…113`) + `SYNE-120…122` + `SYNE-130…131` | ph8 (`ECHOS-080…085`) + ph9 (`ECHOS-090…092`) | **Implémentation avancée — non accepté comme jalon transverse** — persistance, contrôle :5181 et intégration réelle multi-ticks présents ; la stabilité long-run, la reprise worker et le parcours UI complet restent à prouver. | Persistance bit-à-bit, contrôle, intégration SYNE→ECHOS, métriques REST ; test long-run et preuve de fraîcheur à ajouter |
+| **U8** — Tests & persistance (V0.1 → V1) | ph7 (`SYNE-070…073`) + ph11 (`SYNE-110…113`) + `SYNE-120…122` + `SYNE-130…131` | ph9 (`ECHOS-090…092`) — ph8 (Écrans web) retiré par ADR-007 | **Implémentation avancée — non accepté comme jalon transverse** — persistance, contrôle :5181 et intégration réelle multi-ticks présents ; la stabilité long-run, la reprise worker et le parcours UI complet restent à prouver. | Persistance bit-à-bit, contrôle, intégration SYNE→ECHOS, métriques REST ; test long-run et preuve de fraîcheur à ajouter |
 
 ### Intégration PRISM
 

@@ -148,7 +148,7 @@ LIVEX/
 └── .github/workflows/     # GitHub Actions (ci.yml, release.yml)
 ```
 
-> Note : `docs/docs_prototype/` conserve des spécifications historiques de prototypes. Les références à Godot dans ces documents ne décrivent pas l'implémentation PRISM actuelle.
+> Note : l'archive `docs/docs_prototype/` (spécifications historiques du prototype Godot) a été retirée par la revue documentaire V0.1 (PR #502) ; la [Monographie](LIVEX-Monographie_SnapV0-1.md) reste la référence historique. Les références à Godot dans les documents historiques ne décrivent pas l'implémentation PRISM actuelle.
 
 ## 7. Flux de données de référence
 

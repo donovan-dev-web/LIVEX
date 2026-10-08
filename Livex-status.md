@@ -244,12 +244,13 @@ comme deux choix exclusifs du même rôle SYNE, et non comme deux composants
 démarrables simultanément.
 
 **Limite opérationnelle.** Le Launcher peut superviser les adaptations Linux
-déclarées pour ECHOS et `syne-mock`. SYNE réel ne fournit pas encore le contrat
-de manifeste, d’arguments, de readiness et d’arrêt attendu par le Launcher.
-Les chemins d’analyse réels du Launcher ne correspondent pas aux opérations
-actuelles de l’API ECHOS. Le Launcher ne doit donc pas être interprété comme
-capable d’exécuter de bout en bout une campagne scientifique avec les
-composants réels.
+déclarées pour ECHOS et `syne-mock`. SYNE réel publie désormais son manifeste
+`component.json` et son contrat d’arguments, de readiness et d’arrêt (service
+supervisé + batch `reference`, J2A accepté — `launcher/V1-CAPABILITY-MATRIX.md`).
+Les chemins d’analyse du Launcher sont raccordés aux opérations headless
+actuelles de l’API ECHOS (J2B accepté). Reste ouvert avant clôture : la
+validation de l’installation ECHOS Linux et le parcours J3 de bout en bout
+contre les composants réels.
 
 ### SYNE — moteur réel
 
@@ -266,16 +267,17 @@ campagne `.livexp` supervisée par le Launcher.
 ### ECHOS
 
 **Présent dans le dépôt.** Backend Python pour ingestion, stockage et analyse,
-API REST, interface web React/TypeScript et shell Electron. Les tests couvrent
-les suites Python et UI. Des adaptateurs Linux permettent au Launcher de
-démarrer, sonder et arrêter le service ECHOS, sous réserve d’une configuration
-valide de sa base analytique.
+API REST **headless** — l’interface web React/TypeScript et le shell Electron
+ont été retirés (ADR-007, 05/10/2026) ; la présentation est portée par les
+fenêtres natives du Launcher. Les tests couvrent les suites Python. Des
+adaptateurs Linux permettent au Launcher de démarrer, sonder et arrêter le
+service ECHOS, sous réserve d’une configuration valide de sa base analytique.
 
-**Limite d’intégration.** L’API REST existante permet notamment de consulter
-des runs et des métriques, mais ne fournit pas les opérations
-`/analysis/run`, `/analysis/experiment` et `/analysis/report` attendues par le
-service d’analyse du Launcher. Une interface disponible ou un backend sain ne
-prouve donc pas que le Launcher peut générer un rapport de campagne réelle.
+**Limite d’intégration.** L’API REST expose les opérations headless attendues
+par le service d’analyse du Launcher (`/analysis/run`, `/analysis/experiment`
+et `/analysis/report`, J2B accepté). Reste ouvert : la validation de
+l’installation ECHOS Linux (versions/OS supportés) et l’acceptation pilotée
+depuis l’interface du Launcher.
 
 ### `syne-mock`
 

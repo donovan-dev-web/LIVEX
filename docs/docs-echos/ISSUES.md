@@ -110,7 +110,10 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ECHOS-071 | Métriques de reproductibilité — **LIVRÉ (PR ECHOS, U7)** | `type/feature`, `component/echos` | P1 | ECHOS-070, `METRICS_SPEC.md` | Méta-métriques stables entre runs (déterminisme ECHOS) — ✓ `ReproducibilityScore` = `1.0 − (CognitiveDiff + SocialDiff)/2`, `CognitiveDiff`/`SocialDiff` = L2 normalisées sur croyances/confiance (functions pures, clés triées) ; `test_compare.py` (stabilité entre appels, distributions comparables entre populations) |
 | ECHOS-072 | Format d'export comparatif (CSV/JSON) — **LIVRÉ (PR ECHOS, U7)** | `type/feature`, `component/echos` | P2 | ECHOS-070 | Export uniforme pour analyse hors ligne — ✓ `format=csv` (`tick,engine,metric,run_a,run_b,diff` alignés) et `format=json` (métadonnées + distances + séries) ; 11 tests `test_compare.py` |
 
-### Milestone ph8 (echos) — Interface intégrée (Écrans web)
+### Milestone ph8 (echos) — Interface intégrée (Écrans web) — **RETRAITÉ (ADR-007, 05/10/2026)**
+
+> Ce qui suit est **historique** : `echos-ui/` (React/Vite) a été supprimé — voir
+> la note de périmètre en §1 et le milestone ph10 ci-dessous.
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
@@ -161,5 +164,5 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 ## Points restés ouverts dans ce document
 
-- Le périmètre exact des **écrans web (React/Vite)** reste `[OUVERT]` au-delà des besoins définis par les parties 4 et 5 de la Monographie (§ROADMAP ECHOS, LIMITATIONS).
+- ~~Le périmètre exact des **écrans web (React/Vite)**~~ : **closed par ADR-007 (05/10/2026)** — l'interface a été retirée du composant ECHOS ; la présentation appartient au Launcher (§ROADMAP ECHOS ph8/ph10, LIMITATIONS).
 - Les **valeurs chiffrées** (seuils d'émergence, fenêtres, budgets moteur) sont calibrées après les premiers runs valides — cartes de calibration positionnées en fin de cycle, conformément à la règle §9.6.4 (déterminisme bit-à-bit conservé).

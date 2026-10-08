@@ -1,9 +1,9 @@
 # RAPPORT — Éléments ouverts du projet LIVEX
 
 **Composant** : LIVEX (transverse)
-**Statut** : [SNAPSHOT] — état au 30 septembre 2026, **mis à jour en session** le même jour : V1/V2 exécutées (§5.1) et les 9 ADR cognitifs arbitrés (§3.1)
-**Périmètre** : tous les ADR, tous les « Points restés ouverts » de la documentation, les roadmaps/issues des 3 composants, le plan de correctifs campagne-runs et les suites de tests
-**Dépend de** : `docs/adr/`, `docs/docs-syne/`, `docs/docs-echos/`, `docs/docs-prism/`, `docs/ETHICS_AND_SCOPE.md`, `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md`, `ROADMAP.md`
+**Statut** : [SNAPSHOT] — état au 30 septembre 2026, **mis à jour** le 07/10/2026 (V2′ ADR-016) et le 08/10/2026 (correctif du chemin `reset`, roadmap `ROADMAP-V01.md`)
+**Périmètre** : tous les ADR, tous les « Points restés ouverts » de la documentation, les roadmaps/issues des 3 composants, la campagne de correctifs runs et les suites de tests
+**Dépend de** : `docs/adr/`, `docs/docs-syne/`, `docs/docs-echos/`, `docs/docs-prism/`, `docs/ETHICS_AND_SCOPE.md`, `ROADMAP.md`
 
 ---
 
@@ -21,7 +21,8 @@ catégories disjointes :
 Sources balayées : les 10 ADR de `docs/adr/`, les 15 ADR SYNE, les 3 ADR ECHOS, les
 2 ADR PRISM, les sections « Points restés ouverts » des ~45 documents, les backlogs
 `docs-syne/ISSUES.md` / `docs/docs-echos/ISSUES.md`, les ROADMAPs (racine, SYNE, ECHOS,
-PRISM), `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (§7 jalons et critères de re-campagne),
+PRISM), la campagne de correctifs runs du 29/09/2026 (document exécuté puis retiré du
+dépôt ; ses jalons et critères de re-campagne sont consolidés au §5.1),
 ainsi qu'un balayage `TODO`/`FIXME` du code (aucune occurrence : le code ne porte aucun
 dette explicite non tracée).
 

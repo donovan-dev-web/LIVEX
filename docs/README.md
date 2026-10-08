@@ -19,7 +19,7 @@ historiques conservées pour leur valeur d'archive.
 | Documentation | Contenu |
 |---|---|
 | [SYNE](docs-syne/README.md) | Moteur autoritaire, simulation, configuration et contrats de données. |
-| [ECHOS](docs-echos/README.md) | Ingestion, analyse, stockage, API et interface d'observation. |
+| [ECHOS](docs-echos/README.md) | Ingestion, analyse, stockage et API headless (interface retirée — ADR-007). |
 | [PRISM](docs-prism/README.md) | Projet Unreal final de LIVEX et plugin PRISM-LDK (`PrismLdk`), API Blueprint et intégration. |
 | [Launcher](docs-launcher/README.md) | Orchestrateur de la pile : matrice des modes, campagnes, supervision à six niveaux, réseau et Gateway, flux de données et format de paquet `.livexp`. |
 | [syne-mock](../syne-mock/README.md) | Serveur Node.js de développement, ses scénarios, contrats et limites. |
@@ -53,9 +53,9 @@ de privilégier les systèmes natifs d'Unreal.
 
 ## Archives
 
-`docs/docs_prototype/` et la [Monographie](../LIVEX-Monographie_SnapV0-1.md)
-décrivent des étapes de conception antérieures. Les références à Godot, aux
-anciens répertoires ou aux moteurs graphiques encore « ouverts » dans ces
-archives ne décrivent pas la réalisation PRISM actuelle. Les ADR d'origine
+La [Monographie](../LIVEX-Monographie_SnapV0-1.md) décrit des étapes de
+conception antérieures. Les références à Godot, aux anciens répertoires ou aux
+moteurs graphiques encore « ouverts » dans cette archive ne décrivent pas la
+réalisation PRISM actuelle. Les ADR d'origine
 restent consultables comme historique ; les schémas courants sont dans les
 documents de contrat.
