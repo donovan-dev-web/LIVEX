@@ -45,16 +45,31 @@ public sealed class ProcessManager : IProcessManager
             throw new ArgumentException("le jeton de session ne doit jamais figurer dans les arguments de ligne de commande");
         }
 
+        // Windows : CreateProcess n'exécute que des .exe — un composant « script »
+        // pointant sur un .cmd/.bat (ex. echos-launcher.cmd) passe par l'interpréteur.
+        var fileName = spec.ExecutablePath;
+        var arguments = spec.Arguments;
+        if (OperatingSystem.IsWindows())
+        {
+            var extension = Path.GetExtension(spec.ExecutablePath);
+            if (extension.Equals(".cmd", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals(".bat", StringComparison.OrdinalIgnoreCase))
+            {
+                fileName = Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe";
+                arguments = new[] { "/c", spec.ExecutablePath }.Concat(spec.Arguments).ToList();
+            }
+        }
+
         var startInfo = new ProcessStartInfo
         {
-            FileName = spec.ExecutablePath,
+            FileName = fileName,
             WorkingDirectory = spec.WorkingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
         };
-        foreach (var argument in spec.Arguments)
+        foreach (var argument in arguments)
         {
             startInfo.ArgumentList.Add(argument);
         }
@@ -73,8 +88,9 @@ public sealed class ProcessManager : IProcessManager
             throw new InvalidOperationException($"démarrage impossible : {spec.ExecutablePath}");
         }
 
-        // Confinement Unix : le fils reçoit son propre groupe de processus, afin que l'arrêt
-        // forcé vise ce groupe sans jamais toucher le groupe du Launcher (INTEGRATION_CONTRACT.md §5.2).
+        // Confinement à la création (INTEGRATION_CONTRACT.md §5.2) : le fils reçoit sa propre
+        // unité — groupe de processus Unix, Job Object Windows — pour que rien ne survive au
+        // Launcher et que l'arrêt forcé d'un composant ne vise que son propre arbre.
         ProcessTreeKiller.MakeOwnProcessGroup(process.Id);
 
         _ = PumpAsync(process.StandardOutput, spec.StdOutLogPath, instanceId, "stdout", cancellationToken);

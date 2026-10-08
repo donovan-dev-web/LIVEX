@@ -6,7 +6,8 @@
   "type": "analysis",
   "runtime": "script",
   "executable": {
-    "linux": "echos-launcher"
+    "linux": "echos-launcher",
+    "windows": "echos-launcher.cmd"
   },
   "workingDirectory": ".",
   "endpoints": {

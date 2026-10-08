@@ -141,6 +141,13 @@ public interface IAnalysisService
         string experimentId,
         IReadOnlyList<string> runIds,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Version du composant d'analyse tel qu'il a répondu, ou <c>null</c> si elle n'est
+    /// pas déterminable. Permet au paquet de consigner la version d'ECHOS qui a produit
+    /// le rapport (J3), sans la supposer du côté du Launcher.
+    /// </summary>
+    string? AnalysisComponentVersion => null;
 }
 
 /// <summary>

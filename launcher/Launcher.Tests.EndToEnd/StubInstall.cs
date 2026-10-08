@@ -71,6 +71,15 @@ public static class StubInstall
             {
                 // Démarrage en cours : on retente.
             }
+            catch (TaskCanceledException)
+            {
+                // Sous Windows, une connexion vers un port encore sans écoute ne rend pas
+                // « refus » immédiatement : la pile TCP retransmet le SYN ~2 s avant
+                // ECONNREFUSED (« slow TCP connect on Windows », daniel.haxx.se, 14/08/2024),
+                // soit exactement le délai d'attente du client — le délai perçu est donc un
+                // expiration de requête, pas une annulation. C'est aussi le démarrage en cours :
+                // on retente, jusqu'au délai global de 20 s ci-dessous.
+            }
 
             await Task.Delay(150);
         }

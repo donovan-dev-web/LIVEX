@@ -124,8 +124,7 @@ rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
 | Tests C# | xUnit + Moq |
 | Tests interface | Avalonia headless + xUnit (Launcher) ; Vitest + ESLint + Prettier **retirés** avec `echos-ui` |
 | CI/CD | GitHub Actions |
-| Conteneurisation | Docker multi-stage |
-| Registre d'images | GHCR |
+| Conteneurisation | **Retirée** (08/10/2026) — distribution par artefacts natifs + Launcher, arbitrage A1 de `ROADMAP-V01.md` |
 
 ## 6. Organisation actuelle du dépôt
 
@@ -144,11 +143,10 @@ LIVEX/
 │   ├── docs-prism/
 │   ├── governance/
 │   └── adr/
-├── compose.yml            # Orchestration Docker
 └── .github/workflows/     # GitHub Actions (ci.yml, release.yml)
 ```
 
-> Note : `docs/docs_prototype/` conserve des spécifications historiques de prototypes. Les références à Godot dans ces documents ne décrivent pas l'implémentation PRISM actuelle.
+> Note : l'archive `docs/docs_prototype/` (spécifications historiques du prototype Godot) a été retirée par la revue documentaire V0.1 (PR #502) ; la [Monographie](LIVEX-Monographie_SnapV0-1.md) reste la référence historique. Les références à Godot dans les documents historiques ne décrivent pas l'implémentation PRISM actuelle.
 
 ## 7. Flux de données de référence
 

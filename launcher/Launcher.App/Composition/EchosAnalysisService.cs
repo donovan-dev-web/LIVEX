@@ -52,6 +52,10 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
     }
 
     /// <inheritdoc />
+    public string? AnalysisComponentVersion =>
+        _orchestration.Registry.FindByComponent("echos")?.Installation?.Manifest?.Version;
+
+    /// <inheritdoc />
     public async Task<IReadOnlyDictionary<string, byte[]>> AnalyzeRunAsync(RunResult run, string experimentId, CancellationToken cancellationToken)
     {
         var runPath = RunPath(experimentId, run.RunId);

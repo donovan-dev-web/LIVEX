@@ -34,11 +34,11 @@ class FakeTransport:
 
 
 def _fixture(name: str) -> str:
-    return (FIXTURES / name).read_text()
+    return (FIXTURES / name).read_text(encoding="utf-8")
 
 
 def _expected_stream() -> list[dict]:
-    return json.loads((GOLDEN / "stream.json").read_text())
+    return json.loads((GOLDEN / "stream.json").read_text(encoding="utf-8"))
 
 
 def test_receive_replays_snapshot_then_event_in_golden_order():

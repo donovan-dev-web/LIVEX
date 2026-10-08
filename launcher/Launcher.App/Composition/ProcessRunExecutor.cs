@@ -314,19 +314,11 @@ public sealed class ProcessRunExecutor : IRunExecutor
         return files;
     }
 
+    /// <summary>
+    /// Les journaux du run sont archivés en lecture partagée : la pompe détachée qui les écrit
+    /// peut encore tenir le fichier au moment de la collecte, et un journal doit archiver un run
+    /// réussi sans devenir sa cause d'échec (RunLogArchive).
+    /// </summary>
     private static IReadOnlyList<(string Name, byte[] Content)> CollectLogFiles(string logsDirectory)
-    {
-        var logs = new List<(string, byte[])>();
-        if (!Directory.Exists(logsDirectory))
-        {
-            return logs;
-        }
-
-        foreach (var file in Directory.EnumerateFiles(logsDirectory))
-        {
-            logs.Add((Path.GetFileName(file), File.ReadAllBytes(file)));
-        }
-
-        return logs;
-    }
+        => RunLogArchive.Collect(logsDirectory);
 }

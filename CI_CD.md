@@ -17,7 +17,7 @@ Ce document décrit le pipeline d'intégration et de déploiement continu de LIV
 - **CI sur tout événement** : chaque PR et chaque push sur `main`/`develop` lance la validation.
 - **Séparation par composant** : les jobs ciblent les chemins `syne/`, `echos/`, `prism/`, `syne-mock/` et les documents concernés. Les anciens chemins de prototypes sont historiques.
 - **Échec = blocage** : un job rouge bloque la fusion (protection de branche).
-- **Conteneurisation** : Docker multi-stage ; registre GHCR (GitHub Container Registry).
+- **Conteneurisation** : **retirée** (08/10/2026, arbitrage A1 de `ROADMAP-V01.md`) — plus d'image ni de registre GHCR ; la distribution et l'installation sont portées par le Launcher (artefacts natifs `linux-x64`/`win-x64`).
 
 ### 2.1 Protection de branche
 
@@ -56,7 +56,6 @@ réactivée quand la signature de commits sera en place.
 | Couverture | Coverlet (`coverlet.*.runsettings`) | **≥ 80%** sur le code couvert (objectif V2, Annexe I.3) |
 | Analyse statique | ex. `dotnet format` / analyzers .NET | sans erreur bloquante |
 | Front (interface) | `npm ci` + Vitest/ESLint/Prettier (héritage prototype) | lint + tests |
-| Docker | `docker build` multi-stage par composant | image construite |
 | Mock SYNE | `npm ci` + `npm test` dans `syne-mock/` | tests du contrat et du comportement simulé |
 | Intégration mock → ECHOS | `npm ci` dans `syne-mock/` + `pytest echos/tests/test_syne_mock_integration.py` (gate `LIVEX_MOCK_E2E=1`) | le client ECHOS ingère le flux du mock jusqu'au stockage et à l'API, sans build .NET |
 | Intégration U8 (SYNE → ECHOS) | `dotnet build --configuration Release` (syne) + `pytest echos/tests/test_syne_echos_integration.py` (gate `LIVEX_SYNE_E2E=1`) | le même trajet contre le moteur .NET réel |
@@ -73,9 +72,10 @@ présumée. La validation doit aussi être effectuée dans PRISM.
 Déclencheur : **tag SemVer** posé selon `VERSIONING.md` (`syne-v*`, `echos-v*`, `prism-v*`, `livex-v*`).
 
 1. Vérification finale : build + tests + couverture (mêmes étapes que `ci.yml`).
-2. Construction des images Docker.
-3. Publication des images dans **GHCR** avec retag `latest` (si le tag le permet).
-4. Génération d'une **GitHub Release** avec les notes automatiques (changelog) et l'assemblage des artefacts.
+2. Génération d'une **GitHub Release** avec les notes automatiques (changelog) et l'assemblage des artefacts natifs.
+
+> La construction d'images Docker et la publication GHCR, prévues initialement
+> ici, ont été **retirées** (08/10/2026, arbitrage A1 de `ROADMAP-V01.md`).
 
 ## 5. Orchestration locale
 
@@ -83,11 +83,11 @@ Déclencheur : **tag SemVer** posé selon `VERSIONING.md` (`syne-v*`, `echos-v*`
   mock se lance séparément avec `npm start` dans `syne-mock/`. Le plugin PRISM
   se valide depuis l'hôte Unreal de build/test puis dans le projet PRISM ; ne
   pas supposer qu'il est lancé par la pile serveur.
-- Jalon V2 (Annexe J.2, jalon 12) : critère de validation `docker compose up` démarre et fonctionne en < 30 secondes.
+- ~~Jalon V2 (Annexe J.2, jalon 12) : critère de validation `docker compose up` démarre et fonctionne en < 30 secondes.~~ **Retiré du périmètre LIVEX (08/10/2026)** : plus de Docker dans le projet — installation et orchestration portées par le Launcher (artefacts natifs, `--check`), arbitrage A1 de `ROADMAP-V01.md`.
 
 ## 6. Secrets et sécurité
 
-- Les secrets (jetons GHCR, etc.) sont stockés dans les **GitHub Secrets** ; jamais de secret en clair dans le dépôt.
+- Les secrets (jetons de déploiement, etc.) sont stockés dans les **GitHub Secrets** ; jamais de secret en clair dans le dépôt.
 - Règle `SECURITY.md` : aucun secret commité ; les clés détectées sont révoquées immédiatement.
 
 ---

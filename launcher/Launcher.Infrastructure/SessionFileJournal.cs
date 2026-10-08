@@ -72,6 +72,30 @@ public sealed class SessionFileJournal : ISessionJournal, IDisposable
         _currentDate = today;
     }
 
+    /// <summary>
+    /// Lecture partagée d'un journal de session : le fichier reste ouvert en écriture tant que
+    /// le Launcher tourne, et sous Windows un lecteur doit explicitement autoriser l'écrivain
+    /// (<see cref="FileShare.ReadWrite"/>), sinon la lecture échoue en violation de partage —
+    /// là où Linux n'a aucun verrou obligatoire sur les fichiers.
+    /// </summary>
+    public static IEnumerable<string> ReadSharedLines(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 81920, FileOptions.SequentialScan);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        while (reader.ReadLine() is { } line)
+        {
+            yield return line;
+        }
+    }
+
+    /// <summary>Variante asynchrone de la lecture partagée (export des journaux de session).</summary>
+    public static async Task<string> ReadSharedTextAsync(string path)
+    {
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return await reader.ReadToEndAsync().ConfigureAwait(false);
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {

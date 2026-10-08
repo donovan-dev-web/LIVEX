@@ -92,7 +92,13 @@ test('Launcher manifest points to the executable and truthful readiness endpoint
   const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'component.json'), 'utf8'));
   assert.equal(manifest.id, 'syne-mock');
   assert.equal(manifest.executable.linux, 'src/cli.js');
-  assert.equal(fs.statSync(path.join(__dirname, '..', manifest.executable.linux)).mode & 0o111, 0o111);
+  if (process.platform !== 'win32') {
+    // Le bit d'exécution POSIX n'a aucun sens sur Windows : sans cette garde,
+    // le contrôle y est toujours faux sans rien prouver sur l'adaptateur Linux.
+    assert.equal(fs.statSync(path.join(__dirname, '..', manifest.executable.linux)).mode & 0o111, 0o111);
+  }
+  assert.equal(manifest.executable.windows, 'src/cli.js');
+  assert.ok(fs.existsSync(path.join(__dirname, '..', manifest.executable.windows)));
   assert.equal(manifest.health.path, '/api/control/status');
   assert.equal(manifest.endpoints.control.port, 5181);
 });
@@ -116,7 +122,12 @@ test('launcher shutdown is authenticated and exits cleanly', async t => {
   await clientClosed;
 });
 
-test('SIGTERM closes both servers and exits cleanly', async t => {
+test('SIGTERM closes both servers and exits cleanly', {
+  // Windows n'a pas de livraison de signal : `kill(SIGTERM)` y équivaut à un
+  // TerminateProcess (code null, signal 'SIGTERM'), donc la fermeture
+  // gracieuse n'est pas observable. Le chemin POSIX reste couvert par Linux.
+  skip: process.platform === 'win32' && 'SIGTERM non livrable sous Windows',
+}, async t => {
   const { child, exit } = await startMock(t);
 
   child.kill('SIGTERM');
@@ -124,7 +135,9 @@ test('SIGTERM closes both servers and exits cleanly', async t => {
   assert.deepEqual(await exit, { code: 0, signal: null });
 });
 
-test('SIGINT closes both servers and exits cleanly', async t => {
+test('SIGINT closes both servers and exits cleanly', {
+  skip: process.platform === 'win32' && 'SIGINT non livrable sous Windows',
+}, async t => {
   const { child, exit } = await startMock(t);
 
   child.kill('SIGINT');

@@ -54,7 +54,7 @@ Les éléments structurants de la décision :
 
 ## Alternatives considérées
 
-- **Godot 4.7.2 édition .NET (piste [HÉRITÉ] de l'ADR-001)** : conservé comme prototype et archives dans `docs/docs_prototype/`. Refusé comme moteur définitif — le périmètre de représentation (réseau social, inspection, vues de beliefs et de relations) et le budget de rendu à ~1000 entités dépassent ce que le prototype couvrait.
+- **Godot 4.7.2 édition .NET (piste [HÉRITÉ] de l'ADR-001)** : conservé comme prototype ; l'archive `docs/docs_prototype/` a été retirée par la revue documentaire V0.1 (PR #502). Refusé comme moteur définitif — le périmètre de représentation (réseau social, inspection, vues de beliefs et de relations) et le budget de rendu à ~1000 entités dépassent ce que le prototype couvrait.
 - **Unity** : refusé. Écosystème comparable à Unreal pour la qualité de rendu, mais le plugin livré ici est écrit contre les API Unreal ; retenoir Unity aurait imposé un second adaptateur sans gain identifié, SYNE et ECHOS étant déjà livrés.
 - **Moteur graphique laissé volontairement ouvert (position de l'ADR-001)** : cette non-décision n'est plus tenable. Le projet PRISM est l'implémentation finale attendue de LIVEX ; maintenir le moteur ouvert repousserait indéfiniment l'écriture du code. La décision est désormais réversible : seuls les adaptateurs changent, pas les contrats.
 - **Rendu ECHOS uniquement (React/TypeScript) sans PRISM** : refusé. L'interface d'observation d'ECHOS reste un outil d'analyse, pas la représentation interactive du monde.

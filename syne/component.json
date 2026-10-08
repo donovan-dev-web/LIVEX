@@ -7,7 +7,8 @@
   "protocolVersion": 1,
   "runtime": "dotnet",
   "executable": {
-    "linux": "Simulation.Console/bin/Release/net10.0/publish/Simulation.Console"
+    "linux": "Simulation.Console/bin/Release/net10.0/publish/Simulation.Console",
+    "windows": "Simulation.Console/bin/Release/net10.0/win-x64/publish/Simulation.Console.exe"
   },
   "workingDirectory": ".",
   "endpoints": {

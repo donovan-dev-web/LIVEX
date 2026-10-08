@@ -251,7 +251,10 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
                 var entries = new List<(DateTimeOffset Ts, SessionEvent Event)>();
                 foreach (var (path, _) in files)
                 {
-                    foreach (var line in File.ReadLines(path))
+                    // Lecture partagée : le journal est encore ouvert en écriture par le Launcher
+                    // — sous Windows, File.ReadLines échouerait en violation de partage et le
+                    // panneau resterait sans jamais s'actualiser.
+                    foreach (var line in SessionFileJournal.ReadSharedLines(path))
                     {
                         try
                         {
@@ -313,7 +316,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         var contents = new StringBuilder();
         foreach (var file in files)
         {
-            var text = await File.ReadAllTextAsync(file).ConfigureAwait(false);
+            var text = await SessionFileJournal.ReadSharedTextAsync(file).ConfigureAwait(false);
             contents.Append(text);
             if (text.Length > 0 && text[^1] is not '\n' and not '\r')
             {

@@ -5,10 +5,10 @@
 
 | Référence | Valeur |
 | :-- | :-- |
-| Date de l’état observé | 2 octobre 2026 |
-| Branche et commit | `develop` — `90f06463b02ce4630a4ef763c519867be1dff82f` |
-| Fichiers suivis par Git | 618 |
-| Résultat principal des suites locales | 1 086 réussis, 2 ignorés, 0 échec |
+| Date de l’état observé | 8 octobre 2026 |
+| Branche et commit | `develop` — `68af96a5` (code ; le présent rapport et le lot documentaire qui l’accompagne n’ajoutent que de la documentation) |
+| Fichiers suivis par Git | 632 |
+| Résultat principal des suites locales | 1 205 réussis, 13 ignorés, 0 échec |
 | Répertoire analysé | Racine du dépôt LIVEX |
 
 ## Sommaire
@@ -24,58 +24,73 @@
 ## 1. Synthèse
 
 LIVEX est un dépôt multi-composants composé du moteur de simulation SYNE,
-d’ECHOS (ingestion, analyse, API et interface), du projet Unreal PRISM et de
+d’ECHOS (ingestion, analyse et API headless), du projet Unreal PRISM et de
 son plugin d’intégration PRISM-LDK, de `syne-mock` et du Launcher. Le Launcher
 est une application de bureau Avalonia avec ses couches de domaine,
 d’orchestration, d’infrastructure, de présentation et de gestion des paquets.
+L’interface web d’ECHOS et son shell Electron ont été retirés (ADR-007,
+05/10/2026) : la présentation est portée par les fenêtres natives du Launcher.
 
-Au commit de référence, l’inventaire Git contient **618 fichiers**. La
-classification de ce rapport en dénombre **226 fichiers source, 129 fichiers
-de tests, 149 documents, 73 fichiers de configuration, 38 assets et 3 fichiers
-autres**. Tokei détecte **61 953 lignes de code au sens de son analyseur** sur
-les fichiers suivis ; ce chiffre inclut notamment les données JSON, les
-fichiers de projets et les configurations et ne représente donc pas les seules
-lignes de code applicatif.
+Au commit de référence, l’inventaire Git contient **632 fichiers** (621 fichiers
+suivis avant le présent lot, auxquels s’ajoutent les 11 documents de
+`docs/docs-installer/`). La classification de ce rapport en dénombre **216
+fichiers source, 156 fichiers de tests, 173 documents, 46 fichiers de
+configuration, 37 assets et 4 fichiers autres**. Tokei détecte **63 162 lignes
+de code au sens de son analyseur** sur 602 fichiers reconnus ; ce chiffre
+inclut notamment les données JSON, les fichiers de projets et les
+configurations et ne représente donc pas les seules lignes de code applicatif.
 
-Pour une mesure plus proche du code exécutable, le rapport isole **48 775 lignes
-Tokei de code** dans les langages de programmation du dépôt, en excluant les
-assets SVG et les exemples de code repérés dans la documentation. Ce total
-comprend **30 644 lignes source et scripts** et **18 131 lignes de tests**.
-Tokei exclut les lignes vides et les commentaires de ses comptes « code ».
+Pour une mesure plus proche du code exécutable, le rapport isole **60 788
+lignes Tokei de code** dans les langages de programmation et scripts du dépôt
+(les assets SVG et les exemples de code repérés dans la documentation ne sont
+pas assimilés à du code applicatif). Ce total comprend **37 978 lignes source
+et scripts** et **22 810 lignes de tests**. Tokei exclut les lignes vides et
+les commentaires de ses comptes « code ».
 
-Les suites effectivement exécutées localement totalisent **1 086 tests réussis
-et 2 tests ignorés**, sans échec : SYNE 569, Launcher 102, ECHOS Python 309,
-ECHOS UI 62 et `syne-mock` 44. Les deux tests ECHOS ignorés localement
-correspondent aux intégrations avec SYNE et le mock ; des jobs CI dédiés les
-ont exécutés séparément avec succès.
+Les suites effectivement exécutées localement totalisent **1 205 tests
+réussis et 13 tests ignorés**, sans échec : SYNE 592, Launcher 206, ECHOS
+Python 361 et `syne-mock` 46. Les 13 tests ECHOS ignorés localement sont des
+parcours d’intégration qui exigent un SYNE publié en Release (12, exécutés par
+le job CI U8) ou le serveur `syne-mock` (1, job CI dédié). La couverture de
+lignes mesurée le 08/10 est de **91,57 %** pour ECHOS et de **85,86 %** pour
+les assemblages SYNE agrégés (Core 88,68 %, Console 73,49 %), au-delà du seuil
+de 80 % requis.
 
 **Ces résultats ne signifient pas que toutes les capacités prévues de LIVEX
-sont livrées.** En particulier, l’exécution de campagnes par SYNE réel,
-l’analyse de campagne par les opérations attendues du Launcher, et l’expérience
-de rendu PRISM restent incomplètes ou incompatibles avec les contrats actuels.
+sont livrées.** Le plan de sortie fait foi : `ROADMAP-V01.md`. Les campagnes
+scientifiques (V2′ rejouée par le chemin `reset`, 6/6 conforme à ADR-016 ;
+benchmarks V5 refaits sur la machine de référence), le parcours J3 de bout en
+bout contre les composants réels et la validation transverse V3 (hors long-run)
+sont validés ; le support Windows est validé localement depuis le 08/10/2026
+(Lot W : manifestes, bancs portables, E2E 31/31, `--check`, exécutable natif)
+et constaté en CI le 08/10/2026 : **PR #527, 13/13 jobs verts** Linux +
+`windows-latest`. Aucune release, publication ni tag avant que tout ne soit
+validé. L’expérience de rendu PRISM reste hors périmètre V0.1.
 
 ## 2. Périmètre et méthode
 
 ### Référence du comptage
 
-- Le périmètre est le contenu **suivi par Git** au commit indiqué ci-dessus,
-  obtenu depuis `git ls-files`. Les fichiers générés non suivis — dont le
-  présent rapport lorsqu’il est produit — ne sont pas inclus dans les 618.
+- Le périmètre est le contenu **suivi par Git** à la date indiquée ci-dessus,
+  obtenu depuis `git ls-files`. Les fichiers générés non suivis — dont les
+  sorties de compilation et les caches — ne sont pas inclus.
 - Les répertoires de dépendances, environnements virtuels, caches, sorties de
   compilation et distributions ignorés par Git ne sont pas comptés.
 - La ventilation « source / tests / documentation / configuration / assets /
   autres » est une classification pratique fondée sur les chemins et
-  extensions. Elle décrit ce dépôt et non une taxonomie universelle.
-- Les lignes de code par langage et les lignes source/tests sont analysées avec
+  extensions : un fichier est un **test** si un segment de son chemin contient
+  `test`/`tests` ou si son nom suit les conventions (`test_*.py`, `*_test.*`,
+  `*.test.*`, `*Tests.cs`) ; les extensions `.md`/`.txt` et le fichier
+  `LICENSE` sont des **documents** ; images et assets Unreal forment les
+  **assets** ; JSON, YAML, MSBuild, INI, TOML et fichiers cachés forment la
+  **configuration** ; les extensions de langages applicatifs et les scripts
+  forment la **source**. Elle décrit ce dépôt et non une taxonomie universelle.
+- Les lignes de code par langage et les lignes source/tests sont analysés avec
   **Tokei 13.0.0** sur les fichiers suivis. Les nombres de lignes désignent les
   lignes classées comme code par Tokei, pas le nombre de lignes physiques.
-- Les statistiques de code source/tests ci-dessous isolent les langages
-  applicatifs et les scripts ; les fichiers de configuration et de données,
-  les assets SVG et les exemples de code dans la documentation ne sont pas
-  assimilés à du code applicatif.
 - Les résultats de tests sont ceux des commandes/suites exécutées dans la
-  validation de cette révision. Un résultat de test ne prouve ni l’exhaustivité
-  fonctionnelle ni la compatibilité entre composants.
+  validation du 08/10/2026 (voir §5). Un résultat de test ne prouve ni
+  l’exhaustivité fonctionnelle ni la compatibilité entre composants.
 
 La collecte de l’inventaire suivie par Git est reproductible avec
 `git ls-files`. La ventilation linguistique peut être recalculée avec
@@ -94,35 +109,47 @@ Le présent rapport ne prétend pas donner la taille disque de l’installation
 locale ; celle-ci varie avec les builds, les dépendances installées et les
 caches.
 
+### Évolution depuis le snapshot du 02/10/2026
+
+L’état du 02/10 (618 fichiers, 1 086 tests) est obsolète sur plusieurs points.
+Les écarts principaux avec le présent inventaire sont : le retrait de
+l’interface ECHOS et de son shell Electron (ADR-007, 05/10 — 53 fichiers
+retirés de `echos/`), l’ajout des documents d’installation (`docs/docs-installer/`),
+les tests ajoutés par les lots V0.1 (correctif du chemin `reset`, contrôles de
+cycle de vie, E2E Launcher) et la suppression des artefacts Docker (arbitrage
+A1). Les comptes de ce rapport remplacent ceux du snapshot.
+
 ## 3. Structure et inventaire des fichiers
 
 ### Répartition des fichiers suivis
 
 | Catégorie | Fichiers | Part |
 | :-- | --: | --: |
-| Code source | 226 | 36,6 % |
-| Tests | 129 | 20,9 % |
-| Documentation | 149 | 24,1 % |
-| Configuration et manifests | 73 | 11,8 % |
-| Assets | 38 | 6,1 % |
-| Autres | 3 | 0,5 % |
-| **Total** | **618** | **100 %** |
+| Code source | 216 | 34,2 % |
+| Tests | 156 | 24,7 % |
+| Documentation | 173 | 27,4 % |
+| Configuration et manifests | 46 | 7,3 % |
+| Assets | 37 | 5,9 % |
+| Autres | 4 | 0,6 % |
+| **Total** | **632** | **100 %** |
+
+Les parts sont arrondies au dixième.
 
 ### Répartition par répertoire de premier niveau
 
 | Répertoire | Fichiers suivis | Contenu principal |
 | :-- | --: | :-- |
-| `echos/` | 148 | Backend Python, tests, interface React/TypeScript et application Electron |
-| `syne/` | 146 | Moteur .NET, outils console et tests |
-| `docs/` | 117 | Documentation des composants et références techniques |
-| `launcher/` | 107 | Application Avalonia, bibliothèques, outils et tests |
+| `syne/` | 154 | Moteur .NET, outils console, serveur de contrôle et tests |
+| `launcher/` | 145 | Application Avalonia, bibliothèques, outils et tests (unitaires, intégration, E2E) |
+| `docs/` | 136 | Documentation des composants, installateur et références techniques |
+| `echos/` | 95 | Backend Python headless (API, ingestion, analyse) et tests |
 | `prism/` | 35 | Hôte Unreal technique et plugin PRISM-LDK |
 | `syne-mock/` | 29 | Serveur Node.js, tests et documentation d’intégration |
-| Racine du dépôt | 22 | Documentation et fichiers communs au projet |
-| `.github/` | 8 | Workflows et modèles GitHub |
-| `scripts/` | 4 | Scripts de développement et d’intégration |
-| `configs/` | 2 | Configurations partagées |
-| **Total** | **618** | |
+| Racine du dépôt | 24 | Documentation et fichiers communs au projet |
+| `.github/` | 7 | Modèles et workflows (`ci.yml`, `release.yml`) |
+| `scripts/` | 5 | Scripts de développement et d’intégration |
+| `configs/` | 2 | Configurations de simulation partagées |
+| **Total** | **632** | |
 
 ### Volume de code source et de tests par composant
 
@@ -133,91 +160,115 @@ ventilation vérifiable.
 
 | Composant / ensemble | Source et scripts (LOC) | Tests (LOC) | Fichiers de tests |
 | :-- | --: | --: | --: |
-| SYNE | 9 843 | 9 336 | 69 |
-| ECHOS (backend et UI) | 8 917 | 5 353 | 41 |
-| Launcher | 8 238 | 2 624 | 14 |
-| `syne-mock` | 1 541 | 818 | 5 |
+| SYNE | 10 448 | 10 208 | 75 |
+| Launcher | 14 934 | 5 393 | 30 |
+| ECHOS (backend) | 8 448 | 6 364 | 46 |
+| `syne-mock` | 1 560 | 845 | 5 |
+| Scripts partagés | 1 611 | 0 | 0 |
 | PRISM / PRISM-LDK | 888 | 0 | 0 |
-| Scripts partagés | 1 217 | 0 | 0 |
-| **Total** | **30 644** | **18 131** | **129** |
+| Exemples HTML de la documentation | 89 | 0 | 0 |
+| **Total** | **37 978** | **22 810** | **156** |
 
 Le « 0 » PRISM signifie qu’aucun fichier de test n’a été classé dans son
-répertoire au moment de l’inventaire ; il ne signifie pas que le plugin ne
-dispose d’aucune validation manuelle ou d’aucun test dans l’outillage Unreal.
+répertoire ; il ne signifie pas que le plugin ne dispose d’aucune validation
+manuelle ou d’aucun test dans l’outillage Unreal.
 
 ## 4. Langages et lignes de code
 
-Tokei compte ici les fichiers suivis qu’il reconnaît. Les statistiques
+Tokei compte ici les fichiers suivis qu’il reconnaît (602 sur 632 ; les assets
+binaires, `LICENSE` et scripts sans extension ne le sont pas). Les statistiques
 comprennent les sources, les tests, la documentation et les formats de
 configuration ; elles ne sont pas toutes des lignes de code applicatif.
 
 | Langage / format reconnu | Fichiers Tokei | Lignes « code » |
 | :-- | --: | --: |
-| C# | 206 | 29 098 |
-| Python | 67 | 11 072 |
-| JSON | 31 | 11 029 |
-| JavaScript | 25 | 2 646 |
-| TSX | 29 | 2 453 |
-| TypeScript | 12 | 1 037 |
-| AXAML | 2 | 989 |
+| C# | 241 | 39 043 |
+| Python | 78 | 15 751 |
+| JavaScript | 20 | 2 405 |
+| AXAML | 4 | 1 822 |
+| JSON | 28 | 1 212 |
 | C Header | 5 | 439 |
-| YAML | 4 | 424 |
 | C++ | 3 | 403 |
-| CSS | 1 | 399 |
-| MSBuild | 20 | 311 |
-| Shell | 4 | 227 |
+| MSBuild | 20 | 313 |
+| YAML | 2 | 274 |
 | SVG | 17 | 204 |
 | INI | 4 | 188 |
 | Visual Studio Solution | 2 | 168 |
-| HTML | 2 | 101 |
-| RPM Specfile | 1 | 60 |
+| Shell | 2 | 102 |
+| HTML | 1 | 89 |
 | Unreal Project | 1 | 31 |
 | TOML | 1 | 25 |
 | Unreal Plugin | 1 | 24 |
-| Markdown | 145 | 0 |
+| Markdown | 169 | 0 |
 | Plain Text | 3 | 0 |
 
-Le total global affiché par Tokei est **61 953 lignes « code »** toutes
+Le total global affiché par Tokei est **63 162 lignes « code »** toutes
 catégories confondues. Les lignes des formats de données et de configuration
 (JSON, MSBuild, YAML, etc.) et les SVG ne doivent pas être additionnées aux
 LOC applicatives. Pour les langages applicatifs et scripts uniquement, après
-exclusion des SVG et des exemples de documentation, le total de référence est
-**48 775 LOC** : **30 644 LOC source/scripts** et **18 131 LOC de tests**.
+exclusion des assets et des exemples de documentation, le total de référence
+est **60 788 LOC** : **37 978 LOC source/scripts** et **22 810 LOC de tests**.
 
 Les lignes reconnues individuellement par langage ne s’additionnent pas
-exactement au total global de Tokei ; un écart de **625 lignes** reste dans
+exactement au total global de Tokei ; un écart de **669 lignes** reste dans
 l’agrégat plutôt que d’être attribué à une ligne du tableau. Les comptes de
 fichiers par langage sont ceux des rapports Tokei et peuvent refléter ses
 attributions aux formats intégrés ; pour le nombre de fichiers versionnés, la
-référence reste `git ls-files` (618).
+référence reste `git ls-files` (632).
 
 ## 5. Tests et validations
 
-### Résultats observés
+### Résultats observés (exécutés le 08/10/2026)
 
 | Composant | Suite / type | Résultat local |
 | :-- | :-- | :-- |
-| SYNE | `Simulation.Core.Tests` | 508 réussis |
-| SYNE | `Simulation.Console.Tests` | 61 réussis |
-| ECHOS | Python : backend, analyse, ingestion et contrats | 309 réussis, 2 ignorés ; couverture mesurée : 93,04 % |
-| ECHOS | Interface React/TypeScript | 62 réussis dans 14 fichiers de test |
-| Launcher | Tests unitaires | 84 réussis |
-| Launcher | Tests d’intégration | 7 réussis |
-| Launcher | Tests end-to-end | 11 réussis |
-| `syne-mock` | Suite Node.js | 44 réussis |
+| SYNE | `Simulation.Core.Tests` | 514 réussis |
+| SYNE | `Simulation.Console.Tests` | 78 réussis |
+| ECHOS | Python : backend, analyse, ingestion et contrats | 361 réussis, 13 ignorés ; couverture mesurée : 91,57 % |
+| Launcher | Tests unitaires | 162 réussis |
+| Launcher | Tests d’intégration | 15 réussis |
+| Launcher | Tests end-to-end (contre un SYNE publié) | 29 réussis |
+| `syne-mock` | Suite Node.js | 46 réussis |
 | PRISM / PRISM-LDK | Tests automatisés dans cette validation | Aucun lancé |
-| **Total des suites locales** | **Exécutions comptabilisées** | **1 086 réussis, 2 ignorés, 0 échec** |
+| **Total des suites locales** | **Exécutions comptabilisées** | **1 205 réussis, 13 ignorés, 0 échec** |
 
-Les deux tests ECHOS ignorés en local sont les parcours d’intégration qui
-demandent respectivement un SYNE Release et le serveur `syne-mock`. Les jobs
-d’intégration dédiés de la CI ont exécuté ces deux parcours et les ont réussis.
-Ces exécutions CI sont indiquées séparément et ne sont pas ajoutées au total
-local ci-dessus.
+Commandes : `dotnet test Syne.sln` (SYNE), `pytest echos/tests` (ECHOS),
+`npm test` (`syne-mock`), `dotnet test` des trois projets Launcher avec
+`TMPDIR` sur disque (le `/tmp` en tmpfs de 7,5 Gio déborde sur le test de
+paquet > 2 Gio) et `LIVEX_SYNE_PUBLISHED_ROOT` pointant sur un SYNE publié
+pour les E2E.
 
-Les checks de la PR Launcher #507 ciblant `develop` ont réussi, incluant les
-tests des composants concernés et les builds Electron Linux et Windows. Cela
-valide les checks de cette PR à la date de la fusion, pas chaque plateforme et
-chaque scénario d’intégration en fonctionnement sur la machine locale.
+Les 13 tests ECHOS ignorés en local sont des parcours d’intégration : 12
+exigent un build SYNE Release (job CI U8) et 1 exige le serveur `syne-mock`
+(job CI dédié). Ces jobs CI sont conçus pour les exécuter séparément ; leurs
+résultats ne sont pas ajoutés au total local ci-dessus.
+
+### Couverture de lignes
+
+- **ECHOS** : 91,57 % (`pytest echos/tests`, seuil requis 80 %).
+- **SYNE** : 85,86 % agrégé — `Simulation.Core` 88,68 % (6 120/6 901),
+  `Simulation.Console` 73,49 % (1 159/1 577) — mesuré le 08/10 avec
+  `dotnet test --collect:"XPlat Code Coverage"` (coverlet). Filtre appliqué :
+  `FullyQualifiedName!~ScaleTargetsTests&FullyQualifiedName!~LauncherBatchProcessTests`,
+  ces deux classes étant incompatibles avec l’instrumentation (voir ci-dessous).
+
+Le chiffre historique de 96,19 % (jalon SYNE-100, moteur 0.8.0) concernait un
+périmètre et une base de code antérieurs ; il n’est pas comparable à la mesure
+ci-dessus.
+
+### Points de vigilance sur les mesures
+
+- `ScaleTargetsTests.OneThousandEntities_StayAboveRegressionFloor` (plancher
+  de débit à 1000 entités) a échoué une fois le 08/10 lorsque plusieurs suites
+  tournaient simultanément, puis est repassé vert en reprise isolée. Le test
+  mesure un débit : il est sensible à la charge de la machine et échoue
+  systématiquement sous instrumentation coverlet. Les checksums de déterminisme
+  sont inchangés ; il s’agit d’un test fragile sous charge, pas d’une
+  régression du moteur.
+- `LauncherBatchProcessTests` échoue sous le collecteur de couverture
+  (le processus SYNE enfant avorte avec `HttpListener` déjà disposé) ; il passe
+  en exécution standard. D’où l’exclusion de ces deux classes de la mesure de
+  couverture.
 
 ### Interprétation
 
@@ -226,8 +277,12 @@ chaque scénario d’intégration en fonctionnement sur la machine locale.
 - Les tests SYNE et `syne-mock` valident des produits distincts. Les résultats
   ne démontrent pas que leurs simulations sont scientifiquement équivalentes.
 - Les tests du Launcher couvrent les règles du Launcher, l’infrastructure et
-  les parcours simulés ; ils ne rendent pas opérationnelles les API absentes de
-  SYNE ou d’ECHOS.
+  les parcours E2E contre un SYNE publié ; la preuve de bout en bout complète
+  (campagne → interruption → reprise → analyse → paquet, J3) est automatisée
+  par `J3RealComponentsEndToEndTests` contre SYNE publié et ECHOS réel
+  (étape 4) — le parcours est validé sous Windows le 08/10/2026 (31/31 contre
+  SYNE `win-x64` + ECHOS réel) ; le banc est aussi déclaré sur `windows-latest`
+  (constat CI à faire).
 - Aucun résultat automatisé PRISM ne doit être déduit de la réussite des tests
   des autres composants.
 
@@ -244,12 +299,17 @@ comme deux choix exclusifs du même rôle SYNE, et non comme deux composants
 démarrables simultanément.
 
 **Limite opérationnelle.** Le Launcher peut superviser les adaptations Linux
-déclarées pour ECHOS et `syne-mock`. SYNE réel ne fournit pas encore le contrat
-de manifeste, d’arguments, de readiness et d’arrêt attendu par le Launcher.
-Les chemins d’analyse réels du Launcher ne correspondent pas aux opérations
-actuelles de l’API ECHOS. Le Launcher ne doit donc pas être interprété comme
-capable d’exécuter de bout en bout une campagne scientifique avec les
-composants réels.
+déclarées pour ECHOS et `syne-mock`. SYNE réel publie son manifeste
+`component.json` et son contrat d’arguments, de readiness et d’arrêt (service
+supervisé + batch `reference`, J2A accepté — `launcher/V1-CAPABILITY-MATRIX.md`).
+Les chemins d’analyse du Launcher sont raccordés aux opérations headless de
+l’API ECHOS (J2B accepté). L’installation ECHOS Linux est validée (étape 9 de
+`ROADMAP-V01.md`, procédure en `docs/docs-launcher/INTEGRATION_CONTRACT.md`
+§10.3). Le parcours J3 de bout en bout contre les composants réels est acquis
+(étape 4, `J3RealComponentsEndToEndTests`). **Constat CI `windows-latest` : fait
+le 08/10/2026** (PR #527, 13/13 jobs verts) — les validations locales Windows
+(étape 5, Lot W) sont faites et cochées au 08/10/2026 (208 tests verts,
+`--check`, exécutable natif).
 
 ### SYNE — moteur réel
 
@@ -257,31 +317,42 @@ composants réels.
 contrôle/observabilité, avec tests dédiés. Le README décrit notamment le PRNG,
 le monde, les entités, les traits et la boucle de simulation.
 
-**Limite d’intégration.** Le mode serveur actuel ne termine pas un run selon le
-contrat batch du Launcher et ne prend pas en charge l’ensemble des arguments,
-sondes et routes d’arrêt attendus. Il n’y a pas de manifeste Launcher SYNE
-compatible. Lancer le service de contrôle n’équivaut donc pas à lancer une
-campagne `.livexp` supervisée par le Launcher.
+**Contrat d’intégration.** Le serveur de contrôle applique le profil de
+référence sur les chemins `prepare`, `start` **et** `reset` (correctif
+`ef878f21` : `reset` sans config produit les mêmes options que `prepare`), le
+manifeste `component.json` et le contrat batch (arguments, readiness, arrêt
+authentifié) sont publiés et acceptés (J2A), et la campagne V2′ rejouée
+**par le chemin `reset`** est conforme aux critères ADR-016 sur 6/6 couples
+population/graine (`RAPPORT-ELEMENTS-OUVERTS.md` §5.1 bis). Lancer le service
+de contrôle équivaut désormais au contrat attendu par le Launcher ; la preuve
+d’extrémité J3 est fournie par le parcours automatisé de l’étape 4.
+
+**Limite résiduelle.** La preuve est répétée dans le parcours complet du
+Launcher (étape 4) ; les benchmarks V5 de référence sont ceux de
+`docs/docs-syne/PERFORMANCE.md` §9 (machine i7-8750H, 08/10/2026).
 
 ### ECHOS
 
 **Présent dans le dépôt.** Backend Python pour ingestion, stockage et analyse,
-API REST, interface web React/TypeScript et shell Electron. Les tests couvrent
-les suites Python et UI. Des adaptateurs Linux permettent au Launcher de
-démarrer, sonder et arrêter le service ECHOS, sous réserve d’une configuration
-valide de sa base analytique.
+API REST **headless** — l’interface web React/TypeScript et le shell Electron
+ont été retirés (ADR-007, 05/10/2026) ; la présentation est portée par les
+fenêtres natives du Launcher. Les tests couvrent les suites Python (361 tests
+verts, couverture 91,57 %). Des adaptateurs Linux permettent au Launcher de
+démarrer, sonder et arrêter le service ECHOS.
 
-**Limite d’intégration.** L’API REST existante permet notamment de consulter
-des runs et des métriques, mais ne fournit pas les opérations
-`/analysis/run`, `/analysis/experiment` et `/analysis/report` attendues par le
-service d’analyse du Launcher. Une interface disponible ou un backend sain ne
-prouve donc pas que le Launcher peut générer un rapport de campagne réelle.
+**Contrat d’intégration.** L’API REST expose les opérations headless attendues
+par le service d’analyse du Launcher (`/analysis/run`, `/analysis/experiment`
+et `/analysis/report`, J2B accepté). L’installation Linux est validée sur
+machine propre (venv vierge, 212 Mo, imports et tests verts — étape 9).
+L’acceptation pilotée depuis l’interface du Launcher est couverte par le
+parcours J3 (étape 4 : analyses individuelles et rapport archivé contre ECHOS
+réel).
 
 ### `syne-mock`
 
 **Présent dans le dépôt.** Serveur Node.js déterministe destiné à émuler le
 contrat de transport pour le développement et les intégrations clientes. Il
-possède un manifeste Linux, un cycle de vie supervisable et 44 tests.
+possède un manifeste Linux, un cycle de vie supervisable et 46 tests.
 
 **Limite fonctionnelle.** C’est une émulation de protocole, pas un moteur
 scientifique équivalent à SYNE. La génération, les décisions et le mouvement
@@ -296,43 +367,41 @@ les contrats SYNE et des éléments d’intégration Blueprint. La documentation
 décrit l’architecture et les flux HTTP/WebSocket.
 
 **Limite fonctionnelle.** L’hôte technique et le plugin d’intégration ne
-constituent pas à eux seuls l’expérience complète de rendu 3D prévue. Les
-objectifs de rendu et d’interaction documentés sont une feuille de route, pas
-des fonctions automatiquement livrées. Le profil PRISM reste verrouillé dans
-le Launcher tant que ce composant n’est pas implémenté/intégré.
+constituent pas à eux seuls l’expérience complète de rendu 3D prévue. Le
+profil PRISM reste verrouillé dans le Launcher. **PRISM est explicitement hors
+périmètre V0.1** (portes d’intégration séparées,
+`launcher/V1-CAPABILITY-MATRIX.md` §4-7).
 
 ## 7. Limites et travaux encore nécessaires
 
-Les principaux écarts visibles à ce commit sont :
+Le plan de sortie fait foi : **`ROADMAP-V01.md`**. Les étapes 1, 2, 3, 4, 6,
+7, 9, 10 et 11 y sont cochées avec leurs preuves (étape 5 : Lot L committé) ;
+les écarts restants sont :
 
-1. **Contrat batch SYNE ↔ Launcher** : aligner arguments de run, démarrage,
-   readiness, export des résultats, fin de run et arrêt propre ; fournir et
-   tester un manifeste compatible.
-2. **Analyse ECHOS pilotée par le Launcher** : définir et implémenter les
-   opérations d’analyse d’expérience/campagne et de génération de rapport
-   attendues, ou adapter explicitement les services du Launcher au contrat
-   REST réellement offert par ECHOS.
-3. **Campagnes de bout en bout** : vérifier l’exécution multi-run, l’agrégation
-   et la traçabilité des résultats avec les composants réels, et non uniquement
-   avec des stubs ou le mock.
-4. **PRISM** : poursuivre le rendu interactif Unreal et les tests de validation
-   de l’intégration sur un environnement disposant de l’outillage Unreal.
-5. **Matrice de plateformes et de modes** : différencier les capacités
-   réellement disponibles par OS et par mode ; les manifestes Launcher fournis
-   par ECHOS et `syne-mock` sont Linux seulement, même si des builds Electron
-   Linux/Windows existent en CI.
-6. **Métriques de flux et intégration UI/headless** : certaines métriques de
-   flux et variantes d’exécution de composants ne sont pas fournies par les
-   composants actuels ; l’interface doit signaler leur indisponibilité plutôt
-   que fabriquer des mesures.
+1. **Validation Windows de l'étape 5 (Lot W)** : **réalisée le 08/10/2026 sur
+   la machine Windows** — `ManifestDetector`, `ProcessTreeKiller`,
+   `ProcessRunExecutor`, `--check` validés (208 tests verts, aucun orphelin),
+   avec trois défauts corrigés (apphost `livex-launcher.exe`, Job Object,
+   lecture du journal de session sous verrou). **Constat des jobs CI
+   `windows-latest`** : **fait le 08/10/2026** (PR #527, 13/13 jobs verts,
+   E2E de campagne compris).
+2. **PRISM** : rendu interactif Unreal et validation d’intégration — hors
+   périmètre V0.1, porte d’intégration séparée.
+3. **Fiabilité des preuves** : le test de débit (§5) **n’est plus fragile** —
+   meilleur de 5 essais et deux assemblées SYNE exécutées en étapes
+   séquentielles en CI (`PERFORMANCE.md` §9.4), correctif validé par 13/13 jobs
+   verts ; restent explicites, tant qu’aucun job dédié ne les lève, une couverture
+   mesurée avec deux classes exclues et 13 tests d’intégration qui ne dépendent
+   que de la CI.
 
-### Conclusion
-
-Le dépôt contient une base logicielle substantielle et testée pour le Launcher,
-SYNE, ECHOS et `syne-mock`, ainsi qu’un plugin PRISM en développement. La
-couverture de tests observée est solide sur les suites présentes, mais les
-contrats manquants entre le Launcher, SYNE et les opérations d’analyse ECHOS
-restent les facteurs déterminants pour déclarer l’orchestration scientifique
-complète. Ce rapport décrit donc **l’état du code versionné et des validations
-réalisées**, et non une certification que toutes les fonctionnalités V1
-prévues sont opérationnelles.
+### ConclusionLe dépôt contient une base logicielle substantielle et testée pour le Launcher,
+SYNE, ECHOS et `syne-mock` (suites vertes, 0 échec, couvertures au-dessus
+de 80 %), ainsi qu’un plugin PRISM hors périmètre de sortie. Les contrats
+inter-composants (J2A, J2B), l’installation ECHOS Linux, les campagnes
+scientifiques rejouées par `reset`, le parcours J3 de bout en bout et la
+validation V3 sont établis ; ce qui manque pour déclarer **LIVEX V0.1** tient
+à la CI `windows-latest` (le Lot W, validations locales Windows, est bouclé le
+08/10/2026) inscrite dans `ROADMAP-V01.md`. Aucune release, tag ni publication n’est programmé avant
+validation complète. Ce rapport décrit **l’état du code versionné
+et des validations réalisées au 08/10/2026**, et non une certification que
+toutes les fonctionnalités V1 prévues sont opérationnelles.

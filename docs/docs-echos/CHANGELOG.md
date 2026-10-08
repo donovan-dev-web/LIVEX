@@ -148,7 +148,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - **Contrôles de rafraîchissement du tableau de bord** : bouton « Actualiser » (rechargement immédiat des métriques, groupes et phénomènes) et bascule « Live » (rafraîchissement automatique cadré) / « Figé » (gel manuel pour lire un instant précis).
 
 ### Added
-- **Plan campagne-runs — axes A/B/C/D ECHOS réalisés (J-C1 → J-C4)** : réalisation du plan `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (décisions D1/D2/D3 du 29/09/2026).
+- **Plan campagne-runs — axes A/B/C/D ECHOS réalisés (J-C1 → J-C4)** : réalisation du plan de correctifs campagne-runs du 29/09/2026 (décisions D1/D2/D3 ; document exécuté puis retiré du dépôt — résultats consolidés dans `../../RAPPORT-ELEMENTS-OUVERTS.md` §5.1).
   - **A1** : champ `seed` transporté (`WorldSnapshot.seed`, contrat SYNE 0.2.1 additif) — `consume()` enregistre le seed du snapshot et ne dérive depuis `run_id` qu'en **repli** (`_seed_of` étendu à `run-<seed>-<12hex>`) ; seed introuvable des deux côtés → `seed: ""` + avertissement d'ingestion, jamais une erreur fatale (observe-only).
   - **A2** : changement de `run_id` détecté en flux — run enregistré avant son premier tick (zéro FK error), fenêtres glissantes réinitialisées, série Parquet flushée, rapport de calibration bâti à la fin de **chaque** run (y compris interrompu par un reset).
   - **A3** : `outcome`/`extinctionTick` dans le rapport de calibration + `population_outcome()` en SQL (disponible pendant l'ingestion) + exposition `/api/runs` et `/api/runs/{id}`.

@@ -3,7 +3,7 @@
 **Composant** : SYNE (profil de référence) / ECHOS (viabilité observée)
 **Statut** : Acceptée
 **Date** : 29 septembre 2026
-**Dépend de** : ADR-014, ADR-009, DETERMINISM.md §7, `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (décisions D1/D2/D3)
+**Dépend de** : ADR-014, ADR-009, DETERMINISM.md §7, `RAPPORT-ELEMENTS-OUVERTS.md` §5.1 (campagne J-C1 → J-C4, décisions D1/D2/D3)
 **Source** : Rapport de campagne de runs (3 runs pilotés 1200 ticks — seeds 12345 / 424242 / 999 — + benchmark CLI + 4 runs batch 2000 ticks)
 
 ## Contexte

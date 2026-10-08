@@ -56,7 +56,7 @@ def test_mock_stream_is_ingested_and_served_by_echos(tmp_path):
             "dataPort": data_port,
             "controlPort": control_port,
             "agents": {"initialCount": 3},
-        }))
+        }), encoding="utf-8")
         process = subprocess.Popen(
             [node, "src/cli.js", str(config_path)],
             cwd=MOCK,

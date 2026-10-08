@@ -20,7 +20,7 @@ GOLDEN = Path(__file__).resolve().parent / "golden"
 
 
 def _raw(name: str) -> str:
-    return (FIXTURES / name).read_text()
+    return (FIXTURES / name).read_text(encoding="utf-8")
 
 
 def _variant(name: str, tick: int) -> str:
@@ -133,7 +133,7 @@ def test_first_segment_matches_golden():
 
     (segment,) = list(aligned_ticks(client))
 
-    expected = json.loads((GOLDEN / "segment_tick1_v01.json").read_text())
+    expected = json.loads((GOLDEN / "segment_tick1_v01.json").read_text(encoding="utf-8"))
     assert segment.to_dict() == expected
 
 

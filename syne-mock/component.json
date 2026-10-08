@@ -6,7 +6,8 @@
   "type": "utility",
   "runtime": "script",
   "executable": {
-    "linux": "src/cli.js"
+    "linux": "src/cli.js",
+    "windows": "src/cli.js"
   },
   "workingDirectory": ".",
   "endpoints": {
