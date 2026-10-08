@@ -251,8 +251,13 @@ partir des artefacts de CI.
 `launcher/ROADMAP-V1.md` §2B, case restée ouverte : versions Python, ressources
 runtime, base analytique accessible — documenter et tester les prérequis.
 
-**Critère de sortie** : [ ] Procédure d'installation ECHOS vérifiée sur une
-machine propre, résultats dans `docs/docs-launcher/INTEGRATION_CONTRACT.md`.
+**Critère de sortie** : [x] Procédure d'installation ECHOS vérifiée sur une
+machine propre (venv vierge : `--without-pip` + `get-pip.py`, 212 Mo,
+imports + pytest verts), résultats dans
+`docs/docs-launcher/INTEGRATION_CONTRACT.md` **§10.3** — probes live :
+`/health/ready` 200, `/api/runs` 200, `/analysis/*` 422 structurés,
+`/control/shutdown` 401, SIGTERM sans orphelin. Case J2B de
+`launcher/ROADMAP-V1.md` cochée. **Preuve : commit du lot étape 9.**
 
 ### Étape 10 — Retrait du jalon T6 (Docker) — **Lot L**
 

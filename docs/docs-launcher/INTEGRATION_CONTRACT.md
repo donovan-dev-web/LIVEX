@@ -270,6 +270,22 @@ Le Launcher archive `stream.jsonl` dans le `.livexp` : c'est cet artefact, et lu
 seul, qui permet de réanalyser un run plus tard, SYNE éteint. La réanalyse depuis
 le paquet produit les **mêmes octets** que celle faite pendant la campagne.
 
+### 10.3 Installation Linux — **validée le 08/10/2026** (étape 9, `ROADMAP-V01.md`)
+
+Procédure exécutée sur environnement **vierge** (venv neuf) et vérifiée de bout
+en bout. Machine de référence V0.1 : **Ubuntu x86-64, Python 3.14.4, pip 26.2.1**.
+
+| Point | Constat |
+| :-- | :-- |
+| **Prérequis système** | Python **≥ 3.11** (`requires-python` du `pyproject.toml` ; testé sur 3.14.4) et `pip`. **Piège constaté** : sans le paquet système `python3-venv` (ensurepip), `python3 -m venv` échoue — contournement validé : `python3 -m venv --without-pip .venv` puis `get-pip.py`. `uv` n'est pas requis (le `uv.lock` reste une commodité). |
+| **Installation** | `cd echos && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt` → **0 échec**. Résolution constatée : `fastapi` 0.142.x, `uvicorn`, `pydantic` 2.13.x, `httpx`, `websockets` 15.0.1, `pyarrow` 25.0.1. Emprise : **~212 Mo** (pyarrow domine). `./echos-launcher` exécute `.venv/bin/python` s'il existe, sinon `python3`. |
+| **Santé du code** | `pytest echos/tests` **vert** dans le venv (0 échec). |
+| **Démarrage & readiness** | `./echos-launcher --headless --control-port <p> --work-dir <d> --log-dir <d>` → `/health/ready` **200** en < 30 s : migrations de la base exécutées, `ready` publié **uniquement** ensuite. |
+| **Base analytique** | `<LIVEX_DATA>/echos/analytics.sqlite` (défaut `~/.livex-data`), **hors** work-dir ; fichier + WAL créés à l'ouverture. Racine inutilisable → variable absente → `/health/ready` **503** explicite (jamais un échec muet). |
+| **Endpoints analysables** | `GET /api/runs` → `200 {"runs":[]}` ; `POST /analysis/run`, `/analysis/experiment`, `/analysis/report` avec `{}` → **422** à erreur de schéma **structurée** (`detail[]` FastAPI), aucun 500, aucune utilisation d'interface (ADR-007). |
+| **Arrêt & orphelins** | `POST /control/shutdown` sans jeton → **401** (auth exigée). `SIGTERM` → fermeture loguée (`Application shutdown complete`), **aucun processus orphelin** après `wait`. |
+| **OS supportés** | **Linux x86-64 uniquement** (manifeste `executable.linux`). Windows : hors validation — étape 5 de `ROADMAP-V01.md` (clés `executable.windows` + CI `windows-latest`). |
+
 ## 11. Exigences propres à PRISM
 
 | Exigence | Précision |

@@ -198,9 +198,11 @@ déclarée Linux ; aucun support Windows/macOS n’est revendiqué.
 - [x] Définir et tester la disponibilité réelle : base analytique accessible,
   migrations valides et endpoints d’analyse utilisables avant de signaler
   `ready`.
-- [ ] Valider l’installation ECHOS Linux (Python, ressources
+- [x] Valider l’installation ECHOS Linux (Python, ressources
   runtime, chemins de données) et spécifier précisément les versions/OS
-  supportés.
+  supportés — **fait le 08/10/2026** : procédure vierge + probes de
+  readiness/analyse/arrêt dans `../docs/docs-launcher/INTEGRATION_CONTRACT.md`
+  §10.3 (Linux x86-64, Python ≥ 3.11, ~212 Mo).
 - [x] Alimenter la base analytique depuis les données batch SYNE : chaque run
   archivé expose son flux d’observabilité, ECHOS l’enregistre par
   `POST /ingest/run` avant toute analyse.
@@ -235,9 +237,9 @@ d’exclure le contexte `profiling` — des durées de calcul non reproductibles
 du rapport déterministe ; ces durées restent disponibles par la voie
 d’instrumentation.
 
-Reste ouvert : la validation de l’installation ECHOS Linux (versions et OS
-supportés, ressources runtime) et l’acceptation sur un service ECHOS réel
-pilotée depuis l’interface du Launcher plutôt que depuis le backend.
+Reste ouvert : l’acceptation sur un service ECHOS réel pilotée depuis
+l’interface du Launcher plutôt que depuis le backend (J3). La validation de
+l’installation ECHOS Linux est faite (§10.3 du contrat, 08/10/2026).
 
 #### 2C — `syne-mock`
 
@@ -261,8 +263,8 @@ couvrent readiness, ports attribués, conflit de ports, arrêt authentifié avec
 fermeture du WebSocket, SIGINT et SIGTERM. `npm test` passe avec 46 tests.
 La sélection exclusive SYNE réel/émulé demeure testée par le Launcher (J0).
 J2C est terminé ; la partie technique de J2A et de J2B est désormais couverte,
-la validation d'installation ECHOS (versions/OS) reste à faire avant clôture
-définitive de J2.
+la validation d'installation ECHOS (versions/OS) étant close le 08/10/2026
+(INTEGRATION_CONTRACT §10.3), J2 est clos.
 
 ### Jalon 3 — Brancher le Launcher aux contrats réels
 
