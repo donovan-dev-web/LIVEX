@@ -209,14 +209,26 @@ Aujourd'hui : `runs-on: ubuntu-latest` dans toute la CI, manifestes sans clé
 `executable.windows`.
 
 **Rédigeable sur Linux (Lot L)** :
-- [ ] `syne/component.json` : publication `win-x64` + clé `executable.windows`.
-- [ ] `echos/component.json` : point d'entrée Windows (script/exe) + clé
-      `executable.windows`.
-- [ ] `syne-mock/component.json` : clé `executable.windows` (Node).
-- [ ] Générateur de manifestes / validation du schéma pour les clés par OS
-      (`.github/workflows/ci.yml` job « Validation des manifests »).
-- [ ] Jobs CI Windows : SYNE (build+tests), ECHOS, mock, Launcher
-      (unit + integration + E2E avec SYNE publié).
+- [x] `syne/component.json` : publication `win-x64` + clé `executable.windows` —
+      `Simulation.Console/bin/Release/net10.0/win-x64/publish/Simulation.Console.exe`
+      (publié en CI par `dotnet publish -r win-x64`, chemin déclaré au manifeste).
+- [x] `echos/component.json` : point d'entrée Windows (script/exe) + clé
+      `executable.windows` — nouveau `echos/echos-launcher.cmd` symétrique de
+      `echos-launcher` (venv prioritaire, `python` en repli) ; copié dans les
+      installations par le banc J3.
+- [x] `syne-mock/component.json` : clé `executable.windows` (Node) — `src/cli.js`
+      (même script, le chemin est relatif et valable sur les deux OS).
+- [x] Générateur de manifestes / validation du schéma pour les clés par OS
+      (`.github/workflows/ci.yml` job « Validation des manifests ») —
+      `validate_manifests.py` impose désormais la forme `path` **ou** les deux
+      clés `linux` + `windows` sur chaque manifeste d'espace de travail.
+- [x] Jobs CI Windows : SYNE (build+tests), ECHOS, mock, Launcher
+      (unit + integration + E2E avec SYNE publié) — jobs `syne-dotnet-windows`,
+      `echos-python-windows`, `syne-mock-node-windows`, `launcher-dotnet-windows`
+      sur `windows-latest`. Portabilité : `ProcessManager` exécute les `.cmd` via
+      `cmd.exe /c` (CreateProcess ne lance que des `.exe`), bancs E2E lisant la
+      clé d'exécutable de la plateforme courante, venv ECHOS sous `.venv\Scripts`,
+      liens de répertoire en junction sous Windows.
 
 **À valider sur Windows (Lot W)** :
 - [ ] `ManifestDetector`, `ProcessTreeKiller`, `ProcessRunExecutor` déjà
@@ -226,7 +238,9 @@ Aujourd'hui : `runs-on: ubuntu-latest` dans toute la CI, manifestes sans clé
 
 **Critère de sortie** : [ ] CI verte sur `ubuntu-latest` **et**
 `windows-latest`, y compris l'E2E de campagne, **et** validations locales
-Windows ci-dessus effectuées.
+Windows ci-dessus effectuées. *(Lot L committé : les jobs `windows-latest` sont
+exécutables dès le prochain push — le constat de la CI Windows et les validations
+Lot W restent à faire, machine Windows §8.)*
 
 ### Étape 6 — Validation transverse V3 (stabilité) — **Lot L**
 

@@ -180,9 +180,10 @@ internal sealed class PublishedSyneHarness : IDisposable
     public static PublishedSyneHarness Create(string root, out PublishedSyneHarness harness)
     {
         harness = new PublishedSyneHarness(root);
-        if (!OperatingSystem.IsLinux())
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsWindows())
         {
-            throw SkipException.ForSkip("The SYNE component manifest currently declares Linux only.");
+            throw SkipException.ForSkip(
+                "The SYNE component manifest declares linux and windows executables only.");
         }
 
         var publishedSyneRoot = Environment.GetEnvironmentVariable("LIVEX_SYNE_PUBLISHED_ROOT");
@@ -240,10 +241,11 @@ internal static class PublishedSyneInstaller
         File.Copy(manifestPath, Path.Combine(componentRoot, "component.json"), overwrite: true);
 
         using var manifestDocument = JsonDocument.Parse(File.ReadAllText(manifestPath));
-        var executableRelativePath = manifestDocument.RootElement
-            .GetProperty("executable")
-            .GetProperty("linux")
-            .GetString();
+        var executableKey = OperatingSystem.IsWindows() ? "windows" : "linux";
+        Assert.True(
+            manifestDocument.RootElement.GetProperty("executable").TryGetProperty(executableKey, out var executableElement),
+            $"SYNE manifest declares no executable for {executableKey}.");
+        var executableRelativePath = executableElement.GetString();
         var manifestVersion = manifestDocument.RootElement.GetProperty("version").GetString();
         Assert.False(string.IsNullOrWhiteSpace(executableRelativePath));
         var sourceExecutableDirectory = Path.GetDirectoryName(

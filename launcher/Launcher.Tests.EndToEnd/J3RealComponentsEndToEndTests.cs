@@ -233,10 +233,10 @@ public sealed class J3RealComponentsEndToEndTests : IDisposable
     /// </summary>
     private void RequireRealComponents()
     {
-        if (!OperatingSystem.IsLinux())
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsWindows())
         {
             throw SkipException.ForSkip(
-                "J3 : composants déclarés Linux aujourd'hui (validation Windows à l'étape 5).");
+                "J3 : les manifestes déclarent les exécutables linux et windows uniquement.");
         }
 
         var syneRoot = Environment.GetEnvironmentVariable("LIVEX_SYNE_PUBLISHED_ROOT");
@@ -254,7 +254,10 @@ public sealed class J3RealComponentsEndToEndTests : IDisposable
                 "(installation : INTEGRATION_CONTRACT.md §10.3).");
         }
 
-        if (!File.Exists(Path.Combine(_echosRoot, ".venv", "bin", "python")))
+        var venvPython = OperatingSystem.IsWindows()
+            ? Path.Combine(_echosRoot, ".venv", "Scripts", "python.exe")
+            : Path.Combine(_echosRoot, ".venv", "bin", "python");
+        if (!File.Exists(venvPython))
         {
             throw SkipException.ForSkip(
                 $"venv ECHOS absent ({Path.Combine(_echosRoot, ".venv")}) — installation requise " +
@@ -305,20 +308,47 @@ public sealed class J3RealComponentsEndToEndTests : IDisposable
         var destination = Path.Combine(_componentsParent, "echos");
         Directory.CreateDirectory(destination);
         File.Copy(Path.Combine(_echosRoot!, "component.json"),
-            Path.Combine(destination, "component.json"), overwrite: true);
-        var launcher = Path.Combine(destination, "echos-launcher");
+            Path.Combine(destination, "component.json"), overwrite: true);        var launcher = Path.Combine(destination, "echos-launcher");
         File.Copy(Path.Combine(_echosRoot!, "echos-launcher"), launcher, overwrite: true);
+        // Le manifeste ECHOS pointe sur echos-launcher.cmd sous Windows : le fichier
+        // doit être présent dans l'installation pour que la détection soit honnête.
+        File.Copy(Path.Combine(_echosRoot!, "echos-launcher.cmd"),
+            Path.Combine(destination, "echos-launcher.cmd"), overwrite: true);
         if (!OperatingSystem.IsWindows())
         {
             File.SetUnixFileMode(launcher,
                 UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
-                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute
-                | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
         }
-        Directory.CreateSymbolicLink(
-            Path.Combine(destination, "echos"), Path.Combine(_echosRoot!, "echos"));
-        Directory.CreateSymbolicLink(
-            Path.Combine(destination, ".venv"), Path.Combine(_echosRoot!, ".venv"));
+        LinkDirectory(Path.Combine(destination, "echos"), Path.Combine(_echosRoot!, "echos"));
+        LinkDirectory(Path.Combine(destination, ".venv"), Path.Combine(_echosRoot!, ".venv"));
+    }
+
+    /// <summary>
+    /// Lien de répertoire : symbolique sous Linux, junction sous Windows
+    /// (un lien symbolique de répertoire exége le privilège SeCreateSymbolicLink,
+    /// qu'un hôte d'exécution CI n'a pas toujours ; la junction est équivalente
+    /// pour un lien local et ne demande aucun privilège).
+    /// </summary>
+    private static void LinkDirectory(string linkPath, string targetPath)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Directory.CreateSymbolicLink(linkPath, targetPath);
+            return;
+        }
+
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            ArgumentList = { "/c", "mklink", "/J", linkPath, targetPath },
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+        using var process = System.Diagnostics.Process.Start(psi)
+            ?? throw new InvalidOperationException("mklink /J n'a pas pu être lancé.");
+        process.WaitForExit();
+        Assert.True(Directory.Exists(linkPath), $"junction refusée : {linkPath} → {targetPath}");
     }
 
     private static ExperimentDefinition Definition(string id, int runCount = 3) => new()
