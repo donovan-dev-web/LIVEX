@@ -51,7 +51,7 @@ La Monographie fournit une feuille de route V2 en 24 semaines (13 phases). Elle 
 4. **T3** : information locale (message n'est reçu que dans le rayon).
 5. **T4** : benchmarks — objectifs de ticks/s (cf. `docs/docs-syne/PERFORMANCE.md`).
 6. **T5** : 160+ tests, couverture ≥ 80%.
-7. **T6** : `docker compose up` démarre en < 30 s.
+7. ~~**T6** : `docker compose up` démarre en < 30 s.~~ **Retiré du périmètre LIVEX (08/10/2026)** : plus de Docker dans le projet — l'installation et l'orchestration sont portées par le Launcher (artefacts natifs, `--check`), arbitrage A1 de `ROADMAP-V01.md`.
 
 ## 5. Long terme (vision)
 

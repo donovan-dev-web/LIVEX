@@ -78,8 +78,7 @@ syne/
 │   ├── Entities/                 # entité, traits [0,2], paramétrage + fabrique déterministe (SYNE-004)
 │   └── Loop/                     # boucle minimale : 1 tick = 1 min, maxTicks, temps simulé (SYNE-002)
 ├── Simulation.Console/           # exécutable (mode serveur WebSocket/HTTP / CLI batch) — ADR-002
-├── Simulation.Core.Tests/        # tests unitaires xUnit (vecteurs PRNG & fabrique épinglés)
-└── Dockerfile                    # à venir — conteneurisation hors périmètre U0
+└── Simulation.Core.Tests/        # tests unitaires xUnit (vecteurs PRNG & fabrique épinglés)
 ```
 
 `Simulation.Console` prend en charge l'exécution CLI/batch ainsi que les
@@ -130,4 +129,4 @@ le moteur .NET font autorité pour les règles et résultats de simulation.
 
 ## Points restés ouverts dans ce document
 - La distribution multi-fréquence exacte du scheduler sera affinée lors de l'implémentation (jalon SYNE-2 : boucle minimale).
-- Conteneurisation (`Dockerfile` SYNE) : hors périmètre U0.
+- Conteneurisation (`Dockerfile` SYNE) : **retirée du périmètre LIVEX** (08/10/2026, arbitrage A1 de `ROADMAP-V01.md`) — plus aucun Docker dans le projet.
