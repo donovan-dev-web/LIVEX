@@ -27,7 +27,7 @@ class FakeTransport:
 
 
 def _variant(name: str, tick: int) -> str:
-    data = json.loads((FIXTURES / name).read_text())
+    data = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
     data["tick"] = tick
     return json.dumps(data)
 

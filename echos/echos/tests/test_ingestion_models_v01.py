@@ -11,11 +11,11 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def _load(name: str) -> dict:
-    return json.loads((FIXTURES / name).read_text())
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
 def _raw(name: str) -> str:
-    return (FIXTURES / name).read_text()
+    return (FIXTURES / name).read_text(encoding="utf-8")
 
 
 def test_world_snapshot_v01_parses_without_health():

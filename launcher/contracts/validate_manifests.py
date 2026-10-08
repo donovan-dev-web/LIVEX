@@ -49,13 +49,28 @@ def main() -> int:
     failures = []
     for manifest_path in manifests:
         relative_path = manifest_path.relative_to(REPOSITORY_ROOT)
+        manifest_document = json.loads(manifest_path.read_text(encoding="utf-8"))
         errors = sorted(
-            validator.iter_errors(json.loads(manifest_path.read_text(encoding="utf-8"))),
+            validator.iter_errors(manifest_document),
             key=lambda error: list(map(str, error.absolute_path)),
         )
         for error in errors:
             location = ".".join(map(str, error.absolute_path)) or "<root>"
             failures.append(f"{relative_path}:{location}: {error.message}")
+
+        # Clés par plateforme (ROADMAP-V01 étape 5) : un composant lançable doit
+        # viser soit un chemin universel, soit les deux plateformes cibles.
+        executable = manifest_document.get("executable")
+        if isinstance(executable, dict):
+            has_universal_path = isinstance(executable.get("path"), str)
+            has_platform_keys = all(
+                isinstance(executable.get(platform), str) for platform in ("linux", "windows")
+            )
+            if not (has_universal_path or has_platform_keys):
+                failures.append(
+                    f"{relative_path}:executable: la forme « path » ou les clés par "
+                    f"plateforme « linux » et « windows » sont requises toutes deux"
+                )
 
     if failures:
         print("\n".join(failures))

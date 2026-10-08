@@ -17,7 +17,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
 def _variant(name: str, tick: int) -> str:
-    data = json.loads((FIXTURES / name).read_text())
+    data = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
     data["tick"] = tick
     return json.dumps(data)
 
@@ -153,7 +153,7 @@ def test_consume_records_seed_carried_by_the_snapshot(tmp_path):
     """A1 : le seed transporté (contrat V0.2.1) gagne sur la dérivation ``_seed_of``."""
     frames = []
     for tick in range(1, 3):
-        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8"))
         snapshot["tick"] = tick
         snapshot["runId"] = "run-12345-0a1b2c3d4e5f"
         snapshot["seed"] = 12345
@@ -174,7 +174,7 @@ def test_consume_falls_back_to_seed_of_new_run_id_format(tmp_path):
     """A1 : flux V0.8 (format ``run-<seed>-<12hex>`` sans champ seed) → seed dérivé."""
     frames = []
     for tick in range(1, 3):
-        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8"))
         snapshot["tick"] = tick
         snapshot["runId"] = "run-999-123456789abc"
         frames.append(json.dumps(snapshot))
@@ -194,7 +194,7 @@ def test_consume_survives_a_missing_seed_with_a_warning(tmp_path, caplog):
     """A1 : ni snapshot ni run_id porteurs → seed vide, jamais une erreur fatale."""
     frames = []
     for tick in range(1, 3):
-        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8"))
         snapshot["tick"] = tick
         snapshot["runId"] = "not-a-run-format"
         frames.append(json.dumps(snapshot))
@@ -226,7 +226,8 @@ def test_consume_two_successive_runs_in_one_connection(tmp_path):
     frames = []
     for run_id in ("run-7", "run-8"):
         for tick in range(1, 3):
-            snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+            raw = (FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8")
+            snapshot = json.loads(raw)
             snapshot["tick"] = tick
             snapshot["runId"] = run_id
             frames.append(json.dumps(snapshot))
@@ -264,7 +265,8 @@ def test_rolling_contexts_are_reset_between_runs(tmp_path):
     frames = []
     for run_id in ("run-a", "run-b"):
         for tick in range(1, 3):
-            snapshot = json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+            raw = (FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8")
+            snapshot = json.loads(raw)
             snapshot["tick"] = tick
             snapshot["runId"] = run_id
             frames.append(json.dumps(snapshot))
@@ -391,10 +393,10 @@ def test_rolling_context_exposes_the_three_engine_windows():
     from echos.storage.pipeline import TickSegment, _snapshot_for_engines, _RollingContext
 
     snapshot = WorldSnapshot.model_validate(
-        json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        json.loads((FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8"))
     )
     events = [ExternalEvent.model_validate(
-        json.loads((FIXTURES / "decision_made_v01.json").read_text())
+        json.loads((FIXTURES / "decision_made_v01.json").read_text(encoding="utf-8"))
     )]
     segment = TickSegment(tick=1, snapshot=snapshot, events=events)
 
@@ -449,7 +451,7 @@ def test_event_window_is_bounded_by_ticks_then_by_events():
     from echos.storage.pipeline import _RollingContext
 
     snapshot = WorldSnapshot.model_validate(
-        json.loads((FIXTURES / "world_snapshot_v01.json").read_text())
+        json.loads((FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8"))
     )
 
     def segment(tick: int, events: int) -> TickSegment:

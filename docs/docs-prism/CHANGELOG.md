@@ -30,7 +30,7 @@
 - `PRISM_UNREAL_IMPLEMENTATION.md` : la conversion de positions et la grille de tuiles renvoient à `SCALE_AND_CADENCE_SPEC.md` (convention retenue `k = 100`, tuile 3200 uu) au lieu de l'échelle illustrative de 100 uu ; le tableau de cadence ajoute la ligne d'immersion `TPS = 6`.
 
 ### Historical
-- Les versions antérieures de ces documents décrivaient un prototype Godot et des intentions de rendu. Elles ne décrivent plus la plateforme ni l'implémentation actuelles. Le prototype est archivé dans `../docs_prototype/`.
+- Les versions antérieures de ces documents décrivaient un prototype Godot et des intentions de rendu. Elles ne décrivent plus la plateforme ni l'implémentation actuelles. Le prototype était archivé dans `../docs_prototype/` — répertoire retiré depuis par la revue documentaire V0.1 (PR #502).
 
 ## [0.0.0] — à venir
 

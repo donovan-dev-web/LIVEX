@@ -41,11 +41,14 @@ public class ScaleTargetsTests
 
     private static double Throughput(ulong seed, ulong count, int ticks)
     {
-        // Meilleur de 3 essais : les mesures de débit en CI sont perturbées par la
-        // charge parallèle — le max (essai le moins contensionné, proche du taux
-        // machine) sert de référence anti-régression (PERFORMANCE.md §9).
+        // Meilleur de 5 essais : les mesures de débit en CI sont perturbées par la
+        // charge — le max (essai le moins contensionné, proche du taux machine)
+        // sert de référence anti-régression (PERFORMANCE.md §9). Cinq essais
+        // couvrent plusieurs fenêtres de charge : un run `windows-latest` où les
+        // deux assemblées de tests tournaient en parallèle avait vu les trois
+        // essais passer sous le plancher sans aucune régression du moteur.
         double best = 0.0;
-        for (int attempt = 0; attempt < 3; attempt++)
+        for (int attempt = 0; attempt < 5; attempt++)
         {
             SimulationLoop loop = Build(seed, count);
             var sw = Stopwatch.StartNew();
@@ -57,22 +60,30 @@ public class ScaleTargetsTests
         return best;
     }
 
+    /// <summary>Contrôle de débit : message portant la valeur mesurée (diagnostic CI).</summary>
+    private static void AssertAboveFloor(double floor, double measured, string message)
+    {
+        Assert.True(
+            measured >= floor,
+            $"{message} Mesuré {measured:F1} t/s, plancher {floor:F0} t/s.");
+    }
+
     [Fact]
     public void FiftyEntities_StayAboveRegressionFloor()
     {
-        Assert.True(Throughput(12345, 50, 100) >= 120.0, "Débit à 50 entités sous le plancher anti-régression.");
+        AssertAboveFloor(120.0, Throughput(12345, 50, 100), "Débit à 50 entités sous le plancher anti-régression.");
     }
 
     [Fact]
     public void FiveHundredEntities_StayAboveRegressionFloor()
     {
-        Assert.True(Throughput(12345, 500, 60) >= 30.0, "Débit à 500 entités sous le plancher anti-régression.");
+        AssertAboveFloor(30.0, Throughput(12345, 500, 60), "Débit à 500 entités sous le plancher anti-régression.");
     }
 
     [Fact]
     public void OneThousandEntities_StayAboveRegressionFloor()
     {
-        Assert.True(Throughput(12345, 1000, 40) >= 20.0, "Débit à 1000 entités sous le plancher anti-régression.");
+        AssertAboveFloor(20.0, Throughput(12345, 1000, 40), "Débit à 1000 entités sous le plancher anti-régression.");
     }
 
     [Fact]

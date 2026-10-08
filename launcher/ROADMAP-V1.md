@@ -198,9 +198,11 @@ déclarée Linux ; aucun support Windows/macOS n’est revendiqué.
 - [x] Définir et tester la disponibilité réelle : base analytique accessible,
   migrations valides et endpoints d’analyse utilisables avant de signaler
   `ready`.
-- [ ] Valider l’installation ECHOS Linux (Python, ressources
+- [x] Valider l’installation ECHOS Linux (Python, ressources
   runtime, chemins de données) et spécifier précisément les versions/OS
-  supportés.
+  supportés — **fait le 08/10/2026** : procédure vierge + probes de
+  readiness/analyse/arrêt dans `../docs/docs-launcher/INTEGRATION_CONTRACT.md`
+  §10.3 (Linux x86-64, Python ≥ 3.11, ~212 Mo).
 - [x] Alimenter la base analytique depuis les données batch SYNE : chaque run
   archivé expose son flux d’observabilité, ECHOS l’enregistre par
   `POST /ingest/run` avant toute analyse.
@@ -235,9 +237,9 @@ d’exclure le contexte `profiling` — des durées de calcul non reproductibles
 du rapport déterministe ; ces durées restent disponibles par la voie
 d’instrumentation.
 
-Reste ouvert : la validation de l’installation ECHOS Linux (versions et OS
-supportés, ressources runtime) et l’acceptation sur un service ECHOS réel
-pilotée depuis l’interface du Launcher plutôt que depuis le backend.
+Reste ouvert : l’acceptation sur un service ECHOS réel pilotée depuis
+l’interface du Launcher plutôt que depuis le backend (J3). La validation de
+l’installation ECHOS Linux est faite (§10.3 du contrat, 08/10/2026).
 
 #### 2C — `syne-mock`
 
@@ -261,8 +263,8 @@ couvrent readiness, ports attribués, conflit de ports, arrêt authentifié avec
 fermeture du WebSocket, SIGINT et SIGTERM. `npm test` passe avec 46 tests.
 La sélection exclusive SYNE réel/émulé demeure testée par le Launcher (J0).
 J2C est terminé ; la partie technique de J2A et de J2B est désormais couverte,
-la validation d'installation ECHOS (versions/OS) reste à faire avant clôture
-définitive de J2.
+la validation d'installation ECHOS (versions/OS) étant close le 08/10/2026
+(INTEGRATION_CONTRACT §10.3), J2 est clos.
 
 ### Jalon 3 — Brancher le Launcher aux contrats réels
 
@@ -283,14 +285,35 @@ J2B.
 - [ ] Raccorder les paramètres de campagne (configuration/simulation, nombre de
   runs, ticks, seed/stratégie, politique d’échec et destination) à la commande
   SYNE ; enregistrer les valeurs effectives dans les métadonnées du run.
-- [ ] Collecter les artefacts depuis les seuls chemins autorisés, vérifier
+- [x] Collecter les artefacts depuis les seuls chemins autorisés, vérifier
   complétude/empreintes, produire l’index et sceller le paquet seulement après
-  fermeture de tous les producteurs.
-- [ ] À la reprise, ne pas rejouer un run réussi ; reconnaître et diagnostiquer
-  un run partiel ou un processus toujours actif au lieu de le supposer terminé.
-- [ ] Contrôler les erreurs composant par composant : échec d’ECHOS ne supprime
-  pas les artefacts SYNE ; échec du composant optionnel ne rend pas l’état
-  SYNE incohérent.
+  fermeture de tous les producteurs — **prouvé le 08/10/2026** : la collecte
+  n’énumère que `data/` et `logs/` du dossier de run (`ProcessRunExecutor`,
+  `CollectFiles`), les empreintes sont vérifiées run par run
+  (`VerifyRunIntegrity`), et le parcours réel J3 (`J3RealComponentsEndToEndTests`)
+  contrôle chaque entrée du paquet scellé (aucune `..`, aucune entrée absolue,
+  tout sous `runs/RUN-xxxx/` ou `runs/index.json`) ; l’exécuteur attend la
+  sortie du moteur avant de collecter et la campagne ne se scelle qu’après
+  l’analyse de fin de campagne.
+- [x] À la reprise, ne pas rejouer un run réussi ; reconnaître et diagnostiquer
+  un run partiel au lieu de le supposer terminé — **prouvé le 08/10/2026** par
+  `CampaignRunnerTests.Reprise_ne_rejoue_aucun_run_termine` (état
+  `Recoverable`, run interrompu marqué `Annule`, reprise n'exécute que
+  RUN-0002/0003 avec la même graine) et
+  `Reprise_publie_une_progression_comptant_les_runs_deja_termines` — confirmé
+  **contre du vrai SYNE** le 08/10/2026 par
+  `J3RealComponentsEndToEndTests.J3_SYNE_publie_et_ECHOS_reel_interruption_reprise_analyse_et_rapport`
+  (entrée `RUN-0001` identique octet à octet avant/après reprise, une seule
+  occurrence `run_completed` au journal, ligne de session « jamais rejoué(s) »).
+- [ ] À la reprise, reconnaître un **processus toujours actif** (composant en
+  vie au lieu d'un run terminé) — aucune preuve de test identifiée.
+- [x] Contrôler les erreurs composant par composant : échec d’ECHOS ne supprime
+  pas les artefacts SYNE ; échec du composant optionnel ne rend pas l’état SYNE
+  incohérent — **prouvé contre ECHOS réel le 08/10/2026** :
+  `J3RealComponentsEndToEndTests.J3_echec_ECHOS_ne_supprime_rien_et_laisse_la_campagne_se_terminer`
+  (ECHOS arrêté entre deux runs : second run terminé, empreintes des deux runs
+  valides, flux archivés intacts, analyse du run 2 marquée « indisponible » au
+  journal, paquet scellé sans rapport).
 
 #### ECHOS — raccordement au paquet
 
@@ -300,9 +323,15 @@ J2B.
   telle quelle dans le manifeste d’expérience. Le Launcher constate l’identité
   qu’ECHOS a enregistrée : un dossier mal apparié est nommé au lieu de
   ressortir plus tard comme un « run inconnu » opaque.
-- [ ] Archiver les artefacts d’analyse et le rapport retournés dans le
+- [x] Archiver les artefacts d’analyse et le rapport retournés dans le
   paquet selon le schéma ; enregistrer les versions d’ECHOS, des métriques et
-  du format de rapport.
+  du format de rapport — **prouvé le 08/10/2026** : analyses individuelles
+  (`analysis/individual/`), agrégats (`analysis/aggregate/`) et rapport
+  (`analysis/emergence_report.md`) archivés puis relus à l’identique dans le
+  parcours réel J3 ; la version d’ECHOS qui a produit le rapport est
+  consignée dans le manifeste du paquet (lue sur l’instance qui a répondu,
+  `IAnalysisService.AnalysisComponentVersion`) ; les schémas des réponses
+  d’analyse (`schemaVersion`) voyagent dans les fichiers archivés eux-mêmes.
 - [x] Préserver le rapport Markdown source sans le transformer ; afficher et
   exporter le même contenu et signaler clairement son absence ou son erreur
   (session complète G5 : l’archived est comparé octet à octet à ce qu’ECHOS
@@ -313,6 +342,14 @@ J2B.
 création de campagne → run batch → artefacts → analyse sans interface → rapport
 archivé et relu depuis le `.livexp`. Un second parcours arrête la campagne,
 la relance et prouve qu’aucun run terminé n’est rejoué.
+
+**Statut au 08/10/2026 : franchie sur Linux** — les deux parcours sont
+réalisés par `J3RealComponentsEndToEndTests` (2 tests verts contre SYNE publié
+et ECHOS réel installé par son `echos-launcher`, base d’analyse dédiée),
+intégrés à la suite E2E (31 tests) et câblés en CI Linux (job Launcher :
+venv ECHOS + `LIVEX_SYNE_PUBLISHED_ROOT`). Reste : exécution CI effective
+lors du prochain push, puis validation sous Windows à l’étape 5 de
+`../../ROADMAP-V01.md`.
 
 ### Jalon 4 — Terminer les surfaces UI et de configuration
 

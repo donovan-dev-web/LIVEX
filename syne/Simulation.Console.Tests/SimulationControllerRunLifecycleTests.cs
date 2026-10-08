@@ -148,6 +148,32 @@ public sealed class SimulationControllerRunLifecycleTests
         Assert.Equal(tick, controller.Status().Tick);
     }
 
+    [Fact]
+    public async Task Reset_WithoutConfig_BuildsTheSameReferenceProfileAsPrepare()
+    {
+        // Contrat du chemin piloté : reset sans surcouche doit produire le
+        // profil de référence, exactement comme prepare sans surcouche — et
+        // non les défauts du type. La campagne V2′ du 07/10 n'a validé que
+        // prepare+start ; sans cet invariant, un reset piloté long redémarre
+        // sur un autre profil (mesuré : extinction t300 par reset).
+        await using var controller = new SimulationController();
+
+        await controller.PrepareAsync(seed: null, configJson: null);
+        string prepareJson = ConfigLoader.ToJson(
+            controller.PreparedOptions ?? throw new InvalidOperationException("prepare n'a pas d'options."));
+
+        await controller.ResetAsync(seed: null, maxTicks: 1);
+        string resetJson = ConfigLoader.ToJson(
+            controller.PreparedOptions ?? throw new InvalidOperationException("reset n'a pas d'options."));
+        await controller.StopAsync();
+
+        Assert.Equal(prepareJson, resetJson);
+        // Exigence ADR-016 : le chemin HTTP ne dépend jamais d'un défaut qu'on
+        // pourrait oublier de recaler — reset doit égaler le profil de
+        // référence lui-même, pas seulement coïncider avec les défauts.
+        Assert.Equal(ConfigLoader.ToJson(SimulationProfiles.Reference()), resetJson);
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan timeout)
     {
         DateTime deadline = DateTime.UtcNow + timeout;

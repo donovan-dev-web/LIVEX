@@ -22,7 +22,7 @@ WINDOW = 100
 
 
 def _load(name: str) -> dict:
-    return json.loads((FIXTURES / name).read_text())
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
 def _community_history(snapshot: dict) -> list[dict]:
@@ -91,4 +91,4 @@ def test_last_tick_series_matches_golden_files():
 
 
 def _load_golden() -> dict:
-    return json.loads((GOLDEN / "analysis_golden.json").read_text())
+    return json.loads((GOLDEN / "analysis_golden.json").read_text(encoding="utf-8"))

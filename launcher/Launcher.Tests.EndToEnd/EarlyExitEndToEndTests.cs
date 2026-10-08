@@ -18,20 +18,25 @@ public sealed class EarlyExitEndToEndTests : IDisposable
     [Fact]
     public async Task Un_composant_qui_s_arrete_immediatement_ne_laisse_aucune_instance()
     {
-        if (!OperatingSystem.IsLinux())
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsWindows())
         {
-            throw SkipException.ForSkip("Le composant de ce banc est un script shell.");
+            throw SkipException.ForSkip("Le composant de ce banc est un script shell ou batch.");
         }
 
         var componentsParent = Path.Combine(_root, "components");
         var location = Path.Combine(componentsParent, "syne");
         Directory.CreateDirectory(location);
 
-        var executable = Path.Combine(location, "exit-now");
-        await File.WriteAllTextAsync(executable, "#!/bin/sh\nexit 3\n");
-        File.SetUnixFileMode(executable,
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
-            | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        var executable = Path.Combine(location, OperatingSystem.IsWindows() ? "exit-now.cmd" : "exit-now");
+        await File.WriteAllTextAsync(executable, OperatingSystem.IsWindows()
+            ? "@echo off\r\nexit /b 3\r\n"
+            : "#!/bin/sh\nexit 3\n");
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(executable,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute
+                | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
 
         await File.WriteAllTextAsync(Path.Combine(location, "component.json"), Manifest);
 
@@ -78,7 +83,7 @@ public sealed class EarlyExitEndToEndTests : IDisposable
           "type": "engine",
           "version": "0.0.0-exit",
           "protocolVersion": 1,
-          "executable": { "path": "exit-now" },
+          "executable": { "linux": "exit-now", "windows": "exit-now.cmd" },
           "capabilities": ["headless", "seed", "tickLimit"],
           "endpoints": { "control": { "transport": "http" } },
           "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },

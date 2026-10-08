@@ -10,7 +10,10 @@ from __future__ import annotations
 import json
 import os
 import socket
+import sqlite3
 import subprocess
+import sys
+import threading
 import time
 import urllib.request
 from pathlib import Path
@@ -83,7 +86,7 @@ def _json_request(url: str, method: str, body: dict | None = None) -> dict:
 def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
     assert SYNE_DLL.exists(), f"Build the SYNE Release console first: {SYNE_DLL}"
     config_path = tmp_path / "syne-e2e.json"
-    config_path.write_text(json.dumps({"agents": {"initialCount": 3}}))
+    config_path.write_text(json.dumps({"agents": {"initialCount": 3}}), encoding="utf-8")
     port = _free_port()
     control_port = _free_port()
     process = subprocess.Popen(
@@ -120,7 +123,7 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
             {
                 "seed": 17,
                 "maxTicks": 200000,
-                "config": json.loads(config_path.read_text()),
+                "config": json.loads(config_path.read_text(encoding="utf-8")),
             },
         )
         assert started["runId"]
@@ -199,3 +202,174 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait(timeout=5)
+
+
+def _pump(stream, lines) -> None:
+    """Collecte le journal du worker au fil de l'eau (thread daémo)."""
+
+    for line in stream:
+        lines.append(line.rstrip("\n"))
+
+
+def _wait_until(predicate, timeout, interval=0.1) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(interval)
+    return bool(predicate())
+
+
+def _tick_rows(database, run_id) -> int:
+    """Lignes de tick_summaries pour un run, -1 si la base est momentanément verrouillée."""
+
+    connection = sqlite3.connect(f"file:{database}?mode=ro", uri=True, timeout=1)
+    try:
+        cursor = connection.execute(
+            "SELECT COUNT(*) FROM tick_summaries WHERE run_id = ?", (run_id,)
+        )
+        return int(cursor.fetchone()[0])
+    except sqlite3.Error:
+        return -1
+    finally:
+        connection.close()
+
+
+def _start_syne(observe_port, control_port):
+    return subprocess.Popen(
+        [
+            "dotnet", str(SYNE_DLL), "--serve", "--serve-port", str(control_port),
+            "--observe-port", str(observe_port),
+        ],
+        cwd=ROOT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def _wait_control(control_url, process, timeout=15) -> None:
+    deadline = time.monotonic() + timeout
+    last_error: Exception | None = None
+    while time.monotonic() < deadline and process.poll() is None:
+        try:
+            _json_request(f"{control_url}/api/control/status", "GET")
+            return
+        except Exception as exc:  # server is still starting or binding
+            last_error = exc
+            time.sleep(0.05)
+    raise AssertionError(f"contrôle SYNE indisponible : {last_error}")
+
+
+@pytest.mark.skipif(
+    os.getenv("LIVEX_SYNE_E2E") != "1",
+    reason="requires Release SYNE build; enabled in the U8 integration CI job",
+)
+def test_worker_reconnects_after_violent_syne_death(tmp_path):
+    """V3 — reprise du worker après mort violente du flux SYNE.
+
+    SIGKILL de SYNE en plein run : le worker doit sortir de son ``recv``,
+    se reconnecter avec backoff, puis réingérer le run d'une seconde session
+    SYNE redémarrée sur le même port. Les preuves sont le journal du worker
+    (constat de fermeture + second « connecté ») et les lignes de la base
+    (le second run est écrit) — jamais la seule absence de crash.
+    """
+    assert SYNE_DLL.exists(), f"Build the SYNE Release console first: {SYNE_DLL}"
+    database = tmp_path / "v3-worker.db"
+    started_file = tmp_path / "worker-started"
+    observe_port = _free_port()
+    control_port = _free_port()
+    control_url = f"http://127.0.0.1:{control_port}"
+
+    syne = _start_syne(observe_port, control_port)
+    worker = None
+    worker_lines: list[str] = []
+    try:
+        _wait_control(control_url, syne)
+
+        # Le worker est connecté AVANT le premier run : il reçoit le
+        # world_initialized depuis le début, comme en production (J2).
+        env = dict(os.environ)
+        env.update(
+            {
+                "ECHOS_ANALYTICS_DB": str(database),
+                "SYNE_OBSERVABILITY_URL": f"ws://127.0.0.1:{observe_port}/",
+                "LIVEX_WS_STARTED_FILE": str(started_file),
+            }
+        )
+        worker = subprocess.Popen(
+            [sys.executable, "-m", "echos.dev_ingest"],
+            cwd=ROOT / "echos",
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        threading.Thread(target=_pump, args=(worker.stdout, worker_lines), daemon=True).start()
+
+        assert _wait_until(lambda: started_file.exists(), 10), (
+            "worker jamais démarré :\n" + "\n".join(worker_lines)
+        )
+        assert _wait_until(
+            lambda: any("connecté au flux SYNE" in line for line in worker_lines), 15
+        ), "worker jamais connecté :\n" + "\n".join(worker_lines)
+
+        started = _json_request(
+            f"{control_url}/api/control/start",
+            "POST",
+            {"seed": 17, "maxTicks": 200000, "config": {"agents": {"initialCount": 3}}},
+        )
+        run_one = started["runId"]
+        assert _wait_until(lambda: _tick_rows(database, run_one) >= 3, 20), (
+            f"run {run_one} non ingéré :\n" + "\n".join(worker_lines)
+        )
+
+        # Mort violente : SIGKILL, aucun arrêt propre du flux.
+        killed_at = time.monotonic()
+        syne.kill()
+        syne.wait(timeout=5)
+
+        assert _wait_until(
+            lambda: any("reconnexion" in line for line in worker_lines), 10
+        ), "worker n'a pas constaté la fermeture du flux :\n" + "\n".join(worker_lines)
+        detected_after = time.monotonic() - killed_at
+        print(f"V3 reprise : fermeture constatée en {detected_after:.2f}s")
+        assert worker.poll() is None, "worker mort pendant la reconnexion"
+
+        # Nouvelle session SYNE sur le même port. On laisse le worker reconnecter
+        # AVANT de démarrer le second run : il reçoit le world_initialized du run.
+        restarted_at = time.monotonic()
+        syne = _start_syne(observe_port, control_port)
+        _wait_control(control_url, syne)
+        assert _wait_until(
+            lambda: sum("connecté au flux SYNE" in line for line in worker_lines) >= 2, 45
+        ), "worker non reconnecté après redémarrage :\n" + "\n".join(worker_lines)
+        reconnected_after = time.monotonic() - restarted_at
+        print(f"V3 reprise : reconnexion après redémarrage en {reconnected_after:.2f}s")
+
+        started_two = _json_request(
+            f"{control_url}/api/control/start",
+            "POST",
+            {"seed": 99, "maxTicks": 200000, "config": {"agents": {"initialCount": 3}}},
+        )
+        run_two = started_two["runId"]
+        assert run_two != run_one, f"identités de run attendues distinctes, reçu {run_one}"
+        assert _wait_until(lambda: _tick_rows(database, run_two) >= 1, 20), (
+            f"reprise non prouvée : run {run_two} non ingéré après reconnexion :\n"
+            + "\n".join(worker_lines)
+        )
+        assert worker.poll() is None, "worker arrêté après reconnexion"
+    finally:
+        if worker is not None:
+            worker.terminate()
+            try:
+                worker.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                worker.kill()
+                worker.wait(timeout=5)
+        if syne.poll() is None:
+            syne.terminate()
+            try:
+                syne.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                syne.kill()
+                syne.wait(timeout=5)
