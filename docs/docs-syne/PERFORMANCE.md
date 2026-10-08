@@ -195,6 +195,10 @@ alors fidèlement l'état (sans entité vivante).
 
 Les tests `ScaleTargetsTests` n'assertent **pas** les objectifs finaux (mesurés à la machine de
 référence en 9.2) mais des **planchers anti-régression** environ 7× en-deçà des mesures réelles :
-**50 → ≥ 120 t/s, 500 → ≥ 30 t/s, 1000 → ≥ 20 t/s** (meilleur de 3 essais). Une régression
+**50 → ≥ 120 t/s, 500 → ≥ 30 t/s, 1000 → ≥ 20 t/s** (meilleur de 5 essais : plusieurs fenêtres de
+charge, la mesure la moins perturbée retient). Une régression
 d'ordre de grandeur (retour à la perception naïve O(n²), boucle cassée, etc.) les casse ; la
 convention de marge est la même que pour le micro-benchmark `PerceptionBenchmarkTests` (§8).
+Côté CI, les deux assemblées de tests SYNE sont lancées dans **deux étapes séquentielles**
+(`.github/workflows/ci.yml`) : exécutées en parallèle, elles se partagent les vCPU du runner et
+le plancher de 500 entités tombait sous le seuil sans régression (constat sur `windows-latest`).

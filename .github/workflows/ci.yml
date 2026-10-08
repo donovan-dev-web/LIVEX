@@ -103,8 +103,14 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore --configuration Release --warnaserror
-      - name: Tests
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+      # Les deux assemblées de tests sont exécutées l'une après l'autre : lancées
+      # en parallèle (un seul `dotnet test`), deux testhost se partagent les vCPU
+      # du runner et le plancher de débit de ScaleTargetsTests mesure sous
+      # contention — échec « temps réel » sans aucune régression du moteur.
+      - name: Tests (Simulation.Core)
+        run: dotnet test Simulation.Core.Tests --no-build --configuration Release --logger "trx;LogFileName=core.trx" --results-directory TestResults
+      - name: Tests (Simulation.Console)
+        run: dotnet test Simulation.Console.Tests --no-build --configuration Release --logger "trx;LogFileName=console.trx" --results-directory TestResults
       - name: Upload résultats
         uses: actions/upload-artifact@v4
         with:
@@ -298,8 +304,14 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore --configuration Release --warnaserror
-      - name: Tests
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+      # Les deux assemblées de tests sont exécutées l'une après l'autre : lancées
+      # en parallèle (un seul `dotnet test`), deux testhost se partagent les vCPU
+      # du runner et le plancher de débit de ScaleTargetsTests mesure sous
+      # contention — échec « temps réel » sans aucune régression du moteur.
+      - name: Tests (Simulation.Core)
+        run: dotnet test Simulation.Core.Tests --no-build --configuration Release --logger "trx;LogFileName=core.trx" --results-directory TestResults
+      - name: Tests (Simulation.Console)
+        run: dotnet test Simulation.Console.Tests --no-build --configuration Release --logger "trx;LogFileName=console.trx" --results-directory TestResults
       - name: Upload résultats
         uses: actions/upload-artifact@v4
         with:
