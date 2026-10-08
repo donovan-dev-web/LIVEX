@@ -288,11 +288,18 @@ J2B.
 - [ ] Collecter les artefacts depuis les seuls chemins autorisés, vérifier
   complétude/empreintes, produire l’index et sceller le paquet seulement après
   fermeture de tous les producteurs.
-- [ ] À la reprise, ne pas rejouer un run réussi ; reconnaître et diagnostiquer
-  un run partiel ou un processus toujours actif au lieu de le supposer terminé.
+- [x] À la reprise, ne pas rejouer un run réussi ; reconnaître et diagnostiquer
+  un run partiel au lieu de le supposer terminé — **prouvé le 08/10/2026** par
+  `CampaignRunnerTests.Reprise_ne_rejoue_aucun_run_termine` (état
+  `Recoverable`, run interrompu marqué `Annule`, reprise n'exécute que
+  RUN-0002/0003 avec la même graine) et
+  `Reprise_publie_une_progression_comptant_les_runs_deja_termines`.
+- [ ] À la reprise, reconnaître un **processus toujours actif** (composant en
+  vie au lieu d'un run terminé) — aucune preuve de test identifiée.
 - [ ] Contrôler les erreurs composant par composant : échec d’ECHOS ne supprime
-  pas les artefacts SYNE ; échec du composant optionnel ne rend pas l’état
-  SYNE incohérent.
+  pas les artefacts SYNE ; échec du composant optionnel ne rend pas l’état SYNE
+  incohérent. (Partiellement couvert par l’isolation d’`EchosAnalysisService`
+  contre stubs — reste à prouver contre ECHOS réel, J3.)
 
 #### ECHOS — raccordement au paquet
 

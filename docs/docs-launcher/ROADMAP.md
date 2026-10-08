@@ -39,11 +39,17 @@ contrats de SYNE et d'ECHOS, dont il dépend pour piloter, et il accompagne PRIS
 
 > **État de réalisation observé :** les sections ci-dessous décrivent la cible
 > et les portes de conception ; elles ne signifient pas que le jalon est livré.
-> Au 2 octobre 2026, G1 et G2 sont présents dans le code, G3 est testé contre
-> des composants simulés mais pas contre SYNE/ECHOS réels, G4 a ses parcours
-> principaux (les variantes UI/headless et la validation complète restent
-> ouvertes), G5 n'est pas franchi, G6 ne dispose pas encore des installateurs du
-> Launcher et G7 reste verrouillé faute de PRISM conforme. La matrice factuelle
+> Au 8 octobre 2026 : G1 et G2 sont présents dans le code ; G3 est testé contre
+> des composants simulés **et** contre SYNE publié (J2A accepté) ; G4 a ses
+> parcours principaux (variantes UI/headless et validation complètes restent
+> ouvertes, J4) ; **G5 est livré côté Launcher mais n'est PAS franchi** —
+> arbitrage explicite du 08/10/2026 : la condition du §6.6 impose le scénario
+> vert **contre un ECHOS réel**, et l'implémentation actuelle a été prouvée
+> contre le banc de stubs (`CHANGELOG.md`, G5 → G7) — conformément à la règle
+> « stub ≠ acceptation » de `../../launcher/ROADMAP-V1.md` §1 ; la preuve réelle
+> relève du parcours J3 (étape 4 de `../../ROADMAP-V01.md`) ; G6 dispose de
+> `--check` complet mais pas encore des installateurs multiplateformes (étape
+> 8) ; G7 reste verrouillé faute de PRISM conforme. La matrice factuelle
 > et le plan d'exécution à jour sont dans
 > [`../../launcher/V1-CAPABILITY-MATRIX.md`](../../launcher/V1-CAPABILITY-MATRIX.md)
 > et [`../../launcher/ROADMAP-V1.md`](../../launcher/ROADMAP-V1.md).

@@ -278,20 +278,20 @@ Métriques : flux WS segmenté par `runId` (2500 snapshots/run, décisions exact
 initiale — le chemin piloté `reset` reproduit exactement le chemin `prepare`**
 (égalité bit à bit des critères ADR-016 sur les 6 couples pop/seed).
 
-**V3–V6 restent à exécuter** (voir table ci-dessous ; long-run retiré de la V0.1,
+**V3, V4 et V6 restent à exécuter** (voir table ci-dessous ; long-run retiré de la V0.1,
 arbitrage A2 de `ROADMAP-V01.md`).
 
 ### 5.2 Validations restantes
 
 Ces chantiers ne demandent **pas de décision ni de nouveau code** (ou très peu).
 V1 et V2 ont été exécutées le 30/09/2026 (§5.1), V2′ le 07/10 (ADR-016) et **V2′
-par `reset` le 08/10/2026 (§5.1 bis)** — restent V3, V4, V5, V6.
+par `reset` le 08/10/2026 (§5.1 bis)**, V5 le 08/10/2026 (§5.2) — restent V3, V4 et V6.
 
 | # | Validation | Critère | Source |
 | :-- | :-- | :-- | :-- |
 | V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | **EXÉCUTÉE le 07/10/2026 en périmètre élargi** (ADR-016) : défauts intégrés recalibrés B1, 50 **et** 100 agents × **2500 ticks** × 3 seeds — énergie stable **✓** (|pente| ≤ 0,0037/tick < 0,005, 0 extinction, 0 mort, population = initiale sur 6/6) ; part Eat/Drink ≥ 15 % **vide, pas remplie** : la faim moyenne ne dépasse jamais 70 avec ces défauts (critère requalifié, voir ADR-016 §Validation (c)). **REJOUÉE par le chemin `reset` le 08/10/2026 : 6/6 ✓** — mêmes pentes que le chemin `prepare`, voir §5.1 bis | Plan §4-B1/§7 ; `ADR-016` |
-| V3 | **Jalons U7/U8 comme jalons transverses** | Cadence contrôlée, backpressure, lag, parcours UI complets ; stabilité long-run, reprise worker | `ROADMAP.md` §6 (U7 « validation produit partielle », U8 « non accepté comme jalon transverse ») |
-| V4 | Ingestion **réelle** de deux runs SYNE en CI (preuve J2/J3 ECHOS) | Les 2 tests skippés (binaire SYNE Release / serveur syne-mock) passent en continu | `docs/docs-echos/TESTING.md` §315 ; suite ECHOS : 2 skipped |
+| V3 | **Jalons U7/U8 comme jalons transverses** | Cadence contrôlée, backpressure, lag, reprise worker, parcours UI complets (long-run 12 h/72 h retiré — arbitrage A2, `ROADMAP-V01.md` étape 6) | `ROADMAP.md` §6 (U7 « validation produit partielle », U8 « non accepté comme jalon transverse ») |
+| V4 | Ingestion **réelle** de deux runs SYNE en CI (preuve J2/J3 ECHOS) | Les 13 tests skippés en local (12 binaire SYNE Release — job U8, 1 serveur syne-mock) passent en continu | `docs/docs-echos/TESTING.md` §315 ; suite ECHOS : 13 skipped (08/10/2026) |
 | V5 | Recalibrage complet des benchmarks | **REFAIT le 08/10/2026** sur la machine de référence (i7-8750H, arbitrage A3) : deux passes `--benchmark`, checksums identiques. Cibles V2 atteintes à 50 (≥1354 t/s) et 500 (≥42,8) ; **écart ~1,7× à 1000** (5,9–6,5 vs ≥10 t/s) — premières mesures à charge complète (les chiffres ph9 mesuraient des populations mourantes), optimisation perception documentée dans `PERFORMANCE.md` §9.2 | `docs/docs-syne/PERFORMANCE.md` §9 |
 | V6 | Validation du plugin PRISM contre SYNE réel | Étapes 2 et 6 de la roadmap PRISM ; build CI dans la version d'Unreal ciblée | `docs/docs-prism/ROADMAP.md`, `ARCHITECTURE.md` §176 |
 

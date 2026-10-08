@@ -304,15 +304,35 @@ tombstones annotés et mentions négatives) — **preuve : commit du lot étape
 
 ### Étape 11 — Réalignement des statuts de jalons — **Lot L**
 
-- [ ] `launcher/ROADMAP-V1.md` : les cases J3+ sont cohérentes avec l'état
-      réel (certaines paraissent en retard sur la code base).
-- [ ] `docs/docs-launcher/ROADMAP.md` : G5 « non franchi » (`README.md:24`)
-      vs « réalisé contre stubs » (`CHANGELOG.md:149`) : trancher.
-- [ ] `RAPPORT-ELEMENTS-OUVERTS.md` : rayer V2′/V3/V5 une fois faites, passer
-      le statut à [SNAPSHOT] daté.
-- [ ] `Livex-status.md` : réédition complète (état au 02/10 obsolète).
+- [x] `launcher/ROADMAP-V1.md` : les cases J3+ sont cohérentes avec l'état
+      réel — le 08/10, J2A et J2B y sont marqués acceptés (état préexistant,
+      `:172-183`, `:218`) et J3 est ramenée à ses seuls items ouverts : la
+      reprise sans rejouer un run réussi est cochée (preuve :
+      `CampaignRunnerTests.Reprise_ne_rejoue_aucun_run_termine` et
+      `Reprise_publie_une_progression_comptant_les_runs_deja_termines`), la
+      reconnaissance d'un processus toujours actif reste ouverte, le contrôle
+      d'erreurs annoté « partiellement couvert, reste à prouver contre ECHOS
+      réel ».
+- [x] `docs/docs-launcher/ROADMAP.md` : G5 **tranché « livré côté Launcher mais
+      non franchi »** — le §6.6 impose le scénario vert **contre un ECHOS
+      réel** ; l'implémentation est prouvée contre le banc de stubs
+      (`CHANGELOG.md` Unreleased : « G5 → G7 (contre le banc de stubs) ») et la
+      règle « stub ≠ acceptation » (`launcher/ROADMAP-V1.md` §1) s'applique.
+      La preuve réelle relève de J3 (étape 4) ; l'état de réalisation de
+      `docs/docs-launcher/ROADMAP.md` est réécrit en ce sens et la raison
+      obsolète de `launcher/README.md:24` (« SYNE batch et opérations d'analyse
+      non disponibles », contredite par J2A/J2B) est remplacée par le motif
+      réel : scénario vert contre ECHOS réel non encore prouvé. Aucune mention
+      « G5 franchi » ne subsiste.
+- [x] `RAPPORT-ELEMENTS-OUVERTS.md` : V2′ rayée (preuve étape 2, commit
+      `9bf722b9`) et V5 rayée (preuve étape 7, commit `68af96a5`), statut
+      passé à [SNAPSHOT] daté du 08/10 ; V3 sera rayée à l'étape 6.
+- [x] `Livex-status.md` : réédition complète (inventaire 632 fichiers, suites
+      1 205 tests verts, statuts J2A/J2B/installation ECHOS intégrés).
 
-**Critère de sortie** : [ ] Un seul document fait foi pour l'état V0.1.
+**Critère de sortie** : [x] Un seul document fait foi pour l'état V0.1 —
+`ROADMAP-V01.md` est déclaré document de référence par `Livex-status.md`
+(§1 et §7), qui en reprend l'état sans le contredire.
 
 ---
 
@@ -419,6 +439,5 @@ bugs remontés.
 - Ce document est un plan, pas un constat : chaque case passe à
   `[x]` uniquement avec sa preuve (workflow, test ou décision) et un commit
   local (A4).
-- `ROADMAP-V01.md` et `docs/docs-installer/` sont non suivis par git à la
-  date de rédaction : à inclure dans le premier commit du lot documentaire
-  (étape 3).
+- `docs/docs-installer/` était non suivi à la date de rédaction : il est
+  versé au présent lot (il est compté dans l'inventaire de `Livex-status.md`).
