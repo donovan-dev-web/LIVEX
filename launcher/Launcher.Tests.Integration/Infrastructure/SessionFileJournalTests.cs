@@ -45,15 +45,9 @@ public sealed class SessionFileJournalTests : IDisposable
     }
 
     /// <summary>Règle de plateforme qui motive la lecture partagée (constatée sur Windows).</summary>
-    [Fact]
+    [WindowsOnlyFact]
     public void Sous_Windows_un_lecteur_naif_echoue_pendant_lecriture()
     {
-        if (!OperatingSystem.IsWindows())
-        {
-            // Linux n'a pas de verrou obligatoire sur les fichiers : le constat est Windows.
-            throw SkipException.ForSkip("le verrou de partage est une règle Windows");
-        }
-
         using (var journal = new SessionFileJournal(_directory))
         {
             journal.Info("Export", "entrée sous verrou");
@@ -74,6 +68,25 @@ public sealed class SessionFileJournalTests : IDisposable
         }
         catch (DirectoryNotFoundException)
         {
+        }
+    }
+}
+
+/// <summary>
+/// <c>[Fact]</c> exécuté seulement sous Windows. Le saut est posé <b>à la découverte</b>
+/// (propriété <c>Skip</c> de l'attribut) et non levé en cours de test : le saut dynamique
+/// (<c>SkipException.ForSkip</c>) n'est pas converti en « ignoré » par la pile
+/// xunit 2.9.3 + vstest, il ferait échouer le job Linux de la CI.
+/// </summary>
+internal sealed class WindowsOnlyFactAttribute : FactAttribute
+{
+    /// <summary>Initialise l'attribut, sauté hors Windows.</summary>
+    public WindowsOnlyFactAttribute()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            // Linux n'a pas de verrou obligatoire sur les fichiers : le constat est Windows.
+            Skip = "le verrou de partage est une règle Windows";
         }
     }
 }
