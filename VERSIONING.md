@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 8 octobre 2026
 **Dépend de** : —
 **Source Monographie** : §7.1 (organisation du monorepo), Annexe J (roadmap V2)
 
@@ -67,7 +67,8 @@ Le versionnement est déclenché par les évènements suivants :
 ## 8. État courant des versions (septembre 2026)
 
 > Synoptique de référence après la campagne de correctifs
-> `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (ADR-015). L'état détaillé et les
+> de runs du 29/09/2026 (ADR-015 ; jalons et critères consolidés dans
+> `RAPPORT-ELEMENTS-OUVERTS.md` §5.1). L'état détaillé et les
 > matrice de compatibilité par composant vivent dans `docs/docs-syne/ROADMAP.md`
 > et `docs/docs-echos/ROADMAP.md`.
 

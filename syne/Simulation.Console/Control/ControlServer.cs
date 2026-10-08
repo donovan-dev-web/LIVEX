@@ -355,12 +355,15 @@ public sealed class ControlServer : IAsyncDisposable
         return string.IsNullOrWhiteSpace(message)
             ? "La configuration contient des valeurs ou des types invalides."
             : message;
-    }
-
-    private async Task<(int Status, string Body)> ResetAsync(JsonElement body)
+    }    private async Task<(int Status, string Body)> ResetAsync(JsonElement body)
     {
-        ulong? seed = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("seed", out JsonElement seedElement)
-            ? seedElement.GetUInt64()
+        ulong? seed = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("seed", out JsonElement seedElement) ? seedElement.GetUInt64() : null;
+        // Même règle que start/prepare : la surcouche reste en JSON brut et un
+        // type non objet est un 400 explicite, jamais un repli silencieux.
+        if (body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out JsonElement resetConfig) && resetConfig.ValueKind != JsonValueKind.Object)
+            return (400, ToJson(ErrorJson("invalid_config", "config doit etre un objet JSON.")));
+        string? config = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("config", out JsonElement resetConfigRaw)
+            ? resetConfigRaw.GetRawText()
             : null;
         int? maxTicks = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("maxTicks", out JsonElement maxTicksElement)
             ? maxTicksElement.GetInt32()
@@ -368,7 +371,7 @@ public sealed class ControlServer : IAsyncDisposable
 
         try
         {
-            string runId = await _controller.ResetAsync(seed, maxTicks);
+            string runId = await _controller.ResetAsync(seed, maxTicks, config);
             return (200, ToJson(OkJson("reset", runId, _controller.Status())));
         }
         catch (JsonException exception)

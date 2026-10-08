@@ -33,11 +33,10 @@ public sealed class SimulationControllerTests
         var world = await controller.PrepareAsync(42, ConfigLoader.ToJson(config), ticksPerSecond: 2);
         Assert.Equal(2, world.TicksPerSecond);
         Assert.True(controller.AcknowledgeReady("1.0"));
+        DateTime startedAt = DateTime.UtcNow;
         await controller.StartAsync(42, null, 2);
-        await WaitUntilAsync(() => controller.Status().Tick == 1);
-        await Task.Delay(150);
-        Assert.Equal(1ul, controller.Status().Tick);
         await WaitUntilAsync(() => controller.State == SimulationControlState.Finished);
+        AssertRunTookAtLeastTwoTickIntervals(startedAt);
 
         var snapshotTicks = new List<int>();
         foreach (string message in sink.Messages.Where(message => message.Contains("\"type\":\"snapshot\"")))
@@ -75,11 +74,10 @@ public sealed class SimulationControllerTests
         config.Simulation.TicksPerSecond = 2;
 
         string runId = await controller.StartAsync(seed: 42, configJson: ConfigLoader.ToJson(config), maxTicks: 2);
-
-        await Task.Delay(150);
-        Assert.InRange(controller.Status().Tick, 1ul, 1ul);
+        DateTime startedAt = DateTime.UtcNow;
 
         await WaitUntilAsync(() => controller.State == SimulationControlState.Finished);
+        AssertRunTookAtLeastTwoTickIntervals(startedAt);
         Assert.Equal(runId, controller.Status().RunId);
 
         string snapshot = sink.Messages.First(message => message.Contains("\"type\":\"snapshot\""));
@@ -96,6 +94,28 @@ public sealed class SimulationControllerTests
         }
 
         Assert.True(condition(), "La condition n'a pas été satisfaite dans le délai imparti.");
+    }
+
+    /// <summary>
+    /// La cadence demandée (2 t/s) a bien été celle du run : deux ticks valent
+    /// deux intervalles de 500 ms, soit ≈ 1 s — un run à la cadence par défaut
+    /// (10 t/s) finirait en ≈ 200 ms.
+    /// </summary>
+    /// <remarks>
+    /// Mesuré sur le run entier, ancré sur <c>start</c>, et non plus par une
+    /// fenêtre fixe de 150 ms après l'observation du tick 1 : sous charge (runner
+    /// CI), la reprise du fil de test ou du <c>Task.Delay</c> peut être tardive,
+    /// et le tick 2 — légitimement arrivé 500 ms après le premier — tombait alors
+    /// dans la fenêtre et faisait échouer le banc sans anomalie de cadence
+    /// (constaté sur `windows-latest`, job SYNE .NET).
+    /// </remarks>
+    private static void AssertRunTookAtLeastTwoTickIntervals(DateTime startedAt)
+    {
+        TimeSpan elapsed = DateTime.UtcNow - startedAt;
+        Assert.True(
+            elapsed >= TimeSpan.FromMilliseconds(900),
+            $"cadence trop rapide : {elapsed.TotalMilliseconds:F0} ms pour 2 ticks à 2 t/s " +
+            "(au moins deux intervalles de 500 ms attendus)");
     }
 
     private sealed class RecordingSink : IObservabilitySink

@@ -43,6 +43,7 @@ public sealed class LauncherComposition : IDisposable
     private readonly string _packagesRoot;
     private readonly string _componentsRoot;
     private readonly string _dataRoot;
+    private bool _disposed;
 
     /// <summary>
     /// Vrai : les sources standard (application, LIVEX_HOME, profil utilisateur, registre)
@@ -312,6 +313,12 @@ public sealed class LauncherComposition : IDisposable
     /// <summary>Libère la supervision, la surface HTTP, la façade et les processus lancés par le Launcher.</summary>
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
         _supervisionStop.Cancel();
         try
         {

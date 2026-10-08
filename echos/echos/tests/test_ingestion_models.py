@@ -17,15 +17,15 @@ GOLDEN = Path(__file__).resolve().parent / "golden"
 
 
 def _load(name: str) -> dict:
-    return json.loads((FIXTURES / name).read_text())
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
 def _golden(name: str) -> dict:
-    return json.loads((GOLDEN / name).read_text())
+    return json.loads((GOLDEN / name).read_text(encoding="utf-8"))
 
 
 def test_world_snapshot_parse_matches_golden():
-    message = parse_message((FIXTURES / "world_snapshot.json").read_text())
+    message = parse_message((FIXTURES / "world_snapshot.json").read_text(encoding="utf-8"))
 
     assert isinstance(message, WorldSnapshot)
     assert message.model_dump(mode="json", exclude_none=True) == _golden(
@@ -38,7 +38,7 @@ def test_world_snapshot_parse_matches_golden():
 
 
 def test_world_snapshot_preserves_camelcase_contract():
-    message = parse_message((FIXTURES / "world_snapshot.json").read_text())
+    message = parse_message((FIXTURES / "world_snapshot.json").read_text(encoding="utf-8"))
 
     assert message.model_dump(mode="json", by_alias=True, exclude_none=True) == _load(
         "world_snapshot.json"
@@ -46,7 +46,7 @@ def test_world_snapshot_preserves_camelcase_contract():
 
 
 def test_external_event_parse_matches_golden():
-    message = parse_message((FIXTURES / "external_event.json").read_text())
+    message = parse_message((FIXTURES / "external_event.json").read_text(encoding="utf-8"))
 
     assert isinstance(message, ExternalEvent)
     assert message.model_dump(mode="json") == _golden("external_event.json")
@@ -56,7 +56,7 @@ def test_external_event_parse_matches_golden():
 
 
 def test_external_event_preserves_camelcase_contract():
-    message = parse_message((FIXTURES / "external_event.json").read_text())
+    message = parse_message((FIXTURES / "external_event.json").read_text(encoding="utf-8"))
 
     assert message.model_dump(mode="json", by_alias=True, exclude_none=True) == _load(
         "external_event.json"
@@ -107,7 +107,7 @@ def test_snapshot_missing_contract_fields_is_rejected():
 
 def _parse_invalid_fixture():
     try:
-        parse_message((FIXTURES / "invalid_message.json").read_text())
+        parse_message((FIXTURES / "invalid_message.json").read_text(encoding="utf-8"))
     except InvalidMessageError as exc:
         return exc
     raise AssertionError("payload invalide non rejeté")

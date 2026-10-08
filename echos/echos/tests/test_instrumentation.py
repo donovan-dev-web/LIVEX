@@ -62,7 +62,7 @@ class TestEchosLogger:
         logger.structured("run-9", 1, {"EmergenceIndicators": {"EmergenceScore": 0.5}})
         logger.structured("run-9", 2, {"EmergenceIndicators": {"EmergenceScore": 0.6}})
 
-        lines = (tmp_path / "structured-run-9.jsonl").read_text().splitlines()
+        lines = (tmp_path / "structured-run-9.jsonl").read_text(encoding="utf-8").splitlines()
         assert len(lines) == 2
         first, second = (json.loads(line) for line in lines)
         assert first["event"] == "tick_metrics"
@@ -76,13 +76,13 @@ class TestEchosLogger:
     def test_structured_keys_are_sorted(self, tmp_path):
         logger = EchosLogger(tmp_path)
         logger.decision(trace("run-9"))
-        line = json.loads((tmp_path / "decision-traces-run-9.jsonl").read_text())
+        line = json.loads((tmp_path / "decision-traces-run-9.jsonl").read_text(encoding="utf-8"))
         assert list(line) == sorted(line)  # clés triées → hash d'export stable
 
     def test_profiling_writes_report(self, tmp_path):
         logger = EchosLogger(tmp_path)
         logger.profiling("run-9", 1, {"Perception": {"calls": 1, "totalMs": 2.0, "avgMs": 2.0}})
-        payload = json.loads((tmp_path / "profilage-run-9.jsonl").read_text())
+        payload = json.loads((tmp_path / "profilage-run-9.jsonl").read_text(encoding="utf-8"))
         assert payload["event"] == "engine_profiling"
         assert payload["engines"]["Perception"]["totalMs"] == 2.0
 
@@ -91,7 +91,7 @@ class TestEchosLogger:
         logger.info("démarrage de l'analyse")
         files = list(tmp_path.glob("echos-*.log"))
         assert len(files) == 1
-        content = files[0].read_text()
+        content = files[0].read_text(encoding="utf-8")
         assert f"[{logging_module._APP_TAG}]" in content  # ligne taggée SSE-V2
         assert "démarrage de l'analyse" in content
 

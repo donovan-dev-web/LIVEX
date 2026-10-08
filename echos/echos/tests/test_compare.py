@@ -30,7 +30,7 @@ EXTRA_BELIEF_A = {"A": {"subject": "x", "predicate": "y", "value": "true"}}
 
 
 def _snapshot(tick: int, run_id: str) -> dict:
-    data = json.loads((FIXTURES / "snapshot_analysis.json").read_text())
+    data = json.loads((FIXTURES / "snapshot_analysis.json").read_text(encoding="utf-8"))
     data["tick"] = tick
     data["runId"] = run_id
     return data

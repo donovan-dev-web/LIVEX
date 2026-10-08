@@ -208,8 +208,9 @@ Composants ── /metrics (pull, cadence configurable) ──► Launcher
   définies par ECHOS.
 - **Rétention** : tampon mémoire borné ; fichiers de run soumis aux règles de
   nettoyage et d'archivage de `DATA_FLOW.md`.
-- **Docker / Prometheus / Grafana** : un `docker-compose` d'observabilité peut être
-  fourni **pour le développement uniquement**.
+- **Prometheus / Grafana** : restent externes et facultatifs ; **Docker est
+  retiré du projet** (08/10/2026, arbitrage A1 de `ROADMAP-V01.md`) — aucun
+  `docker-compose` d'observabilité n'est fourni ni promis.
 
 ## 7. Journaux et corrélation
 

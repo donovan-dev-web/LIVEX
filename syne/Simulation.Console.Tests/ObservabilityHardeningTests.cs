@@ -279,6 +279,50 @@ public sealed class ObservabilityHardeningTests
         Assert.Equal(1, server.ClientCount);
     }
 
+    [Fact]
+    public async Task ObservabilityServer_ClientThatStopsReading_IsRemovedAndBroadcastKeepsWorking()
+    {
+        int port = FreePort();
+        await using var server = new ObservabilityServer(port);
+        server.Start();
+
+        using var client = new ClientWebSocket();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        await client.ConnectAsync(new Uri($"ws://127.0.0.1:{port}/"), cts.Token);
+        await WaitUntilAsync(() => server.ClientCount == 1, TimeSpan.FromSeconds(10));
+
+        // Le client ne lit plus : les tampons TCP se remplissent et l'envoi
+        // serveur finit par se bloquer jusqu'à l'expiration de SendTimeout.
+        // V3 (08/10/2026) : TimeoutException échappait à SendTextAsync — le
+        // client n'était jamais retiré, chaque trame rebloquait 2 s et la
+        // cadence moteur se couplait au consommateur. Il doit être abandonné,
+        // et l'observabilité rester utilisable juste après.
+        const int frameSize = 512 * 1024;
+        string payload = new('x', frameSize);
+        Task broadcast = Task.Run(async () =>
+        {
+            for (var i = 0; i < 64 && server.ClientCount > 0; i++)
+            {
+                await server.BroadcastAsync(payload);
+            }
+        });
+
+        Task finished = await Task.WhenAny(broadcast, Task.Delay(TimeSpan.FromSeconds(45)));
+        Assert.Same(broadcast, finished);
+        await broadcast;
+
+        // Client retiré malgré l'envoi bloqué, pas seulement « noticed ».
+        await WaitUntilAsync(() => server.ClientCount == 0, TimeSpan.FromSeconds(10));
+        Assert.False(server.HasSubscribers);
+
+        // La diffusion suivante revient immédiatement : personne ne doit
+        // hériter du verrou laissé par le client abandonné.
+        var resend = server.BroadcastAsync("{\"type\":\"ping\"}");
+        finished = await Task.WhenAny(resend, Task.Delay(TimeSpan.FromSeconds(2)));
+        Assert.Same(resend, finished);
+        await resend;
+    }
+
     private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan timeout)
     {
         DateTime deadline = DateTime.UtcNow + timeout;

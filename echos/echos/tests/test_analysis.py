@@ -26,11 +26,11 @@ _CONTEXT_KEYS = ("events", "history", "communityHistory")
 
 
 def _load(name: str) -> dict:
-    return json.loads((FIXTURES / name).read_text())
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
 def _golden() -> dict:
-    return json.loads((GOLDEN / "analysis_golden.json").read_text())
+    return json.loads((GOLDEN / "analysis_golden.json").read_text(encoding="utf-8"))
 
 
 def _fresh_snapshot() -> dict:

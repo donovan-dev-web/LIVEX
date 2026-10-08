@@ -135,6 +135,18 @@ public sealed class CampaignRunner
                     if (report is not null)
                     {
                         _packages.WriteAnalysisReport(packagePath, report, aggregateFiles);
+
+                        // Version du composant d'analyse consignée au paquet (J3) : c'est
+                        // ECHOS qui a produit le rapport, le manifeste en fait foi — jamais
+                        // supposée côté Launcher, lue sur l'instance qui a répondu.
+                        var analysisVersion = _analysis.AnalysisComponentVersion;
+                        if (!string.IsNullOrWhiteSpace(analysisVersion))
+                        {
+                            _packages.RegisterComponents(packagePath,
+                            [
+                                new JsonComponentRef { Id = "echos", Version = analysisVersion },
+                            ]);
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -363,15 +375,9 @@ public sealed class CampaignRunner
     private async Task<IReadOnlyList<(string Name, byte[] Content)>> CollectFailureLogsAsync(RunSpec spec, Exception failure, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        var logsDirectory = Path.Combine(spec.WorkDirectory, "logs");
-        var logs = new List<(string, byte[])>();
-        if (Directory.Exists(logsDirectory))
-        {
-            foreach (var file in Directory.EnumerateFiles(logsDirectory))
-            {
-                logs.Add((Path.GetFileName(file), File.ReadAllBytes(file)));
-            }
-        }
+        // Lecture partagée (RunLogArchive) : la pompe du moteur peut encore tenir stdout.log,
+        // et la collecte d'un diagnostic ne doit jamais remplacer le diagnostic lui-même.
+        var logs = new List<(string, byte[])>(RunLogArchive.Collect(Path.Combine(spec.WorkDirectory, "logs")));
 
         // Le message d'incident lui-même est un fait d'exécution, pas une interprétation.
         logs.Add(("failure.txt", System.Text.Encoding.UTF8.GetBytes(

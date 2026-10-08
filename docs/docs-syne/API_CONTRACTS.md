@@ -240,7 +240,7 @@ dans Unreal ; Monographie §5.4.2) :
 | POST | `/api/control/start` | `{ seed, config }` (optionnel) |
 | POST | `/api/control/pause` | — |
 | POST | `/api/control/resume` | — |
-| POST | `/api/control/reset` | `{ seed, runId }` |
+| POST | `/api/control/reset` | `{ seed?, config?, maxTicks? }` |
 | GET | `/api/control/status` | — |
 
 - Binding local par défaut : `127.0.0.1:5181`. Le port HTTP se configure avec
@@ -252,10 +252,12 @@ dans Unreal ; Monographie §5.4.2) :
   (`--serve-port`, défaut 5181). Machine à états : `idle → running ⇋ paused → finished`.
   `start { seed?, config? }` (JSON partiel fusionné sur les défauts, même règle que
   `--config`) construit le run et répond `{ ok, action, runId, state, tick, aliveCount, seed }` ;
-  `pause`/`resume` gèlent/reprennent l'avancement des ticks ; `reset { seed?, runId? }`
-  reconstruit un run (le `runId` reçu identifie l'appelant, il n'est pas utilisé pour
-  restaurer — la reprise depuis le dernier `tick_states` reste le contrat de
-  persistance §4 via `SqlitePersistenceStore`). `GET /api/control/status` expose
+  `pause`/`resume` gèlent/reprennent l'avancement des ticks ; `reset { seed?, config?, maxTicks? }`
+  reconstruit un run sur le même modèle que `start` — la surcouche `config` (JSON partiel,
+  même règle) construit le nouveau monde et son absence applique le profil de référence ;
+  le `runId` du nouveau run est généré (il n'est pas utilisé pour restaurer — la reprise
+  depuis le dernier `tick_states` reste le contrat de persistance §4 via
+  `SqlitePersistenceStore`). `GET /api/control/status` expose
   `{ state, runId, tick, aliveCount, seed, maxTicks }` (polling ECHOS).
   Ce contrat est **non intrusif** (SYNE-081, DETERMINISM.md §3) : aucune commande ne
   retire de tirage au PRNG ni ne change la trajectoire (vérifié par test — run piloté

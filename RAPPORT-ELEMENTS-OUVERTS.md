@@ -1,9 +1,9 @@
 # RAPPORT — Éléments ouverts du projet LIVEX
 
 **Composant** : LIVEX (transverse)
-**Statut** : [SNAPSHOT] — état au 30 septembre 2026, **mis à jour en session** le même jour : V1/V2 exécutées (§5.1) et les 9 ADR cognitifs arbitrés (§3.1)
-**Périmètre** : tous les ADR, tous les « Points restés ouverts » de la documentation, les roadmaps/issues des 3 composants, le plan de correctifs campagne-runs et les suites de tests
-**Dépend de** : `docs/adr/`, `docs/docs-syne/`, `docs/docs-echos/`, `docs/docs-prism/`, `docs/ETHICS_AND_SCOPE.md`, `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md`, `ROADMAP.md`
+**Statut** : [SNAPSHOT] — état au 30 septembre 2026, **mis à jour** le 07/10/2026 (V2′ ADR-016) et le 08/10/2026 (correctif du chemin `reset`, roadmap `ROADMAP-V01.md`)
+**Périmètre** : tous les ADR, tous les « Points restés ouverts » de la documentation, les roadmaps/issues des 3 composants, la campagne de correctifs runs et les suites de tests
+**Dépend de** : `docs/adr/`, `docs/docs-syne/`, `docs/docs-echos/`, `docs/docs-prism/`, `docs/ETHICS_AND_SCOPE.md`, `ROADMAP.md`
 
 ---
 
@@ -21,7 +21,8 @@ catégories disjointes :
 Sources balayées : les 10 ADR de `docs/adr/`, les 15 ADR SYNE, les 3 ADR ECHOS, les
 2 ADR PRISM, les sections « Points restés ouverts » des ~45 documents, les backlogs
 `docs-syne/ISSUES.md` / `docs/docs-echos/ISSUES.md`, les ROADMAPs (racine, SYNE, ECHOS,
-PRISM), `docs/PLAN-CORRECTIFS-CAMPAGNE-RUNS.md` (§7 jalons et critères de re-campagne),
+PRISM), la campagne de correctifs runs du 29/09/2026 (document exécuté puis retiré du
+dépôt ; ses jalons et critères de re-campagne sont consolidés au §5.1),
 ainsi qu'un balayage `TODO`/`FIXME` du code (aucune occurrence : le code ne porte aucun
 dette explicite non tracée).
 
@@ -42,7 +43,7 @@ dette explicite non tracée).
 | Fonctionnalités — moteur SYNE | **6** | Moyen |
 | Fonctionnalités — ECHOS / API / UI | **6** | Faible à moyen |
 | Fonctionnalités — PRISM / Unreal | **2 chantiers** (6 étapes) | Très lourd |
-| Validations à exécuter (campagnes de runs, jalons) | V1 **exécutée et validée** ; V2 **exécutée** (critères 1/4 ✓, 2/3 ✗ → itération B1) ; **V2' exécutée** le 07/10 (ADR-016 : défauts B1 validés 50 et 100 agents × 2500 ticks, 6/6 ✓) ; restent V3–V6 | Moyen |
+| Validations à exécuter (campagnes de runs, jalons) | V1 **exécutée et validée** ; V2 **exécutée** (critères 1/4 ✓, 2/3 ✗ → itération B1) ; **V2' exécutée** le 07/10 (ADR-016 : défauts B1 validés 50 et 100 agents × 2500 ticks, 6/6 ✓) ; restent V4–V6 | Moyen |
 | Questions de fond permanentes (éthique/science) | **3 familles** | Hors cycle |
 
 Les campagnes de runs de validation (§5) ont été **exécutées le 30/09/2026** (§5.1) :
@@ -235,35 +236,154 @@ seeds 12345 / 424242 / 999 + un second run 12345 pour le déterminisme.
 
 **Défauts résiduels découverts pendant les campagnes** :
 
-1. 🔴 **Le chemin `POST /api/control/reset` n'applique pas le profil de référence** :
-   `ResetAsync` appelle `StartAsync(seed, configJson: null)` → `PrepareCoreAsync` avec
-   `ConfigLoader.LoadDefaults()` (sans Eat/Drink recovery) — alors que `prepare` applique
-   `SimulationProfiles.ReferenceJson()`. Effet mesuré : seed 424242 → extinction t300 par
-   `reset` vs survie 1200/1200 par `prepare`. Tout run piloté long doit passer par
-   `prepare`+`start` en attendant correctif (proposer : même défaut de profil que
-   `prepare` dans `PrepareCoreAsync` quand `configJson` est null).
+1. ✅ **CLOS le 08/10/2026 — le chemin `POST /api/control/reset` appliquait le défaut
+   `ConfigLoader.LoadDefaults()` au lieu du profil de référence** (`ResetAsync` →
+   `StartAsync(seed, configJson: null)` → `PrepareCoreAsync`), alors que `prepare`
+   appliquait `SimulationProfiles.ReferenceJson()`. Effet mesuré le 30/09 : seed 424242 →
+   extinction t300 par `reset` vs survie 1200/1200 par `prepare`. **Correctif `ef878f21`** :
+   `PrepareCoreAsync` applique `ReferenceJson()` quand la surcouche est nulle ; `reset`
+   accepte en plus une surcouche `config` (contrat aligné, API_CONTRACTS §3). **Preuve** :
+   test `Reset_WithoutConfig_BuildsTheSameReferenceProfileAsPrepare` + campagne V2′
+   rejouée **par reset** le 08/10/2026 : 6/6 ✓ (voir §5.1 bis).
 2. 🟠 **Aucun flush au `finished`** : la fin d'un run ne flushera pas le dernier segment ni
    le rapport ; tout atterrit à la fermeture du flux (arrêt SYNE / reconnexion). Cohérent
    avec le §4.3, mais la lecture « rapport écrit à la fin de chaque run » du plan A2 ne
    tient en exécution que pour les runs suivis d'un reset consommé.
 3. 🟡 Le worker ECHOS ne détecte pas la mort violente du flux SYNE tant qu'aucune trame
    n'arrive (bloqué en `recv`) — sa reconnexion prend effet à la prochaine émission.
+   *Confirmé en conditions réelles par la campagne V3 (§5.3) : la passe à 50 t/s
+   n'a connecté qu'une seule fois, aucun événement de déconnexion.*
+4. ✅ **CLOS le 08/10/2026 — découvert pendant la campagne V3 (§5.3)** : un client
+   WS qui cessait de lire figeait le moteur. `SendTextAsync` laissait échapper le
+   `TimeoutException` de `WaitAsync(SendTimeout)` (absent du filtre du `catch`), le
+   client n'était donc jamais retiré et chaque trame rebloquait 2 s — le moteur
+   tombait à **1,5 t/s au lieu de ~77** avec le consommateur gelé. **Correctif** :
+   `TimeoutException` ajoutée au filtre du `catch` → `RemoveClient` (fermeture du
+   socket) ; test de non-régression
+   `ObservabilityServer_ClientThatStopsReading_IsRemovedAndBroadcastKeepsWorking`.
+   **Preuve** : suite SYNE 593/593 + mesures avant/après de la campagne V3 (§5.3).
 
-**V3–V6 restent à exécuter** (voir table ci-dessous).
+**V4 et V6 restent à exécuter** (voir table ci-dessous).
+
+### 5.1 bis — Campagne V2′ **par le chemin `reset`** (08/10/2026) : VALIDÉE 6/6
+
+Suite du correctif `ef878f21` (défaut 1 ci-dessus clos), la campagne ADR-016 a été
+rejouée **enchaînant les runs par `POST /api/control/reset`** (une seule session
+`--serve`, pop50 → pop100 portées par la surcouche `config` du reset) :
+`start:50/12345 → reset:50/424242 → reset:50/999 → reset:100/12345 →
+reset:100/424242 → reset:100/999`, 2500 ticks, critères ADR-016 inchangés.
+Métriques : flux WS segmenté par `runId` (2500 snapshots/run, décisions exactes
+125 000/250 000), outillage rejouable `scripts/reset-campaign.py`, artefacts
+`docs/campaign-runs/v2r-reset/campaign.json` (hors git).
+
+| Pop | Seed | Vivants (fin/init) | Extinction | Pente énergie (200 t) | Morts | Identique au chemin `prepare` (ADR-016) |
+| --: | --: | :-- | :-- | :-- | :-- | :-- |
+| 50 | 12345 | 50 / 50 | — | −0,0014/tick | 0 | ✓ (−0,0014) |
+| 50 | 424242 | 50 / 50 | — | −0,0037/tick | 0 | ✓ (−0,0037) |
+| 50 | 999 | 50 / 50 | — | −0,0027/tick | 0 | ✓ (−0,0027) |
+| 100 | 12345 | 100 / 100 | — | −0,0018/tick | 0 | ✓ (−0,0018) |
+| 100 | 424242 | 100 / 100 | — | −0,0028/tick | 0 | ✓ (−0,0028) |
+| 100 | 999 | 100 / 100 | — | −0,0025/tick | 0 | ✓ (−0,0025) |
+
+**6/6 : 0 extinction, 0 mort, |pente| ≤ 0,0037/tick < 0,005, population finale =
+initiale — le chemin piloté `reset` reproduit exactement le chemin `prepare`**
+(égalité bit à bit des critères ADR-016 sur les 6 couples pop/seed).
+
+**V4 et V6 restent à exécuter** (voir table ci-dessous ; long-run retiré de la V0.1,
+arbitrage A2 de `ROADMAP-V01.md`).
 
 ### 5.2 Validations restantes
 
 Ces chantiers ne demandent **pas de décision ni de nouveau code** (ou très peu).
-V1 et V2 ont été exécutées le 30/09/2026 (§5.1) ; V2 devra être **rejouée** après le
-correctif du chemin `reset` et l'itération B1.
+V1 et V2 ont été exécutées le 30/09/2026 (§5.1), V2′ le 07/10 (ADR-016) et **V2′
+par `reset` le 08/10/2026 (§5.1 bis)**, **V3 le 08/10/2026 (§5.3)** et V5 le
+08/10/2026 (§5.2) — restent V4 et V6.
 
 | # | Validation | Critère | Source |
 | :-- | :-- | :-- | :-- |
-| V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | **EXÉCUTÉE le 07/10/2026 en périmètre élargi** (ADR-016) : défauts intégrés recalibrés B1, 50 **et** 100 agents × **2500 ticks** × 3 seeds — énergie stable **✓** (|pente| ≤ 0,0037/tick < 0,005, 0 extinction, 0 mort, population = initiale sur 6/6) ; part Eat/Drink ≥ 15 % **vide, pas remplie** : la faim moyenne ne dépasse jamais 70 avec ces défauts (critère requalifié, voir ADR-016 §Validation (c)). Reste à rejouer V2' sur le chemin `reset` une fois le correctif §5.1-D1 fait | Plan §4-B1/§7 ; `ADR-016` |
-| V3 | **Jalons U7/U8 comme jalons transverses** | Cadence contrôlée, backpressure, lag, parcours UI complets ; stabilité long-run, reprise worker | `ROADMAP.md` §6 (U7 « validation produit partielle », U8 « non accepté comme jalon transverse ») |
-| V4 | Ingestion **réelle** de deux runs SYNE en CI (preuve J2/J3 ECHOS) | Les 2 tests skippés (binaire SYNE Release / serveur syne-mock) passent en continu | `docs/docs-echos/TESTING.md` §315 ; suite ECHOS : 2 skipped |
-| V5 | Recalibrage complet des benchmarks | Refaits après implémentation, aux jalons ph10 (T4) et avant validation v0.1 | `docs/docs-syne/PERFORMANCE.md` §118-124 |
+| V2' | **Re-campagne 3 × 1200 ticks** après correctif `reset` + itération B1 | **EXÉCUTÉE le 07/10/2026 en périmètre élargi** (ADR-016) : défauts intégrés recalibrés B1, 50 **et** 100 agents × **2500 ticks** × 3 seeds — énergie stable **✓** (|pente| ≤ 0,0037/tick < 0,005, 0 extinction, 0 mort, population = initiale sur 6/6) ; part Eat/Drink ≥ 15 % **vide, pas remplie** : la faim moyenne ne dépasse jamais 70 avec ces défauts (critère requalifié, voir ADR-016 §Validation (c)). **REJOUÉE par le chemin `reset` le 08/10/2026 : 6/6 ✓** — mêmes pentes que le chemin `prepare`, voir §5.1 bis | Plan §4-B1/§7 ; `ADR-016` |
+| V3 | **Jalons U7/U8 comme jalons transverses** | **EXÉCUTÉE le 08/10/2026 (§5.3)** : cadence 44–77 t/s mesurée (0,76–0,96× demandé), backpressure et lag mesurés sur 3 phases × 2 passes (`scripts/v3-campaign.py`, artefacts `docs/campaign-runs/v3/results-{100,50}tps.json`), défaut moteur←consommateur découvert et corrigé (§5.1 défaut 4), reprise worker après mort violente automatisée (test U8, 3/3 : 0,01 s de constat, 0,55–0,60 s de reconnexion), parcours UI par 66 tests ViewModel (revue visuelle des écrans → Jalon 4) ; long-run 12 h/72 h retiré — arbitrage A2 | `ROADMAP.md` §6 (U7 « validation produit partielle », U8 « non accepté comme jalon transverse ») |
+| V4 | Ingestion **réelle** de deux runs SYNE en CI (preuve J2/J3 ECHOS) | Les 13 tests skippés en local (12 binaire SYNE Release — job U8, 1 serveur syne-mock) passent en continu | `docs/docs-echos/TESTING.md` §315 ; suite ECHOS : 13 skipped (08/10/2026) |
+| V5 | Recalibrage complet des benchmarks | **REFAIT le 08/10/2026** sur la machine de référence (i7-8750H, arbitrage A3) : deux passes `--benchmark`, checksums identiques. Cibles V2 atteintes à 50 (≥1354 t/s) et 500 (≥42,8) ; **écart ~1,7× à 1000** (5,9–6,5 vs ≥10 t/s) — premières mesures à charge complète (les chiffres ph9 mesuraient des populations mourantes), optimisation perception documentée dans `PERFORMANCE.md` §9.2 | `docs/docs-syne/PERFORMANCE.md` §9 |
 | V6 | Validation du plugin PRISM contre SYNE réel | Étapes 2 et 6 de la roadmap PRISM ; build CI dans la version d'Unreal ciblée | `docs/docs-prism/ROADMAP.md`, `ARCHITECTURE.md` §176 |
+
+### 5.3 — Campagne V3 (08/10/2026) : cadence, backpressure, lag, reprise
+
+Exécutée sur la machine de référence (i7-8750H) avec `scripts/v3-campaign.py` :
+SYNE `--serve` réel + worker `echos.dev_ingest` réel, un run de 30 s découpé en
+trois phases de 10 s (**nominal** / **consommateur gelé** — `SIGSTOP` du worker — /
+**reprise** — `SIGCONT`), 50 agents, deux passes à cadence demandée 100 t/s puis
+50 t/s. Artefacts détaillés (rejouables) : `docs/campaign-runs/v3/results-100tps.json`
+et `results-50tps.json` (hors git). Long-run 12 h/72 h retiré de la V0.1
+(arbitrage A2).
+
+**Défaut découvert puis corrigé pendant la campagne (§5.1 défaut 4)** : un client
+WS qui cessait de lire figeait le moteur (`TimeoutException` non filtrée → client
+jamais retiré → 2 s bloquées par trame). Avant/après (50 agents, demandé 100 t/s) :
+
+| Phase | Avant correctif | Après correctif |
+| :-- | --: | --: |
+| Nominal | 76,9 t/s (0,77×) | 76,4–77,2 t/s (0,76–0,77×) |
+| Consommateur gelé (10 s) | **1,5 t/s (0,02×)** | **70,6–71,2 t/s (0,71×)** |
+| Reprise | 44,8 t/s (0,45×) | 63,1–63,3 t/s (0,63×) |
+
+Le correctif ne régresse rien : suite SYNE **593/593** dont le test de
+non-régression `ObservabilityServer_ClientThatStopsReading_IsRemovedAndBroadcastKeepsWorking`.
+Un client abandonné perd sa fenêtre : **1 trou** compté honnêtement sur la passe
+100 t/s, **0** sur la passe 50 t/s (les tampons TCP absorbent le gel sans
+expiration du délai d'envoi de 2 s).
+
+**Cadence et lag** (lag = tick moteur − tick max en base, échantillonné à 1 Hz ;
+médianes par phase, p95/max entre parenthèses) :
+
+| Cadence demandée | Phase | Cadence moteur | Lag médian (p95 / max) | Tick max en base |
+| :-- | :-- | --: | :-- | :-- |
+| 100 t/s | nominal | 76,4 t/s (0,76×) | 101 (219 / 223) | 0 → 567 |
+| 100 t/s | gelé | 70,6 t/s (0,71×) | 477 (889 / 925) | **plateau 573** |
+| 100 t/s | reprise | 63,3 t/s (0,63×) | 1025 (1286 / 1296) | 573 → 2120 (rattrapage ≈ 155 t/s) |
+| 50 t/s | nominal | 44,4 t/s (0,89×) | **2 (3 / 16)** | 0 → 455 |
+| 50 t/s | gelé | 38,7 t/s (0,77×) | 144 (366 / 386) | **plateau 460** |
+| 50 t/s | reprise | 48,0 t/s (0,96×) | 585 (803 / 822) | 460 → 505 |
+
+Lectures :
+
+1. **Le moteur ne dépend plus du consommateur** : gel de 10 s → 0,71× au lieu de
+   0,02× ; la base fige exactement à l'arrêt (plateaux 573 / 460) puis se remplit.
+2. **À 50 t/s le worker suit en temps réel** (lag médian 2, p95 3) ; **à 100 t/s le
+   retard est structurel** (≈ 100 ticks) : le débit soutenu d'écriture (~57 t/s)
+   est sous les ~76 t/s produits — le backlog explose pendant le gel puis se
+   résorbe en reprise (rattrapage par lots mesuré ≈ 155 t/s ; retard final
+   **19 ticks** sur la passe 100).
+3. **Le retard apparent de 822 ticks en fin de passe 50 t/s n'est pas une perte**
+   (0 trou côté client) : sans déconnexion, le worker n'a pas forcé le flush de son
+   segment — c'est la signature du **défaut résiduel 2** (§5.1, aucun flush avant
+   fermeture du flux) ; à 100 t/s la déconnexion force le flush et la base rejoint
+   le moteur (19 ticks de retard).
+4. **Reconnexion observée en conditions réelles** (passe 100, journal worker) :
+   « Ingestion interrompue : 783 ticks, 96795 événements; reconnexion... » →
+   « Nouvelle tentative dans 0.5s. » → « ECHOS connecté au flux SYNE ». La passe 50
+   n'a connu qu'une seule connexion (aucun événement de déconnexion), ce qui
+   **confirme en conditions réelles le défaut résiduel 3** (worker bloqué en
+   `recv` tant que la trame n'arrive pas).
+
+**Reprise du worker après mort violente du flux SYNE** : test automatisé
+`test_worker_reconnects_after_violent_syne_death` (suite U8) — SIGKILL de SYNE en
+plein run → fermeture constatée en **0,01 s**, worker vivant ; SYNE redémarré sur le
+même port → reconnexion en **0,55–0,60 s**, second run réingéré dans la base.
+Exécuté **3/3 le 08/10/2026** (durée ≈ 2,5 s par exécution).
+
+**Parcours UI (états vides, erreurs, verrouillages)** : **66 tests ViewModel**
+automatisés dans `launcher/Launcher.Tests.Unit/Presentation/` (5 fichiers) couvrent
+les états vides (« Un run sans données… », absence de rapport, effacement du repart),
+les erreurs (ECHOS indoignable ×2, comparaison impossible, lecture de paquet
+échouée, démarrage refusé) et les verrouillages (verrou d'immersion, réévaluation
+du verrou au rafraîchissement, immersion non entrée). La revue visuelle des neuf
+écrans et les parcours clavier restent au **Jalon 4**.
+
+**Verdict V3 : EXÉCUTÉE et validée** — cadence, backpressure, lag et reprise
+worker mesurés et attachés ; défaut de rétroaction moteur←consommateur corrigé et
+non régressif ; deux résidus documentés (défauts 2 et 3) ; revue UI visuelle
+reportée au Jalon 4 ; long-run hors périmètre (arbitrage A2).
 
 ---
 

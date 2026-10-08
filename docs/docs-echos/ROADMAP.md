@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 8 octobre 2026
 **Dépend de** : `../ROADMAP.md` (racine), `../docs-syne/ROADMAP.md`
 **Source Monographie** : §9.6, §7.9 (adapté), §4.2 (architecture)
 
@@ -42,7 +42,7 @@
 ## 4. Dépendances externes
 
 - SYNE : WebSocket :5180 (snapshot/event), HTTP :5181 (contrôle), schéma SQLite Annexe G.
-- PRISM : les vues d'analyse intégrées à ECHOS sont réutilisées dans PRISM (cf. `../docs-prism/UX_INTERACTION.md`) — coordination en `../ARCHITECTURE.md` racine.
+- PRISM : les vues d'analyse sont portées par le Launcher depuis l'ADR-007 (l'interface ECHOS ayant été retirée) ; une éventuelle réutilisation dans PRISM reste à coordonner (cf. `../docs-prism/UX_INTERACTION.md`) — coordination en `../ARCHITECTURE.md` racine.
 
 ## 5. Limites assumées (cf. `LIMITATIONS.md`)
 
@@ -54,4 +54,4 @@
 
 ## Points restés ouverts dans ce document
 - Aucune date n'est posée. L'ordre ci-dessus est une proposition issue du Plan doc ; il sera ajusté selon l'avancement réel de SYNE (les jalons dépendent des contrats SYNE).
-- Le périmètre exact des écrans **web (React/Vite)** est [OUVERT] au-delà des besoins définis par les parties 4 et 5 de la Monographie.
+- ~~Le périmètre exact des écrans **web (React/Vite)**~~ : **closed par ADR-007 (05/10/2026)** — ECHOS n'a plus d'interface ; la présentation appartient au Launcher (consoles de logs, fenêtre d'analyse native).

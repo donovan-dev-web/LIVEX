@@ -56,11 +56,16 @@ def test_launcher_adapter_accepts_shared_arguments():
 
 def test_manifest_describes_linux_adapter_and_database_readiness():
     root = Path(__file__).resolve().parents[2]
-    manifest = json.loads((root / "component.json").read_text())
+    manifest = json.loads((root / "component.json").read_text(encoding="utf-8"))
 
     assert manifest["id"] == "echos"
     assert manifest["executable"]["linux"] == "echos-launcher"
-    assert (root / manifest["executable"]["linux"]).stat().st_mode & 0o111 == 0o111
+    if os.name != "nt":
+        # Le bit d'exécution POSIX n'a aucun sens sur Windows : le contrôle y
+        # serait toujours faux sans rien prouver sur l'adaptateur Linux.
+        assert (root / manifest["executable"]["linux"]).stat().st_mode & 0o111 == 0o111
+    assert manifest["executable"]["windows"] == "echos-launcher.cmd"
+    assert (root / manifest["executable"]["windows"]).is_file()
     assert manifest["health"]["path"] == "/health/ready"
 
 
@@ -123,7 +128,7 @@ def test_adapter_without_a_usable_data_root_keeps_the_readiness_503(
 ):
     monkeypatch.delenv("ECHOS_ANALYTICS_DB", raising=False)
     blocker = tmp_path / "blocked"
-    blocker.write_text("not a directory")
+    blocker.write_text("not a directory", encoding="utf-8")
     monkeypatch.setenv("LIVEX_DATA", str(blocker))
 
     ensure_analytics_db()
@@ -145,8 +150,8 @@ def test_launcher_adapter_becomes_ready_without_any_database_in_the_environment(
     environment = {**os.environ, "LIVEX_SESSION_TOKEN": token, "LIVEX_DATA": str(tmp_path)}
     environment.pop("ECHOS_ANALYTICS_DB", None)
     process = subprocess.Popen(
-        [
-            str(root / "echos-launcher"),
+        _adapter_argv(
+            root,
             "--headless",
             "--instance-id",
             "echos-test",
@@ -158,7 +163,7 @@ def test_launcher_adapter_becomes_ready_without_any_database_in_the_environment(
             "unused",
             "--correlation-id",
             "test-correlation",
-        ],
+        ),
         env=environment,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -167,9 +172,41 @@ def test_launcher_adapter_becomes_ready_without_any_database_in_the_environment(
         assert _await_ready(port), "adapter should apply a default database and become ready"
         assert (tmp_path / "echos" / "analytics.sqlite").exists()
     finally:
-        if process.poll() is None:
-            process.terminate()
-            process.wait(timeout=5)
+        _stop(process)
+
+
+def _adapter_argv(root: Path, *args: str) -> list[str]:
+    """Commande lançant l'adaptateur du composant sur la plateforme courante.
+
+    `CreateProcess` ne sait pas exécuter un fichier `.cmd` : sur Windows on passe
+    par `COMSPEC`, qui est exactement ce que fera le Launcher pour
+    `component.json` (`executable.windows`).
+    """
+    if os.name == "nt":
+        return [
+            os.environ.get("COMSPEC", "cmd.exe"),
+            "/c",
+            str(root / "echos-launcher.cmd"),
+            *args,
+        ]
+    return [str(root / "echos-launcher"), *args]
+
+
+def _stop(process: subprocess.Popen) -> None:
+    """Arrête l'adaptateur et toute sa descendance (aucun orphelin)."""
+    if process.poll() is not None:
+        return
+    if os.name == "nt":
+        # `cmd /c` interpose l'interpréteur : terminer le seul cmd laisserait
+        # l'analyse orpheline, encore à l'écoute du port.
+        subprocess.run(
+            ["taskkill", "/T", "/F", "/PID", str(process.pid)],
+            capture_output=True,
+            check=False,
+        )
+    else:
+        process.terminate()
+    process.wait(timeout=10)
 
 
 def _await_ready(port: int, timeout: float = 10) -> bool:
@@ -187,10 +224,9 @@ def test_launcher_adapter_starts_on_allocated_port_and_shuts_down():
     port = _free_port()
     token = "echos-launcher-test"
     root = Path(__file__).resolve().parents[2]
-    adapter = root / "echos-launcher"
     process = subprocess.Popen(
-        [
-            str(adapter),
+        _adapter_argv(
+            root,
             "--headless",
             "--instance-id",
             "echos-test",
@@ -202,7 +238,7 @@ def test_launcher_adapter_starts_on_allocated_port_and_shuts_down():
             "unused",
             "--correlation-id",
             "test-correlation",
-        ],
+        ),
         env={
             **os.environ,
             "ECHOS_ANALYTICS_DB": ":memory:",
@@ -230,6 +266,4 @@ def test_launcher_adapter_starts_on_allocated_port_and_shuts_down():
         assert response.status_code == 200
         assert process.wait(timeout=5) == 0
     finally:
-        if process.poll() is None:
-            process.terminate()
-            process.wait(timeout=5)
+        _stop(process)

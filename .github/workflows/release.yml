@@ -56,8 +56,3 @@ jobs:
         with:
           body_path: CHANGELOG.md
           generate_release_notes: true
-
-      # TODO (conteneurisation — hors périmètre U0) :
-      #   - renvoyer la re-vérification + build images Docker multi-stage (syne, echos)
-      #   - publication GHCR avec retag `latest` (registre ghcr.io/${{ github.repository_owner_lowercase }})
-      #   - réactivation sur les tags composants (CI_CD.md §4)
