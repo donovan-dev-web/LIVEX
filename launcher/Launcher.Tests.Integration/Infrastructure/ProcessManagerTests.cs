@@ -68,6 +68,16 @@ public sealed class ProcessManagerTests : IAsyncLifetime
     }
 
     /// <summary>La sonde /health/ready répond sur le port de contrôle alloué.</summary>
+    /// <remarks>
+    /// Le composant doit rester en vie pendant toute la fenêtre de sondage : sous Windows,
+    /// une connexion vers un port sans écoute n'échoue pas immédiatement après le RST, la pile
+    /// TCP retransmet le SYN pendant ~2 s avant de rendre ECONNREFUSED (comportement documenté,
+    /// « slow TCP connect on Windows », daniel.haxx.se, 14/08/2024) — soit exactement le délai
+    /// d'attente de la sonde (2 s). Avec un horizon de 10 ticks (200 ms d'écoute), aucune sonde
+    /// ne peut alors atterrir sur la fenêtre vivante du composant. L'horizon du stub est donc
+    /// porté au-delà du délai du test : l'assertion (sonde au vert + /info = syne) est
+    /// inchangée et le composant est tué par le `finally` comme auparavant.
+    /// </remarks>
     [Fact]
     public async Task Sonde_health_ready_repond()
     {
@@ -76,7 +86,11 @@ public sealed class ProcessManagerTests : IAsyncLifetime
         var prober = new HealthProber(TimeSpan.FromSeconds(2));
         var port = FreePort();
 
-        var processId = await _manager.StartAsync(BuildSpec("probe-0001", workDirectory, port, extra => { }), CancellationToken.None);
+        var processId = await _manager.StartAsync(BuildSpec("probe-0001", workDirectory, port, extra =>
+        {
+            // Horizon > délai de sondage (10 s) : le composant reste joignable pendant la sonde.
+            extra.Arguments.AddRange(["--ticks", "1000"]);
+        }), CancellationToken.None);
         try
         {
             var control = new Uri($"http://127.0.0.1:{port}/");

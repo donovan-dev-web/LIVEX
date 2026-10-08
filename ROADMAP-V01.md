@@ -5,7 +5,7 @@
 **Dernière mise à jour** : 8 octobre 2026
 **Dépend de** : `ROADMAP.md`, `VERSIONING.md`, `RAPPORT-ELEMENTS-OUVERTS.md`, `Livex-status.md`, `launcher/ROADMAP-V1.md`, `launcher/V1-CAPABILITY-MATRIX.md`
 **Source Monographie** : Partie 9, Annexe J (jalons T0–T6)
-**Machines** : **Lot L** = machine Linux actuelle (`devops-GL73-8SE`, Ubuntu, Intel Core i7-8750H / 12 cœurs / 14 Gio, dotnet 10.0.401, Node 20, Python 3) — **Lot W** = machine Windows (bascule prévue après le lot L, voir §8)
+**Machines** : **Lot L** = machine Linux (`devops-GL73-8SE`, Ubuntu, Intel Core i7-8750H / 12 cœurs / 14 Gio, dotnet 10.0.401, Node 20, Python 3) — **Lot W** = machine Windows **active depuis le 08/10/2026** (`DESKTOP-MQQ150J`, Windows 11 10.0.26200, dotnet 10.0.401, Node 25.9.0, Python 3.12.10, dépôt `D:\LIVEX`, branche `feature/windows-validation-v01`) — voir §8
 
 ---
 
@@ -197,7 +197,28 @@ Items encore ouverts de `launcher/ROADMAP-V1.md` Jalon 3 :
       **Avancement 08/10** : vert en local sur Linux (2 tests, suite E2E
       complète 31/31) ; job CI Linux câblé (venv ECHOS + SYNE publié dans
       `ci.yml`), exécution CI à constater au prochain push (A4 : pas de push
-      sans demande) ; Windows à l'étape 5.
+      sans demande).
+      **Lot W — vert en local sous Windows le 08/10/2026** : suite E2E
+      complète **31/31** contre SYNE publié `win-x64` + ECHOS réel
+      (venv `.venv\Scripts`), parcours campagne → interruption → reprise →
+      analyse → paquet `.livexp` vérifié ; **aucun processus orphelin** après
+      la suite (arbre de processus confiné).
+      *Reste le constat CI (Linux **et** Windows) : la branche
+      `feature/windows-validation-v01` n'a encore **aucun** run GitHub Actions
+      (API : `total_count = 0` au 08/10) — les jobs `windows-latest` n'ont jamais
+      tourné, ils s'exécuteront au prochain push (A4).*
+- [x] **Correctifs Lot W** apportés au parcours (preuve : commit du Lot W) —
+      tous découverts par la suite E2E Windows :
+  - `StubInstall.WaitForHealthyAsync` ne traitait que `HttpRequestException` :
+    sous Windows, l'expiration de la sonde (2 s) arrive **avant** le refus TCP
+    et se manifeste en `TaskCanceledException` → le démarrage en cours était
+    pris pour un échec définitif.
+  - `J3RealComponentsEndToEndTests.ReadSessionJournal` lisait le journal de
+    session pendant que la composition l'avait ouvert en écriture → violation
+    de partage sur Windows (lecture partagée mutualisée).
+  - Banc `CampaignEndToEndTests` : manifeste sans clé `executable.windows`
+    (chaîne « binaire absent » sur Windows) et compositions jamais disposées →
+    suppression de la racine impossible sous Windows.
 - [x] Cases du Jalon 3 cochées avec preuves liées dans `ROADMAP-V1.md` —
       reprise, archivage, chemins autorisés, erreurs composant et Porte J3
       cochées le 08/10/2026 (la case « processus toujours actif » reste ouverte
@@ -205,8 +226,9 @@ Items encore ouverts de `launcher/ROADMAP-V1.md` Jalon 3 :
 
 ### Étape 5 — Support Windows (cible Linux + Windows) — **L → W**
 
-Aujourd'hui : `runs-on: ubuntu-latest` dans toute la CI, manifestes sans clé
-`executable.windows`.
+État de départ du lot L : CI 100 % `ubuntu-latest` et manifestes sans clé
+`executable.windows` — **corrigés par le Lot L** (cases ci-dessous) ; il restait
+à valider les comportements natifs (**Lot W**, fait le 08/10/2026).
 
 **Rédigeable sur Linux (Lot L)** :
 - [x] `syne/component.json` : publication `win-x64` + clé `executable.windows` —
@@ -230,17 +252,68 @@ Aujourd'hui : `runs-on: ubuntu-latest` dans toute la CI, manifestes sans clé
       clé d'exécutable de la plateforme courante, venv ECHOS sous `.venv\Scripts`,
       liens de répertoire en junction sous Windows.
 
-**À valider sur Windows (Lot W)** :
-- [ ] `ManifestDetector`, `ProcessTreeKiller`, `ProcessRunExecutor` déjà
-      multi-OS : vérifier les comportements Windows (chemins, arbre de
-      processus, arrêt authentifié).
-- [ ] `--check` / `EnvironmentChecker` validés sous Windows.
+**À valider sur Windows (Lot W)** — *exécuté le 08/10/2026, machine
+`DESKTOP-MQQ150J` (Windows 11 10.0.26200, dotnet 10.0.401 / SDK .NET 10.0.12,
+Node 25.9.0, Python 3.12.10)* :
+- [x] `ManifestDetector` : résolution des chemins Windows — le manifeste avec
+      clé `executable.windows` est résolu et le binaire est trouvé. **Preuve** :
+      `livex-launcher --check` contre un SYNE installé
+      (`LIVEX_HOME` → jonction vers `syne/`) : `[OK ] composants : 1 composant(s)
+      détecté(s), 1 valide(s)` + `[OK ] moteur : SYNE 0.15.0 présent et
+      exécutable`, code de sortie **0** ; sans composant : 8 contrôles, code 2.
+- [x] `ProcessTreeKiller` : arbre de processus — **défaut corrigé** : le Job
+      Object unique était **terminé et fermé à chaque arrêt forcé**, ce qui
+      tuait aussi les autres composants vivants et retirait le garde-fou
+      `KILL_ON_JOB_CLOSE` pour la suite de la session. Désormais : assignation
+      au démarrage (`MakeOwnProcessGroup`, symétrique Unix) + arrêt forcé borné
+      à l'arbre du composant (`Kill(entireProcessTree: true)`).
+      **Preuve** : 208/208 tests verts + **aucun processus orphelin** après les
+      trois suites (constat `tasklist`).
+- [x] `ProcessRunExecutor` : exécution réelle sous Windows — chemins, ports,
+      collecte et scellement. **Preuve** : 31/31 E2E, dont
+      `J3_SYNE_publie_et_ECHOS_reel_interruption_reprise_analyse_et_rapport`
+      et `Launcher_lance_SYNE_publie_collecte_les_donnees_et_scelle_le_paquet`.
+- [x] Arrêt authentifié : `StopAsync` (POST `/control/shutdown` porteur du jeton,
+      délai de grâce tiré du manifeste, arrêt forcé au-delà) — **preuve** : tests
+      filtrés `Arret|Manifeste|Sonde|Injoignable|Detect|Installation` =
+      **24/24 verts** (11 unit + 2 intégration + 11 E2E).
+- [x] `--check` / `EnvironmentChecker` sous Windows — **preuve** : les 8
+      vérifications du tableau s'affichent dans l'ordre, sortie textuelle
+      stable, code 2 sans composant / **0 avec SYNE installé**.
+- [x] **Lancement natif de `livex-launcher.exe` — défaut bloquant trouvé et
+      corrigé** : `app.manifest` déclarait `<assembly manifestType="dualIdentity">`
+      sans `manifestVersion`, ce que le chargeur Windows refuse
+      (journal SideBySide événement 11 : « l'élément assembly du manifeste ne
+      contient pas l'attribut manifestVersion correct », puis événement 64 :
+      « l'attribut manifestType n'est pas autorisé ») → **l'exécutable ne
+      démarrait jamais** (« configuration côté-à-côté incorrecte »), y compris
+      via PowerShell. Manifeste réécrit au format canonique
+      (`manifestVersion="1.0"`) ; `livex-launcher.exe --check` s'exécute
+      nativement. *Ce défaut échappait aux suites : aucun test ne lance l'apphost.*
+- [x] **Défaut de lecture du journal de session** corrigé côté produit :
+      `File.ReadAllText`/`File.ReadLines` échouent en violation de partage tant
+      que le Launcher écrit son journal — donc sur Windows, **l'export des
+      journaux tombait en erreur et le panneau « journaux récents » ne se
+      rafraîchissait jamais**. Lecture partagée mutualisée
+      (`SessionFileJournal.ReadSharedLines` / `ReadSharedTextAsync`,
+      `FileShare.ReadWrite`).
+- [x] **Latence Windows du refus de connexion** (constat de machine, non un
+      défaut produit) : un port sans écoute ne rend `ECONNREFUSED` qu'après
+      **≈ 2,05 s** (la pile TCP retransmet le SYN, comportement documenté
+      « slow TCP connect on Windows », daniel.haxx.se, 14/08/2024), alors que
+      la sonde du Launcher attend 2 s → chaque sonde sur un composant absent
+      expire. Conséquence traitée : banc de sonde (`Sonde_health_ready_repond`)
+      maintenu vivant au-delà du délai de sondage ; assertions inchangées.
 
 **Critère de sortie** : [ ] CI verte sur `ubuntu-latest` **et**
 `windows-latest`, y compris l'E2E de campagne, **et** validations locales
-Windows ci-dessus effectuées. *(Lot L committé : les jobs `windows-latest` sont
-exécutables dès le prochain push — le constat de la CI Windows et les validations
-Lot W restent à faire, machine Windows §8.)*
+Windows ci-dessus effectuées. *(Validations locales **Lot W faites** le
+08/10/2026 : build `--warnaserror` 0 avertissement + **162 unit + 15 intégration
++ 31 E2E = 208 tests, 0 échec** + `--check` + exécutable natif. **Reste le
+constat CI** : aucun run GitHub Actions n'existe pour la branche
+`feature/windows-validation-v01` (API `total_count = 0`) ; les jobs
+`windows-latest` s'exécuteront au prochain push — A4 : pas de push sans demande
+explicite.)*
 
 ### Étape 6 — Validation transverse V3 (stabilité) — **Lot L**
 
@@ -451,28 +524,51 @@ La V0.1 peut être annoncée si et seulement si :
 **Déclencheur** : le lot Linux ci-dessous est terminé, committé localement
 (étapes 1, 2, 3, 4-Linux, 6, 7, 9, 10, 11 terminés + étape 5 rédigée).
 
-À faire **uniquement sur la machine Windows** :
+À faire **uniquement sur la machine Windows** — *réalisé le 08/10/2026* :
 
-1. Restaurer l'environnement (dotnet 10 SDK, Node 20, Python 3) et cloner la
-   branche de travail.
-2. **Étape 5 (validation)** : `ManifestDetector`, `ProcessTreeKiller`,
+1. [x] Restaurer l'environnement (dotnet 10 SDK, Node 20, Python 3) et cloner la
+   branche de travail — **fait** : dotnet 10.0.401 / SDK 10.0.12, Node 25.9.0,
+   Python 3.12.10, branche `feature/windows-validation-v01` sur `D:\LIVEX`
+   (venv ECHOS `.venv` reconstruit, SYNE publié en `win-x64`).
+2. [x] **Étape 5 (validation)** : `ManifestDetector`, `ProcessTreeKiller`,
    `ProcessRunExecutor` (chemins, arbre de processus, arrêt authentifié),
-   `--check` / `EnvironmentChecker`, build + tests Launcher sous Windows.
-3. **Étape 4 (E2E Windows)** : campagne → interruption → reprise → analyse →
-   paquet `.livexp` contre SYNE publié `win-x64`.
-4. Cocher les étapes 5 et 4 avec les preuves CI `windows-latest`.
+   `--check` / `EnvironmentChecker`, build + tests Launcher sous Windows —
+   **fait**, avec 3 défauts corrigés (apphost, Job Object, lecture du journal) ;
+   détails et preuves en §3 étape 5.
+3. [x] **Étape 4 (E2E Windows)** : campagne → interruption → reprise → analyse →
+   paquet `.livexp` contre SYNE publié `win-x64` — **fait** : E2E **31/31**
+   (correctifs de banc : attente de santé Windows, manifeste `executable.windows`,
+   libération des compositions).
+4. [ ] Cocher les étapes 5 et 4 avec les preuves CI `windows-latest` —
+   **bloqué sur un push explicite (A4)** : aucun run GitHub Actions n'existe
+   encore pour cette branche (API : `total_count = 0`), donc les jobs
+   `windows-latest` n'ont jamais tourné. Les validations locales sont faites et
+   cochées ; il reste à constater la CI après push.
 
-Ce qui **reste faisable sur Linux** pendant que la machine Windows travaille :
-la partie rédactionnelle restante de l'étape 5, le suivi des workflows CI
-(`windows-latest` tourne sur GitHub, pas sur ta machine) et les correctifs de
-bugs remontés.
+Suite immédiate (Lot W) : demander le **push** de
+`feature/windows-validation-v01`, constater les 4 jobs `windows-latest`
+(`syne-dotnet-windows`, `echos-python-windows`, `syne-mock-node-windows`,
+`launcher-dotnet-windows`) et le job Linux, puis traiter toute régression CI.
+
+Ce qui **reste faisable sur Linux** : le suivi des workflows CI
+(`windows-latest` tourne sur GitHub, pas sur la machine Windows) et les
+correctifs de bugs remontés — la rédaction de l'étape 5 et les validations
+locales étant faites.
 
 ---
 
 ## Points restés ouverts dans ce document
 
-- **Bascule Windows** : la date n'est pas fixée — elle suivra la fin du lot
-  Linux (§8), à convenir au moment des faits.
+- **Bascule Windows** : **effectuée le 08/10/2026** (§8) — validations locales
+  Lot W terminées et cochées (étapes 4 et 5) ; il reste à constater la CI
+  `windows-latest`, ce qui exige un **push** de la branche, autorisé seulement
+  sur demande explicite (A4).
+- **Défauts trouvés uniquement sur Windows** (corriger avant toute release) :
+  l'apphost `livex-launcher.exe` ne démarrait pas (manifeste `app.manifest`
+  invalide) et l'export / l'affichage des journaux de session échouaient en
+  violation de partage — les deux corrigés et couverts par les suites du Lot W,
+  mais **non couverts par un test dédié** : ajouter un test qui lance
+  l'apphost publié et un test d'export du journal pendant l'écriture.
 - Ce document est un plan, pas un constat : chaque case passe à
   `[x]` uniquement avec sa preuve (workflow, test ou décision) et un commit
   local (A4).

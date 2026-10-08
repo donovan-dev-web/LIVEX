@@ -61,8 +61,9 @@ sont livrées.** Le plan de sortie fait foi : `ROADMAP-V01.md`. Les campagnes
 scientifiques (V2′ rejouée par le chemin `reset`, 6/6 conforme à ADR-016 ;
 benchmarks V5 refaits sur la machine de référence), le parcours J3 de bout en
 bout contre les composants réels et la validation transverse V3 (hors long-run)
-sont validés ; il reste à valider sous Windows le support rédigé (manifestes,
-bancs portables et CI `windows-latest`). Aucune release, publication ni tag
+sont validés ; le support Windows est validé localement depuis le 08/10/2026
+(Lot W : manifestes, bancs portables, E2E 31/31, `--check`, exécutable natif),
+il reste à constater la CI `windows-latest`. Aucune release, publication ni tag
 avant que tout ne soit validé. L’expérience de rendu PRISM reste hors périmètre
 V0.1.
 
@@ -279,7 +280,9 @@ ci-dessus.
   les parcours E2E contre un SYNE publié ; la preuve de bout en bout complète
   (campagne → interruption → reprise → analyse → paquet, J3) est automatisée
   par `J3RealComponentsEndToEndTests` contre SYNE publié et ECHOS réel
-  (étape 4) — le banc est aussi déclaré sur `windows-latest` (constat à faire).
+  (étape 4) — le parcours est validé sous Windows le 08/10/2026 (31/31 contre
+  SYNE `win-x64` + ECHOS réel) ; le banc est aussi déclaré sur `windows-latest`
+  (constat CI à faire).
 - Aucun résultat automatisé PRISM ne doit être déduit de la réussite des tests
   des autres composants.
 
@@ -303,8 +306,10 @@ Les chemins d’analyse du Launcher sont raccordés aux opérations headless de
 l’API ECHOS (J2B accepté). L’installation ECHOS Linux est validée (étape 9 de
 `ROADMAP-V01.md`, procédure en `docs/docs-launcher/INTEGRATION_CONTRACT.md`
 §10.3). Le parcours J3 de bout en bout contre les composants réels est acquis
-(étape 4, `J3RealComponentsEndToEndTests`). **Reste ouvert avant clôture : les
-validations Windows** (étape 5 — Lot W et constat CI `windows-latest`).
+(étape 4, `J3RealComponentsEndToEndTests`). **Reste ouvert avant clôture : le
+constat CI `windows-latest`** — les validations locales Windows (étape 5,
+Lot W) sont faites et cochées au 08/10/2026 (208 tests verts, `--check`,
+exécutable natif).
 
 ### SYNE — moteur réel
 
@@ -373,11 +378,13 @@ Le plan de sortie fait foi : **`ROADMAP-V01.md`**. Les étapes 1, 2, 3, 4, 6,
 7, 9, 10 et 11 y sont cochées avec leurs preuves (étape 5 : Lot L committé) ;
 les écarts restants sont :
 
-1. **Validation Windows de l'étape 5 (Lot W)** : les manifestes déclarent les
-   clés `executable.windows`, les bancs sont portables et les jobs
-   `windows-latest` sont en place — reste la validation locale sous Windows
-   (`ManifestDetector`, `ProcessTreeKiller`, `ProcessRunExecutor`, `--check`)
-   et le constat des jobs CI `windows-latest`, E2E de campagne compris.
+1. **Validation Windows de l'étape 5 (Lot W)** : **réalisée le 08/10/2026 sur
+   la machine Windows** — `ManifestDetector`, `ProcessTreeKiller`,
+   `ProcessRunExecutor`, `--check` validés (208 tests verts, aucun orphelin),
+   avec trois défauts corrigés (apphost `livex-launcher.exe`, Job Object,
+   lecture du journal de session sous verrou). **Reste le constat des jobs CI
+   `windows-latest`**, E2E de campagne compris — il exige un push explicite
+   (arbitrage A4).
 2. **PRISM** : rendu interactif Unreal et validation d’intégration — hors
    périmètre V0.1, porte d’intégration séparée.
 3. **Fiabilité des preuves** : un test de débit (§5) fragile sous charge
@@ -392,8 +399,8 @@ de 80 %), ainsi qu’un plugin PRISM hors périmètre de sortie. Les contrats
 inter-composants (J2A, J2B), l’installation ECHOS Linux, les campagnes
 scientifiques rejouées par `reset`, le parcours J3 de bout en bout et la
 validation V3 sont établis ; ce qui manque pour déclarer **LIVEX V0.1** tient
-à la validation Windows (Lot W et CI `windows-latest`) inscrite dans
-`ROADMAP-V01.md`. Aucune release, tag ni publication n’est programmé avant
+à la CI `windows-latest` (le Lot W, validations locales Windows, est bouclé le
+08/10/2026) inscrite dans `ROADMAP-V01.md`. Aucune release, tag ni publication n’est programmé avant
 validation complète. Ce rapport décrit **l’état du code versionné
 et des validations réalisées au 08/10/2026**, et non une certification que
 toutes les fonctionnalités V1 prévues sont opérationnelles.

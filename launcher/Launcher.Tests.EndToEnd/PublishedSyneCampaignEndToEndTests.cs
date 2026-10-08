@@ -167,6 +167,9 @@ internal sealed class PublishedSyneHarness : IDisposable
 {
     private PublishedSyneHarness(string root) => Root = root;
 
+    /// <summary>Journal de session ouvert par le banc — libéré à la disposition du banc.</summary>
+    private SessionFileJournal? _journal;
+
     /// <summary>Racine des paquets de la campagne.</summary>
     public string Root { get; }
 
@@ -196,6 +199,7 @@ internal sealed class PublishedSyneHarness : IDisposable
         harness.ManifestVersion = PublishedSyneInstaller.Install(publishedSyneRoot, componentRoot);
 
         var journal = new SessionFileJournal(Path.Combine(root, "sessions"));
+        harness._journal = journal;
         var clock = new SystemClock();
         var registry = new ServiceRegistry();
         var detector = new ManifestDetector(journal);
@@ -220,6 +224,11 @@ internal sealed class PublishedSyneHarness : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        // Le journal tient son fichier ouvert : sans cette libération, la suppression de la
+        // racine échoue sous Windows (un fichier ouvert n'est pas supprimable), là où Linux
+        // l'ignore.
+        _journal?.Dispose();
+        _journal = null;
     }
 }
 

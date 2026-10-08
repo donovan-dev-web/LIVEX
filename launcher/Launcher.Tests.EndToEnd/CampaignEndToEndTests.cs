@@ -19,6 +19,7 @@ public sealed class CampaignEndToEndTests : IDisposable
     private readonly string _root;
     private readonly string _componentsRoot;
     private readonly string _componentsParent;
+    private readonly List<Launcher.App.Composition.LauncherComposition> _compositions = [];
 
     public CampaignEndToEndTests()
     {
@@ -50,7 +51,7 @@ public sealed class CampaignEndToEndTests : IDisposable
               "name": "SYNE",
               "type": "engine",
               "version": "0.1.0-stub",
-              "executable": { "path": "Stub.Syne" },
+              "executable": { "path": "Stub.Syne", "linux": "Stub.Syne", "windows": "Stub.Syne.exe" },
               "capabilities": ["headless", "seed", "tickLimit", "export", "pause"],
               "endpoints": { "control": { "transport": "http" } },
               "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
@@ -71,6 +72,11 @@ public sealed class CampaignEndToEndTests : IDisposable
         var packagesRoot = Path.Combine(_root, "packages");
         var dataRoot = Path.Combine(_root, "data");
         var composition = new Launcher.App.Composition.LauncherComposition(packagesRoot, _componentsParent, dataRoot);
+
+        // Chaque composition ouvre le journal de session (fichier tenu ouvert) : elle doit être
+        // libérée avant la suppression de la racine — sous Windows, un fichier ouvert ne peut
+        // pas être supprimé, contrairement à Linux.
+        _compositions.Add(composition);
         return (composition, detector, packagesRoot);
     }
 
@@ -216,6 +222,12 @@ public sealed class CampaignEndToEndTests : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        foreach (var composition in _compositions)
+        {
+            composition.Dispose();
+        }
+
+        _compositions.Clear();
         try
         {
             Directory.Delete(_root, recursive: true);

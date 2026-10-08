@@ -284,7 +284,7 @@ en bout. Machine de référence V0.1 : **Ubuntu x86-64, Python 3.14.4, pip 26.2.
 | **Base analytique** | `<LIVEX_DATA>/echos/analytics.sqlite` (défaut `~/.livex-data`), **hors** work-dir ; fichier + WAL créés à l'ouverture. Racine inutilisable → variable absente → `/health/ready` **503** explicite (jamais un échec muet). |
 | **Endpoints analysables** | `GET /api/runs` → `200 {"runs":[]}` ; `POST /analysis/run`, `/analysis/experiment`, `/analysis/report` avec `{}` → **422** à erreur de schéma **structurée** (`detail[]` FastAPI), aucun 500, aucune utilisation d'interface (ADR-007). |
 | **Arrêt & orphelins** | `POST /control/shutdown` sans jeton → **401** (auth exigée). `SIGTERM` → fermeture loguée (`Application shutdown complete`), **aucun processus orphelin** après `wait`. |
-| **OS supportés** | **Linux x86-64 uniquement** (manifeste `executable.linux`). Windows : hors validation — étape 5 de `ROADMAP-V01.md` (clés `executable.windows` + CI `windows-latest`). |
+| **OS supportés** | **Linux x86-64** et **Windows x64**, validés localement le 08/10/2026 (étape 5 de `ROADMAP-V01.md`, Lot W) : ECHOS réel démarré par `echos-launcher.cmd` + venv `.venv\Scripts`, parcours J3 E2E 31/31, `--check` vert, aucun orphelin. Le constat CI `windows-latest` reste à faire (push de la branche, arbitrage A4). |
 
 ## 11. Exigences propres à PRISM
 

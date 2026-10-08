@@ -12,18 +12,42 @@ namespace Launcher.Infrastructure;
 /// </summary>
 public static class ProcessTreeKiller
 {
-    /// <summary>Place un processus fils dans son propre groupe, côté parent (best effort, Unix).</summary>
+    /// <summary>
+    /// Confinement à la création, côté parent (best effort) : le fils reçoit sa propre unité —
+    /// son groupe de processus Unix, ou le Job Object Windows du Launcher
+    /// (JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE) — pour que rien ne survive à la fermeture du
+    /// Launcher et que l'arrêt forcé d'un composant ne touche jamais aux autres.
+    /// </summary>
     public static void MakeOwnProcessGroup(int childPid)
     {
-        if (!OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
-            try
-            {
-                setpgid(childPid, childPid);
-            }
-            catch (DllNotFoundException)
-            {
-            }
+            AssignToJob(childPid);
+            return;
+        }
+
+        try
+        {
+            setpgid(childPid, childPid);
+        }
+        catch (DllNotFoundException)
+        {
+        }
+    }
+
+    /// <summary>Windows : ajoute le fils au Job Object du Launcher (best effort).</summary>
+    [SupportedOSPlatform("windows")]
+    private static void AssignToJob(int childPid)
+    {
+        try
+        {
+            using var child = Process.GetProcessById(childPid);
+            JobObjectAssigner.TryAssign(child);
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            // Processus déjà terminé ou accès refusé : le confinement reste best effort,
+            // l'arrêt forcé conserve son repli sur l'arbre de processus.
         }
     }
 
@@ -57,16 +81,21 @@ public static class ProcessTreeKiller
     [SupportedOSPlatform("windows")]
     private static void KillTreeWindows(Process process)
     {
-        if (!JobObjectAssigner.TryAssign(process))
+        // L'arrêt forcé vise l'arbre du SEUL composant. Le Job Object commun (assigné au
+        // démarrage) est le garde-fou « aucun orphelin à la fermeture du Launcher » : il ne
+        // doit être ni terminé ni fermé ici — terminer le job tuerait aussi les autres composants
+        // encore vivants (le job les contient tous) et fermer son handle retirerait le
+        // garde-fou pour toute la fin de la session.
+        try
         {
-            // Sans Job Object possible, repli : arbre .NET.
-            process.Kill(entireProcessTree: true);
-            return;
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
         }
-
-        if (!JobObjectAssigner.TerminateCurrentJob())
+        catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
         {
-            process.Kill(entireProcessTree: true);
+            // Processus terminé entre-temps : condition normale, aucun orphelin à tuer.
         }
     }
 
@@ -118,9 +147,6 @@ internal static class JobObjectAssigner
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool TerminateJobObject(IntPtr hJob, uint uExitCode);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool CloseHandle(IntPtr hObject);
@@ -190,19 +216,5 @@ internal static class JobObjectAssigner
     {
         var handle = JobHandle.Value;
         return handle != IntPtr.Zero && AssignProcessToJobObject(handle, process.Handle);
-    }
-
-    /// <summary>Termine tout ce que contient le job (arrêt forcé de l'arbre).</summary>
-    public static bool TerminateCurrentJob()
-    {
-        var handle = JobHandle.Value;
-        if (handle == IntPtr.Zero)
-        {
-            return false;
-        }
-
-        var terminated = TerminateJobObject(handle, 1);
-        CloseHandle(handle);
-        return terminated;
     }
 }

@@ -375,7 +375,9 @@ public sealed class J3RealComponentsEndToEndTests : IDisposable
             return string.Empty;
         }
 
-        return string.Join("\n", Directory.EnumerateFiles(directory).Select(File.ReadAllText));
+        // Lecture partagée : le journal est encore ouvert en écriture par la composition —
+        // sous Windows, File.ReadAllText échouerait en violation de partage.
+        return string.Join("\n", Directory.EnumerateFiles(directory).SelectMany(SessionFileJournal.ReadSharedLines));
     }
 
     /// <summary>Appel direct de GenerateReport (§10.1) : c'est la référence de fidélité.</summary>

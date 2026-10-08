@@ -88,8 +88,9 @@ public sealed class ProcessManager : IProcessManager
             throw new InvalidOperationException($"démarrage impossible : {spec.ExecutablePath}");
         }
 
-        // Confinement Unix : le fils reçoit son propre groupe de processus, afin que l'arrêt
-        // forcé vise ce groupe sans jamais toucher le groupe du Launcher (INTEGRATION_CONTRACT.md §5.2).
+        // Confinement à la création (INTEGRATION_CONTRACT.md §5.2) : le fils reçoit sa propre
+        // unité — groupe de processus Unix, Job Object Windows — pour que rien ne survive au
+        // Launcher et que l'arrêt forcé d'un composant ne vise que son propre arbre.
         ProcessTreeKiller.MakeOwnProcessGroup(process.Id);
 
         _ = PumpAsync(process.StandardOutput, spec.StdOutLogPath, instanceId, "stdout", cancellationToken);
