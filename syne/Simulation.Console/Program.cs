@@ -33,13 +33,7 @@ public static class Program
                 return 0;
             }
 
-            SimulationOptions options = ConfigLoader.LoadDefaults();
-            if (cli.ConfigPath is not null)
-            {
-                options = ConfigLoader.LoadFile(cli.ConfigPath);
-            }
-
-            options = ApplyCliOverrides(options, cli);
+            SimulationOptions options = ResolveOptions(cli);
 
             IReadOnlyList<string> errors = SimulationOptionsValidator.Validate(options);
             if (errors.Count > 0)
@@ -88,6 +82,32 @@ public static class Program
             System.Console.Error.WriteLine("Lancez --help pour la liste des options.");
             return 2;
         }
+    }
+
+    /// <summary>
+    /// Résolution effectives des options : défauts intégrés → profil de scénario
+    /// (<c>--simulation</c>) → surcouche <c>--config</c> → flags CLI
+    /// (CONFIGURATION.md §5). <c>reference</c> n'injecte rien : le profil de
+    /// référence EST le défaut intégré calibré (ADR-016) — tout chemin existant
+    /// reste bit-à-bit identique. <c>prism</c> (ADR-017) s'applique comme
+    /// surcouche complète <b>sous</b> <c>--config</c>, qui garde donc la priorité
+    /// (paradigme du Launcher : surcouche `launcher-config.json`).
+    /// </summary>
+    public static SimulationOptions ResolveOptions(CliOptions cli)
+    {
+        ArgumentNullException.ThrowIfNull(cli);
+        SimulationOptions options = ConfigLoader.LoadDefaults();
+        if (string.Equals(cli.Simulation, SimulationProfiles.PrismId, StringComparison.Ordinal))
+        {
+            options = ConfigLoader.MergeJson(options, SimulationProfiles.PrismJson());
+        }
+
+        if (cli.ConfigPath is not null)
+        {
+            options = ConfigLoader.MergeJson(options, File.ReadAllText(cli.ConfigPath));
+        }
+
+        return ApplyCliOverrides(options, cli);
     }
 
     private static SimulationOptions ApplyCliOverrides(SimulationOptions options, CliOptions cli)
@@ -352,9 +372,12 @@ public static class Program
             throw new ArgumentException("--export-dir exige --autostart en mode service.");
         }
 
-        string configJson = cli.ConfigPath is null
-            ? ConfigLoader.ToJson(options)
-            : await File.ReadAllTextAsync(cli.ConfigPath);
+        // Configuration **effectivement appliquée** (profil de scénario +
+        // surcouche + flags CLI, ADR-017) : le contrôleur reçoit le résolu
+        // complet au prepare — sinon `--simulation prism` perdrait son profil
+        // (le prepare du contrôleur mergerait la seule surcouche sur le profil
+        // de référence par défaut).
+        string configJson = ConfigLoader.ToJson(options);
         Observability.ObservabilityServer? observability = cli.AutoStart && cli.ObservePort is null
             ? null
             : new Observability.ObservabilityServer(cli.ObservePort ?? Observability.ObservabilityServer.DefaultPort);
@@ -525,6 +548,7 @@ public static class Program
         int initialEntityCount)
     {
         var summary = new System.Text.StringBuilder();
+        var clock = Simulation.Core.Configuration.SimulationClock.From(options.Simulation);
         summary.AppendLine($"SYNE — boucle minimale ({template.Species}) :");
         summary.AppendLine($"  monde : {options.Simulation.WorldWidth} x {options.Simulation.WorldHeight} | grille : {loop.World.Grid.CellCountX}x{loop.World.Grid.CellCountY}");
         summary.AppendLine($"  PRNG : {options.Random.Engine}, seed : {options.Random.Seed}");
@@ -535,19 +559,19 @@ public static class Program
             // cours de run, son compte est donc le compte initial capturé avant la
             // boucle — pas le compteur final, qui faisait lire « tick 1 … 42 entités »
             // après une extinction.
-            var head = BuildTickLine(1UL, initialEntityCount);
-            var tail = BuildTickLine(loop.CurrentTick, loop.World.Entities.Count);
+            var head = BuildTickLine(1UL, initialEntityCount, clock);
+            var tail = BuildTickLine(loop.CurrentTick, loop.World.Entities.Count, clock);
             summary.AppendLine("(tête) " + head);
             summary.AppendLine("  …    …");
             summary.AppendLine("(queue) " + tail);
         }
 
-        summary.AppendLine($"  exécuté en {elapsedMs} ms | 1 tick = 1 minute simulée");
+        summary.AppendLine($"  exécuté en {elapsedMs} ms | 1 tick = {clock.SimulatedSecondsPerTick} s simulées");
         System.Console.WriteLine(summary.ToString());
     }
 
-    private static string BuildTickLine(ulong tick, int entityCount)
+    private static string BuildTickLine(ulong tick, int entityCount, Simulation.Core.Configuration.SimulationClock clock)
     {
-        return $"tick {tick:D8}  {SimulationTime.FormatClock(tick)}  entités : {entityCount}";
+        return $"tick {tick:D8}  {clock.FormatClock(tick)}  entités : {entityCount}";
     }
 }

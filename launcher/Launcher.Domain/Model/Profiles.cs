@@ -5,6 +5,18 @@ public static class WellKnownSimulations
 {
     /// <summary>Profil batch de référence actuellement disponible dans SYNE réel.</summary>
     public const string Reference = "reference";
+
+    /// <summary>
+    /// Profil batch PRISM (ADR-017) : monde 2 240 × 2 240, 6 TPS, 5 s simulées
+    /// par tick (R = 30) — accepté par `--simulation` depuis le contrat SYNE
+    /// 0.4.0. Additif : n'altère aucun chemin `reference`.
+    /// </summary>
+    public const string Prism = "prism";
+
+    /// <summary>Vrai si <paramref name="simulationId"/> est un scénario SYNE connu.</summary>
+    public static bool IsKnown(string simulationId) =>
+        string.Equals(simulationId, Reference, StringComparison.Ordinal)
+        || string.Equals(simulationId, Prism, StringComparison.Ordinal);
 }
 
 /// <summary>Profils d'exécution prédéfinis (COMPONENTS.md §9).</summary>

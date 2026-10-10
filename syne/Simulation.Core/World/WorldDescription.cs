@@ -7,6 +7,11 @@ public sealed record WorldDescription(
     int Height,
     double CellSize,
     int TicksPerSecond,
+    // Échelle temporelle/ spatiale du run (champs additifs ADR-017, description
+    // 1.0 → 1.1) : secondes simulées par tick (défaut 60 = 1 tick = 1 minute,
+    // ADR-005) et mètres par unité SYNE (informatif, PRISM k = 100 uu / unité).
+    int SimulatedSecondsPerTick,
+    double MetersPerUnit,
     int CellCountX,
     int CellCountY,
     IReadOnlyList<WorldAgent> Agents,
@@ -31,14 +36,26 @@ public sealed record WorldRegion(string Id, int X, int Y, int Width, int Height)
 
 public static class WorldDescriptionBuilder
 {
-    public const string Version = "1.0";
+    /// <summary>1.0 → 1.1 (ADR-017) : champs additifs <c>simulatedSecondsPerTick</c> et <c>metersPerUnit</c>.</summary>
+    public const string Version = "1.1";
     private const int ResourceLocationsPerType = 3;
 
-    public static WorldDescription Build(World world, ulong seed, double cellSize = 10, int ticksPerSecond = 10)
+    public static WorldDescription Build(
+        World world,
+        ulong seed,
+        double cellSize = 10,
+        int ticksPerSecond = 10,
+        int simulatedSecondsPerTick = Simulation.Core.Configuration.SimulationClock.DefaultSimulatedSecondsPerTick,
+        double metersPerUnit = 1.0)
     {
         ArgumentNullException.ThrowIfNull(world);
         if (cellSize <= 0) throw new ArgumentOutOfRangeException(nameof(cellSize));
         if (ticksPerSecond <= 0) throw new ArgumentOutOfRangeException(nameof(ticksPerSecond));
+        if (simulatedSecondsPerTick is < Simulation.Core.Configuration.SimulationClock.MinSimulatedSecondsPerTick
+            or > Simulation.Core.Configuration.SimulationClock.MaxSimulatedSecondsPerTick)
+            throw new ArgumentOutOfRangeException(nameof(simulatedSecondsPerTick));
+        if (!double.IsFinite(metersPerUnit) || metersPerUnit <= 0)
+            throw new ArgumentOutOfRangeException(nameof(metersPerUnit));
         int countX = (int)Math.Ceiling(world.Size.Width / cellSize);
         int countY = (int)Math.Ceiling(world.Size.Height / cellSize);
         var agents = world.Entities
@@ -76,7 +93,8 @@ public static class WorldDescriptionBuilder
             regions.Add(new WorldRegion($"chunk-{x / regionSize}-{y / regionSize}", x, y,
                 Math.Min(regionSize, countX - x), Math.Min(regionSize, countY - y)));
         return new WorldDescription(Version, world.Size.Width, world.Size.Height, cellSize,
-            ticksPerSecond, countX, countY, agents, cells, initialObstacles, resources, regions);
+            ticksPerSecond, simulatedSecondsPerTick, metersPerUnit,
+            countX, countY, agents, cells, initialObstacles, resources, regions);
     }
 
     private static List<WorldResource> BuildResourceLocations(

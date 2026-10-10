@@ -38,7 +38,7 @@ et `docs/docs-syne/` restent la source de vérité.
 Routes : `GET /api/control/status`, `GET /api/world`, `POST
 /api/control/prepare|ready|start|pause|resume|stop|reset`.
 Le cycle est `idle → worldPreparing → ready → running ⇋ paused → finished`.
-`prepare` est explicite : appelez `ready` avec `{"worldVersion":"1.0"}` avant
+`prepare` est explicite : appelez `ready` avec `{"worldVersion":"1.1"}` avant
 `start`, sinon la réponse est `409 world_not_ready`. Un `start` direct conserve
 l’auto-préparation implicite rétrocompatible. Le statut expose
 `worldPrepared`, `worldVersion` et `worldReadyAcknowledged`.
@@ -46,7 +46,8 @@ Le corps de `start/reset` accepte `{"seed":42,"maxTicks":400}`. La génération 
 défaut produit 50 agents et 400 ticks, sans hasard dépendant du temps. Chaque tick
 émet un `snapshot`, `tick_summary`, `decision_made` et `action_completed` par agent.
 Avant tout snapshot, le WebSocket émet `world_initialized` avec une
-`WorldDescription` version `1.0`. Le monde est généré dans l'ordre
+`WorldDescription` version `1.1` (champs additifs ADR-017 :
+`simulatedSecondsPerTick`, `metersPerUnit`). Le monde est généré dans l'ordre
 topologie → obstacles → ressources → agents. Les emplacements de ressources
 initiaux sont des marqueurs de grille ; les stocks dynamiques dans les snapshots
 restent globaux par type. Les obstacles initiaux restent identiques au monde

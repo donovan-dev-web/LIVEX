@@ -91,7 +91,9 @@ public class ControlServerWireTests : IAsyncLifetime
 
         using var ready = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/ready"))
         {
-            Content = JsonBody("{ \"worldVersion\": \"1.0\" }"),
+            // Version du contrat de description (ADR-017 : 1.0 → 1.1) — épinglée
+            // sur la constante du moteur pour ne plus casser à chaque bump mineur.
+            Content = JsonBody($"{{ \"worldVersion\": \"{Simulation.Core.World.WorldDescriptionBuilder.Version}\" }}"),
         };
         using HttpResponseMessage acknowledged = await _http.SendAsync(ready);
         Assert.Equal(System.Net.HttpStatusCode.OK, acknowledged.StatusCode);

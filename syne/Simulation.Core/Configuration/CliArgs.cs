@@ -56,7 +56,7 @@ public sealed record CliOptions(
         Options de simulation :
           --seed <ulong>                  Graine du PRNG (xoshiro256**).
           --max-ticks <int>               Nombre maximal de ticks.
-          --simulation <id>               Scénario batch pris en charge : reference.
+          --simulation <id>               Scénario batch pris en charge : reference, prism (ADR-017).
           --ticks <int>                   Horizon batch strictement positif.
           --export-dir <chemin>           Dossier des artefacts batch (result.json).
           --run-id <id>                   Identité du run écrite dans le flux exporté.
@@ -246,9 +246,11 @@ public sealed record CliOptions(
         ValidateMode(observe, observePort, "--observe", "--observe-port", serve, servePort, "--serve", "--serve-port",
             controlPort is not null);
 
-        if (simulation is not null && simulation != "reference")
+        if (!SimulationProfiles.IsKnownSimulationId(simulation))
         {
-            throw new ArgumentException($"Scénario batch non pris en charge : \"{simulation}\". Valeur acceptée : reference.");
+            throw new ArgumentException(
+                $"Scénario batch non pris en charge : \"{simulation}\". " +
+                $"Valeurs acceptées : {SimulationProfiles.ReferenceId}, {SimulationProfiles.PrismId}.");
         }
 
         if (ticks is <= 0)

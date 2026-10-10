@@ -679,6 +679,10 @@ public sealed class StubFacade : IOrchestrationFacade
         ("Sain", "SYNE et ECHOS démarrés, PRISM arrêté (verrouillé G7)");
 
     /// <inheritdoc />
+    public Task<PrismEngineStart> StartEnginePrismAsync() =>
+        Task.FromResult(new PrismEngineStart(null, "syne", "http://127.0.0.1:5181", "ws://127.0.0.1:5180/"));
+
+    /// <inheritdoc />
     public ProfileResolution ResolveProfile(string profileId, SessionKind session, IReadOnlyCollection<string>? extraComponents = null) => new() { Satisfiable = true, StartupOrder = { "syne" } };
 
     /// <inheritdoc />

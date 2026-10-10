@@ -45,7 +45,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category="SYNE|Connection") void Disconnect();
 	UFUNCTION(BlueprintCallable, Category="SYNE|Control", meta=(AdvancedDisplay="TicksPerSecond"))
 	void Prepare(int64 Seed, int32 TicksPerSecond = 10);
-	UFUNCTION(BlueprintCallable, Category="SYNE|Control") void Ready(const FString& WorldVersion = TEXT("1.0"));
+	// Version de la description du monde reçue dans `world_initialized` (contrat
+	// 1.1 depuis ADR-017 : simulatedSecondsPerTick / metersPerUnit additifs).
+	// À reconstruire en lecture de `world.version` sans valeur en dur (spec PRISM §6).
+	UFUNCTION(BlueprintCallable, Category="SYNE|Control") void Ready(const FString& WorldVersion = TEXT("1.1"));
 	UFUNCTION(BlueprintCallable, Category="SYNE|Control") void Start(int64 Seed, int32 MaxTicks = 400);
 	UFUNCTION(BlueprintCallable, Category="SYNE|Control") void Pause();
 	UFUNCTION(BlueprintCallable, Category="SYNE|Control") void Resume();

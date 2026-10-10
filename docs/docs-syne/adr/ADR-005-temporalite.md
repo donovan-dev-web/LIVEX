@@ -1,9 +1,9 @@
 # ADR-005 : Temporalité — tick = minute
 
 **Composant** : SYNE
-**Statut** : [Historique — décision acceptée à l'époque]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : —
+**Statut** : [Historique — précisée par ADR-017]
+**Dernière mise à jour** : 10 octobre 2026
+**Dépend de** : ADR-017 (échelle temporelle configurable)
 **Source Monographie** : Annexe F.6 (ADR-005)
 
 ---
@@ -14,7 +14,9 @@ Le temps simulé doit avoir un sens pour l'interprétation des besoins, de l'én
 
 ## Décision
 
-**1 tick = 1 minute de temps simulé** (cycle de 24 heures = 1440 ticks). Réglage **[HÉRITÉ]** du prototype, **paramétrable** (décision n°1 « unité de temps »). L'échelle de temps est contrôlée par la boucle de simulation.
+**1 tick = 1 minute de temps simulé** (cycle de 24 heures = 1440 ticks). Réglage **[HÉRITÉ]** du prototype. L'échelle de temps est contrôlée par la boucle de simulation.
+
+> **Précision ADR-017 (10 octobre 2026)** : la « paramétrabilité » affirmée ici n'existait **que dans la documentation** — le moteur portait une constante statique (`SimulationTime.TicksPerSimulationMinute = 1`). ADR-017 la rend réelle : `simulation.simulatedSecondsPerTick` (défaut 60 → comportement historique inchangé), horloge instanciée `SimulationClock` et règles de conversion A/B/C. Ce document reste la référence du **profil par défaut** ; l'échelle configurable vit dans ADR-017.
 
 ## Conséquences
 
@@ -35,4 +37,5 @@ Le temps simulé doit avoir un sens pour l'interprétation des besoins, de l'én
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 10 octobre 2026 | Précision | La « paramétrabilité » était documentée mais non implémentée ; ADR-017 l'instancie (défaut 60 s/tick, neutre) |
 | 17 septembre 2026 | Création | — |

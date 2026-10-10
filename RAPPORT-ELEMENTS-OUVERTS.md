@@ -385,6 +385,56 @@ worker mesurés et attachés ; défaut de rétroaction moteur←consommateur cor
 non régressif ; deux résidus documentés (défauts 2 et 3) ; revue UI visuelle
 reportée au Jalon 4 ; long-run hors périmètre (arbitrage A2).
 
+### 5.4 — ADR-017, échelle temporelle configurable (10/10/2026)
+
+**Livré** (spec « Profil gameplay PRISM — temps, échelle, vitesse », étapes 1-4
++ vérifications) : `simulation.simulatedSecondsPerTick` (défaut 60, `[1, 3600]`)
++ `world.metersPerUnit` (> 0) ; `SimulationClock` instanciée ; conversion A/B/C
+appliquée une fois au démarrage (`TemporalScale`, court-circuit `dt == 1`
+bit-exact) ; profil `prism` (`SimulationProfiles.Prism()` +
+`configs/simulation/prism.json`) ; contrats additifs (observabilité **0.4.0**,
+description `world_initialized` **1.1**, status) ; `syne-mock` aligné (temps
+`tick × spt`, description 1.1, profil prism 4 900 cases). Inventaire PR 0 :
+`docs/docs-syne/TICK_QUANTITIES.md` (classement A/B/C avec preuves fichier:ligne,
+à valider pour les non-classés §3 : reproduction, engagements, constantes
+codées en dur, `communication.trustDecay` mort).
+
+**Preuves automatisées** : **626 tests SYNE verts** (dont 29 tests ADR-017 :
+neutralité `dt == 1`, équivalence 12 ticks à `dt = 1/12` par quantité de classe A,
+validation, contrats, critères n°4-6) — **goldens dorés inchangés** ; 48 tests
+`syne-mock` (2 nouveaux) ; Launcher 162 unit + 20 intégration verts ; ECHOS
+inchangé (pytest exit 0, contrat 0.4.0 consommé tel quel).
+
+**Compatibilité Launcher vérifiée (complément du 10/10/2026)** : `--simulation`
+accepte désormais `prism` (le mode supervisé prépare avec la configuration
+**résolue** — profil prism sous la surcouche `launcher-config.json`), et le
+champ « Scénario » du formulaire de campagne accepte `prism`.
+Parcours de bout en bout prouvé par un batch supervisé réel avec les arguments
+exacts du Launcher (`Adr017PrismBatchTests`) : `world_initialized` **1.1** portant
+`simulatedSecondsPerTick: 5` / `metersPerUnit: 1` (cadence 24 de la surcouche
+prioritaire) + snapshots `tick × 5 s` ; provenance `result.json`
+(`"simulation": "prism"`) vérifiée sur un run CLI.
+
+**Campagne de calibration prism (critères 8-9, smoke réduit)** : deux runs CLI
+réels lancés le 10/10/2026
+(`Simulation.Console --config <profil prism> --max-ticks 30000`, 100 et 50 agents,
+seed 12345) — **arrêtés après > 1 h sans terminer** (1 plein cœur CPU chacun,
+pas de blocage : débit très inférieur aux 5 t/s visés, cohérent avec le coût A*
+du monde 2 240 ; journaux vides — le résumé CLI n'est écrit qu'à l'issue).
+Le verdict extinction/survie de ces deux runs reste donc à produire avec
+campagne outillée et budget de tick mesuré proprement (étape 5). **Constat préliminaire à creuser** : le monde prism
+(2 240² avec `worldCellSize` 32 pour la description, grille de cheminement à
+`agents.pathfinding.cellSize` 10 → 224 × 224 cases et A* plafonné à 4 096
+cellules par requête) est nettement plus lourd par tick que le monde `reference`
+(50 × 50) des benchmarks V5 — le critère 9 (budget de tick) et le débit réel à
+6 TPS demandés doivent être mesurés proprement sur le profil prism avant
+campagne complète (le pas de déplacement à vitesse constante multiplie aussi les
+requêtes de chemin sur de longues distances, §8 de la spec). Le relevé de densité
+sociale (critère 10) et la campagne complète (×3 seeds, pente d'énergie par
+minute simulée) restent à exécuter avec `scripts/calibration-campaign.py` (outil
+ADR-016 réutilisable) et le relevé ECHOS — c'est l'étape 5 du plan de travail de
+la spec, hors livraison code de cette session.
+
 ---
 
 ## 6. Questions de fond (permanentes, hors cycle de livraison)

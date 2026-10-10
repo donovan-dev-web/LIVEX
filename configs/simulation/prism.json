@@ -1,0 +1,46 @@
+{
+  "simulation": {
+    "worldWidth": 2240,
+    "worldHeight": 2240,
+    "worldCellSize": 32,
+    "ticksPerSecond": 6,
+    "simulatedSecondsPerTick": 5
+  },
+  "world": { "metersPerUnit": 1.0 },
+  "resources": {
+    "food": {
+      "initial": 20000,
+      "regenerationRate": 20
+    },
+    "water": {
+      "initial": 20000,
+      "regenerationRate": 10
+    }
+  },
+  "communication": {
+    "relayEnabled": false,
+    "maxSendsPerTick": 1,
+    "maxReceivesPerTick": 1,
+    "sendEnergyCost": 0,
+    "sendEnergyPayloadFactor": 0,
+    "receiveEnergyCost": 0,
+    "receiveEnergyPayloadFactor": 0
+  },
+  "agents": {
+    "needs": {
+      "socialDriftRate": 0.0002,
+      "curiosityDriftRate": 0.0005
+    },
+    "actions": {
+      "moveEnergyCost": 0.03,
+      "restEnergyGain": 1.5,
+      "restFatigueRecovery": 2,
+      "catalog": {
+        "entries": {
+          "eat": { "energyRecovery": 2.0 },
+          "drink": { "energyRecovery": 1.0 }
+        }
+      }
+    }
+  }
+}
