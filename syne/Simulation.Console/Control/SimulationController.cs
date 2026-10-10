@@ -189,7 +189,8 @@ public sealed class SimulationController : IAsyncDisposable
                 }
                 var (_, loop) = SimulationFactory.Build(options, effectiveSeed);
                 var description = Simulation.Core.World.WorldDescriptionBuilder.Build(
-                    loop.World, effectiveSeed, options.Simulation.WorldCellSize, options.Simulation.TicksPerSecond);
+                    loop.World, effectiveSeed, options.Simulation.WorldCellSize, options.Simulation.TicksPerSecond,
+                    options.Simulation.SimulatedSecondsPerTick, options.World.MetersPerUnit);
                 lock (_gate)
                 {
                     _loop = loop;

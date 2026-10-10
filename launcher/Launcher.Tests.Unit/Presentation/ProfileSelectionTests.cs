@@ -41,6 +41,22 @@ public sealed class ProfileSelectionTests
     }
 
     [Fact]
+    public void Campagne_accepte_le_scenario_prism_ADR_017()
+    {
+        // ADR-017 : le scénario « prism » est désormais sélectionnable dans le
+        // formulaire de campagne (additif — `reference` reste le défaut).
+        var viewModel = new MainWindowViewModel(new ScriptedProfileFacade());
+
+        viewModel.SimulationId = WellKnownSimulations.Prism;
+
+        Assert.True(viewModel.CanCreateCampaign);
+
+        viewModel.SimulationId = WellKnownSimulations.Prism + " ";
+
+        Assert.True(viewModel.CanCreateCampaign); // la validation tolère les espaces de bord
+    }
+
+    [Fact]
     public void Verrou_immersion_affiche_la_cause_exacte_et_le_jalon()
     {
         var facade = new ScriptedProfileFacade();
@@ -174,6 +190,9 @@ public sealed class ProfileSelectionTests
         public ReportReadResult ReadEmergenceReport(string packagePath) => new(null, null);
 
         public Task<string?> ToggleComponentAsync(string componentId, bool start) => Task.FromResult<string?>(null);
+
+        public Task<PrismEngineStart> StartEnginePrismAsync() =>
+            Task.FromResult(new PrismEngineStart("non utilisé dans ce banc", null, null, null));
 
         public ResourceSnapshot SampleResources() => new(double.NaN, double.NaN, 31);
 

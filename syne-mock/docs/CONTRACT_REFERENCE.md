@@ -40,9 +40,9 @@ diffusés tels quels : ne pas appliquer l'ordre ci-dessus.
 Champs présents dans le mock :
 
 ```text
-type, version, engineVersion, runId, tick, simulatedTimeMinutes, aliveCount
-season, seasonIndex, agents[], resources[], obstacles[], territories[], groups[], books[]
-worldChanges[], actions[]
+type, version, engineVersion, runId, tick, simulatedTimeMinutes, simulatedTimeSeconds,
+aliveCount, season, seasonIndex, agents[], resources[], obstacles[], territories[],
+groups[], books[], worldChanges[], actions[]
 ```
 
 Chaque agent contient `id` (chaîne décimale dans le snapshot), `species`,
@@ -218,10 +218,11 @@ client ne doit pas en dépendre :
 - **Les ressources locales ne sont jamais ciblées.** `world.resources[]`
   décrit la carte ; les agents ne consomment que les réserves globales
   `resources`.
-- **Le temps est simplifié.** `simulatedTimeMinutes` vaut `tick`, et
-  `seasonIndex` vaut `floor(tick / 90) % 4` : une saison dure 90 ticks, quelle que
-  soit la cadence. Les deux échelles ne sont pas reliées — à
-  `ticksPerSecond: 10`, une saison réelle de 9 s est étiquetée 90 minutes.
+- **Le temps suit `simulatedSecondsPerTick` (ADR-017)** : `simulatedTimeSeconds`
+  vaut `tick × simulatedSecondsPerTick` (60 par défaut) et `simulatedTimeMinutes`
+  en est le plancher — parité du contrat SYNE. En revanche `seasonIndex` vaut
+  `floor(tick / 90) % 4` : une saison dure 90 ticks, sans dépendance au pas
+  temporel (le mock ne reproduit pas la classe A, spec §5).
 - **Le déplacement n'est pas un pathfinding.** `stepToward` et un contournement
   perpendiculaire déterministe remplacent l'A\* de SYNE sur la grille
   rasteurisée, et `worldChanges[]` ne porte aucune mutation de terrain.
@@ -241,7 +242,7 @@ encore lire comme porteur de sens.
 | GET | `/api/control/status` | — | status JSON |
 | GET | `/api/world` | — | `WorldDescription` ou `409 world_not_prepared` |
 | POST | `/api/control/prepare` | `{"seed":42,"ticksPerSecond":10}` | monde préparé |
-| POST | `/api/control/ready` | `{"worldVersion":"1.0"}` | accusé de réception |
+| POST | `/api/control/ready` | `{"worldVersion":"1.1"}` | accusé de réception |
 | POST | `/api/control/start` | `{"seed":42,"maxTicks":400}` | `{ok,action,...status}` |
 | POST | `/api/control/pause` | `{}` | idem |
 | POST | `/api/control/resume` | `{}` | idem |
@@ -250,7 +251,8 @@ encore lire comme porteur de sens.
 
 Le status contient `state` (`idle`, `worldPreparing`, `ready`, `running`,
 `paused`, `finished`), `runId` (ou `null`), `tick`, `aliveCount`, `seed`,
-`maxTicks`, `ticksPerSecond`, `worldPrepared`, `worldVersion` et
+`maxTicks`, `ticksPerSecond`, `simulatedSecondsPerTick` (additif ADR-017,
+`null` tant que le monde n'est pas préparé), `worldPrepared`, `worldVersion` et
 `worldReadyAcknowledged`. Les
 valeurs non fournies à `start/reset` viennent de la
 configuration. Toujours lire le code HTTP avant de parser une réponse succès.
@@ -266,9 +268,10 @@ particulier, un `replay.file` introuvable ou malformé lève avant l'entrée en
 à `start` se comporte comme le premier une fois la cause corrigée. Un client peut
 donc réessayer sans appeler `stop` au préalable.
 
-`world_initialized` précède le premier snapshot et contient `version: "1.0"`,
+`world_initialized` précède le premier snapshot et contient `version: "1.1"`,
 `seed` et `world`. Celui-ci contient `width`, `height`, `cellSize`,
-`ticksPerSecond`, `cellCountX`, `cellCountY`, des agents initiaux (`id`, `species`,
+`ticksPerSecond`, `simulatedSecondsPerTick`, `metersPerUnit`, `cellCountX`,
+`cellCountY`, des agents initiaux (`id`, `species`,
 `position{x,y}`), des `cells` (`terrainType`, `walkable`, `height`,
 `movementCost`, `obstacles`), des obstacles initiaux (`id`, `x`, `y`, `radius`),
 des ressources locales et des régions. La liste
@@ -314,7 +317,7 @@ actuels portent sur les obstacles.
 
 **Initialisation et démarrage** : `Event BeginPlay` → `Get Syne Subsystem` →
 `Connect` → `OnConnected` → `Prepare(42, 10)` → `OnWorldInitialized` →
-générer les tuiles/World Partition → `Ready("1.0")` → `Start(42, 400)` →
+générer les tuiles/World Partition → `Ready("1.1")` → `Start(42, 400)` →
 `OnSnapshot` → stocker `LatestSnapshot`.
 
 **Pause sécurisée** : `Input Escape` → `Get Connection State` (Connected) →

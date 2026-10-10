@@ -356,6 +356,7 @@
                     <Panel Grid.Column="1" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-home.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=accueil}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-experience.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=experiences}"/>
+                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-play.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-analyse.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=analyse}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-report.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=rapports}"/>
                       <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Stretch="Uniform" IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=configuration}"/>
@@ -598,7 +599,10 @@
             <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=experiences}">
               <StackPanel Spacing="12">
                 <TextBlock Text="EXPÉRIENCES" Classes="panel-title"/>
-                <TextBlock Text="Une expérience = un paquet .livexp : créé ci-dessous, vivant pendant l'exécution, scellé à la fin (PACKAGE_FORMAT.md §4). Mode Mono : un seul run, à observer en direct dans la fenêtre d'analyse. Mode MultiRun : plusieurs runs batch, graines dérivées de la graine de base. SYNE V1 accepte actuellement uniquement le scénario « reference »." Classes="muted" TextWrapping="Wrap"/>
+                <Border Background="#3a2a12" BorderBrush="#e0a25a" BorderThickness="1" CornerRadius="8" Padding="10" IsVisible="{Binding IsExperienceLocked}">
+                  <TextBlock Text="Mode PRISM actif : le moteur est piloté par votre projet Unreal. La création de campagne est verrouillée — arrêtez le mode PRISM (écran PRISM) pour revenir à l'Expérience." Classes="body" TextWrapping="Wrap"/>
+                </Border>
+                <TextBlock Text="Une expérience = un paquet .livexp : créé ci-dessous, vivant pendant l'exécution, scellé à la fin (PACKAGE_FORMAT.md §4). Le Launcher pilote le moteur en lot : un run, ou plusieurs à graines dérivées. Scénarios batch : « reference » (défaut) ou « prism » (monde 2 240, ADR-017). Le pilotage par le projet Unreal relève de l'écran PRISM, pas de cette campagne." Classes="muted" TextWrapping="Wrap"/>
 
                 <!-- Création : un seul formulaire, deux rythmes (Mono/MultiRun). -->
                 <Border Background="#0b0e13" BorderBrush="#262b34" BorderThickness="1" CornerRadius="8" Padding="12">
@@ -610,32 +614,29 @@
                         <TextBox Text="{Binding CampaignTitle}" Watermark="Ex. Écosystème — saison 1"/>
                       </StackPanel>
                       <StackPanel Grid.Column="1" Spacing="5">
-                        <TextBlock Text="Simulation" Classes="small"/>
-                        <TextBox Text="{Binding SimulationId}" Watermark="reference"/>
+                        <TextBlock Text="Scénario (monde SYNE)" Classes="small"/>
+                        <TextBox Text="{Binding SimulationId}" Watermark="reference ou prism"
+                                  ToolTip.Tip="reference : monde calibré (1 tick = 1 min) · prism : monde 2 240 (1 tick = 5 s, ADR-017)."/>
                       </StackPanel>
                       <StackPanel Grid.Row="1" Spacing="5">
-                        <TextBlock Text="Mode" Classes="small"/>
-                        <ComboBox ItemsSource="{Binding RunModeOptions}" SelectedItem="{Binding SelectedRunMode}"
-                                  ToolTip.Tip="Mono : un run à observer en direct · MultiRun : série de runs exécutée au plus vite"/>
+                        <TextBlock Text="Nombre de runs" Classes="small"/>
+                        <TextBox Text="{Binding RunCountInput}" Watermark="1"
+                                  ToolTip.Tip="1 = run unique · plus = série batch à graines dérivées."/>
                       </StackPanel>
                       <StackPanel Grid.Row="1" Grid.Column="1" Spacing="5">
                         <TextBlock Text="Vitesse d'exécution (ticks par seconde)" Classes="small"/>
                         <ComboBox ItemsSource="{Binding TicksPerSecondOptions}" SelectedItem="{Binding SelectedTicksPerSecond}"
                                   ToolTip.Tip="10 = direct regardable dans la fenêtre d'analyse · 100 = compromise · 1000 = exécution batch la plus rapide. Valeur archivée dans config.resolved.json du paquet."/>
                       </StackPanel>
-                      <StackPanel Grid.Row="2" Spacing="5" IsVisible="{Binding IsMultiRun}">
-                        <TextBlock Text="Nombre de runs" Classes="small"/>
-                        <TextBox Text="{Binding RunCountInput}" Watermark="3"/>
-                      </StackPanel>
-                      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
+                      <StackPanel Grid.Row="2" Spacing="5">
                         <TextBlock Text="Ticks par run" Classes="small"/>
                         <TextBox Text="{Binding TickCountInput}" Watermark="1000"/>
                       </StackPanel>
-                      <StackPanel Grid.Row="3" Spacing="5">
+                      <StackPanel Grid.Row="2" Grid.Column="1" Spacing="5">
                         <TextBlock Text="Agents initiaux" Classes="small"/>
                         <TextBox Text="{Binding AgentCountInput}" Watermark="50"/>
                       </StackPanel>
-                      <StackPanel Grid.Row="3" Grid.Column="1" Spacing="5">
+                      <StackPanel Grid.Row="3" Spacing="5">
                         <TextBlock Text="Graine de base" Classes="small"/>
                         <TextBox Text="{Binding BaseSeedInput}" Watermark="42"/>
                       </StackPanel>
@@ -703,6 +704,36 @@
             </Border>
 
             <!-- ·Vue ANALYSE : rapport d'émergence (USER_INTERFACE.md §3.2, ADR-003) ·-->
+            <!-- ·Vue PRISM : posture pilotée — le moteur tourne sans autostart, le projet Unreal pilote ·-->
+            <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}">
+              <StackPanel Spacing="12">
+                <TextBlock Text="PRISM — MODE PILOTÉ" Classes="panel-title"/>
+                <TextBlock Text="Le moteur démarre sans --autostart sur le profil prism (monde 2 240, 1 tick = 5 s simulées, ADR-017). Votre projet Unreal rejoint les points d'accès ci-dessous puis pilote la simulation : Prepare(seed, ticksPerSecond) → Ready(worldVersion) → Start(seed, maxTicks) (TRANSPORT_API.md §3). Tant que ce mode est actif, l'écran Expériences est verrouillé — les deux parcours sont exclusifs."
+                           Classes="muted" TextWrapping="Wrap"/>
+
+                <Border Background="#0b0e13" BorderBrush="#262b34" BorderThickness="1" CornerRadius="8" Padding="12">
+                  <StackPanel Spacing="10">
+                    <TextBlock Text="MOTEUR" Classes="h-gold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Classes="btn-primary" Content="Démarrer en mode PRISM" Command="{Binding StartPrismCommand}"
+                              CommandParameter="start" IsEnabled="{Binding !IsPrismRunning}"/>
+                      <Button Classes="btn" Content="Arrêter" Command="{Binding StopPrismCommand}"
+                              CommandParameter="stop" IsEnabled="{Binding IsPrismRunning}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding PrismStatus}" Classes="body" TextWrapping="Wrap"/>
+
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6"
+                          IsVisible="{Binding IsPrismRunning}" Margin="0,4,0,0">
+                      <TextBlock Grid.Row="0" Text="Contrôle (HTTP)" Classes="small" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PrismControlUrl}" Classes="body"/>
+                      <TextBlock Grid.Row="1" Text="Observation (WebSocket)" Classes="small" VerticalAlignment="Center"/>
+                      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PrismObserveUrl}" Classes="body"/>
+                    </Grid>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </Border>
+
             <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=analyse}">
               <StackPanel Spacing="12">
                 <TextBlock Text="RAPPORT D'ÉMERGENCE" Classes="panel-title"/>

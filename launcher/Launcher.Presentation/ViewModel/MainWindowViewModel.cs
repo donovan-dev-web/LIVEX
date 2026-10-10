@@ -36,7 +36,6 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _campaignTitle = "Nouvelle expérience";
     private string _simulationId = WellKnownSimulations.Reference;
     private string _runCountInput = "1";
-    private string _selectedRunMode = "Mono";
     private int _selectedTicksPerSecond = DirectTicksPerSecond;
     private string _tickCountInput = "1000";
     private string _agentCountInput = "50";
@@ -55,6 +54,11 @@ public sealed class MainWindowViewModel : ObservableObject
     private PackageLogFileViewModel? _selectedRunLog;
     private CancellationTokenSource? _campaignCancellation;
     private bool _isCampaignRunning;
+    private string _prismStatus = "Le moteur démarre en mode PRISM sans --autostart : votre projet Unreal pilote ensuite la simulation via l'API de contrôle (prepare → ready → start).";
+    private string _prismControlUrl = string.Empty;
+    private string _prismObserveUrl = string.Empty;
+    private bool _isPrismRunning;
+    private string? _prismComponentId;
 
     /// <summary>Initialise la vue modèle avec la façade d'orchestration.</summary>
     public MainWindowViewModel(IOrchestrationFacade orchestration)
@@ -89,6 +93,10 @@ public sealed class MainWindowViewModel : ObservableObject
         CancelCampaignCommand = new RelayCommand<string>(
             _ => _campaignCancellation?.Cancel(),
             _ => IsCampaignRunning);
+        StartPrismCommand = new RelayCommand<string>(async _ => await StartPrismAsync().ConfigureAwait(true));
+        StopPrismCommand = new RelayCommand<string>(
+            async _ => await StopPrismAsync().ConfigureAwait(true),
+            _ => IsPrismRunning);
         DocumentationItems = new ObservableCollection<DocumentationItemViewModel>(_orchestration.ListDocumentation());
         if (DocumentationItems.Count > 0)
         {
@@ -119,6 +127,7 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Identifiants stables des entrées de navigation.</summary>
     public const string NavAccueilId = "accueil";
     public const string NavExperiencesId = "experiences";
+    public const string NavPrismId = "prism";
     public const string NavCampagnesId = "campagnes";
     public const string NavAnalyseId = "analyse";
     public const string NavRapportsId = "rapports";
@@ -145,6 +154,7 @@ public sealed class MainWindowViewModel : ObservableObject
     public string SelectedNavTitle => SelectedNavId switch
     {
         NavExperiencesId => "Expériences",
+        NavPrismId => "PRISM",
         NavCampagnesId => "Campagnes",
         NavAnalyseId => "Analyse",
         NavRapportsId => "Rapports",
@@ -187,6 +197,7 @@ public sealed class MainWindowViewModel : ObservableObject
     [
         new(NavAccueilId, "Accueil", true),
         new(NavExperiencesId, "Expériences", false),
+        new(NavPrismId, "PRISM", false),
         new(NavAnalyseId, "Analyse", false),
         new(NavRapportsId, "Rapports", false),
         new(NavConfigurationId, "Configuration", false),
@@ -321,7 +332,7 @@ public sealed class MainWindowViewModel : ObservableObject
     public string CampaignTitle { get => _campaignTitle; set => UpdateCampaignField(ref _campaignTitle, value); }
     /// <summary>Identifiant de simulation communiqué au moteur.</summary>
     public string SimulationId { get => _simulationId; set => UpdateCampaignField(ref _simulationId, value); }
-    /// <summary>Nombre de runs demandé (mode MultiRun ; le mode Mono force 1).</summary>
+    /// <summary>Nombre de runs demandé : 1 = run unique, plus = série batch (graines dérivées).</summary>
     public string RunCountInput { get => _runCountInput; set => UpdateCampaignField(ref _runCountInput, value); }
     /// <summary>Horizon en ticks par run.</summary>
     public string TickCountInput { get => _tickCountInput; set => UpdateCampaignField(ref _tickCountInput, value); }
@@ -329,31 +340,8 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Nombre maximal de runs du format (RUN-nnnn sur quatre chiffres).</summary>
     private const int MaxRunCount = 65_535;
 
-    /// <summary>Cadence « direct » : un run Mono se regarde en fenêtre analytique.</summary>
+    /// <summary>Cadence « direct » par défaut : un run se regarde en fenêtre analytique.</summary>
     public const int DirectTicksPerSecond = 10;
-
-    /// <summary>Modes de création d'une expérience (un seul écran, deux rythmes).</summary>
-    public IReadOnlyList<string> RunModeOptions { get; } = ["Mono", "MultiRun"];
-
-    /// <summary>Mode choisi : Mono = un run regardable en direct, MultiRun = série batch.</summary>
-    public string SelectedRunMode
-    {
-        get => _selectedRunMode;
-        set
-        {
-            if (SetProperty(ref _selectedRunMode, value))
-            {
-                OnPropertyChanged(nameof(IsMultiRun));
-                // Cadence par défaut du mode : Mono se regarde, MultiRun s'exécute au
-                // plus vite. Le choix reste modifiable ensuite dans le même écran.
-                SelectedTicksPerSecond = IsMultiRun ? RunEngineProfile.BatchTicksPerSecond : DirectTicksPerSecond;
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-    }
-
-    /// <summary>Vrai en mode MultiRun : le champ « Nombre de runs » n'a de sens que là.</summary>
-    public bool IsMultiRun => string.Equals(SelectedRunMode, "MultiRun", StringComparison.Ordinal);
 
     /// <summary>Vitesses proposées (ticks par seconde) : direct regardable → batch.</summary>
     public IReadOnlyList<int> TicksPerSecondOptions { get; } =
@@ -444,6 +432,7 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>True quand les paramètres du formulaire passent les validations locales.</summary>
     public bool CanCreateCampaign =>
         !IsCampaignRunning
+        && !IsExperienceLocked
         && !string.IsNullOrWhiteSpace(CampaignTitle)
         && IsSupportedSimulation
         && int.TryParse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture, out var runs) && runs is > 0 and <= MaxRunCount
@@ -452,8 +441,82 @@ public sealed class MainWindowViewModel : ObservableObject
         && long.TryParse(BaseSeedInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
         && SelectedTicksPerSecond is > 0 and <= 100_000;
 
-    private bool IsSupportedSimulation =>
-        string.Equals(SimulationId.Trim(), WellKnownSimulations.Reference, StringComparison.Ordinal);
+    // Scénarios SYNE acceptés (WellKnownSimulations) — `prism` est additif
+    // (ADR-017) : le défaut reste `reference`, aucun chemin existant ne change.
+    private bool IsSupportedSimulation => WellKnownSimulations.IsKnown(SimulationId.Trim());
+
+    /// <summary>Commande de démarrage du moteur en mode PRISM (posture pilotée).</summary>
+    public RelayCommand<string> StartPrismCommand { get; }
+
+    /// <summary>Commande d'arrêt du moteur en mode PRISM.</summary>
+    public RelayCommand<string> StopPrismCommand { get; }
+
+    /// <summary>État du mode PRISM, affiché dans l'écran dédié.</summary>
+    public string PrismStatus { get => _prismStatus; private set => SetProperty(ref _prismStatus, value); }
+
+    /// <summary>URL de l'API de contrôle HTTP que le projet Unreal rejoint (prepare/ready/start).</summary>
+    public string PrismControlUrl { get => _prismControlUrl; private set => SetProperty(ref _prismControlUrl, value); }
+
+    /// <summary>URL du flux WebSocket d'observabilité (world_initialized + snapshots).</summary>
+    public string PrismObserveUrl { get => _prismObserveUrl; private set => SetProperty(ref _prismObserveUrl, value); }
+
+    /// <summary>Vrai quand le moteur tourne en posture pilotée (le mode PRISM est actif).</summary>
+    public bool IsPrismRunning
+    {
+        get => _isPrismRunning;
+        private set
+        {
+            if (SetProperty(ref _isPrismRunning, value))
+            {
+                OnPropertyChanged(nameof(IsExperienceLocked));
+                OnPropertyChanged(nameof(CanCreateCampaign));
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    /// <summary>Vrai quand le mode PRISM verrouille l'écran Expériences (modes mutuellement exclusifs).</summary>
+    public bool IsExperienceLocked => IsPrismRunning;
+
+    private async Task StartPrismAsync()
+    {
+        PrismStatus = "Démarrage du moteur en mode PRISM…";
+        var result = await _orchestration.StartEnginePrismAsync().ConfigureAwait(true);
+        if (result.Error is not null)
+        {
+            _prismComponentId = null;
+            IsPrismRunning = false;
+            PrismControlUrl = string.Empty;
+            PrismObserveUrl = string.Empty;
+            PrismStatus = $"Mode PRISM indisponible : {result.Error}";
+            return;
+        }
+
+        _prismComponentId = result.ComponentId;
+        PrismControlUrl = result.ControlUrl ?? "—";
+        PrismObserveUrl = result.ObserveUrl ?? "—";
+        IsPrismRunning = true;
+        PrismStatus = "Moteur en mode PRISM : rejoignez les points d'accès ci-dessous depuis votre projet Unreal, puis enchaînez prepare → ready → start.";
+        RefreshFromRegistry();
+    }
+
+    private async Task StopPrismAsync()
+    {
+        if (_prismComponentId is null)
+        {
+            return;
+        }
+
+        var error = await _orchestration.ToggleComponentAsync(_prismComponentId, false).ConfigureAwait(true);
+        _prismComponentId = null;
+        IsPrismRunning = false;
+        PrismControlUrl = string.Empty;
+        PrismObserveUrl = string.Empty;
+        PrismStatus = error is null
+            ? "Moteur arrêté. Le mode Expérience est de nouveau disponible."
+            : $"Arrêt impossible : {error}";
+        RefreshFromRegistry();
+    }
 
     /// <summary>Profil sélectionné dans la vue Configuration.</summary>
     public string SelectedProfile
@@ -867,7 +930,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         if (resumePackagePath is null && !IsSupportedSimulation)
         {
-            CampaignStatus = $"Scénario non pris en charge : SYNE V1 accepte uniquement « {WellKnownSimulations.Reference} ».";
+            CampaignStatus = $"Scénario non pris en charge : SYNE accepte « {WellKnownSimulations.Reference} » et « {WellKnownSimulations.Prism} ».";
             return;
         }
 
@@ -886,10 +949,8 @@ public sealed class MainWindowViewModel : ObservableObject
                 Title = CampaignTitle.Trim(),
                 Profile = WellKnownProfiles.Experience,
                 Simulation = SimulationId.Trim(),
-                // Mono = un run, toujours : le champ « Nombre de runs » ne sert qu'en MultiRun.
-                RunCount = IsMultiRun
-                    ? int.Parse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture)
-                    : 1,
+                // Nombre de runs explicite : 1 = run unique, > 1 = série batch à graines dérivées.
+                RunCount = int.Parse(RunCountInput, NumberStyles.None, CultureInfo.InvariantCulture),
                 Ticks = long.Parse(TickCountInput, NumberStyles.None, CultureInfo.InvariantCulture),
                 // Cadence d'exécution demandée au moteur (10 = direct regardable,
                 // 1000 = batch) — archivée dans config.resolved.json du paquet.
@@ -1078,6 +1139,13 @@ public sealed class NavItemViewModel(string Id, string Title, bool Selected)
 
 /// <summary>Entrée du lecteur de documentation.</summary>
 public sealed record DocumentationItemViewModel(string RelativePath, string Title);
+
+/// <summary>
+/// Résultat du démarrage du moteur en mode PRISM (posture pilotée) : les points d'accès
+/// que le projet Unreal rejoint (API de contrôle HTTP + diffusion WebSocket). `Error` non
+/// nul si le démarrage a échoué ; les URLs sont alors absentes.
+/// </summary>
+public sealed record PrismEngineStart(string? Error, string? ComponentId, string? ControlUrl, string? ObserveUrl);
 
 /// <summary>Un composant sélectionnable en mode Personnaliser.</summary>
 public sealed class CustomComponentSelectionViewModel : ObservableObject
@@ -1275,6 +1343,13 @@ public interface IOrchestrationFacade
 
     /// <summary>Démarre ou arrête un composant de la pile (cycle de vie réel, INTEGRATION_CONTRACT.md §5).</summary>
     Task<string?> ToggleComponentAsync(string componentId, bool start);
+
+    /// <summary>
+    /// Démarre le moteur actif en mode PRISM (posture pilotée, ADR-017) : sans `--autostart`,
+    /// monde `prism`, diffusion WebSocket exposée — le projet Unreal prépare puis démarre via
+    /// l'API de contrôle. Rend les points d'accès à rejoindre, ou l'erreur de démarrage.
+    /// </summary>
+    Task<PrismEngineStart> StartEnginePrismAsync();
 
     /// <summary>Échantillonne les ressources locales (GUI.md §9.2), sans métrique scientifique.</summary>
     ResourceSnapshot SampleResources();

@@ -3,6 +3,7 @@
   "agents": 50,
   "maxTicks": 400,
   "ticksPerSecond": 10,
+  "simulatedSecondsPerTick": 60,
   "world": {
     "width": 500,
     "height": 500,

@@ -7,7 +7,10 @@ namespace Simulation.Core.Loop;
 /// <summary>
 /// Boucle de simulation (SYNE-002, SIMULATION_LOOP.md §1).
 /// <list type="bullet">
-/// <item>1 tick = 1 minute simulée (défaut) — <see cref="SimulationTime"/>.</item>
+/// <item>1 tick = <c>simulatedSecondsPerTick</c> secondes simulées (défaut 60 →
+/// 1 minute, ADR-005/ADR-017) — horloge instanciée <see cref="Clock"/> ; les
+/// quantités de classe A sont mises à l'échelle une fois à la construction
+/// (<see cref="Configuration.TemporalScale"/>), neutre par défaut.</item>
 /// <item>Respect de <c>maxTicks</c> : la boucle s'arrête après le tick n° <c>maxTicks</c>.</item>
 /// <item>L'état du PRNG avance d'un tirage par tick (flux ancré au tick index).</item>
 /// <item>Depuis U1 : pipeline cognitif BDI (perception, mémoire, croyances, besoins,
@@ -21,6 +24,9 @@ public sealed class SimulationLoop
     private readonly int _autoSaveEveryNTicks;
     private readonly Action<SimulationLoop>? _autosaveHandler;
     private readonly Simulation.Core.Configuration.SimulationOptions _options;
+    private readonly Simulation.Core.Configuration.SimulationClock _clock;
+    private readonly Simulation.Core.Configuration.ResourceSettings _effectiveResources;
+    private readonly Simulation.Core.Configuration.SeasonSettings _effectiveSeasons;
     private readonly List<Simulation.Core.Configuration.SeasonChange> _seasonChanges = new();
     private readonly List<World.TerritoryMembershipChange> _territoryChanges = new();
     private readonly List<Simulation.Core.World.BookChange> _bookChanges = new();
@@ -50,6 +56,10 @@ public sealed class SimulationLoop
         _rng = initialRng;
         _budget = budget;
         _options = options;
+        _clock = Simulation.Core.Configuration.SimulationClock.From(options.Simulation);
+        double dt = _clock.SimulatedMinutesPerTick;
+        _effectiveResources = Simulation.Core.Configuration.TemporalScale.ScaleResources(options.Resources, dt);
+        _effectiveSeasons = Simulation.Core.Configuration.TemporalScale.ScaleSeasons(options.World.Seasons, dt);
         Resources = new World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
         _autoSaveEveryNTicks = options.Simulation.AutoSaveEveryNTicks;
@@ -75,6 +85,10 @@ public sealed class SimulationLoop
         _rng = initialRng;
         _budget = budget;
         _options = options;
+        _clock = Simulation.Core.Configuration.SimulationClock.From(options.Simulation);
+        double dt = _clock.SimulatedMinutesPerTick;
+        _effectiveResources = Simulation.Core.Configuration.TemporalScale.ScaleResources(options.Resources, dt);
+        _effectiveSeasons = Simulation.Core.Configuration.TemporalScale.ScaleSeasons(options.World.Seasons, dt);
         Resources = new World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
         _autoSaveEveryNTicks = Math.Max(1, autoSaveEveryNTicks);
@@ -82,6 +96,13 @@ public sealed class SimulationLoop
     }
 
     public World.World World { get; }
+
+    /// <summary>
+    /// Horloge du run (ADR-017) : correspondance tick ⇄ temps simulé issue de
+    /// <c>simulation.simulatedSecondsPerTick</c> — exposée aux capteurs
+    /// (<see cref="Observability.WorldSnapshot"/>) et aux clients.
+    /// </summary>
+    public Simulation.Core.Configuration.SimulationClock Clock => _clock;
 
     /// <summary>Réserves globales de ressources (SYNE-042) : consommées par Eat/Drink, exposées dans le snapshot.</summary>
     public World.ResourceStocks Resources { get; internal set; }
@@ -108,8 +129,12 @@ public sealed class SimulationLoop
     /// <summary>Vide la file des changements de saison (drain d'observabilité).</summary>
     public void ClearSeasonChanges() => _seasonChanges.Clear();
 
-    /// <summary>Saison courante du monde au tick courant (fonction pure du tick, 0 PRNG).</summary>
-    public World.Season CurrentSeason => _options.World.Seasons.At(CurrentTick);
+    /// <summary>
+    /// Saison courante du monde au tick courant (fonction pure du tick, 0 PRNG) —
+    /// saison effective en ticks (durée configurée exprimée en minutes simulées,
+    /// ADR-017 : identique au défaut, 360 ticks à <c>dt = 1</c>).
+    /// </summary>
+    public World.Season CurrentSeason => _effectiveSeasons.At(CurrentTick);
 
     /// <summary>
     /// Cycle de saisons activé (<c>world.seasons.enabled</c>) — modifieurs de
@@ -250,7 +275,7 @@ public sealed class SimulationLoop
         if (_budget is null)
         {
             _cognition.Step(CurrentTick);
-            Resources.ApplyLifecycle(CurrentTick, _options.Resources, SeasonFactorsForTick());
+            Resources.ApplyLifecycle(CurrentTick, _effectiveResources, SeasonFactorsForTick());
         }
         else
         {
@@ -258,7 +283,7 @@ public sealed class SimulationLoop
             _cognition.Step(CurrentTick);
             using (TickPhaseScope resourcesScope = _budget.Begin(TickPhase.EventsGroupsPopulation))
             {
-                Resources.ApplyLifecycle(CurrentTick, _options.Resources, SeasonFactorsForTick());
+                Resources.ApplyLifecycle(CurrentTick, _effectiveResources, SeasonFactorsForTick());
             }
 
             double elapsedMs = (Stopwatch.GetTimestamp() - start) * (1000.0 / Stopwatch.Frequency);
@@ -360,7 +385,7 @@ public sealed class SimulationLoop
     /// </summary>
     private Simulation.Core.Configuration.SeasonFactors? SeasonFactorsForTick()
     {
-        Simulation.Core.Configuration.SeasonSettings seasons = _options.World.Seasons;
+        Simulation.Core.Configuration.SeasonSettings seasons = _effectiveSeasons;
         if (!seasons.Enabled)
         {
             return null;
@@ -403,19 +428,21 @@ public sealed class SimulationLoop
     }
 }
 
-/// <summary>Correspondance tick ↔ temps simulé (1 tick = 1 minute, SIMULATION_LOOP.md §1).</summary>
+/// <summary>
+/// Facade historique de correspondance tick ⇄ temps simulé (SIMULATION_LOOP.md §1).
+/// Depuis ADR-017, l'horloge est <b>instanciée</b> par run à partir de la
+/// configuration (<see cref="Configuration.SimulationClock"/>, exposée par
+/// <see cref="SimulationLoop.Clock"/>) : cette facade fixe l'échelle du profil
+/// par défaut (1 tick = 1 minute) et n'est conservée que pour les chemins qui
+/// n'ont pas de run sous la main (affichage CLI, tests historiques).
+/// </summary>
 public static class SimulationTime
 {
+    /// <summary>Échelle du profil par défaut (ADR-005) — utiliser <see cref="Configuration.SimulationClock"/> pour un run configuré.</summary>
     public static readonly int TicksPerSimulationMinute = 1;
 
-    public static long ToSimulatedMinutes(ulong tick) => (long)tick * TicksPerSimulationMinute;
+    public static long ToSimulatedMinutes(ulong tick) => Simulation.Core.Configuration.SimulationClock.Default.ToSimulatedMinutes(tick);
 
     /// <summary>Format horloge simulée « T+h:mm » depuis le tick 0.</summary>
-    public static string FormatClock(ulong tick)
-    {
-        long minutes = ToSimulatedMinutes(tick);
-        long hours = minutes / 60;
-        int minutesOfHour = (int)(minutes % 60);
-        return $"T+{hours}:{minutesOfHour:D2}";
-    }
+    public static string FormatClock(ulong tick) => Simulation.Core.Configuration.SimulationClock.Default.FormatClock(tick);
 }

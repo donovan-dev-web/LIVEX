@@ -106,9 +106,15 @@ public static class SimulationSnapshotRestorer
     private static void RestoreCognition(SimulationLoop loop, SimulationSnapshot snapshot, SimulationOptions options)
     {
         var minds = new Dictionary<ulong, MindState>();
+        // Les esprits restaurés reconstruisent mémoire/confiance depuis les
+        // options **effectives** de la boucle (ADR-017 : sous-arbre agents mis à
+        // l'échelle temporelle) — avec un profil à dt ≠ 1, les taux de
+        // décroissance restaurés doivent être ceux du run sauvé, pas ceux du
+        // fichier de config brut.
+        SimulationOptions mindOptions = loop.Cognition.EffectiveOptions;
         foreach (MindSnapshotDto mindDto in snapshot.Minds)
         {
-            minds[mindDto.EntityId] = RestoreMind(mindDto, options);
+            minds[mindDto.EntityId] = RestoreMind(mindDto, mindOptions);
         }
 
         var groups = new List<Group>();
