@@ -25,8 +25,14 @@ pas les résultats attendus de la simulation réelle.
 
 Avant tout `snapshot`, SYNE émet `world_initialized` avec `version`, `seed` et
 `world`. La description versionnée contient `width`, `height`, `cellSize`,
-`ticksPerSecond`, `cellCountX`, `cellCountY`, `agents[]`, `cells[]`,
-`obstacles[]`, `resources[]` et `regions[]`. Chaque obstacle initial contient
+`ticksPerSecond`, `simulatedSecondsPerTick`, `metersPerUnit`, `cellCountX`,
+`cellCountY`, `agents[]`, `cells[]`,
+`obstacles[]`, `resources[]` et `regions[]`.
+**Version de description 1.1 (ADR-017, contrat 0.4.0)** : `simulatedSecondsPerTick`
+(entier, 60 par défaut — 1 tick = 1 minute simulée ; 5 pour le profil `prism`)
+et `metersPerUnit` (double informatif, défaut 1,0) sont **additifs** ; les champs
+antérieurs sont inchangés et une référence à `"1.0"` reste acceptée par les
+consommateurs qui comparent les versions. Chaque obstacle initial contient
 `id`, `x`, `y` et `radius`; `cells[].obstacles[]` référence aussi les ID qui
 recouvrent la cellule.
 Chaque agent initial expose `id`, `species` et `position{x,y}` ; ces agents et
@@ -93,7 +99,8 @@ client de corréler le pilotage et le flux.
 | `runId` | string | Identifiant du run (format canonique piloté : `run-<seed>-<12hex>`) |
 | `seed` | uint | **0.2.1 (additif, rétro-compatible)** — seed effectif du run. ECHOS n'a plus à dériver le seed du `runId` (dérivation qui perdait le seed des runs pilotés et invalidait `same_seed` dans `/api/compare`) |
 | `tick` | uint | Numéro de tick courant |
-| `simulatedTimeMinutes` | uint | Temps simulé (minutes) |
+| `simulatedTimeMinutes` | uint | Temps simulé (minutes, **plancher entier** — historique ECHOS stocké en `INTEGER`, inchangé) |
+| `simulatedTimeSeconds` | uint | **0.4.0 (additif, ADR-017)** — temps simulé en secondes : `tick × simulatedSecondsPerTick` (60 par défaut ⇒ `minutes × 60`) |
 | `aliveCount` | uint | Entités vivantes |
 | `agents[]` | array | État complet exposé de chaque entité (position, besoins, intention, action exécutée, traits, croyances, objectifs, confiance, mémoire) — **0.3.0 (additif, sous drapeaux)** : `agents[].inventory` (quantités par type de ressource, D8) et `agents[].commitments` (engagements actifs/résolus, D5) sont émis **seulement** quand `agents.actions.inventory.enabled` / `agents.actions.commitments.enabled` sont actifs ; sortie bit-à-bit identique sinon (rétro-compatible à la lecture) |
 | `resources[]` | array | Stocks globaux `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1), pas des stocks localisés par nœud |
@@ -124,6 +131,9 @@ Exemple (format condensé) :
                  "fatigueDelta": 0 } ] }
 ```
 
+> Le contrat `0.4.0` (ADR-017) ajoute `simulatedTimeSeconds` au snapshot (additif) :
+> le temps simulé exact voyage à côté du plancher `simulatedTimeMinutes`, que les
+> consommateurs historiques continuent de valider et stocker tel quel.
 > Le contrat `0.2.0` ajoute les champs agrégés `worldChanges[]` et `actions[]` au snapshot (additif).
 > `agents[].id` est sérialisé comme chaîne décimale par SYNE ; `currentIntention` est l'objectif
 > courant et `currentAction` l'action atomique exécutée au tick. Les deux peuvent être `Idle`.
@@ -217,7 +227,8 @@ Exemple :
 
 États : `idle`, `worldPreparing`, `ready`, `running`, `paused`, `finished`.
 `POST /api/control/prepare` prépare le monde; `GET /api/world` le restitue.
-`POST /api/control/ready` accepte `{ "worldVersion": "1.0" }` (optionnel) et
+`POST /api/control/ready` accepte `{ "worldVersion": "1.1" }` (optionnel, version
+courante de la description — ADR-017) et
 accuse réception de la préparation; le statut expose
 `worldReadyAcknowledged`. Après un `prepare` explicite, `start` exige cet accusé
 et répond `409 world_not_ready` sinon. Un `start` direct conserve
@@ -258,7 +269,11 @@ dans Unreal ; Monographie §5.4.2) :
   le `runId` du nouveau run est généré (il n'est pas utilisé pour restaurer — la reprise
   depuis le dernier `tick_states` reste le contrat de persistance §4 via
   `SqlitePersistenceStore`). `GET /api/control/status` expose
-  `{ state, runId, tick, aliveCount, seed, maxTicks }` (polling ECHOS).
+  `{ state, runId, tick, aliveCount, seed, maxTicks, worldPrepared, worldVersion,
+  worldReadyAcknowledged, ticksPerSecond, simulatedSecondsPerTick }` (polling ECHOS) —
+  `ticksPerSecond` et `simulatedSecondsPerTick` sont `null` tant qu'aucun monde
+  n'est préparé puis valent la valeur du monde préparé (`simulatedSecondsPerTick`
+  additif ADR-017, contrat 0.4.0).
   Ce contrat est **non intrusif** (SYNE-081, DETERMINISM.md §3) : aucune commande ne
   retire de tirage au PRNG ni ne change la trajectoire (vérifié par test — run piloté
   == run ininterrompu, état bit-à-bit). Consommé tel quel par le `ControlClient` ECHOS

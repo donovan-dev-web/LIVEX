@@ -119,11 +119,13 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
     { id: 'configured-rock', x: 20, y: 20, radius: 3 }
   ]);
   const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
-  assert.equal(world.version, '1.0');
+  assert.equal(world.version, '1.1');
   assert.equal(world.ticksPerSecond, 24);
+  assert.equal(world.simulatedSecondsPerTick, 60);
+  assert.equal(world.metersPerUnit, 1);
   assert.equal(world.cells.length, world.cellCountX * world.cellCountY);
   assert.equal((await post('/api/control/start')).status, 409);
-  assert.equal((await post('/api/control/ready', { worldVersion: '1.0' })).status, 200);
+  assert.equal((await post('/api/control/ready', { worldVersion: '1.1' })).status, 200);
   const mismatchedStart = await post('/api/control/start', { seed: 20, maxTicks: 1 });
   assert.equal(mismatchedStart.status, 409);
   assert.equal((await mismatchedStart.json()).error, 'prepared_seed_mismatch');
@@ -133,6 +135,66 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
   assert.equal(status.worldPrepared, true);
   assert.equal(status.worldReadyAcknowledged, true);
   assert.equal(status.ticksPerSecond, 24);
+  assert.equal(status.simulatedSecondsPerTick, 60);
+});
+
+test('prism profile emits the ADR-017 temporal and spatial scale contract', async (t) => {
+  // Profil `prism` (spec PRISM §4.4) : monde 2240 / cellule 32 → 70 × 70 =
+  // 4 900 cases, cadence 6 TPS, 5 s simulées par tick (R = 30).
+  const server = openServer(t, {
+    agents: 0,
+    ticksPerSecond: 6,
+    maxTicks: 3,
+    simulatedSecondsPerTick: 5,
+    world: { width: 2240, height: 2240, cellSize: 32, metersPerUnit: 1 }
+  });
+  await server.listen(0, 0);
+  const port = server.httpServer.address().port;
+  await fetch(`http://127.0.0.1:${port}/api/control/prepare`, {
+    method: 'POST', body: JSON.stringify({ seed: 42, ticksPerSecond: 6 }), headers: { 'content-type': 'application/json' }
+  });
+
+  const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
+  assert.equal(world.version, '1.1');
+  assert.equal(world.width, 2240);
+  assert.equal(world.cellSize, 32);
+  assert.equal(world.ticksPerSecond, 6);
+  assert.equal(world.simulatedSecondsPerTick, 5);
+  assert.equal(world.metersPerUnit, 1);
+  assert.equal(world.cellCountX, 70);
+  assert.equal(world.cellCountY, 70);
+  assert.equal(world.cells.length, 4900);
+
+  server.simulation.acknowledgeReady('1.1');
+  server.simulation.start(42, 3);
+  for (let i = 0; i < 3; i++) server.simulation.step();
+  const snapshot = server.simulation.snapshot();
+  // tick × 5 s : secondes simulées exactes, minutes en plancher entier —
+  // l'ancienne formule `round(tick / ticksPerSecond)` donnait 1 minute au tick 3.
+  assert.equal(snapshot.simulatedTimeSeconds, 15);
+  assert.equal(snapshot.simulatedTimeMinutes, 0);
+  assert.equal(server.simulation.status().simulatedSecondsPerTick, 5);
+  server.simulation.stop();
+
+  const post = (path, body = {}) => fetch(`http://127.0.0.1:${port}${path}`, {
+    method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' }
+  });
+  const rejected = await post('/api/control/prepare', {
+    seed: 1, simulatedSecondsPerTick: 0,
+    config: { simulatedSecondsPerTick: 0 }
+  });
+  assert.equal(rejected.status, 400);
+});
+
+test('simulated time follows simulatedSecondsPerTick, not the tick rate', () => {
+  const simulation = new Simulation({ seed: 5, agents: 0, ticksPerSecond: 24, maxTicks: 5, simulatedSecondsPerTick: 10 });
+  assert.equal(simulation.simulatedSeconds(17280), 172_800);
+  assert.equal(simulation.simulatedMinutes(17280), 2880);
+  assert.equal(simulation.simulatedMinutes(3), 0); // 30 s simulées → 0 minute (plancher)
+
+  // Par défaut (60 s/tick), le mock rejoue le contrat historique : minutes == tick.
+  const legacy = new Simulation({ seed: 5, agents: 0 });
+  assert.equal(legacy.simulatedMinutes(5010), 5010);
 });
 
 test('world_initialized precedes a global snapshot and configured obstacles remain authoritative', async (t) => {
@@ -285,7 +347,7 @@ test('prepared agent positions are reused by the first simulation snapshot', () 
   const simulation = new Simulation({ seed: 23, agents: 3 });
   simulation.prepare(23);
   const initialAgents = simulation.worldDescription().agents;
-  simulation.acknowledgeReady('1.0');
+  simulation.acknowledgeReady('1.1');
   simulation.start(23, 10);
   const snapshotAgents = simulation.snapshot().agents;
   assert.deepEqual(snapshotAgents.map(agent => ({

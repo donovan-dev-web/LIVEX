@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 7 octobre 2026
+**Dernière mise à jour** : 10 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versionnement :
@@ -13,6 +13,11 @@ jalons : G1 → G4 livrés, G5 → G7 réalisés côté Launcher contre le banc 
 portes externes P1 – P5 restant de côté des composants.
 
 ## [Unreleased]
+
+### Added
+- **Écran PRISM — mode piloté (posture ADR-017)** : nouvelle entrée de navigation « PRISM » entre Expériences et Analyse. Elle démarre le moteur actif (SYNE réel ou émulé) en **posture pilotée** — `--simulation prism`, **sans** `--autostart`, diffusion WebSocket exposée (`--observe-port`) à côté du port de contrôle — pour que le projet Unreal pilote la simulation via `prepare → ready → start` (TRANSPORT_API.md §3). Le Launcher affiche l'URL de contrôle (HTTP) et l'URL d'observation (WS) à rejoindre. Les deux parcours sont **mutuellement exclusifs** : tant que le mode PRISM est actif, l'écran Expériences est verrouillé (bandeau + `CanCreateCampaign` à faux), et l'arrêt rouvre l'Expérience. Nouvelle interface `IOrchestrationFacade.StartEnginePrismAsync()` (posture `EnginePosture.Batch | Piloted` enfilée dans `StartComponentCoreAsync` ; le lot `reference --autostart --seed --ticks` reste inchangé). Preuves : E2E `PrismPilotedPostureEndToEndTests` (profil prism transmis au moteur, endpoint d'observation, URLs), test unitaire de verrouillage.
+- **Nettoyage du formulaire Expérience** : le champ « Mode » (Mono/MultiRun) disparaît — c'était un préréglage qui mutait deux autres champs en cachette. « Nombre de runs » et « Vitesse d'exécution » redeviennent des champs **explicites** (défauts 1 run et 10 t/s, identiques à l'ancien Mono) ; le comportement de campagne est inchangé.
+- **Scénario de campagne `prism` (ADR-017)** : le champ « Scénario » du formulaire de campagne accepte désormais `prism` en plus de `reference` (`WellKnownSimulations.Prism` + `IsKnown`, validation `CanCreateCampaign` et message de refus alignés). Le moteur receiving `--simulation prism` applique le profil PRISM (monde 2 240 × 2 240, 5 s simulées/tick) **sous** la surcouche `launcher-config.json` — l'identité du scénario est archivée telle quelle dans `config.resolved.json` (`engine.profile`), et la provenance `world_initialized` du contrat 1.1 (dont `simulatedSecondsPerTick`/`metersPerUnit`) traverse le run sans autre changement Launcher. Additif : `reference` et tous les chemins existants sont inchangés (tests 163 unit + 20 intégration verts).
 
 ### Fixed
 - **Archivage d'une donnée de run au-delà de 2 Gio (« The file is too long »)** :

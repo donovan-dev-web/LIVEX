@@ -427,8 +427,18 @@ class Simulation {
     this.events.splice(0, this.events.length - Math.floor(cap / 2));
   }
 
+  /**
+   * Temps simulé (ADR-017) : `tick × simulatedSecondsPerTick` — la formule
+   * historique `round(tick / ticksPerSecond)` mélangeait temps simulé et
+   * cadence réelle et divergeait de SYNE dès qu'une cadence n'était pas 1:1.
+   */
+  simulatedSeconds(tick) {
+    return tick * this.options.simulatedSecondsPerTick;
+  }
+
+  /** Minutes simulées : plancher entier, comme `SimulationClock.ToSimulatedMinutes` (contrat ECHOS). */
   simulatedMinutes(tick) {
-    return Math.round(tick / this.options.ticksPerSecond);
+    return Math.floor(this.simulatedSeconds(tick) / 60);
   }
 
   snapshot() {
@@ -437,6 +447,7 @@ class Simulation {
       runId: this.runId,
       seed: this.options.seed,
       tick: this.tick,
+      simulatedTimeSeconds: this.simulatedSeconds(this.tick),
       simulatedTimeMinutes: this.simulatedMinutes(this.tick),
       agents: this.agents,
       stocks: this.resources,
@@ -461,6 +472,7 @@ class Simulation {
       seed: this.options.seed,
       maxTicks: this.options.maxTicks,
       ticksPerSecond: this.world?.ticksPerSecond ?? null,
+      simulatedSecondsPerTick: this.world?.simulatedSecondsPerTick ?? null,
       worldPrepared: !!this.world,
       worldVersion: this.worldVersion,
       worldReadyAcknowledged: this.worldReadyAcknowledged

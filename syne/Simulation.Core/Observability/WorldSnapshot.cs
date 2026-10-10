@@ -83,7 +83,11 @@ public sealed record WorldSnapshot(
     // plus à dériver le seed du run_id, ce qui invalidait same_seed sur les runs pilotés.
     ulong Seed,
     ulong Tick,
+    // Temps simulé en minutes (plancher entier, conserve le contrat historique
+    // validé/stocké en INTEGER par ECHOS) et en secondes (champ additif ADR-017 —
+    // à `simulatedSecondsPerTick = 60`, minutes = tick, comme avant).
     long SimulatedTimeMinutes,
+    long SimulatedTimeSeconds,
     int AliveCount,
     IReadOnlyList<AgentSnapshot> Agents,
     IReadOnlyList<ResourceSnapshot> Resources,
@@ -178,7 +182,8 @@ public sealed record WorldSnapshot(
             runId ?? ObservabilityContract.RunIdFor(seed),
             seed,
             loop.CurrentTick,
-            SimulationTime.ToSimulatedMinutes(loop.CurrentTick),
+            loop.Clock.ToSimulatedMinutes(loop.CurrentTick),
+            loop.Clock.ToSimulatedSeconds(loop.CurrentTick),
             agents.Count,
             agents,
             resources,

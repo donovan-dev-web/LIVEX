@@ -1,7 +1,7 @@
 const { round } = require('./deterministic-random');
 
 class SnapshotBuilder {
-  build({ config, runId, seed, tick, simulatedTimeMinutes, agents, stocks, obstacles, worldChanges, actions, groups, books }) {
+  build({ config, runId, seed, tick, simulatedTimeSeconds, simulatedTimeMinutes, agents, stocks, obstacles, worldChanges, actions, groups, books }) {
     const seasonIndex = Math.floor(tick / 90) % 4;
     const seasons = ['spring', 'summer', 'autumn', 'winter'];
     const territories = config.territories.enabled
@@ -22,9 +22,11 @@ class SnapshotBuilder {
       // le snapshot — ECHOS n'a plus à le dériver du runId.
       seed,
       tick,
-      // Parité de contrat (API_CONTRACTS.md §2.1) : minutes simulées, comme
-      // SimulationTime.ToSimulatedMinutes (1 minute = 1 tick à la cadence 1x).
+      // Parité de contrat (API_CONTRACTS.md §2.1) : minutes simulées (plancher
+      // entier, stockage ECHOS INTEGER) + secondes simulées exactes (additif
+      // ADR-017, contrat 0.4.0) — `tick × simulatedSecondsPerTick`.
       simulatedTimeMinutes: simulatedTimeMinutes ?? tick,
+      simulatedTimeSeconds: simulatedTimeSeconds ?? tick * config.simulatedSecondsPerTick,
       aliveCount: agents.length,
       season: seasons[seasonIndex],
       seasonIndex,

@@ -8,11 +8,14 @@ namespace Simulation.Core.Observability;
 public static class ObservabilityContract
 {
     /// <summary>
-    /// Version du contrat d'observabilité (API_CONTRACTS.md §2). 0.2.0 → 0.2.1 :
-    /// champ snapshot ``seed`` (additif, rétro-compatible) — le seed voyage dans
-    /// le snapshot au lieu d'être dérivé du ``run_id`` par ECHOS.
+    /// Version du contrat d'observabilité (API_CONTRACTS.md §2). 0.3.0 → 0.4.0 :
+    /// champs additifs de l'échelle temporelle (ADR-017) — ``simulatedTimeSeconds``
+    /// dans le snapshot, ``simulatedSecondsPerTick``/``metersPerUnit`` dans la
+    /// description ``world_initialized`` (version de description 1.0 → 1.1) et
+    /// dans ``/api/control/status``. Rétrocompatible : les champs existants
+    /// (dont ``simulatedTimeMinutes``, plancher entier) sont inchangés.
     /// </summary>
-    public const string Version = "0.3.0";
+    public const string Version = "0.4.0";
 
     /// <summary>
     /// Version du moteur (DETERMINISM.md §3.6.2, VERSIONING.md §3) : identifie les

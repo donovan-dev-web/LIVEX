@@ -17,7 +17,7 @@ public sealed class SimulationControllerTests
         Assert.Equal(SimulationControlState.Ready, controller.State);
         Assert.False(controller.Status().WorldReadyAcknowledged);
         await Assert.ThrowsAsync<InvalidOperationException>(() => controller.StartAsync(null, null, 1));
-        Assert.True(controller.AcknowledgeReady("1.0"));
+        Assert.True(controller.AcknowledgeReady(Simulation.Core.World.WorldDescriptionBuilder.Version));
         Assert.True(controller.Status().WorldReadyAcknowledged);
         await controller.StartAsync(null, null, 1);
     }
@@ -32,7 +32,7 @@ public sealed class SimulationControllerTests
 
         var world = await controller.PrepareAsync(42, ConfigLoader.ToJson(config), ticksPerSecond: 2);
         Assert.Equal(2, world.TicksPerSecond);
-        Assert.True(controller.AcknowledgeReady("1.0"));
+        Assert.True(controller.AcknowledgeReady(Simulation.Core.World.WorldDescriptionBuilder.Version));
         DateTime startedAt = DateTime.UtcNow;
         await controller.StartAsync(42, null, 2);
         await WaitUntilAsync(() => controller.State == SimulationControlState.Finished);
@@ -53,7 +53,7 @@ public sealed class SimulationControllerTests
     {
         await using var controller = new SimulationController();
         await controller.PrepareAsync(42, ConfigLoader.ToJson(new SimulationOptions()), ticksPerSecond: 3);
-        Assert.True(controller.AcknowledgeReady("1.0"));
+        Assert.True(controller.AcknowledgeReady(Simulation.Core.World.WorldDescriptionBuilder.Version));
 
         var exception = await Assert.ThrowsAsync<PreparedWorldMismatchException>(
             () => controller.StartAsync(43, null, 1));

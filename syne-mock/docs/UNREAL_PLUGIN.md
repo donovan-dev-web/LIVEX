@@ -37,7 +37,7 @@ brutes et les erreurs de décodage doivent rester observables pour le diagnostic
    démarrage. La reconnexion automatique, si activée, ne s'applique qu'après
    une connexion demandée puis interrompue ; `Disconnect()` la désactive.
 2. `Prepare(seed, ticksPerSecond)` appelle `POST /api/control/prepare` avec la
-   seed et une fréquence positive en ticks/seconde, puis `Ready("1.0")`
+   seed et une fréquence positive en ticks/seconde, puis `Ready("1.1")`
    accuse réception avant `Start()`. Après cette préparation explicite,
    `Start` réutilise le monde et sa cadence ; son seed, s'il est envoyé, doit
    correspondre au seed préparé. Un `Start()` direct reste rétrocompatible

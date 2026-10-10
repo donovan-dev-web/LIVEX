@@ -182,7 +182,10 @@ public sealed class ControlServer : IAsyncDisposable
 
         if (path == "/api/control/status" && method == "GET")
         {
-            return (200, ToJson(StatusJson(_controller.Status(), _controller.WorldDescription?.TicksPerSecond)));
+            return (200, ToJson(StatusJson(
+                _controller.Status(),
+                _controller.WorldDescription?.TicksPerSecond,
+                _controller.WorldDescription?.SimulatedSecondsPerTick)));
         }
 
         if (path == "/api/world" && method == "GET")
@@ -559,7 +562,10 @@ public sealed class ControlServer : IAsyncDisposable
         ["detail"] = detail,
     };
 
-    private static Dictionary<string, object?> StatusJson(SimulationStatusSnapshot status, int? ticksPerSecond) => new()
+    private static Dictionary<string, object?> StatusJson(
+        SimulationStatusSnapshot status,
+        int? ticksPerSecond,
+        int? simulatedSecondsPerTick) => new()
     {
         ["state"] = status.State.ToString().ToLowerInvariant(),
         ["runId"] = status.RunId,
@@ -571,5 +577,9 @@ public sealed class ControlServer : IAsyncDisposable
         ["worldReadyAcknowledged"] = status.WorldReadyAcknowledged,
         ["maxTicks"] = status.MaxTicks,
         ["ticksPerSecond"] = ticksPerSecond,
+        // Échelle temporelle du run (ADR-017, contrat 0.4.0) : secondes simulées
+        // par tick — null tant qu'aucun monde n'est préparé (même sémantique
+        // que ticksPerSecond).
+        ["simulatedSecondsPerTick"] = simulatedSecondsPerTick,
     };
 }
