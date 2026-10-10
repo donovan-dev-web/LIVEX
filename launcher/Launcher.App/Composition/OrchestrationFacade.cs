@@ -195,6 +195,58 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
     public async Task<string?> ToggleComponentAsync(string componentId, bool start) =>
         start ? await StartComponentAsync(componentId).ConfigureAwait(false) : await StopComponentAsync(componentId).ConfigureAwait(false);
 
+    /// <inheritdoc />
+    public async Task<PrismEngineStart> StartEnginePrismAsync()
+    {
+        var engineId = ResolvePilotableEngineId();
+        if (engineId is null)
+        {
+            return new PrismEngineStart(
+                "aucun moteur actif détecté (SYNE réel ou émulé) : le mode PRISM exige une installation détectée",
+                null, null, null);
+        }
+
+        var error = await StartComponentAsync(engineId, EnginePosture.Piloted).ConfigureAwait(false);
+        if (error is not null)
+        {
+            return new PrismEngineStart(error, null, null, null);
+        }
+
+        var instance = _orchestration.Registry.FindByComponent(engineId);
+        string? controlUrl = instance is not null && instance.Endpoints.TryGetValue("control", out var control)
+            ? control.Url
+            : null;
+        string? observeUrl = instance is not null && instance.Endpoints.TryGetValue("observe", out var observe)
+            ? observe.Url
+            : null;
+        return new PrismEngineStart(null, engineId, controlUrl, observeUrl);
+    }
+
+    /// <summary>Posture de lancement du moteur : batch piloté par le Launcher, ou pilotée par PRISM.</summary>
+    private enum EnginePosture
+    {
+        /// <summary>Campagne : `--autostart`, graine et horizon imposés (comportement historique).</summary>
+        Batch,
+
+        /// <summary>PRISM : sans `--autostart`, monde `prism`, le plugin Unreal prépare et démarre.</summary>
+        Piloted,
+    }
+
+    /// <summary>Moteur que le mode PRISM peut piloter : l'installation active détectée, SYNE réel de préférence.</summary>
+    private string? ResolvePilotableEngineId()
+    {
+        foreach (var engineId in new[] { "syne", "syne-mock" })
+        {
+            var installation = _orchestration.Registry.GetActiveInstallation(engineId);
+            if (installation is { ManifestValid: true } && IsLaunchable(installation))
+            {
+                return engineId;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Dossier des journaux stdout/stderr d'une instance (sessions/&lt;instance&gt;/logs), celui
     /// que la fenêtre console propose d'ouvrir. Chemin construit, non lu : il n'est pas
@@ -643,7 +695,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         }
     }
 
-    private async Task<string?> StartComponentAsync(string componentId)
+    private async Task<string?> StartComponentAsync(string componentId, EnginePosture posture = EnginePosture.Batch)
     {
         lock (_gate)
         {
@@ -668,7 +720,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
         try
         {
-            return await StartComponentCoreAsync(componentId).ConfigureAwait(false);
+            return await StartComponentCoreAsync(componentId, posture).ConfigureAwait(false);
         }
         finally
         {
@@ -679,7 +731,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         }
     }
 
-    private async Task<string?> StartComponentCoreAsync(string componentId)
+    private async Task<string?> StartComponentCoreAsync(string componentId, EnginePosture posture)
     {
         var installation = _orchestration.Registry.GetActiveInstallation(componentId);
         if (installation is null)
@@ -777,7 +829,33 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         var isEngine = string.Equals(manifest.Type, "engine", StringComparison.Ordinal)
             || (manifest.Capabilities.Contains("seed", StringComparer.Ordinal)
                 && manifest.Capabilities.Contains("tickLimit", StringComparer.Ordinal));
-        if (isEngine)
+        if (isEngine && posture == EnginePosture.Piloted)
+        {
+            // Mode PRISM (posture pilotée) : ni `--autostart`, ni graine/horizon imposés —
+            // le projet Unreal prépare puis démarre via l'API de contrôle (`prepare`/`ready`/
+            // `start`, TRANSPORT_API.md §3). Le monde suit le profil `prism` (ADR-017) et la
+            // diffusion WebSocket est exposée pour que le plugin reçoive `world_initialized`
+            // et les snapshots. Le port de contrôle (--control-port) sert déjà d'API de
+            // pilotage ; --observe-port ouvre le flux WS à côté, comme en campagne.
+            arguments.Add("--simulation");
+            arguments.Add(WellKnownSimulations.Prism);
+
+            ResolvedEndpoint observe;
+            try
+            {
+                observe = _ports.Resolve(componentId, instanceId, "observe", null);
+            }
+            catch (PortUnavailableException exception)
+            {
+                _ports.Release(instanceId);
+                return exception.Message;
+            }
+
+            resolvedEndpoints["observe"] = observe with { Url = $"ws://127.0.0.1:{observe.Port}/" };
+            arguments.Add("--observe-port");
+            arguments.Add(observe.Port.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        else if (isEngine)
         {
             var seed = DateTimeOffset.UtcNow.ToUnixTimeSeconds() & 0x7FFFFFFF;
             arguments.AddRange([

@@ -75,6 +75,20 @@ public sealed class FakeOrchestrationFacade : IOrchestrationFacade
         return Task.FromResult<string?>(null);
     }
 
+    /// <summary>Résultat renvoyé par StartEnginePrismAsync (scriptable pour les tests PRISM).</summary>
+    public PrismEngineStart PrismStartResult { get; set; } =
+        new(null, "syne", "http://127.0.0.1:5181", "ws://127.0.0.1:5180/");
+
+    /// <summary>Nombre de démarrages PRISM demandés.</summary>
+    public int PrismStartCalls { get; private set; }
+
+    /// <inheritdoc />
+    public Task<PrismEngineStart> StartEnginePrismAsync()
+    {
+        PrismStartCalls++;
+        return Task.FromResult(PrismStartResult);
+    }
+
     /// <inheritdoc />
     public ResourceSnapshot SampleResources() => new(double.NaN, double.NaN, 31);
 
@@ -190,18 +204,18 @@ public sealed class ReportProvenanceTests : IDisposable
     }
 
     /// <summary>
-    /// La navigation expose les écrans V1 dans leur ordre (USER_INTERFACE.md).
-    /// « Campagnes » n'existe plus : expériences et campagnes ne font qu'un écran,
-    /// avec le mode Mono/MultiRun (voir la vue Expériences).
+    /// La navigation expose les écrans dans leur ordre (USER_INTERFACE.md) : le mode PRISM
+    /// a son écran dédié, entre Expériences et Analyse. « Campagnes » n'existe plus :
+    /// expériences et campagnes ne font qu'un écran.
     /// </summary>
     [Fact]
-    public void Navigation_huit_entrees_dans_l_ordre_v1()
+    public void Navigation_neuf_entrees_dans_l_ordre_v1()
     {
         var viewModel = new MainWindowViewModel(new FakeOrchestrationFacade());
 
-        Assert.Equal(8, viewModel.NavItems.Count);
+        Assert.Equal(9, viewModel.NavItems.Count);
         Assert.Equal(
-            ["Accueil", "Expériences", "Analyse", "Rapports", "Configuration", "Logs", "Monitoring", "Documentation"],
+            ["Accueil", "Expériences", "PRISM", "Analyse", "Rapports", "Configuration", "Logs", "Monitoring", "Documentation"],
             viewModel.NavItems.Select(item => item.Title).ToList());
         Assert.DoesNotContain(viewModel.NavItems, item => item.Id == MainWindowViewModel.NavCampagnesId);
 
@@ -209,29 +223,66 @@ public sealed class ReportProvenanceTests : IDisposable
         Assert.Equal(0, viewModel.SelectedNavIndex);
         viewModel.NavigateCommand.Execute(MainWindowViewModel.NavAnalyseId);
         Assert.Equal(MainWindowViewModel.NavAnalyseId, viewModel.SelectedNavId);
-        Assert.Equal(2, viewModel.SelectedNavIndex);
+        Assert.Equal(3, viewModel.SelectedNavIndex);
         Assert.Equal("Analyse", viewModel.SelectedNavTitle);
     }
 
     /// <summary>
-    /// Un seul écran de création, deux rythmes : Mono impose un run et la cadence
-    /// directe (10 ticks/s, regardable en fenêtre d'analyse) ; MultiRun autorise la
-    /// série et passe en batch (1000 ticks/s). La cadence choisie part dans la
-    /// définition — donc dans le `config.resolved.json` du paquet.
+    /// Mode PRISM : le démarrage pilote le moteur (posture pilotée), expose les points
+    /// d'accès du projet Unreal et verrouille l'écran Expériences (parcours exclusifs) ;
+    /// l'arrêt rouvre l'Expérience.
     /// </summary>
     [Fact]
-    public async Task Creation_Mono_force_un_seul_run_et_la_cadence_directe()
+    public async Task Mode_prism_pilote_le_moteur_et_verrouille_lexperience()
+    {
+        var facade = new FakeOrchestrationFacade
+        {
+            PrismStartResult = new PrismEngineStart(null, "syne", "http://127.0.0.1:5181", "ws://127.0.0.1:5180/"),
+        };
+        var viewModel = new MainWindowViewModel(facade) { CampaignTitle = "Campagne verrouillée" };
+
+        // Au départ : pas de mode PRISM, l'Expérience est accessible.
+        Assert.False(viewModel.IsPrismRunning);
+        Assert.False(viewModel.IsExperienceLocked);
+        Assert.True(viewModel.CanCreateCampaign);
+
+        // Démarrage PRISM : moteur piloté, points d'accès affichés, Expérience verrouillée.
+        viewModel.StartPrismCommand.Execute("start");
+        await Task.Delay(1);
+
+        Assert.Equal(1, facade.PrismStartCalls);
+        Assert.True(viewModel.IsPrismRunning);
+        Assert.True(viewModel.IsExperienceLocked);
+        Assert.Equal("http://127.0.0.1:5181", viewModel.PrismControlUrl);
+        Assert.Equal("ws://127.0.0.1:5180/", viewModel.PrismObserveUrl);
+        Assert.False(viewModel.CanCreateCampaign);
+
+        // Arrêt : le moteur s'arrête, l'Expérience se rouvre.
+        viewModel.StopPrismCommand.Execute("stop");
+        await Task.Delay(1);
+
+        Assert.Equal(("syne", false), Assert.Single(facade.ToggleCalls));
+        Assert.False(viewModel.IsPrismRunning);
+        Assert.False(viewModel.IsExperienceLocked);
+        Assert.True(viewModel.CanCreateCampaign);
+    }
+
+    /// <summary>
+    /// Un seul écran, champs explicites : 1 run par défaut et cadence directe (10 ticks/s,
+    /// regardable en fenêtre d'analyse) ; le champ « Nombre de runs » pilote la série, la
+    /// vitesse reste libre. La cadence choisie part dans la définition — donc dans le
+    /// `config.resolved.json` du paquet.
+    /// </summary>
+    [Fact]
+    public async Task Creation_defaut_un_seul_run_et_cadence_directe_puis_serie()
     {
         var facade = new FakeOrchestrationFacade();
         var viewModel = new MainWindowViewModel(facade) { CampaignTitle = "Essai direct" };
 
-        Assert.Equal("Mono", viewModel.SelectedRunMode);
-        Assert.False(viewModel.IsMultiRun);
         Assert.Equal(MainWindowViewModel.DirectTicksPerSecond, viewModel.SelectedTicksPerSecond);
         Assert.True(viewModel.CanCreateCampaign);
 
-        // Le champ « Nombre de runs » n'existe pas en Mono : un run, toujours.
-        viewModel.RunCountInput = "7";
+        // Par défaut : un seul run, cadence directe.
         viewModel.CreateCampaignCommand.Execute("start");
         await Task.Delay(1);
 
@@ -239,12 +290,9 @@ public sealed class ReportProvenanceTests : IDisposable
         Assert.Equal(1, definition.RunCount);
         Assert.Equal(MainWindowViewModel.DirectTicksPerSecond, definition.TicksPerSecond);
 
-        // MultiRun : la série redevient possible et le rythme passe en batch.
-        viewModel.SelectedRunMode = "MultiRun";
-        Assert.True(viewModel.IsMultiRun);
-        Assert.Equal(Launcher.Application.RunEngineProfile.BatchTicksPerSecond, viewModel.SelectedTicksPerSecond);
-
+        // Série : le champ « Nombre de runs » pilote le compte, la vitesse passe en batch.
         viewModel.RunCountInput = "3";
+        viewModel.SelectedTicksPerSecond = Launcher.Application.RunEngineProfile.BatchTicksPerSecond;
         viewModel.CreateCampaignCommand.Execute("start");
         await Task.Delay(1);
 
@@ -254,9 +302,9 @@ public sealed class ReportProvenanceTests : IDisposable
         Assert.Empty(definition.Validate());
     }
 
-    /// <summary>La vitesse reste libre : on peut regarder un MultiRun, accélérer un Mono.</summary>
+    /// <summary>La vitesse reste libre : on peut regarder un run, ou accélérer une série.</summary>
     [Fact]
-    public void La_cadence_de_lexecution_est_choisissable_independamment_du_mode()
+    public void La_cadence_de_lexecution_est_choisissable()
     {
         var viewModel = new MainWindowViewModel(new FakeOrchestrationFacade());
 
@@ -265,19 +313,14 @@ public sealed class ReportProvenanceTests : IDisposable
         Assert.Equal(100, viewModel.SelectedTicksPerSecond);
         Assert.True(viewModel.CanCreateCampaign);
 
-        // Changement de mode : le défaut du mode s'applique, puis reste modifiable.
-        viewModel.SelectedRunMode = "MultiRun";
-        Assert.Equal(1000, viewModel.SelectedTicksPerSecond);
-        viewModel.SelectedRunMode = "Mono";
-        Assert.Equal(MainWindowViewModel.DirectTicksPerSecond, viewModel.SelectedTicksPerSecond);
         viewModel.SelectedTicksPerSecond = 1000;
         Assert.Equal(1000, viewModel.SelectedTicksPerSecond);
         Assert.True(viewModel.CanCreateCampaign);
     }
 
     /// <summary>
-    /// PRISM n'est pas une entrée de navigation : il apparaît comme composant de la pile
-    /// (USER_INTERFACE.md §2.2), et les modes vivent dans le sélecteur de session.
+    /// Le profil Immersion n'est pas une entrée de navigation (il vit dans le sélecteur de
+    /// session) ; en revanche le MODE PRISM — posture pilotée du moteur — a son écran dédié.
     /// </summary>
     [Fact]
     public void Immersion_n_est_pas_une_entree_de_navigation()
@@ -285,6 +328,7 @@ public sealed class ReportProvenanceTests : IDisposable
         var viewModel = new MainWindowViewModel(new FakeOrchestrationFacade());
 
         Assert.DoesNotContain(viewModel.NavItems, item => item.Id == "immersion");
+        Assert.Contains(viewModel.NavItems, item => item.Id == MainWindowViewModel.NavPrismId);
         Assert.Equal("Standard", viewModel.SelectedMode);
         Assert.Equal("Mode:Standard", viewModel.ModeLabel);
     }

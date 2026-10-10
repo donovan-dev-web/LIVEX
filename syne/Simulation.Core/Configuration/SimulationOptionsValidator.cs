@@ -42,6 +42,20 @@ public static class SimulationOptionsValidator
             errors.Add($"simulation.ticksPerSecond doit être &gt; 0 (reçu : {options.Simulation.TicksPerSecond}).");
         }
 
+        if (options.Simulation.SimulatedSecondsPerTick is < SimulationClock.MinSimulatedSecondsPerTick
+            or > SimulationClock.MaxSimulatedSecondsPerTick)
+        {
+            errors.Add(
+                $"simulation.simulatedSecondsPerTick doit être dans " +
+                $"[{SimulationClock.MinSimulatedSecondsPerTick}, {SimulationClock.MaxSimulatedSecondsPerTick}] " +
+                $"(reçu : {options.Simulation.SimulatedSecondsPerTick}).");
+        }
+
+        if (!double.IsFinite(options.World.MetersPerUnit) || options.World.MetersPerUnit <= 0.0)
+        {
+            errors.Add($"world.metersPerUnit doit être &gt; 0 (reçu : {options.World.MetersPerUnit}).");
+        }
+
         if (options.Agents.InitialCount < 0)
         {
             errors.Add($"agents.initialCount doit être &gt;= 0 (reçu : {options.Agents.InitialCount}).");

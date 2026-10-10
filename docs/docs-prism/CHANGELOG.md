@@ -11,6 +11,8 @@
 ## [Unreleased]
 
 ### Added
+- **Contrat d'échelle temporelle ADR-017 (spec « Profil gameplay PRISM », 10/10/2026)** : `world_initialized.world` (description **1.1**) porte `simulatedSecondsPerTick` (défaut 60 → 5 pour le profil `prism`) et `metersPerUnit` (défaut 1,0 — PRISM k = 100 uu/unité) ; chaque `snapshot` porte `simulatedTimeSeconds` (`tick × simulatedSecondsPerTick`) à côté de `simulatedTimeMinutes` (plancher entier, inchangé) ; `/api/control/status` expose `simulatedSecondsPerTick`. Exigences de reconstruction du plugin (§6 de la spec) documentées dans `TRANSPORT_API.md` : **aucune valeur temporelle/ spatiale en dur** — lire `cellSize`, `ticksPerSecond`, `simulatedSecondsPerTick`, `metersPerUnit` depuis `world_initialized`, `k = tuile_WP / cellSize`, `MaxWalkSpeed = speed × k × TPS`, horloge UI affichant `simulatedTimeSeconds` **et** le ratio R.
+### Added
 - Plugin Unreal **PRISM-LDK** (`prism/LDK/Plugins/PrismLdk/`, module `PrismLdk`) : `UPrismLdkSubsystem` (WebSocket `5180` + contrôle HTTP `5181`), types, fonctions et événements Blueprint (`OnWorldInitialized`, `OnSnapshot`, `OnWorldDelta`, `OnSyneEvent`, `OnControlResult`, `OnError`).
 - Hôte technique de développement/build `prism/LDK/LDK.uproject` (Unreal 5.8, `EngineAssociation` `5.8`) avec sa configuration `Config/` et ses assets Blueprint de test.
 - Guide d'intégration Blueprint du plugin : `PRISM_UNREAL_IMPLEMENTATION.md`.

@@ -21,6 +21,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "worldHeight": 500,
     "maxTicks": 1000000,
     "ticksPerSecond": 10,
+    "simulatedSecondsPerTick": 60,
     "autoSaveEveryNTicks": 1000,
     "maxBackups": 5
   },
@@ -73,7 +74,7 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "receiveEnergyCost": 0,
     "receiveEnergyPayloadFactor": 0
   },
-  "world": { "seasons": { "enabled": false }, "territories": { "enabled": false }, "books": { "enabled": false, "writeCostEnergy": 20.0, "readBenefit": 1.0 }, "events": false, "obstacles": false },
+  "world": { "metersPerUnit": 1.0, "seasons": { "enabled": false }, "territories": { "enabled": false }, "books": { "enabled": false, "writeCostEnergy": 20.0, "readBenefit": 1.0 }, "events": false, "obstacles": false },
   "groups": {
     "enabled": true,
     "reviewIntervalTicks": 10,
@@ -421,6 +422,27 @@ Validation §6 : `zones` rejetée si `world.territories.enabled` est `false` ; p
 Exemple : `{"world":{"books":{"enabled":true,"writeCostEnergy":20,"readBenefit":1}}}`.
 Les coûts doivent être positifs ou nuls. En V0.1, l’écriture et la lecture sont des appels explicites de l’API du moteur ; l’accès spatial, le temps de rédaction et l’effet cognitif détaillé restent hors de ce sous-jalon.
 
+### 6.12 Clés d’échelle temporelle (ADR-017)
+
+| Clé | Défaut | Plage validée | Rôle |
+| :-- | :-- | :-- | :-- |
+| `simulation.simulatedSecondsPerTick` | `60` | `[1, 3600]` (entier) | Secondes simulées par tick — 60 : 1 tick = 1 minute simulée (ADR-005, comportement historique **inchangé**) ; 5 : profil `prism` (R = 30 à 6 TPS) |
+| `world.metersPerUnit` | `1.0` | `> 0` | **Informatif** : mètres par unité SYNE — jamais calculé par le moteur, transmis aux clients (`world_initialized`, PRISM k = 100 uu/unité) |
+
+Règle de conversion (ADR-017, inventaire complet `TICK_QUANTITIES.md`) : `dt = simulatedSecondsPerTick / 60` est appliqué **une fois au démarrage du run** — les quantités de **classe A** (taux de besoins, énergie mouvement/repos, régénérations/dégradation des réserves, décroissances mémoire/croyances/confiance, durée des saisons) sont exprimées **par minute simulée** dans la config et mises à l'échelle en valeurs par tick effectif ; les classes B (cadences en ticks) et C (effets par action) sont inchangées. Le ratio temps réel est `R = ticksPerSecond × simulatedSecondsPerTick` — l'UI doit l'afficher (ADR-005).
+
+Profils enregistrés (`SimulationProfiles`) :
+
+| Profil | Fichier | Monde | TPS | spt | R |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| `reference` | `configs/simulation/reference.json` | 500 × 500, cellule 10 | 10 | 60 | 600 (historique : 1 tick = 1 min) |
+| `prism` | `configs/simulation/prism.json` | 2 240 × 2 240, cellule 32 | 6 | **5** | **30** |
+
+Exemple : `{"simulation":{"simulatedSecondsPerTick":5}}`.
+Validation : valeur entière dans `[1, 3600]` (0, négatif, > 3600 et non entier rejetés) ; `world.metersPerUnit` strictement positif et fini.
+
+Activation du profil `prism` : `--simulation prism` (scénario batch accepté à côté de `reference` ; le profil s'applique **sous** `--config`, priorité §5 — `reference`/aucun scénario reste le défaut intégré, inchangé) ; côté Launcher, le champ « Scénario » de la campagne accepte `prism`.
+
 ---
 
 ## Points restés ouverts dans ce document
@@ -438,3 +460,5 @@ L'aménagement environnemental configurable se limite aux obstacles
 `POST /api/control/prepare` peut surcharger la cadence de cette préparation
 avec `ticksPerSecond` (entier strictement positif). La valeur est incluse dans
 `world_initialized.world.ticksPerSecond` et réutilisée par `start`.
+Depuis ADR-017 (contrat description 1.1), `world_initialized.world` inclut
+aussi `simulatedSecondsPerTick` et `metersPerUnit` (§6.12).

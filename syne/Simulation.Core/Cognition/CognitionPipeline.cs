@@ -51,18 +51,42 @@ public sealed class CognitionPipeline
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(stocks);
         _world = world;
-        _options = options;
-        _perception = new PerceptionSystem(world, options.Agents.Perception);
+
+        // Échelle temporelle (ADR-017) : les quantités de classe A (taux de
+        // besoins, décroissances mémoire/croyances/confiance, coûts énergétiques
+        // de mouvement/repos) sont mises à l'échelle **une fois** ici, de façon
+        // déterministe, à partir de `dt = simulatedSecondsPerTick / 60` — le
+        // sous-arbre agents des options « effectives » porte ces valeurs par
+        // tick effectif. À `dt == 1` (défaut, reference), TemporalScale retourne
+        // les instances d'entrée : le run est bit-à-bit identique (pin ADR-016).
+        double dt = Configuration.SimulationClock.From(options.Simulation).SimulatedMinutesPerTick;
+        _options = Configuration.TemporalScale.WithScaledAgentSettings(
+            options,
+            Configuration.TemporalScale.ScaleNeeds(options.Agents.Needs, dt),
+            Configuration.TemporalScale.ScaleMemory(options.Agents.Memory, dt),
+            Configuration.TemporalScale.ScaleBeliefs(options.Agents.Beliefs, dt),
+            Configuration.TemporalScale.ScaleTrust(options.Agents.Trust, dt),
+            Configuration.TemporalScale.ScaleActions(options.Agents.Actions, dt));
+
+        _perception = new PerceptionSystem(world, _options.Agents.Perception);
         _stocks = stocks;
-        _catalog = new ActionCatalog(options.Agents.Actions);
-        _executor = new ActionExecutor(world, _catalog, stocks, options);
+        _catalog = new ActionCatalog(_options.Agents.Actions);
+        _executor = new ActionExecutor(world, _catalog, stocks, _options);
         _interruption = new InterruptionTrigger(_catalog, stocks);
-        _communication = new CommunicationSystem(world, options.Communication);
-        _groups = new GroupSystem(options.Groups);
-        _birth = new BirthSystem(options.Reproduction);
-        _death = new DeathSystem(options.Agents.Life);
+        _communication = new CommunicationSystem(world, _options.Communication);
+        _groups = new GroupSystem(_options.Groups);
+        _birth = new BirthSystem(_options.Reproduction);
+        _death = new DeathSystem(_options.Agents.Life);
         _budget = budget;
     }
+
+    /// <summary>
+    /// Options effectives du run (ADR-017) : sous-arbre <c>agents</c> mis à
+    /// l'échelle temporelle (classe A par tick effectif), autres sections
+    /// partagées avec la config d'origine. La restauration bit-à-bit reconstruit
+    /// les esprits avec ces réglages pour rester cohérente avec le run sauvé.
+    /// </summary>
+    internal SimulationOptions EffectiveOptions => _options;
 
     public PerceptionSystem Perception => _perception;
 

@@ -33,6 +33,10 @@ public static class ObservabilitySerializer
             ["seed"] = (ulong)snapshot.Seed,
             ["tick"] = (ulong)snapshot.Tick,
             ["simulatedTimeMinutes"] = snapshot.SimulatedTimeMinutes,
+            // Champ additif ADR-017 (contrat 0.4.0) : secondes simulées exactes —
+            // `simulatedTimeMinutes` reste le plancher entier historique (stockage
+            // ECHOS en INTEGER).
+            ["simulatedTimeSeconds"] = snapshot.SimulatedTimeSeconds,
             ["aliveCount"] = snapshot.AliveCount,
             ["agents"] = agents,
             ["resources"] = ResourcesJson(snapshot.Resources),

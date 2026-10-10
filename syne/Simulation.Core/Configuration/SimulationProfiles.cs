@@ -3,6 +3,24 @@ namespace Simulation.Core.Configuration;
 /// <summary>Profils opérationnels explicites utilisés par les lanceurs de runs.</summary>
 public static class SimulationProfiles
 {
+    /// <summary>Identifiant de scénario batch du profil de référence (ADR-016).</summary>
+    public const string ReferenceId = "reference";
+
+    /// <summary>
+    /// Identifiant de scénario batch du profil PRISM (ADR-017, monde 2 240 /
+    /// 5 s simulées par tick) — accepté par <c>--simulation</c> et par le
+    /// sélecteur de scénario du Launcher.
+    /// </summary>
+    public const string PrismId = "prism";
+
+    /// <summary>
+    /// Vrai si <paramref name="simulationId"/> est un scénario batch connu
+    /// (<c>null</c> = défaut historique, équivalent à <see cref="ReferenceId"/> :
+    /// le profil de référence EST le défaut intégré, ADR-016).
+    /// </summary>
+    public static bool IsKnownSimulationId(string? simulationId) =>
+        simulationId is null or ReferenceId or PrismId;
+
     /// <summary>
     /// Profil de référence : scénario de survie calibré.
     /// </summary>
@@ -58,4 +76,37 @@ public static class SimulationProfiles
     /// dont la désérialisation rendrait chaque clé absente destructive.
     /// </summary>
     public static string ReferenceJson() => ConfigLoader.ToJson(Reference());
+
+    /// <summary>
+    /// Profil <b>PRISM</b> (ADR-017 §4.4, SCALE_AND_CADENCE_SPEC.md §2) : monde
+    /// 2 240 × 2 240 unités (70 × 70 cases de 32 m, case logique = cluster World
+    /// Partition 3 200 uu à k = 100 uu/unité), cadence 6 TPS (166,7 ms/tick) et
+    /// <b>5 secondes simulées par tick</b> — ratio R = 30 (1 s réelle = 30 s
+    /// simulées : faim en 3 min 20, journée en 48 min). Le pas de déplacement
+    /// reste 1 unité × trait <c>speed</c> par tick : la vitesse apparente
+    /// (600 uu/s à speed 1,0) est celle du joueur UE par défaut.
+    ///
+    /// <para>
+    /// <b>Additif et neutre</b> : seul <c>simulatedSecondsPerTick</c> change
+    /// l'écoulement du temps simulé (classe A mise à l'échelle au démarrage) ;
+    /// ni TPS de référence, ni trait de vitesse, ni échelle k ne bougent.
+    /// rejoue le profil <c>reference</c> calibré (ADR-016) puis applique le bloc
+    /// PRISM — un profil doit être <b>complet</b> (le contrôleur applique la
+    /// configuration fournie sur les défauts intégrés).
+    /// </para>
+    /// </summary>
+    public static SimulationOptions Prism()
+    {
+        var options = Reference();
+        options.Simulation.WorldWidth = 2240;
+        options.Simulation.WorldHeight = 2240;
+        options.Simulation.WorldCellSize = 32;
+        options.Simulation.TicksPerSecond = 6;
+        options.Simulation.SimulatedSecondsPerTick = 5;
+        options.World.MetersPerUnit = 1.0;
+        return options;
+    }
+
+    /// <summary>Profil PRISM sous forme de surcouche JSON (même sémantique que <see cref="ReferenceJson"/>).</summary>
+    public static string PrismJson() => ConfigLoader.ToJson(Prism());
 }

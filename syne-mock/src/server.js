@@ -145,7 +145,7 @@ function createServer(options = {}) {
         log('CONTROL response action=%s -> 409 %s', action, error.code);
         return send(409, errorJson(error.code, error.message));
       }
-      if (/^(seed|ticksPerSecond|maxTicks|world\.|agents(?:[ .]|$)|resources\.|Unable to place agent)/.test(error.message)) {
+      if (/^(seed|ticksPerSecond|simulatedSecondsPerTick|maxTicks|world\.|agents(?:[ .]|$)|resources\.|Unable to place agent)/.test(error.message)) {
         log('CONTROL response action=%s -> 400 invalid_configuration (%s)', action, error.message);
         return send(400, errorJson('invalid_configuration', error.message));
       }

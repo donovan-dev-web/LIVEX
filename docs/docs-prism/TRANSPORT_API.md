@@ -41,6 +41,17 @@ systèmes actifs, les ressources globales, les obstacles, ainsi que
 dans `world_initialized`. Les détails et les champs versionnés sont définis
 dans [`../docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md).
 
+**Échelle temporelle (ADR-017, contrat description 1.1 / observabilité 0.4.0)** :
+`world_initialized.world` porte `simulatedSecondsPerTick` (secondes simulées par
+tick — 60 au défaut, 5 pour le profil `prism`) et `metersPerUnit` (mètres par
+unité SYNE, informatif — k = 100 uu/unité) ; chaque `snapshot` porte
+`simulatedTimeSeconds` (`tick × simulatedSecondsPerTick`) à côté de
+`simulatedTimeMinutes` (plancher entier, historique). **Aucune de ces valeurs
+n'est codée en dur dans le plugin** : elles se lisent dans `world_initialized`
+(§6 de la spec PRISM : `k = tuile_WP / cellSize`, horloge UI affichée via
+`simulatedTimeSeconds` **et** le ratio « 1 s = R s simulées »,
+`R = ticksPerSecond × simulatedSecondsPerTick`).
+
 **Règle de consommation** : utiliser `OnSnapshot` comme source de vérité pour
 réconcilier l'état courant présenté par le projet Unreal. Les événements et
 deltas restent utiles pour le journal ou les effets ponctuels ; ils peuvent
@@ -88,7 +99,9 @@ Connect
 Après un `prepare` explicite, SYNE exige l'accusé `ready` avant `start` ;
 ignorer l'ordre ou réutiliser une seed incompatible peut produire une erreur
 HTTP (par exemple `409 world_not_ready`). La cadence `ticksPerSecond` est celle
-du moteur de simulation, pas le framerate Unreal. Les corps précis, états et
+du moteur de simulation, pas le framerate Unreal. `GET /api/control/status`
+restitue `ticksPerSecond` et `simulatedSecondsPerTick` du monde préparé
+(`null` tant qu'aucun monde n'est préparé). Les corps précis, états et
 codes d'erreur suivent le contrat SYNE.
 
 Le plugin ne fait pas de polling périodique automatique documenté de l'état :
