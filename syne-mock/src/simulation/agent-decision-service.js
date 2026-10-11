@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Décision d'action d'un agent simulé (choix déterministe parmi ACTIONS).
+ */
+
 const { round } = require('./deterministic-random');
 const { consume } = require('../world/resource-service');
 

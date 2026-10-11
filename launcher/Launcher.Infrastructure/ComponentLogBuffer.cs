@@ -1,9 +1,13 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tampon des lignes de sortie des composants.
+
 using Launcher.Domain;
 
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Tampon des lignes de sortie des composants (USER_INTERFACE.md §9). Chaque ligne publiée par le
+/// Tampon des lignes de sortie des composants. Chaque ligne publiée par le
 /// gestionnaire de processus est conservée en mémoire, par instance et dans l'ordre de sa
 /// séquence, pour être lue par les fenêtres console du Launcher.
 ///

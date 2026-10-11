@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tampon des lignes de composant : les consoles lisent un flux déjà long sans jamais le perdre, et le
+//        débordement retient la fin plutôt que la tête.
+
 using Launcher.Domain;
 using Launcher.Infrastructure;
 using Xunit;
@@ -5,7 +10,7 @@ using Xunit;
 namespace Launcher.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Tampon des lignes de composant (USER_INTERFACE.md §9) : les consoles lisent un flux déjà long sans
+/// Tampon des lignes de composant : les consoles lisent un flux déjà long sans
 /// jamais le perdre, et le débordement retient la fin plutôt que la tête.
 /// </summary>
 public sealed class ComponentLogBufferTests

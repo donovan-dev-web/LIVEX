@@ -1,7 +1,6 @@
 """Méta-métriques de reproductibilité entre runs (ECHOS-070→072, jalon ph7).
 
-Comparaison de runs contrôlés (EXPERIMENT_COMPARISON.md §2, METRICS_SPEC.md
-§10) :
+Comparaison de runs contrôlés (mêmes métriques, même fenêtre) :
 
 - ``IsReproducible`` : même **seed** ET même **version** du moteur (SYNE) ET
   contenu observé **bit-à-bit identique** (empreinte SHA-256 canonique) ;

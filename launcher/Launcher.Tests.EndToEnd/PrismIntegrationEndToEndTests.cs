@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : G7 — déverrouillage du mode Immersion : le verrou est la conséquence d'un manifeste PRISM conforme au
+//        contrat, pas une constante.
+
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Xunit;
@@ -5,8 +10,8 @@ using Xunit;
 namespace Launcher.Tests.EndToEnd;
 
 /// <summary>
-/// G7 — déverrouillage du mode Immersion (ROADMAP.md §6.8) : le verrou est la conséquence
-/// d'un manifeste PRISM conforme au contrat §11.1, pas une constante. PRISM est détecté,
+/// G7 — déverrouillage du mode Immersion : le verrou est la conséquence
+/// d'un manifeste PRISM conforme au contrat, pas une constante. PRISM est détecté,
 /// pilôté et arrêté comme n'importe quel autre composant de la pile.
 /// </summary>
 [Collection("Composition")]
@@ -34,13 +39,13 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
         using var composition = new Launcher.App.Composition.LauncherComposition(
             Path.Combine(_root, "packages"), _componentsParent, _dataRoot);
 
-        // Déverrouillage : conséquence du manifeste détecté, aucun code spécial (ADR-006).
+        // Déverrouillage : conséquence du manifeste détecté, aucun code spécial.
         var immersion = composition.Orchestration.ResolveProfile(WellKnownProfiles.Immersion);
         Assert.False(immersion.ImmersionLocked, string.Join(" ; ", immersion.Problems));
         Assert.True(immersion.Satisfiable, string.Join(" ; ", immersion.Problems));
         Assert.Equal(["syne", "prism"], immersion.StartupOrder);
 
-        // Cycle de vie : PRISM est démarré comme tout autre composant (§5), sur son port déclaré.
+        // Cycle de vie : PRISM est démarré comme tout autre composant, sur son port déclaré.
         var startError = await composition.Facade.ToggleComponentAsync("prism", true);
         Assert.Null(startError);
 
@@ -50,7 +55,7 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
         Assert.Equal("ws", new Uri(instance.Endpoints["ws"].Url).Scheme);
         await StubInstall.WaitForHealthyAsync(instance.Endpoints["control"].Url);
 
-        // Arguments : communs du §3.1 seulement — aucun argument de lot SYNE (§3.3) sur PRISM.
+        // Arguments : communs seulement — aucun argument de lot SYNE sur PRISM.
         var argsFile = Path.Combine(_dataRoot, "workspace", "sessions", instance.InstanceId, "args.txt");
         var args = File.ReadAllLines(argsFile);
         Assert.Contains("--instance-id", args);
@@ -62,7 +67,7 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
         Assert.DoesNotContain("--simulation", args);
         Assert.DoesNotContain("--autostart", args);
 
-        // Arrêt : commande standard §5.1, registre à jour, aucun survivant.
+        // Arrêt : commande standard, registre à jour, aucun survivant.
         var stopError = await composition.Facade.ToggleComponentAsync("prism", false);
         Assert.Null(stopError);
         Assert.Null(composition.Orchestration.Registry.FindByComponent("prism"));
@@ -82,7 +87,7 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
 }
 
 /// <summary>
-/// G7 — le verrou reste fermé, avec la cause exacte du §11.1, quand le manifeste détecté
+/// G7 — le verrou reste fermé, avec la cause exacte, quand le manifeste détecté
 /// ne satisfait pas les exigences publiées. Le verrou est évalué, jamais codé en dur.
 /// </summary>
 [Collection("Composition")]
@@ -130,9 +135,9 @@ public sealed class PrismLockEndToEndTests : IDisposable
 }
 
 /// <summary>
-/// Posture pilotée PRISM (ADR-017) : le moteur démarre sans `--autostart`, sur le profil
+/// Posture pilotée PRISM : le moteur démarre sans `--autostart`, sur le profil
 /// `prism`, avec la diffusion WebSocket exposée — le projet Unreal prépare puis démarre via
-/// l'API de contrôle (prepare/ready/start, TRANSPORT_API.md §3). Aucun seed ni horizon n'est
+/// l'API de contrôle (prepare/ready/start). Aucun seed ni horizon n'est
 /// imposé au moteur : ils viennent du plugin.
 /// </summary>
 [Collection("Composition")]
@@ -173,7 +178,7 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
         Assert.NotNull(instance);
 
         // Le profil prism (et non reference) a été transmis au moteur : la posture pilote
-        // le monde ADR-017. Le stub écrit launch.json à son démarrage ; on attend le fichier.
+        // le monde. Le stub écrit launch.json à son démarrage ; on attend le fichier.
         var launchPath = Path.Combine(_dataRoot, "workspace", "sessions", instance!.InstanceId, "launch.json");
         string? simulation = null;
         for (var attempt = 0; attempt < 100 && simulation is null; attempt++)
@@ -205,7 +210,7 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
     }
 }
 
-/// <summary>Manifestes des bancs G7 : le conforme satisfait intégralement §11.1, le non conforme non.</summary>
+/// <summary>Manifestes des bancs G7 : le conforme satisfait intégralement, le non conforme non.</summary>
 internal static class Manifests
 {
     /// <summary>SYNE moteur, identique au banc de campagne.</summary>
@@ -226,7 +231,7 @@ internal static class Manifests
         }
         """;
 
-    /// <summary>PRISM conforme au contrat §11.1 : mode déclaré, flux, cadence, contrôle.</summary>
+    /// <summary>PRISM conforme au contrat : mode déclaré, flux, cadence, contrôle.</summary>
     public static string PrismConformant(int port) =>
         $$"""
         {

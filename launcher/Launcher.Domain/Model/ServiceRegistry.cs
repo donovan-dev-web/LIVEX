@@ -1,11 +1,16 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Compte-rendu de santé d'un composant : état, cause principale, date de dernière observation et compteur
+//        d'observations consécutives.
+
 using Launcher.Protocol.Model;
 
 namespace Launcher.Domain.Model;
 
 /// <summary>
-/// Compte-rendu de santé d'un composant (COMPONENTS.md §2) : état, cause principale,
+/// Compte-rendu de santé d'un composant : état, cause principale,
 /// date de dernière observation et compteur d'observations consécutives.
-/// Un état vert sans cause est interdit (COMPONENTS.md §4.1).
+/// Un état vert sans cause est interdit.
 /// </summary>
 public sealed class HealthReport
 {
@@ -24,7 +29,7 @@ public sealed class HealthReport
     public int MissedProbeCount { get; init; }
 }
 
-/// <summary>Installation d'un composant : présence physique sur le poste (COMPONENTS.md §2).</summary>
+/// <summary>Installation d'un composant : présence physique sur le poste.</summary>
 public sealed class ComponentInstallation
 {
     /// <summary>Identifiant de type (ex. « syne »).</summary>
@@ -47,7 +52,7 @@ public sealed class ComponentInstallation
 
     /// <summary>
     /// Délai de grâce que le manifeste déclare pour l'arrêt (« timeouts.shutdownMs »,
-    /// COMPONENTS.md §3) : au-delà, l'arrêt forcé (INTEGRATION_CONTRACT.md §5.1). C'est ce
+    /// au-delà, l'arrêt forcé. C'est ce
     /// délai qui laisse au composant le temps de terminer l'état courant, de vider ses
     /// exports et d'écrire son marqueur d'arrêt propre — un délai plus court tronque ces
     /// écritures et fait lire un arrêt sain comme un incident.
@@ -57,11 +62,11 @@ public sealed class ComponentInstallation
 
 /// <summary>
 /// Instance : un processus en cours d'exécution, piloté par le Launcher,
-/// rattaché à une installation (COMPONENTS.md §2).
+/// rattaché à une installation.
 /// </summary>
 public sealed class ComponentInstance
 {
-    /// <summary>Identifiant d'instance : « &lt;composant&gt;-&lt;nnnn&gt; » (NETWORK.md §6.1).</summary>
+    /// <summary>Identifiant d'instance : « &lt;composant&gt;-&lt;nnnn&gt; ».</summary>
     public string InstanceId { get; init; } = string.Empty;
 
     /// <summary>Identifiant de type du composant.</summary>
@@ -70,7 +75,7 @@ public sealed class ComponentInstance
     /// <summary>Installation dont l'instance est issue.</summary>
     public ComponentInstallation Installation { get; init; } = new();
 
-    /// <summary>Instance adoptée : lancée hors du Launcher, supervisée mais non possédée (COMPONENTS.md §11).</summary>
+    /// <summary>Instance adoptée : lancée hors du Launcher, supervisée mais non possédée.</summary>
     public bool Adopted { get; init; }
 
     /// <summary>Compte-rendu de santé courant.</summary>
@@ -95,12 +100,12 @@ public sealed class ComponentInstance
     public DateTimeOffset? StoppedAt { get; set; }
 }
 
-/// <summary>Point d'accès résolu : la seule forme d'adresse que le domaine connaisse (NETWORK.md §4.1).</summary>
+/// <summary>Point d'accès résolu : la seule forme d'adresse que le domaine connaisse.</summary>
 public sealed record ResolvedEndpoint(string Kind, string Url, int Port);
 
 /// <summary>
 /// Registre de services : table des instances vivantes, unique source pour l'interface,
-/// la supervision et la résolution des appels de contrôle (COMPONENTS.md §5).
+/// la supervision et la résolution des appels de contrôle.
 /// En mémoire, reconstruit par détection, jamais persisté.
 /// </summary>
 public sealed class ServiceRegistry

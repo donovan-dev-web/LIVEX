@@ -1,4 +1,4 @@
-# ADR — Politique de Reconsidération (Contrôle de Saillance)
+# ADR-008 : Politique de Reconsidération (Contrôle de Saillance)
 
 **Statut :** [Accepté] — décision du 30/09/2026 : le filtre de saillance pré-délibération est retenu ; l'implémentation est planifiée **après** la calibration de survie (itération B1 du plan de correctifs campagne-runs).
 **Implémentation (30/09/2026, engineVersion 0.14.0)** : étape 3bis « Contrôle de

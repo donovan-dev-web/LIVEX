@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : G6 — commande --check : les huit vérifications du tableau, dans l'ordre, avec les causes attendues et une
+//        sortie textuelle stable citable en rapport d'incident.
+
 using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
@@ -11,7 +16,7 @@ using Xunit;
 namespace Launcher.Tests.EndToEnd;
 
 /// <summary>
-/// G6 — commande --check (PACKAGING.md §6) : les huit vérifications du tableau, dans l'ordre,
+/// G6 — commande --check : les huit vérifications du tableau, dans l'ordre,
 /// avec les causes attendues et une sortie textuelle stable citable en rapport d'incident.
 /// Hermétique : racines de données et de composants explicites, aucune source standard.
 /// </summary>
@@ -56,7 +61,7 @@ public sealed class EnvironmentCheckerTests : IDisposable
         Assert.Contains("moteur absent", checks.Single(check => check.Name == "moteur").Detail);
         Assert.True(checks.Single(check => check.Name == "ports").Passed);
 
-        // Le navigateur est une information : il ne bloque jamais (PACKAGING.md §6).
+        // Le navigateur est une information : il ne bloque jamais.
         Assert.True(checks.Single(check => check.Name == "navigateur").Passed);
         Assert.Contains("non bloquant", checks.Single(check => check.Name == "navigateur").Detail);
 
@@ -93,7 +98,7 @@ public sealed class EnvironmentCheckerTests : IDisposable
 
             Assert.True(checks.Single(check => check.Name == "composants").Passed);
 
-            // Le port déclaré au manifeste est occupé : conflit nommé (NETWORK.md §6.2).
+            // Le port déclaré au manifeste est occupé : conflit nommé.
             var ports = checks.Single(check => check.Name == "ports");
             Assert.False(ports.Passed);
             Assert.Contains("conflit de port", ports.Detail);

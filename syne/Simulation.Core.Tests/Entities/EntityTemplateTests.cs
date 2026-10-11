@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du paramétrage des templates d'entités (Entité A/B).
+
 using Simulation.Core.Entities;
 using Simulation.Core.Prng;
 using Xunit;

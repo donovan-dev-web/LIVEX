@@ -1,3 +1,5 @@
+"""Tests du consommateur WebSocket :5180 de SYNE."""
+
 import json
 from pathlib import Path
 

@@ -3,7 +3,7 @@
 **Composant** : ECHOS
 **Statut** : [STABLE]
 **Dernière mise à jour** : 5 octobre 2026
-**Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `DECISIONS_ECHOS.md`, `ROADMAP.md` ECHOS
+**Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `ROADMAP.md` ECHOS
 **Source Monographie** : Annexe K (feuille de route V2), §4.10.3 (règle d'or), §9.6.4 (issues ADR)
 
 ---
@@ -117,7 +117,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| ECHOS-080 | Interface web locale React/Vite (V0.1) — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS, `FRONTEND_VISION.md`, `UI_DESIGN.md` | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — ✓ `echos-ui` (les 6 Écrans A→F, React + Vite + TypeScript), proxy `/api` + `/health`, build `tsc -b` ; run sélectionnable, pilier live WS :5180 ; shell Electron conservé à l'horizon ultérieur (post-V0.1) |
+| ECHOS-080 | Interface web locale React/Vite (V0.1) — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos` | P0 | ADR-001 ECHOS | Interface servie par FastAPI (dev Vite, build statique) ; communique avec l'API locale — ✓ `echos-ui` (les 6 Écrans A→F, React + Vite + TypeScript), proxy `/api` + `/health`, build `tsc -b` ; run sélectionnable, pilier live WS :5180 ; shell Electron conservé à l'horizon ultérieur (post-V0.1) |
 | ECHOS-081 | Vue métriques temps réel (WebSocket 5180) — **LIVRÉ (PR UI, U7)** | `type/obs`, `component/echos` | P0 | ECHOS-080, ECHOS-011 | Métriques à jour en continu, sans figer l'exécution SYNE — ✓ Écran A (KPICards `latest` + timeline `?every=`) et Écran D onglet Métriques (8 moteurs) ; état SYNE/tick via WS :5180 (sous-échantillonnage `?every=N` à la lecture) |
 | ECHOS-082 | Vue croyances & confiance — **LIVRÉ (PR UI, U7)** | `type/feat`, `component/echos` | P1 | ECHOS-080, ECHOS-042 | Croyances de l'entité + confiance inter-entités visualisées — ✓ `AgentInspector` (`/beliefs/{agentId}`, `/relationships/{agentId}`) sur Écrans B/C |
 | ECHOS-083 | Vue réseaux sociaux (graphe) — **LIVRÉ (PR UI, U7)** | `type/feature`, `component/echos` | P1 | ECHOS-080, ECHOS-022 | Graphe de confiance mis à jour ; communautés affichées (propagation d'étiquettes déterministe, METRICS_SPEC.md §4) — ✓ Écran C, graphe force-directed (`echarts`), sondage 2 s, sélection → inspecteur |
@@ -151,7 +151,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 - Une carte ne passe en **In Review** qu'avec une PR référençant l'issue (`Closes #ECHOS-*`).
 - Une carte ne passe en **Done** qu'avec **golden files verts** (déterminisme) et couverture respectée.
 - Une carte `status/blocked` doit référencer le blocage (ADR, décision `[OUVERT]`, donnée manquante).
-- **Conformité** : toute carte doit tracer sa **décision** (`DECISIONS_ECHOS.md` n°) quand elle existe — une valeur non tranchée reste `[OUVERTE]` et calibrée plus tard, jamais figée par accident (Monographie §9.6.4).
+- **Conformité** : toute carte doit tracer sa **décision** d'origine quand elle existe — une valeur non tranchée reste `[OUVERTE]` et calibrée plus tard, jamais figée par accident (Monographie §9.6.4).
 
 ---
 

@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Base des vues modèles: notification de changement de propriété, sans dépendance externe.
+
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 

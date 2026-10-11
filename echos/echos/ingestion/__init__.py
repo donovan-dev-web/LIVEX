@@ -2,7 +2,7 @@
 
 - :mod:`models` : modèles pydantic des contrats `WorldInitialized` /
   `WorldSnapshot` / `ExternalEvent`
-  (JSON camelCase, API_CONTRACTS.md §2) + :func:`parse_message` déterministe.
+  (JSON camelCase) + :func:`parse_message` déterministe.
 - :mod:`ws_client` : consommateur WebSocket :5180 (transport injectable).
 - :mod:`stream` : lecture du flux **alignée par tick** (ECHOS-010).
 - :mod:`control_client` : client HTTP :5181 (start / pause / resume / reset).

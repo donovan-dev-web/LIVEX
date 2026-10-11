@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Avancement d'un run dans l'interface.
+
 using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Presentation.ViewModel;
@@ -6,7 +10,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.Presentation;
 
 /// <summary>
-/// Avancement d'un run dans l'interface (EXPERIMENTS.md §8). La règle qui compte :
+/// Avancement d'un run dans l'interface. La règle qui compte :
 /// n'afficher un pourcentage que si le moteur a rapporté un horizon — sinon la barre
 /// afficherait une progression qui n'existe pas.
 /// </summary>

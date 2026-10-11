@@ -1,11 +1,16 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Scénarios batch acceptés par --simulation : reference (défaut intégré) et prism (profil PRISM) — toute
+//        autre valeur reste rejetée avec la liste des valeurs acceptées.
+
 using Simulation.Core.Configuration;
 using Xunit;
 
 namespace Simulation.Core.Tests.Configuration;
 
 /// <summary>
-/// Scénarios batch acceptés par <c>--simulation</c> (ADR-017 §4.4) :
-/// <c>reference</c> (défaut intégré, ADR-016) et <c>prism</c> (profil PRISM) —
+/// Scénarios batch acceptés par <c>--simulation</c> :
+/// <c>reference</c> (défaut intégré) et <c>prism</c> (profil PRISM) —
 /// toute autre valeur reste rejetée avec la liste des valeurs acceptées.
 /// </summary>
 public sealed class CliSimulationProfileTests

@@ -2,7 +2,8 @@
 
 **Composant** : PRISM
 **Statut** : documentation d'intégration
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 11 octobre 2026
+**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Source de vérité des contrats** : [`../docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md)
 
 ---

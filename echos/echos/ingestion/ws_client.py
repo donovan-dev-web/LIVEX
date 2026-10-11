@@ -1,4 +1,4 @@
-"""Consommateur WebSocket :5180 de SYNE (API_CONTRACTS.md §2).
+"""Consommateur WebSocket :5180 de SYNE.
 
 Transport injectable — les tests utilisent un faux transport alimenté par les
 fixtures golden (réception déterministe) ; en production, :class:`WsClient`
@@ -46,9 +46,10 @@ class _WebsocketsTransport:
     def __init__(self, url: str) -> None:
         from websockets.sync.client import connect
 
-        # A long batch can queue many event frames while ECHOS computes its
-        # metrics. Disable the small default receive queue so backpressure is
-        # applied by the socket instead of terminating the stream mid-run.
+        # Un long batch peut empiler de nombreuses trames d'événements pendant
+        # qu'ECHOS calcule ses métriques. On désactive la petite file de réception
+        # par défaut pour que la contre-pression soit appliquée par la socket
+        # plutôt que de couper le flux en plein run.
         self._websocket = connect(url, max_queue=None, max_size=16 * 1024 * 1024)
         self._messages: queue.Queue[object] = queue.Queue()
         self._closed = threading.Event()

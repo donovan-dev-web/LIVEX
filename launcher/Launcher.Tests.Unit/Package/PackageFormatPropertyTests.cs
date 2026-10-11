@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Propriétés du format.livexp.
+
 using System.IO.Compression;
 using System.Text;
 using Launcher.Domain.Model;
@@ -9,7 +13,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.Package;
 
 /// <summary>
-/// Propriétés du format .livexp (TESTING.md §5). Vérifiées sans démarrer un seul composant.
+/// Propriétés du format.livexp. Vérifiées sans démarrer un seul composant.
 /// Chaque propriété est un invariant, pas un scénario.
 /// </summary>
 public sealed class LivexPackagePropertyTests : IDisposable
@@ -65,7 +69,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
             writer.Seal(DateTimeOffset.UnixEpoch);
         }
 
-        // Toute réouverture en écriture d'un paquet scellé est refusée (PACKAGE_FORMAT.md §10).
+        // Toute réouverture en écriture d'un paquet scellé est refusée.
         Assert.Throws<SealedPackageException>(() => LivexPackageWriter.OpenForAppend(path));
     }
 
@@ -265,7 +269,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
 
     // ------------------------------------------------------------------
     // P8 (lecture) : un paquet contenant une entrée exécutable est refusé à l'ouverture,
-    // donc jamais extrait (PACKAGE_FORMAT.md §8 : « refusée à l'écriture et à la extraction »).
+    // donc jamais extrait (« refusée à l'écriture et à la extraction »).
     // ------------------------------------------------------------------
     [Fact]
     public void P8_lecture_refuse_un_paquet_contenant_un_exécutable()
@@ -337,7 +341,7 @@ public sealed class LivexPackagePropertyTests : IDisposable
     }
 
     // ------------------------------------------------------------------
-    // Séquence normative §5.2 : l'ordre d'écriture des entrées d'un run.
+    // Séquence normative : l'ordre d'écriture des entrées d'un run.
     // ------------------------------------------------------------------
     [Fact]
     public void Seance_normative_integrity_json_apres_donnees_index_apres_integrity()

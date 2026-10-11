@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Le profil moteur effectif : la surcouche remise au moteur et le document qui en atteste doivent décrire la
+//        même configuration, sans valeur implicite, et rester reproductibles d'un run à l'autre.
+
 using System.Text.Json;
 using Launcher.Application;
 using Launcher.Domain;
@@ -7,7 +12,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.Campaign;
 
 /// <summary>
-/// Le profil moteur effectif (EXPERIMENTS.md §12) : la surcouche remise au moteur et
+/// Le profil moteur effectif : la surcouche remise au moteur et
 /// le document qui en atteste doivent décrire la même configuration, sans valeur
 /// implicite, et rester reproductibles d'un run à l'autre.
 /// </summary>
@@ -109,7 +114,7 @@ public sealed class RunEngineProfileTests
     {
         // Port, jeton de session et corrélation sont propres à une exécution : les
         // inscrire rendrait le document différent à chaque run, or un paquet scellé se
-        // compare octet pour octet (PACKAGE_FORMAT.md §6).
+        // compare octet pour octet.
         var json = RunEngineProfile.SerializeResolved(Spec(), Definition());
 
         Assert.DoesNotContain("jeton-aleatoire", json, StringComparison.Ordinal);

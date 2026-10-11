@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Façade en mémoire réalisée par un banc de test : expose uniquement ce que la présentation a le droit de
+//        connaître (aucun calcul scientifique dans la présentation).
+
 using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Domain.Model;
@@ -11,7 +16,7 @@ namespace Launcher.Tests.Unit.Presentation;
 
 /// <summary>
 /// Façade en mémoire réalisée par un banc de test : expose uniquement ce que la présentation
-/// a le droit de connaître (ADR-003 : aucun calcul scientifique dans la présentation).
+/// a le droit de connaître (aucun calcul scientifique dans la présentation).
 /// </summary>
 public sealed class FakeOrchestrationFacade : IOrchestrationFacade
 {
@@ -140,7 +145,7 @@ public sealed class FakeOrchestrationFacade : IOrchestrationFacade
 }
 
 /// <summary>
-/// Tests de la vue principale : provenance du rapport (ADR-003), navigation à neuf entrées,
+/// Tests de la vue principale : provenance du rapport, navigation à neuf entrées,
 /// modes de lancement et cycle de vie des cartes.
 /// </summary>
 public sealed class ReportProvenanceTests : IDisposable
@@ -204,7 +209,7 @@ public sealed class ReportProvenanceTests : IDisposable
     }
 
     /// <summary>
-    /// La navigation expose les écrans dans leur ordre (USER_INTERFACE.md) : le mode PRISM
+    /// La navigation expose les écrans dans leur ordre : le mode PRISM
     /// a son écran dédié, entre Expériences et Analyse. « Campagnes » n'existe plus :
     /// expériences et campagnes ne font qu'un écran.
     /// </summary>

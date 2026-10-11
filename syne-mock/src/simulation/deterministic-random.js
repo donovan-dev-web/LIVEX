@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Générateur pseudo-aléatoire déterministe partagé (seed → flux reproductible).
+ */
+
 const MASK_64 = (1n << 64n) - 1n;
 
 function createSeededRandom(seed) {

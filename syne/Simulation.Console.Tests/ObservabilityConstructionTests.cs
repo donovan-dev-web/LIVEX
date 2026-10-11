@@ -1,3 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Traçabilité des constructions (SYNE-071, jalon U8) : une pose/retrait d'obstacle statique en cours de run
+//        est une modification d'environnement tracée — drainée par l'émetteur en événements
+//        world.construction_placed/world.construction_removed et reflétée dans le snapshot (obstacles), sans rompre
+//        le déterminisme du run.
+
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Simulation.Console.Observability;

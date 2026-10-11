@@ -2,13 +2,14 @@
 
 :func:`consume` enchaîne la boucle réelle : écoute du WebSocket :5180
 (ECHOS-010), agrégation par tick sans perte (ECHOS-011), écriture SQLite
-(ECHOS-012) et séries Parquet (ECHOS-013). ``sample_every`` (``--sample-every=N``,
-API_REST.md §4) limite l'ingestion à 1 tick sur N ; ``None`` garde tout.
+(ECHOS-012) et séries Parquet (ECHOS-013).
+``sample_every`` (``--sample-every=N``) limite l'ingestion à 1 tick sur N ;
+``None`` garde tout.
 Depuis le jalon ECHOS ph4, chaque tick déclenche aussi les 8 moteurs
 (``analysis.compute_all``) et persiste : ``tick_metrics`` (métriques
 numériques) et ``tick_contexts`` (agents, groupes, phénomènes) — les métriques
 sont donc **calculées à l'ingestion, jamais recalculées à la lecture**
-(API_REST.md §4). ``CoherenceResult`` ajoute les compteurs associés.
+``CoherenceResult`` ajoute les compteurs associés.
 
 **Planification (scheduler)** : ``analysis_every=N`` exécute les moteurs et
 écrit métriques/contextes 1 tick sur N (déterminisme : indiciel, N stable).
@@ -85,7 +86,7 @@ borne cette écriture : ``agents`` n'est persisté que 1 tick sur N (défaut 20,
 environnement ``ECHOS_CONTEXT_EVERY``, 1 = comportement historique) plus le
 dernier tick du flux. ``groups``/``phenomena``/``profiling`` suivent la cadence
 ``analysis_every`` (inchangée) — la fraîcheur du contexte servi est documentée
-dans CAUSAL_ANALYSIS.md §4 (≤ ``context_every`` ticks).
+(≤ ``context_every`` ticks).
 """
 
 
@@ -334,7 +335,7 @@ def _conservation_payload(
 ) -> dict:
     """Niveau de conservation **réellement configuré** pour un run (P1).
 
-    Trois niveaux explicites (RAPPORT §4.1) :
+    Trois niveaux explicites :
 
     - ``base`` — métriques, résumés et événements : écrits à chaque tick
       analysé (toujours) ;
@@ -543,8 +544,9 @@ def consume(
         has_decision = any(event.type == _DECISION_TYPE for event in segment.events)
         window_events, window_history, event_window = context.push(segment)
 
-        # The engine snapshot is a large JSON dump of the world: build it only
-        # when analysis runs on this tick or a decision trace needs its context.
+        # Le snapshot moteur est un gros dump JSON du monde : on ne le construit
+        # que si l'analyse tourne sur ce tick ou si une trace de décision a
+        # besoin de son contexte.
         at_cadence = _index % analysis_every == 0
         engine_snapshot = (
             _snapshot_for_engines(

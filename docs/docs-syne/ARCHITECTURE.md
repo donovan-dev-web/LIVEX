@@ -129,4 +129,4 @@ le moteur .NET font autorité pour les règles et résultats de simulation.
 
 ## Points restés ouverts dans ce document
 - La distribution multi-fréquence exacte du scheduler sera affinée lors de l'implémentation (jalon SYNE-2 : boucle minimale).
-- Conteneurisation (`Dockerfile` SYNE) : **retirée du périmètre LIVEX** (08/10/2026, arbitrage A1 de `ROADMAP-V01.md`) — plus aucun Docker dans le projet.
+- Conteneurisation (`Dockerfile` SYNE) : **retirée du périmètre LIVEX** (08/10/2026, arbitrage A1) — plus aucun Docker dans le projet.

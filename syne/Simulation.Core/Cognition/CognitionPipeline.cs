@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Pipeline cognitif BDI (SYNE-010) exécuté à chaque tick dans l'ordre causal strict : perception → mémoire →
+//        croyances → besoins → objectifs → faisabilité → utilité → délibération → intention → action (« boucle
+//        10/15 étapes », jalon U1).
+
 using System.Globalization;
 using Simulation.Core.Actions;
 using Simulation.Core.Communication;
@@ -11,8 +17,8 @@ using Simulation.Core.Social;
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Pipeline cognitif BDI (SYNE-010, COGNITIVE_ARCHITECTURE.md §2) exécuté à
-/// chaque tick dans l'ordre causal strict (DETERMINISM.md §5) :
+/// Pipeline cognitif BDI (SYNE-010) exécuté à
+/// chaque tick dans l'ordre causal strict :
 /// perception → mémoire → croyances → besoins → objectifs → faisabilité →
 /// utilité → délibération → intention → action (« boucle 10/15 étapes », jalon U1).
 ///
@@ -52,13 +58,13 @@ public sealed class CognitionPipeline
         ArgumentNullException.ThrowIfNull(stocks);
         _world = world;
 
-        // Échelle temporelle (ADR-017) : les quantités de classe A (taux de
+        // Échelle temporelle : les quantités de classe A (taux de
         // besoins, décroissances mémoire/croyances/confiance, coûts énergétiques
         // de mouvement/repos) sont mises à l'échelle **une fois** ici, de façon
         // déterministe, à partir de `dt = simulatedSecondsPerTick / 60` — le
         // sous-arbre agents des options « effectives » porte ces valeurs par
         // tick effectif. À `dt == 1` (défaut, reference), TemporalScale retourne
-        // les instances d'entrée : le run est bit-à-bit identique (pin ADR-016).
+        // les instances d'entrée : le run est bit-à-bit identique (pin).
         double dt = Configuration.SimulationClock.From(options.Simulation).SimulatedMinutesPerTick;
         _options = Configuration.TemporalScale.WithScaledAgentSettings(
             options,
@@ -81,7 +87,7 @@ public sealed class CognitionPipeline
     }
 
     /// <summary>
-    /// Options effectives du run (ADR-017) : sous-arbre <c>agents</c> mis à
+    /// Options effectives du run : sous-arbre <c>agents</c> mis à
     /// l'échelle temporelle (classe A par tick effectif), autres sections
     /// partagées avec la config d'origine. La restauration bit-à-bit reconstruit
     /// les esprits avec ces réglages pour rester cohérente avec le run sauvé.
@@ -108,7 +114,7 @@ public sealed class CognitionPipeline
 
     public IReadOnlyCollection<MindState> Minds => _minds.Values;
 
-    /// <summary>Paires (identifiant, esprit) triées par identifiant croissant — persistance bit-à-bit (PERSISTENCE.md §4).</summary>
+    /// <summary>Paires (identifiant, esprit) triées par identifiant croissant — persistance bit-à-bit.</summary>
     internal IReadOnlyList<(ulong Id, MindState Mind)> MindPairsSorted() =>
         _minds
             .Select(pair => (pair.Key, pair.Value))
@@ -132,13 +138,13 @@ public sealed class CognitionPipeline
         }
 
         // Communication de masse en une passe (performance.batchCommunication,
-        // COMMUNICATION_PROTOCOL.md §7) : cartes après perception/décision/action
+        // cartes après perception/décision/action
         // — l'ordre causal est agent par agent puis réseau de communication.
         using (TickPhaseScope communicationScope = _budget?.Begin(TickPhase.Communication) ?? TickPhaseScope.Noop)
         {
             _communication.Step(currentTick, _minds);
 
-            // Engagements (D5, ADR « Engagements Communicationnels ») : après la
+            // Engagements (D5) : après la
             // diffusion — création d'engagement à la réception d'une Response
             // positive, réponse des entités très sociables aux Request comprises.
             // Désactivé par défaut (trajectoire de référence).
@@ -159,7 +165,7 @@ public sealed class CognitionPipeline
             // Engagements (D5) : résolution du cycle — honororation (le prometteur
             // a porté aide/échange/socialisation ce tick) ou expiration (pénalité
             // de confiance, distincte du mensonge factuel). Ordre : identifiants
-            // croissants (DETERMINISM.md §5).
+            // croissants.
             if (_options.Agents.Actions.Commitments.Enabled)
             {
                 ResolveCommitments(currentTick);
@@ -168,7 +174,7 @@ public sealed class CognitionPipeline
             // Groupes émergents (SYNE-060/061) puis naissances (SYNE-062) : après la
             // boucle des entités, la communication de masse et les décréments de
             // croyance/confiance — la population ne mute qu'après l'itération complète
-            // (ordre causal strict, DETERMINISM.md §5).
+            // (ordre causal strict).
             _groups.Step(currentTick, _minds);
             _groups.PropagateObjectives(currentTick, (ulong)_options.Groups.ReviewIntervalTicks, _minds);
             _birth.Step(currentTick, _world, _minds, _options);
@@ -240,7 +246,7 @@ public sealed class CognitionPipeline
 
         using (TickPhaseScope decisionScope = _budget?.Begin(TickPhase.NeedsGoals) ?? TickPhaseScope.Noop)
         {
-            // Contrôle de saillance (D2, ADR « Politique de Reconsidération », étape
+            // Contrôle de saillance (D2, étape
             // 3bis) : entre deux délibérations planifiées, l'intention est poursuivie
             // SAUF saillance (besoin franchi / condition d'interruption) ou filet de
             // sécurité périodique. Désactivé par défaut (trajectoire de référence).
@@ -263,7 +269,7 @@ public sealed class CognitionPipeline
                 }
             }
 
-            // Délibération à fréquence configurable (décision n°14) : entre deux
+            // Délibération à fréquence configurable : entre deux
             // délibérations, l'intention est conservée (holdover) telle quelle.
             if (deliberate)
             {
@@ -273,7 +279,7 @@ public sealed class CognitionPipeline
                 candidates.AddRange(active);
                 candidates.AddRange(generated);
 
-                // Bibliothèque de plans (D3, ADR « Means-End Reasoning ») : ajoute
+                // Bibliothèque de plans (D3) : ajoute
                 // des candidats de manipulation (Take/Trade) pour les objectifs de
                 // besoin — désactivée par défaut (trajectoire de référence).
                 IReadOnlyList<Goal> planCandidates = PlanLibrary.GenerateCandidates(
@@ -303,7 +309,7 @@ public sealed class CognitionPipeline
                 }
             }
 
-            // Interruptions d'action (SYNE-043, décision n°15, COGNITIVE_ARCHITECTURE.md §6) :
+            // Interruptions d'action (SYNE-043) :
             // déclencheur centralisé — un besoin critique dont l'utilité surpasse de >
             // utilityExcessMargin l'action en cours reprend la main, y compris entre
             // deux délibérations. Eat/Drink répondent à la faim critique si la réserve est disponible.
@@ -348,7 +354,7 @@ public sealed class CognitionPipeline
     /// Score de saillance (D2) : généralisation O(k) des conditions d'interruption
     /// — lit les deltas déjà produits par les étapes 1-3 sans recalculer la boucle
     /// cognitive. Une condition d'interruption remplie déclenche la reconsidération
-    /// indépendamment du seuil (RETOURNER SEUIL_MAX de l'ADR, invalidation incluse).
+    /// indépendamment du seuil (RETOURNER SEUIL_MAX, invalidation incluse).
     /// </summary>
     private double ComputeSalience(MindState mind, ActionSettings actions)
     {
@@ -424,7 +430,7 @@ public sealed class CognitionPipeline
     /// Cycle des messages d'engagement (D5) : création d'un <see cref="Commitment"/>
     /// chez le demandeur qui reçoit une <c>Response</c> positive (borné : au plus un
     /// engagement actif par pair, au plus 3 engagements actifs — impact mémoire
-    /// borné, cf. ADR §6), puis réponse positive des entités très sociables
+    /// borné), puis réponse positive des entités très sociables
     /// (facteur ≥ 1.0) à la première <c>Request</c> comprise du tick.
     /// </summary>
     private void ProcessCommitmentMessages(ulong currentTick)
@@ -483,7 +489,7 @@ public sealed class CognitionPipeline
     /// Résolution des engagements (D5) : honoré si le prometteur a exécuté
     /// Give/Trade/Socialize ce tick (l'aide promises s'est matérialisée) →
     /// <c>TrustLevel += commitmentBonus</c> ; expiré sans honororation →
-    /// <c>TrustLevel -= commitmentPenalty</c> (traité comme rompu, ADR §2.2).
+    /// <c>TrustLevel -= commitmentPenalty</c> (traité comme rompu).
     /// Les engagements résolus sont purgés (suivi borné). Identifiants croissants.
     /// </summary>
     private void ResolveCommitments(ulong currentTick)
@@ -546,7 +552,7 @@ public sealed class CognitionPipeline
     /// <summary>
     /// Évalue toutes les actions candidates et sélectionne (SYNE-030/031/033) :
     /// utilité maximale ; à conflit (candidats à moins de <c>conflictTieMargin</c>
-    /// du maximum), résolution probabiliste force × confiance (décision n°22) ;
+    /// du maximum), résolution probabiliste force × confiance ;
     /// puis hystérésis anti-oscillation (<c>actionSwitchMargin</c>).
     /// </summary>
     private (IReadOnlyList<UtilityScore> Scores, UtilityScore Best) Deliberate(
@@ -686,7 +692,7 @@ public sealed class CognitionPipeline
     /// Partage social (SYNE-050, V0.1) : une entité sociable (trait ≥ 0.5) qui
     /// perçoit une entité vivante émet une pulsation <b>Information</b> publique
     /// — une au plus par tick (bien sous <c>maxSendsPerTick</c>). La décision de
-    /// partage ne consomme aucun tirage du PRNG global (DETERMINISM.md §3).
+    /// partage ne consomme aucun tirage du PRNG global.
     /// </summary>
     private bool WantsToShare(Entity entity, Observation observation)
     {
@@ -724,7 +730,7 @@ public sealed class CognitionPipeline
             observation.Position.Y.ToString("0.00", CultureInfo.InvariantCulture),
             observation.Confidence.ToString("0.000", CultureInfo.InvariantCulture));
 
-    /// <summary>Position canonique d'un fait (DATA_MODEL.md §6) : « X,Y » invariant à la culture.</summary>
+    /// <summary>Position canonique d'un fait : « X,Y » invariant à la culture.</summary>
     private static string CanonicalPosition(Simulation.Core.World.Position position) =>
         string.Concat(
             position.X.ToString("0.00", CultureInfo.InvariantCulture),
@@ -744,7 +750,7 @@ public sealed class CognitionPipeline
 
     /// <summary>
     /// Restauration de l'état cognitif complet (persistance bit-à-bit,
-    /// PERSISTENCE.md §4) : remplace le dictionnaire d'esprits et ré-importe les
+    /// remplace le dictionnaire d'esprits et ré-importe les
     /// groupes émergents. Aucun tirage du PRNG — la suite reste bit-à-bit.
     /// </summary>
     internal void RestoreState(IReadOnlyDictionary<ulong, MindState> minds, IEnumerable<Social.Group> groups, ulong nextGroupId)

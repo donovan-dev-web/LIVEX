@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Boucle de simulation (SYNE-002).
+
 using System.Diagnostics;
 using Simulation.Core.Performance;
 using Simulation.Core.Prng;
@@ -5,10 +9,10 @@ using Simulation.Core.Prng;
 namespace Simulation.Core.Loop;
 
 /// <summary>
-/// Boucle de simulation (SYNE-002, SIMULATION_LOOP.md §1).
+/// Boucle de simulation (SYNE-002).
 /// <list type="bullet">
 /// <item>1 tick = <c>simulatedSecondsPerTick</c> secondes simulées (défaut 60 →
-/// 1 minute, ADR-005/ADR-017) — horloge instanciée <see cref="Clock"/> ; les
+/// 1 minute, /) — horloge instanciée <see cref="Clock"/> ; les
 /// quantités de classe A sont mises à l'échelle une fois à la construction
 /// (<see cref="Configuration.TemporalScale"/>), neutre par défaut.</item>
 /// <item>Respect de <c>maxTicks</c> : la boucle s'arrête après le tick n° <c>maxTicks</c>.</item>
@@ -68,7 +72,7 @@ public sealed class SimulationLoop
 
     /// <summary>
     /// Boucle avec autosave branche : <paramref name="autosaveHandler"/> est appelé
-    /// après chaque <c>n</c>-ième tick (PERSISTENCE.md §5). Le handler ne doit
+    /// après chaque <c>n</c>-ième tick. Le handler ne doit
     /// consommer aucun tirage du PRNG — le déterminisme bit-à-bit reste inchangé.
     /// </summary>
     public SimulationLoop(
@@ -98,7 +102,7 @@ public sealed class SimulationLoop
     public World.World World { get; }
 
     /// <summary>
-    /// Horloge du run (ADR-017) : correspondance tick ⇄ temps simulé issue de
+    /// Horloge du run : correspondance tick ⇄ temps simulé issue de
     /// <c>simulation.simulatedSecondsPerTick</c> — exposée aux capteurs
     /// (<see cref="Observability.WorldSnapshot"/>) et aux clients.
     /// </summary>
@@ -132,7 +136,7 @@ public sealed class SimulationLoop
     /// <summary>
     /// Saison courante du monde au tick courant (fonction pure du tick, 0 PRNG) —
     /// saison effective en ticks (durée configurée exprimée en minutes simulées,
-    /// ADR-017 : identique au défaut, 360 ticks à <c>dt = 1</c>).
+    /// identique au défaut, 360 ticks à <c>dt = 1</c>).
     /// </summary>
     public World.Season CurrentSeason => _effectiveSeasons.At(CurrentTick);
 
@@ -150,7 +154,7 @@ public sealed class SimulationLoop
     public bool TerritoriesEnabled => _options.World.Territories.Enabled;
 
     /// <summary>
-    /// Livres activés (SYNE-121, décisions n°18/19, Monographie §3.18) —
+    /// Livres activés (SYNE-121) —
     /// <c>world.books.enabled</c> : écriture payée en énergie par l'auteur
     /// (coût <c>world.books.writeCostEnergy</c>), lecture à bénéfice posé en
     /// principe (n°19, <c>world.books.read_benefit</c>). Désactivés par défaut
@@ -196,14 +200,14 @@ public sealed class SimulationLoop
     }
 
     /// <summary>
-    /// Écrit un livre (SYNE-121, décision n°18, Monographie §3.18) : l'auteur
+    /// Écrit un livre (SYNE-121) : l'auteur
     /// (cognition requise) paie le **coût d'écriture posé en principe** —
     /// énergie <c>world.books.writeCostEnergy</c> **débitée** de ses besoins
     /// corporels (<see cref="Simulation.Core.Cognition.MindState.Needs"/> ;
     /// durée de rédaction et pénalité non modélisées en V0.1) ; le livre est poinçonné
     /// (<c>writtenTick</c> = tick courant) et ajouté au monde. Mutation
     /// **tracée** dans <see cref="LastBookChanges"/>. API de la boucle —
-    /// **0 tirage PRNG** (déterministe, DETERMINISM.md §3).
+    /// **0 tirage PRNG** (déterministe).
     /// </summary>
     public void WriteBook(Simulation.Core.World.Book book)
     {
@@ -232,12 +236,12 @@ public sealed class SimulationLoop
     }
 
     /// <summary>
-    /// Lit un livre (SYNE-121, décision n°19, Monographie §3.18) : le lecteur
+    /// Lit un livre (SYNE-121) : le lecteur
     /// (cognition requise) tire le **bénéfice posé en principe**
     /// (<c>world.books.read_benefit</c>, chiffrage savoir/confiance reporté au
     /// moteur de mémoire) et la lecture est **tracée** (lecteurs distincts,
     /// ordre de première consultation) dans <see cref="LastBookChanges"/>.
-    /// API de la boucle — **0 tirage PRNG** (déterministe, DETERMINISM.md §3).
+    /// API de la boucle — **0 tirage PRNG** (déterministe).
     /// </summary>
     public void ReadBook(Simulation.Core.World.Book book, ulong readerId)
     {
@@ -264,9 +268,9 @@ public sealed class SimulationLoop
     }
 
     /// <summary>
-    /// Avance d'un tick (1 minute simulée, SIMULATION_LOOP.md §1) puis exécute le
+    /// Avance d'un tick (1 minute simulée) puis exécute le
     /// pipeline cognitif BDI (U1, SYNE-010) dans l'ordre causal strict. Le PRNG
-    /// n'avance que d'un tirage par tick (contrat DETERMINISM.md §3).
+    /// n'avance que d'un tirage par tick (contrat).
     /// </summary>
     public void AdvanceOneTick()
     {
@@ -300,7 +304,7 @@ public sealed class SimulationLoop
 
     /// <summary>
     /// Suivi de l'appartenance aux zones de territoire au tick courant (SYNE-073,
-    /// décision n°21) : la présence d'une entité dans le disque la classe membre du
+    /// la présence d'une entité dans le disque la classe membre du
     /// territoire effectif. Recalculée à chaque tick (les positions sont finales
     /// après les boucles entités) — **0 tirage PRNG** ; chaque différence avec le
     /// tick précédent est **tracée** (<see cref="LastTerritoryChanges"/>) dans un
@@ -381,7 +385,7 @@ public sealed class SimulationLoop
     /// Facteurs de régénération saisonniers du tick courant (SYNE-072) + trace du
     /// changement de saison quand le cycle est actif. <c>null</c> sans cycle actif
     /// (régénération nominale ×1) ; pendant un changement, un <see cref="Configuration.SeasonChange"/>
-    /// est ajouté à <see cref="LastSeasonChanges"/>. 0 tirage PRNG (DETERMINISM.md §3).
+    /// est ajouté à <see cref="LastSeasonChanges"/>. 0 tirage PRNG.
     /// </summary>
     private Simulation.Core.Configuration.SeasonFactors? SeasonFactorsForTick()
     {
@@ -416,7 +420,7 @@ public sealed class SimulationLoop
     }
 
     /// <summary>
-    /// Restauration bit-à-bit (SYNE-111, PERSISTENCE.md §4) : pointe la boucle sur
+    /// Restauration bit-à-bit (SYNE-111) : pointe la boucle sur
     /// le tick <paramref name="tick"/> et remplace l'état du PRNG par les 4 × 64 bits
     /// sauvegardés. Aucun tirage supplémentaire — la suite est identique à une
     /// exécution ininterrompue.
@@ -429,8 +433,8 @@ public sealed class SimulationLoop
 }
 
 /// <summary>
-/// Facade historique de correspondance tick ⇄ temps simulé (SIMULATION_LOOP.md §1).
-/// Depuis ADR-017, l'horloge est <b>instanciée</b> par run à partir de la
+/// Facade historique de correspondance tick ⇄ temps simulé.
+/// Depuis, l'horloge est <b>instanciée</b> par run à partir de la
 /// configuration (<see cref="Configuration.SimulationClock"/>, exposée par
 /// <see cref="SimulationLoop.Clock"/>) : cette facade fixe l'échelle du profil
 /// par défaut (1 tick = 1 minute) et n'est conservée que pour les chemins qui
@@ -438,7 +442,7 @@ public sealed class SimulationLoop
 /// </summary>
 public static class SimulationTime
 {
-    /// <summary>Échelle du profil par défaut (ADR-005) — utiliser <see cref="Configuration.SimulationClock"/> pour un run configuré.</summary>
+    /// <summary>Échelle du profil par défaut — utiliser <see cref="Configuration.SimulationClock"/> pour un run configuré.</summary>
     public static readonly int TicksPerSimulationMinute = 1;
 
     public static long ToSimulatedMinutes(ulong tick) => Simulation.Core.Configuration.SimulationClock.Default.ToSimulatedMinutes(tick);

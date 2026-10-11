@@ -1,6 +1,6 @@
 """Moteur 4 — GoalConvergenceMetrics (convergence des objectifs).
 
-Mesure l'alignement ou la divergence des objectifs (METRICS_SPEC.md §5).
+Mesure l'alignement ou la divergence des objectifs.
 Les 4 métriques sont déterministes sur la distribution des types d'objectifs
 actifs des agents (``goals[].kind``, repli ``currentAction`` / ``Idle``).
 

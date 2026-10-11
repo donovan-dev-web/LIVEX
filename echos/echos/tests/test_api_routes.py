@@ -1,6 +1,6 @@
 """API REST ECHOS (ECHOS-040→045, jalon ph4, preuve J5).
 
-Contrat API_REST.md : liste de runs, métriques + séries (``?every=N`` et
+Contrat : liste de runs, métriques + séries (``?every=N`` et
 cache), export reproductible (JSON/CSV), croyances/relations par entité,
 groupes, phénomènes émergents et traces de décision (ECHOS-051),
 déterminisme des réponses, 404/400/422/503.
@@ -667,7 +667,7 @@ def test_metrics_report_a_neutral_fallback_as_unmeasured(tmp_path):
 def test_world_endpoint_publishes_description_and_observation(tmp_path):
     """Vue 2D : description publiée au démarrage + observation au tick choisi.
 
-    Lecture seule (ADR-003) : chaque champ vient d'un contexte persisté à
+    Lecture seule : chaque champ vient d'un contexte persisté à
     l'ingestion ; l'endpoint n'agrège et n'estime rien.
     """
     db = AnalyticsStore(tmp_path / "api.db")
@@ -721,7 +721,7 @@ def test_trust_graph_publishes_nodes_and_edges_as_observed(tmp_path):
     """Graphe de confiance : nœuds et arêtes publiés tels qu'observés.
 
     ``weight`` est le ``trust`` déclaré par l'entité (0–1), sans agrégation ni
-    moyenne : seule la forme du graphe est assemblée (ADR-003).
+    moyenne : seule la forme du graphe est assemblée.
     """
     db = AnalyticsStore(tmp_path / "api.db")
     _populate(db, "run-7", ticks=2)

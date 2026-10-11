@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fenêtre principale du Launcher (grille 1536 × 1024, trois colonnes).
+
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
@@ -9,7 +13,7 @@ using System.Text;
 
 namespace Launcher.App.Views;
 
-/// <summary>Fenêtre principale du Launcher (GUI.md : grille 1536 × 1024, trois colonnes).</summary>
+/// <summary>Fenêtre principale du Launcher (grille 1536 × 1024, trois colonnes).</summary>
 public sealed partial class MainWindow : Window
 {
     /// <summary>Initialise la fenêtre. Toute la logique de vue vit dans le ViewModel.</summary>

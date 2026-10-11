@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fenêtre console d'un composant : affiche en direct la sortie du processus supervisé, sans interprétation.
+
 using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia.Controls;
@@ -8,7 +12,7 @@ using Launcher.Presentation.ViewModel;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Fenêtre console d'un composant (USER_INTERFACE.md §9) : affiche en direct la sortie du processus
+/// Fenêtre console d'un composant : affiche en direct la sortie du processus
 /// supervisé, sans interprétation.
 ///
 /// La sonde est une horloge d'interface (250 ms) qui appelle <see cref="ConsoleViewModel.Poll"/> :

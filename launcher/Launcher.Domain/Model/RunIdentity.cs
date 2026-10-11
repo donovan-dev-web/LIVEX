@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Identité d'un run dans la base analytique ECHOS.
+
 namespace Launcher.Domain.Model;
 
 /// <summary>

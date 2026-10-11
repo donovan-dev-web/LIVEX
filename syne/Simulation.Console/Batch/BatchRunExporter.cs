@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Contrat BatchRunResult et export JSON du résultat d'un run batch.
+
 using System.Globalization;
 using System.Text;
 using System.Text.Json;

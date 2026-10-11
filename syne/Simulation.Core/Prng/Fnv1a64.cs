@@ -1,7 +1,12 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Hachage FNV-1a 64 bits canonique : hachage de contrôle de l'état du monde et de la description de monde,
+//        reproductible bit-à-bit à seed égale.
+
 namespace Simulation.Core.Prng;
 
 /// <summary>
-/// Hachage FNV-1a 64 bits canonique (DETERMINISM.md §6) : hachage de contrôle de
+/// Hachage FNV-1a 64 bits canonique : hachage de contrôle de
 /// l'état du monde et de la description de monde, reproductible bit-à-bit à seed
 /// égale. Centralisé car la même fonction (offset <c>14695981039346656037</c>,
 /// premier <c>1099511628211</c>) était recopiée dans la persistance, la perception

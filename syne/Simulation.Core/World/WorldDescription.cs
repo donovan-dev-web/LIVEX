@@ -1,15 +1,19 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Description versionnée et déterministe du monde envoyée à Unreal avant les snapshots.
+
 namespace Simulation.Core.World;
 
-/// <summary>Versioned, deterministic description sent to Unreal before snapshots.</summary>
+/// <summary>Description versionnée et déterministe du monde envoyée à Unreal avant les snapshots.</summary>
 public sealed record WorldDescription(
     string Version,
     int Width,
     int Height,
     double CellSize,
     int TicksPerSecond,
-    // Échelle temporelle/ spatiale du run (champs additifs ADR-017, description
+    // Échelle temporelle/ spatiale du run (champs additifs, description
     // 1.0 → 1.1) : secondes simulées par tick (défaut 60 = 1 tick = 1 minute,
-    // ADR-005) et mètres par unité SYNE (informatif, PRISM k = 100 uu / unité).
+    // et mètres par unité SYNE (informatif, PRISM k = 100 uu / unité).
     int SimulatedSecondsPerTick,
     double MetersPerUnit,
     int CellCountX,
@@ -36,7 +40,7 @@ public sealed record WorldRegion(string Id, int X, int Y, int Width, int Height)
 
 public static class WorldDescriptionBuilder
 {
-    /// <summary>1.0 → 1.1 (ADR-017) : champs additifs <c>simulatedSecondsPerTick</c> et <c>metersPerUnit</c>.</summary>
+    /// <summary>1.0 → 1.1 : champs additifs <c>simulatedSecondsPerTick</c> et <c>metersPerUnit</c>.</summary>
     public const string Version = "1.1";
     private const int ResourceLocationsPerType = 3;
 
@@ -103,7 +107,7 @@ public static class WorldDescriptionBuilder
         int cellCount = countX * countY;
         // LCG numérique explicite, distinct du PRNG de simulation
         // (Xoshiro256**) : la description du monde ne doit consommer aucun tirage
-        // de la simulation (DETERMINISM.md §3, l'observabilité n'a pas le droit
+        // de la simulation (l'observabilité n'a pas le droit
         // de déplacer la trajectoire). C'est pourquoi ce générateur est local et
         // documenté plutôt que partagé : les paramètres ci-dessous fixent la
         // disposition des ressources annoncée au client, et en changer invalide

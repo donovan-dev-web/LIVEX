@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Gestionnaire de processus : - démarrage explicite, arguments validés, jeton par variable d'environnement
+//        seulement ; - confinement anti-orphelin (Job Object Windows, groupe de processus Linux) ; - arrêt propre :
+//        POST /control/shutdown avec jeton, délai de grâce, arrêt forcé de l'arbre.
+
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
@@ -7,7 +13,7 @@ using Launcher.Protocol;
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Gestionnaire de processus (INTEGRATION_CONTRACT.md §5) :
+/// Gestionnaire de processus :
 /// - démarrage explicite, arguments validés, jeton par variable d'environnement seulement ;
 /// - confinement anti-orphelin (Job Object Windows, groupe de processus Linux) ;
 /// - arrêt propre : POST /control/shutdown avec jeton, délai de grâce, arrêt forcé de l'arbre.
@@ -88,7 +94,7 @@ public sealed class ProcessManager : IProcessManager
             throw new InvalidOperationException($"démarrage impossible : {spec.ExecutablePath}");
         }
 
-        // Confinement à la création (INTEGRATION_CONTRACT.md §5.2) : le fils reçoit sa propre
+        // Confinement à la création : le fils reçoit sa propre
         // unité — groupe de processus Unix, Job Object Windows — pour que rien ne survive au
         // Launcher et que l'arrêt forcé d'un composant ne vise que son propre arbre.
         ProcessTreeKiller.MakeOwnProcessGroup(process.Id);
@@ -200,7 +206,7 @@ public sealed class ProcessManager : IProcessManager
             return new ProcessExit(0, ExitOutcomeNames.Completed, true);
         }
 
-        // 1. Demande d'arrêt : POST /control/shutdown avec jeton (INTEGRATION_CONTRACT.md §5.1).
+        // 1. Demande d'arrêt : POST /control/shutdown avec jeton.
         var stopped = await TryRequestShutdownAsync(controlEndpoint, sessionToken, cancellationToken).ConfigureAwait(false);
         var deadline = _clock.UtcNow + graceful;
         while (_clock.UtcNow < deadline && IsAlive(processId))
@@ -273,7 +279,7 @@ public sealed class ProcessManager : IProcessManager
         }
     }
 
-    /// <summary>Mappe un code de sortie vers le résultat normalisé du contrat (INTEGRATION_CONTRACT.md §4).</summary>
+    /// <summary>Mappe un code de sortie vers le résultat normalisé du contrat.</summary>
     public static string MapOutcome(int exitCode) => exitCode switch
     {
         ExitCodes.Normal => ExitOutcomeNames.Completed,

@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Déclencheur d'interruption d'action centralisé (SYNE-043) : unique point de décision « l'action en cours
+//        est-elle interrompue par un besoin urgent ? ».
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.World;
@@ -5,11 +10,11 @@ using Simulation.Core.World;
 namespace Simulation.Core.Actions;
 
 /// <summary>
-/// Déclencheur d'interruption d'action centralisé (SYNE-043, décision n°15) :
+/// Déclencheur d'interruption d'action centralisé (SYNE-043) :
 /// unique point de décision « l'action en cours est-elle interrompue par un
 /// besoin urgent ? ». Les règles sont déclaratives (besoin critique faim/énergie)
 /// et évaluées facialement à n'importe quel tick, y compris entre deux
-/// délibérations (holdover, COGNITIVE_ARCHITECTURE.md §6).
+/// délibérations (holdover).
 ///
 /// Contrat de déterminisme : évalue par utilité (même formule que la délibération),
 /// aucune consommation du PRNG ; en cas d'égalité, l'ordre du catalogue tranche.

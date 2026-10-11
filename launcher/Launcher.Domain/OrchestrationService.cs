@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Règles d'orchestration du domaine, sans aucun accès processus, réseau ou disque (le domaine ne référence
+//        ni Avalonia, ni System.Diagnostics, ni System.Net).
+
 using Launcher.Domain.Model;
 using Launcher.Protocol.Model;
 
@@ -5,7 +10,7 @@ namespace Launcher.Domain;
 
 /// <summary>
 /// Règles d'orchestration du domaine, sans aucun accès processus, réseau ou disque
-/// (ARCHITECTURE.md : le domaine ne référence ni Avalonia, ni System.Diagnostics, ni System.Net).
+/// (le domaine ne référence ni Avalonia, ni System.Diagnostics, ni System.Net).
 /// </summary>
 public sealed class OrchestrationService
 {
@@ -102,7 +107,7 @@ public sealed class OrchestrationService
 
         var distinct = requested.Distinct().ToList();
 
-        // Le moteur peut être remplacé par un stub en type Développement (COMPONENTS.md §8.3),
+        // Le moteur peut être remplacé par un stub en type Développement,
         // soit parce que l'appelant autorise les stubs sur une session Développement, soit parce
         // que l'opérateur a explicitement choisi l'émulation. Les deux conditions sont distinctes :
         // sans parenthèses, « && » l'emporterait sur « || » par simple priorité d'opérateur.
@@ -117,7 +122,7 @@ public sealed class OrchestrationService
         }
 
         // Verrou du mode Immersion : condition évaluée au manifeste, jamais codée en dur
-        // (ADR-006, INTEGRATION_CONTRACT.md §11.1). Tant qu'une exigence échoue, le verrou
+        // Tant qu'une exigence échoue, le verrou
         // tient avec la cause exacte et le jalon attendu.
         if (distinct.Contains("prism"))
         {
@@ -166,8 +171,8 @@ public sealed class OrchestrationService
 
     /// <summary>
     /// Cause du verrou Immersion pour une installation PRISM donnée, nulle si le verrou est levé.
-    /// Absent ou manifeste invalide : jalon G7 ; manifeste lisible : exigences du §11.1, une par une.
-    /// Publique : l'interface affiche la même évaluation que la résolution de profil (ADR-006).
+    /// Absent ou manifeste invalide : jalon G7 ; manifeste lisible : exigences, une par une.
+    /// Publique : l'interface affiche la même évaluation que la résolution de profil.
     /// </summary>
     public static string? EvaluateImmersionLock(ComponentInstallation? prism)
     {
@@ -215,7 +220,7 @@ public sealed class OrchestrationService
     /// <summary>Composants du type Développement.</summary>
     private static readonly string[] DevelopmentComponents = ["syne-mock", "echos"];
 
-    /// <summary>Construit l'ordre d'arrêt : inverse strict de l'ordre de démarrage (COMPONENTS.md §6).</summary>
+    /// <summary>Construit l'ordre d'arrêt : inverse strict de l'ordre de démarrage.</summary>
     public static IReadOnlyList<string> ShutdownOrder(IReadOnlyList<string> startupOrder)
     {
         var copy = startupOrder.ToList();
@@ -223,7 +228,7 @@ public sealed class OrchestrationService
         return copy;
     }
 
-    /// <summary>Agrège la santé globale avec la cause principale (OBSERVABILITY.md §3.2).</summary>
+    /// <summary>Agrège la santé globale avec la cause principale.</summary>
     public (string GlobalState, string MainCause) AggregateHealth(IReadOnlyCollection<string> requiredComponents)
     {
         var instances = _registry.All();

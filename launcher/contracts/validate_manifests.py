@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Validate the published schema and every workspace component manifest."""
+
+"""Valide le schéma publié et le manifeste de chaque composant de l'espace de travail."""
 
 import json
 from pathlib import Path
@@ -58,7 +59,7 @@ def main() -> int:
             location = ".".join(map(str, error.absolute_path)) or "<root>"
             failures.append(f"{relative_path}:{location}: {error.message}")
 
-        # Clés par plateforme (ROADMAP-V01 étape 5) : un composant lançable doit
+        # Clés par plateforme (étape 5) : un composant lançable doit
         # viser soit un chemin universel, soit les deux plateformes cibles.
         executable = manifest_document.get("executable")
         if isinstance(executable, dict):

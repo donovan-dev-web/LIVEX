@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Journal de session: le fichier reste ouvert en écriture tant que le Launcher tourne.
+
 using Launcher.Infrastructure;
 using Xunit;
 using Xunit.Sdk;
@@ -9,7 +13,7 @@ namespace Launcher.Tests.Integration.Infrastructure;
 /// Sous Windows un lecteur doit explicitement autoriser l'écrivain (<c>FileShare.ReadWrite</c>),
 /// sinon il échoue en violation de partage — c'était le cas de l'export des journaux et du
 /// panneau « journaux récents », jamais rafraîchi alors que Linux, sans verrou obligatoire,
-/// ne le montrait pas (correctif du Lot W, étape 5 de ROADMAP-V01.md).
+/// ne le montrait pas (correctif du Lot W, étape 5).
 /// </summary>
 public sealed class SessionFileJournalTests : IDisposable
 {

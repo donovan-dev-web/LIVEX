@@ -5,9 +5,11 @@
 **Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : `ROADMAP.md`, `COMMUNICATION.md`
 
-> **Versions courantes** : moteur **SYNE 0.13.0** (profil de référence calibré,
-> ADR-015 — voir `docs/docs-syne/adr/ADR-015-calibration-survie-reference.md`),
-> contrat d'observabilité SYNE **0.2.1** (champ `seed` additif dans le snapshot,
+> **Versions courantes** : moteur **SYNE 0.15.0** (défauts intégrés calibrés B1,
+> ADR-016, profil de référence ADR-015 — voir
+> `docs/docs-syne/adr/ADR-016-calibration-stabilite-2500-ticks.md`),
+> contrat d'observabilité SYNE **0.4.0** (champ `seed` et `simulatedTimeSeconds`
+> additifs dans le snapshot,
 > format canonique des runs pilotés `run-<seed>-<12hex>`), stockage d'analyse
 > ECHOS **schéma v6**. Les versions évoluent indépendamment par composant
 > (`VERSIONING.md`).
@@ -181,7 +183,7 @@ lanceur batch. Il démarre uniquement l'API ECHOS, l'ingestion analytique et
 SYNE, puis attend la fin du nombre de ticks demandé :
 
 ```bash
-./scripts/batch-analysis.py 12345 1000
+./scripts/batch_analysis.py 12345 1000
 ```
 
 La commande accepte une seed et un nombre de ticks obligatoires. Elle arrête
@@ -201,7 +203,7 @@ Le rapport Markdown est toujours produit. L'export Parquet est activé par
 défaut ; désactivez-le avec `--no-parquet` (trace JSON restaurée) :
 
 ```bash
-./scripts/batch-analysis.py 12345 1000 --no-parquet
+./scripts/batch_analysis.py 12345 1000 --no-parquet
 ```
 
 Par défaut l'analyse ECHOS est calculée à chaque tick (`--analysis-every 1`).
@@ -209,8 +211,8 @@ Pour économiser CPU/RAM sur les runs longs, planifiez l'analyse 1 tick sur N
 (les résumés, événements et la série agents restent ingérés à chaque tick) :
 
 ```bash
-./scripts/batch-analysis.py 12345 1000 --analysis-every 5
-./scripts/batch-analysis.py 12345 1000 --ticks-per-second 25 --analysis-every 2
+./scripts/batch_analysis.py 12345 1000 --analysis-every 5
+./scripts/batch_analysis.py 12345 1000 --ticks-per-second 25 --analysis-every 2
 ```
 
 Les mêmes réglages sont exposés par variables d'environnement, y compris pour
@@ -223,7 +225,7 @@ La cadence batch est de 10 ticks/s par défaut, comme le mode contrôlé normal.
 Elle peut être augmentée si les mesures montrent qu'ECHOS suit le flux :
 
 ```bash
-./scripts/batch-analysis.py 12345 1000 --ticks-per-second 25
+./scripts/batch_analysis.py 12345 1000 --ticks-per-second 25
 ```
 
 Cette option accélère SYNE, mais ne mesure pas automatiquement la capacité
@@ -239,7 +241,7 @@ rapport présenté à tort comme complet. Le délai de drainage peut être sépa
 du délai général :
 
 ```bash
-./scripts/batch-analysis.py 12345 400 --drain-timeout 900
+./scripts/batch_analysis.py 12345 400 --drain-timeout 900
 ```
 
 La configuration par défaut de SYNE utilise désormais le profil calibré
@@ -251,14 +253,14 @@ sur 400 ticks provoquait une extinction complète par `energy_exhaustion`.
 Pour exécuter explicitement un run calibré :
 
 ```bash
-./scripts/batch-analysis.py 12345 400 --profile reference
+./scripts/batch_analysis.py 12345 400 --profile reference
 ```
 
 Ce profil réduit les coûts énergétiques auxiliaires et augmente les réserves
 initiales. Le profil `raw` reste disponible :
 
 ```bash
-./scripts/batch-analysis.py 12345 400 --profile raw
+./scripts/batch_analysis.py 12345 400 --profile raw
 ```
 
 `--config` reste disponible pour tester une configuration locale.
@@ -275,7 +277,7 @@ que le flux ne se ferme pas prématurément sur ces runs longs.
 Options utiles :
 
 ```bash
-./scripts/batch-analysis.py 42 500 \
+./scripts/batch_analysis.py 42 500 \
   --database echos/data/runs.sqlite \
   --output-dir echos/data/reports/seed-42
 ```

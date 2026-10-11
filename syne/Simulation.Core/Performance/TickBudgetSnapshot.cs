@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Photographie agrégée des budgets de tick (SYNE-090) : moyennes par phase en millisecondes par tick, part
+//        de computation (Σ phases / tick total) et temps moyen d'un tick computationnel.
+
 namespace Simulation.Core.Performance;
 
 /// <summary>
@@ -36,11 +41,11 @@ public sealed record TickBudgetSnapshot
 
     /// <summary>
     /// Part de computation du tick : Σ du temps des sept phases rapporté au temps
-    /// total du tick computationnel (cible ≥ 30 %, PERFORMANCE.md §9 — le reste
+    /// total du tick computationnel (cible ≥ 30 %, — le reste
     /// est de l'allocation/GC/overhead).
     /// </summary>
     /// <remarks>
-    /// <b>Correction calibration B1 (ADR-016)</b> : la somme se faisait sur
+    /// <b>Correction calibration B1 </b> : la somme se faisait sur
     /// <see cref="MeanMs(TickPhase)"/>, c'est-à-dire du temps <i>par échantillon</i>
     /// — or les phases intra-entité (perception, mémoire, besoins, actions) sont
     /// échantillonnées à chaque entité × tick quand les phases réseau/monde le sont

@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Chargement de la configuration par priorité : défauts, fichier, surcouche et arguments.
+
 using System.Text.Json;
 
 namespace Simulation.Core.Configuration;
 
 /// <summary>
-/// Charge la configuration selon la priorité Annexe H §5 :
+/// Charge la configuration selon la priorité :
 /// 1. défauts intégrés ; 2. fichier <c>--config</c> (surcouche) ; 3. flags CLI (overrides).
 /// Un fichier partiel ne surcharge que les sections/propriétés présentes.
 /// </summary>
@@ -64,7 +68,7 @@ public static class ConfigLoader
     ///
     /// <para>
     /// C'est la seule fusion qui respecte la règle « un fichier partiel ne
-    /// surcharge que les sections/propriétés présentes » (Annexe H §5). La fusion
+    /// surcharge que les sections/propriétés présentes ». La fusion
     /// doit se faire sur le <b>JSON brut</b> : désérialiser d'abord la surcouche en
     /// <see cref="SimulationOptions"/> la rend complète — chaque clé absente prend
     /// silencieusement la valeur par défaut du type, qui écrase alors la base. Un

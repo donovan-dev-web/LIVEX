@@ -1,8 +1,12 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Refus explicite levé quand une version de schéma dépasse la version connue du Launcher.
+
 namespace Launcher.Protocol;
 
 /// <summary>
 /// Refus explicite levé quand une version de schéma dépasse la version connue du Launcher.
-/// Politique : refuser, jamais interpréter approximativement (PACKAGE_FORMAT.md §7, ARCHITECTURE.md §9).
+/// Politique : refuser, jamais interpréter approximativement.
 /// </summary>
 public sealed class SchemaNotSupportedException : Exception
 {
@@ -20,7 +24,7 @@ public sealed class SchemaNotSupportedException : Exception
     public int ReceivedSchema { get; }
 }
 
-/// <summary>Contenu altéré, entrée fautive nommée (PACKAGE_FORMAT.md §10).</summary>
+/// <summary>Contenu altéré, entrée fautive nommée.</summary>
 public sealed class CorruptedPackageException : Exception
 {
     public CorruptedPackageException(string entryName, string reason)
@@ -33,7 +37,7 @@ public sealed class CorruptedPackageException : Exception
     public string EntryName { get; }
 }
 
-/// <summary>Tentative d'écriture dans un paquet scellé. Cause : « paquet scellé » (PACKAGE_FORMAT.md §5.3).</summary>
+/// <summary>Tentative d'écriture dans un paquet scellé. Cause : « paquet scellé ».</summary>
 public sealed class SealedPackageException : Exception
 {
     public SealedPackageException()
@@ -42,7 +46,7 @@ public sealed class SealedPackageException : Exception
     }
 }
 
-/// <summary>Entrée refusée pour cause de chemin non conforme : traversal, absolu ou lecteur (PACKAGE_FORMAT.md §8).</summary>
+/// <summary>Entrée refusée pour cause de chemin non conforme : traversal, absolu ou lecteur.</summary>
 public sealed class UnsafeEntryPathException : Exception
 {
     public UnsafeEntryPathException(string entryName)
@@ -55,7 +59,7 @@ public sealed class UnsafeEntryPathException : Exception
     public string EntryName { get; }
 }
 
-/// <summary>Manifeste de composant invalide ou incompatible (COMPONENTS.md §12, PACKAGING.md §4).</summary>
+/// <summary>Manifeste de composant invalide ou incompatible.</summary>
 public sealed class InvalidManifestException : Exception
 {
     public InvalidManifestException(string location, string reason)

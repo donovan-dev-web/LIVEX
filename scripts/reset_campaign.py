@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Campagne V2′ par le chemin ``reset`` (ROADMAP-V01 étape 2).
+"""Campagne V2′ par le chemin ``reset``.
 
-La campagne ADR-016 du 07/10 n'a validé que le chemin ``prepare`` + ``start``.
+La campagne du 07/10 n'a validé que le chemin ``prepare`` + ``start``.
 Ce script rejoue le même protocole (50 et 100 agents × 2500 ticks × 3 seeds)
 en enchaînant les runs **via ``POST /api/control/reset``** : le premier run part
 par ``start``, les suivants par ``reset`` — population et profil compris, puisque
@@ -10,15 +10,15 @@ commit ``ef878f21``).
 
 Le flux d'observabilité est consommé en direct sur WebSocket et segmenté par
 ``runId`` (porté par les snapshots) ; l'analyse réutilise ``analyse()`` de
-``calibration-campaign.py`` pour rester strictement comparable à la campagne du
-07/10. Critères ADR-016 inchangés :
+``calibration_campaign.py`` pour rester strictement comparable à la campagne du
+07/10. Critères inchangés :
 
 1. zéro extinction ;
 2. |pente d'énergie moyenne| < 0,005/tick (200 derniers ticks) ;
 3. population finale ≥ 90 % de la population initiale.
 
 Usage :
-    python3 scripts/reset-campaign.py \\
+    python3 scripts/reset_campaign.py \\
         --populations 50,100 --seeds 12345,424242,999 --ticks 2500 \\
         --out docs/campaign-runs/v2r-reset
 """
@@ -40,9 +40,9 @@ from websockets.sync.client import connect as ws_connect
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BIN = ROOT / "syne" / "Simulation.Console" / "bin" / "Release" / "net10.0" / "Simulation.Console"
-CALIBRATION_SCRIPT = ROOT / "scripts" / "calibration-campaign.py"
+CALIBRATION_SCRIPT = ROOT / "scripts" / "calibration_campaign.py"
 
-# Critères ADR-016 (identiques à calibration-campaign.py, mais population
+# Critères (identiques à calibration_campaign.py, mais population
 # initiale stricte : la campagne du 07/10 a constaté 0 mort sur 6/6).
 SLOPE_TOLERANCE = 0.005
 MIN_SURVIVOR_RATIO = 0.9
@@ -65,7 +65,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 
 def load_analyse():
-    """Réutilise analyse() de calibration-campaign.py (signaux identiques)."""
+    """Réutilise analyse() de calibration_campaign.py (signaux identiques)."""
     spec = importlib.util.spec_from_file_location("calibration_campaign", CALIBRATION_SCRIPT)
     if spec is None or spec.loader is None:
         raise SystemExit(f"script introuvable : {CALIBRATION_SCRIPT}")

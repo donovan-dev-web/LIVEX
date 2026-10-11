@@ -1,7 +1,12 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Instance unique : un seul Launcher opère un espace de travail à la fois ; le second le dit explicitement
+//        au lieu d'échouer en silence.
+
 namespace Launcher.App.Composition;
 
 /// <summary>
-/// Instance unique (INTEGRATION_CONTRACT.md §5.3) : un seul Launcher opère un espace de
+/// Instance unique : un seul Launcher opère un espace de
 /// travail à la fois ; le second le dit explicitement au lieu d'échouer en silence.
 /// </summary>
 public static class SingleInstanceGuard

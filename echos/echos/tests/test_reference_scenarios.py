@@ -1,9 +1,9 @@
-"""Scénarios de référence contrôlés (P2 — RAPPORT §9, P2 lignes 1-2).
+"""Scénarios de référence contrôlés.
 
 Chaque test construit un snapshot **synthétique connu** : on sait ce que la
 situation contient, on vérifie que la mesure publiée le décrit — pas seulement
 qu'elle est déterministe. Ces cas servent de base aux critères d'acceptation de
-``docs/docs-echos/REFERENCE_SCENARIOS.md`` (baselines avant tout ajustement de
+ (baselines avant tout ajustement de
 seuil) et couvrent les sept situations du plan :
 
 1. aucun message ;

@@ -2,7 +2,7 @@
 
 ``build_chain`` reconstruit la chaîne ``Action ← Intention ← Objectif ←
 Besoin ← Croyance ← Mémoire ← Perception`` d'une entité à un tick, en mode
-**hors ligne** sur les traces persécutées (ADR-002 [Accepted]) :
+**hors ligne** sur les traces persécutées :
 - source principale : ligne ``decision_traces`` (action, utilité, besoins,
   compteurs BDI) du tick ;
 - compléments : événement ``decision_made`` correspondant (intention) et
@@ -16,7 +16,7 @@ Contraintes de déterminisme (ECHOS-041/045, exports reproductibles) :
 - chaque couche de la chaîne contribue **au plus un nœud** ; les multiples
   (croyances, perceptions) sont agrégés dans ``detail``.
 
-Boucles de rétroaction (ECHOS-062, CAUSAL_ANALYSIS.md §4.5.3) :
+Boucles de rétroaction (ECHOS-062) :
 - **récurrence** : si l'entité a déjà choisi la même action aux ticks
   précédents du run, ``cycle=True`` et ``cycles`` liste les occurrences
   (``{"layer": "Action", "label": …}`` + ``ticks``) — on **n'étend pas**
@@ -49,7 +49,7 @@ LAYERS = (
 
 DEFAULT_DEPTH = 7
 MAX_DEPTH = 12
-"""Profondeur d'affichage par défaut et plafond (ECHOS-062, §4.5.3)."""
+"""Profondeur d'affichage par défaut et plafond (ECHOS-062)."""
 
 RECURRENCE_WINDOW = 16
 """Occurrences antérieures examinées pour détecter une boucle de rétroaction."""
@@ -177,8 +177,8 @@ def _recurrence(
     """Ticks antérieurs où l'entité a **elle** déjà choisi la même action.
 
     Fenêtre bornée (16 dernières occurrences de l'entité) — boucle de
-    rétroaction (ECHOS-062, §4.5.3 : comportement répété = boucle, affichage
-    borné). Tri stable croissant (déterminisme des exports reproductibles).
+    rétroaction (ECHOS-062 : comportement répété = boucle,
+    affichage borné). Tri stable croissant (déterminisme des exports reproductibles).
 
     Régression : la fenêtre était appliquée aux 16 dernières traces du **run**,
     puis filtrée sur l'entité. Sur un run où d'autres entités décident, la
@@ -195,7 +195,7 @@ def _recurrence(
 
 
 def _find_cycle(nodes: list[Node]) -> tuple[list[tuple[str, str]], int]:
-    """Boucles de rétroaction (ECHOS-062, §4.5.3).
+    """Boucles de rétroaction (ECHOS-062).
 
     Retourne ``(cycles, cutoff)`` : les couples ``(couche, libellé)`` répétés
     et l'indice d'arrêt — la position de la **deuxième** occurrence du premier
@@ -228,12 +228,12 @@ def build_chain(
     ``tick`` optionnel : dernier tick portant une trace pour l'entité.
     ``depth`` dans [1, max_depth] borne le nombre de nœuds servis (les plus
     profonds sont tronqués, ``truncated=True``). ``max_depth`` > 12 interdit
-    (CAUSAL_ANALYSIS.md §4.5.3 — profondeur d'affichage limitée).
+    (profondeur d'affichage limitée).
 
     Retourne un dict stable : ``chain`` (nœuds ``{layer, tick, label,
     detail}``), ``cycle``/``cycles``, ``truncated``, profondeurs demandées et
     servies. La reconstruction est purement lecture — **aucune écriture** dans
-    le monde observé (règle d'or §4.10.3).
+    le monde observé (règle d'or).
     """
     if isinstance(depth, bool) or not isinstance(depth, int) or depth < 1:
         raise CausalError("depth doit être un entier >= 1")

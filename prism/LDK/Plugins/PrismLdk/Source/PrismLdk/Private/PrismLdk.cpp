@@ -1,3 +1,7 @@
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Module Unreal PrismLdk : enregistrement du module et du sous-système de liaison SYNE.
+
 #include "PrismLdk.h"
 #include "PrismLdkSubsystem.h"
 

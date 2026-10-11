@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Calcul déterministe des destinations d'objectif des agents.
+ */
+
 const { createDeterministicOffset } = require('./deterministic-random');
 
 class DestinationService {

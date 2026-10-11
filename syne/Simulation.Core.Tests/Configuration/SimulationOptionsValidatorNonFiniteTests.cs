@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Validation des bornes et des valeurs non finies (jalon review/refactor, engineVersion 0.12.0).
+
 using Simulation.Core.Configuration;
 using Xunit;
 

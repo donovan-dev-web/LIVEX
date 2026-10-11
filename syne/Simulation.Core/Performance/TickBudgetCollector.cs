@@ -1,8 +1,12 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Collecteur de budgets par tick : temps mesuré par sous-système.
+
 using System.Diagnostics;
 
 namespace Simulation.Core.Performance;
 
-/// <summary>Sous-systèmes mesurés par tick (PY (Monographie §7.4.3) — PERFORMANCE.md §3).</summary>
+/// <summary>Sous-systèmes mesurés par tick (PY —).</summary>
 public enum TickPhase
 {
     /// <summary>Grille spatiale + ligne de vue + tris (perception, budget 20 ms).</summary>
@@ -28,10 +32,10 @@ public enum TickPhase
 }
 
 /// <summary>
-/// Collecteur de budgets de tick (SYNE-090, PERFORMANCE.md §3) : mesure le temps
+/// Collecteur de budgets de tick (SYNE-090) : mesure le temps
 /// passé par sous-système (par phase) et le temps total de tick computationnel.
 /// Opt-in (toujours détachable — aucun coût structurel sur la trajectoire, aucun
-/// tirage de PRNG, déterminisme conservé : DETERMINISM.md §3). Le mode par défaut
+/// tirage de PRNG, déterminisme conservé :). Le mode par défaut
 /// de la boucle ne collecte rien.
 /// </summary>
 public sealed class TickBudgetCollector

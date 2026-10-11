@@ -1,11 +1,15 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Stub.Echos : analyste simulé.
+
 using System.Text;
 using System.Text.Json;
 
 namespace Stub.Echos;
 
 /// <summary>
-/// Stub.Echos (INTEGRATION_CONTRACT.md §13) : analyste simulé. Expose /health et /info,
-/// et répond aux demandes d'analyse du §10.1 — AnalyzeRun, AnalyzeExperiment,
+/// Stub.Echos : analyste simulé. Expose /health et /info,
+/// et répond aux demandes d'analyse — AnalyzeRun, AnalyzeExperiment,
 /// GenerateReport — avec un contenu déterministe dérivé de la demande et du dossier
 /// d'entrée, jamais de l'horloge. Fonctionne sans Launcher.
 /// </summary>
@@ -36,7 +40,7 @@ internal static class Program
             Directory.CreateDirectory(_workDirectory);
             Directory.CreateDirectory(Path.Combine(_workDirectory, "analysis"));
 
-            // Preuve de télémétrie : arguments réellement reçus (INTEGRATION_CONTRACT.md §3.1).
+            // Preuve de télémétrie : arguments réellement reçus.
             File.WriteAllLines(Path.Combine(_workDirectory, "args.txt"), args);
         }
 
@@ -52,7 +56,7 @@ internal static class Program
             return "{\"status\":\"shutting_down\"}";
         });
 
-        // Demandes d'analyse (INTEGRATION_CONTRACT.md §10.1) : corps JSON, réponse JSON.
+        // Demandes d'analyse : corps JSON, réponse JSON.
         server.Post("/analysis/run", (_, body) => Analyze("run", body));
         server.Post("/analysis/experiment", (_, body) => Analyze("experiment", body));
         server.Post("/analysis/report", (_, body) => Report(body));
@@ -70,14 +74,14 @@ internal static class Program
         }
         catch (System.Net.Sockets.SocketException exception)
         {
-            // Port indisponible, échec d'écoute → code 3 (INTEGRATION_CONTRACT.md §4), jamais un crash.
+            // Port indisponible, échec d'écoute → code 3, jamais un crash.
             Console.Error.WriteLine($"[Stub.Echos] port {port} indisponible : {exception.Message}");
             return 3;
         }
 
         Console.WriteLine($"[Stub.Echos] écoute sur :{port}, travail dans {_workDirectory}");
 
-        // Arrêt propre (INTEGRATION_CONTRACT.md §5.1) : la commande /control/shutdown
+        // Arrêt propre : la commande /control/shutdown
         // termine le processus, qui n'a pas à rester resident après l'arrêt demandé.
         while (!_shutdownRequested)
         {
@@ -121,7 +125,7 @@ internal static class Program
     /// viennent du **flux**, pas de la demande.
     ///
     /// Refléter ce choix est ce qui rend le stub un double honnête du contrat
-    /// (§10.2) : ECHOS fait autorité sur l'identité, donc un stub qui recopie le
+    ///  ECHOS fait autorité sur l'identité, donc un stub qui recopie le
     /// ``runId`` demandé ne détecterait jamais un dossier de run mal apparié — il
     /// renverrait justement l'identité attendue, masquant le défaut.
     /// </summary>

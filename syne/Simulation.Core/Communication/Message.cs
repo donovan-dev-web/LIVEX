@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Les 7 types de messages : Information, Request, Response, Announcement, Warning, Trading, Acknowledgement.
+
 namespace Simulation.Core.Communication;
 
 /// <summary>
-/// Les 7 types de messages (COMMUNICATION_PROTOCOL.md §2, Monographie §3.16) :
+/// Les 7 types de messages :
 /// Information, Request, Response, Announcement, Warning, Trading, Acknowledgement.
 /// </summary>
 public enum MessageType
@@ -16,18 +20,18 @@ public enum MessageType
 }
 
 /// <summary>
-/// Message échangé par pulsation (COMMUNICATION_PROTOCOL.md §3) :
+/// Message échangé par pulsation :
 /// <c>MessageId | SenderId | Type | Payload | Confidence | Hops | Timestamp(tick)</c>.
 ///
 /// <list type="bullet">
 /// <item><b>Confidence</b> : confiance de transmission du message, dégradée de
-///  10 %/hop à chaque relais (décision n°10). La confiance du récepteur envers
-///  l'émetteur ajuste la confiance à la réception (COMMUNICATION_PROTOCOL.md §7).</item>
+/// 10 %/hop à chaque relais. La confiance du récepteur envers
+/// l'émetteur ajuste la confiance à la réception.</item>
 /// <item><b>Hops</b> : nombre de relais déjà effectués (bordures par <c>maxHops</c>).</item>
 /// </list>
 ///
 /// Déterminisme : le <c>MessageId</c> est un hash stable (SplitMix64) de
-/// (senderId, tick, séquence) — pas de dépendance au PRNG global (DETERMINISM.md §3).
+/// (senderId, tick, séquence) — pas de dépendance au PRNG global.
 /// </summary>
 public sealed record Message
 {
@@ -66,7 +70,7 @@ public sealed record Message
 
     public ulong SenderId { get; }
 
-    /// <summary>Destinataire nominal (optionnel). La diffusion reste publique : toute entité dans la portée reçoit, indépendamment de la cible (interception, décision n°8).</summary>
+    /// <summary>Destinataire nominal (optionnel). La diffusion reste publique : toute entité dans la portée reçoit, indépendamment de la cible (interception).</summary>
     public ulong? TargetId { get; }
 
     public MessageType Type { get; }
@@ -77,11 +81,11 @@ public sealed record Message
 
     public int Hops { get; }
 
-    /// <summary>Tick d'émission (horodatage du message, COMMUNICATION_PROTOCOL.md §3).</summary>
+    /// <summary>Tick d'émission (horodatage du message).</summary>
     public ulong Tick { get; }
 
     /// <summary>Message relayé : saut <c>hops + 1</c> et confiance dégradée de
-    /// <c>hopConfidenceDecay</c> (décision n°10 : <c>confidence *= 0.9^hops</c>).</summary>
+    /// <c>hopConfidenceDecay</c> (<c>confidence *= 0.9^hops</c>).</summary>
     public Message Relayed(double hopConfidenceDecay, ulong tick)
     {
         if (hopConfidenceDecay is <= 0.0 or > 1.0)

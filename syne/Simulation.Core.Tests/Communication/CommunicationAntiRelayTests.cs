@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Garde anti-boucle de la communication et borne de la file sortante (jalon review/refactor, engineVersion
+//        0.12.0).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Communication;
 using Simulation.Core.Configuration;

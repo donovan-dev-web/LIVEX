@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Vue 2D du monde observé, dessinée nativement (pas de page web).
+
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,12 +12,12 @@ using Launcher.Application;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Vue 2D du monde observé, dessinée nativement (ADR-007 : pas de page web).
+/// Vue 2D du monde observé, dessinée nativement (pas de page web).
 ///
 /// Le contrôle ne fait que **projeter** ce qu'ECHOS publie : description de monde
 /// (cellules de terrain, obstacles, ressources initiales, régions), réserves du tick
 /// et entités avec leur position. Les couleurs par groupe et le rayon des points sont
-/// des choix de rendu ; aucune mesure n'est calculée ici (ADR-003).
+/// des choix de rendu ; aucune mesure n'est calculée ici.
 ///
 /// <para>
 /// Cadrage (refonte) : **une seule unité par couche**, jamais mélangée. La description

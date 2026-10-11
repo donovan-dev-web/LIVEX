@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Réalise par HTTP contre l'API REST d'ECHOS (ECHOS produit, le Launcher présente).
+
 using System.Globalization;
 using System.Text.Json;
 using Launcher.Application;
@@ -8,16 +12,16 @@ namespace Launcher.App.Composition;
 
 /// <summary>
 /// Réalise <see cref="IEchosTelemetrySource"/> par HTTP contre l'API REST d'ECHOS
-/// (ADR-007 : ECHOS produit, le Launcher présente).
+/// (ECHOS produit, le Launcher présente).
 ///
 /// Joignabilité : instance en cours si elle existe, sinon port déclaré au manifeste,
-/// sinon 5000 (NETWORK.md §6.2) — la même règle que <see cref="EchosAnalysisService"/>.
+/// sinon 5000 — la même règle que <see cref="EchosAnalysisService"/>.
 /// Aucune valeur n'est calculée ici : les champs de la réponse sont transportés tels
 /// quels, y compris le drapeau de provenance <c>measured</c> et le disclaimer.
 /// </summary>
 public sealed class EchosTelemetryService : IEchosTelemetrySource, IDisposable
 {
-    /// <summary>Port de contrôle ECHOS par défaut (NETWORK.md §6.2).</summary>
+    /// <summary>Port de contrôle ECHOS par défaut.</summary>
     public const int DefaultControlPort = 5000;
 
     private readonly OrchestrationService _orchestration;

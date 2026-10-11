@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Micro-benchmark de la requête de voisinage (SYNE-012) : la grille spatiale doit rester sous le budget tick
+//        de perception (perception 20 ms).
+
 using System.Diagnostics;
 using Simulation.Core.Entities;
 using Simulation.Core.World;
@@ -7,9 +12,9 @@ namespace Simulation.Core.Tests;
 
 /// <summary>
 /// Micro-benchmark de la requête de voisinage (SYNE-012) : la grille spatiale
-/// doit rester sous le budget tick de perception (PERFORMANCE.md — perception
+/// doit rester sous le budget tick de perception (— perception
 /// 20 ms). Valeur moyenne asserée très en-deçà du budget (marge anti-flakiness
-/// CI). Méthodologie documentée dans PERFORMANCE.md §3.
+/// CI). Méthodologie documentée dans.
 /// </summary>
 public class PerceptionBenchmarkTests
 {

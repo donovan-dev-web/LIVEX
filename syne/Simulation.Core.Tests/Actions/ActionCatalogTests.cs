@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Catalogue déclaratif des actions (SYNE-040) : chaque action est déclarée en configuration
+//        (agents.actions.catalog) et résolue en définition.
+
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
@@ -33,7 +38,7 @@ public class ActionCatalogTests
             Assert.NotNull(catalog[kind]);
         }
 
-        // Ordre du catalogue = ordre de l'enum (départage stable, décision n°22).
+        // Ordre du catalogue = ordre de l'enum (départage stable).
         Assert.Equal(Enum.GetValues<DesireKind>().Length, catalog.Definitions.Count);
     }
 
@@ -49,7 +54,7 @@ public class ActionCatalogTests
         Assert.Equal(ResourceKind.Water, catalog[DesireKind.Drink].RequiresReserve);
         Assert.Equal(30.0, catalog[DesireKind.Drink].ThirstRecovery);
 
-        // Calibration B1 (ADR-016, héritée de D1) : manger/boire rapporte plus
+        // Calibration B1 (héritée de D1) : manger/boire rapporte plus
         // d'énergie qu'il n'en coûte — c'est le levier qui rend le bilan positif.
         Assert.Equal(2.0, catalog[DesireKind.Eat].EnergyRecovery);
         Assert.Equal(1.0, catalog[DesireKind.Drink].EnergyRecovery);
@@ -63,7 +68,7 @@ public class ActionCatalogTests
         Assert.True(catalog[DesireKind.SeekFood].Movement);
         Assert.True(catalog[DesireKind.Explore].Movement);
         // Le coût déclaré est exactement `moveEnergyCost` (valeur calibrée par le
-        // profil — 0,03 depuis ADR-016, pas une valeur codée en dur ici).
+        // profil — 0,03 depuis, pas une valeur codée en dur ici).
         Assert.Equal(ConfigLoader.LoadDefaults().Agents.Actions.MoveEnergyCost, catalog[DesireKind.SeekFood].EnergyCost, 10);
         Assert.False(catalog[DesireKind.Rest].Movement);
     }

@@ -1,3 +1,5 @@
+"""Tests du client de contrôle HTTP :5181 de SYNE."""
+
 import json
 
 import httpx

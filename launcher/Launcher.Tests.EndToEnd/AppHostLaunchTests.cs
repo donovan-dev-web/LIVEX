@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : L'apphost natif (livex-launcher / livex-launcher.exe) doit réellement démarrer sous l'OS courant.
+
 using System.Diagnostics;
 using Xunit;
 
@@ -41,7 +45,7 @@ public sealed class AppHostLaunchTests
 
         // Un manifeste refusé par le système s'arrête avant toute sortie : ni le premier ni le
         // dernier contrôle ne sont imprimés. La sortie complète prouve que les huit se sont
-        // déroulés (PACKAGING.md §6), et le code de sortie est celui d'un --check exécuté —
+        // déroulés, et le code de sortie est celui d'un --check exécuté —
         // 0 si un composant est détecté sur la machine, 2 sur un poste vierge.
         Assert.Contains("exécution : livex-launcher", output, StringComparison.Ordinal);
         Assert.Contains("navigateur", output, StringComparison.Ordinal);

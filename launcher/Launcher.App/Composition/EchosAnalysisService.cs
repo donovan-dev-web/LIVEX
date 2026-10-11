@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Réalise IAnalysisService par HTTP contre le port de contrôle d'ECHOS (le Launcher demande, ECHOS produit).
+
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -9,15 +13,15 @@ namespace Launcher.App.Composition;
 
 /// <summary>
 /// Réalise <see cref="IAnalysisService"/> par HTTP contre le port de contrôle d'ECHOS
-/// (INTEGRATION_CONTRACT.md §10.1 — le Launcher demande, ECHOS produit, ADR-003).
+/// (le Launcher demande, ECHOS produit).
 /// Joignabilité : si une instance ECHOS tourne, son port résolu fait foi ; sinon le port
-/// déclaré au manifeste ; sinon la valeur par défaut 5000 (NETWORK.md §6.2).
+/// déclaré au manifeste ; sinon la valeur par défaut 5000.
 /// Tout échec — refus, délai dépassé, réponse malformée — lève une erreur explicite :
 /// l'absence d'analyse est consignée par la campagne, jamais approximée.
 /// </summary>
 public sealed class EchosAnalysisService : IAnalysisService, IDisposable
 {
-    /// <summary>Port de contrôle ECHOS par défaut (NETWORK.md §6.2).</summary>
+    /// <summary>Port de contrôle ECHOS par défaut.</summary>
     public const int DefaultControlPort = 5000;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -319,7 +323,7 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
         foreach (var file in payload.Files ?? Array.Empty<AnalysisFile>())
         {
             // Le nom vient d'ECHOS : le contenu est accepté tel quel, le chemin non
-            // (PACKAGE_FORMAT.md §8). Un nom refusé fait échouer l'analyse, jamais l'écriture
+            // Un nom refusé fait échouer l'analyse, jamais l'écriture
             // du paquet — la campagne consigne alors une analyse indisponible.
             if (!Launcher.Package.PackageEntryRules.IsSafe(file.Name))
             {
@@ -357,7 +361,7 @@ public sealed class EchosAnalysisService : IAnalysisService, IDisposable
     private static InvalidOperationException Malformed(string detail) =>
         new($"réponse malformée d'ECHOS — {detail}");
 
-    /// <summary>Corps des demandes d'analyse (INTEGRATION_CONTRACT.md §10.1).</summary>
+    /// <summary>Corps des demandes d'analyse.</summary>
     private sealed class AnalysisRequest
     {
         [JsonPropertyName("experimentId")]

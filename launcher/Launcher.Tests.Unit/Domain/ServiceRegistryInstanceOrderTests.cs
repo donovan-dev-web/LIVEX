@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : L'ordre dans lequel le registre énumère les instances est visible dans l'interface : la ligne d'un
+//        composant y désigne une instance précise tant qu'elle vit.
+
 using Launcher.Domain.Model;
 using Launcher.Protocol.Model;
 using Xunit;

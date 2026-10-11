@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du cheminement A* déterministe (SYNE-077) : contournement d'obstacles, repli « sur place »
+//        (destination bloquée ou expansion plafonnée), déterminisme (même grille → même chemin) et cache LRU borné.
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Navigation;
 using Simulation.Core.World;

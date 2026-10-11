@@ -1,8 +1,12 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Constantes de contrat partagées.
+
 namespace Launcher.Protocol;
 
 /// <summary>
 /// Constantes de contrat partagées. Versionnées avec soin : tout changement de sens
-/// impose un incrément de version (PACKAGE_FORMAT.md §7).
+/// impose un incrément de version.
 /// </summary>
 public static class PackageConstants
 {
@@ -30,14 +34,14 @@ public static class PackageConstants
     /// <summary>Préfixe des répertoires de run, numérotés à partir de 1 sur quatre chiffres.</summary>
     public const string RunDirectoryPrefix = "RUN-";
 
-    /// <summary>Nom du rapport d'émergence, fichier de référence (DATA_FLOW.md §3.1).</summary>
+    /// <summary>Nom du rapport d'émergence, fichier de référence.</summary>
     public const string EmergenceReportEntry = "analysis/emergence_report.md";
 
-    /// <summary>Horodatage d'entrée ZIP fixé pour le déterminisme (PACKAGE_FORMAT.md §6) : 1980-01-01 00:00:00 UTC, borne du format DOS.</summary>
+    /// <summary>Horodatage d'entrée ZIP fixé pour le déterminisme : 1980-01-01 00:00:00 UTC, borne du format DOS.</summary>
     public const long ZipEpochTimestamp = 315532800L;
 }
 
-/// <summary>Statuts d'un run (EXPERIMENTS.md §6). Chaînes stables, portées par runs/index.json.</summary>
+/// <summary>Statuts d'un run. Chaînes stables, portées par runs/index.json.</summary>
 public static class RunStatuses
 {
     public const string Planifie = "Planifie";
@@ -47,7 +51,7 @@ public static class RunStatuses
     public const string Annule = "Annule";
 }
 
-/// <summary>Codes de sortie normatifs des composants (INTEGRATION_CONTRACT.md §4).</summary>
+/// <summary>Codes de sortie normatifs des composants.</summary>
 public static class ExitCodes
 {
     public const int Normal = 0;
@@ -62,7 +66,7 @@ public static class ExitCodes
     public const int TerminatedBySignal = 143;
 }
 
-/// <summary>Résultat normalisé d'une fin de processus (INTEGRATION_CONTRACT.md §4).</summary>
+/// <summary>Résultat normalisé d'une fin de processus.</summary>
 public static class ExitOutcomeNames
 {
     public const string Completed = "Completed";
@@ -77,7 +81,7 @@ public static class ExitOutcomeNames
     public const string ProcessError = "ProcessError";
 }
 
-/// <summary>Corrélation propagée dans les opérations (OBSERVABILITY.md §7.2).</summary>
+/// <summary>Corrélation propagée dans les opérations.</summary>
 public static class CorrelationHeaders
 {
     /// <summary>En-tête HTTP de corrélation, entre le Launcher et les composants.</summary>
@@ -86,7 +90,7 @@ public static class CorrelationHeaders
     /// <summary>Variable d'environnement de corrélation, transmise aux processus lancés.</summary>
     public const string CorrelationIdEnvVar = "LIVEX_CORRELATION_ID";
 
-    /// <summary>Argument de ligne de commande de corrélation (INTEGRATION_CONTRACT.md §3.1).</summary>
+    /// <summary>Argument de ligne de commande de corrélation.</summary>
     public const string CorrelationIdArgument = "--correlation-id";
 
     public const string SessionTokenEnvVar = "LIVEX_SESSION_TOKEN";

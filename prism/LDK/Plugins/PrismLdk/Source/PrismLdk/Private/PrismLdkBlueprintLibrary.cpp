@@ -1,3 +1,7 @@
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fonctions Blueprint exposant le sous-système PrismLdk aux plans Unreal.
+
 #include "PrismLdkBlueprintLibrary.h"
 #include "PrismLdk.h"
 #include "PrismLdkSubsystem.h"

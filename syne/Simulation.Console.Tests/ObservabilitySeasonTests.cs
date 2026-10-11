@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cycle de saisons à travers l'émetteur (SYNE-072, jalon U8) : quand world.seasons.enabled, un changement de
+//        saison est drainé en événement world.season_changed au tick exact du basculement et le snapshot porte les
+//        champs season/seasonIndex — sans rompre le déterminisme.
+
 using System.Text.Json.Nodes;
 using Simulation.Console.Observability;
 using Simulation.Core.Configuration;

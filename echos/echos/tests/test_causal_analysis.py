@@ -1,8 +1,8 @@
 """Analyse causale (ECHOS-060 → ECHOS-063, jalon ph6, preuve J6).
 
 Reconstruction de chaînes causales ``Action ← Intention ← Objectif ← Besoin
-← Croyance ← Mémoire ← Perception`` sur les traces persistées (ADR-002
-[Accepted] : calcul hors ligne, PAS temps réel), détection des boucles de
+← Croyance ← Mémoire ← Perception`` sur les traces persistées (calcul hors ligne,
+PAS temps réel), détection des boucles de
 rétroaction (récurrence de l'action) et cache LRU invalidé sur la version
 d'ingestion — plus l'endpoint ``/causal-chains`` (404/422/503, déterminisme).
 

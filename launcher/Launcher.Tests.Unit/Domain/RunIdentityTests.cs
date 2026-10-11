@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Identité analytique d'un run ({campagne}-{run}).
+
 using Launcher.Domain.Model;
 using Xunit;
 

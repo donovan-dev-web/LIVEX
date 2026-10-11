@@ -1,4 +1,4 @@
-"""Client de contrôle HTTP :5181 de SYNE (API_CONTRACTS.md §3).
+"""Client de contrôle HTTP :5181 de SYNE.
 
 Endpoints : ``POST /api/control/start|pause|resume|reset``, binding local
 ``127.0.0.1:5181``. Transport injectable (tests : ``httpx.MockTransport``,

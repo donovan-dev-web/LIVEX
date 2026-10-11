@@ -1,7 +1,8 @@
 # SCENE_SPEC — Monde présenté par PRISM
 
 **Composant** : PRISM
-**Dernière mise à jour** : 27 septembre 2026
+**Statut** : [DRAFT]
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
 
 ---

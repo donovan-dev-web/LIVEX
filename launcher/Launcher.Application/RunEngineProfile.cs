@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Profil moteur effectif d'un run : la surcouche de configuration réellement remise au moteur, et le
+//        document config.resolved.json qui en atteste.
+
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Launcher.Protocol;
@@ -6,18 +11,18 @@ namespace Launcher.Application;
 
 /// <summary>
 /// Profil moteur effectif d'un run : la surcouche de configuration réellement remise
-/// au moteur, et le document <c>config.resolved.json</c> qui en atteste (EXPERIMENTS.md §12).
+/// au moteur, et le document <c>config.resolved.json</c> qui en atteste.
 ///
 /// <para>
 /// Les deux sont produits ici, à partir du seul <see cref="RunSpec"/>, parce qu'ils
 /// décrivent la même chose : si la surcouche écrite dans <c>launcher-config.json</c>
 /// et le document archivé dans le paquet pouvaient diverger, le paquet cesserait
-/// d'attester la configuration réellement appliquée — exactement ce que §12 exige.
+/// d'attester la configuration réellement appliquée — exactement ce que le contrat exige.
 /// </para>
 ///
 /// <para>
 /// Ce type n'a pas qualité pour décrire les réglages internes du moteur : ceux-ci
-/// appartiennent au composant (DATA_FLOW.md §6.3, « le Launcher ne dégrade pas un
+/// appartiennent au composant (« le Launcher ne dégrade pas un
 /// composant en écrivant à sa place »). Il n'enregistre que ce que le Launcher a
 /// décidé et transmis, chacun explicitement, sans valeur implicite.
 /// </para>
@@ -25,7 +30,7 @@ namespace Launcher.Application;
 public static class RunEngineProfile
 {
     /// <summary>
-    /// Fréquence de tick par défaut des runs batch (EXPERIMENTS.md §6) — plancher
+    /// Fréquence de tick par défaut des runs batch — plancher
     /// appliqué quand la définition ne demande aucune cadence explicite.
     ///
     /// <para>
@@ -88,7 +93,7 @@ public static class RunEngineProfile
     /// jeton de session, identifiant de corrélation, horodatages, chemins. Elles sont
     /// propres à une exécution et non à la configuration : les inscrire rendrait le
     /// document différent à chaque run, alors qu'un paquet scellé se compare octet pour
-    /// octet (PACKAGE_FORMAT.md §6).
+    /// octet.
     /// </para>
     /// </summary>
     public static string SerializeResolved(RunSpec spec, ExperimentDefinition definition)

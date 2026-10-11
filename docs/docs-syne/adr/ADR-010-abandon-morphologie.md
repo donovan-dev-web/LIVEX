@@ -36,4 +36,5 @@ Les entités sont des **entités logiques**. Leur « corps » est un ensemble de
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 17 septembre 2026 | Création | — |
-| 24 septembre 2026 | Guide de migration V0.1 publié dans `../MIGRATION_MORPHOLOGY.md` (SYNE-130) | Formaliser les champs conservés et retirés |
+| 24 septembre 2026 | Guide de migration V0.1 publié dans `../MIGRATION_MORPHOLOGY.md` (SYNE-130 ; document retiré du dépôt) | Formaliser les champs conservés et retirés |
+| 11 octobre 2026 | Renvoi au guide de migration, retiré depuis, marqué comme tel | Conformité `NAMING_CONVENTIONS.md` §9.4 |

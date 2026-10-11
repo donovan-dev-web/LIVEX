@@ -1,4 +1,4 @@
-# ADR — Engagements Communicationnels (Promesses)
+# ADR-009 : Engagements Communicationnels (Promesses)
 
 **Statut :** [Accepté] — décision du 30/09/2026 : la structure `Commitment` et son impact sur `TrustLevel` sont retenus ; l'implémentation suit les ADR socle (Primitives d'actions, Inventaire, Means-End Reasoning).
 **Implémentation (30/09/2026, engineVersion 0.14.0)** : version minimale de l'ADR —

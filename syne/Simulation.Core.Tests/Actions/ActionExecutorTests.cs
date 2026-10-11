@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Exécuteur d'actions (SYNE-040) : exécution atomique d'une action par entité par tick, effets issus du
+//        catalogue déclaratif, itération par identifiant croissant sans consommation du PRNG.
+
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
@@ -38,7 +43,7 @@ public class ActionExecutorTests
     public void Eat_AppliesCatalogEffectsAndConsumesFoodReserve()
     {
         // SYNE-042 : Eat consomme la réserve Food et applique les effets du catalogue.
-        // Calibration B1 (ADR-016) : Eat rapporte +2,0 d'énergie pour −0,2 de coût
+        // Calibration B1 : Eat rapporte +2,0 d'énergie pour −0,2 de coût
         // (net +1,8) — on écarte d'abord l'énergie du plafond 100 pour observer le gain.
         _mind.Needs.ExertEnergy(20.0);
         double energyBefore = _mind.Needs.Energy;
@@ -110,7 +115,7 @@ public class ActionExecutorTests
     public void Movement_DoesNotEnterObstacle()
     {
         // SYNE-041 : une entité évoluant près d'un obstacle n'entre jamais dans
-        // son intérieur (pas bloqué sur un obstacle, DETERMINISM.md §5).
+        // son intérieur (pas bloqué sur un obstacle).
         var obstacle = new Obstacle("îlot", new Position(50, 50), radius: 20);
         _world.AddObstacle(obstacle);
         var rover = new Entity(new EntityId(9), "Entité B", name: null, new Position(100, 250), TraitSet.NeutralAll, bornAt: 0);

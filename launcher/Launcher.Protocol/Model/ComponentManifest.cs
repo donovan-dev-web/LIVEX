@@ -1,9 +1,13 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Manifeste de composant.
+
 using System.Text.Json.Serialization;
 
 namespace Launcher.Protocol.Model;
 
 /// <summary>
-/// Manifeste de composant (COMPONENTS.md §3, INTEGRATION_CONTRACT.md §2).
+/// Manifeste de composant.
 /// Seule source de vérité de l'orchestration : aucune donnée d'intégration codée en dur.
 /// </summary>
 public sealed class ComponentManifest
@@ -71,7 +75,7 @@ public sealed class ComponentManifest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? ContributesTo { get; set; }
 
-    /// <summary>Version majeure de compatibilité du contrat de contrôle annoncé par /info (NETWORK.md §2.5).</summary>
+    /// <summary>Version majeure de compatibilité du contrat de contrôle annoncé par /info.</summary>
     [JsonPropertyName("protocolVersion")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ProtocolVersion { get; set; }
@@ -107,12 +111,12 @@ public sealed class JsonEndpoint
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Transport { get; set; }
 
-    /// <summary>Port déclaré. Priorité au manifeste : honoré s'il est libre (TESTING.md §6).</summary>
+    /// <summary>Port déclaré. Priorité au manifeste : honoré s'il est libre.</summary>
     [JsonPropertyName("port")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? Port { get; set; }
 
-    /// <summary>Booléen de déclaration (forme INTEGRATION_CONTRACT.md §2 : « control »: true).</summary>
+    /// <summary>Booléen de déclaration (forme : « control »: true).</summary>
     [JsonPropertyName("enabled")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Enabled { get; set; }

@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Sérialisation JSON canonique de tous les contrats : camelCase, UTF-8, fins de ligne LF, sans dépendance à
+//        la locale ni à la plateforme.
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -5,7 +10,7 @@ namespace Launcher.Protocol;
 
 /// <summary>
 /// Sérialisation JSON canonique de tous les contrats : camelCase, UTF-8, fins de ligne LF,
-/// sans dépendance à la locale ni à la plateforme (PACKAGING.md §11).
+/// sans dépendance à la locale ni à la plateforme.
 /// </summary>
 public static class ContractJson
 {

@@ -1,10 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Souvenirs : catégories, mémoire court/long terme et décroissance de la salience.
+
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Catégorie d'un souvenir — décision n°11 (COGNITIVE_ARCHITECTURE.md §4,
-/// DATA_MODEL.md §5). Chaque catégorie a sa propre vitesse de décroissance.
+/// Catégorie d'un souvenir —
+/// Chaque catégorie a sa propre vitesse de décroissance.
 /// </summary>
 public enum MemoryCategory
 {
@@ -14,7 +18,7 @@ public enum MemoryCategory
 }
 
 /// <summary>
-/// Souvenir : source, catégorie, contenu, confiance, horodatage (décision n°11).
+/// Souvenir : source, catégorie, contenu, confiance, horodatage.
 /// Le contenu est une chaîne canonique (papier déterministe, pas d'objet mutable).
 /// </summary>
 public sealed record MemoryEntry
@@ -58,7 +62,7 @@ public readonly record struct MemoryRecall(MemoryEntry Entry, double Salience);
 /// Mémoire (court/long terme) : décroissance exponentielle de la salience
 /// <c>salience(t) = salience(0) × exp(−decayRate × (t − storedAt))</c>, seuil
 /// d'oubli (défaut 0.01), capacité (défaut 1000) avec éviction de l'élément le
-/// moins saillant, decay par catégorie 0.01/0.005/0.002 (décision n°11, SYNE-013).
+/// moins saillant, decay par catégorie 0.01/0.005/0.002 (SYNE-013).
 /// </summary>
 public sealed class Memory
 {
@@ -87,7 +91,7 @@ public sealed class Memory
 
     public MemorySettings Settings => _settings;
 
-    /// <summary>Vitesse de décroissance de la catégorie (décision n°11).</summary>
+    /// <summary>Vitesse de décroissance de la catégorie.</summary>
     public double DecayRateFor(MemoryCategory category) => category switch
     {
         MemoryCategory.Observation => _settings.ObservationDecayRate,
@@ -175,7 +179,7 @@ public sealed class Memory
         _entries.Remove(least);
     }
 
-    /// <summary>Restauration d'état complet (persistance bit-à-bit, PERSISTENCE.md §4) : séquence + entrées.</summary>
+    /// <summary>Restauration d'état complet (persistance bit-à-bit) : séquence + entrées.</summary>
     internal void RestoreState(IEnumerable<MemoryEntry> entries, ulong nextSequence)
     {
         ArgumentNullException.ThrowIfNull(entries);

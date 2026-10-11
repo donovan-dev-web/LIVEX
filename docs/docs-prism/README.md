@@ -1,8 +1,10 @@
 # PRISM — Perceptual Rendering & Interactive Simulation Module
 
 **Composant** : PRISM
+**Statut** : [DRAFT]
 **Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Dernière mise à jour** : 7 octobre 2026
+**Dernière mise à jour** : 11 octobre 2026
+**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
 
 ---
 

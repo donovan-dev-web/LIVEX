@@ -4,7 +4,7 @@
 **Statut** : Acceptée
 **Date** : 7 octobre 2026
 **Dépend de** : ADR-014, ADR-015, ADR-009 (énergie = monnaie d'action), DETERMINISM.md §7
-**Source** : campagne de runs multi-seeds exécutée le 07/10/2026 (50 et 100 agents × 2500 ticks × seeds 12345 / 424242 / 999) + diagnostic de bilan énergétique par tick (`scripts/calibration-campaign.py`)
+**Source** : campagne de runs multi-seeds exécutée le 07/10/2026 (50 et 100 agents × 2500 ticks × seeds 12345 / 424242 / 999) + diagnostic de bilan énergétique par tick (`scripts/calibration_campaign.py`)
 
 ---
 
@@ -84,7 +84,7 @@ de l'ADR-015, « configuration changes require a reviewed decision »).
    portait `agents.actions.catalog.eat.energyRecovery` alors que la clé réelle est
    `agents.actions.catalog.entries.eat.energyRecovery` — `System.Text.Json` ignore les
    propriétés non mappées, donc **toute** exécution `--config configs/simulation/reference.json`
-   (dont `scripts/batch-analysis.py`) tournait avec `eat/drink.energyRecovery = 0`
+   (dont `scripts/batch_analysis.py`) tournait avec `eat/drink.energyRecovery = 0`
    (mesuré : `energyDelta` moyen d'Eat = −0,2 au lieu de +1,8). Corrigé, et le chemin
    `entries` est désormais celui du fichier.
 2. **`TickBudgetSnapshot.ComputationShare()` mélangeait des unités** : elle sommait
@@ -98,7 +98,7 @@ de l'ADR-015, « configuration changes require a reviewed decision »).
 
 Protocole : défauts intégrés **sans aucune surcouche** (`agents.initialCount` seul),
 2500 ticks, seeds 12345 / 424242 / 999, populations **50 et 100** ; métriques calculées
-depuis le flux d'observabilité par tick (`scripts/calibration-campaign.py`) :
+depuis le flux d'observabilité par tick (`scripts/calibration_campaign.py`) :
 
 1. **zéro extinction** ;
 2. **|pente d'énergie moyenne| < 0,005/tick** sur les 200 derniers ticks (mort lente
@@ -121,7 +121,7 @@ Résultats (exécution du 7 octobre 2026, défauts intégrés 0.15.0, `--overlay
 population initiale** — les trois critères sont atteints sur les deux populations.
 À titre de comparaison, les défauts 0.14.0 s'éteignaient à t303 (50 agents, 50 morts
 `energy_exhaustion`, nourriture à 0). Artefacts : `campaign.json` de chaque run
-(reproductible par `scripts/calibration-campaign.py --overlay <vide> --populations 50,100
+(reproductible par `scripts/calibration_campaign.py --overlay <vide> --populations 50,100
 --seeds 12345,424242,999 --ticks 2500`).
 
 ## Conséquences
@@ -131,7 +131,7 @@ population initiale** — les trois critères sont atteints sur les deux populat
 - Le chemin réel des runs (Launcher → overlay `initialCount` + défauts) est viable :
   plus d'extinction « mystérieuse » au tick 300.
 - Un seul jeu de valeurs à maintenir : défauts = profil de référence = `reference.json`.
-- Diagnostic outillé et rejouable : `scripts/calibration-campaign.py` (campagne
+- Diagnostic outillé et rejouable : `scripts/calibration_campaign.py` (campagne
   pop × seeds avec critères) + réconciliation du bilan énergétique.
 
 ### Négatives
@@ -178,7 +178,7 @@ population initiale** — les trois critères sont atteints sur les deux populat
 
 - Campagne 50 et 100 agents × 2500 ticks × 3 seeds sur défauts purs : 0 extinction,
   |pente| < 0,005/tick, population ≥ 90 % (protocole ci-dessus, rejouable à tout moment
-  par `scripts/calibration-campaign.py`).
+  par `scripts/calibration_campaign.py`).
 - Déterminisme : `FullPipeline_SameSeed_IsBitForBitReproducible` + deux campagnes de
   même seed produisant les mêmes empreintes.
 - Suite SYNE complète verte (589 tests) après re-pin des dorés.

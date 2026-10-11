@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Scénarios de bout en bout : une campagne est créée, exécutée par le vrai binaire Stub.Syne détecté par
+//        manifeste, scellée puis relue.
+
 using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Domain.Model;
@@ -9,7 +14,7 @@ using Xunit;
 namespace Launcher.Tests.EndToEnd;
 
 /// <summary>
-/// Scénarios de bout en bout (TESTING.md §8) : une campagne est créée, exécutée par le vrai
+/// Scénarios de bout en bout : une campagne est créée, exécutée par le vrai
 /// binaire Stub.Syne détecté par manifeste, scellée puis relue. Le Launcher exerce ici
 /// toutes ses couches : détection → orchestration → processus → paquet → scellement.
 /// </summary>

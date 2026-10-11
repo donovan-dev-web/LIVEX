@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests d'export JSON du résultat d'un run batch.
+
 using System.Text.Json;
 using Simulation.Console.Batch;
 using Simulation.Console.Control;
@@ -9,7 +13,7 @@ namespace Simulation.Console.Tests;
 public sealed class BatchRunExporterTests
 {
     [Fact]
-    public async Task SameScenarioSeedAndHorizonProduceByteIdenticalResult()
+    public async Task BatchRunExport_SameSeedAndHorizon_ProducesByteIdenticalResult()
     {
         string root = Path.Combine(AppContext.BaseDirectory, "TestArtifacts", Guid.NewGuid().ToString("N"));
         string firstDirectory = Path.Combine(root, "first");

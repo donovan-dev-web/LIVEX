@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Entité : identité, espèce, position, bornAt, traits.
+
 using Simulation.Core.World;
 
 namespace Simulation.Core.Entities;
 
 /// <summary>
-/// Entité : identité, espèce, position, bornAt, traits (DATA_MODEL.md §3).
+/// Entité : identité, espèce, position, bornAt, traits.
 /// Les invariants position/traits sont validés à la création (SYNE-004).
 /// </summary>
 public sealed class Entity

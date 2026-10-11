@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cible de diffusion des trames d'observabilité.
+
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
@@ -6,10 +10,10 @@ using System.Text;
 namespace Simulation.Console.Observability;
 
 /// <summary>
-/// Cible de diffusion des trames d'observabilité (API_CONTRACTS.md §2).
+/// Cible de diffusion des trames d'observabilité.
 /// Contrat unique pour le serveur WebSocket réel et les tests (in-memory) :
 /// l'infusion des trames ne doit jamais muter l'état de la simulation
-/// (anti-triche SYNE-081 — DETERMINISM.md §3).
+/// (anti-triche SYNE-081).
 /// </summary>
 public interface IObservabilitySink
 {
@@ -18,10 +22,10 @@ public interface IObservabilitySink
 }
 
 /// <summary>
-/// Serveur WebSocket minimal (BCL uniquement, ADR-002/ECHOS-010) exposant les
+/// Serveur WebSocket minimal (BCL uniquement, /ECHOS-010) exposant les
 /// messages d'observabilité SYNE sur ws://127.0.0.1:[port]/. Il n'archive rien :
 /// purement de diffusion. Chaque message = une trame texte JSON
-/// (API_CONTRACTS.md §2), diffusion fiable-en-fonction-du-mieux (V0.1).
+/// diffusion fiable-en-fonction-du-mieux (V0.1).
 ///
 /// <para>
 /// Invariant central : <see cref="BroadcastAsync"/> ne doit jamais bloquer ni

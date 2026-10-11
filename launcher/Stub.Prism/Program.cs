@@ -1,13 +1,17 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Stub.Prism : « processus vivant et client WebSocket factice ».
+
 using System.Net.WebSockets;
 using System.Text;
 
 namespace Stub.Prism;
 
 /// <summary>
-/// Stub.Prism (INTEGRATION_CONTRACT.md §13) : « processus vivant et client WebSocket factice ».
-/// Expose les endpoints standard du §6 sur son port de contrôle et, quand --ws-url est fourni,
+/// Stub.Prism : « processus vivant et client WebSocket factice ».
+/// Expose les endpoints standard sur son port de contrôle et, quand --ws-url est fourni,
 /// tente en boucle une connexion WebSocket vers le moteur : l'échec n'est jamais fatal,
-/// l'indisponibilité du flux est un état, pas une panne (INTEGRATION_CONTRACT.md §8).
+/// l'indisponibilité du flux est un état, pas une panne.
 /// Fonctionne sans Launcher.
 /// </summary>
 internal static class Program
@@ -42,7 +46,7 @@ internal static class Program
             Directory.CreateDirectory(workDirectory);
 
             // Preuve de télémétrie : arguments réellement reçus, pour vérifier que le
-            // Launcher ne passe d'arguments SYNE qu'au moteur (INTEGRATION_CONTRACT.md §3.3).
+            // Launcher ne passe d'arguments SYNE qu'au moteur.
             File.WriteAllLines(Path.Combine(workDirectory, "args.txt"), args);
         }
 
@@ -65,7 +69,7 @@ internal static class Program
         }
         catch (System.Net.Sockets.SocketException exception)
         {
-            // Port indisponible, échec d'écoute → code 3 (INTEGRATION_CONTRACT.md §4), jamais un crash.
+            // Port indisponible, échec d'écoute → code 3, jamais un crash.
             Console.Error.WriteLine($"[Stub.Prism] port {port} indisponible : {exception.Message}");
             return 3;
         }
@@ -77,7 +81,7 @@ internal static class Program
 
         Console.WriteLine($"[Stub.Prism] écoute sur :{port}, flux : {wsUrl ?? "(aucun — fournir --ws-url)"}");
 
-        // Arrêt propre (INTEGRATION_CONTRACT.md §5.1) : exit sur /control/shutdown.
+        // Arrêt propre : exit sur /control/shutdown.
         while (!_shutdownRequested)
         {
             Thread.Sleep(100);

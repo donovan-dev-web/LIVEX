@@ -1,9 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Groupe émergent (SYNE-060) : ensemble d'entités liées par une cohésion (confiance réciproque × parts
+//        communes de croyances / buts partagés).
+
 using Simulation.Core.Cognition;
 
 namespace Simulation.Core.Social;
 
 /// <summary>
-/// Groupe émergent (SYNE-060, SYSTEM_SPEC.md §5, décisions n°23/24) : ensemble
+/// Groupe émergent (SYNE-060) : ensemble
 /// d'entités liées par une cohésion (confiance réciproque × parts communes de
 /// croyances / buts partagés). Les structures émergent — aucun script de
 /// coalition. Modèle mutable, mis à jour par <see cref="GroupSystem"/> à chaque

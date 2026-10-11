@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : G5 — session complète : détection des composants, profil satisfiable, demande d'analyse à ECHOS par l'API
+//        du contrat, collecte des artefacts et présentation du rapport d'émergence tel qu'ECHOS l'a écrit.
+
 using System.Text.Json;
 using Launcher.Domain;
 using Launcher.Domain.Model;
@@ -9,8 +14,8 @@ using Xunit;
 namespace Launcher.Tests.EndToEnd;
 
 /// <summary>
-/// G5 — session complète (ROADMAP.md §6.6) : détection des composants, profil satisfiable,
-/// demande d'analyse à ECHOS par l'API du contrat §10.1, collecte des artefacts et
+/// G5 — session complète : détection des composants, profil satisfiable,
+/// demande d'analyse à ECHOS par l'API du contrat, collecte des artefacts et
 /// présentation du rapport d'émergence tel qu'ECHOS l'a écrit. Aucune interface web
 /// n'est ouverte : la preuve est le journal des demandes HTTP tenu par le stub analyste.
 /// Un analyste arrêté ne dégrade pas le moteur : la campagne suivante se scelle sans rapport.
@@ -47,8 +52,8 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
         Assert.True(profile.Satisfiable, string.Join(" ; ", profile.Problems));
         Assert.Equal(["syne", "echos"], profile.StartupOrder);
 
-        // 2. Démarrage d'ECHOS par le cycle de vie réel de la pile (INTEGRATION_CONTRACT.md §5),
-        //    avec les arguments communs — jamais les arguments de lot de SYNE (§3.1 / §3.3).
+        // 2. Démarrage d'ECHOS par le cycle de vie réel de la pile,
+        //    avec les arguments communs — jamais les arguments de lot de SYNE.
         var startError = await composition.Facade.ToggleComponentAsync("echos", true);
         Assert.Null(startError);
 
@@ -80,7 +85,7 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
             Assert.Fail($"campagne incomplète : {reader.Manifest.Counts.RunsDone}/2 — index : {detail} — stderr : {stderr}");
         }
 
-        // 4. Preuve que tout est passé par l'API HTTP d'analyse (§10.1), sans interface web :
+        // 4. Preuve que tout est passé par l'API HTTP d'analyse, sans interface web :
         //    le stub tient le journal de ses demandes, deux ingérations suivies de deux
         //    analyses de run, puis l'agrégation et le rapport.
         var requests = File.ReadAllText(Path.Combine(instanceWork, "analysis", "requests.log"));
@@ -117,7 +122,7 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
         Assert.NotNull(archivedStream);
         Assert.Contains("\"type\":\"world_initialized\"", System.Text.Encoding.UTF8.GetString(archivedStream!), StringComparison.Ordinal);
 
-        // 6. Fidélité : le rapport archivé est exactement celui qu'ECHOS renvoie à l'instant (§3.2).
+        // 6. Fidélité : le rapport archivé est exactement celui qu'ECHOS renvoie à l'instant.
         var expected = await PostReportAsync(control.Url, definition.Id);
         var archived = reader.ReadEmergenceReport();
         Assert.NotNull(archived);
@@ -149,7 +154,7 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
     /// <summary>
     /// L'identité enregistrée doit être celle du flux, et le Launcher doit le
     /// constater. Un stub qui recopie le ``runId`` demandé ne prouverait rien :
-    /// ECHOS fait autorité sur l'identité (INTEGRATION_CONTRACT.md §10.2), donc un
+    /// ECHOS fait autorité sur l'identité, donc un
     /// dossier mal apparié ne peut produire qu'un décalage visible — jamais une
     /// confirmation_muette qui ferait passer une archive de campagne pour correcte.
     /// </summary>
@@ -201,7 +206,7 @@ public sealed class SessionCompleteEndToEndTests : IDisposable
         return document.RootElement.GetProperty("ingested").GetProperty("runId").GetString()!;
     }
 
-    /// <summary>Appel direct de GenerateReport (§10.1) : c'est la référence de fidélité.</summary>
+    /// <summary>Appel direct de GenerateReport : c'est la référence de fidélité.</summary>
     private async Task<string> PostReportAsync(string controlUrl, string experimentId)
     {
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };

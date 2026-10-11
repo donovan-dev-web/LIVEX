@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la boucle de simulation.
+
 using Simulation.Core.Prng;
 using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;

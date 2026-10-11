@@ -159,7 +159,7 @@ class AnalyticsStore:
         (l'invalidation ne repose donc ni sur le temps ni sur un recalcul).
 
         Le compteur n'est fiable que **dans le processus qui écrit**. Quand
-        l'API et l'ingestion sont deux processus séparés (shell bureau, ADR-003),
+        l'API et l'ingestion sont deux processus séparés (shell bureau),
         les écritures de l'un sont invisibles au compteur de l'autre : les
         séries restaient figées sur leur premier chargement (le « retard N
         ticks » croissant du tableau de bord). ``PRAGMA data_version`` reflète

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cibles de débit aux échelles 50/500/1000 entités (SYNE-091).
+
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -11,8 +15,8 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Cibles de débit aux échelles 50/500/1000 entités (SYNE-091, décision n°30,
-/// PERFORMANCE.md §9). Le test CI n'asserte PAS les objectifs finaux (≥ 30/20/10
+/// Cibles de débit aux échelles 50/500/1000 entités (SYNE-091,
+/// Le test CI n'asserte PAS les objectifs finaux (≥ 30/20/10
 /// t/s, mesurés à la machine de référence via le mode CLI --benchmark) mais des
 /// planchers anti-régression très en-deçà des mesures réelles (marge anti-
 /// flakiness CI, même convention que PerceptionBenchmarkTests) : une régression
@@ -43,7 +47,7 @@ public class ScaleTargetsTests
     {
         // Meilleur de 5 essais : les mesures de débit en CI sont perturbées par la
         // charge — le max (essai le moins contensionné, proche du taux machine)
-        // sert de référence anti-régression (PERFORMANCE.md §9). Cinq essais
+        // sert de référence anti-régression. Cinq essais
         // couvrent plusieurs fenêtres de charge : un run `windows-latest` où les
         // deux assemblées de tests tournaient en parallèle avait vu les trois
         // essais passer sous le plancher sans aucune régression du moteur.

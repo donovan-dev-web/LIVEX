@@ -199,7 +199,9 @@ de données (`PACKAGING.md` §2.2).
   et le pilotage d'analyse d'ECHOS (`AnalyzeRun`, `AnalyzeExperiment`, `GenerateReport`)
   la porte **P3** : les campagnes et les rapports sont validés contre les stubs tant
   qu'elles ne sont pas confirmées.
-- Compatibilité avec les composants réels codés (`syne/`, `echos/`, `syne-mock/`) auditée
-  le 2 octobre 2026 : aucun ne livre encore de `component.json`, SYNE rejette les arguments
-  communs du §3.1, SYNE/ECHOS n'exposent pas les endpoints standard du §6. Écarts suivis
-  en `../docs/docs-launcher/ISSUES.md` (O-38 à O-41) — leur levée appartient aux composants.
+- Compatibilité avec les composants réels codés (`syne/`, `echos/`, `syne-mock/`) : les
+  trois livrent désormais leur `component.json` (Linux **et** Windows) et leur contrat
+  batch/supervisé ; SYNE (J2A) et les opérations d'analyse ECHOS (J2B) sont acceptés, et
+  le parcours J3 de bout en bout contre les composants réels est acquis (08/10/2026,
+  E2E 31/31 sous Windows). Les écarts résiduels éventuels restent suivis en
+  `../docs/docs-launcher/ISSUES.md`.

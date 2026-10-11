@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du système de groupes émergents (SYNE-060/061) : cohésion (confiance réciproque × affinité), cycle
+//        de vie formation/dissolution, leader émergent et décisions collectives.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Social;
@@ -6,7 +11,7 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Tests du système de groupes émergents (SYNE-060/061, SYSTEM_SPEC.md §5) :
+/// Tests du système de groupes émergents (SYNE-060/061) :
 /// cohésion (confiance réciproque × affinité), cycle de vie formation/dissolution,
 /// leader émergent et décisions collectives. Aucun tirage du PRNG global.
 /// </summary>

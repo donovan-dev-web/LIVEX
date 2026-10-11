@@ -1,8 +1,12 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : État d'un paquet.livexp.
+
 using System.Text.Json.Serialization;
 
 namespace Launcher.Protocol.Model;
 
-/// <summary>État d'un paquet .livexp (PACKAGE_FORMAT.md §4.1).</summary>
+/// <summary>État d'un paquet.livexp.</summary>
 public static class PackageStates
 {
     /// <summary>Campagne en cours. Écriture attendue.</summary>
@@ -14,7 +18,7 @@ public static class PackageStates
 }
 
 /// <summary>
-/// Manifeste du paquet .livexp (PACKAGE_FORMAT.md §4). Point de commit du paquet :
+/// Manifeste du paquet.livexp. Point de commit du paquet :
 /// écrit en dernier, son absence à jour signifie que le paquet est récupérable plutôt que valide.
 /// </summary>
 public sealed class PackageManifest : ISchemaVersioned
@@ -114,13 +118,13 @@ public sealed class JsonIntegrity
     public string Value { get; set; } = string.Empty;
 }
 
-/// <summary>Entrée de runs/index.json : état de chaque run, source de reprise (PACKAGE_FORMAT.md §3).</summary>
+/// <summary>Entrée de runs/index.json : état de chaque run, source de reprise.</summary>
 public sealed class RunIndexEntry
 {
     [JsonPropertyName("runId")]
     public string RunId { get; set; } = string.Empty;
 
-    /// <summary>Planifié, EnCours, Termine, Echoue, Annule (EXPERIMENTS.md §6).</summary>
+    /// <summary>Planifié, EnCours, Termine, Echoue, Annule.</summary>
     [JsonPropertyName("status")]
     public string Status { get; set; } = "Planifie";
 
@@ -144,7 +148,7 @@ public sealed class RunIndexEntry
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Cause { get; set; }
 
-    /// <summary>Code de sortie du moteur (INTEGRATION_CONTRACT.md §4), si terminé.</summary>
+    /// <summary>Code de sortie du moteur, si terminé.</summary>
     [JsonPropertyName("exitCode")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ExitCode { get; set; }
@@ -160,7 +164,7 @@ public sealed class RunIndex : ISchemaVersioned
     public List<RunIndexEntry> Runs { get; set; } = new();
 }
 
-/// <summary>Entrée de integrity.json : tailles et empreintes SHA-256 (PACKAGE_FORMAT.md §3).</summary>
+/// <summary>Entrée de integrity.json : tailles et empreintes SHA-256.</summary>
 public sealed class IntegrityEntry
 {
     [JsonPropertyName("path")]
@@ -187,7 +191,7 @@ public sealed class RunIntegrity : ISchemaVersioned
 }
 
 /// <summary>
-/// Contenu de provenance.json (PACKAGE_FORMAT.md §3) : qui, quand, quelles versions,
+/// Contenu de provenance.json : qui, quand, quelles versions,
 /// quelle plateforme. Porte la traçabilité de la production, sans donnée scientifique.
 /// </summary>
 public sealed class PackageProvenance
@@ -207,7 +211,7 @@ public sealed class PackageProvenance
     [JsonPropertyName("components")]
     public List<JsonComponentRef> Components { get; set; } = new();
 
-    /// <summary>Plateforme de production (DATA_FLOW.md §4.2 : os, arch, runtime).</summary>
+    /// <summary>Plateforme de production (os, arch, runtime).</summary>
     [JsonPropertyName("platform")]
     public JsonPlatform Platform { get; set; } = new();
 }

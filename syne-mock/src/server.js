@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Serveur HTTP + WebSocket du mock SYNE (cycle de vie, contrôle).
+ */
+
 const http = require('node:http');
 const { timingSafeEqual } = require('node:crypto');
 const { WebSocketServer } = require('ws');
@@ -122,7 +128,7 @@ function createServer(options = {}) {
             'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'));
         }
         if (simulation.state === 'finished') {
-          // Parité SYNE (API_CONTRACTS.md §3) : un run « finished » a atteint
+          // Parité SYNE : un run « finished » a atteint
           // maxTicks — le remède est /reset, pas /prepare (code run_finished).
           log('CONTROL response action=start -> 409 run_finished');
           return send(409, errorJson('run_finished',

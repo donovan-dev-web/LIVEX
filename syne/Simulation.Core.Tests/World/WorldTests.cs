@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du monde (plan 2D, index des entités, grille de perception).
+
 using Simulation.Core.World;
 using WorldType = Simulation.Core.World.World;
 using Xunit;
