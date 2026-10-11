@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Écriture d'un paquet.livexp.
+
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,12 +12,12 @@ using Launcher.Protocol.Model;
 namespace Launcher.Package;
 
 /// <summary>
-/// Écriture d'un paquet .livexp (PACKAGE_FORMAT.md). Vivant puis scellé :
+/// Écriture d'un paquet.livexp. Vivant puis scellé :
 /// - écriture en incrément dans un conteneur ZIP64, index central maintenu en mémoire ;
-/// - ordre d'écriture normatif §5.2 : répertoire du run, integrity.json, runs/index.json,
+/// - ordre d'écriture normatif : répertoire du run, integrity.json, runs/index.json,
 ///   journal.ndjson, manifest.json en dernier (point de commit) ;
 /// - scellement immuable, horodatages d'entrées normalisés, déterminisme octet pour octet ;
-/// - contre-mesures de sécurité §8 : chemins relatifs, refus d'exécutables et de symlinks,
+/// - contre-mesures de sécurité : chemins relatifs, refus d'exécutables et de symlinks,
 ///   écriture exclusive.
 /// </summary>
 public sealed class LivexPackageWriter : IDisposable
@@ -42,7 +46,7 @@ public sealed class LivexPackageWriter : IDisposable
         }
     }
 
-    /// <summary>Crée un paquet neuf pour une campagne : squelette complet, déjà valide et relisible (§5.1).
+    /// <summary>Crée un paquet neuf pour une campagne : squelette complet, déjà valide et relisible.
     /// « packageId » est généré par défaut ; le passer explicitement permet de vérifier la propriété de déterminisme.</summary>
     public static LivexPackageWriter CreateNew(string path, ExperimentDefinition experiment, string launcherVersion, DateTimeOffset createdAt, string? packageId = null)
     {
@@ -118,7 +122,7 @@ public sealed class LivexPackageWriter : IDisposable
         return new LivexPackageWriter(path, stream, manifest, runIndex, journal);
     }
 
-    /// <summary>Ouvre un paquet en lecture seule, quel que soit son état (PACKAGE_FORMAT.md §10).</summary>
+    /// <summary>Ouvre un paquet en lecture seule, quel que soit son état.</summary>
     public static LivexPackageReader OpenRead(string path) => new(path);
 
     /// <summary>État courant du manifeste.</summary>
@@ -144,12 +148,12 @@ public sealed class LivexPackageWriter : IDisposable
     }
 
     /// <summary>
-    /// Clôture un run selon la séquence normative §5.2 : métadonnées et données du run,
+    /// Clôture un run selon la séquence normative : métadonnées et données du run,
     /// integrity.json, runs/index.json, journal.ndjson, manifest.json en dernier.
     /// « dataFiles » porte les fichiers de données collectés (chemin d'entrée → source),
     /// copiés en flux depuis le disque sans jamais être chargés en mémoire — une donnée
     /// de campagne dépasse les 2 Gio d'un byte[].
-    /// « analysisFiles » porte l'analyse individuelle d'ECHOS pour ce run (PACKAGE_FORMAT.md §3),
+    /// « analysisFiles » porte l'analyse individuelle d'ECHOS pour ce run,
     /// écrite sous analysis/individual/ ; elle peut être vide si ECHOS est indisponible.
     ///
     /// <para><b>Pourquoi une réécriture complète</b> : le mode Update de
@@ -157,7 +161,7 @@ public sealed class LivexPackageWriter : IDisposable
     /// <c>MemoryStream</c> (borné à <c>int.MaxValue</c> o) — un run réel de campagne
     /// (« The file is too long ») échouait à cet endroit. Chaque clôture réécrit donc
     /// l'archive en mode <c>Create</c>, qui compresse directement dans le fichier :
-    /// aucun plafond, aucun contenu en mémoire. L'ordre normatif §5.2, l'horodatage
+    /// aucun plafond, aucun contenu en mémoire. L'ordre normatif, l'horodatage
     /// d'époque et le niveau de compression sont identiques à l'ancien chemin.</para>
     /// </summary>
     public void CompleteRun(
@@ -216,7 +220,7 @@ public sealed class LivexPackageWriter : IDisposable
                     dataFiles, logFiles, analysisFiles);
 
                 // Échange atomique : le paquet existant n'est écrasé qu'après l'écriture
-                // complète du temporaire (même garantie que le scellement §5.3).
+                // complète du temporaire (même garantie que le scellement).
                 File.Move(temporaryPath, _path, overwrite: true);
             }
             finally
@@ -236,7 +240,7 @@ public sealed class LivexPackageWriter : IDisposable
     /// Écrit le répertoire du run et les métadonnées dans une archive temporaire ouverte
     /// en mode <c>Create</c> (compression directe dans le fichier, aucun tampon en
     /// mémoire). À la retour, l'archive temporaire est complète et peut être échangée
-    /// avec le paquet. L'ordre normatif §5.2 est respecté : données, integrity, index,
+    /// avec le paquet. L'ordre normatif est respecté : données, integrity, index,
     /// journal, manifeste en dernier (point de commit).
     /// </summary>
     private void WriteCompleteRunEntries(
@@ -305,14 +309,14 @@ public sealed class LivexPackageWriter : IDisposable
         WriteBytesEntry(fresh, $"{prefix}{PackageConstants.RunIntegrityEntry}", ContractJson.Serialize(integrity));
 
         // 4. runs/index.json, journal.ndjson, manifest.json — dans cet ordre,
-        //    le manifeste en dernier : point de commit §5.2.
+        //    le manifeste en dernier : point de commit.
         WriteBytesEntry(fresh, PackageConstants.RunsIndexEntry, ContractJson.Serialize(_runIndex));
         WriteBytesEntry(fresh, PackageConstants.JournalEntry,
             Encoding.UTF8.GetBytes(string.Join("\n", _journal.Select(j => j.ToJsonLine())) + "\n"));
         WriteBytesEntry(fresh, PackageConstants.ManifestEntry, ContractJson.Serialize(_manifest));
     }
 
-    /// <summary>Scelle le paquet : immuable, empreinte pleine, horodatages normalisés (§5.3).</summary>
+    /// <summary>Scelle le paquet : immuable, empreinte pleine, horodatages normalisés.</summary>
     public string Seal(DateTimeOffset sealedAt)
     {
         ThrowIfSealed();
@@ -328,7 +332,7 @@ public sealed class LivexPackageWriter : IDisposable
 
         // Recompactage déterministe : relit toutes les entrées dans l'ordre trié,
         // puis réécrit un paquet neuf : compression deflate à niveau fixé,
-        // horodatage d'époque du format, attributs normalisés (PACKAGE_FORMAT.md §6).
+        // horodatage d'époque du format, attributs normalisés.
         //
         // Écriture atomique : le paquet existant n'est écrasé qu'après la réussite complète
         // de la réécriture dans un fichier temporaire. Un plantage en cours de scellement
@@ -391,7 +395,7 @@ public sealed class LivexPackageWriter : IDisposable
         return _path;
     }
 
-    /// <summary>Marque le paquet comme récupérable : écriture interrompue, reprise possible (§4.1).</summary>
+    /// <summary>Marque le paquet comme récupérable : écriture interrompue, reprise possible.</summary>
     public void MarkRecoverable()
     {
         ThrowIfSealed();
@@ -403,7 +407,7 @@ public sealed class LivexPackageWriter : IDisposable
     }
 
     /// <summary>
-    /// Enregistre les versions des composants engagées dans le manifeste (EXPERIMENTS.md §12 :
+    /// Enregistre les versions des composants engagées dans le manifeste
     /// « les versions des composants sont écrites — manifest.json »). Appelé par le Launcher
     /// au fil des runs, à partir du manifeste du composant réellement lancé.
     /// </summary>
@@ -444,7 +448,7 @@ public sealed class LivexPackageWriter : IDisposable
     /// </summary>
     private void WriteEntryLocked(string entryName, RunDataFile source)
     {
-        // Toute écriture passe par la règle §8, y compris les noms venant d'un composant
+        // Toute écriture passe par la règle, y compris les noms venant d'un composant
         // (données d'un run, analyse ECHOS) : le producteur ne choisit pas le chemin écrit.
         PackageEntryRules.EnsureSafe(entryName);
         var existing = _archive.GetEntry(entryName);
@@ -531,7 +535,7 @@ public sealed class LivexPackageWriter : IDisposable
         }
     }
 
-    /// <summary>Écrit le journal et le manifeste : séquence de création (PACKAGE_FORMAT.md §5.1).</summary>
+    /// <summary>Écrit le journal et le manifeste : séquence de création.</summary>
     private void WriteJournalAndManifest()
     {
         lock (_gate)

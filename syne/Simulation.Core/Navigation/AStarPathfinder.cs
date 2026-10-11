@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cheminement déterministe (SYNE-077) : A* sur une grille rasterisée du monde — les disques obstacles
+//        bloquent les cellules dont le centre tombe dans le disque (marge demi-cellule).
+
 using Simulation.Core.Configuration;
 using Simulation.Core.World;
 using WorldType = Simulation.Core.World.World;
@@ -5,7 +10,7 @@ using WorldType = Simulation.Core.World.World;
 namespace Simulation.Core.Navigation;
 
 /// <summary>
-/// Cheminement déterministe (SYNE-077, Monographie §6.2.12) : A* sur une grille
+/// Cheminement déterministe (SYNE-077) : A* sur une grille
 /// rasterisée du monde — les disques obstacles bloquent les cellules dont le
 /// centre tombe dans le disque (marge demi-cellule). Voisinage carré 8-connexe
 /// parcouru dans un ordre fixe, fermeture par égalité à 1e-12, départage

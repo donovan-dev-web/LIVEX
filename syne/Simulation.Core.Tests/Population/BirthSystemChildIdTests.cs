@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Unicité des identifiants de naissance (jalon review/refactor, engineVersion 0.12.0).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;

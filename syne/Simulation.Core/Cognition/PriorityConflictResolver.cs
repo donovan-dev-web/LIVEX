@@ -1,10 +1,16 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Résolution probabiliste des conflits de priorités (SYNE-033) : quand plusieurs candidats se disputent le
+//        maximum d'utilité (marge conflictTieMargin), le vainqueur est tiré selon la force × confiance de chaque
+//        désir — p = force × confidence / Σ — sans aucun arbitraire d'ancienneté.
+
 using Simulation.Core.Prng;
 
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Résolution probabiliste des conflits de priorités (SYNE-033, décision n°22,
-/// SYSTEMS_SPEC.md §5) : quand plusieurs candidats se disputent le maximum
+/// Résolution probabiliste des conflits de priorités (SYNE-033,
+/// quand plusieurs candidats se disputent le maximum
 /// d'utilité (marge <c>conflictTieMargin</c>), le vainqueur est tiré selon la
 /// <b>force × confiance</b> de chaque désir — <c>p = force × confidence / Σ</c> —
 /// sans aucun arbitraire d'ancienneté.

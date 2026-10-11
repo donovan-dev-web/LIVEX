@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Options brutes issues des flags de ligne de commande, avant fusion.
+
 using System.Globalization;
 
 namespace Simulation.Core.Configuration;
 
 /// <summary>
-/// Options brutes issues des flags de ligne de commande (Annexe H §3), avant fusion.
+/// Options brutes issues des flags de ligne de commande, avant fusion.
 /// </summary>
 public sealed record CliOptions(
     ulong? Seed,

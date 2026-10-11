@@ -312,7 +312,7 @@ def test_event_records_and_events_by_type_are_deterministic(tmp_path):
 
 
 _PRE_V5_TICK_METRICS = """
-CREATE TABLE tick_metrics (
+CREATE TABLE tick_metrics
     run_id TEXT NOT NULL,
     tick INTEGER NOT NULL CHECK (tick >= 0),
     engine TEXT NOT NULL,

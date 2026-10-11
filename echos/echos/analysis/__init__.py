@@ -1,11 +1,11 @@
-"""Moteurs de métriques ECHOS (METRICS_SPEC.md §1 — 7 moteurs + indicateurs).
+"""Moteurs de métriques ECHOS (7 moteurs + indicateurs).
 
 Chaque moteur est buildable et testable séparément : ``ENGINE_NAME`` (contrat
 METRICS_SPEC), ``METRICS`` (nomenclature des métriques), ``compute(snapshot)``
 (fonction pure et déterministe du dict de snapshot transport, camelCase).
 ``EmergenceIndicators`` (ECHOS-030→033) est le moteur composite : il exécute
 les 7 moteurs puis compose le score d'émergence et les phénomènes
-(EMERGENCE_INDICATORS.md).
+
 
 Le registre des moteurs vit dans :mod:`echos.analysis._common` (chargement
 paresseux) afin que ``emergence`` puisse le consumed sans créer de cycle
@@ -69,7 +69,7 @@ def provenance(snapshot: dict) -> dict[str, dict[str, bool]]:
     Le composite ``EmergenceIndicators`` propage depuis ses **dépendances
     réelles** (``emergence.COMPOSITE_DEPENDENCIES``) : chaque sortie n'exige
     que les métriques qui entrent dans sa formule. L'ancienne règle (exiger
-    *toutes* les métriques de *tous* les moteurs entrants) marquait « non
+    * toutes* les métriques de *tous* les moteurs entrants) marquait « non
     mesuré » un score entier à cause d'une métrique incidente qui n'entrait
     pas dans sa formule. Un score d'émergence calculé sur une fenêtre vide
     reste non mesuré ; une contribution isolée reste mesurée si **sa** source

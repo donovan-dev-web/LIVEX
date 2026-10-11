@@ -57,8 +57,5 @@ uvicorn echos.api.app:app --host 127.0.0.1 --port 5000
 | `ROADMAP.md` | Roadmap ECHOS |
 | `CHANGELOG.md` | Versions |
 | `adr/` | Décisions d'architecture |
-| `FRONTEND_VISION.md` | **Historique** : spécification de l'interface retirée d'ECHOS (ADR-007) |
-| `USER_STORIES.md` | **Historique** : personas + user stories de l'interface retirée (ADR-007) |
-| `UI_DESIGN.md` | **Historique** : design system, écrans, layout de l'interface retirée (ADR-007) |
 | `METRICS_DICTIONARY.md` | Dictionnaire des unités, conventions d'échelle, matrice métrique → API → vue |
 | `REFERENCE_SCENARIOS.md` | Cas étalons, baselines et exemples de rapports interprétés |

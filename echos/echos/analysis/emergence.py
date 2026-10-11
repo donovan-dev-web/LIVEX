@@ -1,12 +1,12 @@
 """Moteur 8 — EmergenceIndicators (indicateurs d'émergence, ECHOS-030→033).
 
-Composite (EMERGENCE_INDICATORS.md) : ``compute(snapshot)`` exécute les
+Composite : ``compute(snapshot)`` exécute les
 moteurs de métriques puis compose les indicateurs ; ``compute_from_metrics``
 compose directement à partir de résultats déjà calculés (miroir de la méthode
 ``Calculate`` du prototype C#). Fonctions **pures** et déterministes : aucun
 PRNG, ordre stable (phénomènes par seuils, signaux dans l'ordre de la spec).
 
-Refonte P2 (RAPPORT §3.7) — trois corrections structurelles :
+Refonte P2 — trois corrections structurelles :
 
 1. **Composantes normalisées** : les entropies de Shannon brutes (bits)
    n'étaient pas bornées à 1 ; additionner des bits, un clustering [0,1] et un
@@ -24,11 +24,11 @@ Refonte P2 (RAPPORT §3.7) — trois corrections structurelles :
    lieu d'exiger l'intégralité de tous les moteurs entrants.
 
 Statut : **exploratoire**. Les poids (0.15/0.15/0.10/0.15/0.20/0.25) sont
-[HÉRITÉ] de la Monographie, non calibrés sur des runs de référence et sans
+[HÉRITÉ], non calibrés sur des runs de référence et sans
 analyse de sensibilité ; le score n'est pas une mesure établie d'émergence
-(``Disclaimer`` invariant, Monographie §4.10.3, ECHOS-032).
+(``Disclaimer`` invariant, ECHOS-032).
 
-Conventions V0.1 (cf. METRICS_SPEC.md §1, ECHOS-006) :
+Conventions V0.1 (cf., ECHOS-006) :
 - données manquantes → valeurs neutres 0.0 ; ``DetectedPhenomena`` devient vide ;
 - ``Disclaimer`` invariant (ECHOS-032) ;
 - ``CoverageDelay_Norm = clamp(1 - EmitterCoverageDelay / 100, 0, 1)`` avec
@@ -58,7 +58,7 @@ WEIGHTS = {
     "ContributionRepeatedActions": 0.20,
     "ContributionCommunityCoverage": 0.25,
 }
-"""Poids des composantes du score [HÉRITÉ Monographie §4.4], Σ = 1.0.
+"""Poids des composantes du score [HÉRITÉ ], Σ = 1.0.
 
 Non calibrés : aucune campagne de référence ni analyse de sensibilité ne les
 a validés. Ils sont publiés (et non codés en dur dans la formule) pour que la
@@ -316,7 +316,7 @@ def compute_from_metrics(metrics: dict[str, dict]) -> dict:
     # Chaque composante est [0,1] et les poids somment à 1.0 : la somme est
     # déjà dans [0,1], le clamp ne sert que de garde (plus de saturation).
     emergence_score = clamp(sum(contributions.values()))
-    # Formule canonique bornée (décision P2, EMERGENCE_INDICATORS §3) : trois
+    # Formule canonique bornée (décision P2) : trois
     # grandeurs normalisées, plus de ticks bruts.
     system_complexity = clamp((belief_norm + goal_norm + delay_norm) / 3.0)
 

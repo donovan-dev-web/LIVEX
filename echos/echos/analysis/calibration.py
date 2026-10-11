@@ -1,8 +1,8 @@
-"""Post-run calibration evidence (SYNE-131).
+"""Preuves de calibration post-run (SYNE-131).
 
-This module summarizes observed runs into deterministic, read-only evidence.
-It never changes simulator configuration: parameter choices stay explicit and
-require a reviewed calibration decision.
+Ce module résume les runs observés en preuves déterministes en lecture seule.
+Il ne modifie jamais la configuration du simulateur : les choix de paramètres
+restent explicites et supposent une décision de calibration revue.
 
 Depuis le jalan viabilité (B2, campagne-runs 29/09/2026), le rapport porte
 aussi le résultat de population (``outcome``/``extinctionTick``, A3) et un
@@ -53,7 +53,7 @@ _EAT_OR_DRINK_ACTIONS = frozenset({"Eat", "Drink", "SeekFood", "SeekWater"})
 _HUNGRY_THRESHOLD = 70.0
 _VIABILITY_WINDOW = 200
 """Fenêtre (ticks) de la pente d'énergie : les 200 derniers ticks observés,
-comme les critères d'acceptation de la campagne (§4-B1 du plan)."""
+comme les critères d'acceptation de la campagne."""
 
 
 def _population_outcome(ticks: list[tuple]) -> dict[str, Any]:

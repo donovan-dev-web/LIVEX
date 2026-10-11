@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du pipeline cognitif BDI (ordre des phases par tick).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -66,13 +70,13 @@ public class CognitionPipelineTests
     [Fact]
     public void Deliberation_DrivesTerminalDrinkOnceThirstTriggered()
     {
-        // SYNE-042 : soif déclenchée dès 50 (décision n°4) → l'entité boit quand
+        // SYNE-042 : soif déclenchée dès 50 → l'entité boit quand
         // c'est viable ; la boisson consomme la réserve globale d'eau.
         // (mortalité désactivée : le scénario teste la soif, pas le cycle de vie)
         SimulationOptions options = Options();
         options.Agents.Life.DeathEnabled = false;
         // Régénération inerte pour que la consommation reste observable (les défauts
-        // calibrés ADR-016 régénèrent +10/tick, apport net supérieur à la boisson).
+        // calibrés régénèrent +10/tick, apport net supérieur à la boisson).
         options.Resources.Water.RegenerationRate = 0;
         var world = new WorldType(new WorldSize(500, 500));
         world.AddEntity(MakeEntity(1, new Position(50, 50)));
@@ -85,7 +89,7 @@ public class CognitionPipelineTests
         MindState mind = loop.Cognition.MindOf(1);
         Assert.NotNull(mind.LastDecision);
 
-        // La soif a été éteinte par Drink (réserve mise à jour, décision n°4) :
+        // La soif a été éteinte par Drink (réserve mise à jour) :
         // la réserve globale d'eau a été consommée mais reste non vide. Régénération
         // rendue inerte au-dessus : sans consommation la réserve vaudrait exactement
         // son stock initial (20 000) — toute consommation la passe sous la borne.
@@ -180,7 +184,7 @@ public class CognitionPipelineTests
     [Fact]
     public void DeliberationFrequency_IsConfigurable()
     {
-        // SYNE-031 : intervalle 2 → l'entité 1 délibère aux ticks impairs (décision n°14).
+        // SYNE-031 : intervalle 2 → l'entité 1 délibère aux ticks impairs.
         SimulationOptions options = Options();
         options.Agents.Actions.Deliberation.IntervalTicks = 2;
 
@@ -208,7 +212,7 @@ public class CognitionPipelineTests
         MindState mind = loop.Cognition.MindOf(1);
 
         // tick 87–88 : hors délibération ((87+1) % 10 != 0) — intention Drink conservée
-        // depuis la dernière délibération (soif déclenchée ≥ 50, décision n°4).
+        // depuis la dernière délibération (soif déclenchée ≥ 50).
         Assert.False(mind.DeliberatedThisTick);
         Assert.Equal(DesireKind.Drink, mind.Intention?.Kind);
 
@@ -271,7 +275,7 @@ public class CognitionPipelineTests
         options.Agents.Needs.CuriosityDriftRate = 0;
         options.Resources.Food.Initial = 0;
         // Sans cet apport nul, la régénération nourriture des défauts calibrés
-        // (ADR-016, +20/tick) remplirait la réserve avant l'interruption testée.
+        // (+20/tick) remplirait la réserve avant l'interruption testée.
         options.Resources.Food.RegenerationRate = 0;
 
         (_, SimulationLoop loop) = BuildSingleLoop(options);
@@ -288,7 +292,7 @@ public class CognitionPipelineTests
     [Fact]
     public void DecisionRecord_ExposesFullTrace()
     {
-        // SYNE-030/031 : chaque décision produit une trace complète (COGNITIVE_ARCHITECTURE.md §7).
+        // SYNE-030/031 : chaque décision produit une trace complète.
         (_, SimulationLoop loop) = BuildSingleLoop(Options());
         loop.Run(100);
 

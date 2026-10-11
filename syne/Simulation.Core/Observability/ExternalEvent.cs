@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Événement discret typé (ExternalEvent).
+
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Simulation.Core.Communication;
@@ -8,7 +12,7 @@ using Simulation.Core.World;
 namespace Simulation.Core.Observability;
 
 /// <summary>
-/// Événement discret typé (API_CONTRACTS.md §2.2 — ExternalEvent). V0.1 :
+/// Événement discret typé (ExternalEvent). V0.1 :
 /// <c>tick_summary</c> (1 par tick) et <c>decision_made</c> (1 par entité par tick).
 /// </summary>
 public sealed record ExternalEvent(
@@ -23,7 +27,7 @@ public sealed record ExternalEvent(
 /// <summary>Production d'événements discrets à partir de la cognition (SYNE-080).</summary>
 public static class EventSensor
 {
-    /// <summary>Événement <c>tick_summary</c> (voir API_CONTRACTS.md §2.2).</summary>
+    /// <summary>Événement <c>tick_summary</c>.</summary>
     public static ExternalEvent TickSummary(ulong tick, int aliveCount) =>
         new(ObservabilityContract.TickSummary, tick, Value: (JsonNode)new System.Text.Json.Nodes.JsonObject
         {
@@ -32,8 +36,7 @@ public static class EventSensor
 
     /// <summary>
     /// Événement <c>decision_made</c> par entité (intention, utilité du dernier
-    /// score délibéré + drapeaux de délibération/interruption du tick courant,
-    /// COGNITIVE_ARCHITECTURE.md §7).
+    /// score délibéré + drapeaux de délibération/interruption du tick courant).
     /// </summary>
     public static ExternalEvent DecisionMade(ulong tick, ulong agentId, Cognition.MindState mind)
     {
@@ -57,7 +60,7 @@ public static class EventSensor
 
     /// <summary>
     /// Événement <c>action_completed</c> par entité : issue de l'exécution atomique
-    /// de l'action du tick (SYNE-040, API_CONTRACTS.md §2.2) avec les deltas d'effets.
+    /// de l'action du tick (SYNE-040) avec les deltas d'effets.
     /// </summary>
     public static ExternalEvent ActionCompleted(ulong tick, ulong agentId, Actions.ActionResult result)
     {
@@ -264,7 +267,7 @@ public static class EventSensor
 
     /// <summary>
     /// Événement <c>world.construction_placed</c> (SYNE-071) : pose d'une construction
-    /// (= obstacle statique, décision n°20) — modification d'environnement tracée.
+    /// (= obstacle statique) — modification d'environnement tracée.
     /// Événement d'environnement (pas d'agent porteur) : identifiant, position et
     /// rayon de l'obstacle posé.
     /// </summary>
@@ -310,7 +313,7 @@ public static class EventSensor
     /// <summary>
     /// Événement <c>world.season_changed</c> (SYNE-072) : basculement d'une saison à
     /// l'autre au tick du changement (cycle actif <c>world.seasons.enabled</c>) —
-    /// déterminisme total (fonction pure du tick, 0 tirage PRNG, DETERMINISM.md §3).
+    /// déterminisme total (fonction pure du tick, 0 tirage PRNG).
     /// Événement d'environnement (pas d'agent porteur) : saisons précédente et courante
     /// en clé JSON camelCase.
     /// </summary>
@@ -329,11 +332,11 @@ public static class EventSensor
     }
 
     /// <summary>
-    /// Événement <c>world.territory_membership_changed</c> (SYNE-073, décision n°21) :
+    /// Événement <c>world.territory_membership_changed</c> (SYNE-073) :
     /// une entité est **entrée dans** ou **sortie de** la zone d'un « point de survie »
     /// au tick du franchissement (suivi actif <c>world.territories.enabled</c>) —
     /// déterminisme total (appartenance = fonction pure des positions, 0 tirage PRNG,
-    /// DETERMINISM.md §3). Porteur : l'entité (AgentId), cible : la zone (TargetId),
+    /// Porteur : l'entité (AgentId), cible : la zone (TargetId),
     /// charge utile : le sens du changement {kind} (camelCase).
     /// </summary>
     public static ExternalEvent TerritoryMembershipChanged(ulong tick, World.TerritoryMembershipChange change)

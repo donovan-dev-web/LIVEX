@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Campagne V3 — cadence, backpressure, lag et pertes (ROADMAP-V01 étape 6).
+"""Campagne V3 — cadence, backpressure, lag et pertes.
 
 Scénario (aucun long-run : arbitrage A2) :
 
@@ -14,9 +14,9 @@ Scénario (aucun long-run : arbitrage A2) :
    nouveau lag sont mesurés.
 
 Résultats : JSON dans ``docs/campaign-runs/v3/`` (hors git) + récapitulatif
-sur stdout, à consolider dans RAPPORT-ELEMENTS-OUVERTS.md §5.3.
+sur stdout.
 
-Usage : scripts/v3-campaign.py [--ticks-per-second 100] [--agents 50]
+Usage : scripts/v3_campaign.py [--ticks-per-second 100] [--agents 50]
        [--phase-seconds 10]
 """
 

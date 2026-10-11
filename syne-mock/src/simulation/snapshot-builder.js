@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Construction des snapshots du monde et des agents à chaque tick.
+ */
+
 const { round } = require('./deterministic-random');
 
 class SnapshotBuilder {
@@ -18,13 +24,13 @@ class SnapshotBuilder {
       version: config.contractVersion,
       engineVersion: config.engineVersion,
       runId,
-      // Parité de contrat V0.2.1 (API_CONTRACTS.md §2.1) : le seed voyage dans
+      // Parité de contrat V0.2.1 : le seed voyage dans
       // le snapshot — ECHOS n'a plus à le dériver du runId.
       seed,
       tick,
-      // Parité de contrat (API_CONTRACTS.md §2.1) : minutes simulées (plancher
+      // Parité de contrat : minutes simulées (plancher
       // entier, stockage ECHOS INTEGER) + secondes simulées exactes (additif
-      // ADR-017, contrat 0.4.0) — `tick × simulatedSecondsPerTick`.
+      // contrat 0.4.0) — `tick × simulatedSecondsPerTick`.
       simulatedTimeMinutes: simulatedTimeMinutes ?? tick,
       simulatedTimeSeconds: simulatedTimeSeconds ?? tick * config.simulatedSecondsPerTick,
       aliveCount: agents.length,
@@ -49,7 +55,7 @@ class SnapshotBuilder {
       resources: Object.entries(stocks).map(([type, quantity]) => ({
         type, quantity: round(quantity)
       })),
-      // Parité de contrat (API_CONTRACTS.md §2.1) : les obstacles du snapshot
+      // Parité de contrat : les obstacles du snapshot
       // portent la géométrie du monde {id, x, y, radius}, sans les détails de
       // forme interne (SYNE sérialise ObstacleSnapshot(Id, X, Y, Radius)). Les
       // formes multi-cellules, sans rayon, gardent leur ancre avec un rayon nul.

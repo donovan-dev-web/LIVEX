@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Naissances par fusion consentie : consentement, héritage des traits et de la mémoire.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -5,7 +9,7 @@ using Simulation.Core.World;
 
 namespace Simulation.Core.Population;
 
-/// <summary>Événement de naissance par fusion consentie (SYNE-062, SYSTEM_SPEC.md §8).</summary>
+/// <summary>Événement de naissance par fusion consentie (SYNE-062).</summary>
 public sealed record BirthObservation(
     ulong Tick,
     ulong MotherId,
@@ -16,12 +20,12 @@ public sealed record BirthObservation(
     TraitSet Traits);
 
 /// <summary>
-/// Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17/16,
-/// SYSTEM_SPEC.md §8, Monographie §6.6.2) : une fusion reste côté cycle de vie,
+/// Cycle de vie — naissance par fusion consentie (SYNE-062/075,
+/// une fusion reste côté cycle de vie,
 /// l'entité née a un état cognitif vierge qui réinitialise la boucle de vie.
 ///
 /// Exécuté <b>après</b> la boucle des entités et la communication de masse (ordre
-/// causal strict, DETERMINISM.md §5) : la population ne mute jamais pendant
+/// causal strict) : la population ne mute jamais pendant
 /// l'itération.
 ///
 /// V0.2 : mécanique déterministe sans PRNG —
@@ -29,8 +33,8 @@ public sealed record BirthObservation(
 /// <item>une tentative de fusion au plus tous les <c>intervalTicks</c> (rareté,
 ///  V0.1 → V0.2) ;</item>
 /// <item>le consentement est la confiance <b>réciproque</b> (min des deux sens)
-///  ≥ <c>consentTrustThreshold</c> (§6.6.2) ;</item>
-/// <item>la fidélité de la fusion (SYNE-075, Monographie §6.6.2) exige en plus :
+///  ≥ <c>consentTrustThreshold</c>  ;</item>
+/// <item>la fidélité de la fusion (SYNE-075) exige en plus :
 ///  proximité physique (<c>mergeRange</c>), ligne de vue dégagée
 ///  (<c>requireLineOfSight</c>), énergie suffisante des deux parents
 ///  (<c>mergeMinimumEnergy</c>) et absence de besoin critique chez les deux
@@ -153,7 +157,7 @@ public sealed class BirthSystem
     }
 
     /// <summary>
-    /// Fidélité de la fusion consentie (SYNE-075, Monographie §6.6.2) : confiance
+    /// Fidélité de la fusion consentie (SYNE-075) : confiance
     /// réciproque + proximité + ligne de vue + énergie + absence de besoin critique.
     /// Fonction pure et déterministe (aucun PRNG).
     /// </summary>

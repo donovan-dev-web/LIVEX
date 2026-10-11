@@ -4,7 +4,7 @@
 **Statut** : [Accepted]
 **Dernière mise à jour** : 6 octobre 2026
 **Dépend de** : `ADR-001-stack-dotnet-avalonia.md`, `ADR-003-analyse-propriete-de-echos.md`
-**Annule et remplace** : `../../docs-echos/adr/ADR-003-shell-electron-desktop.md` ([Superseded])
+**Annule et remplace** : l'ADR-003 d'ECHOS (shell Electron, archivé) ([Superseded])
 **Source Monographie** : —
 **Date de décision** : 5 octobre 2026 (utilisateur)
 
@@ -180,8 +180,7 @@ dans des fenêtres natives.**
   l'application. Mitigation : `ShutdownMode.OnMainWindowClose` et libération des
   fenêtres à la fermeture.
 - **Dette documentaire.** D'autres documents décrivaient encore l'interface web
-  (`FRONTEND_VISION.md`, `USER_STORIES.md`, `UI_DESIGN.md`, ROADMAP, ISSUES,
-  monographie). Ils sont marqués **historiques** plutôt que laissés comme
+  (ROADMAP, ISSUES, monographie). Ils sont marqués **historiques** plutôt que laissés comme
   prescriptions ; le reste se traite dans les revues de documentation (P4).
 
 ## Alternatives considérées

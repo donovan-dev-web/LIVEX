@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de l'ensemble des 8 traits (plage [0, 2], neutre 1.0).
+
 using Simulation.Core.Entities;
 using Xunit;
 

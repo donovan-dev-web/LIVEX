@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Options de simulation : valeurs typées et défauts de toutes les sections de configuration.
+
 namespace Simulation.Core.Configuration;
 
 /// <summary>
-/// Options de simulation (Annexe H). Structure parallèle au fichier config.json :
+/// Options de simulation. Structure parallèle au fichier config.json :
 /// les propriétés absentes d'un fichier partiel conservent les défauts intégrés.
 /// </summary>
 public sealed class SimulationOptions
@@ -27,10 +31,10 @@ public sealed class SimulationSettings
     public int TicksPerSecond { get; set; } = 10;
 
     /// <summary>
-    /// Secondes simulées par tick (ADR-017 « échelle temporelle configurable »,
-    /// §4.1) — le second levier de temporalité, à côté de <see cref="TicksPerSecond"/>.
+    /// Secondes simulées par tick (« échelle temporelle configurable »,
+    ///— le second levier de temporalité, à côté de <see cref="TicksPerSecond"/>.
     /// Défaut <b>60</b> : 1 tick = 1 minute simulée (temporalité historique,
-    /// ADR-005) — neutre par défaut, checksums dorés inchangés. Le profil
+    ///— neutre par défaut, checksums dorés inchangés. Le profil
     /// <c>prism</c> porte 5 (1 tick = 5 s simulées, ratio R = 30 à 6 TPS).
     /// Plage validée [1, 3600]. Les quantités de classe A (taux de besoins,
     /// décroissances, régénérations, durées) sont mises à l'échelle une fois au
@@ -62,13 +66,13 @@ public sealed class AgentSettings
     public TrustSettings Trust { get; set; } = new();
     public ActionSettings Actions { get; set; } = new();
 
-    /// <summary>Héritage intergénérationnel (SYNE-063, décision n°16) : mécanismes fins configurables (§6.6.3).</summary>
+    /// <summary>Héritage intergénérationnel (SYNE-063) : mécanismes fins configurables.</summary>
     public InheritanceSettings Inheritance { get; set; } = new();
 
-    /// <summary>Cycle de vie — mortalité par épuisement (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4).</summary>
+    /// <summary>Cycle de vie — mortalité par épuisement (SYNE-074).</summary>
     public LifeSettings Life { get; set; } = new();
 
-    /// <summary>Cheminement (SYNE-077, Monographie §6.2.12) : A* déterministe sur grille rasterisée + cache LRU.</summary>
+    /// <summary>Cheminement (SYNE-077) : A* déterministe sur grille rasterisée + cache LRU.</summary>
     public PathfindingSettings Pathfinding { get; set; } = new();
 }
 
@@ -81,7 +85,7 @@ public sealed class NeedsSettings
     public double SafetyDriftRate { get; set; } = 0.001;
 
     /// <summary>
-    /// Dérive du besoin social — <b>calibration B1 (ADR-016)</b> : 0,001 → 0,0002.
+    /// Dérive du besoin social — <b>calibration B1 </b> : 0,001 → 0,0002.
     /// Ce besoin n'a aucun mécanisme de satisfaction (aucun action ne le décrémente) :
     /// à 0,001/tick il franchit son seuil de déclenchement (0,7) au tick ~700 et
     /// déclenche <c>Socialize</c> <b>en permanence</b> — jusqu'à 96 % des décisions
@@ -90,29 +94,29 @@ public sealed class NeedsSettings
     public double SocialDriftRate { get; set; } = 0.0002;
 
     /// <summary>
-    /// Dérive du besoin de curiosité — <b>calibration B1 (ADR-016)</b> : 0,002 →
+    /// Dérive du besoin de curiosité — <b>calibration B1 </b> : 0,002 →
     /// 0,0005, même cause que <see cref="SocialDriftRate"/> (seuil 0,3 franchi au
     /// tick ~600 au lieu de ~150).
     /// </summary>
     public double CuriosityDriftRate { get; set; } = 0.0005;
 
-    /// <summary>Seuil de déclenchement : un besoin non satisfait lance une action dès ce niveau (décision n°4 : « ≥ 50 »).</summary>
+    /// <summary>Seuil de déclenchement : un besoin non satisfait lance une action dès ce niveau (« ≥ 50 »).</summary>
     public double HungerTriggerThreshold { get; set; } = 50.0;
 
     public double ThirstTriggerThreshold { get; set; } = 50.0;
 
-    /// <summary>Seuil de déclenchement du repos (décision n°4 : Rest dès fatigue &gt; 70).</summary>
+    /// <summary>Seuil de déclenchement du repos (Rest dès fatigue &gt; 70).</summary>
     public double FatigueTriggerThreshold { get; set; } = 70.0;
 }
 
 public sealed class PerceptionSettings
 {
-    /// <summary>Rayon de perception — décision n°6 : défaut 50 (plage 30–70).</summary>
+    /// <summary>Rayon de perception — : défaut 50 (plage 30–70).</summary>
     public int Radius { get; set; } = 50;
     public double ConfidenceFalloff { get; set; } = 0.3;
-    /// <summary>Perception étagée : rotation en groupes de <c>RotationInterval</c> (COGNITIVE_ARCHITECTURE §3).</summary>
+    /// <summary>Perception étagée : rotation en groupes de <c>RotationInterval</c>.</summary>
     public int RotationInterval { get; set; } = 4;
-    /// <summary>Ligne de vue : un obstacle masque la perception (SYNE-011, ADR-013).</summary>
+    /// <summary>Ligne de vue : un obstacle masque la perception (SYNE-011).</summary>
     public bool LineOfSight { get; set; } = true;
 
     /// <summary>
@@ -132,7 +136,7 @@ public sealed class MemorySettings
 {
     public int MaxCapacity { get; set; } = 1000;
     public double RecallThreshold { get; set; } = 0.01;
-    /// <summary>Décroissance des souvenirs d'observation (décision n°11).</summary>
+    /// <summary>Décroissance des souvenirs d'observation.</summary>
     public double ObservationDecayRate { get; set; } = 0.01;
     public double EventDecayRate { get; set; } = 0.005;
     public double InteractionDecayRate { get; set; } = 0.002;
@@ -140,9 +144,9 @@ public sealed class MemorySettings
 
 public sealed class BeliefSettings
 {
-    /// <summary>Force de révision : <c>belief = belief + (signal − belief) × strength</c> (décision n°12).</summary>
+    /// <summary>Force de révision : <c>belief = belief + (signal − belief) × strength</c>.</summary>
     public double UpdateStrength { get; set; } = 0.3;
-    /// <summary>Plafond de variation de confiance par snap (décision n°12 : « plafond par snap »).</summary>
+    /// <summary>Plafond de variation de confiance par snap (« plafond par snap »).</summary>
     public double MaxChangePerSnap { get; set; } = 0.5;
     public double AlignBonus { get; set; } = 0.2;
     public double ConflictPenalty { get; set; } = 0.1;
@@ -153,10 +157,10 @@ public sealed class BeliefSettings
 
 public sealed class TrustSettings
 {
-    /// <summary>Confiance d'une première rencontre (décision n°10).</summary>
+    /// <summary>Confiance d'une première rencontre.</summary>
     public double InitialTrust { get; set; } = 0.5;
 
-    /// <summary>Décroissance de confiance par tick sans interaction (trustDecay, COMMUNICATION_PROTOCOL.md §3).</summary>
+    /// <summary>Décroissance de confiance par tick sans interaction (trustDecay).</summary>
     public double DecayFactorPerTick { get; set; } = 0.9;
 
     /// <summary>Bonus de confiance après une vérité constatée (plafond 1.0).</summary>
@@ -175,7 +179,7 @@ public sealed class TrustSettings
 public sealed class ActionSettings
 {
     /// <summary>
-    /// Coût énergétique d'un déplacement — <b>calibration B1 (ADR-016)</b> :
+    /// Coût énergétique d'un déplacement — <b>calibration B1 </b> :
     /// 0,5 → 0,03. Le mouvement est l'action majoritaire (75 à 98 % des ticks en
     /// régime établi) : à 0,5 (puis 0,05 en D1) son coût dépasse le revenu
     /// amorti de Eat/Drink (≈ 0,057/tick) et l'énergie moyenne décroît sans borne
@@ -183,27 +187,27 @@ public sealed class ActionSettings
     /// </summary>
     public double MoveEnergyCost { get; set; } = 0.03;
 
-    /// <summary>Énergie regagnée par Repos — calibration B1 (ADR-016, hérité de D1).</summary>
+    /// <summary>Énergie regagnée par Repos — calibration B1 (hérité de D1).</summary>
     public double RestEnergyGain { get; set; } = 1.5;
 
-    /// <summary>Fatigue récupérée par Repos — calibration B1 (ADR-016, hérité de D1).</summary>
+    /// <summary>Fatigue récupérée par Repos — calibration B1 (hérité de D1).</summary>
     public double RestFatigueRecovery { get; set; } = 2.0;
     public DeliberationSettings Deliberation { get; set; } = new();
     public InterruptionSettings Interruption { get; set; } = new();
 
-    /// <summary>Bibliothèque de plans candidats par objectif (D3, ADR « Means-End Reasoning » — désactivée par défaut, trajectoire de référence inchangée).</summary>
+    /// <summary>Bibliothèque de plans candidats par objectif (D3, — désactivée par défaut, trajectoire de référence inchangée).</summary>
     public PlansSettings Plans { get; set; } = new();
 
-    /// <summary>Inventaire des entités (D8, ADR « Système d'inventaire » — désactivé par défaut).</summary>
+    /// <summary>Inventaire des entités (D8, — désactivé par défaut).</summary>
     public InventorySettings Inventory { get; set; } = new();
 
-    /// <summary>Contrôle de saillance (D2, ADR « Politique de Reconsidération » — désactivé par défaut).</summary>
+    /// <summary>Contrôle de saillance (D2, — désactivé par défaut).</summary>
     public SalienceSettings Salience { get; set; } = new();
 
-    /// <summary>Engagements communicationnels (D5, ADR « Engagements Communicationnels » — désactivés par défaut).</summary>
+    /// <summary>Engagements communicationnels (D5, — désactivés par défaut).</summary>
     public CommitmentSettings Commitments { get; set; } = new();
 
-    /// <summary>Catalogue déclaratif des actions (SYNE-040, CONFIGURATION.md §6.2).</summary>
+    /// <summary>Catalogue déclaratif des actions (SYNE-040).</summary>
     public ActionCatalogSettings Catalog { get; set; } = new();
 }
 
@@ -221,7 +225,7 @@ public sealed class ActionCatalogSettings
         ["flee"] = new ActionEntrySettings { Movement = true },
         ["socialize"] = new ActionEntrySettings { Movement = true },
         ["explore"] = new ActionEntrySettings { Movement = true },
-        // Primitives atomiques D7 (ADR « Primitives d'actions », engineVersion 0.14.0) :
+        // Primitives atomiques D7 (engineVersion 0.14.0) :
         // déclarées pour la complétude du catalogue (chaque DesireKind DOIT avoir une
         // entrée), mais inertes tant que agents.actions.plans.enabled = false (D3) —
         // elles ne sont jamais générées par la délibération par défaut.
@@ -262,10 +266,10 @@ public sealed class ActionEntrySettings
 
 public sealed class DeliberationSettings
 {
-    /// <summary>Fréquence de délibération : ticks entre deux délibérations (décision n°14, défaut 10).</summary>
+    /// <summary>Fréquence de délibération : ticks entre deux délibérations (défaut 10).</summary>
     public int IntervalTicks { get; set; } = 10;
 
-    /// <summary>Bonus d'alignement avec l'objectif courant (×1.2, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    /// <summary>Bonus d'alignement avec l'objectif courant (×1.2).</summary>
     public double AlignBonus { get; set; } = 1.2;
 
     /// <summary>Bonification maximale d'alignement avec l'objectif collectif (SYNE-076, ×1.2 par défaut).</summary>
@@ -274,19 +278,19 @@ public sealed class DeliberationSettings
     /// <summary>Marge anti-oscillation (hystérésis) : passer à une nouvelle action seulement si elle dépasse l'action courante de cette marge (défaut 0.05).</summary>
     public double ActionSwitchMargin { get; set; } = 0.05;
 
-    /// <summary>Marge de conflit de priorités : candidats à moins de cette marge du maximum → résolution probabiliste confiance×force (décision n°22).</summary>
+    /// <summary>Marge de conflit de priorités : candidats à moins de cette marge du maximum → résolution probabiliste confiance×force.</summary>
     public double ConflictTieMargin { get; set; } = 0.5;
 }
 
 public sealed class InterruptionSettings
 {
-    /// <summary>Interruptions actives (décision n°15).</summary>
+    /// <summary>Interruptions actives.</summary>
     public bool Enabled { get; set; } = true;
 
-    /// <summary>Marge : interruption seulement si l'utilité du besoin critique surpasse l'action courante de cette marge (défaut 10, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    /// <summary>Marge : interruption seulement si l'utilité du besoin critique surpasse l'action courante de cette marge (défaut 10).</summary>
     public double UtilityExcessMargin { get; set; } = 10.0;
 
-    /// <summary>Seuil de faim critique (défaut 85, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    /// <summary>Seuil de faim critique (défaut 85).</summary>
     public double CriticalHunger { get; set; } = 85.0;
 
     /// <summary>Seuil d'énergie critique (défaut 10).</summary>
@@ -294,7 +298,7 @@ public sealed class InterruptionSettings
 }
 
 /// <summary>
-/// Bibliothèque de plans candidats par objectif (ADR « Means-End Reasoning », D3,
+/// Bibliothèque de plans candidats par objectif (D3,
 /// engineVersion 0.14.0). Désactivée par défaut : la délibération ne voit que les
 /// objectifs de besoin (comportement historique). Activée, elle reçoit aussi des
 /// candidats de manipulation (Prendre/Donner/Échanger) — see DesireFactory.ResolveTerminal.
@@ -306,7 +310,7 @@ public sealed class PlansSettings
 }
 
 /// <summary>
-/// Inventaire des entités (ADR « Système d'inventaire », D8, engineVersion 0.14.0).
+/// Inventaire des entités (D8, engineVersion 0.14.0).
 /// Désactivé par défaut : Eat/Drink consomment directement les réserves mondiales
 /// (comportement historique), la trajectoire du scénario de référence est préservée.
 /// Activé, les primitives Prendre/Donner/Échanger (D7) opèrent sur une capacité de
@@ -317,7 +321,7 @@ public sealed class InventorySettings
     /// <summary>Inventaire actif (D8) — les primitives Take/Give/Trade opèrent dessus.</summary>
     public bool Enabled { get; set; }
 
-    /// <summary>Capacité de poids par entité (capacitePoids de l'ADR — défaut posé, calibrable).</summary>
+    /// <summary>Capacité de poids par entité (capacitePoids — défaut posé, calibrable).</summary>
     public double CapacityWeight { get; set; } = 20.0;
 
     /// <summary>Quantité par primitive Prendre (transfert réserve → inventaire).</summary>
@@ -331,7 +335,7 @@ public sealed class InventorySettings
 }
 
 /// <summary>
-/// Contrôle de saillance (ADR « Politique de Reconsidération », D2, engineVersion
+/// Contrôle de saillance (D2, engineVersion
 /// 0.14.0) : étape 3bis de la boucle cognitive — entre deux délibérations, une
 /// entité poursuit son intention sauf saillance (besoin franchi, condition
 /// d'interruption) ou filet de sécurité périodique. Désactivé par défaut.
@@ -347,7 +351,7 @@ public sealed class SalienceSettings
     /// <summary>Poids d'un franchissement de seuil de besoin depuis la dernière délibération.</summary>
     public double NeedThresholdWeight { get; set; } = 1.0;
 
-    /// <summary>Poids d'une condition d'interruption remplie (généralisation §3.15.6).</summary>
+    /// <summary>Poids d'une condition d'interruption remplie (généralisation).</summary>
     public double InterruptionConditionWeight { get; set; } = 2.0;
 
     /// <summary>Filet de sécurité : reconsidération forcée tous les N ticks sans saillance (0 = désactivé).</summary>
@@ -355,7 +359,7 @@ public sealed class SalienceSettings
 }
 
 /// <summary>
-/// Engagements communicationnels (ADR « Engagements Communicationnels », D5,
+/// Engagements communicationnels (D5,
 /// engineVersion 0.14.0) : structure Commitment créée à la réception d'une réponse
 /// positive à une requête, objectif candidat, impact distinct sur la confiance.
 /// Désactivé par défaut.
@@ -365,19 +369,19 @@ public sealed class CommitmentSettings
     /// <summary>Engagements actifs (D5).</summary>
     public bool Enabled { get; set; }
 
-    /// <summary>Durée de validité d'un engagement : non honoré au-delà → Broken (expiryTick de l'ADR).</summary>
+    /// <summary>Durée de validité d'un engagement : non honoré au-delà → Broken (expiryTick).</summary>
     public ulong ExpiryTicks { get; set; } = 100;
 }
 
 public sealed class ResourceSettings
 {
     /// <summary>
-    /// Nourriture — <b>calibration B1 (ADR-016)</b> : réserve initiale 20 000 et
+    /// Nourriture — <b>calibration B1 </b> : réserve initiale 20 000 et
     /// régénération nette 20/tick, **sans** dégradation (« degradationTick »
     /// neutralisé) : avec une dégradation de période, la régénération est
     /// intégralement annulée en fin de période (apport net nul) et la réserve se
     /// réduit à sa valeur initiale — 100 agents épuisent alors les 10 000 de D1
-    /// avant t2000. L'horizon de calibration est 2500 ticks (ADR-016).
+    /// avant t2000. L'horizon de calibration est 2500 ticks.
     /// </summary>
     public ResourceSpec Food { get; set; } = new() { Initial = 20_000, RegenerationRate = 20, DegradationTick = null };
 
@@ -421,49 +425,49 @@ public sealed class ResourceSpec
 
 public sealed class CommunicationSettings
 {
-    /// <summary>Max d'envois par entité et par tick (Annexe H : 5 ; calibration B1 : 1).</summary>
+    /// <summary>Max d'envois par entité et par tick (5 ; calibration B1 : 1).</summary>
     public int MaxSendsPerTick { get; set; } = 1;
 
-    /// <summary>Max de réceptions traitées par tick et par entité (Annexe H : 3 ; calibration B1 : 1).</summary>
+    /// <summary>Max de réceptions traitées par tick et par entité (3 ; calibration B1 : 1).</summary>
     public int MaxReceivesPerTick { get; set; } = 1;
 
-    /// <summary>Probabilité d'incompréhension d'un message reçu (Annexe H : 0.05).</summary>
+    /// <summary>Probabilité d'incompréhension d'un message reçu (0.05).</summary>
     public double IncomprehensionRate { get; set; } = 0.05;
 
-    /// <summary>Décroissance de confiance inter-entités (Annexe H : 0.9, valeurs relatives au trust).</summary>
+    /// <summary>Décroissance de confiance inter-entités (0.9, valeurs relatives au trust).</summary>
     public double TrustDecay { get; set; } = 0.9;
 
-    /// <summary>Portée effective de transmission d'une pulsation (décision n°7 : 20 u. héritées du prototype, configurable).</summary>
+    /// <summary>Portée effective de transmission d'une pulsation (20 u. héritées du prototype, configurable).</summary>
     public int TransmissionRange { get; set; } = 55;
 
-    /// <summary>Relais entité-à-entité actif (SYNE-050, COMMUNICATION_PROTOCOL.md §4) — neutralisé en calibration B1 (ADR-016) avec les coûts énergétiques.</summary>
+    /// <summary>Relais entité-à-entité actif (SYNE-050) — neutralisé en calibration B1 avec les coûts énergétiques.</summary>
     public bool RelayEnabled { get; set; } = false;
 
     /// <summary>Nombre maximal de sauts d'un message relayé (anti-boucle, borne de dégradation).</summary>
     public int MaxHops { get; set; } = 2;
 
     /// <summary>
-    /// Coût énergétique d'émission — décision n°9 : <c>sendEnergyCost + payload × sendEnergyPayloadFactor</c>
-    /// (0.5 + p×0.1 hérités ; **neutres depuis la calibration B1**, ADR-016 : à ~0,2 envoi/agent/tick
+    /// Coût énergétique d'émission — : <c>sendEnergyCost + payload × sendEnergyPayloadFactor</c>
+    /// (0.5 + p×0.1 hérités ; **neutres depuis la calibration B1** : à ~0,2 envoi/agent/tick
     /// l'envoi coûtait ~0,12 énergie/tick, soit 4× le coût de déplacement recalibré).
     /// </summary>
     public double SendEnergyCost { get; set; } = 0;
 
     public double SendEnergyPayloadFactor { get; set; } = 0;
 
-    /// <summary>Coût énergétique de réception — décision n°9 (neutre depuis la calibration B1, ADR-016).</summary>
+    /// <summary>Coût énergétique de réception — (neutre depuis la calibration B1).</summary>
     public double ReceiveEnergyCost { get; set; } = 0;
 
     public double ReceiveEnergyPayloadFactor { get; set; } = 0;
 
-    /// <summary>Décroissance de confiance par relais — décision n°10 : <c>confidence × hopConfidenceDecay</c> (0.9, ≈ 10 %/hop).</summary>
+    /// <summary>Décroissance de confiance par relais — : <c>confidence × hopConfidenceDecay</c> (0.9, ≈ 10 %/hop).</summary>
     public double HopConfidenceDecay { get; set; } = 0.9;
 }
 
 public sealed class WorldSettings
 {
     /// <summary>
-    /// Mètres par unité SYNE (ADR-017 §4.1) — clé <b>informative</b>, jamais
+    /// Mètres par unité SYNE — clé <b>informative</b>, jamais
     /// utilisée dans un calcul du moteur : elle est seulement transmise aux
     /// clients (PRISM : échelle k = 100 uu / unité, 1 unité = 1 m).
     /// Défaut 1,0 (unité = mètre) ; doit être &gt; 0.
@@ -479,8 +483,8 @@ public sealed class WorldSettings
     public bool Events { get; set; }
 
     /// <summary>
-    /// Active le placement des obstacles statiques configurés (SYNE-071, Annexe H).
-    /// Les constructions sont des obstacles statiques de la grille (décision n°20) :
+    /// Active le placement des obstacles statiques configurés (SYNE-071).
+    /// Les constructions sont des obstacles statiques de la grille :
     /// disposés par <see cref="ObstacleLayout"/> à l'init, poés/retirés en cours de run
     /// par <c>World.PlaceConstruction</c>/<c>RemoveConstruction</c> (modification
     /// d'environnement tracée, événement <c>world.construction_placed</c>).
@@ -489,12 +493,12 @@ public sealed class WorldSettings
 
     /// <summary>
     /// Layout initial des obstacles statiques (disques) posés à l'init quand
-    /// <see cref="Obstacles"/> est vrai (SYNE-071, CONFIGURATION.md §6.8).
+    /// <see cref="Obstacles"/> est vrai (SYNE-071).
     /// </summary>
     public List<StaticObstacleSettings> ObstacleLayout { get; set; } = [];
 
     /// <summary>
-    /// Zones de territoire (SYNE-073, décision n°21, CONFIGURATION.md §6.10) :
+    /// Zones de territoire (SYNE-073) :
     /// bloc <c>world.territories</c>. V0.1 : concept d'**observation** — la
     /// présence des entités dans une zone délimite le territoire effectif,
     /// suivi par la boucle et émis sans aucun comportement agentique.
@@ -503,10 +507,10 @@ public sealed class WorldSettings
     public TerritorySettings Territories { get; set; } = new();
 
     /// <summary>
-    /// Livres (SYNE-121, décisions n°18/19, CONFIGURATION.md §6.11) : bloc
+    /// Livres (SYNE-121) : bloc
     /// <c>world.books</c>. V0.1 : écriture/consultation via l'API de la boucle
-    /// (coût en énergie payé par l'auteur — décision n°18 ; bénéfice de lecture
-    /// posé en principe — décision n°19), activités seulement si
+    /// (coût en énergie payé par l'auteur ; bénéfice de lecture
+    /// posé en principe —), activités seulement si
     /// <c>enabled</c>. Désactivé par défaut ⇒ trajectoire du scénario de référence
     /// inchangée (re-pin contractuel).
     /// </summary>
@@ -518,7 +522,7 @@ public sealed class WorldSettings
 /// facteurs de régénération par ressource appliqués en fin de tick quand le
 /// cycle est actif (<c>world.seasons.enabled</c>). Facteur 1.0 = taux nominal ;
 /// &gt; 1 = saison favorable, &lt; 1 = saison défavorable. Pur (0 tirage PRNG,
-/// DETERMINISM.md §3) : la saison courante et son facteur sont des fonctions
+/// la saison courante et son facteur sont des fonctions
 /// déterministes du tick.
 /// </summary>
 public sealed class SeasonDefinition
@@ -536,8 +540,8 @@ public sealed class SeasonDefinition
 /// Cycle de saisons (SYNE-072, <c>world.seasons</c>) : l'ancien drapeau booléen
 /// homonyme (mort, jamais consommé aucun comportement) devient ce bloc actif —
 /// <c>enabled</c> remplit désormais ce rôle. Cycle déterministe de 4 saisons :
-/// saison( tick ) = (indexInitial + tick / seasonLengthTicks) mod 4, sans aucun
-/// tirage PRNG (DETERMINISM.md §3) ; les facteurs de régénération sont appliqués
+/// saison(tick) = (indexInitial + tick / seasonLengthTicks) mod 4, sans aucun
+/// tirage PRNG ; les facteurs de régénération sont appliqués
 /// en fin de tick sur le cycle des ressources (SYNE-070). Saisons désactivées par
 /// défaut ⇒ trajectoire du scénario de référence inchangée (re-pin contractuel).
 /// </summary>
@@ -556,7 +560,7 @@ public sealed class SeasonSettings
     /// Les 4 définitions du cycle (une par saison, ordre indifférent) — défaut :
     /// spring (toutes ressources ×1), summer (eau ×1,2), autumn (bois ×1,2
     /// + nourriture ×1,1), winter (nourriture ×0,8, eau ×0,9) — valeurs V0.1
-    /// de premier jet, calibrées en SYNE-120 (DECISIONS_V01 décision n°4).
+    /// de premier jet, calibrées en SYNE-120.
     /// </summary>
     public List<SeasonDefinition> Cycle { get; set; } =
     [
@@ -630,8 +634,8 @@ public readonly record struct SeasonChange(World.Season Previous, World.Season C
 
 /// <summary>
 /// Pose d'un obstacle statique issu de la configuration <c>world.obstacleLayout</c>
-/// (SYNE-071, DATA_MODEL.md §2) : disque {Position, Radius}. Une construction posée
-/// modifie la perception et le mouvement — modèle figé par la décision n°20.
+/// (SYNE-071) : disque {Position, Radius}. Une construction posée
+/// modifie la perception et le mouvement — modèle figé par la.
 /// </summary>
 public sealed class StaticObstacleSettings
 {
@@ -643,7 +647,7 @@ public sealed class StaticObstacleSettings
 
 /// <summary>
 /// Définition d'une zone de territoire (SYNE-073, <c>world.territories.zones[]</c>,
-/// décision n°21) : disque « point de survie » {Center, Radius}. La présence d'une
+/// disque « point de survie » {Center, Radius}. La présence d'une
 /// entité dans le disque la délimite comme membre du territoire effectif —
 /// concept d'observation V0.1 (aucun comportement agentique, 0 tirage PRNG).
 /// </summary>
@@ -656,13 +660,13 @@ public sealed class TerritoryZoneDefinition
 }
 
 /// <summary>
-/// Zones de territoire (SYNE-073, décision n°21, CONFIGURATION.md §6.10) :
+/// Zones de territoire (SYNE-073) :
 /// <c>world.territories</c>. V0.1 : la présence d'une entité dans une zone délimite
 /// le **territoire effectif** (vue d'observation) — appartenance suivie en fin de
-/// tick (0 tirage PRNG, DETERMINISM.md §3) et émise en <c>world.territory_membership_changed</c>.
+/// tick (0 tirage PRNG) et émise en <c>world.territory_membership_changed</c>.
 /// Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée (re-pin
 /// contractuel). Les sources spatiales de ressources autour des points de survie
-/// (ressources du territoire) restent **hors V0.1** (SYSTEMS_SPEC.md §4).
+/// (ressources du territoire) restent **hors V0.1**.
 /// </summary>
 public sealed class TerritorySettings
 {
@@ -675,12 +679,12 @@ public sealed class TerritorySettings
 
 
 /// <summary>
-/// Livres (SYNE-121, décisions n°18/19, CONFIGURATION.md §6.11) : <c>world.books</c>.
+/// Livres (SYNE-121) : <c>world.books</c>.
 /// L'écriture d'un livre matérialise une connaissance à un instant T au **coût**
 /// (énergie) payé par l'auteur ; la lecture produit un **bénéfice** posé en
-/// principe (structure figée, décision n°19) — le bénéfice cognitif chiffré
-/// dépend du moteur de mémoire (décision n°11) et reste reporté (SYNE-131).
-/// Chiffres V0.1 de premier jet, calibrés en SYNE-120 (DECISIONS_V01 n°18/19).
+/// principe (structure figée) — le bénéfice cognitif chiffré
+/// dépend du moteur de mémoire et reste reporté (SYNE-131).
+/// Chiffres V0.1 de premier jet, calibrés en SYNE-120.
 /// Désactivé par défaut ⇒ trajectoire du scénario de référence inchangée.
 /// </summary>
 public sealed class BookSettings
@@ -688,11 +692,11 @@ public sealed class BookSettings
     /// <summary>Activité livres (écriture/consultation, événements <c>world.book_*</c>, snapshot <c>books[]</c>).</summary>
     public bool Enabled { get; set; }
 
-    /// <summary>Coût d'écriture en énergie payé par l'auteur (décision n°18, Monographie §3.18.5).</summary>
+    /// <summary>Coût d'écriture en énergie payé par l'auteur.</summary>
     public double WriteCostEnergy { get; set; } = 20.0;
 
 
-    /// <summary>Bénéfice de lecture posé en principe (décision n°19, Monographie §3.18.6) — effet cognitif reporté (mine mémoire).</summary>
+    /// <summary>Bénéfice de lecture posé en principe — effet cognitif reporté (mine mémoire).</summary>
     public double ReadBenefit { get; set; } = 1.0;
 }
 
@@ -711,7 +715,7 @@ public sealed class PerformanceSettings
 }
 
 /// <summary>
-/// Formation émergente des groupes (SYNE-060/061, SYSTEM_SPEC.md §5, décisions
+/// Formation émergente des groupes (SYNE-060/061, décisions
 /// n°23, 24) : cohésion = confiance réciproque × affinité (buts partagés +
 /// croyances communes). Les structures émergent — aucun script de coalition.
 /// </summary>
@@ -732,7 +736,7 @@ public sealed class GroupSettings
     /// <summary>Bonus d'affinité par croyance partagée (même fait, confiances ≥ 0.5).</summary>
     public double SharedBeliefBonus { get; set; } = 0.1;
 
-    /// <summary>Bonus d'affinité quand deux entités partagent leur objectif courant (décision n°24 : buts partagés).</summary>
+    /// <summary>Bonus d'affinité quand deux entités partagent leur objectif courant (buts partagés).</summary>
     public double GoalAlignmentBonus { get; set; } = 0.2;
 
     /// <summary>Quorum : une décision collective est adoptée quand ≥ cette fraction des membres partage la même intention.</summary>
@@ -740,8 +744,8 @@ public sealed class GroupSettings
 }
 
 /// <summary>
-/// Cycle de vie — naissance par fusion consentie (SYNE-062/075, décisions n°17, 16,
-/// SYSTEM_SPEC.md §8, Monographie §6.6.2) : fusion rare et volontaire, décision
+/// Cycle de vie — naissance par fusion consentie (SYNE-062/075,
+/// fusion rare et volontaire, décision
 /// déterministe sans PRNG. La « fusion consentie » est soumise aux conditions de
 /// fidélité comportementale (proximité physique, ligne de vue, énergie suffisante,
 /// absence de besoin critique) — SYNE-075.
@@ -754,7 +758,7 @@ public sealed class ReproductionSettings
     /// <summary>Une tentative de fusion tous les N ticks (rareté V0.1 → V0.2).</summary>
     public int IntervalTicks { get; set; } = 100;
 
-    /// <summary>Consentement : confiance réciproque minimale du couple pour fusionner (§6.6.2).</summary>
+    /// <summary>Consentement : confiance réciproque minimale du couple pour fusionner.</summary>
     public double ConsentTrustThreshold { get; set; } = 0.6;
 
     /// <summary>Plafond de naissances par tick (0 = aucune, garde-fou de population).</summary>
@@ -763,7 +767,7 @@ public sealed class ReproductionSettings
     /// <summary>Proximité physique : distance maximale entre les parents pour fusionner (SYNE-075).</summary>
     public double MergeRange { get; set; } = 40.0;
 
-    /// <summary>Énergie minimale des deux parents pour fusionner (SYNE-075, Monographie §6.6.2).</summary>
+    /// <summary>Énergie minimale des deux parents pour fusionner (SYNE-075).</summary>
     public double MergeMinimumEnergy { get; set; } = 30.0;
 
     /// <summary>La ligne de vue entre les parents doit être dégagée (SYNE-075, SYNE-011).</summary>
@@ -774,8 +778,8 @@ public sealed class ReproductionSettings
 }
 
 /// <summary>
-/// Mécanismes fins d'héritage des traits (SYNE-063, décision n°16, DATA_MODEL.md
-/// §6.6.3) : la structure (fusion + transmission) est figée ; la réadaptation/
+/// Mécanismes fins d'héritage des traits (SYNE-063,
+/// la structure (fusion + transmission) est figée ; la réadaptation/
 /// dominance/mutation restent configurables (V0.2).
 /// </summary>
 public sealed class InheritanceSettings
@@ -798,10 +802,10 @@ public sealed class InheritanceSettings
 }
 
 /// <summary>
-/// Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :
+/// Cycle de vie — mortalité (SYNE-074, -6.2.5) :
 /// une entité dont l'énergie atteint 0 (épuisement) meurt : retrait du monde
 /// (grille spatiale + index), des groupes et de la cognition, puis émission d'un
-/// événement <c>agent_died</c> (API_CONTRACTS.md §2.2).
+/// événement <c>agent_died</c>.
 /// </summary>
 public sealed class LifeSettings
 {
@@ -816,7 +820,7 @@ public sealed class LifeSettings
 }
 
 /// <summary>
-/// Cheminement (SYNE-077, Monographie §6.2.12) : A* déterministe sur grille
+/// Cheminement (SYNE-077) : A* déterministe sur grille
 /// rasterisée (les disques obstacles bloquent leurs cellules), voisinage ordonné
 /// + tie-break, cache de chemins LRU borné, repli « sur place » quand
 /// aucun chemin n'existe (destination inaccessible ou expansion plafonnée).

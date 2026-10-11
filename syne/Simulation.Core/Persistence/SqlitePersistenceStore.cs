@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Store SQLite V2.0 (SYNE-110) : schéma relationnel de 11 tables, transactions atomiques et rotation de
+//        maxBackups runs.
+
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using Simulation.Core.Configuration;
@@ -6,11 +11,11 @@ using Simulation.Core.Loop;
 namespace Simulation.Core.Persistence;
 
 /// <summary>
-/// Store SQLite V2.0 (SYNE-110, PERSISTENCE.md §3 — Annexe G) : schéma relationnel
-/// de 11 tables, transactions atomiques (PERSISTENCE.md §5) et rotation de
+/// Store SQLite V2.0 (SYNE-110) : schéma relationnel
+/// de 11 tables, transactions atomiques et rotation de
 /// <c>maxBackups</c> runs. Le snapshot bit-à-bit complet (monde + cognition + RNG
 /// 4×64) est conservé dans <c>tick_states.state</c>/<c>rng_state</c> pour la reprise
-/// exacte (PERSISTENCE.md §4). Les tables agents/ressources/groupes/événements/
+/// exacte. Les tables agents/ressources/groupes/événements/
 /// messages/metrics restent le pendant relationnel requis par le schéma.
 /// </summary>
 public sealed class SqlitePersistenceStore : IDisposable
@@ -505,7 +510,7 @@ public sealed class SqlitePersistenceStore : IDisposable
     }
 
     /// <summary>
-    /// Rotation des backups (PERSISTENCE.md §5, <c>maxBackups</c>) : supprime les
+    /// Rotation des backups (<c>maxBackups</c>) : supprime les
     /// runs les plus anciens dès que le nombre dépasse le plafond. V0.1 : politique
     /// simple « garder les N plus récents », la compression est hors périmètre.
     /// </summary>

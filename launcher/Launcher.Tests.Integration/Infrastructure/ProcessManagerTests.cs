@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Banc d'intégration : le moteur simulé est le vrai binaire Stub.Syne, démarré comme un processus externe.
+
 using System.Net.Sockets;
 using Launcher.Domain;
 using Launcher.Domain.Model;
@@ -8,7 +12,7 @@ using Xunit;
 namespace Launcher.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Banc d'intégration (TESTING.md §4) : le moteur simulé est le vrai binaire Stub.Syne,
+/// Banc d'intégration : le moteur simulé est le vrai binaire Stub.Syne,
 /// démarré comme un processus externe. Vérifie démarrage, codes de sortie, arrêt forcé,
 /// sonde HTTP et confinement — sans aucun composant réel SYNE/ECHOS.
 /// </summary>
@@ -41,7 +45,7 @@ public sealed class ProcessManagerTests : IAsyncLifetime
         Assert.True(File.Exists(Path.Combine(workDirectory, "data", "result.json")));
     }
 
-    /// <summary>Un crash injecté produit le résultat ProcessError du contrat (§4).</summary>
+    /// <summary>Un crash injecté produit le résultat ProcessError du contrat.</summary>
     [Fact]
     public async Task Crash_injecte_produit_ProcessError()
     {
@@ -54,7 +58,7 @@ public sealed class ProcessManagerTests : IAsyncLifetime
         Assert.Equal(ExitOutcomeNames.UnknownError, completion.Outcome);
     }
 
-    /// <summary>Un exit-code arbitraire est transporté tel quel (pannes injectables §13).</summary>
+    /// <summary>Un exit-code arbitraire est transporté tel quel (pannes injectables).</summary>
     [Fact]
     public async Task Code_de_sortie_arbitraire_est_mappe()
     {
@@ -118,7 +122,7 @@ public sealed class ProcessManagerTests : IAsyncLifetime
         }
     }
 
-    /// <summary>Le stub écrit exclusivement dans le dossier fourni (exigence commune §8).</summary>
+    /// <summary>Le stub écrit exclusivement dans le dossier fourni (exigence commune).</summary>
     [Fact]
     public async Task Stub_ecrit_dans_son_dossier_seulement()
     {
@@ -137,7 +141,7 @@ public sealed class ProcessManagerTests : IAsyncLifetime
     }
 
     /// <summary>
-    /// Les lignes de sortie sont publiées en direct vers les consoles (USER_INTERFACE.md §9) :
+    /// Les lignes de sortie sont publiées en direct vers les consoles :
     /// même instance, même canal, séquence strictement croissante.
     /// </summary>
     [Fact]

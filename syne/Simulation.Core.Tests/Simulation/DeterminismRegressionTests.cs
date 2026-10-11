@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Régression de déterminisme bit-à-bit de la perception (SYNE-015) : même seed + config ⇒ même séquence de
+//        perception.
+
 using System.Globalization;
 using System.Text;
 using Simulation.Core.Cognition;
@@ -11,9 +16,9 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Régression de déterminisme bit-à-bit de la perception (SYNE-015, DETERMINISM.md) :
+/// Régression de déterminisme bit-à-bit de la perception (SYNE-015) :
 /// même seed + config ⇒ même séquence de perception. Le hash de trajectoire est
-/// épinglé (checksum de run, DETERMINISM.md §6).
+/// épinglé (checksum de run).
 /// </summary>
 public class DeterminismRegressionTests
 {
@@ -108,7 +113,7 @@ public class DeterminismRegressionTests
         // Épinglé au jalon SYNE ph6 (engineVersion 0.5.0) puis ré-épinglé au jalon ph7b
         // (engineVersion 0.6.0) : les fidélités SYNE-074…077 (mortalité, naissance consentie
         // fidèle, décision collective → objectifs, cheminement A* déterministe) n'altèrent pas
-        // ce scénario — le checksum reste 0x27fad50065d8c4a4 — DETERMINISM.md §7 impose recalcul
+        // ce scénario — le checksum reste 0x27fad50065d8c4a4 — impose recalcul
         // + bump MINOR à chaque altération bit-à-bit de la trajectoire.
         // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x27fad50065d8c4a4 →
         // 0xdb57f58566418f5d. SEULE cause mesurée : le garde anti-relay de
@@ -126,11 +131,11 @@ public class DeterminismRegressionTests
         // neutralisation isolée de ce garde restitue exactement 0x27fad50065d8c4a4, et
         // l'atomicité des réserves (ActionExecutor), la file de messages bornée et la
         // centralisation des hachages sont bit-à-bit neutres sur ce scénario.
-        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0, ADR-016) :
+        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0) :
         // 0x46769cfb11c8b3a7 → 0xf4aaa2733e491935. Cause unique et isolée : recalage des
         // DÉFAUTS intégrés (coût de déplacement 0,5 → 0,03, gains Eat/Drink 0/0 → 2,0/1,0,
         // dérives social/curiosité, réserves et coûts de communication) — cette fois
-        // porté par les défauts eux-mêmes et non par le profil ; re-pin assumé (ADR-016).
+        // porté par les défauts eux-mêmes et non par le profil ; re-pin assumé.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
         Assert.Equal("0xf4aaa2733e491935", $"0x{Fnv1a(log):x16}");
     }

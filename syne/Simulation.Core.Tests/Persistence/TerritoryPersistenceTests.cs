@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Persistance des territoires (jalon review/refactor, engineVersion 0.12.0).
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;

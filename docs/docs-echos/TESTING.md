@@ -309,7 +309,7 @@ Suite : **208 tests** (197 → +11), couverture **97,97 %** (pytest
 
 ### 4.11 Contrat des mesures & scénarios de référence (P0 → P2)
 
-Le refonte sémantique (`RAPPORT-ANALYSE-ECHOS-LAUNCHER.md` P0 → P2) est verrouillée
+La refonte sémantique (P0 → P2) est verrouillée
 par deux suites dédiées :
 
 - **`test_catalog.py` (12 tests)** : chaque métrique publiée possède une fiche et

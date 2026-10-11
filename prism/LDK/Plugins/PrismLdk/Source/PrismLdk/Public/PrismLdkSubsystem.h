@@ -1,3 +1,7 @@
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Sous-système GameInstance PrismLdk : connexion WebSocket à SYNE et pilotage du run.
+
 #pragma once
 
 #include "CoreMinimal.h"

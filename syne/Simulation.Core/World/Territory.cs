@@ -1,12 +1,17 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Zone de territoire (SYNE-073) : disque « point de survie » {Center, Radius} autour duquel la présence des
+//        entités délimite le territoire effectif.
+
 namespace Simulation.Core.World;
 
 /// <summary>
-/// Zone de territoire (SYNE-073, décision n°21, Monographie §6.5) : disque
+/// Zone de territoire (SYNE-073) : disque
 /// « point de survie » {Center, Radius} autour duquel la présence des entités
 /// délimite le **territoire effectif**. V0.1 : le territoire est un concept
 /// d'observation (aucun comportement agentique, aucune revendication) — la
 /// présence d'une entité dans la zone la classe comme membre du territoire.
-/// Pur (0 tirage PRNG, DETERMINISM.md §3) : l'appartenance est une fonction
+/// Pur (0 tirage PRNG) : l'appartenance est une fonction
 /// pure des positions.
 /// </summary>
 public sealed record Territory

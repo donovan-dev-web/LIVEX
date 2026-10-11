@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Boucle de simulation du mock SYNE (tick, agents, stocks, snapshots).
+ */
+
 const fs = require('node:fs');
 const path = require('node:path');
 const { resolveConfig, merge } = require('../config');
@@ -83,7 +89,7 @@ class Simulation {
     this.explicitPreparation = true;
     this.state = 'ready';
 
-    // Format canonique run-<seed>-<12hex> (parité SYNE, API_CONTRACTS.md §2/§3) :
+    // Format canonique run-<seed>-<12hex> (parité SYNE) :
     // SYNE pince déjà son runId sur ce format dès le prepare du monde
     // (SimulationController.PrepareCoreAsync) ; le mock doit porter la même
     // identité pour que les consommateurs lisent un seed cohérent avec celui
@@ -133,7 +139,7 @@ class Simulation {
       this.prepare(seed, this.options.ticksPerSecond, overlay);
 
     // Run « finished » : le monde est prêt mais n'avancera plus — même réponse
-    // que SYNE (API_CONTRACTS.md §3), qui oriente le client vers /reset plutôt
+    // que SYNE, qui oriente le client vers /reset plutôt
     // que vers /prepare (code 409 run_finished, testé côté SYNE).
     if (this.state === 'finished')
       throw Object.assign(new Error('run_finished'), { code: 'run_finished' });
@@ -154,7 +160,7 @@ class Simulation {
     this.options.maxTicks = Number(maxTicks);
     const replay = this.options.replay.file ? loadReplay(this.options.replay.file) : null;
 
-    // Format canonique run-<seed>-<12hex> (parité SYNE, API_CONTRACTS.md §3) :
+    // Format canonique run-<seed>-<12hex> (parité SYNE) :
     // le seed reste lisible dans l'identifiant et le suffixe garantit l'unicité
     // entre deux runs de même seed (les runs successifs se partageaient le même
     // run_id côté stockage ECHOS).
@@ -270,7 +276,7 @@ class Simulation {
 
     // Les événements du tick sont d'abord réunis dans `events` : le snapshot doit
     // partir avant eux. SYNE diffuse « le snapshot puis les événements du tick
-    // courant » (ObservabilityTickEmitter, qui cite API_CONTRACTS.md §2), et tout
+    // courant » (ObservabilityTickEmitter, qui cite), et tout
     // consommateur qui aligne le flux sur les ticks refuse un événement reçu
     // avant le premier snapshot ou portant un autre tick — c'est le cas d'ECHOS
     // (`ingestion.stream.aligned_ticks`), qui rejetait le mock à la première
@@ -428,7 +434,7 @@ class Simulation {
   }
 
   /**
-   * Temps simulé (ADR-017) : `tick × simulatedSecondsPerTick` — la formule
+   * Temps simulé : `tick × simulatedSecondsPerTick` — la formule
    * historique `round(tick / ticksPerSecond)` mélangeait temps simulé et
    * cadence réelle et divergeait de SYNE dès qu'une cadence n'était pas 1:1.
    */

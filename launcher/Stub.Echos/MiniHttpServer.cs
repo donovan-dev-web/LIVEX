@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Serveur HTTP/1.1 minimal, copie autonome de celui de Stub.Syne : chaque stub reste exécutable sans
+//        référence à l'autre (fonctionne sans Launcher).
+
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -6,7 +11,7 @@ namespace Stub.Echos;
 
 /// <summary>
 /// Serveur HTTP/1.1 minimal, copie autonome de celui de Stub.Syne : chaque stub reste
-/// exécutable sans référence à l'autre (INTEGRATION_CONTRACT.md : fonctionne sans Launcher).
+/// exécutable sans référence à l'autre (fonctionne sans Launcher).
 /// </summary>
 public sealed class MiniHttpServer : IDisposable
 {

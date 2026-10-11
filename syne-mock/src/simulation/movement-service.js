@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Déplacement déterministe des agents (pas vers une cible, gestion des blocages).
+ */
+
 const { isPositionBlocked } = require('../world/obstacle-service');
 const { cellAt } = require('../world/cell-grid');
 const { round } = require('./deterministic-random');
@@ -82,9 +88,9 @@ class MovementService {
     if (this.canEnter(world, next, obstacles))
       return this.commit(agent, next, destination, previous);
 
-    // SYNE uses A* around blocked raster cells. The mock uses a deterministic
-    // local detour so obstacle collisions stay visible without duplicating the
-    // engine's full pathfinder.
+    // SYNE contourne les cellules raster bloquées par A*. Le mock utilise un
+    // détour local déterministe pour que les collisions d'obstacle restent
+    // visibles sans dupliquer le pathfinding complet du moteur.
     const dx = next.x - agent.x;
     const dy = next.y - agent.y;
     const distance = Math.hypot(dx, dy) || 1;

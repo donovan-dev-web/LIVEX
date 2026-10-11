@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cycle de vie des runs du contrôleur : préparation, démarrage et arrêt.
+
 using Simulation.Console.Control;
 using Simulation.Core.Configuration;
 using Xunit;
@@ -168,7 +172,7 @@ public sealed class SimulationControllerRunLifecycleTests
         await controller.StopAsync();
 
         Assert.Equal(prepareJson, resetJson);
-        // Exigence ADR-016 : le chemin HTTP ne dépend jamais d'un défaut qu'on
+        // Exigence : le chemin HTTP ne dépend jamais d'un défaut qu'on
         // pourrait oublier de recaler — reset doit égaler le profil de
         // référence lui-même, pas seulement coïncider avec les défauts.
         Assert.Equal(ConfigLoader.ToJson(SimulationProfiles.Reference()), resetJson);

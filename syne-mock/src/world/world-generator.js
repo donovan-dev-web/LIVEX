@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Génération déterministe du monde (terrain, obstacles, ressources, agents).
+ */
+
 const { createInitialAgents } = require('./agent-factory');
 const { OBSTACLE_SHAPES, isCellBlocked, createInitialObstacles } = require('./obstacle-service');
 const { generateResourceLocations } = require('./resource-service');
@@ -42,7 +48,7 @@ class WorldGenerator {
     const regions = this.generateRegions(cellCountX, cellCountY);
     const initialAgents = createInitialAgents(seed, config.agentCount, grid, config.agentSimulation);
     const world = {
-      // 1.1 (ADR-017) : champs additifs simulatedSecondsPerTick / metersPerUnit.
+      // 1.1 : champs additifs simulatedSecondsPerTick / metersPerUnit.
       version: '1.1',
       width,
       height,
@@ -88,9 +94,9 @@ class WorldGenerator {
       throw new Error('world.width and world.height must be positive finite numbers');
     if (!Number.isFinite(cellSize) || cellSize <= 0)
       throw new Error('world.cellSize must be a positive finite number');
-    // Échelle temporelle (ADR-017, §4.1 de la spec PRISM) : entier dans [1, 3600],
+    // Échelle temporelle (de la spec PRISM) : entier dans [1, 3600],
     // comme le validateur SYNE. Le mock ne reproduit pas la classe A — il doit
-    // seulement émettre un temps cohérent (spec §5).
+    // seulement émettre un temps cohérent (spec).
     if (!Number.isInteger(config.simulatedSecondsPerTick) ||
         config.simulatedSecondsPerTick < 1 || config.simulatedSecondsPerTick > 3600)
       throw new Error('simulatedSecondsPerTick must be an integer in [1, 3600]');

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la perception (observations, portée, ligne de vue).
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Perception;

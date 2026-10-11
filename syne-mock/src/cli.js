@@ -1,4 +1,10 @@
 #!/usr/bin/env node
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Interface en ligne de commande du mock SYNE (arguments, lancement du serveur).
+ */
+
 const fs = require('node:fs');
 const { createServer } = require('./server');
 

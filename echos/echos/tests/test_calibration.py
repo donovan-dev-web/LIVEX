@@ -1,3 +1,5 @@
+"""Tests de la calibration post-run (SYNE-131)."""
+
 from echos.analysis.calibration import build_calibration_report
 
 

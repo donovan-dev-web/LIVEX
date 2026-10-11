@@ -76,4 +76,3 @@ et ne doivent pas être supposés fixes.
 | `ROADMAP.md` | Roadmap SYNE |
 | `CHANGELOG.md` | Versions |
 | `adr/` | Décisions d'architecture |
-| `MIGRATION_MORPHOLOGY.md` | Guide de migration SYNE-130 vers des entités logiques |

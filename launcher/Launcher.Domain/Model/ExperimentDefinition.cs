@@ -1,9 +1,13 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Définition déclarative d'une campagne.
+
 using Launcher.Protocol;
 
 namespace Launcher.Domain.Model;
 
 /// <summary>
-/// Définition déclarative d'une campagne (EXPERIMENTS.md §3). Complète et autosuffisante :
+/// Définition déclarative d'une campagne. Complète et autosuffisante :
 /// le fichier suffit à rejouer la campagne, sans le Launcher, si le moteur est disponible.
 /// </summary>
 public sealed class ExperimentDefinition : ISchemaVersioned
@@ -17,7 +21,7 @@ public sealed class ExperimentDefinition : ISchemaVersioned
     /// <summary>Libellé affichable.</summary>
     public string Title { get; set; } = string.Empty;
 
-    /// <summary>Profil d'exécution (COMPONENTS.md §9).</summary>
+    /// <summary>Profil d'exécution.</summary>
     public string Profile { get; set; } = WellKnownProfiles.Analyse;
 
     /// <summary>Identifiant de la simulation à charger par le moteur.</summary>

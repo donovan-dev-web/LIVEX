@@ -1,9 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Paramétrage V0.1 (« Entité A »/« Entité B ») : plages de traits d'où les traits individuels sont hérités
+//        (tirage uniforme déterministe).
+
 namespace Simulation.Core.Entities;
 
 /// <summary>
-/// Paramétrage V0.1 (DATA_MODEL.md §3.2 « Entité A »/« Entité B ») : plages de
+/// Paramétrage V0.1 (« Entité A »/« Entité B ») : plages de
 /// traits d'où les traits individuels sont hérités (tirage uniforme déterministe).
-/// Défauts : bande 0.5–1.5 autour du neutre (initialisation Monographie §3.7.4).
+/// Défauts : bande 0.5–1.5 autour du neutre (initialisation).
 /// </summary>
 public sealed record EntityTemplate
 {

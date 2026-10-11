@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Contrats additifs de l'échelle temporelle : la préparation du profil prism porte simulatedSecondsPerTick
+//        et metersPerUnit dans la description world_initialized et dans /api/control/status, sans rien changer au
+//        cycle de contrôle.
+
 using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -11,7 +17,7 @@ using Xunit;
 namespace Simulation.Console.Tests;
 
 /// <summary>
-/// Contrats additifs de l'échelle temporelle (ADR-017, spec PRISM §4.3) :
+/// Contrats additifs de l'échelle temporelle (spec PRISM) :
 /// la préparation du profil <c>prism</c> porte <c>simulatedSecondsPerTick</c>
 /// et <c>metersPerUnit</c> dans la description <c>world_initialized</c>
 /// (version 1.1) et dans <c>/api/control/status</c>, sans rien changer au
@@ -39,7 +45,7 @@ public sealed class Adr017TemporalContractTests : IAsyncLifetime
     {
         using var prepare = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/prepare"))
         {
-            // Le profil prism est complet (§4.4) : passé comme surcouche, il
+            // Le profil prism est complet : passé comme surcouche, il
             // s'applique sur les défauts avec la sémantique de fusion usuelle.
             Content = JsonBody($$"""{ "seed": 7, "config": {{SimulationProfiles.PrismJson()}} }"""),
         };

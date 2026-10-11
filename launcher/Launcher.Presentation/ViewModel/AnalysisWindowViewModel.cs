@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Vue modèle de la fenêtre d'analyse.
+
 using System.Collections.ObjectModel;
 using System.Globalization;
 using Launcher.Application;
@@ -10,9 +14,9 @@ using SkiaSharp;
 namespace Launcher.Presentation.ViewModel;
 
 /// <summary>
-/// Vue modèle de la fenêtre d'analyse (USER_INTERFACE.md §9.2, ADR-007).
+/// Vue modèle de la fenêtre d'analyse.
 ///
-/// **Règle de frontière (ADR-003)** : cette vue *présente* ce qu'ECHOS produit.
+/// **Règle de frontière ** : cette vue *présente* ce qu'ECHOS produit.
 /// Elle ne calcule aucune valeur scientifique — pas de moyenne, pas d'écart-type,
 /// pas d'indice composite. Séries, dernières valeurs, profil de viabilité, catalogue
 /// et comparaison multi-run viennent tels quels de l'API REST. Seules des
@@ -316,7 +320,7 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     /// <summary>Vitesses de relecture proposées (ticks avancés par seconde d'horloge).</summary>
     public IReadOnlyList<int> ReplaySpeedOptions { get; } = [1, 2, 5, 10];
 
-    /// <summary>Sous-écrans proposés par le menu de la fenêtre (USER_INTERFACE.md §9.2).</summary>
+    /// <summary>Sous-écrans proposés par le menu de la fenêtre.</summary>
     public IReadOnlyList<AnalysisSectionOption> Sections { get; } =
     [
         new(SectionViability, "Viabilité", "Issue, population, besoins, ressources, complétude"),
@@ -716,7 +720,7 @@ public sealed class AnalysisWindowViewModel : ObservableObject
 
     /// <summary>
     /// Relevé complet : liste des runs, séries du run sélectionné, réseau, phénomènes.
-    /// Un échec est **affiché**, jamais comblé (ADR-003 : pas d'approximation locale).
+    /// Un échec est **affiché**, jamais comblé (pas d'approximation locale).
     /// </summary>
     public async Task RefreshAsync()
     {
@@ -945,7 +949,7 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Vue d'ensemble : communautés et phénomènes, tels que publiés (ADR-003).
+    /// Vue d'ensemble : communautés et phénomènes, tels que publiés.
     /// Les séries ont déjà été lues et appliquées par le relevé courant.
     /// </summary>
     private async Task RefreshOverviewAsync(string runId)
@@ -1605,7 +1609,7 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     /// événement existe à ce tick, et son type — la cause reste dans le journal
     /// publié. Borné à <see cref="MaxEventMarkers"/> marqueurs, limité à la
     /// fenêtre affichée, tracé sur l'étendue déjà dessinée : aucune valeur n'est
-    /// produite (transformation de rendu, ADR-003).
+    /// produite (transformation de rendu).
     /// </summary>
     private ISeries[] BuildEventMarkers(IReadOnlyList<MetricOption> selected)
     {
@@ -1735,7 +1739,7 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     /// retiré, il est réintroduit ici comme **outil** explicite) : comptage des
     /// valeurs **publiées** de la métrique choisie, sur la fenêtre affichée.
     ///
-    /// Le comptage est une transformation de **rendu** bornée (ADR-003) : aucune
+    /// Le comptage est une transformation de **rendu** bornée : aucune
     /// valeur n'est produite, seule une fréquence de classe est dessinée. Les
     /// valeurs non mesurées et les ticks sans observation sont **exclus** et
     /// comptés séparément — jamais convertis en zéro observé.

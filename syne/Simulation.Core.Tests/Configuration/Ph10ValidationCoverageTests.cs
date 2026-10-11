@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Couverture des branches de validation restantes (SYNE-100, jalon ph10) : chaque garde-fou de qui n'était
+//        pas encore exercé par les tests ph1/ph5/ph6 (rangées de SimulationOptionsValidator laissées non exécutées
+//        dans la couverture) est déclenchée ici, un test par garde.
+
 using Simulation.Core.Configuration;
 using Xunit;
 
@@ -5,7 +11,7 @@ namespace Simulation.Core.Tests.Configuration;
 
 /// <summary>
 /// Couverture des branches de validation restantes (SYNE-100, jalon ph10) :
-/// chaque garde-fou de CONFIGURATION.md §6 qui n'était pas encore exercé par
+/// chaque garde-fou de qui n'était pas encore exercé par
 /// les tests ph1/ph5/ph6 (rangées de ``SimulationOptionsValidator`` laissées
 /// non exécutées dans la couverture) est déclenchée ici, un test par garde.
 /// </summary>

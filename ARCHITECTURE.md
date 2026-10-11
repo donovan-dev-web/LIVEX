@@ -124,7 +124,7 @@ rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
 | Tests C# | xUnit + Moq |
 | Tests interface | Avalonia headless + xUnit (Launcher) ; Vitest + ESLint + Prettier **retirés** avec `echos-ui` |
 | CI/CD | GitHub Actions |
-| Conteneurisation | **Retirée** (08/10/2026) — distribution par artefacts natifs + Launcher, arbitrage A1 de `ROADMAP-V01.md` |
+| Conteneurisation | **Retirée** (08/10/2026) — distribution par artefacts natifs + Launcher, arbitrage A1 |
 
 ## 6. Organisation actuelle du dépôt
 

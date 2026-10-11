@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de l'héritage intergénérationnel des traits (SYNE-020).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Facteurs de personnalité issus des traits (plage 0-2, neutre 1.0) — entrée de la formule d'utilité.
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 
@@ -5,7 +9,7 @@ namespace Simulation.Core.Cognition;
 
 /// <summary>
 /// Facteurs de personnalité issus des traits (plage 0-2, neutre 1.0) — entrée
-/// de la formule d'utilité (COGNITIVE_ARCHITECTURE.md §6).
+/// de la formule d'utilité.
 /// </summary>
 public sealed class AgentFactors
 {
@@ -18,7 +22,7 @@ public sealed class AgentFactors
         Greed = traits["greed"];
         Strength = traits["strength"];
         Speed = traits["speed"];
-        // Le trait s'appelle « aggression » dans TraitSet (DATA_MODEL.md §3.2) —
+        // Le trait s'appelle « aggression » dans TraitSet —
         // la clé de configuration « aggressiveness » est mappée par EntityFactory.
         Aggressiveness = traits["aggression"];
     }
@@ -35,11 +39,11 @@ public sealed class AgentFactors
 
     public double Speed { get; }
 
-    /// <summary>Agressivité (D7 : dégât d'Attack = 5 × agressivité, §3.15.4).</summary>
+    /// <summary>Agressivité (D7 : dégât d'Attack = 5 × agressivité).</summary>
     public double Aggressiveness { get; }
 }
 
-/// <summary>Score d'utilité d'une action candidate (décision n°13, SYNE-010).</summary>
+/// <summary>Score d'utilité d'une action candidate (SYNE-010).</summary>
 public readonly record struct UtilityScore(
     DesireKind Kind,
     double Benefit,
@@ -51,7 +55,7 @@ public readonly record struct UtilityScore(
     double Utility);
 
 /// <summary>
-/// Évaluateur d'utilité (COGNITIVE_ARCHITECTURE.md §6, décision n°13) :
+/// Évaluateur d'utilité :
 /// <c>U = (benefit − cost − risk) × confidence × personalityModifier + urgency</c>.
 /// Bonus d'alignement ×1.2 si l'action rejoint l'objectif courant ; sélection par
 /// utilité maximale, départage déterministe par ordre du catalogue (SYNE-030).
@@ -79,7 +83,7 @@ public static class UtilityEvaluator
 
         // D5 (engagements) : l'objectif dérivé d'un engagement n'est pas porté par
         // un besoin physiologique — son bénéfice est fourni par l'appelant, calculé
-        // depuis la confiance envers le demandeur (ADR : priorité « non pas depuis
+        // depuis la confiance envers le demandeur (priorité « non pas depuis
         // un besoin physiologique mais depuis le niveau de confiance »). La formule
         // U = (benefit − cost − risk) × confidence × personality + urgency reste
         // strictement identique.
@@ -112,7 +116,7 @@ public static class UtilityEvaluator
     }
 
     /// <summary>
-    /// Bénéfice : satisfaction potentielle d'un besoin (COGNITIVE_ARCHITECTURE.md §6).
+    /// Bénéfice : satisfaction potentielle d'un besoin.
     /// <para>
     /// Calibration D1 (29/09/2026) : le bénéfice Eat/Drink était plafonné à 30
     /// (``min(need, 30)``) — à faim saturée, l'urgence (sigmoïde ×20, +10 critique)
@@ -139,10 +143,10 @@ public static class UtilityEvaluator
             DesireKind.Explore => Math.Min(needs.Curiosity * 100.0, 30.0),
 
             // Primitives D7 (engineVersion 0.14.0) : bénéfices dérivés des besoins
-            // existants — aucune nouvelle formule d'utilité (ADR D3 : la fonction
+            // existants — aucune nouvelle formule d'utilité (D3 : la fonction
             // est inchangée, elle reçoit plus de candidats).
             // Take = pulsion de constitution de stock, PORTÉE PAR L'AVARICE et non
-            // par la faim (ADR Inventaire : « un agent avare continue Prendre
+            // par la faim (Inventaire : « un agent avare continue Prendre
             // au-delà de son besoin immédiat tant que poidsActuel < capacitePoids »)
             // — constant, modulé par greed via PersonalityModifierOf : l'agent
             // stocke quand il n'a pas faim, consomme quand la faim l'emporte.
@@ -152,7 +156,7 @@ public static class UtilityEvaluator
             // Trade = résolution différée du besoin (coûte une ressource → ×0.9).
             DesireKind.Trade => Math.Max(needs.Hunger, needs.Thirst) * 0.54,
             // Attack/Defend ne portent aucun besoin en V0.1 (jamais générés —
-            // doctrine §9.6.3 point 13) : présents au catalogue (D3 temps 1).
+            // doctrine point 13) : présents au catalogue (D3 temps 1).
             _ => 0.0,
         };
     }
@@ -214,7 +218,7 @@ public static class UtilityEvaluator
     /// <summary>
     /// Urgence : sigmoïde <c>1 / (1 + exp(−0.1 × (need − 50))) × 20</c>, +5 si
     /// l'objectif a plus de 100 ticks, +10 si l'état est critique (défaut
-    /// faim &gt; 85 ou énergie &lt; 10, agents.interruption.* — COGNITIVE_ARCHITECTURE.md §6).
+    /// faim &gt; 85 ou énergie &lt; 10, agents.interruption.* —).
     /// </summary>
     public static double UrgencyOf(DesireKind kind, BodyNeeds needs, ulong goalAge, ActionSettings actions)
     {
@@ -258,7 +262,7 @@ public static class UtilityEvaluator
     }
 
     /// <summary>
-    /// Hystérésis anti-oscillation (COGNITIVE_ARCHITECTURE.md §6) : ne passer à
+    /// Hystérésis anti-oscillation : ne passer à
     /// une nouvelle action que si elle dépasse l'action courante de
     /// <c>actionSwitchMargin</c> (défaut 0.05). Sinon l'action courante est
     /// conservée (son score est re-évalué à l'état courant).

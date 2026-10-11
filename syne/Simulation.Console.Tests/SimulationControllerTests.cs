@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : La cadence demandée (2 t/s) a bien été celle du run : deux ticks valent deux intervalles de 500 ms, soit ≈
+//        1 s — un run à la cadence par défaut (10 t/s) finirait en ≈ 200 ms.
+
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Simulation.Console.Control;
@@ -10,7 +15,7 @@ namespace Simulation.Console.Tests;
 public sealed class SimulationControllerTests
 {
     [Fact]
-    public async Task ExplicitPreparationRequiresReadyAcknowledgement()
+    public async Task Prepare_ExplicitCall_RequiresReadyAcknowledgement()
     {
         await using var controller = new SimulationController();
         await controller.PrepareAsync(42, ConfigLoader.ToJson(new SimulationOptions()));
@@ -23,7 +28,7 @@ public sealed class SimulationControllerTests
     }
 
     [Fact]
-    public async Task PrepareStoresRequestedTickRateForTheFollowingRun()
+    public async Task Prepare_RequestedTickRate_StoredForFollowingRun()
     {
         var sink = new RecordingSink();
         await using var controller = new SimulationController(sink);
@@ -49,7 +54,7 @@ public sealed class SimulationControllerTests
     }
 
     [Fact]
-    public async Task ExplicitPreparationRejectsDifferentStartSeedWithoutReplacingWorld()
+    public async Task Prepare_DifferentStartSeed_RejectedWithoutReplacingWorld()
     {
         await using var controller = new SimulationController();
         await controller.PrepareAsync(42, ConfigLoader.ToJson(new SimulationOptions()), ticksPerSecond: 3);
@@ -65,7 +70,7 @@ public sealed class SimulationControllerTests
     }
 
     [Fact]
-    public async Task UsesConfiguredTicksPerSecondAndKeepsRunIdentityInSnapshots()
+    public async Task Run_ConfiguredTicksPerSecond_KeepsRunIdentityInSnapshots()
     {
         var sink = new RecordingSink();
         await using var controller = new SimulationController(sink);

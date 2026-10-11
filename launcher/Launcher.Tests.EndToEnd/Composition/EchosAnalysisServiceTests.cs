@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Contrats d'appel d' EchosAnalysisService.
+
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +17,7 @@ using Xunit;
 namespace Launcher.Tests.EndToEnd.Composition;
 
 /// <summary>
-/// Contrats d'appel d'<c>EchosAnalysisService</c> (INTEGRATION_CONTRACT.md §10.2).
+/// Contrats d'appel d'<c>EchosAnalysisService</c>.
 ///
 /// Le banc fournit un ECHOS minimal qui **tient le journal des requêtes** : ces
 /// tests portent donc sur ce que le Launcher exige réellement du service —
@@ -39,7 +43,7 @@ public sealed class EchosAnalysisServiceTests : IDisposable
         // répondrait « run inconnu » pour un run que la campagne vient de produire.
         Assert.Equal(["ingest/run:EXP-A-RUN-0001", "analysis/run:EXP-A-RUN-0001"], calls);
         // Le nom du fichier est celui qu'ECHOS a choisi : le Launcher le transporte
-        // tel quel et ne préfixe rien (INTEGRATION_CONTRACT.md §3.2, fidélité).
+        // tel quel et ne préfixe rien (fidélité).
         Assert.Equal(["EXP-A-RUN-0001.json"], files.Keys.ToArray());
         Assert.Equal("contenu", Encoding.UTF8.GetString(files["EXP-A-RUN-0001.json"]));
         // Le dossier de run est celui de la campagne, pas le « RUN-nnnn » brut :

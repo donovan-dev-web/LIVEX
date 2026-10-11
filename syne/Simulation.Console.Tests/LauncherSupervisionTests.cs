@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de supervision SYNE par le Launcher (readiness, arrêt authentifié).
+
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
@@ -9,7 +13,7 @@ namespace Simulation.Console.Tests;
 public sealed class LauncherSupervisionTests
 {
     [Fact]
-    public async Task ReadinessInfoAndAuthenticatedShutdownFollowLauncherContract()
+    public async Task LauncherSupervision_ReadinessAndShutdown_FollowContract()
     {
         int port = FreePort();
         await using var server = new ControlServer(

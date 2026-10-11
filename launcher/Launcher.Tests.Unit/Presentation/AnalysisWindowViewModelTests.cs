@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fenêtre d'analyse native.
+
 using Launcher.Application;
 using Launcher.Presentation.ViewModel;
 using LiveChartsCore.Defaults;
@@ -7,7 +11,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.Presentation;
 
 /// <summary>
-/// Fenêtre d'analyse native (ADR-007, ADR-003). Les règles qui comptent : tout vient de
+/// Fenêtre d'analyse native. Les règles qui comptent : tout vient de
 /// l'API d'ECHOS, une métrique non mesurée ne se fait jamais passer pour une observation,
 /// un tick sans observation reste un trou visible, l'indisponibilité est affichée au lieu
 /// d'être approximée, et la relecture ne fait que tronquer des séries déjà publiées.

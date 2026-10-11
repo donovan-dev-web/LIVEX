@@ -1,6 +1,6 @@
 """Tests du point d'entrée serveur.
 
-ECHOS est une **API seule** (ADR-003 ECHOS révisé, ADR-007 Launcher) : aucune
+ECHOS est une **API seule** (ECHOS révisé, Launcher) : aucune
 page n'est servie, le présentatif est le Launcher. Ces tests fixent ce contrat —
 racine qui publie les endpoints, absence de tout repli SPA, priorité des routes
 API — afin qu'une réintroduction silencieuse d'un montage statique échoue ici.

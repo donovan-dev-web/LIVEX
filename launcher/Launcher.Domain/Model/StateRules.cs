@@ -1,10 +1,14 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Règles normatives du cycle de vie et de l'agrégation de santé.
+
 using Launcher.Protocol.Model;
 
 namespace Launcher.Domain.Model;
 
 /// <summary>
-/// Règles normatives du cycle de vie (COMPONENTS.md §4.1) et de l'agrégation de santé
-/// (OBSERVABILITY.md §3). Toutes les transitions passent par ici, jamais par les appelants.
+/// Règles normatives du cycle de vie et de l'agrégation de santé
+/// Toutes les transitions passent par ici, jamais par les appelants.
 /// </summary>
 public static class StateRules
 {
@@ -88,7 +92,7 @@ public static class StateRules
     };
 
     /// <summary>
-    /// Agrégation globale (OBSERVABILITY.md §3.2) : le pire état parmi les composants requis,
+    /// Agrégation globale : le pire état parmi les composants requis,
     /// adouci pour les optionnels. Renvoie l'état global et sa cause principale, toujours affichée.
     /// </summary>
     public static (string GlobalState, string MainCause) Aggregate(
@@ -134,7 +138,7 @@ public static class StateRules
                 ComponentState.Absent or ComponentState.Inactif => "Hors service",
                 _ => "Dégradé",
             };
-            // Cause principale formatée « SYNE : cadence de tick basse » (OBSERVABILITY.md §3.2).
+            // Cause principale formatée « SYNE : cadence de tick basse ».
             return (global, worstRequiredLabel);
         }
 

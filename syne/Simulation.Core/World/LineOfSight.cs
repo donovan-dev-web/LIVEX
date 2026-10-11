@@ -1,7 +1,12 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Ligne de vue (SYNE-011) : un segment entre deux positions du monde est occulté si un obstacle
+//        l'intersecte.
+
 namespace Simulation.Core.World;
 
 /// <summary>
-/// Ligne de vue (SYNE-011, ADR-013) : un segment entre deux positions du monde
+/// Ligne de vue (SYNE-011) : un segment entre deux positions du monde
 /// est occulté si un obstacle l'intersecte. Pure fonction déterministe ;
 /// aucune approximation d'échantillonnage (calcul géométrique exact).
 /// </summary>

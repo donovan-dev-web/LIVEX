@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Campagne de bout en bout contre un SYNE réellement publié : le Launcher le lance, suit son avancement,
+//        collecte ses sorties et scelle le paquet.
+
 using System.Text.Json;
 using Launcher.App.Composition;
 using Launcher.Application;
@@ -98,7 +103,7 @@ public sealed class PublishedSyneCampaignEndToEndTests : IDisposable
     }
 
     /// <summary>
-    /// La progression affichée vient du tic rapporté par le moteur (EXPERIMENTS.md §8).
+    /// La progression affichée vient du tic rapporté par le moteur.
     /// Vérifié contre un vrai SYNE : la lecture de <c>/api/control/status</c> et son
     /// câblage jusqu'à la campagne ne peuvent pas être inventés par le test.
     /// </summary>

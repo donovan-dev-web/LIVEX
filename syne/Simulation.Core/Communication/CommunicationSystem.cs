@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Système de communication par pulsations lumineuses publiques (SYNE-050 → 054).
+
 using System.Globalization;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
@@ -9,26 +13,26 @@ namespace Simulation.Core.Communication;
 
 /// <summary>
 /// Système de communication par pulsations lumineuses publiques (SYNE-050 → 054,
-/// COMMUNICATION_PROTOCOL.md, décisions n°7-10). Exécuté en **une passe par tick**
-/// (<c>performance.batchCommunication</c>, PERFORMANCE.md) après le pipeline
+///-10). Exécuté en **une passe par tick**
+/// (<c>performance.batchCommunication</c>) après le pipeline
 /// cognitif, dans un ordre causal strict :
 ///
 /// <list type="number">
 /// <item><b>Diffusion</b> : chaque entité (identifiant croissant) émet ses
 ///  messages sortants (cap <c>maxSendsPerTick</c>) — portée
 ///  <c>transmissionRange</c> + ligne de vue ; toute entité dans la portée reçoit,
-///  quelle que soit la cible (publicité, interception — décision n°8).</item>
+/// quelle que soit la cible (publicité, interception).</item>
 /// <item><b>Relais</b> : chaque entité relaye les messages compris (cap partagé
 ///  avec les envois) tant que <c>hops &lt; maxHops</c>, avec dégradation de
-///  confiance <c>× hopConfidenceDecay</c> (10 %/hop — décision n°10).</item>
+/// confiance <c>× hopConfidenceDecay</c> (10 %/hop).</item>
 /// </list>
 ///
-/// Coûts énergétiques (décision n°9) : envoi <c>sendEnergyCost + payload ×
+/// Coûts énergétiques : envoi <c>sendEnergyCost + payload ×
 /// sendEnergyPayloadFactor</c>, réception <c>receiveEnergyCost + payload ×
 /// receiveEnergyPayloadFactor</c>, appliqués via <c>BodyNeeds.ExertEnergy</c>.
 ///
 /// Déterminisme : aucun tirage du PRNG global ; l'incompréhension (5 %) et les
-/// identifiants de message dérivent de hash SplitMix64 stables (DETERMINISM.md §3).
+/// identifiants de message dérivent de hash SplitMix64 stables.
 /// </summary>
 public sealed class CommunicationSystem
 {
@@ -152,7 +156,7 @@ public sealed class CommunicationSystem
     /// <see cref="CommunicationState.RecordRelayed"/> et jamais consulté, et une
     /// même entité pouvait relayer deux fois le même message reçu par deux
     /// canaux distincts dans le tick — le mécanisme anti-boucle documenté
-    /// (COMMUNICATION_PROTOCOL.md §4) était inerte.
+    /// était inerte.
     /// </summary>
     private bool CanRelay(MindState mind, ulong entityId, Message message, bool understood)
     {
@@ -256,7 +260,7 @@ public sealed class CommunicationSystem
     {
         receiverMind.Needs.ExertEnergy(ReceiveCost(message));
 
-        // COMMUNICATION_PROTOCOL.md §7.2 : la confiance du message est ajustée par
+        // la confiance du message est ajustée par
         // la confiance du récepteur envers l'émetteur (matrice de relations).
         double effective = Math.Clamp(message.Confidence * receiverMind.Trust.TrustWith(message.SenderId), 0.0, 1.0);
         receiverMind.Trust.Interact(message.SenderId);

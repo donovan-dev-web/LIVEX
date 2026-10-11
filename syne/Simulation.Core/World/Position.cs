@@ -1,8 +1,12 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Position continue 2D dans le monde.
+
 namespace Simulation.Core.World;
 
 /// <summary>
 /// Position continue 2D dans le monde. Monde non-toroidal : la position est
-/// clampée dans [[0, Width], [0, Height]] (DATA_MODEL.md §2).
+/// clampée dans [[0, Width], [0, Height]].
 /// </summary>
 public readonly record struct Position(double X, double Y)
 {

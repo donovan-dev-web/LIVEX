@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la mémoire court/long terme et de la décroissance de salience.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Xunit;

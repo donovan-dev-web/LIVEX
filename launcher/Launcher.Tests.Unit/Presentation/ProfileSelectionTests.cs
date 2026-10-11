@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Sélection de profil dans la vue Configuration (G7) : le statut affiché est la résolution du domaine —
+//        verrou Immersion compris, avec sa cause exacte et son jalon ; le démarrage suit l'ordre de résolution,
+//        l'arrêt en inverse strict.
+
 using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Domain.Model;
@@ -8,10 +14,10 @@ using Xunit;
 namespace Launcher.Tests.Unit.Presentation;
 
 /// <summary>
-/// Sélection de profil dans la vue Configuration (G7, COMPONENTS.md §9) : le statut affiché
+/// Sélection de profil dans la vue Configuration (G7) : le statut affiché
 /// est la résolution du domaine — verrou Immersion compris, avec sa cause exacte et son
-/// jalon — ; le démarrage suit l'ordre de résolution, l'arrêt en inverse strict (§6).
-/// Le verrou est réévalué à chaque rafraîchissement, jamais mémorisé (ADR-006).
+/// jalon ; le démarrage suit l'ordre de résolution, l'arrêt en inverse strict.
+/// Le verrou est réévalué à chaque rafraîchissement, jamais mémorisé.
 /// </summary>
 public sealed class ProfileSelectionTests
 {
@@ -43,7 +49,7 @@ public sealed class ProfileSelectionTests
     [Fact]
     public void Campagne_accepte_le_scenario_prism_ADR_017()
     {
-        // ADR-017 : le scénario « prism » est désormais sélectionnable dans le
+        // le scénario « prism » est désormais sélectionnable dans le
         // formulaire de campagne (additif — `reference` reste le défaut).
         var viewModel = new MainWindowViewModel(new ScriptedProfileFacade());
 

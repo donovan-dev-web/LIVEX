@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Sémaphore « surcouche partielle » de la configuration via le wire HTTP (jalon review/refactor,
+//        engineVersion 0.12.0).
+
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;

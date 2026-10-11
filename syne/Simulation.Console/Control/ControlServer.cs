@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Serveur de contrôle HTTP :5181 (SYNE-113).
+
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,11 +12,11 @@ using Simulation.Console.Observability;
 namespace Simulation.Console.Control;
 
 /// <summary>
-/// Serveur de contrôle HTTP :5181 (SYNE-113, API_CONTRACTS.md §3, ADR-003).
+/// Serveur de contrôle HTTP :5181 (SYNE-113).
 /// Expose un sous-ensemble REST local (binding <c>127.0.0.1</c>) de pilotage du
 /// moteur : <c>POST /api/control/start|pause|resume|stop|reset</c> et
 /// <c>GET /api/control/status</c>. Implémentation BCL uniquement (HttpListener),
-/// comme l'observabilité — aucune dépendance externe (ADR-002).
+/// comme l'observabilité — aucune dépendance externe.
 /// </summary>
 public sealed class ControlServer : IAsyncDisposable
 {
@@ -318,8 +322,8 @@ public sealed class ControlServer : IAsyncDisposable
             return (409, ToJson(ErrorJson("run_finished", "Run terminé — appelez /api/control/reset avant de redémarrer.")));
         }
 
-        // Manual/UI runs use the reviewed reference profile unless the caller
-        // supplies an explicit configuration overlay.
+        // Un run manuel/UI utilise le profil de référence revu, sauf si
+        // l'appelant fournit une surcouche de configuration explicite.
         try
         {
             string? effectiveConfig = _controller.WorldPrepared && config is null
@@ -577,7 +581,7 @@ public sealed class ControlServer : IAsyncDisposable
         ["worldReadyAcknowledged"] = status.WorldReadyAcknowledged,
         ["maxTicks"] = status.MaxTicks,
         ["ticksPerSecond"] = ticksPerSecond,
-        // Échelle temporelle du run (ADR-017, contrat 0.4.0) : secondes simulées
+        // Échelle temporelle du run (contrat 0.4.0) : secondes simulées
         // par tick — null tant qu'aucun monde n'est préparé (même sémantique
         // que ticksPerSecond).
         ["simulatedSecondsPerTick"] = simulatedSecondsPerTick,

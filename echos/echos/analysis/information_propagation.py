@@ -1,12 +1,12 @@
 """Moteur 2 — InformationPropagationMetrics (propagation de l'information).
 
-Mesure la circulation **observée** de l'information (METRICS_SPEC.md §3) à
-partir des événements ``message_sent`` (ADR-004) portés par le snapshot (clé
+Mesure la circulation **observée** de l'information à
+partir des événements ``message_sent`` portés par le snapshot (clé
 ``events``, fenêtre glissante alimentée par le pipeline) : volume, délai de
 couverture des émetteurs, dégradation théorique par saut, chaîne max et
 concentration des émetteurs.
 
-Frontières (RAPPORT d'analyse §3.2) :
+Frontières (d'analyse) :
 
 - ``EmitterCoverageDelay`` (ex-``InformationDiffusionSpeed``) observe le délai
   de couverture des **émetteurs**, jamais la réception : ``SenderCoverage``

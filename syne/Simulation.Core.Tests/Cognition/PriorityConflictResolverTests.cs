@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : SYNE-033 : résolution probabiliste des conflits de priorités — force × confiance, sans arbitraire
+//        d'ancienneté, tirage déterministe sans PRNG.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Xunit;
@@ -5,7 +10,7 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// SYNE-033 : résolution probabiliste des conflits de priorités (décision n°22) —
+/// SYNE-033 : résolution probabiliste des conflits de priorités —
 /// force × confiance, sans arbitraire d'ancienneté, tirage déterministe sans PRNG.
 /// </summary>
 public class PriorityConflictResolverTests

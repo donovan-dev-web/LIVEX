@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Création déterministe des agents initiaux (besoins, traits, position).
+ */
+
 const { createSeededRandom, round } = require('../simulation/deterministic-random');
 const { cellIndexAt, cellIndexOf } = require('./cell-grid');
 

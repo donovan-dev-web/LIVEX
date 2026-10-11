@@ -1,4 +1,4 @@
-ADR-XXX — Refonte du système d'actions vers des primitives atomiques
+# ADR-005 : Refonte du système d'actions vers des primitives atomiques
 Statut : Accepté (30/09/2026) — **implémenté le 30/09/2026 (engineVersion 0.14.0)** : les 5
 primitives atomiques `Take`/`Give`/`Trade`/`Attack`/`Defend` sont ajoutées EN QUEUE de
 `DesireKind` (l'ordre historique 0-8 ne change pas — départage déterministe conservé) et

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : État mental d'une entité : besoins, désirs, croyances, souvenirs et intentions.
+
 using Simulation.Core.Actions;
 using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
@@ -7,7 +11,7 @@ namespace Simulation.Core.Cognition;
 
 /// <summary>
 /// Objectif collectif adopté par un groupe et propagé à ses membres (SYNE-076,
-/// SYSTEM_SPEC.md §5 décision n°24) : l'intention dominante du groupe devient un
+/// l'intention dominante du groupe devient un
 /// facteur d'alignement de l'utilité individuelle, pondéré par le consensus
 /// atteint et la confiance du membre envers le leader émergent. La durée de vie
 /// de l'objectif est l'intervalle de revue des groupes (TTL, ré-adopté à chaque
@@ -26,9 +30,9 @@ public readonly record struct GroupObjective(
 }
 
 /// <summary>
-/// État cognitif d'une entité (DATA_MODEL.md §3.1 : perception, mémoire,
+/// État cognitif d'une entité (perception, mémoire,
 /// croyances, décision) : mémoire, croyances, besoins, intention et trace de
-/// décision (DecisionRecord minimal — COGNITIVE_ARCHITECTURE.md §7).
+/// décision (DecisionRecord minimal).
 /// <para>
 /// Depuis engineVersion 0.14.0 : inventaire (D8, si <c>agents.inventory.enabled</c>),
 /// engagements (D5, si <c>agents.commitments.enabled</c>) et état de saillance
@@ -75,7 +79,7 @@ public sealed class MindState
     public CommunicationState Communication { get; }
 
     /// <summary>
-    /// Inventaire de l'entité (D8, ADR « Système d'inventaire ») — <c>null</c> tant
+    /// Inventaire de l'entité (D8) — <c>null</c> tant
     /// que <c>agents.inventory.enabled</c> est faux (comportement historique :
     /// Eat/Drink consomment directement les réserves mondiales).
     /// </summary>
@@ -114,7 +118,7 @@ public sealed class MindState
 
     public UtilityScore? LastDecision { get; private set; }
 
-    /// <summary>Trace complète de la dernière décision (COGNITIVE_ARCHITECTURE.md §7).</summary>
+    /// <summary>Trace complète de la dernière décision.</summary>
     public DecisionRecord? LastDecisionRecord { get; private set; }
 
     /// <summary>Scores d'utilité des candidats de la dernière décision.</summary>
@@ -123,10 +127,10 @@ public sealed class MindState
     /// <summary>Résultat de l'action atomique du tick courant (SYNE-040/041/042).</summary>
     public ActionResult? LastActionResult { get; private set; }
 
-    /// <summary>Vrai si un tick a délibéré (fréquence configurable, décision n°14).</summary>
+    /// <summary>Vrai si un tick a délibéré (fréquence configurable).</summary>
     internal bool DeliberatedThisTick { get; set; }
 
-    /// <summary>Vrai si un tick a interrompu l'action en cours (besoin critique, décision n°15).</summary>
+    /// <summary>Vrai si un tick a interrompu l'action en cours (besoin critique).</summary>
     internal bool InterruptedThisTick { get; set; }
 
     /// <summary>
@@ -172,9 +176,9 @@ public sealed class MindState
     }
 
     /// <summary>
-    /// Naissance par fusion consentie (SYNE-020, décision n°16) : l'entité née
+    /// Naissance par fusion consentie (SYNE-020) : l'entité née
     /// hérite des traits (via l'Entity), de la **mémoire intergénérationnelle**
-    /// et des **croyances** des deux parents (§6.6.2/§6.6.3). Les besoins sont
+    /// et des **croyances** des deux parents. Les besoins sont
     /// vierges. La diffusion de cet état dans la simulation (action de
     /// reproduction) est câblée au moteur d'actions (ph4).
     /// </summary>
@@ -203,7 +207,7 @@ public sealed class MindState
     }
 
     /// <summary>
-    /// Probabilité de succès du désir (COGNITIVE_ARCHITECTURE.md §5) : base de
+    /// Probabilité de succès du désir : base de
     /// capacité 0.7, renforcée par la conscience de l'environnement (perception
     /// récente). La calibration précise arrive avec le moteur d'actions (ph4).
     /// </summary>
@@ -219,7 +223,7 @@ public sealed class MindState
         }
     }
 
-    /// <summary>Taux de succès par désir (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Taux de succès par désir (persistance bit-à-bit).</summary>
     internal IReadOnlyDictionary<DesireKind, double> SuccessRatesSnapshot()
     {
         var copy = new Dictionary<DesireKind, double>(_successRates);
@@ -234,7 +238,7 @@ public sealed class MindState
         return copy;
     }
 
-    /// <summary>Restauration des taux de succès par désir (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration des taux de succès par désir (persistance bit-à-bit).</summary>
     internal void RestoreSuccessRates(IReadOnlyDictionary<DesireKind, double> rates)
     {
         ArgumentNullException.ThrowIfNull(rates);
@@ -247,7 +251,7 @@ public sealed class MindState
 
     /// <summary>
     /// Restaure l'état cognitif complet d'une entité (persistance bit-à-bit,
-    /// PERSISTENCE.md §4) : besoins, mémoire (avec séquence), croyances, relations,
+    /// besoins, mémoire (avec séquence), croyances, relations,
     /// communication non-éphémère, taux de succès, intention, objectif collectif
     /// et facteurs de personnalité.
     /// </summary>

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du protocole WebSocket du serveur d'observabilité.
+
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
@@ -90,7 +94,7 @@ public class ObservabilityServerWireTests
     public async Task RunAsync_EmitsActionCompletedEventAfterExecution()
     {
         // SYNE-040/080 : chaque tick émet l'événement action_completed de l'action
-        // atomique exécutée (API_CONTRACTS.md §2.2).
+        // atomique exécutée.
         await using var server = new ObservabilityServer(FreePort());
         server.Start();
 

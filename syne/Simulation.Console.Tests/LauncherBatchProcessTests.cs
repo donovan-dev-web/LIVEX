@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du processus batch SYNE supervisé par le Launcher (arrêt authentifié).
+
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -9,7 +13,7 @@ namespace Simulation.Console.Tests;
 public sealed class LauncherBatchProcessTests
 {
     [Fact]
-    public async Task SupervisedServiceStopsOnlyAfterAuthenticatedShutdown()
+    public async Task SupervisedService_Stop_OnlyAfterAuthenticatedShutdown()
     {
         string root = Path.Combine(Path.GetTempPath(), $"syne-launcher-service-{Guid.NewGuid():N}");
         string workDirectory = Path.Combine(root, "work");
@@ -81,7 +85,7 @@ public sealed class LauncherBatchProcessTests
     }
 
     [Fact]
-    public async Task SupervisedServiceFailsExplicitlyWhenItsControlPortIsOccupied()
+    public async Task SupervisedService_OccupiedControlPort_FailsExplicitly()
     {
         using var occupied = new TcpListener(IPAddress.Loopback, 0);
         occupied.Start();
@@ -132,7 +136,7 @@ public sealed class LauncherBatchProcessTests
     }
 
     [Fact]
-    public async Task LauncherArgumentsRunBatchAndKeepOutputsInsideTheRunWorkspace()
+    public async Task LauncherArguments_BatchRun_KeepsOutputsInsideRunWorkspace()
     {
         string root = Path.Combine(Path.GetTempPath(), $"syne-launcher-{Guid.NewGuid():N}");
         string workDirectory = Path.Combine(root, "work");
@@ -209,7 +213,7 @@ public sealed class LauncherBatchProcessTests
     }
 
     [Fact]
-    public async Task BatchRefusesAnExportDirectoryOutsideTheRunWorkspace()
+    public async Task Batch_ExportDirectoryOutsideRunWorkspace_IsRefused()
     {
         string root = Path.Combine(Path.GetTempPath(), $"syne-export-boundary-{Guid.NewGuid():N}");
         string workDirectory = Path.Combine(root, "work");

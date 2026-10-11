@@ -120,7 +120,7 @@ qui l'intersecte (jamais la population entière) — cf. `QueryCircle_ScanWindow
     (≈ 6 t/s vs ≥ 10) documenté comme chantier d'optimisation (perception), hors
     blocage V0.1 (scénarios ≤ 100 agents).
 - Machine de référence de la performance V0.1 à définir (processeur/coeurs utilisés) — impacte les budgets de tick.
-  - **FIGÉE le 08/10/2026 (§9.1)** : i7-8750H (6c/12t), 14 Gio, Ubuntu x86-64, .NET 10.0.401 — arbitrage A3 de `ROADMAP-V01.md`.
+  - **FIGÉE le 08/10/2026 (§9.1)** : i7-8750H (6c/12t), 14 Gio, Ubuntu x86-64, .NET 10.0.401 — arbitrage A3.
 - L'impact des optimisations (pooling, interning) sur le déterminisme reste à valider lors du codage.
   - **Validé au jalon ph9** : pooling (`ObjectPool`, buffer de tri de perception) et instrumentation
     (`TickBudgetCollector`) sont déterministes — checksum doré inchangé, tests d'égalité trajectoire.
@@ -131,7 +131,7 @@ qui l'intersecte (jamais la population entière) — cf. `QueryCircle_ScanWindow
 
 ### 9.1 Machine de référence
 
-**Machine de référence V0.1 (figée le 08/10/2026, arbitrage A3 de `ROADMAP-V01.md`)** :
+**Machine de référence V0.1 (figée le 08/10/2026, arbitrage A3)** :
 Intel Core **i7-8750H** (6 cœurs / 12 threads, 2,2–4,1 GHz), **14 Gio** de RAM,
 Ubuntu x86-64 (noyau 7.0.0-34), SDK **.NET 10.0.401**, alimentation sur secteur.
 
@@ -165,8 +165,7 @@ pondéré), suivie des **événements** (~15 ms/tick à N=1000) et de la
 > les mesures ci-dessus sont donc les **premières mesures honnêtes à charge
 > complète**. À N=1000 le débit réel (≈ 6 t/s) reste **~1,7× sous la cible V2** :
 > l'optimisation de la passe de perception (et le traitement par lots des
-> événements) devient le chantier d'optimisation — suivi en ouverture de
-> `RAPPORT-ELEMENTS-OUVERTS.md` §3.4/§4.2, hors blocage V0.1 (les scénarios
+> événements) devient le chantier d'optimisation — hors blocage V0.1 (les scénarios
 > V0.1 tournent à ≤ 100 agents, ~45× au-dessus de la cible).
 
 > **Correction de la métrique (calibration B1, engineVersion 0.15.0, ADR-016).** Le calcul de

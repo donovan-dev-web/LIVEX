@@ -1,10 +1,14 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Emplacements de l'installation et des données.
+
 using System.Net;
 using System.Net.Sockets;
 
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Emplacements de l'installation et des données (PACKAGING.md §2.2, §7).
+/// Emplacements de l'installation et des données.
 /// L'installation est remplaçable sans perte de données : les deux hiérarchies sont séparées.
 /// </summary>
 public static class WorkspaceLayout
@@ -22,11 +26,11 @@ public static class WorkspaceLayout
         return Path.Combine(profile, ".livex-data");
     }
 
-    /// <summary>Racine de l'espace de travail Launcher (DATA_FLOW.md §2).</summary>
+    /// <summary>Racine de l'espace de travail Launcher.</summary>
     public static string WorkspaceRoot() => Path.Combine(UserDataRoot(), "workspace");
 }
 
-/// <summary>Sonde de disponibilité d'un port : pré-vol avant tout démarrage (NETWORK.md §6.2).</summary>
+/// <summary>Sonde de disponibilité d'un port : pré-vol avant tout démarrage.</summary>
 public static class TcpPortProbe
 {
     /// <summary>Vrai si le port de la boucle locale est libre.</summary>

@@ -1,10 +1,16 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Horloge du temps simulé, instanciée à partir de la configuration (« échelle temporelle configurable ») : 1
+//        tick vaut simulatedSecondsPerTick secondes simulées (défaut 60 — soit 1 tick = 1 minute, temporalité
+//        historique).
+
 namespace Simulation.Core.Configuration;
 
 /// <summary>
 /// Horloge du temps simulé, instanciée à partir de la configuration
-/// (ADR-017 « échelle temporelle configurable ») : 1 tick vaut
+/// (« échelle temporelle configurable ») : 1 tick vaut
 /// <c>simulatedSecondsPerTick</c> secondes simulées (défaut 60 — soit
-/// 1 tick = 1 minute, temporalité historique ADR-005).
+/// 1 tick = 1 minute, temporalité historique).
 ///
 /// <para>
 /// <b>Neutre par défaut</b> : à <c>simulatedSecondsPerTick = 60</c>, les
@@ -16,15 +22,15 @@ namespace Simulation.Core.Configuration;
 /// <para>
 /// Le ratio temps réel ⇄ temps simulé du run est
 /// <c>R = ticksPerSecond × simulatedSecondsPerTick</c> : 1 seconde réelle
-/// équivaut à <c>R</c> secondes simulées (SCALE_AND_CADENCE_SPEC.md §2).
+/// équivaut à <c>R</c> secondes simulées.
 /// </para>
 /// </summary>
 public sealed class SimulationClock
 {
-    /// <summary>Valeur par défaut : 1 tick = 60 s simulées = 1 minute simulée (ADR-005).</summary>
+    /// <summary>Valeur par défaut : 1 tick = 60 s simulées = 1 minute simulée.</summary>
     public const int DefaultSimulatedSecondsPerTick = 60;
 
-    /// <summary>Plage validée de <c>simulation.simulatedSecondsPerTick</c> (ADR-017 §4.1).</summary>
+    /// <summary>Plage validée de <c>simulation.simulatedSecondsPerTick</c>.</summary>
     public const int MinSimulatedSecondsPerTick = 1;
     public const int MaxSimulatedSecondsPerTick = 3600;
 
@@ -44,11 +50,11 @@ public sealed class SimulationClock
         SimulatedSecondsPerTick = simulatedSecondsPerTick;
     }
 
-    /// <summary>Secondes simulées par tick (entier, ADR-017 §4.1).</summary>
+    /// <summary>Secondes simulées par tick (entier).</summary>
     public int SimulatedSecondsPerTick { get; }
 
     /// <summary>
-    /// Minutes simulées par tick (<c>dt</c>, ADR-017 §3) : 1,0 au défaut ;
+    /// Minutes simulées par tick (<c>dt</c>) : 1,0 au défaut ;
     /// 1/12 pour le profil <c>prism</c> (5 s simulées par tick). Les taux de
     /// classe A sont multipliés par cette valeur.
     /// </summary>
@@ -57,10 +63,10 @@ public sealed class SimulationClock
     /// <summary>Ratio « 1 seconde réelle = R secondes simulées » (R = TPS × spt).</summary>
     public double RealTimeRatio(int ticksPerSecond) => ticksPerSecond * (double)SimulatedSecondsPerTick;
 
-    /// <summary>Temps simulé en secondes au tick <paramref name="tick"/> (entier 64 bits, ADR-017 §4.2).</summary>
+    /// <summary>Temps simulé en secondes au tick <paramref name="tick"/> (entier 64 bits).</summary>
     public long ToSimulatedSeconds(ulong tick) => (long)tick * SimulatedSecondsPerTick;
 
-    /// <summary>Temps simulé en minutes au tick <paramref name="tick"/> (division entière — plancher, ADR-017 §4.2).</summary>
+    /// <summary>Temps simulé en minutes au tick <paramref name="tick"/> (division entière — plancher).</summary>
     public long ToSimulatedMinutes(ulong tick) => ToSimulatedSeconds(tick) / 60;
 
     /// <summary>Horloge instanciée depuis <c>simulation.simulatedSecondsPerTick</c>.</summary>
@@ -70,7 +76,7 @@ public sealed class SimulationClock
         return new SimulationClock(settings.SimulatedSecondsPerTick);
     }
 
-    /// <summary>Format horloge simulée « T+h:mm » depuis le tick 0 (ADR-005).</summary>
+    /// <summary>Format horloge simulée « T+h:mm » depuis le tick 0.</summary>
     public string FormatClock(ulong tick)
     {
         long minutes = ToSimulatedMinutes(tick);

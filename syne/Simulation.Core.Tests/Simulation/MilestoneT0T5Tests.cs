@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du jalon transverse T0–T5 : échelle, divergence des croyances et déterminisme.
+
 using System.Globalization;
 using System.Reflection;
 using System.Text;
@@ -13,12 +17,12 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Tests de jalon transverse T0–T5 (SYNE-122, ROADMAP.md §7 « Jalon U8 ») :
+/// Tests de jalon transverse T0–T5 (SYNE-122, « Jalon U8 ») :
 /// <list type="bullet">
 /// <item><b>T0</b> — 50 entités, 1000 ticks : aucun crash, état valide et
 /// déterministe à l'échelle ;</item>
 /// <item><b>T1</b> — 50 entités, 2000 ticks : les croyances divergent entre les
-/// entités (expériences différentes ⇒ croyances différentes, décision n°14) ;</item>
+/// entités (expériences différentes ⇒ croyances différentes) ;</item>
 /// <item><b>T2</b> — des traits différents produisent des décisions différentes
 /// dans une situation strictement identique (même seed, même position, mêmes
 /// besoins) ;</item>
@@ -26,9 +30,9 @@ namespace Simulation.Core.Tests;
 /// que ce qu'elle perçoit ou reçoit dans son voisinage (jamais au-delà) ;</item>
 /// <item><b>T4</b> — reproductibilité du benchmark à l'échelle du jalon (la
 /// mesure des objectifs de débit est couverte par ScaleTargetsTests + le mode
-/// CLI --benchmark, PERFORMANCE.md §9) ;</item>
+/// CLI --benchmark) ;</item>
 /// <item><b>T5</b> — la suite dépasse la barre du jalon (&gt; 160 tests,
-/// couverture ≥ 80 %, cf. TESTING.md).</item>
+/// couverture ≥ 80 %, cf.).</item>
 /// </list>
 /// </summary>
 public class MilestoneT0T5Tests
@@ -287,7 +291,7 @@ public class MilestoneT0T5Tests
     }
 
     // ------------------------------------------------------------------
-    // T5 — la suite dépasse la barre du jalon (&gt; 160 tests, TESTING.md).
+    // T5 — la suite dépasse la barre du jalon (&gt; 160 tests).
     // ------------------------------------------------------------------
 
     [Fact]

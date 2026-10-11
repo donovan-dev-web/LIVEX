@@ -1,10 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Contrôleur du moteur SYNE exposé via HTTP :5181 (SYNE-113).
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Loop;
 using Simulation.Console.Observability;
 
 namespace Simulation.Console.Control;
 
-/// <summary>Machine à états du run piloté par HTTP :5181 (API_CONTRACTS.md §3).</summary>
+/// <summary>Machine à états du run piloté par HTTP :5181.</summary>
 public enum SimulationControlState
 {
     /// <summary>Aucun run démarré (état initial).</summary>
@@ -24,7 +28,7 @@ public enum SimulationControlState
     Finished,
 }
 
-/// <summary>État courant du run piloté (API_CONTRACTS.md §3 — GET /api/control/status).</summary>
+/// <summary>État courant du run piloté (GET /api/control/status).</summary>
 public sealed record SimulationStatusSnapshot(
     SimulationControlState State,
     string RunId,
@@ -48,11 +52,11 @@ public sealed class PreparedWorldMismatchException : InvalidOperationException
 }
 
 /// <summary>
-/// Contrôleur du moteur SYNE exposé via HTTP :5181 (SYNE-113, API_CONTRACTS.md §3).
+/// Contrôleur du moteur SYNE exposé via HTTP :5181 (SYNE-113).
 /// Il administre une <see cref="SimulationLoop"/> en tâche d'arrière-plan et expose
 /// les commandes <c>start</c>, <c>pause</c>, <c>resume</c>, <c>stop</c>, <c>reset</c> ainsi qu'un
 /// état interrogable (<c>status</c>). Le contrôle est **non intrusif** (SYNE-081,
-/// DETERMINISM.md §3) : aucune commande ne retire de tirage au PRNG ni ne change la
+/// aucune commande ne retire de tirage au PRNG ni ne change la
 /// trajectoire — elles gèlent/reprises simplement l'avancement des ticks.
 /// </summary>
 public sealed class SimulationController : IAsyncDisposable
@@ -142,7 +146,7 @@ public sealed class SimulationController : IAsyncDisposable
             /// Options effectives du monde préparé (null tant qu'aucun monde n'est
             /// préparé). Exposées pour que les tests puissent vérifier que deux
             /// chemins de préparation (prepare, reset) construisent exactement le
-            /// même profil — cf. défaut 1 du RAPPORT-ELEMENTS-OUVERTS §5.1.
+            /// même profil (doctrine).
             /// </summary>
         public SimulationOptions? PreparedOptions
             {
@@ -175,7 +179,7 @@ public sealed class SimulationController : IAsyncDisposable
                 // Sans surcouche, le profil de référence est appliqué explicitement :
                 // le chemin reset (configJson null) doit produire exactement le même
                 // monde que prepare, sans jamais dépendre des défauts intégrés
-                // (défaut 1, RAPPORT-ELEMENTS-OUVERTS §5.1 ; doctrine ADR-016).
+                // (doctrine).
                 string effectiveConfig = string.IsNullOrWhiteSpace(configJson)
                     ? SimulationProfiles.ReferenceJson()
                     : configJson;
@@ -458,7 +462,7 @@ public sealed class SimulationController : IAsyncDisposable
         return await StartAsync(seed, configJson, maxTicks, cancellationToken);
     }
 
-    /// <summary>État courant (API_CONTRACTS.md §3, GET /api/control/status).</summary>
+    /// <summary>État courant (GET /api/control/status).</summary>
     public SimulationStatusSnapshot Status()
     {
         lock (_gate)

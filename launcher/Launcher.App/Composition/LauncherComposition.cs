@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Composition racine (la composition appartient à l'application).
+
 using System.Net.Sockets;
 using Launcher.Application;
 using Launcher.Domain;
@@ -8,19 +12,19 @@ using Launcher.Protocol.Model;
 namespace Launcher.App.Composition;
 
 /// <summary>
-/// Composition racine (ARCHITECTURE.md §1 : la composition appartient à l'application).
+/// Composition racine (la composition appartient à l'application).
 /// Réalise le graphe : infrastructure concrète → domaine → cas d'usage, plus la façade
 /// adaptateur consommée par la présentation.
 /// </summary>
 public sealed class LauncherComposition : IDisposable
 {
-    /// <summary>Plage interne LIVEX (NETWORK.md §6.2, §12) : ports des instances et du Launcher lui-même.</summary>
+    /// <summary>Plage interne LIVEX : ports des instances et du Launcher lui-même.</summary>
     private const int PortRangeFrom = 5200;
 
     /// <summary>Borne haute de la plage interne LIVEX.</summary>
     private const int PortRangeTo = 5399;
 
-    /// <summary>Cadence de la boucle de sondes (OBSERVABILITY.md §4) : « health.intervalMs » la précise par composant.</summary>
+    /// <summary>Cadence de la boucle de sondes : « health.intervalMs » la précise par composant.</summary>
     private static readonly TimeSpan ProbeTick = TimeSpan.FromSeconds(1);
 
     /// <summary>Délai par défaut entre deux sondes d'un composant sans « health.intervalMs ».</summary>
@@ -106,14 +110,14 @@ public sealed class LauncherComposition : IDisposable
 
         _surface = StartHttpSurface(packagesRoot);
 
-        // Supervision (OBSERVABILITY.md §4) : sondes tirées par le Launcher, états transités
+        // Supervision : sondes tirées par le Launcher, états transités
         // par StateRules uniquement. Sans elle, un composant démarré resterait « Démarrage ».
         _supervision = Task.Run(() => SuperviseLoopAsync(_supervisionStop.Token));
     }
 
     /// <summary>
-    /// Démarre la surface HTTP d'observabilité du Launcher (NETWORK.md §4.1 : /registry ;
-    /// OBSERVABILITY.md §4 : /health, /info, /metrics) sur un port libre de la plage interne.
+    /// Démarre la surface HTTP d'observabilité du Launcher (/registry ;
+    /// /health, /info, /metrics) sur un port libre de la plage interne.
     /// Non bloquante : si aucun port n'est disponible, l'application démarre sans surface,
     /// l'échec étant journalisé.
     /// </summary>
@@ -160,12 +164,12 @@ public sealed class LauncherComposition : IDisposable
 
     /// <summary>
     /// Tampon des lignes de sortie des composants, source des fenêtres console natives
-    /// (USER_INTERFACE.md §9). Nourri par le gestionnaire de processus, lu par l'interface.
+    /// Nourri par le gestionnaire de processus, lu par l'interface.
     /// </summary>
     public IComponentLogSource Logs => _logs;
 
     /// <summary>
-    /// Lecture de la télémétrie ECHOS pour la fenêtre d'analyse native (ADR-007) :
+    /// Lecture de la télémétrie ECHOS pour la fenêtre d'analyse native :
     /// le Launcher présente ce que l'API REST d'ECHOS publie, sans rien recalculer.
     /// </summary>
     public IEchosTelemetrySource EchosTelemetry => _telemetry;
@@ -183,7 +187,7 @@ public sealed class LauncherComposition : IDisposable
     /// <summary>Détecte les composants et installe le registre.</summary>
     public void DetectComponents() => _orchestration.Adopt(DetectInstallations());
 
-    /// <summary>Surface HTTP d'observabilité, si elle a pu démarrer (NETWORK.md §4.1).</summary>
+    /// <summary>Surface HTTP d'observabilité, si elle a pu démarrer.</summary>
     public LauncherHttpSurface? Surface => _surface;
 
     /// <summary>Port d'écoute de la surface HTTP, dans la plage interne 5200–5399.</summary>
@@ -206,7 +210,7 @@ public sealed class LauncherComposition : IDisposable
             _campaigns);
 
     /// <summary>
-    /// Boucle de supervision (OBSERVABILITY.md §4) : interroge le point de santé déclaré au
+    /// Boucle de supervision : interroge le point de santé déclaré au
     /// manifeste (« health.path », « health.intervalMs ») de chaque instance dotée d'un point
     /// de contrôle, et fait transiter l'état par <see cref="StateRules"/> — Démarrage → Prêt
     /// sur réponse, trois sondes manquées = perte de contact, délai de démarrage selon
@@ -243,7 +247,7 @@ public sealed class LauncherComposition : IDisposable
                     }
                     catch (Exception)
                     {
-                        // Une sonde en échec ne met jamais la supervision à l'arrêt (§8 : un silence est un état).
+                        // Une sonde en échec ne met jamais la supervision à l'arrêt (un silence est un état).
                     }
                 }
 
@@ -291,7 +295,7 @@ public sealed class LauncherComposition : IDisposable
         var state = instance.Health;
         if (state.State == ComponentState.Demarrage)
         {
-            // Le délai de démarrage déclaré au manifeste prime (COMPONENTS.md §4.1) :
+            // Le délai de démarrage déclaré au manifeste prime :
             // avant son dépassement, l'absence de réponse reste « Démarrage », pas une panne.
             var startupMs = instance.Installation.Manifest?.Timeouts?.StartupMs ?? 30000;
             var startedAt = instance.StartedAt ?? at;

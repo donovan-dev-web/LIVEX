@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Générateur pseudo-aléatoire déterministe xoshiro256** (Blackman & Vigna).
+
 namespace Simulation.Core.Prng;
 
 /// <summary>
@@ -7,7 +11,7 @@ namespace Simulation.Core.Prng;
 /// Type valeur immuable : chaque tirage renvoie le résultat ET l'état suivant.
 /// Pour une même graine et un même nombre de tirages, la séquence est identique
 /// bit-à-bit quelle que soit la plateforme — les trajectoires de simulation
-/// restent reproductibles (cf. DETERMINISM.md, arrêt d'utilisation de System.Random).
+/// restent reproductibles (cf., arrêt d'utilisation de System.Random).
 /// </para>
 /// </summary>
 public readonly struct Xoshiro256StarStar
@@ -59,7 +63,7 @@ public readonly struct Xoshiro256StarStar
         return next;
     }
 
-    /// <summary>État complet du générateur (4 × ulong) — persistance bit-à-bit (PERSISTENCE.md §4).</summary>
+    /// <summary>État complet du générateur (4 × ulong) — persistance bit-à-bit.</summary>
     internal (ulong S0, ulong S1, ulong S2, ulong S3) State => (_s0, _s1, _s2, _s3);
 
     private static ulong Rotl(ulong x, int k) => (x << k) | (x >> (64 - k));

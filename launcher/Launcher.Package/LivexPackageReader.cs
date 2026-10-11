@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Lecture d'un paquet .livexp : ouverture en lecture seule et vérification d'intégrité.
+
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
@@ -64,14 +68,14 @@ public sealed class JournalLine
 }
 
 /// <summary>
-/// Lecture d'un paquet .livexp (PACKAGE_FORMAT.md §10) : ouverture en lecture seule,
+/// Lecture d'un paquet.livexp : ouverture en lecture seule,
 /// vérification d'intégrité, contre-mesures zip-bomb et chemins dangereux à la lecture.
 /// </summary>
 public sealed class LivexPackageReader : IDisposable
 {
     // Plafond d'entrée relevé de 4 à 16 Gio : une donnée de campagne réelle pèse
     // ~2,34 Gio pour 50 agents × 2500 ticks et ~4,7 Gio pour 100 — le plafond d'entrée
-    // du format (PACKAGE_FORMAT.md §9) est une garde-fou zip-bomb, pas une borne ZIP.
+    // du format est une garde-fou zip-bomb, pas une borne ZIP.
     // Le ratio 100:1 reste en place : un vrai stream.jsonl reste très loin dedans.
     private const long MaxUncompressedBytes = 16L * 1024 * 1024 * 1024;
     private const long MaxCompressionRatio = 100;
@@ -92,7 +96,7 @@ public sealed class LivexPackageReader : IDisposable
             {
                 EnsureSafeEntryName(entry.FullName);
 
-                // Plafond zip-bomb : taille décompressée déclarée et ratio plafonnés (PACKAGE_FORMAT.md §9).
+                // Plafond zip-bomb : taille décompressée déclarée et ratio plafonnés.
                 if (entry.Length > MaxUncompressedBytes
                     || (entry.CompressedLength > 0 && entry.Length / entry.CompressedLength > MaxCompressionRatio))
                 {
@@ -282,7 +286,7 @@ public sealed class LivexPackageReader : IDisposable
         return ContractJson.DeserializeWithSchema<T>(json, PackageConstants.SchemaVersion, entryName);
     }
 
-    // Même règle qu'à l'écriture (PACKAGE_FORMAT.md §8) : le refus d'un nom non conforme —
+    // Même règle qu'à l'écriture : le refus d'un nom non conforme —
     // chemin ou extension exécutable — vaut à l'ouverture, donc aussi à l'extraction.
     private static void EnsureSafeEntryName(string entryName) => PackageEntryRules.EnsureSafe(entryName);
 

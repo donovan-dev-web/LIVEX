@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de validation des plages d'options de simulation.
+
 using Simulation.Core.Configuration;
 using Xunit;
 

@@ -1,3 +1,5 @@
+"""Tests de l'endpoint de santé de l'API ECHOS."""
+
 from fastapi.testclient import TestClient
 
 from echos import __version__

@@ -1,5 +1,12 @@
 # Documentation LIVEX
 
+**Composant** : LIVEX (général)
+**Statut** : [STABLE]
+**Dernière mise à jour** : 11 octobre 2026
+**Dépend de** : `ARCHITECTURE.md`, `NAMING_CONVENTIONS.md`
+
+---
+
 Cette page distingue les documents de référence actuels des spécifications
 historiques conservées pour leur valeur d'archive.
 

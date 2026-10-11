@@ -1,16 +1,20 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Collecte des journaux techniques d'un run.
+
 using System.Text;
 
 namespace Launcher.Application;
 
 /// <summary>
-/// Collecte des journaux techniques d'un run (EXPERIMENTS.md §6). Le moteur écrit encore ses
+/// Collecte des journaux techniques d'un run. Le moteur écrit encore ses
 /// journaux par une pompe détachée (<c>ProcessManager.PumpAsync</c>) au moment où le Launcher
 /// les archive : sous Windows un lecteur doit explicitement autoriser l'écrivain
 /// (<c>FileShare.ReadWrite</c>), sinon la lecture échoue en violation de partage —
 /// <c>File.ReadAllBytes</c> ouvre avec <c>FileShare.Read</c> et refuse l'écrivain en cours,
 /// là où Linux, sans verrou obligatoire sur les fichiers, ne le montre jamais. C'est la même
-/// règle que <c>SessionFileJournal.ReadShared*</c> (correctif du Lot W, étape 5 de
-/// ROADMAP-V01.md) : elle a coûté la campagne J3 en CI, l'archivage d'un run pourtant réussi
+/// règle que <c>SessionFileJournal.ReadShared*</c> (correctif du Lot W, étape 5) :
+/// elle a coûté la campagne J3 en CI, l'archivage d'un run pourtant réussi
 /// échouant sur son propre journal.
 /// Un journal illisible n'échoue jamais la collecte : il est consigné dans l'archive, pour
 /// que le diagnostic d'un échec ne soit jamais remplacé par l'échec du diagnostic.

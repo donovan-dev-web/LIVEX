@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fabrique d'entités déterministe : mêmes (seed, template, nombre, monde) → mêmes entités (ids séquentiels,
+//        positions, traits tirés dans les plages du paramétrage).
+
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 

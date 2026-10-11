@@ -1,3 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Bibliothèque de plans candidats par objectif (« Means-End Reasoning », D3, engineVersion 0.14.0) :
+//        transforme le mapping historique « besoin → objectif → action quasi unique » en « besoin → objectif → N
+//        plans candidats », chaque plan étant scoré par la fonction d'utilité existante (inchangée) — elle reçoit
+//        simplement plus de candidats en entrée.
+
 using Simulation.Core.Actions;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -6,24 +13,24 @@ using Simulation.Core.World;
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Bibliothèque de plans candidats par objectif (ADR « Means-End Reasoning », D3,
+/// Bibliothèque de plans candidats par objectif (D3,
 /// engineVersion 0.14.0) : transforme le mapping historique « besoin → objectif →
 /// action quasi unique » en « besoin → objectif → N plans candidats », chaque plan
-/// étant scoré par la fonction d'utilité existante (§3.14, **inchangée**) — elle
+/// étant scoré par la fonction d'utilité existante (**inchangée**) — elle
 /// reçoit simplement plus de candidats en entrée.
 ///
 /// <para>
 /// Périmètre du temps 2 de la décision (après la réintroduction d'`Attack`, temps 1,
 /// portée par le catalogue D7) : pour un objectif de faim/soif, l'entité détentrice
 /// d'un stock pertinent peut générer <see cref="DesireKind.Take"/> (constitution de
-/// stock au-delà du besoin immédiat — modulé par le trait <c>greed</c>, cf. ADR
-/// « Inventaire ») ; l'entité en manque peut générer <see cref="DesireKind.Give"/>
+/// stock au-delà du besoin immédiat — modulé par le trait <c>greed</c>) ; l'entité
+/// en manque peut générer <see cref="DesireKind.Give"/>
 /// ou <see cref="DesireKind.Trade"/> vers un pair connu et de confiance. `Steal`
-/// n'est PAS implémenté (l'ADR le conditionne à un arbitrage avec
-/// <c>docs/ETHICS_AND_SCOPE.md</c>) ; `Buy` est couvert par Échanger (1 contre 1).
+/// n'est PAS implémenté (il est conditionné à un arbitrage avec le catalogue
+/// d'actions) ; `Buy` est couvert par Échanger (1 contre 1).
 /// Les candidats ne sont générés que si <c>agents.actions.plans.enabled</c> et
 /// <c>agents.inventory.enabled</c> sont actifs, et uniquement quand l'objectif est
-/// réellement prioritaire (point 1 « à trancher » de l'ADR : coût de génération).
+/// réellement prioritaire (point 1 « à trancher » : coût de génération).
 /// </para>
 /// </summary>
 public static class PlanLibrary
@@ -67,7 +74,7 @@ public static class PlanLibrary
             }
 
             // Constitution de stock : l'entité avare (greed) prend au-delà de
-            // son besoin immédiat tant que sa capacité le permet (ADR Inventaire :
+            // son besoin immédiat tant que sa capacité le permet (Inventaire :
             // « condition nécessaire à l'apparition spontanée d'échanges »).
             if (IsViable(catalog, DesireKind.Take, stocks)
                 && entity.Traits["greed"] >= 1.0

@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Exécuteur de runs : alloue les ports, prépare le dossier du run, lance le moteur avec la graine et
+//        l'horizon, attend la fin, collecte les sorties.
+
 using System.Diagnostics;
 using Launcher.Application;
 using Launcher.Domain;
@@ -8,9 +13,9 @@ using Launcher.Protocol.Model;
 namespace Launcher.App.Composition;
 
 /// <summary>
-/// Exécuteur de runs (EXPERIMENTS.md §6.4) : alloue les ports, prépare le dossier du run,
+/// Exécuteur de runs : alloue les ports, prépare le dossier du run,
 /// lance le moteur avec la graine et l'horizon, attend la fin, collecte les sorties.
-/// Un run n'écrit que dans son dossier (DATA_FLOW.md §3).
+/// Un run n'écrit que dans son dossier.
 /// </summary>
 public sealed class ProcessRunExecutor : IRunExecutor
 {
@@ -77,7 +82,7 @@ public sealed class ProcessRunExecutor : IRunExecutor
             // seul ticksPerSecond est remplacé. La même valeur est archivée dans
             // config.resolved.json — les deux viennent de RunEngineProfile, pour que
             // le paquet ne puisse pas attester une configuration différente de celle
-            // qui a été appliquée (EXPERIMENTS.md §12).
+            // qui a été appliquée.
             RunEngineProfile.ConfigOverlay(spec)), cancellationToken).ConfigureAwait(false);
 
         var declaredControlPort = manifest.Endpoints is { } endpoints && endpoints.TryGetValue("control", out var controlEndpoint)
@@ -110,7 +115,7 @@ public sealed class ProcessRunExecutor : IRunExecutor
             // Artefact de rejouabilité : le flux archivé dans le paquet permet de
             // réanalyser le run après coup, sans SYNE ni capture temps réel.
             "--export-stream",
-            // Corrélation propagée par les deux voies prévues (INTEGRATION_CONTRACT.md §3.1, §7.2).
+            // Corrélation propagée par les deux voies prévues.
             CorrelationHeaders.CorrelationIdArgument, correlationId,
         };
 
@@ -266,7 +271,7 @@ public sealed class ProcessRunExecutor : IRunExecutor
     /// <summary>
     /// Interroge l'avancement du run tant qu'il tourne et le publie. Ne lève jamais :
     /// la sonde est un confort d'affichage, la sortie du processus reste l'unique fait
-    /// qui décide du résultat (EXPERIMENTS.md §8).
+    /// qui décide du résultat.
     /// </summary>
     private async Task PollTickProgressAsync(Uri controlEndpoint, CancellationToken cancellationToken)
     {

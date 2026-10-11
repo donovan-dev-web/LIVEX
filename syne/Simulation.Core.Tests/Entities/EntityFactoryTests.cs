@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la fabrique d'entités déterministe (SYNE-003).
+
 using Simulation.Core.Entities;
 using Simulation.Core.Prng;
 using Simulation.Core.World;

@@ -2,7 +2,8 @@
 
 **Composant** : PRISM
 **Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Dernière mise à jour** : 27 septembre 2026
+**Statut** : [DRAFT]
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : [`../../VISION.md`](../../VISION.md)
 
 ---

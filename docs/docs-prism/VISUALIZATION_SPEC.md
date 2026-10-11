@@ -1,7 +1,8 @@
 # VISUALIZATION_SPEC — Vues de données
 
 **Composant** : PRISM
-**Dernière mise à jour** : 27 septembre 2026
+**Statut** : [DRAFT]
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : [`RENDERING_SPEC.md`](RENDERING_SPEC.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du protocole HTTP du serveur de contrôle.
+
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
@@ -30,7 +34,7 @@ public class ControlServerWireTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ExplicitPrepareRequiresReadyBeforeStart()
+    public async Task Prepare_ExplicitCall_RequiresReadyBeforeStart()
     {
         using var invalidPrepare = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/prepare"))
         {
@@ -91,7 +95,7 @@ public class ControlServerWireTests : IAsyncLifetime
 
         using var ready = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/ready"))
         {
-            // Version du contrat de description (ADR-017 : 1.0 → 1.1) — épinglée
+            // Version du contrat de description (1.0 → 1.1) — épinglée
             // sur la constante du moteur pour ne plus casser à chaque bump mineur.
             Content = JsonBody($"{{ \"worldVersion\": \"{Simulation.Core.World.WorldDescriptionBuilder.Version}\" }}"),
         };

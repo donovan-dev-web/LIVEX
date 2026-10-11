@@ -1,4 +1,4 @@
-"""Routes REST ECHOS (ECHOS-040→044, API_REST.md).
+"""Routes REST ECHOS (ECHOS-040→044).
 
 :func:`register_routes` attache les endpoints d'analyse à un
 ``AnalyticsStore`` (SQLite). Si ``store`` est ``None`` (API démarrée sans base
@@ -295,7 +295,7 @@ def _read_every(every: int | None) -> int:
 def _extinction_chronology(
     store: AnalyticsStore, run_id: str, extinction_tick: int | None
 ) -> list[dict]:
-    """Dernières observations avant l'extinction (P3 — RAPPORT §7.3).
+    """Dernières observations avant l'extinction.
 
     Une **chronologie descriptive** : tick, type d'événement, agent, action et
     cause telles que transportées par SYNE. Aucune inférence causale n'est
@@ -650,7 +650,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         engine: str | None = Query(default=None),
         metric: str | None = Query(default=None),
     ) -> dict:
-        """Synthèse multi-runs (P3 — RAPPORT §4.7, §6.1.8).
+        """Synthèse multi-runs.
 
         Compare plusieurs runs **avec leur contexte de contrôle** (version,
         graine, issue, niveau de conservation) et publie une dispersion
@@ -730,7 +730,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
 
     @app.get("/api/metrics/catalog", tags=["api"])
     def metrics_catalog() -> dict:
-        """Catalogue versionné des métriques (P1 — RAPPORT §8).
+        """Catalogue versionné des métriques.
 
         Définitions, unités, domaines, populations, fenêtres, statuts, avertissements
         et renommages : le Launcher **restaure** ce contenu, il ne redéfinit rien.
@@ -742,7 +742,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         run_id: str,
         every: int | None = Query(default=None, ge=1),
     ) -> dict:
-        """Profil de viabilité d'un run (P1/P3 — RAPPORT §7.3).
+        """Profil de viabilité d'un run.
 
         Résumés de tick déjà conservés (population, besoins, régime des
         ressources) + rapport de calibration post-run, **sans agrégat
@@ -919,7 +919,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         format: str = Query(default="json"),
         light: bool = Query(default=False),
     ) -> dict:
-        """Comparaison de runs contrôlés (ECHOS-070→072, EXPERIMENT_COMPARISON.md).
+        """Comparaison de runs contrôlés (ECHOS-070→072).
 
         Méta-métriques de reproductibilité (ECHOS-070/071) : même seed ET même
         version ET contenu bit-à-bit identique ⇒ ``is_reproducible`` ; score de
@@ -986,7 +986,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         """Chaîne causale d'une entité à un tick (ECHOS-061 → ECHOS-063).
 
         Reconstruction **hors ligne** sur ``decision_traces`` + ``events_log``
-        + contexte ``agents`` (ADR-002 [Accepted], CAUSAL_ANALYSIS.md §4) :
+        + contexte ``agents`` ([Accepted]) :
         Action → Intention → Objectif → Besoin → Croyance → Mémoire →
         Perception. ``tick`` optionnel (dernier tick tracé de l'entité) ;
         ``depth`` > ``MAX_DEPTH`` (12) rejeté côté FastAPI (422). Réponse
@@ -1096,7 +1096,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
     ) -> dict:
         """Description de monde + observation au tick demandé (vue 2D).
 
-        Lecture seule (ADR-003) : ``world`` vient du contexte ``world`` écrit à
+        Lecture seule : ``world`` vient du contexte ``world`` écrit à
         l'ingestion depuis ``world_initialized`` ; ``agents``/``groups``/
         ``resources`` sont les contextes les plus proches **au plus fort** du
         tick demandé, publiés tels qu'observés. Aucun agrégat n'est calculé.
@@ -1148,7 +1148,7 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         Nœuds = entités du contexte ``agents`` ; arêtes = relations ``trust``
         que chaque entité publie (``peerId``/``trust``), transmises telles quelles.
         Seule la **forme** du graphe est assemblée ici : aucune valeur n'est
-        agrégée, moyennée ou estimée (ADR-003 : ECHOS calcule, le Launcher présente).
+        agrégée, moyennée ou estimée (ECHOS calcule, le Launcher présente).
         """
         active = _require_store(store)
         resolved = _resolve_run(active, run_id)

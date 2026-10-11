@@ -1,4 +1,4 @@
-"""Run the local SYNE-to-ECHOS ingestion worker for development."""
+"""Lance le worker local d'ingestion SYNE vers ECHOS pour le développement."""
 
 from __future__ import annotations
 

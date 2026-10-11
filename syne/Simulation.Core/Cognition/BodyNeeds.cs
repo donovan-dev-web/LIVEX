@@ -1,9 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : État des besoins d'une entité : 6 besoins (faim, soif, fatigue 0-100 ; sécurité, social, curiosité 0-1) +
+//        énergie (0-100).
+
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// État des besoins d'une entité (DATA_MODEL.md §7, décision n°3) :
+/// État des besoins d'une entité :
 /// 6 besoins (faim, soif, fatigue 0-100 ; sécurité, social, curiosité 0-1)
 /// + énergie (0-100). Dérive par tick selon les taux configurables.
 /// </summary>
@@ -11,7 +16,7 @@ public sealed class BodyNeeds
 {
     public const double MaxResource = 100.0;
 
-    // Échelles / seuils de prototype (DATA_MODEL.md §7, décision n°4 : besoins
+    // Échelles / seuils de prototype (besoins
     // déclenchés dès « ≥ 50 » (équivalent des seuils configurables par défaut)).
     public const double HungerThreshold = 50.0;
     public const double ThirstThreshold = 50.0;
@@ -48,10 +53,10 @@ public sealed class BodyNeeds
         _ => 0.0,
     };
 
-    /// <summary>Indicateur « état critique » (énergie &lt; 10 ou faim &gt; 90, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    /// <summary>Indicateur « état critique » (énergie &lt; 10 ou faim &gt; 90).</summary>
     public bool IsCritical => Energy < CriticalEnergy || Hunger > CriticalHunger;
 
-    /// <summary>État critique selon les seuils configurables (agents.interruption.*, COGNITIVE_ARCHITECTURE.md §6).</summary>
+    /// <summary>État critique selon les seuils configurables (agents.interruption.*).</summary>
     public bool IsCriticalFor(InterruptionSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -71,7 +76,7 @@ public sealed class BodyNeeds
     };
 
     /// <summary>
-    /// Déclenchement selon les seuils configurables (SYNE-042, décision n°4 :
+    /// Déclenchement selon les seuils configurables (SYNE-042 :
     /// besoins déclenchés dès « ≥ 50 » ; Rest dès fatigue &gt; 70).
     /// </summary>
     public bool IsTriggered(Simulation.Core.Cognition.DesireKind kind, NeedsSettings settings)
@@ -91,7 +96,7 @@ public sealed class BodyNeeds
         };
     }
 
-    /// <summary>Dérive périodique des besoins (décision n°3 : faim +0.5/tick, soif +0.7/tick, fatigue +0.3/tick).</summary>
+    /// <summary>Dérive périodique des besoins (faim +0.5/tick, soif +0.7/tick, fatigue +0.3/tick).</summary>
     public BodyNeeds Advance(NeedsSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -121,7 +126,7 @@ public sealed class BodyNeeds
     /// <summary>
     /// Dégradation de la sécurité par une menace perçue (D7 : cible d'une attaque —
     /// le besoin Safety glissait déjà vers le bas dans le prototype, ce mutateur
-    /// rend la cause explicite ; l'objectif Flee existe déjà en §3.13.1).
+    /// rend la cause explicite ; l'objectif Flee existe déjà en).
     /// </summary>
     public void ThreatenSafety(double amount) => Safety = Clamp01(Safety - amount);
 
@@ -148,7 +153,7 @@ public sealed class BodyNeeds
         return needs;
     }
 
-    /// <summary>Restauration d'état complet (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration d'état complet (persistance bit-à-bit).</summary>
     internal void RestoreState(
         double hunger,
         double thirst,

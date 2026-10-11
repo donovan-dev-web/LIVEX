@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Gestionnaire des fenêtres console du Launcher.
+
 using Avalonia.Controls;
 using Launcher.Domain;
 using Launcher.Presentation.ViewModel;
@@ -5,7 +9,7 @@ using Launcher.Presentation.ViewModel;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Gestionnaire des fenêtres console du Launcher (USER_INTERFACE.md §9). Une fenêtre par instance
+/// Gestionnaire des fenêtres console du Launcher. Une fenêtre par instance
 /// supervisée : rouvrir la console d'un composant déjà affiché la ramène au premier plan
 /// au lieu d'en créer une seconde.
 ///

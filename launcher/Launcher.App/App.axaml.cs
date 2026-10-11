@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Application Avalonia: composition injectée, fenêtre principale, paquet ouvert par --package.
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -67,19 +71,19 @@ public sealed class App : Avalonia.Application
             facade.CampaignProgressChanged += (_, progress) =>
                 Dispatcher.UIThread.Post(() => viewModel.UpdateCampaignProgress(progress));
 
-            // Consoles de composant (USER_INTERFACE.md §9) : une fenêtre native par instance supervisée,
+            // Consoles de composant : une fenêtre native par instance supervisée,
             // ouverte automatiquement au démarrage et à la demande depuis les cartes.
             var consoles = new ConsoleWindowHost(_composition.Logs, facade.LogsDirectoryFor);
             facade.ComponentStarted += (_, started) =>
                 Dispatcher.UIThread.Post(() => consoles.Open(started.InstanceId));
             viewModel.SetConsoleHandler(instanceId => consoles.Open(instanceId));
 
-            // Fenêtre d'analyse native (ADR-007) : une seule fenêtre, alimentée par l'API
+            // Fenêtre d'analyse native : une seule fenêtre, alimentée par l'API
             // REST d'ECHOS — l'interface web/Electron d'ECHOS a été supprimée.
             var analysis = new AnalysisWindowHost(_composition.EchosTelemetry);
             viewModel.SetAnalysisHandler(analysis.Open);
 
-            // Cycle de vie réel des cartes (INTEGRATION_CONTRACT.md §5) : l'erreur éventuelle
+            // Cycle de vie réel des cartes : l'erreur éventuelle
             // est journalisée puis rafraîchie, jamais masquée. Le rafraîchissement revient
             // toujours sur le fil d'interface (Avalonia : collections liées non thread-safe).
             viewModel.SetLifecycleHandler((componentId, start) =>
@@ -87,7 +91,7 @@ public sealed class App : Avalonia.Application
                 _ = RunToggleAsync(viewModel, componentId, start);
             });
 
-            // Profil sélectionné (COMPONENTS.md §9, G7) : démarrage dans l'ordre de résolution,
+            // Profil sélectionné (G7) : démarrage dans l'ordre de résolution,
             // arrêt en ordre inverse strict. Chaque erreur est journalisée, jamais masquée.
             viewModel.SetProfileLifecycleHandler(async (order, start) =>
             {
@@ -124,19 +128,19 @@ public sealed class App : Avalonia.Application
             viewModel.RefreshFromRegistry();
             viewModel.RefreshExperiences();
 
-            // Échantillonnage périodique (GUI.md §11) : état, ressources, journaux.
+            // Échantillonnage périodique : état, ressources, journaux.
             var sampler = new DispatcherTimer(TimeSpan.FromMilliseconds(800), DispatcherPriority.Background,
                 (_, _) => viewModel.RefreshFromRegistry());
             sampler.Start();
 
-            // --package : le paquet est ouvert en lecture au démarrage (USER_INTERFACE.md §3.1,
+            // --package : le paquet est ouvert en lecture au démarrage
             // paquet scellé consultable, paquet vivant avec avertissement).
             if (_packageToOpen is not null)
             {
                 viewModel.OpenPackage(_packageToOpen);
             }
 
-            // La surface HTTP et les processus lancés sont libérés à la fermeture (NETWORK.md §4.1).
+            // La surface HTTP et les processus lancés sont libérés à la fermeture.
             desktop.ShutdownRequested += (_, _) =>
             {
                 analysis.Dispose();

@@ -51,7 +51,7 @@ contre le contrat réel clôt les tâches d’intégration correspondantes.
 - [x] Les suites récentes exécutées sur cette révision comptent 86 tests
   unitaires, 7 d’intégration et 20 end-to-end Launcher, dont un parcours
   campagne contre SYNE publié ; le rapport complet figure dans
-  [`../Livex-status.md`](../Livex-status.md).
+  [`../LIVEX-STATUS.md`](../LIVEX-STATUS.md).
 
 ## 3. Ordre d’exécution et jalons
 
@@ -349,7 +349,7 @@ et ECHOS réel installé par son `echos-launcher`, base d’analyse dédiée),
 intégrés à la suite E2E (31 tests) et câblés en CI Linux (job Launcher :
 venv ECHOS + `LIVEX_SYNE_PUBLISHED_ROOT`). Reste : exécution CI effective
 lors du prochain push, puis validation sous Windows à l’étape 5 de
-`../../ROADMAP-V01.md`.
+`../../ROADMAP.md`.
 
 ### Jalon 4 — Terminer les surfaces UI et de configuration
 
@@ -564,7 +564,7 @@ scénarios de développement et ne remplacent jamais l’acceptation SYNE réel.
 - Interface et modes : [`../docs/docs-launcher/USER_INTERFACE.md`](../docs/docs-launcher/USER_INTERFACE.md)
 - Livraison : [`../docs/docs-launcher/PACKAGING.md`](../docs/docs-launcher/PACKAGING.md)
 - Validation : [`../docs/docs-launcher/TESTING.md`](../docs/docs-launcher/TESTING.md)
-- État mesuré : [`../Livex-status.md`](../Livex-status.md)
+- État mesuré : [`../LIVEX-STATUS.md`](../LIVEX-STATUS.md)
 
 À chaque tâche terminée, mettre à jour son statut et relier la preuve (PR,
 workflow, test ou décision). Si une tâche devient hors V1, déplacer la décision

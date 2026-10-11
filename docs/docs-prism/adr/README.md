@@ -12,7 +12,6 @@ Ce dossier contient les ADR spécifiques à PRISM.
 | :-- | :-- | :-- |
 | `ADR-003-echelle-cadence-syne-unreal.md` | Échelle et cadence SYNE ↔ Unreal (`k = 100`, TPS 6, monde ≈ 5 km²) | [Proposed] |
 | `ADR-002-choix-unreal-prism-ldk.md` | Unreal Engine 5.8 et plugin PRISM-LDK pour PRISM | [Accepted] |
-| `ADR-001-choix-godot.md` | Choix historique du prototype Godot (édition .NET) | [Superseded] par l'ADR-002 |
 
 ## ADR transverses référencés (docs/adr/)
 

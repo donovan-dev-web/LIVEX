@@ -1,13 +1,17 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Profils opérationnels explicites utilisés par les lanceurs de runs.
+
 namespace Simulation.Core.Configuration;
 
 /// <summary>Profils opérationnels explicites utilisés par les lanceurs de runs.</summary>
 public static class SimulationProfiles
 {
-    /// <summary>Identifiant de scénario batch du profil de référence (ADR-016).</summary>
+    /// <summary>Identifiant de scénario batch du profil de référence.</summary>
     public const string ReferenceId = "reference";
 
     /// <summary>
-    /// Identifiant de scénario batch du profil PRISM (ADR-017, monde 2 240 /
+    /// Identifiant de scénario batch du profil PRISM (monde 2 240 /
     /// 5 s simulées par tick) — accepté par <c>--simulation</c> et par le
     /// sélecteur de scénario du Launcher.
     /// </summary>
@@ -16,7 +20,7 @@ public static class SimulationProfiles
     /// <summary>
     /// Vrai si <paramref name="simulationId"/> est un scénario batch connu
     /// (<c>null</c> = défaut historique, équivalent à <see cref="ReferenceId"/> :
-    /// le profil de référence EST le défaut intégré, ADR-016).
+    /// le profil de référence EST le défaut intégré).
     /// </summary>
     public static bool IsKnownSimulationId(string? simulationId) =>
         simulationId is null or ReferenceId or PrismId;
@@ -25,7 +29,7 @@ public static class SimulationProfiles
     /// Profil de référence : scénario de survie calibré.
     /// </summary>
     /// <remarks>
-    /// <b>Calibration B1 (ADR-016, horizon 2500 ticks)</b> : les valeurs calibrées
+    /// <b>Calibration B1 (horizon 2500 ticks)</b> : les valeurs calibrées
     /// sont désormais portées par les **défauts intégrés** (tout run sans surcouche
     /// — dont le chemin Launcher `--simulation reference` — tourne sur le profil
     /// calibré) et ce profil les rejoue **explicitement**, parce que le chemin HTTP
@@ -78,7 +82,7 @@ public static class SimulationProfiles
     public static string ReferenceJson() => ConfigLoader.ToJson(Reference());
 
     /// <summary>
-    /// Profil <b>PRISM</b> (ADR-017 §4.4, SCALE_AND_CADENCE_SPEC.md §2) : monde
+    /// Profil <b>PRISM</b> : monde
     /// 2 240 × 2 240 unités (70 × 70 cases de 32 m, case logique = cluster World
     /// Partition 3 200 uu à k = 100 uu/unité), cadence 6 TPS (166,7 ms/tick) et
     /// <b>5 secondes simulées par tick</b> — ratio R = 30 (1 s réelle = 30 s
@@ -90,7 +94,7 @@ public static class SimulationProfiles
     /// <b>Additif et neutre</b> : seul <c>simulatedSecondsPerTick</c> change
     /// l'écoulement du temps simulé (classe A mise à l'échelle au démarrage) ;
     /// ni TPS de référence, ni trait de vitesse, ni échelle k ne bougent.
-    /// rejoue le profil <c>reference</c> calibré (ADR-016) puis applique le bloc
+    /// rejoue le profil <c>reference</c> calibré puis applique le bloc
     /// PRISM — un profil doit être <b>complet</b> (le contrôleur applique la
     /// configuration fournie sur les défauts intégrés).
     /// </para>

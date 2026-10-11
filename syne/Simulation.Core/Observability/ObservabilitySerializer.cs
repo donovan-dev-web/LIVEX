@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Sérialisation déterministe camelCase des messages d'observabilité.
+
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Simulation.Core.World;
@@ -6,7 +10,7 @@ namespace Simulation.Core.Observability;
 
 /// <summary>
 /// Sérialisation déterministe camelCase des messages d'observabilité
-/// (API_CONTRACTS.md §2). Les objets <c>JsonObject</c> préservent leur ordre
+/// Les objets <c>JsonObject</c> préservent leur ordre
 /// d'insertion → sortie stable et testable (checksum d'émission).
 /// </summary>
 public static class ObservabilitySerializer
@@ -33,7 +37,7 @@ public static class ObservabilitySerializer
             ["seed"] = (ulong)snapshot.Seed,
             ["tick"] = (ulong)snapshot.Tick,
             ["simulatedTimeMinutes"] = snapshot.SimulatedTimeMinutes,
-            // Champ additif ADR-017 (contrat 0.4.0) : secondes simulées exactes —
+            // Champ additif (contrat 0.4.0) : secondes simulées exactes —
             // `simulatedTimeMinutes` reste le plancher entier historique (stockage
             // ECHOS en INTEGER).
             ["simulatedTimeSeconds"] = snapshot.SimulatedTimeSeconds,
@@ -121,7 +125,7 @@ public static class ObservabilitySerializer
     }
 
     /// <summary>
-    /// Livres au serializer (SYNE-121, décisions n°18/19, Monographie §3.18) :
+    /// Livres au serializer (SYNE-121) :
     /// chaque livre est émis en <c>{id, authorId, title, writtenTick, readCount,
     /// readers[]}</c> (lecteurs distincts dans l'ordre de première consultation)
     /// — champ books[] additif, émis seulement quand world.books.enabled est actif

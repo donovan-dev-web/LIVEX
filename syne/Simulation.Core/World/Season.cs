@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Saisons du cycle environnemental (SYNE-072, jalon U8) : quatre saisons en boucle déterministe.
+
 namespace Simulation.Core.World;
 
 /// <summary>
 /// Saisons du cycle environnemental (SYNE-072, jalon U8) : quatre saisons
 /// en boucle déterministe. Le cycle est purement une fonction du tick
-/// (aucun PRNG, DETERMINISM.md §3) — la saison courante se déduit de
+/// (aucun PRNG) — la saison courante se déduit de
 /// <c>(indexInitial + tick / seasonLengthTicks) % 4</c>.
 /// </summary>
 public enum Season
