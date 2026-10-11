@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Point d'entrée SYNE — mode CLI/batch.
+
 using System.Globalization;
 using System.Net;
 using System.Text;
@@ -13,8 +17,8 @@ using Simulation.Core.Performance;
 namespace Simulation.Console;
 
 /// <summary>
-/// Point d'entrée SYNE — mode CLI/batch (ADR-002).
-/// Priorité de configuration : défauts → --config → flags CLI (CONFIGURATION.md §5).
+/// Point d'entrée SYNE — mode CLI/batch.
+/// Priorité de configuration : défauts → --config → flags CLI.
 /// Boucle minimale : monde + entités + grille spatiale + tick (SYNE-002/003/004).
 /// Mode --observe : diffusion WebSocket des snapshots/événements par tick (SYNE-080).
 /// Mode --benchmark : mesure débit/budgets/checksum aux échelles 50/500/1000 (SYNE-090…093).
@@ -87,9 +91,9 @@ public static class Program
     /// <summary>
     /// Résolution effectives des options : défauts intégrés → profil de scénario
     /// (<c>--simulation</c>) → surcouche <c>--config</c> → flags CLI
-    /// (CONFIGURATION.md §5). <c>reference</c> n'injecte rien : le profil de
-    /// référence EST le défaut intégré calibré (ADR-016) — tout chemin existant
-    /// reste bit-à-bit identique. <c>prism</c> (ADR-017) s'applique comme
+    /// <c>reference</c> n'injecte rien : le profil de
+    /// référence EST le défaut intégré calibré — tout chemin existant
+    /// reste bit-à-bit identique. <c>prism</c> s'applique comme
     /// surcouche complète <b>sous</b> <c>--config</c>, qui garde donc la priorité
     /// (paradigme du Launcher : surcouche `launcher-config.json`).
     /// </summary>
@@ -145,7 +149,7 @@ public static class Program
 
         // L'export du flux passe par l'émetteur d'observabilité : les trames
         // écrites sont exactement celles du WebSocket, et l'export n'ajoute
-        // aucun tirage PRNG (DETERMINISM.md §3).
+        // aucun tirage PRNG.
         string? runId = null;
         if (cli.ExportStream)
         {
@@ -187,8 +191,8 @@ public static class Program
     }
 
     /// <summary>
-    /// Mode --benchmark (SYNE-090…093, PERFORMANCE.md §7) : pour chaque population
-    /// ∈ {50, 500, 1000} × chaque seed ∈ {12345, 999, 7} (config §7) exécute
+    /// Mode --benchmark (SYNE-090…093) : pour chaque population
+    /// ∈ {50, 500, 1000} × chaque seed ∈ {12345, 999, 7} (config) exécute
     /// <c>ticks</c> (défaut 300) et mesure le débit (t/s), les budgets par
     /// sous-système et le checksum d'état bit-à-bit. Rien de parallèle — la
     /// trajectoire reste déterministe.
@@ -240,7 +244,7 @@ public static class Program
     }
 
     /// <summary>
-/// FNV-1a canonique de l'état du monde (DETERMINISM.md §6) : préfixe
+/// FNV-1a canonique de l'état du monde : préfixe
 /// « elément=population;ticks » puis une ligne par entité vivante
 /// (id;x;y;énergie trié par id). Reprodéterminé bit-à-bit à seed égale.
 /// </summary>
@@ -305,7 +309,7 @@ public static class Program
 
     /// <summary>
     /// Mode --serve (SYNE-113) : expose l'API HTTP REST de contrôle sur
-    /// 127.0.0.1:[port] (défaut 5181, ADR-003, API_CONTRACTS.md §3). Le process
+    /// 127.0.0.1:[port] (défaut 5181). Le process
     /// reste en vie jusqu'à Ctrl+C ; aucun run n'est démarré automatiquement —
     /// il est lancé via POST /api/control/start.
     /// </summary>
@@ -373,7 +377,7 @@ public static class Program
         }
 
         // Configuration **effectivement appliquée** (profil de scénario +
-        // surcouche + flags CLI, ADR-017) : le contrôleur reçoit le résolu
+        // surcouche + flags CLI) : le contrôleur reçoit le résolu
         // complet au prepare — sinon `--simulation prism` perdrait son profil
         // (le prepare du contrôleur mergerait la seule surcouche sur le profil
         // de référence par défaut).

@@ -1,7 +1,7 @@
-"""Modèles pydantic des contrats d'ingestion SYNE (API_CONTRACTS.md).
+"""Modèles pydantic des contrats d'ingestion SYNE.
 
 Les messages sur le WebSocket :5180 sont des JSON **camelCase** (contrat de
-transport §2). Les modèles acceptent l'alias camelCase en entrée
+transport). Les modèles acceptent l'alias camelCase en entrée
 (``populate_by_name``) tout en exposant des attributs Python snake_case, et
 sérialisent en camelCase avec ``model_dump(by_alias=True)``.
 """
@@ -53,10 +53,10 @@ class Trust(BaseModel):
 
 
 class Commitment(BaseModel):
-    """Engagement communicationnel observable (contrat 0.3.0, ADR D5 — snapshot agent).
+    """Engagement communicationnel observable (contrat 0.3.0, D5 — snapshot agent).
 
     Émis par SYNE seulement quand ``agents.actions.commitments.enabled`` est actif.
-    ``status`` ∈ {Pending, Fulfilled, Broken, Expired} (cycle de vie de l'ADR).
+    ``status`` ∈ {Pending, Fulfilled, Broken, Expired} (cycle de vie).
     """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
@@ -69,7 +69,7 @@ class Commitment(BaseModel):
 
 
 class Agent(BaseModel):
-    """Entité observée (API_CONTRACTS.md §2.1).
+    """Entité observée.
 
     En V0.1, l'émetteur SYNE fournit ``species`` et ``fatigue`` mais pas
     ``health`` (santé non encore simulée) : ``health`` reste accepté pour la
@@ -94,7 +94,7 @@ class Agent(BaseModel):
     goals: list[Goal] | None = None
     trust: list[Trust] | None = None
     memory_count: int | None = Field(default=None, alias="memoryCount", ge=0)
-    # Contrat 0.3.0 (jalon ADR cognitifs) — émis sous drapeaux SYNE, optionnels
+    # Contrat 0.3.0 (jalon cognitifs) — émis sous drapeaux SYNE, optionnels
     # ici pour la rétro-compatibilité avec les flux 0.2.x :
     inventory: dict[str, float] | None = None
     commitments: list[Commitment] | None = None
@@ -219,7 +219,7 @@ class WorldInitialized(BaseModel):
 
 
 class WorldSnapshot(BaseModel):
-    """Snapshot de monde — message système ``snapshot`` (API_CONTRACTS.md §2.1).
+    """Snapshot de monde — message système ``snapshot``.
 
     ``seed`` (additif, contrat V0.2.1) : le seed effectif du run transporté par
     SYNE. Il reste optionnel pour la rétro-compatibilité des flux V0.2.0, où
@@ -247,10 +247,10 @@ class WorldSnapshot(BaseModel):
 
 
 class ExternalEvent(BaseModel):
-    """Événement externe — messages typés (API_CONTRACTS.md §2.2).
+    """Événement externe — messages typés.
 
     Types : ``decision_made``, ``agent_spawned``, ``agent_died``,
-    ``message_sent``, ``group_formed``, ``conflict``... (ADR-004).
+    ``message_sent``, ``group_formed``, ``conflict``....
     """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)

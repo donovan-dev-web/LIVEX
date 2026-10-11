@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du durcissement HTTP du serveur de contrôle.
+
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;

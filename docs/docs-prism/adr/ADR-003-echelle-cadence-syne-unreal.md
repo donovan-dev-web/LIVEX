@@ -141,7 +141,7 @@ Le détail complet (tables, formules, checklist de validation) est dans
   conversion `(12.5, 23.0) → (1250, 2300)` uu, traversée de 2 240 unités en
   ≈ 6 min 13, journée en 240 s, `world_initialized` avec `cellSize = 32` et
   4 900 cellules).
-- **Calibration** : campagne `scripts/calibration-campaign.py` (50/100 agents ×
+- **Calibration** : campagne `scripts/calibration_campaign.py` (50/100 agents ×
   2500 ticks × seeds 12345 / 424242 / 999) sans extinction sur le profil
   monde 2 240 / cellule 32, conformément à ADR-016.
 - **Densité sociale** : observation des voisins moyens réels ; si la moyenne

@@ -1,3 +1,5 @@
+"""Tests des rapports déterministes ECHOS."""
+
 from echos.reporting import build_report, json_report, markdown_report, write_reports
 from echos.storage.aggregation import TickRecord
 from echos.storage.sqlite import AnalyticsStore

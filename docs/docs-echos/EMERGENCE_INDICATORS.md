@@ -31,7 +31,7 @@ score publié et son interprétation.
 
 - **Composantes bornées [0, 1]** : le score est déjà dans l'intervalle, le
   `clamp` final n'est plus qu'une garde — plus de saturation dans le haut de
-  l'échelle (refonte P2, `RAPPORT-ANALYSE-ECHOS-LAUNCHER.md` §9).
+  l'échelle (refonte P2).
 - **Normalisation explicite** : les entropies brutes (bits) croissent avec le
   nombre de catégories ; elles ne sont additionnées qu'après division par leur
   maximum (`BeliefDiversityNorm`, `GoalDiversityNorm`).
@@ -152,7 +152,7 @@ moyenne de trois dispersions normalisées (statut `exploratoire`).
   interrompues) avant d'être présentés comme des seuils de décision.
 - Une projection de survie ou un indice synthétique, s'il est un jour retenu,
   devra être évalué sur des seeds **exclus de la calibration** et exposer
-  incertitude et version (`RAPPORT-ANALYSE-ECHOS-LAUNCHER.md` §9, P2).
+  incertitude et version (P2).
 - **Successeur conceptuel** : `DYNAMIC_VIABILITY_INDEX.md` (**[DRAFT]**)
   spécifie le DVI comme indice de viabilité dynamique — moyenne géométrique
   pondérée (aucune compensation), couverture κ, régimes STATIC/CHAOTIC,

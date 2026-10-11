@@ -209,7 +209,7 @@ Composants ── /metrics (pull, cadence configurable) ──► Launcher
 - **Rétention** : tampon mémoire borné ; fichiers de run soumis aux règles de
   nettoyage et d'archivage de `DATA_FLOW.md`.
 - **Prometheus / Grafana** : restent externes et facultatifs ; **Docker est
-  retiré du projet** (08/10/2026, arbitrage A1 de `ROADMAP-V01.md`) — aucun
+  retiré du projet** (08/10/2026, arbitrage A1) — aucun
   `docker-compose` d'observabilité n'est fourni ni promis.
 
 ## 7. Journaux et corrélation

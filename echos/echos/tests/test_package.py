@@ -1,3 +1,5 @@
+"""Tests du packaging ECHOS (version, métadonnées)."""
+
 import tomllib
 from pathlib import Path
 

@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cycle de saisons (SYNE-072, jalon U8) : cycle déterministe de 4 saisons — saison(tick) = (indexInitial +
+//        tick / seasonLengthTicks) mod 4, modificateurs de régénération par ressource appliqués en fin de tick
+//        (SYNE-070), événement world.season_changed, champs season/seasonIndex du snapshot.
+
 using System.Globalization;
 using System.Text;
 using Simulation.Core.Configuration;
@@ -16,7 +22,7 @@ namespace Simulation.Core.Tests;
 /// saison(tick) = (indexInitial + tick / seasonLengthTicks) mod 4, modificateurs
 /// de régénération par ressource appliqués en fin de tick (SYNE-070), événement
 /// <c>world.season_changed</c>, champs <c>season</c>/<c>seasonIndex</c> du snapshot.
-/// Déterminisme total : 0 tirage PRNG (DETERMINISM.md §3). Cycle désactivé par
+/// Déterminisme total : 0 tirage PRNG. Cycle désactivé par
 /// défaut ⇒ trajectoire du scénario de référence inchangée.
 /// </summary>
 public class SeasonTests

@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Système de groupes émergents (SYNE-060/061).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Social;
 
-/// <summary>Événement discret de formation d'un groupe (SYNE-060, API_CONTRACTS.md §2.2).</summary>
+/// <summary>Événement discret de formation d'un groupe (SYNE-060).</summary>
 public sealed record GroupFormation(ulong GroupId, ulong Tick, IReadOnlyList<ulong> Members, double MeanCohesion);
 
 /// <summary>Événement discret de dissolution d'un groupe (SYNE-060).</summary>
@@ -20,7 +24,7 @@ public sealed record GroupDissolution(
 public sealed record GroupDecision(ulong GroupId, ulong Tick, ulong LeaderId, DesireKind Decision, double Consensus);
 
 /// <summary>
-/// Système de groupes émergents (SYNE-060/061, SYSTEM_SPEC.md §5, décisions
+/// Système de groupes émergents (SYNE-060/061, décisions
 /// n°23/24). Il n'invente aucune coalition scriptée : les groupes naissent de la
 /// **cohésion** constatée entre les entités —
 /// <c>confiance réciproque × affinité (croyances partagées + buts partagés)</c>.
@@ -31,7 +35,7 @@ public sealed record GroupDecision(ulong GroupId, ulong Tick, ulong LeaderId, De
 /// <list type="number">
 /// <item><b>Liens sociaux</b> : paires (entité, entité) en confiance réciproque
 ///  ≥ <c>trustThreshold</c> partageant au moins une croyance ou un but — la
-///  « proximité sociale » (décision n°24) ;</item>
+/// « proximité sociale » ;</item>
 /// <item><b>Composantes connexes</b> du graphe = candidats groupes (union-find
 ///  déterministe, racine = plus petit id) ; taille ≥ <c>minGroupSize</c> ;</item>
 /// <item><b>Cycle de vie</b> : continuité par ensemble de membres identique
@@ -43,7 +47,7 @@ public sealed record GroupDecision(ulong GroupId, ulong Tick, ulong LeaderId, De
 /// </list>
 ///
 /// Déterminisme : aucun tirage du PRNG global ; toutes les itérations suivent
-/// des ordres triés par identifiant (DETERMINISM.md §3).
+/// des ordres triés par identifiant.
 /// </summary>
 public sealed class GroupSystem
 {
@@ -62,10 +66,10 @@ public sealed class GroupSystem
 
     public GroupSettings Settings => _settings;
 
-    /// <summary>Prochain identifiant de groupe (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Prochain identifiant de groupe (persistance bit-à-bit).</summary>
     internal ulong NextGroupId => _nextGroupId;
 
-    /// <summary>Restauration des groupes actifs et du compteur d'identifiants (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration des groupes actifs et du compteur d'identifiants (persistance bit-à-bit).</summary>
     internal void RestoreState(IEnumerable<Group> groups, ulong nextGroupId)
     {
         ArgumentNullException.ThrowIfNull(groups);
@@ -363,7 +367,7 @@ public sealed class GroupSystem
     }
 
     /// <summary>
-    /// Lien social (décision n°24) : confiance réciproque ≥ <c>trustThreshold</c>
+    /// Lien social : confiance réciproque ≥ <c>trustThreshold</c>
     /// ET au moins une part commune (croyance partagée ou but partagé).
     /// </summary>
     private bool AreBonded(
@@ -382,7 +386,7 @@ public sealed class GroupSystem
         return Affinity(self, other, selfId, sortedBeliefs) > 1.0;
     }
 
-    /// <summary>Affinité = 1 + bonus par but partagé + bonus par croyance partagée (décision n°24).</summary>
+    /// <summary>Affinité = 1 + bonus par but partagé + bonus par croyance partagée.</summary>
     private double Affinity(
         MindState self,
         MindState other,
@@ -557,7 +561,7 @@ public sealed class GroupSystem
     /// Décision collective (SYNE-061) : intention dominante des membres travaux
     /// adoptée si sa part ≤…&gt; quorum <c>consensusThreshold</c>. Le vote est
     /// pondéré par la confiance du membre envers le leader émergent (la confiance
-    /// « compte », décision n°24) ; consensus nul en l'absence de leader.
+    /// « compte ») ; consensus nul en l'absence de leader.
     /// </summary>
     private (DesireKind? Decision, double Consensus) CollectiveDecision(
         IReadOnlyList<ulong> members,

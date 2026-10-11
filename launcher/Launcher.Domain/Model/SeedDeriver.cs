@@ -1,10 +1,14 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Dérivation des graines.
+
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Launcher.Domain.Model;
 
 /// <summary>
-/// Dérivation des graines (EXPERIMENTS.md §5). Le Launcher n'invente jamais de graine :
+/// Dérivation des graines. Le Launcher n'invente jamais de graine :
 /// une campagne sans stratégie explicite est refusée à la création.
 /// </summary>
 public static class SeedDeriver
@@ -20,7 +24,7 @@ public static class SeedDeriver
                 : throw new ArgumentException($"stratégie « explicit » : aucune graine fournie pour le run {runNumber}"),
             SeedStrategy.DerivedHashed => Hash(baseSeed, runNumber),
             // « random » n'est dérivable que par la liste tirée puis enregistrée dans la
-            // définition (DATA_FLOW.md §4.3) : c'est elle qui rend le run rejouable à graines
+            // définition : c'est elle qui rend le run rejouable à graines
             // identiques. Sans elle, il n'y a rien à dériver et la campagne est invalide —
             // refusée à la création par ExperimentDefinition.Validate, jamais en pleine boucle.
             SeedStrategy.Random => explicitSeeds is not null && runNumber < explicitSeeds.Count

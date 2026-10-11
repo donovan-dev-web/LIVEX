@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Graphe des communautés observées, dessiné nativement (pas de page web).
+
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,13 +11,13 @@ using Launcher.Application;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Graphe des communautés observées, dessiné nativement (ADR-007 : pas de page web).
+/// Graphe des communautés observées, dessiné nativement (pas de page web).
 ///
 /// Le tracé ne fait que **poser** ce qu'ECHOS publie (`/api/groups`) : un nœud par
 /// communauté, un lien par membre — la relation « appartient au groupe » publiée telle
 /// quelle. Le rayon d'un nœud est un facteur d'échelle d'affichage de la taille publiée,
 /// de même nature qu'une mise à l'échelle d'axe ; aucune mesure n'est calculée ici
-/// (ADR-003 : ECHOS calcule, le Launcher présente).
+/// (ECHOS calcule, le Launcher présente).
 /// </summary>
 public sealed class GroupsGraphControl : Control
 {

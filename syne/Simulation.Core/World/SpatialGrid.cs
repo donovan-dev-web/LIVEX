@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Grille spatiale uniforme : requêtes de voisinage à coût quasi linéaire.
+
 namespace Simulation.Core.World;
 
 /// <summary>
-/// Grille spatiale uniforme (ADR — perceptualité O(quasi-linéaire), Monographie §3.5.4).
+/// Grille spatiale uniforme (— perceptualité O(quasi-linéaire)).
 /// Cellules de taille configurable ; requêtes par rayon (centre ± r) en ordre
 /// déterministe : cellules en parcours ligne-par-ligne, entités dans l'ordre d'insertion.
 /// </summary>

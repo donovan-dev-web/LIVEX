@@ -1,4 +1,4 @@
-# ADR — Institutionnalisation de l'Émergence (Boucle de Second Ordre)
+# ADR-011 : Institutionnalisation de l'Émergence (Boucle de Second Ordre)
 
 **Statut :** [Reporté V2] — décision du 30/09/2026 : le plus ambitieux des ADR ouverts (touche SYNE + ECHOS) ; à rouvrir sur une base calibrée, après la réalisation des ADR socle et une campagne de validation conforme au plan §7
 **Portée :** Extension d'ECHOS (Partie 4) et du Système de Croyances (§3.11), avec un point d'entrée dans SYNE

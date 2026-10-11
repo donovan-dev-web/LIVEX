@@ -1,4 +1,4 @@
-"""Stable headless analysis operations for Launcher integrations."""
+"""Opérations d'analyse headless stables pour l'intégration Launcher."""
 
 from __future__ import annotations
 

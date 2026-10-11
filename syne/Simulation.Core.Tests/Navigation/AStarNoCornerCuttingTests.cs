@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Règle de non-coupe de coin et cohérence du collecteur de budgets (jalon review/refactor, engineVersion
+//        0.12.0).
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Navigation;
 using Simulation.Core.Performance;

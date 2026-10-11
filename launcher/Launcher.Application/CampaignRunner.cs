@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cas d'usage « campagne ».
+
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Launcher.Protocol;
@@ -9,9 +13,9 @@ namespace Launcher.Application;
 public sealed record RunJournalEvent(DateTimeOffset At, string Event, string Message, string? RunId);
 
 /// <summary>
-/// Cas d'usage « campagne » (EXPERIMENTS.md). Une seule boucle d'orchestration, ordonnée,
+/// Cas d'usage « campagne ». Une seule boucle d'orchestration, ordonnée,
 /// avec annulation coopérative. Le Launcher planifie, attend, collecte et archive ;
-/// il ne calcule rien (ADR-003).
+/// il ne calcule rien.
 /// </summary>
 public sealed class CampaignRunner
 {
@@ -23,7 +27,7 @@ public sealed class CampaignRunner
 
     /// <summary>
     /// Contexte de campagne courant, mémorisé pour republier l'avancement du run avec
-    /// la même position dans la campagne (§8). Les runs étant séquentiels (§4), un seul
+    /// la même position dans la campagne. Les runs étant séquentiels, un seul
     /// run est en cours à la fois.
     /// </summary>
     private (string ExperimentId, string RunId, int Done, int Failed, int Total, long Seed) _current =
@@ -39,7 +43,7 @@ public sealed class CampaignRunner
         _journal = journal;
     }
 
-    /// <summary>Événement de progression de campagne (vue de progression, EXPERIMENTS.md §8).</summary>
+    /// <summary>Événement de progression de campagne (vue de progression).</summary>
     public event EventHandler<CampaignProgress>? Progress;
 
     /// <summary>Crée une campagne : définition validée, paquet créé avec son squelette.</summary>
@@ -68,7 +72,7 @@ public sealed class CampaignRunner
             throw new InvalidOperationException("campagne déjà scellée : aucune réexécution (USER_INTERFACE.md §5.2)");
         }
 
-        // Reprise d'après runs/index.json, jamais sur l'examen des répertoires (EXPERIMENTS.md §9).
+        // Reprise d'après runs/index.json, jamais sur l'examen des répertoires.
         var doneRunIds = index.Runs
             .Where(r => r.Status == RunStatuses.Termine)
             .Select(r => r.RunId)
@@ -86,7 +90,7 @@ public sealed class CampaignRunner
 
         try
         {
-            // L'avancement du run est relayé tant que la boucle tourne (EXPERIMENTS.md §8) :
+            // L'avancement du run est relayé tant que la boucle tourne :
             // l'événement du moteur ne porte que l'état du run, la position dans la
             // campagne est celle déjà publiée.
             void OnTickProgress(object? sender, RunTickProgress progress) => PublishTickProgress(progress);
@@ -103,12 +107,12 @@ public sealed class CampaignRunner
         catch (OperationCanceledException)
         {
             // Annulation entre deux runs : aucun run en cours à écrire, mais le paquet
-            // est interrompu et doit être marqué récupérable (EXPERIMENTS.md §10).
+            // est interrompu et doit être marqué récupérable.
             _packages.MarkRecoverable(packagePath);
             throw;
         }
 
-        // Restitution : demande d'analyse agrégée et du rapport d'émergence à ECHOS (EXPERIMENTS.md §11).
+        // Restitution : demande d'analyse agrégée et du rapport d'émergence à ECHOS.
         if (_analysis is not null)
         {
             var completedRunIds = _packages.ReadState(packagePath).Index.Runs
@@ -155,7 +159,7 @@ public sealed class CampaignRunner
                 }
                 catch (Exception exception)
                 {
-                    // Isolation (INTEGRATION_CONTRACT.md §10.1) : une analyse expérimentale qui échoue
+                    // Isolation : une analyse expérimentale qui échoue
                     // ne fait ni échouer ni rouvrir la campagne. L'absence est consignée, jamais approximée.
                     _journal.Warn("AnalysisUnavailable",
                         $"fin de campagne : rapport d'émergence indisponible — {exception.Message}");
@@ -225,7 +229,7 @@ public sealed class CampaignRunner
                 }
                 catch (OperationCanceledException)
                 {
-                    // Annulation : le run passe à Annulé, rien n'est supprimé (EXPERIMENTS.md §10).
+                    // Annulation : le run passe à Annulé, rien n'est supprimé.
                     var cancelledEntry = new RunIndexEntry
                     {
                         RunId = runId,
@@ -255,7 +259,7 @@ public sealed class CampaignRunner
                     if (attempt >= maxAttempts)
                     {
                         // Un run Échoué conserve l'ensemble de ses journaux : le diagnostic
-                        // d'un échec fait partie du paquet (EXPERIMENTS.md §6).
+                        // d'un échec fait partie du paquet.
                         failedLogs = await CollectFailureLogsAsync(spec, exception, cancellationToken).ConfigureAwait(false);
                         result = null;
                     }
@@ -278,14 +282,14 @@ public sealed class CampaignRunner
                 };
                 durations.Add(result.Duration);
 
-                // Versions des composants engagés, lues de leurs manifestes (EXPERIMENTS.md §12).
+                // Versions des composants engagés, lues de leurs manifestes.
                 if (result.ComponentVersions is { Count: > 0 } versions)
                 {
                     _packages.RegisterComponents(packagePath, versions);
                 }
 
                 // Demande d'analyse du run à ECHOS : le Launcher demande, attend, collecte,
-                // sans rien calculer (EXPERIMENTS.md §11, ADR-003). Son indisponibilité ne
+                // sans rien calculer. Son indisponibilité ne
                 // fait pas échouer le run : l'absence est consignée dans le journal du paquet.
                 IReadOnlyDictionary<string, byte[]> analysisFiles = new Dictionary<string, byte[]>();
                 string analysisNote = "analyse individuelle non demandée";
@@ -368,7 +372,7 @@ public sealed class CampaignRunner
 
     /// <summary>
     /// Collecte les journaux d'un run échoué depuis son dossier de travail : le diagnostic
-    /// d'un échec fait partie du paquet (EXPERIMENTS.md §6). L'infrastructure expose cette
+    /// d'un échec fait partie du paquet. L'infrastructure expose cette
     /// collecte par le port de l'exécuteur ; le cas d'usage, lui, ne lit aucun contenu
     /// scientifique — il archive des journaux techniques.
     /// </summary>
@@ -388,7 +392,7 @@ public sealed class CampaignRunner
     private void Publish(string experimentId, string runId, int done, int failed, int total, long seed)
     {
         // Mémorisé pour que l'avancement rapporté par le moteur puisse être republié
-        // avec le même contexte de campagne (§8).
+        // avec le même contexte de campagne.
         _current = (experimentId, runId, done, failed, total, seed);
         Progress?.Invoke(this, new CampaignProgress
         {
@@ -448,7 +452,7 @@ public sealed class CampaignRunner
         });
 }
 
-/// <summary>Progression d'une campagne, exposée à l'interface (EXPERIMENTS.md §8).</summary>
+/// <summary>Progression d'une campagne, exposée à l'interface.</summary>
 public sealed class CampaignProgress : EventArgs
 {
     /// <summary>Identifiant de campagne.</summary>
@@ -470,7 +474,7 @@ public sealed class CampaignProgress : EventArgs
     public int RunsTotal { get; init; }
 
     /// <summary>
-    /// Avancement du run en cours, rapporté par le moteur (§8). Nul quand le moteur
+    /// Avancement du run en cours, rapporté par le moteur. Nul quand le moteur
     /// ne publie pas d'état : l'interface montre alors la progression de campagne
     /// seule, plutôt qu'un pourcentage inventé.
     /// </summary>

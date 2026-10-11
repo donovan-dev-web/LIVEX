@@ -1,4 +1,4 @@
-# ADR — Means-End Reasoning (Plans Alternatifs par Objectif)
+# ADR-007 : Means-End Reasoning (Plans Alternatifs par Objectif)
 
 **Statut :** [Accepté] — décision du 30/09/2026, en deux temps : (1) réintroduction d'`Attack` au catalogue ; (2) bibliothèque de plans candidats par objectif. `Buy` suit les ADR Primitives d'actions et Inventaire (acceptés le même jour) ; `Steal` sera arbitré avec `docs/ETHICS_AND_SCOPE.md` avant tout ajout.
 **Implémentation (30/09/2026, engineVersion 0.14.0)** : temps 1 fait (`Attack` au

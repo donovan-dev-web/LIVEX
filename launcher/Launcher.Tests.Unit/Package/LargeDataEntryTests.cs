@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Régression du plafond « byte[] &lt; 2 Gio » : une donnée de campagne (stream.jsonl) dépasse int.MaxValue
+//        (mesuré en conditions réelles : 2 337 158 145 o pour 2500 ticks × 50 agents) et l'archivage échouait avec
+//        « The file is too long.
+
 using Launcher.Domain.Model;
 using Launcher.Package;
 using Launcher.Protocol;

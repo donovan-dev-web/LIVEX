@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Façade d'orchestration réalisée par l'application (la composition appartient à App).
+
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -13,9 +17,9 @@ using Launcher.Presentation.ViewModel;
 namespace Launcher.App.Composition;
 
 /// <summary>
-/// Façade d'orchestration réalisée par l'application (ARCHITECTURE.md : la composition
+/// Façade d'orchestration réalisée par l'application (la composition
 /// appartient à App). Adapte domaine + infrastructure au contrat de la présentation :
-/// cycle de vie réel des composants de la pile (INTEGRATION_CONTRACT.md §5), ressources
+/// cycle de vie réel des composants de la pile, ressources
 /// locales, journaux récents, liste des expériences.
 /// </summary>
 public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
@@ -52,7 +56,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
     /// <summary>
     /// Levé quand une instance de composant vient de démarrer : c'est le signal d'ouverture
-    /// automatique de sa console de logs (USER_INTERFACE.md §9).
+    /// automatique de sa console de logs.
     /// </summary>
     public event EventHandler<ComponentStartedEventArgs>? ComponentStarted;
 
@@ -619,7 +623,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
                         : DateTimeOffset.MinValue;
                     // La condition d'une campagne vivante est toujours « En cours » : aucun run
                     // exécuté encore, runs en cours, ou tous exécutés en attente d'analyse et de
-                    // scellement. Seul le scellement fait « Terminée » (GUI.md §8).
+                    // scellement. Seul le scellement fait « Terminée ».
                     var status = manifest.State switch
                     {
                         PackageStates.Sealed => "Terminée",
@@ -796,9 +800,9 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
         var correlationId = OrchestrationService.NewCorrelationId();
 
-        // Arguments communs (INTEGRATION_CONTRACT.md §3.1) pour tout composant, puis les
+        // Arguments communs pour tout composant, puis les
         // arguments déclarés au manifeste. Aucun argument propre à SYNE n'est passé à ECHOS
-        // ni à PRISM : les arguments de lot du §3.3 ne vont qu'au moteur (§3.3).
+        // ni à PRISM : les arguments de lot ne vont qu'au moteur.
         var arguments = new List<string>
         {
             "--headless",
@@ -833,7 +837,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         {
             // Mode PRISM (posture pilotée) : ni `--autostart`, ni graine/horizon imposés —
             // le projet Unreal prépare puis démarre via l'API de contrôle (`prepare`/`ready`/
-            // `start`, TRANSPORT_API.md §3). Le monde suit le profil `prism` (ADR-017) et la
+            // `start`). Le monde suit le profil `prism` et la
             // diffusion WebSocket est exposée pour que le plugin reçoive `world_initialized`
             // et les snapshots. Le port de contrôle (--control-port) sert déjà d'API de
             // pilotage ; --observe-port ouvre le flux WS à côté, comme en campagne.
@@ -923,7 +927,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
             if (!stoppingNow)
             {
-                // Fin non demandée : le composant passe Défaillant avec la cause normalisée (COMPONENTS.md §4.1).
+                // Fin non demandée : le composant passe Défaillant avec la cause normalisée.
                 var at = DateTimeOffset.UtcNow;
                 _orchestration.ApplyHealth(instanceId, StateRules.ProcessLost(at, exit.ExitCode, exit.Outcome));
                 LifecycleReported?.Invoke(this, $"{DisplayName(componentId)} terminé de façon inattendue (code {exit.ExitCode})");
@@ -974,7 +978,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         };
 
         // Point de contrôle résolu publié au registre : c'est lui qui fait foi pour
-        // les appels suivants (INTEGRATION_CONTRACT.md §10.1, NETWORK.md §4.1).
+        // les appels suivants.
         foreach (var (kind, endpoint) in resolvedEndpoints)
         {
             instance.Endpoints[kind] = endpoint;
@@ -1269,8 +1273,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
     /// <summary>
     /// Description de PRISM, évaluée à chaque instantané : le verrou est la conséquence du
-    /// manifeste détecté, jamais une constante (ADR-006). Levé → la description est nue ;
-    /// tenu → la cause exacte et le jalon sont affichés sur la carte même (USER_INTERFACE §3.4).
+    /// manifeste détecté, jamais une constante. Levé → la description est nue ;
+    /// tenu → la cause exacte et le jalon sont affichés sur la carte même.
     /// </summary>
     private static string PrismDescription(ComponentInstallation? installation)
     {
@@ -1291,7 +1295,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
     private sealed record ManagedInstance(string InstanceId, int ProcessId, Uri Control, ComponentInstallation Installation, DateTimeOffset StartedAt);
 }
 
-/// <summary>Démarrage observé d'une instance de composant (USER_INTERFACE.md §9 : ouverture de console).</summary>
+/// <summary>Démarrage observé d'une instance de composant (ouverture de console).</summary>
 public sealed class ComponentStartedEventArgs : EventArgs
 {
     /// <summary>Identifiant d'instance démarrée.</summary>

@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Non-régression du jalon cognitifs (engineVersion 0.14.0) : avec les drapeaux D7/D8/D3/D5/D2 désactivés
+//        (défaut), la trajectoire bit-à-bit du scénario de référence est inchangée — le checksum 0x46769cfb11c8b3a7
+//        (pinné depuis la calibration D1, engineVersion 0.13.0) est conservé, seul le pin de version a bougé.
+
 using System.Globalization;
 using System.Text;
 using Simulation.Core.Cognition;
@@ -12,7 +18,7 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Non-régression du jalon ADR cognitifs (engineVersion 0.14.0) : avec les
+/// Non-régression du jalon cognitifs (engineVersion 0.14.0) : avec les
 /// drapeaux D7/D8/D3/D5/D2 **désactivés** (défaut), la trajectoire bit-à-bit
 /// du scénario de référence est inchangée — le checksum 0x46769cfb11c8b3a7
 /// (pinné depuis la calibration D1, engineVersion 0.13.0) est conservé, seul

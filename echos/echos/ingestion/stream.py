@@ -71,7 +71,7 @@ def aligned_ticks(
 
     ``world_initialized`` reste consigné par le contrat mais **transmis** à
     l'appelant via ``on_world`` : la description de monde (terrain, obstacles,
-    ressources, régions) sert à la vue 2D de l'observation (ADR-007) et ne peut
+    ressources, régions) sert à la vue 2D de l'observation et ne peut
     plus être reconstituée après coup — sans callback, elle reste ignorée comme
     par le passé.
     """

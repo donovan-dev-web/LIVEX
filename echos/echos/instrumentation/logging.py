@@ -1,4 +1,4 @@
-"""Journalisation structurée ECHOS (ECHOS-050, LOGGING_INSTRUMENTATION.md).
+"""Journalisation structurée ECHOS (ECHOS-050).
 
 Trois niveaux alignés sur la spécification :
 
@@ -91,7 +91,7 @@ class EchosLogger:
         )
 
     def profiling(self, run_id: str, tick: int, profile: dict[str, dict]) -> None:
-        """Niveau 1 — coût par moteur du tick (ECHOS-052, §5)."""
+        """Niveau 1 — coût par moteur du tick (ECHOS-052)."""
         _append_jsonl(
             self._dir / f"profilage-{run_id}.jsonl",
             {

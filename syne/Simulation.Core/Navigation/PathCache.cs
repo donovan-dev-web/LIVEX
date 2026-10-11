@@ -1,9 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cache LRU de chemins (SYNE-077) : mémoïsation d'un calcul A* par paire (cellule source, cellule but) afin
+//        d'éviter de re-planifier le même chemin à chaque tick de déplacement.
+
 using Simulation.Core.World;
 
 namespace Simulation.Core.Navigation;
 
 /// <summary>
-/// Cache LRU de chemins (SYNE-077, Monographie §6.2.12) : mémoïsation d'un
+/// Cache LRU de chemins (SYNE-077) : mémoïsation d'un
 /// calcul A* par paire (cellule source, cellule but) afin d'éviter de re-planifier
 /// le même chemin à chaque tick de déplacement. Borné : la plus ancienne entrée
 /// est évincée au-delà de <see cref="Capacity"/>.

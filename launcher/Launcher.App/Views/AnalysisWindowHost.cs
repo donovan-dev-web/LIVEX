@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Gestionnaire de la fenêtre d'analyse : une seule fenêtre à la fois.
+
 using Avalonia.Controls;
 using Launcher.Application;
 using Launcher.Presentation.ViewModel;
@@ -5,7 +9,7 @@ using Launcher.Presentation.ViewModel;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Gestionnaire de la fenêtre d'analyse (ADR-007) : une seule fenêtre à la fois.
+/// Gestionnaire de la fenêtre d'analyse : une seule fenêtre à la fois.
 /// Réouvrir l'analyse alors qu'elle est déjà affichée la ramène au premier plan au lieu
 /// d'en créer une seconde, comme pour les consoles de composant.
 /// </summary>

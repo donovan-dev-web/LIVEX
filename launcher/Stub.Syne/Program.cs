@@ -1,10 +1,14 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Stub.Syne : moteur simulé conforme au contrat.
+
 using System.Globalization;
 using System.Text.Json;
 
 namespace Stub.Syne;
 
 /// <summary>
-/// Stub.Syne (INTEGRATION_CONTRACT.md §13) : moteur simulé conforme au contrat.
+/// Stub.Syne : moteur simulé conforme au contrat.
 /// Endpoints : /health/live, /health/ready, /health/details, /info, /metrics, /control/shutdown.
 /// Écrit uniquement dans le dossier fourni (--work-dir). Respecte --seed et --ticks, sort seul.
 /// </summary>
@@ -51,7 +55,7 @@ internal static class Program
         }
         catch (System.Net.Sockets.SocketException exception)
         {
-            // Port indisponible, échec d'écoute → code 3 (INTEGRATION_CONTRACT.md §4), jamais un crash.
+            // Port indisponible, échec d'écoute → code 3, jamais un crash.
             Console.Error.WriteLine($"[Stub.Syne] port {options.ControlPort} indisponible : {exception.Message}");
             return 3;
         }

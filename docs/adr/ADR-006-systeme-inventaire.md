@@ -1,4 +1,4 @@
-ADR-XXX — Système d'inventaire (capacité poids/slots, ressources stockables)
+# ADR-006 : Système d'inventaire (capacité poids/slots, ressources stockables)
 Statut : Accepté (30/09/2026) — **implémenté le 30/09/2026 (engineVersion 0.14.0)** :
 structure `Inventory` (une entrée par type de ressource, capacité de poids
 capaciteWeight = 20), opérations tout-ou-rien 0 PRNG (`TryTake`/`TryGive`), exposé dans le

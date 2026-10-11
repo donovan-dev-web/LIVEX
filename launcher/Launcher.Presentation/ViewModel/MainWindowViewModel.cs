@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Vue modèle principale.
+
 using System.Collections.ObjectModel;
 using System.Globalization;
 using Launcher.Domain;
@@ -8,7 +12,7 @@ using Launcher.Application;
 namespace Launcher.Presentation.ViewModel;
 
 /// <summary>
-/// Vue modèle principale. Réconciliation des deux découpages (USER_INTERFACE.md §2.2) :
+/// Vue modèle principale. Réconciliation des deux découpages :
 /// la navigation latérale porte les **neuf écrans V1**, dont sept hérités de la maquette,
 /// et le sélecteur de la topbar porte les quatre modes de lancement.
 /// L'entrée Immersion n'existe pas : PRISM apparaît comme composant de la pile, pas comme écran.
@@ -210,13 +214,13 @@ public sealed class MainWindowViewModel : ObservableObject
     public RelayCommand<string> ToggleComponentCommand { get; }
 
     /// <summary>
-    /// Commande d'ouverture de la console d'un composant (USER_INTERFACE.md §9) : le paramètre est
+    /// Commande d'ouverture de la console d'un composant : le paramètre est
     /// l'identifiant d'instance, absent si le composant n'est pas démarré.
     /// </summary>
     public RelayCommand<string> OpenConsoleCommand { get; }
 
     /// <summary>
-    /// Commande d'ouverture de la fenêtre d'analyse native (USER_INTERFACE.md §9.2, ADR-007) :
+    /// Commande d'ouverture de la fenêtre d'analyse native :
     /// le Launcher présente l'analyse produite par ECHOS, sans interface web.
     /// </summary>
     public RelayCommand<string> OpenAnalysisCommand { get; }
@@ -248,7 +252,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _lifecycle?.Invoke(runtimeComponentId, row is null || !row.IsRunning);
     }
 
-    /// <summary>Types de session du sélecteur de la topbar (COMPONENTS.md §8).</summary>
+    /// <summary>Types de session du sélecteur de la topbar.</summary>
     public ObservableCollection<string> SessionKinds { get; }
 
     /// <summary>Type de session actif. « Standard » est le libellé d'usage de Production.</summary>
@@ -283,7 +287,7 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
-    /// <summary>Profils connus, dans l'ordre documenté (COMPONENTS.md §9).</summary>
+    /// <summary>Profils connus, dans l'ordre documenté.</summary>
     public IReadOnlyList<string> Profiles { get; } =
     [
         WellKnownProfiles.SimulationSeule,
@@ -442,7 +446,7 @@ public sealed class MainWindowViewModel : ObservableObject
         && SelectedTicksPerSecond is > 0 and <= 100_000;
 
     // Scénarios SYNE acceptés (WellKnownSimulations) — `prism` est additif
-    // (ADR-017) : le défaut reste `reference`, aucun chemin existant ne change.
+    // le défaut reste `reference`, aucun chemin existant ne change.
     private bool IsSupportedSimulation => WellKnownSimulations.IsKnown(SimulationId.Trim());
 
     /// <summary>Commande de démarrage du moteur en mode PRISM (posture pilotée).</summary>
@@ -533,7 +537,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
     /// <summary>
     /// Statut du profil sélectionné, affiché tel quel : « satisfaisable — démarrage : syne → echos »,
-    /// ou les causes exactes, verrou Immersion compris, avec le jalon attendu (USER_INTERFACE §3.4).
+    /// ou les causes exactes, verrou Immersion compris, avec le jalon attendu.
     /// </summary>
     public string ProfileStatus
     {
@@ -544,7 +548,7 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Démarre le profil sélectionné, dans son ordre de démarrage (SYNE en premier).</summary>
     public RelayCommand<string> StartProfileCommand { get; }
 
-    /// <summary>Arrête le profil sélectionné, en ordre inverse strict (COMPONENTS.md §6).</summary>
+    /// <summary>Arrête le profil sélectionné, en ordre inverse strict.</summary>
     public RelayCommand<string> StopProfileCommand { get; }
 
     /// <summary>Vrai si le profil sélectionné est satisfaisable (bouton Démarrer actif).</summary>
@@ -636,10 +640,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _ = _profileLifecycle.Invoke(OrchestrationService.ShutdownOrder(_profileResolution.StartupOrder), false);
     }
 
-    /// <summary>Libellé « Mode:… » du footer (GUI.md §10).</summary>
+    /// <summary>Libellé « Mode:… » du footer.</summary>
     public string ModeLabel => $"Mode:{SelectedMode}";
 
-    /// <summary>État global agrégé, toujours affiché avec sa cause (OBSERVABILITY.md §3.2).</summary>
+    /// <summary>État global agrégé, toujours affiché avec sa cause.</summary>
     public string GlobalState
     {
         get => _globalState;
@@ -653,7 +657,7 @@ public sealed class MainWindowViewModel : ObservableObject
         private set => SetProperty(ref _globalCause, value);
     }
 
-    /// <summary>Pastille du footer : verte sur un système sain, rouge sinon (GUI.md §10).</summary>
+    /// <summary>Pastille du footer : verte sur un système sain, rouge sinon.</summary>
     public string SystemDotColor => GlobalState is "Sain" ? "#2ecc71" : GlobalState is "Inactif" ? "#9da6b0" : "#e05252";
 
     /// <summary>Texte du footer : « Système prêt » ou la cause.</summary>
@@ -662,10 +666,10 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Couleur du texte du footer : vert sur un système sain, ambre sinon.</summary>
     public string SystemTextColor => GlobalState is "Sain" ? "#2ecc71" : "#e8b46a";
 
-    /// <summary>Lignes de l'« État du système » (GUI.md §9.1) et cartes de COMPOSANTS (GUI.md §7).</summary>
+    /// <summary>Lignes de l'« État du système » et cartes de COMPOSANTS.</summary>
     public ObservableCollection<ComponentRowViewModel> Components { get; } = new();
 
-    /// <summary>Ressources échantillonnées (GUI.md §9.2), valeurs textuelles affichées à droite des jauges.</summary>
+    /// <summary>Ressources échantillonnées, valeurs textuelles affichées à droite des jauges.</summary>
     public string RamPercent { get => _ramPercent; private set => SetProperty(ref _ramPercent, value); }
     public string CpuPercent { get => _cpuPercent; private set => SetProperty(ref _cpuPercent, value); }
     public string StoragePercent { get => _storagePercent; private set => SetProperty(ref _storagePercent, value); }
@@ -675,10 +679,10 @@ public sealed class MainWindowViewModel : ObservableObject
     public double CpuValue { get => _cpuValue; private set => SetProperty(ref _cpuValue, value); }
     public double StorageValue { get => _storageValue; private set => SetProperty(ref _storageValue, value); }
 
-    /// <summary>Dernières expériences, issues des paquets de la racine (GUI.md §8).</summary>
+    /// <summary>Dernières expériences, issues des paquets de la racine.</summary>
     public ObservableCollection<ExperienceRowViewModel> Experiences { get; } = new();
 
-    /// <summary>Journal récent, lignes brutes de session (GUI.md §9.3, OBSERVABILITY.md §7).</summary>
+    /// <summary>Journal récent, lignes brutes de session.</summary>
     public ObservableCollection<LogEntryViewModel> Logs { get; } = new();
     /// <summary>Journaux des runs du paquet sélectionné dans la vue Logs.</summary>
     public ObservableCollection<PackageLogFileViewModel> RunLogFiles { get; } = new();
@@ -722,7 +726,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
     /// <summary>
     /// Rapport d'émergence affiché, tel que produit par ECHOS. Aucune présentation ajoutée
-    /// ne porte d'information (USER_INTERFACE.md §3.1 : fidélité au fichier produit).
+    /// ne porte d'information (fidélité au fichier produit).
     /// </summary>
     public string EmergenceReport
     {
@@ -793,7 +797,7 @@ public sealed class MainWindowViewModel : ObservableObject
             Logs.Add(line);
         }
 
-        // État des composants changé : la satisfiabilité du profil affiché aussi (ADR-006 : verrou évalué).
+        // État des composants changé : la satisfiabilité du profil affiché aussi (verrou évalué).
         ResolveSelectedProfile();
     }
 
@@ -812,7 +816,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         CampaignProgressText = $"{progress.CurrentRunId} — graine {progress.CurrentSeed} — {progress.RunsDone}/{progress.RunsTotal} terminé(s), {progress.RunsFailed} échec(s)";
 
-        // Avancement du run, rapporté par le moteur (§8). Sans horizon rapporté, on ne
+        // Avancement du run, rapporté par le moteur. Sans horizon rapporté, on ne
         // montre aucun pourcentage : une barre à 0 % pour un moteur muet serait un mensonge.
         if (progress.CurrentRunProgress is not { } tick)
         {
@@ -1115,16 +1119,16 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Branche les actions de cycle de vie réalisées par l'application (G5 : session complète).</summary>
     public void SetLifecycleHandler(Action<string, bool>? handler) => _lifecycle = handler;
 
-    /// <summary>Branche l'ouverture de console réalisée par l'application (USER_INTERFACE.md §9).</summary>
+    /// <summary>Branche l'ouverture de console réalisée par l'application.</summary>
     public void SetConsoleHandler(Action<string>? handler) => _console = handler;
 
-    /// <summary>Branche l'ouverture de la fenêtre d'analyse réalisée par l'application (ADR-007).</summary>
+    /// <summary>Branche l'ouverture de la fenêtre d'analyse réalisée par l'application.</summary>
     public void SetAnalysisHandler(Action? handler) => _analysis = handler;
 
     private static string FormatPercent(double value) => double.IsNaN(value) ? "—" : $"{value:0} %";
 }
 
-/// <summary>Une entrée de la sidebar (GUI.md §5.1).</summary>
+/// <summary>Une entrée de la sidebar.</summary>
 public sealed class NavItemViewModel(string Id, string Title, bool Selected)
 {
     /// <summary>Identifiant stable de l'entrée.</summary>
@@ -1177,7 +1181,7 @@ public sealed class CustomComponentSelectionViewModel : ObservableObject
     }
 }
 
-/// <summary>Une ligne de composant : colonne d'état (GUI.md §9.1) et carte de COMPOSANTS (GUI.md §7).</summary>
+/// <summary>Une ligne de composant : colonne d'état et carte de COMPOSANTS.</summary>
 public sealed class ComponentRowViewModel : ObservableObject
 {
     private string _stateLabel = string.Empty;
@@ -1211,7 +1215,7 @@ public sealed class ComponentRowViewModel : ObservableObject
     /// <summary>Description de la carte, deux lignes.</summary>
     public string Description { get; init; } = string.Empty;
 
-    /// <summary>Couleur d'accent du composant (GUI.md §3.1).</summary>
+    /// <summary>Couleur d'accent du composant.</summary>
     public string Accent { get; init; } = "#9aa0aa";
 
     /// <summary>Vrai si une installation détectée et son manifeste permettent un démarrage.</summary>
@@ -1224,7 +1228,7 @@ public sealed class ComponentRowViewModel : ObservableObject
     /// <summary>Le bouton bascule démarrer/arrêter est actif si l'une des deux actions est permise.</summary>
     public bool CanToggle => CanStart || CanStop;
 
-    /// <summary>Libellé français de l'état, jamais la couleur seule (USER_INTERFACE.md §6).</summary>
+    /// <summary>Libellé français de l'état, jamais la couleur seule.</summary>
     public string StateLabel { get => _stateLabel; private set => SetProperty(ref _stateLabel, value); }
 
     /// <summary>Cause principale, obligatoire sur un état autre qu'Inactif.</summary>
@@ -1236,7 +1240,7 @@ public sealed class ComponentRowViewModel : ObservableObject
     /// <summary>Vrai si le composant est considéré démarré (Actif, Prêt, Démarrage, Suspendu).</summary>
     public bool IsRunning { get; private set; }
 
-    /// <summary>Couleur d'état (GUI.md §3.1) : vert actif, bleu démarrage, rouge défaillant, gris arrêté.</summary>
+    /// <summary>Couleur d'état : vert actif, bleu démarrage, rouge défaillant, gris arrêté.</summary>
     public string StateColor { get; private set; } = "#9da6b0";
 
     /// <summary>Libellé du bouton principal : « Arrêter » si démarré, « Démarrer » sinon.</summary>
@@ -1265,7 +1269,7 @@ public sealed class ComponentRowViewModel : ObservableObject
     }
 }
 
-/// <summary>Une ligne du tableau « Dernières expériences » (GUI.md §8).</summary>
+/// <summary>Une ligne du tableau « Dernières expériences ».</summary>
 public sealed class ExperienceRowViewModel
 {
     /// <summary>Chemin du paquet source à ouvrir.</summary>
@@ -1296,7 +1300,7 @@ public sealed class ExperienceRowViewModel
     public bool IsRecoverable => Status == "Récupérable";
 }
 
-/// <summary>Une entrée du panneau « Logs récents » (GUI.md §9.3).</summary>
+/// <summary>Une entrée du panneau « Logs récents ».</summary>
 public sealed class LogEntryViewModel
 {
     /// <summary>Niveau : Info, Warn, Error.</summary>
@@ -1308,7 +1312,7 @@ public sealed class LogEntryViewModel
     /// <summary>Horodatage affiché, localisé.</summary>
     public string Timestamp { get; init; } = string.Empty;
 
-    /// <summary>Couleur du niveau (GUI.md §3.1) : bleu INFO, ambre WARN, rouge ERROR.</summary>
+    /// <summary>Couleur du niveau : bleu INFO, ambre WARN, rouge ERROR.</summary>
     public string LevelColor => Level switch
     {
         "Warn" => "#f0a05a",
@@ -1336,25 +1340,25 @@ public interface IOrchestrationFacade
     ProfileResolution ResolveProfile(string profileId, SessionKind session, IReadOnlyCollection<string>? extraComponents = null);
 
     /// <summary>
-    /// Lit le rapport d'émergence produit par ECHOS dans un paquet .livexp (ADR-003 :
+    /// Lit le rapport d'émergence produit par ECHOS dans un paquet.livexp
     /// le Launcher présente le fichier, sans le recalculer). Nul s'il n'est pas encore produit.
     /// </summary>
     ReportReadResult ReadEmergenceReport(string packagePath);
 
-    /// <summary>Démarre ou arrête un composant de la pile (cycle de vie réel, INTEGRATION_CONTRACT.md §5).</summary>
+    /// <summary>Démarre ou arrête un composant de la pile (cycle de vie réel).</summary>
     Task<string?> ToggleComponentAsync(string componentId, bool start);
 
     /// <summary>
-    /// Démarre le moteur actif en mode PRISM (posture pilotée, ADR-017) : sans `--autostart`,
+    /// Démarre le moteur actif en mode PRISM (posture pilotée) : sans `--autostart`,
     /// monde `prism`, diffusion WebSocket exposée — le projet Unreal prépare puis démarre via
     /// l'API de contrôle. Rend les points d'accès à rejoindre, ou l'erreur de démarrage.
     /// </summary>
     Task<PrismEngineStart> StartEnginePrismAsync();
 
-    /// <summary>Échantillonne les ressources locales (GUI.md §9.2), sans métrique scientifique.</summary>
+    /// <summary>Échantillonne les ressources locales, sans métrique scientifique.</summary>
     ResourceSnapshot SampleResources();
 
-    /// <summary>Lit les dernières lignes du journal de session (OBSERVABILITY.md §7).</summary>
+    /// <summary>Lit les dernières lignes du journal de session.</summary>
     IReadOnlyList<LogEntryViewModel> RecentLogs();
 
     /// <summary>Répertoire contenant les journaux persistants de session.</summary>

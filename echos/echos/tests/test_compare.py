@@ -1,6 +1,6 @@
 """Comparaison de runs (ECHOS-070→072, jalon ph7, preuve J2/J3).
 
-Contrat EXPERIMENT_COMPARISON.md §2 : ``/api/compare`` (méta-métriques de
+Contrat : ``/api/compare`` (méta-métriques de
 reproductibilité), stabilité des métriques entre runs (ECHOS-071) et export
 comparatif aligné CSV/JSON (ECHOS-072). Les stores sont peuplés par les vrais
 moteurs sur la fixture riche ``snapshot_analysis.json`` ; les réponses ne

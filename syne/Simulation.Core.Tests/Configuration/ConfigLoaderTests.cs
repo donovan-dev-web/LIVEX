@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du chargement et de la priorité de configuration.
+
 using Simulation.Core.Configuration;
 using Xunit;
 

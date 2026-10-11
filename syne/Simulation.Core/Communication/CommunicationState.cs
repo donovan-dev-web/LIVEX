@@ -1,8 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Activité de communication d'un tick — alimente l'observabilité (message_sent / message_received) et les
+//        traces pour ECHOS (heatmap de NetworkCentrality...).
+
 namespace Simulation.Core.Communication;
 
 /// <summary>
 /// Activité de communication d'un tick — alimente l'observabilité
-/// (<c>message_sent</c> / <c>message_received</c>, API_CONTRACTS.md §2.2)
+/// (<c>message_sent</c> / <c>message_received</c>)
 /// et les traces pour ECHOS (heatmap de communication, NetworkCentrality...).
 /// </summary>
 public sealed record MessageSent(
@@ -25,14 +30,14 @@ public sealed record MessageReceived(
     bool Understood);
 
 /// <summary>
-/// État de communication d'une entité (COMMUNICATION_PROTOCOL.md §7) : file
+/// État de communication d'une entité : file
 /// sortante (bornée par <c>maxSendsPerTick</c>), file entrante (bornée par
 /// <c>maxReceivesPerTick</c>) et ensemble "déjà relayé" anti-boucle.
 ///
 /// V0.1 : la file entrante est consommée comme trace d'activité du tick (la
 /// révision des croyances par messages arrive avec l'analyse/les besoins
 /// sociaux) — la réception ajuste la confiance par la matrice de relations et
-/// marque l'interaction (COMMUNICATION_PROTOCOL.md §7).
+/// marque l'interaction.
 /// </summary>
 public sealed class CommunicationState
 {
@@ -155,13 +160,13 @@ public sealed class CommunicationState
         }
     }
 
-    /// <summary>Messages en attente d'émission (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Messages en attente d'émission (persistance bit-à-bit).</summary>
     internal IReadOnlyList<Message> OutgoingSnapshot => _outgoing.ToList();
 
-    /// <summary>Identifiants déjà relayés (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Identifiants déjà relayés (persistance bit-à-bit).</summary>
     internal IReadOnlyList<ulong> RelayedIdsSnapshot => _relayedMessageIds.ToList();
 
-    /// <summary>Restauration de l'état de communication non-éphémère (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration de l'état de communication non-éphémère (persistance bit-à-bit).</summary>
     internal void RestoreState(IEnumerable<Message> outgoing, IEnumerable<ulong> relayedMessageIds)
     {
         ArgumentNullException.ThrowIfNull(outgoing);

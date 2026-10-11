@@ -1,3 +1,7 @@
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Bibliothèque de fonctions Blueprint donnant accès au sous-système PrismLdk.
+
 #pragma once
 
 #include "CoreMinimal.h"

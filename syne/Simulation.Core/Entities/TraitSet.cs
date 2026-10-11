@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : L'ensemble des 8 traits (plage [0, 2], neutre 1.0).
+
 namespace Simulation.Core.Entities;
 
 /// <summary>
-/// L'ensemble des 8 traits (DATA_MODEL.md §3.2 — plage [0, 2], neutre 1.0).
+/// L'ensemble des 8 traits (plage [0, 2], neutre 1.0).
 /// Type immuable : tous les invariants sont validés à la construction.
 /// </summary>
 public sealed class TraitSet

@@ -1,9 +1,15 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Configuration par défaut et fusion des options du mock SYNE (DEFAULTS).
+ */
+
 const DEFAULTS = {
   seed: 42,
   agents: 50,
   maxTicks: 400,
   ticksPerSecond: 10,
-  // Parité de contrat SYNE (ADR-017) : secondes simulées par tick — 60 au
+  // Parité de contrat SYNE : secondes simulées par tick — 60 au
   // défaut (1 tick = 1 minute simulée), 5 pour le profil `prism`. Le temps
   // émis est `tick × simulatedSecondsPerTick`, jamais dérivé de la cadence.
   simulatedSecondsPerTick: 60,
@@ -11,7 +17,7 @@ const DEFAULTS = {
     width: 500,
     height: 500,
     cellSize: 10,
-    // Parité de contrat SYNE (ADR-017) : mètres par unité — informatif,
+    // Parité de contrat SYNE : mètres par unité — informatif,
     // transmis aux clients (PRISM k = 100 uu / unité).
     metersPerUnit: 1,
     obstacles: false,
@@ -105,10 +111,10 @@ const DEFAULTS = {
   replay: { file: null, loop: false },
   // Parité de contrat avec SYNE (ObservabilityContract.cs) : la version du
   // contrat d'observabilité (0.3.0 : champs additifs inventory/commitments) et
-  // la version moteur (0.14.0 : ADR cognitifs D7/D8/D5/D3/D2) annoncées sont
+  // la version moteur (0.14.0 : cognitifs D7/D8/D5/D3/D2) annoncées sont
   // celles du moteur réel que le mock émule.
   engineVersion: '0.14.0',
-  // 0.4.0 (ADR-017) : champs additifs simulatedTimeSeconds / simulatedSecondsPerTick /
+  // 0.4.0 : champs additifs simulatedTimeSeconds / simulatedSecondsPerTick /
   // metersPerUnit — parité du contrat d'observabilité SYNE.
   contractVersion: '0.4.0'
 };

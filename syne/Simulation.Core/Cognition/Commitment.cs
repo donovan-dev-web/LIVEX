@@ -1,6 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cycle de vie d'un engagement (« Engagements Communicationnels », D5).
+
 namespace Simulation.Core.Cognition;
 
-/// <summary>Cycle de vie d'un engagement (ADR « Engagements Communicationnels », D5).</summary>
+/// <summary>Cycle de vie d'un engagement (D5).</summary>
 public enum CommitmentStatus
 {
     /// <summary>En attente d'honoration (créé à la réception d'une Response positive).</summary>
@@ -12,15 +16,15 @@ public enum CommitmentStatus
     /// <summary>Rompu volontairement — TrustLevel -= CommitmentPenalty chez le demandeur.</summary>
     Broken = 2,
 
-    /// <summary>Expiré sans honororation — traité comme rompu (ADR : « non honoré au-delà → Broken »).</summary>
+    /// <summary>Expiré sans honororation — traité comme rompu (« non honoré au-delà → Broken »).</summary>
     Expired = 3,
 }
 
 /// <summary>
-/// Engagement communicationnel (ADR « Engagements Communicationnels », D5,
+/// Engagement communicationnel (D5,
 /// engineVersion 0.14.0) : créé chez le <b>demandeur</b> quand il reçoit une
 /// <c>Response</c> positive d'un pair à sa <c>Request</c>. Version minimale de
-/// l'ADR : un seul type d'engagement (aide à la survie), pas de propagation
+///  un seul type d'engagement (aide à la survie), pas de propagation
 /// sociale de la rupture (visibilité privée A↔B uniquement).
 ///
 /// <para>
@@ -86,7 +90,7 @@ public sealed record Commitment(
         return true;
     }
 
-    /// <summary>Restauration d'état (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration d'état (persistance bit-à-bit).</summary>
     internal static Commitment Restore(
         ulong toEntityId,
         string requestType,

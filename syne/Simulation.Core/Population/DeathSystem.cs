@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Événement de mort par épuisement (SYNE-074).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -5,7 +9,7 @@ using Simulation.Core.World;
 
 namespace Simulation.Core.Population;
 
-/// <summary>Événement de mort par épuisement (SYNE-074, SYSTEM_SPEC.md §8).</summary>
+/// <summary>Événement de mort par épuisement (SYNE-074).</summary>
 public sealed record DeathObservation(
     ulong Tick,
     ulong EntityId,
@@ -13,13 +17,13 @@ public sealed record DeathObservation(
     string Cause);
 
 /// <summary>
-/// Cycle de vie — mortalité (SYNE-074, SYSTEM_SPEC.md §8, Monographie §6.2.4-6.2.5) :
+/// Cycle de vie — mortalité (SYNE-074, -6.2.5) :
 /// une entité dont l'énergie atteint le seuil fatal (défaut 0 — épuisement) meurt :
 /// son corps est retiré du monde (grille spatiale + index) et les esprits sont
 /// purgés de la cognition et des groupes par l'appelant.
 ///
 /// Exécuté <b>après</b> la boucle des entités, la communication de masse et
-/// naissances (ordre causal strict, DETERMINISM.md §5) : la population ne mute
+/// naissances (ordre causal strict) : la population ne mute
 /// jamais pendant l'itération. Déterminisme : itération par ordre d'identifiant,
 /// aucun tirage du PRNG.
 /// </summary>

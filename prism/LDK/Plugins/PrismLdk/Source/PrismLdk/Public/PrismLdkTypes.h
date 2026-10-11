@@ -1,3 +1,7 @@
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Types Blueprint du PrismLdk (états de connexion et de run SYNE).
+
 #pragma once
 
 #include "CoreMinimal.h"

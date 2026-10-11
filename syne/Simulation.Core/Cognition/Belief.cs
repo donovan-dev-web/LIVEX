@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fait et croyance : interprétation d'un fait avec une confiance 0-1 et un cycle de vie.
+
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Fait : (subject, predicate, value) — DATA_MODEL.md §6. Les trois champs sont
+/// Fait : (subject, predicate, value). Les trois champs sont
 /// comparés sur leur valeur ordinale (insensible à la culture).
 /// </summary>
 public readonly record struct Fact(string Subject, string Predicate, string Value);
@@ -62,7 +66,7 @@ public sealed class Belief
 }
 
 /// <summary>
-/// Révision des croyances (décision n°12, SYNE-014) :
+/// Révision des croyances (SYNE-014) :
 /// <c>belief = belief + (signal − belief) × strength</c>, avec plafond de
 /// variation par snap (« plafond par snap » : un signal trompeur ne peut pas
 /// inverser une croyance forte d'un coup).
@@ -86,7 +90,7 @@ public static class BeliefRevision
 /// <summary>
 /// Ensemble de croyances d'une entité, indexé par fait (ProductName de
 /// comparaison ordinale). Les croyances expirent (plafond 0.4) et décroissent
-/// temporellement (DATA_MODEL.md §6, COGNITIVE_ARCHITECTURE.md §4).
+/// temporellement.
 /// </summary>
 public sealed class BeliefSet
 {
@@ -109,7 +113,7 @@ public sealed class BeliefSet
     internal void Upsert(Belief belief) => _beliefs[belief.Fact] = belief;
 
     /// <summary>
-    /// Applique une observation (COGNITIVE_ARCHITECTURE.md §4) :
+    /// Applique une observation :
     /// <list type="bullet">
     /// <item>fait inconnu → création à la confiance du signal ;</item>
     /// <item>même fait, même source → alignement (+0.2, max 1.0) ;</item>
@@ -154,7 +158,7 @@ public sealed class BeliefSet
 
     /// <summary>
     /// Conflit : toute croyance portant sur le même sujet + prédicat mais une
-    /// valeur différente est pénalisée (data_model.md §6 — deux entités ne
+    /// valeur différente est pénalisée (— deux entités ne
     /// peuvent être observées au même endroit que depuis un signal contradictoire).
     /// </summary>
     private void PenalizeConflicting(Fact fact, BeliefSettings settings, ulong tick)
@@ -194,7 +198,7 @@ public sealed class BeliefSet
         }
     }
 
-    /// <summary>Restauration complète de l'ensemble (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration complète de l'ensemble (persistance bit-à-bit).</summary>
     internal void RestoreState(IEnumerable<Belief> beliefs)
     {
         ArgumentNullException.ThrowIfNull(beliefs);

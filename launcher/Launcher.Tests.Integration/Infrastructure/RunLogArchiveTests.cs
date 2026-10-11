@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Archivage des journaux d'un run : la pompe détachée du moteur (ProcessManager.PumpAsync) peut encore tenir
+//        stdout.log quand le Launcher l'archive.
+
 using System.Text;
 using Launcher.Application;
 using Xunit;
@@ -11,7 +16,7 @@ namespace Launcher.Tests.Integration.Infrastructure;
 /// (<c>FileShare.ReadWrite</c>), sinon l'archivage échoue en violation de partage — c'est ce
 /// qui a fait échouer la reprise de J3 en CI, un run réussi devenant Échoué sur son propre
 /// journal, là où Linux, sans verrou obligatoire, ne le montrait jamais (règle du Lot W,
-/// étape 5 de ROADMAP-V01.md).
+/// étape 5).
 /// </summary>
 public sealed class RunLogArchiveTests : IDisposable
 {

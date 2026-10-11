@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du durcissement de l'observabilité (sink, sérialisation, trames).
+
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
@@ -17,7 +21,7 @@ namespace Simulation.Console.Tests;
 ///
 /// <para>
 /// Invariant : l'observabilité ne doit ni bloquer, ni faire échouer la boucle de
-/// simulation (DETERMINISM.md §3). Avant correction, un client lent gelait le
+/// simulation. Avant correction, un client lent gelait le
 /// run (aucun timeout sur l'envoi), deux diffusions concurrentes sur le même
 /// <see cref="WebSocket"/> levaient <c>InvalidOperationException</c>, un groupe
 /// formé puis dissous dans le même tick faisait échouer l'émission, et les

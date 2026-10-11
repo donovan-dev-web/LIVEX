@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Exécuteur d'actions (SYNE-040) : applique atomiquement chaque tick l'action choisie par la délibération —
+//        une action par entité par tick.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -19,7 +24,7 @@ namespace Simulation.Core.Actions;
 ///
 /// Déterminisme : aucune consommation du PRNG — cible pseudo-aléatoire stable
 /// (hash SplitMix64 de (id, tick, désir)), itération par identifiant croissant,
-/// pas de déplacement dans un obstacle (DETERMINISM.md §5).
+/// pas de déplacement dans un obstacle.
 /// </summary>
 public sealed class ActionExecutor
 {
@@ -77,7 +82,7 @@ public sealed class ActionExecutor
         ArgumentNullException.ThrowIfNull(entity);
         ArgumentNullException.ThrowIfNull(mind);
 
-        // Primitives D7 (ADR « Primitives d'actions ») : manipulation d'inventaire
+        // Primitives D7 : manipulation d'inventaire
         // et interaction inter-entités. Renvoie null si l'action n'est pas une
         // primitive (elle emprunte alors le chemin déclaratif historique).
         ActionResult? primitive = ExecutePrimitive(entity, mind, kind, currentTick, mindLookup);
@@ -176,7 +181,7 @@ public sealed class ActionExecutor
     /// l'entité la plus proche — échoue si l'un des deux inventaires ne peut pas payer.
     /// La confiance des deux parties est renforcée (interaction positive réciproque).</item>
     /// <item><b>Attack</b> (D7/D3 temps 1) : inflige <c>5 × aggressivité</c> de dégât
-    /// d'énergie (§3.15.4) à la cible la plus proche — attaque neutre, jamais portée
+    /// d'énergie à la cible la plus proche — attaque neutre, jamais portée
     /// par un besoin (doctrine de progressivité), réduite de moitié si la cible se
     /// défend ce tick.</item>
     /// <item><b>Defend</b> (D7) : pose le drapeau de défense du tick (réduction de
@@ -217,7 +222,7 @@ public sealed class ActionExecutor
         }
 
         // Réserve ciblée : Food par défaut, Water si la soif domine la faim
-        // (recette fixe courte de l'ADR — pas de planificateur).
+        // (recette fixe courte — pas de planificateur).
         ResourceKind reserve = mind.Needs.Hunger >= mind.Needs.Thirst ? ResourceKind.Food : ResourceKind.Water;
         double amount = Math.Min(_options.Agents.Actions.Inventory.TakeAmount, inventory.FreeWeight);
         if (amount <= 0.0 || _stocks.IsEmpty(reserve))
@@ -282,7 +287,7 @@ public sealed class ActionExecutor
             return ActionResult.Blocked(DesireKind.Give, "capacité du destinataire insuffisante");
         }
 
-        // Le don est une interaction sociale positive réciproque (§3.19.3).
+        // Le don est une interaction sociale positive réciproque.
         mind.Trust.Interact(recipient.Id.Value);
         recipientMind!.Trust.Interact(entity.Id.Value);
         return MechanicalResult(DesireKind.Give, entity, mind);
@@ -307,7 +312,7 @@ public sealed class ActionExecutor
             return ActionResult.Blocked(DesireKind.Trade, "partenaire sans inventaire");
         }
 
-        // Échange fixe 1 Food ↔ 1 Water (× takeAmount, recette V0.1 de l'ADR).
+        // Échange fixe 1 Food ↔ 1 Water (× takeAmount, recette V0.1).
         double amount = _options.Agents.Actions.Inventory.TradeAmount;
         (ResourceKind mine, ResourceKind theirs) = mind.Needs.Hunger >= mind.Needs.Thirst
             ? (ResourceKind.Water, ResourceKind.Food)
@@ -330,7 +335,7 @@ public sealed class ActionExecutor
             return ActionResult.Blocked(DesireKind.Trade, "échec du transfert bidirectionnel");
         }
 
-        // L'échange est une interaction positive réciproque (§3.19.3).
+        // L'échange est une interaction positive réciproque.
         mind.Trust.Interact(partner.Id.Value);
         partnerMind.Trust.Interact(entity.Id.Value);
         return MechanicalResult(DesireKind.Trade, entity, mind);

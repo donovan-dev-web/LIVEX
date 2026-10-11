@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Émetteur du flux d'observabilité : une trame par tick vers les cibles.
+
 using System.Net.WebSockets;
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
@@ -22,14 +26,14 @@ public interface IObservabilityDemand
 /// Boucle de simulation « observée » : avance d'un tick (même contrat que
 /// <see cref="SimulationLoop.Run"/>), puis diffuse le snapshot + événements du
 /// tick sur le serveur WebSocket. Ne tire aucun tirage PRNG supplémentaire
-/// (déterminisme préservé, DETERMINISM.md §3).
+/// (déterminisme préservé).
 /// </summary>
 public sealed class ObservabilityTickEmitter
 {
     /// <summary>
     /// Plafond d'attente d'une diffusion. L'émetteur ne fait pas confiance au
     /// sink pour être borné : un client lent ou un sink bloqué ne doit jamais
-    /// figer la boucle de simulation (DETERMINISM.md §3).
+    /// figer la boucle de simulation.
     /// </summary>
     private static readonly TimeSpan SinkTimeout = TimeSpan.FromSeconds(5);
 
@@ -106,7 +110,7 @@ public sealed class ObservabilityTickEmitter
         _loop.ClearBookChanges();
     }
 
-    /// <summary>Diffuse le snapshot puis les événements du tick courant (API_CONTRACTS.md §2).</summary>
+    /// <summary>Diffuse le snapshot puis les événements du tick courant.</summary>
     public async Task EmitCurrentTickAsync()
     {
         if (!HasSubscribers)

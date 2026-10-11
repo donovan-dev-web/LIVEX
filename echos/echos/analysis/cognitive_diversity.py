@@ -1,7 +1,7 @@
 """Moteur 1 — CognitiveDiversityMetrics (diversité cognitive).
 
 Mesure la séparation des croyances et des comportements entre entités
-(METRICS_SPEC.md §2). Les métriques sont calculées de façon **déterministe**
+Les métriques sont calculées de façon **déterministe**
 sur les croyances, objectifs, décisions et traits exposés par les agents SYNE
 (contract U2, camelCase) avec repli neutre (0.0) si donnée absente.
 

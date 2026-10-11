@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Détection des installations.
+
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Launcher.Domain;
@@ -8,7 +12,7 @@ using Launcher.Protocol.Model;
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Détection des installations (COMPONENTS.md §12, PACKAGING.md §4). Purement déclarative :
+/// Détection des installations. Purement déclarative :
 /// lecture des manifestes et vérification des binaires, sans jamais démarrer un composant.
 /// Sources, par priorité : arborescence de l'application, LIVEX_HOME, répertoire utilisateur,
 /// registre de composants.
@@ -24,7 +28,7 @@ public sealed class ManifestDetector
         _journal = journal;
     }
 
-    /// <summary>Détecte les composants sur toutes les sources standard (PACKAGING.md §4).</summary>
+    /// <summary>Détecte les composants sur toutes les sources standard.</summary>
     public IReadOnlyList<ComponentInstallation> Detect() => DetectFromRoots(SourceRoots());
 
     /// <summary>Détecte les composants sur des racines explicites (banc de tests, installation portable).</summary>
@@ -136,7 +140,7 @@ public sealed class ManifestDetector
             Path.Combine(AppContext.BaseDirectory, "components"),
         };
 
-        // 2. LIVEX_HOME (PACKAGING.md §7).
+        // 2. LIVEX_HOME.
         var livexHome = System.Environment.GetEnvironmentVariable("LIVEX_HOME");
         if (!string.IsNullOrWhiteSpace(livexHome))
         {

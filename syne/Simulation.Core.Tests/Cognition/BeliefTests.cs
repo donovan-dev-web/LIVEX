@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la croyance et de sa révision bornée.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Xunit;

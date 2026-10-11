@@ -1,9 +1,13 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Abstraction du lancement et de l'arrêt des processus de composants.
+
 using Launcher.Domain.Model;
 using Launcher.Protocol.Model;
 
 namespace Launcher.Domain;
 
-/// <summary>Abstraction du lancement et de l'arrêt des processus de composants (ARCHITECTURE.md §1).</summary>
+/// <summary>Abstraction du lancement et de l'arrêt des processus de composants.</summary>
 public interface IProcessManager
 {
     /// <summary>Démarre un composant et renvoie le PID. Le confinement anti-orphelin est de la responsabilité de l'implémentation.</summary>
@@ -25,7 +29,7 @@ public interface IProcessManager
     event EventHandler<ComponentLogLineEventArgs> LineEmitted;
 }
 
-/// <summary>Ligne brute de sortie d'un composant, diffusée en direct vers les consoles (USER_INTERFACE.md §9).</summary>
+/// <summary>Ligne brute de sortie d'un composant, diffusée en direct vers les consoles.</summary>
 public sealed class ComponentLogLineEventArgs : EventArgs
 {
     /// <summary>Ligne publiée.</summary>
@@ -55,7 +59,7 @@ public sealed class ComponentLogLine
 }
 
 /// <summary>
-/// Source de lecture des lignes de composant pour les consoles (USER_INTERFACE.md §9). Réalisée par le
+/// Source de lecture des lignes de composant pour les consoles. Réalisée par le
 /// tampon d'infrastructure ; la présentation ne connaît que cette abstraction.
 /// </summary>
 public interface IComponentLogSource
@@ -104,17 +108,17 @@ public sealed class ProcessExitedEventArgs : EventArgs
     /// <summary>Code de sortie du processus.</summary>
     public int ExitCode { get; init; }
 
-    /// <summary>Résultat normalisé (INTEGRATION_CONTRACT.md §4).</summary>
+    /// <summary>Résultat normalisé.</summary>
     public string Outcome { get; init; } = string.Empty;
 }
 
-/// <summary>Sonde de santé d'un composant (INTEGRATION_CONTRACT.md §6).</summary>
+/// <summary>Sonde de santé d'un composant.</summary>
 public interface IHealthProbe
 {
     /// <summary>
     /// Interroge le point de santé « prêt » et renvoie vrai si prêt, avec la cause en cas d'échec.
     /// Le chemin est déclaré au manifeste (« health.path ») : le défaut /health/ready vaut pour
-    /// tout composant conforme au §6 ; un composant réel peut déclarer le sien (ex. /health).
+    /// tout composant conforme ; un composant réel peut déclarer le sien (ex. /health).
     /// </summary>
     Task<(bool Ready, string? Cause)> ProbeReadyAsync(Uri controlEndpoint, CancellationToken cancellationToken, string readyPath = "/health/ready");
 
@@ -123,7 +127,7 @@ public interface IHealthProbe
 
     /// <summary>
     /// Interroge l'avancement du run en cours. Lecture seule comme les autres sondes
-    /// (EXPERIMENTS.md §8 : la progression vient du tic rapporté par le moteur).
+    /// (la progression vient du tic rapporté par le moteur).
     /// Renvoie <see langword="null"/> si le moteur ne publie pas d'état — l'absence
     /// d'avancement ne doit jamais faire échouer un run.
     /// </summary>
@@ -154,7 +158,7 @@ public sealed class SystemClock : IClock
     public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 }
 
-/// <summary>Journal de session du Launcher : événements datés, corrélés (ARCHITECTURE.md §6).</summary>
+/// <summary>Journal de session du Launcher : événements datés, corrélés.</summary>
 public interface ISessionJournal
 {
     /// <summary>Écrit un événement de session.</summary>
@@ -170,7 +174,7 @@ public interface ISessionJournal
     void Fail(string operation, string message, string? correlationId = null, string? instanceId = null);
 }
 
-/// <summary>Événement du journal de session, schéma JSON Lines (OBSERVABILITY.md §7.1).</summary>
+/// <summary>Événement du journal de session, schéma JSON Lines.</summary>
 public sealed class SessionEvent
 {
     /// <summary>Horodatage UTC ISO 8601.</summary>
@@ -202,7 +206,7 @@ public sealed class SessionEvent
     public string Message { get; init; } = string.Empty;
 }
 
-/// <summary>Stockage des paquets et de l'espace de travail (ARCHITECTURE.md §1, couche infrastructure).</summary>
+/// <summary>Stockage des paquets et de l'espace de travail (couche infrastructure).</summary>
 public interface IPackageStore
 {
     /// <summary>Racine des paquets vivants.</summary>

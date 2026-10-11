@@ -1,6 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Mutation de livre tracée : écriture et lecture, sans rompre le déterminisme.
+
 namespace Simulation.Core.World;
 
-/// <summary>Nature d'une mutation de livre (SYNE-121, API_CONTRACTS.md §2.2).</summary>
+/// <summary>Nature d'une mutation de livre (SYNE-121).</summary>
 public enum BookChangeKind
 {
     Written,
@@ -8,7 +12,7 @@ public enum BookChangeKind
 }
 
 /// <summary>
-/// Mutation de livre tracée (SYNE-121, décisions n°18/19, Monographie §3.18) :
+/// Mutation de livre tracée (SYNE-121) :
 /// un livre a été **écrit** (par un auteur qui en paie le coût) ou **lu** (par
 /// un lecteur qui en tire le bénéfice posé en principe). Consommée par
 /// l'émetteur d'observabilité — même protocole que les changements de saison,
@@ -17,13 +21,13 @@ public enum BookChangeKind
 public sealed record BookChange(BookChangeKind Kind, Book Book, double Value, ulong? ReaderId);
 
 /// <summary>
-/// Livre (SYNE-121, décisions n°18/19, Monographie §3.18, DATA_DATA.md §3.11) :
+/// Livre (SYNE-121) :
 /// une **connaissance matérialisée à l'instant T** — {id, auteur, titre,
 /// contenu} figés à l'écriture, <c>writtenTick</c> poinçonné par la boucle
 /// (instant T exact). V0.1 : **stockage observationnel** — l'écriture coûte de
-/// l'énergie à l'auteur (payée, décision n°18 : coût = temps + énergie +
+/// l'énergie à l'auteur (payée : coût = temps + énergie +
 /// pénalité, structure figée), la lecture produit un **bénéfice posé en
-/// principe** (décision n°19 : cognition, confiance, savoir — le chiffrage
+/// principe** (cognition, confiance, savoir — le chiffrage
 /// dépend du moteur de mémoire, reporté) et trace les lecteurs distincts.
 /// Déterministe : écritures/lectures = API de la boucle (0 tirage PRNG),
 /// ordre de trace des lecteurs = ordre de première consultation.
@@ -46,7 +50,7 @@ public sealed class Book
 
     public string Id { get; }
 
-    /// <summary>Identifiant de l'entité qui a écrit (a payé le coût, décision n°18).</summary>
+    /// <summary>Identifiant de l'entité qui a écrit (a payé le coût).</summary>
     public ulong AuthorId { get; }
 
     public string Title { get; }

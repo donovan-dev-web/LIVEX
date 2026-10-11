@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Restauration bit-à-bit d'un snapshot : reconstruit l'état sans consommer de tirages PRNG.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
@@ -107,7 +111,7 @@ public static class SimulationSnapshotRestorer
     {
         var minds = new Dictionary<ulong, MindState>();
         // Les esprits restaurés reconstruisent mémoire/confiance depuis les
-        // options **effectives** de la boucle (ADR-017 : sous-arbre agents mis à
+        // options **effectives** de la boucle (sous-arbre agents mis à
         // l'échelle temporelle) — avec un profil à dt ≠ 1, les taux de
         // décroissance restaurés doivent être ceux du run sauvé, pas ceux du
         // fichier de config brut.
@@ -200,7 +204,7 @@ public static class SimulationSnapshotRestorer
             successRates[(DesireKind)kind] = rate;
         }
 
-        // Champs additifs jalon ADR (0.14.0) — absents des snapshots antérieurs.
+        // Champs additifs jalon (0.14.0) — absents des snapshots antérieurs.
         IReadOnlyDictionary<WorldNamespace.ResourceKind, double>? inventoryAmounts = null;
         if (dto.Inventory is { } inventoryDto)
         {

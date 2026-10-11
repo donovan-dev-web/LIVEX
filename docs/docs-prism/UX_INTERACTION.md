@@ -1,7 +1,8 @@
 # UX_INTERACTION — Intentions d'interaction
 
 **Composant** : PRISM
-**Dernière mise à jour** : 27 septembre 2026
+**Statut** : [DRAFT]
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : [`VISUALIZATION_SPEC.md`](VISUALIZATION_SPEC.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---

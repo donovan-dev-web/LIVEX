@@ -1,11 +1,11 @@
 """Traces de décision SYNE consommées par ECHOS (ECHOS-051).
 
 ``build_decision_trace`` transforme un événement ``decision_made`` (contrat
-SYNE, API_CONTRACTS.md §2.2) en ligne au schéma ``decision_traces``
-(LOGGING_INSTRUMENTATION.md §1/§3) : action choisie, utilité, drapeaux de
+SYNE) en ligne au schéma ``decision_traces``
+action choisie, utilité, drapeaux de
 délibération/interruption, cause, contexte BDI (croyances, objectifs,
 mémoire) et besoins lus sur le snapshot — brique de l'analyse causale
-(CAUSAL_ANALYSIS.md). Fusion déterministe : clés fixes, tri stable.
+Fusion déterministe : clés fixes, tri stable.
 """
 
 from __future__ import annotations

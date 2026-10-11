@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Tests du déplacement déterministe et de l'indexation des cases.
+ */
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Simulation } = require('../src/server');

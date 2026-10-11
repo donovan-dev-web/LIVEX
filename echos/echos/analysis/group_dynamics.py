@@ -1,6 +1,6 @@
 """Moteur 7 — GroupDynamicsMetrics (dynamique des groupes).
 
-Mesure deux choses **distinctes** et le dit (METRICS_SPEC.md §8, RAPPORT §3.6) :
+Mesure deux choses **distinctes** et le dit :
 
 1. les **communautés inférées** — communautés du graphe de confiance
    (propagation d'étiquettes sur ``trust``, U2). Ce ne sont pas des groupes

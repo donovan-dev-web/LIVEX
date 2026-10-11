@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Tests du serveur HTTP/WebSocket du mock SYNE.
+ */
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
@@ -139,7 +145,7 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
 });
 
 test('prism profile emits the ADR-017 temporal and spatial scale contract', async (t) => {
-  // Profil `prism` (spec PRISM §4.4) : monde 2240 / cellule 32 → 70 × 70 =
+  // Profil `prism` (spec PRISM) : monde 2240 / cellule 32 → 70 × 70 =
   // 4 900 cases, cadence 6 TPS, 5 s simulées par tick (R = 30).
   const server = openServer(t, {
     agents: 0,

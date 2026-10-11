@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 6 octobre 2026
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
@@ -148,7 +148,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - **Contrôles de rafraîchissement du tableau de bord** : bouton « Actualiser » (rechargement immédiat des métriques, groupes et phénomènes) et bascule « Live » (rafraîchissement automatique cadré) / « Figé » (gel manuel pour lire un instant précis).
 
 ### Added
-- **Plan campagne-runs — axes A/B/C/D ECHOS réalisés (J-C1 → J-C4)** : réalisation du plan de correctifs campagne-runs du 29/09/2026 (décisions D1/D2/D3 ; document exécuté puis retiré du dépôt — résultats consolidés dans `../../RAPPORT-ELEMENTS-OUVERTS.md` §5.1).
+- **Plan campagne-runs — axes A/B/C/D ECHOS réalisés (J-C1 → J-C4)** : réalisation du plan de correctifs campagne-runs du 29/09/2026 (décisions D1/D2/D3 ; document exécuté puis retiré du dépôt — résultats consolidés dans `../../RAPPORT-ELEMENTS-OUVERTS.md` §5.1, document retiré du dépôt).
   - **A1** : champ `seed` transporté (`WorldSnapshot.seed`, contrat SYNE 0.2.1 additif) — `consume()` enregistre le seed du snapshot et ne dérive depuis `run_id` qu'en **repli** (`_seed_of` étendu à `run-<seed>-<12hex>`) ; seed introuvable des deux côtés → `seed: ""` + avertissement d'ingestion, jamais une erreur fatale (observe-only).
   - **A2** : changement de `run_id` détecté en flux — run enregistré avant son premier tick (zéro FK error), fenêtres glissantes réinitialisées, série Parquet flushée, rapport de calibration bâti à la fin de **chaque** run (y compris interrompu par un reset).
   - **A3** : `outcome`/`extinctionTick` dans le rapport de calibration + `population_outcome()` en SQL (disponible pendant l'ingestion) + exposition `/api/runs` et `/api/runs/{id}`.
@@ -226,7 +226,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
     - **ECHOS-052 Profilage** — `profile.Markers` (`time.perf_counter`) autour de **chacun des 8 moteurs** via paramètre `profile` de `compute_all` (duck-typing, sortie inchangée) ; `compute_all_profiled` **bit-à-bit identique** à `compute_all` (déterminisme ECHOS-027) ; contexte `profiling` par tick ; budgets V0.1 en garde-fou CI (cibles de calibration, pas des sims réelles).
   - **Pipeline branché** : `consume(client, store, ..., logger=EchosLogger|None)` écrit 4 contextes par tick (`agents`, `groups`, `phenomena`, **`profiling`**) — `contexts_written == 12` pour 3 ticks.
   - **Preuve J5 étendue** : `test_instrumentation.py` (14 tests : JSONL déterministe + tag SSE-V2 + fusion BDI + profilage bit-à-bit/couverture 8 moteurs/format §5), `test_api_routes.py` (endpoint décisions reproductible + 404), `test_pipeline.py` étendu. Tests : 167 → **181**, `SCHEMA_VERSION = "3"`.
-- **ECHOS ph8 — Interface web `echos-ui` (les 6 Écrans, UI_DESIGN.md A→F)** :
+- **ECHOS ph8 — Interface web `echos-ui` (les 6 Écrans A→F ; `UI_DESIGN.md`, document retiré du dépôt)** :
   - **Stack & config** : `react-router-dom` (routes A→F), `echarts` + `echarts-for-react` (timeline, graphe social), `lucide-react` (icônes), `zustand` (état runs/KPI live/run sélectionné/état WS) ; Vite proxy `/api` et `/health` → `http://127.0.0.1:5000` (dév.), export statique servi par FastAPI en prod ; code-splitting par écran + chunk vendor `echarts`/`react`.
   - **`src/api/`** — client REST typé sur les contrats `API_REST.md` §3 (runs, métriques `?every=`, export, décisions, chaînes causales, croyances/relations, groupes, phénomènes, `/compare`) ; 503/404 gérés ; `controlClient` = relais de pilotage ECHOS→SYNE :5181 (start/pause/resume/reset, **jamais en direct**).
   - **`src/ws/realtime.ts`** — client WebSocket :5180 (reconnexion, tick courant, état SYNE).
@@ -237,7 +237,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   - **Écran E `/control`** : pilotage relayé ECHOS→SYNE :5181, calibration, runs + export JSON/CSV, bandeau état WS.
   - **Écran F `/log`** : console 3 niveaux (flux WS) + panneau « limites de validité » (LIMITATIONS.md).
   - **Contraintes respectées** : vues **sans calcul de métrique** (pur affichage), pilotage = relais, pas de minimap. Qualité : eslint + `tsc -b` + vitest/RTL (13 tests, mock fetch + WS) verts.
-- **Trace complète Parquet dans le batch** (`scripts/batch-analysis.py` + `echos/echos/reporting.py`) : le run batch écrit désormais `run_id.parquet` (trace d'analyse complète, schéma `_TRACE_SCHEMA` `section|run_id|tick|engine|metric|key|value|payload`, pyarrow) **et** le rapport `run_id.md` — fin du `.json` volatil ; la série agents reste `run_id.agents.parquet` (temp `.agents-<pid>.parquet` renommée ; `--parquet/--no-parquet`, env `ECHOS_PARQUET_PATH`). Rétrocompatible : `parquet=False` par défaut dans `write_reports`, CLI machine à part.
+- **Trace complète Parquet dans le batch** (`scripts/batch_analysis.py` + `echos/echos/reporting.py`) : le run batch écrit désormais `run_id.parquet` (trace d'analyse complète, schéma `_TRACE_SCHEMA` `section|run_id|tick|engine|metric|key|value|payload`, pyarrow) **et** le rapport `run_id.md` — fin du `.json` volatil ; la série agents reste `run_id.agents.parquet` (temp `.agents-<pid>.parquet` renommée ; `--parquet/--no-parquet`, env `ECHOS_PARQUET_PATH`). Rétrocompatible : `parquet=False` par défaut dans `write_reports`, CLI machine à part.
 - **Planificateur d'analyse pour maîtriser la RAM** (`echos/echos/storage/pipeline.py` + `dev_ingest.py`) : `consume(..., analysis_every=1, parquet_flush_every=None)` — les métriques/contextes sont calculés **1 tick sur N** (déterministe, indiciel) pendant que l'ingestion fine (résumés, événements, traces de décision, série agents) reste **à chaque tick** ; écriture Parquet **bufferisée** (`_flush_agent_series`, remplace l'extension O(n²)) ; clôture forcée en fin de flux ; `engine_snapshot` construit seulement si cadence ou présence d'`decision_made`. Exposé au batch via `--analysis-every` / env `ECHOS_ANALYSIS_EVERY`, à l'entrée dev via `ECHOS_PARQUET_FLUSH_EVERY`.
 - **Benchmark réel SYNE vs SYNE + ECHOS** (`scripts/benchmark.py`, `BENCHMARKS.md`) : grille entités × ticks × seeds (défauts 20/50/100 × 100/400/1000 × 3 seeds), scénarios `syne` (CLI `--headless`, moteur seul) et `echos` (SYNE `--serve` + API ECHOS + ingestion, pilotage HTTP :5181, **sans génération de rapport**) ; mesure **temps mur + pic RSS par processus** via `os.wait4`/`ru_maxrss` (aucune dépendance externe) ; sorties CSV brut + rapport Markdown (`benchmark-<horodatage>.csv/.md`) ; options `--ticks-per-second`, `--analysis-every`, `--parquet`, `--cell-timeout`, `--quick` ; **robustesse** : arrêt/ramassage des processus garanti dans un `finally` (aucun orphelin sur exception) et pré-vérification des ports `5000/5180/5181` avant chaque jeu (piles déjà actives refusées au démarrage).
 
@@ -255,7 +255,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 - (aucun)
 
 ### Changed
-- **Correction documentation (23/09/2026)** : le shell Electron **n'est pas abandonné** — il est **conservé**, son implémentation étant **différée à un horizon ultérieur (post-V0.1)**. Les mentions « PAS de shell Electron » sont reformulées dans `ADR-001`, `ARCHITECTURE.md` (ECHOS + racine), `FRONTEND_VISION.md`, `README.md`, `ROADMAP.md`, `ISSUES.md`, `CHANGELOG.md` (racine) et `TRANSPORT_API.md` (PRISM) ; l'interface V0.1 reste le web local React/Vite servi par FastAPI. La Monographie reste un snapshot figé (non modifié).
+- **Correction documentation (23/09/2026)** : le shell Electron **n'est pas abandonné** — il est **conservé**, son implémentation étant **différée à un horizon ultérieur (post-V0.1)**. Les mentions « PAS de shell Electron » sont reformulées dans `ADR-001`, `ARCHITECTURE.md` (ECHOS + racine), `FRONTEND_VISION.md` (retiré du dépôt), `README.md`, `ROADMAP.md`, `ISSUES.md`, `CHANGELOG.md` (racine) et `TRANSPORT_API.md` (PRISM) ; l'interface V0.1 reste le web local React/Vite servi par FastAPI. La Monographie reste un snapshot figé (non modifié).
 
 ### Fixed
 - **`/api/compare` renvoyait 500 sur tout run réel.** `_canonical_content` décompressait les événements avec six colonnes pour un `zip` de sept : la comparaison de reproductibilité — fonction centrale du module — était inaccessible sur tout run ingéré. Accès par nom de colonne via `AnalyticsStore.event_records()` / `events_by_type(...)` ; `compare()` valide désormais ses arguments hors HTTP.
@@ -296,3 +296,4 @@ Version initiale (instrumentation prototype V1 : 18 tests xUnit, couverture 85 %
 | 22 septembre 2026 | ECHOS-040 à 045 : API REST (runs, métriques/séries + `?every`, export JSON/CSV reproductible, croyances/relations, groupes, phénomènes, cache de séries) + preuve J5 | Jalon U4 — API REST |
 | 23 septembre 2026 | Correction stack : shell Electron **conservé** (implémentation différée post-V0.1), « PAS de shell Electron » reformulé (ADR-001, ARCHITECTURE, FRONTEND_VISION, README, ROADMAP, ISSUES, docs racine, TRANSPORT_API PRISM) | Décision utilisateur — ECHOS garde Electron |
 | 23 septembre 2026 | ECHOS ph8 : échos-ui — les 6 Écrans (A→F), client REST typé + WS, relais de pilotage, design system | Jalon U7 — interface web |
+| 11 octobre 2026 | Conformité : renvois aux documents retirés du dépôt (`RAPPORT-ELEMENTS-OUVERTS.md`, `UI_DESIGN.md`, `FRONTEND_VISION.md`) explicitement neutralisés | `NAMING_CONVENTIONS.md` §9.4 — une référence ne pointe jamais vers un document absent |

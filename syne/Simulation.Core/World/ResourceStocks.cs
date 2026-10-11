@@ -1,6 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Réserves globales de ressources : quantités courantes et régénération par tick.
+
 namespace Simulation.Core.World;
 
-/// <summary>Types de ressources du moteur (décision n°2.4, DATA_MODEL.md §8).</summary>
+/// <summary>Types de ressources du moteur (.4).</summary>
 public enum ResourceKind
 {
     Food = 0,
@@ -10,12 +14,12 @@ public enum ResourceKind
 }
 
 /// <summary>
-/// Réserves globales de ressources (SYNE-042, décision n°4) : quantité courante
-/// de chaque ressource, initialisée depuis <c>resources.*</c> (CONFIGURATION.md §1),
+/// Réserves globales de ressources (SYNE-042) : quantité courante
+/// de chaque ressource, initialisée depuis <c>resources.*</c>,
 /// décrémentée par les actions terminales Eat/Drink (« réserves mises à jour »).
 ///
 /// Déterminisme : aucune consommation du PRNG ; les opérations de réserves sont
-/// des soustractions et additions pures (DETERMINISM.md §3). V0.1 : réserves
+/// des soustractions et additions pures. V0.1 : réserves
 /// globales partagées, les sources spatiales restent au jalon ph7 (SYNE-070).
 ///
 /// Cycle de vie (SYNE-070) : appliqué par le moteur en fin de tick, après toute la
@@ -78,7 +82,7 @@ public sealed class ResourceStocks
 
     /// <summary>
     /// Cycle de vie à la fin du tick (SYNE-070) : régénération puis dégradation,
-    /// exclusivement additives/multiplicatives pures — 0 tirage PRNG (DETERMINISM.md §3).
+    /// exclusivement additives/multiplicatives pures — 0 tirage PRNG.
     /// Régénération : + <c>RegenerationRate × facteur</c> à chaque tick. Dégradation : à chaque
     /// tick multiple de <c>DegradationTick</c> (&gt; 0), la réserve perd la régénération
     /// cumulée de la période (<c>RegenerationRate × DegradationTick × facteur</c>) ; sans taux de
@@ -127,7 +131,7 @@ public sealed class ResourceStocks
     }
 
     /// <summary>
-    /// Restauration bit-à-bit (SYNE-111, PERSISTENCE.md §4) : remet les réserves
+    /// Restauration bit-à-bit (SYNE-111) : remet les réserves
     /// aux niveaux sauvegardés **en place**, sans remplacer l'objet — le pipeline
     /// et le catalogue d'actions gardent leur référence et voient les bonnes valeurs.
     /// </summary>

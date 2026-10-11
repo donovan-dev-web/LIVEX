@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Mortalité par épuisement (SYNE-074) : une entité dont l'énergie atteint 0 meurt — retrait du monde, des
+//        esprits et des groupes, événement agent_died.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -12,7 +17,7 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Mortalité par épuisement (SYNE-074, SYSTEM_SPEC.md §8) : une entité dont
+/// Mortalité par épuisement (SYNE-074) : une entité dont
 /// l'énergie atteint 0 meurt — retrait du monde, des esprits et des groupes,
 /// événement <c>agent_died</c>. Mécanisme déterministe (aucun PRNG).
 /// </summary>
@@ -64,7 +69,7 @@ public class DeathSystemTests
         loop.Cognition.MindOf(4).Needs.ExertEnergy(200);
         loop.AdvanceOneTick();
 
-        // Deux morts au même tick, rapportées par id croissant (déterminisme §5).
+        // Deux morts au même tick, rapportées par id croissant (déterminisme).
         Assert.Equal(2, loop.Cognition.Death.LastDeaths.Count);
         Assert.Equal(2UL, loop.Cognition.Death.LastDeaths[0].Tick);
         Assert.Equal(2UL, loop.Cognition.Death.LastDeaths[0].EntityId);

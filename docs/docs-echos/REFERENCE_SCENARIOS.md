@@ -14,7 +14,7 @@ Ce document fixe les **cas étalons** d'ECHOS : des situations synthétiques don
 on connaît le contenu, pour vérifier que la mesure publiée **décrit** la
 situation — pas seulement qu'elle est déterministe.
 
-Il sert trois usages (`RAPPORT-ANALYSE-ECHOS-LAUNCHER.md` §9, P2 et P4) :
+Il sert trois usages (P2 et P4) :
 
 1. **Baselines avant calibration** : aucun seuil n'est ajusté avant d'avoir ce
    que la mesure doit dire sur ces cas ;
@@ -181,8 +181,7 @@ puis limite. Ni euphémisme, ni conclusion causale.
 > **Lecture retenue** : « tailles stables, composition modifiée — l'identité des
 > communautés n'est pas mesurée par ce contrat. »
 > Une mesure de stabilité d'identité exigerait que le contrat SYNE publie les
-> membres : lacune ouverte (`METRICS_SPEC.md` §4, `RAPPORT-ANALYSE-ECHOS-LAUNCHER.md`
-> §9 P1).
+> membres : lacune ouverte (`METRICS_SPEC.md` §4, P1).
 
 Autres formes obligatoires de prudence :
 

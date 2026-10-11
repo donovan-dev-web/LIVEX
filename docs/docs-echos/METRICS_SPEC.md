@@ -198,8 +198,7 @@ Mesure les stocks, les capacités et les flux des réserves.
 | `RecoveryEpisodes` | count | mesurée | Nombre de cycles sous 20 % puis retour ≥ 80 % observés dans l'historique. | — |
 | `UnresolvedCrisisCount` | count | mesurée | Crises ouvertes (sous 20 %) encore ouvertes au dernier tick de l'historique — observation censurée, jamais un zéro rassurant. | — |
 
-Seuils (20 % / 80 %) **[HÉRITÉ]** : voir `RAPPORT-ANALYSE-ECHOS-LAUNCHER.md` §9 P2
-(campagnes de calibration à mener avant de les présenter comme référence).
+Seuils (20 % / 80 %) **[HÉRITÉ]** : campagnes de calibration à mener avant de les présenter comme référence.
 
 ## 8. Moteur 7 — GroupDynamicsMetrics (dynamique des groupes)
 
@@ -380,8 +379,8 @@ métrique → API → vue) et `REFERENCE_SCENARIOS.md` (cas étalons interprét�
 
 - Les fenêtres et seuils des moteurs (fenêtre 100 ticks, seuil > 2, seuils de
   ressources 20 %/80 %, horizon de diffusion 100 ticks) sont **[HÉRITÉ]** :
-  à confirmer par campagne de calibration (`RAPPORT-ANALYSE-ECHOS-LAUNCHER.md`
-  §9 P2) avant d'être présentés comme référence.
+  à confirmer par campagne de calibration
+  avant d'être présentés comme référence.
 - Les pondérations d'`EmergenceScore` restent non calibrées — voir
   `EMERGENCE_INDICATORS.md` « Points restés ouverts ».
 - La matrice complète métrique → API → vue est maintenue dans

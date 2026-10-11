@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Vue modèle d'une console de composant : les lignes produites par un processus supervisé sont lues en
+//        direct depuis IComponentLogSource et affichées, sans interprétation — la console montre la sortie telle
+//        que le composant l'a émise.
+
 using System.Collections.ObjectModel;
 using System.Globalization;
 using Launcher.Domain;
@@ -5,7 +11,7 @@ using Launcher.Domain;
 namespace Launcher.Presentation.ViewModel;
 
 /// <summary>
-/// Vue modèle d'une console de composant (USER_INTERFACE.md §9) : les lignes produites par un
+/// Vue modèle d'une console de composant : les lignes produites par un
 /// processus supervisé sont lues en direct depuis <see cref="IComponentLogSource"/> et
 /// affichées, sans interprétation — la console montre la sortie telle que le composant
 /// l'a émise.
@@ -18,7 +24,7 @@ namespace Launcher.Presentation.ViewModel;
 /// long rattrape en plusieurs coups plutôt que de figer l'interface sur un seul.
 ///
 /// Aucune valeur scientifique n'est produite ici : une console n'affiche que des faits
-/// d'exécution (ADR-003 Launcher).
+/// d'exécution (Launcher).
 /// </summary>
 public sealed class ConsoleViewModel : ObservableObject
 {
@@ -241,7 +247,7 @@ public sealed class ConsoleLineViewModel
     /// <summary>Canal émetteur : « stdout » ou « stderr ».</summary>
     public string Stream { get; init; } = string.Empty;
 
-    /// <summary>Vrai pour une ligne de stderr, affichée en rouge (GUI.md §3.1).</summary>
+    /// <summary>Vrai pour une ligne de stderr, affichée en rouge.</summary>
     public bool IsError { get; init; }
 
     /// <summary>Texte de la ligne, tel que produit par le composant.</summary>

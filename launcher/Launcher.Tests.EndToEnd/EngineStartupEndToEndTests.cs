@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Bout en bout : démarrage réel du moteur SYNE par le Launcher (readiness, port).
+
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Xunit;

@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Journal de session du Launcher : JSON Lines, un fichier par jour, rotation quotidienne, purge
+//        configurable.
+
 using System.Text;
 using System.Text.Json;
 using Launcher.Domain;
@@ -5,8 +10,8 @@ using Launcher.Domain;
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Journal de session du Launcher (ARCHITECTURE.md §6) : JSON Lines, un fichier par jour,
-/// rotation quotidienne, purge configurable. UTF-8, fins de ligne LF (PACKAGING.md §11).
+/// Journal de session du Launcher : JSON Lines, un fichier par jour,
+/// rotation quotidienne, purge configurable. UTF-8, fins de ligne LF.
 /// </summary>
 public sealed class SessionFileJournal : ISessionJournal, IDisposable
 {

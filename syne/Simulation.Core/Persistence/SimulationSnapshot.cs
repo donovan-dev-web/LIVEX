@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Snapshot bit-à-bit de l'état de simulation à un instant T (SYNE-111) : ne capture que les états mutables
+//        durables — le reste (grille spatiale, cache de chemins, buffers par-tick) est reconstruit
+//        déterministiquement à la restauration.
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Simulation.Core.Cognition;
@@ -13,7 +19,7 @@ namespace Simulation.Core.Persistence;
 
 /// <summary>
 /// Snapshot bit-à-bit de l'état de simulation à un instant T (SYNE-111,
-/// PERSISTENCE.md §4) : ne capture que les états **mutables durables** — le reste
+/// ne capture que les états **mutables durables** — le reste
 /// (grille spatiale, cache de chemins, buffers par-tick) est reconstruit
 /// déterministiquement à la restauration.
 /// </summary>
@@ -27,7 +33,7 @@ public sealed record SimulationSnapshot(
     IReadOnlyList<GroupSnapshotDto> Groups,
     ulong NextGroupId);
 
-/// <summary>État d'un PRNG xoshiro256** (4 × ulong, PERSISTENCE.md §4).</summary>
+/// <summary>État d'un PRNG xoshiro256** (4 × ulong).</summary>
 public sealed record RngStateDto(ulong S0, ulong S1, ulong S2, ulong S3);
 
 /// <summary>État du monde au tick T : dimensions, obstacles, entités, réserves.</summary>
@@ -69,9 +75,9 @@ public sealed record EntitySnapshotDto(
 public sealed record ObstacleSnapshotDto(string Id, double X, double Y, double Radius);
 public sealed record BookSnapshotDto(string Id, ulong AuthorId, string Title, string Content, ulong WrittenTick, IReadOnlyList<ulong> Readers);
 
-/// <summary>État cognitif complet d'une entité au tick T (PERSISTENCE.md §3 table 4).
+/// <summary>État cognitif complet d'une entité au tick T (table 4).
 /// Les champs inventory/commitments/salience sont additifs (SchemaVersion 4 conservé,
-/// hash inchangé quand désactivés — conditions WhenWritingDefault, jalon ADR 0.14.0).</summary>
+/// hash inchangé quand désactivés — conditions WhenWritingDefault, jalon 0.14.0).</summary>
 public sealed record MindSnapshotDto(
     ulong EntityId,
     NeedsSnapshotDto Needs,
@@ -149,7 +155,7 @@ public sealed record MessageSnapshotDto(
 public sealed record GoalSnapshotDto(int Kind, ulong BornTick);
 public sealed record GroupObjectiveSnapshotDto(ulong GroupId, int Kind, double Consensus, double LeaderTrust, ulong AdoptedTick, ulong ExpiresTick);
 
-/// <summary>Groupe émergent actif au tick T (PERSISTENCE.md §3 table 7-8).</summary>
+/// <summary>Groupe émergent actif au tick T (table 7-8).</summary>
 public sealed record GroupSnapshotDto(
     ulong Id,
     ulong BornTick,

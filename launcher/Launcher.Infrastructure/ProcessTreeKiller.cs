@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Aucun processus orphelin : - Windows : Job Object avec JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE ; - Linux :
+//        groupe de processus Unix, chaque fils placé dans le groupe du Launcher.
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -5,7 +10,7 @@ using System.Runtime.Versioning;
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Aucun processus orphelin (INTEGRATION_CONTRACT.md §5.2) :
+/// Aucun processus orphelin :
 /// - Windows : Job Object avec JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE ;
 /// - Linux : groupe de processus Unix, chaque fils placé dans le groupe du Launcher.
 /// Un composant lancé sans Launcher ignore ce mécanisme : le confinement ne crée aucune dépendance.
@@ -134,7 +139,7 @@ public static class ProcessTreeKiller
 
 /// <summary>
 /// Job Object Windows : assigne le fils à un job du Launcher avec terminaison à la fermeture,
-/// puis permet de terminer le job pour un arrêt forcé propre (spike S3, ROADMAP.md).
+/// puis permet de terminer le job pour un arrêt forcé propre (spike S3).
 /// </summary>
 [SupportedOSPlatform("windows")]
 internal static class JobObjectAssigner

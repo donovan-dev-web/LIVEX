@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : J3 (étape 4) — parcours réel de bout en bout : campagne contre un SYNE publié et un ECHOS réellement
+//        installé, interruption après un run, reprise sans rejouer le run terminé, analyse par l'API ECHOS et
+//        rapport archivé à l'identique dans le paquet scellé.
+
 using System.IO.Compression;
 using System.Text.Json;
 using Launcher.App.Composition;
@@ -14,7 +20,7 @@ using Xunit.Sdk;
 namespace Launcher.Tests.EndToEnd;
 
 /// <summary>
-/// J3 (étape 4 de <c>ROADMAP-V01.md</c>) — parcours réel de bout en bout :
+/// J3 (étape 4) — parcours réel de bout en bout :
 /// campagne contre un SYNE publié et un ECHOS réellement installé, interruption
 /// après un run, reprise sans rejouer le run terminé, analyse par l'API ECHOS et
 /// rapport archivé à l'identique dans le paquet scellé. Aucun stub ne peut
@@ -380,7 +386,7 @@ public sealed class J3RealComponentsEndToEndTests : IDisposable
         return string.Join("\n", Directory.EnumerateFiles(directory).SelectMany(SessionFileJournal.ReadSharedLines));
     }
 
-    /// <summary>Appel direct de GenerateReport (§10.1) : c'est la référence de fidélité.</summary>
+    /// <summary>Appel direct de GenerateReport : c'est la référence de fidélité.</summary>
     private async Task<string> PostReportAsync(string controlUrl, string experimentId)
     {
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };

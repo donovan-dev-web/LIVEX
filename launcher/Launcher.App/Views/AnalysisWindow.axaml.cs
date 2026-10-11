@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fenêtre d'analyse native : présente les séries, le profil de viabilité, les communautés et les phénomènes
+//        publiés par l'API REST d'ECHOS — à la place de l'interface web/Electron supprimée.
+
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Launcher.Application;
@@ -6,7 +11,7 @@ using Launcher.Presentation.ViewModel;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Fenêtre d'analyse native (ADR-007) : présente les séries, le profil de viabilité,
+/// Fenêtre d'analyse native : présente les séries, le profil de viabilité,
 /// les communautés et les phénomènes publiés par l'API REST d'ECHOS — à la place de
 /// l'interface web/Electron supprimée.
 ///

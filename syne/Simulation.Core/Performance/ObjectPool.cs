@@ -1,11 +1,18 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Pool d'objets réutilisables (SYNE-092) : réduit la charge GC des structures éphémères (listes de candidats
+//        de perception, scores…) sans changer le comportement — un objet rendu est vidé avant ré-emprunt, et
+//        l'ordre des éléments produits reste identique à une allocation « fraîche » (aucun PRNG, aucune influence
+//        sur la trajectoire).
+
 namespace Simulation.Core.Performance;
 
 /// <summary>
-/// Pool d'objets réutilisables (SYNE-092, PERFORMANCE.md §5) : réduit la charge
+/// Pool d'objets réutilisables (SYNE-092) : réduit la charge
 /// GC des structures éphémères (listes de candidats de perception, scores…)
 /// sans changer le comportement — un objet rendu est vidé avant ré-emprunt, et
 /// l'ordre des éléments produits reste identique à une allocation « fraîche »
-/// (aucun PRNG, aucune influence sur la trajectoire — DETERMINISM.md §3).
+/// (aucun PRNG, aucune influence sur la trajectoire).
 /// </summary>
 /// <typeparam name="T">Type des éléments des conteneurs poolés.</typeparam>
 public sealed class ObjectPool<T>

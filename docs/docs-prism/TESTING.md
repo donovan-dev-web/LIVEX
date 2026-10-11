@@ -1,7 +1,8 @@
 # TESTING — PRISM / PrismLdk
 
 **Composant** : PRISM
-**Dernière mise à jour** : 27 septembre 2026
+**Statut** : [DRAFT]
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---

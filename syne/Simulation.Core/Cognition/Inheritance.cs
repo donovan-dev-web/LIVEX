@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Héritage intergénérationnel (SYNE-020) : la naissance repose sur la fusion consentie des entités parentes
+//        et transmet les traits et le savoir (mémoire intergénérationnelle + croyances) à l'entité née.
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Prng;
@@ -5,14 +10,13 @@ using Simulation.Core.Prng;
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Héritage intergénérationnel (SYNE-020, décision n°16, DATA_MODEL.md §6.6) :
+/// Héritage intergénérationnel (SYNE-020) :
 /// la naissance repose sur la **fusion consentie** des entités parentes et
 /// transmet les **traits** et le **savoir** (mémoire intergénérationnelle +
 /// croyances) à l'entité née.
 ///
-/// La structure est figée (décision n°16) ; les paramètres fins (réadaptation,
-/// dominance, mutation, seuil de salience) restent configurables
-/// (<see cref="InheritanceSettings"/>, SYNE-063 — §6.6.3, V0.2).
+/// La structure est figée ; les paramètres fins (réadaptation,
+/// dominance, mutation, seuil de salience) restent configurables.
 /// </summary>
 public static class Inheritance
 {
@@ -24,8 +28,8 @@ public static class Inheritance
     private const ulong Mix2 = 0x94D049BB133111EBUL;
 
     /// <summary>
-    /// Fusion des traits par moyenne arithmétique par trait (décision n°16,
-    /// §6.6.2) — équivalent à <c>FuseTraits(a, b, new InheritanceSettings(), seed)</c>
+    /// Fusion des traits par moyenne arithmétique par trait — équivalent à
+    /// <c>FuseTraits(a, b, new InheritanceSettings(), seed)</c>
     /// (dominance 0, mutation 0) : préservé pour la rétro-compatibilité V0.1.
     /// </summary>
     public static TraitSet FuseTraits(TraitSet parentA, TraitSet parentB)
@@ -44,7 +48,7 @@ public static class Inheritance
     }
 
     /// <summary>
-    /// Mécanismes fins (SYNE-063, décision n°16, §6.6.3) — déterministes (hash
+    /// Mécanismes fins (SYNE-063) — déterministes (hash
     /// SplitMix64 stable, aucun PRNG global) :
     /// <list type="bullet">
     /// <item><b>réadaptation/dominance</b> (<c>dominance</c> ∈ [0, 1]) : à 0, fusion
@@ -99,7 +103,7 @@ public static class Inheritance
     }
 
     /// <summary>
-    /// Mémoire intergénérationnelle (§6.6.3) : réunit les souvenirs des parents
+    /// Mémoire intergénérationnelle : réunit les souvenirs des parents
     /// dont la salience dépasse <paramref name="salienceThreshold"/> (défaut :
     /// <see cref="InheritanceSettings.SalienceThreshold"/>, évaluée au tick courant),
     /// ré-horodatés au <paramref name="birthTick"/>. L'ordre d'insertion est
@@ -141,7 +145,7 @@ public static class Inheritance
     }
 
     /// <summary>
-    /// Croyances transmises (§6.6.3 « savoir ») : union des croyances parentes ;
+    /// Croyances transmises (« savoir ») : union des croyances parentes ;
     /// sur un fait identique porté par les deux parents, la confiance la plus
     /// haute est conservée. Source ramenée à « héritage » (traçabilité V0.1).
     /// </summary>

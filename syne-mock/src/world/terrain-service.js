@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Type de terrain des cases et coûts de déplacement (plains/river/sea).
+ */
+
 const TERRAIN_TYPES = ['plains', 'river', 'sea'];
 
 // Profil de chaque type de terrain : coût de déplacement et franchissabilité.

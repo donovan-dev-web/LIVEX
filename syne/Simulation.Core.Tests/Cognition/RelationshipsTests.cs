@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests des rapports inter-entités (confiance, affinité).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Xunit;

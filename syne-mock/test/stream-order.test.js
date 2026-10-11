@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Tests de l'ordre du flux d'observabilité émis par tick.
+ */
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Simulation } = require('../src/server');

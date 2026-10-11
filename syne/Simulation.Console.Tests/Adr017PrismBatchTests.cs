@@ -1,3 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Parcours Launcher → SYNE pour le scénario prism : la résolution d'options place le profil sous la
+//        surcouche launcher-config.json, et le batch supervisé transporté par le Launcher (simulation prism
+//        --config … --autostart) porte bien le profil dans la trame world_initialized (description 1.1) et les
+//        snapshots.
+
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +15,7 @@ using Xunit;
 namespace Simulation.Console.Tests;
 
 /// <summary>
-/// Parcours Launcher → SYNE pour le scénario <c>prism</c> (ADR-017) : la
+/// Parcours Launcher → SYNE pour le scénario <c>prism</c> : la
 /// résolution d'options place le profil <b>sous</b> la surcouche
 /// <c>launcher-config.json</c>, et le batch supervisé transporté par le Launcher
 /// (<c>--simulation prism --config … --autostart</c>) porte bien le profil dans
@@ -30,11 +37,11 @@ public sealed class Adr017PrismBatchTests
 
             SimulationOptions options = Program.ResolveOptions(cli);
 
-            // Profil prism (ADR-017)…
+            // Profil prism …
             Assert.Equal(32, options.Simulation.WorldCellSize);
             Assert.Equal(5, options.Simulation.SimulatedSecondsPerTick);
             Assert.Equal(1.0, options.World.MetersPerUnit);
-            // …sous la surcouche du Launcher (priorité §5)…
+            // …sous la surcouche du Launcher (priorité)…
             Assert.Equal(24, options.Simulation.TicksPerSecond);
             Assert.Equal(3, options.Agents.InitialCount);
             // …et sous les flags CLI (priorité la plus haute : monde et seed).
@@ -52,7 +59,7 @@ public sealed class Adr017PrismBatchTests
     public void ResolveOptions_KeepsTheReferenceBehaviourUntouched()
     {
         // `reference` (ou aucun scénario) n'injecte rien : le profil de référence
-        // EST le défaut intégré (ADR-016) — comportement historique bit-à-bit.
+        // EST le défaut intégré — comportement historique bit-à-bit.
         foreach (string? simulation in new[] { (string?)null, "reference" })
         {
             string[] args = simulation is null ? ["--headless"] : ["--simulation", simulation, "--headless"];

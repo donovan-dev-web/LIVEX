@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Mélangeur 64 bits SplitMix64 (faux-aléatoire déterministe) utilisé pour initialiser l'état d'un
+//        Xoshiro256StarStar à partir d'une graine.
+
 namespace Simulation.Core.Prng;
 
 /// <summary>
@@ -29,7 +34,7 @@ public static class SplitMix64
     /// <summary>
     /// Avalanche SplitMix64 (« finalizer ») d'une valeur déjà mélangée : fonction
     /// pure et stable, sans état. Utilisée partout où un hachage déterministe est
-    /// nécessaire sans consommer le PRNG global (DETERMINISM.md §3).
+    /// nécessaire sans consommer le PRNG global.
     /// </summary>
     public static ulong Avalanche(ulong z)
     {

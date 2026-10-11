@@ -1,11 +1,11 @@
-"""Fabrique de l'application FastAPI ECHOS (port 5000, ADR-001 ECHOS).
+"""Fabrique de l'application FastAPI ECHOS (port 5000, ECHOS).
 
 ``create_app`` accepte un ``AnalyticsStore`` (base d'analyse ECHOS) pour les
 endpoints REST ; à défaut d'instance injectée, la variable d'environnement
 ``ECHOS_ANALYTICS_DB`` (chemin du fichier SQLite) est consultée. Sans base
 configurée, les routes de données répondent 503 (contrat toutefois publié).
 L'API reste **lecture seule** : aucune écriture dans le monde observé
-(règle d'or §4.10.3, ECHOS ph4).
+(règle d'or, ECHOS ph4).
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ def create_app(store: AnalyticsStore | None = None) -> FastAPI:
     """Construit l'application ECHOS (sans effet de bord d'import).
 
     L'application est une **API seule** : ECHOS ne porte aucune interface, aucun
-    conteneur de page (ADR-003 ECHOS révisé, ADR-007 Launcher). ``/`` répond la
+    conteneur de page (ECHOS révisé, Launcher). ``/`` répond la
     liste des endpoints, et le présentatif — le Launcher — consomme ces routes.
     """
     if store is None:

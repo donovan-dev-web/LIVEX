@@ -1,4 +1,4 @@
-"""Utilitaires déterministes communs aux 8 moteurs (METRICS_SPEC.md §9).
+"""Utilitaires déterministes communs aux 8 moteurs.
 
 Toutes les fonctions sont **pures** : mêmes entrées → mêmes sorties (aucune
 consommation de PRNG, ordres stables par tri sur les identifiants). Elles
@@ -89,7 +89,7 @@ def measured_flags(snapshot: dict, engine: object) -> dict[str, bool]:
       **publiée mais vide** (``eventWindow``) est une observation réelle
       (« zéro observé »), là où une fenêtre absente est « non mesuré ».
       C'est la distinction que le plan de tâches P1 impose entre
-      *aucune occurrence dans la fenêtre* et *pas assez de couverture*.
+      * aucune occurrence dans la fenêtre* et *pas assez de couverture*.
     """
     requires = getattr(engine, "REQUIRES", None) or {}
     metrics = tuple(getattr(engine, "METRICS", ()))

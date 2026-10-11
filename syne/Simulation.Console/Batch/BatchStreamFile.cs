@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cible d'observabilité écrivant le flux SYNE dans un fichier JSON Lines.
+
 using System.Text;
 using Simulation.Console.Observability;
 
@@ -5,7 +9,7 @@ namespace Simulation.Console.Batch;
 
 /// <summary>
 /// Cible d'observabilité écrivant le flux SYNE dans un fichier JSON Lines
-/// (API_CONTRACTS.md §2). Le contenu est exactement celui diffusé sur
+/// Le contenu est exactement celui diffusé sur
 /// WebSocket : un <c>snapshot</c> par tick puis ses événements, dans l'ordre
 /// d'émission. Rien n'est filtré, réordonné ni reformulé, de sorte qu'un
 /// consommateur ECHOS puisse relire le fichier avec le même contrat que le flux
@@ -15,7 +19,7 @@ namespace Simulation.Console.Batch;
 /// Invariants :
 /// <list type="bullet">
 /// <item>Aucun tirage PRNG, aucune mutation du monde : le déterminisme bit-à-bit
-/// est indépendant de l'activation de l'export (DETERMINISM.md §3).</item>
+/// est indépendant de l'activation de l'export.</item>
 /// <item>UTF-8 sans BOM, séparateur <c>\n</c> : l'empreinte du fichier est
 /// reproductible entre Linux et Windows pour un même contenu.</item>
 /// <item>Une demande d'export explicite qui ne peut pas être satisfaite

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de l'évaluateur d'utilité (benefit − cost).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -25,7 +29,7 @@ public class UtilityEvaluatorTests
 
         // benefit = Min(80, 100) × 0.6 = 48 (calibration D1 : plafond monotone 60,
         // croissant avec le besoin — l'ancien plafond 30 écrasait Eat/Drink) ;
-        // cost = moveEnergyCost = 0,03 (calibration B1, ADR-016) ; risk = 0.15 ;
+        // cost = moveEnergyCost = 0,03 (calibration B1) ; risk = 0.15 ;
         // confidence = 0.5 × (0.5 + 0.7×0.5) = 0.425 ; personality = 0.5 + greed(1.0) = 1.5 ;
         // urgency = sigmoid(0.1×(80−50)) × 20 ≈ 0.9526 × 20 ≈ 19.05.
         Assert.Equal(48.0, score.Benefit, 10);
@@ -60,7 +64,7 @@ public class UtilityEvaluatorTests
     [Fact]
     public void Urgency_CriticalUsesConfigurableThresholds()
     {
-        // Seuil de faim critique : 85 (COGNITIVE_ARCHITECTURE.md §6, agents.interruption.criticalHunger).
+        // Seuil de faim critique : 85 (agents.interruption.criticalHunger).
         var nonCritical = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 84), goalAge: 0, new ActionSettings());
         var critical = UtilityEvaluator.UrgencyOf(DesireKind.SeekFood, BodyNeeds.FromState(hunger: 86), goalAge: 0, new ActionSettings());
 
