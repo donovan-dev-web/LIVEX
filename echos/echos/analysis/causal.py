@@ -2,7 +2,7 @@
 
 ``build_chain`` reconstruit la chaîne ``Action ← Intention ← Objectif ←
 Besoin ← Croyance ← Mémoire ← Perception`` d'une entité à un tick, en mode
-**hors ligne** sur les traces persécutées ([Accepted]) :
+**hors ligne** sur les traces persécutées :
 - source principale : ligne ``decision_traces`` (action, utilité, besoins,
   compteurs BDI) du tick ;
 - compléments : événement ``decision_made`` correspondant (intention) et
@@ -177,8 +177,8 @@ def _recurrence(
     """Ticks antérieurs où l'entité a **elle** déjà choisi la même action.
 
     Fenêtre bornée (16 dernières occurrences de l'entité) — boucle de
-    rétroaction (ECHOS-062: comportement répété = boucle, affichage
- borné). Tri stable croissant (déterminisme des exports reproductibles).
+    rétroaction (ECHOS-062 : comportement répété = boucle,
+    affichage borné). Tri stable croissant (déterminisme des exports reproductibles).
 
     Régression : la fenêtre était appliquée aux 16 dernières traces du **run**,
     puis filtrée sur l'entité. Sur un run où d'autres entités décident, la

@@ -2,8 +2,9 @@
 
 :func:`consume` enchaîne la boucle réelle : écoute du WebSocket :5180
 (ECHOS-010), agrégation par tick sans perte (ECHOS-011), écriture SQLite
-(ECHOS-012) et séries Parquet (ECHOS-013). ``sample_every``
-(``--sample-every=N``) limite l'ingestion à 1 tick sur N ; ``None`` garde tout.
+(ECHOS-012) et séries Parquet (ECHOS-013).
+``sample_every`` (``--sample-every=N``) limite l'ingestion à 1 tick sur N ;
+``None`` garde tout.
 Depuis le jalon ECHOS ph4, chaque tick déclenche aussi les 8 moteurs
 (``analysis.compute_all``) et persiste : ``tick_metrics`` (métriques
 numériques) et ``tick_contexts`` (agents, groupes, phénomènes) — les métriques

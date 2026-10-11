@@ -43,18 +43,18 @@ un régime vide (0.0) et le rapport de calibration les signale comme absentes.
 """
 
 _DDL = """
-CREATE TABLE IF NOT EXISTS _meta
+CREATE TABLE IF NOT EXISTS _meta (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS runs
+CREATE TABLE IF NOT EXISTS runs (
     run_id TEXT PRIMARY KEY,
     version TEXT NOT NULL,
     seed TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS tick_summaries
+CREATE TABLE IF NOT EXISTS tick_summaries (
     run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
     tick INTEGER NOT NULL CHECK (tick >= 0),
     simulated_time_minutes INTEGER NOT NULL CHECK (simulated_time_minutes >= 0),
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS tick_summaries
     PRIMARY KEY (run_id, tick)
 );
 
-CREATE TABLE IF NOT EXISTS events_log
+CREATE TABLE IF NOT EXISTS events_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
     tick INTEGER NOT NULL CHECK (tick >= 0),
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS events_log
     value TEXT
 );
 
-CREATE TABLE IF NOT EXISTS tick_metrics
+CREATE TABLE IF NOT EXISTS tick_metrics (
     run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
     tick INTEGER NOT NULL CHECK (tick >= 0),
     engine TEXT NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS tick_metrics
     PRIMARY KEY (run_id, tick, engine, metric)
 );
 
-CREATE TABLE IF NOT EXISTS tick_contexts
+CREATE TABLE IF NOT EXISTS tick_contexts (
     run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
     tick INTEGER NOT NULL CHECK (tick >= 0),
     context_type TEXT NOT NULL,
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS tick_contexts
     PRIMARY KEY (run_id, tick, context_type)
 );
 
-CREATE TABLE IF NOT EXISTS decision_traces
+CREATE TABLE IF NOT EXISTS decision_traces (
     run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
     tick INTEGER NOT NULL CHECK (tick >= 0),
     agent_id TEXT NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS decision_traces
     PRIMARY KEY (run_id, tick, agent_id)
 );
 
-CREATE TABLE IF NOT EXISTS calibration_reports
+CREATE TABLE IF NOT EXISTS calibration_reports (
     run_id TEXT PRIMARY KEY REFERENCES runs(run_id) ON DELETE CASCADE,
     report_json TEXT NOT NULL
 );
@@ -233,7 +233,7 @@ class AnalyticsStore:
         with self._lock:
             self._conn.execute(
                 """
-                INSERT OR REPLACE INTO tick_summaries
+                INSERT OR REPLACE INTO tick_summaries (
                     run_id, tick, simulated_time_minutes, alive_count,
                     agent_count, mean_energy, mean_hunger, mean_thirst,
                     mean_fatigue, decision_count, mean_food, mean_water
@@ -259,7 +259,7 @@ class AnalyticsStore:
         with self._lock:
             self._conn.execute(
                 """
-                INSERT INTO events_log
+                INSERT INTO events_log (
                     run_id, tick, type, agent_id, target_id, action, cause, value
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -420,7 +420,7 @@ class AnalyticsStore:
         with self._lock:
             self._conn.execute(
                 """
-                INSERT OR REPLACE INTO decision_traces
+                INSERT OR REPLACE INTO decision_traces (
                     run_id, tick, agent_id, chosen_action, utility,
                     deliberated, interrupted, cause,
                     beliefs_count, goals_count, memory_count, needs
@@ -474,7 +474,7 @@ class AnalyticsStore:
             try:
                 self._conn.execute(
                     """
-                    INSERT OR REPLACE INTO tick_summaries
+                    INSERT OR REPLACE INTO tick_summaries (
                         run_id, tick, simulated_time_minutes, alive_count,
                         agent_count, mean_energy, mean_hunger, mean_thirst,
                         mean_fatigue, decision_count, mean_food, mean_water
@@ -521,7 +521,7 @@ class AnalyticsStore:
                 if decision_traces:
                     self._conn.executemany(
                         """
-                        INSERT OR REPLACE INTO decision_traces
+                        INSERT OR REPLACE INTO decision_traces (
                             run_id, tick, agent_id, chosen_action, utility,
                             deliberated, interrupted, cause, beliefs_count,
                             goals_count, memory_count, needs

@@ -28,7 +28,7 @@ Statut : **exploratoire**. Les poids (0.15/0.15/0.10/0.15/0.20/0.25) sont
 analyse de sensibilité ; le score n'est pas une mesure établie d'émergence
 (``Disclaimer`` invariant, ECHOS-032).
 
-Conventions V0.1 (cf., ECHOS-006) :
+Conventions V0.1 (ECHOS-006) :
 - données manquantes → valeurs neutres 0.0 ; ``DetectedPhenomena`` devient vide ;
 - ``Disclaimer`` invariant (ECHOS-032) ;
 - ``CoverageDelay_Norm = clamp(1 - EmitterCoverageDelay / 100, 0, 1)`` avec
@@ -58,7 +58,7 @@ WEIGHTS = {
     "ContributionRepeatedActions": 0.20,
     "ContributionCommunityCoverage": 0.25,
 }
-"""Poids des composantes du score [HÉRITÉ ], Σ = 1.0.
+"""Poids des composantes du score [HÉRITÉ], Σ = 1.0.
 
 Non calibrés : aucune campagne de référence ni analyse de sensibilité ne les
 a validés. Ils sont publiés (et non codés en dur dans la formule) pour que la
