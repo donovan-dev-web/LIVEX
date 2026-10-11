@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Convertisseurs d'affichage: visibilité d'une vue selon le mode actif ou le contenu.
+
 using System.Globalization;
 using Avalonia.Data.Converters;
 

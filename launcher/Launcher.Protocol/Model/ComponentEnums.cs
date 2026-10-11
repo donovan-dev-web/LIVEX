@@ -1,6 +1,10 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Type fonctionnel d'un composant piloté.
+
 namespace Launcher.Protocol.Model;
 
-/// <summary>Type fonctionnel d'un composant piloté (COMPONENTS.md §2).</summary>
+/// <summary>Type fonctionnel d'un composant piloté.</summary>
 public enum ComponentType
 {
     /// <summary>Moteur de simulation (SYNE).</summary>
@@ -9,11 +13,11 @@ public enum ComponentType
     Analysis,
     /// <summary>Immersion (PRISM).</summary>
     Immersion,
-    /// <summary>Utilitaire (type prévu, non attribué en V0.1 — ISSUES.md O-27).</summary>
+    /// <summary>Utilitaire (type prévu, non attribué en V0.1 — O-27).</summary>
     Utility,
 }
 
-/// <summary>Mode d'utilisation servi par un composant (COMPONENTS.md §3, champ contributesTo).</summary>
+/// <summary>Mode d'utilisation servi par un composant (champ contributesTo).</summary>
 public enum UsageMode
 {
     /// <summary>Mode Contrôle : socle, porte par le moteur.</summary>
@@ -24,7 +28,7 @@ public enum UsageMode
     Immersion,
 }
 
-/// <summary>Type de session (COMPONENTS.md §8.1) : change ce que l'interface expose, pas les composants.</summary>
+/// <summary>Type de session : change ce que l'interface expose, pas les composants.</summary>
 public enum SessionKind
 {
     Production,
@@ -32,7 +36,7 @@ public enum SessionKind
     Developpement,
 }
 
-/// <summary>États du cycle de vie d'un composant piloté (COMPONENTS.md §4).</summary>
+/// <summary>États du cycle de vie d'un composant piloté.</summary>
 public enum ComponentState
 {
     /// <summary>Aucune installation détectée.</summary>

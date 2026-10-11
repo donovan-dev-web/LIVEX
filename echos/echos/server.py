@@ -1,8 +1,8 @@
 """Point d'entrée serveur ECHOS (API seule).
 
 ECHOS ne porte aucune interface : c'est un moteur d'analyse et d'ingestion qui
-publie une API REST locale. Le présentatif est le Launcher (ADR-003 Launcher,
-ADR-007 : consoles et fenêtre d'analyse natives), qui consomme ces routes depuis
+publie une API REST locale. Le présentatif est le Launcher (Launcher,
+ consoles et fenêtre d'analyse natives), qui consomme ces routes depuis
 sa propre fenêtre — aucune instance de navigateur n'est nécessaire.
 
 Configuration par variables d'environnement :

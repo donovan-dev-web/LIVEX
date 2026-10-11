@@ -1,14 +1,18 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Photographie du monde à un tick (WorldSnapshot).
+
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.World;
 
 namespace Simulation.Core.Observability;
 
-/// <summary>État d'une réserve globale dans le snapshot (SYNE-042, API_CONTRACTS.md §2.1).</summary>
+/// <summary>État d'une réserve globale dans le snapshot (SYNE-042).</summary>
 public sealed record ResourceSnapshot(string Type, double Quantity);
 
 /// <summary>
-/// Groupe émergent dans le snapshot (SYNE-060/061, API_CONTRACTS.md §2.1) :
+/// Groupe émergent dans le snapshot (SYNE-060/061) :
 /// identifiant, membres triés, leader et dernière décision collective.
 /// </summary>
 public sealed record GroupSnapshot(
@@ -21,11 +25,11 @@ public sealed record GroupSnapshot(
     string? Decision,
     double Consensus);
 
-/// <summary>Obstacle statique (construction, SYNE-071, API_CONTRACTS.md §2.1).</summary>
+/// <summary>Obstacle statique (construction, SYNE-071).</summary>
 public sealed record ObstacleSnapshot(string Id, double X, double Y, double Radius);
 
 /// <summary>
-/// Zone de territoire au snapshot (SYNE-073, décision n°21, API_CONTRACTS.md §2.1) :
+/// Zone de territoire au snapshot (SYNE-073) :
 /// disque « point de survie » + members courants (identifiants croissants,
 /// <c>memberCount</c> = taille, redondante mais explicite à l'émission JSON).
 /// </summary>
@@ -38,7 +42,7 @@ public sealed record TerritorySnapshot(
     IReadOnlyList<ulong> Members);
 
 /// <summary>
-/// Livre au snapshot (SYNE-121, décisions n°18/19, Monographie §3.18) :
+/// Livre au snapshot (SYNE-121) :
 /// identifiant, auteur, titre, tick d'écriture (poinçonné par la boucle,
 /// <c>writtenTick</c>) et liste des lecteurs distincts (ordre de première
 /// consultation, <c>readCount</c> = taille redondante mais explicite).
@@ -73,18 +77,18 @@ public sealed record ActionSnapshot(
     double? ReserveConsumed);
 
 /// <summary>
-/// Photographie du monde à un tick (API_CONTRACTS.md §2.1 — WorldSnapshot).
+/// Photographie du monde à un tick (WorldSnapshot).
 /// Représentation pure, sérialisée en camelCase par <see cref="ObservabilitySerializer"/>.
 /// </summary>
 public sealed record WorldSnapshot(
     string Version,
     string RunId,
-    // Seed effectif du run — champ additif V0.2.1 du contrat (API_CONTRACTS.md §2.1) : ECHOS n'a
+    // Seed effectif du run — champ additif V0.2.1 du contrat : ECHOS n'a
     // plus à dériver le seed du run_id, ce qui invalidait same_seed sur les runs pilotés.
     ulong Seed,
     ulong Tick,
     // Temps simulé en minutes (plancher entier, conserve le contrat historique
-    // validé/stocké en INTEGER par ECHOS) et en secondes (champ additif ADR-017 —
+    // validé/stocké en INTEGER par ECHOS) et en secondes (champ additif —
     // à `simulatedSecondsPerTick = 60`, minutes = tick, comme avant).
     long SimulatedTimeMinutes,
     long SimulatedTimeSeconds,

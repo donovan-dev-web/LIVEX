@@ -1,8 +1,8 @@
-"""Contract integration U8 against the real SYNE WebSocket emitter.
+"""Intégration de contrat U8 contre l'émetteur WebSocket SYNE réel.
 
-Set LIVEX_SYNE_E2E=1 after building Simulation.Console in Release. PRISM has no
-runtime in this repository yet; the last hop is checked through the documented
-ECHOS REST contract consumed by PRISM.
+Définir LIVEX_SYNE_E2E=1 après avoir compilé Simulation.Console en Release.
+PRISM n'a pas encore d'exécutable dans ce dépôt ; le dernier saut est vérifié
+via le contrat REST ECHOS documenté et consommé par PRISM.
 """
 
 from __future__ import annotations
@@ -174,7 +174,8 @@ def test_real_syne_stream_is_ingested_and_served_by_echos(tmp_path):
                 assert all(isinstance(member, str) for member in group["members"])
                 assert set(group["members"]) <= agent_ids
 
-            # The documented PRISM handoff is ECHOS REST; validate a real run through it.
+            # La passation PRISM documentée passe par l'API REST d'ECHOS ;
+            # on valide un run réel par cette voie.
             with TestClient(create_app(store)) as api:
                 response = api.get(f"/api/runs/{run_id}/metrics")
                 assert response.status_code == 200

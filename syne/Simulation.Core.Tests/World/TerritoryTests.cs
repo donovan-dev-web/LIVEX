@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Territoire (SYNE-073, jalon U8) : zones « point de survie » (disques) posées à l'init — la présence d'une
+//        entité dans le disque délimite le territoire effectif.
+
 using System.Text;
 using System.Text.Json.Nodes;
 using Simulation.Core.Configuration;
@@ -12,10 +17,10 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Territoire (SYNE-073, décision n°21, jalon U8) : zones « point de survie »
+/// Territoire (SYNE-073, jalon U8) : zones « point de survie »
 /// (disques) posées à l'init — la **présence** d'une entité dans le disque délimite
 /// le territoire effectif. L'appartenance est suivie en fin de tick par la boucle
-/// (0 tirage PRNG, DETERMINISM.md §3), tracée en <c>world.territory_membership_changed</c>
+/// (0 tirage PRNG), tracée en <c>world.territory_membership_changed</c>
 /// et exposée dans le snapshot <c>territories[]</c> (additif). Suivi désactivé par
 /// défaut ⇒ trajectoire du scénario de référence inchangée.
 /// </summary>
@@ -298,7 +303,7 @@ public class TerritoryTests
     }
 
     // ------------------------------------------------------------------
-    // Validation (§6)
+    // Validation
     // ------------------------------------------------------------------
 
     [Fact]

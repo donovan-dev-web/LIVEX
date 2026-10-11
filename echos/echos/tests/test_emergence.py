@@ -4,9 +4,9 @@ Le moteur composite ``EmergenceIndicators`` compose les moteurs de métriques
 pour produire : le score d'émergence composite borné [0, 1] (ECHOS-030),
 ses **contributions décomposées** (refonte P2), l'auto-détection des signaux
 avec trace des valeurs déclencheuses (ECHOS-031), la complexité (ECHOS-033) et
-le disclaimer de la « règle d'or » §4.10.3 (ECHOS-032).
+le disclaimer de la « règle d'or » (ECHOS-032).
 
-Formules : EMERGENCE_INDICATORS.md. Statut du score : **exploratoire** (poids
+Formules: Statut du score : **exploratoire** (poids
 [HÉRITÉ], non calibrés).
 """
 
@@ -385,7 +385,7 @@ def test_unpredictability_index_was_removed():
 
 
 # ---------------------------------------------------------------------------
-# ECHOS-032 — Règle d'or §4.10.3 (disclaimer)
+# ECHOS-032 — Règle d'or (disclaimer)
 # ---------------------------------------------------------------------------
 
 

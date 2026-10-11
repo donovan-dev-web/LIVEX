@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Découplage de la taille de cellule spatiale du rayon de perception (jalon review/refactor, engineVersion
+//        0.12.0).
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Prng;

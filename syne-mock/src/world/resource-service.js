@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Génération et évolution des réserves de ressources (food/water/wood/mineral).
+ */
+
 const RESOURCE_TYPES = ['food', 'water', 'wood', 'mineral'];
 const LOCATIONS_PER_TYPE = 3;
 

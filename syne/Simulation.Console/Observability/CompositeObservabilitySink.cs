@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Répartit chaque trame d'observabilité sur plusieurs cibles.
+
 namespace Simulation.Console.Observability;
 
 /// <summary>
-/// Répartit chaque trame d'observabilité sur plusieurs cibles (API_CONTRACTS.md §2).
+/// Répartit chaque trame d'observabilité sur plusieurs cibles.
 /// Utilisé lorsqu'un run doit être à la fois observable en direct et archivé :
 /// les deux cibles reçoivent la même trame, dans le même ordre, sans que l'une
 /// puisse filtrer ce que l'autre voit.

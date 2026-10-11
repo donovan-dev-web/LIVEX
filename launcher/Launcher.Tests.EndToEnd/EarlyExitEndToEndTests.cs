@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Arrêt immédiat au démarrage : un composant qui meurt dans la foulée de son lancement (port repris entre le
+//        pré-vol et le bind, exécutable défaillant) publie sa fin de façon asynchrone, souvent avant même que son
+//        instance soit enregistrée.
+
 using Xunit;
 using Xunit.Sdk;
 

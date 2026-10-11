@@ -95,7 +95,7 @@ def test_world_initialized_prelude_is_skipped_before_tick_stream():
 
 
 def test_world_initialized_prelude_is_forwarded_to_the_callback():
-    """La description de monde est transmise à l'appelant (vue 2D, ADR-007).
+    """La description de monde est transmise à l'appelant (vue 2D).
 
     Sans ``on_world``, elle reste ignorée comme par le passé : le contrat de
     découpage des ticks ne change pas, seule l'information devient récupérable.

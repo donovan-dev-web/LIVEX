@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Identifiants de simulation pris en charge par la configuration V1.
+
 namespace Launcher.Domain.Model;
 
 /// <summary>Identifiants de simulation pris en charge par la configuration V1.</summary>
@@ -7,7 +11,7 @@ public static class WellKnownSimulations
     public const string Reference = "reference";
 
     /// <summary>
-    /// Profil batch PRISM (ADR-017) : monde 2 240 × 2 240, 6 TPS, 5 s simulées
+    /// Profil batch PRISM : monde 2 240 × 2 240, 6 TPS, 5 s simulées
     /// par tick (R = 30) — accepté par `--simulation` depuis le contrat SYNE
     /// 0.4.0. Additif : n'altère aucun chemin `reference`.
     /// </summary>
@@ -19,7 +23,7 @@ public static class WellKnownSimulations
         || string.Equals(simulationId, Prism, StringComparison.Ordinal);
 }
 
-/// <summary>Profils d'exécution prédéfinis (COMPONENTS.md §9).</summary>
+/// <summary>Profils d'exécution prédéfinis.</summary>
 public static class WellKnownProfiles
 {
     /// <summary>SYNE seul, sans analyse ni observation.</summary>
@@ -38,7 +42,7 @@ public static class WellKnownProfiles
     public const string Personnalise = "personnalise";
 }
 
-/// <summary>Résultat d'une résolution de profil (COMPONENTS.md §6).</summary>
+/// <summary>Résultat d'une résolution de profil.</summary>
 public sealed class ProfileResolution
 {
     /// <summary>Le profil est satisfiable avec les installations détectées.</summary>
@@ -70,7 +74,7 @@ public static class ComponentDependencies
     };
 }
 
-/// <summary>Politique d'échec d'une campagne (EXPERIMENTS.md §7).</summary>
+/// <summary>Politique d'échec d'une campagne.</summary>
 public enum FailurePolicy
 {
     /// <summary>Le premier échec interrompt la campagne.</summary>
@@ -83,7 +87,7 @@ public enum FailurePolicy
     Tolerate,
 }
 
-/// <summary>Stratégie de dérivation des graines (EXPERIMENTS.md §5, DATA_FLOW.md §4.3).</summary>
+/// <summary>Stratégie de dérivation des graines.</summary>
 public enum SeedStrategy
 {
     /// <summary>graine(n) = baseSeed + n. Stratégie V0.1 par défaut.</summary>

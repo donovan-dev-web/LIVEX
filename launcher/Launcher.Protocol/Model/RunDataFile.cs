@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Contenu d'une entrée de données de run, sans engagement sur la taille.
+
 namespace Launcher.Protocol.Model;
 
 /// <summary>

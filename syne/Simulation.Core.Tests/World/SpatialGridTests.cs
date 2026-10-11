@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la grille spatiale uniforme (requêtes de voisinage).
+
 using Simulation.Core.Entities;
 using Simulation.Core.World;
 using Xunit;

@@ -1,7 +1,8 @@
 # ASSETS_CONVENTIONS — Présentation des éléments
 
 **Composant** : PRISM
-**Dernière mise à jour** : 27 septembre 2026
+**Statut** : [DRAFT]
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : [`SCENE_SPEC.md`](SCENE_SPEC.md)
 
 ---

@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Point d'entrée du Launcher : fenêtre native, --check (diagnostic) et --batch (campagne sans interface).
+
 using System.Threading;
 using Avalonia;
 using Launcher.App.Composition;
@@ -6,9 +10,9 @@ namespace Launcher.App;
 
 /// <summary>
 /// Point d'entrée du Launcher (README docs-launcher) :
-/// livex-launcher                 fenêtre native, ouverture de l'espace de travail
-/// livex-launcher --check         vérification de l'environnement, sans interface
-/// livex-launcher --package X     ouverture d'une campagne
+/// livex-launcher fenêtre native, ouverture de l'espace de travail
+/// livex-launcher --check vérification de l'environnement, sans interface
+/// livex-launcher --package X ouverture d'une campagne
 /// </summary>
 internal static class Program
 {
@@ -20,7 +24,7 @@ internal static class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        // Instance unique : le second Launcher le dit explicitement (INTEGRATION_CONTRACT.md §5.3).
+        // Instance unique : le second Launcher le dit explicitement.
         if (!SingleInstanceGuard.TryAcquire(out var guard))
         {
             Console.Error.WriteLine("livex-launcher : une instance est déjà en cours d'exécution sur cet espace de travail.");
@@ -59,7 +63,7 @@ internal static class Program
     }
 
     /// <summary>
-    /// Diagnostic sans interface (PACKAGING.md §6) : sortie textuelle et stable,
+    /// Diagnostic sans interface : sortie textuelle et stable,
     /// citable dans un rapport d'incident. N'écrit aucun journal de paquet.
     /// </summary>
     private static int RunEnvironmentCheck()

@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Codec bit-à-bit des snapshots de simulation (SYNE-111) : capture l'état mutable durable d'un
+//        SimulationLoop à l'instant T et le restaure sans tirage du PRNG.
+
 using System.Text.Json;
 using Simulation.Core.Cognition;
 using Simulation.Core.Communication;
@@ -32,7 +37,7 @@ public static class SimulationSnapshotCodec
     /// implicitement la terre nominale « Communes ». L'addition est
     /// rétro-compatible à la lecture : un snapshot v3 se restaure avec des listes
     /// vides. Bump MAJEUR uniquement pour une rupture de sémantique, pas pour un
-    /// champ additif (PERSISTENCE.md).
+    /// champ additif.
     /// </summary>
     public const int SchemaVersion = 4;
 
@@ -174,7 +179,7 @@ public static class SimulationSnapshotCodec
             successRates[(int)kind] = rate;
         }
 
-        // Champs additifs jalon ADR (0.14.0) : émis seulement quand les drapeaux
+        // Champs additifs jalon (0.14.0) : émis seulement quand les drapeaux
         // correspondants sont actifs (sinon null — hash inchangé).
         InventorySnapshotDto? inventoryDto = null;
         if (mind.Inventory is { } inventory)
@@ -248,7 +253,7 @@ public static class SimulationSnapshotCodec
             triggeredDtos);
     }
 
-    /// <summary>Sérialise le snapshot en JSON déterministe (PERSISTENCE.md §3 : <c>tick_states.state</c>).</summary>
+    /// <summary>Sérialise le snapshot en JSON déterministe (<c>tick_states.state</c>).</summary>
     public static string ToJson(SimulationSnapshot snapshot) =>
         JsonSerializer.Serialize(snapshot, JsonOptions);
 
@@ -256,7 +261,7 @@ public static class SimulationSnapshotCodec
         JsonSerializer.Deserialize<SimulationSnapshot>(json, JsonOptions)
         ?? throw new InvalidOperationException("Snapshot JSON invalide (null).");
 
-    /// <summary>Code de hachage stable (baseline bit-à-bit, DETERMINISM.md §4).</summary>
+    /// <summary>Code de hachage stable (baseline bit-à-bit).</summary>
     public static ulong Hash(SimulationSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);

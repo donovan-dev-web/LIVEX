@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la description versionnée du monde envoyée à Unreal.
+
 using Xunit;
 using Simulation.Core.Entities;
 using Simulation.Core.World;
@@ -7,7 +11,7 @@ namespace Simulation.Core.Tests.WorldDescription;
 public sealed class WorldDescriptionTests
 {
     [Fact]
-    public void SameSeedProducesSameVersionedLayout()
+    public void WorldDescription_SameSeed_ProducesSameVersionedLayout()
     {
         var first = new Simulation.Core.World.World(new WorldSize(25, 15));
         var second = new Simulation.Core.World.World(new WorldSize(25, 15));

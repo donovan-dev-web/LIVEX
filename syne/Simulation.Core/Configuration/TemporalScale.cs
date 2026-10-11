@@ -1,7 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Facteurs d'échelle temporelle (« échelle temporelle configurable ») : conversion des quantités de classe A
+//        (processus continus du temps simulé) en valeurs par tick effectif, calculée une fois au démarrage du run
+//        de façon déterministe à partir de dt = simulatedSecondsPerTick / 60.
+
 namespace Simulation.Core.Configuration;
 
 /// <summary>
-/// Facteurs d'échelle temporelle (ADR-017 « échelle temporelle configurable ») :
+/// Facteurs d'échelle temporelle (« échelle temporelle configurable ») :
 /// conversion des quantités de <b>classe A</b> (processus continus du temps
 /// simulé) en valeurs <b>par tick effectif</b>, calculée <b>une fois au
 /// démarrage du run</b> de façon déterministe à partir de
@@ -21,7 +27,7 @@ namespace Simulation.Core.Configuration;
 /// <b>Neutralité par défaut</b> : à <c>dt == 1</c> (profil par défaut et
 /// <c>reference</c>), chaque opération retourne <b>l'instance d'entrée</b> —
 /// aucune copie, aucune arithmétique : les checksums dorés restent bit-à-bit
-/// inchangés (DETERMINISM.md, pin contractuel ADR-016).
+/// inchangés (pin contractuel).
 /// </para>
 ///
 /// <para>
@@ -29,7 +35,7 @@ namespace Simulation.Core.Configuration;
 /// perception, revue de groupes, budgets de communication, sauvegarde, A*,
 /// portées) et C (effets ponctuels par action : energyRecovery Eat/Drink,
 /// pénalités de confiance) ne sont <b>jamais</b> passées par ici — cf.
-/// l'inventaire A/B/C (docs/docs-syne/TICK_QUANTITIES.md).
+/// l'inventaire A/B/C.
 /// </para>
 /// </summary>
 public static class TemporalScale
@@ -246,7 +252,7 @@ public static class TemporalScale
     }
 
     /// <summary>
-    /// Options « effectives » d'un run (ADR-017 §4.2) : copie de premier niveau
+    /// Options « effectives » d'un run : copie de premier niveau
     /// de <paramref name="options"/> dont le sous-arbre <c>agents</c> porte les
     /// réglages de classe A mis à l'échelle (besoins, mémoire, croyances,
     /// confiance, actions) — les autres sections sont partagées telles quelles.

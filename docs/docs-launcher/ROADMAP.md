@@ -47,7 +47,7 @@ contrats de SYNE et d'ECHOS, dont il dépend pour piloter, et il accompagne PRIS
 > vert **contre un ECHOS réel**, et l'implémentation actuelle a été prouvée
 > contre le banc de stubs (`CHANGELOG.md`, G5 → G7) — conformément à la règle
 > « stub ≠ acceptation » de `../../launcher/ROADMAP-V1.md` §1 ; la preuve réelle
-> relève du parcours J3 (étape 4 de `../../ROADMAP-V01.md`) ; G6 dispose de
+> relève du parcours J3 (étape 4) ; G6 dispose de
 > `--check` complet mais pas encore des installateurs multiplateformes (étape
 > 8) ; G7 reste verrouillé faute de PRISM conforme. La matrice factuelle
 > et le plan d'exécution à jour sont dans

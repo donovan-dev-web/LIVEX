@@ -1,16 +1,20 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Ports sortants de la couche application (l'application dépend du domaine).
+
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Launcher.Protocol.Model;
 
 namespace Launcher.Application;
 
-/// <summary>Ports sortants de la couche application (ARCHITECTURE.md §1 : l'application dépend du domaine).</summary>
+/// <summary>Ports sortants de la couche application (l'application dépend du domaine).</summary>
 public interface IPackageService
 {
     /// <summary>Crée le paquet d'une campagne et renvoie son chemin.</summary>
     string Create(ExperimentDefinition experiment);
 
-    /// <summary>Clôture un run dans le paquet selon la séquence normative §5.2.</summary>
+    /// <summary>Clôture un run dans le paquet selon la séquence normative.</summary>
     void CompleteRun(string packagePath, RunCompletion completion);
 
     /// <summary>Scelle le paquet d'une campagne.</summary>
@@ -22,7 +26,7 @@ public interface IPackageService
     /// <summary>Écrit le rapport d'émergence et les fichiers d'analyse agrégée (canal 3 — restitution).</summary>
     void WriteAnalysisReport(string packagePath, string emergenceReport, IReadOnlyDictionary<string, byte[]> aggregateFiles);
 
-    /// <summary>Enregistre les versions des composants engagés dans le manifeste (EXPERIMENTS.md §12).</summary>
+    /// <summary>Enregistre les versions des composants engagés dans le manifeste.</summary>
     void RegisterComponents(string packagePath, IReadOnlyList<Protocol.Model.JsonComponentRef> components);
 
     /// <summary>Lit l'état du paquet et son index des runs.</summary>
@@ -74,7 +78,7 @@ public sealed class RunCompletion
     /// <summary>Analyse individuelle d'ECHOS pour ce run, écrite sous analysis/individual/.</summary>
     public IReadOnlyDictionary<string, byte[]> AnalysisFiles { get; init; } = new Dictionary<string, byte[]>();
 
-    /// <summary>Versions des composants engagés, lues de leurs manifestes (EXPERIMENTS.md §12).</summary>
+    /// <summary>Versions des composants engagés, lues de leurs manifestes.</summary>
     public IReadOnlyList<Protocol.Model.JsonComponentRef> ComponentVersions { get; init; } = Array.Empty<Protocol.Model.JsonComponentRef>();
 }
 
@@ -82,7 +86,7 @@ public sealed class RunCompletion
 public interface IRunExecutor
 {
     /// <summary>
-    /// Avancement du run en cours, émis tant qu'il tourne (EXPERIMENTS.md §8). Sans
+    /// Avancement du run en cours, émis tant qu'il tourne. Sans
     /// abonné, l'exécution est identique : la progression est une commodité d'affichage.
     /// </summary>
     event EventHandler<RunTickProgress>? TickProgress;
@@ -130,7 +134,7 @@ public sealed class RunSpec
     public string SessionToken { get; init; } = string.Empty;
 }
 
-/// <summary>Demande d'analyse à ECHOS (ADR-003 : le Launcher demande, ECHOS produit).</summary>
+/// <summary>Demande d'analyse à ECHOS (le Launcher demande, ECHOS produit).</summary>
 public interface IAnalysisService
 {
     /// <summary>Demande l'analyse d'un run. Renvoie les fichiers produits.</summary>
@@ -151,9 +155,9 @@ public interface IAnalysisService
 }
 
 /// <summary>
-/// Lecture de l'analyse ECHOS pour la fenêtre d'analyse native (ADR-007). Le Launcher
+/// Lecture de l'analyse ECHOS pour la fenêtre d'analyse native. Le Launcher
 /// **présente** : aucune méthode de ce port ne calcule une valeur scientifique, il
-/// transporte ce que l'API REST d'ECHOS publie déjà (ADR-003).
+/// transporte ce que l'API REST d'ECHOS publie déjà.
 /// Tout échec lève une erreur explicite — l'absence de données est affichée, jamais
 /// approximée.
 /// </summary>
@@ -327,7 +331,7 @@ public sealed record EchosPhenomenon(
 
 /// <summary>
 /// Réponse de `/api/world` : description de monde publiée au démarrage du run et
-/// observation au tick demandé (ADR-007 — vue 2D de l'observation).
+/// observation au tick demandé (vue 2D de l'observation).
 /// </summary>
 public sealed class EchosWorld
 {

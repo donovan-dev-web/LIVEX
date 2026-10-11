@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Capture headless de la fenêtre d'analyse, alimentée par une source mémoire.
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -12,7 +16,7 @@ using Launcher.Domain.Model;
 using Launcher.Presentation.ViewModel;
 using Launcher.Protocol.Model;
 
-// Capture headless de la MainWindow (GUI.md) : dotnet run -- <sortie.png> [nav-id] [--dump]
+// Capture headless de la MainWindow : dotnet run -- <sortie.png> [nav-id] [--dump]
 var outputPath = args.Length > 0 ? args[0] : "screenshot.png";
 var navId = args.Length > 1 && !args[1].StartsWith('-') ? args[1] : MainWindowViewModel.NavAccueilId;
 var dump = args.Any(argument => argument == "--dump");
@@ -22,7 +26,7 @@ AppBuilder.Configure<HarnessApplication>()
     .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
     .SetupWithoutStarting();
 
-// Capture de la fenêtre d'analyse native (ADR-007) : UiScreenshot <section> <sortie.png> --analysis
+// Capture de la fenêtre d'analyse native : UiScreenshot <section> <sortie.png> --analysis
 if (args.Any(argument => argument == "--analysis"))
 {
     var section = navId is AnalysisWindowViewModel.SectionViability
@@ -37,7 +41,7 @@ if (args.Any(argument => argument == "--analysis"))
     return CaptureAnalysis(outputPath, section);
 }
 
-// Test : fenêtre SANS aucun style d'application ( FluentTheme retiré puis remis ).
+// Test : fenêtre SANS aucun style d'application (FluentTheme retiré puis remis).
 var styles = Application.Current!.Styles;
 var fluent = styles[0];
 styles.RemoveAt(0);
@@ -623,7 +627,7 @@ public sealed class HarnessApplication : Application
     public override void Initialize() => Styles.Add(new FluentTheme());
 }
 
-/// <summary>Façade factice : les données de référence de la maquette (GUI.md §7–§9).</summary>
+/// <summary>Façade factice : les données de référence de la maquette.</summary>
 public sealed class StubFacade : IOrchestrationFacade
 {
     public event EventHandler<CampaignProgress>? CampaignProgressChanged { add { } remove { } }

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Campagne de calibration de survie SYNE (ADR-015, itération B1).
+"""Campagne de calibration de survie SYNE (itération B1).
 
 Exécute le moteur batch (``--export-stream``) pour une grille
 **populations × seeds**, relit le flux d'observabilité écrit par tick et calcule
-les signaux de viabilité déjà définis par ADR-015 / ECHOS schemaVersion 2 :
+les signaux de viabilité déjà définis par / ECHOS schemaVersion 2 :
 
 - ``extinctionTick``      : premier tick où ``aliveCount == 0`` ;
 - ``energySlopePerTick``  : pente (moindres carrés) de l'énergie moyenne sur les
@@ -19,7 +19,7 @@ configuration ``<out>/configs/pop-<n>.json`` = overlay + ``agents.initialCount``
 et lance le moteur dessus.
 
 Usage :
-    python3 scripts/calibration-campaign.py \\
+    python3 scripts/calibration_campaign.py \\
         --overlay /tmp/syne-calib/cand-a.json \\
         --populations 50,100 --seeds 12345,424242,999 --ticks 2500 \\
         --out /home/devops/syne-calib/cand-a
@@ -44,7 +44,7 @@ DEFAULT_BIN = ROOT / "syne" / "Simulation.Console" / "bin" / "Release" / "net10.
 HUNGER_THRESHOLD = 70.0
 SLOPE_WINDOW = 200
 
-# Critères d'acceptation de la campagne (ADR-015 + cible 2500 ticks).
+# Critères d'acceptation de la campagne (+ cible 2500 ticks).
 TARGET_TICKS = 2500
 SLOPE_TOLERANCE = 0.005
 MIN_SURVIVOR_RATIO = 0.9

@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Surface HTTP du Launcher : endpoints de santé, /info, /metrics en texte Prometheus et /registry en lecture
+//        seule, tous sur la boucle locale.
+
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -10,7 +15,7 @@ using Xunit;
 namespace Launcher.Tests.Integration.Infrastructure;
 
 /// <summary>
-/// Surface HTTP du Launcher (NETWORK.md §4.1, OBSERVABILITY.md §4) : endpoints de santé,
+/// Surface HTTP du Launcher : endpoints de santé,
 /// /info, /metrics en texte Prometheus et /registry en lecture seule, tous sur la boucle locale.
 /// </summary>
 public sealed class LauncherHttpSurfaceTests

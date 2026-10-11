@@ -1,4 +1,4 @@
-# ADR — Intentions Partagées (Coordination de Groupe)
+# ADR-010 : Intentions Partagées (Coordination de Groupe)
 
 **Statut :** [Reporté V2] — décision du 30/09/2026 : chantier social lourd, à rouvrir après une calibration validée (plan de correctifs campagne-runs §7) et la réalisation des ADR socle (Primitives d'actions, Inventaire, Means-End Reasoning, Engagements Communicationnels)
 **Portée :** Extension du Système de Groupes (§3.17), sans modification du Système de Décision individuel (§3.14)

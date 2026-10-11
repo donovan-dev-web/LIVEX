@@ -3,7 +3,7 @@
 Chaque :class:`TickSegment` (ECHOS-010) est réduit de façon **déterministe**
 en un :class:`TickRecord` : la série couvre **tous** les ticks (sans perte) et
 le sous-échantillonnage ``downsample(records, every)`` est explicite à la
-lecture (API_REST.md §4, ``?every=N``).
+lecture (``?every=N``).
 """
 
 from __future__ import annotations
@@ -99,7 +99,7 @@ def summarize(
 ) -> Iterator[TickRecord]:
     """Résume le flux en :class:`TickRecord` durables (1 par tick).
 
-    ``sample_every`` (``--sample-every=N``, API_REST.md §4) : ne conserve que
+    ``sample_every`` (``--sample-every=N``) : ne conserve que
     les ticks de rang multiple strict de ``N`` ; ``None`` (défaut) conserve
     **tous** les ticks (agrégation sans perte).
     """

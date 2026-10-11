@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Bout en bout : contrat de manifeste d'un composant détecté.
+
 using Launcher.Domain;
 using Launcher.Infrastructure;
 using Launcher.Tests.Integration.Infrastructure;

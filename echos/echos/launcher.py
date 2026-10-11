@@ -1,8 +1,9 @@
-"""Linux Launcher adapter for ECHOS' environment-configured server.
+"""Adaptateur Launcher (Linux) pour le serveur ECHOS configuré par l'environnement.
 
-Maps the shared Launcher arguments onto ECHOS' environment, and applies a
-default analytics database when the operator imposes none — the Launcher
-environment is minimal, and a probe answering 503 would fail the startup.
+Projette les arguments partagés du Launcher sur l'environnement ECHOS, et
+applique une base analytique par défaut quand l'opérateur n'en impose aucune —
+l'environnement du Launcher est minimal, et une sonde répondant 503 ferait
+échouer le démarrage.
 """
 
 from __future__ import annotations

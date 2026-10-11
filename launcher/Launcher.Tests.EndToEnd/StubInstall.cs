@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Installe un stub comme composant détectable (binaire + component.json) sous une racine donnée, ouvre un
+//        port libre éphémère pour déclarer un point d'accès déterministe.
+
 using System.Net;
 using System.Net.Sockets;
 using Launcher.Tests.Integration.Infrastructure;
@@ -52,7 +57,7 @@ public static class StubInstall
         return port;
     }
 
-    /// <summary>Attend que /health/ready du point de contrôle réponde (INTEGRATION_CONTRACT.md §7).</summary>
+    /// <summary>Attend que /health/ready du point de contrôle réponde.</summary>
     public static async Task WaitForHealthyAsync(string controlUrl)
     {
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };

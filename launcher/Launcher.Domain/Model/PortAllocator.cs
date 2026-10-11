@@ -1,7 +1,11 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Allocation des adresses dans la plage interne LIVEX.
+
 namespace Launcher.Domain.Model;
 
 /// <summary>
-/// Résolution des points d'accès (NETWORK.md §4.1). Le Launcher ne connaît pas une adresse,
+/// Résolution des points d'accès. Le Launcher ne connaît pas une adresse,
 /// il connaît une résolution : c'est ce qui garde la Gateway ajoutable sans refonte.
 /// </summary>
 public interface IEndpointResolver
@@ -11,10 +15,10 @@ public interface IEndpointResolver
 }
 
 /// <summary>
-/// Allocation des adresses dans la plage interne LIVEX (NETWORK.md §6.2, §12).
-/// - Priorité au manifeste : un port déclaré libre n'est jamais réattribué ailleurs (TESTING.md §6).
+/// Allocation des adresses dans la plage interne LIVEX.
+/// - Priorité au manifeste : un port déclaré libre n'est jamais réattribué ailleurs.
 /// - Repli sur la plage interne : un port déclaré déjà pris par une autre instance de la
-///   session n'est pas une erreur, c'est le multi-instance attendu (§6.2, §9.3).
+///   session n'est pas une erreur, c'est le multi-instance attendu.
 /// - Pré-vol : chaque candidat est testé avant attribution ; un occupant est signalé.
 /// - Aucune instance ne choisit seule une adresse.
 /// </summary>
@@ -54,10 +58,10 @@ public sealed class PortAllocator : IEndpointResolver
                 }
 
                 // Un port déclaré déjà détenu par une autre instance de la session est le
-                // fonctionnement normal du multi-instance (NETWORK.md §6.2, §9.3) : c'est
+                // fonctionnement normal du multi-instance : c'est
                 // précisément ce que l'espace d'adressage interne existe pour absorber, et
                 // non une erreur de configuration. Seul un occupant étranger — absent des
-                // réservations — reste un refus : l'opérateur doit l'identifier (§6.2).
+                // réservations — reste un refus : l'opérateur doit l'identifier.
                 if (!_reserved.Contains(declared))
                 {
                     if (!_isFree(declared))
@@ -103,7 +107,7 @@ public sealed class PortAllocator : IEndpointResolver
     private readonly Dictionary<(string InstanceId, string Kind), int> _reservationsByKind = new();
 }
 
-/// <summary>Échec du pré-vol d'adresse : erreur de configuration explicite (NETWORK.md §6.2).</summary>
+/// <summary>Échec du pré-vol d'adresse : erreur de configuration explicite.</summary>
 public sealed class PortUnavailableException : Exception
 {
     public PortUnavailableException(int? port, string reason)

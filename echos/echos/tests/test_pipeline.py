@@ -548,7 +548,7 @@ def test_consume_persists_metric_provenance(tmp_path):
 def test_consume_persists_world_description_for_the_2d_view(tmp_path):
     """La description de monde du prélude est écrite en contexte ``world`` (tick 0).
 
-    Vue 2D de l'observation (ADR-007) : terrain, obstacles, ressources et
+    Vue 2D de l'observation : terrain, obstacles, ressources et
     régions ne sont publiés qu'une fois, dans ``world_initialized`` ; les
     perdre rendrait la carte irrémédiablement incomplète.
     """

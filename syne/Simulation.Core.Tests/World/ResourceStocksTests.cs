@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Réserves globales de ressources (SYNE-042) : initialisées depuis la configuration, consommées par les
+//        actions terminales Eat/Drink, bornées à zéro.
+
 using Simulation.Core.Configuration;
 using Simulation.Core.World;
 using Xunit;
@@ -5,13 +10,13 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Réserves globales de ressources (SYNE-042, décision n°4) : initialisées depuis
+/// Réserves globales de ressources (SYNE-042) : initialisées depuis
 /// la configuration, consommées par les actions terminales Eat/Drink, bornées à zéro.
 /// </summary>
 public class ResourceStocksTests
 {
     [Fact]
-    public void InitializedFromSettings()
+    public void ResourceStocks_Initialized_FromSettings()
     {
         var settings = new ResourceSettings
         {
@@ -36,7 +41,7 @@ public class ResourceStocksTests
         Assert.True(stocks.TryConsume(ResourceKind.Food, 12.0));
         Assert.Equal(18.0, stocks.Stock(ResourceKind.Food), 10);
 
-        // La consommation ne descend jamais sous zéro (réserve finie, décision n°4).
+        // La consommation ne descend jamais sous zéro (réserve finie).
         Assert.True(stocks.TryConsume(ResourceKind.Food, 18.0));
         Assert.Equal(0.0, stocks.Stock(ResourceKind.Food), 10);
         Assert.True(stocks.IsEmpty(ResourceKind.Food));
@@ -77,7 +82,7 @@ public class ResourceStocksTests
     [Fact]
     public void Mineral_IsPartOfTheFourReservedStocks()
     {
-        // SYNE-070 : les minéraux intègrent le cycle des ressources (décision n°2.4 —
+        // SYNE-070 : les minéraux intègrent le cycle des ressources (.4 —
         // types nourriture, eau, bois, minéraux). Défaut : 0.
         var stocks = ResourceStocks.FromState(food: 30.0, water: 1000.0, wood: 50.0, mineral: 20.0);
 
@@ -89,8 +94,8 @@ public class ResourceStocksTests
     public void ApplyLifecycle_RegeneratesPerTickWithinBounds()
     {
         // SYNE-070 : la régénération ajoute regenerationRate par tick (Water +10,
-        // Food +20 — calibration B1 ADR-016, sans dégradation), les stocks restent
-        // bornés à zéro. 0 tirage PRNG (DETERMINISM.md §3).
+        // Food +20 — calibration B1, sans dégradation), les stocks restent
+        // bornés à zéro. 0 tirage PRNG.
         var settings = new ResourceSettings();
         var stocks = new ResourceStocks(settings);
 
@@ -115,7 +120,7 @@ public class ResourceStocksTests
         var settings = new ResourceSettings
         {
             Water = new ResourceSpec { Initial = 1000, RegenerationRate = 5, DegradationTick = 10 },
-            // Figé ici (et non pris aux défauts) : la calibration B1 (ADR-016) a
+            // Figé ici (et non pris aux défauts) : la calibration B1 a
             // neutralisé la dégradation de la nourriture pour que la régénération
             // soit un apport net — le mécanisme reste testé par Water ci-dessus.
             Food = new ResourceSpec { Initial = 100, RegenerationRate = 0, DegradationTick = 100 },

@@ -1,18 +1,22 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Exigences publiées de PRISM vérifiables sans le démarrer.
+
 using Launcher.Protocol.Model;
 
 namespace Launcher.Domain.Model;
 
 /// <summary>
-/// Exigences publiées de PRISM vérifiables sans le démarrer — INTEGRATION_CONTRACT.md §11.1.
+/// Exigences publiées de PRISM vérifiables sans le démarrer.
 /// Le verrou du mode Immersion est une condition évaluée au manifeste, jamais une
-/// constante de code (ADR-006, COMPONENTS.md §7.3). Toute non-conformité produit la
+/// constante de code. Toute non-conformité produit la
 /// cause exacte affichée à l'utilisateur.
 /// </summary>
 public static class PrismRequirements
 {
     /// <summary>
     /// Vérifie le manifeste de PRISM. Renvoie la liste des causes d'échec, vide si le
-    /// manifeste satisfait le §11.1 (mode déclaré, snapshotStream, renderCadence, contrôle).
+    /// manifeste satisfait le contrat (mode déclaré, snapshotStream, renderCadence, contrôle).
     /// </summary>
     public static IReadOnlyList<string> Validate(ComponentManifest manifest)
     {

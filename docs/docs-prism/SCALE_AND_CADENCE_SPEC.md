@@ -371,7 +371,7 @@ La cadence retenue se règle côté SYNE (`prepare` accepte `ticksPerSecond`,
    pas un réglage PRISM.
 5. **Recalibration** : ADR-016 a calibré l'horizon 2500 ticks sur le monde
    500×500 par défaut. Le passage au profil B doit être **re-vérifié** avec
-   `scripts/calibration-campaign.py`. Le bilan énergétique devrait rester stable
+   `scripts/calibration_campaign.py`. Le bilan énergétique devrait rester stable
    (§7.3) ; c'est la densité sociale qui bouge.
 6. **`syne-mock` diverge** : `simulatedMinutes = round(tick / ticksPerSecond)`
    (`syne-mock/src/simulation/simulation.js:430-431`) alors que SYNE émet

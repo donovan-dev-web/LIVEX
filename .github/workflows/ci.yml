@@ -372,7 +372,7 @@ jobs:
 
   # ---------------------------------------------------------------------
   # LAUNCHER — .NET sur Windows (build + tests unitaires, intégration et
-  # bout en bout contre SYNE publié et ECHOS réel — étape 5 de ROADMAP-V01)
+  # bout en bout contre SYNE publié et ECHOS réel — étape 5)
   # ---------------------------------------------------------------------
   launcher-dotnet-windows:
     name: Build & tests (Launcher .NET, Windows)

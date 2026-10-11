@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Primitives atomiques D7 + inventaire D8 (acceptés du 30/09/2026, engineVersion 0.14.0) : manipulation
+//        d'inventaire sous capacité, échange fixe 1↔1, dégât d'attaque (réduit de moitié si défense), drapeaux de
+//        traçabilité et de trajectoire (désactivés par défaut).
+
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
@@ -8,9 +14,9 @@ using Xunit;
 namespace Simulation.Core.Tests.Adr;
 
 /// <summary>
-/// Primitives atomiques D7 + inventaire D8 (ADR acceptés du 30/09/2026,
+/// Primitives atomiques D7 + inventaire D8 (acceptés du 30/09/2026,
 /// engineVersion 0.14.0) : manipulation d'inventaire sous capacité, échange
-/// fixe 1↔1, dégât d'attaque §3.15.4 (réduit de moitié si défense), drapeaux
+/// fixe 1↔1, dégât d'attaque (réduit de moitié si défense), drapeaux
 /// de traçabilité et de trajectoire (désactivés par défaut).
 /// </summary>
 public class AdrCognitivePrimitivesTests

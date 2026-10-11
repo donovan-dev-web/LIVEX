@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Le monde : plan 2D continu non-toroidal, grille spatiale de perception, index des entités.
+
 namespace Simulation.Core.World;
 
 /// <summary>Sens d'une modification d'environnement (SYNE-071).</summary>
@@ -16,7 +20,7 @@ public sealed record EnvironmentChange(EnvironmentChangeKind Kind, Obstacle Obst
 
 /// <summary>
 /// Le monde : plan 2D continu non-toroidal, grille spatiale de perception,
-/// index des entités. Positions dans [0, Width] x [0, Height] (DATA_MODEL.md §2).
+/// index des entités. Positions dans [0, Width] x [0, Height].
 /// </summary>
 public sealed class World
 {
@@ -47,7 +51,7 @@ public sealed class World
     public IReadOnlyList<Obstacle> Obstacles => _obstacles;
 
     /// <summary>
-    /// Zones de territoire (SYNE-073, décision n°21) : disques « point de survie »
+    /// Zones de territoire (SYNE-073) : disques « point de survie »
     /// posés à l'init (config <c>world.territories.zones[]</c>), ordre de pose
     /// stable. La présence d'une entité dans une zone la délimite comme
     /// territoire effectif (appartenance suivie par la boucle, 0 PRNG).
@@ -55,7 +59,7 @@ public sealed class World
     public IReadOnlyList<Territory> Territories => _territories;
 
     /// <summary>
-    /// Livres du monde (SYNE-121, décisions n°18/19) : matérialisations de
+    /// Livres du monde (SYNE-121) : matérialisations de
     /// connaissance à l'instant T, écrites par des entités (coût en énergie payé
     /// à l'écriture, consultées par des lecteurs distincts). Actifs seulement si
     /// <c>world.books.enabled</c> (API de la boucle <c>WriteBook</c>/<c>ReadBook</c>).
@@ -90,7 +94,7 @@ public sealed class World
     }
 
     /// <summary>
-    /// Ajoute un obstacle statique de base au monde (SYNE-011, DATA_MODEL.md §2) :
+    /// Ajoute un obstacle statique de base au monde (SYNE-011) :
     /// configuration initiale ou restauration bit-à-bit. Non tracé (les obstacles
     /// d'init sont l'environnement, pas des modifications d'environnement).
     /// </summary>
@@ -103,7 +107,7 @@ public sealed class World
     }
 
     /// <summary>
-    /// Pose une construction (SYNE-071, décision n°20) : un obstacle statique de la
+    /// Pose une construction (SYNE-071) : un obstacle statique de la
     /// grille, tracé comme modification d'environnement (événement
     /// <c>world.construction_placed</c>). Bloque le mouvement et la ligne de vue.
     /// </summary>
@@ -138,10 +142,10 @@ public sealed class World
     }
 
     /// <summary>
-    /// Applique le layout d'obstacles configuré (SYNE-071, CONFIGURATION.md §6.8) :
+    /// Applique le layout d'obstacles configuré (SYNE-071) :
     /// place les disques de <c>world.obstacleLayout</c> quand <c>world.obstacles</c>
     /// est vrai. Obstacles d'init non tracés. Pose aussi les zones de territoire
-    /// (SYNE-073, CONFIGURATION.md §6.10) quand <c>world.territories</c> est actif.
+    /// (SYNE-073) quand <c>world.territories</c> est actif.
     /// </summary>
     public void ApplyConfiguredLayout(Configuration.WorldSettings settings)
     {

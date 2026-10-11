@@ -1,4 +1,9 @@
-# LIVEX — état réel du projet
+# LIVEX-STATUS.md — état réel du projet
+
+**Composant** : LIVEX (général)
+**Statut** : [STABLE]
+**Dernière mise à jour** : 8 octobre 2026
+**Dépend de** : `ROADMAP.md`, `CHANGELOG.md`, `docs/docs-*/ROADMAP.md`
 
 > Rapport d’inventaire et de maturité du dépôt. Il distingue le code présent,
 > les validations exécutées et les intégrations effectivement disponibles.
@@ -57,7 +62,7 @@ les assemblages SYNE agrégés (Core 88,68 %, Console 73,49 %), au-delà du seui
 de 80 % requis.
 
 **Ces résultats ne signifient pas que toutes les capacités prévues de LIVEX
-sont livrées.** Le plan de sortie fait foi : `ROADMAP-V01.md`. Les campagnes
+sont livrées.** Le plan de sortie fait foi : `ROADMAP.md`. Les campagnes
 scientifiques (V2′ rejouée par le chemin `reset`, 6/6 conforme à ADR-016 ;
 benchmarks V5 refaits sur la machine de référence), le parcours J3 de bout en
 bout contre les composants réels et la validation transverse V3 (hors long-run)
@@ -304,7 +309,7 @@ déclarées pour ECHOS et `syne-mock`. SYNE réel publie son manifeste
 supervisé + batch `reference`, J2A accepté — `launcher/V1-CAPABILITY-MATRIX.md`).
 Les chemins d’analyse du Launcher sont raccordés aux opérations headless de
 l’API ECHOS (J2B accepté). L’installation ECHOS Linux est validée (étape 9 de
-`ROADMAP-V01.md`, procédure en `docs/docs-launcher/INTEGRATION_CONTRACT.md`
+`ROADMAP.md`, procédure en `docs/docs-launcher/INTEGRATION_CONTRACT.md`
 §10.3). Le parcours J3 de bout en bout contre les composants réels est acquis
 (étape 4, `J3RealComponentsEndToEndTests`). **Constat CI `windows-latest` : fait
 le 08/10/2026** (PR #527, 13/13 jobs verts) — les validations locales Windows
@@ -323,7 +328,7 @@ référence sur les chemins `prepare`, `start` **et** `reset` (correctif
 manifeste `component.json` et le contrat batch (arguments, readiness, arrêt
 authentifié) sont publiés et acceptés (J2A), et la campagne V2′ rejouée
 **par le chemin `reset`** est conforme aux critères ADR-016 sur 6/6 couples
-population/graine (`RAPPORT-ELEMENTS-OUVERTS.md` §5.1 bis). Lancer le service
+population/graine. Lancer le service
 de contrôle équivaut désormais au contrat attendu par le Launcher ; la preuve
 d’extrémité J3 est fournie par le parcours automatisé de l’étape 4.
 
@@ -374,7 +379,7 @@ périmètre V0.1** (portes d’intégration séparées,
 
 ## 7. Limites et travaux encore nécessaires
 
-Le plan de sortie fait foi : **`ROADMAP-V01.md`**. Les étapes 1, 2, 3, 4, 6,
+Le plan de sortie fait foi : **`ROADMAP.md`**. Les étapes 1, 2, 3, 4, 6,
 7, 9, 10 et 11 y sont cochées avec leurs preuves (étape 5 : Lot L committé) ;
 les écarts restants sont :
 
@@ -401,7 +406,7 @@ inter-composants (J2A, J2B), l’installation ECHOS Linux, les campagnes
 scientifiques rejouées par `reset`, le parcours J3 de bout en bout et la
 validation V3 sont établis ; ce qui manque pour déclarer **LIVEX V0.1** tient
 à la CI `windows-latest` (le Lot W, validations locales Windows, est bouclé le
-08/10/2026) inscrite dans `ROADMAP-V01.md`. Aucune release, tag ni publication n’est programmé avant
+08/10/2026) inscrite dans `ROADMAP.md`. Aucune release, tag ni publication n’est programmé avant
 validation complète. Ce rapport décrit **l’état du code versionné
 et des validations réalisées au 08/10/2026**, et non une certification que
 toutes les fonctionnalités V1 prévues sont opérationnelles.

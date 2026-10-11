@@ -67,8 +67,7 @@ Le versionnement est déclenché par les évènements suivants :
 ## 8. État courant des versions (septembre 2026)
 
 > Synoptique de référence après la campagne de correctifs
-> de runs du 29/09/2026 (ADR-015 ; jalons et critères consolidés dans
-> `RAPPORT-ELEMENTS-OUVERTS.md` §5.1). L'état détaillé et les
+> de runs du 29/09/2026 (ADR-015). L'état détaillé et les
 > matrice de compatibilité par composant vivent dans `docs/docs-syne/ROADMAP.md`
 > et `docs/docs-echos/ROADMAP.md`.
 

@@ -1,6 +1,6 @@
 """Moteur 3 — SocialComplexityMetrics (complexité sociale).
 
-Mesure la structure des réseaux de relations (METRICS_SPEC.md §4) à partir des
+Mesure la structure des réseaux de relations à partir des
 relations de confiance exposées par les agents (``trust``, U2). Les 7 métriques
 sont calculées de façon déterministe sur le graphe de confiance ; l'absence
 d'historique (stabilité des communautés) replie sur 0.0.

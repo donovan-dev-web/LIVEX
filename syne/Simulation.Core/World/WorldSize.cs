@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Dimensions du monde (défaut 500×500).
+
 namespace Simulation.Core.World;
 
 /// <summary>
-/// Dimensions du monde (défaut 500×500, Annexe H). Strictement positives.
+/// Dimensions du monde (défaut 500×500). Strictement positives.
 /// </summary>
 public readonly record struct WorldSize
 {

@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Graphe de confiance entre entités, dessiné nativement (pas de page web).
+
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,12 +11,12 @@ using Launcher.Application;
 namespace Launcher.App.Views;
 
 /// <summary>
-/// Graphe de confiance entre entités, dessiné nativement (ADR-007 : pas de page web).
+/// Graphe de confiance entre entités, dessiné nativement (pas de page web).
 ///
 /// Chaque nœud est une entité observée, placée à sa **position publiée** ; chaque arête
 /// est la relation `trust` publiée par l'entité source, son épaisseur et son opacité
 /// variant avec le niveau de confiance publié — une mise à l'échelle d'affichage, pas un
-/// agrégat (ADR-003 : ECHOS calcule, le Launcher présente).
+/// agrégat (ECHOS calcule, le Launcher présente).
 /// </summary>
 public sealed class TrustGraphControl : Control
 {
@@ -129,7 +133,7 @@ public sealed class TrustGraphControl : Control
     }
 
     /// <summary>Couleur d'une relation : confiance 0 (rouge) → 0,5 (or) → 1 (vert).
-    /// Mise en forme d'affichage d'une valeur publiée, jamais un calcul (ADR-003).</summary>
+    /// Mise en forme d'affichage d'une valeur publiée, jamais un calcul.</summary>
     private static Color TrustColor(double weight)
     {
         static Color Mix(Color from, Color to, double t) => Color.FromRgb(

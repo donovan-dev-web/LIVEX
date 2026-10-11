@@ -1,10 +1,14 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Rapport inter-entités (table « relationships ») : niveau de confiance 0-1 envers chaque pair connu.
+
 using Simulation.Core.Configuration;
 
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Rapport inter-entités (décision n°10, COMMUNICATION_PROTOCOL.md §3,
-/// DATA_MODEL.md — table « relationships ») : niveau de confiance 0-1 envers
+/// Rapport inter-entités
+/// — table « relationships » : niveau de confiance 0-1 envers
 /// chaque pair connu.
 ///
 /// <list type="bullet">
@@ -32,7 +36,7 @@ public sealed class Relationships
         Settings = settings;
     }
 
-    /// <summary>Configuration de confiance (décision n°10, Table Annexe H).</summary>
+    /// <summary>Configuration de confiance (table des réglages).</summary>
     public TrustSettings Settings { get; } = new();
 
     public int Count => _byPeer.Count;
@@ -66,7 +70,7 @@ public sealed class Relationships
     }
 
     /// <summary>
-    /// Mensonge constaté (COMMUNICATION_PROTOCOL.md §3) : pénalité appliquée,
+    /// Mensonge constaté : pénalité appliquée,
     /// plancher 0.0. Le pair reste marqué comme « interagi » ce cycle : une
     /// tromperie constitue bien une interaction.
     /// </summary>
@@ -128,7 +132,7 @@ public sealed class Relationships
         return result;
     }
 
-    /// <summary>Restauration des relations établies (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration des relations établies (persistance bit-à-bit).</summary>
     internal void RestoreState(IEnumerable<(ulong PeerId, double Trust)> relations)
     {
         ArgumentNullException.ThrowIfNull(relations);

@@ -1,3 +1,5 @@
+"""Tests du contrat d'environnement du Launcher (ECHOS)."""
+
 from __future__ import annotations
 
 import json

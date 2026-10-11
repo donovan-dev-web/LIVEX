@@ -1,10 +1,15 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Pool d'objets réutilisables (SYNE-092) : vérifie la réutilisation (mêmes instances), le vidage au retour,
+//        et l'équilibre des compteurs Rent/Return (observabilité).
+
 using Simulation.Core.Performance;
 using Xunit;
 
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Pool d'objets réutilisables (SYNE-092, PERFORMANCE.md §5) : vérifie la
+/// Pool d'objets réutilisables (SYNE-092) : vérifie la
 /// réutilisation (mêmes instances), le vidage au retour, et l'équilibre des
 /// compteurs Rent/Return (observabilité).
 /// </summary>

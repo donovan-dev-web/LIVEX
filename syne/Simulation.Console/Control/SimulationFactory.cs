@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fabrique déterministe des runs SYNE (mode CLI et mode serveur de contrôle HTTP :5181) : monde + entités +
+//        PRNG + boucle —,. La construction elle-même ne consomme que le PRNG de création (entités) ; la boucle est
+//        ensuite pilotée sans tirage supplémentaire.
+
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
@@ -8,7 +14,7 @@ namespace Simulation.Console.Control;
 
 /// <summary>
 /// Fabrique déterministe des runs SYNE (mode CLI et mode serveur de contrôle
-/// HTTP :5181) : monde + entités + PRNG + boucle — ADR-002, DETERMINISM.md §3.
+/// HTTP :5181) : monde + entités + PRNG + boucle —,.
 /// La construction elle-même ne consomme que le PRNG de création (entités) ;
 /// la boucle est ensuite pilotée sans tirage supplémentaire.
 /// </summary>

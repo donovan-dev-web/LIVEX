@@ -1,14 +1,14 @@
-"""Profilage des moteurs ECHOS (ECHOS-052, LOGGING_INSTRUMENTATION.md §5).
+"""Profilage des moteurs ECHOS (ECHOS-052).
 
 ``ProfileMarkers`` mesure les temps d'exécution de chaque moteur
 (équivalent Python des *ProfileMarkers* basés sur ``Stopwatch`` de la
 spécification) ; ``compute_all_profiled`` exécute les 8 moteurs en traçant
 le coût par moteur **sans changer le résultat** (déterminisme de sortie
-inchangé) — la sortie texte suit le format §5 :
+inchangé) — la sortie texte suit le format :
 
     Perception    : 240.51 ms total,   0.48 ms avg
 
-Les budgets chiffrés restent des cibles de calibration (ECHOS, ISSUES.md
+Les budgets chiffrés restent des cibles de calibration (ECHOS,
 §points restés ouverts) ; le présent module pose la mesure + un seuil CI
 de garde-fou (test ``test_engine_profiling``).
 """
@@ -56,14 +56,14 @@ class ProfileMarkers:
         return result
 
     def report(self) -> list[tuple[str, float, float]]:
-        """Lignes ``(nom, total_ms, avg_ms)`` triées par moteur (format §5)."""
+        """Lignes ``(nom, total_ms, avg_ms)`` triées par moteur (format)."""
         return [
             (name, float(stats["totalMs"]), float(stats["avgMs"]))
             for name, stats in self.summary().items()
         ]
 
     def formatted(self) -> list[str]:
-        """Sortie texte alignée, format LOGGING_INSTRUMENTATION.md §5."""
+        """Sortie texte alignée, format."""
         return [
             f"{name:<15} : {total:10.2f} ms total, {avg:8.2f} ms avg"
             for name, total, avg in self.report()

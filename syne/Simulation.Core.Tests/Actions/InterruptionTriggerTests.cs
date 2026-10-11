@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Déclencheur d'interruption centralisé (SYNE-043) : unique point de décision « l'action en cours doit-elle
+//        être interrompue ? », évaluée à tout tick.
+
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;

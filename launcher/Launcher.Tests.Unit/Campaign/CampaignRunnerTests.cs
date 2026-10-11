@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du déroulé d'une campagne : run nominal, politique d'échec et reprise.
+
 using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Domain.Model;
@@ -104,7 +108,7 @@ public sealed class ScriptedRunExecutor : IRunExecutor
     /// <inheritdoc />
     public event EventHandler<RunTickProgress>? TickProgress;
 
-    /// <summary>Avancement publié avant chaque run, pour vérifier la propagation (§8).</summary>
+    /// <summary>Avancement publié avant chaque run, pour vérifier la propagation.</summary>
     public Func<RunSpec, IEnumerable<RunTickProgress>>? ProgressScript { get; init; }
 
     /// <summary>Publie un avancement comme le ferait le moteur.</summary>
@@ -127,7 +131,7 @@ public sealed class ScriptedRunExecutor : IRunExecutor
 }
 
 /// <summary>
-/// Scénarios de campagne (EXPERIMENTS.md, TESTING.md §8) : campagne nominale, politique d'échec,
+/// Scénarios de campagne : campagne nominale, politique d'échec,
 /// reprise exacte, annulation. Tout est vérifié sans démarrer un seul composant.
 /// </summary>
 public sealed class CampaignRunnerTests : IDisposable
@@ -160,7 +164,7 @@ public sealed class CampaignRunnerTests : IDisposable
         Array.Empty<(string, byte[])>(), spec.Ticks, TimeSpan.FromMilliseconds(10));
 
 // ------------------------------------------------------------------
-// Progression du run relayée depuis le moteur (EXPERIMENTS.md §8).
+// Progression du run relayée depuis le moteur.
 // ------------------------------------------------------------------
 [Fact]
 public async Task La_progression_du_moteur_est_republiée_avec_le_contexte_de_campagne()
@@ -241,7 +245,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
 
 // ------------------------------------------------------------------
 // Scénario « campagne nominale » : création, exécution de tous les runs,
-// scellement, relecture (TESTING.md §8).
+// scellement, relecture.
 // ------------------------------------------------------------------
     [Fact]
     public async Task Campagne_nominale_produit_paquet_scelle_relisible()
@@ -268,7 +272,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
         Assert.NotNull(resolvedBytes);
         // ... et elle atteste la configuration effective, pas seulement la définition
         // de campagne : sans la cadence archivée, le paquet ne prouverait pas que le
-        // run n'a pas été rejoué en temps réel (EXPERIMENTS.md §12).
+        // run n'a pas été rejoué en temps réel.
         using var resolved = System.Text.Json.JsonDocument.Parse(resolvedBytes!);
         var engine = resolved.RootElement.GetProperty("engine");
         Assert.Equal(
@@ -328,12 +332,12 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
         Assert.Equal(PackageStates.Sealed, reader.Manifest.State);
         Assert.Equal(2, reader.Manifest.Counts.RunsDone);
         Assert.Equal(1, reader.Manifest.Counts.RunsFailed);
-        // Un paquet scellé peut contenir des runs échoués, à condition que le manifeste le dise (EXPERIMENTS.md §7).
+        // Un paquet scellé peut contenir des runs échoués, à condition que le manifeste le dise.
         Assert.Single(reader.RunIndex.Runs, r => r.Status == RunStatuses.Echoue && r.Cause!.Contains("exploratoire"));
     }
 
     // ------------------------------------------------------------------
-    // Scénario « pause et reprise » : reprise sans rejouer un run réussi (TESTING.md §8).
+    // Scénario « pause et reprise » : reprise sans rejouer un run réussi.
     // ------------------------------------------------------------------
     [Fact]
     public async Task Reprise_ne_rejoue_aucun_run_termine()
@@ -382,7 +386,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
         using var reader = new LivexPackageReader(sealedPath);
         Assert.Equal(PackageStates.Sealed, reader.Manifest.State);
         Assert.Equal(3, reader.Manifest.Counts.RunsDone);
-        // La graine du run rejoué est exactement la même (EXPERIMENTS.md §9).
+        // La graine du run rejoué est exactement la même.
         Assert.Equal(501, reader.RunIndex.Runs.First(r => r.RunId == "RUN-0002").Seed);
     }
 
@@ -467,7 +471,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
     }
 
     // ------------------------------------------------------------------
-    // ADR-003 / EXPERIMENTS.md §11 : AnalyzeRun est demandé pour chaque run terminé,
+    // / : AnalyzeRun est demandé pour chaque run terminé,
     // et son résultat est archivé sous analysis/individual/.
     // ------------------------------------------------------------------
     [Fact]
@@ -495,7 +499,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
     }
 
     // ------------------------------------------------------------------
-    // ADR-003 : l'indisponibilité d'ECHOS ne fait pas échouer le run ; l'absence est consignée.
+    // l'indisponibilité d'ECHOS ne fait pas échouer le run ; l'absence est consignée.
     // ------------------------------------------------------------------
     [Fact]
     public async Task Echos_indisponible_ne_fait_pas_echouer_le_run()
@@ -516,7 +520,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
     }
 
     // ------------------------------------------------------------------
-    // INTEGRATION_CONTRACT.md §10.1 (isolation) : une analyse expérimentale qui échoue
+    // (isolation) : une analyse expérimentale qui échoue
     // ne fait ni échouer ni rouvrir la campagne — l'absence est consignée, le paquet se scelle.
     // ------------------------------------------------------------------
     [Fact]
@@ -542,7 +546,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
     }
 
     // ------------------------------------------------------------------
-    // EXPERIMENTS.md §6 : un run Échoué conserve l'ensemble de ses journaux.
+    // un run Échoué conserve l'ensemble de ses journaux.
     // ------------------------------------------------------------------
     [Fact]
     public async Task Run_echoue_conserve_ses_journaux()
@@ -588,7 +592,7 @@ public async Task La_progression_est_relayée_puis_détachée_à_la_fin_de_la_ca
     }
 }
 
-/// <summary>Analyste enregistré : compte les demandes et produit un rapport fixe (ADR-003).</summary>
+/// <summary>Analyste enregistré : compte les demandes et produit un rapport fixe.</summary>
 public sealed class RecordingAnalysisService : IAnalysisService
 {
     private readonly Func<int> _onAnalyzeExperiment;

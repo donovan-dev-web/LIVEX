@@ -1,12 +1,14 @@
-"""Contract integration between the SYNE mock (Node) and ECHOS.
+"""Intégration de contrat entre le mock SYNE (Node) et ECHOS.
 
-The mock speaks the same observability and control contracts as the real SYNE
-engine, so ECHOS can be developed, demoed and regression-tested without a .NET
-build. This is the counterpart of ``test_syne_echos_integration.py``, which
-drives ``Simulation.Console.dll`` and is therefore reserved for the U8 job.
+Le mock parle les mêmes contrats d'observabilité et de contrôle que le vrai
+moteur SYNE, si bien qu'ECHOS peut être développé, démontré et testé en
+régression sans compilation .NET. C'est le pendant de
+``test_syne_echos_integration.py``, qui pilote ``Simulation.Console.dll`` et
+est donc réservé au job U8.
 
-Set ``LIVEX_MOCK_E2E=1`` and install ``syne-mock`` (``npm ci``) to run it. The
-mock job in CI sets the flag; ``node`` and the mock must be available.
+Définir ``LIVEX_MOCK_E2E=1`` et installer ``syne-mock`` (``npm ci``) pour
+l'exécuter. Le job mock en CI positionne le drapeau ; ``node`` et le mock
+doivent être disponibles.
 """
 
 from __future__ import annotations
@@ -84,9 +86,9 @@ def test_mock_stream_is_ingested_and_served_by_echos(tmp_path):
         )
         assert started["runId"]
 
-        # This is the assertion the ordering fix exists for: ECHOS refuses any
-        # event that arrives before the first snapshot or off the current tick
-        # (``ingestion.stream.aligned_ticks``).
+        # C'est l'assertion qui justifie le correctif d'ordonnancement : ECHOS
+        # refuse tout événement reçu avant le premier snapshot ou hors du tick
+        # courant (``ingestion.stream.aligned_ticks``).
         client = WsClient(transport=_BoundedTransport(
             websocket,
             complete_ticks=3,

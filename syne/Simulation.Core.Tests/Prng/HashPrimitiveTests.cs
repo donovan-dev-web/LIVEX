@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Vecteurs de contrôle des primitives de hachage canoniques centralisées au jalon review/refactor
+//        (engineVersion 0.12.0).
+
 using Simulation.Core.Prng;
 using Xunit;
 
@@ -21,7 +26,7 @@ namespace Simulation.Core.Tests.Prng;
 /// Ces tests épinglent donc les <b>constantes</b> : une modification de
 /// <see cref="SplitMix64.Avalanche"/> ou de <see cref="Fnv1a64"/> doit être un
 /// acte délibéré, assorti d'un bump MINOR de la version moteur et d'un
-/// ré-échelonnement des checksums dorés (DETERMINISM.md §7).
+/// ré-échelonnement des checksums dorés.
 /// </para>
 /// </summary>
 public class HashPrimitiveTests

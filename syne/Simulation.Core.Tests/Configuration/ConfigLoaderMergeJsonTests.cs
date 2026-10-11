@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Fusion « surcouche partielle » de la configuration (jalon review/refactor, engineVersion 0.12.0).
+
 using Simulation.Core.Configuration;
 using Xunit;
 
@@ -20,7 +24,7 @@ namespace Simulation.Core.Tests.Configuration;
 /// </para>
 /// <para>
 /// La correction fusionne le <b>JSON brut</b> : seules les clés présentes
-/// écrasent, conformément à Annexe H §5.
+/// écrasent, conformément à la règle de surcharge partielle.
 /// </para>
 /// </summary>
 public class ConfigLoaderMergeJsonTests
@@ -126,7 +130,7 @@ public class ConfigLoaderMergeJsonTests
     public void LoadFile_And_MergeJson_Agree_OnTheSamePartialOverlay()
     {
         // Les deux chemins (fichier --config et corps HTTP) doivent produire la
-        // même configuration : c'est le contrat d'Annexe H §5.
+        // même configuration : c'est le contrat d'.
         const string partial = """{"simulation":{"worldWidth":777},"communication":{"maxSendsPerTick":3}}""";
         string path = Path.Combine(Path.GetTempPath(), $"syne-config-{Guid.NewGuid():N}.json");
         File.WriteAllText(path, partial);

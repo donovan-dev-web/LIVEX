@@ -1,19 +1,23 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Inventaire d'une entité (« Système d'inventaire », D8, engineVersion 0.14.0) : une entrée par type de
+//        ressource détenu, bornée par une capacité de poids totale (capacitePoids).
+
 using Simulation.Core.World;
 
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Inventaire d'une entité (ADR « Système d'inventaire », D8, engineVersion
+/// Inventaire d'une entité (D8, engineVersion
 /// 0.14.0) : une entrée par type de ressource détenu, bornée par une capacité
-/// de poids totale (<c>capacitePoids</c> de l'ADR). Les slots (contrainte
-/// secondaire de l'ADR, alternative 3) ne sont pas activés en V0.1.
+/// de poids totale (<c>capacitePoids</c>). Les slots (contrainte
+/// secondaire, alternative 3) ne sont pas activés en V0.1.
 ///
 /// <para>
 /// Opérations atomiques : <see cref="TryTake"/> et <see cref="TryGive"/>
 /// (utilisées aussi par l'échange) échouent sans écrire si la capacité ne couvre
 /// pas le transfert — un agent ne peut jamais porter plus que sa capacité. Toutes
-/// les opérations sont des additions/soustractions pures : 0 tirage PRNG
-/// (DETERMINISM.md §3).
+/// les opérations sont des additions/soustractions pures : 0 tirage PRNG.
 /// </para>
 /// </summary>
 public sealed class Inventory
@@ -23,7 +27,7 @@ public sealed class Inventory
     /// <summary>Capacité de poids totale (unités de ressource transportables).</summary>
     public double CapacityWeight { get; }
 
-    /// <summary>Poids total porté (somme des quantités — poids unitaire 1 V0.1, l'ADR le paramètre par ressource plus tard).</summary>
+    /// <summary>Poids total porté (somme des quantités — poids unitaire 1 V0.1, le paramètre par ressource plus tard).</summary>
     public double CurrentWeight { get; private set; }
 
     public Inventory(double capacityWeight)
@@ -105,7 +109,7 @@ public sealed class Inventory
         return copy;
     }
 
-    /// <summary>Restauration d'état (persistance bit-à-bit, PERSISTENCE.md §4).</summary>
+    /// <summary>Restauration d'état (persistance bit-à-bit).</summary>
     internal void RestoreState(IReadOnlyDictionary<ResourceKind, double> amounts)
     {
         ArgumentNullException.ThrowIfNull(amounts);
@@ -121,7 +125,7 @@ public sealed class Inventory
         }
     }
 
-    /// <summary>Contenu complet (persistance bit-à-bit, PERSISTENCE.md §4), ordre stable du type.</summary>
+    /// <summary>Contenu complet (persistance bit-à-bit), ordre stable du type.</summary>
     internal IReadOnlyDictionary<ResourceKind, double> StateSnapshot()
     {
         var copy = new Dictionary<ResourceKind, double>();

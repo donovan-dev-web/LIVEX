@@ -1,4 +1,4 @@
-"""Catalogue versionné des métriques ECHOS (P1 — RAPPORT §8, §6.3).
+"""Catalogue versionné des métriques ECHOS.
 
 Source unique de vérité **documentaire** : ECHOS reste propriétaire des
 définitions et du calcul ; le Launcher lit ce catalogue et se contente de le

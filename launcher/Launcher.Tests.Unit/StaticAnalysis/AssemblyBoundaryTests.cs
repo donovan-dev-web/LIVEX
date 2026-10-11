@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Analyse statique des frontières d'assembly : Launcher.Domain ne référence ni Avalonia, ni
+//        System.Diagnostics.Process, ni System.Net ; Launcher.Protocol ne référence aucun autre projet du Launcher
+//        Launcher.Package et Launcher.Application ne référencent pas Avalonia.
+
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;
@@ -5,7 +11,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.StaticAnalysis;
 
 /// <summary>
-/// Analyse statique des frontières d'assembly (ARCHITECTURE.md §5, ADR-001) :
+/// Analyse statique des frontières d'assembly :
 /// Launcher.Domain ne référence ni Avalonia, ni System.Diagnostics.Process, ni System.Net ;
 /// Launcher.Protocol ne référence aucun autre projet du Launcher ;
 /// Launcher.Package et Launcher.Application ne référencent pas Avalonia.

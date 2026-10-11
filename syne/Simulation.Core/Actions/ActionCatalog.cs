@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Définition déclarative d'une action du catalogue (SYNE-040) : coût énergétique, effets sur les besoins,
+//        dépendance à une réserve.
+
 using Simulation.Core.Configuration;
 using Simulation.Core.World;
 
@@ -6,7 +11,7 @@ namespace Simulation.Core.Actions;
 /// <summary>
 /// Définition déclarative d'une action du catalogue (SYNE-040) : coût énergétique,
 /// effets sur les besoins, dépendance à une réserve. Issue de la configuration
-/// <c>agents.actions.catalog</c> (CONFIGURATION.md §6.2) — une action est déclarée
+/// <c>agents.actions.catalog</c> — une action est déclarée
 /// en config, ses effets sont appliqués atomiquement par tick par l'exécuteur.
 /// </summary>
 public sealed record ActionDefinition(
@@ -61,7 +66,7 @@ public sealed record ActionResult(
 /// <summary>
 /// Catalogue déclaratif des actions (SYNE-040) : pour chaque <see cref="Cognition.DesireKind"/>,
 /// une <see cref="ActionDefinition"/> issue de la configuration <c>agents.actions.catalog</c>.
-/// L'ordre du catalogue (ordre de l'enum) est l'ordre stable de départage (décision n°22),
+/// L'ordre du catalogue (ordre de l'enum) est l'ordre stable de départage,
 /// les actions sont vérifiées viables contre l'état des réserves.
 /// </summary>
 public sealed class ActionCatalog

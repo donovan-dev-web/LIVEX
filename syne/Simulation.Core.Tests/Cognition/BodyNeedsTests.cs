@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de l'état et de la décroissance des besoins (BodyNeeds).
+
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;

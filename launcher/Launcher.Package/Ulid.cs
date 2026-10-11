@@ -1,10 +1,15 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Générateur d'ULID : identifiant de 26 caractères Crockford Base32, trié par temps, déterministe dans son
+//        format.
+
 using System.Security.Cryptography;
 
 namespace Launcher.Package;
 
 /// <summary>
 /// Générateur d'ULID : identifiant de 26 caractères Crockford Base32, trié par temps,
-/// déterministe dans son format. Utilisé pour « packageId » (PACKAGE_FORMAT.md §4).
+/// déterministe dans son format. Utilisé pour « packageId ».
 /// </summary>
 public static class Ulid
 {

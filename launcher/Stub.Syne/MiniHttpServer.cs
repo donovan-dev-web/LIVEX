@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Serveur HTTP/1.1 minimal sur TcpListener : évite les réservations d'URL de HttpListener sous Windows et
+//        reste identique sous Linux.
+
 using System.Net;
 using System.Net.Sockets;
 using System.Text;

@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Intégration de la boucle de simulation complète (SYNE-101, jalon ph10) : perception → mémoire/croyances →
+//        besoins/objectifs → décision utilitaire → communication → actions → événements/groupes/population.
+
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Simulation.Console.Observability;

@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de la naissance par fusion consentie (SYNE-062) : consentement = confiance réciproque minimale,
+//        rareté (intervalle), plafond de naissances, déterminisme (pas de PRNG) et câblage dans le pipeline.
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -11,7 +16,7 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Tests de la naissance par fusion consentie (SYNE-062, SYSTEM_SPEC.md §8) :
+/// Tests de la naissance par fusion consentie (SYNE-062) :
 /// consentement = confiance réciproque minimale, rareté (intervalle), plafond de
 /// naissances, déterminisme (pas de PRNG) et câblage dans le pipeline.
 /// </summary>

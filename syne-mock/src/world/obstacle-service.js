@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Génération et test des obstacles statiques (formes, blocage des cases).
+ */
+
 // Chaque forme est une liste de décalages [dx, dy] (en cases) par rapport à la case d'ancrage.
 const OBSTACLE_SHAPES = {
   single: [[0, 0]],

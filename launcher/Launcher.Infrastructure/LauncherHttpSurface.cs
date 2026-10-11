@@ -1,3 +1,9 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Surface HTTP du Launcher : - /health/live, /health/ready : le Launcher lui-même est supervisable ; - /info
+//        identité et version ; - /metrics : métriques d'orchestration, texte Prometheus ; - /registry : le
+//        registre de services, en lecture seule, pour les autres composants.
+
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -8,7 +14,7 @@ using Launcher.Protocol;
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Surface HTTP du Launcher (NETWORK.md §4.1, OBSERVABILITY.md §4) :
+/// Surface HTTP du Launcher :
 /// - /health/live, /health/ready : le Launcher lui-même est supervisable ;
 /// - /info : identité et version ;
 /// - /metrics : métriques d'orchestration, texte Prometheus ;
@@ -43,7 +49,7 @@ public sealed class LauncherHttpSurface : IDisposable
         _server.Start();
     }
 
-    /// <summary>Métriques d'orchestration (OBSERVABILITY.md §5.4), sans métrique scientifique.</summary>
+    /// <summary>Métriques d'orchestration, sans métrique scientifique.</summary>
     private string BuildMetrics()
     {
         var builder = new StringBuilder();
@@ -69,7 +75,7 @@ public sealed class LauncherHttpSurface : IDisposable
         return builder.ToString();
     }
 
-    /// <summary>Construit le document du registre au format NETWORK.md §4.1.</summary>
+    /// <summary>Construit le document du registre au format.</summary>
     public static string BuildRegistryJson(IReadOnlyList<ComponentInstance> instances)
     {
         var entries = instances
@@ -92,7 +98,7 @@ public sealed class LauncherHttpSurface : IDisposable
     public void Dispose() => _server.Dispose();
 }
 
-/// <summary>Document du registre de services exposé en lecture (NETWORK.md §4.1).</summary>
+/// <summary>Document du registre de services exposé en lecture.</summary>
 public sealed record LauncherRegistryDocument(IReadOnlyList<LauncherRegistryEntry> Instances);
 
 /// <summary>Une instance vivante du registre, vue par les autres composants.</summary>

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Vecteurs de contrôle du générateur xoshiro256** (déterminisme).
+
 using Simulation.Core.Prng;
 using Xunit;
 

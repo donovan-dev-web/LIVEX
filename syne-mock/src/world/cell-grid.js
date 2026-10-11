@@ -1,3 +1,9 @@
+/**
+ * Projet : LIVEX (SYNE-MOCK)
+ * Auteur : CHARTRAIN Donovan
+ * Rôle : Indexation de cells[] (y puis x) et accès aux cases du monde.
+ */
+
 // Indexation de `cells[]` dans WorldDescription.
 //
 // WorldGenerator publie les cellules dans l'ordre y puis x, donc l'index
@@ -8,8 +14,8 @@
 // sur une carte rectangulaire.
 //
 // Deux entrees distinctes, car les deux grandeurs ne se confondent pas :
-//   - cellIndexAt(world, x, y)  attend une position en unites monde
-//   - cellIndexOf(world, cell)  attend les coordonnees de case deja indexees
+//   - cellIndexAt(world, x, y) attend une position en unites monde
+//   - cellIndexOf(world, cell) attend les coordonnees de case deja indexees
 
 /** Index lineaire de la case contenant la position monde (x, y). */
 function cellIndexAt(world, x, y) {

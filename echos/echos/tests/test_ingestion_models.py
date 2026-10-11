@@ -1,3 +1,5 @@
+"""Tests des modèles d'ingestion des contrats SYNE."""
+
 import json
 from pathlib import Path
 

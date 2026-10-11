@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Preuves de clôture de l'observabilité (SYNE-081 / SYNE-082) : SYNE-081 — anti-triche : l'observation
+//        (capture snapshot + événements + diffusion) ne modifie rien du monde simulé ; un run observé et un run
+//        témoin identiques produisent la même trajectoire bit-à-bit.
+
 using System.Globalization;
 using System.Text;
 using Simulation.Console.Observability;
@@ -13,7 +19,7 @@ using Xunit;
 namespace Simulation.Console.Tests;
 
 /// <summary>
-/// Preuves de clôture de l'observabilité (SYNE-081 / SYNE-082, DETERMINISM.md §3) :
+/// Preuves de clôture de l'observabilité (SYNE-081 / SYNE-082) :
 /// <list type="bullet">
 /// <item>SYNE-081 — anti-triche : l'observation (capture snapshot + événements +
 /// diffusion) ne modifie **rien** du monde simulé ; un run observé et un run
@@ -142,7 +148,7 @@ public class ObservabilityNonIntrusionTests
         // Garde-fou transverse : la preuve d'anti-intrusion s'appuie sur un journal
         // identique à celui de DeterminismRegressionTests ; vérifie la cohérence.
         // Doit rester aligné sur DeterminismRegressionTests.GoldenChecksum_IsPinned
-        // (0xf4aaa2733e491935 depuis la calibration B1 ADR-016 ; 0x46769cfb11c8b3a7
+        // (0xf4aaa2733e491935 depuis la calibration B1 ; 0x46769cfb11c8b3a7
         // depuis la calibration D1 ; 0xdb57f58566418f5d auparavant, engineVersion
         // 0.12.0) : toute divergence entre les deux est un signal que l'observabilité
         // a réintroduit de l'intrusion dans la trajectoire.

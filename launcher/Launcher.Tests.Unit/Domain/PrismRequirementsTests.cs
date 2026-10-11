@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Exigences publiées de PRISM au manifeste : chaque non-conformité produit la cause exacte du tableau
+//        normatif, jamais une vague généralité.
+
 using Launcher.Domain.Model;
 using Launcher.Protocol.Model;
 using Xunit;
@@ -5,7 +10,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.Domain;
 
 /// <summary>
-/// Exigences publiées de PRISM au manifeste (INTEGRATION_CONTRACT.md §11.1) : chaque
+/// Exigences publiées de PRISM au manifeste : chaque
 /// non-conformité produit la cause exacte du tableau normatif, jamais une vague généralité.
 /// </summary>
 public sealed class PrismRequirementsTests

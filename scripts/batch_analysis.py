@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Run one deterministic SYNE simulation and generate its ECHOS report.
+"""Exécute une simulation SYNE déterministe et génère son rapport ECHOS.
 
-This is intentionally independent from the browser development stack.  It
-starts only the ECHOS API, the SYNE control/observability server, and the
-WebSocket consumer, then tears all three down when the run (or an error)
-completes.
+Ce module est délibérément indépendant de la pile de développement
+navigateur : il ne démarre que l'API ECHOS, le serveur de contrôle et
+d'observabilité SYNE et le consommateur WebSocket, puis les arrête tous
+les trois à la fin du run (ou en cas d'erreur).
 """
 
 from __future__ import annotations
@@ -240,16 +240,17 @@ def run(args: argparse.Namespace) -> int:
     environment.update(
         ECHOS_ANALYTICS_DB=str(args.database),
         ECHOS_ANALYSIS_EVERY=str(args.analysis_every),
-        # The per-agent series Parquet (ECHOS-013) is kept as an extra complete
-        # trace: written to a temp path while the run_id is unknown, then
-        # renamed to <run_id>.agents.parquet once the run is identified.
+        # La série Parquet par agent (ECHOS-013) est conservée comme trace
+        # complète supplémentaire : écrite dans un chemin temporaire tant que le
+        # run_id est inconnu, puis renommée en <run_id>.agents.parquet une fois
+        # le run identifié.
         ECHOS_PARQUET_PATH=str(agents_trace) if args.parquet else "",
         SYNE_CONTROL_URL=args.control_url,
         SYNE_OBSERVABILITY_URL="ws://127.0.0.1:5180/",
         LIVEX_WS_STARTED_FILE=str(marker),
         PYTHONPATH=str(ROOT / "echos") + os.pathsep + environment.get("PYTHONPATH", ""),
-        # A completed batch has one finite WebSocket stream. Reconnecting
-        # after the server closes would only create a noisy infinite loop.
+        # Un batch terminé n'a qu'un flux WebSocket fini. Se reconnecter après
+        # la fermeture du serveur ne créerait qu'une boucle infinie bruyante.
         LIVEX_INGEST_ONCE="1",
     )
     processes: list[subprocess.Popen] = []
@@ -299,10 +300,10 @@ def run(args: argparse.Namespace) -> int:
                 "ECHOS a fermé le flux WebSocket avant la fin du run; "
                 "aucun rapport complet ne peut être généré"
             )
-        # The stream groups a tick when the next snapshot arrives, so the
-        # final tick is flushed only when the WebSocket closes. First drain
-        # every preceding snapshot while SYNE is still connected; otherwise
-        # closing the socket can discard frames queued in the transport.
+        # Le flux groupe un tick quand le snapshot suivant arrive : le dernier
+        # tick n'est donc vidé qu'à la fermeture du WebSocket. On draine d'abord
+        # chaque snapshot précédent tant que SYNE est connecté ; sinon la fermeture
+        # de la socket peut jeter des trames en attente de transport.
         drain_timeout = args.drain_timeout or args.timeout
         try:
             wait_for(
@@ -324,13 +325,13 @@ def run(args: argparse.Namespace) -> int:
                 f"{drain_timeout:g}s"
             ) from exc
         _interrupt(processes[1])
-        # Calibration is written by the ingestion pipeline after the final
-        # tick has been flushed by the closed WebSocket.
+        # La calibration est écrite par le pipeline d'ingestion après que le
+        # WebSocket fermé a vidé le dernier tick.
         wait_for(f"{args.api_url}/api/runs/{run_id}/calibration",
                  lambda value: value.get("status") == "complete",
                  [processes[0]], args.timeout, args.poll_interval)
-        # The report is now durable; stop the consumer before it attempts its
-        # normal reconnect and avoid connection-refused noise during cleanup.
+        # Le rapport est désormais durable ; on arrête le consommateur avant sa
+        # reconnexion normale pour éviter le bruit de connexion refusée au nettoyage.
         _terminate([processes[2]])
         if args.parquet and agents_trace.exists():
             agents_trace.replace(args.output_dir / f"{run_id}.agents.parquet")

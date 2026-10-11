@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Les 6 désirs V0.1 + Idle, puis les actions terminales de besoin Eat/Drink (SYNE-042).
+
 using Simulation.Core.Actions;
 using Simulation.Core.Configuration;
 using Simulation.Core.World;
@@ -5,12 +9,12 @@ using Simulation.Core.World;
 namespace Simulation.Core.Cognition;
 
 /// <summary>
-/// Les 6 désirs V0.1 (DATA_MODEL.md §7) + Idle, puis les actions terminales de
-/// besoin Eat/Drink (SYNE-042, décision n°4). Chaque désir découle d'un besoin
-/// non satisfait (objectif = état recherché, COGNITIVE_ARCHITECTURE.md §5).
+/// Les 6 désirs V0.1 + Idle, puis les actions terminales de
+/// besoin Eat/Drink (SYNE-042). Chaque désir découle d'un besoin
+/// non satisfait (objectif = état recherché).
 /// <list type="bullet">
 ///   <item>Les valeurs existantes (0-8) ne changent jamais : l'ordre du catalogue
-///    est stable pour le départage déterministe (décision n°22, DETERMINISM.md §5).</item>
+/// est stable pour le départage déterministe.</item>
 ///   <item>Eat/Drink (7-8) : actions terminales immédiates, non persistantes
 ///    (exécutées tant que le besoin est déclenché, jamais en holdover).</item>
 ///   <item>Take…Defend (9-13, jalon primitives D7/D8 — engineVersion 0.14.0) :
@@ -41,14 +45,14 @@ public enum DesireKind
     /// <summary>Échanger (D7) : transfert bidirectionnel conditionné (1 Food ↔ 1 Water V0.1).</summary>
     Trade = 11,
 
-    /// <summary>Attaquer (D7/D3 temps 1) : inflige un dégât d'énergie (§3.15.4 : −5 × agressivité).</summary>
+    /// <summary>Attaquer (D7/D3 temps 1) : inflige un dégât d'énergie (−5 × agressivité).</summary>
     Attack = 12,
 
     /// <summary>Se défendre (D7) : réduit de moitié le dégât d'une attaque subie.</summary>
     Defend = 13,
 }
 
-/// <summary>État recherché (objectif) né d'un besoin non satisfait (COGNITIVE_ARCHITECTURE.md §5).</summary>
+/// <summary>État recherché (objectif) né d'un besoin non satisfait.</summary>
 public readonly record struct Goal(DesireKind Kind, ulong BornTick)
 {
     public ulong Age(ulong currentTick) => currentTick >= BornTick ? currentTick - BornTick : 0;
@@ -56,7 +60,7 @@ public readonly record struct Goal(DesireKind Kind, ulong BornTick)
 
 /// <summary>
 /// Générateur d'objectifs : un désir est créé quand son besoin passe son seuil
-/// (SYNE-042, décision n°4 : déclenchement dès « ≥ 50 ») et qu'aucun objectif du
+/// (SYNE-042: déclenchement dès « ≥ 50 ») et qu'aucun objectif du
 /// même type n'est actif. Pour faim/soif, le désir engendré est l'action terminale
 /// <see cref="DesireKind.Eat"/>/<see cref="DesireKind.Drink"/> si la réserve globale
 /// correspondante est disponible, sinon le <see cref="DesireKind.SeekFood"/>/

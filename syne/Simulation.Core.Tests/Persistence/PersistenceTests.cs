@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Persistance V2 SQLite (SYNE-110/111/112) : le snapshot bit-à-bit capture l'état (monde + cognition + RNG
+//        4×64), la reprise depuis le dernier point de sauvegarde reproduit exactement la trajectoire d'un run
+//        ininterrompu (même hash), et la rotation maxBackups borne le nombre de runs conservés.
+
 using System.Globalization;
 using System.Text;
 using Microsoft.Data.Sqlite;
@@ -12,7 +18,7 @@ using WorldType = Simulation.Core.World.World;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Persistance V2 SQLite (SYNE-110/111/112, PERSISTENCE.md §3-§5) : le snapshot
+/// Persistance V2 SQLite (SYNE-110/111/112) : le snapshot
 /// bit-à-bit capture l'état (monde + cognition + RNG 4×64), la reprise depuis le
 /// dernier point de sauvegarde reproduit exactement la trajectoire d'un run
 /// ininterrompu (même hash), et la rotation <c>maxBackups</c> borne le nombre de
@@ -225,7 +231,7 @@ public class PersistenceTests
 
     /// <summary>
     /// SYNE-110 : le schéma V2.0 crée bien les 11 tables relationnelles exigées
-    /// par PERSISTENCE.md §3 (Annexe G).
+    /// par.
     /// </summary>
     [Fact]
     public void EnsureSchema_CreatesAllElevenTables()
@@ -253,7 +259,7 @@ public class PersistenceTests
     }
 
     /// <summary>
-    /// PERSISTENCE.md §5 : la rotation <c>maxBackups</c> borne le nombre de runs
+    /// la rotation <c>maxBackups</c> borne le nombre de runs
     /// conservés (les plus anciens sont purgés).
     /// </summary>
     [Fact]

@@ -1,7 +1,11 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Validation des plages à l'import.
+
 namespace Simulation.Core.Configuration;
 
 /// <summary>
-/// Validation des plages à l'import (CONFIGURATION.md §6).
+/// Validation des plages à l'import.
 /// Une configuration invalide stoppe avec un message d'erreur explicite.
 /// </summary>
 public static class SimulationOptionsValidator

@@ -1,3 +1,10 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests « échelle temporelle configurable » : neutralité par défaut — à dt = 1, aucune valeur ne bouge ; par
+//        quantité de classe A, l'état après 12 ticks à dt = 1/12 (5 s simulées/tick, profil prism) est équivalent à
+//        1 tick à dt = 1 ; contrats additifs (horloge, snapshot, world_initialized) ; validation de
+//        simulatedSecondsPerTick et metersPerUnit.
+
 using System.Text.Json;
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
@@ -12,8 +19,8 @@ using WorldType = Simulation.Core.World.World;
 namespace Simulation.Core.Tests.Configuration;
 
 /// <summary>
-/// Tests ADR-017 « échelle temporelle configurable » (spec PRISM « Profil
-/// gameplay » §4.5) :
+/// Tests « échelle temporelle configurable » (spec PRISM « Profil
+/// gameplay ») :
 /// <list type="number">
 /// <item>neutralité par défaut — à <c>dt = 1</c>, aucune valeur ne bouge ;</item>
 /// <item>par quantité de classe A, l'état après 12 ticks à
@@ -29,7 +36,7 @@ public sealed class Adr017TemporalScaleTests
     private const double PrismDt = 5.0 / 60.0;
 
     // ---------------------------------------------------------------------
-    // §4.5-1 — neutralité par défaut (pin contractuel ADR-016)
+    //  — neutralité par défaut (pin contractuel)
     // ---------------------------------------------------------------------
 
     [Fact]
@@ -64,7 +71,7 @@ public sealed class Adr017TemporalScaleTests
     }
 
     // ---------------------------------------------------------------------
-    // §4.5-2 — équivalence « 12 ticks à dt = 1/12 == 1 tick à dt = 1 »
+    //  — équivalence « 12 ticks à dt = 1/12 == 1 tick à dt = 1 »
     // ---------------------------------------------------------------------
 
     [Fact]
@@ -258,7 +265,7 @@ public sealed class Adr017TemporalScaleTests
     }
 
     // ---------------------------------------------------------------------
-    // §4.5-4 — validation
+    //  — validation
     // ---------------------------------------------------------------------
 
     [Theory]
@@ -307,14 +314,14 @@ public sealed class Adr017TemporalScaleTests
     public void NonIntegerSimulatedSecondsPerTick_IsRejectedByTheJsonLoader()
     {
         // Le type entier du contrat rejette « 5.5 » dès la désérialisation —
-        // exigence §4.5-4 « non entier → rejet ».
+        // exigence « non entier → rejet ».
         Assert.ThrowsAny<JsonException>(() => ConfigLoader.MergeJson(
             ConfigLoader.LoadDefaults(),
             """{ "simulation": { "simulatedSecondsPerTick": 5.5 } }"""));
     }
 
     // ---------------------------------------------------------------------
-    // §4.5-3 — horloge, profil prism et contrats additifs
+    //  — horloge, profil prism et contrats additifs
     // ---------------------------------------------------------------------
 
     [Fact]
@@ -344,7 +351,7 @@ public sealed class Adr017TemporalScaleTests
         Assert.Empty(SimulationOptionsValidator.Validate(prism));
 
         // Le profil est complet : rejoué comme surcouche sur les défauts, il
-        // redonne exactement le même objet (§4.4).
+        // redonne exactement le même objet.
         SimulationOptions replayed = ConfigLoader.MergeJson(ConfigLoader.LoadDefaults(), SimulationProfiles.PrismJson());
         Assert.Equal(5, replayed.Simulation.SimulatedSecondsPerTick);
         Assert.Equal(2240, replayed.Simulation.WorldWidth);
@@ -378,7 +385,7 @@ public sealed class Adr017TemporalScaleTests
     [Fact]
     public void WorldInitialized_CarriesTheTemporalAndSpatialScale()
     {
-        // Contrat 0.4.0 (ADR-017 §4.3) : la description du monde porte
+        // Contrat 0.4.0 : la description du monde porte
         // simulatedSecondsPerTick et metersPerUnit (version 1.0 → 1.1), et le
         // monde prism est bien découpé en 70 × 70 cases de 32 (4 900 cases).
         SimulationOptions options = SimulationProfiles.Prism();

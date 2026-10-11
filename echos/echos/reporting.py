@@ -1,8 +1,9 @@
-"""Deterministic reports for completed ECHOS runs.
+"""Rapports déterministes des runs ECHOS terminés.
 
-The report is deliberately assembled from :class:`AnalyticsStore` read APIs:
-it is suitable for archival, diffing, and feeding other tools without
-depending on SQLite row layouts or wall-clock timestamps.
+Le rapport est assemblé délibérément à partir des API de lecture de
+:class:`AnalyticsStore` : il se prête à l'archivage, au diff et à
+l'alimentation d'autres outils sans dépendre de la disposition des lignes
+SQLite ni d'horodatages muraux.
 """
 
 from __future__ import annotations
@@ -96,14 +97,14 @@ def _detected_phenomena(contexts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(by_identifier.values(), key=lambda item: item["identifier"])
 
 
-#: Contextes exclus du rapport déterministe.
+# Contextes exclus du rapport déterministe.
 #:
-#: ``profiling`` contient des durées de calcul (``avgMs``/``totalMs``) : deux
-#: ingérations du **même** flux archivé donneraient donc des octets différents,
-#: et le rapport d'un paquet ne serait plus comparable à une réanalyse faite plus
-#: tard à partir de ce même paquet. Ces durées restent disponibles par la voie
-#: d'instrumentation (``echos.instrumentation.profiling``) ; seul le contenu
-#: scientifique doit être reproductible.
+# ``profiling`` contient des durées de calcul (``avgMs``/``totalMs``) : deux
+# ingérations du **même** flux archivé donneraient donc des octets différents,
+# et le rapport d'un paquet ne serait plus comparable à une réanalyse faite plus
+# tard à partir de ce même paquet. Ces durées restent disponibles par la voie
+# d'instrumentation (``echos.instrumentation.profiling``) ; seul le contenu
+# scientifique doit être reproductible.
 NON_DETERMINISTIC_CONTEXTS = frozenset({"profiling"})
 
 

@@ -1,11 +1,11 @@
 """Moteur 6 — ResourceSustainabilityMetrics (durabilité des ressources).
 
 Mesure ce qui est **observé** sur les réserves et leur consommation
-(METRICS_SPEC.md §7) à partir de la clé ``resources`` du snapshot (réserves des
-biotopes), des événements ``resource_consumed`` (ADR-004) et de l'historique
+ à partir de la clé ``resources`` du snapshot (réserves des
+biotopes), des événements ``resource_consumed`` et de l'historique
 ``history`` (réserves par tick).
 
-Refonte P1 (RAPPORT §3.6) : l'ancien ``ResourceToConsumptionRatio`` mélangeait
+Refonte P1 : l'ancien ``ResourceToConsumptionRatio`` mélangeait
 deux dénominateurs incompatibles — ``quantity / consumed`` (sans unité de
 temps, potentiellement > 1 sans borne) et ``quantity / capacity`` (part de
 capacité) — puis comparait ce mélange à 0,2 dans ``CriticalityPoints`` : le

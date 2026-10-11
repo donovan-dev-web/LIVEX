@@ -1,3 +1,8 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Service de paquets concret : réalise le port IPackageService de l'application par Launcher.Package
+//        (composition de App).
+
 using Launcher.Application;
 using Launcher.Domain;
 using Launcher.Domain.Model;

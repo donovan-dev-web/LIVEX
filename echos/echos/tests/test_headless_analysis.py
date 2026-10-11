@@ -1,3 +1,5 @@
+"""Tests des opérations d'analyse headless (intégration Launcher)."""
+
 import base64
 import json
 

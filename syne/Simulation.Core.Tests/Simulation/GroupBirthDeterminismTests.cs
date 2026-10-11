@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Régression de déterminisme des systèmes du jalon ph6 (SYNE-060/061/062) : deux exécutions du même scénario
+//        doivent produire exactement la même séquence d'événements de groupes et de naissances.
+
 using System.Text;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
@@ -14,7 +19,7 @@ namespace Simulation.Core.Tests;
 /// <summary>
 /// Régression de déterminisme des systèmes du jalon ph6 (SYNE-060/061/062) :
 /// deux exécutions du même scénario doivent produire exactement la même séquence
-/// d'événements de groupes et de naissances (DETERMINISM.md §3, §6). Aucun tirage
+/// d'événements de groupes et de naissances. Aucun tirage
 /// PRNG n'est consommé par ces systèmes.
 /// </summary>
 public class GroupBirthDeterminismTests
@@ -94,11 +99,11 @@ public class GroupBirthDeterminismTests
     [Fact]
     public void SnapshotGroupEvents_AreEmittedThroughContractTypes()
     {
-        // Les événements suivent la nomenclature API_CONTRACTS §2.2.
+        // Les événements suivent la nomenclature.
         Assert.Equal("group_formed", ObservabilityContract.GroupFormed);
         Assert.Equal("group_dissolved", ObservabilityContract.GroupDissolved);
         Assert.Equal("group_decision", ObservabilityContract.GroupDecision);
         Assert.Equal("agent_spawned", ObservabilityContract.AgentSpawned);
-        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 (ADR-016) : défauts intégrés recalés, goldens ré-épinglés
+        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 : défauts intégrés recalés, goldens ré-épinglés
     }
 }

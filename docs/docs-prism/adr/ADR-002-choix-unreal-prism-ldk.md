@@ -3,7 +3,7 @@
 **Composant** : PRISM
 **Statut** : [Accepted]
 **Dernière mise à jour** : 27 septembre 2026
-**Dépend de** : [`ADR-001-choix-godot.md`](ADR-001-choix-godot.md) (supersédé), `../../adr/ADR-003-api-http-rest.md`, `../../adr/ADR-004-websocket-temps-reel.md`
+**Dépend de** : `../../adr/ADR-003-api-http-rest.md`, `../../adr/ADR-004-websocket-temps-reel.md`
 **Source Monographie** : §5.2.3 (choix du moteur), §2.4.2 (indépendance du rendu), §5.15 (évolution)
 
 ---

@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du sous-système de communication par pulsations (SYNE-050 → 054).
+
 using Simulation.Core.Cognition;
 using Simulation.Core.Communication;
 using Simulation.Core.Configuration;
@@ -9,7 +13,7 @@ namespace Simulation.Core.Tests;
 
 /// <summary>
 /// Tests du sous-système de communication par pulsations (SYNE-050 → 054,
-/// COMMUNICATION_PROTOCOL.md, décisions n°7-10).
+///-10).
 /// </summary>
 public class CommunicationSystemTests
 {
@@ -104,9 +108,9 @@ public class CommunicationSystemTests
     public void SendAndReceiveCosts_FollowDecision9(int payloadLength)
     {
         // Décision n°9 : envoi 0.5 + p×0.1 ; réception 0.2 + p×0.05.
-        // Les coûts sont **posés ici** : la calibration B1 (ADR-016) a neutralisé
+        // Les coûts sont **posés ici** : la calibration B1 a neutralisé
         // les défauts (0) pour que l'envoi ne pénalise pas l'énergie — le test
-        // porte la formule de la décision n°9, pas la valeur du profil.
+        // porte la formule de la, pas la valeur du profil.
         // Relais désactivé : pas de rebond du message vers l'émetteur.
         string payload = new string('x', payloadLength);
         double expectedSend = 0.5 + (payloadLength * 0.1);
@@ -178,7 +182,7 @@ public class CommunicationSystemTests
     public void Incomprehension_IsDeterministicForIntermediateRate()
     {
         // La cible d'incompréhension dérive d'un hash stable (receiver, messageId) :
-        // deux exécutions identiques produisent les mêmes drapeaux (DETERMINISM.md §3).
+        // deux exécutions identiques produisent les mêmes drapeaux.
         (_, CommunicationSystem systemA, Dictionary<ulong, MindState> mindsA) = Build(
             Settings(s =>
             {
@@ -252,7 +256,7 @@ public class CommunicationSystemTests
         // Décision n°10 : × 0.9 par saut (10 %/hop). Les relais préservent
         // l'identifiant de l'émetteur d'origine et se voient dans LastSent avec
         // Hops+1 et Confidence×0.9 ; MaxHops=2 borne la chaîne.
-        // Le relais est **activé ici** : la calibration B1 (ADR-016) le coupe par
+        // Le relais est **activé ici** : la calibration B1 le coupe par
         // défaut (coûts énergétiques neutres) — le test porte le mécanisme n°10.
         (_, CommunicationSystem system, Dictionary<ulong, MindState> minds) = Build(
             Settings(s =>

@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Commande --check : diagnostic d'environnement sans interface, sortie textuelle stable.
+
 using Launcher.Domain.Model;
 using Launcher.Infrastructure;
 using Launcher.Package;
@@ -6,13 +10,13 @@ using Launcher.Protocol.Model;
 
 namespace Launcher.App.Composition;
 
-/// <summary>Résultat d'une vérification d'environnement (PACKAGING.md §6).</summary>
+/// <summary>Résultat d'une vérification d'environnement.</summary>
 public sealed record EnvironmentCheck(string Name, bool Passed, string Detail);
 
 /// <summary>
 /// Commande --check : diagnostic sans interface, sortie textuelle et stable,
 /// citable dans un rapport d'incident. N'écrit aucun journal de paquet.
-/// Les huit vérifications de PACKAGING.md §6, dans l'ordre du tableau ;
+/// Les huit vérifications dans l'ordre du tableau ;
 /// le navigateur est une information non bloquant : il ne modifie jamais le code de sortie.
 /// </summary>
 public static class EnvironmentChecker
@@ -44,7 +48,7 @@ public static class EnvironmentChecker
         ];
     }
 
-    /// <summary>Ligne de sortie stable : marqueur, nom, détail (PACKAGING.md §6).</summary>
+    /// <summary>Ligne de sortie stable : marqueur, nom, détail.</summary>
     public static string Format(EnvironmentCheck check) =>
         $"[{(check.Passed ? "OK  " : "ÉCHEC")}] {check.Name} : {check.Detail}";
 
@@ -97,7 +101,7 @@ public static class EnvironmentChecker
         }
     }
 
-    /// <summary>Version du format : schema connu pour tous les paquets présents (PACKAGING.md §9).</summary>
+    /// <summary>Version du format : schema connu pour tous les paquets présents.</summary>
     private static EnvironmentCheck CheckPackageFormat(string dataRoot)
     {
         var packagesRoot = Path.Combine(dataRoot, "packages");
@@ -174,7 +178,7 @@ public static class EnvironmentChecker
         return new EnvironmentCheck("moteur", true, $"SYNE {engine.Manifest!.Version} présent et exécutable : {engine.Location}");
     }
 
-    /// <summary>Ports : aucun conflit sur les ports déclarés par les manifestes (NETWORK.md §6.2).</summary>
+    /// <summary>Ports : aucun conflit sur les ports déclarés par les manifestes.</summary>
     private static EnvironmentCheck CheckPorts(IReadOnlyList<ComponentInstallation> installations)
     {
         foreach (var installation in installations.Where(i => i.ManifestValid))
@@ -200,7 +204,7 @@ public static class EnvironmentChecker
         return new EnvironmentCheck("ports", true, $"{declared} port(s) déclaré(s), aucun conflit");
     }
 
-    /// <summary>Navigateur : information non bloquante, jamais une cause d'échec (PACKAGING.md §6).</summary>
+    /// <summary>Navigateur : information non bloquante, jamais une cause d'échec.</summary>
     private static EnvironmentCheck CheckBrowser()
     {
         var declared = Environment.GetEnvironmentVariable("BROWSER");

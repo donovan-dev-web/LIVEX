@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests du capteur d'observabilité (sélection des entités émises).
+
 using System.Text.Json.Nodes;
 using Simulation.Core.Actions;
 using Simulation.Core.Cognition;
@@ -65,7 +69,7 @@ public class ObservabilitySensorTests
         Assert.NotNull(agent["currentIntention"]);
         Assert.Equal(3, message["actions"]!.AsArray().Count);
 
-        // Aucune clé PascalCase (contrat API_CONTRACTS.md §2).
+        // Aucune clé PascalCase (contrat).
         Assert.DoesNotContain("\"AliveCount\"", json);
         Assert.DoesNotContain("\"SimulatedTimeMinutes\"", json);
         Assert.DoesNotContain("\"RunId\"", json);
@@ -125,9 +129,9 @@ public class ObservabilitySensorTests
     [Fact]
     public void Snapshot_Resources_ReflectStocksAfterActions()
     {
-        // SYNE-042 : le snapshot porte les réserves (DATA_MODEL.md §8) —
+        // SYNE-042 : le snapshot porte les réserves —
         // les actions terminales les mettent à jour.
-        // Régénération rendue inerte ici : avec les défauts calibrés (ADR-016,
+        // Régénération rendue inerte ici : avec les défauts calibrés
         // +10 eau/+20 nourriture par tick) l'apport net masquerait la consommation.
         SimulationOptions options = ConfigLoader.LoadDefaults();
         options.Resources.Water.RegenerationRate = 0;
@@ -153,7 +157,7 @@ public class ObservabilitySensorTests
     public void Event_ActionCompleted_RespectsContract()
     {
         // SYNE-080 : chaque exécution atomique produit un événement action_completed
-        // (API_CONTRACTS.md §2.2) portant l'action exécutée, son issue et ses deltas.
+        // portant l'action exécutée, son issue et ses deltas.
         (_, SimulationLoop loop) = BuildLoop();
         for (int tick = 1; tick <= 12; tick++)
         {
@@ -196,10 +200,10 @@ public class ObservabilitySensorTests
     [Fact]
     public void Snapshot_CarriesEngineVersion()
     {
-        // DETERMINISM.md §3.6.2 / VERSIONING.md §3 : la version moteur identifie le run.
+        // / : la version moteur identifie le run.
         // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
         // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
-        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 (ADR-016) : défauts intégrés recalés, goldens ré-épinglés
+        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 : défauts intégrés recalés, goldens ré-épinglés
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);
@@ -240,7 +244,7 @@ public class ObservabilitySensorTests
     [Fact]
     public void Snapshot_ExposesGroups_AsCamelCaseArray()
     {
-        // SYNE-060 : la photographie embarque les groupes émergents (API_CONTRACTS §2.1).
+        // SYNE-060 : la photographie embarque les groupes émergents.
         SimulationOptions options = ConfigLoader.LoadDefaults();
         var world = new WorldType(new WorldSize(500, 500));
         world.AddEntity(new Entity(new EntityId(1), "Entité A", null, new Position(50, 50), TraitSet.NeutralAll, bornAt: 0));
@@ -291,7 +295,7 @@ public class ObservabilitySensorTests
     public void EventSensor_GroupEvents_CarryContractValues()
     {
         // SYNE-060/061 : événements typés group_formed / group_dissolved /
-        // group_decision avec les schémas de valeur d'API_CONTRACTS §2.2.
+        // group_decision avec les schémas de valeur d'.
         var group = new Social.Group(1, bornTick: 10, [1UL, 2UL, 3UL])
         {
             MeanCohesion = 0.42,
@@ -352,7 +356,7 @@ public class ObservabilitySensorTests
     public void EventSensor_MessageSent_CarriesDeliveryContract()
     {
         // SYNE-050 : événement message_sent (envoi ou relais) avec identifiant,
-        // type, sauts, confiance et taille du payload (API_CONTRACTS §2.2).
+        // type, sauts, confiance et taille du payload.
         var sent = new MessageSent(
             MessageId: 42,
             SenderId: 1,
@@ -380,7 +384,7 @@ public class ObservabilitySensorTests
     public void EventSensor_MessageReceived_CarriesReceptionContract()
     {
         // SYNE-051 : recevoir (y compris interception) — confiance ajustée par la
-        // relation du récepteur + drapeau d'incompréhension (API_CONTRACTS §2.2).
+        // relation du récepteur + drapeau d'incompréhension.
         var received = new MessageReceived(
             MessageId: 42,
             ReceiverId: 2,
@@ -407,7 +411,7 @@ public class ObservabilitySensorTests
     [Fact]
     public void EventSensor_AgentDied_CarriesCauseAndSpecies()
     {
-        // SYNE-074 : la mort par épuisement porte cause et espèce (API_CONTRACTS §2.2).
+        // SYNE-074 : la mort par épuisement porte cause et espèce.
         var death = new DeathObservation(
             Tick: 200,
             EntityId: 9,
@@ -457,7 +461,7 @@ public class ObservabilitySensorTests
     public void Snapshot_ExposesObstacles_AsCamelCaseArray()
     {
         // SYNE-071 : la photographie embarque les obstacles (constructions) du monde
-        // (API_CONTRACTS §2.1), ordre stable d'insertion — déterminisme.
+        // ordre stable d'insertion — déterminisme.
         var world = new WorldType(new WorldSize(500, 500));
         world.AddObstacle(new Obstacle("rocher-1", new Position(250, 150), radius: 15));
         world.AddObstacle(new Obstacle("rocher-2", new Position(420, 380), radius: 25));
@@ -482,7 +486,7 @@ public class ObservabilitySensorTests
     public void EventSensor_ConstructionPlaced_CarriesPlacement()
     {
         // SYNE-071 : pose d'une construction = obstacle statique tracé (modification
-        // d'environnement) avec identifiant, position et rayon (API_CONTRACTS §2.2).
+        // d'environnement) avec identifiant, position et rayon.
         var construction = new Obstacle("maison-1", new Position(120.5, 240.25), radius: 12);
 
         ExternalEvent placed = EventSensor.ConstructionPlaced(tick: 14, construction);

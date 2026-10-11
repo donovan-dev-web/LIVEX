@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Commande relais typée, suffisante pour la navigation et les actions de carte.
+
 using System.Windows.Input;
 
 namespace Launcher.Presentation.ViewModel;

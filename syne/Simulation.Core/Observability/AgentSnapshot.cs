@@ -1,8 +1,12 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : État d'une entité dans un snapshot : position, besoins et humeur.
+
 using Simulation.Core.Entities;
 
 namespace Simulation.Core.Observability;
 
-/// <summary>Observation d'une croyance (fait + confiance) — snapshot agent, API_CONTRACTS.md §2.1.</summary>
+/// <summary>Observation d'une croyance (fait + confiance) — snapshot agent,.</summary>
 public sealed record BeliefObservation(string Subject, string Predicate, string Value, double Confidence);
 
 /// <summary>Observation d'un objectif (type + âge en ticks) — snapshot agent.</summary>
@@ -12,7 +16,7 @@ public sealed record GoalObservation(string Kind, ulong Age);
 public sealed record TrustObservation(string PeerId, double Trust);
 
 /// <summary>
-/// Observation d'un engagement (D5, ADR « Engagements Communicationnels ») —
+/// Observation d'un engagement (D5) —
 /// champ additif du snapshot agent (contrat 0.3.0), émis sous drapeau
 /// <c>agents.actions.commitments.enabled</c>.
 /// </summary>
@@ -24,7 +28,7 @@ public sealed record CommitmentObservation(
     ulong ExpiryTick);
 
 /// <summary>
-/// État d'une entité dans un <see cref="WorldSnapshot"/> (API_CONTRACTS.md §2.1).
+/// État d'une entité dans un <see cref="WorldSnapshot"/>.
 /// V0.1 : identité, espèce, position, besoins, intention, et cognition observable
 /// (traits, croyances, objectifs, relations de confiance, volume mémoire) —
 /// nourrit les moteurs de métriques ECHOS (jalon U2).
@@ -93,7 +97,7 @@ public sealed record AgentSnapshot
     /// <summary>Action atomique exécutée pendant le tick représenté.</summary>
     public string CurrentAction { get; }
 
-    /// <summary>Traits de l'entité (par nom, ordre stable de DATA_MODEL.md §3.2).</summary>
+    /// <summary>Traits de l'entité (par nom, ordre stable de).</summary>
     public IReadOnlyDictionary<string, double> Traits { get; }
 
     /// <summary>Croyances de l'entité (triées par fait — déterminisme d'émission).</summary>
@@ -105,13 +109,13 @@ public sealed record AgentSnapshot
     /// <summary>Relations de confiance (triées par pair — déterminisme d'émission).</summary>
     public IReadOnlyList<TrustObservation> Trust { get; }
 
-    /// <summary>Nombre de souvenirs en mémoire (décision n°11).</summary>
+    /// <summary>Nombre de souvenirs en mémoire.</summary>
     public int MemoryCount { get; }
 
     /// <summary>
     /// Inventaire (D8) : quantité par type de ressource détenu (clé = type
     /// camelCase minuscule, ordre stable du type). Vide si l'inventaire est
-    /// désactivé — l'ADR « Inventaire » porte les quantités, poids = somme.
+    /// désactivé — l' porte les quantités, poids = somme.
     /// </summary>
     public IReadOnlyDictionary<string, double> Inventory { get; }
 

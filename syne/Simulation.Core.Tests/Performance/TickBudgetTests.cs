@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Budgets par tick (SYNE-090) : la collecte mesure chaque sous-système (perception, mémoire/croyances,
+//        besoins/objectifs, décision, actions, événements/groupe/population) et le temps total du tick.
+
 using System.Globalization;
 using System.Text;
 using Simulation.Core.Configuration;
@@ -11,12 +16,12 @@ using Xunit;
 namespace Simulation.Core.Tests;
 
 /// <summary>
-/// Budgets par tick (SYNE-090, PERFORMANCE.md §3/§9) : la collecte mesure chaque
+/// Budgets par tick (SYNE-090) : la collecte mesure chaque
 /// sous-système (perception, mémoire/croyances, besoins/objectifs, décision,
 /// actions, communication, événements/groupe/population) et le temps total du
 /// tick. La part de computation (Σ phases / tick) doit rester ≥ 30 % — le reste
 /// est de l'allocation/GC/overhead. La collecte ne doit jamais altérer la
-/// trajectoire (déterminisme, DETERMINISM.md §3).
+/// trajectoire (déterminisme).
 /// </summary>
 public class TickBudgetTests
 {
@@ -101,7 +106,7 @@ public class TickBudgetTests
         // quand la boucle est instrumentée. Scénario = copie exacte de
         // DeterminismRegressionTests (rochers, 25 entités, 200 ticks, same log).
         // Nouvelle valeur après activation du garde anti-relay (engineVersion 0.12.0)
-        // puis ré-épinglage calibration B1 (engineVersion 0.15.0, ADR-016) :
+        // puis ré-épinglage calibration B1 (engineVersion 0.15.0) :
         // voir DeterminismRegressionTests.GoldenChecksum_IsPinned pour l'analyse.
         SimulationLoop instrumented = BuildGolden(seed: 12345, TickBudgetCollector.CreateEnabled());
 

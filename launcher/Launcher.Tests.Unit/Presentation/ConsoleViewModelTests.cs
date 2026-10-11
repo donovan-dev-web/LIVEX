@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Console de composant.
+
 using Launcher.Domain;
 using Launcher.Presentation.ViewModel;
 using Xunit;
@@ -5,7 +9,7 @@ using Xunit;
 namespace Launcher.Tests.Unit.Presentation;
 
 /// <summary>
-/// Console de composant (USER_INTERFACE.md §9). Les règles qui comptent : rien ne s'affiche sans
+/// Console de composant. Les règles qui comptent : rien ne s'affiche sans
 /// relevé, la pause retient sans perdre, un filtre ne fabrique jamais de retard, et
 /// l'effacement ne rejoue pas un flux déjà lu.
 /// </summary>

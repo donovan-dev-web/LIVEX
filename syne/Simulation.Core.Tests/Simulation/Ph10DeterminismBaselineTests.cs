@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Non-régression de déterminisme à l'échelle de la boucle complète (SYNE-102, jalon ph10) : même seed +
+//        config ⇒ même trajectoire bit-à-bit sur l'état observable complet (positions, énergie, besoins, intention,
+//        mémoire, relations, groupes, naissances, mortalité) — et divergence dès que la seed change.
+
 using System.Globalization;
 using System.Text;
 using Simulation.Core.Configuration;
@@ -16,7 +22,7 @@ namespace Simulation.Core.Tests;
 /// observable complet (positions, énergie, besoins, intention, mémoire, relations,
 /// communication, groupes, naissances, mortalité) — et divergence dès que la seed
 /// change. Le journal d'état est construit en partie canonique (culture invariante,
-/// tris par identifiant), cf. DETERMINISM.md §6/§7.
+/// tris par identifiant), cf. /.
 /// </summary>
 public class Ph10DeterminismBaselineTests
 {
@@ -127,7 +133,7 @@ public class Ph10DeterminismBaselineTests
     {
         // Épinglé au jalon ph10 (U7) : baseline d'état complet (boucle entière,
         // populations 25, 200 ticks, seed 12345 — même scénario que le checksum doré
-        // de la perception, DETERMINISM.md §7) — toute altération bit-à-bit de la
+        // de la perception) — toute altération bit-à-bit de la
         // trajectoire change ce checksum et impose un recalcul + bump MINOR.
         // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x072a488aa18c05eb
         // → 0x88bbc67950002bab. Même cause unique et isolée que pour
@@ -140,10 +146,10 @@ public class Ph10DeterminismBaselineTests
         // → 0xe62395429b50b7c1. Même cause unique que le checksum doré de perception :
         // rééquilibrage de l'arbitrage utilitaire + bilan énergétique (profil de
         // référence, décision D1) — les agents mangent/boivent plus tôt et plus souvent.
-        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0, ADR-016) :
+        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0) :
         // 0xe62395429b50b7c1 → 0x954b8e0e70c0af5f. Cause unique : recalage des défauts
         // intégrés (coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives des
-        // besoins sociaux, réserves et coûts de communication) — ADR-016, re-pin assumé.
+        // besoins sociaux, réserves et coûts de communication) —, re-pin assumé.
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
         Assert.Equal("0x954b8e0e70c0af5f", $"0x{Fnv1a(log):x16}");
     }

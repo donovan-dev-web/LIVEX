@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Indexation de la grille spatiale sur les mondes rectangulaires (jalon review/refactor, engineVersion
+//        0.12.0).
+
 using Simulation.Core.Entities;
 using Simulation.Core.World;
 using Xunit;

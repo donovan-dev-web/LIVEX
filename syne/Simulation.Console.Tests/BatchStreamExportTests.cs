@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Export batch du flux d'observabilité (J2B) : l'artefact produit doit être rejouable par ECHOS avec le
+//        contrat du flux live, reproductible bit à bit pour une graine donnée, et absent du workspace quand il n'a
+//        pas été demandé.
+
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -14,7 +20,7 @@ namespace Simulation.Console.Tests;
 public sealed class BatchStreamExportTests
 {
     [Fact]
-    public async Task SupervisedBatchExportsTheAlignedObservabilityStream()
+    public async Task SupervisedBatch_AlignedStream_IsExported()
     {
         BatchOutcome outcome = await RunBatchAsync(exportStream: true, ticks: 6, seed: 42);
         try
@@ -55,7 +61,7 @@ public sealed class BatchStreamExportTests
     }
 
     [Fact]
-    public async Task TwoIdenticalSeedsProduceTheSameStreamBytes()
+    public async Task SupervisedBatch_TwoIdenticalSeeds_ProduceSameStreamBytes()
     {
         BatchOutcome first = await RunBatchAsync(exportStream: true, ticks: 5, seed: 4242);
         BatchOutcome second = await RunBatchAsync(exportStream: true, ticks: 5, seed: 4242);
@@ -77,7 +83,7 @@ public sealed class BatchStreamExportTests
     }
 
     [Fact]
-    public async Task DifferentSeedsProduceDifferentStreams()
+    public async Task SupervisedBatch_DifferentSeeds_ProduceDifferentStreams()
     {
         BatchOutcome first = await RunBatchAsync(exportStream: true, ticks: 5, seed: 1);
         BatchOutcome second = await RunBatchAsync(exportStream: true, ticks: 5, seed: 2);
@@ -97,7 +103,7 @@ public sealed class BatchStreamExportTests
     }
 
     [Fact]
-    public async Task WithoutTheFlagTheWorkspaceKeepsOnlyTheResult()
+    public async Task SupervisedBatch_WithoutStreamFlag_KeepsOnlyResult()
     {
         BatchOutcome outcome = await RunBatchAsync(exportStream: false, ticks: 3, seed: 42);
         try
@@ -119,7 +125,7 @@ public sealed class BatchStreamExportTests
     }
 
     [Fact]
-    public async Task TheResultDeclaresTheStreamAndTheRunIdentity()
+    public async Task BatchResult_DeclaresStreamAndRunIdentity()
     {
         BatchOutcome outcome = await RunBatchAsync(exportStream: true, ticks: 3, seed: 42);
         try
@@ -136,7 +142,7 @@ public sealed class BatchStreamExportTests
     }
 
     [Fact]
-    public async Task AnUnsafeRunIdentityIsRefusedBeforeAnyProcessStarts()
+    public async Task Batch_UnsafeRunIdentity_RefusedBeforeProcessStarts()
     {
         BatchOutcome outcome = await RunBatchAsync(exportStream: true, ticks: 1, seed: 42, runId: "../evasion");
         using (outcome)
@@ -148,7 +154,7 @@ public sealed class BatchStreamExportTests
     }
 
     [Fact]
-    public async Task ExportStreamWithoutAnExportDirectoryIsRefused()
+    public async Task ExportStream_WithoutExportDirectory_IsRefused()
     {
         string root = Path.Combine(Path.GetTempPath(), $"syne-stream-nodecl-{Guid.NewGuid():N}");
         Directory.CreateDirectory(root);

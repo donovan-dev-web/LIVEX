@@ -1,12 +1,12 @@
 """Instrumentation ECHOS ph5 (ECHOS-050/051/052).
 
 Couvre le package ``echos.instrumentation`` — preuve J5 étendue :
-- ``EchosLogger`` : journalisation structurée JSON Lines (format §1/§4,
-  déterministe : clés triées), traces et profilage séparés ;
+- ``EchosLogger`` : journalisation structurée JSON Lines (format,
+ déterministe : clés triées), traces et profilage séparés ;
 - ``build_decision_trace`` : fusion d'un ``decision_made`` SYNE avec le
   contexte BDI du snapshot (valeur d'analyse causale, schéma v3) ;
 - profiling : ``compute_all_profiled`` retourne les mêmes résultats que
-  ``compute_all`` + le coût des 8 moteurs (sortie §5, déterminisme intact).
+  ``compute_all`` + le coût des 8 moteurs (sortie, déterminisme intact).
 """
 
 import json

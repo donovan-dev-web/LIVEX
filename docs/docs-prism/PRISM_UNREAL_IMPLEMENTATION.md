@@ -1,4 +1,11 @@
-# Intégration du plugin PRISM-LDK au projet Unreal PRISM
+# PRISM_UNREAL_IMPLEMENTATION.md — Intégration du plugin PRISM-LDK au projet Unreal PRISM
+
+**Composant** : PRISM
+**Statut** : [STABLE]
+**Dernière mise à jour** : 11 octobre 2026
+**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
+
+---
 
 **LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
 complet. **PRISM** est le projet Unreal final de LIVEX ; il porte le monde

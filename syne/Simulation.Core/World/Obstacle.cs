@@ -1,9 +1,13 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Obstacle statique : disque {Position, Radius}.
+
 namespace Simulation.Core.World;
 
 /// <summary>
-/// Obstacle statique (DATA_MODEL.md §2) : disque {Position, Radius}.
+/// Obstacle statique : disque {Position, Radius}.
 /// Bloque le mouvement (collision simple) et, depuis U1, la ligne de vue
-/// (SYNE-011 « un obstacle masque la ligne de vue » ; ADR-013).
+/// (SYNE-011 « un obstacle masque la ligne de vue »).
 /// </summary>
 public sealed record Obstacle
 {

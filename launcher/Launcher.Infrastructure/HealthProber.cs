@@ -1,10 +1,14 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Sonde de santé HTTP.
+
 using System.Text.Json;
 using Launcher.Domain;
 
 namespace Launcher.Infrastructure;
 
 /// <summary>
-/// Sonde de santé HTTP (INTEGRATION_CONTRACT.md §6, OBSERVABILITY.md §4).
+/// Sonde de santé HTTP.
 /// Pull : le Launcher fixe la cadence, il n'est jamais sollicité par les composants.
 /// Lecture seule : la supervision ne modifie jamais l'état du composant.
 /// </summary>
@@ -24,7 +28,7 @@ public sealed class HealthProber : IHealthProbe
     /// <inheritdoc />
     public async Task<(bool Ready, string? Cause)> ProbeReadyAsync(Uri controlEndpoint, CancellationToken cancellationToken, string readyPath = "/health/ready")
     {
-        // Chemin déclaré au manifeste (COMPONENTS.md §3) : le §6 fixe /health/ready pour
+        // Chemin déclaré au manifeste : le contrat fixe /health/ready pour
         // les composants conformes, un composant réel peut déclarer /health.
         var path = string.IsNullOrWhiteSpace(readyPath) ? "/health/ready" : readyPath;
         try

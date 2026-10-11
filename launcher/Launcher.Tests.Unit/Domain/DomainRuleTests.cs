@@ -1,3 +1,7 @@
+// Projet : LIVEX (LAUNCHER)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests des règles normatives du domaine (cycle de vie, santé, orchestration).
+
 using Launcher.Domain;
 using Launcher.Domain.Model;
 using Launcher.Protocol;
@@ -89,7 +93,7 @@ public sealed class ComponentManifestEndpointTests
     }
 }
 
-/// <summary>Dérivation des graines (EXPERIMENTS.md §5) : prévisible et dérivable, jamais inventée.</summary>
+/// <summary>Dérivation des graines : prévisible et dérivable, jamais inventée.</summary>
 public sealed class SeedDeriverTests
 {
     [Fact]
@@ -131,7 +135,7 @@ public sealed class SeedDeriverTests
     public void Random_avec_graines_tirées_enregistrées_rejoue_les_mêmes_graines()
     {
         // La stratégie « random » n'est dérivable que par la liste enregistrée dans la
-        // définition (DATA_FLOW.md §4.3) : c'est elle qui rend le run rejouable.
+        // définition : c'est elle qui rend le run rejouable.
         Assert.Equal(7, SeedDeriver.Derive(SeedStrategy.Random, 1, 0, [7, 9]));
         Assert.Equal(9, SeedDeriver.Derive(SeedStrategy.Random, 1, 1, [7, 9]));
     }
@@ -172,7 +176,7 @@ public sealed class SeedDeriverTests
     }
 }
 
-/// <summary>Règles normatives de transition (COMPONENTS.md §4.1).</summary>
+/// <summary>Règles normatives de transition.</summary>
 public sealed class StateRulesTests
 {
     [Fact]
@@ -244,7 +248,7 @@ public sealed class StateRulesTests
     }
 }
 
-/// <summary>Allocation des adresses (NETWORK.md §6.2) : priorité au manifeste, pré-vol, unicité.</summary>
+/// <summary>Allocation des adresses : priorité au manifeste, pré-vol, unicité.</summary>
 public sealed class PortAllocatorTests
 {
     [Fact]
@@ -265,8 +269,8 @@ public sealed class PortAllocatorTests
     [Fact]
     public void Port_declare_deja_pris_par_une_autre_instance_replie_sur_la_plage_interne()
     {
-        // Le multi-instance est la raison d'être de la plage interne (NETWORK.md §6.2,
-        // §9.3) : une campagne lancée pendant qu'une instance interactive tient le port
+        // Le multi-instance est la raison d'être de la plage interne
+        // une campagne lancée pendant qu'une instance interactive tient le port
         // déclaré doit obtenir une autre adresse, pas échouer.
         var allocator = new PortAllocator(5200, 5399, _ => true);
         var interactive = allocator.Resolve("syne", "syne-0001", "control", 5181);
@@ -316,7 +320,7 @@ public sealed class PortAllocatorTests
     }
 }
 
-/// <summary>Résolution de profils (COMPONENTS.md §6, §7) et verrou Immersion (ADR-006).</summary>
+/// <summary>Résolution de profils et verrou Immersion.</summary>
 public sealed class OrchestrationServiceTests
 {
     private static OrchestrationService BuildService(params ComponentInstallation[] installations)
@@ -450,7 +454,7 @@ public sealed class OrchestrationServiceTests
         Assert.DoesNotContain("prism", resolution.StartupOrder);
     }
 
-    /// <summary>Installation PRISM conforme à INTEGRATION_CONTRACT.md §11.1.</summary>
+    /// <summary>Installation PRISM conforme à.</summary>
     private static ComponentInstallation PrismConformant() => new()
     {
         ComponentId = "prism",

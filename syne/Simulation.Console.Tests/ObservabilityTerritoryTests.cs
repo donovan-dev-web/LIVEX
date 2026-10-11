@@ -1,3 +1,9 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Territoire à travers l'émetteur (SYNE-073, jalon U8) : quand world.territories.enabled, l'appartenance aux
+//        zones (« points de survie ») est drainée en world.territory_membership_changed et le snapshot porte le
+//        champ territories[] — sans rompre le déterminisme.
+
 using System.Text.Json.Nodes;
 using Simulation.Console.Observability;
 using Simulation.Core.Configuration;
@@ -14,7 +20,7 @@ namespace Simulation.Console.Tests;
 /// <summary>
 /// Territoire à travers l'émetteur (SYNE-073, jalon U8) : quand
 /// <c>world.territories.enabled</c>, l'appartenance aux zones (« points de
-/// survie », décision n°21) est drainée en <c>world.territory_membership_changed</c>
+/// survie ») est drainée en <c>world.territory_membership_changed</c>
 /// et le snapshot porte le champ <c>territories[]</c> — sans rompre le déterminisme.
 /// Suivi désactivé (défaut) : aucun événement de territoire.
 /// </summary>
@@ -92,7 +98,7 @@ public class ObservabilityTerritoryTests
 
         Assert.Empty(loop.LastTerritoryChanges);
 
-        // Le snapshot du même tick porte le territoire effectif (décision n°21 :
+        // Le snapshot du même tick porte le territoire effectif
         // la présence délimite le territoire).
         var snapshots = EventsOf(sink.Frames, ObservabilityContract.SnapshotType).ToList();
         JsonNode snapshot = Assert.Single(snapshots);

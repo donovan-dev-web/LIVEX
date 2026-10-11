@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Tests de validation de la configuration (phase 1).
+
 using Simulation.Core.Configuration;
 using Xunit;
 

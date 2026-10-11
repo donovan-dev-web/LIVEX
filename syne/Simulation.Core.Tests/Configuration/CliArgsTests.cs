@@ -1,3 +1,7 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Analyse des arguments de ligne de commande (jalon review/refactor, engineVersion 0.12.0).
+
 using System.Globalization;
 using Simulation.Core.Configuration;
 using Xunit;

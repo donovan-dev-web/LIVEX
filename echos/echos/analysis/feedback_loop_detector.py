@@ -1,6 +1,6 @@
 """Moteur 5 — FeedbackLoopDetector (répétitions d'action).
 
-**Portée réelle (P1, RAPPORT §3.5)** : le moteur compte des paires
+**Portée réelle** : le moteur compte des paires
 ``(agent, action)`` répétées dans une fenêtre glissante de décisions. Il
 n'observe ni conséquence, ni relation action → conséquence, ni retour de la
 conséquence sur la décision : ce n'est **pas** une boucle causale. Les mots
@@ -27,7 +27,7 @@ Décisions P1 (registre des métriques) :
 
 Champs/historique absents → repli neutre 0.0 (``measured = false``). Pour une
 analyse causale réelle (contexte → option → action → conséquence → récidive),
-voir ``echos.analysis.causal`` (ECHOS-061) et `CAUSAL_ANALYSIS.md`.
+voir ``echos.analysis.causal`` (ECHOS-061) et.
 """
 
 from __future__ import annotations

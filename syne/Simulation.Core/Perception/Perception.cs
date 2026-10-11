@@ -1,3 +1,8 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Observation : identité, type, position, confiance, tick, attributs (représentation canonique de type
+//        sérialisable).
+
 using System.Globalization;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -8,7 +13,7 @@ using Simulation.Core.World;
 namespace Simulation.Core.Perception;
 
 /// <summary>
-/// Observation (DATA_MODEL.md §4) : identité, type, position, confiance, tick,
+/// Observation : identité, type, position, confiance, tick,
 /// attributs (représentation canonique de type sérialisable).
 /// </summary>
 public sealed record Observation
@@ -50,10 +55,10 @@ public sealed record Observation
 
 /// <summary>
 /// Perception partielle (SYNE-011) : chaque entité ne perçoit que dans son rayon
-/// (décision n°6, défaut 50), la ligne de vue peut être masquée par un obstacle
-/// (ADR-013), la confiance décroît avec la distance
-/// <c>1 − (distance/radius) × 0.3</c> clampée [0.7, 1.0] (DATA_MODEL.md §4), et
-/// la perception est étagée en groupes de rotation (COGNITIVE_ARCHITECTURE.md §3
+/// (défaut 50), la ligne de vue peut être masquée par un obstacle
+/// la confiance décroît avec la distance
+/// <c>1 − (distance/radius) × 0.3</c> clampée [0.7, 1.0], et
+/// la perception est étagée en groupes de rotation
 /// — groupe = <c>id % rotationInterval</c>, perçoit au tick <c>t ≡ groupe</c>).
 /// </summary>
 public sealed class PerceptionSystem
@@ -62,7 +67,7 @@ public sealed class PerceptionSystem
     private readonly PerceptionSettings _settings;
 
     /// <summary>
-    /// Pool du buffer de tri des candidats (SYNE-092, PERFORMANCE.md §5) : la
+    /// Pool du buffer de tri des candidats (SYNE-092) : la
     /// liste temporaire (candidat, distance) est ré-empruntée entre les
     /// perceptions — aucune influence sur l'ordre (tri stable, contenu vide
     /// avant ré-emprunt), déterminisme conservé.
