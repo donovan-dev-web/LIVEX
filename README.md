@@ -9,8 +9,11 @@
 [![Licence MIT](https://img.shields.io/badge/Licence-MIT-216e5a?style=for-the-badge)](LICENSE)
 [![Version V0.1](https://img.shields.io/badge/Version-V0.1-315c9b?style=for-the-badge)](VERSIONING.md)
 [![SYNE 0.15.0](https://img.shields.io/badge/SYNE-0.15.0-1f7f6f?style=for-the-badge)](docs/docs-syne/DETERMINISM.md)
-[![Contrat obs. 0.2.1](https://img.shields.io/badge/Contrat%20obs.-0.2.1-315c9b?style=for-the-badge)](docs/docs-syne/API_CONTRACTS.md)
+[![Contrat obs. 0.4.0](https://img.shields.io/badge/Contrat%20obs.-0.4.0-315c9b?style=for-the-badge)](docs/docs-syne/API_CONTRACTS.md)
 [![Documentation](https://img.shields.io/badge/Docs-en%20fran%C3%A7ais-6b7280?style=for-the-badge)](GLOSSARY.md)
+[![CI](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml)
+[![Tests: 1 258](https://img.shields.io/badge/Tests-1%20258-1f7f6f?style=for-the-badge)](LIVEX-STATUS.md#5-tests-et-validations)
+[![Couverture ≥ 80 %](https://img.shields.io/badge/Couverture-%E2%89%A5%2080%25-1f7f6f?style=for-the-badge)](LIVEX-STATUS.md#5-tests-et-validations)
 
 [Découvrir le projet](#-le-projet) · [Architecture](#-architecture) · [Démarrage](#-démarrage-rapide) · [Documentation](#-documentation) · [Contribuer](#-contribuer)
 
@@ -51,10 +54,11 @@ flowchart LR
 
 | Composant | Responsabilité | État |
 |:--|:--|:--|
-| **SYNE 0.15.0** · *Systems & Emergent Network Engine* | Simule le monde et les agents. C’est la source de vérité de l’état simulé. | Moteur .NET 10 (`engineVersion 0.15.0`, défauts calibrés — ADR-016, profil de référence ADR-015), observabilité (contrat 0.2.1), persistance et contrôle local. |
+| **SYNE 0.15.0** · *Systems & Emergent Network Engine* | Simule le monde et les agents. C’est la source de vérité de l’état simulé. | Moteur .NET 10 (`engineVersion 0.15.0`, défauts calibrés — ADR-016, profil de référence ADR-015), observabilité (contrat 0.4.0), persistance et contrôle local. |
 | **ECHOS 0.1.0** · *Emergent Cognition & Holistic Observation System* | Ingère et analyse les runs, expose les métriques et fournit le pilotage. | API FastAPI **sans interface** (ADR-007), stockage SQLite/Parquet (schéma v6), signaux de viabilité ; la présentation vit dans le Launcher. |
 | **PRISM** · *Perceptual Rendering & Interactive Simulation Module* | Projet Unreal final de LIVEX, pour représenter le monde SYNE et fournir l'expérience interactive. | Projet Unreal PRISM intégrant le plugin **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`). |
-| **syne-mock** | Simule le protocole et un scénario de simulation pour le développement client. | Serveur Node.js local ; comportement incomplet et non équivalent au moteur SYNE (contrat aligné 0.2.1). |
+| **Launcher 0.1.0** | Orchestre la pile : détection des composants par manifeste, campagnes, supervision, journaux et fenêtre d’analyse, paquets `.livexp`. | Application de bureau Avalonia (statut V1) ; la présentation d’ECHOS vit en lui depuis l’ADR-007. |
+| **syne-mock 0.1.0** | Simule le protocole et un scénario de simulation pour le développement client. | Serveur Node.js local ; comportement incomplet et non équivalent au moteur SYNE (contrat aligné 0.4.0). |
 
 > **État du dépôt :** SYNE et ECHOS disposent de leur runtime ; **PRISM** est
 > le projet Unreal final de LIVEX et intègre **PRISM-LDK** (*LIVEX Development
@@ -90,6 +94,7 @@ LIVEX/
 ├── docs/
 │   ├── docs-syne/          # Documentation et décisions SYNE
 │   ├── docs-echos/         # Documentation ECHOS
+│   ├── docs-launcher/      # Spécification complète du Launcher
 │   ├── docs-prism/         # Contrats et feuille de route PRISM
 │   └── governance/         # Gouvernance et processus
 ├── ROADMAP.md              # Jalons unifiés

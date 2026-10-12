@@ -1,14 +1,17 @@
 # ECHOS — Emergent Cognition & Holistic Observation System
 
+[![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-1f7f6f.svg)](CHANGELOG.md)
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
 [![7 moteurs](https://img.shields.io/badge/Moteurs-7-1f7f6f.svg)](METRICS_SPEC.md)
 [![API: REST 5000](https://img.shields.io/badge/API-REST%205000-1f7f6f.svg)](API_REST.md)
-[![Tests: 365](https://img.shields.io/badge/Tests-365-1f7f6f.svg)](TESTING.md)
+[![Tests: 361](https://img.shields.io/badge/Tests-361-1f7f6f.svg)](TESTING.md)
+[![Couverture: 90,5 %](https://img.shields.io/badge/Couverture-90%2C5%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 6 octobre 2026
-**Dépend de** : la documentation transversale (../), SYNE ≥ 0.13.0 (contrat d'observabilité 0.2.1)
+**Version** : 0.1.0
+**Dernière mise à jour** : 11 octobre 2026
+**Dépend de** : la documentation transversale (../), SYNE 0.15.0 (contrat d'observabilité 0.4.0)
 **Source Monographie** : Partie 4
 
 ---

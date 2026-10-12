@@ -4,6 +4,8 @@ Orchestrateur de la pile LIVEX : il pilote SYNE (moteur), ECHOS (analyse) et —
 de sa livraison — PRISM (immersion), depuis une interface unique et un format de données
 unique, le paquet `.livexp`.
 
+**Version** : `0.1.0` (`launcher/Directory.Build.props`, `<Version>`) — statut V1 : voir [`ROADMAP-V1.md`](ROADMAP-V1.md).
+
 La spécification complète vit dans [`../docs/docs-launcher/`](../docs/docs-launcher/README.md) :
 vision, architecture, modèle de composants, contrat d'intégration, format de paquet,
 campagnes, observabilité, interface, empaquetage, tests, feuille de route et six ADR.
