@@ -69,7 +69,7 @@ public static class ObservabilityContract
     /// Sans cela : mort lente (énergie moyenne 69 → 49 entre t800 et t1200,
     /// 2 extinctions sur 3) et Eat/Drink écrasés par Socialize/Explore faim
     /// saturée (utilité moyenne 13,9 vs 83,7). de calibration en référence
-    /// (docs/docs-syne/adr/), checksums dorés et fixtures analysis_golden.json
+    /// (docs/syne/adr/), checksums dorés et fixtures analysis_golden.json
     /// re-calés dans le même commit (procédure).
     /// jalon cognitifs → 0.14.0 : implémentation des acceptés du 30/09/2026,
     /// tous portés par des drapeaux désactivés par défaut (trajectoire du scénario

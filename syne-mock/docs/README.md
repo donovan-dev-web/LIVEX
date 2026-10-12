@@ -18,7 +18,7 @@ En cas de divergence, appliquer cet ordre :
 
 1. le code et les tests de ce dossier (`src/` et `test/`) pour le comportement
    du mock ;
-2. les contrats SYNE partagés dans [`docs/docs-syne/`](../../docs/docs-syne/)
+2. les contrats SYNE partagés dans [`../../docs/syne`](../../docs/syne)
    pour les champs et événements du moteur réel ;
 3. la présente documentation pour le mapping Unreal.
 

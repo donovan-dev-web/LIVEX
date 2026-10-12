@@ -1,6 +1,6 @@
 # ADR-007 : Means-End Reasoning (Plans Alternatifs par Objectif)
 
-**Statut :** [Accepté] — décision du 30/09/2026, en deux temps : (1) réintroduction d'`Attack` au catalogue ; (2) bibliothèque de plans candidats par objectif. `Buy` suit les ADR Primitives d'actions et Inventaire (acceptés le même jour) ; `Steal` sera arbitré avec `docs/ETHICS_AND_SCOPE.md` avant tout ajout.
+**Statut :** [Accepté] — décision du 30/09/2026, en deux temps : (1) réintroduction d'`Attack` au catalogue ; (2) bibliothèque de plans candidats par objectif. `Buy` suit les ADR Primitives d'actions et Inventaire (acceptés le même jour) ; `Steal` sera arbitré avec `../presentation/ETHICS_AND_SCOPE.md` avant tout ajout.
 **Implémentation (30/09/2026, engineVersion 0.14.0)** : temps 1 fait (`Attack` au
 catalogue, jamais généré en V0.1) ; temps 2 fait (`PlanLibrary.GenerateCandidates` :
 candidats `Take` modulés par greed et capacité, `Trade` vers un pair de confiance > 0.5,
@@ -98,4 +98,4 @@ Chaque plan candidat alimente Benefit/Cost/Risk/Confidence/Urgency (§3.14) avec
 [Acceptée et implémentée le 30/09/2026 — engineVersion 0.14.0] : temps 1 (`Attack` au
 catalogue, jamais généré en V0.1) et temps 2 (`PlanLibrary` : candidats `Take`/`Trade`)
 réalisés ; la formule d'utilité est inchangée, seule le volume de candidats augmente.
-`Steal` reste en attente de son arbitrage avec `docs/ETHICS_AND_SCOPE.md`.
+`Steal` reste en attente de son arbitrage avec `../presentation/ETHICS_AND_SCOPE.md`.

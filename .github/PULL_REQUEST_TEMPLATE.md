@@ -15,7 +15,7 @@ Expliciter si ce changement touche :
 - [ ] `WorldSnapshot` / `ExternalEvent` (SYNE → ECHOS/PRISM)
 - [ ] API REST ECHOS
 - [ ] Format de persistance (JSON / SQLite)
-- [ ] Déterminisme / reproductibilité bit-à-bit (si oui → impact `VERSIONING.md`)
+- [ ] Déterminisme / reproductibilité bit-à-bit (si oui → impact `../VERSIONING.md`)
 - Aucun
 
 ## Tests effectués

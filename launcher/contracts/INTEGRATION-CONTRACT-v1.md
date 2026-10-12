@@ -10,7 +10,7 @@ workspace. La CI exécute ce contrôle lorsqu'un composant ou le Launcher change
 avec la dépendance épinglée dans
 [`requirements-validation.txt`](requirements-validation.txt).
 La spécification cible plus détaillée reste dans
-[`../../docs/docs-launcher/INTEGRATION_CONTRACT.md`](../../docs/docs-launcher/INTEGRATION_CONTRACT.md).
+[`../../docs/launcher/INTEGRATION_CONTRACT.md`](../../docs/launcher/INTEGRATION_CONTRACT.md).
 
 > **État au 3 octobre 2026 :** la version de schéma 1 est implémentée par le
 > Launcher. SYNE réel, ECHOS headless et `syne-mock` ont maintenant chacun un
@@ -157,7 +157,7 @@ dans l’endpoint de détail une cause utile à l’opérateur.
   recalculer ni en reformuler les résultats.
 
 La correspondance complète des erreurs et des codes est maintenue dans
-[`../../docs/docs-launcher/INTEGRATION_CONTRACT.md`](../../docs/docs-launcher/INTEGRATION_CONTRACT.md).
+[`../../docs/launcher/INTEGRATION_CONTRACT.md`](../../docs/launcher/INTEGRATION_CONTRACT.md).
 Les opérations d'analyse ECHOS attendues, leur corps et leurs réponses sont
 décrits au §10.1 et §10.2 de ce document. L'API ECHOS réelle expose les quatre
 chemins, l'ingestion d'un run archivé étant **préalable** à son analyse.
@@ -177,9 +177,9 @@ chemins, l'ingestion d'un run archivé étant **préalable** à son analyse.
   scientifique, ni la reproductibilité du moteur réel.
 
 Les manifestes concrets v1 présents dans le dépôt sont
-[`syne/component.json`](../../syne/component.json),
-[`echos/component.json`](../../echos/component.json) et
-[`syne-mock/component.json`](../../syne-mock/component.json). Le manifeste SYNE
+[`../../syne/component.json`](../../syne/component.json),
+[`../../echos/component.json`](../../echos/component.json) et
+[`../../syne-mock/component.json`](../../syne-mock/component.json). Le manifeste SYNE
 ne déclare que Linux et un batch `reference`; le test d’acceptation Launcher
 valide une campagne depuis une copie isolée du publish Linux et son archivage
 dans `.livexp`, sans prouver la compatibilité d’autres scénarios ni OS.
