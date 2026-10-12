@@ -7,7 +7,7 @@ labels: docs
 
 ## Emplacement
 
-Document(s) concerné(s), ex : `docs/docs-syne/PERSISTENCE.md`, `README.md`, `VERSIONING.md`.
+Document(s) concerné(s), ex : `../../docs/syne/PERSISTENCE.md`, `../../README.md`, `../../VERSIONING.md`.
 
 ## Problème ou manque
 

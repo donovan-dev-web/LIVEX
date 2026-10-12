@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://livex.dev/schemas/component-manifest-v1.schema.json",
+  "title": "LIVEX component manifest, schema version 1",
+  "description": "Versioned installation descriptor consumed by the LIVEX Launcher.",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "name",
+    "type",
+    "version",
+    "executable",
+    "endpoints",
+    "capabilities",
+    "health",
+    "timeouts"
+  ],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runtime": {
+      "enum": [
+        "dotnet",
+        "native",
+        "script"
+      ]
+    },
+    "executable": {
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "windows": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "linux": {
+          "$ref": "#/$defs/relativePath"
+        }
+      },
+      "additionalProperties": false
+    },
+    "workingDirectory": {
+      "$ref": "#/$defs/relativePath"
+    },
+    "arguments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "endpoints": {
+      "type": "object",
+      "required": [
+        "control"
+      ],
+      "properties": {
+        "control": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/endpoint"
+            },
+            {
+              "properties": {
+                "transport": {
+                  "const": "http"
+                },
+                "enabled": {
+                  "not": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/endpoint"
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "health": {
+      "type": "object",
+      "required": [
+        "probe",
+        "path"
+      ],
+      "properties": {
+        "probe": {
+          "enum": [
+            "http",
+            "file"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "intervalMs": {
+          "type": "integer",
+          "minimum": 100
+        }
+      },
+      "additionalProperties": true
+    },
+    "timeouts": {
+      "type": "object",
+      "required": [
+        "startupMs",
+        "shutdownMs"
+      ],
+      "properties": {
+        "startupMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "shutdownMs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "contributesTo": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "protocolVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "requires": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!\\\\)(?![A-Za-z]:)(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$"
+    },
+    "endpoint": {
+      "type": "object",
+      "required": [
+        "transport"
+      ],
+      "properties": {
+        "transport": {
+          "enum": [
+            "http",
+            "websocket"
+          ]
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "launchArgument": {
+          "type": "string",
+          "pattern": "^--?[A-Za-z0-9][A-Za-z0-9-]*$"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

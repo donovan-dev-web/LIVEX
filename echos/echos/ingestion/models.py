@@ -1,0 +1,327 @@
+"""Modèles pydantic des contrats d'ingestion SYNE.
+
+Les messages sur le WebSocket :5180 sont des JSON **camelCase** (contrat de
+transport). Les modèles acceptent l'alias camelCase en entrée
+(``populate_by_name``) tout en exposant des attributs Python snake_case, et
+sérialisent en camelCase avec ``model_dump(by_alias=True)``.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic.alias_generators import to_camel
+
+
+class Position(BaseModel):
+    """Position 2D dans le monde SYNE (pixels, flottant)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    x: float
+    y: float
+
+
+class Belief(BaseModel):
+    """Croyance observable d'une entité (fait + confiance, U2 — snapshot agent)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    subject: str
+    predicate: str
+    value: str
+    confidence: float = Field(ge=0, le=1)
+
+
+class Goal(BaseModel):
+    """Objectif observable (type + âge en ticks, U2 — snapshot agent)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    kind: str
+    age: int = Field(ge=0)
+
+
+class Trust(BaseModel):
+    """Relation de confiance observable (pair + niveau, U2 — snapshot agent)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    peer_id: str = Field(alias="peerId")
+    trust: float = Field(ge=0, le=1)
+
+
+class Commitment(BaseModel):
+    """Engagement communicationnel observable (contrat 0.3.0, D5 — snapshot agent).
+
+    Émis par SYNE seulement quand ``agents.actions.commitments.enabled`` est actif.
+    ``status`` ∈ {Pending, Fulfilled, Broken, Expired} (cycle de vie).
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    to_entity_id: str = Field(alias="toEntityId")
+    request_type: str
+    status: str
+    created_tick: int = Field(ge=0)
+    expiry_tick: int = Field(ge=0)
+
+
+class Agent(BaseModel):
+    """Entité observée.
+
+    En V0.1, l'émetteur SYNE fournit ``species`` et ``fatigue`` mais pas
+    ``health`` (santé non encore simulée) : ``health`` reste accepté pour la
+    compatibilité ascendante avec le format documentaire. Les champs cognitifs
+    (``traits``, ``beliefs``, ``goals``, ``trust``, ``memoryCount``) sont émis
+    par SYNE depuis le jalon U2 et restent optionnels (rétro-compatibilité).
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: str
+    species: str | None = None
+    position: Position
+    health: float | None = Field(default=None, ge=0)
+    energy: float = Field(ge=0)
+    hunger: float = Field(ge=0)
+    thirst: float = Field(ge=0)
+    fatigue: float | None = Field(default=None, ge=0)
+    current_action: str | None = None
+    traits: dict[str, float] | None = None
+    beliefs: list[Belief] | None = None
+    goals: list[Goal] | None = None
+    trust: list[Trust] | None = None
+    memory_count: int | None = Field(default=None, alias="memoryCount", ge=0)
+    # Contrat 0.3.0 (jalon cognitifs) — émis sous drapeaux SYNE, optionnels
+    # ici pour la rétro-compatibilité avec les flux 0.2.x :
+    inventory: dict[str, float] | None = None
+    commitments: list[Commitment] | None = None
+
+
+class Resource(BaseModel):
+    """Réserve de monde observée (SYNE V0.1 : type + quantité)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: str | None = None
+    type: str
+    position: Position | None = None
+    quantity: float = Field(ge=0)
+    capacity: float | None = Field(default=None, ge=0)
+
+
+def _agent_ids(value: Any) -> Any:
+    """Normalise une liste d'identifiants d'agents transportés en entiers.
+
+    SYNE sérialise ``agents[].id`` en **chaîne** (``AgentSnapshot.Id``) mais
+    ``groups[].members``/``leaderId``, ``territories[].members`` et
+    ``books[].authorId``/``readers`` en **entiers** (``ulong``). Les deux
+    désignent pourtant le même agent : sans normalisation, un membre de groupe
+    ne pouvait jamais être joint à son agent (``"3" != 3``), et toute
+    consommation de ``groups`` aurait produit des identifiants d'une autre
+    nature que ceux de ``trust``, ``beliefs`` ou ``events_log.agent_id``.
+
+    ECHOS normalise donc **toute** référence à un agent en ``str``, quel que
+    soit le type de transport. Le contrat de transport reste inchangé côté
+    SYNE ; seule la représentation interne devient homogène.
+    """
+    if not isinstance(value, (list, tuple)):
+        return value
+    return [item if isinstance(item, str) else str(item) for item in value]
+
+
+def _agent_id(value: Any) -> Any:
+    """Variante scalaire de :func:`_agent_ids` (identifiant d'agent unique)."""
+    if value is None or isinstance(value, str):
+        return value
+    if isinstance(value, bool):
+        return value
+    return str(value)
+
+
+class Group(BaseModel):
+    """Groupe observable dans le snapshot SYNE.
+
+    ``members`` et ``leader_id`` sont des **identifiants d'agents** : ils sont
+    typés ``str`` comme ``Agent.id``, et normalisés depuis la forme entière
+    émise par SYNE (voir :func:`_agent_ids`). ``group_id`` reste un entier car
+    c'est l'identité du groupe, jamais jointe à un agent.
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    group_id: int
+    members: list[str] = Field(default_factory=list)
+    size: int = Field(ge=0)
+    leader_id: str | None = None
+    born_tick: int = Field(ge=0)
+    cohesion: float
+    decision: str | None = None
+    consensus: float
+
+    _normalize_members = field_validator("members", mode="before")(
+        lambda value: _agent_ids(value)
+    )
+    _normalize_leader = field_validator("leader_id", mode="before")(
+        lambda value: _agent_id(value)
+    )
+
+
+class Territory(BaseModel):
+    """Zone de territoire (SYNE-073). ``members`` = ids d'agents (``str``)."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: str
+    x: float
+    y: float
+    radius: float = Field(ge=0)
+    member_count: int = Field(ge=0)
+    members: list[str] = Field(default_factory=list)
+
+    _normalize_members = field_validator("members", mode="before")(
+        lambda value: _agent_ids(value)
+    )
+
+
+class Book(BaseModel):
+    """Savoir matérialisé (SYNE-121). ``author_id``/``readers`` = ids d'agents."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    id: str
+    author_id: str
+    title: str
+    content: str
+    written_tick: int = Field(ge=0)
+    read_count: int = Field(ge=0)
+    readers: list[str] = Field(default_factory=list)
+
+    _normalize_author = field_validator("author_id", mode="before")(
+        lambda value: _agent_id(value)
+    )
+    _normalize_readers = field_validator("readers", mode="before")(
+        lambda value: _agent_ids(value)
+    )
+
+
+class WorldInitialized(BaseModel):
+    """Initial world description emitted before the first SYNE snapshot."""
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    type: Literal["world_initialized"]
+    version: str
+    seed: int = Field(ge=0)
+    world: dict[str, Any]
+
+
+class WorldSnapshot(BaseModel):
+    """Snapshot de monde — message système ``snapshot``.
+
+    ``seed`` (additif, contrat V0.2.1) : le seed effectif du run transporté par
+    SYNE. Il reste optionnel pour la rétro-compatibilité des flux V0.2.0, où
+    ECHOS le dérivait du ``run_id`` (``_seed_of``) — dérivation qui perdait le
+    seed des runs pilotés (``run_id`` généré, format ``run-<seed>-<12hex>``).
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    type: Literal["snapshot"] = "snapshot"
+    version: str
+    run_id: str
+    engine_version: str | None = None
+    seed: int | None = Field(default=None, ge=0)
+    tick: int = Field(ge=0)
+    simulated_time_minutes: int = Field(ge=0)
+    alive_count: int = Field(ge=0)
+    agents: list[Agent] = Field(default_factory=list)
+    resources: list[Resource] = Field(default_factory=list)
+    groups: list[Group] | None = None
+    season: str | None = None
+    season_index: int | None = Field(default=None, ge=0)
+    territories: list[Territory] | None = None
+    books: list[Book] | None = None
+
+
+class ExternalEvent(BaseModel):
+    """Événement externe — messages typés.
+
+    Types : ``decision_made``, ``agent_spawned``, ``agent_died``,
+    ``message_sent``, ``group_formed``, ``conflict``....
+    """
+
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
+
+    type: str
+    tick: int = Field(ge=0)
+    agent_id: str | None = None
+    target_id: str | None = None
+    action: str | None = None
+    cause: str | None = None
+    value: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def _reserve_snapshot(self) -> "ExternalEvent":
+        if self.type == "snapshot":
+            raise ValueError(
+                "type='snapshot' est réservé au message système WorldSnapshot"
+            )
+        return self
+
+
+Message = WorldInitialized | WorldSnapshot | ExternalEvent
+"""Union des messages reçus sur le WebSocket :5180."""
+
+
+class InvalidMessageError(ValueError):
+    """Payload non conforme aux contrats — message déterministe (réception)."""
+
+    def __init__(self, payload_type: str, detail: str) -> None:
+        super().__init__(
+            f"message {payload_type} invalide (conforme API_CONTRACTS.md) : {detail}"
+        )
+        self.payload_type = payload_type
+        self.detail = detail
+
+
+def parse_message(payload: str | bytes) -> Message:
+    """Parse un message du WebSocket :5180 de façon déterministe.
+
+    Les wrappers ``world_initialized`` et ``snapshot`` sont routés vers leurs
+    modèles système ; les autres types sont routés vers :class:`ExternalEvent`.
+    """
+    from pydantic import ValidationError
+
+    try:
+        data: Any = (
+            payload
+            if isinstance(payload, str)
+            else payload.decode("utf-8")
+        )
+        import json
+
+        obj = json.loads(data)
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise InvalidMessageError(
+            "json", f"payload non encodable/JSON invalide ({exc})"
+        ) from exc
+
+    if not isinstance(obj, dict):
+        raise InvalidMessageError("json", "le message doit être un objet JSON")
+
+    try:
+        if obj.get("type") == "world_initialized":
+            return WorldInitialized.model_validate(obj)
+        if obj.get("type") == "snapshot":
+            return WorldSnapshot.model_validate(obj)
+        return ExternalEvent.model_validate(obj)
+    except ValidationError as exc:
+        summarized = "; ".join(
+            f"{err['loc'][-1]} {err['msg']}" for err in exc.errors()
+        )
+        raise InvalidMessageError(
+            str(obj.get("type", "unknown")), summarized
+        ) from exc

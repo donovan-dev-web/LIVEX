@@ -1,0 +1,488 @@
+"""Rapports déterministes des runs ECHOS terminés.
+
+Le rapport est assemblé délibérément à partir des API de lecture de
+:class:`AnalyticsStore` : il se prête à l'archivage, au diff et à
+l'alimentation d'autres outils sans dépendre de la disposition des lignes
+SQLite ni d'horodatages muraux.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from echos.analysis.calibration import build_calibration_report
+from echos.storage.sqlite import AnalyticsStore
+
+_TRACE_SCHEMA = pa.schema(
+    [
+        pa.field("section", pa.string()),
+        pa.field("run_id", pa.string()),
+        pa.field("tick", pa.int64()),
+        pa.field("engine", pa.string()),
+        pa.field("metric", pa.string()),
+        pa.field("key", pa.string()),
+        pa.field("value", pa.float64()),
+        pa.field("payload", pa.string()),
+    ]
+)
+
+
+def _event(row: tuple) -> dict[str, Any]:
+    tick, event_type, agent_id, action, cause, value = row
+    parsed: Any = value
+    if isinstance(value, str):
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            parsed = value
+    return {
+        "tick": int(tick),
+        "type": event_type,
+        "agentId": agent_id,
+        "action": action,
+        "cause": cause,
+        "value": parsed,
+    }
+
+
+def _tick(row: tuple) -> dict[str, Any]:
+    keys = (
+        "runId", "tick", "simulatedTimeMinutes", "aliveCount", "agentCount",
+        "meanEnergy", "meanHunger", "meanThirst", "meanFatigue", "decisionCount",
+        "meanFood", "meanWater",
+    )
+    values = (
+        row[0], int(row[1]), int(row[2]), int(row[3]), int(row[4]),
+        float(row[5]), float(row[6]), float(row[7]), float(row[8]), int(row[9]),
+        # Colonnes v6 : absentes des lignes legacy (10 colonnes) → ``None``.
+        float(row[10]) if len(row) > 10 else None,
+        float(row[11]) if len(row) > 11 else None,
+    )
+    return dict(zip(keys, values))
+
+
+def _detected_phenomena(contexts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Aggregate detected phenomena across ticks for human comparison."""
+    by_identifier: dict[str, dict[str, Any]] = {}
+    for observation in contexts:
+        payload = observation["payload"]
+        if not isinstance(payload, dict):
+            continue
+        for phenomenon in payload.get("detected") or []:
+            identifier = str(phenomenon.get("identifier", ""))
+            if not identifier:
+                continue
+            item = by_identifier.setdefault(
+                identifier,
+                {
+                    "identifier": identifier,
+                    "label": phenomenon.get("label", identifier),
+                    "description": phenomenon.get("description", ""),
+                    "firstTick": observation["tick"],
+                    "lastTick": observation["tick"],
+                    "occurrences": 0,
+                    "signals": phenomenon.get("signals") or [],
+                },
+            )
+            item["firstTick"] = min(item["firstTick"], observation["tick"])
+            item["lastTick"] = max(item["lastTick"], observation["tick"])
+            item["occurrences"] += 1
+            item["signals"] = phenomenon.get("signals") or item["signals"]
+    return sorted(by_identifier.values(), key=lambda item: item["identifier"])
+
+
+# Contextes exclus du rapport déterministe.
+#:
+# ``profiling`` contient des durées de calcul (``avgMs``/``totalMs``) : deux
+# ingérations du **même** flux archivé donneraient donc des octets différents,
+# et le rapport d'un paquet ne serait plus comparable à une réanalyse faite plus
+# tard à partir de ce même paquet. Ces durées restent disponibles par la voie
+# d'instrumentation (``echos.instrumentation.profiling``) ; seul le contenu
+# scientifique doit être reproductible.
+NON_DETERMINISTIC_CONTEXTS = frozenset({"profiling"})
+
+
+def build_report(
+    store: AnalyticsStore, run_id: str, *, seed_override: int | str | None = None
+) -> dict[str, Any]:
+    """Build the complete, timestamp-free report for one ingested run."""
+    metadata = next((run for run in store.runs() if run["run_id"] == run_id), None)
+    if metadata is None:
+        raise ValueError(f"unknown run: {run_id}")
+    summaries = store.tick_summaries(run_id)
+    if not summaries:
+        raise ValueError(f"run has no completed ticks: {run_id}")
+
+    ticks = [_tick(row) for row in summaries]
+    events = [_event(row) for row in store.events(run_id)]
+    metrics_all = store.metrics_all(run_id)
+    series: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for tick, engine, metric, value in metrics_all:
+        series.setdefault(engine, {}).setdefault(metric, []).append(
+            {"tick": int(tick), "value": float(value)}
+        )
+
+    contexts = {
+        context_type: [
+            {"tick": int(tick), "payload": payload}
+            for tick, payload in observations
+        ]
+        for context_type, observations in store.contexts(run_id).items()
+        if context_type not in NON_DETERMINISTIC_CONTEXTS
+    }
+    calibration = store.calibration_report(run_id)
+    if calibration is None:
+        calibration = build_calibration_report(
+            run_id, summaries, store.events(run_id), metrics_all
+        )
+
+    seed = metadata["seed"] if seed_override is None else str(seed_override)
+    phenomenon_contexts = contexts.get("phenomena", [])
+    return {
+        "schemaVersion": 1,
+        "run": {
+            "runId": metadata["run_id"],
+            "version": metadata["version"],
+            "seed": seed,
+            "status": "complete",
+            "tickRange": {
+                "first": int(metadata["first_tick"]),
+                "last": int(metadata["last_tick"]),
+                "count": int(metadata["ticks_count"]),
+            },
+        },
+        "ticks": ticks,
+        "events": events,
+        "metrics": {"latest": store.latest_metrics(run_id), "series": series},
+        "decisionTraces": store.decision_traces(run_id),
+        "contexts": contexts,
+        "phenomena": phenomenon_contexts,
+        "detectedPhenomena": _detected_phenomena(phenomenon_contexts),
+        "calibration": calibration,
+    }
+
+
+def json_report(
+    store: AnalyticsStore, run_id: str, *, seed_override: int | str | None = None
+) -> str:
+    """Return canonical JSON (stable key and collection ordering)."""
+    return json.dumps(
+        build_report(store, run_id, seed_override=seed_override),
+        ensure_ascii=False, sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+generate_json_report = json_report
+
+
+def markdown_report(
+    store: AnalyticsStore,
+    run_id: str,
+    *,
+    seed_override: int | str | None = None,
+    trace_artifact: str = "json",
+) -> str:
+    """Render a compact, human-readable report from the canonical model."""
+    report = build_report(store, run_id, seed_override=seed_override)
+    run = report["run"]
+    event_counts: dict[str, int] = {}
+    for event in report["events"]:
+        event_counts[event["type"]] = event_counts.get(event["type"], 0) + 1
+    notable_types = {
+        "agent_died",
+        "agent_spawned",
+        "group_formed",
+        "group_dissolved",
+        "conflict",
+        "message_sent",
+    }
+    all_notable_events = [
+        event for event in report["events"] if event["type"] in notable_types
+    ]
+    notable_events = all_notable_events[:50]
+    latest_metrics = report["metrics"]["latest"]
+    selected_metrics = [
+        ("Emergence score", "EmergenceIndicators", "EmergenceScore"),
+        ("Complexité système", "EmergenceIndicators", "SystemComplexity"),
+        ("Diversité croyances", "CognitiveDiversityMetrics", "BeliefDiversity"),
+        ("Diversité objectifs", "CognitiveDiversityMetrics", "GoalDiversity"),
+        ("Communautés inférées", "GroupDynamicsMetrics", "InferredCommunities"),
+        ("Volume messages", "InformationPropagationMetrics", "MessageVolume"),
+        ("Confiance moyenne", "SocialComplexityMetrics", "AverageTrustLevel"),
+    ]
+    lines = [
+        f"# ECHOS run `{run['runId']}`",
+        "",
+        "## Synthèse",
+        "",
+        f"- **Statut :** {run['status']}",
+        f"- **Version :** `{run['version']}`",
+        f"- **Seed :** `{run['seed']}`",
+        f"- **Ticks :** {run['tickRange']['first']}–{run['tickRange']['last']} "
+        f"({run['tickRange']['count']})",
+        "",
+        "## État de la population",
+        "",
+        "| Indicateur | Valeur |",
+        "|---|---:|",
+        f"| Population initiale | {report['calibration']['population']['initial']} |",
+        f"| Population finale | {report['calibration']['population']['final']} |",
+        f"| Minimum d'entités vivantes | {report['calibration']['population']['minimumAlive']} |",
+        f"| Énergie moyenne finale | {report['ticks'][-1]['meanEnergy']:.4g} |",
+        f"| Faim moyenne finale | {report['ticks'][-1]['meanHunger']:.4g} |",
+        f"| Soif moyenne finale | {report['ticks'][-1]['meanThirst']:.4g} |",
+        f"| Fatigue moyenne finale | {report['ticks'][-1]['meanFatigue']:.4g} |",
+        "",
+        "## Événements",
+        "",
+        f"**{len(report['events'])} événements** enregistrés, dont "
+        f"**{len(report['decisionTraces'])} décisions**.",
+        "",
+        "| Type | Nombre |",
+        "|---|---:|",
+    ]
+    for event_type, count in sorted(event_counts.items()):
+        lines.append(f"| `{event_type}` | {count} |")
+    lines += [
+        "",
+        "### Événements pertinents",
+        "",
+    ]
+    if notable_events:
+        for event in notable_events:
+            detail = event["action"] or event["cause"] or ""
+            lines.append(f"- **tick {event['tick']}** `{event['type']}` {detail}".rstrip())
+    else:
+        lines.append("_Aucun événement de changement majeur détecté dans ce run._")
+    lines += [
+        "",
+        "## Métriques principales",
+        "",
+        "| Métrique | Valeur finale |",
+        "|---|---:|",
+    ]
+    for label, engine, metric in selected_metrics:
+        value = latest_metrics.get(engine, {}).get(metric)
+        lines.append(f"| {label} | {value if value is not None else '—'} |")
+    lines += [
+        "",
+        "## Évolution par tick",
+        "",
+        "| Tick | Vivants | Énergie | Émergence | Communautés | Messages |",
+        "|---:|---:|---:|---:|---:|---:|",
+    ]
+    series = report["metrics"]["series"]
+    tick_rows = report["ticks"]
+    if len(tick_rows) > 20:
+        indexes = sorted({round(index * (len(tick_rows) - 1) / 19) for index in range(20)})
+        tick_rows = [report["ticks"][index] for index in indexes]
+    for tick in tick_rows:
+        def series_value(engine: str, metric: str) -> str:
+            values = series.get(engine, {}).get(metric, [])
+            match = next((item["value"] for item in values if item["tick"] == tick["tick"]), None)
+            return "—" if match is None else f"{match:.4g}"
+
+        lines.append(
+            f"| {tick['tick']} | {tick['aliveCount']} | {tick['meanEnergy']:.4g} | "
+            f"{series_value('EmergenceIndicators', 'EmergenceScore')} | "
+            f"{series_value('GroupDynamicsMetrics', 'InferredCommunities')} | "
+            f"{series_value('InformationPropagationMetrics', 'MessageVolume')} |"
+        )
+    lines += [
+        "",
+        "## Calibration ECHOS",
+        "",
+        f"- Politique : {report['calibration'].get('calibrationPolicy', '—')}",
+        f"- Phénomènes détectés : {len(report.get('detectedPhenomena', []))}",
+        (
+            f"- Événements pertinents affichés : {len(notable_events)}"
+            f"/{len(all_notable_events)}"
+            if len(notable_events) < len(all_notable_events)
+            else f"- Événements pertinents : {len(notable_events)}"
+        ),
+        "",
+        "### Liste des phénomènes détectés",
+        "",
+    ]
+    detected = report.get("detectedPhenomena", [])
+    if detected:
+        lines.extend([
+            "| Phénomène | Première détection | Dernière détection | Occurrences |",
+            "|---|---:|---:|---:|",
+        ])
+        for phenomenon in detected:
+            lines.append(
+                f"| **{phenomenon['label']}** (`{phenomenon['identifier']}`) | "
+                f"{phenomenon['firstTick']} | {phenomenon['lastTick']} | "
+                f"{phenomenon['occurrences']} |"
+            )
+            if phenomenon["description"]:
+                lines.append(f"  \n  _{phenomenon['description']}_")
+    else:
+        lines.append("_Aucun phénomène détecté sur les ticks ingérés._")
+    lines += [
+        "",
+        "Les occurrences et signaux détaillés par tick restent disponibles dans "
+        "`contexts.phenomena` de la trace.",
+        "",
+        "## Traces et données détaillées",
+        "",
+        f"La trace associée ({'Parquet' if trace_artifact == 'parquet' else 'JSON'}) contient "
+        "l'intégralité des événements, métriques, contextes, traces de décision et "
+        "données de calibration. Ce document Markdown conserve uniquement la "
+        "synthèse utile à la comparaison humaine.",
+        "",
+        f"- Trace complète : `{run['runId']}.{trace_artifact}`",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+generate_markdown_report = markdown_report
+
+
+def _json_repr(payload: object) -> str:
+    """Sérialisation JSON compacte et déterministe (clés triées)."""
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _trace_rows(report: dict[str, Any], run_id: str) -> list[tuple]:
+    """Aplatit le rapport canonique en lignes normalisées Parquet.
+
+    Chaque ligne porte ``section`` (run|tick|event|metric|decision|context|
+    detected_phenomenon|calibration) et, selon la section, ``tick``, ``engine``,
+    ``metric``, ``key``, ``value`` ou ``payload`` (JSON compact). La trace est
+    la donnée d'archivage « complète » : elle remplace le JSON sans
+    perte d'information (ordre stable, valeurs déterministes).
+    """
+    rows: list[tuple] = [
+        ("run", run_id, None, None, None, "metadata", None, _json_repr(report["run"]))
+    ]
+    for tick in report["ticks"]:
+        rows.append(("tick", run_id, tick["tick"], None, None, None, None, _json_repr(tick)))
+    for event in report["events"]:
+        rows.append(
+            ("event", run_id, event["tick"], None, None, event["type"], None, _json_repr(event))
+        )
+    for engine, metrics in report["metrics"]["series"].items():
+        for metric, points in metrics.items():
+            for point in points:
+                rows.append(
+                    ("metric", run_id, point["tick"], engine, metric, None, point["value"], None)
+                )
+    for decision in report["decisionTraces"]:
+        rows.append(
+            ("decision", run_id, decision["tick"], None, None, decision["agent_id"], None,
+             _json_repr(decision))
+        )
+    for context_type, observations in report["contexts"].items():
+        for observation in observations:
+            rows.append(
+                ("context", run_id, observation["tick"], None, None, context_type, None,
+                 _json_repr(observation["payload"]))
+            )
+    for phenomenon in report.get("detectedPhenomena", []):
+        rows.append(
+            ("detected_phenomenon", run_id, None, None, None, phenomenon["identifier"], None,
+             _json_repr(phenomenon))
+        )
+    rows.append(
+        ("calibration", run_id, None, None, None, "report", None, _json_repr(report["calibration"]))
+    )
+    return rows
+
+
+def parquet_report(
+    store: AnalyticsStore,
+    run_id: str,
+    path: str | Path,
+    *,
+    seed_override: int | str | None = None,
+) -> Path:
+    """Expose la trace complète du run en Parquet columnar (archivage).
+
+    Écrit un seul fichier Parquet normalisé (schéma ``_TRACE_SCHEMA``) à partir
+    du modèle canonique : chaque ligne est requêtable (``section``,
+    ``engine``/``metric``, ``key``...) et l'ordre est déterministe (aucune
+    horodatation d'émission). Renvoie le chemin écrit.
+    """
+    report = build_report(store, run_id, seed_override=seed_override)
+    rows = _trace_rows(report, run_id)
+    columns = {
+        field.name: [row[index] for row in rows] for index, field in enumerate(_TRACE_SCHEMA)
+    }
+    table = pa.Table.from_pydict(columns, schema=_TRACE_SCHEMA)
+    pq.write_table(table, str(path), compression="snappy")
+    return Path(path)
+
+
+def write_reports(
+    store: AnalyticsStore,
+    run_id: str,
+    output_dir: str | Path,
+    *,
+    seed_override: int | str | None = None,
+    parquet: bool = False,
+) -> tuple[Path, Path]:
+    """Write deterministic trace + markdown files and return their paths.
+
+    ``parquet=False`` (défaut, rétrocompatible) écrit ``JSON`` + ``.md``.
+    ``parquet=True`` écrit la **trace complète** ``.parquet`` + ``.md`` (le
+    Parquet remplace le JSON comme archive, sans perte d'information).
+    """
+    directory = Path(output_dir)
+    directory.mkdir(parents=True, exist_ok=True)
+    if parquet:
+        trace_path = parquet_report(
+            store, run_id, directory / f"{run_id}.parquet", seed_override=seed_override
+        )
+        artifact = "parquet"
+    else:
+        trace_path = directory / f"{run_id}.json"
+        trace_path.write_text(
+            json_report(store, run_id, seed_override=seed_override) + "\n",
+            encoding="utf-8",
+        )
+        artifact = "json"
+    markdown_path = directory / f"{run_id}.md"
+    markdown_path.write_text(
+        markdown_report(store, run_id, seed_override=seed_override, trace_artifact=artifact),
+        encoding="utf-8",
+    )
+    return trace_path, markdown_path
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Generate an ECHOS completed-run report")
+    parser.add_argument("database", type=Path)
+    parser.add_argument("run_id")
+    parser.add_argument("-o", "--output-dir", type=Path, default=Path("."))
+    parser.add_argument("--seed", help="seed à archiver si le flux ne la transporte pas")
+    parser.add_argument(
+        "--parquet",
+        action="store_true",
+        help="écrit la trace complète en .parquet à la place du .json (le .md reste généré)",
+    )
+    args = parser.parse_args(argv)
+    with AnalyticsStore(args.database) as store:
+        trace_path, markdown_path = write_reports(
+            store,
+            args.run_id,
+            args.output_dir,
+            seed_override=args.seed,
+            parquet=args.parquet,
+        )
+        print(f"Trace : {trace_path}")
+        print(f"Rapport Markdown : {markdown_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
