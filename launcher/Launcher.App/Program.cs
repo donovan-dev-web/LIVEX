@@ -9,7 +9,7 @@ using Launcher.App.Composition;
 namespace Launcher.App;
 
 /// <summary>
-/// Point d'entrée du Launcher (README docs-launcher) :
+/// Point d'entrée du Launcher (README docs/launcher) :
 /// livex-launcher fenêtre native, ouverture de l'espace de travail
 /// livex-launcher --check vérification de l'environnement, sans interface
 /// livex-launcher --package X ouverture d'une campagne

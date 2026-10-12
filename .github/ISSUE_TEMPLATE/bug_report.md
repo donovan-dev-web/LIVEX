@@ -38,4 +38,4 @@ Définition vérifiable du « bug corrigé ».
 ## Liens
 
 - Issues liées : `#...`
-- ADR concernés : `docs/adr/...`
+- ADR concernés : `../../docs/adr/...`

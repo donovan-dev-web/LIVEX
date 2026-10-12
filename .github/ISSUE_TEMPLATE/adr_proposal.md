@@ -21,7 +21,7 @@ Situation ou problème qui justifie une décision d'architecture. Données objec
 
 ## Alternatives considérées
 
-Options alternatives étudiées et raison de leur abandon (indispensable — cf. `docs/adr/0000-template.md`).
+Options alternatives étudiées et raison de leur abandon (indispensable — cf. `../../docs/adr/0000-template.md`).
 
 ## Statut initial
 

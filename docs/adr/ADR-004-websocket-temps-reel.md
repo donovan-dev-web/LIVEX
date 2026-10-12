@@ -44,7 +44,7 @@ Les consommateurs actuels comprennent ECHOS (client Python) et PRISM
 
 ## Validation / rejet
 
-- Les formats actuels `world_initialized`, `snapshot` et `event` sont détaillés dans `docs/docs-syne/API_CONTRACTS.md` ; cette ADR n'est pas la source de vérité des schémas.
+- Les formats actuels `world_initialized`, `snapshot` et `event` sont détaillés dans `../syne/API_CONTRACTS.md` ; cette ADR n'est pas la source de vérité des schémas.
 
 ---
 
