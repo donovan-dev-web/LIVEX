@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 12 octobre 2026
 **Dépend de** : —
 **Source Monographie** : §7.1 (organisation du monorepo), Annexe J (roadmap V2)
 
@@ -49,7 +49,7 @@ Règles transverses :
 
 Le versionnement est déclenché par les évènements suivants :
 
-- `MINOR`/`MAJOR` → fusion dans `develop` puis promotions successives des branches `release/` (cf. `GITFLOW.md`).
+- `MINOR`/`MAJOR` → fusion dans `develop` puis promotions successives des branches `release/` (cf. `docs/governance/GITFLOW.md`).
 - `PATCH` → fusion directe (hotfix) dans `main` et `develop`.
 
 ## 6. Changelog
@@ -62,7 +62,26 @@ Le versionnement est déclenché par les évènements suivants :
 
 - Le projet est en pré-1.0 : `MAJOR` reste à `0`.
 - Toute libération composant visible publiquement incrémente au minimum `PATCH`.
-- Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `ROADMAP.md`.
+- Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `docs/governance/ROADMAP.md`.
+
+## 8. État courant des versions (octobre 2026)
+
+> Synoptique de référence après la campagne de correctifs
+> de runs du 29/09/2026 (ADR-015). L'état détaillé et les
+> matrice de compatibilité par composant vivent dans `docs/syne/ROADMAP.md`
+> et `docs/echos/ROADMAP.md`.
+
+| Composant / contrat | Version | Évolution |
+| :-- | :-- | :-- |
+| **SYNE** | **0.15.0** | MINOR : calibration **B1** des défauts intégrés (ADR-016) — coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives social/curiosité abaissées, réserves 20 000 avec régénération nette, coûts de communication neutres ; stabilité 2500 ticks à 50 et 100 agents, goldens re-épinglés. (0.14.0 : jalon ADR cognitifs, drapeaux inerte — 0.13.0 : calibration D1, ADR-015) — **inchangée par ADR-017** (échelle temporelle : profil par défaut bit-à-bit identique) |
+| Contrat d'observabilité (snapshot) | **0.4.0** | **ADR-017 (additif)** : `simulatedTimeSeconds` dans le snapshot ; description `world_initialized` 1.0 → **1.1** (`simulatedSecondsPerTick`, `metersPerUnit`) ; `/api/control/status` + `simulatedSecondsPerTick`. `simulatedTimeMinutes` (plancher entier, stockage ECHOS) inchangé. (0.3.0 : champs additifs sous drapeaux — 0.2.1 : champ `seed`) |
+| Format `run_id` | `run-<seed>-<12hex>` | Seed explicite dans l'identifiant ; ECHOS ne dérive plus le seed de l'id (repli `_seed_of` conservé) |
+| **ECHOS** (paquet Python) | **0.1.0** | Version du paquet `echos` (`echos/echos/__init__.py`) — pré-1.0, sans lien automatique avec le schéma de stockage |
+| ECHOS (stockage/calibration) | schéma SQLite **v6** | Migration additive `mean_food`/`mean_water`, rapport de calibration par run avec bloc `viability` |
+| **Launcher** | **0.1.0** | `launcher/Directory.Build.props` (`<Version>`) — statut produit V1 (`launcher/ROADMAP-V1.md`) ; manifeste `.livexp` versionné à part (`Launcher.Protocol`) |
+| **syne-mock** | **0.1.0** | `syne-mock/package.json` ; contrat aligné sur le snapshot SYNE 0.4.0 |
+| **PRISM / PRISM-LDK** | sans version propre | Projet Unreal + plugin `PrismLdk` en [DRAFT] ; ils consomment le contrat SYNE 0.4.0 plutôt que de porter un numéro de version |
+| Présentation d'ECHOS | **retirée** (oct. 2026) | `echos-ui` supprimé (ADR-007) : la fenêtre d'analyse du Launcher consomme `outcome`/`extinctionTick` et `/api/compare?light=1` |
 
 ---
 

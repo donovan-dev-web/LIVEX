@@ -1,0 +1,142 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Régression de déterminisme bit-à-bit de la perception (SYNE-015) : même seed + config ⇒ même séquence de
+//        perception.
+
+using System.Globalization;
+using System.Text;
+using Simulation.Core.Cognition;
+using Simulation.Core.Configuration;
+using Simulation.Core.Entities;
+using Simulation.Core.Loop;
+using Simulation.Core.Prng;
+using Simulation.Core.World;
+using Xunit;
+
+namespace Simulation.Core.Tests;
+
+/// <summary>
+/// Régression de déterminisme bit-à-bit de la perception (SYNE-015) :
+/// même seed + config ⇒ même séquence de perception. Le hash de trajectoire est
+/// épinglé (checksum de run).
+/// </summary>
+public class DeterminismRegressionTests
+{
+    private const ulong FnvOffsetBasis = 14695981039346656037UL;
+    private const ulong FnvPrime = 1099511628211UL;
+
+    private static SimulationOptions ScenarioOptions(ulong seed) => ConfigLoader.LoadDefaults();
+
+    private static SimulationLoop BuildScenario(ulong populationSeed, ulong entityCount)
+    {
+        var world = new Simulation.Core.World.World(WorldSize.From(ScenarioOptions(42)), spatialCellSize: 50);
+        world.AddObstacle(new Obstacle("rocher-1", new Position(250, 150), radius: 15));
+        world.AddObstacle(new Obstacle("rocher-2", new Position(420, 380), radius: 25));
+
+        Xoshiro256StarStar rng = Xoshiro256StarStar.Create(populationSeed);
+        for (ulong i = 1; i <= entityCount; i++)
+        {
+            (Entity entity, rng) = EntityFactory.CreateNext(EntityTemplate.DefaultA, world, rng, i, bornAt: 0);
+            world.AddEntity(entity);
+        }
+
+        return new SimulationLoop(world, rng, ScenarioOptions(populationSeed));
+    }
+
+    private static string BuildPerceptionLog(SimulationLoop loop, int ticks)
+    {
+        var log = new StringBuilder();
+        for (int tick = 1; tick <= ticks; tick++)
+        {
+            loop.AdvanceOneTick();
+            foreach (Entity entity in loop.World.Entities.OrderBy(e => e.Id.Value))
+            {
+                MindState mind = loop.Cognition.MindOf(entity.Id.Value);
+                log.Append(tick.ToString(CultureInfo.InvariantCulture));
+                log.Append(';');
+                log.Append(entity.Id.Value);
+                log.Append(';');
+                log.Append(mind.Memory.Recall((ulong)tick).Count.ToString(CultureInfo.InvariantCulture));
+                log.Append(';');
+                log.Append(mind.Intention?.Kind ?? DesireKind.Idle);
+                log.Append(';');
+                foreach (MemoryRecall recall in mind.Memory.Recall(MemoryCategory.Observation, (ulong)tick).Take(8))
+                {
+                    log.Append(recall.Entry.Content);
+                    log.Append('|');
+                }
+
+                log.Append('\n');
+            }
+        }
+
+        return log.ToString();
+    }
+
+    private static ulong Fnv1a(string text)
+    {
+        ulong hash = FnvOffsetBasis;
+        foreach (byte value in Encoding.UTF8.GetBytes(text))
+        {
+            hash ^= value;
+            hash *= FnvPrime;
+        }
+
+        return hash;
+    }
+
+    [Fact]
+    public void SameSeedAndConfig_ProducesIdenticalPerceptionSequence()
+    {
+        foreach (ulong seed in new ulong[] { 12345, 42, 999 })
+        {
+            string first = BuildPerceptionLog(BuildScenario(seed, entityCount: 20), ticks: 150);
+            string second = BuildPerceptionLog(BuildScenario(seed, entityCount: 20), ticks: 150);
+
+            Assert.Equal(first, second);
+            Assert.Equal(Fnv1a(first), Fnv1a(second));
+        }
+    }
+
+    [Fact]
+    public void DifferentSeed_ProducesDifferentTrajectory()
+    {
+        string seededA = BuildPerceptionLog(BuildScenario(12345, entityCount: 20), ticks: 100);
+        string seededB = BuildPerceptionLog(BuildScenario(12346, entityCount: 20), ticks: 100);
+
+        Assert.NotEqual(seededA, seededB);
+    }
+
+    [Fact]
+    public void GoldenChecksum_IsPinned()
+    {
+        // Épinglé au jalon SYNE ph6 (engineVersion 0.5.0) puis ré-épinglé au jalon ph7b
+        // (engineVersion 0.6.0) : les fidélités SYNE-074…077 (mortalité, naissance consentie
+        // fidèle, décision collective → objectifs, cheminement A* déterministe) n'altèrent pas
+        // ce scénario — le checksum reste 0x27fad50065d8c4a4 — impose recalcul
+        // + bump MINOR à chaque altération bit-à-bit de la trajectoire.
+        // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x27fad50065d8c4a4 →
+        // 0xdb57f58566418f5d. SEULE cause mesurée : le garde anti-relay de
+        // CommunicationSystem.CanRelay, désormais relié à CommunicationState.HasRelayed.
+        // Ré-épinglé au jalon calibration D1 (engineVersion 0.13.0) : 0xdb57f58566418f5d →
+        // 0x46769cfb11c8b3a7. Cause unique et isolée : rééquilibrage de l'arbitrage
+        // utilitaire (BenefitOf Eat/Drink = min(need,100)×0.6) et du bilan énergétique
+        // (EnergyRecovery eat 2.0 / drink 1.0) portés par le profil de référence —
+        // les agents mangent plus tôt, la trajectoire diverge à partir des premières
+        // délibérations. Scénario de DEFAULTS (non passé par le profil) : l'effet
+        // porte sur la formule d'utilité, partagée par toutes les configurations.
+        // Sans lui, un même message était relayé autant de fois que l'agent le rencontrait
+        // via des canaux distincts, épuisant l'énergie et saturant le réseau ; l'état
+        // « déjà relayé » était écrit mais jamais consulté. Vérifié par isolation : la
+        // neutralisation isolée de ce garde restitue exactement 0x27fad50065d8c4a4, et
+        // l'atomicité des réserves (ActionExecutor), la file de messages bornée et la
+        // centralisation des hachages sont bit-à-bit neutres sur ce scénario.
+        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0) :
+        // 0x46769cfb11c8b3a7 → 0xf4aaa2733e491935. Cause unique et isolée : recalage des
+        // DÉFAUTS intégrés (coût de déplacement 0,5 → 0,03, gains Eat/Drink 0/0 → 2,0/1,0,
+        // dérives social/curiosité, réserves et coûts de communication) — cette fois
+        // porté par les défauts eux-mêmes et non par le profil ; re-pin assumé.
+        string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
+        Assert.Equal("0xf4aaa2733e491935", $"0x{Fnv1a(log):x16}");
+    }
+}
