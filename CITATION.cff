@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "Si vous utilisez ce logiciel, merci de le citer comme indiqué ci-dessous."
+title: "LIVEX — Living Intelligent Virtual Ecosystem eXperience"
+type: software
+authors:
+  - family-names: Chartrain
+    given-names: Donovan
+    email: donovan.chartrain@gmail.com
+    website: https://donovan-dev-web.vercel.app
+version: 0.1
+date-released: 2026-10-12
+license: MIT
+repository-code: "https://github.com/donovan-dev-web/LIVEX"
+abstract: >-
+  LIVEX est un projet de recherche et d'expérimentation en vie artificielle et
+  en simulation multi-agents. Des entités autonomes, dotées d'une architecture
+  cognitive BDI (croyances, désirs, intentions), évoluent dans un monde régi
+  par des règles explicites ; le système observe les comportements collectifs
+  émergents sans les imposer. La pile comprend le moteur de simulation SYNE
+  (.NET), l'observatoire d'analyse ECHOS (FastAPI), le projet Unreal PRISM avec
+  son plugin PRISM-LDK, l'orchestrateur Launcher (Avalonia) et le serveur de
+  test syne-mock (Node.js). Résultats déterministes et reproductibles par graine.
+keywords:
+  - artificial-life
+  - multi-agent-simulation
+  - emergence
+  - bdi-architecture
+  - determinism
+  - virtual-ecosystem
