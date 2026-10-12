@@ -11,7 +11,9 @@
         SystemDecorations="None"
         TransparencyLevelHint="Transparent"
         FontFamily="Inter, Segoe UI, Ubuntu, sans-serif"
-        Background="transparent">
+        Background="transparent"
+        CornerRadius="16"
+        ClipToBounds="True">
 
   <!-- Fond de page : dégradé radial sombre, signature de la maquette (GUI.md §3.1). -->
   <Window.Styles>
@@ -191,9 +193,9 @@
       <Setter Property="BorderThickness" Value="0"/>
       <Setter Property="CornerRadius" Value="4"/>
       <Setter Property="Foreground" Value="#d7dbe2"/>
-      <Setter Property="Width" Value="40"/>
+      <Setter Property="Width" Value="32"/>
       <Setter Property="Height" Value="32"/>
-      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Padding" Value="10"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
       <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
@@ -259,15 +261,27 @@
 
   <!-- Fond en dégradé radial (GUI.md §3.1 : pic #141821 en haut) -->
   <Window.Background>
-    <RadialGradientBrush Center="0.5,0.0" GradientOrigin="0.5,0.0" RadiusX="0.95" RadiusY="0.85">
-      <GradientStop Color="#141821" Offset="0"/>
-      <GradientStop Color="#0a1017" Offset="0.45"/>
-      <GradientStop Color="#07090d" Offset="1"/>
-    </RadialGradientBrush>
+    <SolidColorBrush Color="Transparent"/>
   </Window.Background>
 
   <!-- Surface arrondie sans chrome natif : les commandes de fenêtre sont dans la topbar. -->
-  <Border Background="#07090d" BorderBrush="#303640" BorderThickness="1" CornerRadius="14" ClipToBounds="True">
+  <!-- Surface principale : fond, bordure et découpage arrondis -->
+  <Border BorderBrush="#303640"
+          BorderThickness="1"
+          CornerRadius="16"
+          ClipToBounds="True">
+
+    <Border.Background>
+      <RadialGradientBrush Center="0.5,0.0"
+                           GradientOrigin="0.5,0.0"
+                           RadiusX="0.95"
+                           RadiusY="0.85">
+        <GradientStop Color="#141821" Offset="0"/>
+        <GradientStop Color="#0a1017" Offset="0.45"/>
+        <GradientStop Color="#07090d" Offset="1"/>
+      </RadialGradientBrush>
+    </Border.Background>
+
   <!--
     Colonnes et rangées explicites partout : une colonne implicite se dimensionne au contenu
     et fait déborder les enfants. L'image de fond vit dans un Panel (jamais en cellule
@@ -443,7 +457,7 @@
                                        IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=echos}"/>
                                 <Image Source="avares://livex-launcher/Assets/component-prism.png" Stretch="UniformToFill" Opacity="0.82"
                                        IsVisible="{Binding Id, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}"/>
-                                <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*">
+                                <Grid RowDefinitions="Auto,*,Auto,Auto,Auto" ColumnDefinitions="*">
                                 <!-- Grid et non StackPanel : un StackPanel horizontal mesure ses enfants
                                      à l'infini, leurs dimensions naturelles gonflent alors la colonne « * »
                                      de la grille parente et font déborder la carte. -->
@@ -466,47 +480,105 @@
 
                                 <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="12.5" Foreground="#d0d4dc"
                                            Margin="16,8,16,8" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                           
+                                <!-- Ligne 2 : pastille d'état + console -->
+                                <Grid Grid.Row="2"
+                                      ColumnDefinitions="*,Auto"
+                                      Margin="14,0,14,9"
+                                      ColumnSpacing="10">
 
-                                <Border Grid.Row="2" Classes="pill" HorizontalAlignment="Left" Margin="14,0,0,9"
-                                        Background="#101820" BorderBrush="{Binding StateColor}" BorderThickness="1">
-                                  <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Ellipse Width="8" Height="8" Fill="{Binding StateColor}" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding StateLabel}" Foreground="{Binding StateColor}" FontSize="11.5" VerticalAlignment="Center"/>
-                                  </StackPanel>
-                                </Border>
-
-                                <Grid Grid.Row="3" ColumnDefinitions="*,10,*,10,*" Margin="14,0,14,12">
-                                  <!-- Bascule démarrer/arrêter : le libellé et l'icône changent avec l'état (GUI.md §7.1). -->
-                                  <Button Grid.Column="0" Classes="btn" Padding="6,0"
-                                          IsEnabled="{Binding CanToggle}"
-                                          Command="{Binding $parent[Window].DataContext.ToggleComponentCommand}" CommandParameter="{Binding Id}">
-                                    <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-play.svg" Width="15" Height="15" Stretch="Uniform"
-                                               IsVisible="{Binding !IsRunning}"/>
-                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-stop.svg" Width="15" Height="15" Stretch="Uniform"
-                                               IsVisible="{Binding IsRunning}"/>
-                                      <TextBlock Text="{Binding ToggleLabel}" VerticalAlignment="Center"/>
+                                  <!-- Pastille d'état -->
+                                  <Border Classes="pill"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          Background="#101820"
+                                          BorderBrush="{Binding StateColor}"
+                                          BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                      <Ellipse Width="8"
+                                              Height="8"
+                                              Fill="{Binding StateColor}"
+                                              VerticalAlignment="Center"/>
+                                      <TextBlock Text="{Binding StateLabel}"
+                                                Foreground="{Binding StateColor}"
+                                                FontSize="11.5"
+                                                VerticalAlignment="Center"/>
                                     </StackPanel>
-                                  </Button>
-                                  <!-- Console de logs du composant (USER_INTERFACE.md §9) : instance vivante requise. -->
-                                  <Button Grid.Column="2" Classes="btn" Padding="6,0"
+                                  </Border>
+
+                                  <!-- Bouton Console -->
+                                  <Button Grid.Column="1"
+                                          Classes="btn"
+                                          Padding="10,0"
                                           IsEnabled="{Binding CanOpenConsole}"
                                           ToolTip.Tip="Ouvrir la console de logs du composant"
-                                          Command="{Binding $parent[Window].DataContext.OpenConsoleCommand}" CommandParameter="{Binding InstanceId}">
-                                    <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-log.svg" Width="15" Height="15" Stretch="Uniform"/>
-                                      <TextBlock Text="Console" VerticalAlignment="Center"/>
+                                          Command="{Binding $parent[Window].DataContext.OpenConsoleCommand}"
+                                          CommandParameter="{Binding InstanceId}">
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="9"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-log.svg"
+                                              Width="15"
+                                              Height="15"
+                                              Stretch="Uniform"/>
+                                      <TextBlock Text="Console"
+                                                VerticalAlignment="Center"/>
                                     </StackPanel>
                                   </Button>
-                                  <!-- Secondaire : ouvre l'écran Configuration. -->
-                                  <Button Grid.Column="4" Classes="btn" Padding="6,0"
-                                          Command="{Binding $parent[Window].DataContext.NavigateCommand}" CommandParameter="configuration">
-                                    <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg" Width="15" Height="15" Stretch="Uniform"/>
-                                      <TextBlock Text="Configurer" VerticalAlignment="Center"/>
+                                </Grid>
+
+                                <!-- Ligne 3 : Démarrer/Arrêter + Configurer -->
+                                <Grid Grid.Row="3"
+                                      ColumnDefinitions="*,10,*"
+                                      Margin="14,0,14,12">
+
+                                  <!-- Bascule démarrer / arrêter -->
+                                  <Button Grid.Column="0"
+                                          Classes="btn"
+                                          Padding="6,0"
+                                          IsEnabled="{Binding CanToggle}"
+                                          Command="{Binding $parent[Window].DataContext.ToggleComponentCommand}"
+                                          CommandParameter="{Binding Id}">
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="9"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-play.svg"
+                                              Width="15"
+                                              Height="15"
+                                              Stretch="Uniform"
+                                              IsVisible="{Binding !IsRunning}"/>
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-stop.svg"
+                                              Width="15"
+                                              Height="15"
+                                              Stretch="Uniform"
+                                              IsVisible="{Binding IsRunning}"/>
+                                      <TextBlock Text="{Binding ToggleLabel}"
+                                                VerticalAlignment="Center"/>
                                     </StackPanel>
                                   </Button>
-                                </Grid>                                </Grid>
+
+                                  <!-- Configuration -->
+                                  <Button Grid.Column="2"
+                                          Classes="btn"
+                                          Padding="6,0"
+                                          Command="{Binding $parent[Window].DataContext.NavigateCommand}"
+                                          CommandParameter="configuration">
+                                    <StackPanel Orientation="Horizontal"
+                                                Spacing="9"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center">
+                                      <svg:Svg Path="avares://livex-launcher/Assets/icons/icons-setting.svg"
+                                              Width="15"
+                                              Height="15"
+                                              Stretch="Uniform"/>
+                                      <TextBlock Text="Configurer"
+                                                VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                  </Button>
+                                </Grid>
+                            </Grid>
                               </Panel>
                             </Border>
                         </Border>
