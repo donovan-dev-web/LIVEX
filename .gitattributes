@@ -1,0 +1,35 @@
+# Fins de ligne
+# Le dépôt applique `end_of_line = lf` (voir .editorconfig). Les règles
+# ci-dessous sont volontairement ciblées : pas de renormalisation de l'arbre
+# existant, uniquement les types de fichiers pour lesquels la conversion est
+# dangereuse ou bloquante.
+
+# Scripts shell exécutés par la CI (ubuntu) : LF obligatoire.
+*.sh text eol=lf
+
+# Sources et configuration textuelles.
+*.cs text eol=lf
+*.cpp text eol=lf
+*.h text eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.svg text eol=lf
+
+# --- Binaires : aucune conversion de fin de ligne, aucun diff texte ---
+
+# Assets Unreal (hôte prism/LDK et projet PRISM). Une conversion de fin de
+# ligne automatique corromprait ces fichiers.
+*.uasset binary
+*.umap binary
+
+# Images et documents.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

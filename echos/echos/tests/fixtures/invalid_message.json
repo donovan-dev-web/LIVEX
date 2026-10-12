@@ -1,0 +1,10 @@
+{
+  "type": "snapshot",
+  "version": "0.1.0",
+  "runId": "run-abc",
+  "tick": -1,
+  "simulatedTimeMinutes": 5010,
+  "aliveCount": 98,
+  "agents": [],
+  "resources": []
+}

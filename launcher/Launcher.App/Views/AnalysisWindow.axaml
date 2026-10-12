@@ -1,0 +1,783 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Launcher.Presentation.ViewModel"
+        xmlns:views="using:Launcher.App.Views"
+        xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+        x:Class="Launcher.App.Views.AnalysisWindow"
+        x:DataType="vm:AnalysisWindowViewModel"
+        Title="Analyse — ECHOS"
+        Width="1360" Height="920"
+        MinWidth="1000" MinHeight="660"
+        FontFamily="Inter, Segoe UI, Ubuntu, sans-serif"
+        Background="#070a0f">
+
+  <!--
+    Fenêtre d'analyse native (ADR-007) : elle remplace l'interface web/Electron d'ECHOS.
+    Menu de sous-écrans (USER_INTERFACE.md §9.2) — viabilité, comportements (courbes,
+    communautés, phénomènes), statistiques exactes, comparaison, relations et groupes,
+    monde et territoires, fiches d'entités. Tout vient de l'API REST d'ECHOS (ADR-003) :
+    aucune moyenne, aucun écart-type, aucun indice composite n'est calculé ici.
+    Une barre de relecture déplace une fenêtre de lecture sur les séries publiées :
+    elle ne modifie ni SYNE ni les données d'ECHOS.
+  -->
+  <Window.Styles>
+    <Style Selector="TextBlock.h-console">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="Foreground" Value="#e8e6e1"/>
+      <Setter Property="LetterSpacing" Value="2.2"/>
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="#9aa0aa"/>
+      <Setter Property="FontSize" Value="11.5"/>
+    </Style>
+    <Style Selector="TextBlock.small">
+      <Setter Property="Foreground" Value="#5f6875"/>
+      <Setter Property="FontSize" Value="11"/>
+    </Style>
+    <Style Selector="TextBlock.body">
+      <Setter Property="Foreground" Value="#e8e6e1"/>
+      <Setter Property="FontSize" Value="12.5"/>
+    </Style>
+    <Style Selector="TextBlock.chart-title">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="Foreground" Value="#e0a25a"/>
+      <Setter Property="LetterSpacing" Value="1.8"/>
+    </Style>
+    <Style Selector="Button.btn">
+      <Setter Property="Background" Value="#12151d"/>
+      <Setter Property="BorderBrush" Value="#3a3f4a"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Foreground" Value="#e8e6e1"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Padding" Value="12,0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.btn:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1a1f29"/>
+    </Style>
+    <Style Selector="Button.btn:disabled">
+      <Setter Property="Opacity" Value="0.42"/>
+    </Style>
+    <Style Selector="ToggleButton.btn">
+      <Setter Property="Background" Value="#12151d"/>
+      <Setter Property="BorderBrush" Value="#3a3f4a"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Foreground" Value="#9aa0aa"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="Padding" Value="12,0"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="ToggleButton.btn:checked">
+      <Setter Property="Background" Value="#1d2733"/>
+      <Setter Property="BorderBrush" Value="#2d9bf0"/>
+      <Setter Property="Foreground" Value="#e8e6e1"/>
+    </Style>
+    <Style Selector="ToggleButton.btn /template/ ContentPresenter">
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="#0b0f16"/>
+      <Setter Property="BorderBrush" Value="#262b34"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="Padding" Value="12"/>
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="TextBox">
+      <Setter Property="Height" Value="30"/>
+      <Setter Property="FontSize" Value="12.5"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <!-- Menu des sous-écrans : sélection claire, sans chrome de liste. -->
+    <Style Selector="ListBox.sections">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="ListBox.sections ListBoxItem">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0,2"/>
+      <Setter Property="MinHeight" Value="0"/>
+    </Style>
+    <Style Selector="ListBox.sections ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#10141b"/>
+    </Style>
+    <Style Selector="ListBox.sections ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background">
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+          <GradientStop Color="#4a3822" Offset="0"/>
+          <GradientStop Color="#2a2119" Offset="0.85"/>
+        </LinearGradientBrush>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <DockPanel>
+
+    <!--
+      Barre d'outils sur deux lignes : le statut (peut être très long en cas
+      d'indisponibilité) ne doit **jamais** repousser le sélecteur de run hors de
+      la fenêtre — ligne 1 : titre + statut tronqué ; ligne 2 : sélection du run,
+      pas de lecture, direct, actualisation.
+    -->
+    <Border DockPanel.Dock="Top" Background="#0b0f16" BorderBrush="#262b34" BorderThickness="0,0,0,1" Padding="14,10">
+      <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,*">
+          <TextBlock Text="ANALYSE" Classes="h-console" VerticalAlignment="Center"/>
+          <TextBlock Grid.Column="1" Text="{Binding StatusText}" Classes="muted"
+                     HorizontalAlignment="Right" VerticalAlignment="Center" Margin="16,0,0,0"
+                     TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <TextBlock Text="RUN" Classes="small" VerticalAlignment="Center" Margin="0,0,2,0"/>
+          <TextBlock Text="aucun run — ECHOS sans donnée ou injoignable" Classes="small"
+                     VerticalAlignment="Center" Margin="0,0,6,0"
+                     IsVisible="{Binding Runs.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+          <ComboBox MinWidth="340"
+                    Name="RunSelector"
+                    ItemsSource="{Binding Runs}"
+                    SelectedItem="{Binding SelectedRun}"
+                    ToolTip.Tip="Run analysé (base analytique ECHOS) — liste recalée à chaque relevé, la sélection est conservée">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:EchosRunOption">
+                <TextBlock Text="{Binding Label}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <ComboBox Width="92"
+                    ItemsSource="{Binding EveryOptions}"
+                    SelectedItem="{Binding Every}"
+                    ToolTip.Tip="Pas de sous-échantillonnage des séries"/>
+          <ToggleButton Classes="btn" Content="Direct" IsChecked="{Binding IsLive, Mode=TwoWay}"
+                        ToolTip.Tip="Suivre le direct : relecture d'ECHOS toutes les secondes. Distinguer de la relecture d'un run stocké (barre inférieure)."/>
+          <Button Classes="btn" Content="Actualiser" Command="{Binding RefreshCommand}" CommandParameter="refresh"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Pied : compte-rendu factuel du relevé, sans interprétation. -->
+    <Border DockPanel.Dock="Bottom" Background="#0b0f16" BorderBrush="#262b34" BorderThickness="0,1,0,0" Padding="14,7">
+      <StackPanel Spacing="2">
+        <TextBlock Text="{Binding DetailText}" Classes="muted"/>
+        <TextBlock Text="{Binding NetworkText}" Classes="small"/>
+      </StackPanel>
+    </Border>
+
+    <!-- Barre de relecture (P3) : fenêtre de lecture sur les séries publiées. -->
+    <Border DockPanel.Dock="Bottom" Background="#0b0f16" BorderBrush="#262b34" BorderThickness="0,1,0,0" Padding="14,7">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <TextBlock Text="RELECTURE" Classes="h-console" VerticalAlignment="Center"/>
+          <Button Classes="btn" Content="Préc." Command="{Binding ReplayCommand}" CommandParameter="prev"
+                  ToolTip.Tip="Tick précédent de la fenêtre publiée"/>
+          <Button Classes="btn" Content="Suiv." Command="{Binding ReplayCommand}" CommandParameter="next"
+                  ToolTip.Tip="Tick suivant de la fenêtre publiée"/>
+          <Button Classes="btn" Content="Lecture" Command="{Binding ReplayCommand}" CommandParameter="play"
+                  ToolTip.Tip="Lecture automatique à la vitesse choisie"/>
+          <Button Classes="btn" Content="Pause" Command="{Binding ReplayCommand}" CommandParameter="pause"/>
+          <Button Classes="btn" Content="Direct" Command="{Binding ReplayCommand}" CommandParameter="live"
+                  ToolTip.Tip="Retour au dernier tick publié"/>
+        </StackPanel>
+
+        <Slider Grid.Column="1" Margin="16,0"
+                Minimum="{Binding ReplayMinimum}"
+                Maximum="{Binding ReplayMaximum}"
+                Value="{Binding ReplayPosition}"
+                VerticalAlignment="Center"
+                ToolTip.Tip="Curseur de tick : affiche les séries jusqu'à ce tick, sans interpolation"/>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <TextBlock Text="{Binding ReplayText}" Classes="muted" VerticalAlignment="Center"/>
+          <ComboBox Width="96"
+                    ItemsSource="{Binding ReplaySpeedOptions}"
+                    SelectedItem="{Binding ReplaySpeed}"
+                    ToolTip.Tip="Ticks avancés par seconde de relecture — aucun effet sur SYNE"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Menu des sous-écrans (USER_INTERFACE.md §9.2). -->
+    <Border DockPanel.Dock="Left" Width="236" Background="#0b0f16" BorderBrush="#262b34"
+            BorderThickness="0,0,1,0" Padding="10,14">
+      <ListBox Classes="sections" ItemsSource="{Binding Sections}" SelectedItem="{Binding SelectedSection}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:AnalysisSectionOption">
+            <StackPanel Spacing="2" Margin="10,8">
+              <TextBlock Text="{Binding Title}" FontSize="13" Foreground="#e8e6e1"/>
+              <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="#9aa0aa" TextWrapping="Wrap"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="14,12" Spacing="12">
+
+        <!-- ═══════════ SOUS-ÉCRAN : VIABILITÉ (premier écran, P3) ═══════════ -->
+        <StackPanel Spacing="12"
+                    IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=viabilite}">
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="VIABILITÉ DU RUN" Classes="chart-title"/>
+              <TextBlock DockPanel.Dock="Top" Text="{Binding ViabilityHeader}" Classes="muted" Margin="0,6,0,0"/>
+              <TextBlock DockPanel.Dock="Top" Text="{Binding ViabilityCalibration}" Classes="small" Margin="0,4,0,0"/>
+              <TextBlock DockPanel.Dock="Bottom" Text="{Binding ViabilityNote}" Classes="small"
+                         Margin="0,8,0,0" TextWrapping="Wrap"/>
+              <ScrollViewer Margin="0,10,0,0" MaxHeight="300">
+                <StackPanel>
+                  <Grid ColumnDefinitions="2*,*,3*" Margin="0,0,0,6">
+                    <TextBlock Text="FAIT PUBLIÉ" Classes="small"/>
+                    <TextBlock Grid.Column="1" Text="VALEUR" Classes="small"/>
+                    <TextBlock Grid.Column="2" Text="NOTE DE LECTURE" Classes="small"/>
+                  </Grid>
+                  <ItemsControl ItemsSource="{Binding ViabilityRows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ViabilityRow">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3,0,4">
+                          <Grid ColumnDefinitions="2*,*,3*">
+                            <TextBlock Text="{Binding Label}" Classes="muted"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Value}" Foreground="#e8e6e1"
+                                       FontFamily="Cascadia Code, Consolas, DejaVu Sans Mono, monospace"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Note}" Classes="small" TextWrapping="Wrap"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="Aucune donnée de viabilité publiée pour ce run." Classes="small"
+                             Margin="0,6,0,0"
+                             IsVisible="{Binding ViabilityRows.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                </StackPanel>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+
+          <!-- Panneaux par unité : population, besoins, réserves ne partagent jamais un axe. -->
+          <Grid ColumnDefinitions="*,*,*">
+            <Border Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="POPULATION" Classes="chart-title" Margin="0,0,0,8"/>
+                <lvc:CartesianChart Height="220"
+                                    Series="{Binding PopulationSeries}"
+                                    XAxes="{Binding PopulationXAxes}"
+                                    YAxes="{Binding PopulationYAxes}"/>
+              </DockPanel>
+            </Border>
+            <Border Grid.Column="1" Margin="12,0,0,0" Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="BESOINS MOYENS" Classes="chart-title" Margin="0,0,0,8"/>
+                <lvc:CartesianChart Height="220"
+                                    Series="{Binding NeedsSeries}"
+                                    XAxes="{Binding NeedsXAxes}"
+                                    YAxes="{Binding NeedsYAxes}"/>
+              </DockPanel>
+            </Border>
+            <Border Grid.Column="2" Margin="12,0,0,0" Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="RÉSERVES" Classes="chart-title" Margin="0,0,0,8"/>
+                <lvc:CartesianChart Height="220"
+                                    Series="{Binding ResourceSeries}"
+                                    XAxes="{Binding ResourceXAxes}"
+                                    YAxes="{Binding ResourceYAxes}"/>
+              </DockPanel>
+            </Border>
+          </Grid>
+
+          <!-- Chronologie publiée avant extinction : faits, pas hypothèses causales. -->
+          <Border Classes="panel"
+                  IsVisible="{Binding ExtinctionRows.Count, Converter={x:Static vm:StringConverters.NotZero}}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="CHRONOLOGIE PUBLIÉE AVANT EXTINCTION" Classes="chart-title"/>
+              <TextBlock DockPanel.Dock="Bottom"
+                         Text="Faits observés et publiés par ECHOS : ils décrivent ce qui a été émis, pas la cause établie de l'extinction."
+                         Classes="small" Margin="0,8,0,0" TextWrapping="Wrap"/>
+              <ScrollViewer Margin="0,10,0,0" MaxHeight="240">
+                <StackPanel>
+                  <Grid ColumnDefinitions="Auto,2*,2*,2*,2*" Margin="0,0,0,6">
+                    <TextBlock Text="TICK" Classes="small" Margin="0,0,16,0"/>
+                    <TextBlock Grid.Column="1" Text="TYPE" Classes="small"/>
+                    <TextBlock Grid.Column="2" Text="ENTITÉ" Classes="small"/>
+                    <TextBlock Grid.Column="3" Text="ACTION" Classes="small"/>
+                    <TextBlock Grid.Column="4" Text="CAUSE ÉMISE" Classes="small"/>
+                  </Grid>
+                  <ItemsControl ItemsSource="{Binding ExtinctionRows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ChronologyRow">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3,0,4">
+                          <Grid ColumnDefinitions="Auto,2*,2*,2*,2*">
+                            <TextBlock Text="{Binding Tick}" Classes="small" Margin="0,0,16,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Type}" Classes="muted"/>
+                            <TextBlock Grid.Column="2" Text="{Binding AgentId}" Classes="muted"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Action}" Classes="muted"/>
+                            <TextBlock Grid.Column="4" Text="{Binding Cause}" Classes="muted"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ═══════════ SOUS-ÉCRAN : COMPORTEMENTS (vue d'ensemble) ═══════════ -->
+        <StackPanel Spacing="12"
+                    IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=ensemble}">
+          <!-- Courbe temporelle : coordonnées de tick réelles, trous visibles. -->
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="COURBE — VALEURS PUBLIÉES PAR TICK" Classes="chart-title" Margin="0,0,0,8"/>
+              <!-- Annotations d'événements (P3) : marqueur = tick publié, sans interprétation. -->
+              <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" Margin="0,8,0,0">
+                <CheckBox IsChecked="{Binding ShowEventMarkers}"
+                          Content="Marqueurs d'événements"
+                          ToolTip.Tip="Marque sur la courbe les ticks portant un événement publié — le type s'affiche au survol, jamais interprété"/>
+                <TextBlock Grid.Column="1" Text="{Binding EventsText}" Classes="small"
+                           VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="Wrap"/>
+              </Grid>
+              <TextBlock DockPanel.Dock="Bottom"
+                         Text="Un point par tick publié, en tick réel ; un trou = tick sans observation ou sans mesure, jamais interpolé. La fenêtre de relecture borne l'affichage."
+                         Classes="small" Margin="0,8,0,0" TextWrapping="Wrap"/>
+              <lvc:CartesianChart Height="320"
+                                  Series="{Binding TrendSeries}"
+                                  XAxes="{Binding TrendXAxes}"
+                                  YAxes="{Binding TrendYAxes}"/>
+            </DockPanel>
+          </Border>
+
+          <!-- Sélection des métriques et phénomènes émergents. -->
+          <Grid ColumnDefinitions="*,*">
+            <Border Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="MÉTRIQUES" Classes="chart-title" Margin="0,0,0,8"/>
+                <TextBlock DockPanel.Dock="Bottom"
+                           Text="Survolez une métrique pour la fiche « que regarder ? » du catalogue."
+                           Classes="small" Margin="0,8,0,0"/>
+                <ScrollViewer MaxHeight="240">
+                  <ItemsControl ItemsSource="{Binding Metrics}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:MetricOption">
+                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,3"
+                              ToolTip.Tip="{Binding Tip}">
+                          <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                    ToolTip.Tip="Afficher sur la courbe"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Label}" Classes="muted" VerticalAlignment="Center"/>
+                          <TextBlock Grid.Column="2" Text="{Binding Engine}" Classes="small"
+                                     VerticalAlignment="Center" Margin="12,0"/>
+                          <TextBlock Grid.Column="3" Text="{Binding LatestLabel}" Foreground="#e0a25a"
+                                     FontSize="11.5" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </DockPanel>
+            </Border>
+
+            <Border Grid.Column="1" Margin="12,0,0,0" Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="SIGNAUX DÉTECTÉS (RÈGLES PUBLIÉES)" Classes="chart-title" Margin="0,0,0,8"/>
+                <ScrollViewer MaxHeight="240">
+                  <StackPanel>
+                    <Grid ColumnDefinitions="2*,*,*,*" Margin="0,0,0,6">
+                      <TextBlock Text="PHÉNOMÈNE" Classes="small"/>
+                      <TextBlock Grid.Column="1" Text="OCCURRENCES" Classes="small"/>
+                      <TextBlock Grid.Column="2" Text="PREMIER TICK" Classes="small"/>
+                      <TextBlock Grid.Column="3" Text="DERNIER TICK" Classes="small"/>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Phenomena}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PhenomenonRow">
+                          <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3,0,4">
+                            <StackPanel Spacing="2">
+                              <Grid ColumnDefinitions="2*,*,*,*">
+                                <TextBlock Text="{Binding DisplayName}" Classes="muted"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Occurrences}" Classes="muted"/>
+                                <TextBlock Grid.Column="2" Text="{Binding FirstTick}" Classes="muted"/>
+                                <TextBlock Grid.Column="3" Text="{Binding LastTick}" Classes="muted"/>
+                              </Grid>
+                              <TextBlock Text="{Binding Description}" Classes="small" TextWrapping="Wrap"
+                                         IsVisible="{Binding Description, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
+                              <TextBlock Text="{Binding Triggers}" Foreground="#e0a25a" FontSize="11"
+                                         TextWrapping="Wrap"/>
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Aucun signal détecté sur ce run." Classes="small" Margin="0,6,0,0"
+                               IsVisible="{Binding Phenomena.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                    <TextBlock Classes="small" Margin="0,6,0,0" TextWrapping="Wrap"
+                               Text="Une détection est un signal selon la règle publiée, pas un phénomène établi ; l'absence de détection n'est pas l'absence du phénomène."/>
+                  </StackPanel>
+                </ScrollViewer>
+              </DockPanel>
+            </Border>
+          </Grid>
+        </StackPanel>
+
+        <!-- ═══════════ SOUS-ÉCRAN : STATISTIQUES EXACTES ═══════════ -->
+        <Border Classes="panel"
+                IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=statistiques}">
+          <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="STATISTIQUES EXACTES" Classes="chart-title"/>
+            <TextBlock DockPanel.Dock="Top" Text="{Binding StatsHeader}" Classes="muted" Margin="0,6,0,0"/>
+            <TextBlock DockPanel.Dock="Top" Text="{Binding CatalogText}" Classes="small" Margin="0,4,0,0"/>
+            <TextBlock DockPanel.Dock="Bottom"
+                       Text="Valeurs lues dans la réponse d'ECHOS, sans arrondi ni agrégat local ; « repli neutre » signale une valeur non mesurée. Survolez une ligne pour la fiche du catalogue."
+                       Classes="small" Margin="0,8,0,0" TextWrapping="Wrap"/>
+            <ScrollViewer Margin="0,10,0,0" MaxHeight="520">
+              <StackPanel>
+                <Grid ColumnDefinitions="2*,3*,*,*,*" Margin="0,0,0,6">
+                  <TextBlock Text="MOTEUR" Classes="small"/>
+                  <TextBlock Grid.Column="1" Text="MÉTRIQUE" Classes="small"/>
+                  <TextBlock Grid.Column="2" Text="VALEUR" Classes="small"/>
+                  <TextBlock Grid.Column="3" Text="PROVENANCE" Classes="small"/>
+                  <TextBlock Grid.Column="4" Text="STATUT" Classes="small"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding Statistics}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:StatRow">
+                      <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3,0,4"
+                              ToolTip.Tip="{Binding Tip}">
+                        <Grid ColumnDefinitions="2*,3*,*,*,*">
+                          <TextBlock Text="{Binding Engine}" Classes="small"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Metric}" Classes="muted"/>
+                          <TextBlock Grid.Column="2" Text="{Binding Display}" Foreground="#e8e6e1"
+                                     FontFamily="Cascadia Code, Consolas, DejaVu Sans Mono, monospace"/>
+                          <TextBlock Grid.Column="3" Text="{Binding Provenance}" Classes="small"/>
+                          <TextBlock Grid.Column="4" Text="{Binding Status}" Classes="small"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Aucune métrique publiée pour ce run." Classes="small" Margin="0,6,0,0"
+                           IsVisible="{Binding Statistics.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+
+                <!-- Outil de distribution (P3) : l'histogramme retiré de la vue
+                     d'ensemble est réintroduit ici comme outil explicite —
+                     type d'observations, intervalles et n toujours affichés. -->
+                <Border BorderBrush="#262b34" BorderThickness="1" CornerRadius="6" Padding="10,8" Margin="0,14,0,0">
+                  <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <TextBlock Text="OUTIL DE DISTRIBUTION" Classes="small" VerticalAlignment="Center"/>
+                      <ComboBox Grid.Column="1" MinWidth="320" HorizontalAlignment="Right"
+                                ItemsSource="{Binding DistributionOptions}"
+                                SelectedItem="{Binding SelectedDistributionOption}"
+                                ToolTip.Tip="Métrique dont les valeurs publiées sont comptées par classe — aucun extrapolation">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate x:DataType="vm:DistributionOption">
+                            <TextBlock Text="{Binding Label}"/>
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
+                    </Grid>
+                    <lvc:CartesianChart Height="300"
+                                        Series="{Binding DistributionSeries}"
+                                        XAxes="{Binding DistributionXAxes}"
+                                        YAxes="{Binding DistributionYAxes}"/>
+                    <TextBlock Text="{Binding DistributionText}" Classes="small" TextWrapping="Wrap"/>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </ScrollViewer>
+          </DockPanel>
+        </Border>
+
+        <!-- ═══════════ SOUS-ÉCRAN : COMPARER DES EXPÉRIENCES ═══════════ -->
+        <StackPanel Spacing="12"
+                    IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=comparer}">
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="RUNS À COMPARER" Classes="chart-title"/>
+              <TextBlock DockPanel.Dock="Top" Text="{Binding CompareHeader}" Classes="muted" Margin="0,6,0,0"/>
+              <TextBlock DockPanel.Dock="Bottom"
+                         Text="Aucune valeur n'est calculée ici : ECHOS publie le contexte de contrôle et la dispersion."
+                         Classes="small" Margin="0,8,0,0" TextWrapping="Wrap"/>
+              <ScrollViewer Margin="0,10,0,0" MaxHeight="180">
+                <ItemsControl ItemsSource="{Binding CompareRuns}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CompareRunOption">
+                      <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding Label}"
+                                Classes="muted" Margin="0,2"
+                                ToolTip.Tip="Inclure ce run dans la comparaison publiée par ECHOS"/>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="CONTEXTE DE CONTRÔLE" Classes="chart-title" Margin="0,0,0,8"/>
+              <StackPanel>
+                <Grid ColumnDefinitions="2*,*,*,*,2*,*,*" Margin="0,0,0,6">
+                  <TextBlock Text="RUN" Classes="small"/>
+                  <TextBlock Grid.Column="1" Text="VERSION" Classes="small"/>
+                  <TextBlock Grid.Column="2" Text="GRAINE" Classes="small"/>
+                  <TextBlock Grid.Column="3" Text="ISSUE" Classes="small"/>
+                  <TextBlock Grid.Column="4" Text="TICKS" Classes="small"/>
+                  <TextBlock Grid.Column="5" Text="EXTINCTION" Classes="small"/>
+                  <TextBlock Grid.Column="6" Text="CONSERVATION" Classes="small"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding CompareRunRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CompareRunRow">
+                      <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3,0,4">
+                        <Grid ColumnDefinitions="2*,*,*,*,2*,*,*">
+                          <TextBlock Text="{Binding RunId}" Classes="muted"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Version}" Classes="small"/>
+                          <TextBlock Grid.Column="2" Text="{Binding Seed}" Classes="small"/>
+                          <TextBlock Grid.Column="3" Text="{Binding Outcome}" Classes="muted"/>
+                          <TextBlock Grid.Column="4" Text="{Binding Ticks}" Classes="small"/>
+                          <TextBlock Grid.Column="5" Text="{Binding Extinction}" Classes="small"/>
+                          <TextBlock Grid.Column="6" Text="{Binding Conservation}" Classes="small"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DockPanel>
+          </Border>
+
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="DISPERSION PUBLIÉE" Classes="chart-title" Margin="0,0,0,8"/>
+              <TextBlock DockPanel.Dock="Bottom" Text="{Binding CompareNote}" Classes="small"
+                         Margin="0,8,0,0" TextWrapping="Wrap"/>
+              <ScrollViewer MaxHeight="360">
+                <StackPanel>
+                  <Grid ColumnDefinitions="2*,2*,4*,Auto,*,*,*,*" Margin="0,0,0,6">
+                    <TextBlock Text="MOTEUR" Classes="small"/>
+                    <TextBlock Grid.Column="1" Text="MÉTRIQUE" Classes="small"/>
+                    <TextBlock Grid.Column="2" Text="VALEURS PAR RUN" Classes="small"/>
+                    <TextBlock Grid.Column="3" Text="OBS." Classes="small"/>
+                    <TextBlock Grid.Column="4" Text="MIN" Classes="small"/>
+                    <TextBlock Grid.Column="5" Text="MAX" Classes="small"/>
+                    <TextBlock Grid.Column="6" Text="MOYENNE" Classes="small"/>
+                    <TextBlock Grid.Column="7" Text="ÉTENDUE" Classes="small"/>
+                  </Grid>
+                  <ItemsControl ItemsSource="{Binding CompareMetricRows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:CompareMetricRow">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3,0,4">
+                          <Grid ColumnDefinitions="2*,2*,4*,Auto,*,*,*,*">
+                            <TextBlock Text="{Binding Engine}" Classes="small"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Metric}" Classes="muted"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Values}" Classes="small" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="3" Text="{Binding RunsObserved}" Classes="small"/>
+                            <TextBlock Grid.Column="4" Text="{Binding Min}" Foreground="#e8e6e1"/>
+                            <TextBlock Grid.Column="5" Text="{Binding Max}" Foreground="#e8e6e1"/>
+                            <TextBlock Grid.Column="6" Text="{Binding Mean}" Foreground="#e8e6e1"/>
+                            <TextBlock Grid.Column="7" Text="{Binding Spread}" Foreground="#e0a25a"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="Aucune métrique comparée : sélectionnez au moins deux runs." Classes="small"
+                             Margin="0,6,0,0"
+                             IsVisible="{Binding CompareMetricRows.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                </StackPanel>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ═══════════ SOUS-ÉCRAN : CONFIANCE ET COMMUNAUTÉS ═══════════ -->
+        <StackPanel Spacing="12"
+                    IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=relations}">
+          <Grid ColumnDefinitions="*,*">
+            <Border Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="CONFIANCE ENTRE ENTITÉS" Classes="chart-title" Margin="0,0,0,8"/>
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding RelationsText}" Classes="small" Margin="0,8,0,0"/>
+                <views:TrustGraphControl Height="340"
+                                         Nodes="{Binding TrustNodes}"
+                                         Edges="{Binding TrustEdges}"/>
+              </DockPanel>
+            </Border>
+            <Border Grid.Column="1" Margin="12,0,0,0" Classes="panel">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="COMMUNAUTÉS OBSERVÉES" Classes="chart-title" Margin="0,0,0,8"/>
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding NetworkText}" Classes="small" Margin="0,8,0,0"/>
+                <views:GroupsGraphControl Height="340" Groups="{Binding Groups}"/>
+              </DockPanel>
+            </Border>
+          </Grid>
+
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="RELATIONS PUBLIÉES" Classes="chart-title" Margin="0,0,0,8"/>
+              <Grid ColumnDefinitions="*,*,*" DockPanel.Dock="Top" Margin="0,6,0,0">
+                <TextBlock Text="SOURCE" Classes="small"/>
+                <TextBlock Grid.Column="1" Text="CIBLE" Classes="small"/>
+                <TextBlock Grid.Column="2" Text="CONFIANCE PUBLIÉE" Classes="small"/>
+              </Grid>
+              <TextBlock DockPanel.Dock="Top" Text="Aucune relation publiée pour ce run." Classes="small"
+                         Margin="0,6,0,0"
+                         IsVisible="{Binding TrustEdgeRows.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+              <ScrollViewer MaxHeight="200" Margin="0,6,0,0">
+                <ItemsControl ItemsSource="{Binding TrustEdgeRows}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TrustEdgeRow">
+                      <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,2,0,3">
+                        <Grid ColumnDefinitions="*,*,*">
+                          <TextBlock Text="{Binding Source}" Classes="muted"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Target}" Classes="muted"/>
+                          <TextBlock Grid.Column="2" Text="{Binding Display}" Foreground="#e0a25a"
+                                     FontFamily="Cascadia Code, Consolas, DejaVu Sans Mono, monospace"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ═══════════ SOUS-ÉCRAN : MONDE ET TERRITOIRES ═══════════ -->
+        <Border Classes="panel"
+                IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=monde}">
+          <StackPanel Spacing="10">
+            <TextBlock Text="MONDE ET TERRITOIRES" Classes="chart-title"/>
+            <TextBlock Text="{Binding WorldText}" Classes="muted"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBox Width="160" Text="{Binding WorldTickInput, Mode=TwoWay}"
+                       Watermark="tick (vide = dernier)"/>
+              <Button Classes="btn" Content="Afficher ce tick" Command="{Binding RefreshCommand}"
+                      CommandParameter="refresh"/>
+              <TextBlock Text="Le curseur de relecture pilote aussi ce tick." Classes="small"
+                         VerticalAlignment="Center"/>
+            </StackPanel>
+            <views:WorldViewControl Height="440"
+                                    Description="{Binding WorldDescription}"
+                                    Agents="{Binding WorldAgents}"
+                                    TickResources="{Binding WorldResources}"/>
+            <TextBlock Classes="small" TextWrapping="Wrap"
+                       Text="Rendu des données publiées : grille des cellules du monde, cellules de terrain (foncé = praticable), carrés = régions translucides, cercles gris = obstacles, vert = ressource initiale, carré or = réserve du tick, points = entités colorées par communauté. Le curseur de relecture affiche le tick choisi ; entre deux snapshots publiés, les points glissent vers leur position publiée suivante (transition d'affichage seule — aucune mesure n'est calculée ici)."/>
+          </StackPanel>
+        </Border>
+
+        <!-- ═══════════ SOUS-ÉCRAN : FICHE D'ENTITÉ ═══════════ -->
+        <Border Classes="panel"
+                IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=agents}">
+          <Grid ColumnDefinitions="300,*">
+            <DockPanel Margin="0,0,12,0">
+              <TextBlock DockPanel.Dock="Top" Text="ENTITÉS" Classes="chart-title" Margin="0,0,0,8"/>
+              <ListBox ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
+                       Background="#080b10" BorderThickness="0" MaxHeight="560">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AgentOption">
+                    <TextBlock Text="{Binding Label}" Classes="muted" Margin="8,3" TextWrapping="Wrap"/>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+
+            <!-- Colonne 1 : sans Grid.Column explicite, ce panneau tombait dans la
+                 cellule 0 (300 px) par-dessus la liste des entités — superpositions
+                 et sélection de fiche impossibles. -->
+            <ScrollViewer Grid.Column="1">
+              <StackPanel Spacing="12">
+                <TextBlock Text="{Binding AgentHeaderText}" Classes="body" TextWrapping="Wrap"/>
+
+                <StackPanel Spacing="6">
+                  <TextBlock Text="CROYANCES PUBLIÉES" Classes="chart-title"/>
+                  <Grid ColumnDefinitions="2*,2*,2*,*">
+                    <TextBlock Text="SUJET" Classes="small"/>
+                    <TextBlock Grid.Column="1" Text="PRÉDICAT" Classes="small"/>
+                    <TextBlock Grid.Column="2" Text="VALEUR" Classes="small"/>
+                    <TextBlock Grid.Column="3" Text="CONFIANCE" Classes="small"/>
+                  </Grid>
+                  <ItemsControl ItemsSource="{Binding AgentBeliefs}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:BeliefRow">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,2,0,3">
+                          <Grid ColumnDefinitions="2*,2*,2*,*">
+                            <TextBlock Text="{Binding Subject}" Classes="muted"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Predicate}" Classes="muted"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Value}" Classes="muted"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Confidence}" Foreground="#e0a25a"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="Aucune croyance publiée pour cette entité." Classes="small"
+                             IsVisible="{Binding AgentBeliefs.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                  <TextBlock Text="CONFIANCE DÉCLARÉE" Classes="chart-title"/>
+                  <ItemsControl ItemsSource="{Binding AgentTrust}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:TrustRelationRow">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,2,0,3">
+                          <Grid ColumnDefinitions="*,*">
+                            <TextBlock Text="{Binding PeerId}" Classes="muted"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Trust}" Foreground="#e0a25a"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="Aucune relation publiée pour cette entité." Classes="small"
+                             IsVisible="{Binding AgentTrust.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                </StackPanel>
+
+                <StackPanel Spacing="6">
+                  <TextBlock Text="DERNIÈRES DÉCISIONS" Classes="chart-title"/>
+                  <ItemsControl ItemsSource="{Binding AgentDecisions}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:DecisionRow">
+                        <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,2,0,3">
+                          <Grid ColumnDefinitions="Auto,2*,*,3*">
+                            <TextBlock Text="{Binding Tick}" Classes="small" Margin="0,0,12,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Action}" Classes="muted"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Utility}" Foreground="#e0a25a"/>
+                            <TextBlock Grid.Column="3" Text="{Binding Cause}" Classes="small"
+                                       TextTrimming="CharacterEllipsis"/>
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Text="Aucune décision publiée pour cette entité." Classes="small"
+                             IsVisible="{Binding AgentDecisions.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                </StackPanel>
+              </StackPanel>
+            </ScrollViewer>
+          </Grid>
+        </Border>
+
+        <!-- Disclaimer méthodologique d'ECHOS, affiché tel quel (jamais reformulé). -->
+        <Border Classes="panel" IsVisible="{Binding DisclaimerText, Converter={x:Static vm:StringConverters.NotEmpty}}">
+          <TextBlock Text="{Binding DisclaimerText}" Classes="muted" TextWrapping="Wrap"/>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

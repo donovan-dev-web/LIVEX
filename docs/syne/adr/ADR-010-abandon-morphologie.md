@@ -1,0 +1,40 @@
+# ADR-010 : Abandon de la morphologie physique
+
+**Composant** : SYNE
+**Statut** : [Historique — décision acceptée à l'époque]
+**Dernière mise à jour** : 17 septembre 2026
+**Dépend de** : —
+**Source Monographie** : Annexe F.11 (ADR-010)
+
+---
+
+## Contexte
+
+La simulation physique de la morphologie (taille, forme, vitesse) ajoute une complexité massive sans bénéfice pour l'émergence de haut niveau.
+
+## Décision
+
+Les entités sont des **entités logiques**. Leur « corps » est un ensemble de propriétés (position, vitesse, santé) **sans représentation physique détaillée**.
+
+## Conséquences
+
+### Positives
+- Complexité réduite (pas de collisions physiques).
+- La mobilité est un paramètre numérique (coût d'action).
+
+### Négatives
+- **Pas de collisions physiques** : les entités peuvent se chevaucher.
+- Le consommateur de présentation applique un modèle externe commun aux entités ; le projet Unreal PRISM l'implémente via PRISM-LDK (`PrismLdk`).
+
+### Risques
+- Le chevauchement peut sembler irréaliste dans le rendu — compensé par une présentation stylisée.
+
+---
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 17 septembre 2026 | Création | — |
+| 24 septembre 2026 | Guide de migration V0.1 publié dans `../MIGRATION_MORPHOLOGY.md` (SYNE-130 ; document retiré du dépôt) | Formaliser les champs conservés et retirés |
+| 11 octobre 2026 | Renvoi au guide de migration, retiré depuis, marqué comme tel | Conformité `NAMING_CONVENTIONS.md` §9.4 |

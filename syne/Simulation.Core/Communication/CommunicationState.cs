@@ -1,0 +1,187 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Activité de communication d'un tick — alimente l'observabilité (message_sent / message_received) et les
+//        traces pour ECHOS (heatmap de NetworkCentrality...).
+
+namespace Simulation.Core.Communication;
+
+/// <summary>
+/// Activité de communication d'un tick — alimente l'observabilité
+/// (<c>message_sent</c> / <c>message_received</c>)
+/// et les traces pour ECHOS (heatmap de communication, NetworkCentrality...).
+/// </summary>
+public sealed record MessageSent(
+    ulong MessageId,
+    ulong SenderId,
+    ulong? TargetId,
+    MessageType Type,
+    string Payload,
+    int Hops,
+    double Confidence);
+
+/// <summary>Réception d'un message (y compris interception — toute entité dans la portée reçoit).</summary>
+public sealed record MessageReceived(
+    ulong MessageId,
+    ulong ReceiverId,
+    ulong SenderId,
+    MessageType Type,
+    int Hops,
+    double Confidence,
+    bool Understood);
+
+/// <summary>
+/// État de communication d'une entité : file
+/// sortante (bornée par <c>maxSendsPerTick</c>), file entrante (bornée par
+/// <c>maxReceivesPerTick</c>) et ensemble "déjà relayé" anti-boucle.
+///
+/// V0.1 : la file entrante est consommée comme trace d'activité du tick (la
+/// révision des croyances par messages arrive avec l'analyse/les besoins
+/// sociaux) — la réception ajuste la confiance par la matrice de relations et
+/// marque l'interaction.
+/// </summary>
+public sealed class CommunicationState
+{
+    private readonly Queue<Message> _outgoing = new();
+    private readonly List<Message> _recentIncoming = new();
+    private readonly HashSet<ulong> _relayedMessageIds = new();
+    private readonly Dictionary<ulong, bool> _understoodMap = new();
+
+    /// <summary>Messages en attente d'émission au prochain cycle (borné par <c>maxSendsPerTick</c>).</summary>
+    public int OutgoingCount => _outgoing.Count;
+
+    /// <summary>Messages reçus au tick courant (borné par <c>maxReceivesPerTick</c>).</summary>
+    public int RecentIncomingCount => _recentIncoming.Count;
+
+    /// <summary>Messages émis au tick courant (envois + relais), partage le cap <c>maxSendsPerTick</c>.</summary>
+    public int SentThisTick { get; private set; }
+
+    /// <summary>Vrai si le message <paramref name="messageId"/> a déjà été relayé (anti-boucle).</summary>
+    public bool HasRelayed(ulong messageId) => _relayedMessageIds.Contains(messageId);
+
+    /// <summary>Enregistre une émission (envoi ou relais) au tick courant.</summary>
+    public void RecordSent() => SentThisTick++;
+
+    /// <summary>
+    /// Enfile un message en attente d'émission. La file est bornée à
+    /// <paramref name="maxPending"/> : au-delà, le message le plus ancien est
+    /// abandonné (« le plus récent gagne »). Sans cette borne, un esprit qui produit
+    /// plus de <c>maxSendsPerTick</c> messages par tick — cas normal dès qu'un agent
+    /// sociABLE observe plusieurs entités — voit sa file croître indéfiniment :
+    /// <see cref="Drain"/> n'en retire que <c>maxSendsPerTick</c> par tick, donc le
+    /// retard accumule indéfiniment (fuite mémoire + émission d'observations
+    /// périmées des centaines de ticks plus tard).
+    /// </summary>
+    public void Enqueue(Message message, int maxPending = int.MaxValue)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        if (maxPending < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxPending), "maxPending doit être >= 0.");
+        }
+
+        if (maxPending == 0)
+        {
+            return;
+        }
+
+        while (_outgoing.Count >= maxPending)
+        {
+            _outgoing.Dequeue();
+        }
+
+        _outgoing.Enqueue(message);
+    }
+
+    /// <summary>Défile jusqu'à <paramref name="maxSends"/> messages sortants (cap par tick).</summary>
+    public IReadOnlyList<Message> Drain(int maxSends)
+    {
+        if (maxSends < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxSends), "maxSends doit être &gt;= 0.");
+        }
+
+        var result = new List<Message>(Math.Min(_outgoing.Count, maxSends));
+        while (result.Count < maxSends && _outgoing.Count > 0)
+        {
+            result.Add(_outgoing.Dequeue());
+        }
+
+        return result;
+    }
+
+    public void RecordReceived(Message message, bool understood)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        _recentIncoming.Add(message);
+        _understoodMap[message.MessageId] = understood;
+    }
+
+    /// <summary>Messages reçus au tick courant, en ordre de diffusion (sender croissant puis distance), avec le drapeau d'incompréhension.</summary>
+    public IReadOnlyList<(Message Message, bool Understood)> ReceivedThisTick()
+    {
+        var result = new List<(Message, bool)>(_recentIncoming.Count);
+        foreach (Message message in _recentIncoming)
+        {
+            result.Add((message, _understoodMap.TryGetValue(message.MessageId, out bool understood) && understood));
+        }
+
+        return result;
+    }
+
+    public void RecordRelayed(ulong messageId)
+    {
+        _relayedMessageIds.Add(messageId);
+        TrimRelaySet();
+    }
+
+    /// <summary>Remise à zéro des buffers du tick courant (appelé en tête de cycle).</summary>
+    public void BeginTick()
+    {
+        _recentIncoming.Clear();
+        _understoodMap.Clear();
+        SentThisTick = 0;
+    }
+
+    private const int RelaySetTarget = 128;
+
+    private void TrimRelaySet()
+    {
+        if (_relayedMessageIds.Count <= RelaySetTarget)
+        {
+            return;
+        }
+
+        ulong[] sorted = _relayedMessageIds.ToArray();
+        System.Array.Sort(sorted);
+        _relayedMessageIds.RemoveWhere(_ => true);
+        foreach (ulong keep in sorted.AsSpan(RelaySetTarget / 2))
+        {
+            _relayedMessageIds.Add(keep);
+        }
+    }
+
+    /// <summary>Messages en attente d'émission (persistance bit-à-bit).</summary>
+    internal IReadOnlyList<Message> OutgoingSnapshot => _outgoing.ToList();
+
+    /// <summary>Identifiants déjà relayés (persistance bit-à-bit).</summary>
+    internal IReadOnlyList<ulong> RelayedIdsSnapshot => _relayedMessageIds.ToList();
+
+    /// <summary>Restauration de l'état de communication non-éphémère (persistance bit-à-bit).</summary>
+    internal void RestoreState(IEnumerable<Message> outgoing, IEnumerable<ulong> relayedMessageIds)
+    {
+        ArgumentNullException.ThrowIfNull(outgoing);
+        ArgumentNullException.ThrowIfNull(relayedMessageIds);
+
+        _outgoing.Clear();
+        foreach (Message message in outgoing)
+        {
+            _outgoing.Enqueue(message);
+        }
+
+        _relayedMessageIds.Clear();
+        foreach (ulong id in relayedMessageIds)
+        {
+            _relayedMessageIds.Add(id);
+        }
+    }
+}

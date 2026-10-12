@@ -1,0 +1,179 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Grille spatiale uniforme : requêtes de voisinage à coût quasi linéaire.
+
+namespace Simulation.Core.World;
+
+/// <summary>
+/// Grille spatiale uniforme (— perceptualité O(quasi-linéaire)).
+/// Cellules de taille configurable ; requêtes par rayon (centre ± r) en ordre
+/// déterministe : cellules en parcours ligne-par-ligne, entités dans l'ordre d'insertion.
+/// </summary>
+public sealed class SpatialGrid
+{
+    private readonly double _cellSize;
+    private readonly int _cellCountX;
+    private readonly int _cellCountY;
+    private readonly List<Simulation.Core.Entities.Entity>[] _cells;
+    private readonly Dictionary<ulong, (int X, int Y)> _cellOfEntity = new();
+
+    public SpatialGrid(WorldSize size, double cellSize)
+    {
+        if (cellSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(cellSize), "La taille de cellule doit être strictement positive.");
+        }
+
+        Size = size;
+        _cellSize = cellSize;
+        _cellCountX = (int)Math.Ceiling(size.Width / cellSize);
+        _cellCountY = (int)Math.Ceiling(size.Height / cellSize);
+        _cells = new List<Simulation.Core.Entities.Entity>[_cellCountX * _cellCountY];
+        for (int i = 0; i < _cells.Length; i++)
+        {
+            _cells[i] = [];
+        }
+    }
+
+    public WorldSize Size { get; }
+
+    public double CellSize => _cellSize;
+
+    public int CellCountX => _cellCountX;
+
+    public int CellCountY => _cellCountY;
+
+    public void Add(Simulation.Core.Entities.Entity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        if (_cellOfEntity.ContainsKey(entity.Id.Value))
+        {
+            throw new InvalidOperationException($"L'entité {entity.Id.Value} est déjà indexée dans la grille.");
+        }
+
+        (int cx, int cy) = CellOf(entity.Position);
+        _cells[(cy * _cellCountX) + cx].Add(entity);
+        _cellOfEntity[entity.Id.Value] = (cx, cy);
+    }
+
+    public void Move(Simulation.Core.Entities.Entity entity, Position newPosition)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        if (!_cellOfEntity.TryGetValue(entity.Id.Value, out (int X, int Y) oldCell))
+        {
+            throw new InvalidOperationException($"L'entité {entity.Id.Value} n'est pas indexée dans la grille.");
+        }
+
+        (int newX, int newY) = CellOf(newPosition);
+        if (oldCell == (newX, newY))
+        {
+            entity.SetPosition(newPosition);
+            return;
+        }
+
+        bool removed = _cells[(oldCell.Y * _cellCountX) + oldCell.X].Remove(entity);
+        if (!removed)
+        {
+            throw new InvalidOperationException($"Incohérence de grille pour l'entité {entity.Id.Value}.");
+        }
+
+        _cells[(newY * _cellCountX) + newX].Add(entity);
+        _cellOfEntity[entity.Id.Value] = (newX, newY);
+        entity.SetPosition(newPosition);
+    }
+
+    /// <summary>
+    /// Retire une entité de la grille (SYNE-074, mortalité) : désindexage de la
+    /// cellule et de la carte de références. Lève si l'entité n'était pas indexée.
+    /// </summary>
+    public void Remove(Simulation.Core.Entities.Entity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        if (!_cellOfEntity.TryGetValue(entity.Id.Value, out (int X, int Y) cell))
+        {
+            throw new InvalidOperationException($"L'entité {entity.Id.Value} n'est pas indexée dans la grille.");
+        }
+
+        bool removed = _cells[(cell.Y * _cellCountX) + cell.X].Remove(entity);
+        if (!removed)
+        {
+            throw new InvalidOperationException($"Incohérence de grille pour l'entité {entity.Id.Value}.");
+        }
+
+        _cellOfEntity.Remove(entity.Id.Value);
+    }
+
+    /// <summary>
+    /// Entités dans le rayon <paramref name="radius"/> autour de <paramref name="center"/>,
+    /// ordre déterministe. Ne renvoie pas l'entité <paramref name="center"/> de référence
+    /// (<paramref name="excludeId"/>, nullable).
+    /// </summary>
+    public IReadOnlyList<Simulation.Core.Entities.Entity> QueryCircle(Position center, double radius, ulong? excludeId = null)
+    {
+        if (radius <= 0)
+        {
+            return [];
+        }
+
+        var result = new List<Simulation.Core.Entities.Entity>();
+        int startX = Math.Max(0, CellIndexLow(center.X - radius));
+        int endX = Math.Max(startX, CellIndexHigh(center.X + radius, _cellCountX));
+        int startY = Math.Max(0, CellIndexLow(center.Y - radius));
+        int endY = Math.Max(startY, CellIndexHigh(center.Y + radius, _cellCountY));
+
+        for (int cy = startY; cy <= endY; cy++)
+        {
+            for (int cx = startX; cx <= endX; cx++)
+            {
+                foreach (Simulation.Core.Entities.Entity entity in _cells[(cy * _cellCountX) + cx])
+                {
+                    if (excludeId.HasValue && entity.Id.Value == excludeId.Value)
+                    {
+                        continue;
+                    }
+
+                    if (entity.Position.DistanceTo(center) <= radius)
+                    {
+                        result.Add(entity);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public int Count => _cellOfEntity.Count;
+
+    private (int X, int Y) CellOf(Position position)
+    {
+        Position clamped = Position.Clamp(position, Size);
+        int x = CellIndex(clamped.X, _cellCountX);
+        int y = CellIndex(clamped.Y, _cellCountY);
+        return (x, y);
+    }
+
+    /// <summary>
+    /// Index de cellule d'une coordonnée borné par <paramref name="cellCount"/> :
+    /// la borne dépend de l'axe (X vs Y) — indispensable pour les mondes
+    /// rectangulaires, où les deux dimensions ont des comptages de cellules distincts.
+    /// </summary>
+    private int CellIndex(double coordinate, int cellCount)
+    {
+        int index = (int)Math.Floor(coordinate / _cellSize);
+        return Math.Clamp(index, 0, Math.Max(0, cellCount - 1));
+    }
+
+    private int CellIndexLow(double coordinate)
+    {
+        int index = (int)Math.Floor(coordinate / _cellSize);
+        return Math.Max(0, index);
+    }
+
+    /// <summary>Index de cellule supérieur, borné par le nombre de cellules de l'axe.</summary>
+    private int CellIndexHigh(double coordinate, int cellCount)
+    {
+        int index = (int)Math.Floor(coordinate / _cellSize);
+        return Math.Min(cellCount - 1, index);
+    }
+}

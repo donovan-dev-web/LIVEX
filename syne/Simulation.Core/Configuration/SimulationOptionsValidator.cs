@@ -1,0 +1,654 @@
+// Projet : LIVEX (SYNE)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Validation des plages à l'import.
+
+namespace Simulation.Core.Configuration;
+
+/// <summary>
+/// Validation des plages à l'import.
+/// Une configuration invalide stoppe avec un message d'erreur explicite.
+/// </summary>
+public static class SimulationOptionsValidator
+{
+    public static IReadOnlyList<string> Validate(SimulationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        var errors = new List<string>();
+
+        if (options.Simulation.WorldWidth <= 0)
+        {
+            errors.Add($"simulation.worldWidth doit être &gt; 0 (reçu : {options.Simulation.WorldWidth}).");
+        }
+
+        if (options.Simulation.WorldHeight <= 0)
+        {
+            errors.Add($"simulation.worldHeight doit être &gt; 0 (reçu : {options.Simulation.WorldHeight}).");
+        }
+
+        if (options.Simulation.MaxTicks <= 0)
+        {
+            errors.Add($"simulation.maxTicks doit être &gt; 0 (reçu : {options.Simulation.MaxTicks}).");
+        }
+
+        if (options.Simulation.AutoSaveEveryNTicks <= 0)
+        {
+            errors.Add($"simulation.autoSaveEveryNTicks doit être &gt; 0 (reçu : {options.Simulation.AutoSaveEveryNTicks}).");
+        }
+
+        if (options.Simulation.MaxBackups < 0)
+        {
+            errors.Add($"simulation.maxBackups doit être &gt;= 0 (reçu : {options.Simulation.MaxBackups}).");
+        }
+
+        if (options.Simulation.TicksPerSecond <= 0)
+        {
+            errors.Add($"simulation.ticksPerSecond doit être &gt; 0 (reçu : {options.Simulation.TicksPerSecond}).");
+        }
+
+        if (options.Simulation.SimulatedSecondsPerTick is < SimulationClock.MinSimulatedSecondsPerTick
+            or > SimulationClock.MaxSimulatedSecondsPerTick)
+        {
+            errors.Add(
+                $"simulation.simulatedSecondsPerTick doit être dans " +
+                $"[{SimulationClock.MinSimulatedSecondsPerTick}, {SimulationClock.MaxSimulatedSecondsPerTick}] " +
+                $"(reçu : {options.Simulation.SimulatedSecondsPerTick}).");
+        }
+
+        if (!double.IsFinite(options.World.MetersPerUnit) || options.World.MetersPerUnit <= 0.0)
+        {
+            errors.Add($"world.metersPerUnit doit être &gt; 0 (reçu : {options.World.MetersPerUnit}).");
+        }
+
+        if (options.Agents.InitialCount < 0)
+        {
+            errors.Add($"agents.initialCount doit être &gt;= 0 (reçu : {options.Agents.InitialCount}).");
+        }
+
+        foreach (var (key, value) in options.Agents.Traits)
+        {
+            if (value < 0 || value > 2)
+            {
+                errors.Add($"agents.traits.{key} doit être dans [0, 2] (reçu : {value}).");
+            }
+        }
+
+        if (options.Agents.Perception.Radius <= 0)
+        {
+            errors.Add($"agents.perception.radius doit être &gt; 0 (reçu : {options.Agents.Perception.Radius}).");
+        }
+        else if (options.Agents.Perception.Radius < 20 || options.Agents.Perception.Radius > 70)
+        {
+            errors.Add($"agents.perception.radius doit être dans [20, 70] (décision n°6 — reçu : {options.Agents.Perception.Radius}).");
+        }
+
+        if (options.Agents.Perception.ConfidenceFalloff is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.perception.confidenceFalloff doit être dans [0, 1] (reçu : {options.Agents.Perception.ConfidenceFalloff}).");
+        }
+
+        if (options.Agents.Perception.RotationInterval is < 1 or > 64)
+        {
+            errors.Add($"agents.perception.rotationInterval doit être dans [1, 64] (reçu : {options.Agents.Perception.RotationInterval}).");
+        }
+
+        if (options.Random.Engine != "xoshiro256**")
+        {
+            errors.Add($"random.engine doit être \"xoshiro256**\" (reçu : \"{options.Random.Engine}\").");
+        }
+
+        if (options.Communication.MaxSendsPerTick < 0)
+        {
+            errors.Add($"communication.maxSendsPerTick doit être &gt;= 0 (reçu : {options.Communication.MaxSendsPerTick}).");
+        }
+
+        if (options.Communication.MaxReceivesPerTick < 0)
+        {
+            errors.Add($"communication.maxReceivesPerTick doit être &gt;= 0 (reçu : {options.Communication.MaxReceivesPerTick}).");
+        }
+
+        if (options.Communication.TransmissionRange is <= 0 or > 70)
+        {
+            errors.Add($"communication.transmissionRange doit être dans [1, 70] (reçu : {options.Communication.TransmissionRange}).");
+        }
+
+        if (options.Communication.MaxHops < 0)
+        {
+            errors.Add($"communication.maxHops doit être &gt;= 0 (reçu : {options.Communication.MaxHops}).");
+        }
+
+        if (options.Communication.SendEnergyCost < 0.0 || options.Communication.SendEnergyPayloadFactor < 0.0)
+        {
+            errors.Add("communication.sendEnergyCost et sendEnergyPayloadFactor doivent être &gt;= 0.");
+        }
+
+        if (options.Communication.ReceiveEnergyCost < 0.0 || options.Communication.ReceiveEnergyPayloadFactor < 0.0)
+        {
+            errors.Add("communication.receiveEnergyCost et receiveEnergyPayloadFactor doivent être &gt;= 0.");
+        }
+
+        if (options.Communication.IncomprehensionRate is < 0.0 or > 1.0)
+        {
+            errors.Add($"communication.incomprehensionRate doit être dans [0, 1] (reçu : {options.Communication.IncomprehensionRate}).");
+        }
+
+        if (options.Communication.HopConfidenceDecay is <= 0.0 or > 1.0)
+        {
+            errors.Add($"communication.hopConfidenceDecay doit être dans (0, 1] (reçu : {options.Communication.HopConfidenceDecay}).");
+        }
+
+        if (options.Agents.Memory.MaxCapacity <= 0)
+        {
+            errors.Add($"agents.memory.maxCapacity doit être &gt; 0 (reçu : {options.Agents.Memory.MaxCapacity}).");
+        }
+
+        if (options.Agents.Memory.RecallThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.memory.recallThreshold doit être dans [0, 1] (reçu : {options.Agents.Memory.RecallThreshold}).");
+        }
+
+        if (options.Agents.Memory.ObservationDecayRate < 0.0 ||
+            options.Agents.Memory.EventDecayRate < 0.0 ||
+            options.Agents.Memory.InteractionDecayRate < 0.0)
+        {
+            errors.Add("agents.memory.*DecayRate doivent être &gt;= 0.");
+        }
+
+        if (options.Agents.Needs.HungerRate < 0.0 || options.Agents.Needs.ThirstRate < 0.0 || options.Agents.Needs.FatigueRate < 0.0)
+        {
+            errors.Add("agents.needs.*Rate doivent être &gt;= 0.");
+        }
+
+        if (options.Agents.Needs.HungerTriggerThreshold is < 0.0 or > 100.0)
+        {
+            errors.Add($"agents.needs.hungerTriggerThreshold doit être dans [0, 100] (reçu : {options.Agents.Needs.HungerTriggerThreshold}).");
+        }
+
+        if (options.Agents.Needs.ThirstTriggerThreshold is < 0.0 or > 100.0)
+        {
+            errors.Add($"agents.needs.thirstTriggerThreshold doit être dans [0, 100] (reçu : {options.Agents.Needs.ThirstTriggerThreshold}).");
+        }
+
+        if (options.Agents.Needs.FatigueTriggerThreshold is < 0.0 or > 100.0)
+        {
+            errors.Add($"agents.needs.fatigueTriggerThreshold doit être dans [0, 100] (reçu : {options.Agents.Needs.FatigueTriggerThreshold}).");
+        }
+
+        if (options.Agents.Needs.SafetyDriftRate < 0.0 || options.Agents.Needs.SocialDriftRate < 0.0 || options.Agents.Needs.CuriosityDriftRate < 0.0)
+        {
+            errors.Add("agents.needs.*DriftRate doivent être &gt;= 0.");
+        }
+
+        if (options.Agents.Beliefs.UpdateStrength is <= 0.0 or > 1.0)
+        {
+            errors.Add($"agents.beliefs.updateStrength doit être dans (0, 1] (reçu : {options.Agents.Beliefs.UpdateStrength}).");
+        }
+
+        if (options.Agents.Beliefs.MaxChangePerSnap is <= 0.0 or > 1.0)
+        {
+            errors.Add($"agents.beliefs.maxChangePerSnap doit être dans (0, 1] (reçu : {options.Agents.Beliefs.MaxChangePerSnap}).");
+        }
+
+        if (options.Agents.Beliefs.ExpiredCap is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.beliefs.expiredCap doit être dans [0, 1] (reçu : {options.Agents.Beliefs.ExpiredCap}).");
+        }
+
+        if (options.Agents.Beliefs.TimeDecayPerTick is <= 0.0 or > 1.0)
+        {
+            errors.Add($"agents.beliefs.timeDecayPerTick doit être dans (0, 1] (reçu : {options.Agents.Beliefs.TimeDecayPerTick}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.IntervalTicks < 1)
+        {
+            errors.Add($"agents.actions.deliberation.intervalTicks doit être &gt;= 1 (reçu : {options.Agents.Actions.Deliberation.IntervalTicks}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.AlignBonus <= 0.0)
+        {
+            errors.Add($"agents.actions.deliberation.alignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.AlignBonus}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.CollectiveAlignBonus <= 0.0)
+        {
+            errors.Add($"agents.actions.deliberation.collectiveAlignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.CollectiveAlignBonus}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.ActionSwitchMargin < 0.0)
+        {
+            errors.Add($"agents.actions.deliberation.actionSwitchMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ActionSwitchMargin}).");
+        }
+
+        if (options.Agents.Actions.Deliberation.ConflictTieMargin < 0.0)
+        {
+            errors.Add($"agents.actions.deliberation.conflictTieMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ConflictTieMargin}).");
+        }
+
+        if (options.Agents.Actions.Interruption.UtilityExcessMargin < 0.0)
+        {
+            errors.Add($"agents.actions.interruption.utilityExcessMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Interruption.UtilityExcessMargin}).");
+        }
+
+        if (options.Agents.Actions.Interruption.CriticalHunger is <= 0.0 or > 100.0)
+        {
+            errors.Add($"agents.actions.interruption.criticalHunger doit être dans (0, 100] (reçu : {options.Agents.Actions.Interruption.CriticalHunger}).");
+        }
+
+        if (options.Agents.Actions.Interruption.CriticalEnergy is < 0.0 or >= 100.0)
+        {
+            errors.Add($"agents.actions.interruption.criticalEnergy doit être dans [0, 100) (reçu : {options.Agents.Actions.Interruption.CriticalEnergy}).");
+        }
+
+        foreach (var (name, entry) in options.Agents.Actions.Catalog.Entries)
+        {
+            if (entry.EnergyCost is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.energyCost doit être &gt;= 0 (reçu : {entry.EnergyCost}).");
+            }
+
+            if (entry.EnergyRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.energyRecovery doit être &gt;= 0 (reçu : {entry.EnergyRecovery}).");
+            }
+
+            if (entry.FatigueRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.fatigueRecovery doit être &gt;= 0 (reçu : {entry.FatigueRecovery}).");
+            }
+
+            if (entry.HungerRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.hungerRecovery doit être &gt;= 0 (reçu : {entry.HungerRecovery}).");
+            }
+
+            if (entry.ThirstRecovery is < 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.thirstRecovery doit être &gt;= 0 (reçu : {entry.ThirstRecovery}).");
+            }
+
+            if (entry.ReserveConsumption is <= 0.0)
+            {
+                errors.Add($"agents.actions.catalog.{name}.reserveConsumption doit être &gt; 0 (reçu : {entry.ReserveConsumption}).");
+            }
+        }
+
+        if (options.Groups.ReviewIntervalTicks < 1)
+        {
+            errors.Add($"groups.reviewIntervalTicks doit être &gt;= 1 (reçu : {options.Groups.ReviewIntervalTicks}).");
+        }
+
+        if (options.Groups.TrustThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"groups.trustThreshold doit être dans [0, 1] (reçu : {options.Groups.TrustThreshold}).");
+        }
+
+        if (options.Groups.MinGroupSize < 2)
+        {
+            errors.Add($"groups.minGroupSize doit être &gt;= 2 (reçu : {options.Groups.MinGroupSize}).");
+        }
+
+        if (options.Groups.SharedBeliefBonus < 0.0 || options.Groups.GoalAlignmentBonus < 0.0)
+        {
+            errors.Add("groups.sharedBeliefBonus et groups.goalAlignmentBonus doivent être &gt;= 0.");
+        }
+
+        if (options.Groups.ConsensusThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"groups.consensusThreshold doit être dans [0, 1] (reçu : {options.Groups.ConsensusThreshold}).");
+        }
+
+        if (options.Reproduction.IntervalTicks < 1)
+        {
+            errors.Add($"reproduction.intervalTicks doit être &gt;= 1 (reçu : {options.Reproduction.IntervalTicks}).");
+        }
+
+        if (options.Reproduction.ConsentTrustThreshold is < 0.0 or > 1.0)
+        {
+            errors.Add($"reproduction.consentTrustThreshold doit être dans [0, 1] (reçu : {options.Reproduction.ConsentTrustThreshold}).");
+        }
+
+        if (options.Reproduction.MaxBirthsPerTick < 0)
+        {
+            errors.Add($"reproduction.maxBirthsPerTick doit être &gt;= 0 (reçu : {options.Reproduction.MaxBirthsPerTick}).");
+        }
+
+        if (options.Reproduction.MergeRange <= 0)
+        {
+            errors.Add($"reproduction.mergeRange doit être &gt; 0 (reçu : {options.Reproduction.MergeRange}).");
+        }
+
+        if (options.Reproduction.MergeMinimumEnergy is < 0.0 or > 100.0)
+        {
+            errors.Add($"reproduction.mergeMinimumEnergy doit être dans [0, 100] (reçu : {options.Reproduction.MergeMinimumEnergy}).");
+        }
+
+        if (options.Agents.Inheritance.Dominance is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.inheritance.dominance doit être dans [0, 1] (reçu : {options.Agents.Inheritance.Dominance}).");
+        }
+
+        if (options.Agents.Inheritance.MutationRate is < 0.0 or > 1.0)
+        {
+            errors.Add($"agents.inheritance.mutationRate doit être dans [0, 1] (reçu : {options.Agents.Inheritance.MutationRate}).");
+        }
+
+        if (options.Agents.Inheritance.MutationMagnitude < 0.0)
+        {
+            errors.Add($"agents.inheritance.mutationMagnitude doit être &gt;= 0 (reçu : {options.Agents.Inheritance.MutationMagnitude}).");
+        }
+
+        if (options.Agents.Inheritance.SalienceThreshold is <= 0.0 or > 1.0)
+        {
+            errors.Add($"agents.inheritance.salienceThreshold doit être dans (0, 1] (reçu : {options.Agents.Inheritance.SalienceThreshold}).");
+        }
+
+        if (options.Agents.Life.DeathEnergyThreshold is < 0.0 or >= 100.0)
+        {
+            errors.Add($"agents.life.deathEnergyThreshold doit être dans [0, 100) (reçu : {options.Agents.Life.DeathEnergyThreshold}).");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.Agents.Life.EnergyExhaustionCause))
+        {
+            errors.Add("agents.life.energyExhaustionCause ne doit pas être vide.");
+        }
+
+        if (options.Agents.Pathfinding.CellSize <= 0.0)
+        {
+            errors.Add($"agents.pathfinding.cellSize doit être &gt; 0 (reçu : {options.Agents.Pathfinding.CellSize}).");
+        }
+
+        if (options.Agents.Pathfinding.MaxExpansionCells < 1)
+        {
+            errors.Add($"agents.pathfinding.maxExpansionCells doit être &gt;= 1 (reçu : {options.Agents.Pathfinding.MaxExpansionCells}).");
+        }
+
+        if (options.Agents.Pathfinding.CacheCapacity < 0)
+        {
+            errors.Add($"agents.pathfinding.cacheCapacity doit être &gt;= 0 (reçu : {options.Agents.Pathfinding.CacheCapacity}).");
+        }
+
+        foreach (var (key, spec) in new[]
+                 {
+                     ("food", options.Resources.Food),
+                     ("water", options.Resources.Water),
+                     ("wood", options.Resources.Wood),
+                     ("mineral", options.Resources.Mineral),
+                 })
+        {
+            if (spec.Initial < 0)
+            {
+                errors.Add($"resources.{key}.initial doit être &gt;= 0 (reçu : {spec.Initial}).");
+            }
+
+            if (spec.RegenerationRate < 0.0)
+            {
+                errors.Add($"resources.{key}.regenerationRate doit être &gt;= 0 (reçu : {spec.RegenerationRate}).");
+            }
+
+            if (spec.DegradationTick is <= 0)
+            {
+                errors.Add($"resources.{key}.degradationTick doit être &gt; 0 ou absent (reçu : {spec.DegradationTick}).");
+            }
+        }
+
+        if (options.World.ObstacleLayout.Count > 0 && !options.World.Obstacles)
+        {
+            errors.Add("world.obstacleLayout est fourni alors que world.obstacles est false — activer world.obstacles pour placer le layout.");
+        }
+
+        foreach (StaticObstacleSettings obstacle in options.World.ObstacleLayout)
+        {
+            if (string.IsNullOrWhiteSpace(obstacle.Id))
+            {
+                errors.Add("world.obstacleLayout[].id ne doit pas être vide.");
+            }
+
+            if (obstacle.Radius <= 0)
+            {
+                errors.Add($"world.obstacleLayout[{obstacle.Id}].radius doit être &gt; 0 (reçu : {obstacle.Radius}).");
+            }
+
+            if (options.Simulation.WorldWidth > 0 &&
+                (obstacle.X < 0 || obstacle.X > options.Simulation.WorldWidth))
+            {
+                errors.Add($"world.obstacleLayout[{obstacle.Id}].x doit être dans [0, worldWidth] (reçu : {obstacle.X}).");
+            }
+
+            if (options.Simulation.WorldHeight > 0 &&
+                (obstacle.Y < 0 || obstacle.Y > options.Simulation.WorldHeight))
+            {
+                errors.Add($"world.obstacleLayout[{obstacle.Id}].y doit être dans [0, worldHeight] (reçu : {obstacle.Y}).");
+            }
+        }
+
+        if (options.World.Seasons.SeasonLengthTicks <= 0)
+        {
+            errors.Add($"world.seasons.seasonLengthTicks doit être &gt; 0 (reçu : {options.World.Seasons.SeasonLengthTicks}).");
+        }
+
+        if (Simulation.Core.World.Seasons.TryParse(options.World.Seasons.InitialSeason) is null)
+        {
+            errors.Add($"world.seasons.initialSeason doit être l'une de {{spring, summer, autumn, winter}} (reçu : \"{options.World.Seasons.InitialSeason}\").");
+        }
+
+        var seen = new HashSet<Simulation.Core.World.Season>();
+        foreach (SeasonDefinition definition in options.World.Seasons.Cycle)
+        {
+            Simulation.Core.World.Season? parsed = Simulation.Core.World.Seasons.TryParse(definition.Name);
+            if (parsed is null)
+            {
+                errors.Add($"world.seasons.cycle[].name doit être l'une de {{spring, summer, autumn, winter}} (reçu : \"{definition.Name}\").");
+                continue;
+            }
+
+            if (!seen.Add(parsed.Value))
+            {
+                errors.Add($"world.seasons.cycle définit deux fois la saison \"{definition.Name}\" — une seule entrée par saison attendue.");
+            }
+
+            if (definition.FoodFactor < 0 || definition.WaterFactor < 0 || definition.WoodFactor < 0 || definition.MineralFactor < 0)
+            {
+                errors.Add($"world.seasons.cycle[{definition.Name}] : les facteurs de régénération doivent être &gt;= 0.");
+            }
+        }
+
+        foreach (Simulation.Core.World.Season season in Enum.GetValues<Simulation.Core.World.Season>())
+        {
+            if (!seen.Contains(season))
+            {
+                errors.Add($"world.seasons.cycle doit définir les 4 saisons — manquante : \"{Simulation.Core.World.Seasons.Name(season)}\".");
+            }
+        }
+
+        if (options.World.Territories.Zones.Count > 0 && !options.World.Territories.Enabled)
+        {
+            errors.Add("world.territories.zones est fournie alors que world.territories.enabled est false — activer le suivi du territoire pour placer les zones.");
+        }
+
+        var zoneIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (TerritoryZoneDefinition zone in options.World.Territories.Zones)
+        {
+            if (string.IsNullOrWhiteSpace(zone.Id))
+            {
+                errors.Add("world.territories.zones[].id ne doit pas être vide.");
+            }
+
+            if (!zoneIds.Add(zone.Id))
+            {
+                errors.Add($"world.territories.zones définit deux fois l'identifiant \"{zone.Id}\" — un identifiant unique par zone attendu.");
+            }
+
+            if (zone.Radius <= 0)
+            {
+                errors.Add($"world.territories.zones[{zone.Id}].radius doit être &gt; 0 (reçu : {zone.Radius}).");
+            }
+
+            if (options.Simulation.WorldWidth > 0 &&
+                (zone.CenterX < 0 || zone.CenterX > options.Simulation.WorldWidth))
+            {
+                errors.Add($"world.territories.zones[{zone.Id}].centerX doit être dans [0, worldWidth] (reçu : {zone.CenterX}).");
+            }
+
+            if (options.Simulation.WorldHeight > 0 &&
+                (zone.CenterY < 0 || zone.CenterY > options.Simulation.WorldHeight))
+            {
+                errors.Add($"world.territories.zones[{zone.Id}].centerY doit être dans [0, worldHeight] (reçu : {zone.CenterY}).");
+            }
+        }
+
+        if (!double.IsFinite(options.World.Books.WriteCostEnergy) || options.World.Books.WriteCostEnergy < 0.0)
+        {
+            errors.Add($"world.books.writeCostEnergy doit être fini et >= 0 (reçu : {options.World.Books.WriteCostEnergy}).");
+        }
+
+        if (!double.IsFinite(options.World.Books.ReadBenefit) || options.World.Books.ReadBenefit < 0.0)
+        {
+            errors.Add($"world.books.readBenefit doit être fini et >= 0 (reçu : {options.World.Books.ReadBenefit}).");
+        }
+
+        if (!double.IsFinite(options.Simulation.WorldCellSize) || options.Simulation.WorldCellSize <= 0.0)
+        {
+            errors.Add($"simulation.worldCellSize doit être fini et > 0 (reçu : {options.Simulation.WorldCellSize}).");
+        }
+
+        if (!double.IsFinite(options.Agents.Perception.SpatialCellSize) || options.Agents.Perception.SpatialCellSize <= 0.0)
+        {
+            errors.Add($"agents.perception.spatialCellSize doit être fini et > 0 (reçu : {options.Agents.Perception.SpatialCellSize}).");
+        }
+
+        errors.AddRange(FindNonFiniteNumbers(options));
+
+        return errors;
+    }
+
+    /// <summary>
+    /// Balaie tout le graphe d'options à la recherche de <see cref="double"/>
+    /// non finis (NaN, ±Infinity).
+    ///
+    /// <para>
+    /// Les contrôles de plage ci-dessus s'écrivent <c>value is &lt; 0.0 or &gt; 1.0</c> :
+    /// avec NaN, <b>toutes</b> les comparaisons sont fausses, donc la valeur passe
+    /// le test de plage. NaN se propage ensuite dans les calculs d'énergie, de
+    /// distance et de Barclay et corrompt silencieusement la simulation. Plutôt
+    /// que de socleiser chaque comparaison, on balaie le graphe entier : la
+    /// garantie couvre aussi les champs ajoutés ultérieurement.
+    /// </para>
+    /// </summary>
+    private static IReadOnlyList<string> FindNonFiniteNumbers(object root)
+    {
+        var errors = new List<string>();
+        var visited = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        Walk(root, string.Empty, errors, visited, depth: 0);
+        return errors;
+    }
+
+    private static void Walk(
+        object node,
+        string path,
+        List<string> errors,
+        HashSet<object> visited,
+        int depth)
+    {
+        // Garde-fou : un graphe cyclique ne doit pas faire boucler la validation.
+        if (node is null || depth > 12 || !visited.Add(node))
+        {
+            return;
+        }
+
+        Type type = node.GetType();
+        if (type.IsPrimitive || node is string or decimal)
+        {
+            return;
+        }
+
+        if (node is System.Collections.IDictionary dictionary)
+        {
+            foreach (System.Collections.DictionaryEntry entry in dictionary)
+            {
+                string key = entry.Key?.ToString() ?? "?";
+                if (entry.Value is double mapValue)
+                {
+                    ReportNonFinite(mapValue, Combine(path, key), errors);
+                }
+                else if (entry.Value is not null)
+                {
+                    Walk(entry.Value, Combine(path, key), errors, visited, depth + 1);
+                }
+            }
+
+            return;
+        }
+
+        if (node is System.Collections.IEnumerable sequence)
+        {
+            int index = 0;
+            foreach (object? item in sequence)
+            {
+                Walk(item, Combine(path, $"[{index}]"), errors, visited, depth + 1);
+                index++;
+            }
+
+            return;
+        }
+
+        foreach (System.Reflection.PropertyInfo property in type.GetProperties())
+        {
+            if (property.GetIndexParameters().Length > 0 || !property.CanRead)
+            {
+                continue;
+            }
+
+            object? value;
+            try
+            {
+                value = property.GetValue(node);
+            }
+            catch (System.Reflection.TargetInvocationException)
+            {
+                // Propriété calculée qui lève : hors périmètre de la validation.
+                continue;
+            }
+
+            // Les chemins suivent la casse du contrat de configuration (camelCase
+            // comme dans config.json), et non les noms de propriétés C#.
+            string child = Combine(path, ToCamelCase(property.Name));
+            if (value is double doubleValue)
+            {
+                ReportNonFinite(doubleValue, child, errors);
+            }
+            else if (value is float floatValue)
+            {
+                ReportNonFinite(floatValue, child, errors);
+            }
+            else if (value is not null)
+            {
+                Walk(value, child, errors, visited, depth + 1);
+            }
+        }
+    }
+
+    private static string Combine(string path, string segment)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return segment;
+        }
+
+        // Un indice de collection se colle au chemin (« zones[0] ») sans point.
+        return segment.StartsWith('[') ? $"{path}{segment}" : $"{path}.{segment}";
+    }
+
+    private static string ToCamelCase(string name) =>
+        string.IsNullOrEmpty(name) || char.IsLower(name[0]) ? name : char.ToLowerInvariant(name[0]) + name[1..];
+
+    private static void ReportNonFinite(double value, string path, List<string> errors)
+    {
+        if (double.IsFinite(value))
+        {
+            return;
+        }
+
+        string rendered = double.IsNaN(value) ? "NaN" : value > 0 ? "Infinity" : "-Infinity";
+        errors.Add($"{path} doit être un nombre fini (reçu : {rendered}).");
+    }
+}
