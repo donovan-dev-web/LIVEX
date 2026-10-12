@@ -20,7 +20,7 @@ Cette matrice est le livrable de cadrage du jalon 0 dans
 
 | Rôle / variante | Détection dans le Launcher | Démarrage supervisé constaté | Run / analyse réel | OS déclaré | Limite décisive |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| **SYNE réel** | `syne/component.json` présent, exécutable Linux publié déclaré | Service supervisé avec readiness, `/info`, commandes mutantes protégées et arrêt authentifié ; campagne réelle exécutée par le Launcher depuis une copie isolée du publish Linux | Batch autonome `reference`, seed/ticks et `result.json` déterministe avec checksum ; en mode supervisé, `--run-id` et `--export-stream` produisent `data/stream.jsonl`, artefact rejouable archivé dans le paquet ; test E2E vérifie que le Launcher archive résultat, flux et journaux, conserve la version SYNE et scelle un `.livexp` lisible | **Linux et Windows** | J2A accepté ; support Windows validé (Lot W, 08/10/2026) ; macOS non supporté |
+| **SYNE réel** | `../syne/component.json` présent, exécutable Linux publié déclaré | Service supervisé avec readiness, `/info`, commandes mutantes protégées et arrêt authentifié ; campagne réelle exécutée par le Launcher depuis une copie isolée du publish Linux | Batch autonome `reference`, seed/ticks et `result.json` déterministe avec checksum ; en mode supervisé, `--run-id` et `--export-stream` produisent `data/stream.jsonl`, artefact rejouable archivé dans le paquet ; test E2E vérifie que le Launcher archive résultat, flux et journaux, conserve la version SYNE et scelle un `.livexp` lisible | **Linux et Windows** | J2A accepté ; support Windows validé (Lot W, 08/10/2026) ; macOS non supporté |
 | **SYNE émulé (`syne-mock`)** | `component.json` présent | Oui, service Linux avec ports HTTP/WebSocket, sonde et arrêt authentifié | Émule le protocole et un scénario ; pas un exécuteur de campagne compatible ni une simulation scientifique équivalente | **Linux et Windows** | Doit rester exclusif avec SYNE réel et clairement étiqueté comme émulation |
 | **ECHOS headless** | `component.json` présent | Oui, adaptateur Linux ; `/health/ready` vérifie la disponibilité et l'interrogeabilité de la base | Les trois routes `/analysis/run`, `/analysis/experiment`, `/analysis/report` sont implémentées, déterministes et headless ; `POST /ingest/run` enregistre un run archivé à partir de son `stream.jsonl`, et le Launcher l'appelle avant chaque analyse | **Linux et Windows** | Installation Linux validée sur machine propre (étape 9, 08/10/2026, venv vierge) |
 | **ECHOS UI / Electron** | **Supprimé le 5 octobre 2026** (`ADR-007`) : `echos-ui/` et `echos-desktop/` retirés du dépôt, montage statique et CI associés supprimés | Sans objet : plus de variante UI à sélectionner | L’observation se fait par les **fenêtres natives du Launcher** (consoles de logs, fenêtre d’analyse sondant l’API REST) | Sans objet | Aucune : la frontière est tranchée — ECHOS est une API seule, le Launcher présente |
@@ -29,14 +29,14 @@ Cette matrice est le livrable de cadrage du jalon 0 dans
 
 ### Contrats observés pour les adaptations Linux
 
-- `syne/component.json` déclare le binaire publié Linux, le contrôle HTTP et le
+- `../syne/component.json` déclare le binaire publié Linux, le contrôle HTTP et le
   WebSocket d'observabilité ; le scénario batch réellement supporté est
   `reference`, avec arrêt authentifié et readiness distinguée de la vivacité.
-- `echos/component.json` déclare l’exécutable `echos-launcher`, le contrôle HTTP
+- `../echos/component.json` déclare l’exécutable `echos-launcher`, le contrôle HTTP
   sur le port 5000 et la capacité `headless`/`analytics`. Le service utilise
   `/health/ready` et `/control/shutdown`; ses rapports headless dépendent de la
   base ECHOS peuplée en amont.
-- `syne-mock/component.json` déclare le contrôle HTTP (5181), le flux WebSocket
+- `../syne-mock/component.json` déclare le contrôle HTTP (5181), le flux WebSocket
   (5180, argument `--data-port`), `headless`, `control` et `observability`.
   Son endpoint de statut sert de sonde ; l’arrêt est authentifié.
 - Ces ports sont les valeurs déclarées par défaut dans les manifestes, pas une

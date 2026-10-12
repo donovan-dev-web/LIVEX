@@ -2,12 +2,17 @@
 
 **Composant** : LIVEX (général)
 **Statut** : index à jour
-**Dernière mise à jour** : 11 octobre 2026
-**Dépend de** : `NAMING_CONVENTIONS.md`, `0000-template.md`
+**Dernière mise à jour** : 12 octobre 2026
+**Dépend de** : `../NAMING_CONVENTIONS.md`, `0000-template.md`
 
 Ce dossier regroupe les ADR **transverses**, qui engagent plusieurs composants
 (transport, socle de cognition, boucles de second ordre). Les ADR propres à un
-composant restent dans `docs/docs-<composant>/adr/`.
+composant restent dans `docs/<composant>/adr/`.
+
+**Filtre V0.1** (plan de refonte de la documentation) : seuls les ADR
+`Accepted` décrivant un choix **réellement implémenté et toujours en vigueur**
+sont conservés. Les ADR reportés ou sans implémentation ne sont pas recopiés ici
+(Ils restent dans l'historique Git).
 
 ## ADR transverses
 
@@ -20,8 +25,10 @@ composant restent dans `docs/docs-<composant>/adr/`.
 | `ADR-007-means-end-reasoning.md` | Plans alternatifs par objectif | [Accepted] |
 | `ADR-008-politique-reconsideration.md` | Politique de reconsidération (contrôle de saillance) | [Accepted] |
 | `ADR-009-engagements-communicationnels.md` | Engagements communicationnels (promesses) | [Accepted] |
-| `ADR-010-intentions-partagees.md` | Intentions partagées (coordination de groupe) | [Reporté V2] |
-| `ADR-011-institutionnalisation-emergence.md` | Institutionnalisation de l'émergence (boucle de second ordre) | [Reporté V2] |
+
+Les ADR-010 (intentions partagées) et ADR-011 (institutionnalisation) étaient
+classés `Reporté V2` sans implémentation : retranchés du dossier courant le
+12 octobre 2026 (historique Git).
 
 ## Modèle
 
@@ -34,4 +41,5 @@ autres composants. Le numéro `0000` est réservé au gabarit.
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
-| 11 octobre 2026 | Création de l'index ; numérotation des ADR restés sans numéro (`ADR-XXX`, `ADR-<sujet>`) | Mise en conformité avec `NAMING_CONVENTIONS.md` §4 |
+| 11 octobre 2026 | Création de l'index ; numérotation des ADR restés sans numéro (`ADR-XXX`, `ADR-<sujet>`) | Mise en conformité avec `../NAMING_CONVENTIONS.md` §4 |
+| 12 octobre 2026 | Retrait des ADR-010 et ADR-011 (`Reporté V2`, aucune implémentation) | Filtre V0.1 : seuls conservés les ADR Accepted + implémentés + en vigueur |

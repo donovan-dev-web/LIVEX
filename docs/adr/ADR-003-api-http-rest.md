@@ -31,8 +31,8 @@ Exposer une **API HTTP légère** sur le port **5181** par défaut, bind local p
 > **Contrat courant :** les routes supportées et le cycle de contrôle sont
 > `prepare`, `ready`, `start`, `pause`, `resume`, `stop`, `reset` et `status`.
 > Les chemins, payloads, erreurs et règles d'initialisation sont maintenus dans
-> [`docs/docs-syne/API_CONTRACTS.md`](../docs-syne/API_CONTRACTS.md) et
-> [`COMMUNICATION.md`](../../COMMUNICATION.md).
+> [`../syne/API_CONTRACTS.md`](../syne/API_CONTRACTS.md) et
+> [`../COMMUNICATION.md`](../COMMUNICATION.md).
 
 ### Positives
 - Contrôle simple et faiblement couplé, consommable par tout client HTTP.

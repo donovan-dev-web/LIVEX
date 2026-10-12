@@ -4,9 +4,9 @@ Orchestrateur de la pile LIVEX : il pilote SYNE (moteur), ECHOS (analyse) et —
 de sa livraison — PRISM (immersion), depuis une interface unique et un format de données
 unique, le paquet `.livexp`.
 
-**Version** : `0.1.0` (`launcher/Directory.Build.props`, `<Version>`) — statut V1 : voir [`ROADMAP-V1.md`](ROADMAP-V1.md).
+**Version** : `0.1.0` (`Directory.Build.props`, `<Version>`) — statut V1 : voir [`ROADMAP-V1.md`](ROADMAP-V1.md).
 
-La spécification complète vit dans [`../docs/docs-launcher/`](../docs/docs-launcher/README.md) :
+La spécification complète vit dans [`../docs/launcher`](../docs/launcher/README.md) :
 vision, architecture, modèle de composants, contrat d'intégration, format de paquet,
 campagnes, observabilité, interface, empaquetage, tests, feuille de route et six ADR.
 La liste ordonnée et vérifiable des travaux restant pour finaliser V1 est dans
@@ -23,10 +23,10 @@ avec le [`schéma JSON v1`](contracts/component-manifest-v1.schema.json).
 | **G2** | Orchestration sans interface : machine à états, registre, profils, sondes de santé câblées (Démarrage → Prêt, perte de contact), gestion de processus, détection par manifeste | Livré |
 | **G3** | Campagnes : planification séquentielle, graines dérivées, politiques d'échec, reprise exacte, annulation, scellement | Implémenté et testé contre les stubs ; le défaut SYNE réel `reference` est aligné, mais les campagnes et la collecte restent à accepter contre une installation publiée |
 | **G4** | Interface d'orchestration : quatre modes, neuf écrans, cycle de vie, monitoring, lecteur Markdown et CLI `--check` | Parcours principaux, consultation/export des logs de run et gestion des installations présents ; variantes UI/headless et validation complète des états visuels restent à faire |
-| **G5** | Session complète : run réel, analyse headless ECHOS, rapport archivé et relu, reprise sans rejouer les runs terminés | Non franchi (arbitrage du 08/10/2026) : le scénario vert contre un **ECHOS réel** n'est pas encore prouvé — tout est vérifié contre le banc de stubs, alors que le batch SYNE et les opérations d'analyse ECHOS sont désormais disponibles (J2A/J2B acceptés) ; la preuve réelle relève de J3 (`docs/docs-launcher/ROADMAP.md`, état du 08/10) |
+| **G5** | Session complète : run réel, analyse headless ECHOS, rapport archivé et relu, reprise sans rejouer les runs terminés | Non franchi (arbitrage du 08/10/2026) : le scénario vert contre un **ECHOS réel** n'est pas encore prouvé — tout est vérifié contre le banc de stubs, alors que le batch SYNE et les opérations d'analyse ECHOS sont désormais disponibles (J2A/J2B acceptés) ; la preuve réelle relève de J3 (`../docs/launcher/ROADMAP.md`, état du 08/10) |
 | **G6** | Livraison : diagnostic, installation propre et mise à jour | `--check` existe ; installateurs Launcher Windows/Linux et validation sur machines propres restent à faire |
 | **G7** | Déverrouillage Immersion selon manifeste et acceptation PRISM | Verrouillé : aucun manifeste PRISM Launcher ni parcours de rendu accepté |
-| — | Portes externes P1 – P5 (protocole, batch SYNE, ECHOS pilotable, Linux, déterminisme) | Hors du Launcher (`ROADMAP.md`, `ISSUES.md`) |
+| — | Portes externes P1 – P5 (protocole, batch SYNE, ECHOS pilotable, Linux, déterminisme) | Hors du Launcher (`../docs/governance/ROADMAP.md`, `ISSUES.md`) |
 
 Les modes `Console`, `Standard`, `Développement` et `Personnaliser` sont
 sélectionnables dans l'application. Configuration permet d'ajouter des
@@ -65,7 +65,7 @@ au build.
 | Nom | Chemin | Extension | Taille attendue | Description et emplacement |
 | :-- | :-- | :-- | :-- | :-- |
 | Panorama de l'accueil | `Launcher.App/Assets/hero-panorama.png` | PNG | 670 × 204 px | Illustration panoramique à droite du bandeau d'accueil, sous le titre LIVEX. Extrait de la maquette de référence. |
-| Maquette source | `../docs/docs-launcher/maquettes/Interface futuriste du launcher LIVEX.png` | PNG | 1536 × 1024 px | Référence visuelle complète pour la composition, les espacements, les couleurs et les commandes intégrées. |
+| Maquette source | `../docs/launcher/maquettes/Interface futuriste du launcher LIVEX.png` | PNG | 1536 × 1024 px | Référence visuelle complète pour la composition, les espacements, les couleurs et les commandes intégrées. |
 | Logo LIVEX | `Launcher.App/Assets/livex-mark.svg` | SVG | viewBox 1080 × 1080; rendu 50 × 50 px et 34 × 34 px | Symbole de marque dans l'en-tête et en bas de la barre latérale. |
 | Emblèmes de composants | `Launcher.App/Assets/syne-mark.svg`, `echos-mark.svg`, `prism-mark.svg` | SVG | viewBox 1080 × 1080; rendu 48–66 px | Marques des composants dans leurs cartes et dans la colonne d'état système. |
 | Icônes navigation | `Launcher.App/Assets/icons/icons-home.svg`, `icons-experience.svg`, `icons-campagne.svg`, `icons-analyse.svg`, `icons-report.svg`, `icons-setting.svg`, `icons-log.svg` | SVG | 24 × 24 px | Icônes des sept entrées de la maquette historique ; Monitoring et Documentation n'ont pas encore d'icônes dédiées. |
@@ -98,7 +98,7 @@ SDK requis : .NET 10 (épinglé par `global.json`, comme pour SYNE).
 
 > `livex-launcher` n'est **pas installé sur le PATH** tant que le jalon G6
 > (installation, `PACKAGING.md`) n'est pas réalisé : c'est le nom du fichier exécutable
-> produit par la build, dans le répertoire de sortie. Partir de `launcher/` pour toutes
+> produit par la build, dans le répertoire de sortie. Partir de `./` pour toutes
 > les commandes ci-dessous.
 
 ```bash
@@ -201,9 +201,9 @@ de données (`PACKAGING.md` §2.2).
   et le pilotage d'analyse d'ECHOS (`AnalyzeRun`, `AnalyzeExperiment`, `GenerateReport`)
   la porte **P3** : les campagnes et les rapports sont validés contre les stubs tant
   qu'elles ne sont pas confirmées.
-- Compatibilité avec les composants réels codés (`syne/`, `echos/`, `syne-mock/`) : les
+- Compatibilité avec les composants réels codés (`../syne/`, `../echos/`, `../syne-mock/`) : les
   trois livrent désormais leur `component.json` (Linux **et** Windows) et leur contrat
   batch/supervisé ; SYNE (J2A) et les opérations d'analyse ECHOS (J2B) sont acceptés, et
   le parcours J3 de bout en bout contre les composants réels est acquis (08/10/2026,
   E2E 31/31 sous Windows). Les écarts résiduels éventuels restent suivis en
-  `../docs/docs-launcher/ISSUES.md`.
+  `../docs/launcher/ISSUES.md`.

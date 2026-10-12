@@ -34,4 +34,4 @@ Définition vérifiable du « fonctionnalité faite ».
 ## Liens
 
 - Issues liées : `#...`
-- ADR concernés : `docs/adr/...` (à créer si besoin)
+- ADR concernés : `../../docs/adr/...` (à créer si besoin)

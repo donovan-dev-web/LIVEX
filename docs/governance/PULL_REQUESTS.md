@@ -3,14 +3,14 @@
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
 **Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `GITFLOW.md`, `CI_CD.md`
+**Dépend de** : `GITFLOW.md`, `../CI_CD.md`
 **Source Monographie** : —
 
 ---
 
 ## 1. Objectif
 
-Ce document définit le processus de revue et de fusion des Pull Requests (PR) du dépôt LIVEX, adapté au modèle de branche `GITFLOW.md` et au pipeline `CI_CD.md`.
+Ce document définit le processus de revue et de fusion des Pull Requests (PR) du dépôt LIVEX, adapté au modèle de branche `GITFLOW.md` et au pipeline `../CI_CD.md`.
 
 ## 2. Règles générales
 
@@ -19,12 +19,12 @@ Ce document définit le processus de revue et de fusion des Pull Requests (PR) d
 - La PR référence au moins une issue (ou documente explicitement pourquoi aucune).
 - La PR doit cibler la bonne branche : `develop` (flux normal), `main` (release/hotfix).
 
-## 3. Contenu obligatoire (template `.github/PULL_REQUEST_TEMPLATE.md`)
+## 3. Contenu obligatoire (template `../../.github/PULL_REQUEST_TEMPLATE.md`)
 
 1. **Résumé** : quoi, pourquoi, référence Monographie (`§`).
 2. **Changements** : liste des fichiers/pertinences par composant.
 3. **Tests effectués** : commandes, résultats, couverture.
-4. **Impact contrat** : tout changement de contrat de transport (`WorldSnapshot`, `ExternalEvent`, API REST) ou de persistance doit être explicite — il impose une révision de la partie concernée de `VERSIONING.md`.
+4. **Impact contrat** : tout changement de contrat de transport (`WorldSnapshot`, `ExternalEvent`, API REST) ou de persistance doit être explicite — il impose une révision de la partie concernée de `../../VERSIONING.md`.
 5. **Déterminisme** (si concerne SYNE) : impact sur la reproductibilité bit-à-bit, version moteur.
 
 ## 4. Critères de fusion
@@ -50,7 +50,7 @@ Une PR est fusionnable **uniquement** si :
 
 ## 7. ADR
 
-Les PR de type ADR suivent le format `docs/adr/0000-template.md` : une proposition qui documente Contexte / Décision / Conséquences / Alternatives. La fusion d'un ADR est conditionnée à la validation de la décision ; un ADR `Proposed` reste documenté mais non suivi par le code tant qu'il n'est pas `Accepted`.
+Les PR de type ADR suivent le format `../adr/0000-template.md` : une proposition qui documente Contexte / Décision / Conséquences / Alternatives. La fusion d'un ADR est conditionnée à la validation de la décision ; un ADR `Proposed` reste documenté mais non suivi par le code tant qu'il n'est pas `Accepted`.
 
 ---
 

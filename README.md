@@ -8,12 +8,12 @@
 
 [![Licence MIT](https://img.shields.io/badge/Licence-MIT-216e5a?style=for-the-badge)](LICENSE)
 [![Version V0.1](https://img.shields.io/badge/Version-V0.1-315c9b?style=for-the-badge)](VERSIONING.md)
-[![SYNE 0.15.0](https://img.shields.io/badge/SYNE-0.15.0-1f7f6f?style=for-the-badge)](docs/docs-syne/DETERMINISM.md)
-[![Contrat obs. 0.4.0](https://img.shields.io/badge/Contrat%20obs.-0.4.0-315c9b?style=for-the-badge)](docs/docs-syne/API_CONTRACTS.md)
-[![Documentation](https://img.shields.io/badge/Docs-en%20fran%C3%A7ais-6b7280?style=for-the-badge)](GLOSSARY.md)
+[![SYNE 0.15.0](https://img.shields.io/badge/SYNE-0.15.0-1f7f6f?style=for-the-badge)](docs/syne/DETERMINISM.md)
+[![Contrat obs. 0.4.0](https://img.shields.io/badge/Contrat%20obs.-0.4.0-315c9b?style=for-the-badge)](docs/syne/API_CONTRACTS.md)
+[![Documentation](https://img.shields.io/badge/Docs-en%20fran%C3%A7ais-6b7280?style=for-the-badge)](docs/presentation/GLOSSARY.md)
 [![CI](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml)
-[![Tests: 1 258](https://img.shields.io/badge/Tests-1%20258-1f7f6f?style=for-the-badge)](LIVEX-STATUS.md#5-tests-et-validations)
-[![Couverture ≥ 80 %](https://img.shields.io/badge/Couverture-%E2%89%A5%2080%25-1f7f6f?style=for-the-badge)](LIVEX-STATUS.md#5-tests-et-validations)
+[![Tests: 1 258](https://img.shields.io/badge/Tests-1%20258-1f7f6f?style=for-the-badge)](docs/governance/LIVEX-STATUS.md#5-tests-et-validations)
+[![Couverture ≥ 80 %](https://img.shields.io/badge/Couverture-%E2%89%A5%2080%25-1f7f6f?style=for-the-badge)](docs/governance/LIVEX-STATUS.md#5-tests-et-validations)
 
 [Découvrir le projet](#-le-projet) · [Architecture](#-architecture) · [Démarrage](#-démarrage-rapide) · [Documentation](#-documentation) · [Contribuer](#-contribuer)
 
@@ -27,7 +27,7 @@
 
 Le moteur fait évoluer des entités autonomes dans un monde régi par des règles explicites. Chaque entité perçoit une partie de son environnement, possède des besoins, des croyances et une mémoire, puis choisit ses actions selon une architecture cognitive BDI (*Beliefs, Desires, Intentions*). Le système observe les résultats sans les dicter.
 
-LIVEX est un projet de recherche et d’expérimentation en vie artificielle et en simulation multi-agents. Ses résultats sont des observations à analyser, pas des preuves scientifiques en eux-mêmes. Les hypothèses, limites et choix du projet sont documentés dans la [monographie](LIVEX-Monographie_SnapV0-1.pdf) et les [décisions d’architecture](docs/docs-syne/adr/).
+LIVEX est un projet de recherche et d’expérimentation en vie artificielle et en simulation multi-agents. Ses résultats sont des observations à analyser, pas des preuves scientifiques en eux-mêmes. Les hypothèses, limites et choix du projet sont documentés dans la [monographie](LIVEX-Monographie_SnapV0-1.pdf) et les [décisions d’architecture](docs/syne/adr).
 
 ## ✨ Principes de conception
 
@@ -64,7 +64,7 @@ flowchart LR
 > le projet Unreal final de LIVEX et intègre **PRISM-LDK** (*LIVEX Development
 > Kit*, module `PrismLdk`). Le `LDK.uproject` du checkout est un hôte technique
 > de développement/build du plugin, pas un second produit. Consultez les documentations de
-> [PRISM](docs/docs-prism/README.md) et du [mock SYNE](syne-mock/README.md)
+> [PRISM](docs/prism/README.md) et du [mock SYNE](syne-mock/README.md)
 > pour les détails et limites de l'intégration.
 
 ## 🚀 Démarrage rapide
@@ -76,7 +76,7 @@ dotnet run --project syne/Simulation.Console --configuration Release -- \
   --seed 12345 --max-ticks 1000 --headless
 ```
 
-Pour démarrer **SYNE, l’ingestion et l’API ECHOS** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. L’API ne sert aucune page : pour observer l’analyse en direct, ouvrez la **fenêtre Analyse du Launcher** (bouton dédié) et les **consoles de logs** de chaque composant. Voir le guide [Installation & démarrage](INSTALLATION.md#démarrage-complet-syne-echos). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
+Pour démarrer **SYNE, l’ingestion et l’API ECHOS** ensemble, lancez `./scripts/dev-stack.sh`. Le script prépare l’environnement manquant et démarre les services dans le bon ordre. L’API ne sert aucune page : pour observer l’analyse en direct, ouvrez la **fenêtre Analyse du Launcher** (bouton dédié) et les **consoles de logs** de chaque composant. Voir le guide [Installation & démarrage](docs/INSTALLATION.md#démarrage-complet-syne-echos). Pour travailler sur PRISM sans le moteur complet, consultez le [guide du mock SYNE](syne-mock/README.md).
 
 ## 🗂️ Dans le dépôt
 
@@ -92,13 +92,18 @@ LIVEX/
 ├── syne-mock/              # Serveur Node.js de test des contrats SYNE
 ├── launcher/               # Orchestrateur Avalonia, paquets et tests du Launcher
 ├── docs/
-│   ├── docs-syne/          # Documentation et décisions SYNE
-│   ├── docs-echos/         # Documentation ECHOS
-│   ├── docs-launcher/      # Spécification complète du Launcher
-│   ├── docs-prism/         # Contrats et feuille de route PRISM
-│   └── governance/         # Gouvernance et processus
-├── ROADMAP.md              # Jalons unifiés
-├── INSTALLATION.md         # Prérequis et commandes de lancement
+│   ├── README.md           # Portail de la documentation
+│   ├── ARCHITECTURE.md     # Vue d'ensemble technique
+│   ├── COMMUNICATION.md    # Protocoles et ports inter-composants
+│   ├── INSTALLATION.md     # Prérequis et commandes de lancement
+│   ├── presentation/       # Vision, FAQ, glossaire, périmètre éthique
+│   ├── governance/         # Feuille de route, état du dépôt, gitflow
+│   ├── adr/                # Décisions d'architecture transverses
+│   ├── syne/               # Documentation et décisions SYNE
+│   ├── echos/              # Documentation ECHOS
+│   ├── launcher/           # Spécification complète du Launcher
+│   ├── prism/              # Contrats et feuille de route PRISM
+│   └── installer/          # Spécification de l'installateur (à venir)
 └── LIVEX-Monographie...    # Référence scientifique et technique
 ```
 
@@ -106,21 +111,21 @@ LIVEX/
 
 | Lire… | Pour… |
 |:--|:--|
-| [Vision](VISION.md) | Comprendre les objectifs, le périmètre et les limites. |
-| [Architecture](ARCHITECTURE.md) | Voir les composants et leurs responsabilités. |
-| [Installation & démarrage](INSTALLATION.md) | Installer les dépendances et lancer la pile locale. |
-| [Feuille de route](ROADMAP.md) | Suivre les jalons et les travaux à venir. |
-| [Communication](COMMUNICATION.md) | Consulter les protocoles et ports inter-composants. |
-| [Glossaire](GLOSSARY.md) | Retrouver le vocabulaire du projet. |
-| [FAQ](FAQ.md) | Obtenir des réponses aux questions fréquentes. |
-| [Launcher LIVEX](launcher/README.md) · [spécification complète](docs/docs-launcher/README.md) | Comprendre l'état V1, les modes de lancement, l'interface et les limites d'intégration. |
+| [Vision](docs/presentation/VISION.md) | Comprendre les objectifs, le périmètre et les limites. |
+| [Architecture](docs/ARCHITECTURE.md) | Voir les composants et leurs responsabilités. |
+| [Installation & démarrage](docs/INSTALLATION.md) | Installer les dépendances et lancer la pile locale. |
+| [Feuille de route](docs/governance/ROADMAP.md) | Suivre les jalons et les travaux à venir. |
+| [Communication](docs/COMMUNICATION.md) | Consulter les protocoles et ports inter-composants. |
+| [Glossaire](docs/presentation/GLOSSARY.md) | Retrouver le vocabulaire du projet. |
+| [FAQ](docs/presentation/FAQ.md) | Obtenir des réponses aux questions fréquentes. |
+| [Launcher LIVEX](launcher/README.md) · [spécification complète](docs/launcher/README.md) | Comprendre l'état V1, les modes de lancement, l'interface et les limites d'intégration. |
 | [Monographie](LIVEX-Monographie_SnapV0-1.pdf) | Lire les fondements, modèles et choix détaillés. |
-| [Documentation SYNE](docs/docs-syne/README.md) · [ECHOS](docs/docs-echos/README.md) · [PRISM](docs/docs-prism/README.md) | Entrer dans la documentation d’un composant. |
+| [Documentation SYNE](docs/syne/README.md) · [ECHOS](docs/echos/README.md) · [PRISM](docs/prism/README.md) | Entrer dans la documentation d’un composant. |
 | [Documentation générale](docs/README.md) | Repérer les sources de vérité, les contrats et les documents historiques. |
 
 ## 🤝 Contribuer
 
-Les contributions suivent les conventions du dépôt. Avant de proposer un changement, consultez le [guide de contribution](CONTRIBUTING.md), le [Gitflow](GITFLOW.md) et le [code de conduite](CODE_OF_CONDUCT.md). Les choix techniques durables doivent rester cohérents avec l’[architecture](ARCHITECTURE.md) et les ADR du composant concerné.
+Les contributions suivent les conventions du dépôt. Avant de proposer un changement, consultez le [guide de contribution](CONTRIBUTING.md), le [Gitflow](docs/governance/GITFLOW.md) et le [code de conduite](CODE_OF_CONDUCT.md). Les choix techniques durables doivent rester cohérents avec l’[architecture](docs/ARCHITECTURE.md) et les ADR du composant concerné.
 
 ## Licence & auteur
 

@@ -36,7 +36,7 @@ Blueprint) se trouve dans [`docs/`](docs/):
 
 Ces fichiers sont une façade d'intégration et ne constituent pas un nouveau
 contrat : en cas de divergence, les services de `src/`, les tests de `test/`
-et `docs/docs-syne/` restent la source de vérité.
+et `../docs/syne` restent la source de vérité.
 
 Routes : `GET /api/control/status`, `GET /api/world`, `POST
 /api/control/prepare|ready|start|pause|resume|stop|reset`.
@@ -70,7 +70,7 @@ ne sont pas garanties bit-à-bit identiques au moteur C#.
 Tests ciblés : `npm test` (48 tests, dont 2 arrêts par signal ignorés sous
 Windows, sans dépendance à un port fixe). La suite s'exécute aussi en intégration continue via le job `Tests
 (SYNE-MOCK Node)` de `.github/workflows/ci.yml`, déclenché sur toute
-modification de `syne-mock/`. Ports et paramètres sont configurables en JSON.
+modification de `./`. Ports et paramètres sont configurables en JSON.
 `replay.file` permet de rejouer un fichier JSONL (un message SYNE par ligne) ;
 `replay.loop` le répète indéfiniment. Le replay est volontairement un transport
 de messages et ne prétend pas restaurer l'état interne C#.
@@ -85,12 +85,12 @@ SYNE_OBSERVABILITY_URL=ws://127.0.0.1:5180/   # défaut : même valeur
 SYNE_CONTROL_URL=http://127.0.0.1:5181        # défaut : même valeur
 ```
 
-Les défauts d'ECHOS (`echos/echos/dev_ingest.py`, `echos/echos/api/routes.py`)
+Les défauts d'ECHOS (`../echos/echos/dev_ingest.py`, `../echos/echos/api/routes.py`)
 pointent déjà sur ces ports : sans rien définir, ECHOS se branche sur le mock
 dès qu'il écoute. Le test
-`echos/echos/tests/test_syne_mock_integration.py` vérifie le trajet complet
+`../echos/echos/tests/test_syne_mock_integration.py` vérifie le trajet complet
 (contrôle HTTP → flux WebSocket → ingestion → stockage) sur le job
-`Intégration mock → ECHOS` de `.github/workflows/ci.yml`.
+`Intégration mock → ECHOS` de `../.github/workflows/ci.yml`.
 
 Le mock est une émulation de développement, pas une implémentation
 scientifiquement équivalente à SYNE. Il ne prend pas en charge les campagnes

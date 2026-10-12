@@ -49,7 +49,7 @@ Règles transverses :
 
 Le versionnement est déclenché par les évènements suivants :
 
-- `MINOR`/`MAJOR` → fusion dans `develop` puis promotions successives des branches `release/` (cf. `GITFLOW.md`).
+- `MINOR`/`MAJOR` → fusion dans `develop` puis promotions successives des branches `release/` (cf. `docs/governance/GITFLOW.md`).
 - `PATCH` → fusion directe (hotfix) dans `main` et `develop`.
 
 ## 6. Changelog
@@ -62,14 +62,14 @@ Le versionnement est déclenché par les évènements suivants :
 
 - Le projet est en pré-1.0 : `MAJOR` reste à `0`.
 - Toute libération composant visible publiquement incrémente au minimum `PATCH`.
-- Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `ROADMAP.md`.
+- Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `docs/governance/ROADMAP.md`.
 
 ## 8. État courant des versions (octobre 2026)
 
 > Synoptique de référence après la campagne de correctifs
 > de runs du 29/09/2026 (ADR-015). L'état détaillé et les
-> matrice de compatibilité par composant vivent dans `docs/docs-syne/ROADMAP.md`
-> et `docs/docs-echos/ROADMAP.md`.
+> matrice de compatibilité par composant vivent dans `docs/syne/ROADMAP.md`
+> et `docs/echos/ROADMAP.md`.
 
 | Composant / contrat | Version | Évolution |
 | :-- | :-- | :-- |
