@@ -139,7 +139,7 @@ public sealed class FakeOrchestrationFacade : IOrchestrationFacade
         Task.FromResult(packagePath);
 
     public IReadOnlyList<DocumentationItemViewModel> ListDocumentation() =>
-        [new DocumentationItemViewModel("docs-launcher/README.md", "README")];
+        [new DocumentationItemViewModel("launcher/README.md", "README")];
 
     public string ReadDocumentation(string relativePath) => $"# {relativePath}";
 }
@@ -454,8 +454,8 @@ public sealed class ReportProvenanceTests : IDisposable
     {
         var viewModel = new MainWindowViewModel(new FakeOrchestrationFacade());
 
-        Assert.Equal("# docs-launcher/README.md", viewModel.DocumentationContent);
-        Assert.Equal("docs-launcher/README.md", viewModel.DocumentationStatus);
+        Assert.Equal("# launcher/README.md", viewModel.DocumentationContent);
+        Assert.Equal("launcher/README.md", viewModel.DocumentationStatus);
     }
 
     [Fact]

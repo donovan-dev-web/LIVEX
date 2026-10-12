@@ -1,7 +1,7 @@
 # Référence des contrats consommables
 
-Source : `syne-mock/src/server.js`, la suite `syne-mock/test/` et
-`docs/docs-syne/API_CONTRACTS.md`. Les exemples ci-dessous décrivent le mock,
+Source : `../src/server.js`, la suite `../test/` et
+`../../docs/syne/API_CONTRACTS.md`. Les exemples ci-dessous décrivent le mock,
 pas une promesse d'API supplémentaire.
 
 ## WebSocket et ordre des messages
@@ -26,8 +26,8 @@ Pour un tick normal :
 Tout événement porte le `tick` du snapshot qui le précède, et aucun événement
 ne précède le premier snapshot. Un consommateur peut donc reconstruire le flux
 tick par tick, et c'est ce que fait ECHOS (`ingestion.stream.aligned_ticks`) :
-`syne-mock/test/stream-order.test.js` verrouille cet invariant, et
-`echos/echos/tests/test_syne_mock_integration.py` vérifie que le client d'ECHOS
+`../test/stream-order.test.js` verrouille cet invariant, et
+`../../echos/echos/tests/test_syne_mock_integration.py` vérifie que le client d'ECHOS
 ingeste réellement le flux du mock.
 
 Il y a un snapshot par tick, après les mutations. Il n'y a pas de snapshot
@@ -110,7 +110,7 @@ moteur cesse de garantir des IDs numériques.
 - `world.book_written` : `value` contient le livre ;
 - `tick_summary` : `value={aliveCount}`.
 
-Les contrats docs-syne listent également des événements futurs/optionnels
+Les contrats SYNE (`docs/syne/`) listent également des événements futurs/optionnels
 (`agent_spawned`, `agent_died`, `group_formed`, `world.season_changed`, etc.).
 Le plugin les désérialise génériquement tant que le mock ne les émet pas.
 

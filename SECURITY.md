@@ -3,7 +3,7 @@
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
 **Dernière mise à jour** : 27 septembre 2026
-**Dépend de** : `ARCHITECTURE.md`, `COMMUNICATION.md`
+**Dépend de** : `docs/ARCHITECTURE.md`, `docs/COMMUNICATION.md`
 
 ---
 
@@ -29,7 +29,7 @@ Aucune faille connue en V0.1 (serveurs locaux). Toute vulnérabilité découvert
 
 1. Ouvrir une issue GitHub **privée** (ou contacter le mainteneur) — ne pas exposer la faille en issue publique.
 2. Décrire : version, composant, port concerné, reproduction minimale, impact.
-3. Accusé de réception sous 5 jours ouvrés ; correctif selon la gravité (hotfix si critique, cf. `GITFLOW.md`).
+3. Accusé de réception sous 5 jours ouvrés ; correctif selon la gravité (hotfix si critique, cf. `docs/governance/GITFLOW.md`).
 
 ## 4. Secrets
 

@@ -1,0 +1,393 @@
+# Installation & démarrage
+
+**Composant** : LIVEX (général)
+**Statut** : [STABLE]
+**Dernière mise à jour** : 5 octobre 2026
+**Dépend de** : `governance/ROADMAP.md`, `COMMUNICATION.md`
+
+> **Versions courantes** : moteur **SYNE 0.15.0** (défauts intégrés calibrés B1,
+> ADR-016, profil de référence ADR-015 — voir
+> `syne/adr/ADR-016-calibration-stabilite-2500-ticks.md`),
+> contrat d'observabilité SYNE **0.4.0** (champ `seed` et `simulatedTimeSeconds`
+> additifs dans le snapshot,
+> format canonique des runs pilotés `run-<seed>-<12hex>`), stockage d'analyse
+> ECHOS **schéma v6**. Les versions évoluent indépendamment par composant
+> (`../VERSIONING.md`).
+
+Ce guide permet de démarrer localement **SYNE**, l’API **ECHOS** (sans interface), l’ingestion, le mock SYNE utilisé pour développer l’intégration Unreal de PRISM, et le **Launcher**, qui porte les fenêtres d’observation (consoles de logs, fenêtre d’analyse).
+
+> **PRISM / Unreal** : PRISM est le projet Unreal final de LIVEX ; il intègre
+> le plugin **PRISM-LDK** (`Plugins/PrismLdk`). Dans le checkout courant,
+> `../prism/LDK/LDK.uproject` sert d'hôte technique pour compiler et tester ce
+> plugin, sans être un projet produit distinct. Voir la
+> [documentation PRISM](prism/README.md) pour le workflow Blueprint.
+
+## Prérequis
+
+- **.NET SDK 10.0.4xx**, conformément à [`../syne/global.json`](../syne/global.json).
+- **Python 3.11+**.
+- **Node.js 20+** et npm.
+- **Unreal Engine 5.8** et le toolchain Visual Studio adapté, uniquement pour compiler ou utiliser le plugin Unreal.
+- `curl` pour les vérifications de disponibilité du lanceur.
+
+```bash
+dotnet --version
+python3 --version
+node --version
+npm --version
+curl --version
+```
+
+## Développer l'intégration PRISM sans SYNE
+
+Pour avancer sur l'intégration Unreal sans démarrer le moteur .NET complet,
+lancez le serveur Node.js de simulation du contrat :
+
+```bash
+cd syne-mock
+npm ci
+npm start -- config.example.json
+```
+
+Le mock écoute par défaut sur `127.0.0.1:5181` (HTTP de contrôle) et
+`127.0.0.1:5180` (WebSocket), avec 50 agents et un maximum de 400 ticks par
+défaut. Ses ports et le scénario sont configurables dans le JSON. Consultez
+[`../syne-mock/README.md`](../syne-mock/README.md) pour les routes, événements,
+options et commandes de validation.
+
+Le mock est un outil d'intégration : il simule le cycle de contrôle, le monde
+initial et les snapshots, mais simplifie plusieurs comportements du vrai SYNE
+(notamment la délibération et le pathfinding). Il ne doit pas servir à produire
+des résultats scientifiques ni remplacer les tests avec le vrai moteur.
+
+## PRISM et son plugin PRISM-LDK
+
+**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
+complet. **PRISM** est le projet Unreal final de LIVEX ; il intègre le plugin
+**PRISM-LDK** (*LIVEX Development Kit*, nom technique du module `PrismLdk`).
+LDK désigne ce plugin, pas un projet complet distinct.
+
+Le fichier `../prism/LDK/LDK.uproject` fourni dans le dépôt est l'hôte Unreal
+technique utilisé pour ouvrir/compiler/tester le plugin. Il n'est ni le projet
+LIVEX complet ni un second produit. PRISM-LDK expose les contrats et événements
+utiles à Blueprint, et garde le C++ au minimum pour la connexion, le transport
+et la conversion des messages. Pour l'ordre d'initialisation du monde et le
+câblage des événements, suivre
+[`prism/PRISM_UNREAL_IMPLEMENTATION.md`](prism/PRISM_UNREAL_IMPLEMENTATION.md).
+
+### Démarrage complet : SYNE, ECHOS et interface d’analyse
+
+Depuis la racine du dépôt, lancez :
+
+```bash
+./scripts/dev-stack.sh
+```
+
+Le script prépare automatiquement l’environnement Python ECHOS s’il manque, compile SYNE, puis démarre dans le bon ordre :
+
+1. l’API ECHOS sur le port `5000` (aucune page n’y est servie — ADR-007) ;
+2. SYNE en mode serveur, avec contrôle HTTP sur `5181` et WebSocket sur `5180` ;
+3. le consommateur ECHOS, connecté au WebSocket et en attente d’un run.
+
+La documentation de l’API est sur <http://127.0.0.1:5000/docs>. Les runs ingérés sont stockés dans `echos/data/livex-analytics.sqlite`.
+
+Pour **regarder l’analyse en direct**, lancez le Launcher : chaque composant démarré ouvre sa **console de logs**, et le bouton d’analyse ouvre la **fenêtre d’analyse** (séries, histogrammes, radar, graphe relationnel) qui sonde l’API ECHOS.
+
+Le script ne démarre **aucune simulation**. SYNE reste à l’état `Idle` jusqu’à la commande `Start`. Pour arrêter toute la pile, utilisez `Ctrl+C` dans le terminal du script.
+
+> **À noter (calibration B1, SYNE 0.15.0)** : les **défauts intégrés** du moteur
+> sont désormais le scénario calibré (ADR-016) — un run lancé **sans surcouche**
+> (dont les runs du Launcher, qui ne poussent que `agents.initialCount`) est stable
+> sur 2500 ticks à 50 et 100 agents : récupération d'énergie à manger/boire, coût de
+> déplacement abaissé, réserves et régénération dimensionnées pour l'horizon, dérives
+> des besoins sociaux ralenties. Le profil `reference.json` rejoue les mêmes valeurs.
+> `raw.json` reste le jalon historique **non calibré** (extinction ~t300), utile comme
+> point de comparaison — ne le présentez pas comme un scénario viable.
+> **Le Launcher exécute le binaire publié** (`Simulation.Console/bin/Release/net10.0/publish`,
+> chemin déclaré par `../syne/component.json`) : après tout changement des défauts,
+> relancez `dotnet publish syne/Simulation.Console/Simulation.Console.csproj -c Release
+> --output syne/Simulation.Console/bin/Release/net10.0/publish` — sinon les runs du
+> Launcher continuent d'utiliser l'ancien binaire et s'éteignent (~t300) malgré un
+> source corrigé. Reproductible en 500 ticks : `result.json` doit afficher `aliveCount`
+> égal à la population initiale.
+> Si vous relancez `Start` alors qu'un run a atteint son `maxTicks` (état `finished`),
+> SYNE répond `409 run_finished` : appelez `Reset` avant de redémarrer.
+
+### Boutons de pilotage
+
+L’API ECHOS relaie les commandes au serveur de contrôle SYNE sur le port `5181`. Le même processus SYNE expose aussi le WebSocket sur le port `5180` : dès que `Start` est envoyé, les snapshots et événements du run sont diffusés vers ECHOS pour analyse. Son état peut être vérifié avec :
+
+```bash
+curl http://127.0.0.1:5181/api/control/status
+```
+
+La seed est facultative dans le comportement conceptuel de l’API : la valeur affichée par défaut est `12345`. La durée est également facultative. Si `maxTicks` n’est pas fourni, le run continue jusqu’à `Pause`, `Reset`, l’arrêt du processus SYNE ou `Ctrl+C`. Un `Start` ultérieur après `Reset` crée un nouveau run.
+
+## Préparation manuelle (facultative)
+
+Le lanceur s’occupe de ces étapes automatiquement. Pour préparer les dépendances à la main :
+
+```bash
+python3 -m venv echos/.venv
+echos/.venv/bin/python -m pip install --upgrade pip
+echos/.venv/bin/pip install -r echos/requirements-dev.txt
+
+dotnet build syne/Syne.sln --configuration Release
+```
+
+## Démarrage manuel, service par service
+
+Si vous ne souhaitez pas utiliser le lanceur, préparez d’abord l’environnement avec la section précédente. Ouvrez trois terminaux depuis la racine du dépôt et démarrez les services dans cet ordre.
+
+### Terminal 1 — API ECHOS
+
+```bash
+mkdir -p echos/data
+export ECHOS_ANALYTICS_DB="$PWD/echos/data/livex-analytics.sqlite"
+PYTHONPATH="$PWD/echos" echos/.venv/bin/python -m uvicorn echos.api.app:app \
+  --app-dir echos --host 127.0.0.1 --port 5000
+```
+
+### Terminal 2 — Ingestion ECHOS
+
+```bash
+export ECHOS_ANALYTICS_DB="$PWD/echos/data/livex-analytics.sqlite"
+PYTHONPATH="$PWD/echos" echos/.venv/bin/python -m echos.dev_ingest
+```
+
+Le consommateur attend le serveur WebSocket SYNE. Laissez ce terminal ouvert.
+
+### Terminal 3 — SYNE contrôle + observabilité
+
+SYNE démarre en attente, sans lancer de simulation :
+
+```bash
+dotnet run --project syne/Simulation.Console --configuration Release -- --serve
+```
+
+Il écoute sur `127.0.0.1:5181` et `127.0.0.1:5180`. Le run est ensuite démarré par la commande `Start` de l’API ECHOS. Ne passez pas `maxTicks` dans la requête si vous souhaitez une durée illimitée ; utilisez `Pause`, `Resume`, `Stop` ou `Reset` depuis la même API.
+
+### Démarrer uniquement SYNE
+
+Exécution batch sans API ni interface :
+
+```bash
+dotnet run --project syne/Simulation.Console --configuration Release -- \
+  --seed 12345 --max-ticks 1000 --headless
+```
+
+## Run batch SYNE + analyse ECHOS + rapport
+
+Pour exécuter une simulation reproductible sans lancer l'interface, utilisez le
+lanceur batch. Il démarre uniquement l'API ECHOS, l'ingestion analytique et
+SYNE, puis attend la fin du nombre de ticks demandé :
+
+```bash
+./scripts/batch_analysis.py 12345 1000
+```
+
+La commande accepte une seed et un nombre de ticks obligatoires. Elle arrête
+les processus après la fin du run et produit des fichiers déterministes dans
+`echos/data/reports/` :
+
+- `<run-id>.parquet` : la **trace complète d'analyse** (columnar, requêtable
+  — sections `run`/`tick`/`metric`/`event`/`decision`/`context`/
+  `detected_phenomenon`/`calibration`). Ce fichier **remplace le `<run-id>.json`**,
+  plus volatil ;
+- `<run-id>.agents.parquet` : la série lourde des agents (snapshots par tick) ;
+- `<run-id>.md` : lecture humaine, avec résumé par tick, historique des
+  événements pertinents, métriques principales, évolution par tick et
+  calibration. Le détail exhaustif reste dans les `.parquet`.
+
+Le rapport Markdown est toujours produit. L'export Parquet est activé par
+défaut ; désactivez-le avec `--no-parquet` (trace JSON restaurée) :
+
+```bash
+./scripts/batch_analysis.py 12345 1000 --no-parquet
+```
+
+Par défaut l'analyse ECHOS est calculée à chaque tick (`--analysis-every 1`).
+Pour économiser CPU/RAM sur les runs longs, planifiez l'analyse 1 tick sur N
+(les résumés, événements et la série agents restent ingérés à chaque tick) :
+
+```bash
+./scripts/batch_analysis.py 12345 1000 --analysis-every 5
+./scripts/batch_analysis.py 12345 1000 --ticks-per-second 25 --analysis-every 2
+```
+
+Les mêmes réglages sont exposés par variables d'environnement, y compris pour
+l'ingestion manuelle : `ECHOS_ANALYSIS_EVERY`, `ECHOS_CONTEXT_EVERY` (cadence
+du contexte `agents`, défaut 20 — 1 rétablit le contexte à chaque tick),
+`ECHOS_PARQUET_FLUSH_EVERY` (flush bufferisé de la série agents, en nombre de
+ticks) et `ECHOS_PARQUET_PATH` (chemin de la série agents).
+
+La cadence batch est de 10 ticks/s par défaut, comme le mode contrôlé normal.
+Elle peut être augmentée si les mesures montrent qu'ECHOS suit le flux :
+
+```bash
+./scripts/batch_analysis.py 12345 1000 --ticks-per-second 25
+```
+
+Cette option accélère SYNE, mais ne mesure pas automatiquement la capacité
+d'ECHOS : si l'ingestion prend du retard, le drainage peut échouer et le run
+est alors signalé comme incomplet. Utilisez 10 ticks/s comme référence
+comparable entre les seeds, et une cadence supérieure uniquement pour les
+benchmarks.
+
+Le batch attend explicitement que tous les snapshots soient persistés avant de
+fermer SYNE. Si ECHOS décroche ou si le drainage dépasse le délai, la commande
+échoue avec le nombre de ticks effectivement ingérés au lieu de produire un
+rapport présenté à tort comme complet. Le délai de drainage peut être séparé
+du délai général :
+
+```bash
+./scripts/batch_analysis.py 12345 400 --drain-timeout 900
+```
+
+La configuration par défaut de SYNE utilise désormais le profil calibré
+`reference`, afin que le lancement manuel par l'UI ne démarre pas un monde
+condamné à l'extinction. Le dépôt conserve aussi l'ancien comportement dans
+le profil `raw`, utile pour reproduire le rapport historique où `seed=12345`
+sur 400 ticks provoquait une extinction complète par `energy_exhaustion`.
+
+Pour exécuter explicitement un run calibré :
+
+```bash
+./scripts/batch_analysis.py 12345 400 --profile reference
+```
+
+Ce profil réduit les coûts énergétiques auxiliaires et augmente les réserves
+initiales. Le profil `raw` reste disponible :
+
+```bash
+./scripts/batch_analysis.py 12345 400 --profile raw
+```
+
+`--config` reste disponible pour tester une configuration locale.
+
+Le drainage final est effectué après l'arrêt propre de SYNE afin que le
+dernier tick soit flushé par ECHOS. Le rapport n'est généré qu'après
+l'ingestion de tous les ticks demandés.
+
+Les snapshots peuvent dépasser 1 MiB après plusieurs centaines de ticks
+(mémoire et historique des agents). Le client ECHOS est configuré avec une
+limite de trame augmentée et une réception séparée du calcul analytique afin
+que le flux ne se ferme pas prématurément sur ces runs longs.
+
+Options utiles :
+
+```bash
+./scripts/batch_analysis.py 42 500 \
+  --database echos/data/runs.sqlite \
+  --output-dir echos/data/reports/seed-42
+```
+
+Les rapports restent archivés dans le répertoire de sortie et la base SQLite
+conserve les runs précédents. Pour comparer deux runs, utilisez deux seeds et
+des répertoires distincts, puis comparez les JSON ou consultez l'endpoint
+`/api/compare` avec leurs `runId`.
+
+### Benchmark SYNE vs SYNE + ECHOS
+
+Pour mesurer le **coût réel de l'observabilité** (temps + RAM) sur une grille
+entités × ticks × seeds, le lanceur `../scripts/benchmark.py` rejoue chaque
+cellule en deux scénarios — moteur seul (`--headless`) et chaîne complète
+SYNE `--serve` + API ECHOS + ingestion — puis écrit un CSV brut, un rapport
+Markdown et une synthèse JSON dans le répertoire de sortie.
+
+```bash
+echos/.venv/bin/python scripts/benchmark.py                 # grille complète (défauts)
+echos/.venv/bin/python scripts/benchmark.py --quick          # entités×ticks réduits, 1 seed
+echos/.venv/bin/python scripts/benchmark.py \
+  --entities 20,100 --ticks 400,1000 --seeds 12345,999,7 \
+  --output-dir echos/data/benchmarks
+```
+
+Options principales : `--ticks-per-second` (cadence ECHOS, défaut 50),
+`--analysis-every` (si la charge d'analyse pèse trop sur la RAM/CPU),
+`--parquet` (activer la série agents dans la mesure), `--cell-timeout`
+(défaut 600 s) et `--database`. Les ports `5000/5180/5181` doivent être
+libres : le script refuse de démarrer s'ils sont déjà occupés (pile en cours
+ou orphelins d'un run précédent). Méthodologie et lecture des chiffres :
+[`echos/BENCHMARKS.md`](echos/BENCHMARKS.md).
+
+### Benchmark et runs longs
+
+Le benchmark SYNE isolé permet de distinguer un problème de simulation d'un
+retard d'analyse :
+
+```bash
+dotnet run --project syne/Simulation.Console/Simulation.Console.csproj \
+  --configuration Release --no-build -- \
+  --benchmark --benchmark-populations 100 \
+  --benchmark-ticks 800 --seed 12345
+```
+
+Sur la configuration de référence, 800 ticks et 100 agents atteignent environ
+5 255 ticks/s (0,19 ms/tick). Le coût observé sur les runs longs vient
+principalement d'ECHOS : les contextes cognitifs `agents` grossissent avec
+l'historique des croyances. Ils sont compressés automatiquement dans SQLite,
+avec lecture rétrocompatible des anciennes lignes JSON. Cette compression
+réduit fortement la taille disque, mais ne rend pas l'analyse instantanée :
+après un run rapide, ECHOS peut encore devoir drainer les ticks en attente.
+
+Pour vérifier qu'un run long est réellement analysé, contrôlez que le nombre de
+ticks persistés atteint `last_tick` dans la fenêtre d’analyse du Launcher ou via
+`/api/runs/{runId}`. Un
+run SYNE arrivé à 800 ticks alors qu'ECHOS n'en a persisté que 722 est terminé
+côté simulation, mais incomplet côté analyse ; le rapport ne doit être généré
+qu'après ce drainage.
+
+Le JSON conserve les contextes phénomènes à chaque tick dans
+`contexts.phenomena`. Le rapport Markdown ajoute une synthèse des phénomènes
+uniques détectés, avec leur identifiant, description, première et dernière
+détection et nombre d'occurrences. L'endpoint `/api/emergent-phenomena` rend
+cette même vue historique, même si le dernier tick ne
+contient plus le phénomène.
+
+Le lanceur suppose que le binaire Release de SYNE existe. Compilez-le au
+préalable avec `dotnet build syne/Syne.sln --configuration Release` ou lancez
+`../scripts/dev-stack.sh` une première fois.
+
+## Ports utilisés
+
+| Service | Adresse | Rôle |
+|:--|:--|:--|
+| SYNE WebSocket | `127.0.0.1:5180` | Snapshots et événements du run piloté par l’UI. |
+| SYNE HTTP | `127.0.0.1:5181` | Contrôle du serveur SYNE et démarrage des runs. |
+| syne-mock WebSocket | `127.0.0.1:5180` par défaut | Initialisation du monde, snapshots globaux et événements ; lancé séparément de SYNE. |
+| syne-mock HTTP | `127.0.0.1:5181` par défaut | Cycle de contrôle ; lancé séparément de SYNE. |
+| API ECHOS | `127.0.0.1:5000` | Runs, métriques, analyses et relais de contrôle (API seule, aucune page). |
+| Fenêtre d’analyse du Launcher | — | Fenêtre native consommant l’API ECHOS ; aucun port propre. |
+
+## Données, arrêt et vérifications
+
+Les fichiers analytiques locaux sont placés dans `echos/data/`. Pour repartir d’une base vierge, arrêtez les services et supprimez les données générées :
+
+```bash
+rm -f echos/data/livex-analytics.sqlite echos/data/livex-agents.parquet
+# rapports, traces Parquet et benchmarks générés localement :
+rm -rf echos/data/reports echos/data/benchmarks
+```
+
+Tests développeur :
+
+```bash
+# SYNE
+cd syne && dotnet test Syne.sln --configuration Release
+
+# ECHOS — depuis la racine
+echos/.venv/bin/python -m pytest -q
+echos/.venv/bin/python -m flake8 echos/echos
+
+# Launcher — interfaces natives (consoles, fenêtre d’analyse)
+cd launcher && dotnet test Launcher.Tests.Unit
+```
+
+## Documentation complémentaire
+
+- [Architecture globale](ARCHITECTURE.md) · [Contrats inter-composants](COMMUNICATION.md)
+- [Portail de documentation](README.md) · [Guide SYNE](../syne/README.md) · [Guide ECHOS](../echos/README.md)
+- [Guide PRISM / Unreal](prism/README.md) · [Guide syne-mock](../syne-mock/README.md)
+- [Feuille de route](governance/ROADMAP.md) · [Feuille de route PRISM](prism/ROADMAP.md)
+- [Gitflow](governance/GITFLOW.md) · [Contribuer](../CONTRIBUTING.md)

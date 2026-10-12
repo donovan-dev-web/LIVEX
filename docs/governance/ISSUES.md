@@ -57,7 +57,7 @@ stateDiagram-v2
 Règles :
 
 - Une issue **Bug** doit référencer la branche (`bug`/`fix/*`) qui la résout via une PR (lien « closes #… »).
-- Une issue **ADR** suit le cycle décrit dans `docs/governance/PULL_REQUESTS.md` ; seuls les ADR acceptés sont intégrés (format `docs/adr/`).
+- Une issue **ADR** suit le cycle décrit dans `PULL_REQUESTS.md` ; seuls les ADR acceptés sont intégrés (format `../adr/`).
 - Une issue devient **Fermée** uniquement lorsque le critère d'acceptation est vérifié (pipeline vert + vérification manuelle).
 
 ## 5. Labels de référence

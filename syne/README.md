@@ -2,7 +2,7 @@
 
 Moteur de simulation déterministe de LIVEX (1 tick = 1 minute simulée, monde 500×500).
 
-**Version moteur** : `engineVersion 0.15.0` (constante `ObservabilityContract.EngineVersion`, émise dans chaque snapshot) — contrat d'observabilité **0.4.0**. Historique : [docs/docs-syne/CHANGELOG.md](../docs/docs-syne/CHANGELOG.md).
+**Version moteur** : `engineVersion 0.15.0` (constante `ObservabilityContract.EngineVersion`, émise dans chaque snapshot) — contrat d'observabilité **0.4.0**. Historique : [docs/syne/CHANGELOG.md](../docs/syne/CHANGELOG.md).
 
 | Projet | Rôle |
 | :-- | :-- |
@@ -18,7 +18,7 @@ dotnet run --project Simulation.Console -- --serve --serve-port 5181 --observe-p
 dotnet test Syne.sln
 ```
 
-Documentation : [`docs/docs-syne/`](../docs/docs-syne/) — contrat de configuration : [CONFIGURATION.md](../docs/docs-syne/CONFIGURATION.md).
+Documentation : [`../docs/syne`](../docs/syne) — contrat de configuration : [CONFIGURATION.md](../docs/syne/CONFIGURATION.md).
 
 ## Intégration au Launcher LIVEX
 

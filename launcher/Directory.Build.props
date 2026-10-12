@@ -1,6 +1,6 @@
 <Project>
   <!--
-    Conventions de build du Launcher (docs/docs-launcher/ARCHITECTURE.md).
+    Conventions de build du Launcher (docs/launcher/ARCHITECTURE.md).
     - Identifiants de code en anglais, commentaires en français.
     - Avertissements = erreurs : la CI de SYNE fait de même.
   -->

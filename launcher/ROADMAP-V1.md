@@ -4,7 +4,7 @@
 `syne-mock` et PRISM  
 **Référence d’état :** branche `develop`, commit `90f06463` (2 octobre 2026)  
 **Ordre :** jalons ordonnés par dépendance, sans dates calendaires  
-**Référence fonctionnelle :** `../docs/docs-launcher/` ; cette roadmap décrit
+**Référence fonctionnelle :** `../docs/launcher` ; cette roadmap décrit
 le travail restant observé, pas seulement la cible conceptuelle.
 
 ## 1. But et règle de lecture
@@ -51,7 +51,7 @@ contre le contrat réel clôt les tâches d’intégration correspondantes.
 - [x] Les suites récentes exécutées sur cette révision comptent 86 tests
   unitaires, 7 d’intégration et 20 end-to-end Launcher, dont un parcours
   campagne contre SYNE publié ; le rapport complet figure dans
-  [`../LIVEX-STATUS.md`](../LIVEX-STATUS.md).
+  [`../docs/governance/LIVEX-STATUS.md`](../docs/governance/LIVEX-STATUS.md).
 
 ## 3. Ordre d’exécution et jalons
 
@@ -69,7 +69,7 @@ campagne réelle.
   contrôle, métriques et arrêt.
 - [x] Pour chaque ligne, indiquer si elle est livrée, testée sur stub, acceptée
   contre le composant réel, bloquée par un composant externe ou hors V1.
-- [x] Aligner `docs/docs-launcher/ROADMAP.md`, `ISSUES.md`,
+- [x] Aligner `../docs/launcher/ROADMAP.md`, `ISSUES.md`,
   `INTEGRATION_CONTRACT.md`, `COMPONENTS.md`, `PACKAGING.md` et le README du
   Launcher sur cette matrice ; supprimer les affirmations périmées ou
   contradictoires.
@@ -201,7 +201,7 @@ déclarée Linux ; aucun support Windows/macOS n’est revendiqué.
 - [x] Valider l’installation ECHOS Linux (Python, ressources
   runtime, chemins de données) et spécifier précisément les versions/OS
   supportés — **fait le 08/10/2026** : procédure vierge + probes de
-  readiness/analyse/arrêt dans `../docs/docs-launcher/INTEGRATION_CONTRACT.md`
+  readiness/analyse/arrêt dans `../docs/launcher/INTEGRATION_CONTRACT.md`
   §10.3 (Linux x86-64, Python ≥ 3.11, ~212 Mo).
 - [x] Alimenter la base analytique depuis les données batch SYNE : chaque run
   archivé expose son flux d’observabilité, ECHOS l’enregistre par
@@ -558,13 +558,13 @@ scénarios de développement et ne remplacent jamais l’acceptation SYNE réel.
 
 ## 7. Documents de référence et synchronisation
 
-- Contrats et manifeste : [`../docs/docs-launcher/INTEGRATION_CONTRACT.md`](../docs/docs-launcher/INTEGRATION_CONTRACT.md)
-- État des blockers : [`../docs/docs-launcher/ISSUES.md`](../docs/docs-launcher/ISSUES.md)
-- Campagnes et reprise : [`../docs/docs-launcher/EXPERIMENTS.md`](../docs/docs-launcher/EXPERIMENTS.md)
-- Interface et modes : [`../docs/docs-launcher/USER_INTERFACE.md`](../docs/docs-launcher/USER_INTERFACE.md)
-- Livraison : [`../docs/docs-launcher/PACKAGING.md`](../docs/docs-launcher/PACKAGING.md)
-- Validation : [`../docs/docs-launcher/TESTING.md`](../docs/docs-launcher/TESTING.md)
-- État mesuré : [`../LIVEX-STATUS.md`](../LIVEX-STATUS.md)
+- Contrats et manifeste : [`../docs/launcher/INTEGRATION_CONTRACT.md`](../docs/launcher/INTEGRATION_CONTRACT.md)
+- État des blockers : [`../docs/launcher/ISSUES.md`](../docs/launcher/ISSUES.md)
+- Campagnes et reprise : [`../docs/launcher/EXPERIMENTS.md`](../docs/launcher/EXPERIMENTS.md)
+- Interface et modes : [`../docs/launcher/USER_INTERFACE.md`](../docs/launcher/USER_INTERFACE.md)
+- Livraison : [`../docs/launcher/PACKAGING.md`](../docs/launcher/PACKAGING.md)
+- Validation : [`../docs/launcher/TESTING.md`](../docs/launcher/TESTING.md)
+- État mesuré : [`../docs/governance/LIVEX-STATUS.md`](../docs/governance/LIVEX-STATUS.md)
 
 À chaque tâche terminée, mettre à jour son statut et relier la preuve (PR,
 workflow, test ou décision). Si une tâche devient hors V1, déplacer la décision
