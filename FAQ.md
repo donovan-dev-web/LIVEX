@@ -72,8 +72,8 @@ systèmes sociaux et son pathfinding sont simplifiés. Il sert aux tests
 d'intégration et d'interface, pas aux résultats de simulation ou aux tests
 scientifiques finaux. Valider le client contre le vrai moteur reste nécessaire.
 
-Le mock suit le contrat d'observabilité de SYNE (moteur 0.13.0, contrat
-snapshot 0.2.1) : snapshots avec champ `seed`, identifiants de run au format
+Le mock suit le contrat d'observabilité de SYNE (moteur 0.15.0, contrat
+snapshot 0.4.0) : snapshots avec champ `seed`, identifiants de run au format
 canonique `run-<seed>-<12hex>` — il est donc compatible avec l'ingestion
 ECHOS telle quelle.
 

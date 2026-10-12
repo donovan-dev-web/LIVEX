@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 12 octobre 2026
 **Dépend de** : `../COMMUNICATION.md`, `DATA_MODEL.md`
 **Source Monographie** : §2.4 (contrats de transport), §5.4 (PRISM), §3.24 (événements), ADR-003/ADR-004
 
@@ -83,7 +83,7 @@ format `run-<seed>` collisionnait les runs successifs côté stockage ECHOS).
 La réponse HTTP à `start`/`status` expose ce même identifiant pour permettre au
 client de corréler le pilotage et le flux.
 
-> **Implémentation actuelle (SYNE-080, contrat 0.2.1)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
+> **Implémentation actuelle (SYNE-080 — émetteur d'origine ; contrat courant 0.4.0)** : émetteur BCL (HttpListener + `AcceptWebSocketAsync`,
 > zéro dépendance) dans `Simulation.Console`, activé par `--observe` (port `--observe-port`, défaut 5180,
 > bind `127.0.0.1`). Chaque tick émet **1 snapshot global complet + 1 `tick_summary` + 1 `decision_made` + 1
 > `action_completed` par entité, + événements de communication dès qu'un message circule**,

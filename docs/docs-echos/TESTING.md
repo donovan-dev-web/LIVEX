@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 6 octobre 2026
+**Dernière mise à jour** : 11 octobre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`, `REFERENCE_SCENARIOS.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -11,6 +11,13 @@
 ## 1. Objectif
 
 Garantir la **correction et la stabilité des métriques**. Objectif de couverture : **≥ 80 %** (Annexe I.3).
+
+État courant au 11/10/2026 : **375 tests** (361 exécutés + 14 ignorés en local — les
+13 ignorés d'intégration SYNE exigent un build Release publié, exécuté par le job CI
+U8, et 1 `syne-mock` est levé par le job CI « Intégration mock → ECHOS »),
+couverture lignes **90,5 %** (`pytest` + pytest-cov, seuil `--cov-fail-under=80`),
+flake8 sans alerte. Les décomptes « Suite : N tests » ci-dessous sont des jalons
+historiques ; le chiffre courant vit dans `pytest` et dans le badge du README.
 
 ## 2. Référence validée dans le prototype V1 (Annexe §4.9.2)
 

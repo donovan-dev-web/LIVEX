@@ -63,7 +63,7 @@ aucune donnée d'intégration n'est codée en dur dans le Launcher.
   "id": "syne",
   "type": "engine",
   "name": "SYNE",
-  "version": "0.13.0",
+  "version": "0.15.0",
   "runtime": "dotnet",
   "executable": "Simulation.Console",
   "workingDirectory": ".",
