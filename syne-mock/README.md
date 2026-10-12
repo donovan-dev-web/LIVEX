@@ -4,6 +4,9 @@ Mini-serveur Node.js déterministe pour intégrer Unreal au contrat SYNE. `npm i
 puis `npm start -- config_example.json`. Le WebSocket texte JSON camelCase est sur
 `ws://127.0.0.1:5180/`; le contrôle HTTP est sur `http://127.0.0.1:5181`.
 
+**Version** : `0.1.0` (`package.json`) — contrat d'observabilité émis : **0.4.0**
+(`contractVersion` de `src/config.js`), aligné sur SYNE.
+
 Le terminal affiche le suivi avec le préfixe `[SYNE-MOCK ...]` : démarrage des
 ports, connexions/déconnexions WebSocket, requêtes/réponses HTTP et transitions
 `PREPARE`, `READY`, `START`, `PAUSE`, `RESUME`, `STOP` et `RESET`.
@@ -64,8 +67,8 @@ l'implémentation A* de SYNE. La délibération et les systèmes sociaux restent
 des approximations destinées à tester l'intégration Blueprint ; les trajectoires
 ne sont pas garanties bit-à-bit identiques au moteur C#.
 
-Tests ciblés : `npm test` (46 tests, sans dépendance à un
-port fixe). La suite s'exécute aussi en intégration continue via le job `Tests
+Tests ciblés : `npm test` (48 tests, dont 2 arrêts par signal ignorés sous
+Windows, sans dépendance à un port fixe). La suite s'exécute aussi en intégration continue via le job `Tests
 (SYNE-MOCK Node)` de `.github/workflows/ci.yml`, déclenché sur toute
 modification de `syne-mock/`. Ports et paramètres sont configurables en JSON.
 `replay.file` permet de rejouer un fichier JSONL (un message SYNE par ligne) ;
