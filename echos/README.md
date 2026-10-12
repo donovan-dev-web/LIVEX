@@ -5,7 +5,7 @@ Observation et pilotage de SYNE : calculs d'analyse, ingestion et API REST.
 shell de bureau ; la présentation — consoles de logs et fenêtre d'analyse — vit
 chez le Launcher, qui consomme l'API locale.
 
-**Statut** : [DRAFT] — jalon U4 (API REST). Documentation : `../docs/docs-echos/` (VISION, ARCHITECTURE, METRICS_SPEC, API_REST, TESTING).
+**Statut** : [STABLE] — API REST headless, ingestion, analyse et stockage (ADR-007 : présentation portée par le Launcher). **Version** : `0.1.0` (`echos.__version__`, `pyproject.toml`). Documentation : `../docs/docs-echos/` (VISION, ARCHITECTURE, METRICS_SPEC, API_REST, TESTING).
 
 ## Structure
 
