@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 22 septembre 2026
+**Dernière mise à jour** : 12 octobre 2026
 **Dépend de** : `DATA_MODEL.md`, `COGNITIVE_ARCHITECTURE.md`
 **Source Monographie** : §3.16 (communication inter-entités), ADR-008 (communication non confidentielle), Annexe H (config communication)
 
@@ -59,35 +59,35 @@ MessageId (ulong, hash déterministe SplitMix64) | SenderId (émetteur d'origine
 
 | Paramètre | Défaut | Note |
 | :-- | :-- | :-- |
-| `communication.transmissionRange` | 20 | Portée effective une pulsation (décision n°7) |
-| `communication.relayEnabled` | true | Active le relais au-delà du rayon |
+| `communication.transmissionRange` | 55 | Portée effective une pulsation (décision n°7 ; bornes [1, 70], recalibrée au jalon ph6) |
+| `communication.relayEnabled` | false | Active le relais au-delà du rayon (désactivé par calibration) |
 | `communication.maxHops` | 2 | Nombre maximal de sauts d'un message |
-| `communication.maxSendsPerTick` | 5 | Max d'envois (y compris relais) par entité et par tick |
-| `communication.maxReceivesPerTick` | 3 | Max de réceptions traitées par tick |
+| `communication.maxSendsPerTick` | 1 | Max d'envois (y compris relais) par entité et par tick |
+| `communication.maxReceivesPerTick` | 1 | Max de réceptions traitées par tick |
 | `communication.incomprehensionRate` | 0.05 | Probabilité d'incompréhension |
-| `communication.trustDecay` | 0.9 | Décroissance de confiance par tick sans interaction (`Relationships`) |
+| `communication.trustDecay` | 0.9 | Déclaré mais **non lu** par le pipeline, qui utilise `agents.trust.decayFactorPerTick` (`TICK_QUANTITIES.md` §2) |
 | `communication.hopConfidenceDecay` | 0.9 | Dégradation de confiance par hop (décision n°10) |
-| `communication.sendEnergyCost` | 0.5 | Coût d'émission d'une pulsation |
-| `communication.sendEnergyPayloadFactor` | 0.1 | Coût d'émission par caractère de payload |
-| `communication.receiveEnergyCost` | 0.2 | Coût de réception d'une pulsation |
-| `communication.receiveEnergyPayloadFactor` | 0.05 | Coût de réception par caractère de payload |
+| `communication.sendEnergyCost` | 0 | Coût fixe d'émission d'une pulsation (neutralisé par calibration) |
+| `communication.sendEnergyPayloadFactor` | 0 | Coût d'émission par caractère de payload |
+| `communication.receiveEnergyCost` | 0 | Coût fixe de réception d'une pulsation (neutralisé par calibration) |
+| `communication.receiveEnergyPayloadFactor` | 0 | Coût de réception par caractère de payload |
 
 **Latence** : non instantanée (optionnel) — ex. 1 tick pour 10 unités. La **vitesse de signal** (temporisation de la ligne de vue) reste un **paramètre configurable** (§3.16.6) **[ouvert]**.
 
-## 6. Coûts (décision n°9 — [TRANCHÉE et livrée])
+## 6. Coûts (décision n°9 — coûts neutralisés par calibration)
 
-Les coûts de production d'une pulsation (énergie, temps) sont **hérités du prototype** et **configurables** (SYNE-052). Valeurs par défaut (décision n°9) :
+Les coûts de production d'une pulsation (énergie, temps) sont **configurables** (SYNE-052) et **neutralisés par défaut** (calibration) :
 
-- coût d'envoi : énergie = **0.5 + `payloadLength` × 0.1** ;
-- coût de réception : énergie = **0.2 + `payloadLength` × 0.05**.
+- coût d'envoi : énergie = `sendEnergyCost` + `payloadLength` × `sendEnergyPayloadFactor`, soit **0 par défaut** ;
+- coût de réception : énergie = `receiveEnergyCost` + `payloadLength` × `receiveEnergyPayloadFactor`, soit **0 par défaut**.
 
-Les coûts sont appliqués via `BodyNeeds.ExertEnergy` (émetteur à l'émission, récepteur avant traitement). Une réception **écartée par le cap** `maxReceivesPerTick` ne coûte rien.
+La calibration a ramené ces coefficients à zéro : à la fréquence d'émission du scénario de référence, le coût d'envoi dépassait le coût de déplacement recalibré, ce qui épuisait lentement les entités. Les coûts sont appliqués via `BodyNeeds.ExertEnergy` (émetteur à l'émission, récepteur avant traitement). Une réception **écartée par le cap** `maxReceivesPerTick` ne coûte rien.
 
 ## 7. Mécanique de réception (intégration cognitive)
 
 1. Les messages entrants sont mis en file (`CommunicationState`), bornée par `maxReceivesPerTick`.
 2. À la réception, la **confiance du message** est ajustée par la **confiance du récepteur envers l'émetteur** (`TrustWith`).
-3. L'interaction est marquée (`Relationships.Interact`) : première rencontre → confiance initiale, relation connue → renforcement (véracité), décroissance `× trustDecay` par tick sans interaction.
+3. L'interaction est marquée (`Relationships.Interact`) : première rencontre → confiance initiale, relation connue → renforcement (véracité), décroissance `× agents.trust.decayFactorPerTick` par tick sans interaction.
 4. **V0.1** : la file entrante est consommée comme **trace d'activité du tick** (relais, observabilité) — la **révision des croyances par messages** (alignement / conflit / sources multiples) arrive avec l'analyse/les besoins sociaux (jalon ph6+).
 
 (Monographie §3.16, prototype V2 §07)

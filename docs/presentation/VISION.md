@@ -10,12 +10,12 @@
 
 ## 1. Ce qu'est LIVEX
 
-LIVEX — **Systems & Emergent Network EXperiment** — est une plateforme de simulation multi-agents à émergence, persistante, temps réel et observable, construite sur trois modules complémentaires :
+LIVEX — **Living Intelligent Virtual Ecosystem eXperience** — est une plateforme de simulation multi-agents à émergence, persistante, temps réel et observable, construite sur trois modules complémentaires :
 
 | Module | Nom complet | Rôle |
 | :-- | :-- | :-- |
 | **SYNE** | Systems & Emergent Network Engine | Moteur de simulation ; possède la vérité du monde ; indépendant du rendu |
-| **ECHOS** | Emergent Complex Hierarchical Observation System | Système d'observation, d'analyse et de pilotage |
+| **ECHOS** | Emergent Cognition & Holistic Observation System | Système d'observation, d'analyse et de pilotage |
 | **PRISM** | Perceptual Rendering & Interactive Simulation Module | Projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK |
 
 LIVEX propose une **troisième voie** entre deux extrêmes :
