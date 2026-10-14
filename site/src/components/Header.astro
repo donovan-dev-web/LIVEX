@@ -1,0 +1,156 @@
+---
+import { NAV } from '../data/site';
+import { url } from '../utils/url';
+import { useTranslations, stripLangFromPath, type Lang, publishedLangs, languages } from '../i18n/ui';
+import logo from '../assets/marks/livex-mark.svg';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'fr' } = Astro.props;
+const t = useTranslations(lang);
+
+let langPath = stripLangFromPath(Astro.url.pathname);
+if (langPath.startsWith('404')) langPath = '';
+const current = Astro.url.pathname.replace(/\/+$/, '/');
+function normalize(href: string) {
+  return url(href, lang);
+}
+function isCurrent(href: string) {
+  const target = normalize(href);
+  if (target === url('', lang)) return current === target;
+  return current === target || current.startsWith(target);
+}
+const langCodes: Record<Lang, string> = { fr: 'FR', en: 'EN' };
+---
+<header class="site">
+  <div class="w hb">
+    <a class="lg" href={url('', lang)} aria-label={t('nav.home')}>
+      <img src={logo.src} alt="" width="24" height="24" />
+      <span>LIVEX</span>
+    </a>
+
+    <nav class="main" id="main-nav" aria-label={t('nav.main')}>
+      {NAV.map((item) =>
+        item.children ? (
+          <div class="ni">
+            <a
+              href={url(item.href, lang)}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
+              aria-haspopup="true"
+            >
+              {item.label[lang]}<span class="ni-arrow" aria-hidden="true">▾</span>
+            </a>
+            <ul class="sub">
+              {item.children.map((child) => (
+                <li>
+                  <a
+                    href={url(child.href, lang)}
+                    aria-current={isCurrent(child.href) ? 'page' : undefined}
+                  >
+                    {child.label[lang]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <a href={url(item.href, lang)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+            {item.label[lang]}
+          </a>
+        )
+      )}
+    </nav>
+
+    <div class="lang" role="group" aria-label={t('nav.lang')}>
+      {publishedLangs.map((code) => (
+        <a
+          href={url(langPath, code)}
+          hreflang={code}
+          lang={code}
+          aria-current={code === lang ? 'true' : undefined}
+          title={languages[code]}
+        >
+          {langCodes[code]}
+        </a>
+      ))}
+    </div>
+
+    <button
+      type="button"
+      id="theme-toggle"
+      aria-pressed="false"
+      aria-label={t('nav.theme')}
+      title={t('nav.theme')}
+    >
+      <span aria-hidden="true">◐</span>
+      <span class="sr-only">{t('nav.theme')}</span>
+    </button>
+
+    <button
+      type="button"
+      id="nav-toggle"
+      class="nav-burger"
+      aria-expanded="false"
+      aria-controls="main-nav"
+      aria-label={t('nav.menu')}
+      title={t('nav.menu')}
+    >
+      <span class="nav-burger-icon" aria-hidden="true"></span>
+      <span class="sr-only">{t('nav.menu')}</span>
+    </button>
+  </div>
+</header>
+
+<noscript>
+  <style>
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > a { display: inline-block !important; padding: 0 !important; border: 0 !important; }
+      nav.main .sub { display: none !important; }
+    }
+  </style>
+</noscript>
+
+<script is:inline>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else header.removeAttribute('data-nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    document.addEventListener('click', function (e) {
+      if (!header.hasAttribute('data-nav-open')) return;
+      if (!header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script>

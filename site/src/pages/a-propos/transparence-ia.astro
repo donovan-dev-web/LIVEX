@@ -1,0 +1,102 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  title="Transparence sur l'usage de l'IA"
+  description="Quels outils d'IA ont été utilisés pour développer et documenter LIVEX, dans quelles phases et avec quels garde-fous — et ce que le projet n'est pas."
+>
+  <PageHeader
+    index="21"
+    eyebrow="À propos · Transparence IA"
+    title="Dire ce que l'IA a fait, et ce qu'elle n'a pas fait."
+    lead="Deux choses différentes portent le mot « IA » dans LIVEX : l'assistance d'outils génératifs pendant le développement, et le comportement des entités du monde simulé. Il importe de ne jamais les confondre."
+    crumbs={[{ label: 'À propos', href: 'a-propos/' }, { label: 'Transparence IA' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>21.1</b> Principe</div>
+      <h2>Un projet solo, augmenté et responsable.</h2>
+      <p>
+        LIVEX est porté par une seule personne. Il aurait été <strong>difficilement réalisable seul</strong> sans le
+        concours d'outils d'intelligence artificielle, qui accélèrent la documentation, la vérification et certaines
+        tâches répétitives. C'est un fait, et le taire serait une forme de malhonnêteté.
+      </p>
+      <p>
+        Cette page décrit <strong>où</strong> ces outils interviennent, <strong>comment</strong> leur production est
+        contrôlée, et <strong>ce qu'ils ne sont pas</strong> dans le projet.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>21.2</b> Outils et cadres d'usage</div>
+      <h2>Une assistance encadrée, jamais aveugle.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Phase</th><th>Usage de l'IA</th></tr></thead>
+          <tbody>
+            <tr><td>Vérification</td><td>Relecture et contrôle de cohérence sur des passages déjà rédigés.</td></tr>
+            <tr><td>Reformulation</td><td>Aide à la clarté et à la concision, sous validation de l'auteur.</td></tr>
+            <tr><td>Documentation</td><td>Correction et mise en forme de documents du dépôt.</td></tr>
+            <tr><td>Code</td><td>Quelques fonctions, relues et testées comme toute autre contribution.</td></tr>
+            <tr><td>Runs et calibrage</td><td>Aide à préparer et analyser des exécutions de simulation.</td></tr>
+            <tr><td>Revue</td><td>Double vérification de propositions avant intégration.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>21.3</b> Écrit à la main, puis vérifié</div>
+      <h2>La décision reste humaine.</h2>
+      <p>
+        Les choix de conception, les arbitrages d'architecture et les formulations sensibles restent écrits par
+        l'auteur, puis vérifiés. Rien n'est publié sur la seule foi d'une génération automatique : toute affirmation
+        sur une capacité, un chiffre ou une propriété est confrontée à l'état réel du projet avant diffusion.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>21.4</b> Garde-fous</div>
+      <h2>Ce qui borne l'assistance.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px"><h3>Relecture humaine</h3><p class="mu" style="margin:0">Toute production assistée passe par une relecture humaine avant d'être conservée.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Tests</h3><p class="mu" style="margin:0">Le code est soumis aux mêmes suites de tests que le reste du projet ; aucun régime de faveur.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Traçabilité</h3><p class="mu" style="margin:0">Le dépôt, ses commits et son journal des changements restent la trace vérifiable du travail.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Registre des affirmations</h3><p class="mu" style="margin:0">Les affirmations sensibles du site portent une source interne datée, indépendamment de leur mode de rédaction.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>21.5</b> Ce que le projet n'est pas</div>
+      <h2>Les agents ne sont pas des modèles de langage.</h2>
+      <div class="cc">
+        <p>
+          Les entités de LIVEX <strong>ne sont pas</strong> des modèles de langage et le monde n'est pas « appris » par
+          une IA. Leur cognition repose sur des règles explicites, déterministes et inspectables. Aucun modèle
+          génératif n'intervient au cœur de la simulation : la question posée par LIVEX — ce que produisent des lois
+          locales et rejouables — exige une cognition pauvre mais <em>transparente</em>, pas un réseau opaque.
+        </p>
+      </div>
+      <p class="mu" style="font-size:0.78rem">
+        Voir aussi la distinction entre agent simulé, IA apprenante et personnage scénarisé sur
+        <a href={url('comprendre/emergence/')}>L'émergence expliquée</a>.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('a-propos/')}>← À propos</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('comprendre/limites/')}>Limites et portée</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { url } from '../../../utils/url';
+
+const terms = [
+  { id: 'action', term: 'Action', def: "An entity's executable unit of behaviour (move, eat, drink, rest, explore, socialise, communicate, trade, fight, pick up…). Action selection results from a utility-based deliberation.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'agent', term: 'Agent (entity)', def: "An autonomous simulated being endowed with a state, needs, perception, memory, beliefs, capabilities, a decision system and actions. The engine provides the structures, never the behaviour.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'bdi', term: 'BDI (Belief-Desire-Intention)', def: "Cognitive architecture: beliefs (what the entity holds to be true), desires or goals (what it seeks), intentions (what it commits to doing). In LIVEX, this is an organisational framework, not a theory of mind.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'besoin', term: 'Need', def: "A behavioural tension (hunger, thirst, fatigue, safety, social, curiosity) expressed on a scale from 0 to 100. A high need feeds goals and decision-making — it does not trigger behaviour directly.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'cluster', term: 'Cluster', def: "A subset of entities sharing a logical proximity or membership, serving as a basis for the analysis of groupings and communities.", href: 'technique/echos/', label: 'ECHOS' },
+  { id: 'contrat', term: 'Contract', def: "A versioned interface linking two components (snapshot format, run identifier, persistence schema). A contract break is reported in the changelog.", href: 'technique/', label: 'Architecture' },
+  { id: 'croyance', term: 'Belief', def: "A structured representation of a fact, with a confidence (0–1) and a source (perception, memory, communication, inference). A belief is “true” for the entity if its confidence reaches 0.5.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'determinisme', term: 'Determinism (bit-for-bit)', def: "The property whereby two identical executions (same seed, same configuration, same engine version) produce exactly the same trajectory. It is the foundation of reproducibility.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'echos', term: 'ECHOS', def: "Emergent Cognition & Holistic Observation System — the observation, analysis and control system. It reads SYNE's traces and derives measurements from them, without ever intervening on the world.", href: 'technique/echos/', label: 'ECHOS' },
+  { id: 'emergence', term: 'Emergence', def: "The appearance of collective structures (groups, specialisations, exchanges, tensions) that are not programmed, resulting from local interactions under constraints.", href: 'comprendre/emergence/', label: 'Emergence explained' },
+  { id: 'graine', term: 'Seed', def: "A 64-bit integer initialising the engine's pseudo-random generator. It makes two runs comparable and reproducible, and appears in the run identifier.", href: 'technique/resultats/', label: 'Reproducibility' },
+  { id: 'launcher', term: 'Launcher', def: "LIVEX's orchestration layer: driving, combining, monitoring and archiving the work carried out with SYNE, ECHOS and PRISM, from a single interface. It contains no simulation logic, no analysis logic and no rendering logic.", href: 'technique/launcher/', label: 'Launcher' },
+  { id: 'prism', term: 'PRISM', def: "Perceptual Rendering & Interactive Simulation Module — the perceptual rendering module that makes the simulated world visible. It is never the source of truth of the simulation.", href: 'technique/prism/', label: 'PRISM' },
+  { id: 'run', term: 'Run', def: "A complete and reproducible execution of an experiment, defined by a seed, a configuration, an engine version and an initial state.", href: 'technique/resultats/', label: 'Reproducibility' },
+  { id: 'source-de-verite', term: 'Source of truth', def: "The component that holds the authoritative state. For LIVEX, this is SYNE: neither the observation (ECHOS) nor the rendering (PRISM) decides or modifies the world.", href: 'technique/', label: 'Architecture' },
+  { id: 'statuts', term: 'Capability statuses', def: "The imposed vocabulary for describing what actually exists: available, experimental, in development, envisaged, out of scope. A capability is never “available” until it has been delivered and verified.", href: 'comprendre/limites/', label: 'Limits and scope' },
+  { id: 'syne', term: 'SYNE', def: "Systems & Emergent Network Engine — the deterministic simulation engine; it owns the truth of the world.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'tick', term: 'Tick', def: "A unit of simulated time: by default, 1 tick equals 1 simulated minute. At the default rate (10 ticks/real second), one real second equals ten simulated minutes.", href: 'technique/syne/', label: 'SYNE' },
+];
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Glossary"
+  description="Definitions of the terms used in the LIVEX project: agent, BDI, tick, seed, determinism, emergence, contract, run, source of truth, SYNE, ECHOS, PRISM, Launcher and capability statuses."
+>
+  <PageHeader
+    lang="en"
+    index="04"
+    eyebrow="Understand · Glossary"
+    title="The vocabulary, defined."
+    lead="A stable vocabulary for reading the site and the documentation. The repository glossary is authoritative; this page is a summary view of it."
+    crumbs={[{ label: 'Understand', href: 'comprendre/' }, { label: 'Glossary' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>4.1</b> Project terms</div>
+      <h2>From A to Z.</h2>
+      <p class="mu" style="font-size:0.78rem;margin-bottom:6px">
+        Each entry has a stable anchor, usable from articles: <code>/en/comprendre/glossaire/#tick</code>.
+      </p>
+      <dl style="margin:0">
+        {terms.map((t) => (
+          <div class="row" style="grid-template-columns:1fr">
+            <dt id={t.id} style="font:1.35rem/1.3 'Instrument Serif', Georgia, serif;scroll-margin-top:24px">
+              {t.term}
+            </dt>
+            <dd style="margin:2px 0 0;color:var(--mu);font-size:0.82rem;max-width:74ch">
+              {t.def} <a href={url(t.href, 'en')} style="white-space:nowrap">See {t.label} →</a>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+</BaseLayout>

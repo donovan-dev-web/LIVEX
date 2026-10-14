@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+
+const faq = [
+  {
+    q: 'What is LIVEX trying to demonstrate?',
+    a: "LIVEX builds a simulated world where autonomous entities (needs, memory, beliefs, utility) interact, and observes the collective structures that emerge: groups, exchanges, conflicts, propagation of knowledge. The project does not claim this emergence proves \"intelligence\": it provides observers and measurable metrics.",
+  },
+  {
+    q: 'Does LIVEX prove that societies emerge \"that way\"?',
+    a: "No. A sign of emergence is a specific measure, not proof. ECHOS explicitly documents its limitations: the measurement categories reflect the developer's choices, and a rare phenomenon may go unnoticed.",
+  },
+  {
+    q: 'Why is determinism so important?',
+    a: "Bit-for-bit determinism (same seed + configuration + engine version → same trajectory) is essential for repeatability: comparing two experiments by changing only one parameter only makes sense if everything else is reproducible.",
+  },
+  {
+    q: 'Do the entities \"communicate\" with each other?',
+    a: "Yes, within the simulated world, via local, non-confidential and degraded pulses (seven types of messages). This is distinct from communication between components (SYNE ↔ ECHOS ↔ PRISM via WebSocket/HTTP).",
+  },
+  {
+    q: 'Can you \"cheat\" by giving the world view to the entities?',
+    a: "Not by design: partial observability is a first-class feature. An entity only sees what its sensors perceive (range, line of sight), and its memory as well as its beliefs degrade. Anti-cheat is verified by tests.",
+  },
+  {
+    q: 'Is there physical modelling (collisions, bodies, morphology)?',
+    a: "No. Entities are logical (position, velocity, health), with no detailed physical representation, and may overlap. The PRISM rendering stylises this model.",
+  },
+  {
+    q: 'What is the target scale limit?',
+    a: "Performance targets exist for a later phase (notably 50 and 500 entities at target rates). Scaling beyond that is a research axis (spatial grid, culling).",
+  },
+  {
+    q: 'Is LIVEX multiplayer?',
+    a: "Not in V0.1. PRISM envisages a future \"player-inhabitant\" mode (embodying an entity), but this is a distant evolution, not committed.",
+  },
+  {
+    q: 'What is the difference between LIVEX, PRISM and PRISM-LDK?',
+    a: "LIVEX is the complete project. PRISM is its final Unreal project. PRISM-LDK is the Unreal plugin (technical name of the PrismLdk module) that exposes the SYNE contracts to Blueprints. LDK designates the plugin, not a separate product. The simulation engine remains decoupled from Unreal: SYNE makes the decisions and holds the authoritative state.",
+  },
+  {
+    q: 'Why does a SYNE mock exist?',
+    a: "syne-mock is a lightweight Node.js server to advance Unreal integration without running the full .NET engine. It simplifies deliberation, social systems and pathfinding: it serves integration and interface tests, never scientific results.",
+  },
+  {
+    q: 'What is the licence, and who owns the project?',
+    a: "MIT (see the LICENSE file). The repository is currently maintained by a single person. Contribution rules are in CONTRIBUTING.md.",
+  },
+  {
+    q: 'What does LIVEX not seek to prove?',
+    a: "That a society formed without the designer knowing; that a metric equals proof of emergence; that the behaviours of entities reproduce real social facts.",
+  },
+  {
+    q: 'Where are the ethical risks documented?',
+    a: "In ETHICS_AND_SCOPE.md (scope, risks, ethics), itself derived from Part 8 of the monograph.",
+  },
+];
+---
+<BaseLayout
+  lang="en"
+  title="FAQ"
+  description="Frequently asked questions about LIVEX: objectives, determinism, observability, communication between entities, scale, licence and ethics."
+>
+  <PageHeader
+    lang="en"
+    index="16"
+    eyebrow="FAQ"
+    title="Frequently asked questions."
+    lead="Answers drawn from the project's documentation. They evolve with implementation decisions."
+    crumbs={[{ label: 'FAQ' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      {faq.map((item) => (
+        <details class="faq">
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+      <p style="margin-top:24px"><a class="bt" href={url('comprendre/limites/', 'en')}>Limitations and ethics →</a></p>
+    </div>
+  </section>
+</BaseLayout>

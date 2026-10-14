@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
+---
+<BaseLayout
+  title="Feuille de route"
+  description="Jalons passés, en cours et envisagés du projet LIVEX, par statut et sans engagement de calendrier. Ce qui est volontairement hors périmètre y figure aussi."
+>
+  <PageHeader
+    index="14"
+    eyebrow="Feuille de route"
+    title="Un ordre, sans dates."
+    lead="La feuille de route de LIVEX énonce un ordre de travaux, jamais un calendrier. Seul ce qui est instrumenté par un jalon, une décision ou un test y figure — les intentions vagues restent dehors."
+    crumbs={[{ label: 'Feuille de route' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.1</b> Principe</div>
+      <h2>L'ordre, pas la promesse.</h2>
+      <p>
+        Les phases s'enchaînent de manière obligatoire, mais leur calendrier dépend de la disponibilité et des
+        validations intermédiaires. Ce choix préserve la rigueur : mieux vaut un ordre tenu qu'une date non tenue. Les
+        jalons de publication sont toujours <strong>en aval de l'acceptation</strong>, jamais l'inverse.
+      </p>
+      <div class="cc"><p>Une feuille de route utile se reconnaît à ce qu'on peut y perdre des points. Celle-ci en perd
+        trois, énoncés plus bas : un jalon livré mais non franchi, un écart de performance non comblé, une calibration
+        non faite.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.2</b> Trois catégories, pas deux</div>
+      <h2>Livré, en réserve, à faire.</h2>
+      <div class="g3 br">
+        <div>
+          <div class="n">1</div>
+          <h3>Livré</h3>
+          <p>Présent dans le code et couvert par des tests. Un acquis vérifiable.</p>
+        </div>
+        <div>
+          <div class="n">2</div>
+          <h3>Livré mais non activé</h3>
+          <p>Le mécanisme existe et fonctionne, mais il est désactivé par défaut, non calibré ou sans effet observable. Une capacité en réserve, pas un acquis scientifique.</p>
+        </div>
+        <div>
+          <div class="n">3</div>
+          <h3>À faire</h3>
+          <p>Identifié, ordonné, non commencé ou non franchi.</p>
+        </div>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>Confondre les deux premières catégories est l'erreur la plus coûteuse
+        d'un tel projet : un mécanisme livré mais inerte ne produit rien, et le présenter comme livré laisserait croire
+        que le monde contient ce qu'il ne contient pas encore.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.3</b> Les six phases cadres</div>
+      <h2>Du socle à la consolidation.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Phase</th><th>Intitulé</th><th>Objectif</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>Socle &amp; gouvernance</td><td>Dépôt, conventions, pipeline, licence, gouvernance.</td></tr>
+            <tr><td>1</td><td>Cadrage général</td><td>Vision, architecture, contrats inter-composants, glossaire.</td></tr>
+            <tr><td>2</td><td>Moteur (SYNE)</td><td>Cœur du monde simulé : cognition, action, observation interne.</td></tr>
+            <tr><td>3</td><td>Observation (ECHOS)</td><td>Analyse, métriques et pilotage des expériences.</td></tr>
+            <tr><td>4</td><td>Intégration Unreal (PRISM)</td><td>Projet Unreal et plugin PRISM-LDK.</td></tr>
+            <tr><td>5</td><td>Consolidation</td><td>Cohérence des contrats, FAQ, contribution, relecture croisée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.4</b> État des jalons</div>
+      <h2>Ce qui est franchi, ce qui reste ouvert.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Chantier</th><th>État</th></tr></thead>
+          <tbody>
+            <tr><td>Moteur SYNE</td><td>Douze phases techniques livrées (socle, BDI et perception, mémoire et croyances, décision, actions, communication, groupes, ressources, fidélités, observabilité, performance, tests et persistance). Capacités en réserve : saisons, territoires, constructions, inventaire, engagements.</td></tr>
+            <tr><td>Observatoire ECHOS</td><td>Neuf phases livrées, deux retirées (interface intégrée et shell Electron, ADR-007 du 5 octobre 2026). Chantier principal restant : l'indice de viabilité dynamique.</td></tr>
+            <tr><td>Rendu PRISM</td><td>Version de travail. Contrats de transport stabilisés ; validation contre SYNE réel en attente.</td></tr>
+            <tr><td>Launcher</td><td>Jalons G0–G4 largement présents. G5 (session complète avec ECHOS réel) : livré côté Launcher mais non franchi. G7 (mode Immersion) : verrouillé, faute de PRISM conforme.</td></tr>
+            <tr><td>Installateur</td><td>À l'état de spécification, sans ligne de code. Cinq jalons définis ; Linux d'abord.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.5</b> Volontairement hors périmètre</div>
+      <h2>Ce que le projet s'interdit.</h2>
+      <p>Écarter ces pistes n'est pas un jugement sur leur intérêt : c'est un refus de gonfler la cible.</p>
+      <div class="g2">
+        <div class="pl br" style="padding:18px"><h3>Multi-machines</h3><p class="mu" style="margin:0">La répartition sur plusieurs machines est documentée mais non implémentée, et ne compte pas comme travail.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Autres systèmes</h3><p class="mu" style="margin:0">Seuls Windows et Linux sont visés ; les autres plateformes sont hors périmètre.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Modèles de langage au cœur du monde</h3><p class="mu" style="margin:0">Le recours à un modèle de langage comme moteur de décision reste une piste documentée, pas un engagement.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Dates de livraison</h3><p class="mu" style="margin:0">Aucun jalon daté n'est fixé avant consolidation des phases en cours.</p></div>
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/governance/ROADMAP.md" rel="noopener">Feuille de route détaillée ↗</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/resultats/')}>Mesures</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

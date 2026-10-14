@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  title="Limitations and scope"
+  description="What LIVEX does, what it does not do, and the project's ethical principles: simulated agents, no consciousness, no personal data."
+>
+  <PageHeader
+    lang="en"
+    index="02"
+    eyebrow="Understand · Limitations"
+    title="Stating what the project does not do."
+    lead="A research project is judged by its boundaries as much as by its results. Here are LIVEX's boundaries, stated clearly."
+    crumbs={[{ label: 'Understand', href: 'comprendre/' }, { label: 'Limitations' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>2.1</b> Scope</div>
+      <h2>Research work, not a finished product.</h2>
+      <p>
+        LIVEX is a personal exploration project on multi-agent simulation. It does not claim to model societies, people
+        or real systems. The behaviours observed are valid <strong>within the simulated world</strong>, and only there.
+      </p>
+      <div class="cc">
+        <p>
+          No scientific publication, no external validation is claimed. No public release exists to date.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>2.2</b> Ethics</div>
+      <h2>What the agents are not.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px">
+          <h3>No consciousness</h3>
+          <p class="mu" style="margin:0">The agents are simulated entities. Their "desires" or "emotions" are
+            simulation variables, with no subjective experience.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>No personal data</h3>
+          <p class="mu" style="margin:0">The simulation uses neither real data nor profiles of people. The files
+            produced are synthetic traces.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>No claim to realism</h3>
+          <p class="mu" style="margin:0">The project does not claim to reproduce life, the economy or society. It
+            explores dynamics.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>No promises</h3>
+          <p class="mu" style="margin:0">No roadmap is held as a commitment. The published states reflect the
+            present state of the repository.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>2.3</b> Security and use</div>
+      <h2>Designed to run locally.</h2>
+      <p>
+        The development services (engine, observation, mock) run locally and do not expose a hardened public service.
+        Any network exposure should be preceded by authentication, input validation and hardening. See
+        <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SECURITY.md" rel="noopener">SECURITY.md</a>.
+      </p>
+      <p style="margin-top:18px"><a class="bt" href={url('technique/', 'en')}>View the architecture →</a></p>
+    </div>
+  </section>
+</BaseLayout>

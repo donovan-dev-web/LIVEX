@@ -1,0 +1,121 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+import { url } from '../../../utils/url';
+import launcherHome from '../../../assets/captures/launcher-home.png';
+import launcherExperiences from '../../../assets/captures/launcher-experiences.png';
+import launcherPrism from '../../../assets/captures/launcher-prism.png';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Launcher — Orchestration"
+  description="The LIVEX Launcher is the orchestration layer: drive, combine, monitor and archive work carried out with SYNE, ECHOS and PRISM from a single native interface."
+>
+  <PageHeader
+    lang="en"
+    index="09"
+    eyebrow="Architecture · Launcher"
+    title="The control hub."
+    lead="The Launcher is LIVEX's orchestration layer. It does not simulate, analyse or render: it coordinates SYNE, ECHOS and PRISM from a single interface."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Launcher' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p style="margin-top:0"><StatusBadge status="developpement" lang="en" /> <span class="mu">Target version 0.1.0 · Avalonia desktop application</span></p>
+      <div class="cc"><p>In development: the main interface flows are present in the repository; variants and full validation remain open. No public distribution to date.</p></div>
+
+      <div class="sh"><b>9.1</b> Role</div>
+      <h2>Coordinate, without deciding in place of components.</h2>
+      <p>
+        The Launcher allows you to <strong>drive, combine, monitor and archive</strong> work carried out with
+        SYNE, ECHOS and PRISM, from a single interface and a single data format. It contains neither the simulation logic (SYNE),
+        nor the analysis logic (ECHOS), nor the rendering logic (PRISM): it only coordinates them.
+      </p>
+      <p>
+        SYNE remains the single engine. <strong>ECHOS and PRISM are two ways of using that engine</strong>, of equal weight
+        and selectable: ECHOS for analysis, reproducibility and calibration; PRISM for real-time representation. The Launcher
+        allows them to be activated separately or together, without introducing a hierarchy between them.
+      </p>
+      <p>
+        The Launcher is a component of <strong>equal weight</strong> to the other three: it has its own data model and
+        invariants, and remains independent. Removing it must not render any other component unusable.
+      </p>
+
+      <figure class="shot">
+        <img src={launcherHome.src} alt="Capture — LIVEX Launcher home screen" width={launcherHome.width} height={launcherHome.height} loading="lazy" />
+        <figcaption>Capture — Launcher workspace (work-in-progress).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>9.2</b> What it enables</div>
+      <h2>One session, from launch to archive.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px">
+          <h3>Drive</h3>
+          <p class="mu" style="margin:0">Start, combine and stop components; check their status and health.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Organise</h3>
+          <p class="mu" style="margin:0">Group runs into campaigns, in a single package format (<code>.livexp</code>).</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Observe</h3>
+          <p class="mu" style="margin:0">Display measurements produced by ECHOS, without recalculating them (display does not modify the world).</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Contextualise</h3>
+          <p class="mu" style="margin:0">Open a PRISM rendering session when available, in parallel with analysis.</p>
+        </div>
+      </div>
+
+      <figure class="shot" style="margin-top:24px">
+        <img src={launcherExperiences.src} alt="Capture — experiences and campaigns management in the Launcher" width={launcherExperiences.width} height={launcherExperiences.height} loading="lazy" />
+        <figcaption>Capture — experiences and campaigns management (work-in-progress).</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src={launcherPrism.src} alt="Capture — PRISM rendering view opened from the Launcher" width={launcherPrism.width} height={launcherPrism.height} loading="lazy" />
+        <figcaption>Capture — access to a PRISM rendering view from the Launcher (work-in-progress).</figcaption>
+      </figure>
+      <div class="cc">
+        <p>These visuals reflect a work-in-progress version from the repository, not a published public version. Milestone status is recorded in the <a href={url('feuille-de-route/', 'en')}>roadmap</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>9.3</b> Platforms and launch</div>
+      <h2>Windows and Linux, locally.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Element</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Usage</td><td>Native desktop application (not a web interface)</td></tr>
+            <tr><td>Technology</td><td>.NET (C#), MVVM architecture, cross-platform Avalonia UI</td></tr>
+            <tr><td>V0.1 platforms</td><td>Windows and Linux</td></tr>
+            <tr><td>Installer</td><td>At specification stage — not delivered</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Planned launch from terminal:</p>
+      <pre><code>livex-launcher            # open workspace
+livex-launcher --check    # check environment, no UI
+livex-launcher --package &lt;path.livexp&gt;   # open a campaign</code></pre>
+      <p class="mu" style="font-size:0.78rem">
+        Until a release exists, installation and startup from source are described in the
+        <a href={url('telecharger/installation/', 'en')}>installation guide</a>.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('technique/', 'en')}>← Overview</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/resultats/', 'en')}>Reproducibility and measurements →</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

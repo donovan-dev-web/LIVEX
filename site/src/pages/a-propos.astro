@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { PROJECT_STATE } from '../data/release';
+import { url } from '../utils/url';
+---
+<BaseLayout
+  title="À propos"
+  description="L'origine de LIVEX, la vision de son auteur et les faits datés du projet. Un projet de recherche personnel sur la simulation multi-agents."
+>
+  <PageHeader
+    index="20"
+    eyebrow="À propos"
+    title="D'où vient LIVEX."
+    lead="LIVEX est né d'une question, plus que d'un plan. Voici, dans les mots de son auteur, ce qu'il cherche à explorer."
+    crumbs={[{ label: 'À propos' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <blockquote class="sf" style="font-size:clamp(1.6rem,3.5vw,2.6rem);line-height:1.3;margin:0 0 24px;border-left:2px solid var(--ve);padding-left:22px;max-width:34ch">
+        Peut-on construire un environnement virtuel régi par des lois fondamentales, au sein duquel des entités
+        autonomes produisent des comportements et des structures qui n'ont pas été explicitement programmés ?
+      </blockquote>
+      <p>
+        C'est la question qui a donné naissance à LIVEX. Avant d'être un projet de développement, LIVEX est né d'une
+        curiosité pour les mondes de la science-fiction et du LitRPG : des mondes qui paraissent vivants parce que
+        leurs entités ont des besoins, des perceptions et la capacité de décider.
+      </p>
+      <p>
+        Je suis développeur et infographiste 3D. Mon parcours m'a conduit aux deux faces d'un même problème :
+        comment représenter un monde, et comment construire ce qui le fait fonctionner. LIVEX est né de cette
+        rencontre entre création visuelle, développement et curiosité pour les systèmes complexes.
+      </p>
+      <p>
+        Ma vision est simple : ne pas programmer les comportements que je souhaite observer, mais construire
+        l'environnement et les lois qui peuvent leur permettre d'émerger. Et si quelque chose d'intéressant apparaît,
+        il ne suffit pas de le montrer — il faut pouvoir l'observer, le mesurer, l'analyser et, autant que possible,
+        le reproduire.
+      </p>
+      <p class="sf" style="font-size:1.5rem;margin-top:20px">— Donovan Chartrain</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.1</b> Le projet en bref</div>
+      <h2>Des faits, pas des slogans.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+          <tbody>
+            <tr><td>Nature</td><td>Projet de recherche personnel en simulation multi-agents</td></tr>
+            <tr><td>Composants</td><td>SYNE (moteur) · ECHOS (observation) · PRISM (rendu)</td></tr>
+            <tr><td>Licence</td><td>MIT (code) · CC BY 4.0 (contenu du site)</td></tr>
+            <tr><td>Dépôt</td><td><a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a></td></tr>
+            <tr><td>État</td><td>Aucune version publique — V0.1 en préparation</td></tr>
+            <tr><td>Dernier état mesuré</td><td>{PROJECT_STATE.observedDate}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:20px">
+        <a class="bt" href={url('comprendre/')}>Comprendre LIVEX</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('documentation/')}>Documentation</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

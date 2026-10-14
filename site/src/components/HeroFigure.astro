@@ -1,0 +1,140 @@
+---
+
+interface Props {
+  lang?: 'fr' | 'en';
+}
+const { lang = 'fr' } = Astro.props;
+const en = lang === 'en';
+---
+<figure class="pl br">
+  <svg viewBox="-250 -420 600 720" class="hero-svg" role="img" aria-label={en
+    ? 'Exploded isometric view of three stacked layers: a logical world with agents, an observation layer with curves and measurements, a 3D representation layer of blocks'
+    : "Vue éclatée isométrique de trois couches superposées : un monde logique avec des agents, une couche d'observation avec courbes et mesures, une couche de représentation en blocs 3D"
+  }>
+        <path class="dl" d="M0 0L0 -330"/>
+        <path class="dl" d="M230 133L230 -197"/>
+        <path class="dl" d="M0 266L0 -64"/>
+        <path class="dl" d="M-230 133L-230 -197"/>
+        <polygon class="pa" points="0,0 230,133 0,266 -230,133"/>
+        <path class="gl" d="M33 19L-197 152M-33 19L197 152"/>
+        <path class="gl" d="M66 38L-165 171M-66 38L165 171"/>
+        <path class="gl" d="M99 57L-132 190M-99 57L132 190"/>
+        <path class="gl" d="M132 76L-99 209M-132 76L99 209"/>
+        <path class="gl" d="M165 95L-66 228M-165 95L66 228"/>
+        <path class="gl" d="M197 114L-33 247M-197 114L33 247"/>
+        <path class="lk" d="M-7 42L-10 70"/>
+        <path class="lk" d="M-7 42L36 70"/>
+        <path class="lk" d="M-10 70L36 70"/>
+        <path class="lk" d="M-10 70L-53 76"/>
+        <path class="lk" d="M-10 70L-3 97"/>
+        <path class="lk" d="M-10 70L43 93"/>
+        <path class="lk" d="M36 70L-3 97"/>
+        <path class="lk" d="M36 70L43 93"/>
+        <path class="lk" d="M-53 76L-3 97"/>
+        <path class="lk" d="M-3 97L43 93"/>
+        <path class="lk" d="M-7 179L-10 207"/>
+        <path class="lk" d="M-7 179L43 200"/>
+        <path class="lk" d="M-7 179L43 173"/>
+        <path class="lk" d="M-10 207L43 200"/>
+        <path class="lk" d="M-10 207L10 226"/>
+        <path class="lk" d="M43 200L43 173"/>
+        <path class="lk" d="M43 200L10 226"/>
+        <circle class="dt" cx="-7" cy="42" r="3.6"/>
+        <circle class="dt" cx="-10" cy="70" r="3.6"/>
+        <circle class="dt" cx="36" cy="70" r="3.6"/>
+        <circle class="dt" cx="-53" cy="76" r="3.6"/>
+        <circle class="dt" cx="-3" cy="97" r="3.6"/>
+        <circle class="dt" cx="43" cy="93" r="3.6"/>
+        <circle class="dt" cx="-7" cy="179" r="3.6"/>
+        <circle class="dt" cx="-10" cy="207" r="3.6"/>
+        <circle class="dt" cx="43" cy="200" r="3.6"/>
+        <circle class="dt" cx="43" cy="173" r="3.6"/>
+        <circle class="dt" cx="10" cy="226" r="3.6"/>
+        <circle class="dt" cx="-79" cy="175" r="3.6"/>
+        <circle class="dt" cx="-158" cy="122" r="3.6"/>
+        <circle class="dt" cx="151" cy="125" r="3.6"/>
+        <polygon class="rg" points="-38,138 -15,138 -15,151 -38,151"/>
+        <polygon class="rg" points="100,142 123,142 123,155 100,155"/>
+        <polygon class="pa" points="0,-165 230,-32 0,101 -230,-32"/>
+        <path class="gl" d="M66 -127L-165 6M-66 -127L165 6"/>
+        <path class="gl" d="M132 -89L-99 44M-132 -89L99 44"/>
+        <path class="gl" d="M197 -51L-33 82M-197 -51L33 82"/>
+        <path class="dl" d="M-3 70L-3 -95"/>
+        <circle class="cm" cx="-3" cy="-95" r="6"/>
+        <circle class="rg2" cx="-3" cy="-95" r="13"/>
+        <path class="dl" d="M13 198L13 33"/>
+        <circle class="cm" cx="13" cy="33" r="6"/>
+        <circle class="rg2" cx="13" cy="33" r="13"/>
+        <polygon class="fl" points="-181,-22 -168,-15 -168,-29 -181,-36"/>
+        <polygon class="fr" points="-155,-22 -168,-15 -168,-29 -155,-36"/>
+        <polygon class="fa" points="-168,-44 -155,-36 -168,-29 -181,-36"/>
+        <polygon class="fl" points="-163,-12 -150,-4 -150,-34 -163,-42"/>
+        <polygon class="fr" points="-137,-12 -150,-4 -150,-34 -137,-42"/>
+        <polygon class="fa" points="-150,-50 -137,-42 -150,-34 -163,-42"/>
+        <polygon class="fl" points="-145,-2 -132,6 -132,-16 -145,-24"/>
+        <polygon class="fr" points="-118,-2 -132,6 -132,-16 -118,-24"/>
+        <polygon class="fa" points="-132,-31 -118,-24 -132,-16 -145,-24"/>
+        <polygon class="fl" points="-127,9 -114,16 -114,-24 -127,-31"/>
+        <polygon class="fr" points="-100,9 -114,16 -114,-24 -100,-31"/>
+        <polygon class="fa" points="-114,-39 -100,-31 -114,-24 -127,-31"/>
+        <polygon class="fl" points="-109,19 -95,27 -95,1 -109,-7"/>
+        <polygon class="fr" points="-82,19 -95,27 -95,1 -82,-7"/>
+        <polygon class="fa" points="-95,-14 -82,-7 -95,1 -109,-7"/>
+        <polyline class="cv" points="-145,-51 -86,-40 -63,-15 13,-21 43,8 118,6"/>
+        <polygon class="pa" points="0,-330 230,-197 0,-64 -230,-197"/>
+        <path class="gl" d="M33 -311L-197 -178M-33 -311L197 -178"/>
+        <path class="gl" d="M66 -292L-165 -159M-66 -292L165 -159"/>
+        <path class="gl" d="M99 -273L-132 -140M-99 -273L132 -140"/>
+        <path class="gl" d="M132 -254L-99 -121M-132 -254L99 -121"/>
+        <path class="gl" d="M165 -235L-66 -102M-165 -235L66 -102"/>
+        <path class="gl" d="M197 -216L-33 -83M-197 -216L33 -83"/>
+        <path class="dl" d="M-3 -95L-3 -260"/>
+        <path class="dl" d="M13 33L13 -132"/>
+        <polygon class="fl" points="-30,-282 0,-265 0,-291 -30,-308"/>
+        <polygon class="fr" points="30,-282 0,-265 0,-291 30,-308"/>
+        <polygon class="fa" points="0,-326 30,-308 0,-291 -30,-308"/>
+        <polygon class="fl" points="10,-256 39,-239 39,-283 10,-300"/>
+        <polygon class="fr" points="69,-256 39,-239 39,-283 69,-300"/>
+        <polygon class="fa" points="39,-317 69,-300 39,-283 10,-300"/>
+        <polygon class="fl" points="-76,-252 -46,-235 -46,-253 -76,-270"/>
+        <polygon class="fr" points="-16,-252 -46,-235 -46,-253 -16,-270"/>
+        <polygon class="fa" points="-46,-287 -16,-270 -46,-253 -76,-270"/>
+        <polygon class="fl" points="76,-206 105,-189 105,-223 76,-240"/>
+        <polygon class="fr" points="135,-206 105,-189 105,-223 135,-240"/>
+        <polygon class="fa" points="105,-258 135,-240 105,-223 76,-240"/>
+        <polygon class="fl" points="-3,-199 26,-182 26,-212 -3,-229"/>
+        <polygon class="fr" points="56,-199 26,-182 26,-212 56,-229"/>
+        <polygon class="fa" points="26,-246 56,-229 26,-212 -3,-229"/>
+        <polygon class="fl" points="-158,-186 -128,-168 -128,-206 -158,-224"/>
+        <polygon class="fr" points="-99,-186 -128,-168 -128,-206 -99,-224"/>
+        <polygon class="fa" points="-128,-241 -99,-224 -128,-206 -158,-224"/>
+        <polygon class="fl" points="-79,-174 -49,-157 -49,-179 -79,-196"/>
+        <polygon class="fr" points="-20,-174 -49,-157 -49,-179 -20,-196"/>
+        <polygon class="fa" points="-49,-213 -20,-196 -49,-179 -79,-196"/>
+        <polygon class="fl" points="53,-155 82,-138 82,-194 53,-211"/>
+        <polygon class="fr" points="112,-155 82,-138 82,-194 112,-211"/>
+        <polygon class="fv" points="82,-228 112,-211 82,-194 53,-211"/>
+        <polygon class="fl" points="-36,-119 -7,-102 -7,-122 -36,-139"/>
+        <polygon class="fr" points="23,-119 -7,-102 -7,-122 23,-139"/>
+        <polygon class="fa" points="-7,-156 23,-139 -7,-122 -36,-139"/>
+        <path class="dl" d="M230 133L270 127"/>
+        <text class="tx" x="276" y="131">01</text>
+        <path class="dl" d="M230 -32L270 -38"/>
+        <text class="tx" x="276" y="-34">02</text>
+        <path class="dl" d="M230 -197L270 -203"/>
+        <text class="tx" x="276" y="-199">03</text>
+  </svg>
+  <figcaption>
+    {en ? (
+      <>
+        <b>Fig. 1</b> — Exploded view of LIVEX's three layers. <b>Conceptual illustration</b>, not a screenshot.<br />
+        <b class="ve">01</b> SYNE · world truth · <b class="ve">02</b> ECHOS · observation · <b class="ve">03</b> PRISM · 3D representation
+      </>
+    ) : (
+      <>
+        <b>Fig. 1</b> — Vue éclatée des trois couches de LIVEX. <b>Illustration conceptuelle</b>, pas une capture.<br />
+        <b class="ve">01</b> SYNE · vérité du monde · <b class="ve">02</b> ECHOS · observation · <b class="ve">03</b> PRISM · représentation 3D
+      </>
+    )}
+  </figcaption>
+</figure>

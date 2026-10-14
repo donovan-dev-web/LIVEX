@@ -18,6 +18,7 @@ docs/
 ├── governance/       # Feuille de route, état du dépôt, gitflow, plan de refonte
 ├── adr/              # ADR transverses (filtre : Accepted + implémenté)
 ├── syne/  echos/  launcher/  prism/   # Documentation par composant
+├── website/          # Site vitrine : architecture, pages, design, i18n, déploiement
 └── installer/        # Spécification seule — aucun code à ce jour
 ```
 
@@ -50,6 +51,13 @@ CONTRIBUTING…) restent à la racine du dépôt.
 | [Launcher](launcher/README.md) | Orchestrateur de la pile : matrice des modes, campagnes, supervision à six niveaux, réseau et Gateway, flux de données et format de paquet `.livexp`. |
 | [Installateur](installer/README.md) | **Spécification à venir** — aucun code implémenté ; description de l'assistant d'installation (jalon G6). |
 | [syne-mock](../syne-mock/README.md) | Serveur Node.js de développement, ses scénarios, contrats et limites. |
+
+## Site vitrine
+
+Le site public (https://donovan-dev-web.github.io/LIVEX/) est un site statique
+Astro documenté dans [`website/`](website/README.md) : architecture, pages,
+design system, composants, multilinguisme FR/EN, données éditoriales, SEO,
+accessibilité, déploiement et maintenance.
 
 ## LIVEX, PRISM et PRISM-LDK
 

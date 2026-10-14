@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+---
+<BaseLayout
+  lang="en"
+  title="Installation"
+  description="Install and start LIVEX from source: prerequisites, starting the stack (SYNE, ECHOS), local ports and tests. No public binary to date."
+>
+  <PageHeader
+    lang="en"
+    index="12"
+    eyebrow="Download · Installation"
+    title="Start LIVEX from source."
+    lead="No installer is distributed. Here's how to run the stack from the repository, locally — this is a development environment, not a public service."
+    crumbs={[{ label: 'Download', href: 'telecharger/' }, { label: 'Installation' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="cc"><p><strong>Read first.</strong> The development services run locally (<code>127.0.0.1</code>) and
+        are not hardened for public exposure.</p></div>
+
+      <div class="sh"><b>12.1</b> Prerequisites</div>
+      <h2>What you need.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Tool</th><th>Version</th><th>For</th></tr></thead>
+          <tbody>
+            <tr><td>.NET SDK</td><td>10.0.4xx</td><td>SYNE engine</td></tr>
+            <tr><td>Python</td><td>3.11+</td><td>ECHOS (observation, API)</td></tr>
+            <tr><td>Node.js</td><td>20+</td><td>syne-mock (integration)</td></tr>
+            <tr><td>Unreal Engine</td><td>5.8</td><td>PRISM and the PRISM-LDK plugin (outside V0.1 scope)</td></tr>
+            <tr><td>curl</td><td>—</td><td>Availability checks</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12.2</b> Quick start</div>
+      <h2>The stack in one command.</h2>
+      <p>From the root of the repository:</p>
+      <pre><code>./scripts/dev-stack.sh</code></pre>
+      <p>
+        The script prepares the Python environment, compiles SYNE, then starts the ECHOS API (port
+        <code>5000</code>), SYNE (control <code>5181</code>, WebSocket <code>5180</code>) and ECHOS ingestion in order.
+        It does <strong>not</strong> launch any simulation: SYNE remains in the <code>Idle</code> state until the
+        <code>Start</code> command.
+      </p>
+      <p>The API documentation is then available at <code>http://127.0.0.1:5000/docs</code>.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12.3</b> Without the full engine</div>
+      <h2>The mock for integration.</h2>
+      <p>To advance Unreal integration without starting SYNE:</p>
+      <pre><code>cd syne-mock
+npm ci
+npm start -- config.example.json</code></pre>
+      <p class="mu">The mock follows the SYNE observability contract, but simplifies deliberation and pathfinding: it
+        serves integration tests, not scientific results.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12.4</b> Local ports</div>
+      <h2>Everything stays local.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Service</th><th>Address</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>SYNE WebSocket</td><td><code>127.0.0.1:5180</code></td><td>Snapshots and events from a controlled run.</td></tr>
+            <tr><td>SYNE HTTP</td><td><code>127.0.0.1:5181</code></td><td>Control of the server and starting runs.</td></tr>
+            <tr><td>ECHOS API</td><td><code>127.0.0.1:5000</code></td><td>Runs, metrics and analyses (API only).</td></tr>
+            <tr><td>syne-mock</td><td><code>127.0.0.1:5180/5181</code></td><td>Integration server (launched separately).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12.5</b> Tests</div>
+      <h2>Check that everything works.</h2>
+      <pre><code># SYNE
+cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
+
+# ECHOS (from the root)
+echos/.venv/bin/python -m pytest -q
+
+# Launcher
+cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
+      <p><StatusBadge status="experimental" lang="en" /> The paths given are indicative and follow the development
+        repository.</p>
+      <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Full installation guide ↗</a></p>
+    </div>
+  </section>
+</BaseLayout>
