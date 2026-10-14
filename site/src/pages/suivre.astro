@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { SITE } from '../data/site';
+import { url } from '../utils/url';
+---
+<BaseLayout
+  title="Suivre le projet"
+  description="Suivre l'actualité de LIVEX sans collecte de données : flux RSS du journal et dépôt GitHub pour les releases. Aucun délai de réponse n'est garanti."
+>
+  <PageHeader
+    index="18"
+    eyebrow="Suivre"
+    title="Suivre, sans y laisser ses données."
+    lead="Les moyens de suivre l'actualité de LIVEX tiennent aujourd'hui en deux canaux, tous deux sans collecte de données. D'autres viendront quand ils existeront — pas avant."
+    crumbs={[{ label: 'Suivre' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>18.1</b> Canaux disponibles</div>
+      <h2>Deux points d'entrée.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:20px">
+          <h3>Flux RSS du journal</h3>
+          <p class="mu">Le journal du site (jalons, décisions techniques, articles de fond) est publié en flux RSS. Aucun compte, aucun cookie, aucune inscription.</p>
+          <a class="bt" href={url('actualites/feed.xml')}>S'abonner au flux</a>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>Dépôt GitHub</h3>
+          <p class="mu">La transparence technique vit dans le dépôt. Pour être prévenu d'une publication, suivez les <em>releases</em> du projet.</p>
+          <a class="bt" href={SITE.repo + '/releases'} rel="noopener">Releases GitHub ↗</a>
+        </div>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>Le journal sur le site est la source des actualités ; le dépôt en résume les
+        versions et les changements. Une information vit à un seul endroit, l'autre y renvoie.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>18.2</b> Ce qu'il est raisonnable d'attendre</div>
+      <h2>Un projet solo, un rythme honnête.</h2>
+      <p>
+        LIVEX est porté par une seule personne, à côté d'autres travaux. Le rythme de publication est irrégulier, et
+        aucun délai de réponse n'est garanti. Un article utile vaut mieux que plusieurs publications creuses : le
+        journal n'a donc pas de quota.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>À attendre</th><th>À ne pas attendre</th></tr></thead>
+          <tbody>
+            <tr><td>Des jalons datés, publiés quand ils sont franchis</td><td>Un calendrier de livraison</td></tr>
+            <tr><td>Des décisions techniques documentées</td><td>Un support ou une assistance garantis</td></tr>
+            <tr><td>Des annonces de version, le jour de leur publication</td><td>Des réponses dans un délai fixe</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="font-size:0.78rem">
+        Aucun canal n'est listé ici tant qu'il n'est pas ouvert : un espace communautaire, s'il voit le jour, sera
+        annoncé avec ses règles le moment venu.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('actualites/')}>Lire le journal →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('participer/')}>Participer</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

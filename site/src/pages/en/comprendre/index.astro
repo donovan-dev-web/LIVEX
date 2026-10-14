@@ -1,0 +1,87 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  title="Understanding LIVEX"
+  description="LIVEX in plain terms: what a multi-agent simulation ecosystem is for, how it works, and which limitations it accepts."
+>
+  <PageHeader
+    lang="en"
+    index="01"
+    eyebrow="Understand"
+    title="A living archive of a simulated world."
+    lead="LIVEX starts from a simple question: can a collective behaviour that no one programmed by hand be made observable? What the project produces is not a story, but a record."
+    crumbs={[{ label: 'Understand' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>1.1</b> The problem</div>
+      <h2>Understand without scripting.</h2>
+      <p>
+        Many simulations settle for playing out a planned sequence. You see in them exactly what was put in. LIVEX aims
+        for the opposite: place agents, rules and an environment, then <strong>let it run</strong> and record what
+        happens — including the unexpected, including what does not work.
+      </p>
+      <p>
+        This imposes two requirements. First, <strong>determinism</strong>: from the same seed, a run must replay
+        identically, tick after tick. Then, <strong>separation</strong>: what happens (the engine) and what is said
+        about it (the observation) must never be conflated, on pain of narrating what one hoped to see.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>1.2</b> The method</div>
+      <h2>Three steps, three components.</h2>
+      <div class="g3 br">
+        <div>
+          <div class="n">01</div>
+          <h3>Simulate</h3>
+          <p><strong>SYNE</strong> runs the world: agents, resources, rules. Every run is replayable identically and
+            timestamped by a seed.</p>
+        </div>
+        <div>
+          <div class="n">02</div>
+          <h3>Observe</h3>
+          <p><strong>ECHOS</strong> ingests the traces and derives measurements from them: viability, patterns, loops.
+            It observes without acting on the world.</p>
+        </div>
+        <div>
+          <div class="n">03</div>
+          <h3>Make visible</h3>
+          <p><strong>PRISM</strong> makes the world and its dynamics perceptible, through rendering and interaction.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>1.3</b> What LIVEX is not</div>
+      <h2>Limitations we accept.</h2>
+      <div class="cc">
+        <p>
+          LIVEX's agents are neither conscious, nor people, nor models of real societies. They are
+          <strong>simulated</strong> entities, whose “emotions” or “intentions” are variables, not mental states. LIVEX
+          claims neither to predict nor to reproduce reality.
+        </p>
+      </div>
+      <p>
+        The project is in an exploration phase (V0.1). No public version is distributed to date. The component states
+        describe the development repository.
+      </p>
+      <div class="toc" style="margin-top:22px">
+        <a href={url('comprendre/limites/', 'en')}>Limitations and scope →</a>
+        <a href={url('comprendre/emergence/', 'en')}>Emergence explained →</a>
+        <a href={url('comprendre/glossaire/', 'en')}>Glossary →</a>
+        <a href={url('technique/', 'en')}>Architecture →</a>
+        <a href={url('faq/', 'en')}>FAQ →</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

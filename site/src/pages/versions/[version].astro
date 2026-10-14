@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { VERSIONS, type VersionEntry } from '../../data/versions';
+import { RELEASE } from '../../data/release';
+import { url } from '../../utils/url';
+
+export function getStaticPaths() {
+  return VERSIONS.map((v) => ({ params: { version: v.slug }, props: { v } }));
+}
+
+interface Props {
+  v: VersionEntry;
+}
+
+const { v } = Astro.props;
+---
+<BaseLayout
+  title={`${v.label} — Versions`}
+  description={`Notes de version LIVEX ${v.label}, publiées le ${v.date}.`}
+>
+  <PageHeader
+    index="13"
+    eyebrow="Versions"
+    title={`${v.label}.`}
+    lead={v.summary}
+    crumbs={[{ label: 'Versions', href: 'versions/' }, { label: v.label }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p class="mu" style="font-size:0.78rem">
+        Publiée le {v.date} · <StatusBadge status={v.status} />
+      </p>
+
+      {v.highlights.map((h) => (
+        <>
+          <div class="sh"><b>{v.label}</b> {h.component}</div>
+          <ul>
+            {h.items.map((it) => <li>{it}</li>)}
+          </ul>
+        </>
+      ))}
+
+      {v.assets.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Téléchargements</div>
+          <div class="ov">
+            <table class="tb">
+              <thead><tr><th>Plateforme</th><th>Fichier</th><th>Taille</th><th>Empreinte SHA-256</th></tr></thead>
+              <tbody>
+                {v.assets.map((a) => (
+                  <tr>
+                    <td>{a.platform}</td>
+                    <td><a href={a.url} rel="noopener">Télécharger ↗</a></td>
+                    <td>{a.size ?? '—'}</td>
+                    <td><code>{a.sha256 ?? '—'}</code></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {v.changes.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Nouveautés</div>
+          <ul>{v.changes.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      {v.fixes.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Corrections</div>
+          <ul>{v.fixes.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      {v.known.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Limites connues</div>
+          <ul>{v.known.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      <p style="margin-top:24px">
+        <a class="bt" href={url('versions/')}>Toutes les versions</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Journal des changements ↗</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

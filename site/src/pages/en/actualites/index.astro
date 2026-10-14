@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Journal"
+  description="The LIVEX journal is published in French. Milestones, technical decisions and in-depth articles, dated and sourced."
+>
+  <PageHeader
+    lang="en"
+    index="17"
+    eyebrow="Journal"
+    title="The record of the days."
+    lead="Milestones and technical decisions, dated. In-depth articles are added progressively."
+    crumbs={[{ label: 'Journal' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="cc" style="padding:18px 20px">
+        <p>
+          The journal is written and published <strong>in French only</strong>. Rather than offer a degraded machine
+          translation of each article, this English mirror points to the original, which remains authoritative.
+        </p>
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt p" href={url('actualites/', 'fr')}>Read the journal (French) →</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

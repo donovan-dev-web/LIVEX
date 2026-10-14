@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { url } from '../../utils/url';
+import echosAgents from '../../assets/captures/echos-agents.png';
+import echosRelations from '../../assets/captures/echos-relations.png';
+---
+<BaseLayout
+  title="ECHOS — observation et analyse"
+  description="ECHOS (Emergent Cognition & Holistic Observation System) ingère les runs, produit des mesures de viabilité et détecte des motifs émergents. API headless."
+>
+  <PageHeader
+    index="07"
+    eyebrow="Architecture · ECHOS"
+    title="L'observation."
+    lead="ECHOS (Emergent Cognition & Holistic Observation System) lit les traces produites par SYNE et en tire des mesures. Il observe le monde sans jamais intervenir dessus."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'ECHOS' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p style="margin-top:0"><StatusBadge status="experimental" /> <span class="mu">ECHOS 0.1.0 · paquet Python (dépôt)</span></p>
+      <div class="cc"><p>Expérimental : l'API headless est fonctionnelle dans le dépôt, mais non distribuée publiquement à ce jour.</p></div>
+
+      <div class="sh"><b>7.1</b> Rôle</div>
+      <h2>Transformer les traces en mesures.</h2>
+      <p>
+        ECHOS ingère les snapshots et événements d'un run, les stocke (schéma SQLite <strong>v6</strong>) puis en
+        dérive des mesures : viabilité du monde, évolution des ressources, motifs récurrents et
+        <strong>boucles de rétroaction</strong>.
+      </p>
+      <p>
+        Sa sortie est consommable par d'autres outils via une <strong>API headless</strong> : la présentation n'est pas
+        de son ressort.
+      </p>
+
+      <figure class="shot">
+        <img src={echosAgents.src} alt="Vue d'ECHOS : suivi d'agents" width={echosAgents.width} height={echosAgents.height} loading="lazy" />
+        <figcaption>Capture — suivi d'agents dans ECHOS.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src={echosRelations.src} alt="Vue d'ECHOS : relations entre agents" width={echosRelations.width} height={echosRelations.height} loading="lazy" />
+        <figcaption>Capture — relations entre agents dans ECHOS.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>7.2</b> Ce qu'ECHOS mesure</div>
+      <h2>Des indicateurs, pas des jugements.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px"><h3>Viabilité</h3><p class="mu" style="margin:0">Énergie, faim, soif, survie du monde au fil des ticks.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Motifs</h3><p class="mu" style="margin:0">Structures récurrentes dans l'espace et le temps.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Boucles</h3><p class="mu" style="margin:0">Rétroactions où le comportement d'un agent infléchit le suivant.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Relations</h3><p class="mu" style="margin:0">Interactions entre agents, observées et agrégées.</p></div>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS était de 90,55 % au 12 octobre 2026.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>7.3</b> Suite</div>
+      <p style="margin-top:0">
+        <a class="bt" href={url('technique/prism/')}>PRISM : rendu →</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

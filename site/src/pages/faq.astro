@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
+
+const faq = [
+  {
+    q: "Qu'est-ce que LIVEX cherche à démontrer ?",
+    a: "LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les structures collectives qui émergent : groupes, échanges, conflits, propagation du savoir. Le projet n'affirme pas que cette émergence prouve une « intelligence » : il fournit des observateurs et des métriques mesurables.",
+  },
+  {
+    q: 'LIVEX prouve-t-il que les sociétés émergent « comme ça » ?',
+    a: "Non. Un indice d'émergence est une mesure particulière, pas une preuve. ECHOS documente explicitement ses limites : les catégories de mesure reflètent les choix du développeur, et un phénomène rare peut passer inaperçu.",
+  },
+  {
+    q: 'Pourquoi tant d’importance au déterminisme ?',
+    a: "Le déterminisme bit-à-bit (même graine + configuration + version de moteur → même trajectoire) est indispensable à la répétabilité : comparer deux expériences en changeant un seul paramètre n'a de sens que si le reste est reproductible.",
+  },
+  {
+    q: 'Les entités communiquent-elles « entre elles » ?',
+    a: "Oui, au sein du monde simulé, via des pulsations locales, non confidentielles et dégradées (sept types de messages). C'est distinct de la communication entre composants (SYNE ↔ ECHOS ↔ PRISM par WebSocket/HTTP).",
+  },
+  {
+    q: 'Peut-on « tricher » en donnant la vue du monde aux entités ?',
+    a: "Non par conception : l'observabilité partielle est une fonctionnalité de premier plan. Une entité ne voit que ce que ses capteurs perçoivent (rayon, ligne de vue), et sa mémoire comme ses croyances se dégradent. L'anti-triche est vérifié par des tests.",
+  },
+  {
+    q: 'Y a-t-il une modélisation physique (collisions, corps, morphologie) ?',
+    a: "Non. Les entités sont logiques (position, vitesse, santé), sans représentation physique détaillée, et peuvent se chevaucher. Le rendu PRISM stylise ce modèle.",
+  },
+  {
+    q: "Quelle est la limite d'échelle visée ?",
+    a: "Des objectifs de performance existent pour une phase ultérieure (notamment 50 et 500 entités à des cadences cibles). La montée à l'échelle au-delà est un axe de recherche (grille spatiale, culling).",
+  },
+  {
+    q: 'LIVEX est-il multijoueur ?',
+    a: "Pas en V0.1. PRISM envisage un futur mode « joueur-habitant » (incarner une entité), mais c'est une évolution lointaine, non engagée.",
+  },
+  {
+    q: 'Quelle différence entre LIVEX, PRISM et PRISM-LDK ?',
+    a: "LIVEX est le projet complet. PRISM est son projet Unreal final. PRISM-LDK est le plugin Unreal (nom technique du module PrismLdk) qui expose les contrats SYNE aux Blueprints. LDK désigne le plugin, pas un produit distinct. Le moteur de simulation reste découplé d'Unreal : SYNE prend les décisions et détient l'état qui fait autorité.",
+  },
+  {
+    q: 'Pourquoi existe-t-il un mock SYNE ?',
+    a: "syne-mock est un serveur Node.js léger pour avancer sur l'intégration Unreal sans faire tourner le moteur .NET complet. Il simplifie la délibération, les systèmes sociaux et le pathfinding : il sert aux tests d'intégration et d'interface, jamais aux résultats scientifiques.",
+  },
+  {
+    q: 'Quelle est la licence, et qui possède le projet ?',
+    a: "MIT (voir le fichier LICENSE). Le dépôt est aujourd'hui porté par une seule personne. Les règles de contribution sont dans CONTRIBUTING.md.",
+  },
+  {
+    q: 'Qu’est-ce que LIVEX ne cherche pas à prouver ?',
+    a: "Qu'une société s'est formée à l'insu du concepteur ; qu'une métrique vaut une preuve d'émergence ; que les comportements des entités reproduisent des faits sociaux réels.",
+  },
+  {
+    q: 'Où sont documentés les risques éthiques ?',
+    a: "Dans ETHICS_AND_SCOPE.md (portée, risques, éthique), lui-même issu de la Partie 8 de la monographie.",
+  },
+];
+---
+<BaseLayout
+  title="FAQ"
+  description="Questions fréquentes sur LIVEX : objectifs, déterminisme, observabilité, communication entre entités, échelle, licence et éthique."
+>
+  <PageHeader
+    index="16"
+    eyebrow="FAQ"
+    title="Les questions qu'on nous pose."
+    lead="Réponses issues de la documentation du projet. Elles évoluent avec les décisions d'implémentation."
+    crumbs={[{ label: 'FAQ' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      {faq.map((item) => (
+        <details class="faq">
+          <summary>{item.q}</summary>
+          <p>{item.a}</p>
+        </details>
+      ))}
+      <p style="margin-top:24px"><a class="bt" href={url('comprendre/limites/')}>Limites et éthique →</a></p>
+    </div>
+  </section>
+</BaseLayout>

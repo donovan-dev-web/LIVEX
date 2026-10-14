@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
+---
+<BaseLayout
+  title="Confidentialité"
+  description="Politique de confidentialité du site LIVEX : aucun cookie, aucun traceur, aucune mesure d'audience, polices auto-hébergées."
+>
+  <PageHeader
+    index="23"
+    eyebrow="Confidentialité"
+    title="Le site ne vous piste pas."
+    lead="C'est une politique courte, parce qu'il n'y a pas grand-chose à déclarer. Ce site ne collecte rien."
+    crumbs={[{ label: 'Confidentialité' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>23.1</b> Aucun traceur</div>
+      <h2>Ni cookies, ni mesure d'audience.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Élément</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td>Cookies</td><td>Aucun cookie n'est déposé.</td></tr>
+            <tr><td>Mesure d'audience</td><td>Aucune (pas d'Analytics, ni équivalent).</td></tr>
+            <tr><td>Bibliothèques tierces (CDN)</td><td>Aucune. Tout est servi depuis ce domaine.</td></tr>
+            <tr><td>Polices de caractères</td><td>Auto-hébergées — aucun appel à Google Fonts.</td></tr>
+            <tr><td>Stockage local (<code>localStorage</code>)</td><td>Une seule clé : votre préférence de thème clair/sombre. Non transmise, effaçable à tout moment.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>23.2</b> Hébergement</div>
+      <h2>Ce que voit l'hébergeur.</h2>
+      <p>
+        Comme tout site web, chaque visite transmet à l'hébergeur (<strong>GitHub Pages</strong>) des informations
+        techniques minimales (adresse IP, agent utilisateur) nécessaires à la fourniture du service. Ces journaux
+        relèvent de la politique de GitHub et ne sont pas exploités par ce site.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>23.3</b> Vos droits</div>
+      <h2>Rien à demander, faute de données.</h2>
+      <p>
+        Ce site ne constituant aucun traitement de données personnelles, il n'y a ni compte, ni formulaire, ni
+        profilage. La seule donnée stockée localement — votre thème — reste sur votre appareil.
+      </p>
+      <p style="margin-top:18px"><a class="bt" href={url('mentions-legales/')}>Mentions légales →</a></p>
+    </div>
+  </section>
+</BaseLayout>

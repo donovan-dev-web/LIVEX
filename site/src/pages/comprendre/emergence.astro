@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  title="L'émergence expliquée"
+  description="Qu'est-ce que l'émergence en simulation multi-agents ? Définition, exemples, distinction entre agent simulé, IA apprenante et personnage scénarisé, limites d'interprétation."
+>
+  <PageHeader
+    index="03"
+    eyebrow="Comprendre · Émergence"
+    title="Ce qui naît du collectif."
+    lead="L'émergence est ce qui apparaît à l'échelle du groupe sans être écrit dans les règles d'un individu. C'est le cœur du problème que LIVEX explore, et il mérite qu'on en précise les contours."
+    crumbs={[{ label: 'Comprendre', href: 'comprendre/' }, { label: 'Émergence' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.1</b> Qu'est-ce que l'émergence ?</div>
+      <h2>Un tout qui n'est écrit nulle part.</h2>
+      <p class="lead">
+        L'émergence désigne l'apparition de structures ou de comportements collectifs qui ne figurent dans les règles
+        d'aucun individu pris isolément. Aucun plan central ne les ordonne : ils résultent des interactions locales
+        entre des entités simples, répétées dans le temps.
+      </p>
+      <p>
+        L'exemple le plus classique n'a rien à voir avec l'informatique. Un vol d'étourneaux dessine des figures
+        mouvantes, alors qu'aucun oiseau ne connaît la forme d'ensemble ni ne la commande : chacun suit trois règles
+        locales très simples (se rapprocher des voisins, éviter la collision, s'aligner sur leur direction). La figure
+        du groupe « émerge » de ces règles sans être nulle part programmée.
+      </p>
+      <p>
+        Le jeu de la vie de Conway (automate cellulaire, 1970), les essaims d'insectes, les embouteillages ou encore
+        les marchés de l'économie sont d'autres cas souvent cités : des règles locales et une contrainte partagée
+        produisent un ordre global que personne n'a décidé.
+      </p>
+      <div class="cc">
+        <p><strong>Ce que l'émergence n'est pas.</strong> Ni magie, ni conscience. Un comportement émergent reste un
+          comportement observable que l'on peut relier à des causes locales — même si sa forme d'ensemble n'était pas
+          prévisible à partir d'un seul individu.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.2</b> Comment LIVEX l'aborde</div>
+      <h2>Les règles, jamais les conduites.</h2>
+      <p>
+        LIVEX ne scénarise pas les phénomènes collectifs qu'il cherche à observer. Le moteur <strong>SYNE</strong> fournit
+        des structures — un monde, des ressources, des besoins, une perception locale, une mémoire, une fonction de
+        décision — mais jamais les conduites. Chaque entité décide pour elle-même, à partir d'une vue partielle et
+        faillible du monde.
+      </p>
+      <p>
+        Comme les entités voient le monde différemment et décident différemment, les groupes, les échanges et les
+        tensions qui apparaissent ne sont pas écrits à l'avance. Ils sont enregistrés sous forme de traces, puis lus
+        par le système d'observation <strong>ECHOS</strong>, sans jamais intervenir sur le monde.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.3</b> Mesurer l'émergence</div>
+      <h2>Une mesure, pas une preuve.</h2>
+      <p>
+        LIVEX dispose d'un <strong>indice d'émergence composite</strong> : une valeur bornée entre 0 et 1, calculée à
+        partir de six composantes (diversité des croyances, diversité des objectifs, délai de diffusion de
+        l'information, coefficient de regroupement, part de répétitions d'action, couverture des communautés). La
+        dispersion des croyances et des objectifs emprunte à l'<strong>entropie de Shannon</strong> (<code>H = -Σ p_i log2 p_i</code>),
+        qui vaut zéro en cas d'unanimité.
+      </p>
+      <div class="cc">
+        <p><strong>Avertissement méthodologique.</strong> Cet indice est une <em>heuristique d'observation</em>, pas
+          une preuve scientifique d'émergence. Ses poids sont hérités et n'ont pas été calibrés ; une absence de
+          détection n'est pas l'absence du phénomène. Il aide à regarder, il ne conclut pas.</p>
+      </div>
+      <p>
+        Mesurer ainsi ne prouve donc <strong>pas</strong> qu'un comportement est « réellement » émergent ni nouveau.
+        Deux difficultés demeurent : distinguer une émergence authentique d'un artefact statistique ou d'une
+        complexité simplement programmée, et déterminer le nombre de runs nécessaire pour qu'une observation vaille
+        autre chose qu'une intuition. Ces questions restent ouvertes.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.4</b> Trois cas à ne pas confondre</div>
+      <h2>Simulé, appris, écrit.</h2>
+      <p>Le mot « agent » recouvre des réalités très différentes. Les confondre est la source la plus fréquente de malentendu.</p>
+      <div class="ov">
+        <table class="tb">
+          <thead>
+            <tr><th></th><th>Agent simulé (LIVEX)</th><th>IA apprenante</th><th>Personnage scénarisé</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Origine du comportement</td>
+              <td>Règles explicites et état courant</td>
+              <td>Modèle entraîné sur des données</td>
+              <td>Script écrit à l'avance</td>
+            </tr>
+            <tr>
+              <td>Explication</td>
+              <td>Chaque décision est traçable et chiffrée</td>
+              <td>Souvent opaque ligne à ligne</td>
+              <td>Déterminée par l'auteur</td>
+            </tr>
+            <tr>
+              <td>Reproductibilité</td>
+              <td>Bit-à-bit à partir d'une graine</td>
+              <td>Non garanti au bit près</td>
+              <td>Identique à chaque exécution</td>
+            </tr>
+            <tr>
+              <td>Autonomie</td>
+              <td>Choix calculé selon l'état et les croyances</td>
+              <td>Réponse générée par le modèle</td>
+              <td>Aucune : suit une trame</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">
+        LIVEX se situe dans la première colonne : la cognition est explicite, déterministe et inspectable — elle
+        <strong> n'apprend pas</strong> et n'utilise aucun modèle de langage au cœur du monde.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.5</b> Références</div>
+      <h2>Sur quoi s'appuie ce texte.</h2>
+      <p class="mu" style="font-size:0.8rem">
+        Les concepts ci-dessus sont documentés dans le dépôt et adossés à des travaux extérieurs cités par la
+        monographie. Sont notamment mobilisés : l'entropie de Shannon (1948) pour la dispersion ; les automates
+        cellulaires et le jeu de la vie de Conway (1970) comme cas historiques ; les essaims (Reynolds, 1987 ;
+        Bonabeau et al., 1999) ; <em>Sugarscape</em> (Epstein &amp; Axtell, 1996) pour la simulation multi-agents en
+        milieu contraint ; les travaux de Holland, Gell-Mann et de la Santa Fe Institute sur les systèmes complexes ;
+        le cadre BDI de Rao et Georgeff (1995) ; et, comme repoussoir méthodologique, les agents génératifs de Park et
+        al. (2023).
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('comprendre/limites/')}>Limites et portée →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/')}>Architecture</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

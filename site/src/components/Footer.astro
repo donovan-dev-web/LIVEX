@@ -1,0 +1,33 @@
+---
+import { FOOTER_NAV, SITE } from '../data/site';
+import { url } from '../utils/url';
+import { useTranslations, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'fr' } = Astro.props;
+const t = useTranslations(lang);
+const year = new Date().getFullYear();
+---
+<footer class="site">
+  <div class="w">
+    <nav aria-label={t('footer.nav')}>
+      {FOOTER_NAV.map((item) => <a href={url(item.href, lang)}>{item.label[lang]}</a>)}
+      <a href={SITE.repo} rel="noopener">{t('footer.repo')}</a>
+      <a href={SITE.repo + '/blob/main/LICENSE'} rel="noopener">{t('footer.license')}</a>
+    </nav>
+    <hr class="fl" />
+    <div class="fgrid">
+      <p>
+        {lang === 'en'
+          ? `© ${year} LIVEX — personal project by ${SITE.author}. Content under `
+          : `© ${year} LIVEX — projet personnel de ${SITE.author}. Contenu sous licence `}
+        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>{lang === 'en' ? ', code under MIT license.' : ', code sous licence MIT.'}
+      </p>
+      <p class="mu">
+        {lang === 'en' ? 'No trackers, no cookies. Self-hosted fonts.' : 'Aucun traceur, aucun cookie. Polices auto-hébergées.'}
+      </p>
+    </div>
+  </div>
+</footer>

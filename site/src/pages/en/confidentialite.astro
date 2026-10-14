@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  title="Privacy policy"
+  description="Privacy policy for the LIVEX site: no cookies, no trackers, no audience measurement, self-hosted fonts."
+>
+  <PageHeader
+    lang="en"
+    index="23"
+    eyebrow="Privacy"
+    title="The site does not track you."
+    lead="This is a short policy, because there is not much to declare. This site collects nothing."
+    crumbs={[{ label: 'Privacy' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>23.1</b> No trackers</div>
+      <h2>No cookies, no audience measurement.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Element</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Cookies</td><td>No cookies are set.</td></tr>
+            <tr><td>Audience measurement</td><td>None (no Analytics or equivalent).</td></tr>
+            <tr><td>Third-party libraries (CDN)</td><td>None. Everything is served from this domain.</td></tr>
+            <tr><td>Fonts</td><td>Self-hosted — no calls to Google Fonts.</td></tr>
+            <tr><td>Local storage (<code>localStorage</code>)</td><td>Only one key: your preference for light/dark theme. Not transmitted, can be cleared at any time.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>23.2</b> Hosting</div>
+      <h2>What the host sees.</h2>
+      <p>
+        Like any website, each visit transmits minimal technical information (IP address, user agent) to the host
+        (<strong>GitHub Pages</strong>) that is necessary to provide the service. These logs fall under GitHub's policy
+        and are not used by this site.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>23.3</b> Your rights</div>
+      <h2>Nothing to request, as no data is collected.</h2>
+      <p>
+        Since this site does not constitute any processing of personal data, there is no account, no form, no
+        profiling. The only data stored locally — your theme — remains on your device.
+      </p>
+      <p style="margin-top:18px"><a class="bt" href={url('mentions-legales/', 'en')}>Legal notices →</a></p>
+    </div>
+  </section>
+</BaseLayout>

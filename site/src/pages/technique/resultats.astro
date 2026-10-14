@@ -1,0 +1,172 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { PROJECT_STATE } from '../../data/release';
+import { url } from '../../utils/url';
+
+const nf = new Intl.NumberFormat('fr-FR');
+---
+<BaseLayout
+  title="Reproductibilité et mesures"
+  description="Tests, couverture, benchmarks et méthode de reproduction des expériences de simulation LIVEX : ce qui est mesuré, daté, et ce qui ne l'est pas encore."
+>
+  <PageHeader
+    index="10"
+    eyebrow="Architecture · Résultats"
+    title="Ce qui est affirmé est mesuré."
+    lead="Une affirmation chiffrée ne vaut que si l'on peut la rejouer. Cette page rassemble la méthode, les tests, les benchmarks et ce qui reste, à ce jour, non mesuré."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Résultats' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>10.1</b> Méthode et reproductibilité</div>
+      <h2>Rejouer un run à l'identique.</h2>
+      <p>
+        Un run est défini par quatre ingrédients : une <strong>graine</strong> (entier 64 bits), une
+        <strong>configuration</strong>, une <strong>version du moteur</strong> et un <strong>état initial</strong>. À
+        graine et version égales, SYNE rejoue la même trajectoire <strong>bit-à-bit</strong> ; l'identifiant de run
+        (<code>run-&lt;seed&gt;-&lt;12hex&gt;</code>) porte la graine, qu'ECHOS ne dérive pas lui-même.
+      </p>
+      <p>
+        Les benchmarks SYNE impriment un <strong>checksum FNV-1a</strong> de l'état (population, ticks, puis une ligne
+        <code>id;x;y;énergie</code> par entité, triée par identifiant). Deux passes à graine égale produisent le même
+        checksum : c'est la preuve opérationnelle du déterminisme.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Ingrédient</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td>Graine (seed)</td><td>Initialise le PRNG xoshiro256** ; rend deux runs comparables.</td></tr>
+            <tr><td>Configuration</td><td>Paramètres du monde et des entités.</td></tr>
+            <tr><td>Version du moteur</td><td>Garantit des règles identiques entre runs.</td></tr>
+            <tr><td>État initial</td><td>Point de départ commun aux comparaisons.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>10.2</b> Tests et couverture</div>
+      <h2>Mesuré le {PROJECT_STATE.observedDate}.</h2>
+      <div class="g3 br">
+        <div>
+          <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
+          <h3>tests au vert</h3>
+          <p>{PROJECT_STATE.tests.ignored} ignorés, 0 échec sur les suites locales.</p>
+        </div>
+        <div>
+          <div class="n">{PROJECT_STATE.coverage.echos}</div>
+          <h3>couverture ECHOS</h3>
+          <p>Couverture de lignes de l'observatoire (paquet Python).</p>
+        </div>
+        <div>
+          <div class="n">{PROJECT_STATE.coverage.syne}</div>
+          <h3>couverture SYNE</h3>
+          <p>Assemblages SYNE agrégés (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole}).</p>
+        </div>
+      </div>
+      <div class="ov" style="margin-top:28px">
+        <table class="tb">
+          <thead><tr><th>Indicateur</th><th>Valeur</th></tr></thead>
+          <tbody>
+            <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
+            <tr><td>Tests par composant</td><td>SYNE 634 · ECHOS 361 · Launcher 217 · syne-mock 46</td></tr>
+            <tr><td>Intégration continue</td><td>{PROJECT_STATE.ci}</td></tr>
+            <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc"><p>Ces chiffres décrivent un dépôt de développement à une date donnée. Ils ne valent ni validation
+        fonctionnelle, ni promesse de stabilité.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>10.3</b> Benchmarks mesurés</div>
+      <h2>Des chiffres, avec leurs conditions.</h2>
+      <p>
+        Les mesures SYNE V0.1 ont été refaites le <strong>8 octobre 2026</strong>, en Release, sur la machine de
+        référence : Intel Core i7-8750H (6 cœurs / 12 threads), 14 Gio de RAM, Ubuntu x86-64, SDK .NET 10.0.401. Monde
+        500×500, cellule spatiale 50, configuration par défaut, 300 ticks, graines <span class="mu">12345 / 999 / 7</span>, en une passe
+        mono-thread.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Population</th><th>Débit mesuré (t/s)</th><th>Tick moyen</th><th>Cible V2</th><th>Verdict</th></tr></thead>
+          <tbody>
+            <tr><td>50</td><td>1 354 – 2 257</td><td>0,44 – 0,73 ms</td><td>≥ 30</td><td>Au-dessus</td></tr>
+            <tr><td>500</td><td>42,8 – 53,9</td><td>18,5 – 23,3 ms</td><td>≥ 20</td><td>Au-dessus</td></tr>
+            <tr><td>1 000</td><td>5,9 – 6,5</td><td>153 – 169 ms</td><td>≥ 10</td><td><strong>Écart ≈ 1,7×</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc">
+        <p><strong>Écart assumé à 1 000 entités.</strong> La cible de scalabilité n'est pas tenue à cette échelle
+          (≈ 6 t/s contre ≥ 10). L'optimisation de la perception et le traitement par lots des événements sont le
+          chantier identifié ; il ne bloque pas V0.1, dont les scénarios tournent à 100 agents ou moins.</p>
+      </div>
+      <p class="mu" style="font-size:0.78rem">
+        Le coût de l'observabilité (pile ECHOS branchée sur SYNE) est mesuré séparément par un script de benchmark
+        dédié : mêmes entités, mêmes ticks, même graine, pour que tout écart de débit soit imputable à l'observation.
+        Sources : <code>docs/syne/PERFORMANCE.md</code>, <code>docs/echos/BENCHMARKS.md</code>.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>10.4</b> Ce qui n'est pas encore mesuré</div>
+      <h2>Ce que l'on ne prétend pas.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px">
+          <h3>Calibration des constantes</h3>
+          <p class="mu" style="margin:0">Les constantes de besoins et de seuils reposent sur des valeurs héritées, non calibrées. Aucune campagne de référence n'a encore validé ces réglages.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Sensibilité de l'indice d'émergence</h3>
+          <p class="mu" style="margin:0">Les poids du score composite sont publiés mais non éprouvés ; une analyse de sensibilité reste à mener.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Protocole statistique</h3>
+          <p class="mu" style="margin:0">Le nombre de runs nécessaire pour qu'une différence entre configurations soit autre chose qu'une observation n'est pas déterminé.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Machine de référence unique</h3>
+          <p class="mu" style="margin:0">Performance, déterminisme et acceptation reposent sur une seule machine et un seul runtime. Une mesure unique n'est pas une loi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>10.5</b> Limites d'interprétation</div>
+      <h2>Un chiffre n'est pas une conclusion.</h2>
+      <p>
+        Un débit de ticks mesure une vitesse, pas une pertinence. Une couverture de tests mesure l'étendue des
+        vérifications, pas la justesse du modèle. Un indice d'émergence mesure une dispersion, pas une preuve. Chaque
+        résultat porte ici sa version, sa date et sa source ; un chiffre sans source n'est pas publié.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Affirmation</th><th>Statut</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>1 258 tests réussis (0 échec) au 12/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1, §5</td></tr>
+            <tr><td>Couverture ECHOS 90,55 % / SYNE 87,41 % au 12/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>13/13 jobs CI verts le 11/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>Écart ≈ 1,7× sous la cible à 1 000 entités</td><td>Vérifiée</td><td>PERFORMANCE §9.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('comprendre/limites/')}>Limites et portée →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('feuille-de-route/')}>Feuille de route</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+
+const repo = 'https://github.com/donovan-dev-web/LIVEX';
+const blob = `${repo}/blob/main`;
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Contribute"
+  description="Contributing to LIVEX: contribution rules, code of conduct, security reporting and support. The repository is public under the MIT licence."
+>
+  <PageHeader
+    lang="en"
+    index="19"
+    eyebrow="Contribute"
+    title="Contributing, by the rules."
+    lead="The repository is public under the MIT licence. A solo project gladly welcomes contributions, provided a simple framework is respected."
+    crumbs={[{ label: 'Contribute' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="g2">
+        <div class="pl br" style="padding:20px">
+          <h3>Contributing</h3>
+          <p class="mu">Branches, commit messages, PR scope. Read this document before your first contribution.</p>
+          <a class="bt" href={`${blob}/CONTRIBUTING.md`} rel="noopener">CONTRIBUTING.md ↗</a>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>Code of conduct</h3>
+          <p class="mu">Exchanges are held in a respectful framework. It applies to all interactions in the project.</p>
+          <a class="bt" href={`${blob}/CODE_OF_CONDUCT.md`} rel="noopener">CODE_OF_CONDUCT.md ↗</a>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>Security</h3>
+          <p class="mu">Report any vulnerability privately, before any public discussion.</p>
+          <a class="bt" href={`${blob}/SECURITY.md`} rel="noopener">SECURITY.md ↗</a>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>Support</h3>
+          <p class="mu">Where to ask a question, open an issue, or find help.</p>
+          <a class="bt" href={`${blob}/SUPPORT.md`} rel="noopener">SUPPORT.md ↗</a>
+        </div>
+      </div>
+
+      <div class="cc" style="margin-top:26px">
+        <p><strong>Reporting a vulnerability:</strong> open a private advisory via
+          <a href={`${repo}/security/advisories/new`} rel="noopener">GitHub Security Advisories</a> — do not expose the
+          flaw in a public issue.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

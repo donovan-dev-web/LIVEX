@@ -2,8 +2,8 @@
 
 **Composant** : PRISM
 **Statut** : [Proposed] — décision formalisée par [`adr/ADR-003-echelle-cadence-syne-unreal.md`](adr/ADR-003-echelle-cadence-syne-unreal.md)
-**Dernière mise à jour** : 7 octobre 2026
-**Dépend de** : [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md), [`RENDERING_SPEC.md`](RENDERING_SPEC.md), [`SCENE_SPEC.md`](SCENE_SPEC.md), [`../syne/adr/ADR-005-temporalite.md`](../syne/adr/ADR-005-temporalite.md), [`../syne/adr/ADR-016-calibration-stabilite-2500-ticks.md`](../syne/adr/ADR-016-calibration-stabilite-2500-ticks.md)
+**Dernière mise à jour** : 12 octobre 2026
+**Dépend de** : [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md), [`RENDERING_SPEC.md`](RENDERING_SPEC.md), [`SCENE_SPEC.md`](SCENE_SPEC.md), [`../syne/adr/ADR-005-temporalite.md`](../syne/adr/ADR-005-temporalite.md), [`../syne/adr/ADR-017-echelle-temporelle-configurable.md`](../syne/adr/ADR-017-echelle-temporelle-configurable.md), [`../syne/adr/ADR-016-calibration-stabilite-2500-ticks.md`](../syne/adr/ADR-016-calibration-stabilite-2500-ticks.md)
 
 ---
 
@@ -33,7 +33,7 @@ UE 5.8 lors du branchement).
 
 | Repère | Valeur | Source |
 | :-- | :-- | :-- |
-| Unité de temps | **1 tick = 1 minute simulée** | `syne/Simulation.Core/Simulation/SimulationLoop.cs:409` (`TicksPerSimulationMinute = 1`), [`ADR-005`](../syne/adr/ADR-005-temporalite.md) |
+| Unité de temps | **1 tick = `simulatedSecondsPerTick` secondes simulées** — défaut **60** (1 min), **5** en profil `prism` | [`ADR-005`](../syne/adr/ADR-005-temporalite.md) et [`ADR-017`](../syne/adr/ADR-017-echelle-temporelle-configurable.md) ; `SimulationClock.cs` (`DefaultSimulatedSecondsPerTick = 60`) |
 | Cadence configurée | entier strictement > 0, défaut **10** | `SimulationOptions.cs:27` ; validation `Simulation.Console/Control/ControlServer.cs:269-271` ; `SimulationOptionsValidator.cs:40-42` |
 | Exécution de la cadence | `TimeSpan.FromSeconds(1d/TicksPerSecond)` puis `Task.Delay` (aucun rattrapage de retard) | `SimulationController.cs:272`, `:519` |
 | Pas de déplacement | 1 pas par tick d'action, borné par le trait `speed` ∈ [0,5 ; 1,5] (défaut 1,0) | `SimulationOptions.cs:44` ; `EntityTemplate.cs:44-47` ; clamp des traits à [0 ; 2] `TraitSet.cs:9-11` |
@@ -41,7 +41,7 @@ UE 5.8 lors du branchement).
 | Population par défaut | `agents.initialCount` = **100** | `SimulationOptions.cs:34` |
 | Perception | rayon défaut **50**, **borné à [20 ; 70]** (décision n°6), rotation par groupes de 4 ticks | `SimulationOptions.cs:99` et `:102` ; `SimulationOptionsValidator.cs:58-64` |
 | Décision | délibération tous les **10 ticks** | `SimulationOptions.cs:254` |
-| Saisons | **360 ticks** par saison | `SimulationOptions.cs:533` |
+| Saisons | **360 min simulées** par saison (4 320 ticks à 5 s/tick, ADR-017) | `SimulationOptions.cs:533` ; `TICK_QUANTITIES.md` §2 |
 | Durée d'action | **aucune** : toute action se résout en un tick | `ActionEntrySettings` (`SimulationOptions.cs:224-249`), `ActionExecutor.Execute` |
 | Nourriture/eau | Eat/Drink prélèvent sur des **réserves globales**, sans exigence de proximité | `ActionExecutor.cs:94-107` |
 | Énergie du mouvement | coût **forfaitaire par tick de déplacement** (0,03), sans dépendance à la distance | `ActionExecutor.cs:115-122` ; `SimulationOptions.cs:172` |
@@ -117,15 +117,15 @@ Avec `k = 100` : `vitesse_apparente = 100 × TPS × speed` uu/s, soit
 `100 × 6 = 600 uu/s` pour un agent médian — **exactement le `MaxWalkSpeed`
 par défaut d'Unreal**.
 
-| TPS | ms/tick | Frames @60 FPS/tick | Vitesse apparente (trait 1,0) | Journée (1440 ticks) |
+| TPS | ms/tick | Frames @60 FPS/tick | Vitesse apparente (trait 1,0) | Journée simulée (5 s/tick) |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 1000 | 60 | 100 uu/s (1 m/s) | 24 min |
-| 5 | 200 | 12 | 500 uu/s (5 m/s) | 4 min 48 |
-| **6 (retenu)** | **166,7** | **10** | **600 uu/s (6 m/s)** | **240 s (4 min)** |
-| 10 (défaut SYNE) | 100 | 6 | 1000 uu/s (10 m/s) | 144 s |
-| 15 | 66,7 | 4 | 1500 uu/s | 96 s |
-| 30 | 33,3 | 2 | 3000 uu/s | 48 s |
-| 60 | 16,7 | 1 | 6000 uu/s | 24 s |
+| 1 | 1000 | 60 | 100 uu/s (1 m/s) | 4 h 48 |
+| 5 | 200 | 12 | 500 uu/s (5 m/s) | 57 min 36 |
+| **6 (retenu)** | **166,7** | **10** | **600 uu/s (6 m/s)** | **2 880 s (48 min)** |
+| 10 (défaut SYNE) | 100 | 6 | 1000 uu/s (10 m/s) | 28 min 48 |
+| 15 | 66,7 | 4 | 1500 uu/s | 19 min 12 |
+| 30 | 33,3 | 2 | 3000 uu/s | 9 min 36 |
+| 60 | 16,7 | 1 | 6000 uu/s | 4 min 48 |
 
 Contraintes croisées :
 
@@ -145,24 +145,22 @@ Contraintes croisées :
 | Rotation de perception (`SimulationOptions.cs:102`) | 4 | 0,67 s |
 | Délibération (`SimulationOptions.cs:254`) | 10 | **1,67 s** |
 | Action du joueur (lecture UI) | 1 | 166,7 ms |
-| Saison (`SimulationOptions.cs:533`) | 360 | 60 s |
+| Saison (360 min simulées, ×12 à 5 s/tick) | 4 320 | 12 min |
 | Autosave (défaut 1000) | 1000 | 167 s |
-| Journée complète | 1440 | **240 s** |
+| Journée complète (1 440 min simulées) | 17 280 | **2 880 s (48 min)** |
 | Horizon calibré ADR-016 | 2500 | **417 s (6 min 57)** |
 
 ### 4.2 Besoins vus en temps réel (à vide, depuis 0)
 
 Taux `SimulationOptions.cs:65-67`, seuils `:88`, `:90`, `:93` :
 
-| Besoin | Seuil de déclenchement | Ticks | Temps réel @6 |
+| Besoin | Seuil ÷ taux effectif (dt = 1/12 à 5 s/tick) | Ticks | Temps réel @6 |
 | :-- | ---: | ---: | ---: |
-| Faim | 50 ÷ 0,5 | 100 | **16,7 s** |
-| Soif | 50 ÷ 0,7 | 71 | **11,9 s** |
-| Fatigue | 70 ÷ 0,3 | 233 | **38,9 s** |
+| Faim | 50 ÷ (0,5 × 1/12) | 1 200 | **200 s** |
+| Soif | 50 ÷ (0,7 × 1/12) | 857 | **143 s** |
+| Fatigue | 70 ÷ (0,3 × 1/12) | 2 800 | **467 s** |
 
-L'horloge tourne donc à **360× le temps réel** (1440 minutes ÷ 240 s). Ce rythme
-est volontaire (« survival en temps de jeu continu ») mais doit être affiché dans
-l'UI (`RENDERING_SPEC.md`) : une journée passe toutes les 4 minutes.
+L'horloge tourne donc à **R = 30 fois le temps réel** (`R = ticksParSeconde × secondesSimuléesParTick = 6 × 5`, ADR-017). Ce rythme est volontaire (« survival en temps de jeu continu ») mais doit être affiché dans l'UI (`RENDERING_SPEC.md`) : une journée simulée passe toutes les 48 minutes.
 
 ---
 
@@ -357,13 +355,13 @@ La cadence retenue se règle côté SYNE (`prepare` accepte `ticksPerSecond`,
    perception pour lui (`ControlServer.cs:205-233`). La « vitesse = joueur » est
    donc une **parité d'échelle**, pas une synchronisation d'état. Ajouter le
    joueur à SYNE reste une ouverture structurelle.
-2. **Horloge déjà accélérée** : une journée réelle (86 400 s) exigerait
-   `TPS = 1440 / 86400 = 1/60`, or `TicksPerSecond` est un entier ≥ 1
-   (`ControlServer.cs:269-271`). Le plus lent possible, `TPS = 1`, donne déjà
-   une journée en 24 minutes (60× le réel). Le 360× de `TPS = 6` est donc un
-   choix pris sur une base qui ne peut pas être « temps réel pur ». Parité
-   joueur/agent à `TPS = 1` imposerait `k = 600` (1 unité = 6 m, pas de 3 à
-   9 m par tick) : rejeté en §11.
+2. **Horloge accélérée par construction** : une journée simulée (86 400 s)
+   exigerait `R = 1`, soit un produit `TPS × simulatedSecondsPerTick = 1`,
+   impossible avec `TicksPerSecond` entier ≥ 1 (`ControlServer.cs:269-271`). Le
+   rythme le plus lent possible, `TPS = 1` à 5 s/tick, donne `R = 5` et une
+   journée en 4 h 48 ; le `R = 30` retenu est un choix assumé, non un « temps
+   réel pur ». Parité joueur/agent à `TPS = 1` imposerait `k = 600` (1 unité =
+   6 m, pas de 3 à 9 m par tick) : rejeté en §11.
 3. **Les actions n'ont pas de durée** : chaque montage Unreal (0,5–2 s) est une
    **présentation** d'un état qui change en un tick de 166,7 ms. Aucun système
    Unreal ne doit en déduire un état (source de vérité = snapshot).
@@ -393,7 +391,7 @@ Checklist à exécuter sur SYNE réel (jamais sur `syne-mock`) avec le profil B 
 | 2 | Cadence interne : temps entre deux snapshots | 166,7 ms ± 10 ms |
 | 3 | Déplacement : agent médian sur 100 unités | 100 ticks ≈ **16,7 s** réelles |
 | 4 | Traversée du monde (2 240 unités) | ≈ **6 min 13** s réelles |
-| 5 | Journée simulée | **240 s** réelles (mesurer `simulatedTimeMinutes` = 1440) |
+| 5 | Journée simulée | **2 880 s** réelles (48 min ; mesurer `simulatedTimeSeconds` = 86 400, soit `simulatedTimeMinutes` = 1 440) |
 | 6 | Délibération : événements `decision_made` | toutes les 1,67 s par agent |
 | 7 | Échelle : position SYNE `(12.5, 23.0)` → `(1250, 2300)` uu | conversion exacte (aucun offset) |
 | 8 | Trame `world_initialized` | `cellSize = 32`, `cellCountX/Y = 70`, 4 900 `cells[]`, `ticksPerSecond = 6` |
@@ -409,7 +407,7 @@ Checklist à exécuter sur SYNE réel (jamais sur `syne-mock`) avec le profil B 
 k                  = tuile_WP / worldCellSize
 TPS                = MaxWalkSpeed_joueur / (k × speed_médian)     [arrondi entier ≥ 1]
 vitesse_apparente  = k × TPS × speed                              [uu/s]
-journée_réelle(s)  = 1440 / TPS
+journée_réelle(s)  = 86 400 / (TPS × secondesSimuléesParTick)
 voisins_attendus   = (agents / côté²) × π × r²                    [r ≤ 70]
 MaxWalkSpeed(agent)= speed × k × TPS
 ```
@@ -418,9 +416,9 @@ Variantes (pour mémoire, aucune n'est retenue) :
 
 | Objectif | Réglage | Effet |
 | :-- | :-- | :-- |
-| Journée quasi réelle | `TPS = 1`, `k = 600` | Parité joueur/agent satisfaite (600 uu/s), mais 1 unité = 6 m, pas de 3 à 9 m par tick (saut visible à 1 Hz) et monde de 13 km par côté à taille fixe — rejeté |
+| Journée la plus lente possible | `TPS = 1`, `k = 600` | Parité joueur/agent satisfaite (600 uu/s), journée en 4 h 48 ; mais 1 unité = 6 m, pas de 3 à 9 m par tick (saut visible à 1 Hz) et monde de 13 km par côté à taille fixe — rejeté |
 | Conserver `TPS = 10` (défaut SYNE) | `k = 60` | 1 unité = 0,6 m ; agent médian à 600 uu/s ; échelle non métrique |
-| Journée plus rapide (test) | `TPS = 15` | journée 96 s ; agents à 1500 uu/s — hors défaut UE |
+| Journée plus rapide (test) | `TPS = 15` | journée 19 min 12 ; agents à 1500 uu/s — hors défaut UE |
 | Défaut calibré (profil A) | 500 / cell 10 / `k` 100 / `TPS` 6 | tuile 1000 uu (sous le défaut UE), densité sociale correcte |
 | Très grand monde (profil C) | 5 000 / cell 40 | tuile 4000 uu (réglage WP requis), 25 km² |
 
@@ -431,3 +429,4 @@ Variantes (pour mémoire, aucune n'est retenue) :
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 7 octobre 2026 | Création | Fixer `k`, `TPS` et le profil de monde pour l'immersion temps de jeu |
+| 12 octobre 2026 | Mise à jour ADR-017 | Échelle temporelle configurable : `simulatedSecondsPerTick = 5` en profil PRISM, `R = 30`, journée simulée en 48 min ; répercussion sur les besoins et les saisons (classes A) |
