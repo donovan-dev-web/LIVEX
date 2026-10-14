@@ -26,6 +26,15 @@ interface Props {
   lang?: Lang;
   /** Bandeau « traduction automatique » (pages EN de niveau 2). */
   translated?: boolean;
+  /**
+   * Traductions existantes, par langue (chemin sans préfixe de langue).
+   * Pour une page FR sans équivalent EN (ex. articles du journal, FR-only),
+   * passer `{ en: 'actualites/' }` : le sélecteur et `hreflang` pointent alors
+   * vers la page EN la plus proche au lieu d'une page inexistante (404).
+   * Omis → comportement par défaut : toutes les langues publiées partagent
+   * le même chemin.
+   */
+  alternates?: Partial<Record<Lang, string>>;
 }
 
 const {
@@ -36,6 +45,7 @@ const {
   noindex = false,
   lang = 'fr',
   translated = false,
+  alternates,
 } = Astro.props;
 
 const t = useTranslations(lang);
@@ -47,7 +57,21 @@ const ogImage = image ?? new URL(url('media/og-livex.png'), Astro.site).href;
 const langPath = stripLangFromPath(Astro.url.pathname);
 const languages: Record<Lang, string> = { fr: 'fr', en: 'en' };
 const ogLocales: Record<Lang, string> = { fr: 'fr_FR', en: 'en_US' };
-const altLocales = publishedLangs.filter((l) => l !== lang).map((l) => ogLocales[l]);
+
+function langTarget(l: Lang): string | undefined {
+  if (alternates !== undefined && alternates[l] !== undefined) return alternates[l];
+  if (l === lang) return langPath;
+  if (alternates === undefined) return langPath;
+  return undefined;
+}
+const langLinks: Partial<Record<Lang, string>> = {};
+for (const l of publishedLangs) {
+  const target = langTarget(l);
+  if (target !== undefined) langLinks[l] = target;
+}
+const altLocales = publishedLangs
+  .filter((l) => l !== lang && langLinks[l] !== undefined)
+  .map((l) => ogLocales[l]);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -75,10 +99,13 @@ const themeLabels = {
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
 
-    {publishedLangs.map((l) => (
-      <link rel="alternate" hreflang={languages[l]} href={absoluteUrl(langPath, l)} />
-    ))}
-    <link rel="alternate" hreflang="x-default" href={absoluteUrl(langPath, 'fr')} />
+    {publishedLangs.map(
+      (l) =>
+        langLinks[l] !== undefined && (
+          <link rel="alternate" hreflang={languages[l]} href={absoluteUrl(langLinks[l]!, l)} />
+        )
+    )}
+    <link rel="alternate" hreflang="x-default" href={absoluteUrl(langLinks.fr ?? langPath, 'fr')} />
 
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
     <link rel="manifest" href={url('site.webmanifest')} />
@@ -126,7 +153,7 @@ const themeLabels = {
         </div>
       </div>
     )}
-    <Header lang={lang} />
+    <Header lang={lang} langLinks={langLinks} />
     <main id="contenu">
       <slot />
     </main>
