@@ -43,6 +43,10 @@ L'image Open Graph par défaut vit dans `site/public/media/og-livex.png`.
   chemin (`stripLangFromPath`), ce qui garantit la réciprocité FR↔EN.
 - Aucune redirection automatique côté serveur : les deux versions sont
   accessibles et indexables.
+- **Pages sans équivalent dans l'autre langue** (ex. articles du journal,
+  FR-only) : passer `alternates={{ en: 'actualites/' }}` à `BaseLayout` pour
+  que `hreflang` et le sélecteur de langue pointent vers la page EN la plus
+  proche au lieu d'une URL inexistante (404).
 
 ## 4. Sitemap
 
@@ -111,3 +115,4 @@ Un nœud `WebSite` est émis sur chaque page :
 | :-- | :-- | :-- |
 | 14 octobre 2026 | Création | Documenter le SEO et les métadonnées du site. |
 | 14 octobre 2026 | Ajout de `public/llms.txt` et note sur la racine de domaine (robots.txt d'un site de projet). | Réponse au constat d'un `404 /llms.txt` et clarification robots. |
+| 14 octobre 2026 | Ajout de la prop `alternates` (pages sans équivalent EN : journal, 404). | Supprimer les liens `hreflang`/sélecteur vers des pages inexistantes (404). |
