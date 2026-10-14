@@ -6,8 +6,14 @@ import logo from '../assets/marks/livex-mark.svg';
 
 interface Props {
   lang?: Lang;
+  /**
+   * Chemin (sans préfixe de langue) de la page équivalente dans chaque langue.
+   * Une langue absente de cette carte n'est pas proposée dans le sélecteur
+   * (ex. page FR-only du journal). Omis → repli sur le chemin courant.
+   */
+  langLinks?: Partial<Record<Lang, string>>;
 }
-const { lang = 'fr' } = Astro.props;
+const { lang = 'fr', langLinks } = Astro.props;
 const t = useTranslations(lang);
 
 let langPath = stripLangFromPath(Astro.url.pathname);
@@ -63,17 +69,22 @@ const langCodes: Record<Lang, string> = { fr: 'FR', en: 'EN' };
     </nav>
 
     <div class="lang" role="group" aria-label={t('nav.lang')}>
-      {publishedLangs.map((code) => (
-        <a
-          href={url(langPath, code)}
-          hreflang={code}
-          lang={code}
-          aria-current={code === lang ? 'true' : undefined}
-          title={languages[code]}
-        >
-          {langCodes[code]}
-        </a>
-      ))}
+      {publishedLangs.map((code) => {
+        const target = langLinks === undefined ? langPath : langLinks[code];
+        return (
+          target !== undefined && (
+            <a
+              href={url(target, code)}
+              hreflang={code}
+              lang={code}
+              aria-current={code === lang ? 'true' : undefined}
+              title={languages[code]}
+            >
+              {langCodes[code]}
+            </a>
+          )
+        );
+      })}
     </div>
 
     <button
