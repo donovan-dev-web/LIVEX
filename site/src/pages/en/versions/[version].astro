@@ -1,0 +1,98 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+import { VERSIONS, type VersionEntry } from '../../../data/versions';
+import { RELEASE } from '../../../data/release';
+import { url } from '../../../utils/url';
+
+export function getStaticPaths() {
+  return VERSIONS.map((v) => ({ params: { version: v.slug }, props: { v } }));
+}
+
+interface Props {
+  v: VersionEntry;
+}
+
+const { v } = Astro.props;
+---
+<BaseLayout
+  lang="en"
+  translated
+  title={`${v.label} — Versions`}
+  description={`LIVEX release notes ${v.label}, published on ${v.dateEn}.`}
+>
+  <PageHeader
+    lang="en"
+    index="13"
+    eyebrow="Versions"
+    title={`${v.label}.`}
+    lead={v.summaryEn}
+    crumbs={[{ label: 'Versions', href: 'versions/' }, { label: v.label }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p class="mu" style="font-size:0.78rem">
+        Released on {v.dateEn} · <StatusBadge status={v.status} lang="en" />
+      </p>
+
+      {v.highlights.map((h) => (
+        <>
+          <div class="sh"><b>{v.label}</b> {h.component}</div>
+          <ul>
+            {h.itemsEn.map((it) => <li>{it}</li>)}
+          </ul>
+        </>
+      ))}
+
+      {v.assets.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Downloads</div>
+          <div class="ov">
+            <table class="tb">
+              <thead><tr><th>Platform</th><th>File</th><th>Size</th><th>SHA-256 checksum</th></tr></thead>
+              <tbody>
+                {v.assets.map((a) => (
+                  <tr>
+                    <td>{a.platform}</td>
+                    <td><a href={a.url} rel="noopener">Download ↗</a></td>
+                    <td>{a.size ?? '—'}</td>
+                    <td><code>{a.sha256 ?? '—'}</code></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {v.changesEn.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> What's new</div>
+          <ul>{v.changesEn.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      {v.fixesEn.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Fixes</div>
+          <ul>{v.fixesEn.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      {v.knownEn.length > 0 && (
+        <>
+          <div class="sh"><b>{v.label}</b> Known limitations</div>
+          <ul>{v.knownEn.map((c) => <li>{c}</li>)}</ul>
+        </>
+      )}
+
+      <p style="margin-top:24px">
+        <a class="bt" href={url('versions/', 'en')}>All versions</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Changelog ↗</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

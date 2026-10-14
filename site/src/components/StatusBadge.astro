@@ -1,0 +1,26 @@
+---
+import type { StatusId } from '../data/components';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  status: StatusId;
+  label?: string;
+  class?: string;
+  lang?: Lang;
+}
+
+const map: Record<StatusId, { cls: string; fr: string; en: string; glyph: string }> = {
+  disponible: { cls: 'ok', fr: 'Disponible', en: 'Available', glyph: '●' },
+  experimental: { cls: 'ex', fr: 'Expérimental', en: 'Experimental', glyph: '▲' },
+  developpement: { cls: 'dv', fr: 'En développement', en: 'In development', glyph: '◆' },
+  envisage: { cls: 'en', fr: 'Envisagé', en: 'Envisaged', glyph: '○' },
+  'hors-perimetre': { cls: 'hp', fr: 'Hors périmètre', en: 'Out of scope', glyph: '✕' },
+};
+
+const { status, label, class: className, lang = 'fr' } = Astro.props;
+const m = map[status];
+const text = label ?? (lang === 'en' ? m.en : m.fr);
+---
+<span class:list={['bd', m.cls, className]}>
+  <span aria-hidden="true">{m.glyph}</span>{text}
+</span>

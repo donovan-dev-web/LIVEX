@@ -48,7 +48,7 @@ Trace complète d'une décision : besoins, croyances considérées, scores d'uti
 ## E
 
 ### ECHOS
-Emergent Complex Hierarchical Observation System — module d'observation, d'analyse et de pilotage. (Monographie §2.3.2)
+Emergent Cognition & Holistic Observation System — module d'observation, d'analyse et de pilotage. (Monographie §2.3.2)
 
 ### Emergence
 Apparition de structures collectives (groupes, spécialisations, conflits, marchés) non programmées : elles résultent d'interactions locales sous contraintes. (Monographie §1.1, Partie 6)

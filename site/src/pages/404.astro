@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { url } from '../utils/url';
+---
+<BaseLayout
+  title="Page introuvable (404) · Page not found"
+  description="La page demandée n'existe pas ou a été déplacée. · The requested page does not exist or has moved."
+  noindex={true}
+>
+  <div class="w">
+    <section class="hero" style="grid-template-columns:1fr;padding-top:64px">
+      <div data-404="fr" hidden>
+        <p class="ey">Erreur 404</p>
+        <h1>Hors du monde<br /><i>connu.</i></h1>
+        <p class="l">
+          Cette page n'existe pas, ou n'existe plus. Le monde simulé continue, lui — mais pas ici.
+        </p>
+        <div class="cta">
+          <a class="bt p" href={url('')}>Retour à l'accueil</a>
+          <a class="bt" href={url('documentation/')}>Documentation</a>
+          <a class="bt" href={url('actualites/')}>Journal</a>
+          <a class="bt" href={url('', 'en')} hreflang="en" lang="en">English →</a>
+        </div>
+      </div>
+
+      <div data-404="en" hidden>
+        <p class="ey">Error 404</p>
+        <h1>Beyond the<br /><i>known world.</i></h1>
+        <p class="l">
+          This page does not exist, or no longer does. The simulated world goes on — just not here.
+        </p>
+        <div class="cta">
+          <a class="bt p" href={url('', 'en')}>Back to home</a>
+          <a class="bt" href={url('documentation/', 'en')}>Documentation</a>
+          <a class="bt" href={url('actualites/', 'en')}>Journal</a>
+          <a class="bt" href={url('', 'fr')} hreflang="fr" lang="fr">Français →</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <noscript>
+    <div class="w">
+      <p>
+        <a href={url('')}>Accueil (FR)</a> · <a href={url('', 'en')}>Home (EN)</a>
+      </p>
+    </div>
+  </noscript>
+
+  <script is:inline>
+    (function () {
+      var base = '/LIVEX/';
+      var path = location.pathname;
+      if (path.indexOf(base) === 0) path = path.slice(base.length);
+      var lang = path.split('/').filter(Boolean)[0] === 'en' ? 'en' : 'fr';
+      document.documentElement.setAttribute('lang', lang);
+      var blocks = document.querySelectorAll('[data-404]');
+      for (var i = 0; i < blocks.length; i++) {
+        if (blocks[i].getAttribute('data-404') === lang) blocks[i].removeAttribute('hidden');
+      }
+    })();
+  </script>
+</BaseLayout>

@@ -1,0 +1,158 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE } from '../data/site';
+import { url, absoluteUrl } from '../utils/url';
+import {
+  useTranslations,
+  stripLangFromPath,
+  publishedLangs,
+  type Lang,
+} from '../i18n/ui';
+
+import fontSerif from '../assets/fonts/instrument-serif-latin-400-normal.woff2?url';
+import fontMono from '../assets/fonts/jetbrains-mono-latin-400-normal.woff2?url';
+
+interface Props {
+  title: string;
+  description: string;
+  ogType?: 'website' | 'article';
+  image?: string;
+  noindex?: boolean;
+  lang?: Lang;
+  /** Bandeau « traduction automatique » (pages EN de niveau 2). */
+  translated?: boolean;
+}
+
+const {
+  title,
+  description,
+  ogType = 'website',
+  image,
+  noindex = false,
+  lang = 'fr',
+  translated = false,
+} = Astro.props;
+
+const t = useTranslations(lang);
+
+const pageTitle = title.startsWith('LIVEX') ? title : `${title} · LIVEX`;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = image ?? new URL(url('media/og-livex.png'), Astro.site).href;
+
+const langPath = stripLangFromPath(Astro.url.pathname);
+const languages: Record<Lang, string> = { fr: 'fr', en: 'en' };
+const ogLocales: Record<Lang, string> = { fr: 'fr_FR', en: 'en_US' };
+const altLocales = publishedLangs.filter((l) => l !== lang).map((l) => ogLocales[l]);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: canonical,
+  description,
+  inLanguage: lang,
+  license: 'https://opensource.org/licenses/MIT',
+  sameAs: [SITE.repo],
+};
+
+const themeLabels = {
+  dark: lang === 'en' ? 'Switch to dark theme' : 'Activer le thème sombre',
+  light: lang === 'en' ? 'Switch to light theme' : 'Activer le thème clair',
+};
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+
+    {publishedLangs.map((l) => (
+      <link rel="alternate" hreflang={languages[l]} href={absoluteUrl(langPath, l)} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={absoluteUrl(langPath, 'fr')} />
+
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="manifest" href={url('site.webmanifest')} />
+    <meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)" />
+
+    <link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href={url('actualites/feed.xml')} />
+
+    <!-- Open Graph / réseaux sociaux -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="LIVEX" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={ogLocales[lang]} />
+    {altLocales.map((loc) => <meta property="og:locale:alternate" content={loc} />)}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="preload" href={fontSerif} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fontMono} as="font" type="font/woff2" crossorigin />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <!-- Thème : appliqué avant le rendu pour éviter tout clignotement -->
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#contenu">{t('nav.skip')}</a>
+    {translated && (
+      <div class="tnote" role="note">
+        <div class="w">
+          <span>{t('translation.notice')}</span>
+          <a href={url(langPath, 'fr')} hreflang="fr" lang="fr">{t('translation.link')} →</a>
+        </div>
+      </div>
+    )}
+    <Header lang={lang} />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+
+    <script is:inline define:vars={{ themeLabels }}>
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+/* ==========================================================================
+   LIVEX — jetons de design (reprise de la maquette v3 « planche d'observation »)
+   Thème clair par défaut ; sombre en variante manuelle (data-theme="dark").
+   ========================================================================== */
+
+:root {
+  /* Couleurs — thème clair (référence) */
+  --bg: #f2f2ec;      /* papier de labo */
+  --sf: #fafaf6;      /* surface : planches, cartes */
+  --ink: #0a0e1a;     /* encre : structure, texte, cadres */
+  --mu: #5a6070;      /* gris instrument : annotations */
+  --ln: #cfd0c6;      /* filets */
+  --gr: #e3e4db;      /* quadrillage */
+  --co: #2432e8;      /* cobalt · observation */
+  --ve: #cc3209;      /* vermillon · événement */
+  --vef: #ff5a1f;     /* vermillon vif */
+  --ok: #0b7a4b;      /* validé */
+
+  /* Géométrie */
+  --r: 2px;
+  --w: 1180px;
+  --grid: 48px;
+
+  color-scheme: light;
+
+  /* Marges sûres (encoches mobiles) */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  box-sizing: border-box;
+}
+
+:root[data-theme='dark'] {
+  --bg: #090c16;
+  --sf: #10152a;
+  --ink: #ecede6;
+  --mu: #9aa1b5;
+  --ln: #2a314b;
+  --gr: #151a2e;
+  --co: #8a96ff;
+  --ve: #ff7a45;
+  --vef: #ff7a45;
+  --ok: #4fd39a;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}

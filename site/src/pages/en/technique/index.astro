@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+import { COMPONENTS_EN } from '../../../data/components';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  title="Architecture"
+  description="LIVEX architecture: SYNE simulation engine, ECHOS observation, PRISM perceptual rendering, linked by explicit interface contracts."
+>
+  <PageHeader
+    lang="en"
+    index="05"
+    eyebrow="Architecture"
+    title="A pipeline, three responsibilities."
+    lead="LIVEX links three components by explicit contracts. The world produces traces, observation measures them, rendering makes them visible — never mixing roles."
+    crumbs={[{ label: 'Architecture' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>5.1</b> Overview</div>
+      <h2>From world to perception.</h2>
+      <div class="fm">
+        world <span>SYNE</span> traces <span>ECHOS</span> measures <span>PRISM</span> perception
+      </div>
+      <p>
+        Each stage is independent and versioned separately. Any component can be replaced without breaking others,
+        as long as transport and persistence contracts are respected.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>5.2</b> Components</div>
+      <h2>Three blocks, three declared states.</h2>
+      {COMPONENTS_EN.map((c) => (
+        <div class="bn">
+          <div>
+            <span class="k">{c.acronym}</span>
+            <h3>{c.name}</h3>
+          </div>
+          <div>
+            <p>{c.summary}</p>
+            <p style="margin:0 0 6px"><StatusBadge status={c.status.id} lang="en" /></p>
+            <p class="mu" style="margin:0 0 12px;font-size:0.76rem">{c.status.note}</p>
+            <a class="bt" href={url(c.href, 'en')}>Details →</a>
+          </div>
+          <div class="ph">Screenshot<br />{c.acronym}</div>
+        </div>
+      ))}
+      <p class="mu" style="font-size:0.7rem">Capture slots: replaced by real captures of the published version. No illustration stands in for a screenshot.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>5.3</b> Interface contracts</div>
+      <h2>What links the stages.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead>
+            <tr><th>Contract</th><th>Version / format</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Observability contract (snapshot)</td><td>0.4.0</td><td>Additions <code>simulatedTimeSeconds</code>; description <code>world_initialized</code> 1.1.</td></tr>
+            <tr><td>Run identifier format</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>Seed is included in the identifier; ECHOS does not derive it from the ID.</td></tr>
+            <tr><td>ECHOS persistence schema</td><td>SQLite v6</td><td>Additive migration <code>mean_food</code>/<code>mean_water</code>.</td></tr>
+            <tr><td>Local ports (V0.1)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>local only</strong> (<code>127.0.0.1</code>).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc" style="margin-top:22px">
+        <p>These contracts evolve under Semantic Versioning. Any breaking change is reported in the
+          <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/CHANGELOG.md" rel="noopener">CHANGELOG</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>5.4</b> Repository organisation</div>
+      <h2>A monorepo, isolated components.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead>
+            <tr><th>Directory</th><th>Content</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>syne/</code></td><td>.NET simulation engine (SYNE)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td><code>echos/</code></td><td>Observation, analysis, headless API (Python package)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td><code>prism/</code></td><td>Unreal project and PRISM-LDK plugin</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td><code>launcher/</code></td><td>Desktop application (Avalonia) — orchestration and presentation</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td><code>docs/</code></td><td>Monograph, architecture, governance, documentation</td><td>—</td></tr>
+            <tr><td><code>site/</code></td><td>This static showcase site (Astro)</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>5.5</b> Further reading</div>
+      <h2>Orchestration and evidence.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:20px">
+          <h3>Launcher</h3>
+          <p class="mu">The orchestration layer: drive, combine and archive work carried out with SYNE, ECHOS and PRISM from a single interface.</p>
+          <a class="bt" href={url('technique/launcher/', 'en')}>The Launcher →</a>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>Reproducibility and measurements</h3>
+          <p class="mu">Tests, coverage and benchmarks: what is claimed is measured, dated and reproducible — or flagged as unverified.</p>
+          <a class="bt" href={url('technique/resultats/', 'en')}>See results →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
