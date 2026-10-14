@@ -63,6 +63,6 @@ jobs:
           publish_branch: gh-pages
           force_orphan: true
           enable_jekyll: false
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
+          user_name: donovan-dev-web
+          user_email: donovan.dev3d@gmail.com
           commit_message: "chore(site): déploiement ${{ github.sha }}"
