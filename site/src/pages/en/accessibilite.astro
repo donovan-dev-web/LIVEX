@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { SITE } from '../../data/site';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Accessibility"
+  description="Accessibility statement for the LIVEX site: WCAG 2.2 level AA target, measures implemented, known limitations and how to report a defect."
+>
+  <PageHeader
+    lang="en"
+    index="24"
+    eyebrow="Accessibility"
+    title="Making the site readable for everyone."
+    lead="This site targets level AA of the WCAG 2.2 rules. It is a voluntary statement: it describes commitments kept, and names what remains improvable."
+    crumbs={[{ label: 'Accessibility' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>24.1</b> Conformance target</div>
+      <h2>WCAG 2.2, level AA.</h2>
+      <p>
+        The LIVEX site targets conformance with level AA of the <em>Web Content Accessibility Guidelines</em> (WCAG)
+        2.2. This is a <strong>voluntary statement</strong>, with no legal obligation attached to this personal project:
+        the approach is chosen, not imposed.
+      </p>
+      <div class="cc"><p>We do not declare full conformance. An honest statement also sets out what has not yet been
+        verified.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>24.2</b> Measures implemented</div>
+      <h2>What has been done.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px"><h3>Contrasts</h3><p class="mu" style="margin:0">Palette and tokens verified for text/background contrast, in both light and dark themes.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Visible focus</h3><p class="mu" style="margin:0">Every interactive element has a focus indicator visible from the keyboard.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Colour never alone</h3><p class="mu" style="margin:0">Statuses combine colour, symbol and text — never colour alone.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Alternative texts</h3><p class="mu" style="margin:0">Images and figures carry a relevant alternative; diagrams are described in text.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Keyboard navigation</h3><p class="mu" style="margin:0">The site can be browsed entirely with the keyboard, with a skip link to the content.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Light / dark theme</h3><p class="mu" style="margin:0">Light theme by default; manual dark toggle, remembered locally.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Reduced motion</h3><p class="mu" style="margin:0">The system setting <code>prefers-reduced-motion</code> is respected; no continuous animation.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Semantic structure</h3><p class="mu" style="margin:0">Hierarchical headings, a single <code>h1</code> per page, named regions and landmarks.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>24.3</b> Known limitations</div>
+      <h2>What remains to be tested.</h2>
+      <p>
+        Accessibility was taken into account at design time, but no external audit has yet been carried out. Automated
+        checks are not enough: certain uses (screen readers, voice navigation) require a human evaluation that remains
+        to be done.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>24.4</b> Report a defect</div>
+      <h2>Your feedback improves the site.</h2>
+      <p>
+        If you encounter an accessibility barrier — insufficient contrast, an element unreachable from the keyboard, a
+        missing alternative — report it. If possible, specify the page, the browser or the assistive tool used.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Element</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Reporting channel</td><td><a href={SITE.repo + '/issues'} rel="noopener">GitHub Issues ↗</a></td></tr>
+            <tr><td>Last accessibility review</td><td>12 October 2026</td></tr>
+            <tr><td>Target standard</td><td>WCAG 2.2, level AA (voluntary statement)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px"><a class="bt" href={url('plan-du-site/', 'en')}>Sitemap →</a></p>
+    </div>
+  </section>
+</BaseLayout>

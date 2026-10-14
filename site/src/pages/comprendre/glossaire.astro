@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+
+const terms = [
+  { id: 'action', term: 'Action', def: "Unité de comportement exécutable d'une entité (se déplacer, manger, boire, se reposer, explorer, socialiser, communiquer, commercer, combattre, ramasser…). La sélection de l'action résulte d'une délibération par utilité.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'agent', term: 'Agent (entité)', def: "Être simulé autonome doté d'un état, de besoins, d'une perception, d'une mémoire, de croyances, de capacités, d'un système de décision et d'actions. Le moteur fournit les structures, jamais les conduites.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'bdi', term: 'BDI (Belief-Desire-Intention)', def: "Architecture cognitive : croyances (ce que l'entité tient pour vrai), désirs ou objectifs (ce qu'elle cherche), intentions (ce qu'elle s'engage à faire). Chez LIVEX, c'est un cadre organisationnel, pas une théorie de l'esprit.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'besoin', term: 'Besoin', def: "Tension comportementale (faim, soif, fatigue, sécurité, social, curiosité) exprimée sur une échelle de 0 à 100. Un besoin élevé alimente les objectifs et la décision — il ne déclenche pas le comportement directement.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'cluster', term: 'Cluster', def: "Sous-ensemble d'entités partageant une proximité logique ou une appartenance, servant de base à l'analyse des regroupements et des communautés.", href: 'technique/echos/', label: 'ECHOS' },
+  { id: 'contrat', term: 'Contrat', def: "Interface versionnée qui relie deux composants (format de snapshot, identifiant de run, schéma de persistance). Une rupture de contrat est signalée dans le journal des changements.", href: 'technique/', label: 'Architecture' },
+  { id: 'croyance', term: 'Croyance (belief)', def: "Représentation structurée d'un fait, assortie d'une confiance (0–1) et d'une source (perception, mémoire, communication, inférence). Une croyance est « vraie » pour l'entité si sa confiance atteint 0,5.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'determinisme', term: 'Déterminisme (bit-à-bit)', def: "Propriété selon laquelle deux exécutions identiques (même graine, même configuration, même version du moteur) produisent exactement la même trajectoire. C'est le socle de la reproductibilité.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'echos', term: 'ECHOS', def: "Emergent Cognition & Holistic Observation System — le système d'observation, d'analyse et de pilotage. Il lit les traces de SYNE et en tire des mesures, sans jamais intervenir sur le monde.", href: 'technique/echos/', label: 'ECHOS' },
+  { id: 'emergence', term: 'Émergence', def: "Apparition de structures collectives (groupes, spécialisations, échanges, tensions) non programmées, qui résultent d'interactions locales sous contraintes.", href: 'comprendre/emergence/', label: "L'émergence expliquée" },
+  { id: 'graine', term: 'Graine (seed)', def: "Entier 64 bits initialisant le générateur pseudo-aléatoire du moteur. Elle rend deux runs comparables et reproductibles, et figure dans l'identifiant de run.", href: 'technique/resultats/', label: 'Reproductibilité' },
+  { id: 'launcher', term: 'Launcher', def: "Couche d'orchestration de LIVEX : piloter, combiner, surveiller et archiver les travaux conduits avec SYNE, ECHOS et PRISM, depuis une interface unique. Il ne contient ni logique de simulation, ni logique d'analyse, ni logique de rendu.", href: 'technique/launcher/', label: 'Launcher' },
+  { id: 'prism', term: 'PRISM', def: "Perceptual Rendering & Interactive Simulation Module — le module de rendu perceptif qui donne à voir le monde simulé. Il n'est jamais la source de vérité de la simulation.", href: 'technique/prism/', label: 'PRISM' },
+  { id: 'run', term: 'Run', def: "Exécution complète et reproductible d'une expérience, définie par une graine, une configuration, une version de moteur et un état initial.", href: 'technique/resultats/', label: 'Reproductibilité' },
+  { id: 'source-de-verite', term: 'Source de vérité', def: "Le composant qui détient l'état qui fait autorité. Pour LIVEX, c'est SYNE : ni l'observation (ECHOS) ni le rendu (PRISM) ne décident ni ne modifient le monde.", href: 'technique/', label: 'Architecture' },
+  { id: 'statuts', term: 'Statuts de capacités', def: "Vocabulaire imposé pour décrire ce qui existe réellement : disponible, expérimental, en développement, envisagé, hors périmètre. Une capacité n'est jamais « disponible » tant qu'elle n'est pas livrée et vérifiée.", href: 'comprendre/limites/', label: 'Limites et portée' },
+  { id: 'syne', term: 'SYNE', def: "Systems & Emergent Network Engine — le moteur déterministe de simulation ; il possède la vérité du monde.", href: 'technique/syne/', label: 'SYNE' },
+  { id: 'tick', term: 'Tick', def: "Unité de temps simulé : par défaut, 1 tick vaut 1 minute simulée. À la cadence par défaut (10 ticks/seconde réelle), une seconde réelle vaut dix minutes simulées.", href: 'technique/syne/', label: 'SYNE' },
+];
+---
+<BaseLayout
+  title="Glossaire"
+  description="Définition des termes utilisés dans le projet LIVEX : agent, BDI, tick, graine, déterminisme, émergence, contrat, run, source de vérité, SYNE, ECHOS, PRISM, Launcher et statuts de capacités."
+>
+  <PageHeader
+    index="04"
+    eyebrow="Comprendre · Glossaire"
+    title="Le vocabulaire, défini."
+    lead="Un vocabulaire stable pour lire le site et la documentation. Le glossaire du dépôt fait foi ; cette page en est une vue de synthèse."
+    crumbs={[{ label: 'Comprendre', href: 'comprendre/' }, { label: 'Glossaire' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>4.1</b> Termes du projet</div>
+      <h2>De A à Z.</h2>
+      <p class="mu" style="font-size:0.78rem;margin-bottom:6px">
+        Chaque entrée possède une ancre stable, utilisable depuis les articles : <code>/comprendre/glossaire/#tick</code>.
+      </p>
+      <dl style="margin:0">
+        {terms.map((t) => (
+          <div class="row" style="grid-template-columns:1fr">
+            <dt id={t.id} style="font:1.35rem/1.3 'Instrument Serif', Georgia, serif;scroll-margin-top:24px">
+              {t.term}
+            </dt>
+            <dd style="margin:2px 0 0;color:var(--mu);font-size:0.82rem;max-width:74ch">
+              {t.def} <a href={url(t.href)} style="white-space:nowrap">Voir {t.label} →</a>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+</BaseLayout>

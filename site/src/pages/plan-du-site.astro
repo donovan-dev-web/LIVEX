@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
+
+const groups = [
+  {
+    title: 'Vitrine et compréhension',
+    items: [
+      { label: 'Accueil', href: '' },
+      { label: 'Comprendre LIVEX', href: 'comprendre/' },
+      { label: 'Limites et portée', href: 'comprendre/limites/' },
+      { label: "L'émergence expliquée", href: 'comprendre/emergence/' },
+      { label: 'Glossaire', href: 'comprendre/glossaire/' },
+    ],
+  },
+  {
+    title: 'Technique',
+    items: [
+      { label: 'Architecture', href: 'technique/' },
+      { label: 'SYNE', href: 'technique/syne/' },
+      { label: 'ECHOS', href: 'technique/echos/' },
+      { label: 'PRISM', href: 'technique/prism/' },
+      { label: 'Launcher', href: 'technique/launcher/' },
+      { label: 'Reproductibilité, tests et mesures', href: 'technique/resultats/' },
+    ],
+  },
+  {
+    title: 'Logiciel et versions',
+    items: [
+      { label: 'Télécharger', href: 'telecharger/' },
+      { label: 'Installation et prérequis', href: 'telecharger/installation/' },
+      { label: 'Versions', href: 'versions/' },
+      { label: 'Feuille de route', href: 'feuille-de-route/' },
+    ],
+  },
+  {
+    title: 'Documentation, FAQ, actualités',
+    items: [
+      { label: 'Documentation', href: 'documentation/' },
+      { label: 'FAQ', href: 'faq/' },
+      { label: 'Journal', href: 'actualites/' },
+      { label: 'Suivre le projet', href: 'suivre/' },
+    ],
+  },
+  {
+    title: 'Participation et auteur',
+    items: [
+      { label: 'Participer', href: 'participer/' },
+      { label: 'À propos', href: 'a-propos/' },
+      { label: "Transparence sur l'usage de l'IA", href: 'a-propos/transparence-ia/' },
+      { label: 'Kit média', href: 'presse/' },
+    ],
+  },
+  {
+    title: 'Pages légales et de confiance',
+    items: [
+      { label: 'Mentions légales', href: 'mentions-legales/' },
+      { label: 'Confidentialité', href: 'confidentialite/' },
+      { label: 'Accessibilité', href: 'accessibilite/' },
+      { label: 'Licence et réutilisation', href: 'licence/' },
+    ],
+  },
+  {
+    title: 'Pages techniques',
+    items: [{ label: 'Plan du site', href: 'plan-du-site/' }],
+  },
+];
+---
+<BaseLayout
+  title="Plan du site"
+  description="Plan du site LIVEX : toutes les pages publiques, groupées par bloc, avec lien vers le flux RSS du journal."
+>
+  <PageHeader
+    index="26"
+    eyebrow="Plan du site"
+    title="Carte du site."
+    lead="Toutes les pages publiques de LIVEX, groupées par bloc. Le site est construit à partir de cette même source, cohérente avec le sitemap."
+    crumbs={[{ label: 'Plan du site' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="g2">
+        {groups.map((g) => (
+          <div class="pl br" style="padding:20px">
+            <h3 style="margin-bottom:10px">{g.title}</h3>
+            <ul style="list-style:none;padding:0;margin:0">
+              {g.items.map((it) => (
+                <li style="padding:4px 0;font-size:0.8rem">
+                  <a href={url(it.href)}>{it.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div class="cc" style="margin-top:24px">
+        <p><strong>S'abonner :</strong> le journal dispose d'un flux RSS —
+          <a href={url('actualites/feed.xml')}>actualites/feed.xml</a>.</p>
+      </div>
+      <p class="mu" style="font-size:0.76rem">
+        Une version anglaise du site (miroir sous <code>/en/</code>, mêmes arborescence et adresses) est disponible :
+        <a href={url('', 'en')}>English version ↗</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

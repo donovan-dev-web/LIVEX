@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="100%" height="100%" viewBox="0 0 1080 1080" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <rect id="Plan-de-travail1" serif:id="Plan de travail1" x="0" y="0" width="1080" height="1080" style="fill:none;"/>
+    <g id="Plan-de-travail11" serif:id="Plan de travail1">
+        <g id="PRISM" transform="matrix(2.92084,0,0,2.92084,-1037.26,-486.099)">
+            <g transform="matrix(1,0,0,1,12.9101,0)">
+                <path d="M540,199.718L540,390.995L700.431,486.414L540,199.718Z" style="fill:rgb(224,162,90);"/>
+                <path d="M540,199.718L700.431,486.414L540,390.995L540,199.718ZM544.18,215.748L544.18,388.618L689.172,474.854L544.18,215.748Z" style="fill:rgb(224,162,90);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,12.9101,0)">
+                <path d="M517.678,199.718L517.678,390.7L353.749,486.414L517.678,199.718Z" style="fill:rgb(224,162,90);"/>
+                <path d="M517.678,199.718L517.678,390.7L353.749,486.414L517.678,199.718ZM513.498,215.45L365.132,474.927L513.498,388.3L513.498,215.45Z" style="fill:rgb(224,162,90);"/>
+            </g>
+            <g transform="matrix(1,0,0,1,12.9101,0)">
+                <path d="M353.749,502.887L527.09,405.459L694.464,502.887L353.749,502.887Z" style="fill:rgb(224,162,90);"/>
+                <path d="M353.749,502.887L527.09,405.459L694.464,502.887L353.749,502.887ZM369.717,498.707L678.974,498.707L527.054,410.274L369.717,498.707Z" style="fill:rgb(224,162,90);"/>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
+---
+<BaseLayout
+  title="Mentions légales"
+  description="Mentions légales du site LIVEX : éditeur, hébergement, contenu et licences, propriété intellectuelle et responsabilité."
+>
+  <PageHeader
+    index="22"
+    eyebrow="Mentions légales"
+    title="Mentions légales."
+    lead="Informations relatives à l'édition et à l'hébergement de ce site."
+    crumbs={[{ label: 'Mentions légales' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>22.1</b> Éditeur</div>
+      <h2>Qui publie ce site.</h2>
+      <p>
+        Ce site est édité par <strong>Donovan Chartrain</strong>, personne physique, à titre personnel et non
+        professionnel, dans le cadre du projet de recherche <strong>LIVEX</strong>.
+      </p>
+      <p class="mu">Contact : via le dépôt public, sur <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a>.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>22.2</b> Hébergement</div>
+      <h2>Où le site est hébergé.</h2>
+      <p>
+        Ce site est un ensemble de fichiers statiques publiés via <strong>GitHub Pages</strong>, un service de
+        <strong>GitHub, Inc.</strong> (88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis).
+      </p>
+      <p class="mu">L'hébergeur peut conserver des journaux techniques de connexion conformément à sa propre politique.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>22.3</b> Contenus et licences</div>
+      <h2>Ce que vous pouvez réutiliser.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Élément</th><th>Licence</th></tr></thead>
+          <tbody>
+            <tr><td>Code source (dépôt LIVEX)</td><td>MIT — <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a></td></tr>
+            <tr><td>Textes et contenus de ce site</td><td>Creative Commons Attribution 4.0 (CC BY 4.0)</td></tr>
+            <tr><td>Marque « LIVEX » et logos</td><td>Tous droits réservés — usage nominatif uniquement</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc"><p>Les noms SYNE, ECHOS, PRISM et LIVEX désignent les composants du projet. Leur usage à
+        titre descriptif est libre ; toute reprise suggérant une affiliation doit être évitée.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>22.4</b> Responsabilité</div>
+      <h2>Un contenu « tel quel ».</h2>
+      <p>
+        Ce site et les documents qu'il référence sont fournis <em>en l'état</em>, sans garantie d'exactitude ni
+        d'adéquation à un usage particulier. Le projet est en développement ; les informations peuvent évoluer.
+      </p>
+      <p style="margin-top:18px"><a class="bt" href={url('confidentialite/')}>Politique de confidentialité →</a></p>
+    </div>
+  </section>
+</BaseLayout>

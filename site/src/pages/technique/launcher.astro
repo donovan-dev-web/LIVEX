@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { url } from '../../utils/url';
+import launcherHome from '../../assets/captures/launcher-home.png';
+import launcherExperiences from '../../assets/captures/launcher-experiences.png';
+import launcherPrism from '../../assets/captures/launcher-prism.png';
+---
+<BaseLayout
+  title="Launcher — orchestration"
+  description="Le LIVEX Launcher est la couche d'orchestration : piloter, combiner, surveiller et archiver les travaux conduits avec SYNE, ECHOS et PRISM depuis une interface native unique."
+>
+  <PageHeader
+    index="09"
+    eyebrow="Architecture · Launcher"
+    title="Le poste de pilotage."
+    lead="Le Launcher est la couche d'orchestration de LIVEX. Il ne simule pas, n'analyse pas et ne rend pas : il coordonne SYNE, ECHOS et PRISM depuis une interface unique."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Launcher' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p style="margin-top:0"><StatusBadge status="developpement" /> <span class="mu">Version cible 0.1.0 · application de bureau Avalonia</span></p>
+      <div class="cc"><p>En développement : les parcours principaux de l'interface sont présents dans le dépôt ; les variantes et la validation complète restent ouvertes. Aucune distribution publique à ce jour.</p></div>
+
+      <div class="sh"><b>9.1</b> Rôle</div>
+      <h2>Coordonner, sans décider à la place des composants.</h2>
+      <p>
+        Le Launcher permet de <strong>piloter, combiner, surveiller et archiver</strong> les travaux conduits avec
+        SYNE, ECHOS et PRISM, depuis une interface unique et un format de données unique. Il ne contient ni la logique
+        de simulation (SYNE), ni la logique d'analyse (ECHOS), ni la logique de rendu (PRISM) : il ne fait que les
+        coordonner.
+      </p>
+      <p>
+        SYNE reste le moteur unique. <strong>ECHOS et PRISM sont deux façons d'utiliser ce moteur</strong>, de poids
+        égal et sélectionnables : ECHOS pour l'analyse, la reproductibilité et la calibration ; PRISM pour la
+        représentation temps réel. Le Launcher permet de les activer séparément ou ensemble, sans introduire de
+        hiérarchie entre eux.
+      </p>
+      <p>
+        Le Launcher est un composant <strong>de poids égal</strong> aux trois autres : il possède son modèle de données
+        et ses propres invariants, et reste indépendant. Sa suppression ne doit rendre aucun autre composant
+        inutilisable.
+      </p>
+
+      <figure class="shot">
+        <img src={launcherHome.src} alt="Capture — écran d'accueil du LIVEX Launcher" width={launcherHome.width} height={launcherHome.height} loading="lazy" />
+        <figcaption>Capture — espace de travail du Launcher (version de travail).</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>9.2</b> Ce qu'il permet</div>
+      <h2>Une session, du lancement à l'archive.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px">
+          <h3>Piloter</h3>
+          <p class="mu" style="margin:0">Démarrer, combiner et arrêter les composants ; consulter leur état et leur santé.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Organiser</h3>
+          <p class="mu" style="margin:0">Regrouper des runs en campagnes, dans un format de paquet unique (<code>.livexp</code>).</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Observer</h3>
+          <p class="mu" style="margin:0">Afficher les mesures produites par ECHOS, sans les recalculer (l'affichage ne modifie pas le monde).</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Contextualiser</h3>
+          <p class="mu" style="margin:0">Ouvrir une session de rendu PRISM lorsqu'elle est disponible, en parallèle de l'analyse.</p>
+        </div>
+      </div>
+
+      <figure class="shot" style="margin-top:24px">
+        <img src={launcherExperiences.src} alt="Capture — gestion des expériences et des campagnes dans le Launcher" width={launcherExperiences.width} height={launcherExperiences.height} loading="lazy" />
+        <figcaption>Capture — gestion des expériences et des campagnes (version de travail).</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src={launcherPrism.src} alt="Capture — vue de rendu PRISM ouverte depuis le Launcher" width={launcherPrism.width} height={launcherPrism.height} loading="lazy" />
+        <figcaption>Capture — accès à une vue de rendu PRISM depuis le Launcher (version de travail).</figcaption>
+      </figure>
+      <div class="cc">
+        <p>Ces visuels reflètent une version de travail du dépôt, pas une version publique publiée. L'état des
+          jalons est consigné dans la <a href={url('feuille-de-route/')}>feuille de route</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>9.3</b> Plateformes et lancement</div>
+      <h2>Windows et Linux, en local.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+          <tbody>
+            <tr><td>Usage</td><td>Application de bureau native (interface <em>non</em> web)</td></tr>
+            <tr><td>Technologie</td><td>.NET (C#), architecture MVVM, rendu multi-plateforme Avalonia</td></tr>
+            <tr><td>Plateformes V0.1</td><td>Windows et Linux</td></tr>
+            <tr><td>Installateur</td><td>À l'état de spécification — non livré</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Lancement prévu depuis un terminal :</p>
+      <pre><code>livex-launcher            # ouverture de l'espace de travail
+livex-launcher --check    # vérification de l'environnement, sans interface
+livex-launcher --package &lt;chemin.livexp&gt;   # ouverture d'une campagne</code></pre>
+      <p class="mu" style="font-size:0.78rem">
+        Tant qu'aucune release n'existe, l'installation et le démarrage depuis les sources sont décrits dans
+        <a href={url('telecharger/installation/')}>le guide d'installation</a>.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('technique/')}>← Vue d'ensemble</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/resultats/')}>Reproductibilité et mesures →</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

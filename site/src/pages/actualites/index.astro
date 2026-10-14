@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { getCollection } from 'astro:content';
+import { url } from '../../utils/url';
+
+const entries = (await getCollection('actualites', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<BaseLayout
+  title="Journal"
+  description="Journal de développement de LIVEX : jalons, décisions techniques et articles de fond, datés et sourcés."
+>
+  <PageHeader
+    index="17"
+    eyebrow="Journal"
+    title="Le relevé des jours."
+    lead="Jalons et décisions techniques, datés. Les articles de fond arrivent progressivement."
+    crumbs={[{ label: 'Journal' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      {entries.length === 0 ? (
+        <>
+          <div class="row">
+            <span class="mu">—</span>
+            <span class="t">Aucune actualité publiée pour l'instant.</span>
+            <span><StatusBadge status="envisage" label="À venir" /></span>
+          </div>
+          <p class="mu" style="margin-top:18px;font-size:0.8rem">
+            Le flux RSS est déjà disponible et se remplira au fil des publications.
+          </p>
+        </>
+      ) : (
+        entries.map((e) => (
+          <div class="row">
+            <span class="mu">{fmt.format(e.data.date)}</span>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <span class="t"><a href={url(`actualites/${e.id}/`)}>{e.data.title}</a></span>
+              <span class="mu" style="font-size:0.74rem">{e.data.description}</span>
+            </div>
+          </div>
+        ))
+      )}
+      <p style="margin-top:24px">
+        <a class="bt" href={url('actualites/feed.xml')}>Flux RSS</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

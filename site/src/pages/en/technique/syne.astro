@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="SYNE — Simulation engine"
+  description="SYNE is LIVEX's deterministic multi-agent simulation engine: world, agents, rules and bit-for-bit replayability from a seed."
+>
+  <PageHeader
+    lang="en"
+    index="06"
+    eyebrow="Architecture · SYNE"
+    title="The engine."
+    lead="SYNE (Systems & Emergent Network Engine) drives the simulated world. It is deterministic: from the same seed, a run replays identically."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'SYNE' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p style="margin-top:0"><StatusBadge status="experimental" lang="en" /> <span class="mu">SYNE 0.15.0 · .NET engine (repository)</span></p>
+      <div class="cc"><p>Experimental: the engine is functional in the repository, but no public distribution exists to date.</p></div>
+
+      <div class="sh"><b>6.1</b> Role</div>
+      <h2>Set rules, let them play out.</h2>
+      <p>
+        SYNE defines a <strong>world</strong> (space, resources, time) and <strong>agents</strong> that act
+        according to explicit rules. At each tick, the world advances one deterministic step: no decision is
+        left to unrecorded randomness.
+      </p>
+      <p>
+        The engine produces a <strong>snapshot</strong> — a structured picture of the world state — and an event trace.
+        It is this trace, not the engine, that drives observation.
+      </p>
+
+      <div class="pl br" style="margin-top:20px">
+        <div class="ph">SYNE capture<br />to be provided · 16:9</div>
+        <small><b>Fig. 1</b> — Reserved capture slot: no real capture of SYNE is available to date. A visual will only be published once it is authentic.</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>6.2</b> Determinism</div>
+      <h2>The same start, the same run.</h2>
+      <p>
+        <strong>Bit-for-bit</strong> determinism is a contract: replaying a run with the same seed must reproduce
+        exactly the same trajectory. This is what makes a result verifiable and a measurement reproducible.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Element</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Engine version</td><td>0.15.0</td></tr>
+            <tr><td>Run identifier</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td></tr>
+            <tr><td>Snapshot contract</td><td>0.4.0</td></tr>
+            <tr><td>Persistence schema</td><td>v6</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>6.3</b> Next</div>
+      <p style="margin-top:0">
+        <a class="bt" href={url('technique/echos/', 'en')}>ECHOS: observation →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/', 'en')}>Overview</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

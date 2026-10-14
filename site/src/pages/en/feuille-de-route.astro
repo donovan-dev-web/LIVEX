@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Roadmap"
+  description="Past, current and envisaged milestones of the LIVEX project, by status and with no calendar commitment. What is deliberately out of scope is listed there too."
+>
+  <PageHeader
+    lang="en"
+    index="14"
+    eyebrow="Roadmap"
+    title="An order, without dates."
+    lead="LIVEX's roadmap states an order of work, never a calendar. Only what is instrumented by a milestone, a decision or a test is included — vague intentions stay out."
+    crumbs={[{ label: 'Roadmap' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.1</b> Principle</div>
+      <h2>The order, not the promise.</h2>
+      <p>
+        The phases follow one another in a mandatory sequence, but their calendar depends on availability and on
+        intermediate validations. This choice preserves rigour: an order kept is better than a date not kept.
+        Publication milestones are always <strong>downstream of acceptance</strong>, never the reverse.
+      </p>
+      <div class="cc"><p>A useful roadmap is recognisable by the fact that one can lose points on it. This one loses
+        three, stated below: a milestone delivered but not crossed, a performance gap not closed, a calibration not
+        done.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.2</b> Three categories, not two</div>
+      <h2>Delivered, in reserve, to do.</h2>
+      <div class="g3 br">
+        <div>
+          <div class="n">1</div>
+          <h3>Delivered</h3>
+          <p>Present in the code and covered by tests. A verifiable achievement.</p>
+        </div>
+        <div>
+          <div class="n">2</div>
+          <h3>Delivered but not activated</h3>
+          <p>The mechanism exists and works, but it is disabled by default, not calibrated or without observable effect. A capability in reserve, not a scientific achievement.</p>
+        </div>
+        <div>
+          <div class="n">3</div>
+          <h3>To do</h3>
+          <p>Identified, ordered, not started or not crossed.</p>
+        </div>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>Confusing the first two categories is the most costly mistake of such
+        a project: a mechanism delivered but inert produces nothing, and presenting it as delivered would lead one to
+        believe that the world contains what it does not yet contain.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.3</b> The six framework phases</div>
+      <h2>From foundation to consolidation.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Phase</th><th>Title</th><th>Objective</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>Foundation &amp; governance</td><td>Repository, conventions, pipeline, licence, governance.</td></tr>
+            <tr><td>1</td><td>General framing</td><td>Vision, architecture, inter-component contracts, glossary.</td></tr>
+            <tr><td>2</td><td>Engine (SYNE)</td><td>Heart of the simulated world: cognition, action, internal observation.</td></tr>
+            <tr><td>3</td><td>Observation (ECHOS)</td><td>Analysis, metrics and control of experiments.</td></tr>
+            <tr><td>4</td><td>Unreal integration (PRISM)</td><td>Unreal project and PRISM-LDK plugin.</td></tr>
+            <tr><td>5</td><td>Consolidation</td><td>Consistency of contracts, FAQ, contribution, cross-review.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.4</b> Status of the milestones</div>
+      <h2>What is crossed, what remains open.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Workstream</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>SYNE engine</td><td>Twelve technical phases delivered (foundation, BDI and perception, memory and beliefs, decision, actions, communication, groups, resources, loyalties, observability, performance, tests and persistence). Capabilities in reserve: seasons, territories, constructions, inventory, commitments.</td></tr>
+            <tr><td>ECHOS observatory</td><td>Nine phases delivered, two withdrawn (integrated interface and Electron shell, ADR-007 of 5 October 2026). Main remaining workstream: the dynamic viability index.</td></tr>
+            <tr><td>PRISM rendering</td><td>Working version. Transport contracts stabilised; validation against real SYNE pending.</td></tr>
+            <tr><td>Launcher</td><td>Milestones G0–G4 largely present. G5 (complete session with real ECHOS): delivered on the Launcher side but not crossed. G7 (Immersion mode): locked, for lack of a compliant PRISM.</td></tr>
+            <tr><td>Installer</td><td>At the specification stage, without a line of code. Five milestones defined; Linux first.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>14.5</b> Deliberately out of scope</div>
+      <h2>What the project forbids itself.</h2>
+      <p>Setting these avenues aside is not a judgement on their interest: it is a refusal to inflate the target.</p>
+      <div class="g2">
+        <div class="pl br" style="padding:18px"><h3>Multi-machine</h3><p class="mu" style="margin:0">Distribution across several machines is documented but not implemented, and does not count as work.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Other systems</h3><p class="mu" style="margin:0">Only Windows and Linux are targeted; other platforms are out of scope.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Language models at the heart of the world</h3><p class="mu" style="margin:0">Recourse to a language model as a decision engine remains a documented avenue, not a commitment.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Delivery dates</h3><p class="mu" style="margin:0">No dated milestone is set before consolidation of the phases in progress.</p></div>
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/governance/ROADMAP.md" rel="noopener">Detailed roadmap ↗</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/resultats/', 'en')}>Measures</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>
