@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  title="Limites et portée"
+  description="Ce que LIVEX fait, ce qu'il ne fait pas, et les principes déontologiques du projet : agents simulés, pas de conscience, pas de données personnelles."
+>
+  <PageHeader
+    index="02"
+    eyebrow="Comprendre · Limites"
+    title="Dire ce que le projet ne fait pas."
+    lead="Un projet de recherche se juge autant à ses frontières qu'à ses résultats. Voici celles de LIVEX, énoncées sans détour."
+    crumbs={[{ label: 'Comprendre', href: 'comprendre/' }, { label: 'Limites' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>2.1</b> Portée</div>
+      <h2>Un objet de recherche, pas un produit fini.</h2>
+      <p>
+        LIVEX est un travail personnel d'exploration sur la simulation multi-agents. Il ne prétend pas modéliser des
+        sociétés, des personnes ou des systèmes réels. Les comportements observés valent <strong>dans le monde
+        simulé</strong>, et seulement là.
+      </p>
+      <div class="cc">
+        <p>
+          Aucune publication scientifique, aucune validation externe n'est revendiquée. Aucune release publique
+          n'existe à ce jour.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>2.2</b> Déontologie</div>
+      <h2>Ce que les agents ne sont pas.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px">
+          <h3>Pas de conscience</h3>
+          <p class="mu" style="margin:0">Les agents sont des entités simulées. Leurs « désirs » ou « émotions » sont
+            des variables de simulation, sans vécu.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Pas de données personnelles</h3>
+          <p class="mu" style="margin:0">La simulation n'utilise ni données réelles ni profils de personnes. Les
+            fichiers produits sont des traces synthétiques.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Pas de revendication de réalisme</h3>
+          <p class="mu" style="margin:0">Le projet ne prétend pas reproduire le vivant, l'économie ou la société. Il
+            explore des dynamiques.</p>
+        </div>
+        <div class="pl br" style="padding:18px">
+          <h3>Pas de promesse</h3>
+          <p class="mu" style="margin:0">Aucune feuille de route n'est tenue pour un engagement. Les états publiés
+            reflètent le présent du dépôt.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>2.3</b> Sécurité et usage</div>
+      <h2>Conçu pour tourner en local.</h2>
+      <p>
+        Les services de développement (moteur, observation, mock) s'exécutent en local et n'exposent pas de service
+        public durci. Toute exposition réseau devrait être précédée d'authentification, de validation des entrées et
+        de durcissement. Voir <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SECURITY.md" rel="noopener">SECURITY.md</a>.
+      </p>
+      <p style="margin-top:18px"><a class="bt" href={url('technique/')}>Voir l'architecture →</a></p>
+    </div>
+  </section>
+</BaseLayout>

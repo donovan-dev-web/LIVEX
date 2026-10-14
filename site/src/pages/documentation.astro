@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
+
+const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
+const groups = [
+  {
+    title: 'Présentation',
+    items: [
+      { label: 'Vision', href: `${repo}/docs/presentation/VISION.md` },
+      { label: 'FAQ', href: url('faq/') },
+      { label: 'Glossaire', href: url('comprendre/glossaire/') },
+      { label: 'Portée et éthique', href: `${repo}/docs/presentation/ETHICS_AND_SCOPE.md` },
+    ],
+  },
+  {
+    title: 'Architecture',
+    items: [
+      { label: "Vue d'ensemble", href: url('technique/') },
+      { label: 'Architecture technique', href: `${repo}/docs/ARCHITECTURE.md` },
+      { label: 'Contrats inter-composants', href: `${repo}/docs/COMMUNICATION.md` },
+      { label: 'Monographie (PDF)', href: `${repo}/LIVEX-Monographie_SnapV0-1.pdf` },
+    ],
+  },
+  {
+    title: 'Composants',
+    items: [
+      { label: 'SYNE', href: url('technique/syne/') },
+      { label: 'ECHOS', href: url('technique/echos/') },
+      { label: 'PRISM', href: url('technique/prism/') },
+      { label: 'Guide SYNE', href: `${repo}/syne/README.md` },
+    ],
+  },
+  {
+    title: 'Governance',
+    items: [
+      { label: 'Feuille de route', href: url('feuille-de-route/') },
+      { label: 'État du projet', href: `${repo}/docs/governance/LIVEX-STATUS.md` },
+      { label: 'Versionnement', href: `${repo}/VERSIONING.md` },
+      { label: 'Gitflow', href: `${repo}/docs/governance/GITFLOW.md` },
+    ],
+  },
+  {
+    title: 'Contribuer',
+    items: [
+      { label: 'Contribuer', href: `${repo}/CONTRIBUTING.md` },
+      { label: 'Code de conduite', href: `${repo}/CODE_OF_CONDUCT.md` },
+      { label: 'Sécurité', href: `${repo}/SECURITY.md` },
+      { label: 'Support', href: `${repo}/SUPPORT.md` },
+    ],
+  },
+];
+---
+<BaseLayout
+  title="Documentation"
+  description="Portail de documentation de LIVEX : présentation, architecture, composants, gouvernance et contribution. Accès direct au dépôt et à la monographie."
+>
+  <PageHeader
+    index="15"
+    eyebrow="Documentation"
+    title="Tout est documenté, et vérifiable."
+    lead="La documentation vit dans le dépôt. Ce portail en propose les entrées principales, classées par intention."
+    crumbs={[{ label: 'Documentation' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="g2">
+        {groups.map((g) => (
+          <div class="pl br" style="padding:20px">
+            <h3 style="margin-bottom:10px">{g.title}</h3>
+            <ul style="list-style:none;padding:0;margin:0">
+              {g.items.map((it) => (
+                <li style="padding:4px 0;font-size:0.8rem">
+                  <a href={it.href} rel={it.href.startsWith('http') ? 'noopener' : undefined}>{it.label} ↗</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div class="cc" style="margin-top:24px"><p>Le portail de référence : <a href={`${repo}/docs/README.md`} rel="noopener">docs/README.md</a>.</p></div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+import { RELEASE, RELEASE_EN } from '../../../data/release';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  title="Download"
+  description="Download LIVEX: no public version is available to date. Here's what exists, and how to explore the repository right now."
+>
+  <PageHeader
+    lang="en"
+    index="11"
+    eyebrow="Download"
+    title="Nothing to download yet."
+    lead="LIVEX does not yet have a public version. This page states exactly where the project stands, rather than dressing up an absence."
+    crumbs={[{ label: 'Download' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="pl br" style="padding:24px;margin-top:8px">
+        <p style="margin:0 0 10px"><StatusBadge status="developpement" label={RELEASE_EN.plannedLabel} lang="en" /></p>
+        <h2 style="margin-top:0">No release published.</h2>
+        <p>
+          No tag has been placed on the repository. There are therefore no installers, binaries or distributable
+          packages. The <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a> page will remain empty until
+          V0.1 is validated.
+        </p>
+        <div class="cta">
+          <a class="bt" href={url('versions/', 'en')}>Version status</a>
+          <a class="bt" href={url('telecharger/installation/', 'en')}>Installation guide</a>
+          <a class="bt" href={RELEASE.releasesUrl} rel="noopener">GitHub Releases ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>11.1</b> What is planned</div>
+      <h2>What a version might look like.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Item</th><th>Expected form</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td>Launcher (desktop)</td><td>Desktop application (Avalonia) to pilot and observe</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td>SYNE engine</td><td>.NET binary and engine packages</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td>ECHOS</td><td>Python package (observation, headless API)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td>PRISM</td><td>Unreal project (outside V0.1 scope)</td><td><StatusBadge status="hors-perimetre" lang="en" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc"><p>These lines describe an <em>intended form</em>, not a commitment to a date.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>11.2</b> In the meantime</div>
+      <h2>Explore the project right now.</h2>
+      <p>The repository is public, under the MIT licence. The documentation is the best entry point.</p>
+      <div class="cta">
+        <a class="bt p" href={url('documentation/', 'en')}>Documentation</a>
+        <a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">GitHub repository ↗</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

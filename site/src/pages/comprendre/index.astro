@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  title="Comprendre LIVEX"
+  description="LIVEX en clair : à quoi sert un écosystème de simulation multi-agents, comment il fonctionne, et quelles sont ses limites assumées."
+>
+  <PageHeader
+    index="01"
+    eyebrow="Comprendre"
+    title="Une archive vivante d'un monde simulé."
+    lead="LIVEX part d'une question simple : peut-on rendre observable un comportement collectif que personne n'a programmé à la main ? Ce que le projet produit n'est pas une histoire, mais un relevé."
+    crumbs={[{ label: 'Comprendre' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>1.1</b> Le problème</div>
+      <h2>Comprendre sans scénariser.</h2>
+      <p>
+        Beaucoup de simulations se contentent de jouer une séquence prévue. On y voit ce qu'on y a mis. LIVEX vise
+        l'inverse : poser des agents, des règles et un environnement, puis <strong>laisser faire</strong> et enregistrer
+        ce qui se produit — y compris l'inattendu, y compris ce qui ne fonctionne pas.
+      </p>
+      <p>
+        Cela impose deux exigences. D'abord le <strong>déterminisme</strong> : à partir de la même graine, un run doit
+        se rejouer à l'identique, tick après tick. Ensuite la <strong>séparation</strong> : ce qui se passe (le moteur)
+        et ce qu'on en dit (l'observation) ne doivent jamais se confondre, sous peine de raconter ce qu'on espérait
+        voir.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>1.2</b> La méthode</div>
+      <h2>Trois temps, trois composants.</h2>
+      <div class="g3 br">
+        <div>
+          <div class="n">01</div>
+          <h3>Simuler</h3>
+          <p><strong>SYNE</strong> fait tourner le monde : agents, ressources, règles. Chaque run est rejouable à
+            l'identique et horodaté par une graine.</p>
+        </div>
+        <div>
+          <div class="n">02</div>
+          <h3>Observer</h3>
+          <p><strong>ECHOS</strong> ingère les traces et en tire des mesures : viabilité, motifs, boucles. Il observe
+            sans intervenir sur le monde.</p>
+        </div>
+        <div>
+          <div class="n">03</div>
+          <h3>Rendre visible</h3>
+          <p><strong>PRISM</strong> donne à voir le monde et sa dynamique, par le rendu et l'interaction.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>1.3</b> Ce que LIVEX n'est pas</div>
+      <h2>Des limites que l'on assume.</h2>
+      <div class="cc">
+        <p>
+          Les agents de LIVEX ne sont ni conscients, ni des personnes, ni des modèles de sociétés réelles. Ce sont des
+          entités <strong>simulées</strong>, dont les « émotions » ou « intentions » sont des variables, pas des états
+          mentaux. LIVEX ne prétend ni prédire, ni reproduire le réel.
+        </p>
+      </div>
+      <p>
+        Le projet est en phase d'exploration (V0.1). Aucune version publique n'est distribuée à ce jour. Les états des
+        composants décrivent le dépôt de développement.
+      </p>
+      <div class="toc" style="margin-top:22px">
+        <a href={url('comprendre/limites/')}>Limites et portée →</a>
+        <a href={url('comprendre/emergence/')}>L'émergence expliquée →</a>
+        <a href={url('comprendre/glossaire/')}>Glossaire →</a>
+        <a href={url('technique/')}>Architecture →</a>
+        <a href={url('faq/')}>FAQ →</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

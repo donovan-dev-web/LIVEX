@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import StatusBadge from '../../../components/StatusBadge.astro';
+import { url } from '../../../utils/url';
+import echosAgents from '../../../assets/captures/echos-agents.png';
+import echosRelations from '../../../assets/captures/echos-relations.png';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="ECHOS — Observation and analysis"
+  description="ECHOS (Emergent Cognition & Holistic Observation System) ingests runs, produces viability measurements and detects emergent patterns. Headless API."
+>
+  <PageHeader
+    lang="en"
+    index="07"
+    eyebrow="Architecture · ECHOS"
+    title="Observation."
+    lead="ECHOS (Emergent Cognition & Holistic Observation System) reads the traces produced by SYNE and derives measurements from them. It observes the world without ever intervening in it."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'ECHOS' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <p style="margin-top:0"><StatusBadge status="experimental" lang="en" /> <span class="mu">ECHOS 0.1.0 · Python package (repository)</span></p>
+      <div class="cc"><p>Experimental: the headless API is functional in the repository, but not publicly distributed to date.</p></div>
+
+      <div class="sh"><b>7.1</b> Role</div>
+      <h2>Turning traces into measurements.</h2>
+      <p>
+        ECHOS ingests the snapshots and events of a run, stores them (SQLite schema <strong>v6</strong>), then
+        derives measurements: world viability, resource evolution, recurring patterns and
+        <strong>feedback loops</strong>.
+      </p>
+      <p>
+        Its output is consumable by other tools via a <strong>headless API</strong>: presentation is not its concern.
+      </p>
+
+      <figure class="shot">
+        <img src={echosAgents.src} alt="ECHOS view: agent tracking" width={echosAgents.width} height={echosAgents.height} loading="lazy" />
+        <figcaption>Capture — agent tracking in ECHOS.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src={echosRelations.src} alt="ECHOS view: agent relationships" width={echosRelations.width} height={echosRelations.height} loading="lazy" />
+        <figcaption>Capture — agent relationships in ECHOS.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>7.2</b> What ECHOS measures</div>
+      <h2>Indicators, not judgments.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:18px"><h3>Viability</h3><p class="mu" style="margin:0">Energy, hunger, thirst, world survival over ticks.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Patterns</h3><p class="mu" style="margin:0">Recurring structures in space and time.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Loops</h3><p class="mu" style="margin:0">Feedbacks where one agent's behaviour influences the next.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Relationships</h3><p class="mu" style="margin:0">Interactions between agents, observed and aggregated.</p></div>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>Line coverage measured for ECHOS was 90.55% as of 12 October 2026.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>7.3</b> Next</div>
+      <p style="margin-top:0">
+        <a class="bt" href={url('technique/prism/', 'en')}>PRISM: rendering →</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

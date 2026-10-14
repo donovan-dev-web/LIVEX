@@ -1,0 +1,20 @@
+{
+  "name": "LIVEX — Living Intelligent Virtual Ecosystem eXperience",
+  "short_name": "LIVEX",
+  "description": "Écosystème de simulation multi-agents : moteur (SYNE), cognition émergente (ECHOS) et rendu perceptif (PRISM).",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/LIVEX/",
+  "scope": "/LIVEX/",
+  "display": "standalone",
+  "background_color": "#F2F2EC",
+  "theme_color": "#090C16",
+  "icons": [
+    {
+      "src": "/LIVEX/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

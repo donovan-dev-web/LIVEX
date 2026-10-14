@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+
+const groups = [
+  {
+    title: 'Overview and understanding',
+    items: [
+      { label: 'Home', href: '' },
+      { label: 'Understand LIVEX', href: 'comprendre/' },
+      { label: 'Limits and scope', href: 'comprendre/limites/' },
+      { label: 'Emergence explained', href: 'comprendre/emergence/' },
+      { label: 'Glossary', href: 'comprendre/glossaire/' },
+    ],
+  },
+  {
+    title: 'Technical',
+    items: [
+      { label: 'Architecture', href: 'technique/' },
+      { label: 'SYNE', href: 'technique/syne/' },
+      { label: 'ECHOS', href: 'technique/echos/' },
+      { label: 'PRISM', href: 'technique/prism/' },
+      { label: 'Launcher', href: 'technique/launcher/' },
+      { label: 'Reproducibility, tests and measures', href: 'technique/resultats/' },
+    ],
+  },
+  {
+    title: 'Software and versions',
+    items: [
+      { label: 'Download', href: 'telecharger/' },
+      { label: 'Installation and requirements', href: 'telecharger/installation/' },
+      { label: 'Versions', href: 'versions/' },
+      { label: 'Roadmap', href: 'feuille-de-route/' },
+    ],
+  },
+  {
+    title: 'Documentation, FAQ, news',
+    items: [
+      { label: 'Documentation', href: 'documentation/' },
+      { label: 'FAQ', href: 'faq/' },
+      { label: 'Journal', href: 'actualites/' },
+      { label: 'Follow the project', href: 'suivre/' },
+    ],
+  },
+  {
+    title: 'Contribution and author',
+    items: [
+      { label: 'Contribute', href: 'participer/' },
+      { label: 'About', href: 'a-propos/' },
+      { label: 'Transparency on the use of AI', href: 'a-propos/transparence-ia/' },
+      { label: 'Press kit', href: 'presse/' },
+    ],
+  },
+  {
+    title: 'Legal and trust pages',
+    items: [
+      { label: 'Legal notices', href: 'mentions-legales/' },
+      { label: 'Privacy', href: 'confidentialite/' },
+      { label: 'Accessibility', href: 'accessibilite/' },
+      { label: 'Licence and reuse', href: 'licence/' },
+    ],
+  },
+  {
+    title: 'Technical pages',
+    items: [{ label: 'Sitemap', href: 'plan-du-site/' }],
+  },
+];
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Sitemap"
+  description="LIVEX sitemap: all the public pages, grouped by section, with a link to the journal's RSS feed."
+>
+  <PageHeader
+    lang="en"
+    index="26"
+    eyebrow="Sitemap"
+    title="Map of the site."
+    lead="All the public pages of LIVEX, grouped by section. The site is built from this same source, consistent with the sitemap."
+    crumbs={[{ label: 'Sitemap' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="g2">
+        {groups.map((g) => (
+          <div class="pl br" style="padding:20px">
+            <h3 style="margin-bottom:10px">{g.title}</h3>
+            <ul style="list-style:none;padding:0;margin:0">
+              {g.items.map((it) => (
+                <li style="padding:4px 0;font-size:0.8rem">
+                  <a href={url(it.href, 'en')}>{it.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div class="cc" style="margin-top:24px">
+        <p><strong>Subscribe:</strong> the journal has an RSS feed —
+          <a href={url('actualites/feed.xml', 'fr')}>actualites/feed.xml</a>.</p>
+      </div>
+      <p class="mu" style="font-size:0.76rem">
+        This English mirror is generated from the French original. The French version, which is authoritative, is
+        available at <a href={url('', 'fr')}>the root of the site</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

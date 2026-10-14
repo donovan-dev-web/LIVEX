@@ -1,0 +1,74 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { SITE } from '../../data/site';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Follow the project"
+  description="Following LIVEX news without data collection: the journal's RSS feed and the GitHub repository for releases. No response time is guaranteed."
+>
+  <PageHeader
+    lang="en"
+    index="18"
+    eyebrow="Follow"
+    title="Follow, without leaving your data behind."
+    lead="The ways to follow LIVEX news come down today to two channels, both free of any data collection. Others will come when they exist — not before."
+    crumbs={[{ label: 'Follow' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>18.1</b> Available channels</div>
+      <h2>Two entry points.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:20px">
+          <h3>Journal RSS feed</h3>
+          <p class="mu">The site's journal (milestones, technical decisions, in-depth articles) is published as an RSS feed. No account, no cookie, no sign-up.</p>
+          <a class="bt" href={url('actualites/feed.xml', 'fr')}>Subscribe to the feed</a>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>GitHub repository</h3>
+          <p class="mu">Technical transparency lives in the repository. To be notified of a publication, follow the project's <em>releases</em>.</p>
+          <a class="bt" href={SITE.repo + '/releases'} rel="noopener">GitHub Releases ↗</a>
+        </div>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>The journal on the site is the source of the news; the repository
+        summarises its versions and changes. A piece of information lives in one place only, and the other points to
+        it.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>18.2</b> What it is reasonable to expect</div>
+      <h2>A solo project, an honest pace.</h2>
+      <p>
+        LIVEX is carried by a single person, alongside other work. The publishing pace is irregular, and no response
+        time is guaranteed. One useful article is worth more than several empty publications: the journal therefore has
+        no quota.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>To expect</th><th>What not to expect</th></tr></thead>
+          <tbody>
+            <tr><td>Dated milestones, published when they are crossed</td><td>A delivery schedule</td></tr>
+            <tr><td>Documented technical decisions</td><td>Guaranteed support or assistance</td></tr>
+            <tr><td>Release announcements, on the day of their publication</td><td>Replies within a fixed time</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="font-size:0.78rem">
+        No channel is listed here until it is open: a community space, if it comes into being, will be announced with
+        its rules in due course.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('actualites/', 'en')}>Read the journal →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('participer/', 'en')}>Contribute</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

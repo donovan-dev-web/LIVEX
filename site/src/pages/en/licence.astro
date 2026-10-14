@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Licence and reuse"
+  description="LIVEX licence: source code under MIT, texts and site content under CC BY 4.0, brand and logos reserved. Rules of attribution and reuse."
+>
+  <PageHeader
+    lang="en"
+    index="25"
+    eyebrow="Licence"
+    title="What you may reuse."
+    lead="LIVEX's code is open, and the content of this site is too — under different conditions. Here is what applies to what."
+    crumbs={[{ label: 'Licence' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>25.1</b> In one table</div>
+      <h2>Three regimes, one project.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Element</th><th>Licence</th><th>What this allows</th></tr></thead>
+          <tbody>
+            <tr><td>Source code (LIVEX repository)</td><td><strong>MIT</strong> — <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a></td><td>Use, modify and redistribute, retaining the copyright notice.</td></tr>
+            <tr><td>Texts, diagrams and content of this site</td><td><strong>CC BY 4.0</strong> — <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">Creative Commons ↗</a></td><td>Share and adapt, including commercially, with attribution.</td></tr>
+            <tr><td>The “LIVEX” brand, component names and logos</td><td><strong>All rights reserved</strong></td><td>Nominative descriptive use only; any reuse suggesting affiliation is to be avoided.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>25.2</b> Source code</div>
+      <h2>MIT, plainly.</h2>
+      <p>
+        The code is distributed under the <strong>MIT</strong> licence. You may use, modify and redistribute it,
+        including commercially, provided you retain the copyright notice and the licence text. The software is provided
+        <em>as is</em>, without warranty.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>25.3</b> Site content</div>
+      <h2>CC BY 4.0, with attribution.</h2>
+      <p>
+        The texts, diagrams and illustrations of this site are placed under <strong>Creative Commons Attribution 4.0</strong>
+        (CC BY 4.0). You may reuse, adapt and redistribute them, including commercially, provided you credit the author
+        and indicate whether any changes were made.
+      </p>
+      <div class="cc"><p>Suggested attribution: “LIVEX — Donovan Chartrain, CC BY 4.0”, with a link to
+        <a href="https://donovan-dev-web.github.io/LIVEX/" rel="noopener">this page</a> or the original page.</p></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>25.4</b> Brand and logos</div>
+      <h2>The name, with reservations.</h2>
+      <p>
+        “LIVEX”, and the names <strong>SYNE</strong>, <strong>ECHOS</strong>, <strong>PRISM</strong> and
+        <strong>Launcher</strong> designate the project's components. Their <em>descriptive</em> use is free: speaking
+        of “compatible with LIVEX” or “based on SYNE” is allowed. On the other hand, any reuse suggesting an
+        affiliation, a sponsorship or an official origin is to be avoided.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>25.5</b> Fonts and third-party resources</div>
+      <h2>Named dependencies.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Resource</th><th>Licence</th></tr></thead>
+          <tbody>
+            <tr><td>Instrument Serif font</td><td>SIL Open Font License 1.1</td></tr>
+            <tr><td>JetBrains Mono font</td><td>SIL Open Font License 1.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="font-size:0.78rem">
+        The fonts are self-hosted, with no call to a third-party service. A figure without a source is not published;
+        nor is a resource without a named licence.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('mentions-legales/', 'en')}>Legal notices →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">MIT text ↗</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

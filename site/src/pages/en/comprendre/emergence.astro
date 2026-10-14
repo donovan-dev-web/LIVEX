@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import { url } from '../../../utils/url';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="Emergence explained"
+  description="What is emergence in multi-agent simulation? Definition, examples, distinction between simulated agent, learning AI and scripted character, limits of interpretation."
+>
+  <PageHeader
+    lang="en"
+    index="03"
+    eyebrow="Understand · Emergence"
+    title="What is born of the collective."
+    lead="Emergence is what appears at the scale of the group without being written into any individual's rules. It is the heart of the problem LIVEX explores, and it deserves that we clarify its outlines."
+    crumbs={[{ label: 'Understand', href: 'comprendre/' }, { label: 'Emergence' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.1</b> What is emergence?</div>
+      <h2>A whole that is written nowhere.</h2>
+      <p class="lead">
+        Emergence refers to the appearance of collective structures or behaviours that do not appear in the rules of any
+        individual taken in isolation. No central plan orders them: they result from local interactions between simple
+        entities, repeated over time.
+      </p>
+      <p>
+        The most classic example has nothing to do with computing. A murmuration of starlings traces shifting figures,
+        while no bird knows the overall shape or commands it: each follows three very simple local rules (draw closer to
+        neighbours, avoid collision, align with their direction). The shape of the group “emerges” from these rules
+        without being programmed anywhere.
+      </p>
+      <p>
+        Conway's Game of Life (cellular automaton, 1970), insect swarms, traffic jams or economic markets are other
+        frequently cited cases: local rules and a shared constraint produce a global order that no one decided.
+      </p>
+      <div class="cc">
+        <p><strong>What emergence is not.</strong> Neither magic, nor consciousness. An emergent behaviour remains an
+          observable behaviour that can be traced back to local causes — even if its overall form was not predictable
+          from a single individual.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.2</b> How LIVEX approaches it</div>
+      <h2>The rules, never the behaviour.</h2>
+      <p>
+        LIVEX does not script the collective phenomena it seeks to observe. The <strong>SYNE</strong> engine provides
+        structures — a world, resources, needs, local perception, memory, a decision function — but never the behaviour.
+        Each entity decides for itself, from a partial and fallible view of the world.
+      </p>
+      <p>
+        Because entities see the world differently and decide differently, the groups, exchanges and tensions that
+        appear are not written in advance. They are recorded as traces, then read by the observation system
+        <strong>ECHOS</strong>, without ever intervening on the world.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.3</b> Measuring emergence</div>
+      <h2>A measure, not a proof.</h2>
+      <p>
+        LIVEX has a <strong>composite emergence index</strong>: a value bounded between 0 and 1, calculated from six
+        components (diversity of beliefs, diversity of goals, information diffusion delay, clustering coefficient,
+        share of action repetitions, community coverage). The dispersion of beliefs and goals borrows from
+        <strong>Shannon entropy</strong> (<code>H = -Σ p_i log2 p_i</code>),
+        which is zero in the case of unanimity.
+      </p>
+      <div class="cc">
+        <p><strong>Methodological warning.</strong> This index is an <em>observational heuristic</em>, not a scientific
+          proof of emergence. Its weights are inherited and have not been calibrated; an absence of detection is not
+          the absence of the phenomenon. It helps one to look, it does not conclude.</p>
+      </div>
+      <p>
+        Measuring this way therefore does <strong>not</strong> prove that a behaviour is “really” emergent or new.
+        Two difficulties remain: distinguishing an authentic emergence from a statistical artefact or from a complexity
+        that is simply programmed, and determining the number of runs needed for an observation to be worth more than
+        an intuition. These questions remain open.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.4</b> Three cases not to be confused</div>
+      <h2>Simulated, learned, written.</h2>
+      <p>The word “agent” covers very different realities. Confusing them is the most frequent source of misunderstanding.</p>
+      <div class="ov">
+        <table class="tb">
+          <thead>
+            <tr><th></th><th>Simulated agent (LIVEX)</th><th>Learning AI</th><th>Scripted character</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Origin of behaviour</td>
+              <td>Explicit rules and current state</td>
+              <td>Model trained on data</td>
+              <td>Script written in advance</td>
+            </tr>
+            <tr>
+              <td>Explanation</td>
+              <td>Every decision is traceable and quantified</td>
+              <td>Often opaque line by line</td>
+              <td>Determined by the author</td>
+            </tr>
+            <tr>
+              <td>Reproducibility</td>
+              <td>Bit-for-bit from a seed</td>
+              <td>Not guaranteed to the bit</td>
+              <td>Identical on every execution</td>
+            </tr>
+            <tr>
+              <td>Autonomy</td>
+              <td>Choice computed from state and beliefs</td>
+              <td>Response generated by the model</td>
+              <td>None: follows a script</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">
+        LIVEX sits in the first column: cognition is explicit, deterministic and inspectable — it
+        <strong> does not learn</strong> and uses no language model at the heart of the world.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>3.5</b> References</div>
+      <h2>What this text builds on.</h2>
+      <p class="mu" style="font-size:0.8rem">
+        The concepts above are documented in the repository and supported by external works cited by the monograph.
+        In particular it draws on: Shannon entropy (1948) for dispersion; cellular automata and Conway's Game of Life
+        (1970) as historical cases; swarms (Reynolds, 1987; Bonabeau et al., 1999); <em>Sugarscape</em> (Epstein &amp;
+        Axtell, 1996) for multi-agent simulation in a constrained environment; the work of Holland, Gell-Mann and the
+        Santa Fe Institute on complex systems; the BDI framework of Rao and Georgeff (1995); and, as a methodological
+        counterpoint, the generative agents of Park et al. (2023).
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('comprendre/limites/', 'en')}>Limits and scope →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('technique/', 'en')}>Architecture</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

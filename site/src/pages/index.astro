@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import HeroFigure from '../components/HeroFigure.astro';
+import { SITE } from '../data/site';
+import { COMPONENTS } from '../data/components';
+import { PROJECT_STATE, RELEASE } from '../data/release';
+import { url } from '../utils/url';
+
+const nf = new Intl.NumberFormat('fr-FR');
+---
+<BaseLayout
+  title="LIVEX — simulation multi-agents"
+  description="LIVEX réunit un moteur déterministe (SYNE), un système d'observation (ECHOS) et un module de rendu perceptif (PRISM). Un projet de recherche en simulation multi-agents, documenté ouvertement."
+>
+  <div class="w">
+    <!-- Héros -->
+    <section class="hero">
+      <div>
+        <p class="ey">Living Intelligent Virtual Ecosystem eXperience</p>
+        <h1>Observer ce qui <i>émerge.</i></h1>
+        <p class="l">
+          Une plateforme expérimentale de simulation multi-agents, du moteur qui fait vivre le monde jusqu'à sa
+          représentation 3D : trois couches séparées, des règles explicites, des résultats à observer.
+        </p>
+        <div class="cta">
+          <a class="bt p" href={url('comprendre/')}>Comprendre LIVEX</a>
+          <a class="bt" href={url('technique/')}>Explorer la technique</a>
+        </div>
+      </div>
+
+      <HeroFigure lang="fr" />
+    </section>
+
+    <!-- Bandeau d'état -->
+    <div class="vs br" style="padding-left:16px;padding-right:16px;border:1px solid var(--ln)">
+      <StatusBadge status="developpement" label={RELEASE.plannedLabel} />
+      <p>
+        Aucune version publique n'est téléchargeable à ce jour. L'état des composants décrit ci-dessous reflète le
+        <strong> dépôt de développement</strong>, et non une distribution. Voir la page <a href={url('versions/')}>Versions</a>.
+      </p>
+    </div>
+  </div>
+
+  <!-- Ce qu'est LIVEX -->
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>01</b> Le constat</div>
+      <h2>Observer, sans mentir sur ce qui existe.</h2>
+      <p class="lead">
+        LIVEX cherche à rendre lisible un comportement collectif qui n'a pas été écrit à la main. Sa méthode tient en
+        deux exigences : un moteur <strong>déterministe</strong> (le même point de départ rejoue le même run) et une
+        <strong> séparation nette</strong> entre ce qui se passe et ce qu'on en dit.
+      </p>
+      <div class="g3 br" style="margin-top:28px">
+        <div>
+          <div class="n">03</div>
+          <h3>composants</h3>
+          <p>Un moteur, un système d'observation, un module de rendu — indépendants, reliés par des contrats explicites.</p>
+        </div>
+        <div>
+          <div class="n">00</div>
+          <h3>version publique</h3>
+          <p>Le projet est en phase d'exploration (V0.1). Aucune release ni tag n'est posé.</p>
+        </div>
+        <div>
+          <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
+          <h3>tests au vert</h3>
+          <p>Au {PROJECT_STATE.observedDate}, 0 échec sur les suites locales. Un chiffre de méthode, pas une promesse.</p>
+        </div>
+      </div>
+
+      <div class="fm" style="margin-top:36px">
+        monde <span>SYNE · simule</span> traces <span>ECHOS · mesure</span> compréhension <span>PRISM · rend visible</span> <span class="q">→</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture -->
+  <section class="block" id="architecture">
+    <div class="w">
+      <div class="sh"><b>02</b> Architecture</div>
+      <h2>Trois composants, des contrats explicites.</h2>
+
+      {COMPONENTS.map((c) => (
+        <div class="bn">
+          <div>
+            <span class="k">{c.acronym}</span>
+            <h3>{c.name}</h3>
+          </div>
+          <div>
+            <p>{c.summary}</p>
+            <p style="margin:0 0 12px"><StatusBadge status={c.status.id} /></p>
+            <a class="bt" href={url(c.href)}>Détails →</a>
+          </div>
+          <div class="ph">Capture<br />{c.acronym}</div>
+        </div>
+      ))}
+
+      <div class="ct">Contrats d'interface publics — snapshot 0.4.0 · run_id « run-&lt;seed&gt;-&lt;12hex&gt; » · schéma de persistance v6</div>
+      <p class="mu" style="font-size:0.7rem">Les emplacements « Capture » seront remplacés par des captures réelles de la version publiée. Aucune illustration ne tient lieu de capture.</p>
+    </div>
+  </section>
+
+  <!-- Journal -->
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>03</b> Journal</div>
+      <h2>Ce qui bouge, daté.</h2>
+      <p class="lead">Le journal consigne les jalons et les décisions techniques, avec leur date. Les articles de fond arrivent progressivement.</p>
+      <div class="row">
+        <span class="mu">{PROJECT_STATE.observedDate}</span>
+        <span class="t">Aucune actualité publiée pour l'instant.</span>
+        <span><StatusBadge status="envisage" label="À venir" /></span>
+      </div>
+      <p style="margin-top:18px"><a class="bt" href={url('actualites/')}>Voir le journal →</a></p>
+    </div>
+  </section>
+
+  <!-- Prudence -->
+  <section class="block">
+    <div class="w">
+      <div class="cc br" style="padding:18px 20px">
+        <p>
+          <strong>Note de méthode.</strong> LIVEX publie ses limites aussi volontiers que ses résultats. Les états
+          (<em>disponible, expérimental, en développement, envisagé, hors périmètre</em>) décrivent le dépôt, jamais une
+          intention. Aucune affirmation du site n'est publiée sans source interne datée.
+        </p>
+      </div>
+      <div class="ct" style="border:0;margin-top:28px">
+        <a class="bt p" href={url('comprendre/')}>Lire la présentation</a>
+        <span style="display:inline-block;width:10px"></span>
+        <a class="bt" href={SITE.repo} rel="noopener">Dépôt GitHub ↗</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
