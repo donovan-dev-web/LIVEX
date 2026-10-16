@@ -27,6 +27,15 @@ public sealed record ExternalEvent(
 /// <summary>Production d'événements discrets à partir de la cognition (SYNE-080).</summary>
 public static class EventSensor
 {
+    /// <summary>Nom canonique d'un état de décision (nomenclature du flux d'événements).</summary>
+    private static string StateName(Cognition.DecisionState state) => state switch
+    {
+        Cognition.DecisionState.New => "fresh",
+        Cognition.DecisionState.Holdover => "holdover",
+        Cognition.DecisionState.Interrupted => "interrupted",
+        _ => "none",
+    };
+
     /// <summary>Événement <c>tick_summary</c>.</summary>
     public static ExternalEvent TickSummary(ulong tick, int aliveCount) =>
         new(ObservabilityContract.TickSummary, tick, Value: (JsonNode)new System.Text.Json.Nodes.JsonObject
@@ -42,13 +51,62 @@ public static class EventSensor
     {
         ArgumentNullException.ThrowIfNull(mind);
         string action = mind.Intention?.Kind.ToString() ?? "Idle";
+        Cognition.DecisionRecord? record = mind.LastDecisionRecord;
+        Cognition.DecisionState state = mind.DecisionStateThisTick;
         var value = new System.Text.Json.Nodes.JsonObject
         {
             ["intention"] = action,
-            ["utility"] = mind.LastDecision?.Utility ?? 0.0,
+            ["decisionState"] = StateName(state),
             ["deliberated"] = mind.DeliberatedThisTick,
             ["interrupted"] = mind.InterruptedThisTick,
         };
+
+        // Honnêteté des données (S-28 / D-03 / B-10) : l'utilité n'est publiée que
+        // si une décision a réellement eu lieu au tick courant. Un report (holdover)
+        // publie le tick de sa décision d'origine ET son score sous un nom distinct
+        // — jamais un score ancien sous le nom « utility » du tick courant ; une
+        // absence publie explicitement <c>null</c> (jamais 0.0 : zéro observé et
+        // absence de mesure ne doivent pas se confondre en amont d'ECHOS).
+        if (record is null || record.Missing)
+        {
+            value["utility"] = null;
+            value["decisionTick"] = null;
+        }
+        else if (state is Cognition.DecisionState.New or Cognition.DecisionState.Interrupted)
+        {
+            value["utility"] = record.Utility;
+            value["decisionTick"] = record.Tick;
+        }
+        else
+        {
+            value["utility"] = null;
+            value["decisionTick"] = record.Tick;
+            value["heldUtility"] = record.Utility;
+        }
+
+        if (record is { Missing: false } decided)
+        {
+            if (decided.Target is { } target)
+            {
+                value["target"] = target.Label;
+                value["targetType"] = target.TargetType;
+                value["targetConfidence"] = Math.Round(target.Confidence, 4);
+                value["targetAge"] = target.Age(tick);
+            }
+
+            value["rejected"] = new System.Text.Json.Nodes.JsonArray(
+                decided.RejectedKinds.Select(kind => (System.Text.Json.Nodes.JsonNode)System.Text.Json.Nodes.JsonValue.Create(kind.ToString())).ToArray());
+
+            if (decided.ResultOutcome is { } outcome)
+            {
+                value["result"] = outcome;
+            }
+
+            if (decided.ResultReason is { } reason)
+            {
+                value["resultReason"] = reason;
+            }
+        }
         return new ExternalEvent(
             ObservabilityContract.DecisionMade,
             tick,

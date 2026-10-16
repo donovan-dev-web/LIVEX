@@ -80,19 +80,31 @@ public class BeliefTests
     }
 
     [Fact]
-    public void ApplyEvidence_ConflictingFactPenalizesExistingAndCreatesNew()
+    public void ApplyEvidence_ConflictingValuePenalizesThenReplaces_TheSingleCurrentBelief()
     {
+        // S-09 : une seule croyance courante par (sujet, prédicat) — une position
+        // contradictoire ne coexiste pas avec la précédente, elle la remplace.
         var set = new BeliefSet();
         var first = new Fact("entity-2", "position", "80.00,50.25");
-        set.ApplyEvidence(first, signal: 0.7, source: "perception-1", DefaultBeliefs(), tick: 5);
+        set.ApplyEvidence(first, signal: 0.9, source: "perception-1", DefaultBeliefs(), tick: 5);
 
         var second = new Fact("entity-2", "position", "40.00,10.00");
-        set.ApplyEvidence(second, signal: 0.6, source: "perception-1", DefaultBeliefs(), tick: 6);
+        set.ApplyEvidence(second, signal: 0.4, source: "perception-1", DefaultBeliefs(), tick: 6);
 
-        Assert.True(set.TryGet(first, out Belief? penalized));
-        Assert.Equal(0.6, penalized!.Confidence, 10);
-        Assert.True(set.TryGet(second, out Belief? created));
-        Assert.Equal(0.6, created!.Confidence, 10);
+        Assert.False(set.TryGet(first, out _));
+        Assert.Equal(1, set.Count);
+        Assert.True(set.TryGetCurrent("entity-2", "position", out Belief? current));
+        Assert.Equal("40.00,10.00", current!.Fact.Value);
+        Assert.Equal(6UL, current.UpdatedTick);
+        // La croyance reste celle du <b>sujet</b> : son âge (BornTick) court depuis la
+        // première observation, seule la valeur et l'horodatage de mise à jour changent.
+        Assert.Equal(5UL, current.BornTick);
+
+        // Pénalité de conflit effective : le prior pénalisé (0,9 − 0,1) est révisé
+        // vers le signal (0,4) — Revise(0,8 ; 0,4 ; 0,3) = 0,68 et non 0,4 (le
+        // signal n'est pas installé tel quel) ni 0,8 (la croyance antérieure est
+        // bel et bien pénalisée).
+        Assert.Equal(0.68, current.Confidence, 10);
     }
 
     [Fact]

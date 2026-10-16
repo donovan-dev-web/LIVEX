@@ -38,9 +38,15 @@ public static class SimulationProfiles
     /// <list type="bullet">
     /// <item>énergie : `moveEnergyCost` 0,03, `restEnergyGain` 1,5, Eat/Drink
     /// `energyRecovery` 2,0 / 1,0 (hérité de D1) ;</item>
-    /// <item>besoins sociaux : `socialDriftRate` 0,0002, `curiosityDriftRate`
-    /// 0,0005 — un besoin sans mécanisme de satisfaction finissait par saturer
-    /// Socialize/Explore (96 % des décisions en fin de run) ;</item>
+/// <item>besoins sociaux : `socialDriftRate` 0,003, `curiosityDriftRate`
+/// 0,002 — <b>réalignement</b> : la calibration B1 avait ralenti ces dérives
+/// (0,0002 / 0,0005) parce que Socialize/Explore ne réduisaient aucun besoin, si
+/// bien que la dérive ne pouvait que saturer un besoin sans exutoire. Les deux
+/// actions <b>satisfont</b> désormais leur besoin à l'arrivée
+/// (<c>socialRecovery</c> / <c>curiosityRecovery</c>), donc la dérive retrouve une
+/// valeur de cycle : seuil franchi (~230 / ~150 ticks), poursuite ciblée, arrivée,
+/// redescente sous le seuil — l'effet de la dérive est <b>mesuré</b> sur le run de
+/// référence, pas supposé ;</item>
     /// <item>ressources : nourriture 20 000 + 20/tick nets (dégradation
     /// neutralisée), eau 20 000 + 10/tick ;</item>
     /// <item>communication : coûts énergétiques neutres, relais coupé, 1 envoi /
@@ -62,8 +68,8 @@ public static class SimulationProfiles
         options.Communication.ReceiveEnergyPayloadFactor = 0;
         options.Communication.MaxSendsPerTick = 1;
         options.Communication.MaxReceivesPerTick = 1;
-        options.Agents.Needs.SocialDriftRate = 0.0002;
-        options.Agents.Needs.CuriosityDriftRate = 0.0005;
+        options.Agents.Needs.SocialDriftRate = 0.003;
+        options.Agents.Needs.CuriosityDriftRate = 0.002;
         options.Agents.Actions.MoveEnergyCost = 0.03;
         options.Agents.Actions.RestEnergyGain = 1.5;
         options.Agents.Actions.RestFatigueRecovery = 2;

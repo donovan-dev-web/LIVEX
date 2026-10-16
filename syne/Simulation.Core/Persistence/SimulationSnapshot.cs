@@ -31,7 +31,12 @@ public sealed record SimulationSnapshot(
     WorldSnapshotDto World,
     IReadOnlyList<MindSnapshotDto> Minds,
     IReadOnlyList<GroupSnapshotDto> Groups,
-    ulong NextGroupId);
+    ulong NextGroupId,
+    // Identité du run (réalignement Phase 4, D-17) : hash canonique de la
+    // configuration effective au moment de la capture. Absent des snapshots
+    // antérieurs — une absence déclarée, jamais un zéro de remplissage.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    ulong? ConfigHash = null);
 
 /// <summary>État d'un PRNG xoshiro256** (4 × ulong).</summary>
 public sealed record RngStateDto(ulong S0, ulong S1, ulong S2, ulong S3);
@@ -48,7 +53,24 @@ public sealed record WorldSnapshotDto(
     double WoodStock,
     double MineralStock,
     IReadOnlyList<BookSnapshotDto>? Books = null,
-    IReadOnlyList<TerritorySnapshotDto>? Territories = null);
+    IReadOnlyList<TerritorySnapshotDto>? Territories = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<ResourceNodeSnapshotDto>? ResourceNodes = null);
+
+/// <summary>
+/// Gisement localisé persisté (Phase 0) : identité, type, position, quantité
+/// courante, capacité et régénération. Sans ce bloc, une reprise perdait toutes
+/// les sources spatiales — le monde restauré repartait des emplacements initiaux
+/// alors que la trajectoire, elle, continuait sur les gisements entamés.
+/// </summary>
+public sealed record ResourceNodeSnapshotDto(
+    string Id,
+    int Kind,
+    double X,
+    double Y,
+    double Amount,
+    double Capacity,
+    double RegenerationRate);
 
 /// <summary>
 /// Zone de territoire et son appartenance effective au tick T (SYNE-073). Sans ce
@@ -97,7 +119,54 @@ public sealed record MindSnapshotDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     ulong LastDeliberationTick = 0,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<int>? TriggeredAtLastDeliberation = null);
+    IReadOnlyList<int>? TriggeredAtLastDeliberation = null,
+    // Trace décisionnelle complète (D-18) : sans elle, la trajectoire restait
+    // exacte après reprise mais l'explication repartait d'un score nul et d'une
+    // cible absente. Additif : absent si aucune décision.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DecisionSnapshotDto? Decision = null);
+
+/// <summary>
+/// Trace décisionnelle persistée : état (nouvelle / maintenue / interruptive /
+/// absente), action retenue, utilité, cible crue avec âge et confiance, candidats
+/// rejetés, scores décomposés, faits justificatifs et résultat d'exécution.
+/// </summary>
+public sealed record DecisionSnapshotDto(
+    ulong Tick,
+    int State,
+    bool Missing,
+    int Chosen,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    double? Utility,
+    IReadOnlyList<UtilityScoreSnapshotDto> Scores,
+    string? TargetType = null,
+    string? TargetLabel = null,
+    string? TargetPosition = null,
+    ulong TargetObservedTick = 0,
+    double TargetConfidence = 0.0,
+    IReadOnlyList<int>? Rejected = null,
+    IReadOnlyList<DecisionEvidenceSnapshotDto>? Evidence = null,
+    string? ResultOutcome = null,
+    string? ResultReason = null);
+
+/// <summary>Score d'utilité persisté (composantes de la formule, réalignment S-04).</summary>
+public sealed record UtilityScoreSnapshotDto(
+    int Kind,
+    double Benefit,
+    double Cost,
+    double Risk,
+    double Confidence,
+    double PersonalityModifier,
+    double Urgency,
+    double Utility,
+    double SuccessRate);
+
+/// <summary>Fait justificatif persisté (provenance, sujet, confiance, âge).</summary>
+public sealed record DecisionEvidenceSnapshotDto(
+    string Source,
+    string Subject,
+    double Confidence,
+    ulong ObservedTick);
 
 /// <summary>Inventaire persisté (D8) — quantité par type (ordre stable du type).</summary>
 public sealed record InventorySnapshotDto(IReadOnlyDictionary<int, double> Amounts);
@@ -152,7 +221,21 @@ public sealed record MessageSnapshotDto(
     int Hops,
     ulong Tick);
 
-public sealed record GoalSnapshotDto(int Kind, ulong BornTick);
+/// <summary>
+/// Objectif persisté : type, tick de naissance <b>et cible connue</b>
+/// (type, libellé, position observée, âge, confiance). Sans la cible, une
+/// reprise repartait avec une intention <i>sans destination</i> : le déplacement
+/// du tick suivant divergeait du run continu (le but n'est plus le même état
+/// visé). C'est la moitié « objectif ← croyance » de la continuité de preuve.
+/// </summary>
+public sealed record GoalSnapshotDto(
+    int Kind,
+    ulong BornTick,
+    string? TargetType = null,
+    string? TargetLabel = null,
+    string? TargetPosition = null,
+    ulong TargetObservedTick = 0,
+    double TargetConfidence = 0.0);
 public sealed record GroupObjectiveSnapshotDto(ulong GroupId, int Kind, double Consensus, double LeaderTrust, ulong AdoptedTick, ulong ExpiresTick);
 
 /// <summary>Groupe émergent actif au tick T (table 7-8).</summary>

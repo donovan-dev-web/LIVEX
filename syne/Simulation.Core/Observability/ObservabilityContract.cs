@@ -91,8 +91,31 @@ public static class ObservabilityContract
     /// neutres (relais coupé, 1 envoi/1 réception). Objectif : 0 extinction et
     /// énergie stable sur 2500 ticks à 50 et 100 agents. Checksums dorés
     /// re-calés dans le même commit.
+    /// réalignement des divergences fondamentales → 0.16.0 : **altération
+    /// volontaire de trajectoire**, portée par le noyau décisionnel et non par la
+    /// calibration :
+    /// (1) ressources <b>localisées</b> (`resources.localized`) — un gisement est une
+    /// source perceptible, mémorisable, croyable, consommable ; Eat/Drink exigent le
+    /// gisement sous la main, la cible d'une poursuite vient d'une croyance, et
+    /// l'objectif est <b>accompli à l'arrivée</b> (plus d'hystérésis sur un objectif
+    /// terminé) — le modèle global reste disponible et déclaré ;
+    /// (2) <b>fenêtre causale fermée</b> (chapitre III) : déplacements et effets
+    /// inter-entités sont mis en file et appliqués au commit de fin de tick ;
+    /// (3) décision fondée sur la <b>connaissance active</b> (croyances + repli
+    /// mémoire) : candidats, cibles et confiance épistémique — le taux de succès
+    /// observé est désormais distinct de la confiance, et les cibles des primitives
+    /// inter-entités sont crues (aucun balayage global) ;
+    /// (4) <b>une croyance courante par sujet et prédicat</b> (révision ch. XI,
+    /// pénalité de conflit effective pour un sujet mobile) ;
+    /// (5) messages compris → croyance (provenance, confiance dégradée) ;
+    /// (6) dérives social/curiosité rétablies (0,003 / 0,002) parce que
+    /// Socialize/Explore <b>satisfont</b> désormais leur besoin ;
+    /// (7) traces : identité de run (hash de configuration), trace décisionnelle
+    /// complète (cible, preuves, candidats rejetés, résultat, holdover, absence),
+    /// utlité nullable pour une absence (jamais 0.0). Checksums dorés
+    /// ré-épinglés dans le même commit, avec leurs causes.
     /// </summary>
-    public const string EngineVersion = "0.15.0";
+    public const string EngineVersion = "0.16.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

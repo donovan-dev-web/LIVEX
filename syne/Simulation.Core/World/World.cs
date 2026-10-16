@@ -28,6 +28,7 @@ public sealed class World
     private readonly List<Obstacle> _obstacles = [];
     private readonly List<Territory> _territories = [];
     private readonly List<Book> _books = [];
+    private readonly List<ResourceNode> _resourceNodes = [];
     private readonly List<EnvironmentChange> _environmentChanges = [];
     private ulong _obstacleRevision;
 
@@ -57,6 +58,15 @@ public sealed class World
     /// territoire effectif (appartenance suivie par la boucle, 0 PRNG).
     /// </summary>
     public IReadOnlyList<Territory> Territories => _territories;
+
+    /// <summary>
+    /// Gisements localisés de ressources (Phase 0 du réalignement) : sources
+    /// spatiales perceptibles et consommables, placées à l'init par la règle
+    /// partagée <see cref="ResourceNodePlacement"/> (mêmes emplacements que
+    /// <c>WorldDescription.resources[]</c>, publiés à PRISM). Ordre de pose stable
+    /// (type puis indice) — déterminisme d'itération.
+    /// </summary>
+    public IReadOnlyList<ResourceNode> ResourceNodes => _resourceNodes;
 
     /// <summary>
     /// Livres du monde (SYNE-121) : matérialisations de
@@ -169,6 +179,38 @@ public sealed class World
     }
 
     /// <summary>
+    /// Remplace l'ensemble des gisements (restauration bit-à-bit) : la disposition
+    /// d'init est écartée au profit de l'état sauvegardé (quantités comprises).
+    /// </summary>
+    internal void ReplaceResourceNodes(IEnumerable<ResourceNode> nodes)
+    {
+        ArgumentNullException.ThrowIfNull(nodes);
+        _resourceNodes.Clear();
+        foreach (ResourceNode node in nodes)
+        {
+            _resourceNodes.Add(node);
+        }
+    }
+
+    /// <summary>
+    /// Ajoute (ou remplace) le gisement portant l'identifiant donné et renvoie le
+    /// gisement résolu — restauration d'état et compatibilité de contrat.
+    /// </summary>
+    internal ResourceNode UpsertResourceNode(string id, ResourceKind kind, Position position, double amount, double capacity, double regenerationRate)
+    {
+        int index = _resourceNodes.FindIndex(node => node.Id == id);
+        if (index >= 0)
+        {
+            _resourceNodes[index].RestoreState(amount);
+            return _resourceNodes[index];
+        }
+
+        var created = new ResourceNode(id, kind, position, amount, capacity, regenerationRate);
+        _resourceNodes.Add(created);
+        return created;
+    }
+
+    /// <summary>
     /// Ajoute une zone de territoire au monde (SYNE-073) : configuration initiale
     /// (layout <c>world.territories.zones[]</c>) — appartenance non tracée (aucune
     /// mutation d'environnement ; la zone est statique, la présence des entités
@@ -183,6 +225,88 @@ public sealed class World
 
     /// <summary>Consomme les modifications d'environnement tracées (drain par-tick de l'émetteur).</summary>
     public void ClearEnvironmentChanges() => _environmentChanges.Clear();
+
+    /// <summary>
+    /// Ajoute un gisement localisé (init par <see cref="ApplyResourceLayout"/> ou
+    /// restauration bit-à-bit). Identifiant unique exigé.
+    /// </summary>
+    public void AddResourceNode(ResourceNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (node.Position != Position.Clamp(node.Position, Size))
+        {
+            throw new ArgumentOutOfRangeException(nameof(node), "La position du gisement sort du monde (non-toroidal).");
+        }
+
+        if (_resourceNodes.Any(existing => existing.Id == node.Id))
+        {
+            throw new ArgumentException($"Un gisement portant l'identifiant « {node.Id} » existe déjà.", nameof(node));
+        }
+
+        _resourceNodes.Add(node);
+    }
+
+    /// <summary>
+    /// Applique la disposition des gisements configurée : place les
+    /// <c>resources.nodesPerType</c> gisements par type aux emplacements de la
+    /// description du monde. <b>0 tirage PRNG</b> (LCG local dérivé de la graine).
+    /// </summary>
+    public void ApplyResourceLayout(Configuration.ResourceSettings settings, ulong seed, double cellSize)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+
+        // Idempotent : la disposition courante est écartée avant repose. Une même
+        // monde peut servir à construire plusieurs boucles (tests, reprise) et un
+        // second passage ne doit pas lever « identifiant déjà présent ».
+        _resourceNodes.Clear();
+        foreach (ResourceNode node in ResourceNodePlacement.CreateNodes(
+            Size,
+            cellSize,
+            _obstacles,
+            seed,
+            settings.NodesPerType,
+            settings.NodeInitialAmount,
+            settings.NodeCapacity,
+            settings.NodeRegenerationRate))
+        {
+            AddResourceNode(node);
+        }
+    }
+
+    /// <summary>
+    /// Gisement disponible le plus proche d'une position, pour un type donné :
+    /// distance croissante puis identifiant (ordre déterministe). Utilisé par
+    /// l'<b>effet</b> d'une action terminale (consommer la source où l'on se
+    /// tient), jamais pour choisir une cible — la cible d'une décision vient des
+    /// croyances de l'agent.
+    /// </summary>
+    public ResourceNode? NearestResourceNode(Position position, ResourceKind kind, double maxDistance)
+    {
+        ResourceNode? nearest = null;
+        double bestDistance = double.MaxValue;
+        foreach (ResourceNode node in _resourceNodes)
+        {
+            if (node.Kind != kind)
+            {
+                continue;
+            }
+
+            double distance = node.Position.DistanceTo(position);
+            if (distance > maxDistance)
+            {
+                continue;
+            }
+
+            if (distance < bestDistance ||
+                (distance == bestDistance && nearest is not null && string.CompareOrdinal(node.Id, nearest.Id) < 0))
+            {
+                nearest = node;
+                bestDistance = distance;
+            }
+        }
+
+        return nearest;
+    }
 
     /// <summary>
     /// Ajoute un livre au monde (SYNE-121) : stocké à l'écriture

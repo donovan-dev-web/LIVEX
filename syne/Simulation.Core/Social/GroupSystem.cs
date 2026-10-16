@@ -4,6 +4,7 @@
 
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
+using Simulation.Core.World;
 
 namespace Simulation.Core.Social;
 
@@ -95,8 +96,26 @@ public sealed class GroupSystem
     /// <summary>Décisions collectives adoptées au tick courant.</summary>
     public IReadOnlyList<GroupDecision> LastDecisions => _lastDecisions;
 
-    /// <summary>Révision des groupes au tick courant (LOD <c>reviewIntervalTicks</c>).</summary>
-    public void Step(ulong tick, IReadOnlyDictionary<ulong, MindState> minds)
+    /// <summary>
+    /// Révision des groupes au tick courant (LOD <c>reviewIntervalTicks</c>),
+    /// sans positions : la contrainte de proximité spatiale n'est alors
+    /// <b>pas évaluable</b> et est réputée satisfaite (comportement historique des
+    /// appels hors moteur). Le pipeline, lui, fournit toujours les positions
+    /// finales du tick.
+    /// </summary>
+    public void Step(ulong tick, IReadOnlyDictionary<ulong, MindState> minds) => Step(tick, minds, positions: null);
+
+    /// <summary>
+    /// Révision des groupes au tick courant (LOD <c>reviewIntervalTicks</c>).
+    /// <paramref name="positions"/> porte les positions <b>finales</b> du tick :
+    /// quand <c>groups.proximityRequired</c> est actif, deux membres distants ne
+    /// sont pas liés — la cohésion est une structure <b>locale</b> (arbitrage
+    /// Phase 0, ch. VII vs §2b.3).
+    /// </summary>
+    public void Step(
+        ulong tick,
+        IReadOnlyDictionary<ulong, MindState> minds,
+        IReadOnlyDictionary<ulong, Position>? positions)
     {
         ArgumentNullException.ThrowIfNull(minds);
         _lastFormed.Clear();
@@ -109,7 +128,7 @@ public sealed class GroupSystem
         }
 
         Dictionary<ulong, Belief[]> sortedBeliefs = SortedBeliefsOf(minds);
-        IReadOnlyList<List<ulong>> components = ComputeComponents(minds, sortedBeliefs);
+        IReadOnlyList<List<ulong>> components = ComputeComponents(minds, sortedBeliefs, positions);
         var current = new List<(List<ulong> Members, double MeanCohesion)>(components.Count);
         foreach (List<ulong> members in components)
         {
@@ -118,7 +137,7 @@ public sealed class GroupSystem
                 continue;
             }
 
-            current.Add((members, MeanCohesionOf(members, minds, sortedBeliefs)));
+            current.Add((members, MeanCohesionOf(members, minds, sortedBeliefs, positions)));
         }
 
         var unmatched = new HashSet<int>(Enumerable.Range(0, current.Count));
@@ -198,7 +217,8 @@ public sealed class GroupSystem
     /// </summary>
     private IReadOnlyList<List<ulong>> ComputeComponents(
         IReadOnlyDictionary<ulong, MindState> minds,
-        Dictionary<ulong, Belief[]> sortedBeliefs)
+        Dictionary<ulong, Belief[]> sortedBeliefs,
+        IReadOnlyDictionary<ulong, Position>? positions)
     {
         List<ulong> ordered = minds.Keys.OrderBy(id => id).ToList();
         var parent = new Dictionary<ulong, ulong>(ordered.Count);
@@ -212,7 +232,7 @@ public sealed class GroupSystem
         {
             for (int j = i + 1; j < ordered.Count; j++)
             {
-                if (AreBonded(minds[ordered[i]], ordered[i], minds[ordered[j]], ordered[j], sortedBeliefs))
+                if (AreBonded(minds[ordered[i]], ordered[i], minds[ordered[j]], ordered[j], sortedBeliefs, positions))
                 {
                     edges.Add((ordered[i], ordered[j]));
                 }
@@ -304,7 +324,8 @@ public sealed class GroupSystem
     public void PurgeDeceased(
         IReadOnlyCollection<ulong> deceased,
         ulong tick,
-        IReadOnlyDictionary<ulong, MindState> minds)
+        IReadOnlyDictionary<ulong, MindState> minds,
+        IReadOnlyDictionary<ulong, Position>? positions = null)
     {
         ArgumentNullException.ThrowIfNull(deceased);
         ArgumentNullException.ThrowIfNull(minds);
@@ -337,7 +358,7 @@ public sealed class GroupSystem
             else if (survivors.Count != group.Members.Count)
             {
                 group.UpdateMembers(survivors);
-                group.MeanCohesion = MeanCohesionOf(survivors, minds, SortedBeliefsOf(minds));
+                group.MeanCohesion = MeanCohesionOf(survivors, minds, SortedBeliefsOf(minds), positions);
                 RefreshEmergent(group, minds, tick);
             }
         }
@@ -375,8 +396,14 @@ public sealed class GroupSystem
         ulong selfId,
         MindState other,
         ulong otherId,
-        Dictionary<ulong, Belief[]> sortedBeliefs)
+        Dictionary<ulong, Belief[]> sortedBeliefs,
+        IReadOnlyDictionary<ulong, Position>? positions)
     {
+        if (!AreProximate(selfId, otherId, positions))
+        {
+            return false;
+        }
+
         double minTrust = Math.Min(self.Trust.TrustWith(otherId), other.Trust.TrustWith(selfId));
         if (minTrust < _settings.TrustThreshold)
         {
@@ -384,6 +411,30 @@ public sealed class GroupSystem
         }
 
         return Affinity(self, other, selfId, sortedBeliefs) > 1.0;
+    }
+
+    /// <summary>
+    /// Proximité spatiale actuelle de deux membres (arbitrage Phase 0) : exigée
+    /// quand <c>groups.proximityRequired</c> est actif. Sans table de positions
+    /// (appel hors moteur), la contrainte est réputée satisfaite — la règle
+    /// historique reste alors évaluée seule.
+    /// </summary>
+    private bool AreProximate(ulong selfId, ulong otherId, IReadOnlyDictionary<ulong, Position>? positions)
+    {
+        if (!_settings.ProximityRequired || positions is null)
+        {
+            return true;
+        }
+
+        if (!positions.TryGetValue(selfId, out Position selfPosition) ||
+            !positions.TryGetValue(otherId, out Position otherPosition))
+        {
+            // Un membre sans position connue n'est pas vérifiablement proche :
+            // il ne peut pas porter un lien de cohésion locale.
+            return false;
+        }
+
+        return selfPosition.DistanceTo(otherPosition) <= _settings.ProximityRadius;
     }
 
     /// <summary>Affinité = 1 + bonus par but partagé + bonus par croyance partagée.</summary>
@@ -437,7 +488,8 @@ public sealed class GroupSystem
     private double MeanCohesionOf(
         IReadOnlyList<ulong> members,
         IReadOnlyDictionary<ulong, MindState> minds,
-        Dictionary<ulong, Belief[]> sortedBeliefs)
+        Dictionary<ulong, Belief[]> sortedBeliefs,
+        IReadOnlyDictionary<ulong, Position>? positions = null)
     {
         if (members.Count < 2)
         {
@@ -450,7 +502,7 @@ public sealed class GroupSystem
         {
             for (int j = i + 1; j < members.Count; j++)
             {
-                sum += CohesionOf(minds[members[i]], members[i], minds[members[j]], members[j], sortedBeliefs);
+                sum += CohesionOf(minds[members[i]], members[i], minds[members[j]], members[j], sortedBeliefs, positions);
                 count++;
             }
         }
@@ -463,8 +515,17 @@ public sealed class GroupSystem
         ulong selfId,
         MindState other,
         ulong otherId,
-        Dictionary<ulong, Belief[]> sortedBeliefs)
+        Dictionary<ulong, Belief[]> sortedBeliefs,
+        IReadOnlyDictionary<ulong, Position>? positions = null)
     {
+        // Cohérence avec le lien de composante : un couple qui ne satisfait pas la
+        // proximité exigée n'a pas de cohésion (sinon un groupe pourrait exister
+        // par sa règle de liaison tout en rapportant une cohésion d'un autre couple).
+        if (!AreProximate(selfId, otherId, positions))
+        {
+            return 0.0;
+        }
+
         double minTrust = Math.Min(self.Trust.TrustWith(otherId), other.Trust.TrustWith(selfId));
         return minTrust * Affinity(self, other, selfId, sortedBeliefs);
     }

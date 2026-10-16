@@ -9,6 +9,70 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Changed — **réalignement de la cognition active (engineVersion 0.16.0)**
+
+Mise en œuvre du plan de réalignement issu de
+`ANALYSE_DIVERGENCES_FONDAMENTALES_ET_PLAN_REALIGNEMENT.md` (arbitrages consignés
+en **ADR-018**). **Altération volontaire de trajectoire** : les checksums dorés
+sont ré-épinglés dans ce commit, avec leurs causes.
+
+- **Chaîne épistémique active (S-02/S-05/S-07/D-05/B-05)** : les candidats et leur
+  évaluation consomment la **connaissance active** de l'agent — croyances de
+  gisement et de pair, repli **mémoire rappelée** (`KnowledgeBuilder`), cible
+  concrète (`GoalTarget` : objet, position observée, âge, confiance) — plus jamais
+  les collections globales du monde.
+- **Objectif falsifiable (S-06/B-01/B-02)** : `Goal` porte une cible ; un objectif
+  de poursuite est **abandonné** si la cible n'est plus crue et **accompli** à
+  l'arrivée (l'hystérésis anti-oscillation ne compare plus l'action terminale au
+  <i>même</i> objectif sous sa forme « poursuite » — un agent campait sinon sur la
+  source sans jamais consommer).
+- **Fenêtre causale fermée (S-15/S-31/D-11/B-06)** : `TickCommitBuffer` diffère
+  déplacements et effets inter-entités au commit de fin de tick ; exception
+  déclarée et bornée pour le prélèvement d'un gisement.
+- **Ressources localisées (S-17/D-10/B-03/B-04)** : `World/ResourceNode.cs`,
+  placement partagé avec la description du monde publiée à PRISM (aucun tirage du
+  PRNG), agrégat publié = somme des gisements ; le modèle global reste un mode
+  déclaré (`resources.localized = false`).
+- **Croyances alignées sur le chapitre XI (S-08/S-09)** : `BeliefSet.ApplyObservation`
+  applique `UpdateStrength`/`MaxChangePerSnap`, `ConflictPenalty` redevient
+  effectif pour un sujet mobile, et l'ensemble garde **une croyance courante par
+  (sujet, prédicat)** (fin de la croissance par position observée). Le chemin
+  historique `ApplyEvidence` suit la même règle de conflit : la valeur
+  contradictoire remplace la croyance courante après pénalité du prior, qui sert
+  de `prior` à la révision (la pénalité n'est plus appliquée à une croyance
+  aussitôt écartée).
+- **Sémantique des confiances (S-04/S-10/D-07/B-09)** : `UtilityScore.Confidence`
+  devient la confiance **épistémique** de la cible, le taux de succès observé est
+  exposé séparément (EMA sur les issues d'action, plus sur « a vu quelque chose »),
+  et la confiance relationnelle est établie/renforcée par la réception elle-même.
+- **Messages → croyances (S-11/S-21/D-13)** : un message compris alimente une
+  croyance nommée et un souvenir (provenance, confiance dégradée) ; l'émission de
+  partage reste une **loi assumée** (ADR-018).
+- **Besoins fermés (S-13/D-14/B-08/B-12)** : `Socialize`/`Explore` satisfont leur
+  besoin à l'arrivée ; dérives social/curiosité rétablies (0,003 / 0,002) puisque
+  l'exutoire existe ; dérive de sûreté dirigée vers l'**insécurité**.
+- **Traces et identité (S-26/S-27/S-28/D-03/D-17/D-18/B-10)** : `DecisionRecord`
+  étendu (état, cible, preuves, candidats rejetés, résultat), **utilité nullable**
+  (absence ≠ zéro), `RunIdentity` (hash canonique de configuration + hash d'état
+  complet) enregistré dans le snapshot, `MeanMs` mesuré **par tick**.
+- **Fuites fermées (S-20/B-11)** : les primitives inter-entités (Give/Trade/Attack)
+  choisissent une cible **crue**, filtrée par rayon perceptuel et ligne de vue.
+- **Coût par observation (perception à densité)** : le récit canonique d'une
+  observation n'est formaté **qu'à l'écriture effective** en mémoire (la
+  déduplication par croyance écarte la plupart des réobservations d'un voisinage
+  stable) et la source `perception-<id>` est calculée une fois par entité et par
+  tick. Phase de perception à 1 000 entités : ≈ 24 ms → ≈ 14–18 ms par tick ;
+  meilleur de 5 essais × 40 ticks : 19,6 → 25,3 t/s. Plancher anti-régression du
+  CI (20 t/s) conservé, vérifié sur la suite complète. Aucun changement
+  d'empreinte ni de croyance (la source est comparée par valeur ; les checksums
+  dorés restent ceux ré-épinglés ci-dessus).
+- **Tests** : nouveaux cas de gate (`LocalizedResourceActionTests`,
+  `CognitionKnowledgeTests`, `CausalWindowTests`, `TransmissionChainTests`,
+  `RunIdentityTests`) ; les fixtures du modèle **global** déclarent
+  `resources.localized = false` (elles vérifient une mécanique, pas le modèle par
+  défaut) ; scénario T0–T5 « traits ⇒ décisions différentes » rendu isolant
+  (physiologie inerte) pour mesurer réellement l'effet du trait.
+
 ### Added
 - **`--simulation prism` — parcours Launcher de bout en bout (complément ADR-017)** : `--simulation` accepte `prism` en plus de `reference` (`SimulationProfiles.IsKnownSimulationId`, usage et messages mis à jour) ; `Program.ResolveOptions` applique le profil prism **sous** `--config` (priorité §5 : défauts → profil → surcouche → flags CLI) et le mode supervisé prépare avec la **configuration résolue complète** (sinon `--simulation prism` perdait son profil au `prepare`, qui rejouait le seul fichier de surcouche sur le profil de référence). `reference`/aucun scénario n'injecte rien : comportement historique bit-à-bit intact. Tests : `CliSimulationProfileTests` (4) + `Adr017PrismBatchTests` (3, dont un batch supervisé réel avec les arguments exacts du Launcher — `world_initialized` 1.1 et snapshots vérifiés).
 - **ADR-017 — échelle temporelle configurable (spec PRISM « Profil gameplay », contrat 0.4.0)** : clé `simulation.simulatedSecondsPerTick` (défaut 60, `[1, 3600]`) + clé informative `world.metersPerUnit` (> 0) ; `SimulationClock` instanciée (`SimulationLoop.Clock`) remplace la constante statique `TicksPerSimulationMinute` ; `TemporalScale` applique les facteurs `dt = simulatedSecondsPerTick / 60` **une fois au démarrage** (classe A : besoins, moveEnergy/rest gains, régénérations/dégradation, mémoire, croyances `^dt`, confiance `^dt`, saisons ; classes B/C inchangées ; court-circuit `dt == 1` bit-exact) ; restauration bit-à-bit via `CognitionPipeline.EffectiveOptions`. Profil **`prism`** (`SimulationProfiles.Prism()` + `../../configs/simulation/prism.json` : 2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick). Contrats additifs : snapshot + `simulatedTimeSeconds`, `world_initialized` description 1.1 (+ `simulatedSecondsPerTick`/`metersPerUnit`), status + `simulatedSecondsPerTick`, version observabilité **0.4.0**. Tests : `Adr017TemporalScaleTests` (25 : neutralité dt=1, équivalence 12 ticks à dt=1/12 par quantité A, validation, horloge, critères n°4-6), `Adr017TemporalContractTests` (4). Docs : **ADR-017**, ADR-005 précisée (« paramétrable » n'était que documentaire), `TICK_QUANTITIES.md` (inventaire PR 0 A/B/C), CONFIGURATION.md §6.12, API_CONTRACTS.md §2/§3. **Non-régression : goldens dorés inchangés (543 tests Core verts).**

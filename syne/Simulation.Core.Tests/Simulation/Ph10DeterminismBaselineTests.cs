@@ -150,7 +150,17 @@ public class Ph10DeterminismBaselineTests
         // 0xe62395429b50b7c1 → 0x954b8e0e70c0af5f. Cause unique : recalage des défauts
         // intégrés (coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives des
         // besoins sociaux, réserves et coûts de communication) —, re-pin assumé.
+        // Ré-épinglé au réalignement (engineVersion 0.16.0) :
+        // 0x954b8e0e70c0af5f → 0x6f1a7ec30e563337. Mêmes causes que le checksum doré de
+        // perception (ressources localisées et cible crue, fenêtre causale fermée au
+        // commit de fin de tick, décision fondée sur la connaissance, croyance courante
+        // par sujet, dérives sociales rétablies) — le journal d'ÉTAT (positions,
+        // besoins, intentions, souvenirs, croyances) bouge, ce qui confirme que le
+        // réalignement atteint bien la dynamique du monde et pas seulement une couche
+        // de trace. Continuité du déterminisme : même graine ⇒ journal identique
+        // (FullPipeline_SameSeed_IsBitForBitReproducible, vert), graines différentes ⇒
+        // journaux différents (FullPipeline_DifferentSeed_Diverges, vert).
         string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x954b8e0e70c0af5f", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0x6f1a7ec30e563337", $"0x{Fnv1a(log):x16}");
     }
 }

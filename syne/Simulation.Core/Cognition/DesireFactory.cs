@@ -52,20 +52,44 @@ public enum DesireKind
     Defend = 13,
 }
 
-/// <summary>État recherché (objectif) né d'un besoin non satisfait.</summary>
-public readonly record struct Goal(DesireKind Kind, ulong BornTick)
+/// <summary>
+/// État recherché (objectif) né d'un besoin non satisfait.
+/// <para>
+/// Depuis le réalignement (B-02), un objectif peut porter une <b>cible concrète</b>
+/// (<see cref="GoalTarget"/>) : « de l'eau en P, connue à t ». Le but devient
+/// falsifiable — arrivé en P sans ressource, l'objectif n'est pas accompli et la
+/// cible est révisée ou abandonnée. Un objectif sans cible reste possible
+/// (<c>Idle</c>, action purement physiologique), mais un objectif de recherche
+/// sans cible connue n'est plus proposé : dans ce cas l'agent <b>explore</b>.
+/// </para>
+/// </summary>
+public readonly record struct Goal(DesireKind Kind, ulong BornTick, GoalTarget? Target = null)
 {
     public ulong Age(ulong currentTick) => currentTick >= BornTick ? currentTick - BornTick : 0;
+
+    /// <summary>Vrai si l'objectif porte une cible du monde connue par l'agent.</summary>
+    public bool HasTarget => Target is not null;
 }
 
 /// <summary>
 /// Générateur d'objectifs : un désir est créé quand son besoin passe son seuil
-/// (SYNE-042: déclenchement dès « ≥ 50 ») et qu'aucun objectif du
-/// même type n'est actif. Pour faim/soif, le désir engendré est l'action terminale
-/// <see cref="DesireKind.Eat"/>/<see cref="DesireKind.Drink"/> si la réserve globale
-/// correspondante est disponible, sinon le <see cref="DesireKind.SeekFood"/>/
-/// <see cref="DesireKind.SeekWater"/> de poursuite (catalogue, SYNE-040) — le
-/// déclencheur est donc viable par construction.
+/// (SYNE-042 : déclenchement dès « ≥ 50 ») et qu'aucun objectif du même type
+/// n'est actif.
+///
+/// <para>
+/// <b>Deux modèles</b> (arbitrage de la Phase 0) :
+/// <list type="bullet">
+/// <item><b>Localisé</b> (<c>knowledge</c> fourni) : la faisabilité et
+/// la cible dépendent de ce que l'agent <b>sait</b>. Sur un gisement (cible à
+/// portée d'interaction) → <c>Eat</c>/<c>Drink</c> ; gisement connu plus loin →
+/// <c>SeekFood</c>/<c>SeekWater</c> <i>avec cible</i> ; aucun gisement connu →
+/// <c>Explore</c> (recherche d'un repère) et non un déplacement aveugle.</item>
+/// <item><b>Global</b> (<c>knowledge</c> nul, modèle historique) :
+/// <c>Eat</c>/<c>Drink</c> dès que la réserve mondiale est viable, sinon
+/// <c>SeekFood</c>/<c>SeekWater</c> — la localité de la décision n'est alors pas
+/// revendiquée.</item>
+/// </list>
+/// </para>
 /// </summary>
 public static class DesireFactory
 {
@@ -74,7 +98,8 @@ public static class DesireFactory
         ulong tick,
         IEnumerable<DesireKind> activeKinds,
         ActionCatalog catalog,
-        ResourceStocks stocks)
+        ResourceStocks stocks,
+        CognitionKnowledge? knowledge = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(catalog);
@@ -82,6 +107,7 @@ public static class DesireFactory
 
         var goals = new List<Goal>();
         var active = new HashSet<DesireKind>(activeKinds);
+        var generated = new HashSet<DesireKind>();
 
         foreach (DesireKind kind in Enum.GetValues<DesireKind>())
         {
@@ -99,10 +125,15 @@ public static class DesireFactory
                 continue;
             }
 
-            DesireKind candidate = ResolveTerminal(kind, catalog, stocks);
-            if (!active.Contains(candidate) && needs.IsTriggered(kind))
+            if (!needs.IsTriggered(kind))
             {
-                goals.Add(new Goal(candidate, tick));
+                continue;
+            }
+
+            DesireKind candidate = ResolveTerminal(kind, catalog, stocks, knowledge);
+            if (!active.Contains(candidate) && generated.Add(candidate))
+            {
+                goals.Add(new Goal(candidate, tick, knowledge?.TargetFor(candidate)));
             }
         }
 
@@ -110,21 +141,39 @@ public static class DesireFactory
     }
 
     /// <summary>
-    /// Faim/soif : préfère l'action terminale Eat/Drink si la réserve est
-    /// disponible, sinon revient à la poursuite SeekFood/SeekWater.
+    /// Faim/soif : <b>localisé</b>, l'action dépend de la connaissance — sur le
+    /// gisement → action terminale ; gisement connu → poursuite ciblée ; rien de
+    /// connu → exploration. <b>Global</b>, la viabilité de la réserve mondiale
+    /// décide (modèle historique).
     /// </summary>
-    private static DesireKind ResolveTerminal(DesireKind kind, ActionCatalog catalog, ResourceStocks stocks)
+    private static DesireKind ResolveTerminal(
+        DesireKind kind,
+        ActionCatalog catalog,
+        ResourceStocks stocks,
+        CognitionKnowledge? knowledge)
     {
-        if (kind == DesireKind.SeekFood)
+        if (kind is not (DesireKind.SeekFood or DesireKind.SeekWater))
         {
-            return catalog.IsViable(DesireKind.Eat, stocks) ? DesireKind.Eat : DesireKind.SeekFood;
+            return kind;
         }
 
-        if (kind == DesireKind.SeekWater)
+        if (knowledge is { } known)
         {
-            return catalog.IsViable(DesireKind.Drink, stocks) ? DesireKind.Drink : DesireKind.SeekWater;
+            bool food = kind == DesireKind.SeekFood;
+            bool atSource = food ? known.AtFoodSource : known.AtWaterSource;
+            if (atSource)
+            {
+                return food ? DesireKind.Eat : DesireKind.Drink;
+            }
+
+            GoalTarget? target = food ? known.FoodSource : known.WaterSource;
+            return target is not null
+                ? kind
+                : DesireKind.Explore;
         }
 
-        return kind;
+        return kind == DesireKind.SeekFood
+            ? (catalog.IsViable(DesireKind.Eat, stocks) ? DesireKind.Eat : DesireKind.SeekFood)
+            : (catalog.IsViable(DesireKind.Drink, stocks) ? DesireKind.Drink : DesireKind.SeekWater);
     }
 }

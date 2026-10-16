@@ -24,7 +24,10 @@ public sealed record ActionDefinition(
     double HungerRecovery,
     double ThirstRecovery,
     ResourceKind? RequiresReserve,
-    double ReserveConsumption)
+    double ReserveConsumption,
+    double SafetyRecovery = 0.0,
+    double SocialRecovery = 0.0,
+    double CuriosityRecovery = 0.0)
 {
     /// <summary>Viable si aucune réserve requise ou si la réserve est disponible.</summary>
     public bool IsViable(ResourceStocks stocks)
@@ -57,7 +60,10 @@ public sealed record ActionResult(
     double ThirstDelta,
     double FatigueDelta,
     ResourceKind? ReserveConsumed,
-    double ReserveConsumedAmount)
+    double ReserveConsumedAmount,
+    // Gisement effectivement prélevé (modèle localisé) : la provenance de la
+    // ressource fait partie de la trace causale, au même titre que la cible visée.
+    string? SourceNodeId = null)
 {
     public static ActionResult Blocked(Cognition.DesireKind kind, string reason) =>
         new(kind, ActionOutcome.Blocked, reason, 0.0, 0.0, 0.0, 0.0, null, 0.0);
@@ -101,7 +107,12 @@ public sealed class ActionCatalog
                 entry.HungerRecovery ?? 0.0,
                 entry.ThirstRecovery ?? 0.0,
                 entry.Reserve,
-                entry.ReserveConsumption ?? 1.0);
+                entry.ReserveConsumption ?? 1.0,
+                // Exutoires de besoin (réalignement S-13/B-08) : satisfaction
+                // accordée à l'arrivée à la cible connue de l'intention.
+                entry.SafetyRecovery ?? 0.0,
+                entry.SocialRecovery ?? 0.0,
+                entry.CuriosityRecovery ?? 0.0);
         }
 
         _definitions = definitions;

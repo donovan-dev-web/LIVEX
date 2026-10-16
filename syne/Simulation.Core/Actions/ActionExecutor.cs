@@ -33,6 +33,7 @@ public sealed class ActionExecutor
     private readonly ResourceStocks _stocks;
     private readonly SimulationOptions _options;
     private readonly AStarPathfinder _pathfinder;
+    private TickCommitBuffer? _commit;
 
     public ActionExecutor(World.World world, ActionCatalog catalog, ResourceStocks stocks, SimulationOptions options)
     {
@@ -48,6 +49,14 @@ public sealed class ActionExecutor
     }
 
     public AStarPathfinder Pathfinder => _pathfinder;
+
+    /// <summary>
+    /// Ouvre le tampon de conséquences du tick (fenêtre causale fermée,
+    /// ch. III) : les déplacements et les effets inter-entités sont différés à la
+    /// fin de l'itération. <c>null</c> (hors pipeline, tests unitaires) = effets
+    /// appliqués immédiatement, comportement historique.
+    /// </summary>
+    internal void BeginTick(TickCommitBuffer? buffer) => _commit = buffer;
 
     /// <summary>
     /// Exécute l'action <paramref name="kind"/> pour l'entité : applique les effets
@@ -93,13 +102,31 @@ public sealed class ActionExecutor
 
         ActionDefinition definition = _catalog[kind];
 
-        // 1. Prélèvement atomique de la réserve — avant tout effet observable.
+        // 1. Prélèvement atomique de la ressource — avant tout effet observable.
+        //    Modèle localisé (Phase 0) : la source est le GISEMENT où l'agent se
+        //    tient (cible crue atteinte), plus une réserve mondiale.
         ResourceKind? reserveConsumed = null;
         double consumed = 0.0;
+        string? sourceNodeId = null;
         if (definition.RequiresReserve is { } reserve)
         {
             consumed = definition.ReserveConsumption;
-            if (!_stocks.TryConsume(reserve, consumed))
+            if (_options.Resources.Localized)
+            {
+                ResourceNode? node = _world.NearestResourceNode(entity.Position, reserve, _options.Resources.InteractionRadius);
+                if (node is null)
+                {
+                    return ActionResult.Blocked(kind, $"aucun gisement {reserve} à portée (cible connue non atteinte)");
+                }
+
+                if (!node.TryConsume(consumed))
+                {
+                    return ActionResult.Blocked(kind, $"gisement {node.Id} épuisé ({node.Amount:0.###} < {consumed:0.###})");
+                }
+
+                sourceNodeId = node.Id;
+            }
+            else if (!_stocks.TryConsume(reserve, consumed))
             {
                 return ActionResult.Blocked(
                     kind,
@@ -116,10 +143,11 @@ public sealed class ActionExecutor
         double hungerDelta = 0.0;
         double thirstDelta = 0.0;
         double fatigueDelta = 0.0;
+        bool arrived = ArrivedAtTarget(entity, mind, kind);
 
         if (definition.Movement)
         {
-            MoveTowardDeterministicTarget(entity, kind, currentTick);
+            MoveTowardDestination(entity, mind, kind, currentTick);
             energyDelta = -definition.EnergyCost;
             if (energyDelta != 0.0)
             {
@@ -156,6 +184,28 @@ public sealed class ActionExecutor
             mind.Needs.RecoverThirst(definition.ThirstRecovery);
         }
 
+        // Exutoires de besoin (S-13 / B-08) : la satisfaction d'un besoin social,
+        // de curiosité ou de sûreté n'est accordée qu'à l'<b>arrivée</b> à la cible
+        // connue (un déplacement n'est pas une satisfaction). Sans cible, l'effet
+        // s'applique immédiatement (action non dirigée).
+        if (arrived)
+        {
+            if (definition.SafetyRecovery > 0.0)
+            {
+                mind.Needs.RecoverSafety(definition.SafetyRecovery);
+            }
+
+            if (definition.SocialRecovery > 0.0)
+            {
+                mind.Needs.RecoverSocial(definition.SocialRecovery);
+            }
+
+            if (definition.CuriosityRecovery > 0.0)
+            {
+                mind.Needs.RecoverCuriosity(definition.CuriosityRecovery);
+            }
+        }
+
         return new ActionResult(
             kind,
             ActionOutcome.Executed,
@@ -165,7 +215,22 @@ public sealed class ActionExecutor
             thirstDelta,
             fatigueDelta,
             reserveConsumed,
-            consumed);
+            consumed,
+            sourceNodeId);
+    }
+
+    /// <summary>
+    /// Vrai si l'action peut appliquer sa satisfaction : action sans cible (effet
+    /// immédiat) ou cible connue atteinte à portée d'interaction.
+    /// </summary>
+    private bool ArrivedAtTarget(Entity entity, MindState mind, DesireKind kind)
+    {
+        if (mind.Intention is not { } goal || goal.Kind != kind || goal.Target is not { } target)
+        {
+            return true;
+        }
+
+        return entity.Position.DistanceTo(target.Position) <= _options.Resources.InteractionRadius;
     }
 
     /// <summary>
@@ -225,16 +290,23 @@ public sealed class ActionExecutor
         // (recette fixe courte — pas de planificateur).
         ResourceKind reserve = mind.Needs.Hunger >= mind.Needs.Thirst ? ResourceKind.Food : ResourceKind.Water;
         double amount = Math.Min(_options.Agents.Actions.Inventory.TakeAmount, inventory.FreeWeight);
-        if (amount <= 0.0 || _stocks.IsEmpty(reserve))
+        double available = AvailableAtHand(entity, reserve);
+        if (amount <= 0.0 || available <= 0.0)
         {
-            return ActionResult.Blocked(DesireKind.Take, _stocks.IsEmpty(reserve) ? $"réserve {reserve} vide" : "capacité d'inventaire saturée");
+            return ActionResult.Blocked(
+                DesireKind.Take,
+                available <= 0.0
+                    ? (_options.Resources.Localized ? $"aucun gisement {reserve} à portée" : $"réserve {reserve} vide")
+                    : "capacité d'inventaire saturée");
         }
 
-        // Atomicité : prélèvement monde d'abord (échec = aucun effet), stockage ensuite.
-        if (!_stocks.TryConsume(reserve, amount))
+        // Atomicité : prélèvement source d'abord (échec = aucun effet), stockage ensuite.
+        if (available < amount)
         {
-            return ActionResult.Blocked(DesireKind.Take, $"réserve {reserve} insuffisante");
+            return ActionResult.Blocked(DesireKind.Take, $"source {reserve} insuffisante ({available:0.###} < {amount:0.###})");
         }
+
+        ConsumeAtHand(entity, reserve, amount);
 
         double? stored = inventory.TryTake(reserve, amount);
         if (stored is null)
@@ -249,6 +321,29 @@ public sealed class ActionExecutor
         return MechanicalResult(DesireKind.Take, entity, mind);
     }
 
+    /// <summary>Quantité disponible <b>sous la main</b> pour une primitive d'inventaire (gisement ou réserve mondiale).</summary>
+    private double AvailableAtHand(Entity entity, ResourceKind kind)
+    {
+        if (!_options.Resources.Localized)
+        {
+            return _stocks.Stock(kind);
+        }
+
+        return _world.NearestResourceNode(entity.Position, kind, _options.Resources.InteractionRadius)?.Amount ?? 0.0;
+    }
+
+    /// <summary>Prélève la source sous la main (gisement localisé ou réserve mondiale).</summary>
+    private void ConsumeAtHand(Entity entity, ResourceKind kind, double amount)
+    {
+        if (!_options.Resources.Localized)
+        {
+            _stocks.TryConsume(kind, amount);
+            return;
+        }
+
+        _world.NearestResourceNode(entity.Position, kind, _options.Resources.InteractionRadius)?.TryConsume(amount);
+    }
+
     private ActionResult ExecuteGive(Entity entity, MindState mind, Func<ulong, MindState?>? mindLookup)
     {
         if (mind.Inventory is not { } inventory)
@@ -256,10 +351,10 @@ public sealed class ActionExecutor
             return ActionResult.Blocked(DesireKind.Give, "inventaire inactif (agents.inventory.enabled = false)");
         }
 
-        Entity? recipient = NearestOtherEntity(entity);
+        Entity? recipient = NearestKnownEntity(entity, mind);
         if (recipient is null)
         {
-            return ActionResult.Blocked(DesireKind.Give, "aucune entité à portée");
+            return ActionResult.Blocked(DesireKind.Give, "aucune entité connue à portée");
         }
 
         // Don de la ressource détenue en plus grande quantité (recette fixe ;
@@ -300,10 +395,10 @@ public sealed class ActionExecutor
             return ActionResult.Blocked(DesireKind.Trade, "inventaire inactif (agents.inventory.enabled = false)");
         }
 
-        Entity? partner = NearestOtherEntity(entity);
+        Entity? partner = NearestKnownEntity(entity, mind);
         if (partner is null)
         {
-            return ActionResult.Blocked(DesireKind.Trade, "aucun partenaire à portée");
+            return ActionResult.Blocked(DesireKind.Trade, "aucun partenaire connu à portée");
         }
 
         MindState? partnerMind = mindLookup?.Invoke(partner.Id.Value);
@@ -347,10 +442,10 @@ public sealed class ActionExecutor
         ulong currentTick,
         Func<ulong, MindState?>? mindLookup)
     {
-        Entity? target = NearestOtherEntity(entity);
+        Entity? target = NearestKnownEntity(entity, mind);
         if (target is null)
         {
-            return ActionResult.Blocked(DesireKind.Attack, "aucune cible à portée");
+            return ActionResult.Blocked(DesireKind.Attack, "aucune cible connue à portée");
         }
 
         MindState? targetMind = mindLookup?.Invoke(target.Id.Value);
@@ -360,13 +455,21 @@ public sealed class ActionExecutor
         }
 
         double damage = 5.0 * Math.Max(0.0, mind.Factors?.Aggressiveness ?? 1.0);
-        if (targetMind.DefendingThisTick)
+        if (_commit is { } buffer)
         {
-            damage *= 0.5;
+            // Fenêtre causale fermée (ch. III) : le dégât est une conséquence du
+            // tick, appliquée en fin d'itération — la défense de la cible est
+            // résolue à ce moment, sur le drapeau du tick courant, et l'agent
+            // suivant ne voit jamais un état à moitié mis à jour.
+            buffer.RequestEnergyDamage(target.Id.Value, targetMind, damage);
+            buffer.RequestSafetyThreat(target.Id.Value, targetMind, 0.10);
+        }
+        else
+        {
+            targetMind.Needs.ExertEnergy(targetMind.DefendingThisTick ? damage * 0.5 : damage);
+            targetMind.Needs.ThreatenSafety(0.10);
         }
 
-        targetMind.Needs.ExertEnergy(damage);
-        targetMind.Needs.ThreatenSafety(0.10);
         return MechanicalResult(DesireKind.Attack, entity, mind);
     }
 
@@ -390,49 +493,124 @@ public sealed class ActionExecutor
         return new ActionResult(kind, ActionOutcome.Executed, null, energyDelta, 0.0, 0.0, 0.0, null, 0.0);
     }
 
-    /// <summary>Entité vivante la plus proche (toute autre que soi, hors murs), ou null.</summary>
-    private Entity? NearestOtherEntity(Entity self)
+    /// <summary>
+    /// Entité vivante la plus proche <b>parmi celles que l'agent connaît</b> : la
+    /// cible est choisie dans les <b>croyances de position</b> (issues de la
+    /// perception ou d'un message), filtrées par la portée perceptuelle et la ligne
+    /// de vue. Aucune lecture de la collection globale des entités n'intervient dans
+    /// le <i>choix</i> (S-20 / D-09 / B-11) : un pair hors rayon ou masqué n'est pas
+    /// candidat.
+    /// <para>
+    /// La résolution « identifiant connu → entité » est une simple résolution de
+    /// référence sur un identifiant déjà cru (et non un parcours de recherche de
+    /// cible) ; elle est bornée par le nombre de croyances de l'agent.
+    /// </para>
+    /// </summary>
+    private Entity? NearestKnownEntity(Entity self, MindState mind)
     {
         Entity? nearest = null;
         double bestDistance = double.MaxValue;
-        foreach (Entity other in _world.Entities)
+        foreach (Belief belief in mind.Beliefs.AllInPlace)
         {
-            if (other.Id.Value == self.Id.Value)
+            if (!string.Equals(belief.Fact.Predicate, KnowledgeBuilder.EntityPositionPredicate, StringComparison.Ordinal) ||
+                !belief.Fact.Subject.StartsWith("entity-", StringComparison.Ordinal) ||
+                !KnowledgeBuilder.TryParsePosition(belief.Fact.Value, out Position position))
             {
                 continue;
             }
 
-            double distance = self.Position.DistanceTo(other.Position);
-            if (distance < bestDistance || (distance == bestDistance && nearest is not null && other.Id.Value < nearest.Id.Value))
+            if (!ulong.TryParse(
+                    belief.Fact.Subject["entity-".Length..],
+                    System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out ulong knownId) ||
+                knownId == self.Id.Value)
             {
-                nearest = other;
-                bestDistance = distance;
+                continue;
             }
+
+            double distance = self.Position.DistanceTo(position);
+            if (distance > _options.Agents.Perception.Radius ||
+                !LineOfSight.IsClear(self.Position, position, _world.Obstacles))
+            {
+                continue;
+            }
+
+            if (distance > bestDistance || (distance == bestDistance && nearest is not null && knownId >= nearest.Id.Value))
+            {
+                continue;
+            }
+
+            Entity? candidate = FindEntity(knownId);
+            if (candidate is null)
+            {
+                continue;
+            }
+
+            nearest = candidate;
+            bestDistance = distance;
         }
 
         return nearest;
     }
 
+    /// <summary>Résolution d'une entité par identifiant <b>déjà cru</b> (jamais un critère de choix).</summary>
+    private Entity? FindEntity(ulong id)
+    {
+        foreach (Entity entity in _world.Entities)
+        {
+            if (entity.Id.Value == id)
+            {
+                return entity;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>
-    /// Pas de déplacement vers la cible. Si le pas direct est bloqué par un
-    /// obstacle, le chemin A* contournant l'obstacle est emprunté (SYNE-077 :
-    /// le pas suit alors le premier centre de cellule du chemin) ; en l'absence de
-    /// chemin (destination inaccessible ou expansion plafonnée), repli « sur place ».
+    /// Pas de déplacement vers la <b>destination de l'intention</b> : cible connue
+    /// (« eau en P, connue à t »), stable d'un tick à l'autre — c'est le contrat
+    /// <c>B-01/B-02</c> : une destination persistante, pas un offset recalculé.
+    ///
+    /// <para>
+    /// Si l'intention ne porte pas de cible (aucun repère connu), le pas retombe
+    /// sur l'offset pseudo-aléatoire déterministe historique — <b>prospection
+    /// déclarée</b>, et non « quête » : aucun nom d'action ne doit laisser croire à
+    /// une navigation vers un objet que l'agent ignore.
+    /// </para>
+    ///
+    /// Si le pas direct est bloqué par un obstacle, le chemin A* contournant
+    /// l'obstacle est emprunté (SYNE-077) ; en l'absence de chemin, repli
+    /// « sur place ».
     /// </summary>
-    private void MoveTowardDeterministicTarget(Entity entity, DesireKind kind, ulong currentTick)
+    private void MoveTowardDestination(Entity entity, MindState mind, DesireKind kind, ulong currentTick)
     {
         // SYNE-071 : une construction posée/retirée en cours de run re-rasterise la
         // grille A* et purge le cache (no-op si aucune modification — déterminisme).
         _pathfinder.Refresh();
 
-        ActionDefinition definition = _catalog[kind];
-        (double dx, double dy) = DeterministicOffset(entity.Id.Value, currentTick, kind);
-        double targetX = entity.Position.X + dx;
-        double targetY = entity.Position.Y + dy;
+        GoalTarget? destination = mind.Intention is { Kind: var intentionKind, Target: { } intended } && intentionKind == kind
+            ? intended
+            : null;
 
-        Position target = Position.Clamp(
-            new Position(targetX, targetY),
-            _world.Size);
+        Position target;
+        if (destination is { } aimed)
+        {
+            if (entity.Position.DistanceTo(aimed.Position) <= _options.Resources.InteractionRadius)
+            {
+                return; // arrivé : plus de pas (la satisfaction est décidée par le catalogue)
+            }
+
+            target = Position.Clamp(aimed.Position, _world.Size);
+        }
+        else
+        {
+            (double dx, double dy) = DeterministicOffset(entity.Id.Value, currentTick, kind);
+            target = Position.Clamp(
+                new Position(entity.Position.X + dx, entity.Position.Y + dy),
+                _world.Size);
+        }
 
         double speed = Math.Max(0.0, entity.Traits["speed"]);
         Position step = StepToward(entity.Position, target, speed);
@@ -446,7 +624,14 @@ public sealed class ActionExecutor
             return;
         }
 
-        _world.Grid.Move(entity, step);
+        if (_commit is { } buffer)
+        {
+            buffer.RequestMove(entity, step);
+        }
+        else
+        {
+            _world.Grid.Move(entity, step);
+        }
     }
 
     /// <summary>

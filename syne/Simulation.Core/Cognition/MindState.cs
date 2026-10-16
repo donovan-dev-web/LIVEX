@@ -121,6 +121,20 @@ public sealed class MindState
     /// <summary>Trace complète de la dernière décision.</summary>
     public DecisionRecord? LastDecisionRecord { get; private set; }
 
+    /// <summary>
+    /// État de la décision <b>du tick courant</b> (<c>New</c>, <c>Holdover</c>,
+    /// <c>Interrupted</c>, <c>None</c>). Permet à l'observabilité de ne jamais
+    /// publier un score ancien comme décision courante (B-10 / D-03) : un report
+    /// est un report, une absence n'est pas un zéro.
+    /// </summary>
+    public DecisionState DecisionStateThisTick { get; internal set; } = DecisionState.None;
+
+    /// <summary>Tick de la dernière perception effective (épistémique, distinct du taux de succès).</summary>
+    public ulong LastPerceptionTick { get; private set; }
+
+    /// <summary>Nombre d'objets perçus au dernier tick de perception (0 = zéro <b>observé</b>).</summary>
+    public int LastObservationCount { get; private set; }
+
     /// <summary>Scores d'utilité des candidats de la dernière décision.</summary>
     public IReadOnlyList<UtilityScore> LastDecisionScores { get; private set; } = [];
 
@@ -140,10 +154,33 @@ public sealed class MindState
     /// </summary>
     public bool DefendingThisTick { get; internal set; }
 
+    /// <summary>Vitesse d'apprentissage du taux de succès observé d'une action (EMA).</summary>
+    private const double ActionSuccessLearningRate = 0.25;
+
     internal void RecordAction(Actions.ActionResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
         LastActionResult = result;
+
+        // Le taux de succès d'une action décrit la <b>réussite observée</b> de
+        // cette action (S-04 / D-07) : moyenne exponentielle des issues, et non
+        // « présence récente d'une observation quelconque ». Un échec
+        // (Blocked) fait baisser le taux de la seule action concernée.
+        double current = _successRates.TryGetValue(result.Kind, out double rate) ? rate : 0.7;
+        double observed = result.Outcome == Actions.ActionOutcome.Executed ? 1.0 : 0.0;
+        _successRates[result.Kind] = Math.Clamp(
+            current + ((observed - current) * ActionSuccessLearningRate),
+            0.05,
+            0.95);
+
+        if (LastDecisionRecord is { } record)
+        {
+            LastDecisionRecord = record with
+            {
+                ResultOutcome = result.Outcome.ToString(),
+                ResultReason = result.Reason,
+            };
+        }
     }
 
     /// <summary>Enregistre l'état des besoins à la délibération (D2 : base de comparaison de saillance).</summary>
@@ -159,12 +196,18 @@ public sealed class MindState
         bool deliberated,
         bool interrupted,
         ulong tick,
-        ulong entityId)
+        ulong entityId,
+        GoalTarget? target = null,
+        IReadOnlyList<DecisionEvidence>? evidence = null,
+        IReadOnlyList<DesireKind>? rejected = null)
     {
         ArgumentNullException.ThrowIfNull(scores);
 
         LastDecision = chosen;
         LastDecisionScores = scores;
+        DecisionStateThisTick = interrupted
+            ? DecisionState.Interrupted
+            : deliberated ? DecisionState.New : DecisionState.Holdover;
         LastDecisionRecord = new DecisionRecord(
             tick,
             entityId,
@@ -172,7 +215,34 @@ public sealed class MindState
             interrupted,
             chosen.Kind,
             chosen.Utility,
-            scores);
+            scores,
+            DecisionStateThisTick,
+            Missing: false,
+            Target: target,
+            Evidence: evidence,
+            Rejected: rejected);
+    }
+
+    /// <summary>
+    /// Enregistre explicitement une <b>absence</b> de décision au tick courant
+    /// (B-10) : l'absence n'est ni un zéro d'utilité ni la décision du tick
+    /// précédent reportée — elle est nommée.
+    /// </summary>
+    internal void RecordMissingDecision(ulong tick, ulong entityId)
+    {
+        DecisionStateThisTick = DecisionState.None;
+        LastDecision = null;
+        LastDecisionScores = [];
+        LastDecisionRecord = new DecisionRecord(
+            tick,
+            entityId,
+            Deliberated: false,
+            Interrupted: false,
+            Chosen: DesireKind.Idle,
+            Utility: null,
+            Scores: [],
+            State: DecisionState.None,
+            Missing: true);
     }
 
     /// <summary>
@@ -213,14 +283,17 @@ public sealed class MindState
     /// </summary>
     public double SuccessRate(DesireKind kind) => _successRates.TryGetValue(kind, out double rate) ? rate : 0.7;
 
-    /// <summary>Rend l'entité « consciente » : constate les perceptions du tick courant.</summary>
-    internal void AcknowledgePerceptions(int observationCount)
+    /// <summary>
+    /// Constat des perceptions du tick courant. <b>N'alimente plus les taux de
+    /// succès</b> (S-04 / D-07 : « voir quelque chose » n'est pas « réussir une
+    /// action » — le taux de succès d'une action se mesure sur ses issues,
+    /// <see cref="RecordAction"/>) : ce constat horodate la fraîcheur épistémique
+    /// de l'agent, exploitable par l'analyse causale.
+    /// </summary>
+    internal void AcknowledgePerceptions(int observationCount, ulong tick)
     {
-        foreach (DesireKind kind in Enum.GetValues<DesireKind>())
-        {
-            double rate = _successRates.TryGetValue(kind, out double current) ? current : 0.7;
-            _successRates[kind] = Math.Clamp(rate + (observationCount > 0 ? 0.15 : -0.01), 0.1, 1.0);
-        }
+        LastObservationCount = Math.Max(0, observationCount);
+        LastPerceptionTick = tick;
     }
 
     /// <summary>Taux de succès par désir (persistance bit-à-bit).</summary>
@@ -314,5 +387,44 @@ public sealed class MindState
         LastDecision = kind is { } resolved
             ? new UtilityScore(resolved, 0, 0, 0, 0, 0, 0, 0)
             : null;
+        if (kind is null)
+        {
+            LastDecisionRecord = null;
+            DecisionStateThisTick = DecisionState.None;
+        }
+    }
+
+    /// <summary>
+    /// Restauration de la <b>trace diagnostique complète</b> (D-18) : sans elle, la
+    /// trajectoire restait exacte après reprise mais l'explication repartait d'un
+    /// score nul et d'une cible absente.
+    /// </summary>
+    internal void RestoreDecisionRecord(DecisionRecord? record)
+    {
+        LastDecisionRecord = record;
+        if (record is null)
+        {
+            LastDecision = null;
+            LastDecisionScores = [];
+            DecisionStateThisTick = DecisionState.None;
+            return;
+        }
+
+        // Une absence restaurée reste une <b>absence</b> : aucun score d'utilité
+        // n'est reconstitué pour elle (B-10), mais la trace est conservée telle
+        // quelle pour que l'explication continue après reprise (D-18).
+        LastDecision = record.Missing
+            ? null
+            : new UtilityScore(
+                record.Chosen,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                record.Utility ?? 0.0);
+        LastDecisionScores = record.Scores;
+        DecisionStateThisTick = record.State;
     }
 }

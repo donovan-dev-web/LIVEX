@@ -40,6 +40,12 @@ public static class SimulationSnapshotRestorer
             snapshot.Rng.S3);
 
         var loop = new SimulationLoop(world, rng, options);
+
+        // Gisements localisés (Phase 0) : la disposition sauvegardée (quantités
+        // comprises) remplace celle que l'init vient de poser — sinon une reprise
+        // repartirait sur des gisements pleins alors que la trajectoire continue sur
+        // des sources entamées, et le prochain tick divergerait du run continu.
+        loop.RestoreResourceNodes(snapshot.World.ResourceNodes);
         loop.Resources.RestoreState(snapshot.World.FoodStock, snapshot.World.WaterStock, snapshot.World.WoodStock, snapshot.World.MineralStock);
         loop.RestoreState(snapshot.Tick, rng);
         loop.RestoreTerritoryMembership(territoryMembership);
@@ -138,11 +144,90 @@ public static class SimulationSnapshotRestorer
         loop.Cognition.RestoreState(minds, groups, snapshot.NextGroupId);
     }
 
+    /// <summary>
+    /// Reconstruction de la trace décisionnelle persistée (D-18) : état, cible
+    /// crue (avec âge et confiance), scores décomposés, candidats rejetés, faits
+    /// justificatifs et résultat d'exécution.
+    /// </summary>
+    private static DecisionRecord RestoreDecision(DecisionSnapshotDto dto)
+    {
+        var scores = dto.Scores
+            .Select(score => new UtilityScore(
+                (DesireKind)score.Kind,
+                score.Benefit,
+                score.Cost,
+                score.Risk,
+                score.Confidence,
+                score.PersonalityModifier,
+                score.Urgency,
+                score.Utility,
+                score.SuccessRate))
+            .ToList();
+
+        GoalTarget? target = null;
+        if (dto.TargetLabel is { } label &&
+            KnowledgeBuilder.TryParsePosition(dto.TargetPosition ?? string.Empty, out WorldNamespace.Position position))
+        {
+            target = new GoalTarget(
+                dto.TargetType ?? "node",
+                Prng.Fnv1a64.HashUtf8(label),
+                label,
+                position,
+                dto.TargetObservedTick,
+                dto.TargetConfidence);
+        }
+
+        IReadOnlyList<DecisionEvidence>? evidence = dto.Evidence?
+            .Select(item => new DecisionEvidence(item.Source, item.Subject, item.Confidence, item.ObservedTick))
+            .ToList();
+        IReadOnlyList<DesireKind>? rejected = dto.Rejected?.Select(kind => (DesireKind)kind).ToList();
+
+        return new DecisionRecord(
+            dto.Tick,
+            EntityId: 0,
+            Deliberated: dto.State is (int)DecisionState.New,
+            Interrupted: dto.State is (int)DecisionState.Interrupted,
+            (DesireKind)dto.Chosen,
+            dto.Utility,
+            scores,
+            (DecisionState)dto.State,
+            dto.Missing,
+            target,
+            evidence,
+            rejected,
+            dto.ResultOutcome,
+            dto.ResultReason);
+    }
+
+    /// <summary>
+    /// Objectif persisté → objectif restauré, <b>cible comprise</b>. Une intention
+    /// restaurée sans sa destination ferait diverger le premier tick repris du run
+    /// continu (le but n'est plus le même état visé) : la cible fait donc partie du
+    /// contrat d'état de reprise.
+    /// </summary>
+    private static Goal RestoreGoal(GoalSnapshotDto dto)
+    {
+        GoalTarget? target = null;
+        if (dto.TargetLabel is { } label &&
+            KnowledgeBuilder.TryParsePosition(dto.TargetPosition ?? string.Empty, out WorldNamespace.Position position))
+        {
+            target = new GoalTarget(
+                dto.TargetType ?? "node",
+                Prng.Fnv1a64.HashUtf8(label),
+                label,
+                position,
+                dto.TargetObservedTick,
+                dto.TargetConfidence);
+        }
+
+        return new Goal((DesireKind)dto.Kind, dto.BornTick, target);
+    }
+
     private static MindState RestoreMind(MindSnapshotDto dto, SimulationOptions options)
     {
         var mind = new MindState(options)
         {
-            Intention = dto.Intention is { } intention ? new Goal((DesireKind)intention.Kind, intention.BornTick) : null,
+            Intention = dto.Intention is { } intention ? RestoreGoal(intention) : null,
             CollectiveObjective = dto.CollectiveObjective is { } objective
                 ? new GroupObjective(
                     objective.GroupId,
@@ -272,6 +357,13 @@ public static class SimulationSnapshotRestorer
             dto.LastDeliberationTick,
             triggered);
         mind.RestoreLastDecision(dto.LastDecisionKind is { } lastKind ? (DesireKind)lastKind : null);
+        if (dto.Decision is { } decisionDto)
+        {
+            // Continuation de l'EXPLICATION (D-18) : trace complète restaurée —
+            // état, cible crue, scores décomposés, candidats rejetés, faits
+            // justificatifs et résultat. Le snapshot d'état ne suffisait pas.
+            mind.RestoreDecisionRecord(RestoreDecision(decisionDto));
+        }
 
         return mind;
     }

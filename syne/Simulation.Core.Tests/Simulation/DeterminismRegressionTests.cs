@@ -136,7 +136,20 @@ public class DeterminismRegressionTests
         // DÉFAUTS intégrés (coût de déplacement 0,5 → 0,03, gains Eat/Drink 0/0 → 2,0/1,0,
         // dérives social/curiosité, réserves et coûts de communication) — cette fois
         // porté par les défauts eux-mêmes et non par le profil ; re-pin assumé.
+        // Ré-épinglé au réalignement (engineVersion 0.16.0) :
+        // 0xf4aaa2733e491935 → 0xc8116c934c424b28. Le scénario de DÉFAUTS change de
+        // modèle : (1) ressources localisées — la faisabilité d'Eat/Drink dépend du
+        // gisement où l'agent se tient, la cible vient d'une croyance et l'objectif est
+        // accompli à l'arrivée ; (2) fenêtre causale fermée — déplacements et effets
+        // sont appliqués au commit de fin de tick ; (3) décision fondée sur la
+        // connaissance active (croyances, repli mémoire) et non sur les seuils seuls ;
+        // (4) une croyance courante par sujet+prédicat (un sujet mobile ne crée plus de
+        // croyance par position) ; (5) dérives social/curiosité rétablies (0,003 / 0,002)
+        // parce que Socialize/Explore satisfont désormais leur besoin. La propriété de
+        // déterminisme elle-même est couverte par les cas voisins (même graine ⇒
+        // journal identique, graines différentes ⇒ journaux différents) ; ce pin atteste
+        // que la trajectoire de référence a changé, de façon assumée et documentée.
         string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0xf4aaa2733e491935", $"0x{Fnv1a(log):x16}");
+        Assert.Equal("0xc8116c934c424b28", $"0x{Fnv1a(log):x16}");
     }
 }

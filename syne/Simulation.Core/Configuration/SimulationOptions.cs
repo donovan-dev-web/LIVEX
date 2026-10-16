@@ -81,24 +81,44 @@ public sealed class NeedsSettings
     public double HungerRate { get; set; } = 0.5;
     public double ThirstRate { get; set; } = 0.7;
     public double FatigueRate { get; set; } = 0.3;
-    /// <summary>Dérive d'élan des besoins sociaux (V0.1, calibration prototype).</summary>
-    public double SafetyDriftRate { get; set; } = 0.001;
 
     /// <summary>
-    /// Dérive du besoin social — <b>calibration B1 </b> : 0,001 → 0,0002.
-    /// Ce besoin n'a aucun mécanisme de satisfaction (aucun action ne le décrémente) :
-    /// à 0,001/tick il franchit son seuil de déclenchement (0,7) au tick ~700 et
-    /// déclenche <c>Socialize</c> <b>en permanence</b> — jusqu'à 96 % des décisions
-    /// en fin de run, mouvement payé sans gain d'énergie compensé (mort lente).
+    /// Dérive d'insécurité par tick — <b>le besoin <c>Safety</c> DIMINUE de ce
+    /// taux</b>, conformément à la dérive vers l'insécurité décrite par la
+    /// monographie (ch. X : la sûreté se dégrade, elle ne s'améliore pas
+    /// passivement).
+    /// <para>
+    /// Correction de réalignement : le signe était inverse (le besoin
+    /// <i>augmentait</i> vers 1 et, initialisé à 1, ne pouvait jamais franchir le
+    /// seuil de fuite — <c>Flee</c> était inatteignable par dérive). Calibration :
+    /// 0,0002/tick, alignée sur la dérive sociale, atteint le seuil (0,5) au tick
+    /// ~2500 — soit la fin de l'horizon de calibration — au lieu de saturer un run
+    /// court en fuite permanente. La sûreté se rétablit par l'action <c>Flee</c>
+    /// (arrivée à une distance de sécurité d'une menace connue).
+    /// </para>
     /// </summary>
-    public double SocialDriftRate { get; set; } = 0.0002;
+    public double SafetyDriftRate { get; set; } = 0.0002;
 
     /// <summary>
-    /// Dérive du besoin de curiosité — <b>calibration B1 </b> : 0,002 →
-    /// 0,0005, même cause que <see cref="SocialDriftRate"/> (seuil 0,3 franchi au
-    /// tick ~600 au lieu de ~150).
+    /// Dérive du besoin social — <b>réalignement (arbitrage Phase 0/2, D-14/B-08)</b>.
+    /// La calibration B1 avait ramené ce taux à 0,0002 parce que <c>Socialize</c> ne
+    /// réduisait <b>aucun</b> besoin : une dérive plus vive produisait un déplacement
+    /// muet permanent (jusqu'à 96 % des décisions) au lieu d'une boucle homéostatique.
+    /// Depuis le réalignement, <c>Socialize</c> <b>est un exutoire</b>
+    /// (<c>socialRecovery</c> appliqué à l'arrivée) : la dérive est rétablie à une
+    /// valeur qui produit un <b>cycle</b> (déclenchement au tick ~230, satisfaction à
+    /// l'arrivée, redescente sous le seuil) au lieu d'une saturation ou d'un besoin
+    /// inerte. Le taux reste un paramètre : les profils peuvent le recalibrer.
     /// </summary>
-    public double CuriosityDriftRate { get; set; } = 0.0005;
+    public double SocialDriftRate { get; set; } = 0.003;
+
+    /// <summary>
+    /// Dérive du besoin de curiosité — même arbitrage que <see cref="SocialDriftRate"/> :
+    /// <c>Explore</c> est désormais un exutoire (<c>curiosityRecovery</c> à l'arrivée),
+    /// donc la dérive retrouve une valeur de cycle (seuil 0,3 franchi au tick ~150)
+    /// plutôt que la valeur de masquage de la calibration B1 (0,0005 → tick ~600).
+    /// </summary>
+    public double CuriosityDriftRate { get; set; } = 0.002;
 
     /// <summary>Seuil de déclenchement : un besoin non satisfait lance une action dès ce niveau (« ≥ 50 »).</summary>
     public double HungerTriggerThreshold { get; set; } = 50.0;
@@ -113,6 +133,18 @@ public sealed class PerceptionSettings
 {
     /// <summary>Rayon de perception — : défaut 50 (plage 30–70).</summary>
     public int Radius { get; set; } = 50;
+
+    /// <summary>
+    /// Portée de perception des <b>gisements</b> (repères statiques) — décision de
+    /// modèle du réalignement : les gisements sont des repères du paysage, perçus
+    /// de plus loin que les entités mobiles (défaut 200 contre 50). Sans cette
+    /// portée, une source localisée dans un monde 500 × 500 est invisible depuis un
+    /// point de départ aléatoire et la navigation dirigée n'a aucun objet à
+    /// connaître : la boucle perception → mémoire → croyance → but serait vide.
+    /// La perception reste <b>partielle</b> (rayon fini, masquage par obstacle) :
+    /// la portée décide de ce qui est découvrable, pas de ce qui est vrai.
+    /// </summary>
+    public int ResourceRadius { get; set; } = 200;
     public double ConfidenceFalloff { get; set; } = 0.3;
     /// <summary>Perception étagée : rotation en groupes de <c>RotationInterval</c>.</summary>
     public int RotationInterval { get; set; } = 4;
@@ -222,9 +254,14 @@ public sealed class ActionCatalogSettings
         ["eat"] = new ActionEntrySettings { EnergyCost = 0.2, HungerRecovery = 30.0, Reserve = World.ResourceKind.Food, EnergyRecovery = 2.0 },
         ["drink"] = new ActionEntrySettings { EnergyCost = 0.2, ThirstRecovery = 30.0, Reserve = World.ResourceKind.Water, EnergyRecovery = 1.0 },
         ["rest"] = new ActionEntrySettings(),
-        ["flee"] = new ActionEntrySettings { Movement = true },
-        ["socialize"] = new ActionEntrySettings { Movement = true },
-        ["explore"] = new ActionEntrySettings { Movement = true },
+        // Exutoires de besoin (réalignement, S-13/B-08) : Socialize et Explore
+        // étaient déclarés « mouvement » sans qu'aucune entrée du catalogue ne
+        // réduise Social/Curiosity — le besoin entretenait un manque sans le
+        // réduire. Les satisfactions sont déclarées ici et appliquées sur
+        // l'arrivée à la cible connue (pair cru / repère cru).
+        ["flee"] = new ActionEntrySettings { Movement = true, SafetyRecovery = 0.30 },
+        ["socialize"] = new ActionEntrySettings { Movement = true, SocialRecovery = 0.35 },
+        ["explore"] = new ActionEntrySettings { Movement = true, CuriosityRecovery = 0.50 },
         // Primitives atomiques D7 (engineVersion 0.14.0) :
         // déclarées pour la complétude du catalogue (chaque DesireKind DOIT avoir une
         // entrée), mais inertes tant que agents.actions.plans.enabled = false (D3) —
@@ -256,6 +293,15 @@ public sealed class ActionEntrySettings
 
     /// <summary>Réduction de la soif (ex. Drink).</summary>
     public double? ThirstRecovery { get; set; }
+
+    /// <summary>Rétablissement de la sûreté (0-1) — exutoire de <c>Flee</c> (réalignement, S-13).</summary>
+    public double? SafetyRecovery { get; set; }
+
+    /// <summary>Réduction du besoin social (0-1) — exutoire de <c>Socialize</c> (réalignement, B-08).</summary>
+    public double? SocialRecovery { get; set; }
+
+    /// <summary>Réduction du besoin de curiosité (0-1) — exutoire de <c>Explore</c> (réalignement, B-08).</summary>
+    public double? CuriosityRecovery { get; set; }
 
     /// <summary>Réserve globale requise/consommée (ex. Eat → Food).</summary>
     public World.ResourceKind? Reserve { get; set; }
@@ -375,6 +421,40 @@ public sealed class CommitmentSettings
 
 public sealed class ResourceSettings
 {
+    /// <summary>
+    /// Gisements <b>localisés</b> actifs — décision de modèle du réalignement
+    /// (Phase 0) : les ressources sont des sources spatiales que l'agent doit
+    /// découvrir, mémoriser, croire et rejoindre, et non un stock mondial abstrait.
+    /// Les réserves globales (<c>resources.food/water/wood/mineral</c>) ne sont plus
+    /// qu'un <b>agrégat publié</b> (somme des gisements) pour l'observabilité : la
+    /// consommation et la régénération se font au gisement.
+    /// <para>
+    /// Faux = modèle historique (réserve mondiale unique) : aucune source
+    /// spatiale n'est posée et Eat/Drink prélèvent la réserve globale. Les deux
+    /// modèles sont testés ; le profil de référence porte le modèle localisé.
+    /// </para>
+    /// </summary>
+    public bool Localized { get; set; } = true;
+
+    /// <summary>Nombre de gisements par type (doit suivre la description du monde : 3).</summary>
+    public int NodesPerType { get; set; } = 3;
+
+    /// <summary>Quantité initiale d'un gisement (égale à la quantité publiée par la description du monde).</summary>
+    public double NodeInitialAmount { get; set; } = 100.0;
+
+    /// <summary>Capacité d'un gisement (plafond de régénération).</summary>
+    public double NodeCapacity { get; set; } = 100.0;
+
+    /// <summary>Régénération d'un gisement par tick (module saisonnier appliqué).</summary>
+    public double NodeRegenerationRate { get; set; } = 1.0;
+
+    /// <summary>
+    /// Rayon d'interaction avec un gisement : distance maximale à laquelle une
+    /// action terminale (Eat/Drink/Take) prélève la source, et à laquelle
+    /// l'arrivée à une destination est considérée atteinte.
+    /// </summary>
+    public double InteractionRadius { get; set; } = 2.0;
+
     /// <summary>
     /// Nourriture — <b>calibration B1 </b> : réserve initiale 20 000 et
     /// régénération nette 20/tick, **sans** dégradation (« degradationTick »
@@ -741,6 +821,18 @@ public sealed class GroupSettings
 
     /// <summary>Quorum : une décision collective est adoptée quand ≥ cette fraction des membres partage la même intention.</summary>
     public double ConsensusThreshold { get; set; } = 0.5;
+
+    /// <summary>
+    /// La cohésion exige une <b>proximité spatiale actuelle</b> des deux membres —
+    /// arbitrage de modèle du réalignement (ch. VII vs §2b.3) : un groupe est une
+    /// structure <i>locale</i>, pas seulement une relation entretenue. Faux = ancienne
+    /// règle (deux membres distants pouvaient rester liés par confiance et affinité
+    /// persistantes).
+    /// </summary>
+    public bool ProximityRequired { get; set; } = true;
+
+    /// <summary>Distance maximale entre deux membres pour qu'un lien de cohésion soit valide.</summary>
+    public double ProximityRadius { get; set; } = 60.0;
 }
 
 /// <summary>

@@ -104,6 +104,6 @@ public class GroupBirthDeterminismTests
         Assert.Equal("group_dissolved", ObservabilityContract.GroupDissolved);
         Assert.Equal("group_decision", ObservabilityContract.GroupDecision);
         Assert.Equal("agent_spawned", ObservabilityContract.AgentSpawned);
-        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 : défauts intégrés recalés, goldens ré-épinglés
+        Assert.Equal("0.16.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.16.0 : défauts intégrés recalés, goldens ré-épinglés
     }
 }
