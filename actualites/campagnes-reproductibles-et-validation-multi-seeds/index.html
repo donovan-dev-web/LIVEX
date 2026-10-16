@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Campagnes reproductibles et validation multi-seeds · LIVEX</title><meta name="description" content="Campagnes multi-seeds (50/100 agents × 3 graines) montrent stabilité 2500 ticks : 0 extinction, |pente| < seuil, population ≈ initiale."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/"><link rel="alternate" hreflang="en" href="https://donovan-dev-web.github.io/LIVEX/en/actualites/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="website"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="Campagnes reproductibles et validation multi-seeds · LIVEX"><meta property="og:description" content="Campagnes multi-seeds (50/100 agents × 3 graines) montrent stabilité 2500 ticks : 0 extinction, |pente| < seuil, population ≈ initiale."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:locale" content="fr_FR"><meta property="og:locale:alternate" content="en_US"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Campagnes reproductibles et validation multi-seeds · LIVEX"><meta name="twitter:description" content="Campagnes multi-seeds (50/100 agents × 3 graines) montrent stabilité 2500 ticks : 0 extinction, |pente| < seuil, population ≈ initiale."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/","description":"Campagnes multi-seeds (50/100 agents × 3 graines) montrent stabilité 2500 ticks : 0 extinction, |pente| < seuil, population ≈ initiale.","inLanguage":"fr","license":"https://opensource.org/licenses/MIT","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CnPyFOsh.css"></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><a href="/LIVEX/comprendre/" aria-haspopup="true">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li></ul></div><div class="ni"><a href="/LIVEX/technique/" aria-haspopup="true">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><a href="/LIVEX/telecharger/" aria-haspopup="true">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li></ul></div><a href="/LIVEX/actualites/" aria-current="page">Journal</a><a href="/LIVEX/documentation/">Documentation</a><div class="ni"><a href="/LIVEX/a-propos/" aria-haspopup="true">À propos<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li></ul></div></nav><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a><a href="/LIVEX/en/actualites/" hreflang="en" lang="en" title="English">EN</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > a { display: inline-block !important; padding: 0 !important; border: 0 !important; }
+      nav.main .sub { display: none !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else header.removeAttribute('data-nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    document.addEventListener('click', function (e) {
+      if (!header.hasAttribute('data-nav-open')) return;
+      if (!header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/actualites/">Journal</a></span><span> · <span>Campagnes reproductibles et validation multi-seeds</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>17</b> Journal</div><h1 class="ptitle">Campagnes reproductibles et validation multi-seeds</h1><p class="lead">Campagnes multi-seeds (50/100 agents × 3 graines) montrent stabilité 2500 ticks : 0 extinction, |pente| &lt; seuil, population ≈ initiale.</p></section></div><section class="block"><div class="w"><p class="mu" style="font-size:0.78rem"><time datetime="2026-10-08T00:00:00.000Z">8 octobre 2026</time> · campagnes · seeds · calibration · reference · validation</p><p>LIVEX privilégie <strong>la preuve par campagne</strong> plutôt que par exemple isolé. Des campagnes multi-graines, rejouables, valident la viabilité du profil de référence sur 2500 ticks avec des critères explicites.</p>
+<h2 id="objectif--transformer-lintuition-en-preuve">Objectif : transformer l’intuition en preuve</h2>
+<p>Pour affirmer qu’un profil est viable dans les conditions définies, il faut montrer :</p>
+<ul>
+<li><strong>Stabilité sur la durée</strong> : survie à 2500 ticks, pas juste à 300.</li>
+<li><strong>Robustesse aux graines</strong> : comportement cohérent sur plusieurs <code>seed</code> (12345, 424242, 999…).</li>
+<li><strong>Critères quantifiés</strong> : seuils explicites, pas « ça tient ».</li>
+<li><strong>Traçabilité</strong> : chaque run rejouable depuis graine + configuration.</li>
+</ul>
+<h2 id="profil--reference-">Profil « reference »</h2>
+<p>Le profil <code>reference</code> est calibré (valeurs <strong>B1</strong>) pour assurer une trajectoire stable :</p>
+<ul>
+<li><strong>Régénération ressources</strong> : <code>food/water</code> initiales 20000, régénération 20/10, <code>degradationTick</code> = <code>null</code> (empêche l’annulation de la régénération par périodes).</li>
+<li><strong>Coûts énergétiques</strong> : <code>moveEnergyCost</code> 0,03, <code>restEnergyGain</code> 1,5, <code>restFatigueRecovery</code> 2,0.</li>
+<li><strong>Bénéfices Eat/Drink</strong> : rehaussés (<code>eat.energyRecovery=2.0</code>, <code>drink.energyRecovery=1.0</code>) avec plafonnement/déplafonnement cohérent via <code>UtilityEvaluator.BenefitOf</code>.</li>
+<li><strong>Dérives sociales/curiosité</strong> : réduites (<code>socialDriftRate</code> 0,0002, <code>curiosityDriftRate</code> 0,0005).</li>
+<li><strong>Communication bornée</strong> : <code>maxSendsPerTick</code>/<code>maxReceivesPerTick</code> = 1, <code>relayEnabled</code> false, coûts énergétiques messages à 0.</li>
+<li><strong>Un seul jeu de valeurs</strong> : défini dans <code>SimulationProfiles.Reference()</code> et <code>configs/simulation/reference.json</code> (même source). Chemin <code>entries.*</code> strict pour éviter ignorées par JSON.</li>
+</ul>
+<p>Changement volontaire de trajectoire → bump <code>engineVersion</code> MINOR (0.14.0 → 0.15.0 lors de la calibration B1).</p>
+<h2 id="campagne-de-validation">Campagne de validation</h2>
+<p><strong>Critères d’acceptation</strong> (explicites) :</p>
+<ul>
+<li><strong>0 extinction</strong> : <code>alive_count</code> &gt; 0 à t=2500 pour tous les runs.</li>
+<li><strong>0 mort</strong> : pas d’extinction observée.</li>
+<li><strong>Pente stable</strong> : <code>|energySlopePerTick| &lt; 0.005</code> sur fenêtre pertinente.</li>
+<li><strong>Population préservée</strong> : population finale ≈ population initiale.</li>
+</ul>
+<p><strong>Plan validé</strong> : 6 runs = (50 agents + 100 agents) × 3 seeds (12345, 424242, 999).</p>
+<p><strong>Résultat</strong> : <strong>6/6 validés</strong>. Tous atteignent 2500 ticks sans extinction, population finale = initiale, pente ~0.0037/tick.</p>
+<h2 id="outils-rejouables">Outils rejouables</h2>
+<p>Les campagnes sont <strong>scriptables</strong> :</p>
+<ul>
+<li><code>scripts/calibration_campaign.py</code> — validation multi-seeds du profil reference.</li>
+<li><code>scripts/reset_campaign.py</code> — enchaînement cohérent via <code>POST /api/control/reset</code> (avec surcouche <code>config</code>).</li>
+<li><code>scripts/v3_campaign.py</code> — campagne V3 (cadence, backpressure, lag, reprise worker).</li>
+</ul>
+<p>Ces scripts utilisent le <strong>chemin HTTP réel</strong> (<code>--serve</code>) avec flux WS segmenté par <code>runId</code>. Ils sont conçus pour être rejoués depuis un clone propre.</p>
+<h2 id="chemin-reset-vs-prepare">Chemin reset vs prepare</h2>
+<p>Un point clé : <code>POST /api/control/reset</code> accepte désormais une surcouche <code>config</code> partielle (même logique que <code>start/prepare</code>). Cela permet d’<strong>enchaîner</strong> des runs de populations différentes sans relancer SYNE. La validation montre :</p>
+<ul>
+<li>Chemin <code>prepare</code> et chemin <code>reset</code> (avec même surcouche) produisent <strong>des pentes identiques</strong>.</li>
+<li>Application cohérente du profil de référence même après reset (plus de repli sur defaults non calibrés).</li>
+</ul>
+<h2 id="traçabilité-echos">Traçabilité ECHOS</h2>
+<p>ECHOS consigne <code>outcome</code> (<code>extinct|surviving</code>), <code>extinctionTick</code> et bloc <code>viability</code> (pente énergie sur 200 derniers ticks, <code>actionSharesWhenHungry</code>, <code>resourceRegime</code>). Ces signaux sont <strong>observe-only</strong> et exposés dans <code>/api/runs</code>. Le Launcher archive également <code>provenance.json</code> et <code>AnalysisComponentVersion</code> dans le paquet <code>.livexp</code>.</p>
+<h2 id="preuves-concrètes">Preuves concrètes</h2>
+<ul>
+<li><strong>Oracles dorés</strong> : checksums épinglés (perception <code>0xf4aaa2733e491935</code>, état complet <code>0x954b8e0e70c0af5f</code>) — revalidés après calibration.</li>
+<li><strong>Tests bout-en-bout</strong> : parcours J3 réel (SYNE publié + ECHOS réel) vérifient reprise sans rejouer, intégrité octet-à-octet du paquet.</li>
+<li><strong>Détection honnête</strong> : trous de ticks journalisés (<code>gaps_detected</code>), provenance <code>measured</code> explicite.</li>
+<li><strong>Campagne V3</strong> : mesures de cadence/backpressure/lag sous contrainte (gel consommateur) — résultats publiés, jamais masqués.</li>
+</ul>
+<h2 id="philosophie">Philosophie</h2>
+<p>« Tenir 2500 ticks » n’est pas un artifice. C’est le fruit d’un <strong>ajustement explicite</strong> des défauts intégrés (B1), d’un <strong>ordre causal strict</strong>, d’une <strong>communication bornée</strong> et d’un <strong>suivi utilitaire</strong> cohérent. L’objectif n’est pas d’optimiser la survie à tout prix, mais d’obtenir un <strong>comportement stable et traçable</strong> dans un monde à règles explicites.</p>
+<p><strong>Si ça tient sous 6 runs multi-seeds, on peut rejouer. Si on peut rejouer, on peut discuter honnêtement du phénomène observé.</strong></p>
+<p style="margin-top:24px"><a class="bt" href="/LIVEX/actualites/">Toutes les actualités</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">Flux RSS</a></p></div></section></main><footer class="site"><div class="w"><nav aria-label="Navigation de pied de page"><a href="/LIVEX/comprendre/">Comprendre</a><a href="/LIVEX/technique/">Architecture</a><a href="/LIVEX/telecharger/">Télécharger</a><a href="/LIVEX/versions/">Versions</a><a href="/LIVEX/feuille-de-route/">Feuille de route</a><a href="/LIVEX/actualites/">Journal</a><a href="/LIVEX/suivre/">Suivre</a><a href="/LIVEX/documentation/">Documentation</a><a href="/LIVEX/faq/">FAQ</a><a href="/LIVEX/comprendre/glossaire/">Glossaire</a><a href="/LIVEX/participer/">Participer</a><a href="/LIVEX/a-propos/">À propos</a><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a><a href="/LIVEX/presse/">Kit média</a><a href="/LIVEX/mentions-legales/">Mentions légales</a><a href="/LIVEX/confidentialite/">Confidentialité</a><a href="/LIVEX/accessibilite/">Accessibilité</a><a href="/LIVEX/licence/">Licence</a><a href="/LIVEX/plan-du-site/">Plan du site</a><a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a><a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">Code sous licence MIT</a></nav><hr class="fl"><div class="fgrid"><p>© 2026 LIVEX — projet personnel de Donovan. Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence MIT.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>

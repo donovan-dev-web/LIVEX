@@ -1,0 +1,133 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>PRISM : le projet Unreal final et le plugin PRISM-LDK · LIVEX</title><meta name="description" content="PRISM est le projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK. SYNE reste seul décisionnel ; PRISM assure le rendu perceptif."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/"><link rel="alternate" hreflang="en" href="https://donovan-dev-web.github.io/LIVEX/en/actualites/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="website"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="PRISM : le projet Unreal final et le plugin PRISM-LDK · LIVEX"><meta property="og:description" content="PRISM est le projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK. SYNE reste seul décisionnel ; PRISM assure le rendu perceptif."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:locale" content="fr_FR"><meta property="og:locale:alternate" content="en_US"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="PRISM : le projet Unreal final et le plugin PRISM-LDK · LIVEX"><meta name="twitter:description" content="PRISM est le projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK. SYNE reste seul décisionnel ; PRISM assure le rendu perceptif."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/","description":"PRISM est le projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK. SYNE reste seul décisionnel ; PRISM assure le rendu perceptif.","inLanguage":"fr","license":"https://opensource.org/licenses/MIT","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CnPyFOsh.css"></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><a href="/LIVEX/comprendre/" aria-haspopup="true">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li></ul></div><div class="ni"><a href="/LIVEX/technique/" aria-haspopup="true">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><a href="/LIVEX/telecharger/" aria-haspopup="true">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li></ul></div><a href="/LIVEX/actualites/" aria-current="page">Journal</a><a href="/LIVEX/documentation/">Documentation</a><div class="ni"><a href="/LIVEX/a-propos/" aria-haspopup="true">À propos<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li></ul></div></nav><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a><a href="/LIVEX/en/actualites/" hreflang="en" lang="en" title="English">EN</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > a { display: inline-block !important; padding: 0 !important; border: 0 !important; }
+      nav.main .sub { display: none !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else header.removeAttribute('data-nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    document.addEventListener('click', function (e) {
+      if (!header.hasAttribute('data-nav-open')) return;
+      if (!header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/actualites/">Journal</a></span><span> · <span>PRISM : le projet Unreal final et le plugin PRISM-LDK</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>17</b> Journal</div><h1 class="ptitle">PRISM : le projet Unreal final et le plugin PRISM-LDK</h1><p class="lead">PRISM est le projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK. SYNE reste seul décisionnel ; PRISM assure le rendu perceptif.</p></section></div><section class="block"><div class="w"><p class="mu" style="font-size:0.78rem"><time datetime="2026-10-06T00:00:00.000Z">6 octobre 2026</time> · prism · unreal · prism-ldk · rendu · immersion</p><p><strong>PRISM</strong> (<em>Perceptual Rendering &amp; Interactive Simulation Module</em>) est le projet Unreal final de LIVEX. Il intègre le <strong>plugin PRISM-LDK</strong> (<em>LIVEX Development Kit</em>). Son rôle : le <strong>rendu perceptif</strong> et l’<strong>immersion</strong>, sans porter la logique décisionnelle.</p>
+<h2 id="choix-darchitecture">Choix d’architecture</h2>
+<p>L’ADR-002 acte ce choix : <strong>PRISM est le projet Unreal final de LIVEX</strong> et intègre le plugin Unreal <strong>PRISM-LDK</strong>. Cette décision supersède l’ADR-001 (prototype Godot), conservé à titre historique. Le principe est catégorique :</p>
+<blockquote>
+<p><strong>SYNE reste le seul moteur décisionnel et l’unique autorité de l’état simulé.</strong></p>
+</blockquote>
+<p>PRISM est un <strong>hôte de rendu perceptif</strong>, pas un second moteur.</p>
+<h2 id="séparation-des-responsabilités">Séparation des responsabilités</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left">Composant</th>
+<th style="text-align: left">Responsabilité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left"><strong>SYNE</strong></td>
+<td style="text-align: left">Vérité de l’état, boucle de simulation, décisions des agents, déterminisme.</td>
+</tr>
+<tr>
+<td style="text-align: left"><strong>ECHOS</strong></td>
+<td style="text-align: left">Observation, analyse, métriques, calibration, comparaison de runs.</td>
+</tr>
+<tr>
+<td style="text-align: left"><strong>PRISM</strong></td>
+<td style="text-align: left">Représentation visuelle/perceptive, immersion, interaction utilisateur orientée rendu. Aucun calcul décisionnel.</td>
+</tr>
+</tbody>
+</table>
+<p>Cette séparation garantit que l’observation/visualisation n’influence jamais le cours de la simulation.</p>
+<h2 id="le-plugin-prism-ldk">Le plugin PRISM-LDK</h2>
+<p>Le <strong>PRISM-LDK</strong> est le module technique qui formalise l’interface entre PRISM et l’écosystème LIVEX. Il définit :</p>
+<ul>
+<li><strong>Description <code>world_initialized</code> (v1.1)</strong> : paramètres du monde fournis par SYNE, incluant <code>simulatedSecondsPerTick</code>, <code>metersPerUnit</code> (informatif), dimensions, cellule, TPS, etc.</li>
+<li><strong>Flux d’observabilité</strong> : consommation des snapshots et événements SYNE (ordre strict « snapshot puis événements » par tick), alignement sur le tick courant.</li>
+<li><strong>Cycle de contrôle</strong> : respect des phases <code>prepare/ready/start/pause/resume/stop/reset</code> selon les contrats.</li>
+<li><strong>Supervision</strong> : sondes health/readiness (<code>health.path</code>, <code>intervalMs</code>, <code>startupMs</code>) et gestion des états (Démarrage → Prêt → En cours).</li>
+<li><strong>Transport</strong> : s’aligne sur <code>TRANSPORT_API.md</code> et <code>INTEGRATION_CONTRACT.md</code> pour l’interopérabilité avec SYNE/ECHOS/Launcher.</li>
+</ul>
+<h2 id="échelle-temporelle-et-représentation-spatiale">Échelle temporelle et représentation spatiale</h2>
+<p>PRISM consomme <code>simulatedSecondsPerTick</code> exposé dans <code>world_initialized</code>. Cette valeur (ex. 60 s/tick pour <code>reference</code>, 5 s/tick pour <code>prism</code>) définit l’<strong>échelle temporelle simulée</strong> sans altérer l’ordre causal ni les effets par action côté SYNE. <code>metersPerUnit</code> est informatif et permet d’harmoniser l’échelle spatiale entre simulation et rendu perceptif.</p>
+<p>Le profil <code>prism</code> est conçu pour un rendu perceptif (monde 2240×2240, 6 TPS cibles, 5 s/tick) tout en restant cohérent avec les contrats SYNE.</p>
+<h2 id="intégration-avec-le-launcher">Intégration avec le Launcher</h2>
+<p>Le Launcher évalue le <strong>déverrouillage Immersion</strong> en lisant les exigences PRISM (mode porteur, <code>snapshotStream</code>, <code>renderCadence</code>, contrôle). Il sélectionne le <strong>profil</strong> (dont <code>prism</code>) dynamiquement, démarre les composants dans l’ordre de résolution et les arrête dans l’ordre inverse. PRISM est traité comme un composant supervisable (cycle de vie, sondes, gestion d’arrêts/échecs) via ses manifestes.</p>
+<h2 id="point-de-vue-sur-limmersion">Point de vue sur l’immersion</h2>
+<p>PRISM n’a pas vocation à inventer de la logique. Son rôle est de <strong>rendre perceptible</strong> ce qui émerge de SYNE :</p>
+<ul>
+<li><strong>Montrer, pas décider</strong> : l’état visible reflète fidèlement les snapshots SYNE.</li>
+<li><strong>Respect du temps simulé</strong> : la cadence de rendu s’aligne sur le flux (sans extrapolation qui romprait la traçabilité).</li>
+<li><strong>Traçabilité préservée</strong> : tout élément visible remonte à un tick/snapshot SYNE identifiable.</li>
+</ul>
+<h2 id="distinction-par-rapport-au-prototype">Distinction par rapport au prototype</h2>
+<p>L’ADR-002 acte formellement le passage à <strong>Unreal + PRISM-LDK</strong> comme socle final. Les références historiques à Godot (ADR-001) décrivent un prototype, non l’implémentation actuelle. Cette clarification est reflétée dans la documentation (VISION, ARCHITECTURE, PRISM).</p>
+<h2 id="en-résumé">En résumé</h2>
+<p>PRISM est le <strong>canal perceptif</strong> de LIVEX. En intégrant le plugin PRISM-LDK dans un projet Unreal final, il préserve la règle d’or : <strong>SYNE détient la vérité, ECHOS l’analyse, PRISM la perception</strong>. Cette séparation est ce qui permet d’observer une émergence honnête, traçable et reproductible.</p>
+<p style="margin-top:24px"><a class="bt" href="/LIVEX/actualites/">Toutes les actualités</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">Flux RSS</a></p></div></section></main><footer class="site"><div class="w"><nav aria-label="Navigation de pied de page"><a href="/LIVEX/comprendre/">Comprendre</a><a href="/LIVEX/technique/">Architecture</a><a href="/LIVEX/telecharger/">Télécharger</a><a href="/LIVEX/versions/">Versions</a><a href="/LIVEX/feuille-de-route/">Feuille de route</a><a href="/LIVEX/actualites/">Journal</a><a href="/LIVEX/suivre/">Suivre</a><a href="/LIVEX/documentation/">Documentation</a><a href="/LIVEX/faq/">FAQ</a><a href="/LIVEX/comprendre/glossaire/">Glossaire</a><a href="/LIVEX/participer/">Participer</a><a href="/LIVEX/a-propos/">À propos</a><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a><a href="/LIVEX/presse/">Kit média</a><a href="/LIVEX/mentions-legales/">Mentions légales</a><a href="/LIVEX/confidentialite/">Confidentialité</a><a href="/LIVEX/accessibilite/">Accessibilité</a><a href="/LIVEX/licence/">Licence</a><a href="/LIVEX/plan-du-site/">Plan du site</a><a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a><a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">Code sous licence MIT</a></nav><hr class="fl"><div class="fgrid"><p>© 2026 LIVEX — projet personnel de Donovan. Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence MIT.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>

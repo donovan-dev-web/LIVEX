@@ -1,0 +1,124 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Reproductibilité et déterminisme au cœur de LIVEX · LIVEX</title><meta name="description" content="À graine identique, LIVEX vise un rejeu aligné sur ses oracles. Déterminisme, traçabilité et contrôle strict des entrées guident chaque choix."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/"><link rel="alternate" hreflang="en" href="https://donovan-dev-web.github.io/LIVEX/en/actualites/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="website"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="Reproductibilité et déterminisme au cœur de LIVEX · LIVEX"><meta property="og:description" content="À graine identique, LIVEX vise un rejeu aligné sur ses oracles. Déterminisme, traçabilité et contrôle strict des entrées guident chaque choix."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:locale" content="fr_FR"><meta property="og:locale:alternate" content="en_US"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Reproductibilité et déterminisme au cœur de LIVEX · LIVEX"><meta name="twitter:description" content="À graine identique, LIVEX vise un rejeu aligné sur ses oracles. Déterminisme, traçabilité et contrôle strict des entrées guident chaque choix."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/","description":"À graine identique, LIVEX vise un rejeu aligné sur ses oracles. Déterminisme, traçabilité et contrôle strict des entrées guident chaque choix.","inLanguage":"fr","license":"https://opensource.org/licenses/MIT","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CnPyFOsh.css"></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><a href="/LIVEX/comprendre/" aria-haspopup="true">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li></ul></div><div class="ni"><a href="/LIVEX/technique/" aria-haspopup="true">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><a href="/LIVEX/telecharger/" aria-haspopup="true">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li></ul></div><a href="/LIVEX/actualites/" aria-current="page">Journal</a><a href="/LIVEX/documentation/">Documentation</a><div class="ni"><a href="/LIVEX/a-propos/" aria-haspopup="true">À propos<span class="ni-arrow" aria-hidden="true">▾</span></a><ul class="sub"><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li></ul></div></nav><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a><a href="/LIVEX/en/actualites/" hreflang="en" lang="en" title="English">EN</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > a { display: inline-block !important; padding: 0 !important; border: 0 !important; }
+      nav.main .sub { display: none !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else header.removeAttribute('data-nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    document.addEventListener('click', function (e) {
+      if (!header.hasAttribute('data-nav-open')) return;
+      if (!header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/actualites/">Journal</a></span><span> · <span>Reproductibilité et déterminisme au cœur de LIVEX</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>17</b> Journal</div><h1 class="ptitle">Reproductibilité et déterminisme au cœur de LIVEX</h1><p class="lead">À graine identique, LIVEX vise un rejeu aligné sur ses oracles. Déterminisme, traçabilité et contrôle strict des entrées guident chaque choix.</p></section></div><section class="block"><div class="w"><p class="mu" style="font-size:0.78rem"><time datetime="2026-10-03T00:00:00.000Z">3 octobre 2026</time> · reproductibilite · determinisme · tests · contrats</p><p>Si l’on veut pouvoir dire « voici la chaîne de causes qui a produit ce groupe », il faut pouvoir <strong>rejouer</strong> exactement le même monde. C’est pourquoi la reproductibilité et le déterminisme sont des exigences structurantes dans LIVEX, pas des options.</p>
+<h2 id="pourquoi-cest-indispensable">Pourquoi c’est indispensable</h2>
+<p>La question directrice exige une réponse instrumentée, pas argumentative. Pour cela :</p>
+<ul>
+<li><strong>Réponse factuelle</strong> : « à cette graine, sous cette configuration cohérente, ce phénomène apparaît au tick N ».</li>
+<li><strong>Validation par rejeu</strong> : un observateur indépendant doit obtenir le même résultat en rejouant.</li>
+<li><strong>Traçabilité</strong> : toute affirmation doit remonter à des interactions locales traçables.</li>
+</ul>
+<p>Sans reproductibilité, l’interprétation l’emporte sur le fait. Sans déterminisme contrôlé, on ne peut pas distinguer un effet structurel d’une fluctuation.</p>
+<h2 id="syne--déterminisme-par-conception">SYNE : déterminisme par conception</h2>
+<p>SYNE est conçu pour un déroulement <strong>déterministe</strong> à partir d’entrées contrôlées. Quelques principes guident cette exigence :</p>
+<ul>
+<li><strong>Graine unique</strong> : le PRNG est initialisé une seule fois à partir de <code>seed</code>. Tous les tirages aléatoires passent par ce générateur.</li>
+<li><strong>Boucle à ticks</strong> : l’avancement est discret, sans horloge système non maîtrisée dans le cœur décisionnel.</li>
+<li><strong>Ordre causal strict</strong> : perception → évaluation (formule d’utilité) → sélection d’action → application des effets → mises à jour → fin de tick. Cet ordre est invariant.</li>
+<li><strong>Pas d’effets non-déterministes</strong> dans le cœur** : pas de <code>DateTime.UtcNow</code> utilisé pour trancher une décision ; l’heure simulée (<code>simulatedTimeSeconds</code>) est dérivée du tick et de l’échelle temporelle (<code>simulatedSecondsPerTick</code>).</li>
+<li><strong>Snapshot &amp; restore</strong> : capture d’état complet (monde, cognition, PRNG) et restauration exacte permettent un rejeu bit-à-bit identique au parcours ininterrompu.</li>
+<li><strong>Persistance SQLite</strong> : schéma versionné, transactions atomiques, reprise au dernier état valide. La rotation des sauvegardes est bornée pour éviter les effets collatéraux.</li>
+</ul>
+<h2 id="echos--observation-sans-intrusion">ECHOS : observation sans intrusion</h2>
+<p>ECHOS consomme le flux d’observabilité de SYNE sans modifier l’état. Pour préserver la reproductibilité :</p>
+<ul>
+<li><strong>Consommation passive</strong> : il n’envoie pas de commandes modifiant l’état décisionnel.</li>
+<li><strong>Alignement strict</strong> : le flux suit « snapshot puis événements » par tick. ECHOS détecte les <strong>discontinuités de ticks</strong> (trous) et les consigne sans les masquer.</li>
+<li><strong>Provenance</strong> : chaque métrique signale si elle est <strong>mesurée</strong> ou si un repli neutre a dû être appliqué (absence de fenêtre). Cela évite de présenter comme mesuré ce qui est reconstitué.</li>
+<li><strong>Comparaisons honnêtes</strong> : <code>/api/compare</code> distingue un <strong>résumé léger</strong> (<code>light=1</code>) d’une <strong>comparaison complète</strong> fondée sur l’empreinte bit-à-bit. Le verdict « bit-identique/reproductible » n’est émis que lorsque les conditions permettent de l’établir.</li>
+<li><strong>Rapports de calibration versionnés</strong> : <code>schemaVersion 2</code> avec <code>outcome</code>, <code>extinctionTick</code>, bloc <code>viability</code>, <code>actionSharesWhenHungry</code>, <code>resourceRegime</code>. Ces champs sont dérivés depuis les séries persistées, sans réinjection dans SYNE.</li>
+</ul>
+<h2 id="contrôler-ce-qui-entre">Contrôler ce qui entre</h2>
+<p>La reproductibilité exige aussi de <strong>maîtriser les entrées</strong> :</p>
+<ul>
+<li><strong>Configuration cohérente</strong> : profils (<code>reference</code>, <code>prism</code>), surcouches partielles appliquées de manière uniforme (start/prepare/reset suivent les mêmes règles). Un seul jeu de valeurs par profil est maintenu pour éviter la dérive.</li>
+<li><strong>Run_id canonique</strong> : <code>run-&lt;seed&gt;-&lt;12hex&gt;</code> rend traçable le lien entre seed, exécution et artefacts (paquets <code>.livexp</code>, rapports ECHOS).</li>
+<li><strong>Orchestration déterministe</strong> : le Launcher dérive les graines, applique les politiques d’échec de manière explicite, et consigne <code>provenance.json</code> à la création du run. La reprise se fait sans rejouer les runs déjà validés (empreintes et journaux vérifiés).</li>
+<li><strong>Échelle temporelle maîtrisée</strong> : <code>simulatedSecondsPerTick</code> (et <code>metersPerUnit</code> informatif) modifie la représentation temporelle/scalaire, mais les <strong>effets par action</strong> et l’ordre causal restent inchangés. L’horloge est instanciée au démarrage, pas globale mutable.</li>
+</ul>
+<h2 id="preuves-pas-affirmations">Preuves, pas affirmations</h2>
+<p>Le projet traduit ces principes en <strong>preuves concrètes</strong> :</p>
+<ul>
+<li><strong>Oracles de checksum</strong> : états dorés épinglés pour les parcours critiques ; tout changement de trajectoire justifié (bump <code>engineVersion</code> MINOR quand la trajectoire change volontairement).</li>
+<li><strong>Campagnes reproductibles</strong> : campagnes multi-seeds (ex. 50/100 agents × 3 seeds) montrant stabilité sur 2500 ticks avec critères explicites (0 extinction, |pente| &lt; seuil, population finale ≈ initiale).</li>
+<li><strong>Tests bout-en-bout</strong> : parcours réels SYNE publié + ECHOS réel (y compris Windows), vérification octet-à-octet de paquets <code>.livexp</code> et de rapports archivés.</li>
+<li><strong>Détection de trous</strong> : journalisation structurée des discontinuités de ticks, comptage <code>gaps_detected</code>, sans masquage.</li>
+</ul>
+<h2 id="une-discipline-nécessaire">Une discipline nécessaire</h2>
+<p>Dans LIVEX, « ça fonctionne » ne suffit pas. « Ça se rejoue » est la norme. Cette discipline est contraignante, mais elle est aussi ce qui permet de transformer une curiosité (« peut-il émerger quelque chose ? ») en une <strong>affirmation vérifiable</strong> (« dans ces conditions précises, oui, et voici comment le rejouer »).</p>
+<p>C’est précisément cette rigueur qui donne du poids à tout phénomène observé : s’il émerge, il doit pouvoir réapparaître à l’identique.</p>
+<p style="margin-top:24px"><a class="bt" href="/LIVEX/actualites/">Toutes les actualités</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">Flux RSS</a></p></div></section></main><footer class="site"><div class="w"><nav aria-label="Navigation de pied de page"><a href="/LIVEX/comprendre/">Comprendre</a><a href="/LIVEX/technique/">Architecture</a><a href="/LIVEX/telecharger/">Télécharger</a><a href="/LIVEX/versions/">Versions</a><a href="/LIVEX/feuille-de-route/">Feuille de route</a><a href="/LIVEX/actualites/">Journal</a><a href="/LIVEX/suivre/">Suivre</a><a href="/LIVEX/documentation/">Documentation</a><a href="/LIVEX/faq/">FAQ</a><a href="/LIVEX/comprendre/glossaire/">Glossaire</a><a href="/LIVEX/participer/">Participer</a><a href="/LIVEX/a-propos/">À propos</a><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a><a href="/LIVEX/presse/">Kit média</a><a href="/LIVEX/mentions-legales/">Mentions légales</a><a href="/LIVEX/confidentialite/">Confidentialité</a><a href="/LIVEX/accessibilite/">Accessibilité</a><a href="/LIVEX/licence/">Licence</a><a href="/LIVEX/plan-du-site/">Plan du site</a><a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a><a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">Code sous licence MIT</a></nav><hr class="fl"><div class="fgrid"><p>© 2026 LIVEX — projet personnel de Donovan. Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence MIT.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>
