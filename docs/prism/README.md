@@ -53,6 +53,7 @@ d'intégration Blueprint et les conventions de projection du monde.
 | `SCALE_AND_CADENCE_SPEC.md` | Échelle SYNE ↔ Unreal, cadence et profil de monde |
 | `TRANSPORT_API.md` | WebSocket et HTTP SYNE |
 | `PRISM_UNREAL_IMPLEMENTATION.md` | Guide d'intégration PRISM-LDK et Blueprint |
+| `BLUEPRINT_ROADMAP.md` | Plan de travail temporaire de la partie Blueprint (éléments à créer, jalons, empaquetage) |
 | `RENDERING_SPEC.md` | Objectifs de représentation visuelle |
 | `VISUALIZATION_SPEC.md` | Vues d'inspection, sociales et communication |
 | `UX_INTERACTION.md` | Intentions d'interaction et d'interface |

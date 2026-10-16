@@ -74,7 +74,7 @@ function createServer(options = {}) {
         return send(409, errorJson('world_not_prepared', 'Préparez le monde avant de le consulter.'));
       }
       log('HTTP response GET world -> 200');
-      return send(200, worldDescriptionGeometry(simulation.worldDescription()));
+      return send(200, simulation.worldDescription());
     }
     if (request.method !== 'POST' || !url.pathname.startsWith('/api/control/')) {
       log('HTTP response -> 404 not_found');
@@ -108,7 +108,7 @@ function createServer(options = {}) {
           ok: true,
           action: 'prepared',
           ticksPerSecond: simulation.options.ticksPerSecond,
-          world: worldDescriptionGeometry(simulation.worldDescription()),
+          world: simulation.worldDescription(),
           ...simulation.status()
         });
       }
@@ -176,10 +176,10 @@ function createServer(options = {}) {
         type: 'world_initialized',
         version: simulation.worldVersion,
         seed: simulation.options.seed,
-        // Géométrie du monde, comme WorldDescription (ObstacleSnapshot sans
-        // type/shape/cells) : les consommateurs PRISM/ECHOS n'ont pas à connaître
-        // la représentation interne des obstacles du mock.
-        world: worldDescriptionGeometry(simulation.worldDescription())
+        // WorldDescription tel quel : la géométrie des obstacles est déjà celle
+        // du contrat (`{id, x, y, radius}`, comme `WorldObstacle`), donc la trame
+        // diffusée et la réponse de `prepare` ne peuvent pas diverger.
+        world: simulation.worldDescription()
       }));
     }
     client.on('error', error =>
@@ -255,14 +255,6 @@ async function readJsonBody(request) {
   if (!body || typeof body !== 'object' || Array.isArray(body))
     throw new TypeError('request body must be a JSON object');
   return body;
-}
-
-/** Projette les obstacles sur leur géométrie {id, x, y, radius}, comme WorldDescription. */
-function worldDescriptionGeometry(world) {
-  return {
-    ...world,
-    obstacles: (world.obstacles ?? []).map(({ id, x, y, radius }) => ({ id, x, y, radius: radius ?? 0 }))
-  };
 }
 
 module.exports = { createServer, Simulation, DEFAULTS, merge };

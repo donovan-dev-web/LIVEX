@@ -269,6 +269,7 @@ class Simulation {
 
     if (this.replay) {
       this.stepReplay();
+      this.logTick(null);
       return;
     }
 
@@ -283,6 +284,7 @@ class Simulation {
     // trame avec « decision_made reçu avant le premier snapshot ».
     const events = [];
 
+    const previousPositions = this.captureAgentPositions();
     for (const agent of this.agents) {
       const result = this.agentDecisionService.execute(agent, this.tick, this.world, this.obstacles);
       this.tickActions.push(result);
@@ -332,6 +334,55 @@ class Simulation {
     }
 
     if (this.tick >= this.options.maxTicks) this.finish();
+
+    this.logTick(previousPositions);
+  }
+
+  captureAgentPositions() {
+    const positions = new Map();
+    for (const agent of this.agents) positions.set(agent.id, { x: agent.x, y: agent.y });
+    return positions;
+  }
+
+  /**
+   * Résumé console d'un tick : la trace que l'on confronte à la projection
+   * Unreal (PRISM). Une seule ligne par tick, bornée par `tickLogSampleSize`,
+   * activée par `diagnostics.tickLog` (désactivé par défaut — un run produit une
+   * ligne par tick et les tests en enchaînent des centaines).
+   */
+  logTick(previousPositions) {
+    const diagnostics = this.options.diagnostics ?? {};
+    if (!diagnostics.tickLog) return;
+    if (!previousPositions) {
+      log('TICK %s state=%s runId=%s alive=%s (replay)',
+        this.tick, this.state, this.runId || '<none>', this.agents.length);
+      return;
+    }
+
+    let moved = 0;
+    for (const agent of this.agents) {
+      const before = previousPositions.get(agent.id);
+      if (before && (before.x !== agent.x || before.y !== agent.y)) moved++;
+    }
+
+    const actionCounts = new Map();
+    let blocked = 0;
+    for (const action of this.tickActions) {
+      actionCounts.set(action.action, (actionCounts.get(action.action) ?? 0) + 1);
+      if (action.outcome === 'blocked') blocked++;
+    }
+
+    const sampleSize = Math.max(0, Number(diagnostics.tickLogSampleSize) || 0);
+    const sample = this.agents.slice(0, sampleSize)
+      .map(agent => `${agent.id}:(${round(agent.x)},${round(agent.y)},${agent.currentIntention})`)
+      .join(' ');
+    log('TICK %s state=%s runId=%s seed=%s alive=%s moved=%s blocked=%s res=(food:%s,water:%s,wood:%s,mineral:%s) actions={%s}%s',
+      this.tick, this.state, this.runId || '<none>', this.options.seed,
+      this.agents.length, moved, blocked,
+      round(this.resources.food ?? 0), round(this.resources.water ?? 0),
+      round(this.resources.wood ?? 0), round(this.resources.mineral ?? 0),
+      [...actionCounts.entries()].map(([name, count]) => `${name}:${count}`).join(','),
+      sample ? ` sample=[${sample}]` : '');
   }
 
   stepReplay() {

@@ -1,13 +1,20 @@
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
- * Rôle : Génération déterministe du monde (terrain, obstacles, ressources, agents).
+ * Rôle : Génération déterministe du monde (cellules, obstacles, ressources, agents).
+ *
+ * Parité de description (`WorldDescriptionBuilder.Build`, SYNE) : le mock publie
+ * exactement ce que le moteur publie, et rien de plus. En particulier les
+ * cellules suivent la même règle — `terrainType` toujours `plains` (le moteur
+ * n'a pas de biome), `walkable` vrai si la case ne porte aucun obstacle,
+ * `movementCost` 1 sur une case libre et 100 sur une case bloquée. Un
+ * consommateur (PRISM) ne doit pas avoir à traiter un cas que le moteur ne
+ * produit jamais : ni mer, ni rivière, ni coût non entier.
  */
 
 const { createInitialAgents } = require('./agent-factory');
-const { OBSTACLE_SHAPES, isCellBlocked, createInitialObstacles } = require('./obstacle-service');
+const { isCellBlocked, createInitialObstacles } = require('./obstacle-service');
 const { generateResourceLocations } = require('./resource-service');
-const { TERRAIN_PROFILES, generateTerrainGrid } = require('./terrain-service');
 
 class WorldGenerator {
   generate({ seed, ticksPerSecond, config }) {
@@ -20,9 +27,7 @@ class WorldGenerator {
 
     this.validateConfig(config);
 
-    // Terrain et obstacles sont construits d'abord pour que la marchabilité des cases tienne compte des deux.
-    const obstacles = createInitialObstacles(config.world, seed, cellSize);
-    const terrainGrid = generateTerrainGrid(seed, cellCountX, cellCountY, config.world.terrain);
+    const obstacles = createInitialObstacles(config.world);
 
     const cells = [];
     for (let y = 0; y < cellCountY; y++) {
@@ -31,13 +36,12 @@ class WorldGenerator {
           .filter(obstacle => isCellBlocked(x, y, cellSize, [obstacle]))
           .map(obstacle => obstacle.id)
           .sort();
-        const terrainType = terrainGrid[y][x];
-        const terrainProfile = TERRAIN_PROFILES[terrainType];
         cells.push({
-          x, y, terrainType,
-          walkable: obstacleIds.length === 0 && terrainProfile.walkable,
+          x, y,
+          terrainType: 'plains',
+          walkable: obstacleIds.length === 0,
           height: 0,
-          movementCost: obstacleIds.length > 0 ? 100 : terrainProfile.movementCost,
+          movementCost: obstacleIds.length > 0 ? 100 : 1,
           obstacles: obstacleIds
         });
       }
@@ -64,7 +68,12 @@ class WorldGenerator {
         position: { x: agent.x, y: agent.y }
       })),
       cells,
-      obstacles: obstacles.map(obstacle => ({ ...obstacle })),
+      // Ordre stable, comme le moteur qui trie les obstacles par identifiant
+      // (StringComparer.Ordinal) : deux sources ne doivent pas différer par
+      // l'ordre du tableau.
+      obstacles: obstacles
+        .map(obstacle => ({ ...obstacle }))
+        .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
       resources,
       regions
     };
@@ -149,6 +158,19 @@ class WorldGenerator {
         throw new Error(`agents.${name} must be a non-negative finite number`);
     }
 
+    // Clés de fonctionnalités qui n'existent pas dans le moteur. Elles sont
+    // refusées au lieu d'être ignorées : une clé silencieusement inconnue est
+    // exactement ce qui a laissé la mer, les rivières et les obstacles
+    // procéduraux atteindre PRISM alors que SYNE ne sait pas les produire.
+    for (const removed of ['terrain', 'proceduralObstacles']) {
+      if (config.world[removed] !== undefined)
+        throw new Error(
+          `world.${removed} does not exist in SYNE: remove the key (the engine only places disc obstacles from world.obstacleLayout)`);
+    }
+
+    // Le layout n'accepte que la forme de `StaticObstacleSettings` : identifiant,
+    // position, rayon strictement positif. Aucune forme composée, aucun `type` :
+    // le moteur ne sait pas les décrire, donc le mock ne doit pas les accepter.
     const obstacleIds = new Set();
     for (const obstacle of config.world.obstacleLayout ?? []) {
       if (!obstacle.id || !Number.isFinite(Number(obstacle.x)) || !Number.isFinite(Number(obstacle.y)))
@@ -159,34 +181,11 @@ class WorldGenerator {
       if (Number(obstacle.x) < 0 || Number(obstacle.x) > width ||
           Number(obstacle.y) < 0 || Number(obstacle.y) > height)
         throw new Error(`world.obstacleLayout obstacle ${obstacle.id} is outside the world`);
-
-      if (obstacle.type === 'shape') {
-        if (!OBSTACLE_SHAPES[obstacle.shape])
-          throw new Error(`world.obstacleLayout obstacle ${obstacle.id} references unknown shape "${obstacle.shape}"`);
-      } else if (!Number.isFinite(Number(obstacle.radius)) || Number(obstacle.radius) <= 0) {
+      if (obstacle.type !== undefined || obstacle.shape !== undefined)
+        throw new Error(
+          `world.obstacleLayout obstacle ${obstacle.id} is not a disc: SYNE only places {id, x, y, radius}`);
+      if (!Number.isFinite(Number(obstacle.radius)) || Number(obstacle.radius) <= 0)
         throw new Error(`world.obstacleLayout obstacle ${obstacle.id} requires a positive radius`);
-      }
-    }
-
-    const procedural = config.world.proceduralObstacles;
-    if (procedural?.enabled) {
-      if (!Number.isInteger(procedural.count) || procedural.count < 0)
-        throw new Error('world.proceduralObstacles.count must be a non-negative integer');
-      if (procedural.shapes && procedural.shapes.some(shape => !OBSTACLE_SHAPES[shape]))
-        throw new Error('world.proceduralObstacles.shapes contains an unknown shape name');
-      if (procedural.minRadius != null && procedural.maxRadius != null &&
-          Number(procedural.minRadius) > Number(procedural.maxRadius))
-        throw new Error('world.proceduralObstacles.minRadius must not exceed maxRadius');
-    }
-
-    const terrain = config.world.terrain;
-    if (terrain) {
-      if (terrain.seaDepthRatio != null && (terrain.seaDepthRatio < 0 || terrain.seaDepthRatio >= 1))
-        throw new Error('world.terrain.seaDepthRatio must be between 0 and 1');
-      if (terrain.riverCount != null && (!Number.isInteger(terrain.riverCount) || terrain.riverCount < 0))
-        throw new Error('world.terrain.riverCount must be a non-negative integer');
-      if (terrain.riverWidth != null && (!Number.isInteger(terrain.riverWidth) || terrain.riverWidth < 1))
-        throw new Error('world.terrain.riverWidth must be a positive integer');
     }
   }
 }

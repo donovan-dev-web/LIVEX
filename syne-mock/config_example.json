@@ -11,22 +11,9 @@
     "obstacles": true,
     "obstacleLayout": [
       { "id": "rock-1", "x": 250, "y": 250, "radius": 8 },
-      { "id": "ridge-1", "type": "shape", "shape": "line3Vertical", "x": 120, "y": 300 },
-      { "id": "boulder-cluster-1", "type": "shape", "shape": "cross", "x": 380, "y": 150 }
-    ],
-    "proceduralObstacles": {
-      "enabled": true,
-      "count": 15,
-      "shapes": ["single", "duo", "line3", "cross", "block2x2", "lShape"],
-      "minRadius": 4,
-      "maxRadius": 10
-    },
-    "terrain": {
-      "seaEdge": "south",
-      "seaDepthRatio": 0.12,
-      "riverCount": 2,
-      "riverWidth": 1
-    }
+      { "id": "ridge-1", "x": 120, "y": 300, "radius": 6 },
+      { "id": "boulder-cluster-1", "x": 380, "y": 150, "radius": 10 }
+    ]
   },
   "agentSimulation": {
     "needs": {

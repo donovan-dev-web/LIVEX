@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const util = require('node:util');
 const { Simulation } = require('../src/server');
 const { AgentDecisionService } = require('../src/simulation/agent-decision-service');
 const { DEFAULTS } = require('../src/config');
@@ -137,4 +138,47 @@ test('a snapshot never publishes the internal intention marker', () => {
     for (const goal of published.goals)
       assert.ok(goal.age <= simulation.tick, 'l age publie reste borne par le tick courant');
   }
+});
+
+/** Capture les lignes ecrites par `log()` pendant l'execution de `run()`. */
+function captureLog(run) {
+  const lines = [];
+  const original = console.log;
+  console.log = (...args) => lines.push(util.format(...args));
+  try {
+    run();
+  } finally {
+    console.log = original;
+  }
+  return lines;
+}
+
+test('the per-tick console summary is opt-in and reports movement', () => {
+  // Desactive par defaut : un run produit une ligne par tick et les tests en
+  // enchainent des centaines — le journal ne doit pas noyer leur sortie.
+  const off = captureLog(() => {
+    const simulation = new Simulation({ agents: 2, maxTicks: 2 }, () => {});
+    simulation.start(42, 2);
+    simulation.step();
+    simulation.stop();
+  });
+  assert.equal(off.some(line => line.includes('TICK 1')), false, 'aucune ligne TICK sans tickLog');
+
+  const on = captureLog(() => {
+    const simulation = new Simulation(
+      { agents: 2, maxTicks: 2, diagnostics: { tickLog: true, tickLogSampleSize: 1 } }, () => {});
+    simulation.start(42, 2);
+    simulation.step();
+    simulation.stop();
+  });
+  const tick = on.find(line => line.includes('TICK 1'));
+  assert.ok(tick, 'une ligne TICK est ecrite quand tickLog est actif');
+  // Le resume porte ce qu'il faut pour confronter la sortie serveur a Unreal :
+  // identite du run, agents vivants, agents ayant bouge et echantillon de
+  // positions. Les agents du mock explorent des le premier tick, donc bougent.
+  assert.match(tick, /runId=run-42-/);
+  assert.match(tick, /alive=2/);
+  assert.match(tick, /moved=[12]/);
+  assert.match(tick, /actions=\{[^}]*Explore:/);
+  assert.match(tick, /sample=\[1:\(/);
 });

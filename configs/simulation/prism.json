@@ -6,7 +6,17 @@
     "ticksPerSecond": 6,
     "simulatedSecondsPerTick": 5
   },
-  "world": { "metersPerUnit": 1.0 },
+  "world": {
+    "metersPerUnit": 1.0,
+    "obstacles": true,
+    "obstacleLayout": [
+      { "id": "cote-sud-1", "x": 400, "y": 2180, "radius": 15 },
+      { "id": "cote-sud-2", "x": 1120, "y": 2180, "radius": 5 },
+      { "id": "cote-sud-3", "x": 1840, "y": 2180, "radius": 120 },
+      { "id": "crete-centre", "x": 1120, "y": 1120, "radius": 90 },
+      { "id": "amer-1", "x": 300, "y": 300, "radius": 80 }
+    ]
+  },
   "resources": {
     "food": {
       "initial": 20000,
