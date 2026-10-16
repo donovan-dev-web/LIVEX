@@ -47,6 +47,89 @@ public static class SimulationFactory
         return (options, effectiveSeed);
     }
 
+    /// <summary>Nombre de tirages consécutifs dans un obstacle au-delà duquel le placement échoue.</summary>
+    private const int MaxPlacementAttempts = 1_000;
+
+    /// <summary>
+    /// Peuple le monde de <paramref name="population"/> entités et rend le PRNG
+    /// avancé.
+    ///
+    /// Le layout d'obstacles (<c>world.obstacleLayout</c>) est appliqué <b>avant</b>
+    /// la création des entités : un agent ne doit pas démarrer dans un obstacle,
+    /// sinon le monde se contredit lui-même — la description publie la case comme
+    /// bloquée (`walkable: false`) alors qu'une entité s'y tient, et le cheminement
+    /// A* la refuse. Une position retirée est redonnée par le <b>même</b> PRNG, donc
+    /// le tirage reste déterministe pour une graine donnée.
+    ///
+    /// Neutre pour un profil sans obstacle : aucun tirage supplémentaire n'est
+    /// consommé, donc les checksums dorés du profil de référence sont inchangés.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Le layout couvre tant de cases qu'aucun placement ne sort d'un obstacle.
+    /// </exception>
+    public static Xoshiro256StarStar Populate(
+        WorldType world,
+        SimulationOptions options,
+        ulong population,
+        Xoshiro256StarStar rng)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(options);
+
+        world.ApplyConfiguredLayout(options.World);
+
+        EntityTemplate template = EntityTemplate.DefaultA;
+        for (ulong i = 0; i < population; i++)
+        {
+            int attempt = 0;
+            (Entity Entity, Xoshiro256StarStar Next) draw =
+                EntityFactory.CreateNext(template, world, rng, i + 1, bornAt: 0);
+            while (IsInBlockedCell(world, draw.Entity.Position, options.Simulation.WorldCellSize))
+            {
+                if (++attempt >= MaxPlacementAttempts)
+                {
+                    throw new InvalidOperationException(
+                        $"Placement de l'entité {i + 1} impossible : {MaxPlacementAttempts} tirages consécutifs dans un obstacle du layout.");
+                }
+
+                draw = EntityFactory.CreateNext(template, world, draw.Next, i + 1, bornAt: 0);
+            }
+
+            rng = draw.Next;
+            world.AddEntity(draw.Entity);
+        }
+
+        return rng;
+    }
+
+    /// <summary>
+    /// Vrai si <paramref name="position"/> tombe dans une case que la description
+    /// du monde publiera comme bloquée par un obstacle — même règle, même source
+    /// (<see cref="Simulation.Core.World.ObstacleGeometry"/>) que
+    /// <see cref="Simulation.Core.World.WorldDescriptionBuilder"/>.
+    /// </summary>
+    private static bool IsInBlockedCell(WorldType world, Simulation.Core.World.Position position, double cellSize)
+    {
+        if (world.Obstacles.Count == 0)
+        {
+            return false;
+        }
+
+        int cellX = (int)Math.Floor(position.X / cellSize);
+        int cellY = (int)Math.Floor(position.Y / cellSize);
+        double centerX = (cellX + 0.5) * cellSize;
+        double centerY = (cellY + 0.5) * cellSize;
+        foreach (Simulation.Core.World.Obstacle obstacle in world.Obstacles)
+        {
+            if (Simulation.Core.World.ObstacleGeometry.CoversCell(obstacle, centerX, centerY, cellSize))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static (WorldType World, SimulationLoop Loop) Build(
         SimulationOptions options,
         ulong population,
@@ -57,14 +140,7 @@ public static class SimulationFactory
             new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
             options.Agents.Perception.SpatialCellSize);
 
-        EntityTemplate template = EntityTemplate.DefaultA;
-        for (ulong i = 0; i < population; i++)
-        {
-            (Entity entity, rng) = EntityFactory.CreateNext(template, world, rng, i + 1, bornAt: 0);
-            world.AddEntity(entity);
-        }
-
-        world.ApplyConfiguredLayout(options.World);
+        rng = Populate(world, options, population, rng);
 
         var loop = new SimulationLoop(world, rng, options);
         return (world, loop);

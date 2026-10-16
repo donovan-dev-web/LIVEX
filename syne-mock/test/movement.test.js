@@ -9,7 +9,6 @@ const assert = require('node:assert/strict');
 const { Simulation } = require('../src/server');
 const { MovementService, stepToward } = require('../src/simulation/movement-service');
 const { cellAt, cellIndexAt, cellIndexOf } = require('../src/world/cell-grid');
-const { OBSTACLE_SHAPES } = require('../src/world/obstacle-service');
 
 // Grille synthetique : `walkable` dicte ce que le mock autorise, comme WorldDescription.
 function grid(rows) {
@@ -53,24 +52,27 @@ test('cell indexing agrees between world positions and cell coordinates', () => 
   assert.equal(cellAt(world, 25, -1), null);
 });
 
-test('every obstacle shape blocks movement', () => {
-  // isPositionBlocked a besoin de cellSize pour la branche `shape` : sans lui la
-  // cellule calculee vaut NaN et toutes les formes devenaient traversables.
-  for (const shape of Object.keys(OBSTACLE_SHAPES)) {
+test('an obstacle blocks every cell it covers', () => {
+  // Un obstacle est un disque qui traverse la carte : quelle que soit la
+  // trajectoire, aucune case publiee comme bloquee ne doit etre traversee.
+  for (const radius of [3, 8, 20]) {
     const simulation = new Simulation({
       seed: 5, agents: 1,
       world: {
         width: 200, height: 200, cellSize: 10, obstacles: true,
-        obstacleLayout: [{ id: 'mur', type: 'shape', shape, x: 100, y: 100 }]
+        obstacleLayout: [{ id: 'mur', x: 100, y: 100, radius }]
       }
     });
     simulation.prepare(5);
     const world = simulation.worldDescription();
     const occupied = world.cells.filter(cell => cell.obstacles.includes('mur'));
-    assert.ok(occupied.length > 0, `${shape}: aucune case ne porte l'obstacle`);
+    assert.ok(occupied.length > 0, `rayon ${radius}: aucune case ne porte l'obstacle`);
 
+    // Depart hors de l'obstacle : un agent place dans une case bloquee aurait
+    // deja viole la regle avant le premier pas.
+    assert.ok(world.cells.find(cell => cell.x === 2 && cell.y === 2).walkable);
     const service = serviceAt({ x: 190, y: 190 });
-    const walker = agent(90, 90, 4);
+    const walker = agent(25, 25, 4);
     let inside = null;
     for (let i = 0; i < 400; i++) {
       service.move(walker, i, 'Explore', world, world.obstacles);
@@ -78,7 +80,7 @@ test('every obstacle shape blocks movement', () => {
       if (occupied.some(c => c.x === cell.x && c.y === cell.y)) inside = walker;
     }
     assert.equal(inside, null,
-      `${shape}: l'agent a fini sur une case de l'obstacle en (${walker.x},${walker.y})`);
+      `rayon ${radius}: l'agent a fini sur une case de l'obstacle en (${walker.x},${walker.y})`);
   }
 });
 
@@ -86,13 +88,16 @@ test('agents stay on cells the world publishes as walkable', () => {
   const simulation = new Simulation({
     seed: 7, agents: 20,
     world: {
-      width: 200, height: 200, cellSize: 10,
-      terrain: { seaEdge: 'south', seaDepthRatio: 0.4, riverCount: 0 }
+      width: 200, height: 200, cellSize: 10, obstacles: true,
+      obstacleLayout: [
+        { id: 'bloc-central', x: 100, y: 100, radius: 45 },
+        { id: 'bloc-bas', x: 60, y: 170, radius: 25 }
+      ]
     }
   });
   simulation.start(7, 400);
   const world = simulation.world;
-  assert.ok(world.cells.some(cell => !cell.walkable), 'la mer doit etre publiee comme non franchissable');
+  assert.ok(world.cells.some(cell => !cell.walkable), 'les obstacles doivent bloquer des cases');
 
   for (const initial of simulation.agents)
     assert.equal(cellAt(world, initial.x, initial.y).walkable, true,
@@ -104,41 +109,39 @@ test('agents stay on cells the world publishes as walkable', () => {
       const cell = cellAt(world, current.x, current.y);
       assert.ok(cell, `agent ${current.id} sorti de la carte en (${current.x},${current.y})`);
       assert.equal(cell.walkable, true,
-        `agent ${current.id} dans une case walkable:false (${cell.terrainType}) au tick ${i + 1}`);
+        `agent ${current.id} dans une case walkable:false (${cell.obstacles.join(',')}) au tick ${i + 1}`);
     }
   }
 });
 
-test('movement cost slows an agent down in a river but still allows crossing', () => {
-  // cout de depart et cout d arrivee : entrer dans la riviere ralentit, en
-  // sortir aussi, donc une riviere se traverse quatre fois moins vite.
-  const world = grid([
-    '...',
-    '.~.',
-    '...'
-  ]);
-  world.cells[1 * 3 + 1].terrainType = 'river';
-  world.cells[1 * 3 + 1].movementCost = 4;
+test('the published cells carry the SYNE description rule', () => {
+  // Regle de `WorldDescriptionBuilder.Build` : `terrainType` vaut plains partout
+  // (le moteur n'a pas de biome), `walkable` est vrai si la case ne porte aucun
+  // obstacle, `movementCost` vaut 1 ou 100, et un cout est toujours un nombre
+  // fini — l'ancienne mer du mock publiait `Infinity`, donc `null` en JSON.
+  const simulation = new Simulation({
+    seed: 42, agents: 4,
+    world: { obstacles: true, obstacleLayout: [{ id: 'rock', x: 100, y: 100, radius: 12 }] }
+  });
+  simulation.prepare(42);
+  const world = simulation.worldDescription();
 
-  const plains = agent(5, 5, 4);
-  const entering = agent(5, 15, 4);
-  const leaving = agent(15, 15, 4);
-  serviceAt({ x: 25, y: 5 }).move(plains, 1, 'Explore', world, []);
-  serviceAt({ x: 15, y: 15 }).move(entering, 1, 'Explore', world, []);
-  serviceAt({ x: 5, y: 15 }).move(leaving, 1, 'Explore', world, []);
-
-  assert.equal(plains.x - 5, 4, 'en plaine le pas vaut la vitesse');
-  assert.equal(entering.x - 5, 1, 'en entrant dans la riviere, pas divise par 4');
-  assert.equal(leaving.x - 15, -1, 'en sortant de la riviere, pas divise par 4');
+  assert.deepEqual([...new Set(world.cells.map(cell => cell.terrainType))], ['plains']);
+  assert.deepEqual([...new Set(world.cells.map(cell => cell.movementCost))].sort((a, b) => a - b), [1, 100]);
+  assert.ok(world.cells.some(cell => !cell.walkable), 'l obstacle doit bloquer au moins une case');
+  for (const cell of world.cells) {
+    assert.equal(cell.walkable, cell.obstacles.length === 0,
+      `case (${cell.x},${cell.y}) : walkable doit suivre les obstacles portes`);
+    assert.equal(cell.movementCost, cell.obstacles.length === 0 ? 1 : 100);
+    assert.ok(Number.isFinite(cell.movementCost), 'un cout non fini casse le JSON');
+  }
+  // Le monde decrit est serialisable tel quel : aucun `null` introduit par un
+  // `Infinity` ne doit atteindre PRISM ou ECHOS.
+  assert.equal(/null/.test(JSON.stringify(world)), false, 'aucun champ ne doit valoir null');
 });
 
-test('the sea stops an agent that would aim into it', () => {
-  // WorldGenerator publie la mer avec walkable: false et movementCost: Infinity.
-  const world = grid(['...', '...', '..~']);
-  world.cells[2 * 3 + 2].terrainType = 'sea';
-  world.cells[2 * 3 + 2].walkable = false;
-  world.cells[2 * 3 + 2].movementCost = Infinity;
-
+test('a cell the world publishes as blocked stops the agent aiming into it', () => {
+  const world = grid(['...', '...', '..#']);
   const walker = agent(5, 25, 4);
   const outcome = serviceAt({ x: 25, y: 25 }).move(walker, 1, 'Explore', world, []);
 

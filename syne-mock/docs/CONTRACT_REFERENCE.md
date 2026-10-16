@@ -55,7 +55,7 @@ croyances/relations de confiance vides dans cette version du mock. Les ressource
 `radius`, `memberCount`, `members`; les groupes et livres suivent les formes
 émises par le serveur.
 `worldChanges[]` contient les mutations d'obstacle du tick (vide s'il n'y en a
-pas) ; `actions[]` contient un résultat d'action par agent du tick, avec
+pas — le mock n'a pas de type de terrain) ; `actions[]` contient un résultat d'action par agent du tick, avec
 `agentId`, `action`, `outcome`, les deltas d'état et la réserve consommée le
 cas échéant. L'état des agents/réserves/obstacles/groupes/territoires/livres
 est global et complet au moment du snapshot.
@@ -225,7 +225,7 @@ client ne doit pas en dépendre :
   temporel (le mock ne reproduit pas la classe A, spec §5).
 - **Le déplacement n'est pas un pathfinding.** `stepToward` et un contournement
   perpendiculaire déterministe remplacent l'A\* de SYNE sur la grille
-  rasteurisée, et `worldChanges[]` ne porte aucune mutation de terrain.
+  rasteurisée, et `worldChanges[]` ne porte aucune mutation de case.
 - **`simulation.events` est un tampon de diagnostic borné**
   (`diagnostics.maxEvents`, 2 000 par défaut), pas l'historique. Le flux
   diffusé reste la source faisant autorité.
@@ -282,27 +282,35 @@ mutation n'a été explicitement ajoutée au scénario. Les mutations d'obstacle
 `world_delta` avec `changes` (`kind: "added"|"removed"`, `id`, `x`, `y`,
 `radius`).
 
-Le mock publie bien un type de terrain par cellule, avec trois profils :
+Les cellules suivent **exactement** la règle de `WorldDescriptionBuilder.Build`,
+parce que le mock n'a le droit de publier que ce que le moteur sait produire :
 
-| `terrainType` | `movementCost` | `walkable` |
-|---|---|---|
-| `plains` | 1 | `true` |
-| `river` | 4 | `true` |
-| `sea` | `Infinity` | `false` |
+| Champ | Valeur publiée |
+|---|---|
+| `terrainType` | toujours `plains` — SYNE n'a ni biome ni palette de terrains (`TerrainType` codé en dur) |
+| `walkable` | `true` si et seulement si la case ne porte aucun obstacle |
+| `height` | `0` |
+| `movementCost` | `1` sur une case libre, `100` sur une case bloquée |
+| `obstacles` | identifiants des disques couvrant la case, triés |
 
-La mer est une bande le long du bord désigné par `world.terrain.seaEdge`, de
-profondeur `seaDepthRatio × cellCountY` ; les rivières sont creusées depuis un
-bord par `carveRiver` et ne remplacent jamais une cellule de mer. Un agent ne
-peut ni être placé ni se retrouver sur une cellule `walkable: false`, et son pas
-est borné par le `movementCost` le plus élevé entre sa case de départ et sa case
-d'arrivée : entrer dans une rivière ralentit, en sortir aussi.
+Les obstacles sont des **disques** `{id, x, y, radius}`, comme
+`StaticObstacleSettings` (SYNE-071) : il n'existe ni forme composée, ni `type`,
+ni obstacle procédural, et `world.terrain` / `world.proceduralObstacles` sont
+**refusés** au chargement de la configuration au lieu d'être ignorés. Le
+placement des agents et leur déplacement lisent `cells[].walkable`, l'indicateur
+que la description publie elle-même, et le pas est borné par le `movementCost`
+le plus élevé entre la case de départ et la case visée.
 
-Ce découpage appartient au mock. SYNE n'a pas de configuration de type de
-terrain ou de biome, et le layout initial configurable porte sur les obstacles
-et les territoires, pas sur les biomes. Brancher le vrai moteur demandera donc
-un mapping explicite, pas l'envoi de ce champ tel quel.
+Ces valeurs ne sont pas une convention du mock mais une **égalité vérifiée** :
+[`../../scripts/parity_mock_syne_world.js`](../../scripts/parity_mock_syne_world.js)
+lance le moteur réel (profil `prism` + un layout d'obstacles) et le mock sur la
+même géométrie, puis compare le jeu de clés, l'en-tête, `cells[]` champ par
+champ et `obstacles[]`. Il sort en code 1 à la moindre divergence, et refuse de
+conclure si le layout ne bloque aucune case (une comparaison de deux mondes vides
+ne prouverait rien). Non comparé : le contenu de `agents[]` et `resources[]`, qui
+restent des approximations du mock.
 
-Le contrat de snapshot est `0.2.0` : un message global unique par tick,
+Le contrat de snapshot est `0.4.0` : un message global unique par tick,
 contenant l'état dynamique complet et les deux listes `worldChanges[]` et
 `actions[]`. Les événements `decision_made`, `action_completed` et
 `world_delta` sont également émis pour compatibilité/diagnostic ; le client
@@ -310,8 +318,8 @@ doit traiter le snapshot comme état faisant autorité et ne pas appliquer une
 deuxième fois les mêmes mutations depuis ces événements.
 
 La topologie `cells[]` est envoyée une fois par `world_initialized`. Le mock ne
-simule pas de changements de terrain/altitude ; ses changements dynamiques
-actuels portent sur les obstacles.
+simule aucune mutation de case (ni terrain, ni altitude) ; ses changements
+dynamiques actuels portent sur les obstacles.
 
 ## Blueprint : exemples de graphes
 

@@ -4,10 +4,13 @@
 
 #include "PrismLdk.h"
 #include "PrismLdkSubsystem.h"
+#include "PrismLdkService.h"
 
+#include "GenericPlatform/GenericPlatformMisc.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Misc/CommandLine.h"
 #include "Json.h"
 #include "Logging/LogMacros.h"
 #include "WebSocketsModule.h"
@@ -106,10 +109,58 @@ namespace PrismJson
 
 void FPrismLdkModule::StartupModule()
 {
+	// La surface de service (santé, info, métriques, arrêt) n'est ouverte que
+	// sur demande explicite du Launcher : un lancement éditeur ou PIE n'ouvre
+	// aucun port de contrôle.
+	const FPrismLdkServiceOptions ServiceOptions = FPrismLdkServiceOptions::Parse(FCommandLine::Get());
+
+	if (ServiceOptions.bVersionRequested)
+	{
+		PrismLdkServicePrintLine(FString::Printf(
+			TEXT("{\"id\":\"prism\",\"version\":\"%s\",\"protocolVersion\":%d}"),
+			PRISM_COMPONENT_VERSION, PRISM_PROTOCOL_VERSION));
+		FGenericPlatformMisc::RequestExitWithStatus(false, static_cast<uint8>(EPrismLdkServiceExitCode::Success), TEXT("PrismLdk --version"));
+		return;
+	}
+
+	if (!ServiceOptions.UnclaimedArguments.IsEmpty())
+	{
+		UE_LOG(LogPrismLdk, Verbose, TEXT("%d argument(s) non réclamés par le service : %s"),
+			ServiceOptions.UnclaimedArguments.Num(), *FString::Join(ServiceOptions.UnclaimedArguments, TEXT(" ")));
+	}
+
+	if (!ServiceOptions.bServiceRequested)
+	{
+		return;
+	}
+
+	if (!ServiceOptions.IsValid())
+	{
+		const FString Cause = ServiceOptions.DescribeProblems();
+		UE_LOG(LogPrismLdk, Error, TEXT("Configuration de service invalide : %s"), *Cause);
+		PrismLdkServicePrintLine(FString::Printf(TEXT("[PrismLdk] configuration invalide : %s"), *Cause));
+		FGenericPlatformMisc::RequestExitWithStatus(false, static_cast<uint8>(EPrismLdkServiceExitCode::ConfigurationError), TEXT("PrismLdk configuration"));
+		return;
+	}
+
+	const EPrismLdkServiceExitCode ExitCode = FPrismLdkService::Get().Start(ServiceOptions);
+	if (ExitCode != EPrismLdkServiceExitCode::Success)
+	{
+		const FString Cause = FPrismLdkService::Get().GetStartupError();
+		UE_LOG(LogPrismLdk, Error, TEXT("Démarrage du service impossible : %s"), *Cause);
+		PrismLdkServicePrintLine(FString::Printf(TEXT("[PrismLdk] service indisponible : %s"), *Cause));
+		FGenericPlatformMisc::RequestExitWithStatus(false, static_cast<uint8>(ExitCode), TEXT("PrismLdk service"));
+		return;
+	}
+
+	PrismLdkServicePrintLine(FString::Printf(
+		TEXT("[PrismLdk] service de contrôle à l'écoute sur 127.0.0.1:%d (instance %s, corrélation %s)"),
+		ServiceOptions.ControlPort, *ServiceOptions.InstanceId, *ServiceOptions.CorrelationId));
 }
 
 void FPrismLdkModule::ShutdownModule()
 {
+	FPrismLdkService::Get().Stop();
 }
 
 void UPrismLdkSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -126,6 +177,7 @@ void UPrismLdkSubsystem::Deinitialize()
 void UPrismLdkSubsystem::Configure(const FPrismSyneConnectionOptions& InOptions)
 {
 	Options = InOptions;
+	FPrismLdkService::Get().ReportConnectionOptions(InOptions.WebSocketUrl);
 }
 
 bool UPrismLdkSubsystem::Connect()
@@ -148,16 +200,17 @@ bool UPrismLdkSubsystem::Connect()
 		bReconnectPending = false;
 		ReconnectElapsed = 0.0f;
 		ConnectionState = EPrismSyneConnectionState::Connected;
+		FPrismLdkService::Get().ReportWebSocket(true);
 		OnConnected.Broadcast();
 	});
 	Socket->OnConnectionError().AddLambda([this, ThisGeneration](const FString& Message) {
 		if (ThisGeneration != SocketGeneration) return;
-		UE_LOG(LogPrismLdk, Error, TEXT("WebSocket connection error: %s"), *Message);
-		Socket.Reset();
-		ConnectionState = EPrismSyneConnectionState::Disconnected;
-		bReconnectPending = bConnectionRequested && Options.bAutoReconnect;
-		ReconnectElapsed = 0.0f;
-		Error(0, TEXT("websocket_connection"), Message);
+		UE_LOG(LogPrismLdk, Error, TEXT("WebSocket connection error: %s"), *Message);			Socket.Reset();
+			ConnectionState = EPrismSyneConnectionState::Disconnected;
+			bReconnectPending = bConnectionRequested && Options.bAutoReconnect;
+			ReconnectElapsed = 0.0f;
+			FPrismLdkService::Get().ReportWebSocket(false);
+			Error(0, TEXT("websocket_connection"), Message);
 	});
 	Socket->OnClosed().AddLambda([this, ThisGeneration](int32 Code, const FString& Reason, bool bClean) {
 		if (ThisGeneration != SocketGeneration) return;
@@ -166,6 +219,7 @@ bool UPrismLdkSubsystem::Connect()
 		ConnectionState = EPrismSyneConnectionState::Disconnected;
 		bReconnectPending = bConnectionRequested && Options.bAutoReconnect;
 		ReconnectElapsed = 0.0f;
+		FPrismLdkService::Get().ReportWebSocket(false);
 		OnDisconnected.Broadcast();
 	});
 	Socket->OnMessage().AddLambda([this, ThisGeneration](const FString& Message) {
@@ -192,6 +246,9 @@ void UPrismLdkSubsystem::Disconnect()
 
 void UPrismLdkSubsystem::Tick(float DeltaTime)
 {
+	// Mesure de rendu publiée par /metrics et condition de readiness du service.
+	FPrismLdkService::Get().ReportFrame(DeltaTime);
+
 	FQueuedMessage Queued;
 	while (IncomingMessages.Dequeue(Queued)) ParseMessage(Queued.Payload);
 	if (bReconnectPending && bConnectionRequested && Options.bAutoReconnect &&
@@ -275,6 +332,7 @@ void UPrismLdkSubsystem::RequestStatus()
 		TSharedPtr<FJsonObject> Object; const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 		if (!FJsonSerializer::Deserialize(Reader, Object) || !Object.IsValid()) { Error(Response->GetResponseCode(), TEXT("invalid_json"), TEXT("Invalid status response")); return; }
 		ParseStatus(Object, Status);
+		FPrismLdkService::Get().ReportRun(Status.RunId, Status.MaxTicks, Status.WorldVersion, Status.Tick, Status.AliveCount);
 	});
 	Request->ProcessRequest();
 }
@@ -289,7 +347,9 @@ void UPrismLdkSubsystem::ParseMessage(const FString& Payload)
 		UE_LOG(LogPrismLdk, Log, TEXT("World initialized message received"));
 		ParseWorld(PrismJson::Object(Object, TEXT("world")), World);
 		World.Version = PrismJson::String(Object, TEXT("version")); World.Seed = PrismJson::Integer(Object, TEXT("seed"));
-		bHasWorld = true; OnWorldInitialized.Broadcast(World); return;
+		bHasWorld = true;
+		FPrismLdkService::Get().ReportWorld(World.Version, World.TicksPerSecond);
+		OnWorldInitialized.Broadcast(World); return;
 	}
 	if (Type == TEXT("world_delta"))
 	{
@@ -304,7 +364,9 @@ void UPrismLdkSubsystem::ParseMessage(const FString& Payload)
 		UE_LOG(LogPrismLdk, Verbose, TEXT("Snapshot received"));
 		ParseSnapshot(Object, LatestSnapshot);
 		UE_LOG(LogPrismLdk, Verbose, TEXT("Global snapshot tick=%d contains %d agents"), LatestSnapshot.Tick, LatestSnapshot.Agents.Num());
-		bHasSnapshot = true; OnSnapshot.Broadcast(LatestSnapshot); return;
+		bHasSnapshot = true;
+		FPrismLdkService::Get().ReportSnapshot(LatestSnapshot.Tick, LatestSnapshot.AliveCount, LatestSnapshot.RunId);
+		OnSnapshot.Broadcast(LatestSnapshot); return;
 	}
 	FPrismSyneEvent Event; Event.Type = Type; Event.RunId = PrismJson::String(Object, TEXT("runId")); Event.Tick = PrismJson::Integer(Object, TEXT("tick")); Event.AgentId = PrismJson::Integer(Object, TEXT("agentId")); Event.TargetId = PrismJson::Integer(Object, TEXT("targetId")); Event.Action = PrismJson::String(Object, TEXT("action")); Event.Cause = PrismJson::String(Object, TEXT("cause"));
 	const TSharedPtr<FJsonValue>* Value = Object->Values.Find(TEXT("value"));
@@ -329,6 +391,13 @@ void UPrismLdkSubsystem::ParseWorld(const TSharedPtr<FJsonObject>& Object, FPris
 	if (!Object.IsValid()) return;
 	Out = FPrismSyneWorldDescription();
 	Out.Width = PrismJson::Number(Object, TEXT("width")); Out.Height = PrismJson::Number(Object, TEXT("height")); Out.CellSize = PrismJson::Number(Object, TEXT("cellSize")); Out.TicksPerSecond = static_cast<int32>(PrismJson::Integer(Object, TEXT("ticksPerSecond"))); Out.CellCountX = static_cast<int32>(PrismJson::Integer(Object, TEXT("cellCountX"))); Out.CellCountY = static_cast<int32>(PrismJson::Integer(Object, TEXT("cellCountY")));
+	// Description 1.0 → 1.1 (ADR-017, champs additifs) : une description 1.0
+	// antérieure en est dépourvue → repli sur les défauts SYNE (60 s/tick, 1 m/unité)
+	// plutôt que 0, pour ne pas fausser l'horloge UI de PRISM.
+	Out.SimulatedSecondsPerTick = Object->HasField(TEXT("simulatedSecondsPerTick"))
+		? static_cast<int32>(PrismJson::Integer(Object, TEXT("simulatedSecondsPerTick"))) : 60;
+	Out.MetersPerUnit = Object->HasField(TEXT("metersPerUnit"))
+		? PrismJson::Number(Object, TEXT("metersPerUnit")) : 1.0;
 	const TArray<TSharedPtr<FJsonValue>>* AgentValues = nullptr;
 	if (Object->TryGetArrayField(TEXT("agents"), AgentValues))
 	{
@@ -342,21 +411,117 @@ void UPrismLdkSubsystem::ParseWorld(const TSharedPtr<FJsonObject>& Object, FPris
 			Out.Agents.Add(Agent);
 		}
 	}
-	for (const TSharedPtr<FJsonValue>& V : Object->GetArrayField(TEXT("cells"))) { const TSharedPtr<FJsonObject> C = V->AsObject(); FPrismSyneWorldCell Cell; Cell.X = static_cast<int32>(PrismJson::Integer(C, TEXT("x"))); Cell.Y = static_cast<int32>(PrismJson::Integer(C, TEXT("y"))); Cell.TerrainType = PrismJson::String(C, TEXT("terrainType")); Cell.TerrainTypeEnum = PrismJson::TerrainType(Cell.TerrainType); Cell.bWalkable = PrismJson::Boolean(C, TEXT("walkable"), true); Cell.Height = PrismJson::Number(C, TEXT("height")); Cell.MovementCost = PrismJson::Number(C, TEXT("movementCost")); const TArray<TSharedPtr<FJsonValue>>* ObstacleValues = nullptr; if (C->TryGetArrayField(TEXT("obstacles"), ObstacleValues)) for (const TSharedPtr<FJsonValue>& O : *ObstacleValues) Cell.ObstacleIds.Add(O->AsString()); Out.Cells.Add(Cell); }
-	for (const TSharedPtr<FJsonValue>& V : Object->GetArrayField(TEXT("obstacles"))) { const TSharedPtr<FJsonObject> O = V->AsObject(); FPrismSyneWorldObstacle Obstacle; Obstacle.Id = PrismJson::String(O, TEXT("id")); Obstacle.Position.X = PrismJson::Number(O, TEXT("x")); Obstacle.Position.Y = PrismJson::Number(O, TEXT("y")); Obstacle.Radius = PrismJson::Number(O, TEXT("radius")); Out.Obstacles.Add(Obstacle); }
-	for (const TSharedPtr<FJsonValue>& V : Object->GetArrayField(TEXT("resources"))) { const TSharedPtr<FJsonObject> R = V->AsObject(); FPrismSyneResource Resource; Resource.Id = PrismJson::String(R, TEXT("id")); Resource.Type = PrismJson::String(R, TEXT("kind")); if (Resource.Type.IsEmpty()) Resource.Type = PrismJson::String(R, TEXT("type")); Resource.TypeEnum = PrismJson::ResourceType(Resource.Type); Resource.Quantity = PrismJson::Number(R, TEXT("quantity")); const TSharedPtr<FJsonObject> Position = PrismJson::Object(R, TEXT("position")); if (Position.IsValid()) { Resource.Position = PrismJson::Vector(Position); Resource.bHasPosition = true; } else if (R->HasField(TEXT("x")) && R->HasField(TEXT("y"))) { Resource.Position.X = PrismJson::Number(R, TEXT("x")); Resource.Position.Y = PrismJson::Number(R, TEXT("y")); Resource.bHasPosition = true; Resource.bPositionIsCellIndex = true; } Out.Resources.Add(Resource); }
-	for (const TSharedPtr<FJsonValue>& V : Object->GetArrayField(TEXT("regions"))) { const TSharedPtr<FJsonObject> R = V->AsObject(); FPrismSyneWorldRegion Region; Region.Id = PrismJson::String(R, TEXT("id")); Region.X = static_cast<int32>(PrismJson::Integer(R, TEXT("x"))); Region.Y = static_cast<int32>(PrismJson::Integer(R, TEXT("y"))); Region.Width = static_cast<int32>(PrismJson::Integer(R, TEXT("width"))); Region.Height = static_cast<int32>(PrismJson::Integer(R, TEXT("height"))); Out.Regions.Add(Region); }
+	// Les tableaux de la description sont lus de facon **optionnelle** :
+	// `GetArrayField` sur une cle absente declenche un `checkf` moteur, donc
+	// l'arret du jeu, alors qu'un producteur peut legitimement omettre un tableau
+	// vide. Seule une trame qui n'est pas du JSON doit rester une erreur.
+	int32 NonPlainsCells = 0;
+	FString FirstNonPlainsTerrain;
+	int32 NonPositiveMovementCosts = 0;
+	if (const auto* CellValues = PrismJson::Array(Object, TEXT("cells")))
+	{
+		Out.Cells.Reserve(CellValues->Num());
+		for (const TSharedPtr<FJsonValue>& V : *CellValues)
+		{
+			const TSharedPtr<FJsonObject> C = V->AsObject();
+			FPrismSyneWorldCell Cell;
+			Cell.X = static_cast<int32>(PrismJson::Integer(C, TEXT("x")));
+			Cell.Y = static_cast<int32>(PrismJson::Integer(C, TEXT("y")));
+			Cell.TerrainType = PrismJson::String(C, TEXT("terrainType"));
+			Cell.TerrainTypeEnum = PrismJson::TerrainType(Cell.TerrainType);
+			Cell.bWalkable = PrismJson::Boolean(C, TEXT("walkable"), true);
+			Cell.Height = PrismJson::Number(C, TEXT("height"));
+			Cell.MovementCost = PrismJson::Number(C, TEXT("movementCost"));
+			if (Cell.TerrainTypeEnum == EPrismSyneTerrainType::Unknown)
+			{
+				++NonPlainsCells;
+				if (FirstNonPlainsTerrain.IsEmpty()) FirstNonPlainsTerrain = Cell.TerrainType;
+			}
+			// SYNE n'emet que 1 (case libre) et 100 (case bloquee) : 0 signale un
+			// champ absent, ou la valeur `null` d'un `Infinity` non serialisable.
+			if (Cell.MovementCost <= 0.0) ++NonPositiveMovementCosts;
+			if (const auto* ObstacleIds = PrismJson::Array(C, TEXT("obstacles")))
+				for (const TSharedPtr<FJsonValue>& O : *ObstacleIds) Cell.ObstacleIds.Add(O->AsString());
+			Out.Cells.Add(Cell);
+		}
+	}
+	if (const auto* ObstacleValues = PrismJson::Array(Object, TEXT("obstacles")))
+	{
+		for (const TSharedPtr<FJsonValue>& V : *ObstacleValues)
+		{
+			const TSharedPtr<FJsonObject> O = V->AsObject();
+			FPrismSyneWorldObstacle Obstacle;
+			Obstacle.Id = PrismJson::String(O, TEXT("id"));
+			// Geometrie du contrat `WorldObstacle` : disque en unites SYNE.
+			Obstacle.Position.X = PrismJson::Number(O, TEXT("x"));
+			Obstacle.Position.Y = PrismJson::Number(O, TEXT("y"));
+			Obstacle.Radius = PrismJson::Number(O, TEXT("radius"));
+			Out.Obstacles.Add(Obstacle);
+		}
+	}
+	if (const auto* ResourceValues = PrismJson::Array(Object, TEXT("resources")))
+	{
+		for (const TSharedPtr<FJsonValue>& V : *ResourceValues)
+		{
+			const TSharedPtr<FJsonObject> R = V->AsObject();
+			FPrismSyneResource Resource;
+			Resource.Id = PrismJson::String(R, TEXT("id"));
+			Resource.Type = PrismJson::String(R, TEXT("kind"));
+			if (Resource.Type.IsEmpty()) Resource.Type = PrismJson::String(R, TEXT("type"));
+			Resource.TypeEnum = PrismJson::ResourceType(Resource.Type);
+			Resource.Quantity = PrismJson::Number(R, TEXT("quantity"));
+			const TSharedPtr<FJsonObject> Position = PrismJson::Object(R, TEXT("position"));
+			if (Position.IsValid())
+			{
+				Resource.Position = PrismJson::Vector(Position);
+				Resource.bHasPosition = true;
+			}
+			else if (R->HasField(TEXT("x")) && R->HasField(TEXT("y")))
+			{
+				Resource.Position.X = PrismJson::Number(R, TEXT("x"));
+				Resource.Position.Y = PrismJson::Number(R, TEXT("y"));
+				Resource.bHasPosition = true;
+				Resource.bPositionIsCellIndex = true;
+			}
+			Out.Resources.Add(Resource);
+		}
+	}
+	if (const auto* RegionValues = PrismJson::Array(Object, TEXT("regions")))
+	{
+		for (const TSharedPtr<FJsonValue>& V : *RegionValues)
+		{
+			const TSharedPtr<FJsonObject> R = V->AsObject();
+			FPrismSyneWorldRegion Region;
+			Region.Id = PrismJson::String(R, TEXT("id"));
+			Region.X = static_cast<int32>(PrismJson::Integer(R, TEXT("x")));
+			Region.Y = static_cast<int32>(PrismJson::Integer(R, TEXT("y")));
+			Region.Width = static_cast<int32>(PrismJson::Integer(R, TEXT("width")));
+			Region.Height = static_cast<int32>(PrismJson::Integer(R, TEXT("height")));
+			Out.Regions.Add(Region);
+		}
+	}
 	UE_LOG(LogPrismLdk, Log, TEXT("World description parsed: agents=%d, cells=%d, obstacles=%d, resources=%d, regions=%d"),
 		Out.Agents.Num(), Out.Cells.Num(), Out.Obstacles.Num(), Out.Resources.Num(), Out.Regions.Num());
+	// Diagnostics de divergence : le moteur n'emet qu'un terrain (`plains`, en dur
+	// dans WorldDescriptionBuilder) et des couts de 1 ou 100. Toute autre valeur
+	// vient d'un producteur qui ne respecte pas la description du monde (le mock
+	// publiait autrefois `sea`/`river` et `movementCost: null`) — la signaler ici
+	// evite de la chercher dans le rendu.
+	if (NonPlainsCells > 0)
+		UE_LOG(LogPrismLdk, Warning, TEXT("%d cell(s) carry an unknown terrain (first value: \"%s\") : SYNE only emits \"plains\": the world was produced by a non-conforming source."),
+			NonPlainsCells, *FirstNonPlainsTerrain);
+	if (NonPositiveMovementCosts > 0)
+		UE_LOG(LogPrismLdk, Warning, TEXT("%d cell(s) carry no usable movementCost : SYNE only emits 1 (free cell) or 100 (blocked cell)."),
+			NonPositiveMovementCosts);
 	if (Out.Obstacles.IsEmpty())
-		UE_LOG(LogPrismLdk, Warning, TEXT("World description contains no initial obstacles; check the SYNE world.obstacles flag and world.obstacleLayout configuration."));
+		UE_LOG(LogPrismLdk, Log, TEXT("World description contains no initial obstacles : the simulation profile may legitimately declare none (SYNE default world.obstacles = false); otherwise check world.obstacles and world.obstacleLayout."));
 }
 
 void UPrismLdkSubsystem::ParseSnapshot(const TSharedPtr<FJsonObject>& Object, FPrismSyneWorldSnapshot& Out) const
 {
 	Out = FPrismSyneWorldSnapshot();
 	Out.Version = PrismJson::String(Object, TEXT("version")); Out.EngineVersion = PrismJson::String(Object, TEXT("engineVersion"));
-	Out.RunId = PrismJson::String(Object, TEXT("runId")); Out.Tick = PrismJson::Integer(Object, TEXT("tick")); Out.SimulatedTimeMinutes = PrismJson::Number(Object, TEXT("simulatedTimeMinutes")); Out.AliveCount = static_cast<int32>(PrismJson::Integer(Object, TEXT("aliveCount"))); Out.Season = PrismJson::String(Object, TEXT("season")); Out.SeasonEnum = PrismJson::Season(Out.Season); Out.SeasonIndex = static_cast<int32>(PrismJson::Integer(Object, TEXT("seasonIndex")));
+	Out.RunId = PrismJson::String(Object, TEXT("runId")); Out.Seed = PrismJson::Integer(Object, TEXT("seed")); Out.Tick = PrismJson::Integer(Object, TEXT("tick")); Out.SimulatedTimeMinutes = PrismJson::Number(Object, TEXT("simulatedTimeMinutes")); Out.AliveCount = static_cast<int32>(PrismJson::Integer(Object, TEXT("aliveCount"))); Out.Season = PrismJson::String(Object, TEXT("season")); Out.SeasonEnum = PrismJson::Season(Out.Season); Out.SeasonIndex = static_cast<int32>(PrismJson::Integer(Object, TEXT("seasonIndex")));
 	if (const auto* Agents = PrismJson::Array(Object, TEXT("agents")))
 	for (const TSharedPtr<FJsonValue>& V : *Agents)
 	{
@@ -406,6 +571,7 @@ bool UPrismLdkSubsystem::GetWorldDescription(FPrismSyneWorldDescription& OutWorl
 void UPrismLdkSubsystem::Error(int32 Code, const FString& Name, const FString& Message, const FString& Raw)
 {
 	UE_LOG(LogPrismLdk, Error, TEXT("SYNE error code=%d name=%s message=%s"), Code, *Name, *Message);
+	FPrismLdkService::Get().ReportError(FString::Printf(TEXT("%s : %s"), *Name, *Message));
 	FPrismSyneError E; E.HttpCode = Code; E.Code = Name; E.Message = Message; E.RawPayload = Raw; OnError.Broadcast(E);
 }
 

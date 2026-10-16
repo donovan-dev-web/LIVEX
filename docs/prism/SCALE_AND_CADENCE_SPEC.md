@@ -100,7 +100,7 @@ métrique : rayon de perception 70 = 70 m, obstacles en mètres, régions en mè
 | Donnée SYNE | En unités SYNE (`k = 100`) | En Unreal |
 | :-- | :-- | :-- |
 | Position continue (`agents[].position.x/y`) | `double` | × 100 → uu (ex. `12.5` → `1250` uu = 12,5 m) |
-| Case logique (`cells[].x/y`) | 32 unités (profil retenu) | tuile de **3200 uu** = 32 m = cellule WP par défaut |
+| Case logique (`cells[].x/y`) | 32 unités (profil retenu) | tuile de **3200 uu** = 32 m (taille à **poser** dans la grille de runtime si World Partition est utilisé — voir le tableau de profils) |
 | Centre d'une case | `x × 32 + 16` | `x × 3200 + 1600` uu |
 | Rayon d'obstacle (`obstacles[].radius`) | unités | × 100 |
 | Rayon de perception (max code) | 70 | 7000 uu = 70 m |
@@ -175,13 +175,18 @@ dernière rangée partielle, `WorldDescription.cs:49-50`).
 | Profil | `worldWidth/Height` | `worldCellSize` | Cases SYNE | Côté réel | Surface | Cellule WP | Cellules WP | Poids `cells[]` |
 | :-- | ---: | ---: | :-- | ---: | ---: | ---: | ---: | ---: |
 | A — défaut calibré (ADR-016) | 500 | 10 | 50 × 50 = 2 500 | 500 m | 0,25 km² | 1 000 uu | 2 500 | ≈ 0,3 Mo |
-| **B — retenu (≈ 5 km²)** | **2 240** | **32** | **70 × 70 = 4 900** | **2 240 m** | **5,02 km²** | **3 200 uu (défaut UE)** | **4 900** | **≈ 0,5 Mo** |
+| **B — retenu (≈ 5 km²)** | **2 240** | **32** | **70 × 70 = 4 900** | **2 240 m** | **5,02 km²** | **3 200 uu** (à poser) | **4 900** | **≈ 0,5 Mo** |
 | C — grand (option) | 5 000 | 40 | 125 × 125 = 15 625 | 5 000 m | 25 km² | 4 000 uu | 15 625 | ≈ 1,7 Mo |
 
-**Profil B retenu** : côté 2240 m = 70 cases de 32 m ; `32 × 100 = 3200 uu` =
-**cellule World Partition par défaut** (aucun réglage UE), région = 10 cases =
-320 m → 49 régions (`WorldDescription.cs:72-77`), ressources = 4 types ×
-3 marqueurs (`WorldDescription.cs:35`, `:68`).
+**Profil B retenu** : côté 2240 m = 70 cases de 32 m ; `32 × 100 = 3200 uu` est
+la **taille de tuile visée**. Elle n'est **pas** la valeur par défaut de World
+Partition : le moteur 5.8 pose `LoadingRange = 25600`
+(`RuntimePartition.cpp:27`) et `CellSize = LoadingRange / 2`, soit **12 800 uu**
+de cellule (`RuntimePartitionLHGrid.cpp:178`). Pour aligner une case SYNE sur une
+cellule WP, la grille de runtime doit être posée explicitement à
+`CellSize = 3200` ; sans World Partition, cette valeur n'est qu'un pas de tuile.
+Région = 10 cases = 320 m → 49 régions (`WorldDescription.cs:72-77`),
+ressources = 4 types × 3 marqueurs (`WorldDescription.cs:35`, `:68`).
 
 Le poids `cells[]` est un ordre de grandeur (~110 octets/cellule, trame
 `world_initialized` émise **une seule fois**, `SimulationController.cs:189`).
@@ -299,12 +304,22 @@ case `(0,0)` (indice `floor(12.5/32) = 0`). Voir aussi
 
 ### 8.2 World Partition
 
-- **Cellule runtime : 3200 uu** (défaut UE) — ne rien changer.
-- **Streaming activé** (`Enable Streaming`), `LoadingRange` défaut **25 600 uu**
-  = ±8 cellules = ±256 m autour du joueur : ~300 des 4900 cellules chargées.
-  Descendre sous ~6 400 uu rendrait le streaming visible.
-- **HLOD par cellule** : un cluster = une case SYNE de 32 m — le découpage SYNE
-  et le découpage Unreal coïncident.
+- **Cellule runtime : `CellSize = 3200 uu`, à poser explicitement** (World
+  Settings → World Partition → Runtime Grid). Ce n'est **pas** une valeur par
+  défaut : le moteur 5.8 pose `LoadingRange = 25600`
+  (`RuntimePartition.cpp:27`) et `CellSize = LoadingRange / 2`, soit **12 800 uu**
+  (`RuntimePartitionLHGrid.cpp:178`). C'est ce réglage qui fait coïncider une
+  case SYNE de 32 m et une cellule WP ; sans lui, la correspondance est fausse
+  d'un facteur 4.
+- **Streaming** : `LoadingRange` **25 600 uu** = ±8 cellules = ±256 m autour de
+  la source de streaming, soit ≈ 17 × 17 = **289 des 4 900 cellules** chargées.
+  Descendre sous ~6 400 uu (2 cellules) rendrait le streaming visible.
+- **HLOD par cellule** : le HLOD de grille **double** la cellule à chaque niveau
+  (`CellSize = parent × 2`, `RuntimePartitionLHGrid.cpp:162`) → **6 400 uu** au
+  premier niveau HLOD, soit **2 × 2 cases SYNE**, pas une.
+- **WP reste optionnel** : si la carte n'est pas partitionnée, ces réglages
+  n'existent pas et le terrain vit en instances statiques — décision mesurée en
+  B3 ([`BLUEPRINT_ROADMAP.md`](BLUEPRINT_ROADMAP.md) §4).
 
 ### 8.3 Navigation
 
@@ -371,10 +386,12 @@ La cadence retenue se règle côté SYNE (`prepare` accepte `ticksPerSecond`,
    500×500 par défaut. Le passage au profil B doit être **re-vérifié** avec
    `../../scripts/calibration_campaign.py`. Le bilan énergétique devrait rester stable
    (§7.3) ; c'est la densité sociale qui bouge.
-6. **`syne-mock` diverge** : `simulatedMinutes = round(tick / ticksPerSecond)`
-   (`syne-mock/src/simulation/simulation.js:430-431`) alors que SYNE émet
-   `tick × 1` (`SimulationLoop.cs:411`). Tout outil PRISM calibré sur le mock
-   affichera une horloge fausse — tester contre SYNE réel.
+6. **`syne-mock` et l'horloge** : la divergence d'horloge est **refermée** — le
+   mock émet `tick × simulatedSecondsPerTick` (minutes en plancher entier), comme
+   `SimulationClock` (`syne-mock/src/simulation/simulation.js`, méthode
+   `simulatedSeconds`). Les trajectoires du mock restent, elles, des
+   approximations : le transport et la description du monde se valident dessus,
+   les décisions et les trajectoires se valident sur SYNE réel (§10).
 7. **Obstacles en disques uniquement** : un littoral, une rivière ou une crête
    doivent être approximés par des disques côté SYNE (§7.1).
 
@@ -418,8 +435,8 @@ Variantes (pour mémoire, aucune n'est retenue) :
 | :-- | :-- | :-- |
 | Journée la plus lente possible | `TPS = 1`, `k = 600` | Parité joueur/agent satisfaite (600 uu/s), journée en 4 h 48 ; mais 1 unité = 6 m, pas de 3 à 9 m par tick (saut visible à 1 Hz) et monde de 13 km par côté à taille fixe — rejeté |
 | Conserver `TPS = 10` (défaut SYNE) | `k = 60` | 1 unité = 0,6 m ; agent médian à 600 uu/s ; échelle non métrique |
-| Journée plus rapide (test) | `TPS = 15` | journée 19 min 12 ; agents à 1500 uu/s — hors défaut UE |
-| Défaut calibré (profil A) | 500 / cell 10 / `k` 100 / `TPS` 6 | tuile 1000 uu (sous le défaut UE), densité sociale correcte |
+| Journée plus rapide (test) | `TPS = 15` | journée 19 min 12 ; agents à 1500 uu/s, au-dessus du défaut moteur `MaxWalkSpeed = 600` uu/s (`CharacterMovementComponent.cpp:694`) |
+| Défaut calibré (profil A) | 500 / cell 10 / `k` 100 / `TPS` 6 | tuile 1000 uu (sous la cellule WP par défaut, 12 800 uu), densité sociale correcte |
 | Très grand monde (profil C) | 5 000 / cell 40 | tuile 4000 uu (réglage WP requis), 25 km² |
 
 ---

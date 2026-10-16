@@ -20,21 +20,13 @@ const DEFAULTS = {
     // Parité de contrat SYNE : mètres par unité — informatif,
     // transmis aux clients (PRISM k = 100 uu / unité).
     metersPerUnit: 1,
+    // Parité de contrat SYNE (`WorldSettings`) : mêmes clés que le moteur, à la
+    // même sémantique — `obstacles` active le placement du layout, les
+    // obstacles sont des disques `{id, x, y, radius}` (SYNE-071). Le mock ne
+    // connaît ni terrain, ni biome, ni obstacle procédural : le moteur n'en
+    // produit aucun, donc aucun consommateur (PRISM, ECHOS) ne doit en voir.
     obstacles: false,
-    obstacleLayout: [],
-    proceduralObstacles: {
-      enabled: false,
-      count: 12,
-      shapes: ['single', 'duo', 'line3', 'line3Vertical', 'cross', 'block2x2', 'lShape', 'tShape'],
-      minRadius: 4,
-      maxRadius: 12
-    },
-    terrain: {
-      seaEdge: 'south',
-      seaDepthRatio: 0.12,
-      riverCount: 1,
-      riverWidth: 1
-    }
+    obstacleLayout: []
   },
   agentSimulation: {
     species: 'human',
@@ -107,13 +99,26 @@ const DEFAULTS = {
   // `simulation.events` est un tampon de diagnostic, pas l'historique complet :
   // le flux faisant autorite reste la diffusion (WebSocket). Sans borne, un run
   // long accumulait deux evenements par agent et par tick indefiniment.
-  diagnostics: { maxEvents: 2000 },
+  diagnostics: {
+    maxEvents: 2000,
+    // Journal d'un résumé console par tick (tick, état, runId, agents vivants,
+    // agents ayant bougé, blocages, histogramme d'actions, réserves, échantillon
+    // de positions). Désactivé par défaut — un run produit une ligne par tick et
+    // les tests en enchaînent des centaines : c'est un outil de diagnostic que
+    // l'on active explicitement (`diagnostics.tickLog`, ou `--tick-log` au CLI).
+    // C'est la trace qui permet de comparer pas à pas la sortie du mock et la
+    // projection Unreal (PRISM) ; `config_prism.json` l'active.
+    tickLog: false,
+    tickLogSampleSize: 3
+  },
   replay: { file: null, loop: false },
   // Parité de contrat avec SYNE (ObservabilityContract.cs) : la version du
-  // contrat d'observabilité (0.3.0 : champs additifs inventory/commitments) et
-  // la version moteur (0.14.0 : cognitifs D7/D8/D5/D3/D2) annoncées sont
-  // celles du moteur réel que le mock émule.
-  engineVersion: '0.14.0',
+  // contrat d'observabilité et la version moteur annoncées sont celles du
+  // moteur réel que le mock émule, pour que les consommateurs (PRISM, ECHOS)
+  // lisent la même identité de contrat sur le mock et sur SYNE.
+  // 0.15.0 : jalon calibration B1 (règles recalées) — le mock n'émule pas ces
+  // règles, il annonce seulement l'identité de contrat courante.
+  engineVersion: '0.15.0',
   // 0.4.0 : champs additifs simulatedTimeSeconds / simulatedSecondsPerTick /
   // metersPerUnit — parité du contrat d'observabilité SYNE.
   contractVersion: '0.4.0'

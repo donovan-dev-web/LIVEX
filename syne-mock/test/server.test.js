@@ -8,8 +8,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const net = require('node:net');
+const path = require('node:path');
 const WebSocket = require('ws');
 const { createServer, Simulation } = require('../src/server');
+const { readConfig } = require('../src/cli');
 
 function openServer(t, options) {
   const server = createServer(options);
@@ -55,6 +57,23 @@ test('generation is deterministic and has the documented population', () => {
   assert.equal(a.snapshot().seed, 7);
   assert.equal(b.snapshot().seed, 7);
   assert.equal(a.agents.length, 50);
+});
+
+test('emitted contract identity tracks the real SYNE contract', () => {
+  const simulation = new Simulation({ seed: 7, agents: 2 });
+  simulation.start();
+  const snapshot = simulation.snapshot();
+  // Parité de contrat avec SYNE (`ObservabilityContract.cs`) : contrat
+  // d'observabilité 0.4.0, version moteur 0.15.0 et description du monde 1.1.
+  // Un consommateur (PRISM, ECHOS) ne doit pas lire deux identités différentes
+  // selon que la source est le mock ou le moteur réel. Ces valeurs sont verrouillées
+  // ici pour qu'une évolution de SYNE force une mise à jour explicite du mock.
+  assert.equal(snapshot.version, '0.4.0');
+  assert.equal(snapshot.engineVersion, '0.15.0');
+  assert.equal(snapshot.simulatedTimeSeconds, snapshot.tick * 60);
+  assert.equal(simulation.worldDescription().version, '1.1');
+  assert.equal(simulation.worldDescription().metersPerUnit, 1);
+  simulation.stop();
 });
 
 test('advanced systems are represented in snapshots and events', () => {
@@ -146,14 +165,10 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
 
 test('prism profile emits the ADR-017 temporal and spatial scale contract', async (t) => {
   // Profil `prism` (spec PRISM) : monde 2240 / cellule 32 → 70 × 70 =
-  // 4 900 cases, cadence 6 TPS, 5 s simulées par tick (R = 30).
-  const server = openServer(t, {
-    agents: 0,
-    ticksPerSecond: 6,
-    maxTicks: 3,
-    simulatedSecondsPerTick: 5,
-    world: { width: 2240, height: 2240, cellSize: 32, metersPerUnit: 1 }
-  });
+  // 4 900 cases, cadence 6 TPS, 5 s simulées par tick (R = 30). La configuration
+  // testée est celle réellement livrée (`config_prism.json`), pour que le test
+  // porte sur ce que PRISM reçoit et pas sur une reconstruction du monde.
+  const server = openServer(t, { ...readConfig(path.join(__dirname, '..', 'config_prism.json')), agents: 0, maxTicks: 3 });
   await server.listen(0, 0);
   const port = server.httpServer.address().port;
   await fetch(`http://127.0.0.1:${port}/api/control/prepare`, {
@@ -170,6 +185,16 @@ test('prism profile emits the ADR-017 temporal and spatial scale contract', asyn
   assert.equal(world.cellCountX, 70);
   assert.equal(world.cellCountY, 70);
   assert.equal(world.cells.length, 4900);
+  // Le profil prism declare cinq obstacles : les cases bloquees existent, comme
+  // cote moteur (`SimulationProfiles.Prism()` porte le meme layout).
+  assert.equal(world.obstacles.length, 5);
+  assert.ok(world.cells.some(cell => !cell.walkable), 'le layout doit bloquer des cases');
+  assert.deepEqual([...new Set(world.cells.map(cell => cell.terrainType))], ['plains']);
+  assert.deepEqual([...new Set(world.cells.map(cell => cell.movementCost))].sort((a, b) => a - b), [1, 100]);
+  for (const cell of world.cells)
+    assert.equal(cell.walkable, cell.obstacles.length === 0,
+      `case (${cell.x},${cell.y}) : walkable doit suivre les obstacles portes`);
+  assert.equal(/null/.test(JSON.stringify(world)), false);
 
   server.simulation.acknowledgeReady('1.1');
   server.simulation.start(42, 3);
@@ -240,7 +265,8 @@ test('world_initialized precedes a global snapshot and configured obstacles rema
 
 test('agent spawning honours published walkable cells across seeds', () => {
   // Le placement doit suivre cells[].walkable, seul indicateur publie par WorldDescription.
-  // Couvre la mer (relief) et le desaccord historique entre le placement et la grille.
+  // Couvre les cases bloquees par un obstacle et le desaccord historique entre le
+  // placement et la grille.
   const obstacleLayout = [
     { id: 'centre', x: 250, y: 250, radius: 30 },
     { id: 'corner', x: 120, y: 120, radius: 8 }
@@ -291,7 +317,7 @@ test('WorldDescription includes configured obstacle geometry and cell references
   });
   simulation.prepare(31);
   const world = simulation.worldDescription();
-  assert.deepEqual(world.obstacles, [{ id: 'initial-rock', type: 'circle', x: 15, y: 15, radius: 2 }]);
+  assert.deepEqual(world.obstacles, [{ id: 'initial-rock', x: 15, y: 15, radius: 2 }]);
   assert.deepEqual(world.cells.find(cell => cell.x === 1 && cell.y === 1).obstacles, ['initial-rock']);
   assert.equal(world.cells.find(cell => cell.x === 1 && cell.y === 1).walkable, false);
 });

@@ -41,28 +41,24 @@ class MovementService {
    * et si aucun obstacle ne la couvre.
    *
    * `cellAt` renvoie null hors carte, ce qui borne aussi le deplacement aux
-   * bords du monde. La grille est celle de WorldDescription : obstacles et
-   * terrain (mer) suivent donc exactement la regle publiee, au lieu d'un
-   * recalcul qui pourrait diverger.
+   * bords du monde. La grille est celle de WorldDescription : la franchissabilite
+   * des cases suit donc exactement la regle publiee, au lieu d'un recalcul qui
+   * pourrait diverger.
    */
   canEnter(world, position, obstacles) {
     const cell = cellAt(world, position.x, position.y);
     if (!cell || !cell.walkable) return false;
-    // cellSize est indispensable ici : sans lui, la branche `shape` compare
-    // des coordonnees NaN et laisse traverser toutes les formes d'obstacle.
-    return !isPositionBlocked(position, obstacles, world.cellSize);
+    return !isPositionBlocked(position, obstacles);
   }
 
   /**
-   * Distance maximale par tick, divisee par le cout de terrain.
+   * Distance maximale par tick, divisee par le cout publie par la case.
    *
-   * Le cout retenu est le plus eleve entre la case de depart et la case visee :
-   * entrer dans une riviere ralentit, et en sortir aussi. Une riviere
-   * (movementCost 4) se traverse donc quatre fois moins vite qu'une plaine.
-   *
-   * Une case non franchissable donne un budget nul. C'est le cas de la mer, que
-   * WorldGenerator publie avec walkable: false et movementCost: Infinity : il
-   * vaut mieux un agent immobile qu'un agent qui traverse la mer.
+   * Le cout retenu est le plus eleve entre la case de depart et la case visee,
+   * comme le moteur qui facture la case occupee. Seules deux valeurs existent
+   * dans WorldDescription — 1 sur une case libre, 100 sur une case bloquee — et
+   * une case bloquee donne un budget nul : il vaut mieux un agent immobile
+   * qu'un agent qui entre dans un obstacle.
    */
   stepBudget(world, from, destination, speed) {
     const departure = cellAt(world, from.x, from.y);

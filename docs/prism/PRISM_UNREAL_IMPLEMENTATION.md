@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [STABLE]
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 14 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---
@@ -80,6 +80,47 @@ Alternative native Blueprint : **Get Game Instance Subsystem** avec la classe
 `PrismLdkSubsystem`, puis conserver directement sa sortie. Dans les deux cas,
 il ne faut jamais appeler `Configure`, `Connect` ou `Get Connection State` sur
 la variable avant cette affectation.
+
+### Le registre de monde : aucun Blueprint à créer
+
+Le registre `Id SYNE → acteur` est un **sous-système de durée de vie
+GameInstance**, classe C++ **concrète** du plugin
+(`UPrismLdkWorldRegistryBase`, `PrismLdkWorldRegistry.h`) : le moteur
+l'instancie avec le module, donc il n'y a rien à créer dans le Content. Il se
+lit par le nœud **`PRISM Registry`** (`Get Prism Ldk World Registry`) ou par
+**Get Game Instance Subsystem** avec `Prism Ldk World Registry Base`.
+
+Le montage précédent — une classe `Abstract, Blueprintable` dérivée en
+`BP_PRISM_WorldSubsystem` — est **retiré** : l'instance n'existait que tant que
+l'asset était chargé, et le registre manquait dès qu'il était refermé
+(`BLUEPRINT_ROADMAP.md` §11.4). Si un tel Blueprint subsiste dans
+`Content/Core`, le supprimer.
+
+**Pourquoi la classe du plugin reste `Blueprintable`** : le moteur déclare
+`UGameInstanceSubsystem` en `UCLASS(Abstract, MinimalAPI)` **sans**
+`Blueprintable` (moteur 5.8,
+`Engine/Source/Runtime/Engine/Public/Subsystems/GameInstanceSubsystem.h`) ;
+`UWorldSubsystem` et `ULocalPlayerSubsystem` non plus. Une classe du plugin est
+donc le seul moyen d'exposer ces fonctions à un graphe — et c'est aussi ce qui
+rend le registre testable.
+
+Aucune variable Blueprint n'est requise : le registre vit en C++ et s'utilise
+par les fonctions exposées de catégorie `PRISM|Registry`
+(`Set Tile Size Uu`, `Set Stats From Description`, `Get Stats`,
+`Register Agent`, `Get Agent Actor`, `Unregister Agent`, `Register Obstacle`,
+`Add Resource Marker`, `Clear All`, …). Depuis un autre graphe, utiliser le
+nœud **`PRISM Registry`** (`Get Prism Ldk World Registry`) plutôt qu'un cast.
+
+Ordre d'appel à respecter : `SetTileSizeUu(Config.TileSizeUu)` une fois à
+l'initialisation, puis `SetStatsFromDescription(World)` à **chaque**
+`OnWorldInitialized` — c'est le seul endroit où `K = TileSizeUu / CellSize` est
+calculé.
+
+> **Instanciation** : le moteur ne crée que les sous-systèmes dont la **classe
+> est chargée**. En éditeur le Blueprint l'est ; dans un build empaqueté,
+> vérifier la ligne `registre de monde instancié` de `LogPrismLdk` et, si elle
+> manque, appliquer la correction de
+> [`BLUEPRINT_ROADMAP.md`](BLUEPRINT_ROADMAP.md) §11.4.
 
 ### Différence entre l'état et les événements
 
@@ -164,8 +205,11 @@ Dans `OnWorldInitialized`, construire la scène en phases et ne confirmer
 4. **Agents** — parcourir `Agents` et créer chaque acteur à sa position
    initiale. Garder ces acteurs dans une map indexée par `Id`, afin que le
    premier snapshot mette à jour les mêmes acteurs sans doublons.
-5. **Régions/clusters** — parcourir `Regions` pour préparer les volumes,
-   sous-niveaux ou données de World Partition nécessaires.
+5. **Régions/clusters** — parcourir `Regions` pour préparer les volumes ou les
+   données de partitionnement nécessaires (Data Layers, Level Instances). **Pas
+   de sous-niveaux** : dans un monde World Partition, l'organisation se fait par
+   cellules streamées et Data Layers
+   ([`BLUEPRINT_ROADMAP.md`](BLUEPRINT_ROADMAP.md) §4).
 
 `Agents` dans `WorldDescription` contient déjà `Id`, `Species` et `Position`.
 `TicksPerSecond` confirme la cadence demandée à `Prepare`; il s'agit de ticks de
@@ -195,7 +239,13 @@ SYNE est un plan logique 2D. Il faut distinguer trois repères :
    **`k = 100 uu` par unité SYNE, soit 1 unité = 1 m**, et une tuile de
    `CellSize × k` uu. Pour le profil retenu (`CellSize = 32`, monde
    `2 240 × 2 240`), une cellule logique correspond à une tuile de
-   **3200 × 3200 uu**, c'est-à-dire la cellule World Partition par défaut. Les
+   **3200 × 3200 uu**. Ce n'est **pas** la cellule World Partition par défaut :
+   le moteur 5.8 pose `CellSize = LoadingRange / 2` avec
+   `LoadingRange = 25600`, soit **12 800 uu (128 m)** de cellule
+   (`RuntimePartitionLHGrid.cpp:178`, `RuntimePartition.cpp:27`). Pour obtenir
+   une case SYNE = une cellule WP, la grille de runtime doit être posée
+   explicitement à `CellSize = 3200` (détail :
+   [`BLUEPRINT_ROADMAP.md`](BLUEPRINT_ROADMAP.md) §4). Les
    coordonnées de la tuile sont `TileOrigin = (CellX * 3200, CellY * 3200)` et
    son centre `(CellX * 3200 + 1600, CellY * 3200 + 1600)` ; les 70 × 70 tuiles
    couvrent 224 000 × 224 000 uu, soit 2 240 × 2 240 mètres (1 uu = 1 cm).
@@ -270,6 +320,13 @@ Exemple de requête directe à l'API HTTP SYNE :
 
 Dans la configuration de démarrage du mock, le même layout se place sous
 `world` à la racine, avec `obstacles: true` et `obstacleLayout: [...]`.
+Le mock a rendu sa description du monde **identique** à celle du moteur :
+cellules `plains` uniquement, `movementCost` 1 ou 100, obstacles en disques
+`{id, x, y, radius}`. Aucune clé de terrain ou d'obstacle procédural n'existe
+plus côté mock (elles sont refusées au chargement, pas ignorées), donc ce que
+tu vois dans le mock est ce que SYNE produira. L'égalité se rejoue avec
+[`../../scripts/parity_mock_syne_world.js`](../../scripts/parity_mock_syne_world.js),
+qui compare les deux sorties réelles champ par champ.
 Les coordonnées et le rayon de cet obstacle sont en unités continues SYNE. Le
 parseur Unreal transforme `x/y` en `FPrismSyneWorldObstacle.Position` et conserve
 le rayon dans `Radius`.
@@ -328,9 +385,10 @@ Dans `OnSnapshot` :
 
 1. Indexer les acteurs d'agents par leur identifiant SYNE.
 2. Pour chaque agent du tableau `Agents`, créer ou retrouver l'acteur.
-3. Convertir `Position.X/Y` en cellule logique via `floor(position / CellSize)`.
-   Si cette cellule a changé, échantillonner un point du NavMesh dans la tuile
-   correspondante et appeler `AI Move To`.
+3. Convertir `Position.X/Y` en cellule logique avec `Syne To Cell` du plugin
+   (jamais `floor` recopié dans le graphe). Si cette cellule a changé,
+   échantillonner un point du NavMesh dans la tuile correspondante et appeler
+   `AI Move To`.
 4. Mettre à jour les variables d'état : énergie, faim, soif, fatigue,
    intention et action. Le tableau `Actions` rapporte aussi les résultats et
    deltas d'action du tick, avec l'identifiant de l'agent.
@@ -342,8 +400,30 @@ Dans `OnSnapshot` :
    contrat de simulation l'indique.
 
 Il est recommandé de ne pas appeler `Get All Actors Of Class` à chaque tick.
-Utiliser une `Map<int64, Actor>` conservée dans un composant ou un
-GameInstance Blueprint.
+Ce registre existe déjà dans le plugin : `UPrismLdkWorldRegistryBase`
+(`PrismLdkWorldRegistry.h`), sous-système de durée de vie GameInstance de la
+classe C++ concrète. Il associe `Id SYNE → acteur`, dérive
+l'échelle de projection **une seule fois** et se teste sans éditeur (Automation
+Spec `PrismLdk.WorldRegistry`). Contrat Blueprint :
+[`BLUEPRINT_ROADMAP.md`](BLUEPRINT_ROADMAP.md) §6.1.2 ; vérification
+d'instanciation : §11.4 du même document.
+
+### Projection d'espace fournie par le plugin
+
+Les conversions SYNE → Unreal ne se recopient pas dans les graphes : le plugin
+expose des fonctions pures (`UPrismLdkProjection`, catégorie `SYNE|Projection`)
+— `Syne To Unreal`, `Unreal To Syne`, `Syne To Cell`, `Cell To Tile Origin`,
+`Cell To Tile Center`, `Syne Radius To Unreal`, `Max Walk Speed For Speed`,
+`Tile Size From Cell Size`.
+
+`K` et `CellSize` sont **toujours des paramètres** fournis par le produit
+(`TileSizeUu / World.CellSize`) : le plugin ne contient aucune constante
+produit. Elles se lisent dans `GetStats()` du registre de monde (§2) ; ne pas
+les recopier dans une variable de
+Blueprint. Les positions d'agents, d'obstacles et de territoires sont des
+coordonnées **continues** ; les ressources initiales et `Cells[]` sont des
+**indices de cellule** (`Cell To Tile Center`). Échelle et valeurs de contrôle :
+[`SCALE_AND_CADENCE_SPEC.md`](SCALE_AND_CADENCE_SPEC.md) §3.
 
 ### Cadence de simulation et fréquence de rendu
 
@@ -520,12 +600,19 @@ Pour un premier écran de diagnostic, afficher :
 
 La première intégration est terminée lorsque le scénario suivant fonctionne :
 
+0. Lancer les Automation Specs `PrismLdk.Projection` et
+   `PrismLdk.WorldRegistry` (Session Frontend → Automation) : projection et
+   registre doivent être verts avant tout test d'intégration ;
+   `PrismLdk.Service` si le build est supervisé par le Launcher.
+
 1. Lancer le mock pour valider le transport et les graphes Blueprint, ou
    lancer SYNE réel pour valider les comportements de simulation.
-2. Ouvrir une map du projet Unreal PRISM, qui intègre PRISM-LDK (pas une map
-   supposée fournie par le plugin).
+2. Ouvrir la map du projet courant : `LDK_BaseMap` dans le projet de création
+   (`prism/LDK/LDK.uproject`), ou la map propre du projet PRISM final.
 3. Cliquer **Connecter** et recevoir `OnConnected`.
-4. Cliquer **Préparer** et recevoir `OnWorldInitialized`.
+4. Cliquer **Préparer** et recevoir `OnWorldInitialized` ; vérifier que la
+   ligne `registre de monde instancié` est présente dans `LogPrismLdk` et que
+   `GetStats().bScaleValid` est vrai après `SetStatsFromDescription`.
 5. Observer les tuiles, obstacles et ressources générés.
 6. Cliquer **Ready**, puis **Démarrer**.
 7. Voir les agents se déplacer à chaque `OnSnapshot`.
@@ -541,3 +628,130 @@ dans [`../../syne-mock/README.md`](../../syne-mock/README.md). Les détails JSON
 [`../../syne-mock/docs/CONTRACT_REFERENCE.md`](../../syne-mock/docs/CONTRACT_REFERENCE.md) ;
 le contrat public est dans
 [`../syne/API_CONTRACTS.md`](../syne/API_CONTRACTS.md).
+
+## 10. Surface de service attendue par le Launcher
+
+Un build Unreal ne fournit aucun endpoint par défaut : PRISM doit exposer
+lui-même la surface de service décrite par
+[`../../launcher/contracts/INTEGRATION-CONTRACT-v1.md`](../../launcher/contracts/INTEGRATION-CONTRACT-v1.md)
+§5 et [`../launcher/INTEGRATION_CONTRACT.md`](../launcher/INTEGRATION_CONTRACT.md) §6.
+Elle est implémentée dans le plugin, pas dans les Blueprints :
+
+| Fichier | Rôle |
+| :-- | :-- |
+| `Plugins/PrismLdk/Source/PrismLdk/Private/PrismLdkService.h` | Options, état exposé, routeur pur, hôte du service |
+| `Plugins/PrismLdk/Source/PrismLdk/Private/PrismLdkService.cpp` | Analyse des arguments, routes HTTP, métriques, arrêt propre |
+| `Plugins/PrismLdk/Source/PrismLdk/Private/Tests/PrismLdkServiceSpec.cpp` | Automation Spec `PrismLdk.Service` |
+
+### 10.1 Branchement au build
+
+1. **Dépendance de module** — `PrismLdk.Build.cs` déclare `HTTPServer` (serveur
+HTTP du moteur ; casse exacte du répertoire
+`Engine/Source/Runtime/Online/HTTPServer`). C'est le seul module ajouté ; le
+service ne dépend d'aucun plugin.
+2. **Aucun asset, aucun module supplémentaire** — le service vit dans le module
+`PrismLdk` existant (`Type: Runtime`, `LoadingPhase: Default`), et démarre depuis
+`FPrismLdkModule::StartupModule()`. Il est donc opérationnel **avant** qu'un map
+ou qu'un GameInstance existe.
+3. **Ouverture conditionnelle** — sans `--control-port` sur la ligne de commande,
+aucun port n'est ouvert : éditeur, PIE et lancement manuel restent inchangés.
+4. **Arrêt** — `FPrismLdkModule::ShutdownModule()` retire les routes.
+5. **Paquetage** — vérifier la présence du module `HTTPServer` dans le build
+**Shipping** cible : c'est une hypothèse à valider sur le premier paquet réel,
+comme pour tout module moteur utilisé par un plugin runtime.
+
+### 10.2 Arguments acceptés
+
+`--clé valeur`, `--clé=valeur` et `-clé valeur` sont équivalents ; la clé est
+lue sans distinguer la casse.
+
+| Argument | Effet | Exigence |
+| :-- | :-- | :-- |
+| `--control-port <n>` | Ouvre la surface de service sur `127.0.0.1:<n>` | Déclenche le service ; hors domaine ou non entier ⇒ sortie **2** |
+| `--instance-id <id>` | Publié dans `/info` | Obligatoire avec `--control-port` |
+| `--work-dir <path>` | Seul répertoire écrit : marqueur `shutdown.ok` | Obligatoire avec `--control-port` |
+| `--log-dir <path>` | Reçu et journalisé | Obligatoire avec `--control-port` |
+| `--correlation-id <id>` | Publié dans `/info` | Obligatoire, ou `LIVEX_CORRELATION_ID` |
+| `--bind <addr>` | Demandé, journalisé | L'écoute réelle est décidée par le module `HTTPServer` |
+| `--headless` | Reçu et journalisé | Facultatif |
+| `--version` / `--info` | Imprime `{id, version, protocolVersion}` puis quitte **0** | Mode diagnostic, sans service |
+
+`LIVEX_SESSION_TOKEN` n'est **jamais** lu sur la ligne de commande : il vient de
+l'environnement. Absent, il est journalisé en avertissement et toute commande de
+contrôle est refusée.
+
+### 10.3 Endpoints
+
+| Endpoint | Méthode | Auth | Réponses |
+| :-- | :-- | :-- | :-- |
+| `/health/live` | GET | non (boucle locale) | `200` dès que le service écoute |
+| `/health/ready` | GET | non | `200` si écoute **et** moteur en marche ; sinon `503` avec la cause |
+| `/health/details` | GET | non | `200` avec `status`, `readiness`, `checks[]`, `instances` |
+| `/info` | GET | non | `200` `{id, version, protocolVersion, instanceId, correlationId, engineVersion, worldVersion, runId, listening, ready}` |
+| `/metrics` | GET | non | `200` texte Prometheus, unités documentées |
+| `/control/shutdown` | POST | **jeton** | `200` `{ok:true, action:"shutdown"}` ; `401` sans jeton valide |
+| Chemin connu, mauvais verbe | — | — | `405` |
+| Chemin inconnu (dont `/control/config`, non supporté) | — | — | `404` |
+
+Métriques publiées (toutes en unités explicites) : `livex_prism_ready` (booléen),
+`livex_prism_ws_connected{url}` (booléen), `livex_prism_fps` (frames/s, moyenne
+glissante), `livex_prism_tick` (tick SYNE), `livex_prism_agents` (population),
+`livex_prism_http_requests_total` (compteur).
+
+La readiness de PRISM est **l'écoute du service et le démarrage du moteur** (au
+moins une frame rendue). La scène complète n'est volontairement pas exigée :
+`world_initialized` n'arrive qu'après `Prepare`, donc après la readiness du
+processus.
+
+### 10.4 Codes de sortie
+
+| Code | Cause dans cette implémentation |
+| :-- | :-- |
+| 0 | Arrêt propre demandé par `POST /control/shutdown`, ou sortie normale |
+| 2 | Configuration de service invalide : argument obligatoire manquant, port mal formé ou hors domaine |
+| 3 | Port de contrôle indisponible (échec d'écoute) |
+
+### 10.5 Séquence d'arrêt
+
+1. Réponse `200` envoyée au client.
+2. Après un délai de **0,25 s** (l'API HTTP du moteur ne garantit pas que les
+   octets ont quitté la socket), sur le **thread de jeu** :
+   `Disconnect()` du `UPrismLdkSubsystem` ferme la WebSocket SYNE.
+3. Écriture du marqueur `shutdown.ok` dans `--work-dir` (jamais ailleurs).
+4. Retrait des routes, arrêt des listeners, `GLog->Flush()`.
+5. `RequestExitWithStatus(false, 0, …)` → code de sortie **0**.
+
+Une seconde demande d'arrêt est ignorée : la commande est idempotente.
+
+### 10.6 Vérification dans un build
+
+```bash
+# readiness et identité
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:5299/health/ready
+curl -s http://127.0.0.1:5299/info
+curl -s http://127.0.0.1:5299/metrics
+
+# arrêt : refusé sans jeton, accepté avec
+curl -s -o /dev/null -w '%{http_code}\n' -X POST http://127.0.0.1:5299/control/shutdown
+curl -s -X POST -H "Authorization: Bearer $LIVEX_SESSION_TOKEN" \
+  http://127.0.0.1:5299/control/shutdown
+```
+
+Le comportement attendu est directement verrouillé sans réseau par l'Automation
+Spec `PrismLdk.Service` (Session Frontend → Automation) :
+`-ExecCmds="Automation RunTests PrismLdk.Service"`.
+
+### 10.7 Limites connues
+
+- **Commutateurs du moteur.** Un exécutable Unreal reçoit ses propres arguments
+  (`-game`, `-log=…`) : les refuser rendrait le composant inlançable. Le service
+  est donc strict sur **ses** arguments (port, valeurs obligatoires) et conserve
+  les autres pour le journal, au lieu de les refuser comme le demande le contrat
+  §3 pour un service pur.
+- **Adresse d'écoute.** `--bind` ne peut pas être honoré : l'écoute est décidée
+  par le module `HTTPServer`. Vérifier avec `netstat -ano | findstr 5299` si
+  l'interface est bien locale ; le jeton reste la protection des mutations.
+- **Détection de port occupé.** Le code 3 est émis quand l'obtention du routeur
+  échoue ; un conflit découvert seulement par le listener n'est pas distinguable.
+- **`StopAllListeners` est global au module moteur** : appelé uniquement quand ce
+  service a démarré les listeners, au moment de l'arrêt du processus.

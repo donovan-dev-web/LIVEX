@@ -39,12 +39,21 @@ Chaque agent initial expose `id`, `species` et `position{x,y}` ; ces agents et
 positions sont ceux du monde préparé et sont réutilisés pour le premier tick.
 `world.resources[]` décrit les emplacements initiaux à instancier : trois
 emplacements déterministes par type (`food`, `water`, `wood`, `mineral`) quand
-la grille a au moins trois cellules, avec `id`, `kind`, `x`, `y` (indices de
-cellule) et `quantity`. Ces points de placement ne sont pas des stocks de nœuds
+la grille a au moins trois cellules **marchables**, avec `id`, `kind`, `x`, `y` (indices de
+cellule) et `quantity`. Chaque emplacement tombe sur une case marchable : un tirage
+qui tombe dans un obstacle avance jusqu'à la première case libre, et le nombre
+par type suit les cases marchables disponibles — sur un monde très contraint il
+descend sous trois, jusqu'à zéro quand aucune case n'est libre. Ces points de placement ne sont pas des stocks de nœuds
 dynamiques : les ressources simulées restent les réserves globales par type
 exposées dans les snapshots.
 Chaque cellule expose `x`, `y`, `terrainType`, `walkable`, `height`, `movementCost` et
-`obstacles[]`. Le layout est déterministe pour un seed. Les changements
+`obstacles[]`. Le layout est **indépendant de la seed** : il vient de la seule
+configuration (`world.obstacleLayout[]`), sans un tirage de PRNG (SYNE-071). Deux
+seeds sur la même configuration donnent donc le **même relief** — la seed ne fait
+varier que les positions initiales des agents, les marqueurs de ressources et la
+dynamique ; tout consommateur (PRISM) ne doit pas s'attendre à une carte
+différente par seed, ni à ce qu'un changement de seed régénère les obstacles.
+Les changements
 d'obstacles/saisons/territoires existants restent les deltas applicables par
 Unreal (`world.construction_placed` et `world.construction_removed` compris).
 SYNE n'a actuellement pas de configuration de biomes ou types de terrain :

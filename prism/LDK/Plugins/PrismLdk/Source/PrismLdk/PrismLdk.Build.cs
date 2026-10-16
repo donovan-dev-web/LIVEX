@@ -11,7 +11,13 @@ public class PrismLdk : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "CoreUObject", "Engine", "HTTP", "Json", "JsonUtilities", "WebSockets"
+			"Core", "CoreUObject", "Engine", "HTTP", "Json", "JsonUtilities", "WebSockets",
+			// Surface de service locale du composant (santé, info, métriques, arrêt) :
+			// serveur HTTP du moteur, utilisé uniquement par PrismLdkService.
+			// Casse exacte du répertoire du module (`Runtime/Online/HTTPServer`) :
+			// UBT avertit sinon, et la résolution échoue sur un système sensible à
+			// la casse (build Linux du Launcher).
+			"HTTPServer"
 		});
 	}
 }

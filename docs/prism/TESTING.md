@@ -18,7 +18,11 @@ simulation concurrente.
 | Niveau | Vérifications |
 | :-- | :-- |
 | Build Unreal | Compiler PRISM-LDK depuis l'hôte technique et depuis le projet Unreal PRISM |
-| API Blueprint | Vérifier l'accès au subsystem, les types/enums, les dispatchers et les fonctions de contrôle attendus |
+| API Blueprint | Vérifier l'accès au subsystem, les types/enums, les dispatchers, les fonctions de contrôle attendus et l'accès au registre de monde (nœud `PRISM Registry`) |
+| Projection | Automation Spec `PrismLdk.Projection` : valeurs de contrôle du profil (`k = 100`) et paramètres invalides |
+| Registre de monde | Automation Spec `PrismLdk.WorldRegistry` : échelle dérivée une seule fois (`K = TileSizeUu / CellSize`), remplacement d'agent, refus des entrées invalides, acteurs détruits, `ClearAll` |
+| Surface de service | Automation Spec `PrismLdk.Service` : arguments supervisés, jeton de session, codes HTTP par route, métriques et échappement des labels |
+| Service au runtime | Sondes `/health/live`, `/health/ready`, `/health/details`, `/info`, `/metrics` ; `POST /control/shutdown` refusé sans jeton puis accepté, sortie 0 et marqueur `shutdown.ok` |
 | Transport | Vérifier connexion/déconnexion, perte inattendue, reconnexion configurée, JSON invalide et erreur HTTP |
 | Contrats | Vérifier l'ordre `world_initialized` avant snapshots, parsing de snapshots/deltas/événements et conservation de valeurs inconnues |
 | Cycle de vie | Vérifier `Prepare` → réception du monde → `Ready` → résultat positif → `Start`, ainsi que pause/reprise/arrêt/reset/statut |
@@ -51,6 +55,20 @@ Référence : [`../../syne-mock/README.md`](../../syne-mock/README.md).
 ## 4. Critères d'acceptation
 
 - Le projet Unreal PRISM compile avec le plugin PRISM-LDK activé.
+- L'Automation Spec `PrismLdk.Projection` est verte : la projection d'espace
+  (`UPrismLdkProjection`) est testée sans éditeur, et aucune formule équivalente
+  n'est recopiée dans un graphe Blueprint.
+- L'Automation Spec `PrismLdk.WorldRegistry` est verte : l'échelle
+  (`K = TileSizeUu / CellSize`) est dérivée en un seul point
+  (`UPrismLdkWorldRegistryBase`) et le registre `Id SYNE → acteur` est testé
+  sans monde ; aucun registre parallèle n'est construit dans un graphe.
+- Le registre est le sous-système C++ `UPrismLdkWorldRegistryBase` (aucun
+  Blueprint enfant) et son instanciation est confirmée dans un build empaqueté
+  (ligne `registre de monde instancié` de `LogPrismLdk`, `BLUEPRINT_ROADMAP.md`
+  §11.4).
+- L'Automation Spec `PrismLdk.Service` est verte : la surface de service est
+  testée sans réseau, et un build supervisé répond à la readiness du Launcher
+  puis s'arrête proprement sur commande authentifiée.
 - Le flux préparé respecte l'ordre prévu et les erreurs de cycle de vie sont
   visibles côté Blueprint.
 - Un snapshot complet actualise l'état affiché ; événements et deltas ne
