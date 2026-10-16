@@ -97,6 +97,27 @@ public static class EventSensor
             value["rejected"] = new System.Text.Json.Nodes.JsonArray(
                 decided.RejectedKinds.Select(kind => (System.Text.Json.Nodes.JsonNode)System.Text.Json.Nodes.JsonValue.Create(kind.ToString())).ToArray());
 
+            // Trace causale complète (D-06 / AC8) : les faits justificatifs du choix
+            // (provenance, sujet, confiance, tick d'observation) sont publiés eux aussi,
+            // et non seulement l'arithmétique du score — ECHOS peut ainsi remonter
+            // action ← but ← croyance ← mémoire ← perception sans relire le snapshot.
+            if (decided.Evidence is { Count: > 0 } evidence)
+            {
+                var evidenceJson = new System.Text.Json.Nodes.JsonArray();
+                foreach (Cognition.DecisionEvidence fact in evidence)
+                {
+                    evidenceJson.Add((System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject
+                    {
+                        ["source"] = fact.Source,
+                        ["subject"] = fact.Subject,
+                        ["confidence"] = Math.Round(fact.Confidence, 4),
+                        ["observedTick"] = fact.ObservedTick,
+                    });
+                }
+
+                value["evidence"] = evidenceJson;
+            }
+
             if (decided.ResultOutcome is { } outcome)
             {
                 value["result"] = outcome;

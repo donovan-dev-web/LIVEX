@@ -630,7 +630,7 @@ public sealed class CognitionPipeline
     /// faute de croyance vive). C'est ce qui permet de remonter la décision jusqu'à
     /// ses entrées (D-06).
     /// </summary>
-    private static IReadOnlyList<DecisionEvidence> EvidenceFor(MindState mind, GoalTarget? target)
+    internal static IReadOnlyList<DecisionEvidence> EvidenceFor(MindState mind, GoalTarget? target)
     {
         if (target is not { } aimed)
         {

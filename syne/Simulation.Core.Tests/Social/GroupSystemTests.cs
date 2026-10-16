@@ -6,6 +6,7 @@
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Social;
+using Simulation.Core.World;
 using Xunit;
 
 namespace Simulation.Core.Tests;
@@ -297,6 +298,119 @@ public class GroupSystemTests
 
         Assert.Empty(system.LastFormed);
         Assert.Empty(system.Active);
+    }
+
+    [Fact]
+    public void Step_WithPositions_ProximityRequired_ExcludesDistantMember()
+    {
+        // AC7 (loi des groupes avec proximite spatiale) : deux membres eloignes au
+        // dela de `proximityRadius` ne sont PAS lies, meme avec confiance reciproque
+        // et affinité (croyance partagee) suffisantes. La contrainte n'est active
+        // que si le moteur fournit une table de positions (`positions` non nulle).
+        SimulationOptions options = Options();
+        options.Groups.ProximityRequired = true;
+        options.Groups.ProximityRadius = 60.0;
+        options.Groups.MinGroupSize = 2;
+
+        Dictionary<ulong, MindState> minds = Minds(options, 3);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            foreach (ulong peer in minds.Keys.Where(id => id != self))
+            {
+                Bond(mind, peer);
+            }
+
+            ShareBelief(mind, options, target: 9, tick: 9);
+        }
+
+        // Entites 1 et 2 proches (10 <= 60) ; entite 3 hors rayon (1000 > 60).
+        var positions = new Dictionary<ulong, Position>
+        {
+            [1] = new Position(0.0, 0.0),
+            [2] = new Position(10.0, 0.0),
+            [3] = new Position(1000.0, 0.0),
+        };
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds, positions);
+
+        // L'entite 3 n'est liee a personne : le noyau {1,2} forme seul un groupe,
+        // 3 reste hors de toute composante (donc hors de `Active`).
+        Group group = Assert.Single(system.Active);
+        Assert.Equal(new ulong[] { 1, 2 }, group.Members);
+        Assert.DoesNotContain(3UL, group.Members);
+    }
+
+    [Fact]
+    public void Step_WithPositions_ProximityDisabled_BindsDistantMember()
+    {
+        // Controle : la meme topologie avec `proximityRequired = false` relie le
+        // trio entier — la difference vient bien de la contrainte de proximite, et
+        // de rien d'autre (confiance, affinité et croyances identiques).
+        SimulationOptions options = Options();
+        options.Groups.ProximityRequired = false;
+        options.Groups.ProximityRadius = 60.0;
+        options.Groups.MinGroupSize = 2;
+
+        Dictionary<ulong, MindState> minds = Minds(options, 3);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            foreach (ulong peer in minds.Keys.Where(id => id != self))
+            {
+                Bond(mind, peer);
+            }
+
+            ShareBelief(mind, options, target: 9, tick: 9);
+        }
+
+        var positions = new Dictionary<ulong, Position>
+        {
+            [1] = new Position(0.0, 0.0),
+            [2] = new Position(10.0, 0.0),
+            [3] = new Position(1000.0, 0.0),
+        };
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds, positions);
+
+        Group group = Assert.Single(system.Active);
+        Assert.Equal(new ulong[] { 1, 2, 3 }, group.Members);
+    }
+
+    [Fact]
+    public void Step_WithPositions_ProximityRequired_AllNearby_BindsAllMembers()
+    {
+        // Controle : quand les trois entites sont dans le rayon, la proximite ne
+        // filtre personne et le trio complet est lie (la contrainte n'exclut que
+        // les pairs reellement eloignes).
+        SimulationOptions options = Options();
+        options.Groups.ProximityRequired = true;
+        options.Groups.ProximityRadius = 60.0;
+        options.Groups.MinGroupSize = 3;
+
+        Dictionary<ulong, MindState> minds = Minds(options, 3);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            foreach (ulong peer in minds.Keys.Where(id => id != self))
+            {
+                Bond(mind, peer);
+            }
+
+            ShareBelief(mind, options, target: 9, tick: 9);
+        }
+
+        var positions = new Dictionary<ulong, Position>
+        {
+            [1] = new Position(0.0, 0.0),
+            [2] = new Position(10.0, 0.0),
+            [3] = new Position(20.0, 0.0),
+        };
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds, positions);
+
+        Group group = Assert.Single(system.Active);
+        Assert.Equal(new ulong[] { 1, 2, 3 }, group.Members);
     }
 
     [Fact]
