@@ -40,8 +40,8 @@ function createInitialAgents(seed, count, world, agentSettings) {
   const needs = initialNeeds(agentSettings);
 
   // Le placement s'appuie sur cells[].walkable, l'indicateur que le monde publie lui-même,
-  // plutôt que sur un recalcul : obstacles et terrain (mer) sont ainsi traités par la même
-  // règle que celle exposée dans WorldDescription, et aucune divergence n'est possible.
+  // plutôt que sur un recalcul : les obstacles sont ainsi traités par la même règle que
+  // celle exposée dans WorldDescription, et aucune divergence n'est possible.
   // Le déplacement lit la même grille via cell-grid, doncagent et monde ne peuvent pas
   // diverger sur ce qui est franchissable.
   const blocked = new Set();

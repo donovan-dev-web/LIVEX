@@ -532,13 +532,11 @@ public static class Program
             options.Agents.Perception.SpatialCellSize);
 
         EntityTemplate template = EntityTemplate.DefaultA;
-        for (ulong i = 0; i < population; i++)
-        {
-            (Entity entity, rng) = EntityFactory.CreateNext(template, world, rng, i + 1, bornAt: 0);
-            world.AddEntity(entity);
-        }
-
-        world.ApplyConfiguredLayout(options.World);
+        // Même peuplement que le serveur de contrôle (layout d'obstacles posé
+        // avant les entités, aucune entité dans une case bloquée) : une seule
+        // implémentation, pour que le run CLI et le run supervisé ne puissent pas
+        // diverger sur le monde initial.
+        rng = Simulation.Console.Control.SimulationFactory.Populate(world, options, population, rng);
 
         var loop = new SimulationLoop(world, rng, options, budgets);
         return (rng, world, loop, template);

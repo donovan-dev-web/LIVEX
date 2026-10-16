@@ -9,6 +9,7 @@
 #include "PrismLdkBlueprintLibrary.generated.h"
 
 class UPrismLdkSubsystem;
+class UPrismLdkWorldRegistryBase;
 
 UCLASS()
 class PRISMLDK_API UPrismLdkBlueprintLibrary : public UBlueprintFunctionLibrary
@@ -22,4 +23,15 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category="SYNE|Connection", meta=(WorldContext="WorldContextObject", CompactNodeTitle="SYNE"))
 	static UPrismLdkSubsystem* GetPrismLdkSubsystem(const UObject* WorldContextObject);
+
+	/**
+	 * Renvoie le registre de monde PRISM de la GameInstance courante, ou
+	 * `nullptr` si le contexte n'est pas dans un monde joué.
+	 *
+	 * Le registre est un sous-système C++ **concret** du plugin : sa classe est
+	 * chargée avec le module, donc l'instance existe dès qu'une GameInstance
+	 * existe, sans dépendre du chargement d'un asset.
+	 */
+	UFUNCTION(BlueprintPure, Category="PRISM|Registry", meta=(WorldContext="WorldContextObject", CompactNodeTitle="PRISM Registry"))
+	static UPrismLdkWorldRegistryBase* GetPrismLdkWorldRegistry(const UObject* WorldContextObject);
 };

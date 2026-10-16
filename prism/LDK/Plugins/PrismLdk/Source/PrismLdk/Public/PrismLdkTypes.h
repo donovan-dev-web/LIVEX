@@ -220,6 +220,11 @@ struct PRISMLDK_API FPrismSyneWorldDescription
 	UPROPERTY(BlueprintReadOnly) double Height = 0.0;
 	UPROPERTY(BlueprintReadOnly) double CellSize = 0.0;
 	UPROPERTY(BlueprintReadOnly) int32 TicksPerSecond = 10;
+	// Échelle temporelle/ spatiale (description 1.1, ADR-017, additif). Read-only :
+	// se lit dans `world_initialized`, jamais codé en dur côté PRISM (TRANSPORT_API §2).
+	// `simulatedTimeSeconds = Tick × SimulatedSecondsPerTick`.
+	UPROPERTY(BlueprintReadOnly) int32 SimulatedSecondsPerTick = 60;
+	UPROPERTY(BlueprintReadOnly) double MetersPerUnit = 1.0;
 	UPROPERTY(BlueprintReadOnly) int32 CellCountX = 0;
 	UPROPERTY(BlueprintReadOnly) int32 CellCountY = 0;
 	UPROPERTY(BlueprintReadOnly) TArray<FPrismSyneWorldAgent> Agents;
@@ -313,6 +318,9 @@ struct PRISMLDK_API FPrismSyneWorldSnapshot
 	UPROPERTY(BlueprintReadOnly) FString Version;
 	UPROPERTY(BlueprintReadOnly) FString EngineVersion;
 	UPROPERTY(BlueprintReadOnly) FString RunId;
+	// Contrat 0.2.1 (additif) : le seed effectif voyage dans le snapshot — il n'a
+	// plus à être dérivé du runId (diagnostics PRISM).
+	UPROPERTY(BlueprintReadOnly) int64 Seed = 0;
 	UPROPERTY(BlueprintReadOnly) int64 Tick = 0;
 	UPROPERTY(BlueprintReadOnly) double SimulatedTimeMinutes = 0.0;
 	UPROPERTY(BlueprintReadOnly) int32 AliveCount = 0;
