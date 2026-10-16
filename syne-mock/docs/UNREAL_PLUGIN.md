@@ -8,7 +8,8 @@ réimplémentation du moteur SYNE. Le mock expose :
 - WebSocket texte JSON UTF-8 sur `ws://127.0.0.1:5180/` ;
 - contrôle HTTP JSON sur `http://127.0.0.1:5181` ;
 - un monde 2D et des ticks déterministes, par défaut 50 agents et 400 ticks ;
-- un contrat `0.2.0` et `engineVersion` `0.11.0`.
+- un contrat d'observabilité `0.4.0` et un `engineVersion` `0.15.0`
+  (description de monde `1.1`).
 
 Toutes les adresses et versions doivent être configurables. Le plugin ne doit
 pas supposer que le serveur est local en production.
@@ -97,7 +98,7 @@ entrée fournit l'identifiant, l'espèce et la position 2D initiale, afin
 qu'Unreal puisse créer les acteurs avant `Ready`/`Start`. Ces mêmes agents et
 positions sont présents dans le premier snapshot.
 
-Le snapshot global `0.2.0` contient l'état dynamique complet par tick :
+Le snapshot global `0.4.0` contient l'état dynamique complet par tick :
 `agents[]`, `resources[]`, `obstacles[]`, `groups[]`, `territories[]`,
 `books[]`, ainsi que `worldChanges[]` et `actions[]` pour les mutations et
 actions du tick. Les événements unitaires restent émis pour compatibilité,
