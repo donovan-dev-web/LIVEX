@@ -7,9 +7,30 @@ puis `npm start -- config_example.json`. Le WebSocket texte JSON camelCase est s
 **Version** : `0.1.0` (`package.json`) — contrat d'observabilité émis : **0.4.0**
 (`contractVersion` de `src/config.js`), aligné sur SYNE.
 
+Deux configurations de référence : `config_example.json` (500 × 500, cellule 10,
+10 TPS, 50 agents — les défauts du moteur) et **`config_prism.json`, miroir du
+profil `prism`** du moteur (2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick, 100 agents,
+réserves 20 000 avec régénération 20/10, **5 obstacles** — côte sud en trois
+disques, crête centrale, amer — comme `../../configs/simulation/prism.json` et
+`SimulationProfiles.Prism()`). Attention au nom du fichier : `_`, pas
+`.`. Un chemin demandé et introuvable **arrête le démarrage** au lieu de
+retomber sur les défauts — le repli silencieux lançait le mock sur un monde de
+500 × 500 sans le dire. `npm start -- config_prism.json` évite
+le piège le plus visible : un mock laissé sur ses défauts annonce un monde de
+500 × 500 (k = 320) là où le moteur annonce 2 240 × 2 240 (k = 100).
+
 Le terminal affiche le suivi avec le préfixe `[SYNE-MOCK ...]` : démarrage des
 ports, connexions/déconnexions WebSocket, requêtes/réponses HTTP et transitions
 `PREPARE`, `READY`, `START`, `PAUSE`, `RESUME`, `STOP` et `RESET`.
+
+Un **résumé console par tick** peut s'y ajouter : une ligne `TICK <n>` portant
+l'état, le `runId`, le seed, les agents vivants, combien ont bougé, les
+blocages, les réserves, l'histogramme d'actions et un échantillon de positions
+d'agents. C'est la trace qui permet de confronter pas à pas la sortie du mock et
+la projection Unreal. Il est **désactivé par défaut** (un run produit une ligne
+par tick) et s'active par `diagnostics.tickLog` dans la configuration —
+`config_prism.json` l'active — ou par `--tick-log` / `--no-tick-log` au CLI.
+`diagnostics.tickLogSampleSize` borne le nombre d'agents échantillonnés.
 
 ## Intégration au Launcher LIVEX
 
@@ -51,7 +72,7 @@ défaut produit 50 agents et 400 ticks, sans hasard dépendant du temps. Chaque 
 Avant tout snapshot, le WebSocket émet `world_initialized` avec une
 `WorldDescription` version `1.1` (champs additifs ADR-017 :
 `simulatedSecondsPerTick`, `metersPerUnit`). Le monde est généré dans l'ordre
-topologie → obstacles → ressources → agents. Les emplacements de ressources
+cellules → obstacles → ressources → agents. Les emplacements de ressources
 initiaux sont des marqueurs de grille ; les stocks dynamiques dans les snapshots
 restent globaux par type. Les obstacles initiaux restent identiques au monde
 préparé jusqu'à une mutation explicite ; le mock n'ajoute plus d'obstacle
@@ -67,8 +88,9 @@ l'implémentation A* de SYNE. La délibération et les systèmes sociaux restent
 des approximations destinées à tester l'intégration Blueprint ; les trajectoires
 ne sont pas garanties bit-à-bit identiques au moteur C#.
 
-Tests ciblés : `npm test` (48 tests, dont 2 arrêts par signal ignorés sous
-Windows, sans dépendance à un port fixe). La suite s'exécute aussi en intégration continue via le job `Tests
+Tests ciblés : `npm test` (52 tests : 50 verts + 2 arrêts par signal ignorés sous
+Windows, sans dépendance à un port fixe). Vérification d'alignement sur le
+moteur : `node scripts/parity_mock_syne_world.js` depuis la racine du dépôt. La suite s'exécute aussi en intégration continue via le job `Tests
 (SYNE-MOCK Node)` de `.github/workflows/ci.yml`, déclenché sur toute
 modification de `./`. Ports et paramètres sont configurables en JSON.
 `replay.file` permet de rejouer un fichier JSONL (un message SYNE par ligne) ;
@@ -91,6 +113,15 @@ dès qu'il écoute. Le test
 `../echos/echos/tests/test_syne_mock_integration.py` vérifie le trajet complet
 (contrôle HTTP → flux WebSocket → ingestion → stockage) sur le job
 `Intégration mock → ECHOS` de `../.github/workflows/ci.yml`.
+
+La **description du monde** (`world_initialized`) n'est pas une approximation :
+elle est vérifiée identique à celle du moteur champ par champ par
+[`../scripts/parity_mock_syne_world.js`](../scripts/parity_mock_syne_world.js),
+qui lance SYNE réel et le mock sur la même géométrie et le même layout
+d'obstacles. Le mock ne publie que ce que le moteur sait produire : cellules
+`plains`, coût 1 ou 100, obstacles en disques `{id, x, y, radius}` — ni terrain,
+ni biome, ni obstacle procédural (les clés `world.terrain` et
+`world.proceduralObstacles` sont refusées, pas ignorées).
 
 Le mock est une émulation de développement, pas une implémentation
 scientifiquement équivalente à SYNE. Il ne prend pas en charge les campagnes

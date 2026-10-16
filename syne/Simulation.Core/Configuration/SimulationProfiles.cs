@@ -98,6 +98,24 @@ public static class SimulationProfiles
     /// PRISM — un profil doit être <b>complet</b> (le contrôleur applique la
     /// configuration fournie sur les défauts intégrés).
     /// </para>
+    /// <para>
+    /// <b>Obstacles de la scène</b> — <c>world.obstacles</c> est faux par défaut
+    /// (SYNE-071) : sans le bloc ci-dessous, PRISM ne reçoit <b>aucun</b> obstacle
+    /// à l'initialisation (<c>world_initialized.world.obstacles[]</c> vide), donc son
+    /// rendu d'obstacle — <c>BP_PRISM_Obstacle</c> et les mutations
+    /// <c>world.construction_placed</c>/<c>removed</c> — n'a rien à afficher et
+    /// paraît cassé alors que le contrat fonctionne. Le layout est une
+    /// <b>approximation du décor en disques</b> (seule forme supportée) : une côte
+    /// au sud et une crête au centre, plus un amer destiné à vérifier le cas
+    /// d'un obstacle plus petit qu'une case.
+    /// </para>
+    /// <para>
+    /// Les mêmes valeurs sont reproduites dans
+    /// <c>configs/simulation/prism.json</c> (profil CLI/Launcher) et dans le miroir
+    /// du mock <c>syne-mock/config_prism.json</c> : les trois fichiers bougent
+    /// ensemble, et le harnais <c>scripts/parity_mock_syne_world.js</c> compare la
+    /// description du monde des deux sources à partir de ces valeurs.
+    /// </para>
     /// </summary>
     public static SimulationOptions Prism()
     {
@@ -108,6 +126,15 @@ public static class SimulationProfiles
         options.Simulation.TicksPerSecond = 6;
         options.Simulation.SimulatedSecondsPerTick = 5;
         options.World.MetersPerUnit = 1.0;
+        options.World.Obstacles = true;
+        options.World.ObstacleLayout =
+        [
+            new StaticObstacleSettings { Id = "cote-sud-1", X = 400, Y = 2180, Radius = 150 },
+            new StaticObstacleSettings { Id = "cote-sud-2", X = 1120, Y = 2180, Radius = 150 },
+            new StaticObstacleSettings { Id = "cote-sud-3", X = 1840, Y = 2180, Radius = 150 },
+            new StaticObstacleSettings { Id = "crete-centre", X = 1120, Y = 1120, Radius = 60 },
+            new StaticObstacleSettings { Id = "amer-1", X = 300, Y = 300, Radius = 8 },
+        ];
         return options;
     }
 

@@ -82,7 +82,10 @@ test('launcher arguments select the allocated control port without hiding unknow
   assert.deepEqual(parseArgs([
     '--headless', '--instance-id', 'mock-test', '--control-port', '50123',
     '--work-dir', 'work', '--log-dir', 'logs', '--correlation-id', 'corr'
-  ]), { configPath: null, ports: { controlPort: 50123 } });
+  ]), { configPath: null, ports: { controlPort: 50123 }, tickLog: undefined });
+  assert.equal(parseArgs(['--tick-log']).tickLog, true);
+  assert.equal(parseArgs(['--no-tick-log']).tickLog, false);
+  assert.equal(parseArgs([]).tickLog, undefined);
   assert.throws(() => parseArgs(['--autostart']), /Unknown argument/);
   assert.throws(() => parseArgs(['--control-port', '0']), /between 1 and 65535/);
 });
@@ -92,6 +95,46 @@ test('the existing positional JSON configuration remains supported', () => {
 
   assert.equal(parseArgs([configPath]).configPath, configPath);
   assert.equal(readConfig(configPath).controlPort, 5181);
+});
+
+test('a requested configuration file that does not exist fails instead of falling back', () => {
+  // Le repli silencieux sur les defauts lancait le mock sur 500x500/50 agents
+  // alors que l'operateur croyait charger le profil `prism` : le monde publie
+  // ne correspondait ni a sa configuration, ni au moteur, sans aucun message.
+  // Le message nomme le fichier ressemblant du meme dossier (`config.prism.json`
+  // vs `config_prism.json`) quand il est unique, et ne propose rien sinon.
+  assert.throws(
+    () => readConfig(path.join(__dirname, '..', 'config.prism.json')),
+    /introuvable[\s\S]*config_prism\.json/);
+  assert.throws(() => readConfig(path.join(__dirname, '..', 'absent.json')), /introuvable/);
+  assert.throws(() => readConfig(path.join(__dirname, '..', 'absent.json')), error => !/Vouliez-vous dire/.test(error.message));
+  // Un chemin absent reste equivalent aux defauts : seul un chemin demande est
+  // une erreur.
+  assert.deepEqual(readConfig(null), {});
+  assert.equal(readConfig(path.join(__dirname, '..', 'config_prism.json')).world.width, 2240);
+});
+
+test('the prism configuration mirrors the engine profile the plugin will consume', () => {
+  // `configs/simulation/prism.json` (moteur) : monde 2240/cellule 32, 6 TPS,
+  // 5 s/tick. Le mock doit annoncer le meme monde, sinon PRISM calibre son
+  // echelle sur une geometrie que SYNE ne produira jamais.
+  const config = readConfig(path.join(__dirname, '..', 'config_prism.json'));
+  assert.equal(config.ticksPerSecond, 6);
+  assert.equal(config.simulatedSecondsPerTick, 5);
+  assert.equal(config.world.width, 2240);
+  assert.equal(config.world.height, 2240);
+  assert.equal(config.world.cellSize, 32);
+  assert.equal(config.world.metersPerUnit, 1);
+  // Le profil prism du moteur declare les memes obstacles : sans layout d'aucun
+  // cote, PRISM affichait un monde vide et son rendu d'obstacle paraissait casse.
+  assert.equal(config.world.obstacles, true);
+  assert.deepEqual(config.world.obstacleLayout, [
+    { id: 'cote-sud-1', x: 400, y: 2180, radius: 15 },
+    { id: 'cote-sud-2', x: 1120, y: 2180, radius: 5 },
+    { id: 'cote-sud-3', x: 1840, y: 2180, radius: 120 },
+    { id: 'crete-centre', x: 1120, y: 1120, radius: 90 },
+    { id: 'amer-1', x: 300, y: 300, radius: 80 }
+  ]);
 });
 
 test('Launcher manifest points to the executable and truthful readiness endpoint', () => {

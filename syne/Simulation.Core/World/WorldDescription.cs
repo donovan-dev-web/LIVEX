@@ -38,6 +38,29 @@ public sealed record WorldResource(string Id, string Kind, int X, int Y, double 
 
 public sealed record WorldRegion(string Id, int X, int Y, int Width, int Height);
 
+/// <summary>
+/// Géométrie des obstacles : règle <b>unique</b> de découpage des cases, partagée
+/// par la description du monde (ce que le client lit) et par le placement initial
+/// (ce que le monde fait). Elle a déjà été dupliquée : le corps de la règle vivait
+/// inline dans <see cref="WorldDescriptionBuilder.Build"/> et le placement
+/// l'ignorait, si bien que des agents démarraient dans un obstacle que la
+/// description publiait pourtant comme bloqué.
+/// </summary>
+public static class ObstacleGeometry
+{
+    /// <summary>
+    /// Vrai si <paramref name="obstacle"/> couvre la case dont le centre est
+    /// <paramref name="cellCenterX"/>/<paramref name="cellCenterY"/> : distance de
+    /// centre à centre inférieure ou égale à <c>rayon + taille de case / 2</c>.
+    /// </summary>
+    public static bool CoversCell(Obstacle obstacle, double cellCenterX, double cellCenterY, double cellSize)
+    {
+        ArgumentNullException.ThrowIfNull(obstacle);
+        return Math.Sqrt(Math.Pow(obstacle.Position.X - cellCenterX, 2) + Math.Pow(obstacle.Position.Y - cellCenterY, 2))
+            <= obstacle.Radius + (cellSize / 2);
+    }
+}
+
 public static class WorldDescriptionBuilder
 {
     /// <summary>1.0 → 1.1 : champs additifs <c>simulatedSecondsPerTick</c> et <c>metersPerUnit</c>.</summary>
@@ -76,19 +99,27 @@ public static class WorldDescriptionBuilder
                 obstacle.Radius))
             .ToArray();
         var cells = new List<WorldCell>(countX * countY);
+        // Couverture calculée **une fois** par case, et partagée par `cells[]` et par
+        // le placement des marqueurs de ressources : `walkable` et « marchable pour
+        // le placement » sont la même propriété, décidée par la même règle
+        // (`ObstacleGeometry`). Les recalculer séparément est ce qui avait laissé
+        // partir un marqueur de ressource dans un obstacle que la description
+        // publiait pourtant comme bloqué.
+        var blocked = new bool[countX * countY];
         for (int y = 0; y < countY; y++)
         for (int x = 0; x < countX; x++)
         {
             double cx = (x + 0.5) * cellSize;
             double cy = (y + 0.5) * cellSize;
             var obstacles = world.Obstacles
-                .Where(o => Math.Sqrt(Math.Pow(o.Position.X - cx, 2) + Math.Pow(o.Position.Y - cy, 2)) <= o.Radius + cellSize / 2)
+                .Where(o => ObstacleGeometry.CoversCell(o, cx, cy, cellSize))
                 .Select(o => o.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+            blocked[(y * countX) + x] = obstacles.Length > 0;
             cells.Add(new WorldCell(x, y, "plains", obstacles.Length == 0, 0, obstacles.Length == 0 ? 1 : 100, obstacles));
         }
 
         string[] kinds = ["food", "water", "wood", "mineral"];
-        var resources = BuildResourceLocations(seed, kinds, countX, countY);
+        var resources = BuildResourceLocations(seed, kinds, countX, countY, blocked);
 
         int regionSize = 10;
         var regions = new List<WorldRegion>();
@@ -101,10 +132,29 @@ public static class WorldDescriptionBuilder
             countX, countY, agents, cells, initialObstacles, resources, regions);
     }
 
+    /// <summary>
+    /// Emplacements initiaux des ressources : tirages du LCG local, **sur les seules
+    /// cases marchables** (<paramref name="blocked"/> vient de la même passe de
+    /// couverture que <c>cells[]</c>). Un tirage tombant dans un obstacle avance
+    /// jusqu'à la première case libre, exactement comme le placement des agents et
+    /// comme le miroir du mock : publier un marqueur que la description annonce
+    /// bloquée fait instancier à PRISM une ressource dans un rocher. Le nombre
+    /// d'emplacements par type est minoré par les cases marchables disponibles, donc
+    /// il peut descendre sous trois sur un monde très contraint au lieu de boucler.
+    /// </summary>
     private static List<WorldResource> BuildResourceLocations(
-        ulong seed, IReadOnlyList<string> kinds, int countX, int countY)
+        ulong seed, IReadOnlyList<string> kinds, int countX, int countY, bool[] blocked)
     {
         int cellCount = countX * countY;
+        int walkableCount = 0;
+        foreach (bool isBlocked in blocked)
+        {
+            if (!isBlocked)
+            {
+                walkableCount++;
+            }
+        }
+
         // LCG numérique explicite, distinct du PRNG de simulation
         // (Xoshiro256**) : la description du monde ne doit consommer aucun tirage
         // de la simulation (l'observabilité n'a pas le droit
@@ -113,7 +163,8 @@ public static class WorldDescriptionBuilder
         // disposition des ressources annoncée au client, et en changer invalide
         // l'accord entre la description et le monde affiché.
         uint state = unchecked((uint)seed ^ (uint)(seed >> 32) ^ 0xA511E9B3u);
-        var resources = new List<WorldResource>(kinds.Count * Math.Min(ResourceLocationsPerType, cellCount));
+        int locationsPerKind = Math.Min(ResourceLocationsPerType, walkableCount);
+        var resources = new List<WorldResource>(kinds.Count * locationsPerKind);
 
         uint NextCell()
         {
@@ -124,12 +175,12 @@ public static class WorldDescriptionBuilder
         for (int kindIndex = 0; kindIndex < kinds.Count; kindIndex++)
         {
             var usedCells = new HashSet<int>();
-            int locationCount = Math.Min(ResourceLocationsPerType, cellCount);
-            for (int locationIndex = 0; locationIndex < locationCount; locationIndex++)
+            for (int locationIndex = 0; locationIndex < locationsPerKind; locationIndex++)
             {
                 int cellIndex = (int)(NextCell() % (uint)cellCount);
-                while (!usedCells.Add(cellIndex))
+                while (blocked[cellIndex] || usedCells.Contains(cellIndex))
                     cellIndex = (cellIndex + 1) % cellCount;
+                usedCells.Add(cellIndex);
 
                 resources.Add(new WorldResource(
                     $"resource-{kinds[kindIndex]}-{locationIndex + 1}",

@@ -340,7 +340,7 @@ Exemple (extrait) :
 }
 ```
 
-Validation §6 : `world.obstacleLayout` rejeté si `world.obstacles` est `false` ; par entrée `id` non vide, `radius` > 0, `x`/`y` dans le monde. Mutations dynamiques (`AddObstacle`, `PlaceConstruction`/`RemoveConstruction`) validées à l'exécution (bornes + id unique) — la **mécanique agentique** d'une construction (qui, coût en bois/minéraux, durée) reste **ouverte** (décision n°20, §2.20).
+Validation §6 : `world.obstacleLayout` rejeté si `world.obstacles` est `false` ; par entrée `id` non vide, `radius` > 0, `x`/`y` dans le monde. Le layout est **déclaré, pas généré** : la pose ne consomme aucun tirage de PRNG (SYNE-071), donc `random.seed` ne change pas le relief — deux seeds partagent la même carte d'obstacles. Faire varier les obstacles par seed demanderait une clé de configuration dédiée et un générateur, qui n'existent pas en V0.1. Mutations dynamiques (`AddObstacle`, `PlaceConstruction`/`RemoveConstruction`) validées à l'exécution (bornes + id unique) — la **mécanique agentique** d'une construction (qui, coût en bois/minéraux, durée) reste **ouverte** (décision n°20, §2.20).
 
 ### 6.9 Clés d'environnement — cycle de saisons (SYNE-072)
 

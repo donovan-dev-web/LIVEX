@@ -14,6 +14,7 @@ historiques conservées pour leur valeur d'archive.
 
 ```text
 docs/
+├── codebase/         # Cartographie interactive des fichiers, symboles et relations
 ├── presentation/     # Vision, FAQ, glossaire, périmètre éthique
 ├── governance/       # Feuille de route, état du dépôt, gitflow, plan de refonte
 ├── adr/              # ADR transverses (filtre : Accepted + implémenté)
@@ -29,6 +30,11 @@ CONTRIBUTING…) restent à la racine du dépôt.
 
 ## Vue générale
 
+- [Cartographie interactive du codebase](codebase/index.html) — exploration interactive
+  des composants, fichiers, déclarations, paramètres et relations du dépôt, avec
+  une vue en plan 2D et une exploration par voisinage.
+- [Parcours interactif d'un run](codebase/flow.html) — machine à états 2D animée
+  du lancement à la boucle cognitive répétée, avec les cadences et l'observabilité.
 - [Architecture globale](ARCHITECTURE.md) — responsabilités des composants,
   plugin PRISM, LDK et projets Unreal.
 - [Contrats de communication](COMMUNICATION.md) — transports et cycle de
