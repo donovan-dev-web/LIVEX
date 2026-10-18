@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 6 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`, `METRICS_DICTIONARY.md`, `../syne/API_CONTRACTS.md`
 **Source Monographie** : §4.7
 
@@ -38,7 +38,8 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | GET | `/api/runs/{id}/causal-chains/{agentId}` | Chaîne causale d'une entité (`?tick=`, `?depth=` ≤ 12) — jalon ph6 |
 | GET | `/api/beliefs/{agentId}` | Croyances de l'entité au tick le plus récent |
 | GET | `/api/relationships/{agentId}` | Réseau de confiance de l'entité |
-| GET | `/api/groups` | Liste des groupes actifs (communautés) |
+| GET | `/api/groups` | Liste des groupes actifs (communautés **inférées** par ECHOS) |
+| GET | `/api/runs/{id}/native-groups` | Groupes **natifs SYNE** publiés tels qu'observés (`?tick=`) — A0-3 |
 | GET | `/api/world` | Description de monde (terrain, obstacles, ressources, régions) + observation au tick — vue 2D |
 | GET | `/api/trust-graph` | Graphe de confiance : nœuds (entités) et arêtes (`trust` publié) — ADR-007 |
 | GET | `/api/emergent-phenomena` | Phénomènes émergents détectés + disclaimer |
@@ -136,21 +137,48 @@ Croyances / relations de confiance de l'entité **au tick le plus récent** (con
 
 Communautés actives (propagation d'étiquettes) et phénomènes (ECHOS-031) dérivés du contexte écrit à l'ingestion.
 
+Ces `groups` sont des communautés **inférées** par ECHOS sur le graphe de
+confiance (`label` = plus petit membre, singletons exclus). Les groupes
+**déclarés par SYNE** sont publiés par une route **distincte**, sans jamais être
+fusionnés avec ceux-ci : `GET /api/runs/{id}/native-groups` (§3.20).
+
 ### 3.7 `GET /api/runs/{id}/decisions` (jalon ECHOS ph5, ECHOS-051)
 
 ```json
 {"run_id": "run-7", "decisions": [
   {"tick": 1, "agent_id": "A", "chosen_action": "SeekFood",
-   "utility": 0.75, "deliberated": true, "interrupted": false,
+   "utility": 0.75, "held_utility": null, "decision_state": "fresh",
+   "decision_tick": 1, "deliberated": true, "interrupted": false,
    "cause": "hunger=30,thirst=20,fatigue=10.5",
    "beliefs_count": 2, "goals_count": 1, "memory_count": 8,
-   "needs": {"hunger": 30.0, "thirst": 20.0, "fatigue": 10.5, "energy": 50.0}}]
+   "needs": {"hunger": 30.0, "thirst": 20.0, "fatigue": 10.5, "energy": 50.0}},
+  {"tick": 2, "agent_id": "A", "chosen_action": "Explore",
+   "utility": null, "held_utility": 0.75, "decision_state": "holdover",
+   "decision_tick": 1, "deliberated": false, "interrupted": false,
+   "cause": "food=absent", "beliefs_count": 2, "goals_count": 1,
+   "memory_count": 8, "needs": {"…": "…"}},
+  {"tick": 3, "agent_id": "A", "chosen_action": "Rest",
+   "utility": null, "held_utility": null, "decision_state": "none",
+   "decision_tick": null, "deliberated": false, "interrupted": false,
+   "cause": "fatigue=22", "beliefs_count": 2, "goals_count": 1,
+   "memory_count": 8, "needs": {"…": "…"}}]
 }
 ```
 
-Traces de décision (table `decision_traces`, schéma v3) — brique de l'analyse
+Traces de décision (table `decision_traces`, schéma **v7**) — brique de l'analyse
 causale (`CAUSAL_ANALYSIS.md`). Tri **déterministe** `(tick, agent_id)` ;
 **reproductible** (deux appels → corps identiques) ; run inconnu → 404.
+
+**Absence ≠ zéro (BL-09 / S-28 / D-03 / B-10)** : `utility` est **nullable** et ne
+porte une valeur que si une décision a réellement eu lieu au tick courant
+(`decision_state` `fresh` ou `interrupted`). Un **report** (`holdover`) publie le
+score de sa décision d'origine sous `held_utility` avec son `decision_tick`, et
+une **absence** (`none`) ne publie ni l'un ni l'autre. Aucun `0.0` n'est écrit à
+la place d'une mesure absente : « zéro observé » et « non mesuré » restent
+distinguables de bout en bout.
+
+`decision_state` vaut `null` pour une ligne écrite **avant** la migration v7 :
+l'état n'est pas reconstruit après coup, il est « non renseigné ».
 
 ### 3.8 `GET /api/runs/{id}/causal-chains/{agentId}` (jalon ECHOS ph6, ECHOS-061 → ECHOS-063)
 
@@ -444,6 +472,53 @@ toute lecture, ce qui est archivé à quel niveau (`METRICS_SPEC.md` Annexe B).
   ce tick, pas ce qu'il signifie. Distinct de `extinctionChronology` (§3.16) :
   celle-ci est bornée à 50 et limitée à l'avant-extinction.
 - Erreurs §3.12 : run inconnu → `404` ; `limit` hors [1, 2000] → `422`.
+
+### 3.20 `GET /api/runs/{id}/native-groups` (groupes natifs SYNE, A0-3)
+
+```json
+{"run_id": "run-7", "tick": 1200,
+ "groups": [
+   {"groupId": 3, "members": ["A"], "size": 1, "leaderId": null, "bornTick": 40,
+    "cohesion": 1.0, "decision": null, "consensus": 1.0,
+    "maxBondDistance": null, "meanBondDistance": null},
+   {"groupId": 7, "members": ["A", "B", "C"], "size": 3, "leaderId": "B",
+    "bornTick": 12, "cohesion": 0.3333333333333333, "decision": "MoveToFood",
+    "consensus": 0.6666666666666666, "maxBondDistance": 512.5,
+    "meanBondDistance": 128.25}]}
+```
+
+- **Publication, pas recalcul** : la route sert l'observation `groups_native`
+  écrite à l'ingestion (même cadence que le contexte `groups`, 1 tick sur
+  `context_every` — §3.11). Les valeurs (`cohesion`, `consensus`, distances de
+  liens) sont **celles émises par SYNE** : aucune moyenne, aucun arrondi ni
+  normalisation locale. Un champ non publié par le moteur reste **`null`** —
+  jamais `0` (« non mesuré » ≠ « zéro observé »), et jamais omis.
+- **Champs par groupe** : `groupId`, `members`, `size`, `leaderId`, `bornTick`,
+  `cohesion`, `decision`, `consensus`, `maxBondDistance`, `meanBondDistance`.
+  `leaderId`, `decision`, `maxBondDistance` et `meanBondDistance` sont
+  **nullables** : un groupe **sans lien** (taille 1, ou aucune arête mesurée)
+  publie `null` pour les distances, `decision` n'apparaissant qu'au tick d'une
+  décision réellement prise.
+- **Repli documenté** — « observation la plus proche **≤ tick** » : `?tick=N`
+  (`ge=0`) renvoie l'observation la plus récente au plus fort de `N` (même
+  sémantique que `_groups_observation` côté `/api/groups`) ; sans `tick`, la
+  plus récente. Le champ `tick` publié est celui de l'observation **réellement**
+  servie. Les `members`/`leaderId` sont sérialisés en `str` (jointure avec
+  `Agent.id`).
+- **Vide ≠ absent** : contrairement à `/api/groups`, une observation **vide**
+  n'est jamais sautée. Un `[]` au tick `N` est l'observation vraie « SYNE ne
+  publiait aucun groupe à ce tick » ; il est servi avec `tick: N`. Aucun
+  contexte `groups_native` (base antérieure à cette route) → `{"tick": -1,
+  "groups": []}`, sans jamais retomber sur les communautés inférées ni
+  inventer une observation.
+- **Séparation des identités** : les groupes natifs (`groupId` moteur) et les
+  communautés **inférées** d'ECHOS (`/api/groups`, §3.6, `label` = plus petit
+  membre) ne sont **jamais fusionnés** — deux sources, deux contrats.
+- **Ordre déterministe** : `groupId` croissant.
+- **Usage** : panneau « Relations et groupes » du Launcher, qui consomme ce
+  contrat **sans calcul local** (`METRICS_DICTIONARY.md` §3.2).
+- Erreurs §3.12 : run inconnu → `404` ; `tick` négatif → `422` ; store fermé →
+  `503`.
 
 ## 4. La diffusion temps réel
 

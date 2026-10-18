@@ -148,6 +148,9 @@ class Group(BaseModel):
     typés ``str`` comme ``Agent.id``, et normalisés depuis la forme entière
     émise par SYNE (voir :func:`_agent_ids`). ``group_id`` reste un entier car
     c'est l'identité du groupe, jamais jointe à un agent.
+    ``max_bond_distance``/``mean_bond_distance`` (contrat A0-3) sont optionnels
+    : ``None`` vaut « non mesuré » (groupe sans lien) comme « champ absent d'un
+    flux antérieur » — jamais un 0 inventé.
     """
 
     model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
@@ -160,6 +163,12 @@ class Group(BaseModel):
     cohesion: float
     decision: str | None = None
     consensus: float
+    # Arbitrage A0-3 — distances des paires liées instrumentées côté moteur.
+    # Nullable : ``None`` = non mesuré (groupe sans lien), **jamais** 0. Les
+    # valeurs publiées par SYNE sont transportées telles quelles (arrondis
+    # éventuels = ceux du moteur, jamais recalculés par ECHOS).
+    max_bond_distance: float | None = None
+    mean_bond_distance: float | None = None
 
     _normalize_members = field_validator("members", mode="before")(
         lambda value: _agent_ids(value)

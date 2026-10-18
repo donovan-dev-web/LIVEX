@@ -117,6 +117,22 @@
     <Style Selector="ListBox.sections ListBoxItem:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="#10141b"/>
     </Style>
+    <!-- Listes d'entités (fiche d'entité, chaîne causale) : la sélection reprend
+         l'accent du thème au lieu du bleu système, illisible sur fond sombre. -->
+    <Style Selector="ListBox.entities ListBoxItem">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Margin" Value="0,1"/>
+      <Setter Property="MinHeight" Value="0"/>
+    </Style>
+    <Style Selector="ListBox.entities ListBoxItem:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="#10141b"/>
+    </Style>
+    <Style Selector="ListBox.entities ListBoxItem:selected /template/ ContentPresenter">
+      <Setter Property="Background" Value="#1d2733"/>
+      <Setter Property="BorderBrush" Value="#2d9bf0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
     <Style Selector="ListBox.sections ListBoxItem:selected /template/ ContentPresenter">
       <Setter Property="Background">
         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
@@ -627,6 +643,59 @@
             </Border>
           </Grid>
 
+          <!-- Groupes natifs SYNE : panneau distinct des communautés inférées
+               ci-dessus. Chaque valeur est celle publiée par le moteur, jamais
+               recalculée ni arrondie localement ; un champ non publié affiche
+               son motif explicite (« non mesurée » ≠ 0). -->
+          <Border Classes="panel">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="GROUPES NATIFS SYNE" Classes="chart-title" Margin="0,0,0,8"/>
+              <TextBlock DockPanel.Dock="Top" Text="{Binding NativeGroupsText}" Classes="small" Margin="0,0,0,4"/>
+              <TextBlock DockPanel.Dock="Top" Classes="small" TextWrapping="Wrap" Margin="0,0,0,4"
+                         Text="Groupes déclarés par SYNE, publiés tels qu'observés (aucune moyenne ni arrondi local). Une distance « non mesurée » signale un groupe sans lien publié — distingué des communautés inférées ci-dessus, aux identités différentes."/>
+              <Grid DockPanel.Dock="Top" ColumnDefinitions="70,*,56,70,76,86,*,86,96,96" Margin="0,6,0,0">
+                <TextBlock Text="GROUPE" Classes="small"/>
+                <TextBlock Grid.Column="1" Text="MEMBRES" Classes="small"/>
+                <TextBlock Grid.Column="2" Text="TAILLE" Classes="small"/>
+                <TextBlock Grid.Column="3" Text="CHEF" Classes="small"/>
+                <TextBlock Grid.Column="4" Text="NAISSANCE" Classes="small"/>
+                <TextBlock Grid.Column="5" Text="COHÉSION" Classes="small"/>
+                <TextBlock Grid.Column="6" Text="DÉCISION" Classes="small"/>
+                <TextBlock Grid.Column="7" Text="CONSENSUS" Classes="small"/>
+                <TextBlock Grid.Column="8" Text="DIST. MAX" Classes="small"/>
+                <TextBlock Grid.Column="9" Text="DIST. MOY." Classes="small"/>
+              </Grid>
+              <TextBlock DockPanel.Dock="Top" Text="Aucun groupe natif publié à ce tick — aucune observation de groupes déclarés par SYNE."
+                         Classes="small" Margin="0,6,0,0"
+                         IsVisible="{Binding NativeGroups.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+              <ScrollViewer MaxHeight="220" Margin="0,6,0,0">
+                <ItemsControl ItemsSource="{Binding NativeGroups}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:NativeGroupRow">
+                      <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,3">
+                        <Grid ColumnDefinitions="70,*,56,70,76,86,*,86,96,96">
+                          <TextBlock Text="{Binding GroupId}" Foreground="#e0a25a"
+                                     FontFamily="Cascadia Code, Consolas, DejaVu Sans Mono, monospace"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Members}" Classes="muted"
+                                     TextTrimming="CharacterEllipsis"/>
+                          <TextBlock Grid.Column="2" Text="{Binding Size}" Classes="muted"/>
+                          <TextBlock Grid.Column="3" Text="{Binding LeaderId}" Classes="muted"/>
+                          <TextBlock Grid.Column="4" Text="{Binding BornTick}" Classes="muted"/>
+                          <TextBlock Grid.Column="5" Text="{Binding Cohesion}" Classes="muted"/>
+                          <TextBlock Grid.Column="6" Text="{Binding Decision}" Classes="muted"
+                                     TextTrimming="CharacterEllipsis"/>
+                          <TextBlock Grid.Column="7" Text="{Binding Consensus}" Classes="muted"/>
+                          <TextBlock Grid.Column="8" Text="{Binding MaxBondDistance}" Classes="muted"/>
+                          <TextBlock Grid.Column="9" Text="{Binding MeanBondDistance}" Classes="muted"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+
           <Border Classes="panel">
             <DockPanel>
               <TextBlock DockPanel.Dock="Top" Text="RELATIONS PUBLIÉES" Classes="chart-title" Margin="0,0,0,8"/>
@@ -658,12 +727,15 @@
           </Border>
         </StackPanel>
 
-        <!-- ═══════════ SOUS-ÉCRAN : MONDE ET TERRITOIRES ═══════════ -->
+        <!-- ═══════════ SOUS-ÉCRAN : MONDE OBSERVÉ ═══════════ -->
         <Border Classes="panel"
                 IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=monde}">
           <StackPanel Spacing="10">
-            <TextBlock Text="MONDE ET TERRITOIRES" Classes="chart-title"/>
-            <TextBlock Text="{Binding WorldText}" Classes="muted"/>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="MONDE OBSERVÉ" Classes="chart-title" VerticalAlignment="Center"/>
+              <TextBlock Grid.Column="1" Text="{Binding WorldText}" Classes="muted"
+                         VerticalAlignment="Center" TextWrapping="NoWrap"/>
+            </Grid>
             <StackPanel Orientation="Horizontal" Spacing="8">
               <TextBox Width="160" Text="{Binding WorldTickInput, Mode=TwoWay}"
                        Watermark="tick (vide = dernier)"/>
@@ -672,12 +744,62 @@
               <TextBlock Text="Le curseur de relecture pilote aussi ce tick." Classes="small"
                          VerticalAlignment="Center"/>
             </StackPanel>
-            <views:WorldViewControl Height="440"
-                                    Description="{Binding WorldDescription}"
-                                    Agents="{Binding WorldAgents}"
-                                    TickResources="{Binding WorldResources}"/>
+
+            <!-- Carte + réserves sur la même ligne : la carte garde tout l'espace
+                 utile, le panneau latéral liste les réserves publiées par type. -->
+            <Grid ColumnDefinitions="*,300">
+              <views:WorldViewControl Height="460"
+                                      Description="{Binding WorldDescription}"
+                                      Agents="{Binding WorldAgents}"
+                                      TickResources="{Binding WorldResources}"/>
+
+              <Border Grid.Column="1" Margin="12,0,0,0"
+                      Background="#080b10" BorderBrush="#1b2331" BorderThickness="1"
+                      CornerRadius="8" Padding="12,10">
+                <DockPanel>
+                  <TextBlock DockPanel.Dock="Top" Text="RÉSERVES DU TICK"
+                             FontSize="11" FontWeight="Medium" Foreground="#e0a25a" LetterSpacing="1.6"/>
+                  <TextBlock DockPanel.Dock="Top" Text="{Binding WorldResourcesText}" Classes="small"
+                             Margin="0,6,0,0" TextWrapping="Wrap"/>
+                  <TextBlock DockPanel.Dock="Top" Classes="small" TextWrapping="Wrap" Margin="0,6,0,0"
+                             Text="Une réserve sans position publiée est listée ici et n'est pas projetée sur la carte : le contrat SYNE agrège les réserves du tick par type."/>
+                  <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="0,12,0,4">
+                    <TextBlock Text="TYPE" Classes="small"/>
+                    <TextBlock Grid.Column="1" Text="QUANTITÉ" Classes="small" Margin="12,0"/>
+                    <TextBlock Grid.Column="2" Text="CAPACITÉ" Classes="small"/>
+                  </Grid>
+                  <ScrollViewer Margin="0,4,0,0">
+                    <StackPanel>
+                      <ItemsControl ItemsSource="{Binding WorldResourceRows}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="vm:TickResourceRow">
+                            <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,4"
+                                    ToolTip.Tip="{Binding PositionTip}">
+                              <Grid ColumnDefinitions="*,Auto,Auto">
+                                <StackPanel Spacing="1">
+                                  <TextBlock Text="{Binding Type}" Classes="body"/>
+                                  <TextBlock Text="{Binding Provenance}" Classes="small"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding Quantity}" Foreground="#e8e6e1"
+                                           FontFamily="Cascadia Code, Consolas, DejaVu Sans Mono, monospace"
+                                           VerticalAlignment="Center" Margin="12,0"/>
+                                <TextBlock Grid.Column="2" Text="{Binding Capacity}" Classes="small"
+                                           VerticalAlignment="Center"/>
+                              </Grid>
+                            </Border>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <TextBlock Text="aucune réserve publiée" Classes="small" Margin="0,6,0,0"
+                                 IsVisible="{Binding WorldResourceRows.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+                    </StackPanel>
+                  </ScrollViewer>
+                </DockPanel>
+              </Border>
+            </Grid>
+
             <TextBlock Classes="small" TextWrapping="Wrap"
-                       Text="Rendu des données publiées : grille des cellules du monde, cellules de terrain (foncé = praticable), carrés = régions translucides, cercles gris = obstacles, vert = ressource initiale, carré or = réserve du tick, points = entités colorées par communauté. Le curseur de relecture affiche le tick choisi ; entre deux snapshots publiés, les points glissent vers leur position publiée suivante (transition d'affichage seule — aucune mesure n'est calculée ici)."/>
+                       Text="Rendu des données publiées : maillage du monde et cellules de terrain (clair = praticable, rouge sombre = bloqué), rectangles = régions de description (découpage de publication, pas un territoire simulé), cercles gris = obstacles, losanges verts = gisements localisés de la description, points = entités colorées par communauté. Le curseur de relecture affiche le tick choisi ; entre deux snapshots publiés, les points glissent vers leur position publiée suivante (transition d'affichage seule — aucune mesure n'est calculée ici)."/>
           </StackPanel>
         </Border>
 
@@ -687,7 +809,7 @@
           <Grid ColumnDefinitions="300,*">
             <DockPanel Margin="0,0,12,0">
               <TextBlock DockPanel.Dock="Top" Text="ENTITÉS" Classes="chart-title" Margin="0,0,0,8"/>
-              <ListBox ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
+              <ListBox Classes="entities" ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
                        Background="#080b10" BorderThickness="0" MaxHeight="560">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:AgentOption">
@@ -750,15 +872,29 @@
 
                 <StackPanel Spacing="6">
                   <TextBlock Text="DERNIÈRES DÉCISIONS" Classes="chart-title"/>
+                  <!-- Colonnes titrées : l'état de décision (délibérée, reportée,
+                       absente) est publié par SYNE et n'est pas déduit ici. -->
+                  <Grid ColumnDefinitions="Auto,2*,*,2.4*,3*" Margin="0,2,0,4">
+                    <TextBlock Text="TICK" Classes="small" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="ACTION" Classes="small"/>
+                    <TextBlock Grid.Column="2" Text="UTILITÉ" Classes="small"/>
+                    <TextBlock Grid.Column="3" Text="ÉTAT" Classes="small"/>
+                    <TextBlock Grid.Column="4" Text="CAUSE" Classes="small"/>
+                  </Grid>
                   <ItemsControl ItemsSource="{Binding AgentDecisions}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:DecisionRow">
                         <Border BorderThickness="0,0,0,1" BorderBrush="#161b24" Padding="0,2,0,3">
-                          <Grid ColumnDefinitions="Auto,2*,*,3*">
+                          <Grid ColumnDefinitions="Auto,2*,*,2.4*,3*">
                             <TextBlock Text="{Binding Tick}" Classes="small" Margin="0,0,12,0"/>
                             <TextBlock Grid.Column="1" Text="{Binding Action}" Classes="muted"/>
-                            <TextBlock Grid.Column="2" Text="{Binding Utility}" Foreground="#e0a25a"/>
-                            <TextBlock Grid.Column="3" Text="{Binding Cause}" Classes="small"
+                            <!-- « non mesurée » pour une absence ou un report, en gris :
+                                 une absence n'est pas un zéro (BL-09). -->
+                            <TextBlock Grid.Column="2" Text="{Binding Utility}"
+                                       Foreground="{Binding UtilityBrush}"/>
+                            <TextBlock Grid.Column="3" Text="{Binding State}" Classes="small"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="4" Text="{Binding Cause}" Classes="small"
                                        TextTrimming="CharacterEllipsis"/>
                           </Grid>
                         </Border>
@@ -768,6 +904,104 @@
                   <TextBlock Text="Aucune décision publiée pour cette entité." Classes="small"
                              IsVisible="{Binding AgentDecisions.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
                 </StackPanel>
+              </StackPanel>
+            </ScrollViewer>
+          </Grid>
+        </Border>
+
+        <!-- ═══════════ SOUS-ÉCRAN : CHAÎNE CAUSALE ═══════════ -->
+        <Border Classes="panel"
+                IsVisible="{Binding SelectedSectionId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=causalite}">
+          <Grid ColumnDefinitions="280,*">
+            <DockPanel Margin="0,0,14,0">
+              <TextBlock DockPanel.Dock="Top" Text="ENTITÉ TRACÉE" Classes="chart-title" Margin="0,0,0,8"/>
+              <TextBlock DockPanel.Dock="Bottom" Text="La trace publiée est celle de l'entité sélectionnée."
+                         Classes="small" Margin="0,8,0,0" TextWrapping="Wrap"/>
+              <ListBox Classes="entities" ItemsSource="{Binding Agents}" SelectedItem="{Binding SelectedAgent}"
+                       Background="#080b10" BorderThickness="0" MaxHeight="520">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AgentOption">
+                    <TextBlock Text="{Binding Label}" Classes="muted" Margin="8,3" TextWrapping="Wrap"/>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+
+            <ScrollViewer Grid.Column="1">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="CHAÎNE CAUSALE" Classes="chart-title" VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="1" Text="{Binding CausalText}" Classes="small"
+                             VerticalAlignment="Center" Margin="12,0,0,0" TextWrapping="NoWrap"/>
+                </Grid>
+                <TextBlock Text="{Binding CausalHeader}" Classes="muted" TextWrapping="Wrap"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="TICK" Classes="small" VerticalAlignment="Center"/>
+                  <TextBox Width="150" Text="{Binding CausalTickInput, Mode=TwoWay}"
+                           Watermark="vide = dernier tracé"/>
+                  <TextBlock Text="PROFONDEUR" Classes="small" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                  <ComboBox Width="90" ItemsSource="{Binding CausalDepthOptions}"
+                            SelectedItem="{Binding CausalDepth}"
+                            ToolTip.Tip="Nombre de couches servies par ECHOS (plafond 12)"/>
+                  <Button Classes="btn" Content="Reconstruire" Command="{Binding RefreshCommand}"
+                          CommandParameter="refresh"
+                          ToolTip.Tip="Relit la chaîne causale publiée par ECHOS pour l'entité et le tick demandés"/>
+                </StackPanel>
+
+                <!-- Chaîne : une carte par couche, la barre d'accent porte la couche. -->
+                <ItemsControl ItemsSource="{Binding CausalNodes}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CausalNodeRow">
+                      <Border Background="#080b10" BorderBrush="#1b2331" BorderThickness="1"
+                              CornerRadius="8" Margin="0,0,0,6" Padding="0"
+                              ToolTip.Tip="{Binding DetailTip}">
+                        <Grid ColumnDefinitions="4,Auto,*,Auto">
+                          <Border Background="{Binding Accent}" CornerRadius="8,0,0,8"/>
+                          <TextBlock Grid.Column="1" Text="{Binding StepLabel}" Classes="small"
+                                     Margin="12,10,10,0" VerticalAlignment="Top" Width="12"/>
+                          <StackPanel Grid.Column="2" Margin="0,9,12,10" Spacing="3">
+                            <TextBlock Text="{Binding Layer}" FontSize="10.5" FontWeight="Medium"
+                                       Foreground="{Binding Accent}" LetterSpacing="1.6"/>
+                            <TextBlock Text="{Binding Label}" Classes="body" TextWrapping="Wrap"
+                                       FontFamily="Cascadia Code, Consolas, DejaVu Sans Mono, monospace"/>
+                            <TextBlock Text="{Binding Detail}" Classes="small" TextWrapping="Wrap"
+                                       IsVisible="{Binding Detail, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
+                          </StackPanel>
+                          <TextBlock Grid.Column="3" Text="{Binding TickLabel}" Classes="small"
+                                     Margin="0,10,12,0" VerticalAlignment="Top"/>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Aucune chaîne publiée : sélectionnez une entité disposant d'une trace de décision."
+                           Classes="small" Margin="0,4,0,0"
+                           IsVisible="{Binding CausalNodes.Count, Converter={x:Static vm:StringConverters.Zero}}"/>
+
+                <!-- Boucles : signalées par ECHOS, jamais déduites ici. -->
+                <Border IsVisible="{Binding CausalCycles.Count, Converter={x:Static vm:StringConverters.NotZero}}"
+                        Background="#1a1409" BorderBrush="#4a3822" BorderThickness="1"
+                        CornerRadius="8" Padding="12,10">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="BOUCLE SIGNALÉE PAR ECHOS" FontSize="11" FontWeight="Medium"
+                               Foreground="#e0a25a" LetterSpacing="1.6"/>
+                    <ItemsControl ItemsSource="{Binding CausalCycles}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CausalCycleRow">
+                          <Grid ColumnDefinitions="Auto,*,*" Margin="0,2">
+                            <TextBlock Text="{Binding Layer}" Classes="muted" Margin="0,0,12,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Label}" Classes="body"/>
+                            <TextBlock Grid.Column="2" Text="{Binding Recurrence}" Classes="small"/>
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding CausalNote}" Classes="small" TextWrapping="Wrap"
+                           IsVisible="{Binding CausalNote, Converter={x:Static vm:StringConverters.NotEmpty}}"/>
               </StackPanel>
             </ScrollViewer>
           </Grid>

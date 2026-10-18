@@ -7,7 +7,8 @@
 ``None`` garde tout.
 Depuis le jalon ECHOS ph4, chaque tick déclenche aussi les 8 moteurs
 (``analysis.compute_all``) et persiste : ``tick_metrics`` (métriques
-numériques) et ``tick_contexts`` (agents, groupes, phénomènes) — les métriques
+numériques) et ``tick_contexts`` (agents, groupes inférés, groupes natifs SYNE
+``groups_native``, phénomènes) — les métriques
 sont donc **calculées à l'ingestion, jamais recalculées à la lecture**
 ``CoherenceResult`` ajoute les compteurs associés.
 
@@ -323,10 +324,41 @@ def _groups_of(agents: list[dict]) -> list[dict]:
     de communauté, ce qui faisait bouger les identifiants de groupe affichés par
     l'UI sans raison observable. Le plus petit membre est, lui, stable tant que
     le groupe ne se recompose pas.
+
+    Ce ne sont **pas** les groupes déclarés par SYNE : ceux-ci voyagent dans le
+    contexte ``groups_native`` (:func:`_native_groups_of`), jamais fusionnés
+    avec ceux-ci (identités différentes).
     """
     return [
         {"label": members[0], "members": members, "size": len(members)}
         for members in communities(agents)
+    ]
+
+
+def _native_groups_of(snapshot) -> list[dict] | None:
+    """Groupes **déclarés par SYNE** (snapshot), publiés tels qu'observés.
+
+    Contrairement à :func:`_groups_of` (communautés **inférées** par ECHOS sur
+    le graphe de confiance), ce contexte transporte l'état des groupes natifs
+    du moteur — ``groupId``, ``members``, ``size``, ``leaderId``, ``bornTick``,
+    ``cohesion``, ``decision``, ``consensus``, ``maxBondDistance``,
+    ``meanBondDistance`` — **sans aucun recalcul ni arrondi** : les valeurs sont
+    celles émises par SYNE au tick du snapshot (les arrondis éventuels sont
+    ceux du moteur). Les champs nullables (``leaderId``, ``decision``,
+    ``maxBondDistance``, ``meanBondDistance``) sont conservés **explicitement**
+    (``null`` publié, jamais omis ni comblé : « non mesuré » ≠ 0).
+
+    ``None`` = le snapshot ne porte pas le champ ``groups`` (flux antérieur au
+    contrat des groupes) : aucun contexte n'est écrit, pour qu'une base
+    antérieure reste vide plutôt qu'exposant un ``[]``, qui signifierait « SYNE
+    a publié aucun groupe à ce tick ». Un ``[]`` **émis** par le moteur est, lui,
+    une observation vraie et est persisté tel quel.
+    """
+    if snapshot.groups is None:
+        return None
+    return [
+        group.model_dump(mode="json", by_alias=True)
+        for group in snapshot.groups
     ]
 
 
@@ -591,6 +623,15 @@ def consume(
                     ],
                     "profiling": profile,
                 }
+                # Groupes natifs SYNE (A0-3) : même cadence que ``groups``
+                # (context_every), identité **distincte** des communautés
+                # inférées — jamais fusionnés. ``None`` (flux sans le champ
+                # ``groups``) n'écrit rien : une base antérieure reste vide
+                # plutôt qu'exposant un ``[]`` qui signifierait « aucun groupe
+                # publié à ce tick ».
+                native_groups = _native_groups_of(snapshot)
+                if native_groups is not None:
+                    contexts["groups_native"] = native_groups
             else:
                 contexts = {
                     "phenomena": {

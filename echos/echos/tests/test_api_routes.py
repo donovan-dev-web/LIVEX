@@ -312,6 +312,115 @@ def test_groups_and_phenomena_endpoints(tmp_path):
     assert phenomena["disclaimer"]
 
 
+def _native_group(group_id: int, **overrides) -> dict:
+    """Groupe natif tel que SYNE le publie (camelCase, contrat A0-3)."""
+    group = {
+        "groupId": group_id,
+        "members": ["1", "2"],
+        "size": 2,
+        "leaderId": "2",
+        "bornTick": 1,
+        "cohesion": 0.8123,
+        "decision": "MoveToFood",
+        "consensus": 0.75,
+        "maxBondDistance": 512.5,
+        "meanBondDistance": 128.25,
+    }
+    group.update(overrides)
+    return group
+
+
+def test_native_groups_publish_the_syne_observation_as_is(tmp_path):
+    """``/api/runs/{id}/native-groups`` publie les groupes du moteur, tels quels.
+
+    Chaque groupe porte ``groupId``, ``members``, ``size``, ``leaderId``,
+    ``bornTick``, ``cohesion``, ``decision``, ``consensus``,
+    ``maxBondDistance``, ``meanBondDistance`` — valeurs **identiques au flux
+    SYNE** (aucune moyenne, aucun arrondi local) — avec le ``tick``
+    d'observation publié et un ordre déterministe (``groupId`` croissant,
+    ici inversé volontairement dans la base pour prouver le tri).
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-n", "0.5.0", seed="n")
+    db.append_tick_context("run-n", 1, "groups_native", [
+        _native_group(7, cohesion=0.3333333333333333, decision=None),
+        _native_group(3, leaderId=None, decision=None,
+                      maxBondDistance=None, meanBondDistance=None),
+    ])
+    client = _client(db)
+    body = client.get("/api/runs/run-n/native-groups").json()
+
+    assert body["run_id"] == "run-n"
+    assert body["tick"] == 1
+    assert [group["groupId"] for group in body["groups"]] == [3, 7]
+    # Le groupe lié ressort champ pour champ, à l'identique (non arrondi).
+    assert body["groups"][1] == _native_group(7, cohesion=0.3333333333333333, decision=None)
+    # Groupe sans lien : ``maxBondDistance``/``meanBondDistance`` explicites
+    # à ``null`` (non mesuré côté moteur), jamais 0 ni champ omis.
+    isolated = body["groups"][0]
+    assert isolated["maxBondDistance"] is None
+    assert isolated["meanBondDistance"] is None
+    # Reproductible : deux appels, corps identiques (aucun horodatage).
+    assert client.get("/api/runs/run-n/native-groups").json() == body
+
+
+def test_native_groups_fall_back_to_the_closest_observation_at_or_before_tick(tmp_path):
+    """Repli « plus proche disponible ≤ tick » (même sémantique que /api/groups).
+
+    La cadence d'écriture du contexte (``context_every``, défaut 20) signifie
+    que le tick demandé n'est presque jamais écrit : la route publie
+    l'observation la plus récente **au plus fort** du tick demandé, avec son
+    tick d'observation exact — jamais interpolée. Une observation **vide** n'est
+    pas sautée : ``[]`` au tick N vaut « SYNE ne publiait aucun groupe à ce
+    tick ».
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    db.record_run("run-n", "0.5.0", seed="n")
+    db.append_tick_context("run-n", 1, "groups_native", [_native_group(1)])
+    db.append_tick_context("run-n", 5, "groups_native", [])
+    client = _client(db)
+
+    assert client.get(
+        "/api/runs/run-n/native-groups", params={"tick": 3}
+    ).json() == {"run_id": "run-n", "tick": 1, "groups": [_native_group(1)]}
+    assert client.get(
+        "/api/runs/run-n/native-groups", params={"tick": 5}
+    ).json() == {"run_id": "run-n", "tick": 5, "groups": []}
+    # tick au-delà du dernier observé → dernière observation servie.
+    assert client.get(
+        "/api/runs/run-n/native-groups", params={"tick": 99}
+    ).json()["tick"] == 5
+    # tick avant toute observation → aucune donnée inventée.
+    assert client.get(
+        "/api/runs/run-n/native-groups", params={"tick": 0}
+    ).json() == {"run_id": "run-n", "tick": -1, "groups": []}
+    # tick négatif → 422 (contrainte FastAPI, comme /api/world).
+    assert client.get(
+        "/api/runs/run-n/native-groups", params={"tick": -1}
+    ).status_code == 422
+
+
+def test_native_groups_never_fall_back_to_inferred_communities(tmp_path):
+    """Base antérieure (aucun contexte ``groups_native``) : rien n'est inventé.
+
+    Le run n'a que les communautés **inférées** (contexte ``groups``, publiées
+    par ``/api/groups``) : la route des groupes natifs répond ``[]`` +
+    ``tick: -1`` (« aucune observation ») et surtout **jamais** les communautés
+    inférées — identités différentes (``groupId`` moteur ≠ ``label``), jamais
+    fusionnées.
+    """
+    db = AnalyticsStore(tmp_path / "api.db")
+    _populate(db, "run-7")  # écrit les contextes ``groups`` inférés, pas ``groups_native``
+    client = _client(db)
+
+    native = client.get("/api/runs/run-7/native-groups").json()
+    assert native == {"run_id": "run-7", "tick": -1, "groups": []}
+    # La route historique continue de publier les communautés inférées.
+    inferred = client.get("/api/groups").json()
+    assert inferred["groups"]
+    assert all("label" in group for group in inferred["groups"])
+
+
 def test_decisions_endpoint_returns_deterministic_traces(tmp_path):
     db = AnalyticsStore(tmp_path / "api.db")
     _populate(db, "run-7", ticks=2)
@@ -449,6 +558,7 @@ def test_unknown_run_resolves_to_404_everywhere(tmp_path):
 
     assert client.get("/api/runs/ghost/metrics").status_code == 404
     assert client.get("/api/runs/ghost/export").status_code == 404
+    assert client.get("/api/runs/ghost/native-groups").status_code == 404
     assert client.get("/api/beliefs/A", params={"run_id": "ghost"}).status_code == 404
     assert client.get("/api/groups", params={"run_id": "ghost"}).status_code == 404
 
@@ -467,6 +577,7 @@ def test_data_routes_return_503_without_store(monkeypatch):
 
     assert client.get("/api/runs").status_code == 503
     assert client.get("/api/runs/run-7/metrics").status_code == 503
+    assert client.get("/api/runs/run-7/native-groups").status_code == 503
     assert client.get("/health").status_code == 200  # santé toujours disponible
 
 

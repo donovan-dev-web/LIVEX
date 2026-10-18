@@ -632,3 +632,84 @@ def test_consume_keeps_a_world_description_arriving_after_the_run_started(tmp_pa
         assert payload["width"] == 500
         # Idempotent : une seconde description (rejeu éventuel) ne double rien.
         assert len(store.observations_for("run-7", "world")) == 1
+
+
+def test_consume_persists_native_syne_groups_as_published(tmp_path, monkeypatch):
+    """Les groupes **déclarés par SYNE** sont persistés tels qu'observés (A0-3).
+
+    Le contexte ``groups_native`` porte l'état des groupes natifs du moteur —
+    distances de liens comprises — sans aucun recalcul ni arrondi local ; un
+    champ non mesuré (``maxBondDistance``/``meanBondDistance`` d'un groupe sans
+    lien) reste ``null``, jamais 0. Le ``[]`` émis par le moteur est une
+    observation vraie (« aucun groupe à ce tick ») et est persisté tel quel,
+    à côté du contexte ``groups`` (communautés **inférées**), qui reste
+    distinct et intact.
+    """
+    # ``groups_native`` suit la cadence ``context_every`` (défaut 20) : on la
+    # ramène à 1 pour observer le ``[]`` publié au tick 2 (sinon celui du tick 1
+    # reste la dernière observation, ce qui est le comportement voulu).
+    monkeypatch.setenv("ECHOS_CONTEXT_EVERY", "1")
+    published = [
+        {"groupId": 7, "members": [1, 2], "size": 2, "leaderId": 2, "bornTick": 1,
+         "cohesion": 0.3333333333333333, "decision": "MoveToFood",
+         "consensus": 0.6666666666666666, "maxBondDistance": 512.5,
+         "meanBondDistance": 128.25},
+        {"groupId": 3, "members": [1], "size": 1, "bornTick": 1,
+         "cohesion": 1.0, "consensus": 1.0},
+    ]
+    frames = []
+    for tick, groups in ((1, published), (2, [])):
+        snapshot = json.loads(
+            (FIXTURES / "world_snapshot_v01.json").read_text(encoding="utf-8")
+        )
+        snapshot["tick"] = tick
+        snapshot["groups"] = groups
+        frames.append(json.dumps(snapshot))
+    port, thread = _in_process_server(frames)
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "native.db") as store:
+        storage.consume(client, store)
+
+        first = store.context_before("run-7", "groups_native", 1)
+        assert first is not None
+        observed_tick, payload = first
+        assert observed_tick == 1
+        # Valeurs identiques au flux SYNE : aucune moyenne, aucun arrondi local.
+        assert payload[0]["cohesion"] == 0.3333333333333333
+        assert payload[0]["maxBondDistance"] == 512.5
+        # Membres/leader normalisés en ``str`` (jointure avec ``Agent.id``).
+        assert payload[0]["members"] == ["1", "2"]
+        assert payload[0]["leaderId"] == "2"
+        # Groupe sans lien : ``null`` explicite publié, jamais 0 ni omission.
+        assert payload[1]["leaderId"] is None
+        assert payload[1]["decision"] is None
+        assert payload[1]["maxBondDistance"] is None
+        assert payload[1]["meanBondDistance"] is None
+
+        latest = store.latest_context("run-7", "groups_native")
+        assert latest == (2, [])
+        # Les communautés inférées restent servies par leur propre contexte.
+        inferred = store.latest_context("run-7", "groups")
+        assert inferred is not None
+        assert all("label" in group for group in inferred[1])
+
+
+def test_consume_writes_no_native_context_when_the_field_is_absent(tmp_path):
+    """Flux sans le champ ``groups`` (contrat antérieur) : aucun contexte écrit.
+
+    Un ``[]`` persisté signifierait « SYNE a publié aucun groupe à ce tick » :
+    sur un flux qui ne publie pas les groupes du tout, la base doit rester
+    **vide** pour que la route dédiée publie « aucune observation » plutôt
+    qu'une absence déguisée en donnée.
+    """
+    port, thread = _in_process_server(_script(2))
+    client = WsClient()
+    client.connect(f"ws://127.0.0.1:{port}/")
+
+    with AnalyticsStore(tmp_path / "legacy.db") as store:
+        storage.consume(client, store)
+
+        assert store.observations_for("run-7", "groups_native") == []
+        assert store.latest_context("run-7", "groups_native") is None

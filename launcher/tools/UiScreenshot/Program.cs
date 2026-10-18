@@ -34,6 +34,7 @@ if (args.Any(argument => argument == "--analysis"))
         or AnalysisWindowViewModel.SectionRelations
         or AnalysisWindowViewModel.SectionWorld
         or AnalysisWindowViewModel.SectionAgents
+        or AnalysisWindowViewModel.SectionCausality
         or AnalysisWindowViewModel.SectionCompare
         or AnalysisWindowViewModel.SectionOverview
             ? navId
@@ -442,16 +443,34 @@ public sealed class StubTelemetry : Launcher.Application.IEchosTelemetrySource
         });
 
     /// <inheritdoc />
+    public Task<Launcher.Application.EchosNativeGroups> ReadNativeGroupsAsync(
+        string runId, int? tick, CancellationToken cancellationToken) =>
+        Task.FromResult(new Launcher.Application.EchosNativeGroups
+        {
+            RunId = runId,
+            Tick = 20,
+            Groups =
+            [
+                new Launcher.Application.EchosNativeGroup(
+                    1, ["3", "7", "11", "15"], 4, "7", 4, 0.8125, "SeekFood", 0.9, 42.5, 18.25),
+                new Launcher.Application.EchosNativeGroup(
+                    2, ["1", "8", "12"], 3, null, 9, 0.6666666666666666, null, 0.75, null, null),
+            ],
+        });
+
+    /// <inheritdoc />
     public Task<Launcher.Application.EchosWorld> ReadWorldAsync(string? runId, int? tick, CancellationToken cancellationToken)
     {
+        // Monde cohérent avec BuildCells : 25×25 cases de 10 unités = 250×250.
+        // Les positions d'entités restent dans l'étendue publiée (jamais hors cadre).
         var agents = new List<Launcher.Application.EchosAgentSnapshot>
         {
             new("1", 40, 60, 62, 12, 18, "SeekFood", "3"),
             new("2", 120, 90, 48, 30, 22, "Explore", "3"),
             new("3", 200, 140, 71, 8, 9, "Rest", "3"),
-            new("4", 320, 220, 35, 44, 40, "SeekWater", "8"),
-            new("5", 410, 300, 55, 20, 16, "Explore", "8"),
-            new("6", 160, 360, 12, 60, 58, "Flee", null),
+            new("4", 220, 220, 35, 44, 40, "SeekWater", "8"),
+            new("5", 180, 200, 55, 20, 16, "Explore", "8"),
+            new("6", 80, 210, 12, 60, 58, "Flee", null),
         };
         return Task.FromResult(new Launcher.Application.EchosWorld
         {
@@ -459,18 +478,30 @@ public sealed class StubTelemetry : Launcher.Application.IEchosTelemetrySource
             Tick = tick ?? 20,
             WorldTick = 0,
             Description = new Launcher.Application.EchosWorldDescription(
-                500, 500, 10,
+                250, 250, 10,
                 BuildCells(),
-                [new Launcher.Application.EchosObstacle("obs-1", 250, 180, 24)],
-                [new Launcher.Application.EchosWorldResource("res-1", "food", 90, 120, 80)],
-                [new Launcher.Application.EchosRegion("spawn", 10, 10, 80, 60)]),
+                [new Launcher.Application.EchosObstacle("obs-1", 125, 90, 24)],
+                // Coordonnées en indices de grille (contrat de description SYNE).
+                [
+                    new Launcher.Application.EchosWorldResource("resource-food-1", "food", 4, 6, 100),
+                    new Launcher.Application.EchosWorldResource("resource-water-1", "water", 18, 20, 100),
+                    new Launcher.Application.EchosWorldResource("resource-wood-1", "wood", 8, 17, 100),
+                ],
+                [new Launcher.Application.EchosRegion("chunk-0-0", 0, 0, 10, 10)]),
             Agents = agents,
             Groups =
             [
                 new Launcher.Application.EchosGroup("3", ["1", "2", "3"], 3),
                 new Launcher.Application.EchosGroup("8", ["4", "5"], 2),
             ],
-            Resources = [new Launcher.Application.EchosTickResource("food", 90, 120, 42, 80)],
+            // Contrat SYNE 0.5 : réserves du tick agrégées par type, sans position.
+            Resources =
+            [
+                new Launcher.Application.EchosTickResource("food", null, null, 142, 300),
+                new Launcher.Application.EchosTickResource("water", null, null, 210, 300),
+                new Launcher.Application.EchosTickResource("wood", null, null, 300, 300),
+                new Launcher.Application.EchosTickResource("mineral", null, null, 300, 300),
+            ],
         });
     }
 
@@ -575,12 +606,42 @@ public sealed class StubTelemetry : Launcher.Application.IEchosTelemetrySource
         });
 
     /// <inheritdoc />
+    public Task<Launcher.Application.EchosCausalChain> ReadCausalChainAsync(
+        string runId, string agentId, int? tick, int depth, CancellationToken cancellationToken) =>
+        Task.FromResult(new Launcher.Application.EchosCausalChain
+        {
+            RunId = runId,
+            AgentId = agentId,
+            Tick = tick ?? 19,
+            DepthRequested = depth,
+            Nodes =
+            [
+                // Détail tel qu'ECHOS le publie depuis la v7 : l'état de décision, une
+                // utilité nullable et le score reporté sous son propre nom (BL-09).
+                new("Action", 19, "Eat", "decisionState = fresh · utility = 0.71 · deliberated = True · cause = gisement food à portée"),
+                new("Intention", 19, "Eat", "deliberated = True"),
+                new("Objectif", 19, "SeekFood", "kinds = SeekFood · goals_count = 1"),
+                new("Besoin", 19, "hunger (82.5)", "needs = {hunger: 82.5, thirst: 41.0, energy: 58.0}"),
+                new("Croyance", 19, "3 croyance(s)", "subjects = node-food-1, node-water-2"),
+                new("Mémoire", 19, "4 souvenir(s)", "memory_count = 4"),
+                new("Perception", 19, "resource_seen", "received = 2"),
+            ],
+            Cycle = true,
+            Cycles = [new("Action", "Eat", [11, 15, 19])],
+        });
+
+    /// <inheritdoc />
     public Task<IReadOnlyList<Launcher.Application.EchosDecision>> ReadDecisionsAsync(string runId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Launcher.Application.EchosDecision>>(
             [
-                new Launcher.Application.EchosDecision(18, "1", "SeekFood", 0.72, "hunger=30,thirst=12"),
-                new Launcher.Application.EchosDecision(19, "1", "Explore", 0.41, "food=absent"),
-                new Launcher.Application.EchosDecision(20, "1", "Rest", 0.63, "fatigue=22"),
+                // Trois états publiés (BL-09) : délibération chiffrée, report avec
+                // son score sous ``heldUtility``, absence sans aucun score.
+                new Launcher.Application.EchosDecision(
+                    18, "1", "SeekFood", 0.72, null, "fresh", 18, "gisement food à portée"),
+                new Launcher.Application.EchosDecision(
+                    19, "1", "Explore", null, 0.41, "holdover", 14, "food=absent"),
+                new Launcher.Application.EchosDecision(
+                    20, "1", "Rest", null, null, "none", null, "fatigue=22"),
             ]);
 
     /// <inheritdoc />

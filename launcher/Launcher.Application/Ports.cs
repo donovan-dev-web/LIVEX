@@ -182,6 +182,15 @@ public interface IEchosTelemetrySource
     /// <summary>Communautés observées au dernier tick (graphe de relations).</summary>
     Task<EchosNetwork> ReadNetworkAsync(string? runId, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Groupes **natifs déclarés par SYNE** (`GET /api/runs/{id}/native-groups`) au
+    /// tick demandé, publiés tels qu'observés. Distincts des communautés inférées
+    /// (<see cref="ReadNetworkAsync"/>) : identités différentes, jamais fusionnées.
+    /// Aucune valeur n'est recalculée ni arrondie par le Launcher.
+    /// </summary>
+    Task<EchosNativeGroups> ReadNativeGroupsAsync(
+        string runId, int? tick, CancellationToken cancellationToken);
+
     /// <summary>Phénomènes émergents détectés sur le run.</summary>
     Task<EchosPhenomena> ReadPhenomenaAsync(string? runId, CancellationToken cancellationToken);
 
@@ -199,6 +208,15 @@ public interface IEchosTelemetrySource
 
     /// <summary>Traces de décision du run (tri tick puis entité), pour la fiche agent.</summary>
     Task<IReadOnlyList<EchosDecision>> ReadDecisionsAsync(string runId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Chaîne causale d'une entité (`GET /api/runs/{id}/causal-chains/{agent}`) :
+    /// reconstruction hors ligne d'ECHOS (Action → Intention → Objectif → Besoin →
+    /// Croyance → Mémoire → Perception), profondeur bornée et boucles signalées.
+    /// Aucune couche n'est déduite par le Launcher.
+    /// </summary>
+    Task<EchosCausalChain> ReadCausalChainAsync(
+        string runId, string agentId, int? tick, int depth, CancellationToken cancellationToken);
 
     /// <summary>
     /// Journal d'événements borné du run (`GET /api/runs/{id}/events`) — annotations
@@ -289,6 +307,41 @@ public sealed class EchosNetwork
 /// <summary>Une communauté : étiquette (plus petit membre) et membres triés.</summary>
 public sealed record EchosGroup(string Label, IReadOnlyList<string> Members, int Size);
 
+/// <summary>
+/// Groupes **natifs déclarés par SYNE** (`/api/runs/{id}/native-groups`). Le Launcher
+/// les **présente** tels que le moteur les a publiés : aucune moyenne, aucun arrondi
+/// ni recalcul local.
+/// </summary>
+public sealed class EchosNativeGroups
+{
+    /// <summary>Identifiant du run.</summary>
+    public string RunId { get; init; } = string.Empty;
+
+    /// <summary>Tick de l'observation servie ; -1 si aucune observation de groupes natifs.</summary>
+    public int Tick { get; init; } = -1;
+
+    /// <summary>Groupes natifs, ordre publié (`groupId` croissant).</summary>
+    public IReadOnlyList<EchosNativeGroup> Groups { get; init; } = Array.Empty<EchosNativeGroup>();
+}
+
+/// <summary>
+/// Un groupe natif SYNE, tel que publié : identité (`groupId`), composition
+/// (`members`, `size`), chef (`leaderId`), naissance (`bornTick`) et mesures du
+/// moteur (`cohesion`, `decision`, `consensus`, distances de liens). Les champs
+/// absents restent `null` (non publiés) — jamais 0 ni une valeur inventée.
+/// </summary>
+public sealed record EchosNativeGroup(
+    int GroupId,
+    IReadOnlyList<string> Members,
+    int Size,
+    string? LeaderId,
+    int BornTick,
+    double? Cohesion,
+    string? Decision,
+    double? Consensus,
+    double? MaxBondDistance,
+    double? MeanBondDistance);
+
 /// <summary>Phénomènes émergents détectés (`/api/emergent-phenomena`).</summary>
 public sealed class EchosPhenomena
 {
@@ -353,7 +406,11 @@ public sealed class EchosWorld
     /// <summary>Communautés observées au tick retenu.</summary>
     public IReadOnlyList<EchosGroup> Groups { get; init; } = Array.Empty<EchosGroup>();
 
-    /// <summary>Réserves du tick (position et quantité), publiées telles qu'observées.</summary>
+    /// <summary>
+    /// Réserves du tick publiées telles qu'observées : quantité toujours,
+    /// position seulement quand le contrat en publie une (les réserves agrégées
+    /// par type n'en portent pas — voir <see cref="EchosTickResource.Located"/>).
+    /// </summary>
     public IReadOnlyList<EchosTickResource> Resources { get; init; } = Array.Empty<EchosTickResource>();
 }
 
@@ -390,8 +447,58 @@ public sealed record EchosAgentSnapshot(
     string? Action,
     string? Group);
 
-/// <summary>Réserve observée à un tick : type, position, quantité.</summary>
-public sealed record EchosTickResource(string Type, double X, double Y, double Quantity, double? Capacity);
+/// <summary>
+/// Réserve observée à un tick : type, quantité et — quand le contrat la publie —
+/// position. Le contrat d'observabilité SYNE 0.5 ne porte **pas** de position sur
+/// les réserves d'un tick (elles sont agrégées par type) : la vue 2D ne doit donc
+/// pas les projeter à l'origine du monde, elle affiche leur seule quantité.
+/// </summary>
+public sealed record EchosTickResource(string Type, double? X, double? Y, double Quantity, double? Capacity)
+{
+    /// <summary>Vrai si ECHOS a publié une position pour cette réserve.</summary>
+    public bool Located => X is not null && Y is not null;
+}
+
+/// <summary>Un nœud de la chaîne causale reconstruite par ECHOS (`chain[]`).</summary>
+public sealed record EchosCausalNode(string Layer, int Tick, string Label, string Detail);
+
+/// <summary>
+/// Réponse de `/api/runs/{id}/causal-chains/{agent}` : couches servies, boucles
+/// détectées et indicateur de troncature. Reconstruction **en lecture** côté
+/// ECHOS ; le Launcher ne fait que présenter.
+/// </summary>
+public sealed class EchosCausalChain
+{
+    /// <summary>Identifiant du run.</summary>
+    public string RunId { get; init; } = string.Empty;
+
+    /// <summary>Entité dont la chaîne est publiée.</summary>
+    public string AgentId { get; init; } = string.Empty;
+
+    /// <summary>Tick de la trace de décision utilisée (dernier tracé si non demandé).</summary>
+    public int Tick { get; init; } = -1;
+
+    /// <summary>Profondeur demandée à ECHOS.</summary>
+    public int DepthRequested { get; init; }
+
+    /// <summary>Profondeur réellement servie (bornée par la boucle et le plafond ECHOS).</summary>
+    public int DepthServed => Nodes.Count;
+
+    /// <summary>Couches de la chaîne, de l'action vers la perception.</summary>
+    public IReadOnlyList<EchosCausalNode> Nodes { get; init; } = Array.Empty<EchosCausalNode>();
+
+    /// <summary>Vrai si ECHOS signale une boucle (rétroaction ou répétition d'action).</summary>
+    public bool Cycle { get; init; }
+
+    /// <summary>Boucles signalées, libellé publié tel quel.</summary>
+    public IReadOnlyList<EchosCausalCycle> Cycles { get; init; } = Array.Empty<EchosCausalCycle>();
+
+    /// <summary>Vrai si des couches existent au-delà de ce qui est servi.</summary>
+    public bool Truncated { get; init; }
+}
+
+/// <summary>Une boucle signalée : couche, libellé et ticks de récurrence publiés.</summary>
+public sealed record EchosCausalCycle(string Layer, string Label, IReadOnlyList<int> Ticks);
 
 /// <summary>Réponse de `/api/trust-graph` : nœuds et arêtes observés.</summary>
 public sealed class EchosTrustGraph
@@ -485,11 +592,24 @@ public sealed record EchosBelief(string Subject, string Predicate, string Value,
 public sealed record EchosTrustRelation(string PeerId, double Trust);
 
 /// <summary>Une trace de décision publiée par ECHOS.</summary>
+/// <summary>
+/// Une trace de décision publiée par ECHOS.
+///
+/// ``Utility`` est **nullable** (BL-09 / S-28 / B-10) : SYNE ne publie une
+/// utilité que pour une délibération du tick courant. Une **absence**
+/// (`DecisionState` « none ») et un **report** (`holdover`) n'en portent pas —
+/// le score d'origine sort sous `HeldUtility`, avec son tick. Un zéro observé
+/// et une absence de mesure ne doivent donc jamais être rendus identiques :
+/// aucune substitution par 0 n'est faite ici.
+/// </summary>
 public sealed record EchosDecision(
     int Tick,
     string AgentId,
     string ChosenAction,
-    double Utility,
+    double? Utility,
+    double? HeldUtility,
+    string? DecisionState,
+    int? DecisionTick,
     string Cause);
 
 /// <summary>Une entrée de la chronologie descriptive avant l'extinction.</summary>

@@ -1211,6 +1211,57 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
         tick, group_list = observation
         return {"run_id": resolved, "tick": tick, "groups": group_list}
 
+    @app.get("/api/runs/{run_id}/native-groups", tags=["api"])
+    def run_native_groups(
+        run_id: str,
+        tick: int | None = Query(default=None, ge=0),
+    ) -> dict:
+        """Groupes **natifs du moteur** (observation ``groups_native``, A0-3).
+
+        Publie l'état des groupes **déclarés par SYNE** tel qu'observé au tick
+        d'ingestion — ``groupId``, ``members``, ``size``, ``leaderId``,
+        ``bornTick``, ``cohesion``, ``decision``, ``consensus``,
+        ``maxBondDistance``, ``meanBondDistance`` — **sans aucun recalcul,
+        moyenne ni arrondi local** : les valeurs sont celles émises par le
+        moteur (arrondis éventuels = ceux de SYNE). Un champ non publié par le
+        moteur reste ``null`` (``leaderId``, ``decision`` et les distances de
+        liens sont nullables ; ``null`` = non mesuré, jamais 0).
+
+        Ceci est **distinct** de ``/api/groups`` (§3.6), qui publie les
+        communautés **inférées** par ECHOS sur le graphe de confiance : les
+        identités diffèrent (``groupId`` moteur ≠ ``label`` = plus petit
+        membre) et ne sont jamais fusionnées.
+
+        Repli « plus proche disponible ≤ tick » : ``?tick=N`` renvoie
+        l'observation la plus récente au **plus fort** de N (contexte écrit
+        1 tick sur ``context_every``, défaut 20 — voir §3.11) ; sans ``tick``,
+        la plus récente. Contrairement à ``/api/groups``, une observation
+        **vide** n'est jamais sautée : un ``[]`` au tick N est l'observation
+        vraie « SYNE ne publiait aucun groupe à ce tick ». Le ``tick`` publié
+        est celui de l'observation réellement servie. Aucun contexte
+        ``groups_native`` (base antérieure à cette route) → ``tick: -1`` et
+        ``groups: []``, sans jamais retomber sur les communautés inférées.
+        Tri déterministe ``groupId`` croissant.
+        """
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+        observation = (
+            active.context_before(resolved, "groups_native", tick)
+            if tick is not None
+            else active.latest_context(resolved, "groups_native")
+        )
+        if observation is None:
+            return {"run_id": resolved, "tick": -1, "groups": []}
+        observed_tick, native_groups = observation
+        return {
+            "run_id": resolved,
+            "tick": observed_tick,
+            "groups": sorted(
+                native_groups or [],
+                key=lambda group: int(group.get("groupId") or 0),
+            ),
+        }
+
     @app.get("/api/emergent-phenomena", tags=["api"])
     def emergent_phenomena(run_id: str | None = Query(default=None)) -> dict:
         active = _require_store(store)

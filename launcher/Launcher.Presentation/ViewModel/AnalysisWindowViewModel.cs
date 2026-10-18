@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Avalonia.Media;
 using Launcher.Application;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
@@ -69,6 +70,12 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     /// <summary>Sous-écran « fiche d'entité ».</summary>
     public const string SectionAgents = "agents";
 
+    /// <summary>Sous-écran « chaîne causale » (trace de décision reconstruite par ECHOS).</summary>
+    public const string SectionCausality = "causalite";
+
+    /// <summary>Profondeur maximale acceptée par ECHOS pour une chaîne causale.</summary>
+    public const int MaxCausalDepth = 12;
+
     private static readonly SKColor[] Palette =
     [
         new(0x2d, 0x9b, 0xf0),
@@ -102,6 +109,8 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     private bool _showEventMarkers = true;
     private string _eventsText = string.Empty;
     private IReadOnlyList<EchosGroup> _groups = [];
+    private IReadOnlyList<NativeGroupRow> _nativeGroups = [];
+    private string _nativeGroupsText = string.Empty;
     private string _selectedSectionId = SectionViability;
     private string _statsHeader = string.Empty;
     private string _relationsText = string.Empty;
@@ -122,6 +131,12 @@ public sealed class AnalysisWindowViewModel : ObservableObject
     private int _replayTick;
     private bool _isPlaying;
     private int _replaySpeed = 1;
+    private string _worldResourcesText = string.Empty;
+    private string _causalHeader = string.Empty;
+    private string _causalText = string.Empty;
+    private string _causalNote = string.Empty;
+    private string _causalTickInput = string.Empty;
+    private int _causalDepth = 7;
 
     /// <summary>Initialise la vue modèle sur la source de télémétrie ECHOS.</summary>
     public AnalysisWindowViewModel(IEchosTelemetrySource source)
@@ -141,6 +156,9 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         AgentBeliefs = new ObservableCollection<BeliefRow>();
         AgentTrust = new ObservableCollection<TrustRelationRow>();
         AgentDecisions = new ObservableCollection<DecisionRow>();
+        WorldResourceRows = new ObservableCollection<TickResourceRow>();
+        CausalNodes = new ObservableCollection<CausalNodeRow>();
+        CausalCycles = new ObservableCollection<CausalCycleRow>();
         TrendSeries = Array.Empty<ISeries>();
         TrendXAxes = BuildTickAxes();
         TrendYAxes = BuildValueAxes("valeur publiée");
@@ -328,8 +346,9 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         new(SectionStatistics, "Statistiques exactes", "Valeurs publiées par ECHOS, sans calcul local"),
         new(SectionCompare, "Comparer", "Contexte des runs et dispersion publiée"),
         new(SectionRelations, "Relations et groupes", "Confiance entre entités et communautés"),
-        new(SectionWorld, "Monde et territoires", "Terrain, ressources, entités, régions"),
+        new(SectionWorld, "Monde observé", "Terrain, gisements, réserves, entités en mouvement"),
         new(SectionAgents, "Entités", "Fiche détaillée d'une entité"),
+        new(SectionCausality, "Chaîne causale", "Action → perception : trace de décision et boucles"),
     ];
 
     /// <summary>Sous-écran affiché ; son changement déclenche un relevé ciblé.</summary>
@@ -599,6 +618,73 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         set => SetProperty(ref _worldTickInput, value ?? string.Empty);
     }
 
+    /// <summary>
+    /// Réserves du tick, mises en forme pour le panneau latéral de la vue 2D.
+    /// Le contrat SYNE 0.5 les agrège **par type** : sans position publiée, elles
+    /// sont listées ici et ne sont pas projetées sur la carte (jamais à l'origine).
+    /// </summary>
+    public ObservableCollection<TickResourceRow> WorldResourceRows { get; }
+
+    /// <summary>Compte-rendu des réserves : publiées, localisées, quantités absentes.</summary>
+    public string WorldResourcesText
+    {
+        get => _worldResourcesText;
+        private set => SetProperty(ref _worldResourcesText, value);
+    }
+
+    // -----------------------------------------------------------------------
+    // Chaîne causale (A0-2/A0-3 : décision et preuves auditables).
+    // -----------------------------------------------------------------------
+
+    /// <summary>En-tête : entité, tick de la trace et profondeur servie.</summary>
+    public string CausalHeader
+    {
+        get => _causalHeader;
+        private set => SetProperty(ref _causalHeader, value);
+    }
+
+    /// <summary>Couches de la chaîne, de l'action vers la perception.</summary>
+    public ObservableCollection<CausalNodeRow> CausalNodes { get; }
+
+    /// <summary>Boucles signalées par ECHOS (rétroaction ou action répétée).</summary>
+    public ObservableCollection<CausalCycleRow> CausalCycles { get; }
+
+    /// <summary>Compte-rendu de lecture : profondeur demandée/servie et troncature.</summary>
+    public string CausalText
+    {
+        get => _causalText;
+        private set => SetProperty(ref _causalText, value);
+    }
+
+    /// <summary>Note de méthode affichée sous la chaîne (ce que la trace ne prouve pas).</summary>
+    public string CausalNote
+    {
+        get => _causalNote;
+        private set => SetProperty(ref _causalNote, value);
+    }
+
+    /// <summary>Tick demandé pour la chaîne ; vide = dernier tick tracé par ECHOS.</summary>
+    public string CausalTickInput
+    {
+        get => _causalTickInput;
+        set => SetProperty(ref _causalTickInput, value ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Profondeur demandée (couches affichées) ; bornée à 12 comme ECHOS. La
+    /// modification ne déclenche pas de relevé : elle est prise en compte au
+    /// relevé suivant (« Reconstruire » ou entrée dans le sous-écran), ce qui
+    /// évite une lecture à chaque écriture de la liste déroulante.
+    /// </summary>
+    public int CausalDepth
+    {
+        get => _causalDepth;
+        set => SetProperty(ref _causalDepth, Math.Clamp(value, 1, MaxCausalDepth));
+    }
+
+    /// <summary>Profondeurs proposées (les 7 couches publiées, puis les plafonds ECHOS).</summary>
+    public IReadOnlyList<int> CausalDepthOptions { get; } = [3, 5, 7, 10, 12];
+
     /// <summary>Entités proposées dans la liste des fiches.</summary>
     public ObservableCollection<AgentOption> Agents { get; }
 
@@ -697,6 +783,25 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         private set => SetProperty(ref _networkText, value);
     }
 
+    /// <summary>
+    /// Groupes **natifs déclarés par SYNE** publiés tels qu'observés
+    /// (`/api/runs/{id}/native-groups`) : chaque champ est transporté, jamais
+    /// recalculé ni arrondi localement. Distincts des <see cref="Groups"/> (communautés
+    /// inférées) : identités différentes, jamais fusionnées.
+    /// </summary>
+    public IReadOnlyList<NativeGroupRow> NativeGroups
+    {
+        get => _nativeGroups;
+        private set => SetProperty(ref _nativeGroups, value);
+    }
+
+    /// <summary>Compte-rendu des groupes natifs : tick d'observation et nombre publié.</summary>
+    public string NativeGroupsText
+    {
+        get => _nativeGroupsText;
+        private set => SetProperty(ref _nativeGroupsText, value);
+    }
+
     /// <summary>Vrai si un relevé a produit des données à afficher.</summary>
     public bool HasData
     {
@@ -776,6 +881,12 @@ public sealed class AnalysisWindowViewModel : ObservableObject
                 case SectionAgents:
                     await RefreshWorldAsync(runId);
                     await RefreshAgentAsync(runId);
+                    break;
+                case SectionCausality:
+                    // La liste des entités vient de l'observation de monde : elle
+                    // est lue avant la chaîne, comme pour la fiche d'entité.
+                    await RefreshWorldAsync(runId);
+                    await RefreshCausalityAsync(runId);
                     break;
                 default:
                     await RefreshOverviewAsync(runId);
@@ -1090,6 +1201,33 @@ public sealed class AnalysisWindowViewModel : ObservableObject
             ? $"{network.Groups.Count} communauté(s) observée(s) au tick {network.Tick}"
             : "aucune observation de groupes pour ce run";
 
+        // Groupes natifs **déclarés par SYNE** : lus à part (route dédiée), au tick
+        // du curseur comme le graphe de confiance, et présentés **tels quels** —
+        // aucun recalcul, aucune moyenne, aucun arrondi local. ``tick: -1`` signale
+        // l'absence d'observation (base antérieure) ; un ``[]`` publié est une
+        // observation vraie « aucun groupe à ce tick ».
+        // Groupes natifs **déclarés par SYNE** : lus à part (route dédiée), au tick
+        // du curseur comme le graphe de confiance, et présentés **tels quels** —
+        // aucun recalcul, aucune moyenne, aucun arrondi local. `tick: -1` signale
+        // l'absence d'observation (base antérieure) ; un `[]` publié est une
+        // observation vraie « aucun groupe à ce tick ». Une version d'ECHOS
+        // antérieure à la route ne doit pas faire disparaître le graphe de
+        // confiance : l'absence est annoncée dans le panneau, jamais comblée par
+        // les communautés inférées.
+        try
+        {
+            var nativeGroups = await _source.ReadNativeGroupsAsync(runId, ViewTick, CancellationToken.None);
+            NativeGroups = [.. nativeGroups.Groups.Select(BuildNativeGroupRow)];
+            NativeGroupsText = nativeGroups.Tick >= 0
+                ? $"{nativeGroups.Groups.Count} groupe(s) natif(s) SYNE publié(s) au tick {nativeGroups.Tick}"
+                : "aucune observation de groupes natifs pour ce run";
+        }
+        catch (Exception exception)
+        {
+            NativeGroups = [];
+            NativeGroupsText = $"groupes natifs indisponibles — {exception.Message}";
+        }
+
         StatusText = $"ECHOS · {runId} · relevé à " +
             DateTimeOffset.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
         HasData = graph.Nodes.Count > 0;
@@ -1115,9 +1253,107 @@ public sealed class AnalysisWindowViewModel : ObservableObject
                     ? $" · monde {description.Width}×{description.Height}"
                     : " · description de monde indisponible");
         RebuildAgentRows(world.Agents);
+        RebuildWorldResourceRows(world.Resources);
         StatusText = $"ECHOS · {runId} · relevé à " +
             DateTimeOffset.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
         HasData = world.Tick >= 0;
+    }
+
+    /// <summary>
+    /// Met en forme les réserves du tick (rendu seul). Une réserve sans position
+    /// publiée reste comptée et listée : elle n'est simplement pas projetée sur
+    /// la carte, faute d'un point où la placer sans l'inventer.
+    /// </summary>
+    private void RebuildWorldResourceRows(IReadOnlyList<EchosTickResource> resources)
+    {
+        WorldResourceRows.Clear();
+        foreach (var resource in resources)
+        {
+            WorldResourceRows.Add(new TickResourceRow(
+                string.IsNullOrWhiteSpace(resource.Type) ? "—" : resource.Type,
+                FormatNumber(resource.Quantity),
+                FormatNumber(resource.Capacity),
+                resource.Located));
+        }
+
+        var located = resources.Count(resource => resource.Located);
+        WorldResourcesText = resources.Count == 0
+            ? "aucune réserve publiée au tick affiché"
+            : $"{resources.Count} réserve(s) publiée(s) · {located} localisée(s)" +
+                (resources.Count > located
+                    ? " · les autres sont agrégées par type par le contrat SYNE (pas de position)"
+                    : string.Empty);
+    }
+
+    /// <summary>
+    /// Chaîne causale de l'entité sélectionnée, reconstruite **par ECHOS**. Aucun
+    /// nœud n'est déduit ici : les couches, leurs libellés, les boucles et la
+    /// troncature sont ceux de la réponse.
+    /// </summary>
+    private async Task RefreshCausalityAsync(string runId)
+    {
+        if (SelectedAgent is not { } agent)
+        {
+            CausalHeader = "aucune entité sélectionnée";
+            CausalText = string.Empty;
+            CausalNote = string.Empty;
+            CausalNodes.Clear();
+            CausalCycles.Clear();
+            return;
+        }
+
+        var requestedTick = int.TryParse(
+                CausalTickInput.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var tick) && tick >= 0
+            ? tick
+            : (int?)null;
+
+        try
+        {
+            var chain = await _source.ReadCausalChainAsync(
+                runId, agent.Id, requestedTick, CausalDepth, CancellationToken.None);
+
+            CausalHeader = $"Entité {chain.AgentId} · trace de décision du tick {chain.Tick}" +
+                $" · profondeur {chain.DepthServed} / {chain.DepthRequested} couche(s)";
+
+            CausalNodes.Clear();
+            var step = 1;
+            foreach (var node in chain.Nodes)
+            {
+                CausalNodes.Add(new CausalNodeRow(
+                    step++, node.Layer, node.Tick, node.Label, node.Detail));
+            }
+
+            CausalCycles.Clear();
+            foreach (var cycle in chain.Cycles)
+            {
+                CausalCycles.Add(new CausalCycleRow(
+                    cycle.Layer,
+                    cycle.Label,
+                    cycle.Ticks.Count == 0
+                        ? "boucle signalée sans tick de récurrence publié"
+                        : $"récurrence aux ticks {string.Join(", ", cycle.Ticks)}"));
+            }
+
+            CausalText = $"{chain.Nodes.Count} couche(s) servie(s)" +
+                (chain.Truncated
+                    ? " · tronquée : des couches existent au-delà de la profondeur demandée"
+                    : " · chaîne complète pour la profondeur demandée") +
+                (chain.Cycle ? " · boucle signalée" : " · aucune boucle signalée");
+
+            CausalNote = "Reconstruction hors ligne par ECHOS (traces de décision, événements, " +
+                "contexte d'agents) : Action → Intention → Objectif → Besoin → Croyance → " +
+                "Mémoire → Perception. Une couche absente est affichée « imperception » ; " +
+                "la chaîne explique la trace publiée, elle ne prouve pas une causalité établie.";
+        }
+        catch (Exception exception)
+        {
+            // Absence de trace (404) ou ECHOS indisponible : l'absence est affichée.
+            CausalHeader = $"ECHOS indisponible — {exception.Message}";
+            CausalText = string.Empty;
+            CausalNote = string.Empty;
+            CausalNodes.Clear();
+            CausalCycles.Clear();
+        }
     }
 
     /// <summary>Fiche d'entité : croyances, relations et dernières décisions publiées.</summary>
@@ -1155,14 +1391,13 @@ public sealed class AnalysisWindowViewModel : ObservableObject
                          .TakeLast(12)
                          .Reverse())
             {
-                AgentDecisions.Add(new DecisionRow(
-                    decision.Tick, decision.ChosenAction, FormatNumber(decision.Utility), decision.Cause));
+                AgentDecisions.Add(BuildDecisionRow(decision));
             }
 
             AgentHeaderText = $"Entité {agent.Id}" +
                 (profile.Tick >= 0 ? $" · contexte lu au tick {profile.Tick}" : string.Empty) +
                 DescribeContextAge(runId, profile.Tick) +
-                (string.IsNullOrWhiteSpace(agent.Group) ? string.Empty : $" · groupe {agent.Group}") +
+                (string.IsNullOrWhiteSpace(agent.Group) ? string.Empty : $" · communauté {agent.Group}") +
                 $" · énergie {FormatNumber(agent.Energy)}" +
                 (string.IsNullOrWhiteSpace(agent.Action) ? string.Empty : $" · {agent.Action}");
         }
@@ -1297,6 +1532,8 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         EventsText = string.Empty;
         Phenomena.Clear();
         Groups = [];
+        NativeGroups = [];
+        NativeGroupsText = string.Empty;
         DetailText = string.Empty;
         NetworkText = string.Empty;
         Statistics.Clear();
@@ -1320,6 +1557,13 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         WorldAgents = [];
         WorldResources = [];
         WorldText = string.Empty;
+        WorldResourceRows.Clear();
+        WorldResourcesText = string.Empty;
+        CausalNodes.Clear();
+        CausalCycles.Clear();
+        CausalHeader = string.Empty;
+        CausalText = string.Empty;
+        CausalNote = string.Empty;
         Agents.Clear();
         AgentBeliefs.Clear();
         AgentTrust.Clear();
@@ -2096,6 +2340,41 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         },
     ];
 
+    /// <summary>
+    /// Met une décision publiée en ligne de fiche : utilité publiée **ou**
+    /// « non mesurée », état servi par ECHOS, score reporté cité séparément.
+    ///
+    /// Aucune substitution par zéro : la valeur affichée vient du champ publié
+    /// (BL-09). L'état vient de `decision_state` tel que servi ; inconnu, il est
+    /// annoncé comme tel plutôt que deviné.
+    /// </summary>
+    private static DecisionRow BuildDecisionRow(EchosDecision decision)
+    {
+        var measured = decision.Utility is { };
+        var state = decision.DecisionState switch
+        {
+            "fresh" => "délibérée",
+            "holdover" => "reportée",
+            "interrupted" => "interrompue",
+            "none" => "absente",
+            null => "état non renseigné",
+            var published => published,
+        };
+        if (decision.HeldUtility is { } held)
+        {
+            state += $" · {FormatNumber(held)}" +
+                (decision.DecisionTick is { } origin ? $" (décision du tick {origin})" : string.Empty);
+        }
+
+        return new DecisionRow(
+            decision.Tick,
+            decision.ChosenAction,
+            measured ? FormatNumber(decision.Utility) : "non mesurée",
+            state,
+            decision.Cause,
+            measured);
+    }
+
     private static string FormatNumber(double value) =>
         value.ToString("0.###", CultureInfo.InvariantCulture);
 
@@ -2110,6 +2389,31 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         ? FormatNumber(published)
         : "—";
 
+    /// <summary>
+    /// Rend une valeur **publiée par le moteur sans arrondi local** : sa
+    /// représentation aller-retour exacte. Un champ non publié affiche son motif
+    /// explicite (« non mesuré » ≠ 0) — jamais une valeur inventée.
+    /// </summary>
+    private static string FormatPublished(double? value, string missing) => value is { } published
+        ? published.ToString("R", CultureInfo.InvariantCulture)
+        : missing;
+
+    /// <summary>
+    /// Une ligne du panneau « groupes natifs » : composition, chef, naissance et
+    /// mesures transportées depuis la réponse d'ECHOS, telles quelles.
+    /// </summary>
+    private static NativeGroupRow BuildNativeGroupRow(EchosNativeGroup group) => new(
+        group.GroupId,
+        group.Members.Count == 0 ? "—" : string.Join(", ", group.Members),
+        FormatNumber(group.Size),
+        group.LeaderId ?? "non publié",
+        FormatNumber(group.BornTick),
+        FormatPublished(group.Cohesion, "non publiée"),
+        group.Decision ?? "non publiée",
+        FormatPublished(group.Consensus, "non publiée"),
+        FormatPublished(group.MaxBondDistance, "non mesurée"),
+        FormatPublished(group.MeanBondDistance, "non mesurée"));
+
     private void RaiseChartsChanged()
     {
         OnPropertyChanged(nameof(TrendSeries));
@@ -2120,6 +2424,8 @@ public sealed class AnalysisWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(ResourceSeries));
         OnPropertyChanged(nameof(Groups));
         OnPropertyChanged(nameof(NetworkText));
+        OnPropertyChanged(nameof(NativeGroups));
+        OnPropertyChanged(nameof(NativeGroupsText));
     }
 }
 
@@ -2315,6 +2621,23 @@ public sealed record CompareMetricRow(
 /// <summary>Une relation mise en forme pour le tableau du sous-écran confiance.</summary>
 public sealed record TrustEdgeRow(string Source, string Target, string Display);
 
+/// <summary>
+/// Une ligne du panneau « groupes natifs SYNE » : identité du groupe, composition,
+/// chef, naissance et mesures publiées par le moteur, mises en forme telles quelles
+/// (aucun arrondi local ; un champ non publié porte son motif explicite).
+/// </summary>
+public sealed record NativeGroupRow(
+    int GroupId,
+    string Members,
+    string Size,
+    string LeaderId,
+    string BornTick,
+    string Cohesion,
+    string Decision,
+    string Consensus,
+    string MaxBondDistance,
+    string MeanBondDistance);
+
 /// <summary>Une entité sélectionnable dans la liste des fiches.</summary>
 public sealed class AgentOption(string Id, double X, double Y, double Energy, string? Action, string? Group)
 {
@@ -2333,11 +2656,18 @@ public sealed class AgentOption(string Id, double X, double Y, double Energy, st
     /// <summary>Action en cours publiée, si renseignée.</summary>
     public string? Action { get; } = Action;
 
-    /// <summary>Communauté à laquelle l'entité appartient, si observée.</summary>
+    /// <summary>
+    /// Communauté à laquelle l'entité appartient, si observée. C'est le libellé
+    /// **communauté** publié par ECHOS (plus petit identifiant du groupe, stable) —
+    /// une communauté **inférée** sur le graphe de confiance, distincte des groupes
+    /// **natifs** du moteur (`groupId`, cohésion, consensus) que publie
+    /// `/api/runs/{id}/native-groups` et qu'affiche le panneau « groupes natifs ».
+    /// D'où le mot « communauté » ici.
+    /// </summary>
     public string? Group { get; } = Group;
 
-    /// <summary>Libellé affiché : identifiant, groupe et action.</summary>
-    public string Label => Id + (string.IsNullOrWhiteSpace(Group) ? string.Empty : $" · groupe {Group}") +
+    /// <summary>Libellé affiché : identifiant, communauté et action.</summary>
+    public string Label => Id + (string.IsNullOrWhiteSpace(Group) ? string.Empty : $" · communauté {Group}") +
         (string.IsNullOrWhiteSpace(Action) ? string.Empty : $" · {Action}");
 }
 
@@ -2347,5 +2677,76 @@ public sealed record BeliefRow(string Subject, string Predicate, string Value, s
 /// <summary>Une relation de confiance publiée pour l'entité sélectionnée.</summary>
 public sealed record TrustRelationRow(string PeerId, string Trust);
 
-/// <summary>Une décision publiée pour l'entité sélectionnée.</summary>
-public sealed record DecisionRow(int Tick, string Action, string Utility, string Cause);
+/// <summary>
+/// Une décision publiée pour l'entité sélectionnée.
+///
+/// L'utilité n'est affichée que si elle est publiée : une **absence** ou un
+/// **report** affiche « non mesurée », jamais « 0 » (BL-09 / S-28 / B-10 — un
+/// zéro observé et une absence de mesure ne se confondent pas). Le score d'un
+/// report est cité dans la colonne d'état, sous son propre nom et avec le tick
+/// de sa décision d'origine.
+/// </summary>
+public sealed record DecisionRow(
+    int Tick, string Action, string Utility, string State, string Cause, bool Measured)
+{
+    private static readonly IBrush MeasuredBrush = new SolidColorBrush(Color.Parse("#e0a25a"));
+    private static readonly IBrush AbsentBrush = new SolidColorBrush(Color.Parse("#9aa0aa"));
+
+    /// <summary>Couleur de la colonne utilité : une absence n'est pas une mesure.</summary>
+    public IBrush UtilityBrush => Measured ? MeasuredBrush : AbsentBrush;
+}
+
+/// <summary>
+/// Une réserve du tick mise en forme pour le panneau de la vue 2D : quantité et
+/// capacité publiées, et provenance de la position (« position publiée » ou
+/// « agrégée par type » — le contrat SYNE ne localise pas les réserves d'un tick).
+/// </summary>
+public sealed record TickResourceRow(string Type, string Quantity, string Capacity, bool Located)
+{
+    /// <summary>Provenance affichée de la position.</summary>
+    public string Provenance => Located ? "position publiée" : "agrégée par type";
+
+    /// <summary>Explication de l'absence de position, sinon null.</summary>
+    public string? PositionTip => Located
+        ? null
+        : "Réserves du tick : le contrat d'observabilité publie un total par type, sans " +
+            "position. La réserve est donc listée ici et n'est pas projetée sur la carte " +
+            "(aucun point ne serait publié pour la placer).";
+}
+
+/// <summary>
+/// Une couche de la chaîne causale telle que servie par ECHOS : numéro d'étape,
+/// couche, tick, libellé et détail publiés. L'accent est un choix de rendu, il ne
+/// porte aucune valeur.
+/// </summary>
+public sealed record CausalNodeRow(int Step, string Layer, int Tick, string Label, string Detail)
+{
+    private static readonly IReadOnlyDictionary<string, IBrush> LayerBrushes =
+        new Dictionary<string, IBrush>(StringComparer.Ordinal)
+        {
+            ["Action"] = new SolidColorBrush(Color.Parse("#2d9bf0")),
+            ["Intention"] = new SolidColorBrush(Color.Parse("#5cc4ff")),
+            ["Objectif"] = new SolidColorBrush(Color.Parse("#e0a25a")),
+            ["Besoin"] = new SolidColorBrush(Color.Parse("#e05252")),
+            ["Croyance"] = new SolidColorBrush(Color.Parse("#a04cf0")),
+            ["Mémoire"] = new SolidColorBrush(Color.Parse("#2ecc71")),
+            ["Perception"] = new SolidColorBrush(Color.Parse("#7ad1a0")),
+        };
+
+    private static readonly IBrush FallbackBrush = new SolidColorBrush(Color.Parse("#9aa0aa"));
+
+    /// <summary>Couleur d'affichage de la couche (rendu seul).</summary>
+    public IBrush Accent => LayerBrushes.TryGetValue(Layer, out var brush) ? brush : FallbackBrush;
+
+    /// <summary>Étape affichée (« 1 » → « 7 »), pour lire l'ordre de la chaîne.</summary>
+    public string StepLabel => Step.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Tick affiché avec le libellé de la trace.</summary>
+    public string TickLabel => $"tick {Tick.ToString(CultureInfo.InvariantCulture)}";
+
+    /// <summary>Info-bulle du détail publié ; null quand ECHOS n'en publie aucun.</summary>
+    public string? DetailTip => string.IsNullOrWhiteSpace(Detail) ? null : Detail;
+}
+
+/// <summary>Une boucle signalée par ECHOS : couche, libellé et récurrence publiés.</summary>
+public sealed record CausalCycleRow(string Layer, string Label, string Recurrence);
