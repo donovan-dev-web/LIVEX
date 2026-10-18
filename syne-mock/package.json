@@ -6,9 +6,15 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/cli.js",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "eslint src test",
+    "format": "prettier --write src test"
   },
   "dependencies": {
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "eslint": "^10.13.0",
+    "prettier": "^3.9.10"
   }
 }

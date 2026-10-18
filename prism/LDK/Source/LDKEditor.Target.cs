@@ -1,5 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Cible de build de l'éditeur LDK (variante éditeur).
+
 using UnrealBuildTool;
 using System.Collections.Generic;
 
