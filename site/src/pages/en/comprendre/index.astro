@@ -1,12 +1,15 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import { url } from '../../../utils/url';
 ---
 <BaseLayout
   lang="en"
-  title="Understanding LIVEX"
-  description="LIVEX in plain terms: what a multi-agent simulation ecosystem is for, how it works, and which limitations it accepts."
+  title="Understanding LIVEX — method and limits"
+  description="What LIVEX is, its method (deterministic, separated, documented) and the limits it accepts: a multi-agent simulation research project."
 >
   <PageHeader
     lang="en"
@@ -26,11 +29,11 @@ import { url } from '../../../utils/url';
         for the opposite: place agents, rules and an environment, then <strong>let it run</strong> and record what
         happens — including the unexpected, including what does not work.
       </p>
-      <p>
-        This imposes two requirements. First, <strong>determinism</strong>: from the same seed, a run must replay
-        identically, tick after tick. Then, <strong>separation</strong>: what happens (the engine) and what is said
-        about it (the observation) must never be conflated, on pain of narrating what one hoped to see.
-      </p>
+      <p>This imposes two requirements:</p>
+      <ul style="margin:8px 0 0 20px;color:var(--mu);font-size:0.9rem;line-height:1.7">
+        <li><strong>Determinism</strong> — from the same seed, a run replays identically, tick after tick.</li>
+        <li><strong>Separation</strong> — what happens (the engine) and what is said about it (the observation) are never conflated, on pain of narrating what one hoped to see.</li>
+      </ul>
     </div>
   </section>
 
@@ -72,7 +75,7 @@ import { url } from '../../../utils/url';
         </p>
       </div>
       <p>
-        The project is in an exploration phase (V0.1). No public version is distributed to date. The component states
+        The project is in an exploration phase (V0.2). No public version is distributed to date. The component states
         describe the development repository.
       </p>
       <div class="toc" style="margin-top:22px">

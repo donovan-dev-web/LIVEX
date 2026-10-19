@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
@@ -6,7 +9,7 @@ import { url } from '../../utils/url';
 const faq = [
   {
     q: 'What is LIVEX trying to demonstrate?',
-    a: "LIVEX builds a simulated world where autonomous entities (needs, memory, beliefs, utility) interact, and observes the collective structures that emerge: groups, exchanges, conflicts, propagation of knowledge. The project does not claim this emergence proves \"intelligence\": it provides observers and measurable metrics.",
+    a: "LIVEX builds a simulated world where autonomous entities (needs, memory, beliefs, utility) interact, and observes the collective structures that emerge from it: groups, exchanges, conflicts, propagation of knowledge. The project does not claim this emergence proves \"intelligence\": it provides observers and measurable metrics.",
   },
   {
     q: 'Does LIVEX prove that societies emerge \"that way\"?',
@@ -34,7 +37,7 @@ const faq = [
   },
   {
     q: 'Is LIVEX multiplayer?',
-    a: "Not in V0.1. PRISM envisages a future \"player-inhabitant\" mode (embodying an entity), but this is a distant evolution, not committed.",
+    a: "Not in V0.2. PRISM envisages a future \"player-inhabitant\" mode (embodying an entity), but this is a distant evolution, not committed.",
   },
   {
     q: 'What is the difference between LIVEX, PRISM and PRISM-LDK?',
@@ -46,7 +49,7 @@ const faq = [
   },
   {
     q: 'What is the licence, and who owns the project?',
-    a: "MIT (see the LICENSE file). The repository is currently maintained by a single person. Contribution rules are in CONTRIBUTING.md.",
+    a: "GNU GPL v3.0 or later (GPL-3.0-or-later, see the LICENSE file) for SYNE, ECHOS, the Launcher, syne-mock and the site. The Unreal PRISM project remains subject to the Epic Games EULA and is not covered by the GPL. The repository is currently maintained by a single person. Contribution rules are in CONTRIBUTING.md.",
   },
   {
     q: 'What does LIVEX not seek to prove?',
@@ -60,27 +63,36 @@ const faq = [
 ---
 <BaseLayout
   lang="en"
-  title="FAQ"
-  description="Frequently asked questions about LIVEX: objectives, determinism, observability, communication between entities, scale, licence and ethics."
+  title="LIVEX — FAQ: determinism, emergence, licence, ethics"
+  description="LIVEX FAQ: frequently asked questions about multi-agent simulation — goals, determinism, observability, scale, licence and ethics."
 >
   <PageHeader
     lang="en"
     index="16"
     eyebrow="FAQ"
     title="Frequently asked questions."
-    lead="Answers drawn from the project's documentation. They evolve with implementation decisions."
+    lead="Short answers drawn from the project's documentation. They evolve with implementation decisions."
     crumbs={[{ label: 'FAQ' }]}
   />
 
   <section class="block">
     <div class="w">
-      {faq.map((item) => (
-        <details class="faq">
-          <summary>{item.q}</summary>
-          <p>{item.a}</p>
-        </details>
-      ))}
-      <p style="margin-top:24px"><a class="bt" href={url('comprendre/limites/', 'en')}>Limitations and ethics →</a></p>
+      <h2>{faq.length} questions, answered to the point.</h2>
+      <p>Open a question to read the answer. Each one restates a documented point — goals, determinism, scale,
+        licence — with no promise and no shortcut.</p>
+      <div style="margin-top:20px">
+        {faq.map((item) => (
+          <details class="faq">
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
+      <div class="cta" style="margin-top:24px">
+        <a class="bt p" href={url('documentation/', 'en')}>Documentation</a>
+        <a class="bt" href={url('comprendre/glossaire/', 'en')}>Glossary</a>
+        <a class="bt" href={url('comprendre/limites/', 'en')}>Limitations and ethics</a>
+      </div>
     </div>
   </section>
 </BaseLayout>

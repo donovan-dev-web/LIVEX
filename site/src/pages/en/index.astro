@@ -1,18 +1,24 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import HeroFigure from '../../components/HeroFigure.astro';
 import { SITE } from '../../data/site';
 import { COMPONENTS_EN } from '../../data/components';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN } from '../../data/release';
+import echosAgents from '../../assets/captures/echos-agents.png';
+import launcherHome from '../../assets/captures/launcher-home.png';
+import launcherPrism from '../../assets/captures/launcher-prism.png';
 import { url } from '../../utils/url';
 
 const nf = new Intl.NumberFormat('en-US');
 ---
 <BaseLayout
   lang="en"
-  title="LIVEX — multi-agent simulation"
-  description="LIVEX brings together a deterministic engine (SYNE), an observation system (ECHOS) and a perceptual rendering module (PRISM). A multi-agent simulation research project, documented openly."
+  title="LIVEX — deterministic multi-agent simulation"
+  description="Deterministic SYNE engine, ECHOS observation, PRISM rendering: a research platform for reproducible, openly documented multi-agent simulation."
 >
   <div class="w">
     <!-- Hero -->
@@ -47,12 +53,18 @@ const nf = new Intl.NumberFormat('en-US');
   <section class="block">
     <div class="w">
       <div class="sh"><b>01</b> The premise</div>
-      <h2>Observe, without lying about what exists.</h2>
+      <h2>Make legible what no one wrote.</h2>
       <p class="lead">
-        LIVEX seeks to make legible a collective behaviour that was never written by hand. Its method rests on two
-        requirements: a <strong>deterministic</strong> engine (the same starting point replays the same run) and a
-        <strong> clean separation</strong> between what happens and what is said about it.
+        LIVEX seeks to make observable a collective behaviour that was never programmed by hand. Its method rests on two
+        requirements: a <strong>deterministic</strong> engine (the same starting point replays the same run, bit for bit)
+        and a <strong>clean separation</strong> between what happens (the engine) and what is said about it (the
+        observation).
       </p>
+      <ul style="margin:16px 0 0 20px;color:var(--mu);font-size:0.88rem;line-height:1.7">
+        <li><strong>Deterministic</strong> — same seed, same configuration, same trajectory.</li>
+        <li><strong>Separated</strong> — simulate, measure, make visible: three independent layers.</li>
+        <li><strong>Documented</strong> — every published figure has a dated internal source.</li>
+      </ul>
       <div class="g3 br" style="margin-top:28px">
         <div>
           <div class="n">03</div>
@@ -62,7 +74,7 @@ const nf = new Intl.NumberFormat('en-US');
         <div>
           <div class="n">00</div>
           <h3>public version</h3>
-          <p>The project is in an exploration phase (V0.1). No release or tag has been placed.</p>
+          <p>The project has moved to V0.2. No public release or tag has been placed to date.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
@@ -94,11 +106,13 @@ const nf = new Intl.NumberFormat('en-US');
             <p style="margin:0 0 12px"><StatusBadge status={c.status.id} lang="en" /></p>
             <a class="bt" href={url(c.href, 'en')}>Details →</a>
           </div>
-          <div class="ph">Screenshot<br />{c.acronym}</div>
+          {c.key === 'syne' && <img src={launcherHome.src} alt="Preview of the LIVEX Launcher" width="100%" loading="lazy" />}
+          {c.key === 'echos' && <img src={echosAgents.src} alt="Preview of ECHOS: agent tracking" width="100%" loading="lazy" />}
+          {c.key === 'prism' && <img src={launcherPrism.src} alt="Preview of PRISM rendering" width="100%" loading="lazy" />}
         </div>
       ))}
 
-      <div class="ct">Public interface contracts — snapshot 0.4.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · persistence schema v6</div>
+      <div class="ct">Public interface contracts — snapshot 0.5.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · persistence schema v5</div>
       <p class="mu" style="font-size:0.7rem">The “Screenshot” placeholders will be replaced by real captures of the published version. No illustration stands in for a screenshot.</p>
     </div>
   </section>
@@ -111,8 +125,8 @@ const nf = new Intl.NumberFormat('en-US');
       <p class="lead">The journal records milestones and technical decisions, with their date. In-depth articles are added progressively.</p>
       <div class="row">
         <span class="mu">{PROJECT_STATE_EN.observedDate}</span>
-        <span class="t">No article published yet.</span>
-        <span><StatusBadge status="envisage" label="Upcoming" lang="en" /></span>
+        <span class="t"><a href={url('actualites/', 'en')}>Repository and component status: versions, tests, coverage.</a></span>
+        <span><StatusBadge status="experimental" label="In progress" lang="en" /></span>
       </div>
       <p style="margin-top:18px"><a class="bt" href={url('actualites/', 'en')}>View the journal →</a></p>
     </div>

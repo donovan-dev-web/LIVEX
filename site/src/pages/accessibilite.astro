@@ -1,12 +1,15 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { SITE } from '../data/site';
 import { url } from '../utils/url';
 ---
 <BaseLayout
-  title="Accessibilité"
-  description="Déclaration d'accessibilité du site LIVEX : objectif WCAG 2.2 niveau AA, mesures mises en œuvre, limites connues et moyen de signaler un défaut."
+  title="Accessibilité — objectif WCAG 2.2 niveau AA"
+  description="Déclaration d'accessibilité du site LIVEX : objectif WCAG 2.2 niveau AA, mesures mises en œuvre, limites connues et signalement d'un défaut."
 >
   <PageHeader
     index="24"
@@ -56,6 +59,10 @@ import { url } from '../utils/url';
         vérifications automatisées ne suffisent pas : certains usages (lecteurs d'écran, navigation vocale) demandent
         une évaluation humaine qui reste à faire.
       </p>
+      <p class="mu" style="font-size:0.78rem">
+        La référence appliquée ici est la version 2.2 des
+        <a href="https://www.w3.org/TR/WCAG22/" rel="noopener">Web Content Accessibility Guidelines ↗</a> (W3C).
+      </p>
     </div>
   </section>
 
@@ -66,7 +73,7 @@ import { url } from '../utils/url';
       <p>
         Si vous rencontrez une barrière d'accessibilité — contraste insuffisant, élément inatteignable au clavier,
         alternative manquante — signalez-le. Précisez si possible la page, le navigateur ou l'outil d'assistance
-        utilisé.
+        utilisé. Les signalements sont traités comme des issues publiques du dépôt.
       </p>
       <div class="ov">
         <table class="tb">

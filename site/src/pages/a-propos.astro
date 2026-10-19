@@ -1,18 +1,21 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
-import { PROJECT_STATE } from '../data/release';
+import { PROJECT_STATE, RELEASE } from '../data/release';
 import { url } from '../utils/url';
 ---
 <BaseLayout
-  title="À propos"
-  description="L'origine de LIVEX, la vision de son auteur et les faits datés du projet. Un projet de recherche personnel sur la simulation multi-agents."
+  title="À propos — origine, vision et faits datés"
+  description="Origine de LIVEX, vision de son auteur et faits datés du projet : un projet de recherche personnel en simulation multi-agents, avec SYNE, ECHOS et PRISM."
 >
   <PageHeader
     index="20"
     eyebrow="À propos"
     title="D'où vient LIVEX."
-    lead="LIVEX est né d'une question, plus que d'un plan. Voici, dans les mots de son auteur, ce qu'il cherche à explorer."
+    lead="LIVEX est né d'une question, pas d'un plan. Voici, dans les mots de son auteur, ce qu'il cherche à explorer — et l'état réel du projet, daté."
     crumbs={[{ label: 'À propos' }]}
   />
 
@@ -38,6 +41,11 @@ import { url } from '../utils/url';
         il ne suffit pas de le montrer — il faut pouvoir l'observer, le mesurer, l'analyser et, autant que possible,
         le reproduire.
       </p>
+      <p>
+        Concrètement, cela donne trois briques complémentaires : <strong>SYNE</strong>, le moteur qui tient la vérité
+        du monde ; <strong>ECHOS</strong>, qui observe et analyse ce qui s'y passe ; et <strong>PRISM</strong>, qui
+        restitue le monde sans jamais en être la source. L'ensemble est documenté et mesuré plutôt que promis.
+      </p>
       <p class="sf" style="font-size:1.5rem;margin-top:20px">— Donovan Chartrain</p>
     </div>
   </section>
@@ -46,15 +54,19 @@ import { url } from '../utils/url';
     <div class="w">
       <div class="sh"><b>20.1</b> Le projet en bref</div>
       <h2>Des faits, pas des slogans.</h2>
+      <p class="mu">
+        Les valeurs ci-dessous sont datées et proviennent de la source unique du site ; elles décrivent l'état du
+        dépôt, pas une promesse de publication.
+      </p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
           <tbody>
             <tr><td>Nature</td><td>Projet de recherche personnel en simulation multi-agents</td></tr>
             <tr><td>Composants</td><td>SYNE (moteur) · ECHOS (observation) · PRISM (rendu)</td></tr>
-            <tr><td>Licence</td><td>MIT (code) · CC BY 4.0 (contenu du site)</td></tr>
+            <tr><td>Licence</td><td>GPL-3.0-or-later (code LIVEX hors PRISM) · CC BY 4.0 (contenu du site)</td></tr>
             <tr><td>Dépôt</td><td><a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a></td></tr>
-            <tr><td>État</td><td>Aucune version publique — V0.1 en préparation</td></tr>
+            <tr><td>État</td><td>Aucune version publique — version cible {RELEASE.planned}</td></tr>
             <tr><td>Dernier état mesuré</td><td>{PROJECT_STATE.observedDate}</td></tr>
           </tbody>
         </table>
@@ -63,6 +75,8 @@ import { url } from '../utils/url';
         <a class="bt" href={url('comprendre/')}>Comprendre LIVEX</a>
         <span style="display:inline-block;width:8px"></span>
         <a class="bt" href={url('documentation/')}>Documentation</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('a-propos/transparence-ia/')}>Transparence IA</a>
       </p>
     </div>
   </section>
