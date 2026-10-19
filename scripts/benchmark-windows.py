@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Benchmark Windows natif de LIVEX : par composant et par scénario.
 
 Pourquoi ce script existe à côté de ``scripts/benchmark.py`` : ce dernier

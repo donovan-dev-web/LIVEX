@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Benchmark réel SYNE vs SYNE + ECHOS (comparatif de performances).
 
 Pour une grille (entités × ticks × seeds), deux scénarios sont mesurés :
