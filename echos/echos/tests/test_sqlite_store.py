@@ -156,6 +156,50 @@ def test_tick_bundle_commits_all_outputs_and_bumps_once(tmp_path):
         assert len(store.events("run-7")) == 1
 
 
+def test_tick_bundle_persists_nullable_utility_and_holdover(tmp_path):
+    """Régression ingestion batch/live (J3/BL-09) : un flux SYNE réel publie
+    ``utility: null`` pour une absence et reporte le score d'origine sous
+    ``held_utility``. Le chemin ``append_tick_bundle`` (utilisé par ``consume``)
+    doit accepter ce ``None`` sans lever, et conserver le report — un
+    ``float(None)`` faisait échouer toute l'ingestion en 500.
+    """
+    with AnalyticsStore(tmp_path / "analyse.db") as store:
+        store.record_run("run-7", "0.1.0", seed="7")
+        store.append_tick_bundle(
+            _record(),
+            {"Engine": {"score": 1.5}},
+            {"agents": []},
+            [],
+            [
+                {
+                    "run_id": "run-7",
+                    "tick": 1,
+                    "agent_id": "1",
+                    "chosen_action": "SeekWater",
+                    "utility": None,
+                    "held_utility": 61.79,
+                    "decision_state": "holdover",
+                    "decision_tick": 3,
+                    "deliberated": False,
+                    "interrupted": False,
+                    "cause": "reprise",
+                    "beliefs_count": 2,
+                    "goals_count": 1,
+                    "memory_count": 0,
+                    "needs": {"hunger": 100.0},
+                }
+            ],
+        )
+
+        traces = store.decision_traces("run-7")
+        assert len(traces) == 1
+        trace = traces[0]
+        assert trace["utility"] is None  # absence, jamais 0.0
+        assert trace["held_utility"] == 61.79
+        assert trace["decision_state"] == "holdover"
+        assert trace["decision_tick"] == 3
+
+
 def test_tick_bundle_rolls_back_when_one_output_fails(tmp_path):
     with AnalyticsStore(tmp_path / "analyse.db") as store:
         store.record_run("run-7", "0.1.0", seed="7")
@@ -311,6 +355,25 @@ def test_event_records_and_events_by_type_are_deterministic(tmp_path):
         assert store.events_by_type("run-7", "ghost") == []
 
 
+_PRE_V7_DECISION_TRACES = """
+CREATE TABLE decision_traces (
+    run_id TEXT NOT NULL,
+    tick INTEGER NOT NULL CHECK (tick >= 0),
+    agent_id TEXT NOT NULL,
+    chosen_action TEXT,
+    utility REAL NOT NULL,
+    deliberated INTEGER NOT NULL DEFAULT 0,
+    interrupted INTEGER NOT NULL DEFAULT 0,
+    cause TEXT,
+    beliefs_count INTEGER NOT NULL DEFAULT 0,
+    goals_count INTEGER NOT NULL DEFAULT 0,
+    memory_count INTEGER NOT NULL DEFAULT 0,
+    needs TEXT,
+    PRIMARY KEY (run_id, tick, agent_id)
+);
+"""
+
+
 _PRE_V5_TICK_METRICS = """
 CREATE TABLE tick_metrics (
     run_id TEXT NOT NULL,
@@ -377,6 +440,62 @@ def test_a_database_written_before_v5_is_migrated_without_losing_rows(tmp_path):
         assert store.latest_measured("run-avant")["EmergenceIndicators"] == {
             "EmergenceScore": False,
         }
+
+
+def test_a_database_written_before_v7_accepts_a_null_utility(tmp_path):
+    """BL-09 : la v7 rend ``decision_traces.utility`` nullable sans perdre de lignes.
+
+    SQLite ne retire pas un ``NOT NULL`` : la migration reconstruit la table.
+    Les lignes antérieures gardent leur ``utility`` — y compris le ``0.0`` que
+    la v6 écrivait pour une absence — et sortent avec ``decision_state`` ``None``
+    (« non renseigné »), jamais avec un état reconstruit après coup.
+    """
+    path = tmp_path / "v7.db"
+    sqlite3.connect(path).executescript(
+        "CREATE TABLE runs (run_id TEXT PRIMARY KEY, version TEXT NOT NULL, seed TEXT);"
+        "INSERT INTO runs VALUES ('run-avant', '0.16.0', '7');"
+        + _PRE_V7_DECISION_TRACES
+        + "INSERT INTO decision_traces (run_id, tick, agent_id, chosen_action, utility,"
+        " deliberated, interrupted, cause, beliefs_count, goals_count, memory_count, needs)"
+        " VALUES ('run-avant', 4, '1', 'Rest', 0.0, 0, 0, 'fatigue=22', 0, 0, 4, '{}');"
+    ).connection.commit()
+
+    with AnalyticsStore(path) as store:
+        columns = {
+            str(row[1]): row
+            for row in store._conn.execute("PRAGMA table_info(decision_traces)").fetchall()
+        }
+        assert bool(columns["utility"][3]) is False  # NOT NULL retiré
+        for name in ("held_utility", "decision_state", "decision_tick"):
+            assert name in columns
+
+        legacy = store.decision_traces("run-avant")
+        assert [row["tick"] for row in legacy] == [4]
+        assert legacy[0]["utility"] == 0.0  # valeur historique conservée telle quelle
+        assert legacy[0]["decision_state"] is None
+        assert legacy[0]["held_utility"] is None
+
+        # Une absence (utility=None) et un report s'écrivent désormais sans perte.
+        store.append_decision_trace("run-avant", 5, {
+            "agent_id": "1", "chosen_action": "Rest", "utility": None,
+            "held_utility": None, "decision_state": "none", "decision_tick": None,
+            "deliberated": False, "interrupted": False, "cause": "",
+            "beliefs_count": 0, "goals_count": 0, "memory_count": 0, "needs": {},
+        })
+        store.append_decision_trace("run-avant", 6, {
+            "agent_id": "1", "chosen_action": "Explore", "utility": None,
+            "held_utility": 0.71, "decision_state": "holdover", "decision_tick": 3,
+            "deliberated": False, "interrupted": False, "cause": "",
+            "beliefs_count": 0, "goals_count": 0, "memory_count": 0, "needs": {},
+        })
+
+        rows = {row["tick"]: row for row in store.decision_traces("run-avant")}
+        assert rows[5]["utility"] is None
+        assert rows[5]["decision_state"] == "none"
+        assert rows[6]["utility"] is None
+        assert rows[6]["held_utility"] == 0.71
+        assert rows[6]["decision_state"] == "holdover"
+        assert rows[6]["decision_tick"] == 3
 
 
 def test_migrated_column_rejects_a_non_boolean_measured_value(tmp_path):

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 64" width="1100" height="64" role="img" aria-label="Performances" font-family='"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif'>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#090C16"/><stop offset="1" stop-color="#141a33"/></linearGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3fb8ea" stop-opacity=".28"/><stop offset=".45" stop-color="#3fb8ea" stop-opacity="0"/></linearGradient></defs>
+<rect width="1100" height="64" rx="12" fill="url(#bg)"/>
+<rect width="1100" height="64" rx="12" fill="url(#gl)"/>
+<rect x="0" y="14" width="6" height="36" rx="3" fill="#3fb8ea"/>
+<text x="30" y="42" font-size="26" font-weight="700" fill="#f5efe4">Performances</text>
+<rect x=".5" y=".5" width="1099" height="63" rx="12" fill="none" stroke="#fff" stroke-opacity=".1"/>
+</svg>
