@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Banc d'intégration : le moteur simulé est le vrai binaire Stub.Syne, démarré comme un processus externe.

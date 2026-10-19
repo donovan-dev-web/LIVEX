@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
@@ -6,15 +9,15 @@ import { url } from '../../utils/url';
 <BaseLayout
   lang="en"
   translated
-  title="Licence and reuse"
-  description="LIVEX licence: source code under MIT, texts and site content under CC BY 4.0, brand and logos reserved. Rules of attribution and reuse."
+  title="Licence and reuse — GNU GPL v3.0 or later, CC BY 4.0 content"
+  description="LIVEX licence: source code under GNU GPL v3.0 or later (GPL-3.0-or-later), site content under CC BY 4.0, reserved brand. Rules for copyleft, attribution, citation and reuse."
 >
   <PageHeader
     lang="en"
     index="25"
     eyebrow="Licence"
     title="What you may reuse."
-    lead="LIVEX's code is open, and the content of this site is too — under different conditions. Here is what applies to what."
+    lead="LIVEX's code is under copyleft, and the content of this site is under CC BY 4.0 — under different conditions. Here is what applies to what."
     crumbs={[{ label: 'Licence' }]}
   />
 
@@ -22,11 +25,16 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>25.1</b> In one table</div>
       <h2>Three regimes, one project.</h2>
+      <p class="mu">
+        Before reusing anything, identify what you are taking: code, text, or a distinctive sign. Each column below
+        applies independently of the others.
+      </p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Element</th><th>Licence</th><th>What this allows</th></tr></thead>
           <tbody>
-            <tr><td>Source code (LIVEX repository)</td><td><strong>MIT</strong> — <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a></td><td>Use, modify and redistribute, retaining the copyright notice.</td></tr>
+            <tr><td>LIVEX source code — SYNE, ECHOS, Launcher, syne-mock, site (excluding PRISM)</td><td><strong>GPL-3.0-or-later</strong> — <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a></td><td>Use, study, modify and redistribute, provided notices are kept, changes are stated, and any distributed derivative work is placed under the same licence with its corresponding source code.</td></tr>
+            <tr><td>Unreal PRISM project and PRISM-LDK plugin</td><td><strong>Epic Games EULA</strong></td><td>Not covered by the project GPL; use and distribution are subject to Epic Games' terms.</td></tr>
             <tr><td>Texts, diagrams and content of this site</td><td><strong>CC BY 4.0</strong> — <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">Creative Commons ↗</a></td><td>Share and adapt, including commercially, with attribution.</td></tr>
             <tr><td>The “LIVEX” brand, component names and logos</td><td><strong>All rights reserved</strong></td><td>Nominative descriptive use only; any reuse suggesting affiliation is to be avoided.</td></tr>
           </tbody>
@@ -38,11 +46,27 @@ import { url } from '../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>25.2</b> Source code</div>
-      <h2>MIT, plainly.</h2>
+      <h2>GPLv3, with copyleft.</h2>
       <p>
-        The code is distributed under the <strong>MIT</strong> licence. You may use, modify and redistribute it,
-        including commercially, provided you retain the copyright notice and the licence text. The software is provided
-        <em>as is</em>, without warranty.
+        The code is distributed under the <strong>GNU General Public License, version 3.0 or any later version</strong>
+        (SPDX: <code>GPL-3.0-or-later</code>). You may use, study, modify and redistribute it, including commercially,
+        provided you retain the copyright and licence notices, state the changes made, and place any distributed
+        derivative work under the same licence while supplying its corresponding source code.
+      </p>
+      <p>
+        The scope covers the code of SYNE, ECHOS, the Launcher, syne-mock and the site. The Unreal PRISM project
+        (<code>prism/</code>), including the PRISM-LDK plugin, is not covered by the GPL: it remains subject to
+        Epic Games' terms applicable to Unreal Engine.
+      </p>
+      <p>
+        The GPL does not require you to publish your code when you use LIVEX internally or expose it as a network
+        service: the sharing obligation applies to distribution of the software or of a derivative work. LIVEX is not
+        licensed under the AGPL.
+      </p>
+      <p>
+        The software is provided <em>as is</em>, without warranty. The full licence text is authoritative and is
+        available in the
+        <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a> file.
       </p>
     </div>
   </section>
@@ -76,7 +100,31 @@ import { url } from '../../utils/url';
 
   <section class="block">
     <div class="w">
-      <div class="sh"><b>25.5</b> Fonts and third-party resources</div>
+      <div class="sh"><b>25.5</b> Common cases</div>
+      <h2>May I…</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th>Case</th><th>Answer</th></tr></thead>
+          <tbody>
+            <tr><td>Reuse a text or diagram from this site in an article</td><td>Yes, under CC BY 4.0 — credit the author and state whether you modified the original.</td></tr>
+            <tr><td>Use the SYNE engine in a commercial project</td><td>Yes. The GPL allows commercial use, but if you distribute a derivative work it must remain under GPL-3.0-or-later and its source code must be provided.</td></tr>
+            <tr><td>Modify the code and redistribute it</td><td>Yes, provided the modified version is published under GPL-3.0-or-later, with the corresponding source code and a statement of the changes.</td></tr>
+            <tr><td>Integrate LIVEX into distributed proprietary software</td><td>No, unless the whole complies with the GPL: a distributed derivative work cannot add proprietary restrictions.</td></tr>
+            <tr><td>Distribute the Unreal PRISM project or the PRISM-LDK plugin</td><td>Under Epic Games' terms, not under the project GPL.</td></tr>
+            <tr><td>Publish a screenshot of the site or the logos</td><td>Reserved for descriptive or editorial use; do not alter the marks.</td></tr>
+            <tr><td>Suggest an affiliation or an official partnership</td><td>No — the project is personal, with no supporting organisation.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="font-size:0.78rem">
+        If in doubt about a case not listed, open an issue: the answer will also help clarify this page.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>25.6</b> Fonts, engines and third-party resources</div>
       <h2>Named dependencies.</h2>
       <div class="ov">
         <table class="tb">
@@ -84,17 +132,21 @@ import { url } from '../../utils/url';
           <tbody>
             <tr><td>Instrument Serif font</td><td>SIL Open Font License 1.1</td></tr>
             <tr><td>JetBrains Mono font</td><td>SIL Open Font License 1.1</td></tr>
+            <tr><td>Unreal Engine (PRISM host)</td><td>Epic Games licence (EULA), not covered by the project GPL</td></tr>
+            <tr><td>Epic Games template files in the Unreal project</td><td>Copyright Epic Games, Inc. — not covered by the GPL</td></tr>
           </tbody>
         </table>
       </div>
       <p class="mu" style="font-size:0.78rem">
-        The fonts are self-hosted, with no call to a third-party service. A figure without a source is not published;
-        nor is a resource without a named licence.
+        The fonts are self-hosted, with no call to a third-party service; their licence (<a href="https://github.com/donovan-dev-web/LIVEX/blob/main/site/src/assets/fonts/OFL.txt" rel="noopener">OFL.txt ↗</a>) is provided in the repository.
+        The full list of third-party components and of files not covered by the GPL is in
+        <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/THIRD-PARTY-NOTICES.md" rel="noopener">THIRD-PARTY-NOTICES.md ↗</a>.
+        A figure without a source is not published; nor is a resource without a named licence.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={url('mentions-legales/', 'en')}>Legal notices →</a>
         <span style="display:inline-block;width:8px"></span>
-        <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">MIT text ↗</a>
+        <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">GPLv3 text ↗</a>
       </p>
     </div>
   </section>

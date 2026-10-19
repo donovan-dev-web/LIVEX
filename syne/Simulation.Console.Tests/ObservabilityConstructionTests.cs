@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Traçabilité des constructions (SYNE-071, jalon U8) : une pose/retrait d'obstacle statique en cours de run
@@ -14,8 +17,8 @@ using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Console.Tests;
 

@@ -1,11 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests de la description versionnée du monde envoyée à Unreal.
 
-using Xunit;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.World;
+using Xunit;
 
 namespace Simulation.Core.Tests.WorldDescription;
 

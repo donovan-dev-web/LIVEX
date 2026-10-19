@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -33,16 +36,17 @@ class WorldGenerator {
     for (let y = 0; y < cellCountY; y++) {
       for (let x = 0; x < cellCountX; x++) {
         const obstacleIds = obstacles
-          .filter(obstacle => isCellBlocked(x, y, cellSize, [obstacle]))
-          .map(obstacle => obstacle.id)
+          .filter((obstacle) => isCellBlocked(x, y, cellSize, [obstacle]))
+          .map((obstacle) => obstacle.id)
           .sort();
         cells.push({
-          x, y,
+          x,
+          y,
           terrainType: 'plains',
           walkable: obstacleIds.length === 0,
           height: 0,
           movementCost: obstacleIds.length > 0 ? 100 : 1,
-          obstacles: obstacleIds
+          obstacles: obstacleIds,
         });
       }
     }
@@ -50,7 +54,12 @@ class WorldGenerator {
 
     const resources = generateResourceLocations(seed, cellCountX, cellCountY, cells);
     const regions = this.generateRegions(cellCountX, cellCountY);
-    const initialAgents = createInitialAgents(seed, config.agentCount, grid, config.agentSimulation);
+    const initialAgents = createInitialAgents(
+      seed,
+      config.agentCount,
+      grid,
+      config.agentSimulation
+    );
     const world = {
       // 1.1 : champs additifs simulatedSecondsPerTick / metersPerUnit.
       version: '1.1',
@@ -62,20 +71,20 @@ class WorldGenerator {
       metersPerUnit: config.world.metersPerUnit,
       cellCountX,
       cellCountY,
-      agents: initialAgents.map(agent => ({
+      agents: initialAgents.map((agent) => ({
         id: agent.id,
         species: agent.species,
-        position: { x: agent.x, y: agent.y }
+        position: { x: agent.x, y: agent.y },
       })),
       cells,
       // Ordre stable, comme le moteur qui trie les obstacles par identifiant
       // (StringComparer.Ordinal) : deux sources ne doivent pas différer par
       // l'ordre du tableau.
       obstacles: obstacles
-        .map(obstacle => ({ ...obstacle }))
+        .map((obstacle) => ({ ...obstacle }))
         .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)),
       resources,
-      regions
+      regions,
     };
 
     return { world, initialAgents, obstacles };
@@ -90,7 +99,7 @@ class WorldGenerator {
           x,
           y,
           width: Math.min(regionSize, cellCountX - x),
-          height: Math.min(regionSize, cellCountY - y)
+          height: Math.min(regionSize, cellCountY - y),
         });
       }
     }
@@ -106,8 +115,11 @@ class WorldGenerator {
     // Échelle temporelle (de la spec PRISM) : entier dans [1, 3600],
     // comme le validateur SYNE. Le mock ne reproduit pas la classe A — il doit
     // seulement émettre un temps cohérent (spec).
-    if (!Number.isInteger(config.simulatedSecondsPerTick) ||
-        config.simulatedSecondsPerTick < 1 || config.simulatedSecondsPerTick > 3600)
+    if (
+      !Number.isInteger(config.simulatedSecondsPerTick) ||
+      config.simulatedSecondsPerTick < 1 ||
+      config.simulatedSecondsPerTick > 3600
+    )
       throw new Error('simulatedSecondsPerTick must be an integer in [1, 3600]');
     if (!Number.isFinite(metersPerUnit) || metersPerUnit <= 0)
       throw new Error('world.metersPerUnit must be a positive finite number');
@@ -138,20 +150,39 @@ class WorldGenerator {
     // Domaines des besoins de départ, alignés sur ceux qu'ils bornent :
     // hunger/thirst/fatigue sont des échelles 0-100, safety/social/curiosity des
     // fractions 0-1, parce que `curiosity >= 0.3` est le trigger d'exploration.
-    for (const [name, max] of Object.entries({ hunger: 100, thirst: 100, fatigue: 100, safety: 1, social: 1, curiosity: 1 })) {
+    for (const [name, max] of Object.entries({
+      hunger: 100,
+      thirst: 100,
+      fatigue: 100,
+      safety: 1,
+      social: 1,
+      curiosity: 1,
+    })) {
       const value = config.agentSimulation.needs.initial?.[name];
       if (!Number.isFinite(value) || value < 0 || value > max)
-        throw new Error(`agents.needs.initial.${name} must be a finite number between 0 and ${max}`);
+        throw new Error(
+          `agents.needs.initial.${name} must be a finite number between 0 and ${max}`
+        );
     }
-    if (!Number.isFinite(config.agentSimulation.perceptionRadius) || config.agentSimulation.perceptionRadius < 0)
+    if (
+      !Number.isFinite(config.agentSimulation.perceptionRadius) ||
+      config.agentSimulation.perceptionRadius < 0
+    )
       throw new Error('agents.perceptionRadius must be a non-negative finite number');
-    if (!Number.isInteger(config.agentSimulation.deliberationIntervalTicks) ||
-        config.agentSimulation.deliberationIntervalTicks < 1)
+    if (
+      !Number.isInteger(config.agentSimulation.deliberationIntervalTicks) ||
+      config.agentSimulation.deliberationIntervalTicks < 1
+    )
       throw new Error('agents.deliberationIntervalTicks must be a positive integer');
     for (const name of [
-      'moveEnergyCost', 'restEnergyGain', 'restFatigueRecovery',
-      'eatEnergyCost', 'eatHungerRecovery', 'drinkEnergyCost',
-      'drinkThirstRecovery', 'reserveConsumption'
+      'moveEnergyCost',
+      'restEnergyGain',
+      'restFatigueRecovery',
+      'eatEnergyCost',
+      'eatHungerRecovery',
+      'drinkEnergyCost',
+      'drinkThirstRecovery',
+      'reserveConsumption',
     ]) {
       const value = config.agentSimulation[name];
       if (!Number.isFinite(value) || value < 0)
@@ -165,7 +196,8 @@ class WorldGenerator {
     for (const removed of ['terrain', 'proceduralObstacles']) {
       if (config.world[removed] !== undefined)
         throw new Error(
-          `world.${removed} does not exist in SYNE: remove the key (the engine only places disc obstacles from world.obstacleLayout)`);
+          `world.${removed} does not exist in SYNE: remove the key (the engine only places disc obstacles from world.obstacleLayout)`
+        );
     }
 
     // Le layout n'accepte que la forme de `StaticObstacleSettings` : identifiant,
@@ -173,17 +205,26 @@ class WorldGenerator {
     // le moteur ne sait pas les décrire, donc le mock ne doit pas les accepter.
     const obstacleIds = new Set();
     for (const obstacle of config.world.obstacleLayout ?? []) {
-      if (!obstacle.id || !Number.isFinite(Number(obstacle.x)) || !Number.isFinite(Number(obstacle.y)))
+      if (
+        !obstacle.id ||
+        !Number.isFinite(Number(obstacle.x)) ||
+        !Number.isFinite(Number(obstacle.y))
+      )
         throw new Error('world.obstacleLayout entries require an id and a finite position');
       if (obstacleIds.has(String(obstacle.id)))
         throw new Error(`world.obstacleLayout contains duplicate id ${obstacle.id}`);
       obstacleIds.add(String(obstacle.id));
-      if (Number(obstacle.x) < 0 || Number(obstacle.x) > width ||
-          Number(obstacle.y) < 0 || Number(obstacle.y) > height)
+      if (
+        Number(obstacle.x) < 0 ||
+        Number(obstacle.x) > width ||
+        Number(obstacle.y) < 0 ||
+        Number(obstacle.y) > height
+      )
         throw new Error(`world.obstacleLayout obstacle ${obstacle.id} is outside the world`);
       if (obstacle.type !== undefined || obstacle.shape !== undefined)
         throw new Error(
-          `world.obstacleLayout obstacle ${obstacle.id} is not a disc: SYNE only places {id, x, y, radius}`);
+          `world.obstacleLayout obstacle ${obstacle.id} is not a disc: SYNE only places {id, x, y, radius}`
+        );
       if (!Number.isFinite(Number(obstacle.radius)) || Number(obstacle.radius) <= 0)
         throw new Error(`world.obstacleLayout obstacle ${obstacle.id} requires a positive radius`);
     }

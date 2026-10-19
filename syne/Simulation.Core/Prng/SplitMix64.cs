@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Mélangeur 64 bits SplitMix64 (faux-aléatoire déterministe) utilisé pour initialiser l'état d'un

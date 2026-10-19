@@ -52,8 +52,15 @@ Chaque agent contient `id` (chaîne décimale dans le snapshot), `species`,
 remplis comme suit : traits configurés, objectif courant s'il existe, et
 croyances/relations de confiance vides dans cette version du mock. Les ressources sont `{type, quantity}` pour
 `food`, `water`, `wood`, `mineral`. Les territoires contiennent `id`, `x`, `y`,
-`radius`, `memberCount`, `members`; les groupes et livres suivent les formes
-émises par le serveur.
+`radius`, `memberCount`, `members`. Les groupes portent `groupId`, `size`,
+`leaderId` (absent ou `null` quand le groupe n'a pas de leader), `bornTick`,
+`cohesion`, `consensus`, `decision` et `members`. Le contrat 0.5.0 annonce en
+plus `maxBondDistance` / `meanBondDistance` (distance max/moyenne des paires
+liées, `null` = non mesurée) : ce sont des mesures d'**analyse** : le moteur
+les mesure, le mock n'a pas de modèle de liens et publie `null`, et un client de
+rendu comme PRISM les ignore. Un client d'analyse doit donc les lire de façon
+**facultative**, et un champ absent ou `null` vaut « non mesuré », jamais `0.0`. Les livres suivent la forme
+émise par le serveur.
 `worldChanges[]` contient les mutations d'obstacle du tick (vide s'il n'y en a
 pas — le mock n'a pas de type de terrain) ; `actions[]` contient un résultat d'action par agent du tick, avec
 `agentId`, `action`, `outcome`, les deltas d'état et la réserve consommée le
@@ -241,7 +248,7 @@ encore lire comme porteur de sens.
 |---|---|---|---|
 | GET | `/api/control/status` | — | status JSON |
 | GET | `/api/world` | — | `WorldDescription` ou `409 world_not_prepared` |
-| POST | `/api/control/prepare` | `{"seed":42,"ticksPerSecond":10}` | monde préparé |
+| POST | `/api/control/prepare` | `{"seed":42,"ticksPerSecond":10,"config":{…}}` | monde préparé |
 | POST | `/api/control/ready` | `{"worldVersion":"1.1"}` | accusé de réception |
 | POST | `/api/control/start` | `{"seed":42,"maxTicks":400}` | `{ok,action,...status}` |
 | POST | `/api/control/pause` | `{}` | idem |
@@ -258,6 +265,16 @@ valeurs non fournies à `start/reset` viennent de la
 configuration. Toujours lire le code HTTP avant de parser une réponse succès.
 `ticksPerSecond` de `prepare` doit être un entier strictement positif ; il est
 renvoyé avec le monde préparé et mémorisé pour le run qui suit.
+
+La surcouche `config` (objet JSON, facultative) est **fusionnée sur la
+configuration de démarrage du mock**, exactement comme SYNE fusionne `config`
+sur ses défauts. C'est le mécanisme qui permet au **même appel** de préparer le
+même monde des deux côtés : sans elle, le mock applique son fichier de
+démarrage (ou 500 × 500 si aucun n'est fourni) et SYNE son profil de référence.
+Le profil `prism` de référence est `configs/simulation/prism.json`
+(`SimulationProfiles.Prism()`), dont `syne-mock/config_prism.json` est le
+miroir pour la géométrie ; `Prepare(seed, ticksPerSecond, configJson)` du
+plugin transmet cette chaîne telle quelle.
 Après un prepare explicite, démarrer avec le même seed réutilise ce monde et
 sa cadence. Un seed différent est rejeté avec `409 prepared_seed_mismatch` ;
 répéter `prepare`, reconstruire le monde Unreal puis appeler `ready`.
@@ -302,15 +319,16 @@ que la description publie elle-même, et le pas est borné par le `movementCost`
 le plus élevé entre la case de départ et la case visée.
 
 Ces valeurs ne sont pas une convention du mock mais une **égalité vérifiée** :
-[`../../scripts/parity_mock_syne_world.js`](../../scripts/parity_mock_syne_world.js)
+[`../../scripts/parity-mock-syne-world.js`](../../scripts/parity-mock-syne-world.js)
 lance le moteur réel (profil `prism` + un layout d'obstacles) et le mock sur la
 même géométrie, puis compare le jeu de clés, l'en-tête, `cells[]` champ par
 champ et `obstacles[]`. Il sort en code 1 à la moindre divergence, et refuse de
 conclure si le layout ne bloque aucune case (une comparaison de deux mondes vides
-ne prouverait rien). Non comparé : le contenu de `agents[]` et `resources[]`, qui
-restent des approximations du mock.
+ne prouverait rien). Non comparé : le contenu de `agents[]`, que le mock place
+avec son propre tirage (les marqueurs `resources[]` sont eux comparés champ par
+champ).
 
-Le contrat de snapshot est `0.4.0` : un message global unique par tick,
+Le contrat de snapshot est `0.5.0` : un message global unique par tick,
 contenant l'état dynamique complet et les deux listes `worldChanges[]` et
 `actions[]`. Les événements `decision_made`, `action_completed` et
 `world_delta` sont également émis pour compatibilité/diagnostic ; le client

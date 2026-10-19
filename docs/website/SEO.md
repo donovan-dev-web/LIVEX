@@ -68,7 +68,7 @@ Un nœud `WebSite` est émis sur chaque page :
   "url": "<URL canonique>",
   "description": "<description>",
   "inLanguage": "fr | en",
-  "license": "https://opensource.org/licenses/MIT",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
   "sameAs": ["https://github.com/donovan-dev-web/LIVEX"]
 }
 ```

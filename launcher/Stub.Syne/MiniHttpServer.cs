@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Serveur HTTP/1.1 minimal sur TcpListener : évite les réservations d'URL de HttpListener sous Windows et

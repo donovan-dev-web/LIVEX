@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Agrégation par tick sans perte (ECHOS-011) : résumé déterministe d'un
 segment, conservation de tous les ticks et sous-échantillonnage paramétrable."""
 

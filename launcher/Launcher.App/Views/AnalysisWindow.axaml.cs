@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Fenêtre d'analyse native : présente les séries, le profil de viabilité, les communautés et les phénomènes
@@ -112,6 +115,11 @@ public sealed partial class AnalysisWindow : Window
             Task.FromResult(new EchosNetwork { RunId = runId ?? string.Empty });
 
         /// <inheritdoc />
+        public Task<EchosNativeGroups> ReadNativeGroupsAsync(
+            string runId, int? tick, CancellationToken cancellationToken) =>
+            Task.FromResult(new EchosNativeGroups { RunId = runId });
+
+        /// <inheritdoc />
         public Task<EchosPhenomena> ReadPhenomenaAsync(string? runId, CancellationToken cancellationToken) =>
             Task.FromResult(new EchosPhenomena { RunId = runId ?? string.Empty });
 
@@ -136,6 +144,11 @@ public sealed partial class AnalysisWindow : Window
         /// <inheritdoc />
         public Task<IReadOnlyList<EchosDecision>> ReadDecisionsAsync(string runId, CancellationToken cancellationToken) =>
             Task.FromResult<IReadOnlyList<EchosDecision>>([]);
+
+        /// <inheritdoc />
+        public Task<EchosCausalChain> ReadCausalChainAsync(
+            string runId, string agentId, int? tick, int depth, CancellationToken cancellationToken) =>
+            Task.FromResult(new EchosCausalChain { RunId = runId, AgentId = agentId });
 
         /// <inheritdoc />
         public Task<EchosEventFeed> ReadEventsAsync(string runId, CancellationToken cancellationToken) =>

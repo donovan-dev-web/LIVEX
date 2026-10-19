@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Séries temporelles lourdes en Parquet (ECHOS-013).
 
 Chaque agent/tick (énergie, besoins, fatigue, action, position) est écrit en

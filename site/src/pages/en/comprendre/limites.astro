@@ -1,12 +1,15 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import { url } from '../../../utils/url';
 ---
 <BaseLayout
   lang="en"
-  title="Limitations and scope"
-  description="What LIVEX does, what it does not do, and the project's ethical principles: simulated agents, no consciousness, no personal data."
+  title="Limitations and scope — what LIVEX does not do"
+  description="Scope, ethics, security: what LIVEX does not claim to do — no consciousness, no personal data, no public release."
 >
   <PageHeader
     lang="en"
@@ -26,9 +29,11 @@ import { url } from '../../../utils/url';
         or real systems. The behaviours observed are valid <strong>within the simulated world</strong>, and only there.
       </p>
       <div class="cc">
-        <p>
-          No scientific publication, no external validation is claimed. No public release exists to date.
-        </p>
+        <ul style="margin:0 0 0 18px;color:var(--mu);font-size:0.9rem;line-height:1.7">
+          <li>No scientific publication or external validation is claimed.</li>
+          <li>No public release exists to date: the repository remains in development.</li>
+          <li>The behaviours observed are valid within the simulated world, and only there.</li>
+        </ul>
       </div>
     </div>
   </section>

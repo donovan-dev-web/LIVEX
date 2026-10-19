@@ -1,17 +1,20 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
-  title="Transparence sur l'usage de l'IA"
+  title="Transparence IA — outils, garde-fous et limites"
   description="Quels outils d'IA ont été utilisés pour développer et documenter LIVEX, dans quelles phases et avec quels garde-fous — et ce que le projet n'est pas."
 >
   <PageHeader
     index="21"
     eyebrow="À propos · Transparence IA"
     title="Dire ce que l'IA a fait, et ce qu'elle n'a pas fait."
-    lead="Deux choses différentes portent le mot « IA » dans LIVEX : l'assistance d'outils génératifs pendant le développement, et le comportement des entités du monde simulé. Il importe de ne jamais les confondre."
+    lead="Deux usages distincts du mot « IA » coexistent dans LIVEX : l'assistance d'outils génératifs pendant le développement, et le comportement des entités du monde simulé. Cette page les distingue nettement."
     crumbs={[{ label: 'À propos', href: 'a-propos/' }, { label: 'Transparence IA' }]}
   />
 
@@ -35,6 +38,10 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>21.2</b> Outils et cadres d'usage</div>
       <h2>Une assistance encadrée, jamais aveugle.</h2>
+      <p class="mu">
+        L'assistance intervient surtout sur la production écrite et la vérification. Elle ne décide de rien à elle
+        seule : chaque phase ci-dessous reste sous validation de l'auteur.
+      </p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Phase</th><th>Usage de l'IA</th></tr></thead>
@@ -67,9 +74,12 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>21.4</b> Garde-fous</div>
       <h2>Ce qui borne l'assistance.</h2>
+      <p class="mu">
+        Quatre contrôles structurels empêchent qu'une production assistée ne devienne une affirmation non vérifiée.
+      </p>
       <div class="g2">
         <div class="pl br" style="padding:18px"><h3>Relecture humaine</h3><p class="mu" style="margin:0">Toute production assistée passe par une relecture humaine avant d'être conservée.</p></div>
-        <div class="pl br" style="padding:18px"><h3>Tests</h3><p class="mu" style="margin:0">Le code est soumis aux mêmes suites de tests que le reste du projet ; aucun régime de faveur.</p></div>
+        <div class="pl br" style="padding:18px"><h3>Tests</h3><p class="mu" style="margin:0">Le code assisté est soumis aux mêmes suites de tests que le reste du projet ; aucun régime de faveur.</p></div>
         <div class="pl br" style="padding:18px"><h3>Traçabilité</h3><p class="mu" style="margin:0">Le dépôt, ses commits et son journal des changements restent la trace vérifiable du travail.</p></div>
         <div class="pl br" style="padding:18px"><h3>Registre des affirmations</h3><p class="mu" style="margin:0">Les affirmations sensibles du site portent une source interne datée, indépendamment de leur mode de rédaction.</p></div>
       </div>

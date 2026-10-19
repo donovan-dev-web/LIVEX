@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : L'apphost natif (livex-launcher / livex-launcher.exe) doit réellement démarrer sous l'OS courant.

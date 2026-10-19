@@ -438,6 +438,8 @@ Profils enregistrés (`SimulationProfiles`) :
 | `reference` | `../../configs/simulation/reference.json` | 500 × 500, cellule 10 | 10 | 60 | 600 (historique : 1 tick = 1 min) |
 | `prism` | `../../configs/simulation/prism.json` | 2 240 × 2 240, cellule 32 | 6 | **5** | **30** |
 
+Le fichier `prism.json` doit **rejouer exactement** `SimulationProfiles.Prism()` : même géométrie (dont les cinq obstacles du layout `cote-sud-1/2/3` `r = 150`, `crete-centre` `r = 60`, `amer-1` `r = 8`) et mêmes dérives de besoins (`0,003` / `0,002`). C'est le verrou `ReferenceProfileParityTests.PrismJsonFile_ReplaysExactlyThePrismProfile` ; `syne-mock/config_prism.json` en est le miroir pour la géométrie (`scripts/parity-mock-syne-world.js`).
+
 Exemple : `{"simulation":{"simulatedSecondsPerTick":5}}`.
 Validation : valeur entière dans `[1, 3600]` (0, négatif, > 3600 et non entier rejetés) ; `world.metersPerUnit` strictement positif et fini.
 

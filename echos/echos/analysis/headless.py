@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Opérations d'analyse headless stables pour l'intégration Launcher."""
 
 from __future__ import annotations

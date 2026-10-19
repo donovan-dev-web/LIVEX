@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
@@ -62,7 +65,7 @@ const groups = [
     ],
   },
   {
-    title: 'Technical pages',
+    title: 'Site tools',
     items: [{ label: 'Sitemap', href: 'plan-du-site/' }],
   },
 ];
@@ -70,8 +73,8 @@ const groups = [
 <BaseLayout
   lang="en"
   translated
-  title="Sitemap"
-  description="LIVEX sitemap: all the public pages, grouped by section, with a link to the journal's RSS feed."
+  title="Sitemap — every public page of the site"
+  description="LIVEX sitemap: every public page grouped by section — understanding, technical, versions, journal, contributing and legal notices."
 >
   <PageHeader
     lang="en"
@@ -84,6 +87,10 @@ const groups = [
 
   <section class="block">
     <div class="w">
+      <p class="mu">
+        Seven sections cover the whole site. Look up a specific term in the glossary, or start from the three
+        understanding pages if you are new to the project.
+      </p>
       <div class="g2">
         {groups.map((g) => (
           <div class="pl br" style="padding:20px">

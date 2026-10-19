@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Fabrique déterministe des runs SYNE (mode CLI et mode serveur de contrôle HTTP :5181) : monde + entités +

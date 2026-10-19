@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
@@ -7,8 +10,8 @@ import { url } from '../../../utils/url';
 <BaseLayout
   lang="en"
   translated
-  title="SYNE — Simulation engine"
-  description="SYNE is LIVEX's deterministic multi-agent simulation engine: world, agents, rules and bit-for-bit replayability from a seed."
+  title="SYNE: deterministic simulation engine"
+  description="SYNE, LIVEX's deterministic multi-agent simulation engine: world, agents, explicit rules and bit-for-bit replayability from a seed."
 >
   <PageHeader
     lang="en"
@@ -21,7 +24,7 @@ import { url } from '../../../utils/url';
 
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="experimental" lang="en" /> <span class="mu">SYNE 0.15.0 · .NET engine (repository)</span></p>
+      <p style="margin-top:0"><StatusBadge status="experimental" lang="en" /> <span class="mu">SYNE 0.17.0 · .NET engine (repository)</span></p>
       <div class="cc"><p>Experimental: the engine is functional in the repository, but no public distribution exists to date.</p></div>
 
       <div class="sh"><b>6.1</b> Role</div>
@@ -30,6 +33,10 @@ import { url } from '../../../utils/url';
         SYNE defines a <strong>world</strong> (space, resources, time) and <strong>agents</strong> that act
         according to explicit rules. At each tick, the world advances one deterministic step: no decision is
         left to unrecorded randomness.
+      </p>
+      <p>
+        The benefit for the researcher: rules are readable, versioned and replayable. A result can be re-read,
+        discussed and reproduced by a third party, without relying on an opaque engine.
       </p>
       <p>
         The engine produces a <strong>snapshot</strong> — a structured picture of the world state — and an event trace.
@@ -55,10 +62,10 @@ import { url } from '../../../utils/url';
         <table class="tb">
           <thead><tr><th>Element</th><th>Value</th></tr></thead>
           <tbody>
-            <tr><td>Engine version</td><td>0.15.0</td></tr>
+            <tr><td>Engine version</td><td>0.17.0</td></tr>
             <tr><td>Run identifier</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td></tr>
-            <tr><td>Snapshot contract</td><td>0.4.0</td></tr>
-            <tr><td>Persistence schema</td><td>v6</td></tr>
+            <tr><td>Snapshot contract</td><td>0.5.0</td></tr>
+            <tr><td>Persistence schema</td><td>v5</td></tr>
           </tbody>
         </table>
       </div>

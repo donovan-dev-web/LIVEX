@@ -1,87 +1,69 @@
 ---
 title: "ECHOS : observation, analyse et calibration rigoureuses"
-description: "ECHOS consomme le flux SYNE sans intrusion, détecte les trous de ticks, calcule des métriques traçables avec provenance, et produit des rapports de calibration versionnés."
+description: "ECHOS observe SYNE sans jamais le modifier : métriques avec provenance, trous de ticks signalés, rapports de calibration versionnés."
 date: 2026-10-05
 tags: ["echos", "analyse", "metriques", "calibration", "observabilite"]
 draft: false
 ---
 
-**ECHOS** (*Emergent Cognition & Holistic Observation System*) est l'observateur et l'analyste de LIVEX. Il transforme l'observabilité brute de SYNE en **faits traçables, comparables et reproductibles**.
+Une courbe retombe à zéro. Imaginez le rapport de fin de campagne : la population décroît, tick après tick, puis la ligne touche l'axe. Deux lectures s'offrent à vous. Le monde est mort — ou votre instrument a cessé de voir au milieu du trajet.
 
-## Rôle et principes
+Un observatoire ordinaire publierait le zéro, et vous décideriez ensuite. **ECHOS** publie le zéro et sa provenance : mesure réelle, ou fenêtre manquante. C'est peu, dit comme ça. C'est tout, si l'on veut en tirer une conclusion.
 
-- **Observation non-intrusive** : ECHOS ne modifie jamais l'état décisionnel de SYNE. Il consomme passivement snapshots et événements.
-- **Autorité séparée** : SYNE détient la vérité du monde ; ECHOS détient la vérité des **observations et analyses**.
-- **Traçabilité** : toute métrique est soit **mesurée**, soit accompagnée d'un repli neutre justifié (`provenance.measured`).
-- **Honnêteté sur les limites** : discontinuités (trous de ticks), indisponibilités, valeurs manquantes sont **consignées**, jamais masquées.
-- **Comparaisons rigoureuses** : distinction claire entre résumé allégé et comparaison fondée sur l'empreinte bit-à-bit.
+ECHOS (*Emergent Cognition & Holistic Observation System*) est l'observateur et l'analyste de LIVEX, en version 0.1.0. Sa fonction tient en une phrase : transformer l'observabilité brute de SYNE en **faits traçables, comparables et reproductibles** — et ne jamais produire autre chose.
 
-## Ingestion et alignement
+## Un observatoire séparé, par principe
 
-ECHOS ingère le flux WebSocket de SYNE en respectant strictement l'ordre :
+On pourrait croire qu'un observatoire est un accessoire : quelques compteurs dans le moteur suffiraient. Le projet en a fait un composant à part entière, et la raison est de fond. Si la mesure vivait dans le moteur, elle pourrait influencer le monde : un compteur qui consomme du hasard, un calcul qui retarde un tick, une agrégation qui lit un état à moitié mis à jour.
 
-1. **Snapshot** (début de tick) — état complet à ce tick.
-2. **Événements** du tick — conséquences appliquées.
-3. **tick_summary** — agrégats consolidés.
+En séparant l'observatoire, LIVEX garantit que la mesure est **en aval** : ECHOS lit un flux, il ne le modifie pas. D'où une répartition nette des autorités. SYNE détient la vérité du monde ; ECHOS détient la vérité des **observations et des analyses**. L'observateur ne renvoie jamais de commande capable d'altérer l'état décisionnel, ne lisse pas les discontinuités, ne comble pas les trous : il les signale. Et lorsqu'il ne voit pas quelque chose, il le dit plutôt que de le deviner.
 
-Cet alignement est vérifié. À tout changement de `run_id`, ECHOS enregistre le nouveau run **avant** son premier tick, réinitialise ses fenêtres glissantes, flush sa série Parquet et prépare un rapport propre. Il **détecte les trous de ticks** (écart entre dernier tick vu +1 et tick reçu), les journalise structurellement et incrémente `gaps_detected`. Le rattrapage SYNE est signalé comme hors périmètre V0.1, jamais approximé.
+## Le rythme du flux
 
-## Persistance et schéma
+ECHOS ingère le WebSocket de SYNE en respectant strictement un ordre à chaque tick : d'abord le **snapshot**, état complet à ce tick ; puis les **événements**, conséquences appliquées ; enfin le **tick_summary**, agrégats consolidés. Cet alignement est vérifié, pas supposé. Un snapshot lu après coup, mélangé à des événements du tick suivant, produirait des mesures plausibles et fausses — le genre d'erreur qui ne se voit qu'au moment où l'on essaie de reproduire.
 
-ECHOS persiste dans un **analytics DB SQLite** versionné :
+Un changement de `run_id` déclenche une chorégraphie précise : le nouveau run est enregistré **avant** son premier tick, les fenêtres glissantes sont réinitialisées, la série Parquet est vidée, un rapport propre est préparé. Et si un tick manque — un écart entre le dernier tick vu plus un et le tick reçu —, ECHOS le détecte, le journalise structurellement et incrémente `gaps_detected`. Si le tick 812 manque entre 811 et 813, le rapport le dira. Le rattrapage éventuel du moteur est signalé comme hors périmètre V0.2 : jamais approximé, jamais comblé en silence.
 
-- **tick_summaries** : agrégats globaux par tick (population, moyennes, ressources...).
-- **tick_metrics** : métriques normalisées avec colonnes `measured` (provenance) et valeurs bornées.
-- **contexts** : contexte `agents`/`groups`/`phenomena`/`profiling` avec cadence contrôlée (`context_every`, défaut 20) — plus le **dernier tick** systématiquement conservé.
-- **events** : journal des événements observés (déterministe dans sa forme).
-- **runs** : métadonnées (`run_id`, `seed`, `engineVersion`, `outcome`, `extinctionTick`, `viability`, ...).
+## Mesuré, ou seulement affiché
 
-Migration additive (schéma v6) pour préserver la compatibilité ascendante.
+C'est ici que l'observateur devient un instrument plutôt qu'un tableau de bord. Chaque métrique porte un booléen `measured`, par couple moteur/métrique. `measured = true` signifie que la valeur a été réellement calculée depuis le flux pour la fenêtre considérée. `measured = false` signifie qu'un repli neutre a dû s'appliquer faute de fenêtre exploitable — et ce repli n'est jamais présenté comme une mesure.
 
-## Métriques traçables et provenance
+La distinction est exposée par l'API, sur `/api/runs/{id}/metrics` et `/api/runs/{id}`. L'objectif est simple à formuler : **aucune métrique à zéro systématique ne peut passer inaperçue**. Un zéro peut vouloir dire « le monde est vide » ; il peut vouloir dire « je n'ai rien vu ». L'API empêche de confondre les deux.
 
-L'ajout du champ `measured` (booléen) par couple (moteur, métrique) distingue :
+Cette nuance paraît technique. Elle est en réalité la ligne de partage entre une observation et une croyance. Un chercheur qui lit `measured = false` sait qu'il ne dispose pas d'un fait, mais d'une absence de fait. Il peut alors relancer l'ingestion, vérifier le flux, corriger la fenêtre — au lieu de conclure hâtivement à une extinction.
 
-- **`measured = true`** : valeur réellement calculée depuis le flux pour cette fenêtre.
-- **`measured = false`** : repli neutre appliqué faute de fenêtre exploitable (jamais présenté comme mesuré).
+## Ce que l'observatoire retient
 
-Cette distinction est exposée via `/api/runs/{id}/metrics` et `/api/runs/{id}`. L'objectif : **aucune métrique à zéro systématique** ne peut passer inaperçue.
+Les faits vont quelque part : une base SQLite versionnée, organisée par usage. Les `tick_summaries` gardent les agrégats globaux par tick — population, moyennes, ressources. Les `tick_metrics` stockent les métriques normalisées, avec leur colonne `measured` et des valeurs bornées. Les `contexts` conservent le contexte `agents`, `groups`, `phenomena` et `profiling` à cadence contrôlée (`context_every`, 20 ticks par défaut), **plus** le dernier tick systématiquement conservé — de sorte que la fin d'un run n'est jamais perdue. Les `events` forment le journal observé, déterministe dans sa forme. Les `runs` portent les métadonnées : `run_id`, `seed`, `engineVersion`, `outcome`, `extinctionTick`, `viability`.
 
-## Rapports de calibration versionnés
+La migration est additive, pour préserver la compatibilité ascendante avec les bases existantes. Une campagne ne doit pas devenir illisible parce que l'outil a changé de version entre deux relevés.
 
-À la fin d'un run (ou sur demande), ECHOS produit un rapport de calibration `schemaVersion 2` structuré :
+## Le rapport de calibration
 
-- **En-tête** : `run_id`, `seed`, `engineVersion`, horodatage, provenance.
-- **Résultat populationnel** : `outcome` (`extinct` | `surviving`), `extinctionTick` (premier tick où `alive_count == 0`).
-- **Bloc `viability`** : `energySlopePerTick` sur les 200 derniers ticks ; `actionSharesWhenHungry` quand `mean_hunger > 70` ; `resourceRegime` (food/water) sur fenêtre pertinente.
-- **Dérivés** : `population_outcome` calculé aussi en SQL pour cohérence entre API et persistance.
+À la fin d'un run, ou sur demande, ECHOS produit un rapport `schemaVersion 2` qui se lit comme un verdict daté et signé. L'en-tête porte `run_id`, `seed`, `engineVersion`, horodatage et provenance. Le résultat populationnel dit si le monde a survécu — `outcome` (`extinct` ou `surviving`) — et, le cas échéant, `extinctionTick`, premier tick où `alive_count` vaut zéro.
 
-Ce rapport est **observe-only** : il décrit, il n'altère pas SYNE.
+Vient le bloc de viabilité : la pente d'énergie par tick sur les 200 derniers ticks (`energySlopePerTick`), la part des actions prises quand la faim est haute (`actionSharesWhenHungry`, déclenchée au-dessus d'une faim moyenne de 70), et le régime de ressources (`resourceRegime`) sur la fenêtre pertinente. Le `population_outcome` est recalculé en SQL, pour que l'API et la persistance disent la même chose.
 
-## API REST (points clés)
+Ce rapport est `observe-only` : il décrit, il n'altère jamais SYNE. Il ne sert pas à piloter le monde en cours de route, ni à corriger une trajectoire jugée décevante. Il sert à documenter ce qui a eu lieu, avec assez de précision pour qu'un autre puisse le contester.
 
-L'API ECHOS est contractuelle (`API_REST.md`) :
+## Comparer sans tricher
 
-- `GET /api/runs` — liste avec `outcome`, `extinction_tick`, métadonnées.
-- `GET /api/runs/{id}` — détail complet + provenance.
-- `GET /api/runs/{id}/metrics` — métriques avec `measured`.
-- `POST /api/compare` — comparaison entre deux runs. Par défaut résumé ; `light=1` renvoie uniquement résumé (sans séries/empreinte). La comparaison **complète** seule peut statuer sur « bit-identique » / « reproductible ».
-- `POST /analysis/run|experiment|report` — orchestration analyse/rapport (utilisée par Launcher).
-- `GET /health` — santé du service.
+Comparer deux runs est le geste le plus utile de l'observatoire — et le plus tentant à truquer. L'API `/api/compare` sépare donc deux régimes. Par défaut, elle renvoie un résumé ; avec `light=1`, uniquement le résumé, sans séries ni empreinte. Seule la comparaison **complète**, fondée sur l'empreinte bit-à-bit, peut statuer sur « bit-identique » ou « reproductible ». Un verdict fort ne peut donc pas naître d'un aperçu léger.
 
-## Interface `echos-ui`
+C'est une règle de vocabulaire autant que de calcul. Dire « les deux runs sont identiques » après avoir comparé deux moyennes serait une faute. L'outil rend la faute difficile : il faut demander la comparaison complète pour obtenir la réponse forte.
 
-L'interface web consomme cette API de manière rigoureuse :
+## De la donnée à l'écran
 
-- **Sélection explicite** du `run_id` (plus de « run le plus récent » implicite pour les vues contextuelles).
-- **Export CSV propre** (données tabulaires, pas d'enveloppe JSON illisible).
-- **Graphiques cohérents** avec cadence respectée (clé de cache incluant cadence).
-- **Vues ciblées** : beliefs/relationships/phenomena requièrent explicitement `run_id`.
+L'interface `echos-ui` consomme cette API sans la déformer : sélection explicite du `run_id` — plus de « run le plus récent » implicite pour les vues contextuelles —, export CSV propre plutôt qu'une enveloppe JSON illisible, graphiques dont la clé de cache intègre la cadence, et vues ciblées (`beliefs`, `relationships`, `phenomena`) qui exigent un `run_id` déclaré.
 
-## Intégration avec Launcher
+Le Launcher, de son côté, délègue l'analyse par HTTP : appels standards courts, mais `ingest`, `analysis` et `report` bénéficient de délais étendus, jusqu'à 30 minutes, pour les ingests lourdes. La version d'ECHOS qui a produit un rapport est consignée dans le manifeste du paquet `.livexp` (`AnalysisComponentVersion`) : la traçabilité descend jusqu'à l'outil de mesure.
 
-Le Launcher délègue l'analyse à ECHOS via HTTP avec **délais adaptés** : appels standards courts, `ingest/run`, `analysis/run`, `analysis/experiment`, `analysis/report` jusqu'à **30 minutes** (compte tenu d'ingestions lourdes). La version d'ECHOS ayant produit le rapport est consignée dans le manifeste du paquet `.livexp` (`AnalysisComponentVersion`), garantissant traçabilité.
+Les preuves suivent : la suite ECHOS passe **383 tests réussis, 0 échec**, avec une couverture mesurée de 91,32 %. Ce chiffre ne dit pas que les conclusions scientifiques sont vraies ; il dit que l'instrument fait ce qu'il annonce.
 
-## Position
+## L'observateur honnête
 
-ECHOS est **l'observateur honnête**. Il ne cherche pas à lisser les discontinuités ni à combler les trous. Il les signale. Il ne prétend pas mesurer ce qu'il ne voit pas : il l'indique explicitement via `measured`. Cette discipline est ce qui permet à LIVEX d'affirmer des phénomènes émergents sur des **bases factuelles et traçables**, plutôt que sur des impressions.
+ECHOS ne cherche pas à lisser les discontinuités ni à combler les trous : il les signale. Il ne prétend pas mesurer ce qu'il ne voit pas : il l'indique, champ à l'appui. Cette discipline est ce qui permet à LIVEX d'affirmer des phénomènes sur des **bases factuelles et traçables**, plutôt que sur des impressions — et d'accepter aussi qu'un phénomène ne soit pas confirmé.
+
+C'est elle, par exemple, qui rend possible de publier un verdict « non confirmé » sans le maquiller. Un observateur complaisant aurait trouvé une fenêtre, déplacé un seuil, appelé « cycle » une saturation. ECHOS n'a pas ce pouvoir — et c'est précisément ce qu'on lui demande.
+
+Pour aller plus loin, la page [ECHOS du site](https://donovan-dev-web.github.io/LIVEX/technique/echos/) résume l'architecture et les contrats, le détail vivant dans le [dépôt](https://github.com/donovan-dev-web/LIVEX). Les prochains rapports de campagne, eux, sont annoncés dans le [journal](https://donovan-dev-web.github.io/LIVEX/actualites/) — suivez-le en [flux RSS](https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml) pour les recevoir dès leur parution.

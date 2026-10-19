@@ -70,6 +70,8 @@ Le sixième observable est l'ensemble des métriques : sept moteurs, un score co
 
 Rappelons la règle qui gouverne tout : un score d'émergence est un indicateur exploratoire, jamais une preuve. Et un zéro non mesuré n'est pas un zéro observé.
 
+*Statut du score (A0-4/BL-04, 17 octobre 2026).* Le score composite demeure **exploratoire**. Le protocole de verdict impose une provenance en trois états — mesuré, absent, zéro observé — et traite une provenance inattendue comme un échec de critère, non comme un silence. La campagne d'octobre 2026 distingue un zéro observé (aucune décision ciblant un nœud dans le modèle global) d'une mesure absente (distance aux sources, non calculable sans nœud). Elle publie également un verdict **non confirmé** pour le cycle social, sans déplacement de seuil. Le protocole, les résultats et les limites sont conservés dans le [rapport expérimental pérenne](../governance/realignment/EXPERIMENTAL-VALIDATION-2026-10.md).
+
 | Observable | Statut | Réserve |
 | :-- | :-- | :-- |
 | Trajectoires | disponible | dépend des règles |

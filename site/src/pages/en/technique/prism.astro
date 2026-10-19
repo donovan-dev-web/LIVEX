@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
@@ -8,8 +11,8 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
 <BaseLayout
   lang="en"
   translated
-  title="PRISM — Perceptual rendering"
-  description="PRISM (Perceptual Rendering & Interactive Simulation Module) makes the simulated world visible: Unreal project and PRISM-LDK integration plugin. Out of scope for V0.1."
+  title="PRISM: perceptual rendering (beyond V0.2)"
+  description="PRISM makes the simulated LIVEX world perceptible: Unreal project and PRISM-LDK integration plugin. Component in development, out of scope for V0.2."
 >
   <PageHeader
     lang="en"
@@ -23,7 +26,7 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
   <section class="block">
     <div class="w">
       <p style="margin-top:0"><StatusBadge status="developpement" lang="en" /> <span class="mu">Unreal project and PRISM-LDK plugin</span></p>
-      <div class="cc"><p>In development: the PRISM rendering experience is <strong>out of scope for V0.1</strong>. No playable version is claimed.</p></div>
+      <div class="cc"><p>In development: the PRISM rendering experience is <strong>out of scope for V0.2</strong>. No playable version is claimed.</p></div>
 
       <div class="sh"><b>8.1</b> Role</div>
       <h2>Making dynamics visible.</h2>
@@ -45,8 +48,11 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
       <div class="sh"><b>8.2</b> State</div>
       <h2>The youngest component.</h2>
       <p>
-        PRISM is a work-in-progress. No timeline is promised. The project's roadmap is authoritative, and rendering
-        is not listed for V0.1.
+        PRISM is a work-in-progress. No timeline is promised: rendering is deliberately out of scope for V0.2, so that
+        validation of the engine and observation is not diluted.
+      </p>
+      <p class="mu" style="font-size:0.82rem">
+        The project's roadmap is authoritative for the steps ahead.
       </p>
       <div class="cc">
         <p>Do not assume that local protections in the engine or mock secure distribution of the PRISM project. See <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SECURITY.md" rel="noopener">SECURITY.md</a>.</p>

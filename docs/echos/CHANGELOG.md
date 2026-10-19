@@ -2,12 +2,58 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
 
 ## [Unreleased]
+
+### Added
+- **Groupes natifs SYNE publiés tels qu'observés (A0-3)** : nouvelle route
+  `GET /api/runs/{id}/native-groups?tick=` qui sert l'observation
+  `groups_native` écrite à l'ingestion — l'état des groupes **déclarés par le
+  moteur** (`groupId`, `members`, `size`, `leaderId`, `bornTick`, `cohesion`,
+  `decision`, `consensus`, `maxBondDistance`, `meanBondDistance`). Les valeurs
+  sont celles émises par SYNE, **sans aucun recalcul, moyenne ni arrondi
+  local** ; un champ non publié reste `null` (jamais `0`). Le module
+  `Group` d'ingestion gagne les distances de liens nullables
+  (`maxBondDistance`, `meanBondDistance`) du contrat `WorldSnapshot`, et
+  `storage/pipeline.py` écrit le contexte `groups_native` à la cadence
+  `context_every`, **à côté** du contexte `groups` (communautés **inférées**),
+  sans jamais les fusionner (identités distinctes). Le flux **sans** le champ
+  `groups` n'écrit rien : une base antérieure reste vide plutôt qu'exposant un
+  `[]` trompeur. Repli documenté « observation la plus proche ≤ tick » (sans
+  `tick`, la plus récente) ; une observation **vide** n'est jamais sautée
+  (contrairement à `/api/groups`) et est servie avec son `tick` ; aucun
+  contexte → `{"tick": -1, "groups": []}`, rien n'est inventé ; ordre
+  déterministe `groupId` croissant. Le Launcher consomme ce contrat **sans
+  calcul local**. Preuves : suite ECHOS verte (couverture 91 %), tests
+  d'ingestion (`test_consume_persists_native_syne_groups_as_published`,
+  `test_consume_writes_no_native_context_when_the_field_is_absent`), de
+  modélisation (`test_group_bond_distances_are_parsed_and_stay_nullable`) et de
+  route (publication, vide, sans lien, 404/503). `API_REST.md` §2/§3.6/§3.20 et
+  `METRICS_DICTIONARY.md` §3.2 mis à jour.
+
+### Fixed
+- **Absence de décision ramenée à zéro à l'ingestion (BL-09 / S-28 / D-03 / B-10) —
+  schéma SQLite v7** : SYNE publie `utility: null` pour une absence et pour un
+  report (le score d'origine sortant sous `heldUtility`), mais
+  `instrumentation/decision_traces.py` faisait `float(value.get("utility", 0.0)
+  or 0.0)` : **le `null` devenait `0.0`**, `heldUtility` et `decisionState`
+  étaient perdus, et la colonne était `utility REAL NOT NULL`. Sur le run de
+  référence — 89 % de reports — la fiche d'entité du Launcher affichait donc « 0 »
+  là où le contrat dit « aucune décision ce tick, score reporté ». Correction :
+  `utility` **nullable**, colonnes `held_utility`, `decision_state` et
+  `decision_tick` ajoutées, et migration **v7** qui reconstruit la table (SQLite
+  ne retire pas un `NOT NULL`) en conservant les lignes ; les lignes antérieures
+  gardent leur valeur et sortent avec `decision_state` `NULL` (« non
+  renseigné ») — aucune mesure n'est reconstruite après coup. La couche
+  « Action » de la chaîne causale expose désormais `decisionState`, `utility`
+  (nullable), `heldUtility` et `decisionTick`. Preuves : suite ECHOS **376
+  tests verts** (couverture 91 %), test de migration (`test_a_database_written_before_v7…`),
+  les tests de migration v7 de `echos/tests/`.
+  `API_REST.md` §3.7 mis à jour.
 
 ### Changed
 - **Équations mathématiques rendues en KaTeX/LaTeX** : tous les blocs

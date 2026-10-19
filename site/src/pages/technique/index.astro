@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -6,8 +9,8 @@ import { COMPONENTS } from '../../data/components';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
-  title="Architecture"
-  description="Architecture de LIVEX : moteur de simulation SYNE, observation ECHOS, rendu perceptif PRISM, reliés par des contrats d'interface explicites."
+  title="Architecture LIVEX : SYNE, ECHOS, PRISM"
+  description="Architecture de LIVEX : moteur de simulation déterministe SYNE, observation ECHOS, rendu perceptif PRISM, reliés par des contrats d'interface versionnés."
 >
   <PageHeader
     index="05"
@@ -25,8 +28,9 @@ import { url } from '../../utils/url';
         monde <span>SYNE</span> traces <span>ECHOS</span> mesures <span>PRISM</span> perception
       </div>
       <p>
-        Chaque étage est indépendant et versionné séparément. Un même composant peut être remplacé sans casser les
-        autres, tant que les contrats de transport et de persistance sont respectés.
+        Chaque étage est indépendant et versionné séparément : un composant peut être remplacé sans casser les autres,
+        pourvu que les contrats de transport et de persistance soient respectés. C'est ce découplage qui rend la pile
+        testable et évolutive.
       </p>
     </div>
   </section>
@@ -64,10 +68,10 @@ import { url } from '../../utils/url';
             <tr><th>Contrat</th><th>Version / forme</th><th>Note</th></tr>
           </thead>
           <tbody>
-            <tr><td>Contrat d'observabilité (snapshot)</td><td>0.4.0</td><td>Ajouts <code>simulatedTimeSeconds</code> ; description <code>world_initialized</code> 1.1.</td></tr>
+            <tr><td>Contrat d'observabilité (snapshot)</td><td>0.5.0</td><td>Ajout <code>simulatedTimeSeconds</code> ; description de monde <code>world_initialized</code> 1.1.</td></tr>
             <tr><td>Format d'identifiant de run</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>La graine figure dans l'identifiant ; ECHOS ne la dérive pas de l'id.</td></tr>
             <tr><td>Schéma de persistance ECHOS</td><td>SQLite v6</td><td>Migration additive <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>Ports locaux (V0.1)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>locaux uniquement</strong> (<code>127.0.0.1</code>).</td></tr>
+            <tr><td>Ports locaux (V0.2)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>locaux uniquement</strong> (<code>127.0.0.1</code>).</td></tr>
           </tbody>
         </table>
       </div>

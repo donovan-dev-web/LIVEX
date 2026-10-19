@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Découplage de la taille de cellule spatiale du rayon de perception (jalon review/refactor, engineVersion
@@ -6,8 +9,8 @@
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Prng;
-using Xunit;
 using Simulation.Core.World;
+using Xunit;
 using WorldModel = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests.Configuration;

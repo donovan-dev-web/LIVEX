@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests du jalon transverse T0–T5 : échelle, divergence des croyances et déterminisme.
@@ -11,8 +14,8 @@ using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 
@@ -196,8 +199,20 @@ public class MilestoneT0T5Tests
         // Situation strictement identique : même seed, même monde, même position,
         // mêmes autres traits — seule la curiosité (trait plage [2,2] contre [0,0])
         // diffère. L'expérience contrôlée isole donc l'effet du trait.
-        SimulationLoop low = Build(seed: 777, count: 1, template: TemplateWithFixedTrait("curiosity", 0.0), options: OptionsNoDeath());
-        SimulationLoop high = Build(seed: 777, count: 1, template: TemplateWithFixedTrait("curiosity", 2.0), options: OptionsNoDeath());
+        // Physiologie rendue <b>inerte</b> dans les deux bras : sous le modèle de
+        // ressources localisées, la faim et la soif (dérives 0,5 et 0,7 par tick)
+        // saturent bien avant les besoins sociaux (0,003) et de curiosité (0,002).
+        // Sans cette neutralisation, le choix resterait dominé en permanence par les
+        // besoins physiologiques et AUCUN trait ne pourrait modifier la décision :
+        // le cas ne mesurerait plus ce qu'il prétend mesurer (l'effet du trait). La
+        // situation reste strictement identique entre les deux bras ; seule la
+        // curiosité diffère.
+        SimulationOptions isolating = OptionsNoDeath();
+        isolating.Agents.Needs.HungerRate = 0;
+        isolating.Agents.Needs.ThirstRate = 0;
+        isolating.Agents.Needs.FatigueRate = 0;
+        SimulationLoop low = Build(seed: 777, count: 1, template: TemplateWithFixedTrait("curiosity", 0.0), options: isolating);
+        SimulationLoop high = Build(seed: 777, count: 1, template: TemplateWithFixedTrait("curiosity", 2.0), options: isolating);
 
         Entity lowEntity = low.World.Entities.Single();
         Entity highEntity = high.World.Entities.Single();
@@ -266,7 +281,7 @@ public class MilestoneT0T5Tests
     {
         MindState mind = loop.Cognition.MindOf(observerId);
         return mind.Beliefs.All.Any(belief =>
-            belief.Fact.Subject == $"entity-{subjectId}" && belief.Fact.Predicate == "position") ;
+            belief.Fact.Subject == $"entity-{subjectId}" && belief.Fact.Predicate == "position");
     }
 
     // ------------------------------------------------------------------

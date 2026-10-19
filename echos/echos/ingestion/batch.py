@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Peuplement de la base analytique depuis un run batch archivé (J2B).
 
 L'API d'analyse d'ECHOS ne calcule rien : elle lit des runs déjà enregistrés.

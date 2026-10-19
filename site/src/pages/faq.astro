@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { url } from '../utils/url';
@@ -6,7 +9,7 @@ import { url } from '../utils/url';
 const faq = [
   {
     q: "Qu'est-ce que LIVEX cherche à démontrer ?",
-    a: "LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les structures collectives qui émergent : groupes, échanges, conflits, propagation du savoir. Le projet n'affirme pas que cette émergence prouve une « intelligence » : il fournit des observateurs et des métriques mesurables.",
+    a: "LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les structures collectives qui en émergent : groupes, échanges, conflits, propagation du savoir. Le projet ne prétend pas que cette émergence prouve une « intelligence » : il fournit des observateurs et des métriques mesurables.",
   },
   {
     q: 'LIVEX prouve-t-il que les sociétés émergent « comme ça » ?',
@@ -34,7 +37,7 @@ const faq = [
   },
   {
     q: 'LIVEX est-il multijoueur ?',
-    a: "Pas en V0.1. PRISM envisage un futur mode « joueur-habitant » (incarner une entité), mais c'est une évolution lointaine, non engagée.",
+    a: "Pas en V0.2. PRISM envisage un futur mode « joueur-habitant » (incarner une entité), mais c'est une évolution lointaine, non engagée.",
   },
   {
     q: 'Quelle différence entre LIVEX, PRISM et PRISM-LDK ?',
@@ -46,7 +49,7 @@ const faq = [
   },
   {
     q: 'Quelle est la licence, et qui possède le projet ?',
-    a: "MIT (voir le fichier LICENSE). Le dépôt est aujourd'hui porté par une seule personne. Les règles de contribution sont dans CONTRIBUTING.md.",
+    a: "GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later, voir le fichier LICENSE) pour SYNE, ECHOS, le Launcher, syne-mock et le site vitrine. Le projet Unreal PRISM reste soumis à l'EULA d'Epic Games et n'est pas couvert par la GPL. Le dépôt est aujourd'hui porté par une seule personne. Les règles de contribution sont dans CONTRIBUTING.md.",
   },
   {
     q: 'Qu’est-ce que LIVEX ne cherche pas à prouver ?',
@@ -59,26 +62,35 @@ const faq = [
 ];
 ---
 <BaseLayout
-  title="FAQ"
-  description="Questions fréquentes sur LIVEX : objectifs, déterminisme, observabilité, communication entre entités, échelle, licence et éthique."
+  title="LIVEX — FAQ : déterminisme, émergence, licence, éthique"
+  description="FAQ LIVEX : les questions fréquentes sur la simulation multi-agents — objectifs, déterminisme, observabilité, échelle, licence et éthique."
 >
   <PageHeader
     index="16"
     eyebrow="FAQ"
     title="Les questions qu'on nous pose."
-    lead="Réponses issues de la documentation du projet. Elles évoluent avec les décisions d'implémentation."
+    lead="Réponses courtes, issues de la documentation du projet. Elles évoluent avec les décisions d'implémentation."
     crumbs={[{ label: 'FAQ' }]}
   />
 
   <section class="block">
     <div class="w">
-      {faq.map((item) => (
-        <details class="faq">
-          <summary>{item.q}</summary>
-          <p>{item.a}</p>
-        </details>
-      ))}
-      <p style="margin-top:24px"><a class="bt" href={url('comprendre/limites/')}>Limites et éthique →</a></p>
+      <h2>{faq.length} questions, répondues sans détour.</h2>
+      <p>Ouvrez une question pour lire la réponse. Chaque réponse reprend un point documenté — objectifs, déterminisme,
+        échelle, licence — sans promesse ni raccourci.</p>
+      <div style="margin-top:20px">
+        {faq.map((item) => (
+          <details class="faq">
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
+      <div class="cta" style="margin-top:24px">
+        <a class="bt p" href={url('documentation/')}>Documentation</a>
+        <a class="bt" href={url('comprendre/glossaire/')}>Glossaire</a>
+        <a class="bt" href={url('comprendre/limites/')}>Limites et éthique</a>
+      </div>
     </div>
   </section>
 </BaseLayout>

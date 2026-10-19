@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 19 octobre 2026
 **Dépend de** : `../presentation/VISION.md`, `../../VERSIONING.md`
 **Source Monographie** : Annexe J (feuille de route V2 détaillée), Partie 9 (Conclusions)
 
@@ -85,6 +85,12 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 
 - PRISM est le projet Unreal final de LIVEX et intègre le plugin PRISM-LDK (`PrismLdk`). Le `LDK.uproject` présent dans le dépôt sert d'hôte technique de build/test du plugin, pas de projet produit indépendant. ECHOS-091 vérifie uniquement SYNE→ECHOS ; la validation PRISM doit couvrir le plugin et le projet Unreal PRISM contre le vrai SYNE.
 - Le mock Node.js (`../../syne-mock/`) facilite le développement client, mais ne remplace ni la validation contre SYNE ni les critères scientifiques du moteur.
+
+## 7. Dette de conformité de distribution
+
+| Tâche | Portée | Critère de clôture |
+| :-- | :-- | :-- |
+| **Notices des dépendances transitives** | Installeur Launcher, paquets NuGet / PyPI / npm | Générer les notices de licence de l'ensemble des dépendances transitives (et non des seules dépendances directes listées dans `THIRD-PARTY-NOTICES.md`), les joindre à chaque artefact distribué et vérifier leur présence dans l'installeur avant toute publication binaire. |
 
 ---
 

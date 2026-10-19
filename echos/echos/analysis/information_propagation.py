@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 2 — InformationPropagationMetrics (propagation de l'information).
 
 Mesure la circulation **observée** de l'information à
@@ -26,7 +29,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ._common import (
+from .common import (
     alive_count,
     event_values,
     event_window_published,

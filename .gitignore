@@ -61,3 +61,12 @@ prism/LDK/*.sln
 prism/LDK/*.slnx
 docs/campaign-runs/
 echos/data/
+.mcp.json
+.agentsroom/handoff-transcript-*.txt
+.agentsroom/handoff-summary-*.md
+.agentsroom/fork-context-*.txt
+.agentsroom/transfer-context-*.txt
+.agents/mcp.json
+
+# Documentation generee (graphe du codebase) - non suivie, deplacee avant commit
+docs/codebase/

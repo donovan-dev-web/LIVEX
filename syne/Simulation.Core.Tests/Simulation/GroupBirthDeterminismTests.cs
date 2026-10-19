@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Régression de déterminisme des systèmes du jalon ph6 (SYNE-060/061/062) : deux exécutions du même scénario
@@ -10,9 +13,9 @@ using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Prng;
-using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 
@@ -104,6 +107,6 @@ public class GroupBirthDeterminismTests
         Assert.Equal("group_dissolved", ObservabilityContract.GroupDissolved);
         Assert.Equal("group_decision", ObservabilityContract.GroupDecision);
         Assert.Equal("agent_spawned", ObservabilityContract.AgentSpawned);
-        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 : défauts intégrés recalés, goldens ré-épinglés
+        Assert.Equal("0.17.0", ObservabilityContract.EngineVersion); // arbitrage A0-3 0.17.0 : groupes en observateur seul, distances instrumentées, goldens ré-épinglés
     }
 }

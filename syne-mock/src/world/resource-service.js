@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -9,12 +12,13 @@ const LOCATIONS_PER_TYPE = 3;
 
 function generateResourceLocations(seed, cellCountX, cellCountY, cells) {
   const cellCount = cellCountX * cellCountY;
-  let state = ((Number(seed) >>> 0) ^ (Math.floor(Number(seed) / 0x100000000) >>> 0) ^ 0xa511e9b3) >>> 0;
+  let state =
+    ((Number(seed) >>> 0) ^ (Math.floor(Number(seed) / 0x100000000) >>> 0) ^ 0xa511e9b3) >>> 0;
   const nextCell = () => {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
     return state;
   };
-  const available = cells.filter(cell => cell.walkable);
+  const available = cells.filter((cell) => cell.walkable);
   const resources = [];
 
   for (const kind of RESOURCE_TYPES) {
@@ -33,7 +37,7 @@ function generateResourceLocations(seed, cellCountX, cellCountY, cells) {
         kind,
         x: cell.x,
         y: cell.y,
-        quantity: 100
+        quantity: 100,
       });
     }
   }
@@ -41,7 +45,9 @@ function generateResourceLocations(seed, cellCountX, cellCountY, cells) {
 }
 
 function createStocks(configuredStocks) {
-  return Object.fromEntries(RESOURCE_TYPES.map(kind => [kind, Number(configuredStocks[kind] ?? 0)]));
+  return Object.fromEntries(
+    RESOURCE_TYPES.map((kind) => [kind, Number(configuredStocks[kind] ?? 0)])
+  );
 }
 
 function advanceStocks(stocks, regeneration) {
@@ -60,5 +66,5 @@ module.exports = {
   generateResourceLocations,
   createStocks,
   advanceStocks,
-  consume
+  consume,
 };

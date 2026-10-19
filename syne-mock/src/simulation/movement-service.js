@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -26,8 +29,8 @@ function stepToward(from, target, maxStep) {
   if (distance <= 1e-12 || maxStep <= 0) return null;
   const step = Math.min(distance, maxStep);
   return {
-    x: round(from.x + dx / distance * step),
-    y: round(from.y + dy / distance * step)
+    x: round(from.x + (dx / distance) * step),
+    y: round(from.y + (dy / distance) * step),
   };
 }
 
@@ -92,12 +95,12 @@ class MovementService {
     const distance = Math.hypot(dx, dy) || 1;
     const detours = [
       { x: -dy / distance, y: dx / distance },
-      { x: dy / distance, y: -dx / distance }
+      { x: dy / distance, y: -dx / distance },
     ];
     for (const direction of detours) {
       const candidate = {
         x: round(agent.x + direction.x * budget),
-        y: round(agent.y + direction.y * budget)
+        y: round(agent.y + direction.y * budget),
       };
       if (this.canEnter(world, candidate, obstacles))
         return this.commit(agent, candidate, destination, previous);

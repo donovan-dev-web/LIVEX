@@ -2,6 +2,7 @@
   "name": "livex-site",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "description": "Site vitrine statique de LIVEX (GitHub Pages)",
   "scripts": {

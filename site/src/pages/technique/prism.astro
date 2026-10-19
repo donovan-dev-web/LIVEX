@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -6,8 +9,8 @@ import { url } from '../../utils/url';
 import prismShot from '../../assets/captures/launcher-prism.png';
 ---
 <BaseLayout
-  title="PRISM — rendu perceptif"
-  description="PRISM (Perceptual Rendering & Interactive Simulation Module) donne à voir le monde simulé : projet Unreal et plugin d'intégration PRISM-LDK. Hors périmètre V0.1."
+  title="PRISM : rendu perceptif (hors V0.2)"
+  description="PRISM rend perceptible le monde simulé LIVEX : projet Unreal et plugin PRISM-LDK. Composant en développement, hors périmètre de la version V0.2."
 >
   <PageHeader
     index="08"
@@ -20,7 +23,7 @@ import prismShot from '../../assets/captures/launcher-prism.png';
   <section class="block">
     <div class="w">
       <p style="margin-top:0"><StatusBadge status="developpement" /> <span class="mu">Projet Unreal et plugin PRISM-LDK</span></p>
-      <div class="cc"><p>En développement : l'expérience de rendu PRISM est <strong>hors périmètre V0.1</strong>. Aucune version jouable n'est revendiquée.</p></div>
+      <div class="cc"><p>En développement : l'expérience de rendu PRISM est <strong>hors périmètre V0.2</strong>. Aucune version jouable n'est revendiquée.</p></div>
 
       <div class="sh"><b>8.1</b> Rôle</div>
       <h2>Donner à voir la dynamique.</h2>
@@ -42,8 +45,11 @@ import prismShot from '../../assets/captures/launcher-prism.png';
       <div class="sh"><b>8.2</b> État</div>
       <h2>Le composant le plus jeune.</h2>
       <p>
-        PRISM est en version de travail. Aucune promesse n'est faite sur son échéance. La feuille de route du projet
-        fait foi, et le rendu n'y figure pas pour V0.1.
+        PRISM est en version de travail. Aucune promesse n'est faite sur son échéance : le rendu est volontairement
+        hors périmètre V0.2, pour ne pas diluer la validation du moteur et de l'observation.
+      </p>
+      <p class="mu" style="font-size:0.82rem">
+        La feuille de route du projet fait foi pour les étapes à venir.
       </p>
       <div class="cc">
         <p>Ne présumez pas que les protections locales du moteur ou du mock sécurisent une distribution du projet

@@ -1,8 +1,19 @@
+﻿// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Pipeline cognitif BDI (SYNE-010) exécuté à chaque tick dans l'ordre causal strict : perception → mémoire →
 //        croyances → besoins → objectifs → faisabilité → utilité → délibération → intention → action (« boucle
 //        10/15 étapes », jalon U1).
+//
+//        Réalignement (Phases 2-4 du plan) :
+//        — la génération des candidats et l'évaluation d'utilité consomment la CONNAISSANCE active de l'agent
+//          (croyances de gisement et de pair, repli mémoire) et non plus seulement les seuils de besoin ;
+//        — les objectifs portent une cible concrète (« eau en P, connue à t ») et le déplacement la poursuit ;
+//        — les conséquences d'action sont différées à la fin du tick (fenêtre causale fermée, chapitre III) ;
+//        — un message compris alimente une croyance nommée, et la trace décisionnelle porte cible, preuves et
+//          candidats rejetés (absence de décision ≠ zéro).
 
 using System.Globalization;
 using Simulation.Core.Actions;
@@ -26,12 +37,21 @@ namespace Simulation.Core.Cognition;
 /// confiée au catalogue déclaratif + exécuteur atomique (SYNE-040/041/042) et
 /// les interruptions au déclencheur centralisé (SYNE-043).
 ///
-/// Déterminisme : aucune consommation du PRNG (l'avance du générateur reste à
-/// un tirage par tick), ordre d'itération par identifiant croissant, cibles de
-/// déplacement pseudo-aléatoires déterministes (hash stable), agrégats en
-/// représentation invariante à la culture.
+/// <para>
+/// <b>Fenêtre causale (chapitre III §1)</b> : pendant l'itération des entités,
+/// aucune mutation de monde n'est appliquée — déplacements et effets portés à un
+/// pair sont mis en file dans un <see cref="TickCommitBuffer"/> et appliqués après
+/// la boucle, dans l'ordre des identifiants. Ce qu'un agent perçoit à un tick est
+/// donc l'état figé en début de tick, et non l'état à moitié mis à jour par un
+/// agent traité plus tôt (S-15/S-31/D-11/B-06).
+/// </para>
+///
+/// <b>Déterminisme</b> : aucune consommation du PRNG (l'avance du générateur reste à
+/// un tirage par tick), ordre d'itération par identifiant croissant, agrégats en
+/// représentation invariante à la culture. La prospection sans repère connu reste
+/// un offset pseudo-aléatoire déterministe (hash stable) — déclarée comme telle.
 /// </summary>
-public sealed class CognitionPipeline
+public sealed partial class CognitionPipeline
 {
     private readonly Simulation.Core.World.World _world;
     private readonly SimulationOptions _options;
@@ -46,6 +66,18 @@ public sealed class CognitionPipeline
     private readonly DeathSystem _death;
     private readonly TickBudgetCollector? _budget;
     private readonly Dictionary<ulong, MindState> _minds = new();
+
+    // Mémoïsation par tick des fragments canoniques d'observation (sujet
+    // « entity-N », position « X,Y »). Pendant l'itération des entités, aucune
+    // position ne change (fenêtre causale fermée : les déplacements sont appliqués
+    // au commit de fin de tick), donc la même chaîne est valable pour tous les
+    // observateurs du tick. Purement identique au résultat : mêmes chaînes, mêmes
+    // croyances — seule l'allocation répétée disparaît (à forte densité, un agent
+    // perçoit des dizaines de voisins et chaque observation format toutes ses
+    // clés).
+    private readonly Dictionary<ulong, string> _entitySubjectCache = new();
+    private readonly Dictionary<ulong, string> _positionCache = new();
+    private ulong _cacheTick = ulong.MaxValue;
 
     public CognitionPipeline(
         Simulation.Core.World.World world,
@@ -125,16 +157,53 @@ public sealed class CognitionPipeline
 
     public bool HasMind(ulong entityId) => _minds.ContainsKey(entityId);
 
-    /// <summary>Exécute une itération complète du pipeline pour toutes les entités.</summary>
+    /// <summary>
+    /// Exécute une itération complète du pipeline pour toutes les entités.
+    /// <list type="number">
+    /// <item><b>Itération des entités</b> (identifiants croissants) : perception sur
+    /// l'état figé, cognition, décision, action — les mutations de monde sont mises
+    /// en file.</item>
+    /// <item><b>Commit des conséquences</b> : déplacements et effets inter-entités
+    /// appliqués en une fois.</item>
+    /// <item><b>Communication</b> puis réception → <b>croyance</b> ; engagements si
+    /// activés.</item>
+    /// <item><b>Décroissances</b> (croyances, confiance), <b>groupes</b> (sur les
+    /// positions finales), <b>naissances</b>, <b>mortalité</b>.</item>
+    /// </list>
+    /// </summary>
     public void Step(ulong currentTick)
     {
+        if (_cacheTick != currentTick)
+        {
+            _cacheTick = currentTick;
+            _entitySubjectCache.Clear();
+            _positionCache.Clear();
+        }
+
         List<Entity> ordered = _world.Entities
             .OrderBy(entity => entity.Id.Value)
             .ToList();
 
-        foreach (Entity entity in ordered)
+        var commit = new TickCommitBuffer();
+        _executor.BeginTick(commit);
+        try
         {
-            StepEntity(entity, currentTick);
+            foreach (Entity entity in ordered)
+            {
+                StepEntity(entity, currentTick);
+            }
+
+
+            // Fenêtre causale fermée (ch. III) : les conséquences d'action —
+            // déplacements et dégâts — ne rejoignent le monde qu'ici. Aucun agent
+            // n'a donc perçu, décidé ni agi sur un état modifié par un autre agent
+            // du même tick, et l'ordre des identifiants n'est plus une loi causale.
+            commit.Commit(_world);
+        }
+        finally
+        {
+            _executor.BeginTick(null);
+            commit.Clear();
         }
 
         // Communication de masse en une passe (performance.batchCommunication,
@@ -143,6 +212,11 @@ public sealed class CognitionPipeline
         using (TickPhaseScope communicationScope = _budget?.Begin(TickPhase.Communication) ?? TickPhaseScope.Noop)
         {
             _communication.Step(currentTick, _minds);
+
+            // Réception → croyance (D-13) : un message compris alimente une
+            // croyance nommée (provenance = émetteur, confiance = fiabilité de
+            // transmission × confiance relationnelle × confiance du témoignage).
+            ApplyReceivedMessages(currentTick, ordered);
 
             // Engagements (D5) : après la
             // diffusion — création d'engagement à la réception d'une Response
@@ -174,9 +248,17 @@ public sealed class CognitionPipeline
             // Groupes émergents (SYNE-060/061) puis naissances (SYNE-062) : après la
             // boucle des entités, la communication de masse et les décréments de
             // croyance/confiance — la population ne mute qu'après l'itération complète
-            // (ordre causal strict).
-            _groups.Step(currentTick, _minds);
-            _groups.PropagateObjectives(currentTick, (ulong)_options.Groups.ReviewIntervalTicks, _minds);
+            // (ordre causal strict). La cohésion est évaluée sur les positions
+            // <b>finales</b> du tick (post-commit) : elles servent à INSTRUMENTER la
+            // distance des paires liées (arbitrage A0-3), jamais à filtrer la liaison.
+            // Positions construites seulement quand la revue de groupes a lieu :
+            // hors revue (LOD `reviewIntervalTicks`), la table serait un coût par
+            // tick pour un système qui n'itère même pas.
+            bool groupsReview = _options.Groups.Enabled
+                && currentTick > 0
+                && currentTick % (ulong)_options.Groups.ReviewIntervalTicks == 0;
+            Dictionary<ulong, World.Position>? positions = groupsReview ? Positions() : null;
+            _groups.Step(currentTick, _minds, positions);
             _birth.Step(currentTick, _world, _minds, _options);
             foreach ((ulong childId, MindState childMind) in _birth.NewbornMinds)
             {
@@ -190,7 +272,7 @@ public sealed class CognitionPipeline
             IReadOnlyList<ulong> deceased = _death.Step(currentTick, _world, _minds);
             if (deceased.Count > 0)
             {
-                _groups.PurgeDeceased(deceased, currentTick, _minds);
+                _groups.PurgeDeceased(deceased, currentTick, _minds, positions ?? Positions());
                 foreach (ulong deathId in deceased)
                 {
                     _minds.Remove(deathId);
@@ -199,573 +281,4 @@ public sealed class CognitionPipeline
         }
     }
 
-    private void StepEntity(Entity entity, ulong currentTick)
-    {
-        MindState mind = GetOrCreate(entity.Id.Value, entity);
-        mind.Factors ??= new AgentFactors(entity.Traits);
-        mind.DeliberatedThisTick = false;
-        mind.InterruptedThisTick = false;
-
-        int observed = 0;
-        bool announced = false;
-        using (TickPhaseScope perceptionScope = _budget?.Begin(TickPhase.Perception) ?? TickPhaseScope.Noop)
-        {
-            if (_perception.ShouldPerceive(entity, currentTick))
-            {
-                IReadOnlyList<Observation> observations = _perception.Perceive(entity, currentTick);
-                observed = observations.Count;
-                foreach (Observation observation in observations)
-                {
-                    StoreObservation(mind, entity, observation, currentTick);
-                    if (!announced && WantsToShare(entity, observation))
-                    {
-                        EnqueueSharePulse(entity, observation, mind, currentTick);
-                        announced = true;
-                    }
-                }
-            }
-        }
-
-        using (TickPhaseScope memoryScope = _budget?.Begin(TickPhase.MemoryBeliefs) ?? TickPhaseScope.Noop)
-        {
-            mind.AcknowledgePerceptions(observed);
-            mind.Needs.Advance(_options.Agents.Needs);
-        }
-
-        ActionSettings actions = _options.Agents.Actions;
-        DesireKind chosenKind;
-        mind.DefendingThisTick = false;
-        mind.SkippedBySalience = false;
-
-        // Demandes d'aide (D5) : émission d'une Request quand la faim est critique
-        // — la réponse des pairs crée l'engagement (voir ProcessCommitmentMessages).
-        if (_options.Agents.Actions.Commitments.Enabled)
-        {
-            EnqueueHelpRequest(entity, mind, currentTick);
-        }
-
-        using (TickPhaseScope decisionScope = _budget?.Begin(TickPhase.NeedsGoals) ?? TickPhaseScope.Noop)
-        {
-            // Contrôle de saillance (D2, étape
-            // 3bis) : entre deux délibérations planifiées, l'intention est poursuivie
-            // SAUF saillance (besoin franchi / condition d'interruption) ou filet de
-            // sécurité périodique. Désactivé par défaut (trajectoire de référence).
-            bool deliberate = ShouldDeliberate(entity, currentTick);
-            if (!deliberate && actions.Salience.Enabled)
-            {
-                double salience = ComputeSalience(mind, actions);
-                mind.LastSalienceScore = salience;
-                bool forced = actions.Salience.ForcedReconsiderationTicks > 0
-                    && currentTick - mind.LastDeliberationTick >= (ulong)actions.Salience.ForcedReconsiderationTicks;
-                if (salience < actions.Salience.ReconsiderThreshold && !forced)
-                {
-                    mind.SkippedBySalience = true;
-                    deliberate = false;
-                }
-                else
-                {
-                    mind.SkippedBySalience = false;
-                    deliberate = true;
-                }
-            }
-
-            // Délibération à fréquence configurable : entre deux
-            // délibérations, l'intention est conservée (holdover) telle quelle.
-            if (deliberate)
-            {
-                IReadOnlyList<Goal> active = ActiveGoals(mind, currentTick);
-                IReadOnlyList<Goal> generated = DesireFactory.Generate(mind.Needs, currentTick, active.Select(goal => goal.Kind), _catalog, _stocks);
-                var candidates = new List<Goal>(active.Count + generated.Count);
-                candidates.AddRange(active);
-                candidates.AddRange(generated);
-
-                // Bibliothèque de plans (D3) : ajoute
-                // des candidats de manipulation (Take/Trade) pour les objectifs de
-                // besoin — désactivée par défaut (trajectoire de référence).
-                IReadOnlyList<Goal> planCandidates = PlanLibrary.GenerateCandidates(
-                    candidates, mind, entity, _catalog, _stocks,
-                    actions.Inventory, actions.Plans, currentTick);
-                candidates.AddRange(planCandidates);
-
-                (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(mind, candidates, currentTick, entity.Id.Value);
-                mind.RecordDecision(scores, best, deliberated: true, interrupted: false, currentTick, entity.Id.Value);
-                mind.DeliberatedThisTick = true;
-                mind.RecordDeliberationState(currentTick, TriggeredNeeds(mind, _options.Agents.Needs));
-                chosenKind = best.Kind;
-            }
-            else
-            {
-                chosenKind = mind.LastDecision is { } held ? held.Kind : DesireKind.Idle;
-
-                // Holdover : une action terminale Eat/Drink dont la réserve s'est
-                // épuisée retombe sur la poursuite SeekFood/SeekWater (SYNE-042).
-                if (chosenKind == DesireKind.Eat && !_catalog.IsViable(DesireKind.Eat, _stocks))
-                {
-                    chosenKind = DesireKind.SeekFood;
-                }
-                else if (chosenKind == DesireKind.Drink && !_catalog.IsViable(DesireKind.Drink, _stocks))
-                {
-                    chosenKind = DesireKind.SeekWater;
-                }
-            }
-
-            // Interruptions d'action (SYNE-043) :
-            // déclencheur centralisé — un besoin critique dont l'utilité surpasse de >
-            // utilityExcessMargin l'action en cours reprend la main, y compris entre
-            // deux délibérations. Eat/Drink répondent à la faim critique si la réserve est disponible.
-            if (_options.Agents.Actions.Interruption.Enabled)
-            {
-                (IReadOnlyList<UtilityScore> scores, UtilityScore? interruption) = _interruption.Evaluate(
-                    actions.Interruption,
-                    actions,
-                    mind.Needs,
-                    mind.Factors ?? new AgentFactors(TraitSet.NeutralAll),
-                    mind.SuccessRate,
-                    chosenKind,
-                    mind.Intention,
-                    currentTick,
-                    entity.Id.Value);
-
-                if (interruption is { } chosen)
-                {
-                    mind.RecordDecision(scores, chosen, deliberated: false, interrupted: true, currentTick, entity.Id.Value);
-                    mind.DeliberatedThisTick = false;
-                    mind.InterruptedThisTick = true;
-                    chosenKind = chosen.Kind;
-                }
-            }
-        }
-
-        Goal? goal = chosenKind == DesireKind.Idle
-            ? new Goal(DesireKind.Idle, currentTick)
-            : mind.Intention is { } intention && intention.Kind == chosenKind
-                ? intention
-                : new Goal(chosenKind, currentTick);
-        mind.Intention = goal;
-
-        using (TickPhaseScope actionScope = _budget?.Begin(TickPhase.ActionsMovement) ?? TickPhaseScope.Noop)
-        {
-            ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick, MindOf);
-            mind.RecordAction(result);
-        }
-    }
-
-    /// <summary>
-    /// Score de saillance (D2) : généralisation O(k) des conditions d'interruption
-    /// — lit les deltas déjà produits par les étapes 1-3 sans recalculer la boucle
-    /// cognitive. Une condition d'interruption remplie déclenche la reconsidération
-    /// indépendamment du seuil (RETOURNER SEUIL_MAX, invalidation incluse).
-    /// </summary>
-    private double ComputeSalience(MindState mind, ActionSettings actions)
-    {
-        double score = 0.0;
-        IReadOnlyList<DesireKind> triggered = TriggeredNeeds(mind, _options.Agents.Needs);
-        foreach (DesireKind kind in triggered)
-        {
-            if (!mind.TriggeredAtLastDeliberation.Contains(kind))
-            {
-                score += actions.Salience.NeedThresholdWeight;
-            }
-        }
-
-        // Condition d'interruption remplie (critique) : reconsidération forcée.
-        if (mind.Needs.IsCriticalFor(actions.Interruption))
-        {
-            return double.MaxValue;
-        }
-
-        return score;
-    }
-
-    private IReadOnlyList<DesireKind> TriggeredNeeds(MindState mind, NeedsSettings needs)
-    {
-        var triggered = new List<DesireKind>();
-        foreach (DesireKind kind in Enum.GetValues<DesireKind>())
-        {
-            if (kind is DesireKind.Idle or DesireKind.Take or DesireKind.Give or DesireKind.Trade
-                or DesireKind.Attack or DesireKind.Defend)
-            {
-                continue;
-            }
-
-            if (mind.Needs.IsTriggered(kind, needs))
-            {
-                triggered.Add(kind);
-            }
-        }
-
-        return triggered;
-    }
-
-    /// <summary>Fréquence de délibération configurable (décalée par entité pour lisser la charge).</summary>
-    private bool ShouldDeliberate(Entity entity, ulong currentTick) =>
-        (currentTick + entity.Id.Value) % (ulong)_options.Agents.Actions.Deliberation.IntervalTicks == 0;
-
-    /// <summary>
-    /// Demandes d'aide (D5, version minimale) : une entité en faim critique, sans
-    /// engagement en attente, émet une pulsation <c>Request</c> publique « help-food »
-    /// au plus une fois par 20 ticks (cooldown déterministe par identifiant — la
-    /// production réelle de Request remplace la consommation passive de la file).
-    /// </summary>
-    private void EnqueueHelpRequest(Entity entity, MindState mind, ulong currentTick)
-    {
-        if (mind.Needs.Hunger <= _options.Agents.Actions.Interruption.CriticalHunger
-            || mind.Commitments.Any(commitment => commitment.Status == CommitmentStatus.Pending)
-            || (currentTick + entity.Id.Value) % 20 != 0)
-        {
-            return;
-        }
-
-        Message request = CommunicationSystem.CreateMessage(
-            entity.Id.Value,
-            targetId: null,
-            MessageType.Request,
-            "help-food",
-            currentTick,
-            sequence: 2);
-        mind.Communication.Enqueue(request, _options.Communication.MaxSendsPerTick);
-    }
-
-    /// <summary>
-    /// Cycle des messages d'engagement (D5) : création d'un <see cref="Commitment"/>
-    /// chez le demandeur qui reçoit une <c>Response</c> positive (borné : au plus un
-    /// engagement actif par pair, au plus 3 engagements actifs — impact mémoire
-    /// borné), puis réponse positive des entités très sociables
-    /// (facteur ≥ 1.0) à la première <c>Request</c> comprise du tick.
-    /// </summary>
-    private void ProcessCommitmentMessages(ulong currentTick)
-    {
-        foreach ((ulong entityId, MindState mind) in _minds.OrderBy(pair => pair.Key))
-        {
-            foreach ((Message message, bool understood) in mind.Communication.ReceivedThisTick())
-            {
-                if (!understood || message.SenderId == entityId)
-                {
-                    continue;
-                }
-
-                if (message.Type == MessageType.Response
-                    && !mind.Commitments.Any(commitment =>
-                        commitment.ToEntityId == message.SenderId && commitment.Status == CommitmentStatus.Pending)
-                    && mind.Commitments.Count < 3)
-                {
-                    mind.Commitments.Add(new Commitment(
-                        message.SenderId,
-                        "survival",
-                        currentTick,
-                        currentTick + _options.Agents.Actions.Commitments.ExpiryTicks));
-                }
-            }
-        }
-
-        foreach ((ulong entityId, MindState mind) in _minds.OrderBy(pair => pair.Key))
-        {
-            if ((mind.Factors?.Sociability ?? 0.0) < 1.0)
-            {
-                continue;
-            }
-
-            foreach ((Message message, bool understood) in mind.Communication.ReceivedThisTick())
-            {
-                if (!understood || message.SenderId == entityId || message.Type != MessageType.Request)
-                {
-                    continue;
-                }
-
-                Message response = CommunicationSystem.CreateMessage(
-                    entityId,
-                    message.SenderId,
-                    MessageType.Response,
-                    "yes",
-                    currentTick,
-                    sequence: 3);
-                mind.Communication.Enqueue(response, _options.Communication.MaxSendsPerTick);
-                break;
-            }
-        }
-    }
-
-    /// <summary>
-    /// Résolution des engagements (D5) : honoré si le prometteur a exécuté
-    /// Give/Trade/Socialize ce tick (l'aide promises s'est matérialisée) →
-    /// <c>TrustLevel += commitmentBonus</c> ; expiré sans honororation →
-    /// <c>TrustLevel -= commitmentPenalty</c> (traité comme rompu).
-    /// Les engagements résolus sont purgés (suivi borné). Identifiants croissants.
-    /// </summary>
-    private void ResolveCommitments(ulong currentTick)
-    {
-        foreach ((ulong _, MindState mind) in _minds.OrderBy(pair => pair.Key))
-        {
-            for (int i = mind.Commitments.Count - 1; i >= 0; i--)
-            {
-                Commitment commitment = mind.Commitments[i];
-                if (commitment.Status != CommitmentStatus.Pending)
-                {
-                    mind.Commitments.RemoveAt(i);
-                    continue;
-                }
-
-                if (currentTick >= commitment.ExpiryTick)
-                {
-                    commitment.Expire(currentTick);
-                    mind.Trust.Penalize(commitment.ToEntityId, _options.Agents.Trust.CommitmentPenalty);
-                    mind.Commitments.RemoveAt(i);
-                    continue;
-                }
-
-                if (_minds.TryGetValue(commitment.ToEntityId, out MindState? responder)
-                    && responder.LastActionResult is { } action
-                    && action.Outcome == ActionOutcome.Executed
-                    && action.Kind is DesireKind.Give or DesireKind.Trade or DesireKind.Socialize)
-                {
-                    commitment.Fulfill(currentTick);
-                    mind.Trust.Reward(commitment.ToEntityId, _options.Agents.Trust.CommitmentBonus);
-                    mind.Commitments.RemoveAt(i);
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Objectifs encore actifs : besoin encore déclenché ou objectif récemment
-    /// défini (poursuite). Les actions terminales Eat/Drink (SYNE-042) ne
-    /// persistent pas : elles restent actives tant que le besoin est déclenché et
-    /// que la réserve est disponible.
-    /// </summary>
-    private IReadOnlyList<Goal> ActiveGoals(MindState mind, ulong currentTick)
-    {
-        if (mind.Intention is not { } intention)
-        {
-            return [];
-        }
-
-        bool stillNeeded = mind.Needs.IsTriggered(intention.Kind, _options.Agents.Needs);
-        bool recent = intention.Age(currentTick) < 100;
-        bool viable = intention.Kind is not (DesireKind.Eat or DesireKind.Drink) ||
-                      _catalog.IsViable(intention.Kind, _stocks);
-
-        return (stillNeeded || (recent && !IsTerminal(intention.Kind))) && viable ? [intention] : [];
-    }
-
-    private static bool IsTerminal(DesireKind kind) => kind is DesireKind.Eat or DesireKind.Drink;
-
-    /// <summary>
-    /// Évalue toutes les actions candidates et sélectionne (SYNE-030/031/033) :
-    /// utilité maximale ; à conflit (candidats à moins de <c>conflictTieMargin</c>
-    /// du maximum), résolution probabiliste force × confiance ;
-    /// puis hystérésis anti-oscillation (<c>actionSwitchMargin</c>).
-    /// </summary>
-    private (IReadOnlyList<UtilityScore> Scores, UtilityScore Best) Deliberate(
-        MindState mind,
-        IReadOnlyList<Goal> candidates,
-        ulong currentTick,
-        ulong entityId)
-    {
-        AgentFactors factors;
-        if (mind.Factors is { } resolved)
-        {
-            factors = resolved;
-        }
-        else
-        {
-            factors = new AgentFactors(TraitSet.NeutralAll);
-        }
-
-        ActionSettings actions = _options.Agents.Actions;
-        var scores = new List<UtilityScore>(candidates.Count + 1)
-        {
-            UtilityEvaluator.Evaluate(
-                DesireKind.Idle,
-                mind.Needs,
-                factors,
-                mind.SuccessRate(DesireKind.Idle),
-                goalAge: 0,
-                actions),
-        };
-
-        foreach (Goal goal in candidates)
-        {
-            if (goal.Kind == DesireKind.Idle)
-            {
-                continue;
-            }
-
-            scores.Add(UtilityEvaluator.Evaluate(
-                goal.Kind,
-                mind.Needs,
-                factors,
-                mind.SuccessRate(goal.Kind),
-                goal.Age(currentTick),
-                actions,
-                mind.Intention?.Kind,
-                mind.CollectiveObjective));
-        }
-
-        // Engagements (D5) : chaque engagement actif ajoute un candidat d'aide
-        // (Socialize) dont le bénéfice dérive de la confiance envers le demandeur
-        // (40 × confiance — jusqu'à 40, comparable à Socialize saturé) au lieu d'un
-        // besoin physiologique. La formule d'utilité est inchangée (benefitOverride).
-        if (_options.Agents.Actions.Commitments.Enabled)
-        {
-            foreach (Commitment commitment in mind.Commitments)
-            {
-                if (!commitment.IsActive(currentTick))
-                {
-                    continue;
-                }
-
-                double trust = mind.Trust.TrustWith(commitment.ToEntityId);
-                scores.Add(UtilityEvaluator.Evaluate(
-                    DesireKind.Socialize,
-                    mind.Needs,
-                    factors,
-                    mind.SuccessRate(DesireKind.Socialize),
-                    goalAge: 0,
-                    actions,
-                    mind.Intention?.Kind,
-                    mind.CollectiveObjective,
-                    benefitOverride: 40.0 * trust));
-            }
-        }
-
-        double maximum = scores.Max(score => score.Utility);
-        var contested = scores.Where(score => maximum - score.Utility <= actions.Deliberation.ConflictTieMargin).ToList();
-        UtilityScore selected = contested.Count > 1
-            ? PriorityConflictResolver.Resolve(contested, mind.Needs, entityId, currentTick)
-            : contested[0];
-
-        if (mind.Intention is { } current)
-        {
-            UtilityScore adjusted = UtilityEvaluator.ApplyActionSwitchMargin(
-                selected,
-                current.Kind,
-                mind.Needs,
-                factors,
-                mind.SuccessRate(current.Kind),
-                current.Age(currentTick),
-                actions,
-                mind.CollectiveObjective);
-
-            if (adjusted.Kind != selected.Kind)
-            {
-                scores.Add(adjusted);
-                selected = adjusted;
-            }
-        }
-
-        return (scores, selected);
-    }
-
-    private void StoreObservation(MindState mind, Entity self, Observation observation, ulong currentTick)
-    {
-        string content = FormatContent(observation);
-        mind.Memory.Store(
-            MemoryCategory.Observation,
-            $"entity-{self.Id.Value}",
-            content,
-            observation.Confidence,
-            currentTick);
-
-        if (observation.EntityType == "entity")
-        {
-            Fact position = new($"entity-{observation.EntityId}", "position", CanonicalPosition(observation.Position));
-            mind.Beliefs.ApplyEvidence(
-                position,
-                observation.Confidence,
-                $"perception-{self.Id.Value}",
-                _options.Agents.Beliefs,
-                currentTick);
-        }
-        else if (observation.EntityType == "obstacle")
-        {
-            Fact obstacle = new($"obstacle-{observation.EntityId}", "radius", observation.Attributes["radius"]);
-            mind.Beliefs.ApplyEvidence(
-                obstacle,
-                observation.Confidence,
-                $"perception-{self.Id.Value}",
-                _options.Agents.Beliefs,
-                currentTick);
-        }
-    }
-
-    /// <summary>
-    /// Partage social (SYNE-050, V0.1) : une entité sociable (trait ≥ 0.5) qui
-    /// perçoit une entité vivante émet une pulsation <b>Information</b> publique
-    /// — une au plus par tick (bien sous <c>maxSendsPerTick</c>). La décision de
-    /// partage ne consomme aucun tirage du PRNG global.
-    /// </summary>
-    private bool WantsToShare(Entity entity, Observation observation)
-    {
-        if (observation.EntityType != "entity")
-        {
-            return false;
-        }
-
-        return entity.Traits["sociability"] >= 0.5;
-    }
-
-    private void EnqueueSharePulse(Entity entity, Observation observation, MindState mind, ulong currentTick)
-    {
-        string payload = $"perceived-{observation.EntityId}#{CanonicalPosition(observation.Position)}";
-        Message share = CommunicationSystem.CreateMessage(
-            entity.Id.Value,
-            targetId: null,
-            MessageType.Information,
-            payload,
-            currentTick,
-            sequence: 1);
-
-        // File sortante bornée : au-delà de maxSendsPerTick en attente, la pulsance
-        // la plus ancienne est abandonnée au profit de la plus récente (une
-        // perception périmée n'a plus d'intérêt et la file ne doit pas croître).
-        mind.Communication.Enqueue(share, _options.Communication.MaxSendsPerTick);
-    }
-
-    private static string FormatContent(Observation observation) =>
-        string.Join(
-            "|",
-            observation.EntityType,
-            observation.EntityId.ToString(CultureInfo.InvariantCulture),
-            observation.Position.X.ToString("0.00", CultureInfo.InvariantCulture),
-            observation.Position.Y.ToString("0.00", CultureInfo.InvariantCulture),
-            observation.Confidence.ToString("0.000", CultureInfo.InvariantCulture));
-
-    /// <summary>Position canonique d'un fait : « X,Y » invariant à la culture.</summary>
-    private static string CanonicalPosition(Simulation.Core.World.Position position) =>
-        string.Concat(
-            position.X.ToString("0.00", CultureInfo.InvariantCulture),
-            ",",
-            position.Y.ToString("0.00", CultureInfo.InvariantCulture));
-
-    private MindState GetOrCreate(ulong entityId, Entity entity)
-    {
-        if (!_minds.TryGetValue(entityId, out MindState? mind))
-        {
-            mind = new MindState(_options);
-            _minds[entityId] = mind;
-        }
-
-        return mind;
-    }
-
-    /// <summary>
-    /// Restauration de l'état cognitif complet (persistance bit-à-bit,
-    /// remplace le dictionnaire d'esprits et ré-importe les
-    /// groupes émergents. Aucun tirage du PRNG — la suite reste bit-à-bit.
-    /// </summary>
-    internal void RestoreState(IReadOnlyDictionary<ulong, MindState> minds, IEnumerable<Social.Group> groups, ulong nextGroupId)
-    {
-        ArgumentNullException.ThrowIfNull(minds);
-        ArgumentNullException.ThrowIfNull(groups);
-
-        _minds.Clear();
-        foreach ((ulong id, MindState mind) in minds)
-        {
-            _minds[id] = mind;
-        }
-
-        // Le GroupSystem est readonly — restauration en place des groupes actifs
-        // et du compteur d'identifiants (persistance bit-à-bit).
-        _groups.RestoreState(groups, nextGroupId);
-    }
 }

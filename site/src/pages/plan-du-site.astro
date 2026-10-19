@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { url } from '../utils/url';
@@ -62,14 +65,14 @@ const groups = [
     ],
   },
   {
-    title: 'Pages techniques',
+    title: 'Outils du site',
     items: [{ label: 'Plan du site', href: 'plan-du-site/' }],
   },
 ];
 ---
 <BaseLayout
-  title="Plan du site"
-  description="Plan du site LIVEX : toutes les pages publiques, groupées par bloc, avec lien vers le flux RSS du journal."
+  title="Plan du site — toutes les pages publiques"
+  description="Plan du site LIVEX : toutes les pages publiques groupées par section — compréhension, technique, versions, journal, participation et mentions légales."
 >
   <PageHeader
     index="26"
@@ -81,6 +84,10 @@ const groups = [
 
   <section class="block">
     <div class="w">
+      <p class="mu">
+        Sept blocs couvrent l'ensemble du site. Cherchez un sujet précis dans le glossaire, ou partez des trois pages
+        de compréhension si vous découvrez le projet.
+      </p>
       <div class="g2">
         {groups.map((g) => (
           <div class="pl br" style="padding:20px">

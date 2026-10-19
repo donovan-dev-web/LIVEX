@@ -112,7 +112,7 @@ plutôt que valide.
   },
   "counts": { "runs": 12, "runsDone": 5, "runsFailed": 0 },
   "components": [
-    { "id": "syne", "version": "0.15.0" },
+    { "id": "syne", "version": "0.17.0" },
     { "id": "echos", "version": "0.1.0" }
   ],
   "integrity": { "algorithm": "sha256", "value": "…" }

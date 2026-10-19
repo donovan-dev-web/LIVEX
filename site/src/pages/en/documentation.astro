@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
@@ -55,35 +58,42 @@ const groups = [
 <BaseLayout
   lang="en"
   translated
-  title="Documentation"
-  description="LIVEX documentation portal: overview, architecture, components, governance and contribution. Direct access to the repository and monograph."
+  title="LIVEX — Documentation: architecture, guides, governance"
+  description="LIVEX documentation portal: overview, architecture, components, governance and contribution — repository, monograph and guides in one place."
 >
   <PageHeader
     lang="en"
     index="15"
     eyebrow="Documentation"
     title="Everything is documented, and verifiable."
-    lead="Documentation lives in the repository. This portal provides the main entry points, organised by intent."
+    lead="Documentation lives in the repository, versioned alongside the code. This portal gathers its main entry points, organised by intent, so you can go straight to what you need."
     crumbs={[{ label: 'Documentation' }]}
   />
 
   <section class="block">
     <div class="w">
-      <div class="g2">
+      <h2>The main entry points, by intent.</h2>
+      <p>Understand the project, build with it, follow its governance or contribute: pick an intent, then follow the
+        link. The full detail stays in the repository.</p>
+      <div class="g2" style="margin-top:20px">
         {groups.map((g) => (
           <div class="pl br" style="padding:20px">
             <h3 style="margin-bottom:10px">{g.title}</h3>
             <ul style="list-style:none;padding:0;margin:0">
               {g.items.map((it) => (
                 <li style="padding:4px 0;font-size:0.8rem">
-                  <a href={it.href} rel={it.href.startsWith('http') ? 'noopener' : undefined}>{it.label} ↗</a>
+                  <a href={it.href} rel={it.href.startsWith('http') ? 'noopener' : undefined}>{it.label}{it.href.startsWith('http') ? ' ↗' : ''}</a>
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-      <div class="cc" style="margin-top:24px"><p>Reference portal: <a href={`${repo}/docs/README.md`} rel="noopener">docs/README.md</a>.</p></div>
+      <div class="cc" style="margin-top:24px"><p>The repository's reference portal:
+        <a href={`${repo}/docs/README.md`} rel="noopener">docs/README.md</a>. For a short view without leaving the
+        site: <a href={url('technique/', 'en')}>Architecture</a>,
+        <a href={url('feuille-de-route/', 'en')}>Roadmap</a> and
+        <a href={url('faq/', 'en')}>FAQ</a>.</p></div>
     </div>
   </section>
 </BaseLayout>

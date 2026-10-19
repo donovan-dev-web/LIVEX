@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Groupe émergent (SYNE-060) : ensemble d'entités liées par une cohésion (confiance réciproque × parts
@@ -37,6 +40,19 @@ public sealed class Group
 
     /// <summary>Cohésion moyenne des liens internes au dernier calcul (confiance × affinité).</summary>
     public double MeanCohesion { get; internal set; }
+
+    /// <summary>
+    /// Distance maximale mesurée entre une paire liée du groupe au dernier calcul
+    /// (instrumentation A0-3). <c>null</c> = non mesurée (aucune table de
+    /// positions fournie à la revue) — jamais zéro.
+    /// </summary>
+    public double? MaxBondDistance { get; internal set; }
+
+    /// <summary>
+    /// Distance moyenne mesurée entre les paires liées du groupe au dernier
+    /// calcul (instrumentation A0-3). <c>null</c> = non mesurée.
+    /// </summary>
+    public double? MeanBondDistance { get; internal set; }
 
     /// <summary>Leader émergent (SYNE-061) : confiance interne entrante maximale, départage id minimal.</summary>
     public ulong? LeaderId { get; internal set; }

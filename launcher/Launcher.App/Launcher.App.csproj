@@ -22,10 +22,31 @@
   <ItemGroup>
     <Content Include="..\..\docs\**\*.md"
              Link="docs\%(RecursiveDir)%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest" />
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\..\*.md"
              Link="docs\global\%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest" />
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    Textes de licence joints à la distribution (docs/launcher/PACKAGING.md §2.1).
+    Ils sont copiés à la racine de la publication, à côté de livex-launcher.
+  -->
+  <ItemGroup>
+    <None Include="..\..\LICENSE"
+          Link="LICENSE"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\NOTICE"
+          Link="NOTICE"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.md"
+          Link="THIRD-PARTY-NOTICES.md"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

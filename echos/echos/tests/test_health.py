@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Tests de l'endpoint de santé de l'API ECHOS."""
 
 from fastapi.testclient import TestClient

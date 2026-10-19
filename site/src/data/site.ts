@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Métadonnées du site et navigation principale (source unique).
  */
@@ -13,7 +16,7 @@ export const SITE = {
   shortDescription:
     "Écosystème de simulation multi-agents : moteur, cognition émergente et rendu perceptif.",
   repo: 'https://github.com/donovan-dev-web/LIVEX',
-  license: 'MIT',
+  license: 'GPL-3.0-or-later',
   author: 'Donovan',
   lang: 'fr',
   favicon: 'favicon.svg',

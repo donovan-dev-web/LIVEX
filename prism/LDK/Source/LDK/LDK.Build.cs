@@ -1,5 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+// Projet : LIVEX (PRISM)
+// Auteur : CHARTRAIN Donovan
+// Rôle : Règles de build du module hôte LDK.
+
 using UnrealBuildTool;
 
 public class LDK : ModuleRules

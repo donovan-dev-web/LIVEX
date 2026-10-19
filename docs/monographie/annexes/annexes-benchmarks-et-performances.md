@@ -24,7 +24,7 @@ dotnet run -c Release --project syne/Simulation.Console -- --benchmark
 
 Les ticks et les populations sont ajustables par `--benchmark-ticks` et `--benchmark-populations`.
 
-## 3. Résultats mesurés (version 0.15.0)
+## 3. Résultats mesurés (version 0.17.0)
 
 | Population | Débit | Tick moyen | Cible (objectif V2) | Verdict |
 | --: | --: | --: | :-- | :-- |
@@ -40,7 +40,7 @@ Ces corrections ont plus de valeur que les chiffres eux-mêmes, parce qu'elles m
 
 **Des runs où la population mourait.** Des mesures publiées au jalon antérieur (1 187 t/s à 500, 505 t/s à 1 000) avaient été obtenues sur des runs dont la population s'éteignait en cours de route par défaut de calibration : les derniers ticks, presque vides, gonflaient le débit. Depuis la décision ADR-016, les populations survivent sans mortalité, et les chiffres du tableau 3 sont **les premières mesures honnêtes à charge complète**.
 
-**Une part de computation mal calculée.** `TickBudgetSnapshot.ComputationShare()` sommait des temps **par échantillon** alors que les phases intra-entité (perception, mémoire, besoins, actions) sont échantillonnées par entité et par tick, tandis que communication et événements le sont une fois par tick. La part affichée revenait donc au ratio (communication + événements) par tick, sous-estimant les phases intra-entité d'un facteur proche de la population. Depuis la correction (calibration B1, `engineVersion` 0.15.0), la part est le temps **par tick** de chaque phase divisé par le temps de tick : les valeurs observées deviennent 90 à 98 %, le complément étant le travail hors scopes (tri de l'ordre causal, allocations, ramasse-miettes).
+**Une part de computation mal calculée.** `TickBudgetSnapshot.ComputationShare()` sommait des temps **par échantillon** alors que les phases intra-entité (perception, mémoire, besoins, actions) sont échantillonnées par entité et par tick, tandis que communication et événements le sont une fois par tick. La part affichée revenait donc au ratio (communication + événements) par tick, sous-estimant les phases intra-entité d'un facteur proche de la population. Depuis la correction (calibration B1, `engineVersion` 0.17.0), la part est le temps **par tick** de chaque phase divisé par le temps de tick : les valeurs observées deviennent 90 à 98 %, le complément étant le travail hors scopes (tri de l'ordre causal, allocations, ramasse-miettes).
 
 **Une instrumentation à prouver neutre.** Object pooling, buffer de tri de perception, collecteur de budget : tout a été vérifié non altérant. Le checksum doré `0x27fad50065d8c4a4` est inchangé, et trois tests s'en portent garants : `ScaleChecksum_IsBitForBitReproducible`, `BudgetCollection_DoesNotAlterTrajectory`, et l'égalité de trajectoire entre runs instrumentés et non instrumentés.
 

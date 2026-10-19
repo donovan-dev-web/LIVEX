@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : DRAFT
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : [`../governance/ROADMAP.md`](../governance/ROADMAP.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---
@@ -31,7 +31,12 @@
 Ces étapes sont des objectifs, non une déclaration que les fonctions visuelles
 sont déjà implémentées par le plugin.
 
-## 3. Risques et réponse
+## 3. État de validation
+
+L’acceptation de phase 5 a vérifié, sur Unreal Engine 5.8, le rejeu des snapshots 41 puis 47 sans fabrication des ticks 42–46, et l’état dégradé après déconnexion. Le relevé du 17 octobre rapporte 63 Automation Specs réussies, 0 échec. La détection d’une WebSocket connectée mais silencieuse et une garde de monotonie/staleness ne font pas partie du contrat courant; elles restent une décision à prendre si un consommateur en a besoin. L’état autoritaire reste toujours celui de la dernière trame reçue; un rendu interpolé éventuel ne doit pas être réinjecté dans SYNE. Voir le [rapport d’acceptation pérenne](../governance/realignment/PRISM-ACCEPTANCE-2026-10.md).
+
+
+## 4. Risques et réponse
 
 | Risque | Réponse |
 | :-- | :-- |

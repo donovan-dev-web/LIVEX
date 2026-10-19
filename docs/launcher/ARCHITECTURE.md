@@ -319,6 +319,7 @@ livex/                                   # INSTALLATION (racine choisie à l'ins
 │           └── ...
 ├── templates/                           # alias racine des modèles (PACKAGING §2.1)
 ├── LICENSE
+├── THIRD-PARTY-NOTICES.md
 └── VERSION
 
 <données utilisateur>/                   # DONNÉES — hors installation (PACKAGING §2.2)

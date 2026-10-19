@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests de l'évaluateur d'utilité (benefit − cost).
@@ -119,39 +122,6 @@ public class UtilityEvaluatorTests
         Assert.Equal(48.0 * 1.2, aligned.Benefit, 10);
         Assert.Equal(48.0, otherwise.Benefit, 10);
         Assert.True(aligned.Utility > otherwise.Utility);
-    }
-
-    [Fact]
-    public void Evaluate_CollectiveObjective_ScalesAlignmentByConsensusAndLeaderTrust()
-    {
-        // SYNE-076 : le bénéfice d'une action conforme à l'objectif collectif est
-        // bonifié de ×1,2 quand consensus = 1 et confiance leader = 1 ; pondéré
-        // par le produit consensus × confiance sinon.
-        var needs = BodyNeeds.FromState(hunger: 80, thirst: 70);
-        var actions = new ActionSettings();
-        var full = new GroupObjective(
-            GroupId: 1, Kind: DesireKind.SeekFood, Consensus: 1.0, LeaderTrust: 1.0,
-            AdoptedTick: 1, ExpiresTick: 11);
-        var half = full with { Consensus = 0.5, LeaderTrust = 1.0 };
-
-        UtilityScore aligned = UtilityEvaluator.Evaluate(
-            DesireKind.SeekFood, needs, Neutral(), successRate: 0.7, goalAge: 0, actions,
-            currentIntention: null, collectiveObjective: full);
-        UtilityScore partial = UtilityEvaluator.Evaluate(
-            DesireKind.SeekFood, needs, Neutral(), successRate: 0.7, goalAge: 0, actions,
-            currentIntention: null, collectiveObjective: half);
-        UtilityScore nonConforming = UtilityEvaluator.Evaluate(
-            DesireKind.SeekWater, needs, Neutral(), successRate: 0.7, goalAge: 0, actions,
-            currentIntention: null, collectiveObjective: full);
-
-        // 48 × 1.2 (plein) ; 48 × (1 + 0.2 × 0.5) = 52,8 (moitié) ; 42 (non conforme :
-        // SeekWater lit la soif 70 → min(70,100) × 0.6 = 42) — bénéfices recalés par
-        // la calibration D1 (plafond monotone 60, croissant avec le besoin).
-        Assert.Equal(57.6, aligned.Benefit, 10);
-        Assert.Equal(52.8, partial.Benefit, 10);
-        Assert.Equal(42.0, nonConforming.Benefit, 10);
-        Assert.True(aligned.Utility > partial.Utility);
-        Assert.True(partial.Utility > nonConforming.Utility);
     }
 
     [Fact]

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Photographie du monde à un tick (WorldSnapshot).
@@ -23,7 +26,9 @@ public sealed record GroupSnapshot(
     ulong BornTick,
     double Cohesion,
     string? Decision,
-    double Consensus);
+    double Consensus,
+    double? MaxBondDistance,
+    double? MeanBondDistance);
 
 /// <summary>Obstacle statique (construction, SYNE-071).</summary>
 public sealed record ObstacleSnapshot(string Id, double X, double Y, double Radius);
@@ -152,7 +157,9 @@ public sealed record WorldSnapshot(
                 group.BornTick,
                 Math.Round(group.MeanCohesion, 4),
                 group.Decision?.ToString(),
-                Math.Round(group.Consensus, 4)));
+                Math.Round(group.Consensus, 4),
+                group.MaxBondDistance is { } maxDistance ? Math.Round(maxDistance, 4) : null,
+                group.MeanBondDistance is { } meanDistance ? Math.Round(meanDistance, 4) : null));
         }
 
         var obstacles = new List<ObstacleSnapshot>(loop.World.Obstacles.Count);

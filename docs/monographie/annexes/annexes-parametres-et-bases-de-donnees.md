@@ -145,7 +145,9 @@ L'observatoire stocke ses analyses dans huit tables.
 | `decision_traces` | Trace de décision : action choisie, utilité, flags de délibération et d'interruption, compteurs, besoins |
 | `calibration_reports` | Rapport de calibration au format JSON |
 
-Deux détails de schéma méritent l'attention. La table `tick_metrics` porte une colonne **`measured`** : la distinction entre « zéro observé » et « non mesuré » est donc inscrite dans le stockage lui-même, et non ajoutée par convention d'affichage. Et la table `decision_traces` conserve à la fois l'utilité retenue et les compteurs (croyances, objectifs, mémoire), ce qui permet de reconstruire une chaîne causale sans relancer le monde.
+Deux détails de schéma méritent l'attention. La table `tick_metrics` porte une colonne **`measured`** : la distinction entre « zéro observé » et « non mesuré » est donc inscrite dans le stockage lui-même, et non ajoutée par convention d'affichage. La table `decision_traces` conserve l'utilité retenue, `held_utility`, `decision_state` et `decision_tick`, ce qui permet de distinguer absence et score reporté.
+
+**Note de version du relevé courant (18 octobre 2026).** Le code écrit `SCHEMA_VERSION = "6"` dans `_meta`. La migration BL-09 reconstruit `decision_traces` pour rendre `utility` nullable et ses commentaires/tests la nomment v7, mais la constante n'a pas été incrémentée. La valeur documentée ici (v6) décrit donc le compteur réellement publié; la discordance de numérotation reste à harmoniser dans le code et les migrations. Voir le [statut LIVEX](../../governance/LIVEX-STATUS.md).
 
 Cinq index couvrent les requêtes fréquentes : résumés par run, événements par run et tick, métriques par run et tick, contextes par run et tick, traces de décision par run et tick.
 

@@ -14,6 +14,7 @@ historiques conservées pour leur valeur d'archive.
 
 ```text
 docs/
+├── captures/         # Captures d'écran et animations (GIF) de présentation
 ├── codebase/         # Cartographie interactive des fichiers, symboles et relations
 ├── presentation/     # Vision, FAQ, glossaire, périmètre éthique
 ├── governance/       # Feuille de route, état du dépôt, gitflow, plan de refonte
@@ -43,6 +44,7 @@ CONTRIBUTING…) restent à la racine du dépôt.
   projets Unreal.
 - [Vision](presentation/VISION.md) · [Feuille de route](governance/ROADMAP.md) ·
   [Glossaire](presentation/GLOSSARY.md).
+- [Captures et animations](captures/README.md) — captures d'écran et GIF de présentation.
 - [Convention de nommage](NAMING_CONVENTIONS.md) — identifiants en anglais,
   commentaires en français, règles par langage (C#, Python, JS, C++/Unreal) et
   structure des commentaires dans le code.

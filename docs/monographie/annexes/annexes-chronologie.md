@@ -30,19 +30,22 @@ Cette première phase a établi trois choses qui n'ont pas été remises en caus
 | Octobre 2026 | Développement du Launcher : orchestration, paquet `.livexp`, supervision et réseau |
 | Octobre 2026 | Rédaction et révisions de la présente monographie |
 
-L'activité d'implémentation de cette phase est concentrée sur quelques semaines, avec un rythme élevé de fusions de branches. Chaque composant a été développé avec son propre versionnage, ce qui explique que les numéros de version ne se correspondent pas : SYNE 0.15.0, ECHOS 0.1.0, Launcher 0.1.0.
+L'activité d'implémentation de cette phase est concentrée sur quelques semaines, avec un rythme élevé de fusions de branches. Chaque composant a été développé avec son propre versionnage, ce qui explique que les numéros de version ne se correspondent pas : SYNE 0.17.0, ECHOS 0.1.0, Launcher 0.1.0.
 
-## 3. État de référence au 12 octobre 2026
+## 3. État de référence au 18 octobre 2026
 
-| Composant | Version | État |
+Cette photographie documentaire actualise les versions et ajoute le résultat des vérifications locales exécutées le 18/10. Les événements antérieurs restent datés selon leurs sources.
+
+| Composant | Version / contrat | État relevé |
 | :-- | :-- | :-- |
-| SYNE | 0.15.0 (contrat d'observabilité 0.4.0) | Disponible |
-| ECHOS | 0.1.0 (schéma SQLite v6) | Disponible, service d'analyse sans interface |
-| Launcher | 0.1.0 (paquet `.livexp`) | Disponible |
-| PRISM | Version de travail | Conçu, verrouillé en attente |
-| PRISM-LDK | Version de travail | Plugin de transport |
-| `syne-mock` | 0.1.0 | Outil de test |
-| Installateur | (aucune version) | Spécification, non implémenté |
+| SYNE | 0.17.0 (observabilité 0.5.0, monde 1.1, snapshot schemaVersion 5) | Disponible; Core 604/604 et Console 91/91 dans la vérification locale. |
+| ECHOS | 0.1.0 (`SCHEMA_VERSION = 6`; métriques 2.0.0) | Service d'analyse sans interface; 382 réussis, 14 ignorés, couverture 91,30 %. La migration BL-09 dite v7 n'a pas incrémenté le compteur global. |
+| Launcher | 0.1.0 (paquet `.livexp`) | Unit 174/174, Integration 20/20; E2E 31/33 avec SYNE publié, les deux J3 restant en échec. Le rapport de campagne du 17/10 est un run distinct à 33/33. |
+| PRISM / PRISM-LDK | Version de travail; contrats consommés 0.5.0 / monde 1.1 | Specs UE documentées, non réexécutées dans ce relevé; rendu interactif complet reste une porte distincte. |
+| `syne-mock` | 0.1.0 | Outil de test; 51 réussis, 2 ignorés sous Windows. |
+| Installateur | (aucune version) | Spécification, non implémenté. |
+
+Le livre garde sa date de référence historique du 12 octobre 2026 pour ses descriptions narratives et campagnes de cette date. Le présent tableau n'actualise pas rétroactivement leurs protocoles ou résultats; consulter [`LIVEX-STATUS.md`](../../governance/LIVEX-STATUS.md) pour le détail complet des vérifications et limites.
 
 ## 4. Ce que cette chronologie montre
 

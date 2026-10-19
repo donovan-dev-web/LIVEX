@@ -128,3 +128,15 @@ Ce chapitre a montré que le temps du monde est un temps causal : quinze étapes
 On peut résumer ce que le chapitre établit en une phrase : le monde a un **avant** et un **après** qui ne se confondent jamais, et aucun événement ne peut influencer le passé. Cette flèche du temps, discrète et stricte, est ce qui rend possible tout ce qui suit : la comparaison de deux runs, la reconstruction d'une cause, la mesure d'une propagation. Sans elle, il n'y aurait ni expérience ni analyse, seulement une animation.
 
 Ce que ce chapitre ne permet pas encore de conclure : que ces règles produisent des phénomènes intéressants. Pour cela, il faut pouvoir arrêter le monde et le reprendre sans le briser, afin de comparer des expériences. C'est le sujet du chapitre suivant : persister et revenir.
+
+## Note de conformité — fenêtre causale et ordre d'itération (arbitrage A0-1)
+
+*Ajoutée le 17 octobre 2026, à l'issue du réalignement SYNE 0.17.0 (phase 3, arbitrage A0-1). Le corps du chapitre est inchangé : cette note certifie ce que le code exécute à la date indiquée.*
+
+**Conforme.** L'énoncé du §1 — « les conséquences d'une action dans un tick n'affectent le monde qu'en fin de tick, et n'influencent donc les décisions qu'au tick suivant » — est implémenté : la perception et la délibération d'un tick lisent l'état figé en ouverture de tick ; les effets (déplacements, effets inter-entités) sont mis en file puis appliqués en lot à la fermeture du tick. Références : `Simulation.Core/Actions/TickCommitBuffer.cs` et `CognitionPipeline.Step` (itération triée par identifiant, commit de fin de boucle).
+
+**Précision sur l'ordre.** Le §5 impose l'ordre croissant des identifiants. Cette note précise le sens à en donner : l'ordre d'itération est un **détail d'exécution, pas une loi causale**. Deux runs à configuration et graine identiques mais dont les entités ont été insérées dans un ordre inversé produisent exactement la même empreinte d'état complète. C'est vérifié par `CausalOrderInvarianceTests` (comparaison aux ticks 10, 30 et 60, avec contrôle de divergence par graine), en complément de `CausalWindowTests` (aucun agent ne perçoit un effet produit dans le même tick).
+
+**Exception déclarée.** Le prélèvement sur un **gisement** reste séquentiel, dans l'ordre des identifiants : une action terminale doit savoir si elle a réussi avant d'appliquer son effet sur le besoin, et différer le prélèvement imposerait soit une révision a posteriori du résultat, soit une double dépense silencieuse. La conséquence visible est bornée à la quantité d'un stock partagé — jamais à la perception d'un agent.
+
+**Portée de cette note.** Une note de conformité établit l'accord entre ce chapitre et le code à une date donnée, en citant les tests qui le constatent ; elle ne dit rien de la viabilité du monde ni de l'émergence des structures. Constat relevé le 17 octobre 2026 : `CausalWindowTests` et `CausalOrderInvarianceTests` verts, suite moteur complète verte (596 tests).

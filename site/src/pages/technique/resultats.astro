@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { PROJECT_STATE } from '../../data/release';
@@ -7,8 +10,8 @@ import { url } from '../../utils/url';
 const nf = new Intl.NumberFormat('fr-FR');
 ---
 <BaseLayout
-  title="Reproductibilité et mesures"
-  description="Tests, couverture, benchmarks et méthode de reproduction des expériences de simulation LIVEX : ce qui est mesuré, daté, et ce qui ne l'est pas encore."
+  title="Reproductibilité et mesures LIVEX"
+  description="Tests, couverture et benchmarks LIVEX : méthode de reproduction bit-à-bit, résultats mesurés et limites assumées, datés et sourcés."
 >
   <PageHeader
     index="10"
@@ -55,7 +58,7 @@ const nf = new Intl.NumberFormat('fr-FR');
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>tests au vert</h3>
-          <p>{PROJECT_STATE.tests.ignored} ignorés, 0 échec sur les suites locales.</p>
+          <p>0 échec sur les suites locales.</p>
         </div>
         <div>
           <div class="n">{PROJECT_STATE.coverage.echos}</div>
@@ -73,7 +76,7 @@ const nf = new Intl.NumberFormat('fr-FR');
           <thead><tr><th>Indicateur</th><th>Valeur</th></tr></thead>
           <tbody>
             <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tests par composant</td><td>SYNE 634 · ECHOS 361 · Launcher 217 · syne-mock 46</td></tr>
+            <tr><td>Tests au vert par composant</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
             <tr><td>Intégration continue</td><td>{PROJECT_STATE.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
           </tbody>
@@ -155,9 +158,9 @@ const nf = new Intl.NumberFormat('fr-FR');
         <table class="tb">
           <thead><tr><th>Affirmation</th><th>Statut</th><th>Source</th></tr></thead>
           <tbody>
-            <tr><td>1 258 tests réussis (0 échec) au 12/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>Couverture ECHOS 90,55 % / SYNE 87,41 % au 12/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>13/13 jobs CI verts le 11/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>1 356 tests réussis, 0 échec au 19/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1, §5</td></tr>
+            <tr><td>Couverture ECHOS 91,32 % / SYNE 81,20 % au 19/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>13/13 jobs CI verts le 19/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
             <tr><td>Écart ≈ 1,7× sous la cible à 1 000 entités</td><td>Vérifiée</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
         </table>

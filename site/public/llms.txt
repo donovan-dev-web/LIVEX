@@ -5,7 +5,7 @@
 > rendu perceptif (PRISM).
 
 Documentation publique, en français (langue source) avec un miroir anglais sous `/en/`.
-Code sous licence MIT, contenu sous CC BY 4.0. Auteur : Donovan Chartrain.
+Code sous licence GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later), contenu sous CC BY 4.0. Auteur : Donovan Chartrain.
 Dépôt : https://github.com/donovan-dev-web/LIVEX
 
 ## Présentation

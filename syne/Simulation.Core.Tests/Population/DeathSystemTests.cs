@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Mortalité par épuisement (SYNE-074) : une entité dont l'énergie atteint 0 meurt — retrait du monde, des
@@ -10,9 +13,9 @@ using Simulation.Core.Loop;
 using Simulation.Core.Population;
 using Simulation.Core.Prng;
 using Simulation.Core.Social;
-using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 

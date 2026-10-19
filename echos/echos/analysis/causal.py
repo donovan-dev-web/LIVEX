@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Reconstruction de chaînes causales (ECHOS-060 → ECHOS-063, jalon ph6).
 
 ``build_chain`` reconstruit la chaîne ``Action ← Intention ← Objectif ←
@@ -70,6 +73,11 @@ class Node:
 
 class CausalError(ValueError):
     """Erreur métier de reconstruction (traduite en 4xx par l'API REST)."""
+
+
+def _value_or_none(value: Any) -> Any:
+    """Valeur publiée telle quelle — un booléen n'est jamais un nombre."""
+    return None if isinstance(value, bool) else value
 
 
 def _trace_for(
@@ -269,7 +277,13 @@ def build_chain(
             tick=tick,
             label=action,
             detail={
-                "utility": float(trace.get("utility") or 0.0),
+                # Utilité **nullable** (BL-09) : ``null`` pour une absence ou un
+                # report, dont le score sort sous ``heldUtility`` avec son état
+                # et le tick de la décision d'origine. Jamais 0.0 par défaut.
+                "decisionState": trace.get("decision_state"),
+                "utility": _value_or_none(trace.get("utility")),
+                "heldUtility": _value_or_none(trace.get("held_utility")),
+                "decisionTick": _value_or_none(trace.get("decision_tick")),
                 "deliberated": bool(trace.get("deliberated")),
                 "interrupted": bool(trace.get("interrupted")),
                 "cause": str(trace.get("cause") or ""),

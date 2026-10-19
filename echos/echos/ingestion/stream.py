@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Consommation du flux SYNE **alignée sur les ticks** (ECHOS-010).
 
 Le flux peut commencer par ``world_initialized`` ; cette description de monde

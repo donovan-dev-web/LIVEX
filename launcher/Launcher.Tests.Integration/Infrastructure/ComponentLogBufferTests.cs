@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tampon des lignes de composant : les consoles lisent un flux déjà long sans jamais le perdre, et le

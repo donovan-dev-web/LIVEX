@@ -1,3 +1,6 @@
+﻿# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Schéma SQLite d'analyse ECHOS (ECHOS-012, étendu jalon ECHOS ph4).
 
 Base de données **distincte** des tables SYNE : les tables
@@ -26,7 +29,7 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "6"
+SCHEMA_VERSION = "7"
 """Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
 
 v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces``.
@@ -105,7 +108,10 @@ CREATE TABLE IF NOT EXISTS decision_traces (
     tick INTEGER NOT NULL CHECK (tick >= 0),
     agent_id TEXT NOT NULL,
     chosen_action TEXT,
-    utility REAL NOT NULL,
+    utility REAL,
+    held_utility REAL,
+    decision_state TEXT,
+    decision_tick INTEGER,
     deliberated INTEGER NOT NULL DEFAULT 0,
     interrupted INTEGER NOT NULL DEFAULT 0,
     cause TEXT,
@@ -178,6 +184,7 @@ class AnalyticsStore:
             self._conn.executescript(_DDL)
             self._migrate_measured_column()
             self._migrate_resource_columns()
+            self._migrate_decision_trace_nullable_utility()
             self._conn.execute(
                 "INSERT OR REPLACE INTO _meta (key, value) VALUES ('schema_version', ?)",
                 (SCHEMA_VERSION,),
@@ -219,6 +226,61 @@ class AnalyticsStore:
                 self._conn.execute(
                     f"ALTER TABLE tick_summaries ADD COLUMN {name} REAL NOT NULL DEFAULT 0"
                 )
+
+    def _migrate_decision_trace_nullable_utility(self) -> None:
+        """Rend ``decision_traces.utility`` nullable (v7) et ajoute les colonnes BL-09.
+
+        SQLite ne retire pas un ``NOT NULL`` : la migration reconstruit la table.
+        Les lignes anterieures gardent leur ``utility`` (y compris le ``0.0``
+        ecrit pour une absence) et sortent avec ``decision_state`` ``None``.
+        """
+        columns = {
+            str(row[1]): row
+            for row in self._conn.execute("PRAGMA table_info(decision_traces)").fetchall()
+        }
+        needs_rebuild = (
+            "utility" not in columns
+            or bool(columns.get("utility", (None, None, None, 1))[3])
+            or "held_utility" not in columns
+            or "decision_state" not in columns
+            or "decision_tick" not in columns
+        )
+        if not needs_rebuild:
+            return
+        self._conn.executescript(
+            "CREATE TABLE IF NOT EXISTS decision_traces_new ("
+            "run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE, "
+            "tick INTEGER NOT NULL CHECK (tick >= 0), "
+            "agent_id TEXT NOT NULL, "
+            "chosen_action TEXT, "
+            "utility REAL, "
+            "held_utility REAL, "
+            "decision_state TEXT, "
+            "decision_tick INTEGER, "
+            "deliberated INTEGER NOT NULL DEFAULT 0, "
+            "interrupted INTEGER NOT NULL DEFAULT 0, "
+            "cause TEXT, "
+            "beliefs_count INTEGER NOT NULL DEFAULT 0, "
+            "goals_count INTEGER NOT NULL DEFAULT 0, "
+            "memory_count INTEGER NOT NULL DEFAULT 0, "
+            "needs TEXT, "
+            "PRIMARY KEY (run_id, tick, agent_id));"
+        )
+        existing = [
+            "run_id", "tick", "agent_id", "chosen_action", "utility",
+            "deliberated", "interrupted", "cause", "beliefs_count",
+            "goals_count", "memory_count", "needs",
+        ]
+        select_cols = ", ".join(
+            name if name in columns else "NULL" for name in existing
+        )
+        self._conn.execute(
+            "INSERT INTO decision_traces_new ("
+            + ", ".join(existing)
+            + ") SELECT " + select_cols + " FROM decision_traces"
+        )
+        self._conn.execute("DROP TABLE decision_traces")
+        self._conn.execute("ALTER TABLE decision_traces_new RENAME TO decision_traces")
 
     def record_run(self, run_id: str, version: str, seed: str | None = None) -> None:
         with self._lock:
@@ -422,16 +484,20 @@ class AnalyticsStore:
                 """
                 INSERT OR REPLACE INTO decision_traces (
                     run_id, tick, agent_id, chosen_action, utility,
+                    held_utility, decision_state, decision_tick,
                     deliberated, interrupted, cause,
                     beliefs_count, goals_count, memory_count, needs
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     run_id,
                     int(tick),
                     str(trace["agent_id"]),
                     str(trace["chosen_action"]),
-                    float(trace["utility"]),
+                    _number_or_none(trace.get("utility")),
+                    _number_or_none(trace.get("held_utility")),
+                    trace.get("decision_state"),
+                    _number_or_none(trace.get("decision_tick")),
                     int(bool(trace["deliberated"])),
                     int(bool(trace["interrupted"])),
                     str(trace["cause"]),
@@ -519,18 +585,28 @@ class AnalyticsStore:
                         ],
                     )
                 if decision_traces:
+                    # Même contrat que ``append_decision_trace`` (BL-09) : ``utility``
+                    # est **nullable** et le report publie son score sous
+                    # ``held_utility`` avec son ``decision_tick``. Le chemin batch
+                    # (``consume`` → ici) doit appliquer la même règle que le chemin
+                    # unitaire, sinon un flux réel portant ``utility: null`` — cas
+                    # majoritaire — fait échouer l'ingestion entière.
                     self._conn.executemany(
                         """
                         INSERT OR REPLACE INTO decision_traces (
                             run_id, tick, agent_id, chosen_action, utility,
+                            held_utility, decision_state, decision_tick,
                             deliberated, interrupted, cause, beliefs_count,
                             goals_count, memory_count, needs
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         [
                             (
                                 record.run_id, record.tick, str(trace["agent_id"]),
-                                str(trace["chosen_action"]), float(trace["utility"]),
+                                str(trace["chosen_action"]), _number_or_none(trace.get("utility")),
+                                _number_or_none(trace.get("held_utility")),
+                                trace.get("decision_state"),
+                                _number_or_none(trace.get("decision_tick")),
                                 int(bool(trace["deliberated"])), int(bool(trace["interrupted"])),
                                 str(trace["cause"]), int(trace["beliefs_count"]),
                                 int(trace["goals_count"]), int(trace["memory_count"]),
@@ -555,6 +631,7 @@ class AnalyticsStore:
                 rows = self._conn.execute(
                     """
                     SELECT tick, agent_id, chosen_action, utility,
+                           held_utility, decision_state, decision_tick,
                            deliberated, interrupted, cause,
                            beliefs_count, goals_count, memory_count, needs
                     FROM decision_traces
@@ -567,6 +644,7 @@ class AnalyticsStore:
                 rows = self._conn.execute(
                     """
                     SELECT tick, agent_id, chosen_action, utility,
+                           held_utility, decision_state, decision_tick,
                            deliberated, interrupted, cause,
                            beliefs_count, goals_count, memory_count, needs
                     FROM decision_traces
@@ -580,14 +658,17 @@ class AnalyticsStore:
                 "tick": int(row[0]),
                 "agent_id": row[1],
                 "chosen_action": row[2],
-                "utility": float(row[3]),
-                "deliberated": bool(row[4]),
-                "interrupted": bool(row[5]),
-                "cause": row[6],
-                "beliefs_count": int(row[7]),
-                "goals_count": int(row[8]),
-                "memory_count": int(row[9]),
-                "needs": json.loads(row[10]) if row[10] else {},
+                "utility": (float(row[3]) if row[3] is not None else None),
+                "held_utility": (float(row[4]) if row[4] is not None else None),
+                "decision_state": row[5],
+                "decision_tick": (int(row[6]) if row[6] is not None else None),
+                "deliberated": bool(row[7]),
+                "interrupted": bool(row[8]),
+                "cause": row[9],
+                "beliefs_count": int(row[10]),
+                "goals_count": int(row[11]),
+                "memory_count": int(row[12]),
+                "needs": json.loads(row[13]) if row[13] else {},
             }
             for row in rows
         ]
@@ -996,3 +1077,9 @@ def _decode_context(payload: str | bytes) -> object:
     if text.startswith("z:"):
         text = zlib.decompress(b64decode(text[2:])).decode("utf-8")
     return json.loads(text)
+
+
+def _number_or_none(value: object) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value)

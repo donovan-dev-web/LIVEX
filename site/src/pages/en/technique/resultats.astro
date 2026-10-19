@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import { PROJECT_STATE, PROJECT_STATE_EN } from '../../../data/release';
@@ -9,8 +12,8 @@ const nf = new Intl.NumberFormat('en-US');
 <BaseLayout
   lang="en"
   translated
-  title="Reproducibility and measurements"
-  description="Tests, coverage, benchmarks and reproduction method for LIVEX simulation experiments: what is measured, dated, and what is not yet."
+  title="Reproducibility and measures in LIVEX"
+  description="LIVEX tests, coverage and benchmarks: bit-for-bit replay method, measured results and stated limits, dated and sourced."
 >
   <PageHeader
     lang="en"
@@ -58,7 +61,7 @@ const nf = new Intl.NumberFormat('en-US');
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>passing tests</h3>
-          <p>{PROJECT_STATE.tests.ignored} ignored, 0 failures across local suites.</p>
+          <p>0 failures across local suites.</p>
         </div>
         <div>
           <div class="n">{PROJECT_STATE.coverage.echos}</div>
@@ -76,7 +79,7 @@ const nf = new Intl.NumberFormat('en-US');
           <thead><tr><th>Indicator</th><th>Value</th></tr></thead>
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tests per component</td><td>SYNE 634 · ECHOS 361 · Launcher 217 · syne-mock 46</td></tr>
+            <tr><td>Passing tests per component</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
             <tr><td>Continuous integration</td><td>{PROJECT_STATE_EN.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
           </tbody>
@@ -155,9 +158,9 @@ const nf = new Intl.NumberFormat('en-US');
         <table class="tb">
           <thead><tr><th>Claim</th><th>Status</th><th>Source</th></tr></thead>
           <tbody>
-            <tr><td>1,258 tests passing (0 failures) as of 12/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>ECHOS coverage 90.55% / SYNE 87.41% as of 12/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>13/13 CI jobs green on 11/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>1,356 passing tests, 0 failures as of 19/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1, §5</td></tr>
+            <tr><td>ECHOS coverage 91.32% / SYNE 81.20% as of 19/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>13/13 CI jobs green on 19/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
             <tr><td>Gap ≈ 1.7× below target at 1,000 entities</td><td>Verified</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
         </table>

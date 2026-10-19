@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Tests des modèles d'ingestion des contrats SYNE V0.1."""
 
 import json
@@ -170,3 +173,44 @@ def test_group_members_are_accepted_in_string_form_too():
     }))
 
     assert message.groups[0].members == ["A"]
+
+
+def test_group_bond_distances_are_parsed_and_stay_nullable():
+    """Contrat A0-3 : distances des paires liées lues telles que SYNE les émet.
+
+    ``maxBondDistance``/``meanBondDistance`` sont nullables : publiées →
+    conservées à leur valeur exacte (aucun arrondi ni coercition) ; absentes ou
+    ``null`` (groupe sans lien) → ``None``, jamais 0 — la distinction « non
+    mesuré » vs « mesuré nul » appartient au moteur.
+    """
+    from echos.ingestion.models import parse_message
+
+    message = parse_message(json.dumps({
+        "type": "snapshot", "version": "0.5.0", "runId": "run-21", "tick": 3,
+        "simulatedTimeMinutes": 3, "aliveCount": 3,
+        "agents": [{"id": "1", "species": "A", "position": {"x": 0, "y": 0},
+                    "energy": 1, "hunger": 0, "thirst": 0},
+                   {"id": "2", "species": "A", "position": {"x": 1, "y": 0},
+                    "energy": 1, "hunger": 0, "thirst": 0}],
+        "groups": [
+            {"groupId": 1, "members": [1, 2], "size": 2, "leaderId": 2,
+             "bornTick": 1, "cohesion": 0.8123, "decision": "MoveToFood",
+             "consensus": 0.75, "maxBondDistance": 512.5,
+             "meanBondDistance": 128.25},
+            {"groupId": 2, "members": [1], "size": 1, "bornTick": 2,
+             "cohesion": 1.0, "consensus": 1.0, "maxBondDistance": None,
+             "meanBondDistance": None},
+            {"groupId": 3, "members": [2], "size": 1, "bornTick": 2,
+             "cohesion": 1.0, "consensus": 1.0},
+        ],
+    }))
+
+    linked, explicit_null, absent = message.groups
+    assert (linked.max_bond_distance, linked.mean_bond_distance) == (512.5, 128.25)
+    assert (explicit_null.max_bond_distance, explicit_null.mean_bond_distance) == (None, None)
+    assert (absent.max_bond_distance, absent.mean_bond_distance) == (None, None)
+    # La forme camelCase ressort au dump (contrat de transport inchangé) —
+    # les nulls sont transportés tels quels, jamais omis par ``exclude_none``.
+    dumped = linked.model_dump(mode="json", by_alias=True)
+    assert dumped["maxBondDistance"] == 512.5
+    assert explicit_null.model_dump(mode="json", by_alias=True)["maxBondDistance"] is None

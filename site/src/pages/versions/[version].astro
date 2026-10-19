@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -17,8 +20,8 @@ interface Props {
 const { v } = Astro.props;
 ---
 <BaseLayout
-  title={`${v.label} — Versions`}
-  description={`Notes de version LIVEX ${v.label}, publiées le ${v.date}.`}
+  title={`LIVEX ${v.label} — Notes de version`}
+  description={`Notes de version LIVEX ${v.label}, publiées le ${v.date} : nouveautés, corrections et limites connues.`}
 >
   <PageHeader
     index="13"
@@ -42,6 +45,11 @@ const { v } = Astro.props;
           </ul>
         </>
       ))}
+
+      {v.assets.length === 0 && (
+        <div class="cc"><p>Aucun fichier joint à cette version : les binaires, tailles et empreintes SHA-256
+          apparaissent ici dès qu'un artefact est attaché.</p></div>
+      )}
 
       {v.assets.length > 0 && (
         <>

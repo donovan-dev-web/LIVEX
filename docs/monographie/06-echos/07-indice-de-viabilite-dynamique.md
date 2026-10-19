@@ -173,7 +173,7 @@ Les **marges aux seuils de crise** complètent la résilience : celle-ci dit **s
 
 ## 6. Statut, phases d'implémentation et publication
 
-L'indice est **spécifié et planifié** : son implémentation est prévue **avant la publication de ce livre**. Le présent chapitre est donc écrit comme une référence d'implémentation, et non comme la description d'un mécanisme en service. La distinction compte, parce qu'elle fixe la façon de lire ce qui suit : chaque section indique ce qui est **publiable à quelle phase**.
+L'indice est **spécifié**, mais son implémentation n'est pas attestée. La date envisagée auparavant — avant la publication de ce livre — n'a pas valeur de preuve : le relevé du code du 18 octobre 2026 ne trouve ni moteur `ViabilityIndicators` ni métriques DVI publiées. L'endpoint de viabilité existant expose les séries sources et le rapport de calibration, sans score dynamique synthétique. Le présent chapitre est donc une référence de spécification et non la description d'un mécanisme en service; les phases ci-dessous sont un plan de travail, pas des livraisons acquises.
 
 L'implémentation est découpée en trois phases, chacune produisant une valeur publiable et testable, sans casser les contrats existants.
 
@@ -198,7 +198,7 @@ Les sorties sont exposées par une interface conforme aux règles de lecture du 
 | Interface et calibration | phase 3 |
 | Score d'émergence | inchangé, composite publié jusqu'à preuve contraire |
 
-Cette honnêteté n'est pas un détail administratif : elle détermine la façon de lire le reste du livre. Tant que l'indice n'est pas calibré, il ne peut pas servir à **juger** un run ; il peut seulement servir à **décrire** un régime.
+Cette honnêteté n'est pas un détail administratif : elle détermine la façon de lire le reste du livre. Le DVI n'étant pas implémenté dans le code vérifié, il ne peut actuellement ni **juger** un run ni **décrire** son régime. Les séries sources de l'endpoint existant restent consultables, mais ne sont pas l'indice spécifié ici.
 
 ## 7. Sorties publiées et règles de lecture
 
@@ -300,7 +300,7 @@ En liant la mesure à des propriétés nécessaires plutôt qu'à un volume, l'i
 
 **Ce que ce chapitre ne permet pas de conclure.**
 
-- L'indice n'est **pas encore livré** au moment de la rédaction : les valeurs de viabilité ne sont pas publiées, et seuls le score d'émergence et les moteurs existants le sont. Le chapitre décrit une spécification accompagnée de son plan d'implémentation.
+- Le DVI n'est **pas implémenté** dans le code vérifié le 18 octobre 2026 : les sorties de viabilité à sept composantes ne sont pas publiées. L'endpoint existant expose des séries sources et diagnostics observés; ce chapitre décrit la spécification et un plan d'implémentation, pas une fonctionnalité livrée.
 - Les constantes sont héritées et non calibrées : les seuils de régime et la zone optimale ne sont pas des normes.
 - L'indice ne prouve rien sur l'émergence : un monde viable n'est pas un monde qui produit des structures nouvelles, seulement un monde où l'on peut espérer en observer.
 - L'observatoire n'injecte aucune perturbation : la résilience n'est mesurée que sur les crises spontanées, ce qui rend la composante dépendante de ce que le monde a bien voulu produire.
