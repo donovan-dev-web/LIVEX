@@ -1,14 +1,14 @@
 # SYNE — Systems & Emergent Network Engine
 
-[![Version: 0.15.0](https://img.shields.io/badge/Version-0.15.0-1f7f6f.svg)](CHANGELOG.md)
+[![Version: 0.17.0](https://img.shields.io/badge/Version-0.17.0-1f7f6f.svg)](CHANGELOG.md)
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
-[![Tests: 634](https://img.shields.io/badge/Tests-634-1f7f6f.svg)](TESTING.md)
-[![Couverture: 87,4 %](https://img.shields.io/badge/Couverture-87%2C4%25-1f7f6f.svg)](TESTING.md)
+[![Tests: 695](https://img.shields.io/badge/Tests-695-1f7f6f.svg)](TESTING.md)
+[![Couverture: 81,19 %](https://img.shields.io/badge/Couverture-81%2C19%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Version moteur** : 0.15.0 (contrat d'observabilité 0.4.0)
-**Dernière mise à jour** : 12 octobre 2026
+**Version moteur** : 0.17.0 (contrat d'observabilité 0.5.0)
+**Dernière mise à jour** : 19 octobre 2026
 **Dépend de** : la documentation transversale (../)
 **Source Monographie** : Partie 3, 7.2, 7.3.1
 

@@ -4,7 +4,7 @@
 
 Cette monographie est le livre exhaustif du projet LIVEX. Elle décrit ce que le projet est réellement, comment il est construit, ce qu'il permet d'observer et ce qu'il ne permet pas encore d'affirmer. Elle s'appuie sur le code réellement implémenté, sur les contrats versionnés et sur les preuves exécutables (tests, campagnes rejouables, rapports). Nous distinguons systématiquement ce qui est disponible, expérimental, en développement, envisagé ou hors périmètre.
 
-État décrit : SYNE 0.15.0 (contrat d'observabilité 0.4.0), ECHOS 0.1.0 (schéma SQLite v6), Launcher 0.1.0 (paquet `.livexp`), PRISM et PRISM-LDK en version de travail, `syne-mock` 0.1.0 (outil), installateur à l'état de spécification. Date de référence de la description : 12 octobre 2026.
+État décrit : SYNE 0.17.0 (contrat d'observabilité 0.5.0), ECHOS 0.1.0 (`SCHEMA_VERSION = 6`; la migration BL-09 dite v7 reste à harmoniser), Launcher 0.1.0 (paquet `.livexp`), PRISM et PRISM-LDK en version de travail, `syne-mock` 0.1.0 (outil), installateur à l'état de spécification. Date de référence du livre : 12 octobre 2026. Les vérifications locales plus récentes et leurs limites figurent dans le [statut courant](../governance/LIVEX-STATUS.md).
 
 ## Comment ce sommaire est organisé
 

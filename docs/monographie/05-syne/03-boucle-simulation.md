@@ -131,7 +131,7 @@ Ce que ce chapitre ne permet pas encore de conclure : que ces règles produisent
 
 ## Note de conformité — fenêtre causale et ordre d'itération (arbitrage A0-1)
 
-*Ajoutée le 17 octobre 2026, à l'issue du réalignement (plan `ANALYSE_DIVERGENCES_FONDAMENTALES_ET_PLAN_REALIGNEMENT.md`, phase 3, engineVersion 0.17.0). Le corps du chapitre est inchangé : cette note certifie ce que le code exécute à la date indiquée, conformément à la transposition décidée en phase 0 (A0-1).*
+*Ajoutée le 17 octobre 2026, à l'issue du réalignement SYNE 0.17.0 (phase 3, arbitrage A0-1). Le corps du chapitre est inchangé : cette note certifie ce que le code exécute à la date indiquée.*
 
 **Conforme.** L'énoncé du §1 — « les conséquences d'une action dans un tick n'affectent le monde qu'en fin de tick, et n'influencent donc les décisions qu'au tick suivant » — est implémenté : la perception et la délibération d'un tick lisent l'état figé en ouverture de tick ; les effets (déplacements, effets inter-entités) sont mis en file puis appliqués en lot à la fermeture du tick. Références : `Simulation.Core/Actions/TickCommitBuffer.cs` et `CognitionPipeline.Step` (itération triée par identifiant, commit de fin de boucle).
 

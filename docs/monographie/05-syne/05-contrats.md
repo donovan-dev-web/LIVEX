@@ -2,7 +2,7 @@
 
 SYNE possède la vérité du monde, mais il ne vit pas seul. Deux familles de clients l'entourent : ceux qui observent et mesurent (ECHOS), ceux qui montrent et pilotent (PRISM). Pour qu'ils puissent travailler sans réécrire le monde ni dépendre de ses détails internes, il faut des contrats explicites, versionnés et stables. Ce chapitre les décrit.
 
-Depuis la version 0.15.0, le **contrat d'observabilité** porte la version 0.4.0, et la **version moteur** diffusée dans chaque message est 0.15.0. La version moteur identifie les règles du run : deux runs ne sont comparables que si leurs versions moteur coïncident.
+Depuis la version 0.17.0, le **contrat d'observabilité** porte la version 0.5.0, et la **version moteur** diffusée dans chaque message est 0.17.0. La version moteur identifie les règles du run : deux runs ne sont comparables que si leurs versions moteur coïncident.
 
 Un contrat, dans ce projet, n'est pas un document : c'est une interface qui fonctionne et que des tests vérifient. Le livre décrit les contrats parce qu'ils sont la frontière entre ce que le moteur garantit et ce dont il ne répond pas. Tout ce qui est écrit ici est un engagement tenu ; tout ce qui n'y figure pas n'est pas garanti, même si le code le fait aujourd'hui.
 

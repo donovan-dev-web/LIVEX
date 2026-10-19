@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 19 octobre 2026
 **Dépend de** : `ARCHITECTURE.md`, `../presentation/VISION.md`, `../../VERSIONING.md`
 
 ---
@@ -22,7 +22,7 @@ maintenance. Elle ne décrit pas le simulateur ni ses composants — voir
 | Langues | français (langue source) et anglais (miroir `/en/`) |
 | Hébergement | GitHub Pages (branche `gh-pages`) |
 | Déploiement | `.github/workflows/pages.yml` |
-| Licence | code du site sous MIT, contenu rédactionnel sous CC BY 4.0 |
+| Licence | code du site sous GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later), contenu rédactionnel sous CC BY 4.0 |
 
 ## 2. Rôle du site
 

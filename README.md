@@ -9,7 +9,7 @@
 <a href="docs/prism/README.md"><img alt="PRISM · rendu 3D" src="https://img.shields.io/badge/PRISM-rendu%203D-f0a846?style=plastic" /></a>
 
 [![Version globale V0.2](https://img.shields.io/badge/LIVEX-V0.2-315c9b?labelColor=090C16)](VERSIONING.md)
-[![Licence MIT](https://img.shields.io/badge/Licence-MIT-216e5a?labelColor=090C16)](LICENSE)
+[![Licence GPLv3](https://img.shields.io/badge/Licence-GPLv3-216e5a?logo=gplv3&logoColor=BD0000&labelColor=090C16)](LICENSE)
 [![Moteur SYNE 0.17.0](https://img.shields.io/badge/SYNE-0.17.0-3fb8ea?labelColor=090C16)](syne/component.json)
 [![Contrat d’observabilité 0.5.0](https://img.shields.io/badge/Contrat-0.5.0-a97bff?labelColor=090C16)](docs/syne/API_CONTRACTS.md)
 
@@ -131,13 +131,13 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 
 <div align="center">
 
-| ECHOS · relations | Launcher · expériences |
+| Launcher · expériences | Launcher · vue PRISM |
 |:--:|:--:|
-| <img src="docs/captures/echos-relations.png" alt="Vue des relations observées dans ECHOS" /> | <img src="docs/captures/launcher-experiences.png" alt="Vue des expériences dans le Launcher LIVEX" /> |
+| <img src="docs/captures/launcher-experiences.png" alt="Vue des expériences dans le Launcher LIVEX" /> | <img src="docs/captures/launcher-prism.png" alt="Vue PRISM dans le Launcher LIVEX" /> | <img src="docs/captures/launcher-prism.png" alt="Vue PRISM dans le Launcher LIVEX" /> |
 
-| Launcher · vue PRISM | ECHOS · agents |
+| ECHOS · relations | ECHOS · agents |
 |:--:|:--:|
-| <img src="docs/captures/launcher-prism.png" alt="Vue PRISM dans le Launcher LIVEX" /> | <img src="docs/captures/echos-agents.png" alt="Vue des agents observés dans ECHOS" /> |
+| <img src="docs/captures/echos-relations.png" alt="Vue des relations observées dans ECHOS" /> | <img src="docs/captures/echos-agents.png" alt="Vue des agents observés dans ECHOS" /> |
 
 </div>
 
@@ -240,7 +240,11 @@ Les contributions suivent les conventions du dépôt. Avant de proposer un chang
 
 ## Licence et auteur
 
-Distribué sous licence [MIT](LICENSE).
+Distribué sous licence [GNU GPL v3.0 ou ultérieure](LICENSE) (SPDX : `GPL-3.0-or-later`). Copyright (C) 2026 Donovan Chartrain. Le texte complet de la licence figure dans [`LICENSE`](LICENSE), la déclaration de copyright dans [`NOTICE`](NOTICE) ; les composants tiers et les fichiers non couverts par la GPL sont recensés dans [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md). Cette licence couvre le code de SYNE, ECHOS, du Launcher, de syne-mock et du site vitrine ; le projet Unreal PRISM (`prism/`, dont le plugin PRISM-LDK) reste soumis aux conditions d'Epic Games et n'est pas couvert par la GPL.
+
+<img src="docs/assets/gplv3-or-later.png" alt="Logo GNU GPL v3.0 ou ultérieure" width="100px">
+
+<br>
 
 **Donovan Chartrain**, développeur et infographiste 3D · [Portfolio développement](https://donovan-dev-web.vercel.app) · [Portfolio 3D](https://donovan-dev-3d.vercel.app)
 
@@ -250,4 +254,5 @@ Distribué sous licence [MIT](LICENSE).
 
 <img src="docs/assets/footer.svg" alt="Construire les conditions. Observer les conséquences. Comprendre ce qui émerge." width="100%" />
 
+Copyright (C) 2026 Donovan Chartrain.
 </div>

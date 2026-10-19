@@ -4,7 +4,7 @@
 **Statut** : [Acceptée]
 **Dernière mise à jour** : 16 octobre 2026
 **Dépend de** : ADR-005 (temporalité), ADR-007 (mémoire oubliante), ADR-013 (obstacles et ligne de vue), ADR-015/016 (calibrations de survie)
-**Source** : `ANALYSE_DIVERGENCES_FONDAMENTALES_ET_PLAN_REALIGNEMENT.md` (audit du 16/10/2026), phases 0 à 6 ; constats S-01…S-31, divergences D-01…D-20, points bloquants B-01…B-12
+**Source** : audit des écarts de modèle (16/10/2026), phases 0 à 6 ; constats S-01…S-31, divergences D-01…D-20, points bloquants B-01…B-12. La synthèse pérenne des décisions, résultats et limites est dans [`docs/governance/realignment/SYNE-REALIGNMENT-0.17.0.md`](../../governance/realignment/SYNE-REALIGNMENT-0.17.0.md) et le suivi des arbitrages dans le présent ADR.
 
 ---
 
@@ -88,7 +88,7 @@ chapitre VII est tranchée en faveur d'une **distinction explicite entre
 interaction locale et calcul d'observation**, consignée ici plutôt que corrigée
 à l'aveugle dans le code.
 
-> **Amendement du 17 octobre 2026 (arbitrage A0-3, §9 du plan de réalignement)** :
+> **Amendement du 17 octobre 2026 (arbitrage A0-3)** :
 > deux points de D3 sont **supplantés** et exécutés tels qu'arbitrés en phase 0 :
 > (1) la propagation de l'objectif collectif dans l'utilité individuelle est
 > **supprimée** (`PropagateObjectives`, `GroupObjective`, `collectiveAlignBonus`)

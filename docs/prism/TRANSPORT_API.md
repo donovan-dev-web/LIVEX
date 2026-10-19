@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : documentation d'intégration
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Source de vérité des contrats** : [`../syne/API_CONTRACTS.md`](../syne/API_CONTRACTS.md)
 
@@ -42,6 +42,16 @@ systèmes actifs, les ressources globales, les obstacles, ainsi que
 dans `world_initialized`. Les détails et les champs versionnés sont définis
 dans [`../syne/API_CONTRACTS.md`](../syne/API_CONTRACTS.md).
 
+**Groupes** : chaque entrée de `groups[]` porte `groupId`, `members[]`, `size`,
+`bornTick`, `cohesion`, `consensus`, `decision` et, facultativement, `leaderId`
+(groupe sans leader → `bHasLeader` reste faux : aucun identifiant 0 n'est
+fabriqué). Depuis A0-3, la trame porte **aussi** `maxBondDistance` /
+`meanBondDistance` (distance maximale et moyenne des paires liées) : ce sont des
+**mesures d'analyse**, pas des données de rendu. `FPrismSyneGroup` ne les expose
+pas et le parseur les ignore ; un consommateur qui en a besoin les lit dans
+l'observatoire, pas dans la scène. Absence ou `null` veulent dire « non mesuré »,
+jamais `0.0`.
+
 **Échelle temporelle (ADR-017, contrat description 1.1 / observabilité 0.4.0)** :
 `world_initialized.world` porte `simulatedSecondsPerTick` (secondes simulées par
 tick — 60 au défaut, 5 pour le profil `prism`) et `metersPerUnit` (mètres par
@@ -75,7 +85,7 @@ fournit les fonctions Blueprint `Prepare`, `Ready`, `Start`, `Pause`, `Resume`,
 
 | Méthode | Route | Fonction du plugin | Usage |
 | :-- | :-- | :-- | :-- |
-| POST | `/api/control/prepare` | `Prepare(seed, ticksPerSecond)` | Préparer un monde et sa cadence |
+| POST | `/api/control/prepare` | `Prepare(seed, ticksPerSecond, configJson)` | Préparer un monde, sa cadence et son profil |
 | POST | `/api/control/ready` | `Ready(worldVersion)` | Accuser réception après préparation côté projet |
 | POST | `/api/control/start` | `Start(seed, maxTicks)` | Démarrer le monde préparé |
 | POST | `/api/control/pause` | `Pause()` | Suspendre les ticks |
@@ -84,11 +94,41 @@ fournit les fonctions Blueprint `Prepare`, `Ready`, `Start`, `Pause`, `Resume`,
 | POST | `/api/control/reset` | `Reset(seed, maxTicks)` | Réinitialiser selon le contrat SYNE |
 | GET | `/api/control/status` | `RequestStatus()` | Lire l'état du run |
 
+Le corps de `prepare` accepte une surcouche `config` (objet JSON), fusionnée
+par le serveur sur ses propres défauts. C'est elle qui garantit que SYNE et
+`syne-mock` préparent **le même monde** : sans surcouche, SYNE prépare le profil
+de référence (500 × 500, 60 s/tick) et le mock sa configuration de démarrage —
+deux géométries, deux `CellSize`, donc deux échelles `k` pour PRISM.
+
+```json
+{
+  "seed": 42,
+  "ticksPerSecond": 6,
+  "config": {
+    "simulation": { "worldWidth": 2240, "worldHeight": 2240, "worldCellSize": 32,
+                    "ticksPerSecond": 6, "simulatedSecondsPerTick": 5 },
+    "world": { "metersPerUnit": 1.0, "obstacles": true, "obstacleLayout": [
+      { "id": "amer-1", "x": 300, "y": 300, "radius": 8 }
+    ] }
+  }
+}
+```
+
+(Extrait : le profil `prism` déclare cinq disques.)
+
+`Prepare` transmet `ConfigJson` **tel quel** : le plugin ne fusionne ni ne
+complète la surcouche. La valeur de référence est le profil `prism` du dépôt
+(`configs/simulation/prism.json`, identique à `SimulationProfiles.Prism()` et à
+`syne-mock/config_prism.json` pour la géométrie) ; Blueprint la porte dans
+`DA_PRISM_SessionConfig.WorldConfigJson`. Laisser le champ vide conserve le
+comportement antérieur (défauts du serveur) mais ne garantit plus l'égalité des
+mondes entre les deux sources.
+
 Le cycle de préparation recommandé est :
 
 ```text
 Connect
- → Prepare(seed, ticksPerSecond)
+ → Prepare(seed, ticksPerSecond, configJson)
  → OnWorldInitialized
  → le projet Unreal PRISM construit/prépare sa présentation
  → Ready(worldVersion)
@@ -104,6 +144,14 @@ du moteur de simulation, pas le framerate Unreal. `GET /api/control/status`
 restitue `ticksPerSecond` et `simulatedSecondsPerTick` du monde préparé
 (`null` tant qu'aucun monde n'est préparé). Les corps précis, états et
 codes d'erreur suivent le contrat SYNE.
+
+**Lecture du statut** : une réponse de commande n'est pas un statut complet.
+`prepare` renvoie `{ok, action, ticksPerSecond, world}` et `ready` un accusé
+`{ok, action, …}` sans `state`. Le plugin **fusionne** chaque réponse sur le
+statut courant : une clé absente ne remet pas un champ à zéro. Les valeurs
+`null` (`ticksPerSecond`, `simulatedSecondsPerTick`) sont lues comme « non
+renseigné » (`bHasSimulatedSecondsPerTick = false`), jamais converties en `0`
+observé ni en l'ancienne valeur par défaut `10`.
 
 Le plugin ne fait pas de polling périodique automatique documenté de l'état :
 Blueprint peut appeler `RequestStatus()` quand il a besoin de le relire.
@@ -123,3 +171,13 @@ Le mode replay rejoue des messages JSONL sans restaurer l'état interne de SYNE.
 Consulter [`../../syne-mock/README.md`](../../syne-mock/README.md) pour les
 différences à jour. Ne pas utiliser le mock pour valider l'équivalence des
 décisions, trajectoires ou résultats métier.
+
+**Ce qui est identique et vérifié** : les deux sources parlent le même contrat
+(`version` 0.5.0, `engineVersion` 0.17.0, description 1.1), le même ordre de
+flux (snapshot puis événements du tick, aucun événement avant le premier
+snapshot) et la même géométrie quand `prepare` reçoit la même surcouche
+`config`. `syne-mock` accepte cette surcouche comme SYNE ; ses tests
+verrouillent l'identité de contrat et l'ordre, et
+`scripts/parity-mock-syne-world.js` compare la description de monde champ par
+champ. La projection PRISM (`PrismLdk.Contract`) rejoue les trames des deux
+sources dans les mêmes parseurs.

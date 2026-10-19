@@ -52,7 +52,7 @@ flowchart LR
 
 ## 4. Ce qui reste ouvert
 
-Le projet laisse ouverts, et le dit, un certain nombre de chantiers. La scène interactive complète, hors périmètre de la version 0.1. Le support d'exécution au-delà de Windows et Linux. L'activation calibrée des systèmes livrés mais désactivés (saisons, territoires, livres, constructions, primitives cognitives). Les sources spatiales de ressources et la conflictualité collective. L'indice de viabilité dynamique, spécifié et en cours de réalisation, dont la livraison est prévue avant la publication de ce livre, mais qui n'est pas encore disponible à la date décrite. L'installateur, qui n'a pas encore une ligne de code. Le nombre de runs nécessaires pour conclure statistiquement.
+Le projet laisse ouverts, et le dit, un certain nombre de chantiers. La scène interactive complète, hors périmètre de la version 0.1. Le support d'exécution au-delà de Windows et Linux. L'activation calibrée des systèmes livrés mais désactivés (saisons, territoires, livres, constructions, primitives cognitives). Les sources spatiales de ressources et la conflictualité collective. L'indice de viabilité dynamique reste une spécification : le relevé du code du 18 octobre ne trouve ni moteur DVI à sept composantes ni sorties correspondantes, malgré l'échéance antérieure envisagée avant publication. L'installateur, qui n'a pas encore une ligne de code. Le nombre de runs nécessaires pour conclure statistiquement.
 
 Ces chantiers ne sont pas des promesses : ce sont des constats d'inachèvement, écrits comme tels. L'annexe L les reprend un par un, dans l'ordre où ils se commandent, en distinguant les capacités livrées mais non activées, les jalons présents dans le code mais non franchis et ce qui reste hors périmètre.
 

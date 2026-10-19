@@ -53,7 +53,7 @@ Une limite d'échelle mérite d'être soulignée : la représentation vise un mo
 
 ## 5. Les limites de couverture de preuve
 
-Toutes les capacités prévues ne sont pas livrées, et le livre le rappelle. À l'état décrit, les benchmarks de longue durée, la reprise de travailleur et le parcours d'interface complet ne sont pas encore des preuves de publication. Les campagnes scientifiques ont été rejouées par le chemin de réinitialisation, et le parcours de bout en bout est acquis, mais le journal des travaux ouverts reste ouvert.
+Toutes les capacités prévues ne sont pas livrées, et le livre le rappelle. À la coupe du 12 octobre, les benchmarks de longue durée, la reprise de travailleur et le parcours d'interface complet ne constituaient pas des preuves de publication. Les campagnes scientifiques ont été rejouées par le chemin de réinitialisation; le rapport de campagne Launcher du 17 octobre documente un run J3 à 33/33, mais la vérification locale du 18 octobre donne 31/33 avec deux assertions d'analyse en échec. Le journal des travaux ouverts reste donc ouvert.
 
 Plusieurs fonctionnalités sont livrées mais désactivées par défaut : saisons, territoires, livres, constructions, primitives cognitives, inventaire, engagements, contrôle de saillance. Leur activation change la trajectoire et n'est pas encore calibrée. Le livre les décrit comme disponibles mais inactives, jamais comme actives.
 
@@ -62,18 +62,18 @@ Plusieurs fonctionnalités sont livrées mais désactivées par défaut : saison
 | Préuves non encore publiées | benchmarks longue durée, reprise de travailleur, parcours d'interface |
 | Livré mais désactivé | saisons, territoires, livres, constructions, inventaire, engagements |
 | Hors périmètre 0.1 | rendu interactif complet, ressources spatiales, négociation territoriale, conflit actif |
-| Spécifié, implémentation planifiée | indice de viabilité dynamique (livraison prévue avant la publication de ce livre) |
+| Spécifié, non implémenté au relevé du 18/10 | indice de viabilité dynamique (DVI à sept composantes; seules les séries de source et la calibration post-run sont disponibles) |
 | Spécifié, non implémenté | installateur |
 
 Certaines capacités sont explicitement hors périmètre de la version 0.1 : l'expérience de rendu interactive complète, les sources spatiales de ressources, la négociation territoriale et la conflictualité collective active.
 
-Deux cas ne doivent pas être confondus avec un abandon. L'**indice de viabilité dynamique** est spécifié et son implémentation est découpée en trois phases qui doivent être livrées avant la publication de ce livre : au moment de la rédaction, il n'est donc ni disponible ni hors périmètre, mais **en cours de réalisation**, et c'est le score composite qui reste publié. Sa référence complète, y compris ses phases et ses constantes, est le chapitre ECHOS VII. L'**installateur** est, lui, à l'état de spécification sans plan de livraison annoncé.
+Deux cas ne doivent pas être confondus avec une capacité livrée. L'**indice de viabilité dynamique** est spécifié, mais le relevé du code du 18 octobre 2026 ne trouve ni moteur DVI ni métriques à sept composantes. L'endpoint de viabilité publie les séries sources et la calibration post-run; le score composite reste le composite publié. Le chapitre ECHOS VII décrit la spécification et un plan en phases, non un mécanisme en service. La livraison autrefois prévue avant la publication du livre n'est pas attestée. L'**installateur** reste à l'état de spécification sans plan de livraison annoncé.
 
 ## 6. Les limites de provenance
 
-Un chiffre peut tromper. Un test vert confirme le comportement qu'il couvre, mais ne valide pas l'ensemble d'un contrat entre composants. Les tests du moteur et ceux du mock valident des produits distincts, et leur réussite ne démontre pas que les deux simulations soient équivalentes. Aucun résultat automatisé de la scène ne peut être déduit de la réussite des autres composants.
+Un chiffre peut tromper. Un test vert confirme le comportement qu'il couvre, mais ne valide pas l'ensemble d'un contrat entre composants. Le run Launcher 33/33 archivé le 17/10 et le run local 31/33 du 18/10 sont des relevés distincts; le second laisse deux assertions J3 en échec, et quatre skips conditionnels sont comptés en échecs si le moteur publié manque. Les tests du moteur et ceux du mock valident des produits distincts, et leur réussite ne démontre pas que les deux simulations soient équivalentes. Aucun résultat automatisé de la scène ne peut être déduit de la réussite des autres composants.
 
-La couverture mesurée est assortie de deux exclusions documentées (deux classes incompatibles avec l'instrumentation), et seize tests ne s'exécutent qu'en intégration continue. Ces limitations de portée sont publiées, non passées sous silence.
+Les couvertures doivent toujours être lues avec leur date et leur assemblage : au 18 octobre, ECHOS mesure 91,30 %, SYNE Core 91,17 % et Console 63,46 %, sans agrégat SYNE par union recalculé. Le total ancien de seize tests ignorés et les exclusions de couverture appartiennent au relevé historique du 12 octobre; ils ne sont pas présentés ici comme une mesure actuelle. Les limites d'exécution restent publiées, non passées sous silence.
 
 ## 7. Les questions éthiques
 

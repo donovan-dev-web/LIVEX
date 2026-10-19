@@ -14,7 +14,7 @@ Cette priorité en quatre niveaux mérite d'être retenue, car elle explique un 
 
 ## 2. Le fichier de configuration
 
-Un fichier de configuration regroupe les paramètres en sections : simulation, agents, ressources, communication, monde, groupes, reproduction, aléatoire et performance. Les valeurs par défaut de la version 0.15.0 sont rassemblées ci-dessous pour les sections principales.
+Un fichier de configuration regroupe les paramètres en sections : simulation, agents, ressources, communication, monde, groupes, reproduction, aléatoire et performance. Les valeurs par défaut de la version 0.17.0 sont rassemblées ci-dessous pour les sections principales.
 
 **Simulation.** Dimensions 500 par 500, taille de cellule 10, nombre maximal de ticks 1 000 000, cadence 10 ticks par seconde, durée simulée par tick 60 secondes, sauvegarde automatique tous les 1000 ticks, cinq sauvegardes conservées.
 
@@ -64,7 +64,7 @@ Les options de ligne de commande sont le dernier mot parce qu'elles servent aux 
 
 ## 5. L'échelle temporelle
 
-La version 0.15.0 introduit un second levier de temporalité, à côté de la cadence : la **durée simulée par tick**. Leur rapport porte un nom, `R`, et détermine combien de temps simulé s'écoule par seconde réelle. Par défaut, un tick vaut une minute simulée et la cadence est de dix ticks par seconde, soit dix minutes simulées par seconde réelle.
+La version 0.17.0 introduit un second levier de temporalité, à côté de la cadence : la **durée simulée par tick**. Leur rapport porte un nom, `R`, et détermine combien de temps simulé s'écoule par seconde réelle. Par défaut, un tick vaut une minute simulée et la cadence est de dix ticks par seconde, soit dix minutes simulées par seconde réelle.
 
 Ce levier a une conséquence non triviale. Certaines quantités sont des **processus continus du temps simulé** : elles doivent être mises à l'échelle. D'autres sont des **cadences mécaniques de calcul** : elles restent en ticks. D'autres encore sont des **effets ponctuels par action** : elles ne changent pas. Cette classification, dite A, B et C, est un point technique central.
 

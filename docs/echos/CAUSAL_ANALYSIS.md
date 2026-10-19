@@ -54,6 +54,7 @@ Cette décision est formalisée dans `adr/ADR-002-mode-calcul-causal.md` **[Acce
 - **Déterminisme** (ECHOS-041) : ordres stables (besoins par (valeur, clé), croyances/sujets triés, perceptions (tick, id)), aucun tirage, aucune écriture.
 - **Boucles de rétroaction (ECHOS-062, §4.5.3)** : une action déjà choisie aux ticks précédents du run ⇒ `cycle=true` + récurrence (`cycles[].ticks`) ; duplicat intra-chaîne ⇒ arrêt au seuil du retour. La **profondeur d'affichage est bornée** (`depth ≤ max_depth = 12`, défaut 7) ; troncature signalée (`truncated`).
 - **Accès** : `GET /api/runs/{run_id}/causal-chains/{agent_id}?tick=&depth=` (`API_REST.md` §3.8) ; `tick` optionnel (dernière décision de l'entité).
+- **Consommateur** : le sous-écran **Chaîne causale** de la fenêtre d'analyse du Launcher (`docs/launcher/USER_INTERFACE.md` §9.2) affiche la réponse telle quelle — couches, boucles et troncature publiées, aucun nœud reconstruit côté présentation.
 - **Cache (ECHOS-063)** : `CausalCache` LRU borné (256), invalidé sur `AnalyticsStore.ingest_version` — un re-run du même run force la re-analyse (résultat reproductible).
 
 **Exemple de sortie** (extrait) :

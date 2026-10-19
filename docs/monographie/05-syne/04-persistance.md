@@ -97,7 +97,7 @@ Ce que ce chapitre ne permet pas encore de conclure : que l'état sauvegardé so
 
 ## Note de conformité — identité du run et trace de décision (réalignement, phase 4)
 
-*Ajoutée le 17 octobre 2026, à l'issue du réalignement (plan `ANALYSE_DIVERGENCES_FONDAMENTALES_ET_PLAN_REALIGNEMENT.md`, phase 4, engineVersion 0.17.0, schemaVersion 5). Le corps du chapitre est inchangé : cette note certifie ce que le code exécute à la date indiquée.*
+*Ajoutée le 17 octobre 2026, à l'issue du réalignement SYNE 0.17.0 (phase 4, schemaVersion 5). Le corps du chapitre est inchangé : cette note certifie ce que le code exécute à la date indiquée.*
 
 **Identité du run.** L'instantané porte le **hash canonique de configuration** (`RunIdentity.ConfigHash` : insensible à l'ordre des clés, sensible aux valeurs, stable entre deux chargements équivalents) en plus du tick, de l'état du générateur et du monde. Le **hash d'état** (`RunIdentity.StateHash`) est reproductible pour deux runs identiques et diverge avec la graine ; il change avec l'état, pas avec l'identité courante du run. Une empreinte d'identité publiée (`RunIdentityStamp`) rassemble versions moteur et schéma, graine et hash de configuration — une valeur absente y est explicitement *absente*, jamais inventée. Gates : `RunIdentityTests` (dont `Snapshot_CarriesTheConfigurationHash`) et la reprise bit-à-bit `ReloadFromSnapshot_ContinuesBitForBitIdenticalToUninterruptedRun` citée au §5.
 

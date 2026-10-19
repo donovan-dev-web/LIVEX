@@ -56,8 +56,14 @@ livex/
 │           └── ...
 ├── templates/                   # modèles de paquet, de campagne, de profil
 ├── LICENSE
+├── THIRD-PARTY-NOTICES.md
 └── VERSION
 ```
+
+> **État transitoire (19/10/2026).** En attendant l'installeur, `dotnet publish`
+> place `LICENSE`, `NOTICE` et `THIRD-PARTY-NOTICES.md` à la racine du dossier
+> `launcher/` (voir `launcher/Launcher.App/Launcher.App.csproj`). L'installeur
+> devra les remonter à la racine de l'installation (`livex/`) et y ajouter `VERSION`.
 
 Le Launcher est installé **sans** ses composants. Il détecte ceux qui sont présents
 et signale ceux qui manquent, conformément à `COMPONENTS.md` §12.

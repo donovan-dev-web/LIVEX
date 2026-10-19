@@ -128,7 +128,7 @@ client de corréler le pilotage et le flux.
 | `agents[]` | array | État complet exposé de chaque entité (position, besoins, intention, action exécutée, traits, croyances, objectifs, confiance, mémoire) — **0.3.0 (additif, sous drapeaux)** : `agents[].inventory` (quantités par type de ressource, D8) et `agents[].commitments` (engagements actifs/résolus, D5) sont émis **seulement** quand `agents.actions.inventory.enabled` / `agents.actions.commitments.enabled` sont actifs ; sortie bit-à-bit identique sinon (rétro-compatible à la lecture) |
 | `resources[]` | array | Stocks globaux `{type, quantity}` — 4 types depuis **SYNE ph7c** (food, water, wood, **mineral**) (DATA_MODEL §8.1), pas des stocks localisés par nœud |
 | `obstacles[]` | array | Constructions/obstacles statiques `{id, x, y, radius}` — depuis **SYNE ph11d** (SYNE-071), ordre d'insertion (déterminisme) (DATA_MODEL §2) |
-| `groups[]`, `territories[]`, `books[]` | arrays | État complet courant des systèmes activés |
+| `groups[]`, `territories[]`, `books[]` | arrays | État complet courant des systèmes activés. `groups[]` : `{groupId, members[], size, leaderId?, bornTick, cohesion, consensus, decision?, maxBondDistance, meanBondDistance}` ; `maxBondDistance`/`meanBondDistance` (0.5.0, additif) sont `null` quand la distance des paires liées n'a pas été mesurée — **jamais 0.0**, et `leaderId` est absent pour un groupe sans leader |
 | `worldChanges[]` | array | Mutations d'obstacle de ce tick `{kind, id, x, y, radius}` ; vide si aucune |
 | `actions[]` | array | Résultat d'action du tick par agent : `{agentId, action, outcome, cause, energyDelta, hungerDelta, thirstDelta, fatigueDelta, reserve?, reserveConsumed?}` ; vide seulement si aucun agent |
 
@@ -147,7 +147,8 @@ Exemple (format condensé) :
                      "members": [1, 2, 3, 4, 5] } ],
   "groups": [ { "groupId": 1, "members": [1, 2, 3], "size": 3,
                 "leaderId": 1, "bornTick": 5000, "cohesion": 0.42,
-                "decision": "SeekFood", "consensus": 0.80 } ],
+                "decision": "SeekFood", "consensus": 0.80,
+                "maxBondDistance": 12.5, "meanBondDistance": 8.25 } ],
   "worldChanges": [ { "kind": "added", "id": "maison-1", "x": 100, "y": 100, "radius": 10 } ],
   "actions": [ { "agentId": "1", "action": "Explore", "outcome": "executed",
                  "energyDelta": -0.5, "hungerDelta": 0, "thirstDelta": 0,
@@ -174,6 +175,11 @@ Exemple (format condensé) :
 > (syne-060/061, ajout **additif**, MINOR) liste les groupes actifs au tick : `groupId`,
 > `members[]`, `size`, `leaderId`, `bornTick`, `cohesion` (cohésion moyenne au dernier LOD),
 > `decision`/`consensus` (dernière décision collective, `SYSTEMS_SPEC` §5).
+> **Contrat 0.5.0 (arbitrage A0-3, additif)** : `maxBondDistance` et
+> `meanBondDistance` (distance maximale / moyenne des paires liées, arrondies à
+> 4 décimales) sont **émis dans `groups[]`** et dans `group_formed` ; la valeur
+> est `null` quand aucune position n'a permis la mesure. Le consommateur doit
+> distinguer l'absence d'un zéro observé (`0.0` = paires liées confondues).
 
 ### 2.2 `event` — ExternalEvent
 
@@ -211,7 +217,8 @@ Exemple :
 > (COMMUNICATION_PROTOCOL.md §8).
 > **`group_formed`/`group_dissolved`/`group_decision` (jalon SYNE ph6)** : diffusés par
 > `ObservabilityTickEmitter` à chaque révision LOD (défaut 10 ticks) par `Cognition.Groups`.
-> `group_formed` : `agentId` = leader émergent, `value = {groupId, size, cohesion, members[]}`.
+> `group_formed` : `agentId` = leader émergent, `value = {groupId, size, cohesion, maxBondDistance, members[]}`
+> (`maxBondDistance` = 0.5.0, additif, `null` si non mesurée).
 > `group_dissolved` : `agentId` = leader sortant, `value = {groupId, lifetime, success,
 > membersOut, membersIn, members[]}` (bilan de vie + turnover brut — consommé par ECHOS
 > `group_dynamics`). `group_decision` : `agentId` = leader, `action` = intention majoritaire,

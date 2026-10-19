@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : `../governance/ROADMAP.md` (racine), `VISION.md`, `adr`
 **Source Monographie** : —
 
@@ -36,6 +36,8 @@ contrats de SYNE et d'ECHOS, dont il dépend pour piloter, et il accompagne PRIS
 | **5 — Consolidation** | Le Launcher devient le point d'entrée unique de LIVEX |
 
 ## 3. Les jalons
+
+> **Relevé d’acceptation réelle (17–18/10/2026).** L’intégration Launcher a été vérifiée avec SYNE publié et ECHOS réel : les suites du 17/10 rapportent `Integration` 20/20 et `EndToEnd` 33/33 sur SYNE publié, avec un paquet `.livexp` scellé puis relu. Le relevé d’intégration du 18/10 couvre aussi la chaîne SYNE→ECHOS→Launcher et la correction des données absentes (utilité nullable, réserves sans position inventée, groupes natifs distingués des communautés ECHOS). Ces résultats répondent au critère de composants réels pour les parcours testés, mais ne ferment pas toutes les portes G4–G7 ni la livraison multi-plateforme. Sans `LIVEX_SYNE_PUBLISHED_ROOT`, quatre tests gatés peuvent être comptés à tort comme échecs par le runner : cette limite d’environnement demeure à corriger. Détail dans le [rapport d’acceptation pérenne](../governance/realignment/LAUNCHER-ACCEPTANCE-2026-10.md); la matrice et le plan Launcher V1 restent la référence du backlog.
 
 > **État de réalisation observé :** les sections ci-dessous décrivent la cible
 > et les portes de conception ; elles ne signifient pas que le jalon est livré.

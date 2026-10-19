@@ -52,7 +52,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   « Action » de la chaîne causale expose désormais `decisionState`, `utility`
   (nullable), `heldUtility` et `decisionTick`. Preuves : suite ECHOS **376
   tests verts** (couverture 91 %), test de migration (`test_a_database_written_before_v7…`),
-  `docs/realignment-evidence/launcher/evidence/verif-migration-v7-echos.txt`.
+  les tests de migration v7 de `echos/tests/`.
   `API_REST.md` §3.7 mis à jour.
 
 ### Changed

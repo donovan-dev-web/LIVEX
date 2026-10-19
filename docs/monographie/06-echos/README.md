@@ -16,7 +16,7 @@ On pourrait croire qu'un observatoire est un accessoire : quelques compteurs ajo
 4. **API et viabilité** : les endpoints disponibles, la lecture seule, et le profil de viabilité d'un run.
 5. **Les outils mathématiques partagés** : l'entropie de Shannon, sa version normalisée, la moyenne, la variance, le rapport borné, la fonction de borne et l'indice de concordance, avec leur histoire et leurs limites.
 6. **Les formules des métriques, famille par famille** : les formules exactes des sept familles, leurs constantes et ce qu'elles ne mesurent pas.
-7. **L'indice de viabilité dynamique** : les sept composantes, le noyau géométrique, la couverture, les régimes, la trajectoire post-run, les phases d'implémentation et la calibration. Ce chapitre est une référence d'implémentation : l'indice est spécifié et planifié pour être livré avant la publication de ce livre.
+7. **L'indice de viabilité dynamique** : les sept composantes, le noyau géométrique, la couverture, les régimes, la trajectoire post-run, les phases d'implémentation et la calibration. Ce chapitre est une spécification de projet, pas une description de code livré; le relevé courant du [statut LIVEX](../../governance/LIVEX-STATUS.md) confirme que le DVI à sept composantes n'est pas implémenté.
 8. **Composites, reproductibilité et causalité** : le score d'émergence, la complexité, les phénomènes détectés, la comparaison de deux runs et la reconstruction d'une chaîne de causes.
 
 ## Le trajet d'une donnée
@@ -44,7 +44,7 @@ Une quatrième règle, moins visible, complète les trois premières : une métr
 
 ## État
 
-ECHOS 0.1.0 est un backend Python (FastAPI) assorti de NumPy, Pandas, SciPy et NetworkX, d'un stockage SQLite (schéma version 6) et de séries Parquet. Le catalogue des métriques porte la version 2.0.0 et comporte soixante et une fiches. Trois cent soixante et un tests couvrent le composant, avec une couverture mesurée de 90,55 %. Le composant est **disponible** en tant que service d'analyse headless.
+ECHOS 0.1.0 est un backend Python (FastAPI) assorti de NumPy, Pandas, SciPy et NetworkX, d'un stockage SQLite dont `SCHEMA_VERSION` vaut 6, et de séries Parquet. La migration BL-09 qui rend l'utilité nullable est dite v7 dans ses tests/commentaires, mais le compteur global reste 6; cette discordance est explicitée dans l'[annexe des schémas](../annexes/annexes-parametres-et-bases-de-donnees.md). Le catalogue des métriques porte la version 2.0.0 et comporte soixante et une fiches. Le relevé local du 18 octobre 2026 passe 382 tests, en ignore 14 et mesure 91,30 % de couverture. L'endpoint de profil de viabilité décrit des séries observées et la calibration post-run; il ne publie pas le DVI spécifié dans le chapitre VII. Le composant est **disponible** en tant que service d'analyse headless.
 
 ## Ce que cette partie apporte à la question directrice
 

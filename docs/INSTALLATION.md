@@ -5,10 +5,10 @@
 **Dernière mise à jour** : 5 octobre 2026
 **Dépend de** : `governance/ROADMAP.md`, `COMMUNICATION.md`
 
-> **Versions courantes** : moteur **SYNE 0.15.0** (défauts intégrés calibrés B1,
+> **Versions courantes** : moteur **SYNE 0.17.0** (défauts intégrés calibrés B1,
 > ADR-016, profil de référence ADR-015 — voir
 > `syne/adr/ADR-016-calibration-stabilite-2500-ticks.md`),
-> contrat d'observabilité SYNE **0.4.0** (champ `seed` et `simulatedTimeSeconds`
+> contrat d'observabilité SYNE **0.5.0** (champ `seed` et `simulatedTimeSeconds`
 > additifs dans le snapshot,
 > format canonique des runs pilotés `run-<seed>-<12hex>`), stockage d'analyse
 > ECHOS **schéma v6**. Les versions évoluent indépendamment par composant

@@ -145,7 +145,7 @@ ajoutée ici **avant** sa mise en ligne.
    tant qu'aucune capture réelle n'existe.
 3. **Pas de promesse** : les statuts et la page Télécharger décrivent le
    dépôt, pas une feuille de route commerciale.
-4. **Double licence explicite** : code MIT, contenu CC BY 4.0 (voir aussi
+4. **Double licence explicite** : code sous GNU GPL v3.0 ou ultérieure, contenu CC BY 4.0 (voir aussi
    `footer` et `licence/`).
 5. **Ton** : sobre, factuel, sans superlatif ; « illustration conceptuelle »
    clairement étiquetée.

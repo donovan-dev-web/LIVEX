@@ -67,3 +67,6 @@ echos/data/
 .agentsroom/fork-context-*.txt
 .agentsroom/transfer-context-*.txt
 .agents/mcp.json
+
+# Documentation generee (graphe du codebase) - non suivie, deplacee avant commit
+docs/codebase/

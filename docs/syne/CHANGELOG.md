@@ -9,12 +9,14 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Fixed
+
+- **`groups[]` du snapshot n'émettait pas les distances que le contrat 0.5.0 annonce** : `ObservabilitySerializer.GroupsJson` omettait `maxBondDistance` / `meanBondDistance` (seul `group_formed` les portait), alors que `PrismLdk` les parse dans `groups[]` et que la documentation les déclarait publiées. Les deux clés sont désormais émises, arrondies à 4 décimales, avec `null` quand la paire n'a pas été mesurée — jamais `0.0`. Verrouillé par `AdrGroupObserverTests` (JSON publié + absence ≠ zéro).
+- **`configs/simulation/prism.json` ne rejouait pas `SimulationProfiles.Prism()`** : layout d'obstacles `15/5/120/90/80` au lieu de `150/150/150/60/8`, et dérives de besoins restées à l'ancienne calibration (`0,0002`/`0,0005`) au lieu de `0,003`/`0,002`. Même monde annoncé, décisions et décor différents — `scripts/parity-mock-syne-world.js` échouait (203 cases bloquées côté moteur contre 108 côté mock). Fichier réaligné et verrouillé par `ReferenceProfileParityTests.PrismJsonFile_ReplaysExactlyThePrismProfile`.
+
 ### Changed — **arbitrage A0-3 « groupes : observateur seul » (engineVersion 0.17.0)**
 
-Mise en œuvre de la phase 3 du plan de réalignement (arbitrage **A0-3** validé
-le 17/10/2026, qui remplace partiellement **ADR-018 D3** — voir l'amendement
-dans l'ADR). Le conflit d'arbitrage A0-3 / D3 (BL-33) a été tranché en faveur de
-A0-3 : exécution intégrale, suppression complète des mécanismes d'injection.
+Mise en œuvre de l’arbitrage **A0-3** (17/10/2026), qui remplace partiellement **ADR-018 D3** — voir l’amendement dans l’ADR. Le conflit A0-3 / D3 (BL-33) a été tranché en faveur de A0-3 : exécution intégrale, suppression complète des mécanismes d’injection. Le rapport versionné des arbitrages et résultats figure dans [`docs/governance/realignment/SYNE-REALIGNMENT-0.17.0.md`](../governance/realignment/SYNE-REALIGNMENT-0.17.0.md).
 
 - **Décision collective exposée, jamais injectée** : `GroupSystem.PropagateObjectives`,
   `GroupObjective` / `MindState.CollectiveObjective` et le bonus
@@ -48,10 +50,7 @@ A0-3 : exécution intégrale, suppression complète des mécanismes d'injection.
 
 ### Changed — **réalignement de la cognition active (engineVersion 0.16.0)**
 
-Mise en œuvre du plan de réalignement issu de
-`ANALYSE_DIVERGENCES_FONDAMENTALES_ET_PLAN_REALIGNEMENT.md` (arbitrages consignés
-en **ADR-018**). **Altération volontaire de trajectoire** : les checksums dorés
-sont ré-épinglés dans ce commit, avec leurs causes.
+Mise en œuvre des arbitrages consignés en **ADR-018**. **Altération volontaire de trajectoire** : les checksums dorés sont ré-épinglés dans ce commit, avec leurs causes. Le rapport versionné du réalignement SYNE 0.17.0 est conservé dans [`docs/governance/realignment/SYNE-REALIGNMENT-0.17.0.md`](../governance/realignment/SYNE-REALIGNMENT-0.17.0.md).
 
 - **Chaîne épistémique active (S-02/S-05/S-07/D-05/B-05)** : les candidats et leur
   évaluation consomment la **connaissance active** de l'agent — croyances de

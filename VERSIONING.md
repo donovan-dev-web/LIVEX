@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 12 octobre 2026
+**Dernière mise à jour** : 19 octobre 2026
 **Dépend de** : —
 **Source Monographie** : §7.1 (organisation du monorepo), Annexe J (roadmap V2)
 
@@ -73,8 +73,9 @@ Le versionnement est déclenché par les évènements suivants :
 
 | Composant / contrat | Version | Évolution |
 | :-- | :-- | :-- |
-| **SYNE** | **0.15.0** | MINOR : calibration **B1** des défauts intégrés (ADR-016) — coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives social/curiosité abaissées, réserves 20 000 avec régénération nette, coûts de communication neutres ; stabilité 2500 ticks à 50 et 100 agents, goldens re-épinglés. (0.14.0 : jalon ADR cognitifs, drapeaux inerte — 0.13.0 : calibration D1, ADR-015) — **inchangée par ADR-017** (échelle temporelle : profil par défaut bit-à-bit identique) |
-| Contrat d'observabilité (snapshot) | **0.4.0** | **ADR-017 (additif)** : `simulatedTimeSeconds` dans le snapshot ; description `world_initialized` 1.0 → **1.1** (`simulatedSecondsPerTick`, `metersPerUnit`) ; `/api/control/status` + `simulatedSecondsPerTick`. `simulatedTimeMinutes` (plancher entier, stockage ECHOS) inchangé. (0.3.0 : champs additifs sous drapeaux — 0.2.1 : champ `seed`) |
+| **Global LIVEX** | **V0.2** | Jalon transverse : réalignement des divergences fondamentales clos (37/37 BL, 7/7 phases), contrat d'observabilité 0.5.0, moteur SYNE 0.17.0. |
+| **SYNE** | **0.17.0** | MINOR : calibration **B1** des défauts intégrés (ADR-016) — coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives social/curiosité abaissées, réserves 20 000 avec régénération nette, coûts de communication neutres ; stabilité 2500 ticks à 50 et 100 agents, goldens re-épinglés. (0.14.0 : jalon ADR cognitifs, drapeaux inerte — 0.13.0 : calibration D1, ADR-015) — **inchangée par ADR-017** (échelle temporelle : profil par défaut bit-à-bit identique) |
+| Contrat d'observabilité (snapshot) | **0.5.0** | **ADR-017 (additif)** : `simulatedTimeSeconds` dans le snapshot ; description `world_initialized` 1.0 → **1.1** (`simulatedSecondsPerTick`, `metersPerUnit`) ; `/api/control/status` + `simulatedSecondsPerTick`. `simulatedTimeMinutes` (plancher entier, stockage ECHOS) inchangé. (0.3.0 : champs additifs sous drapeaux — 0.2.1 : champ `seed`) |
 | Format `run_id` | `run-<seed>-<12hex>` | Seed explicite dans l'identifiant ; ECHOS ne dérive plus le seed de l'id (repli `_seed_of` conservé) |
 | **ECHOS** (paquet Python) | **0.1.0** | Version du paquet `echos` (`echos/echos/__init__.py`) — pré-1.0, sans lien automatique avec le schéma de stockage |
 | ECHOS (stockage/calibration) | schéma SQLite **v6** | Migration additive `mean_food`/`mean_water`, rapport de calibration par run avec bloc `viability` |
