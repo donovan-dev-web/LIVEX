@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Ingestion — contrats d'observation et de pilotage de SYNE.
 
 - :mod:`models` : modèles pydantic des contrats `WorldInitialized` /

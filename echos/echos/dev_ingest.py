@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Lance le worker local d'ingestion SYNE vers ECHOS pour le développement."""
 
 from __future__ import annotations

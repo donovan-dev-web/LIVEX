@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Routes REST ECHOS (ECHOS-040→044).
 
 :func:`register_routes` attache les endpoints d'analyse à un

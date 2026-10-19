@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Agrégation incrémentale par tick (ECHOS-011).
 
 Chaque :class:`TickSegment` (ECHOS-010) est réduit de façon **déterministe**

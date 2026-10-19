@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Utilitaires déterministes communs aux 8 moteurs.
 
 Toutes les fonctions sont **pures** : mêmes entrées → mêmes sorties (aucune

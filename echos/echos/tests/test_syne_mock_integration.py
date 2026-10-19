@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Intégration de contrat entre le mock SYNE (Node) et ECHOS.
 
 Le mock parle les mêmes contrats d'observabilité et de contrôle que le vrai

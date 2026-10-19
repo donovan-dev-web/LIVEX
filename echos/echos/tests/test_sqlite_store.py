@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Schéma SQLite d'analyse (ECHOS-012) : structure **stable** et table
 d'analyse **distincte** des tables SYNE, lecture déterministe."""
 

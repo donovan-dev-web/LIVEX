@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Pipeline d'ingestion ECHOS vers le stockage d'analyse (ECHOS-011→013, ph4).
 
 :func:`consume` enchaîne la boucle réelle : écoute du WebSocket :5180

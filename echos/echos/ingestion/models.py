@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Modèles pydantic des contrats d'ingestion SYNE.
 
 Les messages sur le WebSocket :5180 sont des JSON **camelCase** (contrat de

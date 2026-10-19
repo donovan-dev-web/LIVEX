@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Instrumentation ECHOS ph5 (ECHOS-050/051/052).
 
 Couvre le package ``echos.instrumentation`` — preuve J5 étendue :

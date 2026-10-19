@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Intégration de contrat U8 contre l'émetteur WebSocket SYNE réel.
 
 Définir LIVEX_SYNE_E2E=1 après avoir compilé Simulation.Console en Release.

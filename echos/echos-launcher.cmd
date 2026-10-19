@@ -1,4 +1,6 @@
 @echo off
+REM SPDX-FileCopyrightText: 2026 Donovan Chartrain
+REM SPDX-License-Identifier: GPL-3.0-or-later
 setlocal
 set "component_dir=%~dp0"
 if exist "%component_dir%.venv\Scripts\python.exe" (

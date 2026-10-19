@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Tests de la calibration post-run (SYNE-131)."""
 
 from echos.analysis.calibration import build_calibration_report

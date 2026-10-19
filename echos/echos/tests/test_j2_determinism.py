@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Preuve J2 (ECHOS-027) : la chaîne ECHOS (accumulation → moteurs) est
 déterministe, bit-à-bit.
 

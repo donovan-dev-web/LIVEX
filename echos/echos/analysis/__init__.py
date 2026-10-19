@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteurs de métriques ECHOS (7 moteurs + indicateurs).
 
 Chaque moteur est buildable et testable séparément : ``ENGINE_NAME`` (contrat

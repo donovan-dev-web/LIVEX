@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 5 — FeedbackLoopDetector (répétitions d'action).
 
 **Portée réelle** : le moteur compte des paires

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Contrat d'ingestion ECHOS : zéro mesuré / non mesuré / absent / trou (BL-24).
 
 L'audit S-29 conclut que le mécanisme existe déjà (``gaps_detected``, drapeau

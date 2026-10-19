@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 3 — SocialComplexityMetrics (complexité sociale).
 
 Mesure la structure des réseaux de relations à partir des

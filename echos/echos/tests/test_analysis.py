@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteurs de métriques ECHOS (ECHOS-020→026, jalon U2).
 
 Chaque moteur est une fonction pure et déterministe ``compute(snapshot) ->

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """API REST ECHOS (ECHOS-040→045, jalon ph4, preuve J5).
 
 Contrat : liste de runs, métriques + séries (``?every=N`` et

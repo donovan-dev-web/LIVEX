@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Consommation alignée sur les ticks (ECHOS-010) : découpage en segments,
 erreurs de désalignement, et consommation sur **vrai serveur WebSocket**
 (serveur Python in-process rejouant le contrat V0.1 de SYNE)."""

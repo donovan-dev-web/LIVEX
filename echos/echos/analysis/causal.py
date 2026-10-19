@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Reconstruction de chaînes causales (ECHOS-060 → ECHOS-063, jalon ph6).
 
 ``build_chain`` reconstruit la chaîne ``Action ← Intention ← Objectif ←

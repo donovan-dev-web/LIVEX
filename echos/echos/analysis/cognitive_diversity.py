@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 1 — CognitiveDiversityMetrics (diversité cognitive).
 
 Mesure la séparation des croyances et des comportements entre entités

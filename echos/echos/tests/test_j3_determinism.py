@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Preuve J3 (ECHOS-030/033, jalon U3) : le score d'émergence est stable
 entre runs identiques et borné sur [0, 1].
 

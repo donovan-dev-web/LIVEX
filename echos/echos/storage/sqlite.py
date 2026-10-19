@@ -1,4 +1,7 @@
-﻿"""Schéma SQLite d'analyse ECHOS (ECHOS-012, étendu jalon ECHOS ph4).
+﻿# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+"""Schéma SQLite d'analyse ECHOS (ECHOS-012, étendu jalon ECHOS ph4).
 
 Base de données **distincte** des tables SYNE : les tables
 ``runs``/``tick_summaries``/``events_log`` appartiennent à la couche

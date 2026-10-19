@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Scénarios de référence contrôlés.
 
 Chaque test construit un snapshot **synthétique connu** : on sait ce que la

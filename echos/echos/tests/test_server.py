@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Tests du point d'entrée serveur.
 
 ECHOS est une **API seule** (ECHOS révisé, Launcher) : aucune

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Pipeline d'ingestion (ECHOS-011→013) : flux → SQLite + Parquet, en
 bout-en-bout sur un vrai serveur WebSocket in-process."""
 

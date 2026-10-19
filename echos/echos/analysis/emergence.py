@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 8 — EmergenceIndicators (indicateurs d'émergence, ECHOS-030→033).
 
 Composite : ``compute(snapshot)`` exécute les
