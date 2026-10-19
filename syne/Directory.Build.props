@@ -1,0 +1,12 @@
+<Project>
+
+  <!--
+    Métadonnées communes aux projets .NET de SYNE.
+    La licence du dépôt est la GNU GPL v3.0 ou ultérieure (voir LICENSE et NOTICE).
+  -->
+  <PropertyGroup>
+    <Copyright>Copyright (C) 2026 Donovan Chartrain</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+
+</Project>

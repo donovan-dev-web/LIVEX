@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Arbitrage A0-3 (17/10/2026, validate le 17/10) — loi des groupes en
@@ -12,6 +15,7 @@
 //            distance des paires liées est instrumentée (max/moyenne par
 //            groupe, `null` = non mesuré) et persistée dans le snapshot.
 
+using System.Text.Json.Nodes;
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
@@ -95,6 +99,15 @@ public class AdrGroupObserverTests
         Assert.Equal(512.5, worldGroup.MaxBondDistance);
         Assert.Equal(256.25, worldGroup.MeanBondDistance);
 
+        // (2bis) Émission JSON : les deux distances sont réellement PUBLIÉES dans
+        // `groups[]` du snapshot (le contrat 0.5.0 les annonce). Vérifier l'objet
+        // `GroupSnapshot` ne prouvait pas la sérialisation : les deux champs
+        // manquaient dans le JSON avant le 18/10.
+        JsonObject snapshotJson = ObservabilitySerializer.SnapshotMessage(world);
+        JsonObject worldGroupJson = (JsonObject)snapshotJson["groups"]!.AsArray()[0]!;
+        Assert.Equal(512.5, (double?)worldGroupJson["maxBondDistance"]);
+        Assert.Equal(256.25, (double?)worldGroupJson["meanBondDistance"]);
+
         // (3) Événements : group_formed porte la distance instrumentée (null JSON
         // si non mesurée) et group_decision expose l'adoption.
         ExternalEvent formed = EventSensor.GroupFormed(tick: 1, group);
@@ -131,6 +144,26 @@ public class AdrGroupObserverTests
         Assert.Equal(256.25, restoredGroup.MeanBondDistance);
         Assert.Equal(DesireKind.SeekFood, restoredGroup.Decision);
         Assert.Equal(0.9, restoredGroup.Consensus, 10);
+    }
+
+    [Fact]
+    public void ObserverSnapshot_WithoutMeasuredBondDistances_SerializesNull_NotZero()
+    {
+        // Absence ≠ zéro : un groupe dont les distances n'ont pas été mesurées
+        // publie `null` dans le snapshot (jamais 0.0, qui se lirait comme un
+        // zéro observé).
+        SimulationLoop loop = BuildLoop(seed: 12345, entityCount: 5);
+        var minds = loop.Cognition.MindPairsSorted().ToDictionary(pair => pair.Id, pair => pair.Mind);
+        var group = new Group(3, bornTick: 2, new List<ulong> { 2, 3 });
+        loop.Cognition.RestoreState(minds, new[] { group }, nextGroupId: 4);
+
+        WorldSnapshot world = WorldSnapshot.Capture(loop, seed: 12345);
+        JsonObject json = (JsonObject)ObservabilitySerializer.SnapshotMessage(world)["groups"]!.AsArray()[0]!;
+
+        Assert.True(json.ContainsKey("maxBondDistance"));
+        Assert.True(json.ContainsKey("meanBondDistance"));
+        Assert.Null(json["maxBondDistance"]);
+        Assert.Null(json["meanBondDistance"]);
     }
 
     [Fact]

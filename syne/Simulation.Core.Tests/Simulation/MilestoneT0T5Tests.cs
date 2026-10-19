@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests du jalon transverse T0–T5 : échelle, divergence des croyances et déterminisme.
@@ -11,8 +14,8 @@ using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 
@@ -278,7 +281,7 @@ public class MilestoneT0T5Tests
     {
         MindState mind = loop.Cognition.MindOf(observerId);
         return mind.Beliefs.All.Any(belief =>
-            belief.Fact.Subject == $"entity-{subjectId}" && belief.Fact.Predicate == "position") ;
+            belief.Fact.Subject == $"entity-{subjectId}" && belief.Fact.Predicate == "position");
     }
 
     // ------------------------------------------------------------------

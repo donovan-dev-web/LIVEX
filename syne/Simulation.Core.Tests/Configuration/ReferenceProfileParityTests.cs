@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Verrou « un seul jeu de valeurs » (ADR-016) : défauts = profil de référence = configs/simulation/reference.json (BL-35 / A0-2).
@@ -41,12 +44,31 @@ public sealed class ReferenceProfileParityTests
     [Fact]
     public void ReferenceJsonFile_ReplaysExactlyTheReferenceProfile()
     {
-        string overlay = File.ReadAllText(LocateReferenceJson());
+        string overlay = File.ReadAllText(LocateSimulationConfig("reference.json"));
 
         SimulationOptions fromFile = ConfigLoader.MergeJson(ConfigLoader.LoadDefaults(), overlay);
 
         Assert.Equal(
             CanonicalJson(ConfigLoader.ToJson(SimulationProfiles.Reference())),
+            CanonicalJson(ConfigLoader.ToJson(fromFile)));
+    }
+
+    [Fact]
+    public void PrismJsonFile_ReplaysExactlyThePrismProfile()
+    {
+        // Même verrou pour le profil `prism` : `configs/simulation/prism.json`
+        // est le profil CLI/Launcher et la surcouche que PRISM envoie dans
+        // `POST /api/control/prepare` ; `SimulationProfiles.Prism()` est ce que
+        // produit `--simulation prism`. Les deux avaient divergé (dérives
+        // 0,0002/0,0005 au lieu de 0,003/0,002, et un layout d'obstacles
+        // 15/5/120/90/80 au lieu de 150/150/150/60/8) : même géométrie annoncée,
+        // trajectoire et décor différents. Un écart doit casser ce test.
+        string overlay = File.ReadAllText(LocateSimulationConfig("prism.json"));
+
+        SimulationOptions fromFile = ConfigLoader.MergeJson(ConfigLoader.LoadDefaults(), overlay);
+
+        Assert.Equal(
+            CanonicalJson(ConfigLoader.ToJson(SimulationProfiles.Prism())),
             CanonicalJson(ConfigLoader.ToJson(fromFile)));
     }
 
@@ -68,16 +90,16 @@ public sealed class ReferenceProfileParityTests
     }
 
     /// <summary>
-    /// Localise <c>configs/simulation/reference.json</c> en remontant depuis le
+    /// Localise <c>configs/simulation/&lt;nom&gt;</c> en remontant depuis le
     /// répertoire de sortie du test : le fichier vit à la racine du dépôt, pas
     /// dans l'assembly.
     /// </summary>
-    private static string LocateReferenceJson()
+    private static string LocateSimulationConfig(string fileName)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null)
         {
-            string candidate = Path.Combine(directory.FullName, "configs", "simulation", "reference.json");
+            string candidate = Path.Combine(directory.FullName, "configs", "simulation", fileName);
             if (File.Exists(candidate))
             {
                 return candidate;
@@ -87,7 +109,7 @@ public sealed class ReferenceProfileParityTests
         }
 
         throw new FileNotFoundException(
-            "configs/simulation/reference.json introuvable en remontant depuis " + AppContext.BaseDirectory);
+            $"configs/simulation/{fileName} introuvable en remontant depuis " + AppContext.BaseDirectory);
     }
 
     /// <summary>Forme canonique : mêmes valeurs, clés d'objet triées par ordre ordinal.</summary>

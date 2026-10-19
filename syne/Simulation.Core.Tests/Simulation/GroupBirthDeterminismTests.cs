@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Régression de déterminisme des systèmes du jalon ph6 (SYNE-060/061/062) : deux exécutions du même scénario
@@ -10,9 +13,9 @@ using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Prng;
-using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 

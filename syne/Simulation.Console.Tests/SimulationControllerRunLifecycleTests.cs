@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Cycle de vie des runs du contrôleur : préparation, démarrage et arrêt.
@@ -16,7 +19,7 @@ namespace Simulation.Console.Tests;
 /// La boucle de tick était lancée en « feu et forget » (<c>_ = Task.Run(...)</c>)
 /// et jamais conservée. Conséquences : un second <c>StartAsync</c> superimposait
 /// une deuxième boucle sur le même monde ; <c>Stop</c> n'annulait que la dernière
-        /// <c>Stop</c> n'annulait que la dernière
+/// <c>Stop</c> n'annulait que la dernière
 /// celle-ci pouvait ensuite repasser l'état à <c>Finished</c> par-dessus un run
 /// plus récent ; et <c>DisposeAsync</c> simulait l'attente avec
 /// <c>Task.Delay(20)</c>.

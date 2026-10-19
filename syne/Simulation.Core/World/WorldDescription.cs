@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Description versionnée et déterministe du monde envoyée à Unreal avant les snapshots.
@@ -107,16 +110,16 @@ public static class WorldDescriptionBuilder
         // publiait pourtant comme bloqué.
         var blocked = new bool[countX * countY];
         for (int y = 0; y < countY; y++)
-        for (int x = 0; x < countX; x++)
-        {
-            double cx = (x + 0.5) * cellSize;
-            double cy = (y + 0.5) * cellSize;
-            var obstacles = world.Obstacles
-                .Where(o => ObstacleGeometry.CoversCell(o, cx, cy, cellSize))
-                .Select(o => o.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-            blocked[(y * countX) + x] = obstacles.Length > 0;
-            cells.Add(new WorldCell(x, y, "plains", obstacles.Length == 0, 0, obstacles.Length == 0 ? 1 : 100, obstacles));
-        }
+            for (int x = 0; x < countX; x++)
+            {
+                double cx = (x + 0.5) * cellSize;
+                double cy = (y + 0.5) * cellSize;
+                var obstacles = world.Obstacles
+                    .Where(o => ObstacleGeometry.CoversCell(o, cx, cy, cellSize))
+                    .Select(o => o.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+                blocked[(y * countX) + x] = obstacles.Length > 0;
+                cells.Add(new WorldCell(x, y, "plains", obstacles.Length == 0, 0, obstacles.Length == 0 ? 1 : 100, obstacles));
+            }
 
         string[] kinds = ["food", "water", "wood", "mineral"];
         var resources = BuildResourceLocations(seed, kinds, countX, countY, blocked);
@@ -124,9 +127,9 @@ public static class WorldDescriptionBuilder
         int regionSize = 10;
         var regions = new List<WorldRegion>();
         for (int y = 0; y < countY; y += regionSize)
-        for (int x = 0; x < countX; x += regionSize)
-            regions.Add(new WorldRegion($"chunk-{x / regionSize}-{y / regionSize}", x, y,
-                Math.Min(regionSize, countX - x), Math.Min(regionSize, countY - y)));
+            for (int x = 0; x < countX; x += regionSize)
+                regions.Add(new WorldRegion($"chunk-{x / regionSize}-{y / regionSize}", x, y,
+                    Math.Min(regionSize, countX - x), Math.Min(regionSize, countY - y)));
         return new WorldDescription(Version, world.Size.Width, world.Size.Height, cellSize,
             ticksPerSecond, simulatedSecondsPerTick, metersPerUnit,
             countX, countY, agents, cells, initialObstacles, resources, regions);

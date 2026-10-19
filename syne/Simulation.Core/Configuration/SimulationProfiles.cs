@@ -1,3 +1,6 @@
+﻿// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Profils opérationnels explicites utilisés par les lanceurs de runs.
@@ -38,15 +41,15 @@ public static class SimulationProfiles
     /// <list type="bullet">
     /// <item>énergie : `moveEnergyCost` 0,03, `restEnergyGain` 1,5, Eat/Drink
     /// `energyRecovery` 2,0 / 1,0 (hérité de D1) ;</item>
-/// <item>besoins sociaux : `socialDriftRate` 0,003, `curiosityDriftRate`
-/// 0,002 — <b>réalignement</b> : la calibration B1 avait ralenti ces dérives
-/// (0,0002 / 0,0005) parce que Socialize/Explore ne réduisaient aucun besoin, si
-/// bien que la dérive ne pouvait que saturer un besoin sans exutoire. Les deux
-/// actions <b>satisfont</b> désormais leur besoin à l'arrivée
-/// (<c>socialRecovery</c> / <c>curiosityRecovery</c>), donc la dérive retrouve une
-/// valeur de cycle : seuil franchi (~230 / ~150 ticks), poursuite ciblée, arrivée,
-/// redescente sous le seuil — l'effet de la dérive est <b>mesuré</b> sur le run de
-/// référence, pas supposé ;</item>
+    /// <item>besoins sociaux : `socialDriftRate` 0,003, `curiosityDriftRate`
+    /// 0,002 — <b>réalignement</b> : la calibration B1 avait ralenti ces dérives
+    /// (0,0002 / 0,0005) parce que Socialize/Explore ne réduisaient aucun besoin, si
+    /// bien que la dérive ne pouvait que saturer un besoin sans exutoire. Les deux
+    /// actions <b>satisfont</b> désormais leur besoin à l'arrivée
+    /// (<c>socialRecovery</c> / <c>curiosityRecovery</c>), donc la dérive retrouve une
+    /// valeur de cycle : seuil franchi (~230 / ~150 ticks), poursuite ciblée, arrivée,
+    /// redescente sous le seuil — l'effet de la dérive est <b>mesuré</b> sur le run de
+    /// référence, pas supposé ;</item>
     /// <item>ressources : nourriture 20 000 + 20/tick nets (dégradation
     /// neutralisée), eau 20 000 + 10/tick ;</item>
     /// <item><b>modèle de ressources localisé</b> (A0-2 / BL-35) : `resources.localized
@@ -135,7 +138,7 @@ public static class SimulationProfiles
     /// Les mêmes valeurs sont reproduites dans
     /// <c>configs/simulation/prism.json</c> (profil CLI/Launcher) et dans le miroir
     /// du mock <c>syne-mock/config_prism.json</c> : les trois fichiers bougent
-    /// ensemble, et le harnais <c>scripts/parity_mock_syne_world.js</c> compare la
+    /// ensemble, et le harnais <c>scripts/parity-mock-syne-world.js</c> compare la
     /// description du monde des deux sources à partir de ces valeurs.
     /// </para>
     /// </summary>

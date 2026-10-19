@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Unicité des identifiants de naissance (jalon review/refactor, engineVersion 0.12.0).
@@ -7,8 +10,8 @@ using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Population;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Persistance V2 SQLite (SYNE-110/111/112) : le snapshot bit-à-bit capture l'état (monde + cognition + RNG

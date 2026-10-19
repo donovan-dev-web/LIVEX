@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Contrat d'observabilité (SYNE-080) : messages JSON camelCase sur WebSocket, versionnés.
@@ -128,7 +131,7 @@ public static class ObservabilityContract
     /// (`groups.proximityRequired`/`proximityRadius` supprimés) : la confiance
     /// décroissante éteint les liens distants, et la distance des paires liées est
     /// instrumentée (`maxBondDistance`/`meanBondDistance`, null = non mesuré) ;
-        /// (3) schemaVersion 4 → 5 (retrait de `collectiveObjective` dans `minds[]`,
+    /// (3) schemaVersion 4 → 5 (retrait de `collectiveObjective` dans `minds[]`,
     /// ajout des distances dans `groups[]`).
     /// **Mesuré le 17/10** : la trajectoire des runs de référence est
     /// **inchangée** — les pins dorés (`0xc8116c934c424b28`, `0x6f1a7ec30e563337`)
