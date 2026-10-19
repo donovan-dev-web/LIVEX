@@ -31,7 +31,7 @@ complet ne signifie ni « aucune crise » ni « crise non rétablie ».
 
 from __future__ import annotations
 
-from ._common import event_window_published, events_of, event_values, mean, safe_ratio
+from .common import event_window_published, events_of, event_values, mean, safe_ratio
 
 ENGINE_NAME = "ResourceSustainabilityMetrics"
 

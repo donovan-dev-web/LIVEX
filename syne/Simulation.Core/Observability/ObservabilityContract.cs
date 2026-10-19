@@ -18,8 +18,13 @@ public static class ObservabilityContract
     /// description ``world_initialized`` (version de description 1.0 → 1.1) et
     /// dans ``/api/control/status``. Rétrocompatible : les champs existants
     /// (dont ``simulatedTimeMinutes``, plancher entier) sont inchangés.
+    /// 0.4.0 → 0.5.0 (arbitrage A0-3, engineVersion 0.17.0) : champs additifs
+    /// ``maxBondDistance``/``meanBondDistance`` (nullable = non mesuré) dans
+    /// ``groups[]`` du snapshot et ``maxBondDistance`` dans ``group_formed`` —
+    /// instrumentations de la distance des paires liées de groupe. Aucun champ
+    /// existant retiré ni altéré côté observabilité.
     /// </summary>
-    public const string Version = "0.4.0";
+    public const string Version = "0.5.0";
 
     /// <summary>
     /// Version du moteur : identifie les
@@ -114,8 +119,26 @@ public static class ObservabilityContract
     /// complète (cible, preuves, candidats rejetés, résultat, holdover, absence),
     /// utlité nullable pour une absence (jamais 0.0). Checksums dorés
     /// ré-épinglés dans le même commit, avec leurs causes.
+    /// arbitrage A0-3 (groupes) → 0.17.0 : **altération volontaire de trajectoire**
+    /// (1) la décision collective n'est plus INJECTÉE dans l'utilité individuelle :
+    /// la propagation SYNE-076 (`PropagateObjectives`, `GroupObjective`, bonus
+    /// `collectiveAlignBonus`) est supprimée — elle reste exposée (état du groupe,
+    /// `group_decision`, snapshot) ;
+    /// (2) la liaison de cohésion n'a plus de clause de proximité explicite
+    /// (`groups.proximityRequired`/`proximityRadius` supprimés) : la confiance
+    /// décroissante éteint les liens distants, et la distance des paires liées est
+    /// instrumentée (`maxBondDistance`/`meanBondDistance`, null = non mesuré) ;
+        /// (3) schemaVersion 4 → 5 (retrait de `collectiveObjective` dans `minds[]`,
+    /// ajout des distances dans `groups[]`).
+    /// **Mesuré le 17/10** : la trajectoire des runs de référence est
+    /// **inchangée** — les pins dorés (`0xc8116c934c424b28`, `0x6f1a7ec30e563337`)
+    /// restent valides et ont été revérifiés après la passe, **sans
+    /// ré-épinglage nécessaire** : sur ces trajectoires aucune décision collective
+    /// n'était adoptée et toutes les paires liées étaient déjà spatialement
+    /// proches — les mécanismes supprimés y étaient inertes. Le bump MINOR porte
+    /// les règles et le schéma, pas une altération mesurée.
     /// </summary>
-    public const string EngineVersion = "0.16.0";
+    public const string EngineVersion = "0.17.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

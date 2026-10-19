@@ -9,25 +9,11 @@ using Simulation.Core.World;
 
 namespace Simulation.Core.Cognition;
 
-/// <summary>
-/// Objectif collectif adopté par un groupe et propagé à ses membres (SYNE-076,
-/// l'intention dominante du groupe devient un
-/// facteur d'alignement de l'utilité individuelle, pondéré par le consensus
-/// atteint et la confiance du membre envers le leader émergent. La durée de vie
-/// de l'objectif est l'intervalle de revue des groupes (TTL, ré-adopté à chaque
-/// révision).
-/// </summary>
-public readonly record struct GroupObjective(
-    ulong GroupId,
-    DesireKind Kind,
-    double Consensus,
-    double LeaderTrust,
-    ulong AdoptedTick,
-    ulong ExpiresTick)
-{
-    /// <summary>Vrai tant que l'objectif collectif n'a pas expiré.</summary>
-    public bool IsActive(ulong currentTick) => currentTick <= ExpiresTick;
-}
+// Arbitrage A0-3 (17/10/2026) : le `GroupObjective` (SYNE-076) et
+// `MindState.CollectiveObjective` ont été SUPPRIMÉS — l'objectif collectif
+// d'un groupe ne s'injecte plus dans la cognition individuelle. La décision
+// collective reste calculée par `GroupSystem` et exposée (état du groupe,
+// `LastDecisions`, snapshot, événement `group_decision`).
 
 /// <summary>
 /// État cognitif d'une entité (perception, mémoire,
@@ -107,14 +93,6 @@ public sealed class MindState
 
     /// <summary>Objectif courant (intention) — nul tant qu'aucune délibération n'a eu lieu.</summary>
     public Goal? Intention { get; set; }
-
-    /// <summary>
-    /// Objectif collectif adopté par le groupe du membre (SYNE-076) — nul hors
-    /// groupe ou sans décision collective. Contraint l'utilité via un bonus
-    /// d'alignement pondéré par le consensus et la confiance leader (TTL =
-    /// intervalle de revue).
-    /// </summary>
-    public GroupObjective? CollectiveObjective { get; set; }
 
     public UtilityScore? LastDecision { get; private set; }
 
@@ -325,7 +303,7 @@ public sealed class MindState
     /// <summary>
     /// Restaure l'état cognitif complet d'une entité (persistance bit-à-bit,
     /// besoins, mémoire (avec séquence), croyances, relations,
-    /// communication non-éphémère, taux de succès, intention, objectif collectif
+    /// communication non-éphémère, taux de succès, intention
     /// et facteurs de personnalité.
     /// </summary>
     internal void RestoreState(
@@ -337,7 +315,6 @@ public sealed class MindState
         IReadOnlyDictionary<DesireKind, double> successRates,
         AgentFactors? factors,
         Goal? intention,
-        GroupObjective? collectiveObjective,
         IReadOnlyDictionary<World.ResourceKind, double>? inventoryAmounts = null,
         IReadOnlyList<Commitment>? commitments = null,
         ulong lastDeliberationTick = 0,
@@ -360,7 +337,6 @@ public sealed class MindState
         RestoreSuccessRates(successRates);
         Factors = factors;
         Intention = intention;
-        CollectiveObjective = collectiveObjective;
         if (inventoryAmounts is { } amounts && Inventory is { } inventory)
         {
             inventory.RestoreState(amounts);

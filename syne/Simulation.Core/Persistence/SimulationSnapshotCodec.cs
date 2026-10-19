@@ -39,7 +39,12 @@ public static class SimulationSnapshotCodec
     /// vides. Bump MAJEUR uniquement pour une rupture de sémantique, pas pour un
     /// champ additif.
     /// </summary>
-    public const int SchemaVersion = 4;
+    // 4 → 5 (arbitrage A0-3, engineVersion 0.17.0) : suppression du champ
+    // `collectiveObjective` de `MindSnapshotDto` (l'objectif collectif n'existe
+    // plus dans la cognition) et ajout additif des distances de paires liées
+    // (`maxBondDistance` / `meanBondDistance`, nullables = non mesuré) dans
+    // `groups[]`.
+    public const int SchemaVersion = 5;
 
     /// <summary>Capte l'état complet du monde + cognition à l'instant T.</summary>
     public static SimulationSnapshot Capture(SimulationLoop loop)
@@ -84,7 +89,9 @@ public static class SimulationSnapshotCodec
                 group.LeaderId,
                 group.Decision is { } decision ? (int)decision : null,
                 group.Consensus,
-                group.HadDecision));
+                group.HadDecision,
+                group.MaxBondDistance,
+                group.MeanBondDistance));
         }
 
         var books = loop.World.Books.Select(book => new BookSnapshotDto(
@@ -260,15 +267,6 @@ public static class SimulationSnapshotCodec
                     intention.Target is { } aim ? FormatPosition(aim.Position) : null,
                     intention.Target?.ObservedTick ?? 0UL,
                     intention.Target?.Confidence ?? 0.0)
-                : null,
-            mind.CollectiveObjective is { } objective
-                ? new GroupObjectiveSnapshotDto(
-                    objective.GroupId,
-                    (int)objective.Kind,
-                    objective.Consensus,
-                    objective.LeaderTrust,
-                    objective.AdoptedTick,
-                    objective.ExpiresTick)
                 : null,
             mind.LastDecision is { } last ? (int)last.Kind : null,
             inventoryDto,

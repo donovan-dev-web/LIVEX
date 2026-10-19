@@ -275,17 +275,6 @@ public class Ph10ValidationCoverageTests
     }
 
     [Fact]
-    public void NonPositiveCollectiveAlignBonus_IsRejected()
-    {
-        var options = ConfigLoader.LoadDefaults();
-        options.Agents.Actions.Deliberation.CollectiveAlignBonus = 0.0;
-
-        Assert.Contains(
-            SimulationOptionsValidator.Validate(options),
-            e => e.Contains("collectiveAlignBonus"));
-    }
-
-    [Fact]
     public void InvalidCatalogEntries_AreRejected()
     {
         var options = ConfigLoader.LoadDefaults();

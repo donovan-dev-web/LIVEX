@@ -137,6 +137,8 @@ public static class SimulationSnapshotRestorer
                 Decision = group.Decision is { } decision ? (DesireKind)decision : null,
                 Consensus = group.Consensus,
                 HadDecision = group.HadDecision,
+                MaxBondDistance = group.MaxBondDistance,
+                MeanBondDistance = group.MeanBondDistance,
             };
             groups.Add(rebuilt);
         }
@@ -228,15 +230,6 @@ public static class SimulationSnapshotRestorer
         var mind = new MindState(options)
         {
             Intention = dto.Intention is { } intention ? RestoreGoal(intention) : null,
-            CollectiveObjective = dto.CollectiveObjective is { } objective
-                ? new GroupObjective(
-                    objective.GroupId,
-                    (DesireKind)objective.Kind,
-                    objective.Consensus,
-                    objective.LeaderTrust,
-                    objective.AdoptedTick,
-                    objective.ExpiresTick)
-                : null,
         };
 
         var memory = new List<MemoryEntry>(dto.Memory.Entries.Count);
@@ -351,7 +344,6 @@ public static class SimulationSnapshotRestorer
             successRates,
             factors: null,
             mind.Intention,
-            mind.CollectiveObjective,
             inventoryAmounts,
             commitments,
             dto.LastDeliberationTick,

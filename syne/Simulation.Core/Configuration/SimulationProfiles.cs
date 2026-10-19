@@ -49,6 +49,16 @@ public static class SimulationProfiles
 /// référence, pas supposé ;</item>
     /// <item>ressources : nourriture 20 000 + 20/tick nets (dégradation
     /// neutralisée), eau 20 000 + 10/tick ;</item>
+    /// <item><b>modèle de ressources localisé</b> (A0-2 / BL-35) : `resources.localized
+    /// = true` est déclaré ici **explicitement** et dans
+    /// `configs/simulation/reference.json` — le profil de référence tourne sur les
+    /// gisements localisés `ResourceNode`, condition posée par A0-2 et remplie par le
+    /// **gate de viabilité du profil localisé** publié et franchi le 17/10
+    /// (`docs/realignment-evidence/BL35-GATE-VIABILITE-LOCALISE.md` : V1 viabilité
+    /// 3/3 graines sans mort, V2 sensibilité à la graine, V3 quête adossée à un
+    /// dépôt connu, V4 compétition sur gisement). Les réserves globales restent le
+    /// **modèle baseline historique** — déclaré et testé séparément — pour la
+    /// continuité des baselines ;</item>
     /// <item>communication : coûts énergétiques neutres, relais coupé, 1 envoi /
     /// 1 réception par tick (hérité de D1).</item>
     /// </list>
@@ -56,6 +66,12 @@ public static class SimulationProfiles
     public static SimulationOptions Reference()
     {
         var options = new SimulationOptions();
+        // A0-2 / BL-35 : déclaration explicite du modèle de ressources du profil
+        // de référence. Ce n'est pas un héritage muet du défaut : A0-2 pose les
+        // réserves globales comme baseline historique et les gisements localisés
+        // comme modèle cible, sous gate de viabilité publié et franchi le 17/10
+        // (docs/realignment-evidence/BL35-GATE-VIABILITE-LOCALISE.md).
+        options.Resources.Localized = true;
         options.Resources.Food.Initial = 20_000;
         options.Resources.Food.RegenerationRate = 20;
         options.Resources.Food.DegradationTick = null;

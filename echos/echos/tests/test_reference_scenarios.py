@@ -29,7 +29,7 @@ from echos.analysis import (
     resource_sustainability,
     social_complexity,
 )
-from echos.analysis._common import measured_flags
+from echos.analysis.common import measured_flags
 
 
 def _base(alive: int, agents: list[dict]) -> dict:
@@ -179,7 +179,7 @@ def test_scenario_size_stability_does_not_claim_identity_stability():
              {"id": "b", "trust": [{"peerId": "d", "trust": 1.0}]},
              {"id": "d", "trust": [{"peerId": "b", "trust": 1.0}]}]
 
-    from echos.analysis._common import community_sizes
+    from echos.analysis.common import community_sizes
 
     snapshot = _base(4, after)
     # Tailles du partition **précédent** (membres différents, mêmes tailles).

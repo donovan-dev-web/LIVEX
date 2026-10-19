@@ -99,6 +99,20 @@ client de corréler le pilotage et le flux.
 > diffusion à **tous** les consommateurs connectés. L'émission
 > n'ajoute aucun tirage PRNG (déterminisme inchangé, DETERMINISM.md §3).
 
+> **Limite déclarée — flux *best-effort* (S-30/D-19, BL-23).** La diffusion WebSocket
+> est best-effort : `ObservabilityTickEmitter.SafeBroadcastAsync` borne l'envoi dans le
+> temps (`SinkTimeout`), n'attend jamais un client et ne propage jamais d'exception ; un
+> client lent, fermé ou mort **fait perdre la trame**, sans rejeu ni retransmission
+> (`ObservabilityServer` : « diffusion fiable-en-fonction-du-mieux (V0.1) », envoi borné à
+> 2 s par client). Ce flux ne doit donc **jamais** être la source unique de preuve d'un fait :
+> une trame manquante n'est pas la preuve d'une absence, et les trames perdues ne sont pas
+> reconstituables depuis le flux. L'**archive complète** est l'export batch
+> `stream.jsonl` (`BatchStreamFile`, `--export-stream`), qui n'est **jamais** best-effort
+> (un export non satisfait lève une `IOException`, il ne produit pas de fichier tronqué).
+> ECHOS ingère les deux voies et porte les trous (`missing_ticks`, `completeness`) et la
+> provenance par métrique. Non-intrusion : la diffusion n'altère pas la trajectoire
+> (`ObservabilityNonIntrusionTests`).
+
 ### 2.1 `snapshot` — WorldSnapshot
 
 | Champ | Type | Description |

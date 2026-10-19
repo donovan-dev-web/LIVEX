@@ -46,7 +46,7 @@ baseline prédictive hors échantillon (décision P0 du registre).
 
 from __future__ import annotations
 
-from ._common import COMPOSITE_ENGINE_NAME, clamp, load_engines
+from .common import COMPOSITE_ENGINE_NAME, clamp, load_engines
 
 ENGINE_NAME = COMPOSITE_ENGINE_NAME
 

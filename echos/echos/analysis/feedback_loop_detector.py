@@ -34,7 +34,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ._common import clamp, mean
+from .common import clamp, mean
 
 ENGINE_NAME = "FeedbackLoopDetector"
 

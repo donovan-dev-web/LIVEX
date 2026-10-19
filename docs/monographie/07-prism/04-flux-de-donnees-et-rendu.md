@@ -49,6 +49,8 @@ Enfin, elle ne doit **jamais** être réinjectée dans le monde : l'affichage ne
 
 Il faut donc lire un rendu comme une **traduction** : fidèle sur les positions, approximative sur les instants, muette sur les décisions. Quand une question porte sur un instant précis, la trace du moteur fait foi, pas l'image.
 
+*Précision de conformité (17 octobre 2026, phase 5 — BL-25).* La règle ci-dessus est vérifiée sur la **surface de service** que le Launcher consomme (`/metrics`, `/health/details`) : le rejeu d'un flux troué — tick 41, puis **aucune** trame pour 42 à 46, puis tick 47 — montre que l'état publié reste le dernier tick **reçu**, n'avance pas seul pendant le silence et ne produit **aucun** tick intermédiaire ; une déconnexion déclare le flux **dégradé** sans fabriquer de tick (specs `PrismLdk.GapReplay`, Unreal Automation sur UE 5.8 : 63 specs, 0 échec). L'interpolation décrite dans cette section n'est donc jamais réinjectée ni présentée comme état autoritaire : elle reste une commodité **visuelle** entre deux trames **reçues**. Réserve déclarée : le service ne *représente* pas l'ancienneté du dernier instantané — un flux connecté mais silencieux n'est pas distingué d'un flux vivant (le contrat de transport ne prescrit ni monotonie de tick ni champ de staleness).
+
 ## 5. Ce que le rendu ne doit pas faire
 
 Trois interdits structurent cette partie, et ils reprennent les interdits du projet.

@@ -43,7 +43,7 @@ public sealed class ControlServer : IAsyncDisposable
         ObservabilityServer? observability = null,
         string? sessionToken = null,
         string instanceId = "syne",
-        string version = "0.16.0",
+        string version = "0.17.0",
         bool initiallyReady = true)
     {
         _listener.Prefixes.Add($"http://127.0.0.1:{port}/");

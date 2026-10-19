@@ -318,8 +318,11 @@ public sealed class DeliberationSettings
     /// <summary>Bonus d'alignement avec l'objectif courant (×1.2).</summary>
     public double AlignBonus { get; set; } = 1.2;
 
-    /// <summary>Bonification maximale d'alignement avec l'objectif collectif (SYNE-076, ×1.2 par défaut).</summary>
-    public double CollectiveAlignBonus { get; set; } = 1.2;
+    // Arbitrage A0-3 (17/10/2026) : `collectiveAlignBonus` SUPPRIMÉ avec la
+    // propagation SYNE-076 — l'objectif collectif d'un groupe ne modifie plus
+    // aucun score individuel ; il est exposé (état du groupe, événement
+    // group_decision, snapshot) et n'entre dans la délibération d'un membre
+    // qu'en tant que candidat individuel tracé s'il le choisit.
 
     /// <summary>Marge anti-oscillation (hystérésis) : passer à une nouvelle action seulement si elle dépasse l'action courante de cette marge (défaut 0.05).</summary>
     public double ActionSwitchMargin { get; set; } = 0.05;
@@ -822,17 +825,12 @@ public sealed class GroupSettings
     /// <summary>Quorum : une décision collective est adoptée quand ≥ cette fraction des membres partage la même intention.</summary>
     public double ConsensusThreshold { get; set; } = 0.5;
 
-    /// <summary>
-    /// La cohésion exige une <b>proximité spatiale actuelle</b> des deux membres —
-    /// arbitrage de modèle du réalignement (ch. VII vs §2b.3) : un groupe est une
-    /// structure <i>locale</i>, pas seulement une relation entretenue. Faux = ancienne
-    /// règle (deux membres distants pouvaient rester liés par confiance et affinité
-    /// persistantes).
-    /// </summary>
-    public bool ProximityRequired { get; set; } = true;
-
-    /// <summary>Distance maximale entre deux membres pour qu'un lien de cohésion soit valide.</summary>
-    public double ProximityRadius { get; set; } = 60.0;
+    // Arbitrage A0-3 (17/10/2026) : les réglages `proximityRequired` et
+    // `proximityRadius` ont été SUPPRIMÉS — la liaison de cohésion n'a plus
+    // aucune clause de proximité explicite (la décroissance de confiance
+    // 0,9/tick sans interaction éteint de lui-même un lien distant), et la
+    // distance des paires liées est instrumentée (max/moyenne par groupe,
+    // exposée en snapshot) au lieu d'être filtrante.
 }
 
 /// <summary>

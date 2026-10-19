@@ -56,6 +56,8 @@ flowchart LR
 
 Le bornage de la liste des ticks manquants est une nécessité pratique, mais il n'introduit aucune ambiguïté : la liste peut être tronquée, mais le comptage exact est fourni. Un client sait donc combien de ticks manquent, même s'il ne reçoit pas leur énumération complète. On retrouve la même rigueur que partout : ne jamais confondre « je ne montre pas tout » avec « il n'y a rien ».
 
+*Précision de conformité (17 octobre 2026, phase 5 — BL-24).* Un test de contrat (`echos/tests/test_ingestion_states_contract.py`) asservit ces trois champs sur les **deux voies d'ingestion** réelles — flux live (`WsClient`) et rejeu du fichier `data/stream.jsonl` (`StreamFileClient`, `ingest_run_stream`) — et vérifie que les deux produisent le **même** contenu de base. Il fixe aussi une distinction que le lecteur doit connaître : `missing_ticks` liste les ticks **sans observation de métrique**, ce qui inclut une **absence planifiée** lorsque l'analyse est échantillonnée (un tick sur *N*) en même temps qu'un tick réellement perdu. Le nombre de ticks **réellement perdus** se lit sur `completeness` (route de viabilité), calculée sur les résumés de tick, et la cadence employée est publiée avec le run (`base.analysisEvery`) : un consommateur peut donc distinguer une mesure non planifiée d'une donnée perdue. Aucune des deux surfaces n'interpole.
+
 ## 4. Le profil de viabilité
 
 Un run a un destin : il survit, il s'éteint, ou l'on ne sait pas. Le profil de viabilité résume ce destin sans obliger l'interface à le recalculer.

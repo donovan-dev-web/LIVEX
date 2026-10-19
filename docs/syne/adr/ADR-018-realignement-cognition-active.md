@@ -88,6 +88,19 @@ chapitre VII est tranchée en faveur d'une **distinction explicite entre
 interaction locale et calcul d'observation**, consignée ici plutôt que corrigée
 à l'aveugle dans le code.
 
+> **Amendement du 17 octobre 2026 (arbitrage A0-3, §9 du plan de réalignement)** :
+> deux points de D3 sont **supplantés** et exécutés tels qu'arbitrés en phase 0 :
+> (1) la propagation de l'objectif collectif dans l'utilité individuelle est
+> **supprimée** (`PropagateObjectives`, `GroupObjective`, `collectiveAlignBonus`)
+> — la décision collective est *exposée* (état du groupe, événement
+> `group_decision`, snapshot) et n'entre dans un membre qu'en tant que candidat
+> individuel tracé ; (2) la clause de **proximité explicite** de `AreBonded`
+> (`groups.proximityRequired`) est **retirée** — la décroissance de confiance
+> l'implicite — et les distances des paires liées deviennent une **mesure
+> instrumentée** (max/moyenne par groupe, `null` = non mesuré). Le principe de D3
+> (observateur agrégateur central, déclaré) est **confirmé**. Exécution,
+> preuves et gate : `AdrGroupObserverTests` + changelog engineVersion 0.17.0.
+
 ### D4 — Preuve d'émergence : critères observables, pas d'illustration
 
 **Décision** : ce qui est revendiqué, c'est la **capacité d'étude**, pas

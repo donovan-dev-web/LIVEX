@@ -77,6 +77,8 @@ Il y a donc **trois canaux, pas deux**. Les confondre conduit à faire passer de
 
 Les formes de sortie plus ambitieuses (agent de nœud, passerelle) sont documentées mais **non planifiées** : le livre les mentionne comme direction, pas comme état.
 
+*Précision de conformité (17 octobre 2026, phase 5 — BL-27).* Ces propriétés sont vérifiées contre le **composant SYNE réellement publié** (`dotnet publish … -c Release -r win-x64 --self-contained false`), et non seulement contre un bouchon : `Launcher.Tests.Integration` **20/20** et `Launcher.Tests.EndToEnd` **33/33** (exit 0), dont une campagne de bout en bout détectée par manifeste, exécutée, puis **scellée en `.livexp` et relue** (`PackageStates.Sealed`). Le paquet scellé n'est ni confondu avec la persistance interne SQLite du moteur ni avec l'instantané du rendu. Point de méthode : hors la variable d'environnement désignant SYNE publié, les quatre bancs concernés sont logiquement **sautés** mais comptés en **échecs** par le couple `xunit`/runner du projet — un run sans composants publiés affiche donc un signal rouge plutôt qu'un saut explicite ; cette porte est **déclarée non franchie**.
+
 ## 5. Ce que ce chapitre apporte à la question directrice
 
 Ce chapitre a décrit la mémoire longue du projet. Le paquet conserve la définition d'une campagne, la configuration effectivement appliquée, les versions engagées et les empreintes d'intégrité ; le manifeste déclare l'état et rend le scellement explicite ; le flux de données sépare ce qui doit être archivé de ce qui doit circuler ; le réseau garantit que l'orchestration ne s'interpose pas entre le monde et son observateur.

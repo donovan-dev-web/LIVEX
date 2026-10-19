@@ -9,6 +9,43 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 
 ## [Unreleased]
 
+### Changed — **arbitrage A0-3 « groupes : observateur seul » (engineVersion 0.17.0)**
+
+Mise en œuvre de la phase 3 du plan de réalignement (arbitrage **A0-3** validé
+le 17/10/2026, qui remplace partiellement **ADR-018 D3** — voir l'amendement
+dans l'ADR). Le conflit d'arbitrage A0-3 / D3 (BL-33) a été tranché en faveur de
+A0-3 : exécution intégrale, suppression complète des mécanismes d'injection.
+
+- **Décision collective exposée, jamais injectée** : `GroupSystem.PropagateObjectives`,
+  `GroupObjective` / `MindState.CollectiveObjective` et le bonus
+  `collectiveAlignBonus` sont **supprimés** — l'objectif d'un groupe ne modifie
+  plus aucun terme de l'utilité individuelle. La décision collective reste calculée
+  (quorum, leader émergent) et **exposée** : état du groupe + `LastDecisions`,
+  snapshot d'état, snapshot d'observabilité (`groups[].decision`/`consensus`) et
+  événement `group_decision`.
+- **Liaison sans clause de proximité, distances instrumentées** :
+  `groups.proximityRequired` et `groups.proximityRadius` sont **supprimés** —
+  la confiance décroissante (0,9/tick sans interaction) éteint de lui-même un lien
+  distant. La distance des paires liées est **mesurée et exposée** :
+  `Group.MaxBondDistance` / `MeanBondDistance` (max/moyenne par groupe,
+  `null` = **non mesuré**, jamais zéro), portés par le snapshot d'état
+  (`groups[].maxBondDistance`/`meanBondDistance`), le snapshot d'observabilité et
+  l'événement `group_formed`.
+- **schemaVersion 4 → 5** : retrait de `collectiveObjective` dans `minds[]`,
+  ajout additif des distances dans `groups[]`. Contrat d'observabilité
+  **0.4.0 → 0.5.0** (champs additifs uniquement).
+- **Tests** : `AdrGroupObserverTests` (gates A0-3 : exposition snapshot/événement,
+  round-trip de persistance des distances, garde de non-réintroduction des
+  mécanismes d'injection, absence ≠ zéro) ; `CausalOrderInvarianceTests`
+  (**invariance à l'ordre d'insertion** — A0-1/BL-34 : deux runs même graine et
+  même configuration à ordre d'insertion inversé produisent la même empreinte
+  d'état complète aux ticks 10/30/60, contrôle de divergence par graine).
+- **Mesuré le 17/10** : les checksums dorés **n'ont pas bougé** (aucun
+  ré-épinglage nécessaire) — sur les runs épinglés aucune décision collective
+  n'était adoptée et toutes les paires liées étaient déjà proches : les
+  mécanismes supprimés y étaient inertes. Suite complète : **855 tests verts**
+  (596 Core + 91 Console + 168 Launcher), 0 échec.
+
 ### Changed — **réalignement de la cognition active (engineVersion 0.16.0)**
 
 Mise en œuvre du plan de réalignement issu de

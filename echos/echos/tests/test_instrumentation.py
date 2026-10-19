@@ -172,6 +172,63 @@ class TestBuildDecisionTrace:
             "energy": 50.0,
         }
 
+    def test_absence_ne_devient_jamais_zero(self):
+        """BL-09 (S-28 / D-03 / B-10) : une absence publique ``utility: null``.
+
+        Régression : l'ingestion faisait ``float(value.get("utility", 0.0) or 0.0)``
+        et transformait le ``null`` publié par SYNE en ``0.0`` — un zéro observé
+        et une absence de mesure redevenaient indistinguables.
+        """
+        trace = build_decision_trace(
+            "run-9",
+            1,
+            _decision(utility=None, decisionState="none", decisionTick=None),
+            SNAPSHOT,
+        )
+
+        assert trace["utility"] is None
+        assert trace["decision_state"] == "none"
+        assert trace["held_utility"] is None
+        assert trace["decision_tick"] is None
+
+    def test_report_conserve_le_score_sous_held_utility(self):
+        """Un report publiable ``heldUtility`` + son tick d'origine, sans utility."""
+        trace = build_decision_trace(
+            "run-9",
+            12,
+            _decision(
+                utility=None,
+                heldUtility=0.71,
+                decisionState="holdover",
+                decisionTick=3,
+                deliberated=False,
+            ),
+            SNAPSHOT,
+        )
+
+        assert trace["utility"] is None
+        assert trace["held_utility"] == 0.71
+        assert trace["decision_state"] == "holdover"
+        assert trace["decision_tick"] == 3
+
+    def test_deliberation_fraiche_garde_son_utilite(self):
+        trace = build_decision_trace(
+            "run-9",
+            4,
+            _decision(
+                utility=0.83,
+                decisionState="fresh",
+                decisionTick=4,
+                deliberated=True,
+            ),
+            SNAPSHOT,
+        )
+
+        assert trace["utility"] == 0.83
+        assert trace["held_utility"] is None
+        assert trace["decision_state"] == "fresh"
+        assert trace["decision_tick"] == 4
+
     def test_deliberated_and_interrupted_flags(self):
         deliberate = build_decision_trace(
             "run-9", 1, _decision(deliberated=True, interrupted=False), SNAPSHOT

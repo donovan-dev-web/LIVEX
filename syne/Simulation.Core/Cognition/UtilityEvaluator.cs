@@ -82,7 +82,6 @@ public static class UtilityEvaluator
         ulong goalAge,
         ActionSettings actions,
         DesireKind? currentIntention = null,
-        GroupObjective? collectiveObjective = null,
         double? benefitOverride = null,
         double? knowledgeConfidence = null)
     {
@@ -106,17 +105,12 @@ public static class UtilityEvaluator
             benefit *= actions.Deliberation.AlignBonus;
         }
 
-        // Alignement collectif (SYNE-076) : l'objectif adopté par le groupe
-        // rehausse le bénéfice de l'action conforme, pondéré par le consensus
-        // atteint et la confiance du membre envers le leader (aucun alignement
-        // sans consensus ni confiance — ×1 ; bonification maximale quand les
-        // deux valent 1, ×CollectiveAlignBonus).
-        if (collectiveObjective is { } collective && collective.Kind == kind)
-        {
-            double effective = Math.Clamp(collective.Consensus, 0.0, 1.0) *
-                               Math.Clamp(collective.LeaderTrust, 0.0, 1.0);
-            benefit *= 1.0 + ((actions.Deliberation.CollectiveAlignBonus - 1.0) * effective);
-        }
+        // A0-3 (17/10/2026) : l'objectif collectif d'un groupe ne modifie PLUS
+        // aucun terme de l'utilité individuelle (la propagation SYNE-076 et son
+        // bonus `collectiveAlignBonus` ont été supprimés). La décision collective
+        // est exposée (état du groupe, événement group_decision, snapshot) ; un
+        // membre qui en tient compte en fait un candidat individuel tracé, soumis
+        // à cette même formule sans paramètre collectif.
 
         double cost = CostOf(kind, actions);
         double risk = RiskOf(kind);
@@ -295,7 +289,6 @@ public static class UtilityEvaluator
         double successRate,
         ulong goalAge,
         ActionSettings actions,
-        GroupObjective? collectiveObjective = null,
         double? currentKnowledgeConfidence = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
@@ -315,7 +308,6 @@ public static class UtilityEvaluator
             goalAge,
             actions,
             current,
-            collectiveObjective,
             knowledgeConfidence: currentKnowledgeConfidence);
         if (candidate.Utility < currentScore.Utility + actions.Deliberation.ActionSwitchMargin)
         {

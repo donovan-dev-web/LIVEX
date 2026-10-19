@@ -8,7 +8,7 @@ d'historique (stabilité des communautés) replie sur 0.0.
 
 from __future__ import annotations
 
-from ._common import (
+from .common import (
     agent_ids,
     agents_of,
     alive_count,

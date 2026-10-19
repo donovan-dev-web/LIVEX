@@ -54,7 +54,7 @@ Ce point est le plus technique du chapitre, et l'un des plus importants. Restaur
 
 ## 5. Ce que contient l'instantané
 
-L'instantané déterministe contient tout ce qui est nécessaire pour poursuivre sans discontinuité : le monde (dimensions, obstacles, entités au trait près, réserves en place), la cognition par entité (besoins, mémoire et sa séquence, croyances, confiance, files de messages non éphémères, taux de succès, intention, objectif collectif, décision reportée), les groupes actifs, le prochain identifiant de groupe, et le générateur. Les états **dérivés** (grille spatiale, cache de cheminement, tampons par tick) sont reconstruits déterministiquement à la restauration : les sauvegarder serait redondant, les recalculer garantit la cohérence.
+L'instantané déterministe contient tout ce qui est nécessaire pour poursuivre sans discontinuité : le monde (dimensions, obstacles, entités au trait près, réserves en place), la cognition par entité (besoins, mémoire et sa séquence, croyances, confiance, files de messages non éphémères, taux de succès, intention, trace de décision (état, utilité nullable, preuves justificatives, candidats rejetés)), les groupes actifs, le prochain identifiant de groupe, et le générateur. Les états **dérivés** (grille spatiale, cache de cheminement, tampons par tick) sont reconstruits déterministiquement à la restauration : les sauvegarder serait redondant, les recalculer garantit la cohérence.
 
 | Contenu de l'instantané | Sauvegardé | Reconstruit |
 | :-- | :--: | :--: |
@@ -94,3 +94,13 @@ La migration est un sujet que beaucoup de projets négligent, et qui distingue u
 Ce chapitre a montré que le monde peut être arrêté et repris sans discontinuité, au bit près. C'est la condition pour mener des campagnes longues, pour comparer des expériences et pour archiver une trajectoire. Sans cette garantie, il n'y aurait pas d'instrument, seulement une démonstration.
 
 Ce que ce chapitre ne permet pas encore de conclure : que l'état sauvegardé soit exploitable par une autre partie du système. Pour relier les composants, il faut des contrats explicites et versionnés. C'est le sujet du chapitre suivant.
+
+## Note de conformité — identité du run et trace de décision (réalignement, phase 4)
+
+*Ajoutée le 17 octobre 2026, à l'issue du réalignement (plan `ANALYSE_DIVERGENCES_FONDAMENTALES_ET_PLAN_REALIGNEMENT.md`, phase 4, engineVersion 0.17.0, schemaVersion 5). Le corps du chapitre est inchangé : cette note certifie ce que le code exécute à la date indiquée.*
+
+**Identité du run.** L'instantané porte le **hash canonique de configuration** (`RunIdentity.ConfigHash` : insensible à l'ordre des clés, sensible aux valeurs, stable entre deux chargements équivalents) en plus du tick, de l'état du générateur et du monde. Le **hash d'état** (`RunIdentity.StateHash`) est reproductible pour deux runs identiques et diverge avec la graine ; il change avec l'état, pas avec l'identité courante du run. Une empreinte d'identité publiée (`RunIdentityStamp`) rassemble versions moteur et schéma, graine et hash de configuration — une valeur absente y est explicitement *absente*, jamais inventée. Gates : `RunIdentityTests` (dont `Snapshot_CarriesTheConfigurationHash`) et la reprise bit-à-bit `ReloadFromSnapshot_ContinuesBitForBitIdenticalToUninterruptedRun` citée au §5.
+
+**Trace de décision restaurée.** L'instantané conserve la trace complète de la dernière décision — état (`fresh`/`holdover`/`interrupted`/`none`), utilité **nullable** (jamais `0.0` en l'absence de décision), scores des candidats, candidats rejetés et chaîne de preuves (source, sujet, confiance, tick d'observation) — et la restauration la réintègre telle quelle (`DecisionSnapshotDto`, `RestoreDecision` + `RestoreDecisionRecord`). Le point d'attention reste ce que le chapitre dit de la provenance de build : elle n'est pas dans l'instantané, et ce n'est pas un oubli — l'instantané ne publie pas ce qu'il ne contient pas.
+
+**Portée de cette note.** Comme celle du chapitre III, elle établit l'accord entre ce chapitre et le code à une date donnée, en citant les tests qui le constatent ; elle ne dit rien de la viabilité du monde ni de l'émersion des structures. Constat relevé le 17 octobre 2026 : `RunIdentityTests`, `PersistenceTests` et `AdrDecisionEvidenceTests` verts, suite moteur complète verte (596 tests).

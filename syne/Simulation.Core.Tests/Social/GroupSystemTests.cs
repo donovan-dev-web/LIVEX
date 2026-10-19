@@ -301,15 +301,15 @@ public class GroupSystemTests
     }
 
     [Fact]
-    public void Step_WithPositions_ProximityRequired_ExcludesDistantMember()
+    public void Step_WithPositions_DistantMembers_StayBonded_AndDistanceIsInstrumented()
     {
-        // AC7 (loi des groupes avec proximite spatiale) : deux membres eloignes au
-        // dela de `proximityRadius` ne sont PAS lies, meme avec confiance reciproque
-        // et affinité (croyance partagee) suffisantes. La contrainte n'est active
-        // que si le moteur fournit une table de positions (`positions` non nulle).
+        // A0-3 (17/10/2026) : la liaison de cohésion n'a PLUS de clause de
+        // proximité explicite (l'ancienne clause D3 `proximityRequired` a été
+        // retirée) : deux membres distants restent liés par confiance réciproque
+        // et affinité, et leur distance est INSTRUMENTÉE (max/moyenne par
+        // groupe) au lieu d'être filtrante. La confiance décroissante éteint de
+        // lui-même un lien distants (0,9/tick sans interaction).
         SimulationOptions options = Options();
-        options.Groups.ProximityRequired = true;
-        options.Groups.ProximityRadius = 60.0;
         options.Groups.MinGroupSize = 2;
 
         Dictionary<ulong, MindState> minds = Minds(options, 3);
@@ -323,7 +323,7 @@ public class GroupSystemTests
             ShareBelief(mind, options, target: 9, tick: 9);
         }
 
-        // Entites 1 et 2 proches (10 <= 60) ; entite 3 hors rayon (1000 > 60).
+        // Entités 1 et 2 proches (10) ; entité 3 très loin (1000 ≫ 60).
         var positions = new Dictionary<ulong, Position>
         {
             [1] = new Position(0.0, 0.0),
@@ -334,58 +334,20 @@ public class GroupSystemTests
         var system = new GroupSystem(options.Groups);
         system.Step(tick: 10, minds, positions);
 
-        // L'entite 3 n'est liee a personne : le noyau {1,2} forme seul un groupe,
-        // 3 reste hors de toute composante (donc hors de `Active`).
-        Group group = Assert.Single(system.Active);
-        Assert.Equal(new ulong[] { 1, 2 }, group.Members);
-        Assert.DoesNotContain(3UL, group.Members);
-    }
-
-    [Fact]
-    public void Step_WithPositions_ProximityDisabled_BindsDistantMember()
-    {
-        // Controle : la meme topologie avec `proximityRequired = false` relie le
-        // trio entier — la difference vient bien de la contrainte de proximite, et
-        // de rien d'autre (confiance, affinité et croyances identiques).
-        SimulationOptions options = Options();
-        options.Groups.ProximityRequired = false;
-        options.Groups.ProximityRadius = 60.0;
-        options.Groups.MinGroupSize = 2;
-
-        Dictionary<ulong, MindState> minds = Minds(options, 3);
-        foreach ((ulong self, MindState mind) in minds)
-        {
-            foreach (ulong peer in minds.Keys.Where(id => id != self))
-            {
-                Bond(mind, peer);
-            }
-
-            ShareBelief(mind, options, target: 9, tick: 9);
-        }
-
-        var positions = new Dictionary<ulong, Position>
-        {
-            [1] = new Position(0.0, 0.0),
-            [2] = new Position(10.0, 0.0),
-            [3] = new Position(1000.0, 0.0),
-        };
-
-        var system = new GroupSystem(options.Groups);
-        system.Step(tick: 10, minds, positions);
-
+        // Le trio entier est lié (aucun filtre spatial) et les distances des
+        // paires liées sont mesurées : max = 1000, moyenne = (10 + 1000 + 990)/3.
         Group group = Assert.Single(system.Active);
         Assert.Equal(new ulong[] { 1, 2, 3 }, group.Members);
+        Assert.Equal(1000.0, group.MaxBondDistance);
+        Assert.Equal(2000.0 / 3.0, group.MeanBondDistance!.Value, 10);
+        Assert.True(group.MaxBondDistance > 60.0,
+            "La distance instrumentée dépasse l'ancien rayon de proximité : la liaison n'est plus filtrante.");
     }
 
     [Fact]
-    public void Step_WithPositions_ProximityRequired_AllNearby_BindsAllMembers()
+    public void Step_WithPositions_NearbyMembers_Bond_WithSmallInstrumentedDistance()
     {
-        // Controle : quand les trois entites sont dans le rayon, la proximite ne
-        // filtre personne et le trio complet est lie (la contrainte n'exclut que
-        // les pairs reellement eloignes).
         SimulationOptions options = Options();
-        options.Groups.ProximityRequired = true;
-        options.Groups.ProximityRadius = 60.0;
         options.Groups.MinGroupSize = 3;
 
         Dictionary<ulong, MindState> minds = Minds(options, 3);
@@ -411,11 +373,41 @@ public class GroupSystemTests
 
         Group group = Assert.Single(system.Active);
         Assert.Equal(new ulong[] { 1, 2, 3 }, group.Members);
+        Assert.Equal(20.0, group.MaxBondDistance);
+        Assert.Equal(40.0 / 3.0, group.MeanBondDistance!.Value, 10);
     }
 
     [Fact]
-    public void PropagateObjectives_AdoptsCollectiveDecision_InMembersTTL()
+    public void Step_WithoutPositions_LeavesDistancesUnmeasured_NotZero()
     {
+        // Distinction zéro observé / non mesuré (A0-3) : sans table de positions
+        // (appel hors moteur), les distances sont `null` — jamais 0.
+        SimulationOptions options = Options();
+        Dictionary<ulong, MindState> minds = Minds(options, 3);
+        foreach ((ulong self, MindState mind) in minds)
+        {
+            foreach (ulong peer in minds.Keys.Where(id => id != self))
+            {
+                Bond(mind, peer);
+            }
+
+            ShareBelief(mind, options, target: 9, tick: 9);
+        }
+
+        var system = new GroupSystem(options.Groups);
+        system.Step(tick: 10, minds);
+
+        Group group = Assert.Single(system.Active);
+        Assert.Null(group.MaxBondDistance);
+        Assert.Null(group.MeanBondDistance);
+    }
+
+    [Fact]
+    public void Step_CollectiveDecision_IsExposedWithoutTouchingMinds()
+    {
+        // A0-3 : la décision collective reste CALCULÉE et EXPOSÉE (état du groupe,
+        // LastDecisions), mais la revue ne MUTATE plus aucun esprit (la propagation
+        // SYNE-076 et `CollectiveObjective` ont été supprimées).
         SimulationOptions options = Options();
         Dictionary<ulong, MindState> minds = Minds(options, 3);
         foreach ((ulong self, MindState mind) in minds)
@@ -429,91 +421,21 @@ public class GroupSystemTests
             mind.Intention = new Goal(DesireKind.SeekFood, BornTick: 8);
         }
 
-        var system = new GroupSystem(options.Groups);
-        system.Step(tick: 10, minds);
-        Assert.Single(system.Active);
-
-        system.PropagateObjectives(currentTick: 10, ttlTicks: 10, minds);
-
-        foreach (ulong member in new ulong[] { 1, 2, 3 })
-        {
-            GroupObjective? objective = minds[member].CollectiveObjective;
-            Assert.NotNull(objective);
-            Assert.Equal(1UL, objective.Value.GroupId);
-            Assert.Equal(DesireKind.SeekFood, objective.Value.Kind);
-            // Consensus 1.0 × confiance leader > 0 → bonus maximal ×1.2.
-            Assert.Equal(1.0, objective.Value.Consensus, 12);
-            Assert.True(objective.Value.LeaderTrust > 0.0);
-            Assert.Equal(10UL, objective.Value.AdoptedTick);
-            Assert.Equal(20UL, objective.Value.ExpiresTick);
-        }
-    }
-
-    [Fact]
-    public void PropagateObjectives_WithoutDecision_ClearsObjective()
-    {
-        SimulationOptions options = Options();
-        options.Groups.ConsensusThreshold = 1.0; // empêche l'adoption (divergence)
-
-        Dictionary<ulong, MindState> minds = Minds(options, 3);
-        foreach ((ulong self, MindState mind) in minds)
-        {
-            foreach (ulong peer in minds.Keys.Where(id => id != self))
-            {
-                Bond(mind, peer);
-            }
-
-            ShareBelief(mind, options, target: 9, tick: 9);
-        }
-
-        // Entités 1 et 2 sur SeekWater, entité 3 en divergence (Rest) :
-        // consensus SeekWater = 0.5 < quorum 1.0 → aucune décision adoptée.
-        minds[1].Intention = new Goal(DesireKind.SeekWater, BornTick: 8);
-        minds[2].Intention = new Goal(DesireKind.SeekWater, BornTick: 8);
-        minds[3].Intention = new Goal(DesireKind.Rest, BornTick: 8);
+        var intentionsBefore = minds.ToDictionary(pair => pair.Key, pair => pair.Value.Intention);
 
         var system = new GroupSystem(options.Groups);
         system.Step(tick: 10, minds);
-        Assert.Null(Assert.Single(system.Active).Decision);
 
-        system.PropagateObjectives(currentTick: 10, ttlTicks: 10, minds);
+        Group group = Assert.Single(system.Active);
+        Assert.Equal(DesireKind.SeekFood, group.Decision);
+        GroupDecision decision = Assert.Single(system.LastDecisions);
+        Assert.Equal(group.Id, decision.GroupId);
+        Assert.Equal(DesireKind.SeekFood, decision.Decision);
+        Assert.True(decision.Consensus > 0.0);
 
-        foreach (ulong member in new ulong[] { 1, 2, 3 })
+        foreach ((ulong id, MindState mind) in minds)
         {
-            Assert.Null(minds[member].CollectiveObjective);
+            Assert.Equal(intentionsBefore[id], mind.Intention);
         }
-    }
-
-    [Fact]
-    public void PropagateObjectives_WithoutLeaderTrust_DoesNotAlign()
-    {
-        // Chaîne 1-2-3-4 : leader émergent = 2 (confiance entrante max, départage
-        // par id min). Le membre 4 n'a aucune confiance envers le leader 2 (pas de
-        // lien direct) : il est dans le groupe sans s'aligner sur son objectif.
-        SimulationOptions options = Options();
-        Dictionary<ulong, MindState> minds = Minds(options, 4);
-        foreach ((ulong self, MindState mind) in minds)
-        {
-            ShareBelief(mind, options, target: 9, tick: 9);
-            mind.Intention = new Goal(DesireKind.SeekFood, BornTick: 8);
-        }
-
-        foreach ((ulong a, ulong b) in new[] { (1UL, 2UL), (2UL, 3UL), (3UL, 4UL) })
-        {
-            Bond(minds[a], b);
-            Bond(minds[b], a);
-        }
-
-        var system = new GroupSystem(options.Groups);
-        system.Step(tick: 10, minds);
-        Assert.Equal(2UL, Assert.Single(system.Active).LeaderId);
-
-        system.PropagateObjectives(currentTick: 10, ttlTicks: 10, minds);
-
-        Assert.NotNull(minds[1].CollectiveObjective);
-        Assert.NotNull(minds[2].CollectiveObjective);
-        Assert.NotNull(minds[3].CollectiveObjective);
-        // Sans confiance envers le leader, le membre 4 ne s'aligne pas.
-        Assert.Null(minds[4].CollectiveObjective);
     }
 }

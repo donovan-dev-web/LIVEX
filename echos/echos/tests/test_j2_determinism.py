@@ -32,7 +32,7 @@ def _community_history(snapshot: dict) -> list[dict]:
     3 agents, présente dès le tick 1. Cela rend ``CommunitySizeMatch`` mesurable
     sur le rejeu au lieu de retomber sur son repli neutre.
     """
-    from echos.analysis._common import community_sizes
+    from echos.analysis.common import community_sizes
 
     sizes = community_sizes(snapshot["agents"])
     return [{"tick": tick, "communities": list(sizes)} for tick in range(1, 11)]

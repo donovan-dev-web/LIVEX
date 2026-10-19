@@ -209,11 +209,6 @@ public static class SimulationOptionsValidator
             errors.Add($"agents.actions.deliberation.alignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.AlignBonus}).");
         }
 
-        if (options.Agents.Actions.Deliberation.CollectiveAlignBonus <= 0.0)
-        {
-            errors.Add($"agents.actions.deliberation.collectiveAlignBonus doit être &gt; 0 (reçu : {options.Agents.Actions.Deliberation.CollectiveAlignBonus}).");
-        }
-
         if (options.Agents.Actions.Deliberation.ActionSwitchMargin < 0.0)
         {
             errors.Add($"agents.actions.deliberation.actionSwitchMargin doit être &gt;= 0 (reçu : {options.Agents.Actions.Deliberation.ActionSwitchMargin}).");

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ._common import (
+from .common import (
     alive_count,
     event_values,
     event_window_published,

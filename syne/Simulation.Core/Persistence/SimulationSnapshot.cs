@@ -110,7 +110,6 @@ public sealed record MindSnapshotDto(
     IReadOnlyList<ulong> RelayedMessageIds,
     IReadOnlyDictionary<int, double> SuccessRates,
     GoalSnapshotDto? Intention,
-    GroupObjectiveSnapshotDto? CollectiveObjective,
     int? LastDecisionKind,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     InventorySnapshotDto? Inventory = null,
@@ -236,7 +235,6 @@ public sealed record GoalSnapshotDto(
     string? TargetPosition = null,
     ulong TargetObservedTick = 0,
     double TargetConfidence = 0.0);
-public sealed record GroupObjectiveSnapshotDto(ulong GroupId, int Kind, double Consensus, double LeaderTrust, ulong AdoptedTick, ulong ExpiresTick);
 
 /// <summary>Groupe émergent actif au tick T (table 7-8).</summary>
 public sealed record GroupSnapshotDto(
@@ -247,4 +245,8 @@ public sealed record GroupSnapshotDto(
     ulong? LeaderId,
     int? Decision,
     double Consensus,
-    bool HadDecision);
+    bool HadDecision,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    double? MaxBondDistance = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    double? MeanBondDistance = null);

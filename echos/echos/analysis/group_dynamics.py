@@ -31,7 +31,7 @@ Repli neutre 0.0 quand les données font défaut (``measured = false``).
 
 from __future__ import annotations
 
-from ._common import (
+from .common import (
     alive_count,
     community_sizes,
     communities,

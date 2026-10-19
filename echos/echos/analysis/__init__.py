@@ -7,7 +7,7 @@ METRICS_SPEC), ``METRICS`` (nomenclature des métriques), ``compute(snapshot)``
 les 7 moteurs puis compose le score d'émergence et les phénomènes
 
 
-Le registre des moteurs vit dans :mod:`echos.analysis._common` (chargement
+Le registre des moteurs vit dans :mod:`echos.analysis.common` (chargement
 paresseux) afin que ``emergence`` puisse le consumed sans créer de cycle
 d'import ; ce module n'en est que la façade publique.
 """
@@ -15,7 +15,7 @@ d'import ; ce module n'en est que la façade publique.
 from contextlib import nullcontext
 from typing import Any
 
-from ._common import COMPOSITE_ENGINE_NAME, load_engines, measured_flags
+from .common import COMPOSITE_ENGINE_NAME, load_engines, measured_flags
 
 ENGINES = load_engines()
 

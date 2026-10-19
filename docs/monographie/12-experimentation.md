@@ -4,6 +4,8 @@ Chaque campagne de ce livre suit le même gabarit d'enquête : contexte et quest
 
 Une campagne est ce qui distingue une observation d'une preuve. Observer, c'est regarder un run tourner ; mener une campagne, c'est poser une question précise, définir un protocole, exécuter plusieurs fois, et confronter le résultat à une attente. Le projet applique aux campagnes la même exigence qu'aux tests : elles doivent être rejouables par un script, et leurs conclusions doivent être bornées à ce qui a été mesuré.
 
+*Le gabarit de campagne de verdict (extension A0-4/BL-04, 17 octobre 2026).* Le gabarit ci-dessus reçoit une extension pour les campagnes qui prétendent à un **verdict** plutôt qu'à une observation — elle ajoute quatre étapes **avant** le premier run : (1) le phénomène candidat, formulé sans référence à un résultat attendu ; (2) les définitions exactes des métriques et les seuils numériques avec leur direction ; (3) les graines (K ≥ 5), la population, l'horizon et les bras (baseline + ablation/contraste) ; (4) la logique de verdict, y compris le nombre de graines devant passer. Puis deux étapes après : la **provenance** de chaque métrique (mesuré, absent, zéro observé) et le **verdict binaire** publié avec la liste des graines en échec. Toute condition qui échoue se publie comme échec : le gabarit ne prévoit aucun état « retouché ». Un exemple complet — pré-enregistrement, harnais, résultats, verdict confirmé et verdict non confirmé cohabitants — est rejouable dans `docs/realignment-evidence/emergence/` (`dotnet test A0-4.Harness`, ~1 min 40). Le protocole complet est dans `A0-4_VERDICT_PROTOCOL.md`.
+
 ```mermaid
 flowchart LR
     Q["Question"] --> O["Options"] --> D["Decision"] --> P["Preuve"] --> L["Limites"] --> S["Suite"]

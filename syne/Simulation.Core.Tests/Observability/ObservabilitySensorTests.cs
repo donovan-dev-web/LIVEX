@@ -228,7 +228,7 @@ public class ObservabilitySensorTests
         // / : la version moteur identifie le run.
         // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
         // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
-        Assert.Equal("0.16.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.16.0 : défauts intégrés recalés, goldens ré-épinglés
+        Assert.Equal("0.17.0", ObservabilityContract.EngineVersion); // arbitrage A0-3 0.17.0 : groupes en observateur seul, distances instrumentées, goldens ré-épinglés
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

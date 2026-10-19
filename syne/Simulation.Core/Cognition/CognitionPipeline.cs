@@ -246,8 +246,8 @@ public sealed class CognitionPipeline
             // boucle des entités, la communication de masse et les décréments de
             // croyance/confiance — la population ne mute qu'après l'itération complète
             // (ordre causal strict). La cohésion est évaluée sur les positions
-            // <b>finales</b> du tick (post-commit) : une proximité spatiale actuelle
-            // est exigée quand `groups.proximityRequired` est actif.
+            // <b>finales</b> du tick (post-commit) : elles servent à INSTRUMENTER la
+            // distance des paires liées (arbitrage A0-3), jamais à filtrer la liaison.
             // Positions construites seulement quand la revue de groupes a lieu :
             // hors revue (LOD `reviewIntervalTicks`), la table serait un coût par
             // tick pour un système qui n'itère même pas.
@@ -256,7 +256,6 @@ public sealed class CognitionPipeline
                 && currentTick % (ulong)_options.Groups.ReviewIntervalTicks == 0;
             Dictionary<ulong, World.Position>? positions = groupsReview ? Positions() : null;
             _groups.Step(currentTick, _minds, positions);
-            _groups.PropagateObjectives(currentTick, (ulong)_options.Groups.ReviewIntervalTicks, _minds);
             _birth.Step(currentTick, _world, _minds, _options);
             foreach ((ulong childId, MindState childMind) in _birth.NewbornMinds)
             {
@@ -998,7 +997,6 @@ public sealed class CognitionPipeline
                 goal.Age(currentTick),
                 actions,
                 currentIntention,
-                mind.CollectiveObjective,
                 knowledgeConfidence: Epistemic(goal.Kind)));
         }
 
@@ -1024,7 +1022,6 @@ public sealed class CognitionPipeline
                     goalAge: 0,
                     actions,
                     mind.Intention?.Kind,
-                    mind.CollectiveObjective,
                     benefitOverride: 40.0 * trust));
             }
         }
@@ -1045,7 +1042,6 @@ public sealed class CognitionPipeline
                 mind.SuccessRate(current),
                 mind.Intention?.Age(currentTick) ?? 0UL,
                 actions,
-                mind.CollectiveObjective,
                 Epistemic(current));
 
             if (adjusted.Kind != selected.Kind)

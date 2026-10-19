@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ._common import (
+from .common import (
     agents_of,
     alive_count,
     belief_facts,

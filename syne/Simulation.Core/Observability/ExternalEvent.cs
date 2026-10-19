@@ -240,6 +240,10 @@ public static class EventSensor
             ["groupId"] = group.Id,
             ["size"] = group.Members.Count,
             ["cohesion"] = Math.Round(group.MeanCohesion, 4),
+            // Instrumentation A0-3 : distance max des paires liées au moment de la
+            // formation — null JSON = non mesurée (aucune table de positions),
+            // jamais zéro observé.
+            ["maxBondDistance"] = group.MaxBondDistance is { } distance ? Math.Round(distance, 4) : null,
             ["members"] = JsonMembers(group.Members),
         };
         ulong anchor = group.LeaderId ?? group.Members[0];

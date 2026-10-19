@@ -41,7 +41,7 @@ from typing import Iterator
 
 from echos.analysis import compute_all, provenance
 from echos.analysis.calibration import build_calibration_report
-from echos.analysis._common import communities, community_sizes
+from echos.analysis.common import communities, community_sizes
 from echos.analysis.feedback_loop_detector import WINDOW_SIZE as _HISTORY_TICKS
 from echos.ingestion.stream import TickSegment, aligned_ticks
 from echos.ingestion.ws_client import WsClient

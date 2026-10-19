@@ -143,11 +143,14 @@ public class TerritoryPersistenceTests
     }
 
     [Fact]
-    public void SchemaVersion_IsFour_AndLegacySnapshotsWithoutTerritoriesStillLoad()
+    public void SchemaVersion_IsFive_AndLegacySnapshotsWithoutTerritoriesStillLoad()
     {
         // Rétro-compatibilité : un snapshot v3 (sans champ territories) doit se
         // restaurer avec des listes vides plutôt que de lever.
-        Assert.Equal(4, SimulationSnapshotCodec.SchemaVersion);
+        // 4 → 5 (arbitrage A0-3, engineVersion 0.17.0) : retrait de
+        // `collectiveObjective` dans minds[] et ajout des distances de paires
+        // liées dans groups[].
+        Assert.Equal(5, SimulationSnapshotCodec.SchemaVersion);
 
         string legacy = """
         {
