@@ -227,7 +227,6 @@ class AnalyticsStore:
                     f"ALTER TABLE tick_summaries ADD COLUMN {name} REAL NOT NULL DEFAULT 0"
                 )
 
-
     def _migrate_decision_trace_nullable_utility(self) -> None:
         """Rend ``decision_traces.utility`` nullable (v7) et ajoute les colonnes BL-09.
 
@@ -1084,4 +1083,3 @@ def _number_or_none(value: object) -> float | None:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
     return float(value)
-
