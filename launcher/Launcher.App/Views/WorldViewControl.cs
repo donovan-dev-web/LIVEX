@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Vue 2D du monde observé, dessinée nativement (pas de page web).
@@ -189,7 +192,8 @@ public sealed class WorldViewControl : Control
         var description = Description;
         var agents = Agents ?? [];
         var resources = TickResources ?? [];
-        if (description is null && agents.Count == 0 && resources.Count == 0)
+        var locatedResources = resources.Count(resource => resource.Located);
+        if (description is null && agents.Count == 0 && locatedResources == 0)
         {
             DrawCentered(context, "aucune observation de monde pour ce tick", width, height);
             return;
@@ -235,8 +239,13 @@ public sealed class WorldViewControl : Control
 
         foreach (var resource in resources)
         {
-            extentX = Math.Max(extentX, resource.X);
-            extentY = Math.Max(extentY, resource.Y);
+            // Une réserve sans position publiée n'étend pas le cadre : elle n'est
+            // pas projetée (le contrat SYNE agrège les réserves du tick par type).
+            if (resource is { X: { } resourceX, Y: { } resourceY })
+            {
+                extentX = Math.Max(extentX, resourceX);
+                extentY = Math.Max(extentY, resourceY);
+            }
         }
 
         extentX = Math.Max(1, extentX);
@@ -270,7 +279,12 @@ public sealed class WorldViewControl : Control
 
             foreach (var resource in resources)
             {
-                var point = Map(resource.X, resource.Y);
+                if (resource is not { X: { } resourceX, Y: { } resourceY })
+                {
+                    continue;
+                }
+
+                var point = Map(resourceX, resourceY);
                 context.DrawRectangle(
                     new SolidColorBrush(TickResourceColor),
                     null,
