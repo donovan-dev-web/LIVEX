@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---
@@ -24,6 +24,7 @@ simulation concurrente.
 | Surface de service | Automation Spec `PrismLdk.Service` : arguments supervisés, jeton de session, codes HTTP par route, métriques et échappement des labels |
 | Service au runtime | Sondes `/health/live`, `/health/ready`, `/health/details`, `/info`, `/metrics` ; `POST /control/shutdown` refusé sans jeton puis accepté, sortie 0 et marqueur `shutdown.ok` |
 | Transport | Vérifier connexion/déconnexion, perte inattendue, reconnexion configurée, JSON invalide et erreur HTTP |
+| Contrat consommé | Automation Spec `PrismLdk.Contract` : trames SYNE/syne-mock rejouées dans les parseurs réels — description 1.1, `simulatedTimeSeconds` exact et son repli, `leaderId` absent, mesures d'analyse de groupe ignorées sans rejet, fusion du statut et `null` non converti en `10` |
 | Contrats | Vérifier l'ordre `world_initialized` avant snapshots, parsing de snapshots/deltas/événements et conservation de valeurs inconnues |
 | Cycle de vie | Vérifier `Prepare` → réception du monde → `Ready` → résultat positif → `Start`, ainsi que pause/reprise/arrêt/reset/statut |
 | Projet PRISM | Vérifier que la scène reste cohérente avec les données initiales puis les snapshots, sans doubler les mutations |
@@ -31,6 +32,27 @@ simulation concurrente.
 Les résultats réseau sont asynchrones ; vérifier les callbacks `OnControlResult`
 et `OnError`, et ne pas considérer un appel Blueprint comme confirmation de
 succès avant le retour correspondant.
+
+### 2.1 Exécution (UE 5.8, projet `prism/LDK/LDK.uproject`)
+
+```text
+# Compilation du module éditeur (un nouveau fichier de spec exige une
+# régénération du makefile : toucher PrismLdk.Build.cs si la spec n'apparaît pas)
+"C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat" ^
+  LDKEditor Win64 Development -project="D:\LIVEX\prism\LDK\LDK.uproject" -waitmutex -NoUBA
+
+# Automation
+"C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" ^
+  "D:\LIVEX\prism\LDK\LDK.uproject" ^
+  -ExecCmds="Automation RunTests PrismLdk;Quit" ^
+  -unattended -nopause -nosplash -nullrhi ^
+  -ReportExportPath="D:\LIVEX\prism\LDK\Saved\AutomationReport"
+```
+
+État mesuré le 18 octobre 2026 : **69 specs, 0 échec** (`succeeded` 65 +
+`SuccessWithWarnings` 4, `failed` 0) — `Projection`, `WorldRegistry`, `Service`,
+`GapReplay` et `Contract` (6 specs). Le rapport machine est
+`Saved/AutomationReport/index.json`.
 
 ## 3. Usage de syne-mock pour les tests de développement
 
@@ -73,6 +95,17 @@ Référence : [`../../syne-mock/README.md`](../../syne-mock/README.md).
   visibles côté Blueprint.
 - Un snapshot complet actualise l'état affiché ; événements et deltas ne
   doublent pas ses mutations.
+- L'Automation Spec `PrismLdk.Contract` est verte : le plugin lit la même
+  identité (contrat 0.5.0, moteur 0.17.0, description 1.1) et les mêmes champs
+  sur une trame SYNE et sur une trame `syne-mock`, y compris les valeurs
+  facultatives (`leaderId` absent) et l'absence de `simulatedTimeSeconds`
+  (repli `tick × simulatedSecondsPerTick`). Les mesures d'analyse des groupes
+  (`maxBondDistance` / `meanBondDistance`, mesurées par SYNE, `null` côté mock)
+  sont présentes dans les trames et **ignorées** par le plugin : PRISM est un
+  rendu 3D, un consommateur d'analyse les lit dans l'observatoire.
+- `Prepare` transmet la surcouche `config` : le monde préparé par le mock et
+  par SYNE est le même (géométrie, cadence, pas temporel), donc `k` et
+  l'horloge de PRISM ne dépendent pas de la source.
 - Les données inconnues restent diagnostiquables plutôt que converties
   silencieusement en état simulé valide.
 - Les tests de comportement décisionnel et de trajectoire sont exécutés contre

@@ -1,17 +1,21 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { SITE } from '../data/site';
 import { url } from '../utils/url';
 ---
 <BaseLayout
-  title="Mentions légales"
-  description="Mentions légales du site LIVEX : éditeur, hébergement, contenu et licences, propriété intellectuelle et responsabilité."
+  title="Mentions légales — éditeur, hébergement, licences"
+  description="Mentions légales du site LIVEX : éditeur, hébergement GitHub Pages, contenus et licences (GPL-3.0-or-later, CC BY 4.0), propriété intellectuelle et responsabilité."
 >
   <PageHeader
     index="22"
     eyebrow="Mentions légales"
     title="Mentions légales."
-    lead="Informations relatives à l'édition et à l'hébergement de ce site."
+    lead="Informations relatives à l'édition et à l'hébergement de ce site — projet personnel, site statique, sans traitement de données."
     crumbs={[{ label: 'Mentions légales' }]}
   />
 
@@ -23,7 +27,7 @@ import { url } from '../utils/url';
         Ce site est édité par <strong>Donovan Chartrain</strong>, personne physique, à titre personnel et non
         professionnel, dans le cadre du projet de recherche <strong>LIVEX</strong>.
       </p>
-      <p class="mu">Contact : via le dépôt public, sur <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a>.</p>
+      <p class="mu">Contact : via le dépôt public, sur <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a>. Les vulnérabilités se signalent en privé, via <a href={`${SITE.repo}/security/advisories/new`} rel="noopener">GitHub Security Advisories ↗</a>.</p>
     </div>
   </section>
 
@@ -43,11 +47,16 @@ import { url } from '../utils/url';
     <div class="w">
       <div class="sh"><b>22.3</b> Contenus et licences</div>
       <h2>Ce que vous pouvez réutiliser.</h2>
+      <p class="mu">
+        Trois régimes coexistent : le code, les contenus éditoriaux et la marque. Le détail des permissions et
+        obligations figure sur la page <a href={url('licence/')}>Licence et réutilisation</a>.
+      </p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Élément</th><th>Licence</th></tr></thead>
           <tbody>
-            <tr><td>Code source (dépôt LIVEX)</td><td>MIT — <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a></td></tr>
+            <tr><td>Code source LIVEX (hors projet Unreal PRISM)</td><td>GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later) — <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/LICENSE" rel="noopener">LICENSE ↗</a></td></tr>
+            <tr><td>Projet Unreal PRISM et plugin PRISM-LDK</td><td>EULA Epic Games — non couvert par la GPL du projet</td></tr>
             <tr><td>Textes et contenus de ce site</td><td>Creative Commons Attribution 4.0 (CC BY 4.0)</td></tr>
             <tr><td>Marque « LIVEX » et logos</td><td>Tous droits réservés — usage nominatif uniquement</td></tr>
           </tbody>
@@ -64,9 +73,15 @@ import { url } from '../utils/url';
       <h2>Un contenu « tel quel ».</h2>
       <p>
         Ce site et les documents qu'il référence sont fournis <em>en l'état</em>, sans garantie d'exactitude ni
-        d'adéquation à un usage particulier. Le projet est en développement ; les informations peuvent évoluer.
+        d'adéquation à un usage particulier. Le projet est en développement ; les informations peuvent évoluer, et les
+        chiffres publiés portent une date de mesure. Aucune version publique n'étant disponible, rien de ce site ne
+        constitue un produit livré.
       </p>
-      <p style="margin-top:18px"><a class="bt" href={url('confidentialite/')}>Politique de confidentialité →</a></p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('confidentialite/')}>Politique de confidentialité →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('accessibilite/')}>Accessibilité</a>
+      </p>
     </div>
   </section>
 </BaseLayout>

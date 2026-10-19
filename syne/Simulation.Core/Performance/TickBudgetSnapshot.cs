@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Photographie agrégée des budgets de tick (SYNE-090) : moyennes par phase en millisecondes par tick, part
@@ -29,8 +32,29 @@ public sealed record TickBudgetSnapshot
 
     public double MeanPipelineMs => PipelineSamples > 0 ? PipelineTotalMs / PipelineSamples : 0.0;
 
-    /// <summary>Temps moyen par tick pour la phase (0 si jamais mesurée).</summary>
+    /// <summary>
+    /// Temps moyen <b>par tick</b> de la phase (0 si jamais mesurée) — lecture
+    /// dimensionnellement cohérente avec <see cref="MeanPipelineMs"/> et
+    /// <see cref="ComputationShare"/>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Correction de mesure (réalignement)</b> : la moyenne divisait par le
+    /// nombre d'<i>échantillons</i> de la phase. Les phases intra-entité
+    /// (perception, mémoire, besoins, décision, action) sont échantillonnées une fois
+    /// par entité et par tick, les phases monde/réseau une fois par tick : la colonne
+    /// affichée rendait donc le temps <i>par entité</i> pour les premières (0,03 ms) et
+    /// le temps <i>par tick</i> pour les secondes (6 ms) — deux unités dans le même
+    /// tableau, ce qui masquait la phase réellement dominante. La lecture par tick est
+    /// conservée (par échantillon explicitement, <see cref="MeanPerSampleMs"/>).
+    /// </remarks>
     public double MeanMs(TickPhase phase)
+    {
+        int index = (int)phase;
+        return PipelineSamples > 0 ? _totalMs[index] / PipelineSamples : 0.0;
+    }
+
+    /// <summary>Temps moyen par échantillon de la phase (temps par entité pour les phases intra-entité).</summary>
+    public double MeanPerSampleMs(TickPhase phase)
     {
         int index = (int)phase;
         return _samples[index] > 0 ? _totalMs[index] / _samples[index] : 0.0;

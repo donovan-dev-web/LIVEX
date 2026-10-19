@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Construit une URL tenant compte du `base` Astro (/LIVEX/ sur GitHub Pages)
  * et de la langue (préfixe `en/` pour la version anglaise).

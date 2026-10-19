@@ -47,7 +47,7 @@ décrivent cette page utilisent cet index comme préfixe de sous-section
 | 22 | `mentions-legales/` | Mentions légales. |
 | 23 | `confidentialite/` | Confidentialité (aucun traceur, aucun cookie). |
 | 24 | `accessibilite/` | Déclaration d'accessibilité. |
-| 25 | `licence/` | Licence et réutilisation (MIT / CC BY 4.0). |
+| 25 | `licence/` | Licence et réutilisation (GPL-3.0-or-later / CC BY 4.0). |
 | 26 | `plan-du-site/` | Plan du site, groupé par **blocs A–G** (FR et EN). |
 | 27 | `presse/` | Kit média (éléments de langage, logo, faits clés, contact). |
 | — | `404.html` | Page introuvable, bilingue, `noindex`. |

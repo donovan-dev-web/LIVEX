@@ -40,7 +40,7 @@ Le schéma suivant décrit l'état V0.1. Un trait plein désigne un flux disponi
 
 ```mermaid
 flowchart TB
-    subgraph SYNE["SYNE 0.15.0 : decider (verite, sans ecran)"]
+    subgraph SYNE["SYNE 0.17.0 : decider (verite, sans ecran)"]
         CORE["Bibliotheque : monde, agents, cognition, actions, interactions, grille, navigation"]
         SRV["Executable : flux 5180 + pilotage 5181"]
         CORE --- SRV

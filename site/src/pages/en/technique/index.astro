@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
@@ -7,8 +10,8 @@ import { url } from '../../../utils/url';
 ---
 <BaseLayout
   lang="en"
-  title="Architecture"
-  description="LIVEX architecture: SYNE simulation engine, ECHOS observation, PRISM perceptual rendering, linked by explicit interface contracts."
+  title="LIVEX architecture: SYNE, ECHOS, PRISM"
+  description="LIVEX architecture: deterministic SYNE simulation engine, ECHOS observation and PRISM perceptual rendering, linked by versioned interface contracts."
 >
   <PageHeader
     lang="en"
@@ -27,8 +30,9 @@ import { url } from '../../../utils/url';
         world <span>SYNE</span> traces <span>ECHOS</span> measures <span>PRISM</span> perception
       </div>
       <p>
-        Each stage is independent and versioned separately. Any component can be replaced without breaking others,
-        as long as transport and persistence contracts are respected.
+        Each stage is independent and versioned separately: any component can be replaced without breaking the others,
+        as long as transport and persistence contracts are respected. That decoupling is what makes the stack testable
+        and evolvable.
       </p>
     </div>
   </section>
@@ -66,10 +70,10 @@ import { url } from '../../../utils/url';
             <tr><th>Contract</th><th>Version / format</th><th>Note</th></tr>
           </thead>
           <tbody>
-            <tr><td>Observability contract (snapshot)</td><td>0.4.0</td><td>Additions <code>simulatedTimeSeconds</code>; description <code>world_initialized</code> 1.1.</td></tr>
+            <tr><td>Observability contract (snapshot)</td><td>0.5.0</td><td>Adds <code>simulatedTimeSeconds</code>; world description <code>world_initialized</code> 1.1.</td></tr>
             <tr><td>Run identifier format</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>Seed is included in the identifier; ECHOS does not derive it from the ID.</td></tr>
             <tr><td>ECHOS persistence schema</td><td>SQLite v6</td><td>Additive migration <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>Local ports (V0.1)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>local only</strong> (<code>127.0.0.1</code>).</td></tr>
+            <tr><td>Local ports (V0.2)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>local only</strong> (<code>127.0.0.1</code>).</td></tr>
           </tbody>
         </table>
       </div>

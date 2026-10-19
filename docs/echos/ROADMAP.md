@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 8 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : `../ROADMAP.md` (racine), `../syne/ROADMAP.md`
 **Source Monographie** : §9.6, §7.9 (adapté), §4.2 (architecture)
 
@@ -29,6 +29,10 @@
 | 9 | Tests & couverture | **LIVRÉ (U8, ECHOS-090→092)** : suite pytest + goldens, couverture 96,01 %, test d’intégration réel SYNE→ECHOS en CI, rapport de calibration déterministe. Cette validation ne couvre pas PRISM ; PRISM-LDK (`PrismLdk`) et le projet Unreal PRISM doivent être validés séparément contre SYNE réel. |
 | 10 | Shell Electron | **RETRAIT (ADR-007, 05/10/2026)** : le packaging `.deb`/`.exe` livré (backend PyInstaller + interface FastAPI, CI matrice sur tag `echos-v*`) a été **supprimé** — ECHOS n'a plus d'interface ni de shell de bureau. Voir `../launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md` |
 
+### État de l’acceptation d’ingestion
+
+La phase d’acceptation d’octobre 2026 a verrouillé par tests contractuels les quatre états de données (zéro mesuré, non mesuré, absent selon la cadence, trou de tick) sur batch et streaming, avec provenance alignée. Au relevé du 17 octobre : 11 tests contractuels dédiés; 372 réussis et 14 ignorés en exécution par défaut; la voie SYNE réel a donné 385 réussis, 1 ignoré, et la voie mock 373 réussis, 13 ignorés. Ces chiffres sont un résultat historique, pas une promesse de la suite courante. Voir le [rapport d’acceptation pérenne](../governance/realignment/ECHOS-ACCEPTANCE-2026-10.md); les contrats et tests maintenus sont dans ce composant.
+
 ## 3. Jalons de validation
 
 | Jalon | Critère |
@@ -41,7 +45,7 @@
 
 ## 4. Dépendances externes
 
-- SYNE : WebSocket :5180 (snapshot/event), HTTP :5181 (contrôle), schéma SQLite Annexe G.
+- SYNE : WebSocket :5180 (snapshot/event), HTTP :5181 (contrôle), schéma SQLite Annexe G. Version moteur : **0.17.0** (calibration B1, ADR-016).
 - PRISM : les vues d'analyse sont portées par le Launcher depuis l'ADR-007 (l'interface ECHOS ayant été retirée) ; une éventuelle réutilisation dans PRISM reste à coordonner (cf. `../prism/UX_INTERACTION.md`) — coordination en `../ARCHITECTURE.md` racine.
 
 ## 5. Limites assumées (cf. `LIMITATIONS.md`)

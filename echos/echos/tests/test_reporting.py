@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Tests des rapports déterministes ECHOS."""
 
 from echos.reporting import build_report, json_report, markdown_report, write_reports

@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : `../ROADMAP.md` (racine)
 **Source Monographie** : Annexe J (feuille de route V2), §3.24 (fondations V0.1)
 
@@ -20,18 +20,24 @@
 | 0 | Socle | Architecture & documentation | ADR |
 | 1 | BDI + Perception | Boucle 10/15 étapes, perception partielle | boucle de simulation, grille spatiale — **livré** (jalon SYNE ph1, issues #7–#12) |
 | 2 | Mémoire + Croyances | Mémoire long terme, révision croyances | mémoires + BeliefStore — **livré** (SYNE-013/014) |
-| 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formule d'utilité, DecisionRecord — **livré** (jalon SYNE ph3, issues #16–#19, engineVersion 0.2.0) |
-| 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions + exécuteur atomique — **livré** (jalon SYNE ph4, issues #20–#23, engineVersion 0.3.0) |
-| 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses — **livré** (jalon SYNE ph5, issues #24–#28, engineVersion 0.4.0, `CommunicationSystem` : diffusion + interception + relais + coûts + confiance, événements `message_sent`/`message_received`) |
-| 6 | Groupes | Cohésion, leadership, décisions collectives | réseau social émergent — **livré** (jalon SYNE ph6, issues #29–#32, engineVersion 0.5.0, `GroupSystem` : cohésion confiance × affinité, LOD 10 ticks, leader par confiance entrante, décisions pondérées, turnover ; `BirthSystem` : fusion consentie, naissances post-boucle ; `SOCIAL_NETWORK.md`) |
-| 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 — **cycle des ressources livré** (jalon U8, SYNE-070, engineVersion 0.7.0 : 4ᵉ type `Mineral`, régénération/dégradation périodique en fin de tick, persistance étendue) ; **constructions livrées** (SYNE-071, engineVersion 0.8.0 : obstacles statiques configurables `world.obstacleLayout[]`, mutation dynamique validée + tracée, grille A\* re-rasterisable — pas de mécanique agentique, mathématiques ouvertes) ; **saisons livrées** (SYNE-072, engineVersion 0.9.0 : cycle `world.seasons` actif — fonction pure du tick, `world.season_changed` au basculement, facteurs de régénération par resource, snapshot `season`/`seasonIndex`) ; **territoires livrés** (SYNE-073, engineVersion 0.10.0 : zones « points de survie » `world.territories.zones[]`, territoire effectif = présence des entités `distance ≤ radius` — suivi purement observationnel 0 PRNG, `world.territory_membership_changed` + snapshot `territories[]`, désactivé par défaut) ; obstacles cercle V0.1 en place (ADR-013) ; sources spatiales **hors V0.1** |
-| 7b | Fidélités V0.1 (resegmentation) | 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe) | **livré** (jalon SYNE ph7b, SYNE-074…077, U6 — issues dédiées `ISSUES.md` ph7b, engineVersion 0.6.0) |
+| 3 | Décision + Utilité | UtilityEvaluator, objectifs dynamiques | formule d'utilité, DecisionRecord — **livré** (jalon SYNE ph3, issues #16–#19, engineVersion 0.3.0) |
+| 4 | Actions | Actions déclaratives, pool d'actions | catalogue d'actions + exécuteur atomique — **livré** (jalon SYNE ph4, issues #20–#23, engineVersion 0.4.0) |
+| 5 | Communication | 7 types, protocole, validation | protocole pulsations lumineuses — **livré** (jalon SYNE ph5, issues #24–#28, engineVersion 0.5.0, `CommunicationSystem` : diffusion + interception + relais + coûts + confiance, événements `message_sent`/`message_received`) |
+| 6 | Groupes | Cohésion, leadership, décisions collectives | réseau social émergent — **livré** (jalon SYNE ph6, issues #29–#32, engineVersion 0.6.0, `GroupSystem` : cohésion confiance × affinité, LOD 10 ticks, leader par confiance entrante, décisions pondérées, turnover ; `BirthSystem` : fusion consentie, naissances post-boucle ; `SOCIAL_NETWORK.md`) |
+| 7 | Ressources + Environnement | Saisons, régénération, obstacles | monde V2 — cycle des ressources (SYNE-070), constructions (SYNE-071), saisons (SYNE-072) et territoires (SYNE-073) livrés; obstacles circulaires V0.1 en place (ADR-013). Les sources spatiales sont livrées dans le profil `reference` 0.17.0 après gate de viabilité (3 graines, 2 500 ticks); la baseline globale reste disponible, déclarée et testée. La viabilité à long horizon et la raréfaction restent à valider. |
+| 7b | Fidélités V0.1 (resegmentation) | 4 fidélités monographie (mortalité, naissance consentie fidèle, décision collective → objectifs, cheminement A* déterministe) | **livré** (jalon SYNE ph7b, SYNE-074…077, U6 — issues dédiées `ISSUES.md` ph7b, engineVersion 0.7.0) |
 | 8 | Observabilité | Tests anti-triche, validations | événements typés complets — **SYNE-080 livré** (émetteur WebSocket `--observe`, snapshot + events camelCase) |
 | 9 | Performance & Scalabilité | Benchmarks, optimisations, 500+ entités | **livré** (jalon SYNE ph9, SYNE-090…093, U7 — `TickBudgetCollector` budgets ≥ 30 % computation, `--benchmark` cibles 50/500/1000 t/s ≥ 2720/1187/505 (PERFORMANCE.md §9), `ObjectPool` + grille spatiale, déterminisme bit-à-bit/checksum, tests `ScaleTargetsTests`) |
 | 10 | Tests & Couverture | 160+ tests, ≥ 80 % | **livré** (jalon SYNE ph10, SYNE-100…102, U7 — **324 tests** (315 Core + 9 Console), couverture **96,19 %** (`Ph10ValidationCoverageTests` 100 % validator + `ObservabilitySensorTests` 100 % `ExternalEvent`), intégration boucle complète sans perte (`ObservabilityChainedLoopTests`), non-régression déterminisme baseline d'état `0x072a488aa18c05eb` (`Ph10DeterminismBaselineTests`, DETERMINISM §7)) |
 | 11 | Persistance & Reprise | JSON → SQLite, migration | **livré** (jalon U8, SYNE-110…112 — SQLite 11 tables `PRAGMA user_version=2`, reprise bit-à-bit après crash `PersistenceTests` ; **SYNE-113** : serveur de contrôle HTTP :5181 `--serve`, non intrusif, `ControlServerWireTests`, finalise ECHOS-085) |
 
 (Ordre adapté de l'Annexe J.1)
+
+### État du réalignement SYNE 0.17.0
+
+La phase de réalignement cognitif est **réalisée** selon ADR-018 : le profil de référence est localisé après gate de viabilité; la cognition active s’appuie sur croyances et mémoire rappelée, les objectifs ont des cibles révisables, et l’ordre causal du tick est vérifié. L’arbitrage A0-3 expose les décisions collectives comme observation sans injection dans l’utilité individuelle. Les versions associées sont `engineVersion` 0.17.0, `schemaVersion` 5 et contrat d’observabilité 0.5.0.
+
+Le gate localisé (3 graines, 2 500 ticks) et les campagnes de reproductibilité ont franchi les critères consignés dans le [rapport expérimental de gouvernance](../governance/realignment/EXPERIMENTAL-VALIDATION-2026-10.md). Ils ne valident pas les horizons supérieurs, la raréfaction ou l’hiver; ces travaux restent dans les étapes futures des ressources/environnement. Les décisions de conception et résultats détaillés sont dans le [rapport SYNE 0.17.0](../governance/realignment/SYNE-REALIGNMENT-0.17.0.md) et la [cartographie d’accès](../governance/realignment/ACCESS-DECISIONS-0.17.0.md).
 
 ## 3. Jalons de validation (rappel)
 

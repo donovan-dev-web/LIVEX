@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Codec bit-à-bit des snapshots de simulation (SYNE-111) : capture l'état mutable durable d'un
@@ -39,7 +42,12 @@ public static class SimulationSnapshotCodec
     /// vides. Bump MAJEUR uniquement pour une rupture de sémantique, pas pour un
     /// champ additif.
     /// </summary>
-    public const int SchemaVersion = 4;
+    // 4 → 5 (arbitrage A0-3, engineVersion 0.17.0) : suppression du champ
+    // `collectiveObjective` de `MindSnapshotDto` (l'objectif collectif n'existe
+    // plus dans la cognition) et ajout additif des distances de paires liées
+    // (`maxBondDistance` / `meanBondDistance`, nullables = non mesuré) dans
+    // `groups[]`.
+    public const int SchemaVersion = 5;
 
     /// <summary>Capte l'état complet du monde + cognition à l'instant T.</summary>
     public static SimulationSnapshot Capture(SimulationLoop loop)
@@ -84,7 +92,9 @@ public static class SimulationSnapshotCodec
                 group.LeaderId,
                 group.Decision is { } decision ? (int)decision : null,
                 group.Consensus,
-                group.HadDecision));
+                group.HadDecision,
+                group.MaxBondDistance,
+                group.MeanBondDistance));
         }
 
         var books = loop.World.Books.Select(book => new BookSnapshotDto(
@@ -100,6 +110,21 @@ public static class SimulationSnapshotCodec
                 loop.MembersOfTerritory(zone.Id)))
             .ToArray();
 
+        // Gisements localisés (Phase 0) : omis quand le modèle global est actif
+        // (liste vide) — le hash des snapshots du modèle historique est inchangé.
+        IReadOnlyList<ResourceNodeSnapshotDto>? nodes = loop.World.ResourceNodes.Count == 0
+            ? null
+            : loop.World.ResourceNodes
+                .Select(node => new ResourceNodeSnapshotDto(
+                    node.Id,
+                    (int)node.Kind,
+                    node.Position.X,
+                    node.Position.Y,
+                    node.Amount,
+                    node.Capacity,
+                    node.RegenerationRate))
+                .ToList();
+
         IReadOnlyDictionary<World.ResourceKind, double> stocks = loop.Resources.Snapshot();
         var world = new WorldSnapshotDto(
             loop.World.Size.Width,
@@ -112,7 +137,8 @@ public static class SimulationSnapshotCodec
             stocks[World.ResourceKind.Wood],
             stocks[World.ResourceKind.Mineral],
             books,
-            territories);
+            territories,
+            nodes);
 
         return new SimulationSnapshot(
             SchemaVersion,
@@ -122,7 +148,8 @@ public static class SimulationSnapshotCodec
             world,
             minds,
             groups,
-            loop.Cognition.Groups.NextGroupId);
+            loop.Cognition.Groups.NextGroupId,
+            RunIdentity.ConfigHash(loop.Options));
     }
 
     private static MindSnapshotDto CaptureMind(ulong entityId, MindState mind)
@@ -235,22 +262,80 @@ public static class SimulationSnapshotCodec
             mind.Communication.RelayedIdsSnapshot.ToList(),
             successRates,
             mind.Intention is { } intention
-                ? new GoalSnapshotDto((int)intention.Kind, intention.BornTick)
-                : null,
-            mind.CollectiveObjective is { } objective
-                ? new GroupObjectiveSnapshotDto(
-                    objective.GroupId,
-                    (int)objective.Kind,
-                    objective.Consensus,
-                    objective.LeaderTrust,
-                    objective.AdoptedTick,
-                    objective.ExpiresTick)
+                ? new GoalSnapshotDto(
+                    (int)intention.Kind,
+                    intention.BornTick,
+                    intention.Target?.TargetType,
+                    intention.Target?.Label,
+                    intention.Target is { } aim ? FormatPosition(aim.Position) : null,
+                    intention.Target?.ObservedTick ?? 0UL,
+                    intention.Target?.Confidence ?? 0.0)
                 : null,
             mind.LastDecision is { } last ? (int)last.Kind : null,
             inventoryDto,
             commitmentDtos,
             mind.LastDeliberationTick,
-            triggeredDtos);
+            triggeredDtos,
+            CaptureDecision(mind));
+    }
+
+    /// <summary>
+    /// Position canonique d'une cible persistée : « X,Y » invariant à la culture
+    /// (même format que la trace décisionnelle et les croyances).
+    /// </summary>
+    private static string FormatPosition(Position position) =>
+        string.Concat(
+            position.X.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture),
+            ",",
+            position.Y.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+
+    /// <summary>
+    /// Trace décisionnelle persistée (D-18) : état, cible crue, scores décomposés,
+    /// candidats rejetés, faits justificatifs et résultat d'exécution — la reprise
+    /// doit continuer la <b>trajectoire</b> et l'<b>explication</b>.
+    /// </summary>
+    private static DecisionSnapshotDto? CaptureDecision(MindState mind)
+    {
+        if (mind.LastDecisionRecord is not { } record)
+        {
+            return null;
+        }
+
+        var scores = record.Scores
+            .Select(score => new UtilityScoreSnapshotDto(
+                (int)score.Kind,
+                score.Benefit,
+                score.Cost,
+                score.Risk,
+                score.Confidence,
+                score.PersonalityModifier,
+                score.Urgency,
+                score.Utility,
+                score.SuccessRate))
+            .ToList();
+
+        IReadOnlyList<DecisionEvidenceSnapshotDto>? evidence = record.Evidence is { Count: > 0 }
+            ? record.Evidence
+                .Select(item => new DecisionEvidenceSnapshotDto(item.Source, item.Subject, item.Confidence, item.ObservedTick))
+                .ToList()
+            : null;
+
+        return new DecisionSnapshotDto(
+            record.Tick,
+            (int)record.State,
+            record.Missing,
+            (int)record.Chosen,
+            record.Utility,
+            scores,
+            record.Target?.TargetType,
+            record.Target?.Label,
+            record.Target is { } target ? FormatPosition(target.Position) : null,
+            record.Target?.ObservedTick ?? 0UL,
+            record.Target?.Confidence ?? 0.0,
+            record.Rejected?.Select(kind => (int)kind).ToList(),
+            evidence,
+            record.ResultOutcome,
+            record.ResultReason);
     }
 
     /// <summary>Sérialise le snapshot en JSON déterministe (<c>tick_states.state</c>).</summary>

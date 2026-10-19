@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { SITE } from '../../data/site';
@@ -7,15 +10,15 @@ import { url } from '../../utils/url';
 <BaseLayout
   lang="en"
   translated
-  title="Follow the project"
-  description="Following LIVEX news without data collection: the journal's RSS feed and the GitHub repository for releases. No response time is guaranteed."
+  title="Follow the project — RSS journal and releases"
+  description="Following LIVEX news without data collection: the journal's RSS feed and GitHub releases. Irregular pace, no guaranteed response time."
 >
   <PageHeader
     lang="en"
     index="18"
     eyebrow="Follow"
     title="Follow, without leaving your data behind."
-    lead="The ways to follow LIVEX news come down today to two channels, both free of any data collection. Others will come when they exist — not before."
+    lead="Two channels are enough to follow LIVEX, and neither collects data. Others will come if they ever exist — not before."
     crumbs={[{ label: 'Follow' }]}
   />
 
@@ -23,6 +26,9 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>18.1</b> Available channels</div>
       <h2>Two entry points.</h2>
+      <p class="mu">
+        You subscribe to a feed or watch a repository — that is the whole mechanism. No account, no sign-up.
+      </p>
       <div class="g2">
         <div class="pl br" style="padding:20px">
           <h3>Journal RSS feed</h3>
@@ -61,8 +67,8 @@ import { url } from '../../utils/url';
         </table>
       </div>
       <p class="mu" style="font-size:0.78rem">
-        No channel is listed here until it is open: a community space, if it comes into being, will be announced with
-        its rules in due course.
+        Journal articles are written in French. No channel is listed here until it is open: a community space, if it
+        comes into being, will be announced with its rules in due course.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={url('actualites/', 'en')}>Read the journal →</a>

@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import { url } from '../../../utils/url';
@@ -6,15 +9,15 @@ import { url } from '../../../utils/url';
 <BaseLayout
   lang="en"
   translated
-  title="Journal"
-  description="The LIVEX journal is published in French. Milestones, technical decisions and in-depth articles, dated and sourced."
+  title="Journal — LIVEX milestones in French"
+  description="The LIVEX development journal: dated milestones, technical decisions and in-depth articles on multi-agent simulation, published in French with an RSS feed."
 >
   <PageHeader
     lang="en"
     index="17"
     eyebrow="Journal"
     title="The record of the days."
-    lead="Milestones and technical decisions, dated. In-depth articles are added progressively."
+    lead="Milestones and technical decisions, dated and sourced. In-depth articles are added progressively."
     crumbs={[{ label: 'Journal' }]}
   />
 
@@ -26,8 +29,13 @@ import { url } from '../../../utils/url';
           translation of each article, this English mirror points to the original, which remains authoritative.
         </p>
       </div>
+      <p class="mu" style="margin-top:18px;font-size:0.78rem">
+        The RSS feed is also French. Both links below take you to the French version of the site.
+      </p>
       <p style="margin-top:18px">
         <a class="bt p" href={url('actualites/', 'fr')}>Read the journal (French) →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('suivre/', 'en')}>Follow the project</a>
       </p>
     </div>
   </section>

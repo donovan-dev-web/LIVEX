@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Ingestion d'un run batch archivé : ``stream.jsonl`` → base analytique (J2B).
 
 Ces tests utilisent un flux écrit par le vrai binaire SYNE

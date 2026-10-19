@@ -11,7 +11,7 @@
 **Statut** : [STABLE]
 **Version** : 0.1.0
 **Dernière mise à jour** : 11 octobre 2026
-**Dépend de** : la documentation transversale (../), SYNE 0.15.0 (contrat d'observabilité 0.4.0)
+**Dépend de** : la documentation transversale (../), SYNE 0.17.0 (contrat d'observabilité 0.5.0)
 **Source Monographie** : Partie 4
 
 ---

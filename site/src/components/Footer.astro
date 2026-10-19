@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import { FOOTER_NAV, SITE } from '../data/site';
 import { url } from '../utils/url';
 import { useTranslations, type Lang } from '../i18n/ui';
@@ -23,7 +26,7 @@ const year = new Date().getFullYear();
         {lang === 'en'
           ? `© ${year} LIVEX — personal project by ${SITE.author}. Content under `
           : `© ${year} LIVEX — projet personnel de ${SITE.author}. Contenu sous licence `}
-        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>{lang === 'en' ? ', code under MIT license.' : ', code sous licence MIT.'}
+        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>{lang === 'en' ? ', code under the GNU GPL v3.0 or later.' : ', code sous licence GNU GPL v3.0 ou ultérieure.'}
       </p>
       <p class="mu">
         {lang === 'en' ? 'No trackers, no cookies. Self-hosted fonts.' : 'Aucun traceur, aucun cookie. Polices auto-hébergées.'}

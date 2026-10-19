@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Preuve J3 (ECHOS-030/033, jalon U3) : le score d'émergence est stable
 entre runs identiques et borné sur [0, 1].
 
@@ -25,7 +28,7 @@ def _load(name: str) -> dict:
 
 def _community_history(snapshot: dict) -> list[dict]:
     """Tailles de communautés par tick (même source que test_j2_determinism)."""
-    from echos.analysis._common import community_sizes
+    from echos.analysis.common import community_sizes
 
     sizes = community_sizes(snapshot["agents"])
     return [{"tick": tick, "communities": list(sizes)} for tick in range(1, 11)]

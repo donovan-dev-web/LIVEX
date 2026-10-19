@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS (+ lecture Launcher)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 6 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : `METRICS_SPEC.md`, `API_REST.md`, `../launcher/USER_INTERFACE.md` §9.2
 **Source Monographie** : §4.3, §4.7
 
@@ -87,8 +87,10 @@ métrique ou vue doit prolonger ce tableau (revue de changement,
 | Journal d'événements (type, tick, entité, action, cause) | `/api/runs/{id}/events` (`total`, `limit`, `types`, `events`) | **Comportements** — marqueurs verticaux sur la courbe (16 max, fenêtre affichée) ; case « Marqueurs d'événements » |
 | Cadence et âge d'un contexte échantillonné | run → `conservation.sampledDetails.agentContextEvery` + `last_tick` | **Entités** — en-tête de fiche « cadence N tick(s) (âge ≤ N-1) · X tick(s) derrière le dernier » |
 | Distribution d'une métrique (intervalles + effectifs) | `/api/runs/{id}/metrics` (valeurs + `measured_by_tick`) | **Statistiques exactes** — outil de distribution (comptage de classe rendu, exclusions comptées, aucune extrapolation) |
-| Description du monde, entités, réserves | `/api/world` | **Monde et territoires** |
+| Description du monde, entités, réserves | `/api/world` | **Monde observé** — carte 2D + panneau des réserves du tick (une réserve sans position publiée est listée « agrégée par type », jamais projetée sur la carte) |
 | Confiance, croyances, décisions d'une entité | `/api/trust-graph`, `/api/beliefs/{id}`, `/api/relationships/{id}`, `/api/runs/{id}/decisions` | **Relations et groupes**, **Entités** |
+| Groupes natifs SYNE (`groupId`, membres, chef, cohésion, consensus, distances de liens) | `/api/runs/{id}/native-groups` (`?tick=`, repli « plus proche ≤ tick ») | **Relations et groupes** — groupes du moteur publiés tels qu'observés, **sans calcul local** (`null` = non mesuré, jamais 0) ; distincts des communautés inférées (`/api/groups`) |
+| Chaîne causale (action → perception, boucles, troncature) | `/api/runs/{id}/causal-chains/{agent}` (`chain[]`, `cycles[]`, `cycle`, `truncated`, `depth_served`) | **Chaîne causale** — une carte par couche, bandeau « boucle signalée par ECHOS » (ticks de récurrence publiés) |
 
 ### 3.3 Règle de lecture commune
 

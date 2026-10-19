@@ -6,6 +6,12 @@
 **Dépend de** : [`ADR-002-choix-unreal-prism-ldk.md`](ADR-002-choix-unreal-prism-ldk.md), [`../SCALE_AND_CADENCE_SPEC.md`](../SCALE_AND_CADENCE_SPEC.md), [`../../adr/ADR-003-api-http-rest.md`](../../adr/ADR-003-api-http-rest.md), [`../../adr/ADR-004-websocket-temps-reel.md`](../../adr/ADR-004-websocket-temps-reel.md), [`../../syne/adr/ADR-005-temporalite.md`](../../syne/adr/ADR-005-temporalite.md)
 **Source Monographie** : §2.4.2 (indépendance du rendu), §5.2.3 (moteur), §5.15 (évolution)
 
+> **Note du 18 octobre 2026** : la durée simulée d'un tick n'est plus une
+> constante — ADR-017/`simulatedSecondsPerTick` (60 par défaut, **5** au profil
+> `prism`, donc `R = 30` et non 360) la remplace. Le reste du présent ADR
+> (échelle `k`, indépendance FPS/tick, cadence) reste valide ; la valeur de
+> cadence qui fait foi est celle **reçue** dans `world_initialized`.
+
 ---
 
 ## Contexte

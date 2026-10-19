@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests du sous-système de communication par pulsations (SYNE-050 → 054).
@@ -136,6 +139,13 @@ public class CommunicationSystemTests
         Assert.Equal(Math.Round(100.0 - expectedReceive, 6), Math.Round(minds[2].Needs.Energy, 6));
     }
 
+    /// <summary>
+    /// S-10 / réalignement : la confiance relationnelle est <b>établie ou
+    /// renforcée par la réception elle-même</b>, puis appliquée au contenu reçu. Un
+    /// pair déjà connu est renforcé (bonus de véracité) avant la pondération ; un
+    /// premier message n'est plus annulé par une confiance nulle (voir le cas
+    /// premier contact ci-dessous).
+    /// </summary>
     [Fact]
     public void Confidence_IsAdjustedByReceiverTrustTowardsSender()
     {
@@ -148,12 +158,48 @@ public class CommunicationSystemTests
             (1, new Position(10, 10), 1.0),
             (2, new Position(12, 10), 1.0));
 
-        minds[2].Trust.Interact(1); // première rencontre → confiance initiale 0.5
+        double established = minds[2].Trust.Interact(1); // première rencontre → confiance initiale
+        Assert.Equal(minds[2].Trust.Settings.InitialTrust, established, 10);
+
         minds[1].Communication.Enqueue(Message(1, "x"));
         brains(system, minds, tick: 1);
 
         MessageReceived received = Assert.Single(system.LastReceived);
-        Assert.Equal(Math.Round(1.0 * 0.5, 4), Math.Round(received.Confidence, 4));
+        // Le contenu est pondéré par la confiance du récepteur envers l'émetteur au
+        // moment de la réception (que la réception vient elle-même de renforcer).
+        Assert.Equal(
+            Math.Round(1.0 * minds[2].Trust.TrustWith(1), 4),
+            Math.Round(received.Confidence, 4));
+        Assert.True(minds[2].Trust.TrustWith(1) > established);
+    }
+
+    /// <summary>
+    /// Premier message d'un émetteur inconnu : la réception établit la relation
+    /// (confiance initiale) <b>avant</b> de pondérer le contenu — la confiance
+    /// effective n'est donc pas nulle (S-10 : « premier message »).
+    /// </summary>
+    [Fact]
+    public void FirstMessage_FromUnknownSender_IsWeightedByInitialTrust()
+    {
+        (_, CommunicationSystem system, Dictionary<ulong, MindState> minds) = Build(
+            Settings(s =>
+            {
+                s.TransmissionRange = 30;
+                s.RelayEnabled = false;
+            }),
+            (1, new Position(10, 10), 1.0),
+            (2, new Position(12, 10), 1.0));
+
+        Assert.False(minds[2].Trust.Knows(1));
+        minds[1].Communication.Enqueue(Message(1, "x"));
+        brains(system, minds, tick: 1);
+
+        MessageReceived received = Assert.Single(system.LastReceived);
+        Assert.Equal(
+            Math.Round(1.0 * minds[2].Trust.Settings.InitialTrust, 4),
+            Math.Round(received.Confidence, 4));
+        Assert.True(received.Confidence > 0.0);
+        Assert.True(minds[2].Trust.Knows(1));
     }
 
     [Theory]

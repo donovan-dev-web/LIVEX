@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests du capteur d'observabilité (sélection des entités émises).
@@ -14,8 +17,8 @@ using Simulation.Core.Population;
 using Simulation.Core.Prng;
 using Simulation.Core.Social;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 
@@ -119,11 +122,36 @@ public class ObservabilitySensorTests
         Assert.Equal("1", (string?)eventJson["agentId"]);
         Assert.Equal(mind.Intention?.Kind.ToString() ?? "Idle", (string?)eventJson["action"]);
         Assert.NotNull(eventJson["cause"]);
-        Assert.NotNull(eventJson["value"]);
-        Assert.Equal(mind.Intention?.Kind.ToString() ?? "Idle", (string?)eventJson["value"]!["intention"]);
-        Assert.True((double?)eventJson["value"]!["utility"] >= 0);
-        Assert.NotNull((bool?)eventJson["value"]!["deliberated"]);
-        Assert.NotNull((bool?)eventJson["value"]!["interrupted"]);
+        var value = (JsonObject)eventJson["value"]!;
+        Assert.Equal(mind.Intention?.Kind.ToString() ?? "Idle", (string?)value["intention"]);
+        Assert.NotNull((bool?)value["deliberated"]);
+        Assert.NotNull((bool?)value["interrupted"]);
+
+        // Honnêteté des données (S-28 / D-03 / B-10) : l'état de la décision est
+        // nommé, et l'utilité n'est publiée que si une décision a réellement eu lieu
+        // au tick courant. Un report (holdover) publie son score d'origine sous
+        // « heldUtility » ; une absence publie null — jamais 0.0, jamais un score
+        // ancien sous le nom « utility » du tick courant.
+        string decisionState = (string?)value["decisionState"] ?? string.Empty;
+        Assert.Contains(decisionState, new[] { "fresh", "holdover", "interrupted", "none" });
+        switch (decisionState)
+        {
+            case "fresh":
+            case "interrupted":
+                Assert.NotNull(value["utility"]);
+                Assert.True((double?)value["utility"] >= 0.0);
+                Assert.NotNull(value["decisionTick"]);
+                break;
+            case "holdover":
+                Assert.Null(value["utility"]);
+                Assert.NotNull(value["heldUtility"]);
+                Assert.NotNull(value["decisionTick"]);
+                break;
+            default:
+                Assert.Null(value["utility"]);
+                Assert.Null(value["decisionTick"]);
+                break;
+        }
     }
 
     [Fact]
@@ -203,7 +231,7 @@ public class ObservabilitySensorTests
         // / : la version moteur identifie le run.
         // Jalon SYNE U8 → 0.8.0 : constructions = obstacles statiques configurables,
         // pose/retrait tracés et réémis dans le snapshot (SYNE-071).
-        Assert.Equal("0.15.0", ObservabilityContract.EngineVersion); // jalon calibration B1 0.15.0 : défauts intégrés recalés, goldens ré-épinglés
+        Assert.Equal("0.17.0", ObservabilityContract.EngineVersion); // arbitrage A0-3 0.17.0 : groupes en observateur seul, distances instrumentées, goldens ré-épinglés
 
         (_, SimulationLoop loop) = BuildLoop();
         loop.Run(3);

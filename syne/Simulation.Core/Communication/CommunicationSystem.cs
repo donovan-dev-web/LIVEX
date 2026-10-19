@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Système de communication par pulsations lumineuses publiques (SYNE-050 → 054).
@@ -260,10 +263,18 @@ public sealed class CommunicationSystem
     {
         receiverMind.Needs.ExertEnergy(ReceiveCost(message));
 
-        // la confiance du message est ajustée par
-        // la confiance du récepteur envers l'émetteur (matrice de relations).
-        double effective = Math.Clamp(message.Confidence * receiverMind.Trust.TrustWith(message.SenderId), 0.0, 1.0);
+        // Fiabilité de la réception : la confiance du message est ajustée par la
+        // confiance du récepteur envers l'émetteur (matrice de relations).
+        //
+        // ORDRE CORRIGÉ (S-10) : l'interaction est enregistrée <b>avant</b>
+        // l'évaluation. Avant, un émetteur encore inconnu avait
+        // <c>TrustWith == 0</c> — la toute première réception valait donc une
+        // confiance effective <i>nulle</i>, alors que l'interaction qui suivait
+        // établissait la relation à la confiance de première rencontre
+        // (<c>initialTrust</c>, 0.5 par défaut). La confiance d'un premier message
+        // est désormais celle d'une première rencontre : ni nulle, ni maximale.
         receiverMind.Trust.Interact(message.SenderId);
+        double effective = Math.Clamp(message.Confidence * receiverMind.Trust.TrustWith(message.SenderId), 0.0, 1.0);
 
         bool understood = DeterministicDraw(receiverId, message.MessageId) >= _settings.IncomprehensionRate;
         receiverMind.Communication.RecordReceived(message, understood);

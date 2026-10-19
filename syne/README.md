@@ -2,7 +2,7 @@
 
 Moteur de simulation déterministe de LIVEX (1 tick = 1 minute simulée, monde 500×500).
 
-**Version moteur** : `engineVersion 0.15.0` (constante `ObservabilityContract.EngineVersion`, émise dans chaque snapshot) — contrat d'observabilité **0.4.0**. Historique : [docs/syne/CHANGELOG.md](../docs/syne/CHANGELOG.md).
+**Version moteur** : `engineVersion 0.17.0` (constante `ObservabilityContract.EngineVersion`, émise dans chaque snapshot) — contrat d'observabilité **0.5.0**. Historique : [docs/syne/CHANGELOG.md](../docs/syne/CHANGELOG.md).
 
 | Projet | Rôle |
 | :-- | :-- |

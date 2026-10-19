@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Consommateur WebSocket :5180 de SYNE.
 
 Transport injectable — les tests utilisent un faux transport alimenté par les

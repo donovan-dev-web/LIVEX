@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Comparaison de runs (ECHOS-070→072, jalon ph7, preuve J2/J3).
 
 Contrat : ``/api/compare`` (méta-métriques de

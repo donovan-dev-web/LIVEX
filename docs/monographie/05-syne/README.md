@@ -8,14 +8,14 @@ Le nom est un acronyme, mais c'est d'abord une fonction : **SYNE est le composan
 
 Ce chapitre suit un monde, de l'intérieur. Il ne s'agit pas d'énumérer des classes de code, mais de comprendre comment un espace, des ressources et des rythmes d'un côté, une cognition de l'autre, et une boucle causale qui les relie, peuvent produire des trajectoires singulières à partir de règles communes.
 
-SYNE 0.15.0, en C# sur .NET, tient cette promesse par quatre vertus inséparables.
+SYNE 0.17.0, en C# sur .NET, tient cette promesse par quatre vertus inséparables.
 
 - **Il simule.** Un plan continu avec des réserves qui respirent et une géographie qui résiste.
 - **Il fait décider.** Des entités BDI à utilité transparente, dont un calcul complet est détaillé.
 - **Il persiste.** On peut l'arrêter en plein vol et le reprendre à l'identique, au bit près.
 - **Il dit ce qu'il fait.** Des snapshots, des événements et des contrats versionnés.
 
-À l'état décrit, six cent trente-quatre tests couvrent le moteur, et la couverture agrégée des assemblages mesurée est de 87,41 %. Ce n'est pas un chiffre de fierté : c'est la condition pour croire ce qu'on observe.
+Le relevé historique du 12 octobre comptait 634 tests SYNE et 87,41 % de couverture agrégée. La vérification locale du 18 octobre passe 604 tests Core et 91 Console; les rapports Cobertura bruts donnent 91,17 % et 63,46 % par assemblage, sans agrégat par union recalculé. Voir le [statut courant](../../governance/LIVEX-STATUS.md). Ces résultats attestent les comportements couverts, pas une vérité générale sur le monde simulé.
 
 ## Comment lire cette partie
 
@@ -63,7 +63,7 @@ Pour que la partie ne soit pas une abstraction, elle suit une entité, Charlie. 
 
 Le répertoire `syne-mock`, séparé, contient un serveur Node.js destiné au développement des clients sans lancer le moteur. Il émule une partie des contrats : ce n'est ni le moteur réel, ni une référence d'équivalence algorithmique. Seuls le moteur .NET et ses contrats font foi pour les règles et les résultats de simulation.
 
-Les valeurs citées dans cette partie sont les valeurs par défaut de la version 0.15.0, telles qu'elles figurent dans les options de simulation du code, sauf mention contraire. Certains systèmes livrés (saisons, territoires, livres, constructions, primitives cognitives) sont désactivés par défaut afin de préserver la trajectoire de référence ; leur activation est décrite avec leur statut.
+Les valeurs citées dans cette partie sont les valeurs par défaut de la version 0.17.0, telles qu'elles figurent dans les options de simulation du code, sauf mention contraire. Certains systèmes livrés (saisons, territoires, livres, constructions, primitives cognitives) sont désactivés par défaut afin de préserver la trajectoire de référence ; leur activation est décrite avec leur statut.
 
 Un troisième avertissement concerne la lecture des chiffres. Un même paramètre peut apparaître dans plusieurs chapitres sous des formes différentes : valeur par défaut, valeur d'un profil, valeur calibrée. Le livre précise chaque fois le contexte. En cas de doute entre une valeur citée dans la prose et celle d'un fichier de configuration versionné, le fichier prime.
 

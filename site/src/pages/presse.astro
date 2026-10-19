@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { SITE } from '../data/site';
@@ -8,8 +11,8 @@ import { url } from '../utils/url';
 const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
 ---
 <BaseLayout
-  title="Kit média"
-  description="Kit média LIVEX : éléments de langage, présentation du projet, logo et faits clés datés pour les journalistes et créateurs de contenu."
+  title="Kit média — éléments de langage et faits clés"
+  description="Kit média LIVEX : éléments de langage (15 s, 30 s, 1 min), faits clés datés, logo et règles d'usage pour journalistes et créateurs de contenu."
 >
   <PageHeader
     index="27"
@@ -24,8 +27,8 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
       <div class="sh"><b>27.1</b> En une phrase</div>
       <h2>Le projet, résumé.</h2>
       <blockquote class="sf" style="font-size:clamp(1.5rem,3vw,2.2rem);line-height:1.3;margin:0 0 20px;border-left:2px solid var(--ve);padding-left:22px;max-width:40ch">
-        LIVEX est un écosystème de simulation multi-agents qui cherche à rendre observables les comportements
-        collectifs : un moteur (SYNE), une cognition émergente (ECHOS) et un rendu perceptif (PRISM).
+        LIVEX est un écosystème de simulation multi-agents qui rend observables les comportements collectifs : un
+        moteur (SYNE), un système d'observation de la cognition (ECHOS) et un rendu perceptif (PRISM).
       </blockquote>
 
       <div class="g3 br">
@@ -43,10 +46,14 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
         <div>
           <h3>1 minute</h3>
           <p>Né d'une question — peut-on obtenir des comportements émergents à partir de lois simples ? — {SITE.name}
-            est un projet de recherche personnel. Le code est ouvert sous licence MIT. Aucune version publique n'est
+            est un projet de recherche personnel. Le code des composants LIVEX est ouvert sous licence GNU GPL v3.0 ou ultérieure ; le projet Unreal PRISM reste soumis à l'EULA d'Epic Games. Aucune version publique n'est
             encore disponible ; l'état du dépôt est publié et daté.</p>
         </div>
       </div>
+      <p class="mu" style="margin-top:16px;font-size:0.78rem">
+        Ces trois niveaux de lecture sont réutilisables tels quels, à condition de mentionner le projet et son auteur —
+        cf. <a href={url('licence/')}>licence et réutilisation</a>.
+      </p>
     </div>
   </section>
 
@@ -62,8 +69,8 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
             <tr><td>Nature</td><td>Projet de recherche personnel en simulation multi-agents</td></tr>
             <tr><td>Composants</td><td>SYNE (moteur) · ECHOS (observation) · PRISM (rendu)</td></tr>
             <tr><td>Auteur</td><td>Donovan Chartrain</td></tr>
-            <tr><td>Licence</td><td>MIT (code) · CC BY 4.0 (contenu du site)</td></tr>
-            <tr><td>Release</td><td>Aucune version publique — {RELEASE.plannedLabel}</td></tr>
+            <tr><td>Licence</td><td>GPL-3.0-or-later (code LIVEX hors PRISM) · CC BY 4.0 (contenu du site)</td></tr>
+            <tr><td>Release</td><td>Aucune version publique — version cible {RELEASE.planned}</td></tr>
             <tr><td>Dernier état mesuré</td><td>{PROJECT_STATE.observedDate}</td></tr>
             <tr><td>Dépôt</td><td><a href={SITE.repo} rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a></td></tr>
           </tbody>
@@ -82,12 +89,22 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
       <h2>La marque, et ses limites.</h2>
       <p>
         Le logo LIVEX est un fichier vectoriel disponible dans le dépôt :
-        <a href={logoUrl} rel="noopener">livex-mark.svg ↗</a>.
+        <a href={logoUrl} rel="noopener">livex-mark.svg ↗</a>. Trois marques de composants accompagnent la marque
+        principale, dans le même dossier :
+        <a href={`${SITE.repo}/blob/main/site/src/assets/marks/syne-mark.svg`} rel="noopener">syne-mark.svg ↗</a>,
+        <a href={`${SITE.repo}/blob/main/site/src/assets/marks/echos-mark.svg`} rel="noopener">echos-mark.svg ↗</a>,
+        <a href={`${SITE.repo}/blob/main/site/src/assets/marks/prism-mark.svg`} rel="noopener">prism-mark.svg ↗</a>.
+      </p>
+      <p class="mu" style="font-size:0.78rem">
+        Des captures d'écran réelles du Launcher et d'ECHOS sont également publiées dans le dépôt
+        (<a href={`${SITE.repo}/tree/main/site/public/captures`} rel="noopener">site/public/captures/ ↗</a>) et
+        réutilisables. Les animations GIF de ce dossier sont des images temporaires de présentation : à ne pas citer
+        comme captation du logiciel.
       </p>
       <div class="cc" style="padding:18px 20px">
         <p><strong>Règles d'usage.</strong> Le nom et le logo LIVEX sont protégés ; leur usage est réservé à des fins
           éditoriales et descriptives. Ne pas les modifier, ni suggérer une affiliation ou une approbation. Le contenu
-          du site est réutilisable sous <a href={url('licence/')}>CC BY 4.0</a> ; le code est sous MIT.</p>
+          du site est réutilisable sous <a href={url('licence/')}>CC BY 4.0</a> ; le code des composants LIVEX est sous GNU GPL v3.0 ou ultérieure, tandis que le projet Unreal PRISM reste sous EULA Epic Games.</p>
       </div>
     </div>
   </section>

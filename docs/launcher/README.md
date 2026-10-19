@@ -3,7 +3,7 @@
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
 **Version cible** : 0.1.0
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 19 octobre 2026
 **Dépend de** : `../syne`, `../echos`, `../prism`, `../COMMUNICATION.md`, `../../VERSIONING.md`
 **Source Monographie** : —
 

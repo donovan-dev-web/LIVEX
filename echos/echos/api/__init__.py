@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """API ECHOS — couche applicative FastAPI (port 5000).
 
 Points d'entrée : ``create_app()`` (factory, store injectable via

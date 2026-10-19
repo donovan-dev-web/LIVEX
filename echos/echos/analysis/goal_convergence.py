@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 4 — GoalConvergenceMetrics (convergence des objectifs).
 
 Mesure l'alignement ou la divergence des objectifs.
@@ -14,7 +17,7 @@ from __future__ import annotations
 
 from collections import Counter
 
-from ._common import (
+from .common import (
     agents_of,
     alive_count,
     goal_kinds,

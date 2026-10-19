@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Description versionnée et déterministe du monde envoyée à Unreal avant les snapshots.
@@ -107,16 +110,16 @@ public static class WorldDescriptionBuilder
         // publiait pourtant comme bloqué.
         var blocked = new bool[countX * countY];
         for (int y = 0; y < countY; y++)
-        for (int x = 0; x < countX; x++)
-        {
-            double cx = (x + 0.5) * cellSize;
-            double cy = (y + 0.5) * cellSize;
-            var obstacles = world.Obstacles
-                .Where(o => ObstacleGeometry.CoversCell(o, cx, cy, cellSize))
-                .Select(o => o.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-            blocked[(y * countX) + x] = obstacles.Length > 0;
-            cells.Add(new WorldCell(x, y, "plains", obstacles.Length == 0, 0, obstacles.Length == 0 ? 1 : 100, obstacles));
-        }
+            for (int x = 0; x < countX; x++)
+            {
+                double cx = (x + 0.5) * cellSize;
+                double cy = (y + 0.5) * cellSize;
+                var obstacles = world.Obstacles
+                    .Where(o => ObstacleGeometry.CoversCell(o, cx, cy, cellSize))
+                    .Select(o => o.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+                blocked[(y * countX) + x] = obstacles.Length > 0;
+                cells.Add(new WorldCell(x, y, "plains", obstacles.Length == 0, 0, obstacles.Length == 0 ? 1 : 100, obstacles));
+            }
 
         string[] kinds = ["food", "water", "wood", "mineral"];
         var resources = BuildResourceLocations(seed, kinds, countX, countY, blocked);
@@ -124,71 +127,44 @@ public static class WorldDescriptionBuilder
         int regionSize = 10;
         var regions = new List<WorldRegion>();
         for (int y = 0; y < countY; y += regionSize)
-        for (int x = 0; x < countX; x += regionSize)
-            regions.Add(new WorldRegion($"chunk-{x / regionSize}-{y / regionSize}", x, y,
-                Math.Min(regionSize, countX - x), Math.Min(regionSize, countY - y)));
+            for (int x = 0; x < countX; x += regionSize)
+                regions.Add(new WorldRegion($"chunk-{x / regionSize}-{y / regionSize}", x, y,
+                    Math.Min(regionSize, countX - x), Math.Min(regionSize, countY - y)));
         return new WorldDescription(Version, world.Size.Width, world.Size.Height, cellSize,
             ticksPerSecond, simulatedSecondsPerTick, metersPerUnit,
             countX, countY, agents, cells, initialObstacles, resources, regions);
     }
 
     /// <summary>
-    /// Emplacements initiaux des ressources : tirages du LCG local, **sur les seules
-    /// cases marchables** (<paramref name="blocked"/> vient de la même passe de
-    /// couverture que <c>cells[]</c>). Un tirage tombant dans un obstacle avance
-    /// jusqu'à la première case libre, exactement comme le placement des agents et
-    /// comme le miroir du mock : publier un marqueur que la description annonce
-    /// bloquée fait instancier à PRISM une ressource dans un rocher. Le nombre
-    /// d'emplacements par type est minoré par les cases marchables disponibles, donc
-    /// il peut descendre sous trois sur un monde très contraint au lieu de boucler.
+    /// Emplacements initiaux des ressources publiés au client. La règle de
+    /// placement vit désormais dans <see cref="ResourceNodePlacement"/> — la
+    /// <b>même</b> que celle qui pose les gisements simulés : le moteur ne publie
+    /// plus une ressource qu'il ne simule pas, et les deux ne peuvent plus
+    /// diverger (tirages du LCG local, sur les seules cases marchables
+    /// <paramref name="blocked"/> issues de la même passe de couverture que
+    /// <c>cells[]</c>). Un tirage tombant dans un obstacle avance jusqu'à la
+    /// première case libre, exactement comme le placement des agents et comme le
+    /// miroir du mock.
     /// </summary>
     private static List<WorldResource> BuildResourceLocations(
         ulong seed, IReadOnlyList<string> kinds, int countX, int countY, bool[] blocked)
     {
-        int cellCount = countX * countY;
-        int walkableCount = 0;
-        foreach (bool isBlocked in blocked)
+        IReadOnlyList<ResourceLocation> locations = ResourceNodePlacement.Locations(
+            countX,
+            countY,
+            blocked,
+            seed,
+            ResourceLocationsPerType);
+
+        var resources = new List<WorldResource>(locations.Count);
+        foreach (ResourceLocation location in locations)
         {
-            if (!isBlocked)
-            {
-                walkableCount++;
-            }
-        }
-
-        // LCG numérique explicite, distinct du PRNG de simulation
-        // (Xoshiro256**) : la description du monde ne doit consommer aucun tirage
-        // de la simulation (l'observabilité n'a pas le droit
-        // de déplacer la trajectoire). C'est pourquoi ce générateur est local et
-        // documenté plutôt que partagé : les paramètres ci-dessous fixent la
-        // disposition des ressources annoncée au client, et en changer invalide
-        // l'accord entre la description et le monde affiché.
-        uint state = unchecked((uint)seed ^ (uint)(seed >> 32) ^ 0xA511E9B3u);
-        int locationsPerKind = Math.Min(ResourceLocationsPerType, walkableCount);
-        var resources = new List<WorldResource>(kinds.Count * locationsPerKind);
-
-        uint NextCell()
-        {
-            state = unchecked(state * 1664525u + 1013904223u);
-            return state;
-        }
-
-        for (int kindIndex = 0; kindIndex < kinds.Count; kindIndex++)
-        {
-            var usedCells = new HashSet<int>();
-            for (int locationIndex = 0; locationIndex < locationsPerKind; locationIndex++)
-            {
-                int cellIndex = (int)(NextCell() % (uint)cellCount);
-                while (blocked[cellIndex] || usedCells.Contains(cellIndex))
-                    cellIndex = (cellIndex + 1) % cellCount;
-                usedCells.Add(cellIndex);
-
-                resources.Add(new WorldResource(
-                    $"resource-{kinds[kindIndex]}-{locationIndex + 1}",
-                    kinds[kindIndex],
-                    cellIndex % countX,
-                    cellIndex / countX,
-                    100));
-            }
+            resources.Add(new WorldResource(
+                location.Id,
+                kinds[(int)location.Kind],
+                location.CellX,
+                location.CellY,
+                ResourceNodePlacement.DefaultAmount));
         }
 
         return resources;

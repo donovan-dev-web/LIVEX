@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Séries lourdes en Parquet (ECHOS-013) : roundtrip columnar et cohérence
 de jointure SQLite ↔ Parquet sur la clé (tick, agent)."""
 

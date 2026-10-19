@@ -1,11 +1,14 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
-  title="Comprendre LIVEX"
-  description="LIVEX en clair : à quoi sert un écosystème de simulation multi-agents, comment il fonctionne, et quelles sont ses limites assumées."
+  title="Comprendre LIVEX — méthode et limites"
+  description="Ce qu'est LIVEX, sa méthode (déterministe, séparée, documentée) et ses limites assumées : un projet de recherche en simulation multi-agents."
 >
   <PageHeader
     index="01"
@@ -24,12 +27,11 @@ import { url } from '../../utils/url';
         l'inverse : poser des agents, des règles et un environnement, puis <strong>laisser faire</strong> et enregistrer
         ce qui se produit — y compris l'inattendu, y compris ce qui ne fonctionne pas.
       </p>
-      <p>
-        Cela impose deux exigences. D'abord le <strong>déterminisme</strong> : à partir de la même graine, un run doit
-        se rejouer à l'identique, tick après tick. Ensuite la <strong>séparation</strong> : ce qui se passe (le moteur)
-        et ce qu'on en dit (l'observation) ne doivent jamais se confondre, sous peine de raconter ce qu'on espérait
-        voir.
-      </p>
+      <p>Cela impose deux exigences :</p>
+      <ul style="margin:8px 0 0 20px;color:var(--mu);font-size:0.9rem;line-height:1.7">
+        <li><strong>Déterminisme</strong> — à partir de la même graine, un run se rejoue à l'identique, tick après tick.</li>
+        <li><strong>Séparation</strong> — ce qui se passe (le moteur) et ce qu'on en dit (l'observation) ne se confondent jamais, sous peine de raconter ce qu'on espérait voir.</li>
+      </ul>
     </div>
   </section>
 
@@ -71,7 +73,7 @@ import { url } from '../../utils/url';
         </p>
       </div>
       <p>
-        Le projet est en phase d'exploration (V0.1). Aucune version publique n'est distribuée à ce jour. Les états des
+        Le projet est en phase d'exploration (V0.2). Aucune version publique n'est distribuée à ce jour. Les états des
         composants décrivent le dépôt de développement.
       </p>
       <div class="toc" style="margin-top:22px">

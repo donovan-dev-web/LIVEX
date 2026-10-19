@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Territoire à travers l'émetteur (SYNE-073, jalon U8) : quand world.territories.enabled, l'appartenance aux
@@ -12,8 +15,8 @@ using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Console.Tests;
 
@@ -108,7 +111,7 @@ public class ObservabilityTerritoryTests
         Assert.Equal(3, zone["memberCount"]!.GetValue<int>());
         var members = (JsonArray)zone["members"]!;
         Assert.Equal([1UL, 2UL, 3UL], members.Select(member => member!.GetValue<ulong>()));
-        Assert.Equal("0.15.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.17.0", (string?)snapshot["engineVersion"]);
     }
 
     [Fact]
@@ -162,7 +165,7 @@ public class ObservabilityTerritoryTests
         Assert.Equal("2", (string?)read["agentId"]);
         Assert.Equal(1.5, (double?)read["value"]!["readBenefit"]);
         Assert.Empty(loop.LastBookChanges);
-        Assert.Equal("0.15.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.17.0", (string?)snapshot["engineVersion"]);
     }
 
 }

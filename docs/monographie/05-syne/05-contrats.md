@@ -2,7 +2,7 @@
 
 SYNE possède la vérité du monde, mais il ne vit pas seul. Deux familles de clients l'entourent : ceux qui observent et mesurent (ECHOS), ceux qui montrent et pilotent (PRISM). Pour qu'ils puissent travailler sans réécrire le monde ni dépendre de ses détails internes, il faut des contrats explicites, versionnés et stables. Ce chapitre les décrit.
 
-Depuis la version 0.15.0, le **contrat d'observabilité** porte la version 0.4.0, et la **version moteur** diffusée dans chaque message est 0.15.0. La version moteur identifie les règles du run : deux runs ne sont comparables que si leurs versions moteur coïncident.
+Depuis la version 0.17.0, le **contrat d'observabilité** porte la version 0.5.0, et la **version moteur** diffusée dans chaque message est 0.17.0. La version moteur identifie les règles du run : deux runs ne sont comparables que si leurs versions moteur coïncident.
 
 Un contrat, dans ce projet, n'est pas un document : c'est une interface qui fonctionne et que des tests vérifient. Le livre décrit les contrats parce qu'ils sont la frontière entre ce que le moteur garantit et ce dont il ne répond pas. Tout ce qui est écrit ici est un engagement tenu ; tout ce qui n'y figure pas n'est pas garanti, même si le code le fait aujourd'hui.
 
@@ -18,6 +18,8 @@ Le moteur expose deux transports.
 Les ports ne sont pas figés : ils sont configurables, et le bind par défaut est local (`127.0.0.1`). Un client ne doit jamais supposer un port en dur.
 
 Cette séparation entre deux transports répond à deux besoins distincts. Le flux d'observation est unidirectionnel et volumineux : il pousse un état par tick. Le contrôle est bidirectionnel, ponctuel et critique : chaque commande a un résultat, et son ordre importe. Mélanger les deux sur un même canal aurait rendu le contrôle dépendant du débit d'observation, ce qui est exactement ce qu'il faut éviter : un monde qui produit beaucoup d'état ne doit pas ralentir les ordres de pilotage.
+
+**Limite déclarée : le flux temps réel est *best-effort*.** La diffusion WebSocket ne garantit ni l'absence de perte ni la livraison à un client indisponible : un consommateur lent, déconnecté ou fermé fait perdre des trames — l'émetteur abandonne la trame au bout d'un délai borné et ne la rejoue pas, sans jamais faire échouer la simulation. Ce flux ne doit donc **jamais** être la source unique de preuve d'un fait : une trame manquante n'est pas la preuve que l'événement n'a pas eu lieu, et le flux seul ne permet pas de reconstituer les trames perdues. L'**archive complète** est l'export de flux `stream.jsonl`, qui, lui, n'est *jamais* best-effort (un export non satisfait lève une erreur plutôt que de produire un fichier tronqué). C'est pourquoi l'ingestion ECHOS accepte les deux voies — flux live WebSocket et fichier batch `stream.jsonl` — et porte, sur les séries concernées, les indicateurs de trou et la provenance qui rendent le manque **visible** plutôt que silencieux. Cette réserve est une limite de transport, pas un défaut de décision : `ObservabilityNonIntrusionTests` vérifie que la diffusion n'altère jamais la trajectoire.
 
 ## 2. Le message d'initialisation
 
@@ -73,7 +75,7 @@ Un instantané est donc **auto-suffisant** pour l'état dynamique, et **non auto
 | Événement | Moment | Contenu principal |
 | :-- | :-- | :-- |
 | `tick_summary` | à chaque tick | nombre de vivants |
-| `decision_made` | à chaque décision | intention, utilité, drapeaux, cause |
+| `decision_made` | à chaque décision | intention, utilité (nullable), état de décision, preuves, drapeaux, cause |
 | `action_completed` | à chaque action | résultat de l'exécution |
 | `message_sent` | à l'émission | identifiant, émetteur, type, charge |
 | `message_received` | à la réception | confiance effective, sauts |
@@ -91,6 +93,12 @@ Un instantané est donc **auto-suffisant** pour l'état dynamique, et **non auto
 Les événements `decision_made`, `action_completed` et les mutations restent émis séparément pour la compatibilité et le diagnostic, mais les consommateurs qui mettent à jour un état doivent traiter le snapshot comme la source de vérité, et éviter d'appliquer deux fois les mutations qu'il contient déjà.
 
 Cette double règle, événements pour le diagnostic et instantané pour l'état, est le point le plus délicat du contrat. Elle stipule qu'un événement raconte **ce qui s'est passé**, tandis qu'un instantané décrit **ce qui est**. Un consommateur peut s'abonner aux événements pour réagir (afficher un effet, journaliser), mais s'il veut connaître l'état, il doit lire l'instantané. Appliquer les mutations d'un événement en plus de celles d'un instantané produirait un double comptage. Le livre y revient dans la partie PRISM, où ce piège est le plus fréquent.
+
+*Précision de contrats (17 octobre 2026, réalignement phases 3-4, contrat d'observabilité 0.5.0).* Trois ajouts datés, tous additifs, concernant les événements du tableau ci-dessus :
+
+- **`decision_made` — absence ≠ zéro.** L'utilité n'est plus jamais un zéro de substitut : une absence de décision publie `utility: null` avec l'état `none` ; un score reporté (holdover) est publié sous `heldUtility` avec l'état `holdover` ; seul un choix du tick courant expose `utility` avec l'état `fresh` (ou `interrupted`). L'événement porte en plus la **chaîne de preuves** de la décision (source, sujet, confiance, tick d'observation) et l'état du candidat retenu. Gate : `ObservabilitySensorTests` (utilité/état) et `AdrDecisionEvidenceTests` (chaîne publiée).
+- **`group_formed` — distances des paires liées.** L'événement et l'instantané de groupe portent la distance **maximale** et la distance **moyenne** des paires liées ; `null` signifie « non mesuré », jamais zéro. Gate : `AdrGroupObserverTests`.
+- **`group_decision` — exposée, jamais injectée.** La décision collective reste un constat publié (état du groupe, événement) — arbitrage A0-3 du 17/10 : elle n'entre dans aucun score individuel hors candidat individuel tracé.
 
 ## 5. Le contrôle
 

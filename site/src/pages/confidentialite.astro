@@ -1,17 +1,20 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { url } from '../utils/url';
 ---
 <BaseLayout
-  title="Confidentialité"
-  description="Politique de confidentialité du site LIVEX : aucun cookie, aucun traceur, aucune mesure d'audience, polices auto-hébergées."
+  title="Confidentialité — aucun cookie, aucun traceur"
+  description="Confidentialité du site LIVEX : aucun cookie, aucun traceur, aucune mesure d'audience, aucune ressource tierce — une seule clé locale pour le thème."
 >
   <PageHeader
     index="23"
     eyebrow="Confidentialité"
     title="Le site ne vous piste pas."
-    lead="C'est une politique courte, parce qu'il n'y a pas grand-chose à déclarer. Ce site ne collecte rien."
+    lead="C'est une politique courte, parce qu'il n'y a pas grand-chose à déclarer : ce site ne collecte rien."
     crumbs={[{ label: 'Confidentialité' }]}
   />
 
@@ -19,6 +22,9 @@ import { url } from '../utils/url';
     <div class="w">
       <div class="sh"><b>23.1</b> Aucun traceur</div>
       <h2>Ni cookies, ni mesure d'audience.</h2>
+      <p class="mu">
+        Rien de ce qui suit n'est négociable par un bandeau de consentement : il n'y a rien à consentir.
+      </p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Élément</th><th>Statut</th></tr></thead>
@@ -43,6 +49,10 @@ import { url } from '../utils/url';
         techniques minimales (adresse IP, agent utilisateur) nécessaires à la fourniture du service. Ces journaux
         relèvent de la politique de GitHub et ne sont pas exploités par ce site.
       </p>
+      <p class="mu" style="font-size:0.78rem">
+        Le flux RSS du journal est un simple fichier statique : s'y abonner ne crée ni compte ni identifiant
+        d'abonné, et votre lecteur de flux est seul à connaître votre adresse.
+      </p>
     </div>
   </section>
 
@@ -54,7 +64,11 @@ import { url } from '../utils/url';
         Ce site ne constituant aucun traitement de données personnelles, il n'y a ni compte, ni formulaire, ni
         profilage. La seule donnée stockée localement — votre thème — reste sur votre appareil.
       </p>
-      <p style="margin-top:18px"><a class="bt" href={url('mentions-legales/')}>Mentions légales →</a></p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('mentions-legales/')}>Mentions légales →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('suivre/')}>Suivre le projet</a>
+      </p>
     </div>
   </section>
 </BaseLayout>

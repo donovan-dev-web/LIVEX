@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Catalogue versionné des métriques ECHOS.
 
 Source unique de vérité **documentaire** : ECHOS reste propriétaire des

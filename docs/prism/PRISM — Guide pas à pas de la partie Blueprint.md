@@ -39,7 +39,7 @@ SYNE / mock ──WebSocket + HTTP──► UPrismLdkSubsystem (plugin C++)
 
 ### 0.3 Où tu en es
 
-- **Fait côté C++** : le plugin compile, les 3 Automation Specs sont vertes (`PrismLdk.Projection`, `PrismLdk.WorldRegistry`, `PrismLdk.Service`), le service Launcher existe. Tu n'as plus rien à écrire en C++ pour cette partie.
+- **Fait côté C++** : le plugin compile, les 5 Automation Specs sont vertes (`PrismLdk.Projection`, `PrismLdk.WorldRegistry`, `PrismLdk.Service`, `PrismLdk.GapReplay`, `PrismLdk.Contract` — 69 specs, 0 échec au 18/10), le service Launcher existe. Tu n'as plus rien à écrire en C++ pour cette partie.
 - **Déjà créé côté Content** : `Core/BP_PRISM_GameInstance` et `Core/DA_PRISM_SessionConfig` (probablement vides ou incomplets).
 - **À nettoyer** : `GameInstance_LDK`, `ldk_GameMode` et le doublon `LDK_BaseMap.umap` à la racine du Content.
 
@@ -56,7 +56,7 @@ SYNE / mock ──WebSocket + HTTP──► UPrismLdkSubsystem (plugin C++)
 ## 1. Étape zéro : préparer l'environnement (15 minutes)
 
 1. **Lancer le mock** : terminal dans le dossier `syne-mock` → `npm start -- config_prism.json`. Tu dois voir `SERVER listening` avec les ports 5181 (HTTP) et 5180 (WebSocket) et, au premier `Prepare`, `world=2240x2240 ... cells=4900`.
-   - Utilise **`config_prism.json`**, pas les défauts du mock : c'est le miroir du profil `prism` du moteur (2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick, aucun obstacle). Sans lui, le mock annonce un monde de 500 × 500 (cellule 10 → `k = 320`) que SYNE ne produira jamais, et tout ton rendu sera calibré sur une échelle fausse.
+   - Utilise **`config_prism.json`**, pas les défauts du mock : c'est le miroir du profil `prism` du moteur (2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick, **cinq obstacles** : côte sud en trois disques `r = 150`, crête `r = 60`, amer `r = 8`). Sans lui, le mock annonce un monde de 500 × 500 (cellule 10 → `k = 320`) que SYNE ne produira jamais, et tout ton rendu sera calibré sur une échelle fausse. Côté SYNE, c'est `WorldConfigJson` (§2.1) qui joue ce rôle dans `Prepare` : même géométrie des deux côtés.
 2. **Ouvrir** `prism/LDK/LDK.uproject` (UE 5.8.3). Vérifier dans **Edit → Plugins** que `PrismLdk` est activé.
 3. **Window → Output Log**, filtre `LogPrismLdk`. Pour voir aussi les snapshots et deltas (niveau Verbose), tape dans la console de l'éditeur : `Log LogPrismLdk Verbose`.
 4. **Project Settings → Maps & Modes** :
@@ -83,6 +83,7 @@ Ouvre l'asset (`Core/DA_PRISM_SessionConfig`) et compare champ par champ. Si un 
 | `DefaultSeed` | Integer64 | `42` |
 | `DefaultTicksPerSecond` | Integer | `6` |
 | `DefaultMaxTicks` | Integer | `400` (valeur par défaut de `Start` dans le plugin ; à ton choix) |
+| `WorldConfigJson` | String | contenu de `configs/simulation/prism.json` (objet JSON sur une ligne) — **le même pour SYNE et pour le mock** |
 | `TileSizeUu` | Float **double précision** | **`3200`** |
 | `bAutoStart` | Boolean | `false` pour l'instant |
 | `DefaultWorldVersion` | String | `1.1` (simple valeur de repli) |
@@ -202,7 +203,7 @@ Crée ces fonctions dans le GameInstance. Elles sont appelées par l'interface (
 | Fonction | Contenu |
 | :-- | :-- |
 | `RequestConnect()` | `LDK.Connect` ; si le retour est `false` → `Print String` |
-| `RequestStart(Seed, TicksPerSecond, MaxTicks)` | `Set Session` (les 3 champs) → `LDK.Prepare(Seed, TicksPerSecond)` |
+| `RequestStart(Seed, TicksPerSecond, MaxTicks)` | `Set Session` (les 3 champs) → `LDK.Prepare(Seed, TicksPerSecond, Config.WorldConfigJson)` |
 | `RequestReady()` | `LDK.Ready(Session.WorldVersion)` |
 | `RequestStartRun()` | `LDK.Start(Session.Seed, Session.MaxTicks)` |
 | `RequestPause()` / `RequestResume()` / `RequestStop()` | `LDK.Pause` / `LDK.Resume` / `LDK.Stop` |
@@ -210,6 +211,8 @@ Crée ces fonctions dans le GameInstance. Elles sont appelées par l'interface (
 | `RequestStatus()` | `LDK.RequestStatus` |
 
 La graine (`Seed`) reste dans `Session` pour pouvoir rejouer le même run avec `Reset`.
+
+> **Pourquoi `WorldConfigJson`** : sans surcouche `config`, SYNE prépare le profil de référence (500 × 500, 60 s/tick) tandis que le mock prépare son fichier de démarrage. Même transport, même contrat, **deux mondes** : `CellSize` différent, donc `k` différent, donc une scène calibrée sur une géométrie que l'autre source ne produira jamais. Le plugin transmet la chaîne telle quelle dans `POST /api/control/prepare` ; SYNE et le mock la fusionnent sur leurs défauts. Le fichier de référence est `configs/simulation/prism.json`, strictement égal à `SimulationProfiles.Prism()` (verrouillé par `ReferenceProfileParityTests`).
 
 ### 2.5 Test de fin de B1
 
@@ -269,7 +272,7 @@ Après `RequestConnect`, ajoute (toujours dans le Level Blueprint) :
 - Le mock affiche dans l'ordre : `PREPARE`, `READY`, `START`.
 - Tu vois les `Print String` de `TEST_Snap` défiler à environ 6 par seconde.
 - `Get Stats` donne `bScaleValid = true`.
-- **Regarde la valeur de `K`** : `k = TileSizeUu / CellSize`. Avec le profil `prism` de SYNE (`CellSize = 32`) tu obtiens **100**. Ton mock peut envoyer un autre `CellSize` (le doc d'implémentation cite 10 en exemple, ce qui donnerait 320) : ce n'est pas une erreur, c'est ce que le monde annonce. **\[À VÉRIFIER\]** la valeur envoyée par ton mock.
+- **Regarde la valeur de `K`** : `k = TileSizeUu / CellSize`. Avec le profil `prism` (`CellSize = 32`) tu obtiens **100**, sur SYNE comme sur le mock dès lors que `WorldConfigJson` est transmis. Si tu obtiens `320`, c'est que le mock a démarré sur ses défauts (500 × 500, cellule 10) : vérifie le champ `WorldConfigJson` et le `CellSize` reçu dans `world_initialized`.
 - Pas d'erreur `world_not_ready` ni `run_active` dans le log.
 
 Tu supprimeras ce test temporaire quand le WorldDirector (B3) prendra le relais : c'est lui qui s'abonnera à `ED_PRISM_WorldInitialized`.
@@ -441,7 +444,7 @@ ResetWorld
 - Obstacle de contrôle (si `k = 100`) : SYNE `(150, 120)`, rayon 8 → centre `(15000, 12000)` uu, rayon `800` uu.
 - Marqueur de ressource en cellule `(5, 7)` → centre de tuile `(17600, 24000)` uu.
 - `Registry.GetObstacleCount` = nombre d'obstacles de `World.Obstacles`.
-- **Si aucun obstacle n'apparaît, c'est normal** tant que le serveur n'a pas de layout : SYNE a `world.obstacles = false` par défaut, et le nœud `Prepare` du plugin n'envoie pas de configuration de monde. Mets le layout dans le fichier de démarrage du mock (`world.obstacles: true` et `obstacleLayout: [ … ]`).
+- **Si aucun obstacle n'apparaît** : le profil `prism` en déclare **cinq** (côte sud en trois disques `r = 150`, crête centrale `r = 60`, amer `r = 8`). Vérifie que `WorldConfigJson` est bien transmis (le monde doit annoncer 2 240 × 2 240, cellule 32) et que le serveur a reçu `world.obstacles: true` ; sans surcouche, chaque source applique ses propres défauts.
 - Aucune formule d'échelle dans tes graphes : uniquement les nœuds du plugin.
 
 ## 5. Jalon B4 — Agents et navigation
@@ -573,7 +576,7 @@ Pour envoyer le message d'interface sans cast, utilise le nœud `ApplyAgentView 
 | Bouton | Au clic (`OnClicked`) |
 | :-- | :-- |
 | Connecter | `GI.RequestConnect` |
-| Préparer | convertis les champs texte en nombres (si la conversion échoue, prends les valeurs de `Config`) → `GI.RequestStart(Seed, TicksPerSecond, MaxTicks)` |
+| Préparer | convertis les champs texte en nombres (si la conversion échoue, prends les valeurs de `Config`) → `GI.RequestStart(Seed, TicksPerSecond, MaxTicks)` (transmet `Config.WorldConfigJson`) |
 | Démarrer | `GI.RequestStartRun` |
 | Pause / Reprendre / Arrêter | `GI.RequestPause` / `RequestResume` / `RequestStop` |
 | Réinitialiser | `GI.RequestReset` |
@@ -604,7 +607,9 @@ Appelle `RefreshButtons` depuis les gestionnaires de `ED_PRISM_Connected`, `ED_P
 
 Etiquettes : connexion, état SYNE, `RunId`, `Tick / MaxTicks`, population (`AliveCount`), saison (`SeasonEnum`), horloge. Tout se met à jour dans le gestionnaire de `ED_PRISM_Snapshot` (`Snapshot.Tick`, `Snapshot.AliveCount`, `Snapshot.SeasonEnum`), plus `Get Status` pour `MaxTicks`.
 
-**Horloge** : affiche le temps simulé du snapshot **et** le ratio `R = TicksPerSecond × SimulatedSecondsPerTick` lu dans `Get Stats` du registre. Au profil `prism`, `R = 6 × 5 = 30` : une seconde réelle = 30 secondes simulées, soit une journée simulée en 48 minutes.
+**Horloge** : affiche `Snapshot.SimulatedTimeSeconds` (secondes simulées exactes, champ du snapshot depuis le contrat 0.4.0) **et** le ratio `R = TicksPerSecond × SimulatedSecondsPerTick` lu dans `Get Stats` du registre. Au profil `prism`, `R = 6 × 5 = 30` : une seconde réelle = 30 secondes simulées, soit une journée simulée en 48 minutes. `Snapshot.SimulatedTimeMinutes` reste le plancher entier historique ; ne l'utilise pas pour une horloge fine.
+
+**Groupes** : `Snapshot.Groups` expose `GroupId`, `Size`, `Members`, `Cohesion`, `Consensus`, `Decision` et `LeaderId` accompagné de `bHasLeader` (un groupe peut ne pas avoir de leader : n'affiche pas un identifiant 0 fabriqué). Les mesures d'analyse du contrat 0.5.0 (`maxBondDistance` / `meanBondDistance`) ne sont **pas** exposées : PRISM est un rendu 3D, l'observatoire porte les mesures.
 
 ### 6.5 `WBP_PRISM_AgentInspector`
 
@@ -712,12 +717,12 @@ Une mutation d'obstacle ne produit **qu'un seul** acteur (ou une seule suppressi
 Elles expliquent probablement une partie de la confusion. À corriger dans la doc :
 
 1. **Version du monde** : le doc d'implémentation (§4) cite `"1.0"`, la roadmap `"1.1"` (en repli). La règle retenue est de lire `World.Version`.
-2. **Cadence** : le doc d'implémentation dit qu'un tick = une minute simulée (6 ticks/s = 360×), la roadmap dit `simulatedSecondsPerTick = 5` au profil `prism` (R = 30). La valeur qui fait foi est celle reçue dans `world_initialized` ; mets à jour la table de cadence du doc d'implémentation.
-3. **Exemples d'échelle** : le doc d'implémentation garde en exemple `CellSize = 10`, tuile 100 uu, `k = 10`, alors que le profil retenu est `32` / `3200` / `100`.
+2. ~~**Cadence**~~ : résolu (18/10) — la table de cadence du doc d'implémentation est repassée au modèle ADR-017 (`simulatedSecondsPerTick` reçu dans `world_initialized` ; `R = TicksPerSecond × simulatedSecondsPerTick`, soit 30 au profil `prism`).
+3. **Exemples d'échelle** : le doc d'implémentation garde en exemple `CellSize = 10`, tuile 100 uu, `k = 10`, alors que le profil retenu est `32` / `3200` / `100` — lis toujours `World.CellSize`, ne recopie aucun exemple.
 4. **GameInstance** : la roadmap (§6.2.1) place `GameInstanceClass` sur le GameMode ; ça se règle dans Project Settings (à vérifier).
 5. **`Session.bWorldReady`** : écrit par le Director (§6.3.1, étape 7) alors que `Session` vit dans le GameInstance. Ce guide le fait dans le GameInstance.
 6. **Sous-niveaux** : `ResetWorld` mentionne encore « vider les sous-niveaux runtime » alors qu'ils sont abandonnés.
-7. **Horloge** : le HUD parle de `simulatedTimeSeconds`, la structure du snapshot (§5.3) expose `SimulatedTimeMinutes`.
+7. ~~**Horloge**~~ : résolu — la structure expose désormais `SimulatedTimeSeconds` **et** `SimulatedTimeMinutes` ; le HUD utilise le premier (voir §6.4).
 8. **Nom de fonction** : `InitFromId(Id)` (§6.3.1) et `InitFromWorld(FPrismSyneWorldAgent)` (§6.4.1) désignent la même fonction.
 9. **`bAutoStart`** : présent à la fois dans le GameInstance et dans `DA_PRISM_SessionConfig` ; garde une seule source (la config).
 10. **Nombre de tests** : la roadmap annonce 34 tests en B0 et 30 tests dans la commande de rejeu (§13).

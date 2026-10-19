@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Catalogue de métriques versionné (P1) et profil de viabilité (P1/P3).
 
 Le catalogue est le contrat documentaire entre ECHOS et le Launcher : ECHOS

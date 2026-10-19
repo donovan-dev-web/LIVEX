@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -21,7 +24,10 @@ function tempFile(name, content) {
 }
 
 test('a start refused for a missing replay file leaves no run active', () => {
-  const simulation = new Simulation({ replay: { file: path.join(os.tmpdir(), 'absent-replay.jsonl') } }, () => {});
+  const simulation = new Simulation(
+    { replay: { file: path.join(os.tmpdir(), 'absent-replay.jsonl') } },
+    () => {}
+  );
 
   assert.throws(() => simulation.start(42, 10));
 
@@ -34,7 +40,10 @@ test('a start refused for a missing replay file leaves no run active', () => {
 });
 
 test('a start refused for a malformed replay line leaves no run active', () => {
-  const file = tempFile('malformed.jsonl', '{"tick":1,"type":"snapshot"}\nceci n est pas du JSON\n');
+  const file = tempFile(
+    'malformed.jsonl',
+    '{"tick":1,"type":"snapshot"}\nceci n est pas du JSON\n'
+  );
   const simulation = new Simulation({ replay: { file } }, () => {});
 
   assert.throws(() => simulation.start(42, 10));
@@ -46,7 +55,10 @@ test('a start refused for a malformed replay line leaves no run active', () => {
 test('a refused start does not block a later start', () => {
   // Avant correction, l'echec laissait state='running' : l'appel suivant etait
   // rejete au motif « run is already active » et le run restait bloque.
-  const simulation = new Simulation({ replay: { file: path.join(os.tmpdir(), 'absent-replay.jsonl') } }, () => {});
+  const simulation = new Simulation(
+    { replay: { file: path.join(os.tmpdir(), 'absent-replay.jsonl') } },
+    () => {}
+  );
 
   assert.throws(() => simulation.start(42, 10), /introuvable/);
 
@@ -62,31 +74,50 @@ test('a refused start does not block a later start', () => {
 });
 
 test('a refused start reports the replay error, not an active-run rejection', () => {
-  const simulation = new Simulation({ replay: { file: path.join(os.tmpdir(), 'absent-replay.jsonl') } }, () => {});
+  const simulation = new Simulation(
+    { replay: { file: path.join(os.tmpdir(), 'absent-replay.jsonl') } },
+    () => {}
+  );
 
   assert.throws(() => simulation.start(42, 10), /introuvable/);
-  assert.throws(() => simulation.start(42, 10), /introuvable/,
-    'le second echec doit venir du replay, pas de la garde « run deja actif »');
+  assert.throws(
+    () => simulation.start(42, 10),
+    /introuvable/,
+    'le second echec doit venir du replay, pas de la garde « run deja actif »'
+  );
 });
 
 test('the event buffer stays bounded and keeps the most recent events', () => {
   const cap = 50;
-  const simulation = new Simulation({ agents: 5, maxTicks: 40, diagnostics: { maxEvents: cap } }, () => {});
+  const simulation = new Simulation(
+    { agents: 5, maxTicks: 40, diagnostics: { maxEvents: cap } },
+    () => {}
+  );
   simulation.start(42, 40);
   for (let i = 0; i < 40; i++) simulation.step();
   simulation.stop();
 
   assert.ok(simulation.events.length > 0, 'des evenements ont bien ete produits');
-  assert.ok(simulation.events.length <= cap, `le tampon depasse la borne : ${simulation.events.length} > ${cap}`);
+  assert.ok(
+    simulation.events.length <= cap,
+    `le tampon depasse la borne : ${simulation.events.length} > ${cap}`
+  );
 
-  const ticks = simulation.events.map(event => event.tick);
-  assert.deepEqual(ticks, [...ticks].sort((a, b) => a - b), 'les evenements restent ordonnes');
+  const ticks = simulation.events.map((event) => event.tick);
+  assert.deepEqual(
+    ticks,
+    [...ticks].sort((a, b) => a - b),
+    'les evenements restent ordonnes'
+  );
   assert.equal(ticks.at(-1), 40, 'le tick le plus recent est conserve');
   assert.ok(ticks[0] > 1, 'les premiers evenements ont bien ete liberes');
 });
 
 test('the event buffer is unbounded only if the bound is disabled', () => {
-  const simulation = new Simulation({ agents: 3, maxTicks: 20, diagnostics: { maxEvents: 0 } }, () => {});
+  const simulation = new Simulation(
+    { agents: 3, maxTicks: 20, diagnostics: { maxEvents: 0 } },
+    () => {}
+  );
   simulation.start(42, 20);
   for (let i = 0; i < 20; i++) simulation.step();
   simulation.stop();
@@ -99,11 +130,32 @@ test('goal age counts ticks since the intention last changed', () => {
     { food: 100, water: 100, wood: 100, mineral: 100 },
     { move: () => ({ moved: false, blocked: false }) }
   );
-  const world = { width: 400, height: 300, cellSize: 10, cellCountX: 40, cellCountY: 30, cells: [], obstacles: [] };
+  const world = {
+    width: 400,
+    height: 300,
+    cellSize: 10,
+    cellCountX: 40,
+    cellCountY: 30,
+    cells: [],
+    obstacles: [],
+  };
   const agent = {
-    id: 1, x: 50, y: 50, energy: 100, traits: { ...DEFAULTS.agentSimulation.traits },
-    hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0,
-    currentIntention: 'Idle', currentAction: 'Idle', goals: [], intentionSince: 0, memoryCount: 0
+    id: 1,
+    x: 50,
+    y: 50,
+    energy: 100,
+    traits: { ...DEFAULTS.agentSimulation.traits },
+    hunger: 0,
+    thirst: 0,
+    fatigue: 0,
+    safety: 1,
+    social: 0,
+    curiosity: 0,
+    currentIntention: 'Idle',
+    currentAction: 'Idle',
+    goals: [],
+    intentionSince: 0,
+    memoryCount: 0,
   };
 
   agent.hunger = 100;
@@ -112,7 +164,11 @@ test('goal age counts ticks since the intention last changed', () => {
     decisions.execute(agent, tick, world, []);
     assert.equal(agent.currentIntention, 'Eat');
     assert.equal(agent.goals.length, 1);
-    assert.equal(agent.goals[0].age, tick - 1, `age vaut la duree du but, pas le tick (tick ${tick})`);
+    assert.equal(
+      agent.goals[0].age,
+      tick - 1,
+      `age vaut la duree du but, pas le tick (tick ${tick})`
+    );
   }
 
   agent.hunger = 0;
@@ -162,16 +218,22 @@ test('the per-tick console summary is opt-in and reports movement', () => {
     simulation.step();
     simulation.stop();
   });
-  assert.equal(off.some(line => line.includes('TICK 1')), false, 'aucune ligne TICK sans tickLog');
+  assert.equal(
+    off.some((line) => line.includes('TICK 1')),
+    false,
+    'aucune ligne TICK sans tickLog'
+  );
 
   const on = captureLog(() => {
     const simulation = new Simulation(
-      { agents: 2, maxTicks: 2, diagnostics: { tickLog: true, tickLogSampleSize: 1 } }, () => {});
+      { agents: 2, maxTicks: 2, diagnostics: { tickLog: true, tickLogSampleSize: 1 } },
+      () => {}
+    );
     simulation.start(42, 2);
     simulation.step();
     simulation.stop();
   });
-  const tick = on.find(line => line.includes('TICK 1'));
+  const tick = on.find((line) => line.includes('TICK 1'));
   assert.ok(tick, 'une ligne TICK est ecrite quand tickLog est actif');
   // Le resume porte ce qu'il faut pour confronter la sortie serveur a Unreal :
   // identite du run, agents vivants, agents ayant bouge et echantillon de

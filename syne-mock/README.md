@@ -4,15 +4,16 @@ Mini-serveur Node.js déterministe pour intégrer Unreal au contrat SYNE. `npm i
 puis `npm start -- config_example.json`. Le WebSocket texte JSON camelCase est sur
 `ws://127.0.0.1:5180/`; le contrôle HTTP est sur `http://127.0.0.1:5181`.
 
-**Version** : `0.1.0` (`package.json`) — contrat d'observabilité émis : **0.4.0**
-(`contractVersion` de `src/config.js`), aligné sur SYNE.
+**Version** : `0.1.0` (`package.json`) — contrat d'observabilité émis : **0.5.0**
+(`contractVersion` de `src/config.js`), `engineVersion` **0.17.0**, alignés sur
+SYNE (`ObservabilityContract.cs`).
 
 Deux configurations de référence : `config_example.json` (500 × 500, cellule 10,
 10 TPS, 50 agents — les défauts du moteur) et **`config_prism.json`, miroir du
 profil `prism`** du moteur (2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick, 100 agents,
 réserves 20 000 avec régénération 20/10, **5 obstacles** — côte sud en trois
-disques, crête centrale, amer — comme `../../configs/simulation/prism.json` et
-`SimulationProfiles.Prism()`). Attention au nom du fichier : `_`, pas
+disques, crête centrale, amer — **comme `SimulationProfiles.Prism()`** : rayons
+150/150/150/60/8, l'amer de rayon 8 étant plus petit qu'une case de 32). Attention au nom du fichier : `_`, pas
 `.`. Un chemin demandé et introuvable **arrête le démarrage** au lieu de
 retomber sur les défauts — le repli silencieux lançait le mock sur un monde de
 500 × 500 sans le dire. `npm start -- config_prism.json` évite
@@ -65,7 +66,10 @@ Le cycle est `idle → worldPreparing → ready → running ⇋ paused → finis
 `prepare` est explicite : appelez `ready` avec `{"worldVersion":"1.1"}` avant
 `start`, sinon la réponse est `409 world_not_ready`. Un `start` direct conserve
 l’auto-préparation implicite rétrocompatible. Le statut expose
-`worldPrepared`, `worldVersion` et `worldReadyAcknowledged`.
+`worldPrepared`, `worldVersion` et `worldReadyAcknowledged`. `prepare` accepte
+aussi une surcouche `config` (objet JSON) fusionnée sur la configuration de
+démarrage : c’est le même champ que SYNE, et ce qui permet à PRISM de préparer
+la même géométrie des deux côtés sans changer le fichier de démarrage.
 Le corps de `start/reset` accepte `{"seed":42,"maxTicks":400}`. La génération par
 défaut produit 50 agents et 400 ticks, sans hasard dépendant du temps. Chaque tick
 émet un `snapshot`, `tick_summary`, `decision_made` et `action_completed` par agent.
@@ -88,9 +92,9 @@ l'implémentation A* de SYNE. La délibération et les systèmes sociaux restent
 des approximations destinées à tester l'intégration Blueprint ; les trajectoires
 ne sont pas garanties bit-à-bit identiques au moteur C#.
 
-Tests ciblés : `npm test` (52 tests : 50 verts + 2 arrêts par signal ignorés sous
+Tests ciblés : `npm test` (53 tests : 51 verts + 2 arrêts par signal ignorés sous
 Windows, sans dépendance à un port fixe). Vérification d'alignement sur le
-moteur : `node scripts/parity_mock_syne_world.js` depuis la racine du dépôt. La suite s'exécute aussi en intégration continue via le job `Tests
+moteur : `node scripts/parity-mock-syne-world.js` depuis la racine du dépôt. La suite s'exécute aussi en intégration continue via le job `Tests
 (SYNE-MOCK Node)` de `.github/workflows/ci.yml`, déclenché sur toute
 modification de `./`. Ports et paramètres sont configurables en JSON.
 `replay.file` permet de rejouer un fichier JSONL (un message SYNE par ligne) ;
@@ -116,7 +120,7 @@ dès qu'il écoute. Le test
 
 La **description du monde** (`world_initialized`) n'est pas une approximation :
 elle est vérifiée identique à celle du moteur champ par champ par
-[`../scripts/parity_mock_syne_world.js`](../scripts/parity_mock_syne_world.js),
+[`../scripts/parity-mock-syne-world.js`](../scripts/parity-mock-syne-world.js),
 qui lance SYNE réel et le mock sur la même géométrie et le même layout
 d'obstacles. Le mock ne publie que ce que le moteur sait produire : cellules
 `plains`, coût 1 ou 100, obstacles en disques `{id, x, y, radius}` — ni terrain,

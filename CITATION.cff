@@ -9,7 +9,7 @@ authors:
     website: https://donovan-dev-web.vercel.app
 version: 0.1
 date-released: 2026-10-12
-license: MIT
+license: GPL-3.0-or-later
 repository-code: "https://github.com/donovan-dev-web/LIVEX"
 abstract: >-
   LIVEX est un projet de recherche et d'expérimentation en vie artificielle et
@@ -19,7 +19,10 @@ abstract: >-
   émergents sans les imposer. La pile comprend le moteur de simulation SYNE
   (.NET), l'observatoire d'analyse ECHOS (FastAPI), le projet Unreal PRISM avec
   son plugin PRISM-LDK, l'orchestrateur Launcher (Avalonia) et le serveur de
-  test syne-mock (Node.js). Résultats déterministes et reproductibles par graine.
+  test syne-mock (Node.js).  Résultats déterministes et reproductibles par graine. La licence
+  GPL-3.0-or-later couvre SYNE, ECHOS, le Launcher, syne-mock et le site
+  vitrine ; le projet Unreal PRISM reste soumis aux conditions d'Epic Games
+  et n'est pas couvert par la GPL.
 keywords:
   - artificial-life
   - multi-agent-simulation

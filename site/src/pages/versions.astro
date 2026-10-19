@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import StatusBadge from '../components/StatusBadge.astro';
@@ -7,14 +10,14 @@ import { PROJECT_STATE, RELEASE, VERSION_TABLE } from '../data/release';
 const nf = new Intl.NumberFormat('fr-FR');
 ---
 <BaseLayout
-  title="Versions"
-  description="Versions des composants LIVEX, état du projet au 12 octobre 2026 et politique de versionnement. Aucun tag ni release publique à ce jour."
+  title="LIVEX — Versions des composants et état du projet"
+  description={`Versions des composants LIVEX (SYNE, ECHOS, PRISM, Launcher), état du projet au ${PROJECT_STATE.observedDate} et politique de versionnement. Aucune release publique.`}
 >
   <PageHeader
     index="13"
     eyebrow="Versions"
     title="Où en est le projet."
-    lead="Un état factuel et daté. Chaque composant évolue indépendamment ; aucune version globale n'est encore publiée."
+    lead="Un état factuel et daté, composant par composant. Chaque module avance à son rythme : la version globale V0.2 est en préparation, sans release publique."
     crumbs={[{ label: 'Versions' }]}
   />
 
@@ -26,7 +29,7 @@ const nf = new Intl.NumberFormat('fr-FR');
       </div>
 
       <div class="sh"><b>13.1</b> Versions par composant</div>
-      <h2>Trois rythmes indépendants.</h2>
+      <h2>Quatre composants, quatre versions.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Composant</th><th>Version</th><th>Note</th><th>État</th></tr></thead>
@@ -41,7 +44,8 @@ const nf = new Intl.NumberFormat('fr-FR');
       <p class="mu" style="margin-top:14px;font-size:0.76rem">
         Versionnement sémantique indépendant par composant, doublé d'un marqueur global pour les livraisons
         transverses. Détails : <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/VERSIONING.md" rel="noopener">VERSIONING.md</a>.
-        Chaque version publiée disposera d'une fiche dédiée (<code>/versions/&lt;version&gt;/</code>).
+        Chaque version publiée disposera d'une fiche dédiée (<code>/versions/&lt;version&gt;/</code>) ; aucune n'existe
+        encore, faute de tag public.
       </p>
     </div>
   </section>
@@ -54,7 +58,7 @@ const nf = new Intl.NumberFormat('fr-FR');
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>tests au vert</h3>
-          <p>{PROJECT_STATE.tests.ignored} ignorés, 0 échec sur les suites locales.</p>
+          <p>Relevé du {PROJECT_STATE.observedDate} : 0 échec sur les suites unitaires et d'intégration.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.trackedFiles)}</div>
@@ -73,15 +77,16 @@ const nf = new Intl.NumberFormat('fr-FR');
           <thead><tr><th>Indicateur</th><th>Valeur</th></tr></thead>
           <tbody>
             <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tests par composant</td><td>SYNE 634 · ECHOS 361 · Launcher 217 · syne-mock 46</td></tr>
+            <tr><td>Tests par composant</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
             <tr><td>Couverture ECHOS</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
             <tr><td>Couverture SYNE (agrégée)</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
+            <tr><td>Release</td><td>Aucune release publique — {RELEASE.planned} en préparation</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>Ces chiffres décrivent un dépôt de développement. Ils ne valent pas validation
-        fonctionnelle ni promesse de stabilité.</p></div>
+      <div class="cc"><p>Ces chiffres décrivent un dépôt de développement, pas un produit : ils ne constituent ni une
+        validation fonctionnelle, ni une promesse de stabilité.</p></div>
 
       <p style="margin-top:18px"><a class="bt" href={RELEASE.changelogUrl} rel="noopener">Journal des changements ↗</a></p>
     </div>

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Atomicité de la réservation de ressources dans l'exécution d'action (jalon review/refactor, engineVersion
@@ -8,8 +11,8 @@ using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests.Actions;
 
@@ -38,6 +41,12 @@ public class ActionExecutorReserveAtomicityTests
 
     public ActionExecutorReserveAtomicityTests()
     {
+        // Modèle de ressources global (arbitrage Phase 0) : ces cas vérifient
+        // l'atomicité tout-ou-rien du prélèvement sur la <b>réserve mondiale</b>
+        // déclarée (épuisement, « presque assez », frontière exacte). L'atomicité du
+        // prélèvement sur un gisement localisé est vérifiée par
+        // LocalizedResourceActionTests.
+        _options.Resources.Localized = false;
         _catalog = new ActionCatalog(_options.Agents.Actions);
         _stocks = new ResourceStocks(_options.Resources);
         _world = new WorldType(new WorldSize(500, 500));

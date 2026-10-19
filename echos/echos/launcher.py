@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Adaptateur Launcher (Linux) pour le serveur ECHOS configuré par l'environnement.
 
 Projette les arguments partagés du Launcher sur l'environnement ECHOS, et

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Méta-métriques de reproductibilité entre runs (ECHOS-070→072, jalon ph7).
 
 Comparaison de runs contrôlés (mêmes métriques, même fenêtre) :

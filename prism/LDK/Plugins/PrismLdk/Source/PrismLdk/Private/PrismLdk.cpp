@@ -61,6 +61,21 @@ namespace PrismJson
 		const TSharedPtr<FJsonObject>* V = nullptr;
 		return O.IsValid() && O->TryGetObjectField(Key, V) ? *V : nullptr;
 	}
+	/**
+	 * Lit un nombre **facultatif** : faux si la clé est absente ou vaut `null`.
+	 * SYNE distingue « non mesuré » (`null`) d'un zéro observé (`0.0`) — un
+	 * `TryGetNumberField` transformerait le premier en second.
+	 */
+	static bool OptionalNumber(const TSharedPtr<FJsonObject>& O, const TCHAR* Key, double& OutValue)
+	{
+		const TSharedPtr<FJsonValue>* Found = O.IsValid() ? O->Values.Find(Key) : nullptr;
+		if (Found == nullptr || !Found->IsValid() || (*Found)->IsNull())
+		{
+			return false;
+		}
+
+		return (*Found)->TryGetNumber(OutValue);
+	}
 	static FPrismSyneVector2D Vector(const TSharedPtr<FJsonObject>& O)
 	{
 		FPrismSyneVector2D V;
@@ -283,21 +298,43 @@ void UPrismLdkSubsystem::SendControl(const FString& Action, const FString& Body)
 		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 		if (!FJsonSerializer::Deserialize(Reader, Object) || !Object.IsValid()) { Error(Code, TEXT("invalid_json"), Action, Response->GetContentAsString()); return; }
 		FPrismSyneControlResult Result;
-		Result.bOk = Object->GetBoolField(TEXT("ok"));
+		Result.bOk = PrismJson::Boolean(Object, TEXT("ok"));
 		Result.Action = PrismJson::String(Object, TEXT("action"));
 		Result.Error = PrismJson::String(Object, TEXT("error"));
+		const FString Detail = PrismJson::String(Object, TEXT("detail"));
+		// Les réponses de contrôle n'ont pas toutes la forme complète du statut :
+		// `prepare` renvoie le monde (`{ok, action, ticksPerSecond, world}`) et
+		// `ready` un accusé sans `worldPrepared`. On part donc du statut courant et
+		// `ParseStatus` ne remplace que les champs réellement présents — sinon un
+		// `prepare` remettait `State`, `Tick`, `AliveCount` et `worldPrepared` à zéro.
+		Result.Status = Status;
 		ParseStatus(Object, Result.Status);
 		Status = Result.Status;
-		if (!Result.bOk || Code >= 400) { if (Result.Error.IsEmpty()) Result.Error = TEXT("http_error"); Error(Code, Result.Error, Action, Response->GetContentAsString()); }
+		if (!Result.bOk || Code >= 400)
+		{
+			if (Result.Error.IsEmpty()) Result.Error = TEXT("http_error");
+			Error(Code, Result.Error, Detail.IsEmpty() ? Action : Detail, Response->GetContentAsString());
+		}
 		OnControlResult.Broadcast(Result);
 	});
 	Request->ProcessRequest();
 }
 
-void UPrismLdkSubsystem::Prepare(int64 Seed, int32 TicksPerSecond)
+void UPrismLdkSubsystem::Prepare(int64 Seed, int32 TicksPerSecond, const FString& ConfigJson)
 {
-	UE_LOG(LogPrismLdk, Log, TEXT("Phase PREPARE (seed=%lld, ticksPerSecond=%d)"), Seed, TicksPerSecond);
-	SendControl(TEXT("prepare"), FString::Printf(TEXT("{\"seed\":%lld,\"ticksPerSecond\":%d}"), Seed, TicksPerSecond));
+	UE_LOG(LogPrismLdk, Log, TEXT("Phase PREPARE (seed=%lld, ticksPerSecond=%d, config=%s)"),
+		Seed, TicksPerSecond, ConfigJson.IsEmpty() ? TEXT("<défaut du serveur>") : *ConfigJson);
+	// Surcouche `config` du contrat de contrôle : elle est **transmise telle
+	// quelle** — SYNE comme le mock fusionnent ce JSON partiel sur leurs
+	// propres défauts. Sans elle, la même commande prépare le profil de
+	// référence côté SYNE et la configuration du mock côté mock.
+	FString Body = FString::Printf(TEXT("{\"seed\":%lld,\"ticksPerSecond\":%d"), Seed, TicksPerSecond);
+	if (!ConfigJson.IsEmpty())
+	{
+		Body += FString::Printf(TEXT(",\"config\":%s"), *ConfigJson);
+	}
+	Body += TEXT("}");
+	SendControl(TEXT("prepare"), Body);
 }
 
 void UPrismLdkSubsystem::Ready(const FString& WorldVersion)
@@ -331,7 +368,12 @@ void UPrismLdkSubsystem::RequestStatus()
 		if (!bSucceeded || !Response.IsValid()) { Error(0, TEXT("status_failed"), TEXT("Unable to request status")); return; }
 		TSharedPtr<FJsonObject> Object; const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 		if (!FJsonSerializer::Deserialize(Reader, Object) || !Object.IsValid()) { Error(Response->GetResponseCode(), TEXT("invalid_json"), TEXT("Invalid status response")); return; }
-		ParseStatus(Object, Status);
+		// Une lecture explicite du statut repart d'un statut vide : un champ absent
+		// de la réponse n'hérite pas d'une valeur antérieure (contrairement à
+		// l'accusé d'une commande, qui complète le statut courant).
+		FPrismSyneStatus Fresh;
+		ParseStatus(Object, Fresh);
+		Status = Fresh;
 		FPrismLdkService::Get().ReportRun(Status.RunId, Status.MaxTicks, Status.WorldVersion, Status.Tick, Status.AliveCount);
 	});
 	Request->ProcessRequest();
@@ -381,10 +423,55 @@ void UPrismLdkSubsystem::ParseMessage(const FString& Payload)
 
 void UPrismLdkSubsystem::ParseStatus(const TSharedPtr<FJsonObject>& Object, FPrismSyneStatus& Out) const
 {
-	const FString State = PrismJson::String(Object, TEXT("state"));
-	Out.State = State == TEXT("running") ? EPrismSyneRunState::Running : State == TEXT("paused") ? EPrismSyneRunState::Paused : State == TEXT("finished") ? EPrismSyneRunState::Finished : State == TEXT("ready") ? EPrismSyneRunState::Ready : State == TEXT("worldPreparing") ? EPrismSyneRunState::WorldPreparing : EPrismSyneRunState::Idle;
-	Out.RunId = PrismJson::String(Object, TEXT("runId")); Out.Tick = PrismJson::Integer(Object, TEXT("tick")); Out.AliveCount = static_cast<int32>(PrismJson::Integer(Object, TEXT("aliveCount"))); Out.TicksPerSecond = static_cast<int32>(PrismJson::Integer(Object, TEXT("ticksPerSecond"))); Out.Seed = PrismJson::Integer(Object, TEXT("seed")); Out.MaxTicks = static_cast<int32>(PrismJson::Integer(Object, TEXT("maxTicks"))); Out.bWorldPrepared = PrismJson::Boolean(Object, TEXT("worldPrepared")); Out.WorldVersion = PrismJson::String(Object, TEXT("worldVersion")); Out.bWorldReadyAcknowledged = PrismJson::Boolean(Object, TEXT("worldReadyAcknowledged"));
+	if (!Object.IsValid()) return;
+	// Fusion champ par champ : chaque clé n'écrase `Out` que si elle est
+	// **présente** dans la réponse. Le statut SYNE complet (GET status) porte
+	// tous les champs ; les accusés de commande n'en portent qu'une partie
+	// (voir `SendControl`).
+	if (Object->HasField(TEXT("state")))
+	{
+		const FString State = PrismJson::String(Object, TEXT("state"));
+		Out.State = State == TEXT("running") ? EPrismSyneRunState::Running : State == TEXT("paused") ? EPrismSyneRunState::Paused : State == TEXT("finished") ? EPrismSyneRunState::Finished : State == TEXT("ready") ? EPrismSyneRunState::Ready : State == TEXT("worldPreparing") ? EPrismSyneRunState::WorldPreparing : EPrismSyneRunState::Idle;
+	}
+	if (Object->HasField(TEXT("runId"))) Out.RunId = PrismJson::String(Object, TEXT("runId"));
+	if (Object->HasField(TEXT("tick"))) Out.Tick = PrismJson::Integer(Object, TEXT("tick"));
+	if (Object->HasField(TEXT("aliveCount"))) Out.AliveCount = static_cast<int32>(PrismJson::Integer(Object, TEXT("aliveCount")));
+	if (Object->HasField(TEXT("ticksPerSecond")))
+	{
+		// `null` tant qu'aucun monde n'est préparé : 0 = non renseigné, jamais
+		// une cadence inventée (10 par défaut de l'ancien contrat).
+		double TicksPerSecond = 0.0;
+		Out.TicksPerSecond = PrismJson::OptionalNumber(Object, TEXT("ticksPerSecond"), TicksPerSecond)
+			? static_cast<int32>(TicksPerSecond) : 0;
+	}
+	// Contrat 0.4.0 (additif) : pas temporel du monde préparé, `null` avant
+	// toute préparation. `HasField` + `OptionalNumber` distinguent l'absence
+	// ou le `null` d'une valeur mesurée (jamais 0 présenté comme un pas).
+	if (Object->HasField(TEXT("simulatedSecondsPerTick")))
+	{
+		double SecondsPerTick = 0.0;
+		Out.bHasSimulatedSecondsPerTick = PrismJson::OptionalNumber(Object, TEXT("simulatedSecondsPerTick"), SecondsPerTick);
+		Out.SimulatedSecondsPerTick = Out.bHasSimulatedSecondsPerTick ? static_cast<int32>(SecondsPerTick) : 0;
+	}
+	if (Object->HasField(TEXT("seed"))) Out.Seed = PrismJson::Integer(Object, TEXT("seed"));
+	if (Object->HasField(TEXT("maxTicks"))) Out.MaxTicks = static_cast<int32>(PrismJson::Integer(Object, TEXT("maxTicks")));
+	if (Object->HasField(TEXT("worldPrepared"))) Out.bWorldPrepared = PrismJson::Boolean(Object, TEXT("worldPrepared"));
+	if (Object->HasField(TEXT("worldVersion"))) Out.WorldVersion = PrismJson::String(Object, TEXT("worldVersion"));
+	if (Object->HasField(TEXT("worldReadyAcknowledged"))) Out.bWorldReadyAcknowledged = PrismJson::Boolean(Object, TEXT("worldReadyAcknowledged"));
 }
+
+#if WITH_DEV_AUTOMATION_TESTS
+void UPrismLdkSubsystem::DebugParseStatusBody(const FString& Body)
+{
+	TSharedPtr<FJsonObject> Object;
+	const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Body);
+	if (FJsonSerializer::Deserialize(Reader, Object) && Object.IsValid())
+	{
+		// Même fusion que `SendControl` : l'accusé complète le statut courant.
+		ParseStatus(Object, Status);
+	}
+}
+#endif
 
 void UPrismLdkSubsystem::ParseWorld(const TSharedPtr<FJsonObject>& Object, FPrismSyneWorldDescription& Out) const
 {
@@ -521,7 +608,14 @@ void UPrismLdkSubsystem::ParseSnapshot(const TSharedPtr<FJsonObject>& Object, FP
 {
 	Out = FPrismSyneWorldSnapshot();
 	Out.Version = PrismJson::String(Object, TEXT("version")); Out.EngineVersion = PrismJson::String(Object, TEXT("engineVersion"));
-	Out.RunId = PrismJson::String(Object, TEXT("runId")); Out.Seed = PrismJson::Integer(Object, TEXT("seed")); Out.Tick = PrismJson::Integer(Object, TEXT("tick")); Out.SimulatedTimeMinutes = PrismJson::Number(Object, TEXT("simulatedTimeMinutes")); Out.AliveCount = static_cast<int32>(PrismJson::Integer(Object, TEXT("aliveCount"))); Out.Season = PrismJson::String(Object, TEXT("season")); Out.SeasonEnum = PrismJson::Season(Out.Season); Out.SeasonIndex = static_cast<int32>(PrismJson::Integer(Object, TEXT("seasonIndex")));
+	Out.RunId = PrismJson::String(Object, TEXT("runId")); Out.Seed = PrismJson::Integer(Object, TEXT("seed")); Out.Tick = PrismJson::Integer(Object, TEXT("tick")); Out.SimulatedTimeMinutes = PrismJson::Number(Object, TEXT("simulatedTimeMinutes"));
+	// Contrat 0.4.0 (additif) : secondes simulées exactes. Un flux antérieur au
+	// 0.4.0 les omet → formule du contrat (`tick × simulatedSecondsPerTick`) avec
+	// le ratio lu dans `world_initialized` (jamais une constante recopiée ici).
+	Out.SimulatedTimeSeconds = Object->HasField(TEXT("simulatedTimeSeconds"))
+		? PrismJson::Integer(Object, TEXT("simulatedTimeSeconds"))
+		: Out.Tick * static_cast<int64>(World.SimulatedSecondsPerTick > 0 ? World.SimulatedSecondsPerTick : 60);
+	Out.AliveCount = static_cast<int32>(PrismJson::Integer(Object, TEXT("aliveCount"))); Out.Season = PrismJson::String(Object, TEXT("season")); Out.SeasonEnum = PrismJson::Season(Out.Season); Out.SeasonIndex = static_cast<int32>(PrismJson::Integer(Object, TEXT("seasonIndex")));
 	if (const auto* Agents = PrismJson::Array(Object, TEXT("agents")))
 	for (const TSharedPtr<FJsonValue>& V : *Agents)
 	{
@@ -554,7 +648,16 @@ void UPrismLdkSubsystem::ParseSnapshot(const TSharedPtr<FJsonObject>& Object, FP
 	if (const auto* Obstacles = PrismJson::Array(Object, TEXT("obstacles")))
 	for (const TSharedPtr<FJsonValue>& V : *Obstacles) { const TSharedPtr<FJsonObject> O = V->AsObject(); FPrismSyneObstacle Obstacle; Obstacle.Id = PrismJson::String(O, TEXT("id")); Obstacle.Position = PrismJson::Vector(PrismJson::Object(O, TEXT("position"))); if (O->HasField(TEXT("x"))) Obstacle.Position.X = PrismJson::Number(O, TEXT("x")); if (O->HasField(TEXT("y"))) Obstacle.Position.Y = PrismJson::Number(O, TEXT("y")); Obstacle.Radius = PrismJson::Number(O, TEXT("radius")); Out.Obstacles.Add(Obstacle); }
 	if (const auto* Groups = PrismJson::Array(Object, TEXT("groups")))
-	for (const TSharedPtr<FJsonValue>& V : *Groups) { const TSharedPtr<FJsonObject> G = V->AsObject(); FPrismSyneGroup Group; Group.GroupId = PrismJson::Integer(G, TEXT("groupId")); Group.Size = static_cast<int32>(PrismJson::Integer(G, TEXT("size"))); Group.LeaderId = PrismJson::Integer(G, TEXT("leaderId")); Group.bHasLeader = G->HasField(TEXT("leaderId")); Group.BornTick = PrismJson::Integer(G, TEXT("bornTick")); Group.Cohesion = PrismJson::Number(G, TEXT("cohesion")); Group.Consensus = PrismJson::Number(G, TEXT("consensus")); Group.Decision = PrismJson::String(G, TEXT("decision")); if (const auto* Members = PrismJson::Array(G, TEXT("members"))) for (const TSharedPtr<FJsonValue>& Member : *Members) Group.Members.Add(PrismJson::Integer(Member)); Out.Groups.Add(Group); }
+	for (const TSharedPtr<FJsonValue>& V : *Groups) { const TSharedPtr<FJsonObject> G = V->AsObject(); FPrismSyneGroup Group; Group.GroupId = PrismJson::Integer(G, TEXT("groupId")); Group.Size = static_cast<int32>(PrismJson::Integer(G, TEXT("size"))); Group.BornTick = PrismJson::Integer(G, TEXT("bornTick")); Group.Cohesion = PrismJson::Number(G, TEXT("cohesion")); Group.Consensus = PrismJson::Number(G, TEXT("consensus")); Group.Decision = PrismJson::String(G, TEXT("decision"));
+		// `leaderId` peut être `null` (groupe sans leader) : `HasField` est vrai
+		// sur une clé nulle, d'où la lecture par `OptionalNumber` pour que
+		// `bHasLeader` ne présente pas un identifiant 0 fabriqué.
+		double LeaderId = 0.0;
+		if (PrismJson::OptionalNumber(G, TEXT("leaderId"), LeaderId)) { Group.LeaderId = static_cast<int64>(LeaderId); Group.bHasLeader = true; }
+		// Mesures d'analyse du groupe (contrat 0.5.0 : `maxBondDistance` /
+		// `meanBondDistance`) : présentes dans la trame, volontairement ignorées.
+		// PRISM est un rendu 3D ; l'analyse se lit dans l'observatoire, pas ici.
+		if (const auto* Members = PrismJson::Array(G, TEXT("members"))) for (const TSharedPtr<FJsonValue>& Member : *Members) Group.Members.Add(PrismJson::Integer(Member)); Out.Groups.Add(Group); }
 	if (const auto* Territories = PrismJson::Array(Object, TEXT("territories")))
 	for (const TSharedPtr<FJsonValue>& V : *Territories) { const TSharedPtr<FJsonObject> T = V->AsObject(); FPrismSyneTerritory Territory; Territory.Id = PrismJson::String(T, TEXT("id")); Territory.Position.X = PrismJson::Number(T, TEXT("x")); Territory.Position.Y = PrismJson::Number(T, TEXT("y")); Territory.Radius = PrismJson::Number(T, TEXT("radius")); Territory.MemberCount = static_cast<int32>(PrismJson::Integer(T, TEXT("memberCount"))); if (const auto* Members = PrismJson::Array(T, TEXT("members"))) for (const TSharedPtr<FJsonValue>& Member : *Members) Territory.Members.Add(PrismJson::Integer(Member)); Out.Territories.Add(Territory); }
 	if (const auto* Books = PrismJson::Array(Object, TEXT("books")))

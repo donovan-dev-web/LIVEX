@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Preuve J2 (ECHOS-027) : la chaîne ECHOS (accumulation → moteurs) est
 déterministe, bit-à-bit.
 
@@ -32,7 +35,7 @@ def _community_history(snapshot: dict) -> list[dict]:
     3 agents, présente dès le tick 1. Cela rend ``CommunitySizeMatch`` mesurable
     sur le rejeu au lieu de retomber sur son repli neutre.
     """
-    from echos.analysis._common import community_sizes
+    from echos.analysis.common import community_sizes
 
     sizes = community_sizes(snapshot["agents"])
     return [{"tick": tick, "communities": list(sizes)} for tick in range(1, 11)]

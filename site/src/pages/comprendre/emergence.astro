@@ -1,11 +1,14 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
-  title="L'émergence expliquée"
-  description="Qu'est-ce que l'émergence en simulation multi-agents ? Définition, exemples, distinction entre agent simulé, IA apprenante et personnage scénarisé, limites d'interprétation."
+  title="L'émergence expliquée — simulation multi-agents"
+  description="Définition de l'émergence, exemples, mesure (indice composite), distinction agent simulé / IA / personnage scénarisé et limites d'interprétation."
 >
   <PageHeader
     index="03"
@@ -67,10 +70,19 @@ import { url } from '../../utils/url';
       <h2>Une mesure, pas une preuve.</h2>
       <p>
         LIVEX dispose d'un <strong>indice d'émergence composite</strong> : une valeur bornée entre 0 et 1, calculée à
-        partir de six composantes (diversité des croyances, diversité des objectifs, délai de diffusion de
-        l'information, coefficient de regroupement, part de répétitions d'action, couverture des communautés). La
-        dispersion des croyances et des objectifs emprunte à l'<strong>entropie de Shannon</strong> (<code>H = -Σ p_i log2 p_i</code>),
-        qui vaut zéro en cas d'unanimité.
+        partir de six composantes :
+      </p>
+      <ul style="margin:8px 0 12px 20px;color:var(--mu);font-size:0.9rem;line-height:1.7">
+        <li>diversité des croyances ;</li>
+        <li>diversité des objectifs ;</li>
+        <li>délai de diffusion de l'information ;</li>
+        <li>coefficient de regroupement ;</li>
+        <li>part de répétitions d'action ;</li>
+        <li>couverture des communautés.</li>
+      </ul>
+      <p>
+        La dispersion des croyances et des objectifs emprunte à l'<strong>entropie de Shannon</strong>
+        (<code>H = -Σ p_i log2 p_i</code>), qui vaut zéro en cas d'unanimité.
       </p>
       <div class="cc">
         <p><strong>Avertissement méthodologique.</strong> Cet indice est une <em>heuristique d'observation</em>, pas

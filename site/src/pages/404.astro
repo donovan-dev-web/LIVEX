@@ -1,10 +1,13 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { url } from '../utils/url';
 ---
 <BaseLayout
   title="Page introuvable (404) · Page not found"
-  description="La page demandée n'existe pas ou a été déplacée. · The requested page does not exist or has moved."
+  description="La page demandée n'existe pas ou a été déplacée. · The requested page does not exist or has moved. Retrouvez le contenu via le plan du site."
   noindex={true}
   alternates={{ fr: '', en: '' }}
 >
@@ -14,12 +17,14 @@ import { url } from '../utils/url';
         <p class="ey">Erreur 404</p>
         <h1>Hors du monde<br /><i>connu.</i></h1>
         <p class="l">
-          Cette page n'existe pas, ou n'existe plus. Le monde simulé continue, lui — mais pas ici.
+          Cette page n'existe pas, ou n'existe plus. Le monde simulé continue, lui — mais pas ici. Le plan du site
+          recense toutes les pages encore en ligne.
         </p>
         <div class="cta">
           <a class="bt p" href={url('')}>Retour à l'accueil</a>
           <a class="bt" href={url('documentation/')}>Documentation</a>
           <a class="bt" href={url('actualites/')}>Journal</a>
+          <a class="bt" href={url('plan-du-site/')}>Plan du site</a>
           <a class="bt" href={url('', 'en')} hreflang="en" lang="en">English →</a>
         </div>
       </div>
@@ -28,12 +33,14 @@ import { url } from '../utils/url';
         <p class="ey">Error 404</p>
         <h1>Beyond the<br /><i>known world.</i></h1>
         <p class="l">
-          This page does not exist, or no longer does. The simulated world goes on — just not here.
+          This page does not exist, or no longer does. The simulated world goes on — just not here. The sitemap lists
+          every page still online.
         </p>
         <div class="cta">
           <a class="bt p" href={url('', 'en')}>Back to home</a>
           <a class="bt" href={url('documentation/', 'en')}>Documentation</a>
           <a class="bt" href={url('actualites/', 'en')}>Journal</a>
+          <a class="bt" href={url('plan-du-site/', 'en')}>Sitemap</a>
           <a class="bt" href={url('', 'fr')} hreflang="fr" lang="fr">Français →</a>
         </div>
       </div>

@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -12,14 +15,14 @@ const entries = (await getCollection('actualites', ({ data }) => !data.draft)).s
 const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 <BaseLayout
-  title="Journal"
-  description="Journal de développement de LIVEX : jalons, décisions techniques et articles de fond, datés et sourcés."
+  title="Journal — jalons et décisions techniques"
+  description="Journal de développement de LIVEX : jalons datés, décisions techniques et articles de fond sur la simulation multi-agents, avec flux RSS."
 >
   <PageHeader
     index="17"
     eyebrow="Journal"
     title="Le relevé des jours."
-    lead="Jalons et décisions techniques, datés. Les articles de fond arrivent progressivement."
+    lead="Jalons et décisions techniques, datés et sourcés. Les articles de fond arrivent progressivement."
     crumbs={[{ label: 'Journal' }]}
   />
 
@@ -37,18 +40,26 @@ const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', ye
           </p>
         </>
       ) : (
-        entries.map((e) => (
-          <div class="row">
-            <span class="mu">{fmt.format(e.data.date)}</span>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <span class="t"><a href={url(`actualites/${e.id}/`)}>{e.data.title}</a></span>
-              <span class="mu" style="font-size:0.74rem">{e.data.description}</span>
+        <>
+          <p class="mu" style="margin-bottom:20px">
+            {entries.length} article{entries.length > 1 ? 's' : ''} publié{entries.length > 1 ? 's' : ''}, du plus
+            récent au plus ancien. Les articles sont rédigés en français.
+          </p>
+          {entries.map((e) => (
+            <div class="row">
+              <span class="mu">{fmt.format(e.data.date)}</span>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <span class="t"><a href={url(`actualites/${e.id}/`)}>{e.data.title}</a></span>
+                <span class="mu" style="font-size:0.74rem">{e.data.description}</span>
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </>
       )}
       <p style="margin-top:24px">
         <a class="bt" href={url('actualites/feed.xml')}>Flux RSS</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('suivre/')}>Suivre le projet</a>
       </p>
     </div>
   </section>

@@ -63,7 +63,7 @@ restent l'unique source de l'état simulé, y compris des obstacles** ; PRISM le
             pas les ports de SYNE (voir §2.2.2 et §11.1)
 [PRISM/BP]  Configure(Options) → Connect()
 [SYNE]      accepte la WebSocket
-[PRISM/BP]  OnConnected → Prepare(Seed, TicksPerSecond)
+[PRISM/BP]  OnConnected → Prepare(Seed, TicksPerSecond, ConfigJson)  (profil prism)
 [SYNE]      prépare le monde et émet world_initialized sur la WebSocket
 [PRISM/BP]  OnWorldInitialized → BuildWorldFromDescription → Ready(World.Version)
 [PRISM/BP]  OnControlResult(bOk=true) → Start(Seed, MaxTicks)
@@ -1202,7 +1202,7 @@ GameInstanceSubsystem » en §6.1.2).
 | Contrat de service du Launcher | `launcher/contracts/INTEGRATION-CONTRACT-v1.md` ; `docs/launcher/INTEGRATION_CONTRACT.md` §3/§4/§6/§7 | lire les contrats ; l'implémentation est `PrismLdkService` |
 | Arguments réellement reçus par PRISM | `launcher/Launcher.Tests.EndToEnd/PrismIntegrationEndToEndTests.cs` (`PrismUnlockEndToEndTests`, assertions `Contains`/`DoesNotContain`) | exécuter la suite de tests Launcher |
 | Contrat SYNE (routes, messages, champs) | `docs/prism/TRANSPORT_API.md` et `syne/API_CONTRACTS.md` (source de vérité) | lire les contrats ; ne jamais généraliser depuis un seul mock |
-| Égalité `syne-mock` ↔ moteur pour la description du monde | `scripts/parity_mock_syne_world.js` — lance SYNE réel (profil `prism` + layout d'obstacles) et le mock sur la même géométrie, puis compare clés, en-tête, `cells[]` champ par champ et `obstacles[]` | **exécuter le script** (code 0 attendu, refus de conclure si aucune case n'est bloquée) ; ne jamais affirmer l'alignement du mock sans l'avoir lancé |
+| Égalité `syne-mock` ↔ moteur pour la description du monde | `scripts/parity-mock-syne-world.js` — lance SYNE réel (profil `prism` + layout d'obstacles) et le mock sur la même géométrie, puis compare clés, en-tête, `cells[]` champ par champ et `obstacles[]` | **exécuter le script** (code 0 attendu, refus de conclure si aucune case n'est bloquée) ; ne jamais affirmer l'alignement du mock sans l'avoir lancé |
 | Profil de simulation | `configs/simulation/prism.json` (monde 2240, cellule 32, 6 ticks/s, 5 s simulées par tick) | lire le fichier |
 | Projection et échelle | `Source/PrismLdk/Private/PrismLdkProjection.cpp` + Spec `PrismLdk.Projection` | exécuter la spec ; le tableau de §8 en découle |
 | Registre et échelle dérivée | `Source/PrismLdk/Public/PrismLdkWorldRegistry.h` + Spec `PrismLdk.WorldRegistry` | exécuter la spec |
@@ -1225,7 +1225,7 @@ Commandes de rejeu :
 
 | Date | Changement | Motif |
 | 15 octobre 2026 | **Registre de monde en C++ pur** | Le montage `Abstract` + `BP_PRISM_WorldSubsystem` ne tenait que tant que l'asset était chargé : la ligne `registre de monde instancié` disparaît de la session de 11 h 58, `Get Prism Ldk World Registry` renvoie `nullptr`, le directeur de monde s'exécute sur `None` et le monde n'est plus construit. `UPrismLdkWorldRegistryBase` devient **concrète** (instanciée avec le module, résolution par classe exacte) ; le Blueprint enfant est supprimé du contenu, et §2.3 du guide, §5.5, §6.1.2, §11.4, la checklist §12 et §13 sont réalignés. |
-| 15 octobre 2026 | **Parité de la description du monde avec le moteur** | `scripts/parity_mock_syne_world.js` ; §13 gagne la ligne « Égalité `syne-mock` ↔ moteur ». Le mock publiait des cellules que SYNE ne sait pas produire (mer/rivières `terrainType: sea|river`, `movementCost: null` issu d'un `Infinity`, obstacles procéduraux et à formes) : PRISM affichait un monde impossible et le plugin signalait l'écart. Mesure : 4 900 cases identiques champ par champ, 11 cases bloquées de part et d'autre. |
+| 15 octobre 2026 | **Parité de la description du monde avec le moteur** | `scripts/parity-mock-syne-world.js` ; §13 gagne la ligne « Égalité `syne-mock` ↔ moteur ». Le mock publiait des cellules que SYNE ne sait pas produire (mer/rivières `terrainType: sea|river`, `movementCost: null` issu d'un `Infinity`, obstacles procéduraux et à formes) : PRISM affichait un monde impossible et le plugin signalait l'écart. Mesure : 4 900 cases identiques champ par champ, 11 cases bloquées de part et d'autre. |
 | 14 octobre 2026 | **Vérification intégrale et corrections** | Relecture de toutes les affirmations moteur sur la source du moteur 5.8 : sous-niveaux abandonnés dans un monde WP, défauts WP corrigés (`CellSize = 12 800 uu`, pas 3 200), casse `HTTPServer`, clé de Map `Int Point` non vérifiée remplacée par un index, `RunId`/`Tick`/`AliveCount` retirés des stats du registre, point ouvert des URLs SYNE sous Launcher, ajout de §5.5 et de §13 (sources de vérité). |
 | :-- | :-- | :-- |
 | 14 octobre 2026 | Création | Plan de route Blueprint PRISM avant implémentation Unreal. |

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Cycle de saisons à travers l'émetteur (SYNE-072, jalon U8) : quand world.seasons.enabled, un changement de
@@ -12,8 +15,8 @@ using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Console.Tests;
 
@@ -110,7 +113,7 @@ public class ObservabilitySeasonTests
         JsonNode snapshot = Assert.Single(snapshots);
         Assert.Equal("spring", (string?)snapshot["season"]);
         Assert.Equal(0, snapshot["seasonIndex"]!.GetValue<int>());
-        Assert.Equal("0.15.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.17.0", (string?)snapshot["engineVersion"]);
     }
 
     [Fact]

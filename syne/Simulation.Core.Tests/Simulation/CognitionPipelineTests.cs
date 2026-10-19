@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests du pipeline cognitif BDI (ordre des phases par tick).
@@ -7,9 +10,9 @@ using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Prng;
-using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 
@@ -58,13 +61,15 @@ public class CognitionPipelineTests
         (_, SimulationLoop loop) = BuildLoop();
         loop.AdvanceOneTick();
 
-        // id2 (groupe 2) ne perçoit pas au tick 1.
+        // id2 (groupe 2) ne perçoit pas au tick 1 : aucun souvenir
+        // d'<b>observation</b> (la rotation porte sur la perception ; recevoir un
+        // message produit un souvenir d'interaction, ce n'est pas une perception).
         MindState mind2 = loop.Cognition.MindOf(2);
-        Assert.Empty(mind2.Memory.Recall(1));
+        Assert.Empty(mind2.Memory.Recall(MemoryCategory.Observation, 1));
 
         // … mais il perçoit au tick 2.
         loop.AdvanceOneTick();
-        Assert.NotEmpty(loop.Cognition.MindOf(2).Memory.Recall(2));
+        Assert.NotEmpty(loop.Cognition.MindOf(2).Memory.Recall(MemoryCategory.Observation, 2));
     }
 
     [Fact]
@@ -105,7 +110,14 @@ public class CognitionPipelineTests
         // SYNE-042 : réserve d'eau vide → plus de Drink viable → poursuite SeekWater.
         // Le cycle de vie (SYNE-070) est ici rendu inerte (régénération nulle) pour
         // reproduire le cas d'épuisement — une réserve régénérée ne s'épuiserait pas.
+        //
+        // Modèle global (arbitrage Phase 0) : ce cas porte sur la <b>règle de repli</b>
+        // d'une action terminale non viable depuis la réserve mondiale. Sous le modèle
+        // localisé par défaut, la même règle se lit « gisement connu épuisé → poursuite
+        // ciblée, sinon prospection » (voir LocalizedResourceActionTests et le gate de
+        // connaissance dans CognitionKnowledgeTests).
         SimulationOptions options = Options();
+        options.Resources.Localized = false;
         options.Resources.Water.Initial = 0;
         options.Resources.Water.RegenerationRate = 0;
 
@@ -203,7 +215,12 @@ public class CognitionPipelineTests
     public void Holdover_KeepsIntentionBetweenDeliberations()
     {
         // SYNE-031 : entre deux délibérations (intervalle 10, entité 1), l'intention est conservée.
-        (_, SimulationLoop loop) = BuildSingleLoop(Options());
+        // Modèle de ressources global (arbitrage Phase 0) : sous le modèle localisé par
+        // défaut, une soif sans gisement connu mène à Explore (prospection) et non à
+        // Drink — ce cas porte sur le holdover, pas sur la navigation vers un gisement.
+        SimulationOptions holdoverOptions = Options();
+        holdoverOptions.Resources.Localized = false;
+        (_, SimulationLoop loop) = BuildSingleLoop(holdoverOptions);
         for (int tick = 1; tick <= 87; tick++)
         {
             loop.AdvanceOneTick();
@@ -233,6 +250,11 @@ public class CognitionPipelineTests
         // pendant une non-délibération → reprise par interruption. Réserve disponible →
         // le déclencheur centralisé répond par l'action terminale Eat (SYNE-042).
         SimulationOptions options = Options();
+        // Modèle global (arbitrage Phase 0) : le cas porte sur le <b>déclencheur</b>
+        // d'interruption (faim critique hors délibération), pas sur la navigation vers
+        // un gisement — sous le modèle localisé, l'action terminale exigerait d'être
+        // sur la source crue.
+        options.Resources.Localized = false;
         options.Agents.Needs.HungerRate = 5;
         options.Agents.Needs.ThirstRate = 0;
         options.Agents.Needs.FatigueRate = 0;

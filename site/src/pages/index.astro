@@ -1,17 +1,23 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import StatusBadge from '../components/StatusBadge.astro';
 import HeroFigure from '../components/HeroFigure.astro';
 import { SITE } from '../data/site';
 import { COMPONENTS } from '../data/components';
 import { PROJECT_STATE, RELEASE } from '../data/release';
+import echosAgents from '../assets/captures/echos-agents.png';
+import launcherHome from '../assets/captures/launcher-home.png';
+import launcherPrism from '../assets/captures/launcher-prism.png';
 import { url } from '../utils/url';
 
 const nf = new Intl.NumberFormat('fr-FR');
 ---
 <BaseLayout
-  title="LIVEX — simulation multi-agents"
-  description="LIVEX réunit un moteur déterministe (SYNE), un système d'observation (ECHOS) et un module de rendu perceptif (PRISM). Un projet de recherche en simulation multi-agents, documenté ouvertement."
+  title="LIVEX — simulation multi-agents déterministe"
+  description="Moteur déterministe SYNE, observation ECHOS, rendu PRISM : une plateforme de recherche en simulation multi-agents, reproductible et documentée."
 >
   <div class="w">
     <!-- Héros -->
@@ -46,12 +52,17 @@ const nf = new Intl.NumberFormat('fr-FR');
   <section class="block">
     <div class="w">
       <div class="sh"><b>01</b> Le constat</div>
-      <h2>Observer, sans mentir sur ce qui existe.</h2>
+      <h2>Rendre lisible ce que personne n'a écrit.</h2>
       <p class="lead">
-        LIVEX cherche à rendre lisible un comportement collectif qui n'a pas été écrit à la main. Sa méthode tient en
-        deux exigences : un moteur <strong>déterministe</strong> (le même point de départ rejoue le même run) et une
-        <strong> séparation nette</strong> entre ce qui se passe et ce qu'on en dit.
+        LIVEX cherche à rendre observable un comportement collectif qui n'a pas été programmé à la main. Sa méthode tient
+        en deux exigences : un moteur <strong>déterministe</strong> (le même point de départ rejoue le même run, bit à
+        bit) et une <strong>séparation nette</strong> entre ce qui se passe (le moteur) et ce qu'on en dit (l'observation).
       </p>
+      <ul style="margin:16px 0 0 20px;color:var(--mu);font-size:0.88rem;line-height:1.7">
+        <li><strong>Déterministe</strong> — même graine, même configuration, même trajectoire.</li>
+        <li><strong>Séparé</strong> — simuler, mesurer, rendre visible : trois couches indépendantes.</li>
+        <li><strong>Documenté</strong> — chaque chiffre publié a une source interne datée.</li>
+      </ul>
       <div class="g3 br" style="margin-top:28px">
         <div>
           <div class="n">03</div>
@@ -61,7 +72,7 @@ const nf = new Intl.NumberFormat('fr-FR');
         <div>
           <div class="n">00</div>
           <h3>version publique</h3>
-          <p>Le projet est en phase d'exploration (V0.1). Aucune release ni tag n'est posé.</p>
+          <p>Le projet est passé en V0.2. Aucune release publique ni tag n'est posé à ce jour.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
@@ -93,11 +104,13 @@ const nf = new Intl.NumberFormat('fr-FR');
             <p style="margin:0 0 12px"><StatusBadge status={c.status.id} /></p>
             <a class="bt" href={url(c.href)}>Détails →</a>
           </div>
-          <div class="ph">Capture<br />{c.acronym}</div>
+          {c.key === 'syne' && <img src={launcherHome.src} alt="Aperçu du Launcher LIVEX" width="100%" loading="lazy" />}
+          {c.key === 'echos' && <img src={echosAgents.src} alt="Aperçu d'ECHOS : suivi d'agents" width="100%" loading="lazy" />}
+          {c.key === 'prism' && <img src={launcherPrism.src} alt="Aperçu du rendu PRISM" width="100%" loading="lazy" />}
         </div>
       ))}
 
-      <div class="ct">Contrats d'interface publics — snapshot 0.4.0 · run_id « run-&lt;seed&gt;-&lt;12hex&gt; » · schéma de persistance v6</div>
+      <div class="ct">Contrats d'interface publics — snapshot 0.5.0 · run_id « run-&lt;seed&gt;-&lt;12hex&gt; » · schéma de persistance v5</div>
       <p class="mu" style="font-size:0.7rem">Les emplacements « Capture » seront remplacés par des captures réelles de la version publiée. Aucune illustration ne tient lieu de capture.</p>
     </div>
   </section>
@@ -110,8 +123,8 @@ const nf = new Intl.NumberFormat('fr-FR');
       <p class="lead">Le journal consigne les jalons et les décisions techniques, avec leur date. Les articles de fond arrivent progressivement.</p>
       <div class="row">
         <span class="mu">{PROJECT_STATE.observedDate}</span>
-        <span class="t">Aucune actualité publiée pour l'instant.</span>
-        <span><StatusBadge status="envisage" label="À venir" /></span>
+        <span class="t"><a href={url('actualites/')}>État du dépôt et des composants : versions, tests, couverture.</a></span>
+        <span><StatusBadge status="experimental" label="En cours" /></span>
       </div>
       <p style="margin-top:18px"><a class="bt" href={url('actualites/')}>Voir le journal →</a></p>
     </div>

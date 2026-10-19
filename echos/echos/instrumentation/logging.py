@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Journalisation structurée ECHOS (ECHOS-050).
 
 Trois niveaux alignés sur la spécification :

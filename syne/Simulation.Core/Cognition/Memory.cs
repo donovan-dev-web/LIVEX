@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Souvenirs : catégories, mémoire court/long terme et décroissance de la salience.
@@ -149,10 +152,37 @@ public sealed class Memory
         return result;
     }
 
+    /// <summary>
+    /// Derniers souvenirs stockés (au plus <paramref name="maxCount"/>), sans copie
+    /// de la collection : parcours chaud pour la déduplication d'observation.
+    /// </summary>
+    public IReadOnlyList<MemoryEntry> RecentEntries(int maxCount)
+    {
+        if (maxCount <= 0 || _entries.Count == 0)
+        {
+            return [];
+        }
+
+        int start = Math.Max(0, _entries.Count - maxCount);
+        var recent = new List<MemoryEntry>(_entries.Count - start);
+        for (int i = start; i < _entries.Count; i++)
+        {
+            recent.Add(_entries[i]);
+        }
+
+        return recent;
+    }
+
     public double SalienceOf(MemoryEntry entry, ulong currentTick)
     {
         double age = currentTick >= entry.StoredAt ? (double)(currentTick - entry.StoredAt) : 0.0;
-        return Math.Exp(-DecayRateFor(entry.Category) * age);
+        double exponent = -DecayRateFor(entry.Category) * age;
+
+        // Chemin court : au-delà de -20, l'exponentielle vaut < 2e-9 — sous tout
+        // seuil de rappel utile et sous toute tolérance de comparaison. Renvoyer
+        // zéro évite un <c>Math.Exp</c> par souvenir (ce calcul est parcouru par
+        // l'éviction de capacité, donc pour chaque écriture mémoire d'un esprit plein).
+        return exponent < -20.0 ? 0.0 : Math.Exp(exponent);
     }
 
     /// <summary>

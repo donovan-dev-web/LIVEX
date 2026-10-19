@@ -1,6 +1,6 @@
 # Chapitre 4. La méthode : ne croire que ce qui se rejoue
 
-Une phrase gouverne ce projet jusque dans ses tests : en cas de doute entre un document et le code, le code prime. Non par mépris de l'écrit, ce livre en est la preuve, mais parce que la question directrice exige des faits rejouables, pas des descriptions flatteuses. Chaque paramètre cité dans ce livre est le défaut réel du moteur 0.15.0, chaque route une route implémentée, chaque garantie un test nommé que le lecteur peut relancer.
+Une phrase gouverne ce projet jusque dans ses tests : en cas de doute entre un document et le code, le code prime. Non par mépris de l'écrit, ce livre en est la preuve, mais parce que la question directrice exige des faits rejouables, pas des descriptions flatteuses. Chaque paramètre cité dans ce livre est le défaut réel du moteur 0.17.0, chaque route une route implémentée, chaque garantie un test nommé que le lecteur peut relancer.
 
 Ce chapitre explique la méthode en six volets : le primat du code, le déterminisme comme contrat, les tests comme preuve, les campagnes rejouables, le versionnage et le filtrage des décisions, et l'intégration continue qui exécute tout le reste à chaque changement.
 
@@ -43,19 +43,17 @@ Pourquoi parler de contrat **moral** et non seulement technique ? Parce qu'un d�
 
 ## 4.3 Les tests comme preuve
 
-Les tests sont la seconde face de cette méthode. À l'état décrit, les suites exécutées localement le 12 octobre 2026 totalisent 1 258 tests réussis et 16 tests ignorés, sans échec : 634 côté moteur SYNE (548 pour le cœur et 86 pour la console), 361 côté ECHOS, 217 côté Launcher (164 unitaires, 20 d'intégration et 33 de bout en bout) et 46 côté `syne-mock` (deux tests supplémentaires étant ignorés sous Windows, faute de livraison des signaux d'arrêt).
+Les tests sont la seconde face de cette méthode. Le livre conserve un relevé local daté du 12 octobre 2026 : 1 258 tests réussis et 16 ignorés, sans échec dans les suites alors lancées. Ce total est historique et ne décrit pas le checkout courant. La vérification locale du 18 octobre donne SYNE 695/695, ECHOS 382 réussis et 14 ignorés, `syne-mock` 51 réussis et 2 ignorés, Launcher Unit 174/174 et Integration 20/20. Mais Launcher EndToEnd, avec SYNE publié, termine à 31/33 : les deux tests J3 réels échouent sur l'assertion de collecte d'analyse ECHOS. Sans prérequis SYNE publié, quatre cas conditionnels sont comptés comme échecs au lieu de skips. Les détails sont conservés dans le [statut courant](../governance/LIVEX-STATUS.md).
 
-Ces chiffres ne sont pas une fierté : ils sont une condition. Ils indiquent qu'un comportement décrit a été couvert par un test, non que l'ensemble du projet est prouvé. La couverture de lignes mesurée est de 90,55 % pour ECHOS et de 87,41 % pour les assemblages SYNE agrégés (90,43 % pour le cœur, 74,03 % pour la console), au-dessus du seuil de 80 % fixé par le projet.
+Ces chiffres ne sont pas une fierté : ils indiquent seulement les comportements couverts par les tests, non que l'ensemble du projet est prouvé. Les couvertures ECHOS et SYNE du relevé du 12/10 sont historiques (respectivement 90,55 % et 87,41 % agrégé). La mesure ECHOS du 18/10 est 91,30 %. Les rapports Cobertura SYNE locaux du 18/10 donnent 91,17 % Core et 63,46 % Console; un taux agrégé par union n'a pas été recalculé, donc ces nombres par assemblage ne s'y substituent pas.
 
-| Suite | Tests réussis | Tests ignorés | Couverture de lignes |
-| :-- | --: | --: | --: |
-| SYNE, cœur | 548 | | 90,43 % |
-| SYNE, console | 86 | | 74,03 % |
-| SYNE, agrégé | 634 | | 87,41 % |
-| ECHOS | 361 | | 90,55 % |
-| Launcher | 217 | | |
-| `syne-mock` | 46 | 2 (Windows) | |
-| Total local | 1 258 | 16 | |
+| Suite | Résultat local au 18/10 | Couverture locale |
+| :-- | :-- | :-- |
+| SYNE Core / Console | 604 / 91 réussis | 91,17 % / 63,46 % par assemblage, non agrégé |
+| ECHOS | 382 réussis, 14 ignorés | 91,30 % |
+| Launcher Unit / Integration | 174 / 20 réussis | — |
+| Launcher EndToEnd avec SYNE publié | 31 réussis, 2 échecs | — |
+| `syne-mock` | 51 réussis, 2 ignorés | — |
 
 Le livre est explicite sur la portée des tests. Un test vert confirme le comportement qu'il couvre. Il ne valide pas l'ensemble du contrat entre composants. Les tests SYNE et ceux de `syne-mock` valident des produits distincts : leur réussite ne démontre pas que les deux simulations sont équivalentes. Et aucun résultat automatisé de PRISM ne peut être déduit de la réussite des autres composants.
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests de la naissance par fusion consentie (SYNE-062) : consentement = confiance réciproque minimale,
@@ -9,9 +12,9 @@ using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Population;
 using Simulation.Core.Prng;
-using WorldType = Simulation.Core.World.World;
 using Simulation.Core.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 

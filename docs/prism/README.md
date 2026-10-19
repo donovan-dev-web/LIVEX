@@ -2,9 +2,9 @@
 
 **Composant** : PRISM
 **Statut** : [DRAFT]
-**Version** : sans version propre (DRAFT) — consomme le contrat SYNE `0.4.0`
+**Version** : sans version propre (DRAFT) — consomme le contrat SYNE `0.5.0`
 **Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Dernière mise à jour** : 12 octobre 2026
+**Dernière mise à jour** : 18 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
 
 ---

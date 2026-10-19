@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -25,7 +28,7 @@ function controlOutcome(simulation, action) {
     state: status.state,
     tick: status.tick,
     aliveCount: status.aliveCount,
-    seed: status.seed
+    seed: status.seed,
   };
 }
 
@@ -33,10 +36,9 @@ function createServer(options = {}) {
   const config = resolveConfig(options);
   const shutdownToken = options.sessionToken ?? process.env.LIVEX_SESSION_TOKEN;
   const clients = new Set();
-  const simulation = new Simulation(config, message => {
+  const simulation = new Simulation(config, (message) => {
     const text = JSON.stringify(message);
-    for (const client of clients)
-      if (client.readyState === 1) client.send(text);
+    for (const client of clients) if (client.readyState === 1) client.send(text);
   });
 
   const httpServer = http.createServer(async (request, response) => {
@@ -44,7 +46,7 @@ function createServer(options = {}) {
       const text = JSON.stringify(body);
       response.writeHead(statusCode, {
         'content-type': 'application/json',
-        'content-length': Buffer.byteLength(text)
+        'content-length': Buffer.byteLength(text),
       });
       response.end(text);
     };
@@ -58,9 +60,10 @@ function createServer(options = {}) {
     if (request.method === 'POST' && url.pathname === '/control/shutdown') {
       const authorization = request.headers.authorization ?? '';
       const expected = shutdownToken ? `Bearer ${shutdownToken}` : '';
-      const authorized = expected.length > 0
-        && Buffer.byteLength(authorization) === Buffer.byteLength(expected)
-        && timingSafeEqual(Buffer.from(authorization), Buffer.from(expected));
+      const authorized =
+        expected.length > 0 &&
+        Buffer.byteLength(authorization) === Buffer.byteLength(expected) &&
+        timingSafeEqual(Buffer.from(authorization), Buffer.from(expected));
       if (!authorized) {
         return send(401, errorJson('unauthorized', 'Jeton de session absent ou invalide.'));
       }
@@ -71,7 +74,10 @@ function createServer(options = {}) {
     if (request.method === 'GET' && url.pathname === '/api/world') {
       if (!simulation.worldDescription()) {
         log('HTTP response GET world -> 409 world_not_prepared');
-        return send(409, errorJson('world_not_prepared', 'Préparez le monde avant de le consulter.'));
+        return send(
+          409,
+          errorJson('world_not_prepared', 'Préparez le monde avant de le consulter.')
+        );
       }
       log('HTTP response GET world -> 200');
       return send(200, simulation.worldDescription());
@@ -86,7 +92,10 @@ function createServer(options = {}) {
       body = await readJsonBody(request);
     } catch (error) {
       log('HTTP response -> 400 invalid_json (%s)', error.message);
-      return send(400, errorJson('invalid_json', 'Le corps de la requête n\'est pas un JSON valide.'));
+      return send(
+        400,
+        errorJson('invalid_json', "Le corps de la requête n'est pas un JSON valide.")
+      );
     }
     const action = url.pathname.slice('/api/control/'.length);
     log('CONTROL request action=%s body=%j', action, body);
@@ -96,27 +105,37 @@ function createServer(options = {}) {
         const ticksPerSecond = body.ticksPerSecond ?? config.ticksPerSecond;
         if (!Number.isInteger(ticksPerSecond) || ticksPerSecond <= 0) {
           log('CONTROL response action=prepare -> 400 invalid_ticks_per_second');
-          return send(400, errorJson('invalid_ticks_per_second', 'ticksPerSecond doit être un entier strictement positif.'));
+          return send(
+            400,
+            errorJson(
+              'invalid_ticks_per_second',
+              'ticksPerSecond doit être un entier strictement positif.'
+            )
+          );
         }
-        if (!simulation.prepare(
-          body.seed ?? config.seed,
-          ticksPerSecond,
-          body.config ?? {}))
-          return send(409, errorJson('run_active',
-            'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'));
+        if (!simulation.prepare(body.seed ?? config.seed, ticksPerSecond, body.config ?? {}))
+          return send(
+            409,
+            errorJson(
+              'run_active',
+              'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'
+            )
+          );
         return send(200, {
           ok: true,
           action: 'prepared',
           ticksPerSecond: simulation.options.ticksPerSecond,
           world: simulation.worldDescription(),
-          ...simulation.status()
+          ...simulation.status(),
         });
       }
       if (action === 'ready') {
         if (!simulation.acknowledgeReady(body.worldVersion)) {
           log('CONTROL response action=ready -> 409 world_not_ready');
-          return send(409, errorJson('world_not_ready',
-            'Le monde n\'est pas préparé ou sa version est incorrecte.'));
+          return send(
+            409,
+            errorJson('world_not_ready', "Le monde n'est pas préparé ou sa version est incorrecte.")
+          );
         }
         log('CONTROL response action=ready -> 200');
         return send(200, controlOutcome(simulation, 'ready'));
@@ -124,34 +143,57 @@ function createServer(options = {}) {
       if (action === 'start') {
         if (simulation.state === 'running' || simulation.state === 'paused') {
           log('CONTROL response action=start -> 409 run_active');
-          return send(409, errorJson('run_active',
-            'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'));
+          return send(
+            409,
+            errorJson(
+              'run_active',
+              'Un run est déjà en cours — utilisez /stop ou /reset avant de redémarrer.'
+            )
+          );
         }
         if (simulation.state === 'finished') {
           // Parité SYNE : un run « finished » a atteint
           // maxTicks — le remède est /reset, pas /prepare (code run_finished).
           log('CONTROL response action=start -> 409 run_finished');
-          return send(409, errorJson('run_finished',
-            'Run terminé — appelez /api/control/reset avant de redémarrer.'));
+          return send(
+            409,
+            errorJson(
+              'run_finished',
+              'Run terminé — appelez /api/control/reset avant de redémarrer.'
+            )
+          );
         }
-        simulation.start(body.seed ?? config.seed, body.maxTicks ?? config.maxTicks, body.config ?? {});
+        simulation.start(
+          body.seed ?? config.seed,
+          body.maxTicks ?? config.maxTicks,
+          body.config ?? {}
+        );
       } else if (action === 'pause') simulation.pause();
       else if (action === 'resume') simulation.resume();
       else if (action === 'stop') simulation.stop();
-      else if (action === 'reset') simulation.reset(body.seed ?? config.seed, body.maxTicks ?? config.maxTicks);
+      else if (action === 'reset')
+        simulation.reset(body.seed ?? config.seed, body.maxTicks ?? config.maxTicks);
       else {
         log('CONTROL response action=%s -> 404 not_found', action);
         return send(404, errorJson('not_found', `Action de contrôle inconnue : ${action}.`));
       }
     } catch (error) {
       const conflictErrors = new Set([
-        'world_not_ready', 'prepared_seed_mismatch', 'prepared_config_mismatch', 'run_finished'
+        'world_not_ready',
+        'prepared_seed_mismatch',
+        'prepared_config_mismatch',
+        'run_finished',
       ]);
       if (conflictErrors.has(error.code)) {
         log('CONTROL response action=%s -> 409 %s', action, error.code);
         return send(409, errorJson(error.code, error.message));
       }
-      if (/^(seed|ticksPerSecond|simulatedSecondsPerTick|maxTicks|world\.|agents(?:[ .]|$)|resources\.|Unable to place agent)/.test(error.message)) {
+      if (
+        // eslint-disable-next-line max-len -- expression régulière de validation, non scindable sans perte de lisibilité
+        /^(seed|ticksPerSecond|simulatedSecondsPerTick|maxTicks|world\.|agents(?:[ .]|$)|resources\.|Unable to place agent)/.test(
+          error.message
+        )
+      ) {
         log('CONTROL response action=%s -> 400 invalid_configuration (%s)', action, error.message);
         return send(400, errorJson('invalid_configuration', error.message));
       }
@@ -159,42 +201,60 @@ function createServer(options = {}) {
       return send(500, errorJson('internal_error', 'Erreur interne du serveur de contrôle.'));
     }
 
-    log('CONTROL response action=%s -> 200 (state=%s, tick=%s)',
-      action, simulation.state, simulation.tick);
+    log(
+      'CONTROL response action=%s -> 200 (state=%s, tick=%s)',
+      action,
+      simulation.state,
+      simulation.tick
+    );
     return send(200, controlOutcome(simulation, action));
   });
 
   const websocketServer = new WebSocketServer({ noServer: true });
   let nextClientId = 1;
-  websocketServer.on('connection', client => {
+  websocketServer.on('connection', (client) => {
     clients.add(client);
     client.syneMockClientId = nextClientId++;
-    log('WEBSOCKET connected (client=%s, remote=%s, clients=%s)',
-      client.syneMockClientId, client._socket.remoteAddress, clients.size);
+    log(
+      'WEBSOCKET connected (client=%s, remote=%s, clients=%s)',
+      client.syneMockClientId,
+      client._socket.remoteAddress,
+      clients.size
+    );
     if (simulation.worldDescription()) {
-      client.send(JSON.stringify({
-        type: 'world_initialized',
-        version: simulation.worldVersion,
-        seed: simulation.options.seed,
-        // WorldDescription tel quel : la géométrie des obstacles est déjà celle
-        // du contrat (`{id, x, y, radius}`, comme `WorldObstacle`), donc la trame
-        // diffusée et la réponse de `prepare` ne peuvent pas diverger.
-        world: simulation.worldDescription()
-      }));
+      client.send(
+        JSON.stringify({
+          type: 'world_initialized',
+          version: simulation.worldVersion,
+          seed: simulation.options.seed,
+          // WorldDescription tel quel : la géométrie des obstacles est déjà celle
+          // du contrat (`{id, x, y, radius}`, comme `WorldObstacle`), donc la trame
+          // diffusée et la réponse de `prepare` ne peuvent pas diverger.
+          world: simulation.worldDescription(),
+        })
+      );
     }
-    client.on('error', error =>
-      log('WEBSOCKET error (client=%s): %s', client.syneMockClientId, error.message));
+    client.on('error', (error) =>
+      log('WEBSOCKET error (client=%s): %s', client.syneMockClientId, error.message)
+    );
     client.on('close', (code, reason) => {
       clients.delete(client);
-      log('WEBSOCKET disconnected (client=%s, code=%s, reason=%s, clients=%s)',
-        client.syneMockClientId, code, reason.toString() || '<none>', clients.size);
+      log(
+        'WEBSOCKET disconnected (client=%s, code=%s, reason=%s, clients=%s)',
+        client.syneMockClientId,
+        code,
+        reason.toString() || '<none>',
+        clients.size
+      );
     });
   });
 
   const dataServer = http.createServer();
   dataServer.on('upgrade', (request, socket, head) =>
-    websocketServer.handleUpgrade(request, socket, head,
-      client => websocketServer.emit('connection', client, request)));
+    websocketServer.handleUpgrade(request, socket, head, (client) =>
+      websocketServer.emit('connection', client, request)
+    )
+  );
 
   let closePromise;
   const server = {
@@ -206,26 +266,30 @@ function createServer(options = {}) {
       try {
         await listenOnLoopback(dataServer, dataPort);
       } catch (error) {
-        await new Promise(resolve => httpServer.close(resolve));
+        await new Promise((resolve) => httpServer.close(resolve));
         throw error;
       }
-      log('SERVER listening (http=127.0.0.1:%s, websocket=127.0.0.1:%s)',
-        httpServer.address().port, dataServer.address().port);
+      log(
+        'SERVER listening (http=127.0.0.1:%s, websocket=127.0.0.1:%s)',
+        httpServer.address().port,
+        dataServer.address().port
+      );
       return {
         controlPort: httpServer.address().port,
-        dataPort: dataServer.address().port
+        dataPort: dataServer.address().port,
       };
     },
-    close: () => closePromise ??= new Promise(resolve => {
-      simulation.stop();
-      for (const client of clients) client.terminate();
-      clients.clear();
-      websocketServer.close(() => {
-        dataServer.closeAllConnections();
-        httpServer.closeAllConnections();
-        dataServer.close(() => httpServer.close(resolve));
-      });
-    })
+    close: () =>
+      (closePromise ??= new Promise((resolve) => {
+        simulation.stop();
+        for (const client of clients) client.terminate();
+        clients.clear();
+        websocketServer.close(() => {
+          dataServer.closeAllConnections();
+          httpServer.closeAllConnections();
+          dataServer.close(() => httpServer.close(resolve));
+        });
+      })),
   };
 
   return server;
@@ -233,7 +297,7 @@ function createServer(options = {}) {
 
 function listenOnLoopback(server, port) {
   return new Promise((resolve, reject) => {
-    const onError = error => {
+    const onError = (error) => {
       server.off('listening', onListening);
       reject(error);
     };

@@ -3,6 +3,7 @@
     "ticksPerSecond": 10
   },
   "resources": {
+    "localized": true,
     "food": {
       "initial": 20000,
       "regenerationRate": 20
@@ -23,8 +24,8 @@
   },
   "agents": {
     "needs": {
-      "socialDriftRate": 0.0002,
-      "curiosityDriftRate": 0.0005
+      "socialDriftRate": 0.003,
+      "curiosityDriftRate": 0.002
     },
     "actions": {
       "moveEnergyCost": 0.03,

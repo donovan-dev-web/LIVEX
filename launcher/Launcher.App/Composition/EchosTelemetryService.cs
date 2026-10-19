@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Réalise par HTTP contre l'API REST d'ECHOS (ECHOS produit, le Launcher présente).
@@ -314,6 +317,59 @@ public sealed class EchosTelemetryService : IEchosTelemetrySource, IDisposable
     }
 
     /// <inheritdoc />
+    public async Task<EchosNativeGroups> ReadNativeGroupsAsync(
+        string runId, int? tick, CancellationToken cancellationToken)
+    {
+        // Route dédiée : le run est dans le chemin, le tick optionnel en requête.
+        // Aucune valeur n'est recomposée ici — les champs sortent tels quels, et un
+        // champ absent reste ``null`` (« non mesuré »), jamais 0.
+        var path = Query(
+            $"api/runs/{Uri.EscapeDataString(runId)}/native-groups", null, tick);
+        using var document = await GetJsonAsync(path, cancellationToken).ConfigureAwait(false);
+
+        var root = document.RootElement;
+        var groups = new List<EchosNativeGroup>();
+        if (root.TryGetProperty("groups", out var items) && items.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in items.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var members = new List<string>();
+                if (item.TryGetProperty("members", out var raw) && raw.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var member in raw.EnumerateArray())
+                    {
+                        members.Add(member.ToString());
+                    }
+                }
+
+                groups.Add(new EchosNativeGroup(
+                    ReadInt32(item, "groupId"),
+                    members,
+                    ReadInt32(item, "size"),
+                    ReadStringOrNull(item, "leaderId"),
+                    ReadInt32(item, "bornTick"),
+                    ReadNullableDouble(item, "cohesion"),
+                    ReadStringOrNull(item, "decision"),
+                    ReadNullableDouble(item, "consensus"),
+                    ReadNullableDouble(item, "maxBondDistance"),
+                    ReadNullableDouble(item, "meanBondDistance")));
+            }
+        }
+
+        return new EchosNativeGroups
+        {
+            RunId = ReadString(root, "run_id"),
+            Tick = ReadInt32(root, "tick"),
+            Groups = groups,
+        };
+    }
+
+    /// <inheritdoc />
     public async Task<EchosPhenomena> ReadPhenomenaAsync(string? runId, CancellationToken cancellationToken)
     {
         var path = string.IsNullOrWhiteSpace(runId)
@@ -591,15 +647,132 @@ public sealed class EchosTelemetryService : IEchosTelemetrySource, IDisposable
                 continue;
             }
 
+            // ``utility`` peut être ``null`` (absence ou report, BL-09) : la
+            // lecture ne doit ni le remplacer par 0 ni perdre ``heldUtility``.
             decisions.Add(new EchosDecision(
                 ReadInt32(item, "tick"),
                 ReadString(item, "agent_id"),
                 ReadString(item, "chosen_action"),
-                ReadDouble(item, "utility"),
+                ReadNullableDouble(item, "utility"),
+                ReadNullableDouble(item, "held_utility"),
+                ReadStringOrNull(item, "decision_state"),
+                ReadNullableInt32(item, "decision_tick"),
                 ReadString(item, "cause")));
         }
 
         return decisions;
+    }
+
+    /// <inheritdoc />
+    public async Task<EchosCausalChain> ReadCausalChainAsync(
+        string runId, string agentId, int? tick, int depth, CancellationToken cancellationToken)
+    {
+        var path = $"api/runs/{Uri.EscapeDataString(runId)}/causal-chains/{Uri.EscapeDataString(agentId)}" +
+            $"?depth={Math.Clamp(depth, 1, MaxCausalDepth)}" +
+            (tick is { } value ? $"&tick={value.ToString(CultureInfo.InvariantCulture)}" : string.Empty);
+        using var document = await GetJsonAsync(path, cancellationToken).ConfigureAwait(false);
+
+        var root = document.RootElement;
+        var nodes = new List<EchosCausalNode>();
+        if (root.TryGetProperty("chain", out var items) && items.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in items.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var layer = ReadString(item, "layer");
+                if (layer.Length == 0)
+                {
+                    continue;
+                }
+
+                nodes.Add(new EchosCausalNode(
+                    layer,
+                    ReadInt32(item, "tick"),
+                    ReadString(item, "label"),
+                    DescribeDetail(item)));
+            }
+        }
+
+        var cycles = new List<EchosCausalCycle>();
+        if (root.TryGetProperty("cycles", out var cycleItems) && cycleItems.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var cycle in cycleItems.EnumerateArray())
+            {
+                if (cycle.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                var layer = ReadString(cycle, "layer");
+                if (layer.Length == 0)
+                {
+                    continue;
+                }
+
+                cycles.Add(new EchosCausalCycle(
+                    layer, ReadString(cycle, "label"), ReadIntArray(cycle, "ticks")));
+            }
+        }
+
+        return new EchosCausalChain
+        {
+            RunId = ReadString(root, "run_id"),
+            AgentId = ReadString(root, "agent_id"),
+            Tick = ReadInt32(root, "tick"),
+            DepthRequested = ReadInt32(root, "depth_requested"),
+            Nodes = nodes,
+            Cycle = root.TryGetProperty("cycle", out var cycleFlag)
+                && cycleFlag.ValueKind == JsonValueKind.True,
+            Cycles = cycles,
+            Truncated = root.TryGetProperty("truncated", out var truncated)
+                && truncated.ValueKind == JsonValueKind.True,
+        };
+    }
+
+    /// <summary>Profondeur maximale acceptée par ECHOS (`MAX_DEPTH` = 12).</summary>
+    private const int MaxCausalDepth = 12;
+
+    /// <summary>
+    /// Résumé du bloc `detail` d'une couche : les champs publiés sont listés dans
+    /// l'ordre de la réponse, sans interprétation (aucune valeur recalculée).
+    /// </summary>
+    private static string DescribeDetail(JsonElement node)
+    {
+        if (!node.TryGetProperty("detail", out var detail) || detail.ValueKind != JsonValueKind.Object)
+        {
+            return string.Empty;
+        }
+
+        var parts = new List<string>();
+        foreach (var property in detail.EnumerateObject())
+        {
+            if (property.Value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            var value = property.Value.ValueKind switch
+            {
+                JsonValueKind.Array => string.Join(", ", property.Value.EnumerateArray()
+                    .Select(item => item.ValueKind == JsonValueKind.Object
+                        ? item.GetRawText()
+                        : item.ToString())),
+                JsonValueKind.Object => property.Value.GetRawText(),
+                _ => property.Value.ToString(),
+            };
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            parts.Add($"{property.Name} = {value}");
+        }
+
+        return string.Join(" · ", parts);
     }
 
     private async Task<JsonDocument> GetJsonAsync(string path, CancellationToken cancellationToken)
@@ -1066,6 +1239,19 @@ public sealed class EchosTelemetryService : IEchosTelemetrySource, IDisposable
             ? value.GetDouble()
             : 0;
 
+    private static string? ReadStringOrNull(JsonElement element, string property)
+    {
+        if (element.ValueKind != JsonValueKind.Object
+            || !element.TryGetProperty(property, out var value)
+            || value.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        var text = value.GetString();
+        return string.IsNullOrWhiteSpace(text) ? null : text;
+    }
+
     private static double? ReadNullableDouble(JsonElement element, string property)
     {
         if (element.ValueKind != JsonValueKind.Object
@@ -1287,7 +1473,11 @@ public sealed class EchosTelemetryService : IEchosTelemetrySource, IDisposable
         return groups;
     }
 
-    /// <summary>Réserves du tick, avec leur position observée.</summary>
+    /// <summary>
+    /// Réserves du tick, **avec ou sans** position selon ce qu'ECHOS publie.
+    /// Le contrat SYNE 0.5 agrège les réserves par type : l'absence de position
+    /// est un fait publié, jamais l'origine du monde (0,0).
+    /// </summary>
     private static IReadOnlyList<EchosTickResource> ReadTickResources(JsonElement root)
     {
         var resources = new List<EchosTickResource>();
@@ -1303,18 +1493,11 @@ public sealed class EchosTelemetryService : IEchosTelemetrySource, IDisposable
                 continue;
             }
 
-            double x = 0;
-            double y = 0;
-            if (item.TryGetProperty("position", out var position) && position.ValueKind == JsonValueKind.Object)
-            {
-                x = ReadNullableDouble(position, "x") ?? 0;
-                y = ReadNullableDouble(position, "y") ?? 0;
-            }
-
+            var position = ObjectOrUndefined(item, "position");
             resources.Add(new EchosTickResource(
                 ReadString(item, "type"),
-                x,
-                y,
+                ReadNullableDouble(position, "x"),
+                ReadNullableDouble(position, "y"),
                 ReadDouble(item, "quantity"),
                 ReadNullableDouble(item, "capacity")));
         }

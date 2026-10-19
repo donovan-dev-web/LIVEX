@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Relance d'un flux SYNE archivé (JSON Lines) dans le magasin d'analyse.
 
 Le Launcher archive, dans chaque run d'un paquet, le flux d'observabilité
