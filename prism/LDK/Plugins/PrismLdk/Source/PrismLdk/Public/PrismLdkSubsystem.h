@@ -47,8 +47,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="SYNE|Connection") void Configure(const FPrismSyneConnectionOptions& InOptions);
 	UFUNCTION(BlueprintCallable, Category="SYNE|Connection") bool Connect();
 	UFUNCTION(BlueprintCallable, Category="SYNE|Connection") void Disconnect();
-	UFUNCTION(BlueprintCallable, Category="SYNE|Control", meta=(AdvancedDisplay="TicksPerSecond"))
-	void Prepare(int64 Seed, int32 TicksPerSecond = 10);
+	// `ConfigJson` est une surcouche JSON **objet** (même contrat que `config` de
+	// `POST /api/control/prepare`) : sans elle, SYNE prépare le profil de
+	// référence et le mock son fichier de configuration — deux mondes différents.
+	// Laisser vide pour conserver le comportement historique.
+	UFUNCTION(BlueprintCallable, Category="SYNE|Control", meta=(AdvancedDisplay="TicksPerSecond,ConfigJson"))
+	void Prepare(int64 Seed, int32 TicksPerSecond = 10, const FString& ConfigJson = TEXT(""));
 	// Version de la description du monde reçue dans `world_initialized` (contrat
 	// 1.1 depuis ADR-017 : simulatedSecondsPerTick / metersPerUnit additifs).
 	// À reconstruire en lecture de `world.version` sans valeur en dur (spec PRISM §6).
@@ -68,6 +72,20 @@ private:
 	struct FQueuedMessage { FString Payload; };
 	void ParseMessage(const FString& Payload);
 	void SendControl(const FString& Action, const FString& Body);
+#if WITH_DEV_AUTOMATION_TESTS
+public:
+	/**
+	 * Points d'entrée de test : rejouent une trame WebSocket et un corps de
+	 * réponse de contrôle par les **parseurs réels** (`ParseMessage`,
+	 * `ParseStatus`), sans socket. C'est le chemin exact que suivent SYNE et
+	 * syne-mock : les specs `PrismLdk.Contract` vérifient le contrat consommé,
+	 * pas une copie de celui-ci.
+	 */
+	void DebugParseMessage(const FString& Payload) { ParseMessage(Payload); }
+	void DebugParseStatusBody(const FString& Body);
+	FPrismSyneStatus DebugGetStatus() const { return Status; }
+private:
+#endif
 	void ParseStatus(const TSharedPtr<FJsonObject>& Object, FPrismSyneStatus& Out) const;
 	void ParseWorld(const TSharedPtr<FJsonObject>& Object, FPrismSyneWorldDescription& Out) const;
 	void ParseSnapshot(const TSharedPtr<FJsonObject>& Object, FPrismSyneWorldSnapshot& Out) const;

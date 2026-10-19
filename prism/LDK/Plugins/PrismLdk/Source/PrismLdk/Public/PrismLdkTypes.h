@@ -266,6 +266,11 @@ struct PRISMLDK_API FPrismSyneGroup
 	UPROPERTY(BlueprintReadOnly) double Cohesion = 0.0;
 	UPROPERTY(BlueprintReadOnly) double Consensus = 0.0;
 	UPROPERTY(BlueprintReadOnly) FString Decision;
+	// Le groupe est exposé pour le RENDU : identité, appartenance, teinte et
+	// état lisible. Les mesures d'analyse du contrat 0.5.0
+	// (`maxBondDistance` / `meanBondDistance`, instrumentation A0-3) ne sont
+	// volontairement PAS exposées : PRISM représente le monde et les entités en
+	// 3D, il ne consomme pas les données destinées à l'analyse.
 };
 
 USTRUCT(BlueprintType)
@@ -323,6 +328,11 @@ struct PRISMLDK_API FPrismSyneWorldSnapshot
 	UPROPERTY(BlueprintReadOnly) int64 Seed = 0;
 	UPROPERTY(BlueprintReadOnly) int64 Tick = 0;
 	UPROPERTY(BlueprintReadOnly) double SimulatedTimeMinutes = 0.0;
+	// Contrat 0.4.0 (additif, ADR-017) : secondes simulées exactes
+	// (`tick × simulatedSecondsPerTick`). `SimulatedTimeMinutes` reste le
+	// plancher entier historique. Absent d'un flux antérieur au 0.4.0 → le
+	// plugin applique la formule du contrat avec le ratio de `world_initialized`.
+	UPROPERTY(BlueprintReadOnly) int64 SimulatedTimeSeconds = 0;
 	UPROPERTY(BlueprintReadOnly) int32 AliveCount = 0;
 	UPROPERTY(BlueprintReadOnly) FString Season;
 	UPROPERTY(BlueprintReadOnly) EPrismSyneSeason SeasonEnum = EPrismSyneSeason::Unknown;
@@ -359,7 +369,14 @@ struct PRISMLDK_API FPrismSyneStatus
 	UPROPERTY(BlueprintReadOnly) FString RunId;
 	UPROPERTY(BlueprintReadOnly) int64 Tick = 0;
 	UPROPERTY(BlueprintReadOnly) int32 AliveCount = 0;
-	UPROPERTY(BlueprintReadOnly) int32 TicksPerSecond = 10;
+	// 0 = non renseigné (monde non préparé : `/api/control/status` publie `null`
+	// pour `ticksPerSecond`). La valeur réelle se lit dans `world_initialized`.
+	UPROPERTY(BlueprintReadOnly) int32 TicksPerSecond = 0;
+	// Contrat 0.4.0 (additif) : `/api/control/status` publie aussi le pas
+	// temporel du monde préparé. `null` avant toute préparation → le booléen
+	// reste faux (absence ≠ valeur nulle).
+	UPROPERTY(BlueprintReadOnly) int32 SimulatedSecondsPerTick = 0;
+	UPROPERTY(BlueprintReadOnly) bool bHasSimulatedSecondsPerTick = false;
 	UPROPERTY(BlueprintReadOnly) int64 Seed = 0;
 	UPROPERTY(BlueprintReadOnly) int32 MaxTicks = 0;
 	UPROPERTY(BlueprintReadOnly) bool bWorldPrepared = false;
