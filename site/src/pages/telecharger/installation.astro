@@ -1,17 +1,21 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import { PROJECT_STATE } from '../../data/release';
 ---
 <BaseLayout
-  title="Installation"
-  description="Installer et démarrer LIVEX depuis les sources : prérequis, démarrage de la pile (SYNE, ECHOS), ports locaux et tests. Aucun binaire public à ce jour."
+  title="LIVEX — Guide d'installation depuis les sources"
+  description="Installer LIVEX depuis les sources : prérequis (.NET, Python, Node.js), commande de démarrage de la pile SYNE et ECHOS, ports locaux et tests."
 >
   <PageHeader
     index="12"
     eyebrow="Télécharger · Installation"
     title="Démarrer LIVEX depuis les sources."
-    lead="Aucun installeur n'est distribué. Voici comment faire tourner la pile depuis le dépôt, en local — c'est un environnement de développement, pas un service public."
+    lead="Aucun installeur n'est distribué pour l'instant. Voici comment faire tourner la pile SYNE + ECHOS depuis le dépôt, en local : un environnement de développement, pas un service public."
     crumbs={[{ label: 'Télécharger', href: 'telecharger/' }, { label: 'Installation' }]}
   />
 
@@ -21,7 +25,7 @@ import StatusBadge from '../../components/StatusBadge.astro';
         (<code>127.0.0.1</code>) et ne sont pas durcis pour une exposition publique.</p></div>
 
       <div class="sh"><b>12.1</b> Prérequis</div>
-      <h2>Ce qu'il faut avoir.</h2>
+      <h2>Les prérequis, en un coup d'œil.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Outil</th><th>Version</th><th>Pour</th></tr></thead>
@@ -29,11 +33,13 @@ import StatusBadge from '../../components/StatusBadge.astro';
             <tr><td>.NET SDK</td><td>10.0.4xx</td><td>Moteur SYNE</td></tr>
             <tr><td>Python</td><td>3.11+</td><td>ECHOS (observation, API)</td></tr>
             <tr><td>Node.js</td><td>20+</td><td>syne-mock (intégration)</td></tr>
-            <tr><td>Unreal Engine</td><td>5.8</td><td>PRISM et le plugin PRISM-LDK (hors portée V0.1)</td></tr>
+            <tr><td>Unreal Engine</td><td>5.8</td><td>PRISM et le plugin PRISM-LDK (hors périmètre V0.2)</td></tr>
             <tr><td>curl</td><td>—</td><td>Vérifications de disponibilité</td></tr>
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>Trois outils suffisent pour la pile complète : .NET SDK, Python et Node.js. Unreal Engine
+        n'est nécessaire que pour PRISM, hors périmètre de la V0.2.</p></div>
     </div>
   </section>
 
@@ -81,6 +87,8 @@ npm start -- config_prism.json</code></pre>
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>Aucun service n'est exposé hors de votre machine : les quatre adresses ci-dessus sont en
+        <code>127.0.0.1</code>.</p></div>
     </div>
   </section>
 
@@ -96,8 +104,8 @@ echos/.venv/bin/python -m pytest -q
 
 # Launcher
 cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
-      <p><StatusBadge status="experimental" /> Les chemins sont donnés à titre indicatif et suivent le dépôt de
-        développement.</p>
+      <p><StatusBadge status="experimental" /> Relevé du {PROJECT_STATE.observedDate} : <strong>0 échec</strong> sur
+        ces trois suites. Les chemins restent indicatifs et suivent le dépôt de développement.</p>
       <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Guide d'installation complet ↗</a></p>
     </div>
   </section>

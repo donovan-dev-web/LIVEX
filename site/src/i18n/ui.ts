@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Internationalisation.
  * Français = langue source (racine). Anglais = miroir sous `/en/`, même arborescence.
@@ -32,7 +35,7 @@ export const ui = {
     'nav.main': 'Navigation principale',
     'nav.menu': 'Menu',
     'nav.breadcrumb': "Fil d'Ariane",
-    'footer.license': 'Code sous licence MIT',
+    'footer.license': 'Code sous licence GNU GPL v3.0 ou ultérieure',
     'footer.repo': 'Dépôt GitHub',
     'footer.nav': 'Navigation de pied de page',
     'translation.notice': 'Traduction automatique, relue — le français fait foi.',
@@ -53,7 +56,7 @@ export const ui = {
     'nav.main': 'Main navigation',
     'nav.menu': 'Menu',
     'nav.breadcrumb': 'Breadcrumb',
-    'footer.license': 'Code under MIT license',
+    'footer.license': 'Code under the GNU GPL v3.0 or later',
     'footer.repo': 'GitHub repository',
     'footer.nav': 'Footer navigation',
     'translation.notice': 'Machine translation, reviewed — the French version is authoritative.',

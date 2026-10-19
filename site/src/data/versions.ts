@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Historique des versions publiées (fiches par version, S14).
  * Vide tant qu'aucune release n'est posée — voir data/release.ts, RELEASE.published.
