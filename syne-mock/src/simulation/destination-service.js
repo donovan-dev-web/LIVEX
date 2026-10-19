@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -13,10 +16,14 @@ class DestinationService {
 
   choose(agent, tick, action, world) {
     const offset = createDeterministicOffset(
-      agent.id, tick, action, this.settings.perceptionRadius);
+      agent.id,
+      tick,
+      action,
+      this.settings.perceptionRadius
+    );
     return {
       x: Math.max(0, Math.min(world.width, agent.x + offset.x)),
-      y: Math.max(0, Math.min(world.height, agent.y + offset.y))
+      y: Math.max(0, Math.min(world.height, agent.y + offset.y)),
     };
   }
 }

@@ -8,7 +8,7 @@ réimplémentation du moteur SYNE. Le mock expose :
 - WebSocket texte JSON UTF-8 sur `ws://127.0.0.1:5180/` ;
 - contrôle HTTP JSON sur `http://127.0.0.1:5181` ;
 - un monde 2D et des ticks déterministes, par défaut 50 agents et 400 ticks ;
-- un contrat d'observabilité `0.4.0` et un `engineVersion` `0.15.0`
+- un contrat d'observabilité `0.5.0` et un `engineVersion` `0.17.0`
   (description de monde `1.1`).
 
 Toutes les adresses et versions doivent être configurables. Le plugin ne doit
@@ -37,12 +37,15 @@ brutes et les erreurs de décodage doivent rester observables pour le diagnostic
    lorsqu'il est appelé explicitement. Le subsystem ne se connecte pas au
    démarrage. La reconnexion automatique, si activée, ne s'applique qu'après
    une connexion demandée puis interrompue ; `Disconnect()` la désactive.
-2. `Prepare(seed, ticksPerSecond)` appelle `POST /api/control/prepare` avec la
-   seed et une fréquence positive en ticks/seconde, puis `Ready("1.1")`
-   accuse réception avant `Start()`. Après cette préparation explicite,
-   `Start` réutilise le monde et sa cadence ; son seed, s'il est envoyé, doit
-   correspondre au seed préparé. Un `Start()` direct reste rétrocompatible
-   (auto-prepare implicite).
+2. `Prepare(seed, ticksPerSecond, configJson)` appelle
+   `POST /api/control/prepare` avec la seed, une fréquence positive en
+   ticks/seconde et, si fournie, la surcouche `config` (objet JSON transmis
+   tel quel). C'est cette surcouche qui fait préparer **le même monde** au mock
+   et à SYNE : sans elle, chacun applique ses propres défauts. Puis
+   `Ready("1.1")` accuse réception avant `Start()`. Après cette préparation
+   explicite, `Start` réutilise le monde et sa cadence ; son seed, s'il est
+   envoyé, doit correspondre au seed préparé. Un `Start()` direct reste
+   rétrocompatible (auto-prepare implicite).
 3. `Tick(float)` dépile sans bloquer et applique `world_initialized`, les
    `world_delta`, puis les snapshots dans l'ordre.
 4. Le codec exige `type` et `tick` pour les messages de flux ; un champ inconnu
@@ -61,7 +64,8 @@ API native conseillée (noms indicatifs) :
 
 ```cpp
 bool Connect(const FSyneConnectionOptions& Options);
-TFuture<FSyneWorldDescription> Prepare(int64 Seed, int32 TicksPerSecond = 10);
+TFuture<FSyneWorldDescription> Prepare(int64 Seed, int32 TicksPerSecond = 10,
+                                       const FString& ConfigJson = TEXT(""));
 TFuture<FSyneControlResult> Ready(FString WorldVersion);
 void Disconnect();
 TFuture<FSyneControlResult> Start(int64 Seed, int32 MaxTicks);
@@ -86,6 +90,12 @@ Les callbacks de commande doivent retourner `ok`, `action`, `runId`, `state`,
 `tick`, `aliveCount`, `seed` et `maxTicks`; un code HTTP non-2xx devient une
 erreur typée et non une exception Blueprint.
 
+**Toutes les réponses ne portent pas tous les champs** : `prepare` renvoie
+`{ok, action, ticksPerSecond, world}` et `ready` un accusé sans `state`.
+Fusionner chaque réponse sur le statut courant (ne pas repartir d'un statut
+vide), et lire `ticksPerSecond` / `simulatedSecondsPerTick` comme facultatifs :
+`null` signifie « monde non préparé », jamais `0` ni une cadence inventée.
+
 ## 5. Structs, enums, delegates et événements
 
 Types minimum à exposer : `FSyneVector2D`, `FSyneAgentSnapshot`,
@@ -98,13 +108,21 @@ entrée fournit l'identifiant, l'espèce et la position 2D initiale, afin
 qu'Unreal puisse créer les acteurs avant `Ready`/`Start`. Ces mêmes agents et
 positions sont présents dans le premier snapshot.
 
-Le snapshot global `0.4.0` contient l'état dynamique complet par tick :
+Le snapshot global `0.5.0` contient l'état dynamique complet par tick :
 `agents[]`, `resources[]`, `obstacles[]`, `groups[]`, `territories[]`,
 `books[]`, ainsi que `worldChanges[]` et `actions[]` pour les mutations et
 actions du tick. Les événements unitaires restent émis pour compatibilité,
 mais ne doivent pas être réappliqués lorsqu'on utilise le snapshot comme source
 de vérité. La topologie statique `cells[]` est envoyée une fois dans
 `world_initialized`.
+
+Dans `groups[]`, le contrat 0.5.0 annonce `maxBondDistance` et
+`meanBondDistance` (distance max/moyenne des paires liées). Ce sont des mesures
+d'**analyse** : le mock n'a pas de modèle de liens et publie donc `null` (non
+mesuré), et un client de **rendu** (PRISM) les ignore. Un client d'analyse doit
+les lire comme facultatives — clé absente ou `null` = non mesuré, jamais `0.0` —
+et les prendre sur SYNE, qui les mesure.
+`leaderId` peut lui aussi être absent (groupe sans leader).
 
 Enums recommandés :
 

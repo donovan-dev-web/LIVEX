@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -21,21 +24,24 @@ function openServer(t, options) {
 
 function closeClient(client) {
   if (client.readyState === WebSocket.CLOSED) return Promise.resolve();
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     client.once('close', resolve);
     client.close();
   });
 }
 
-test('a data-port conflict rejects startup and releases the control port', async t => {
+test('a data-port conflict rejects startup and releases the control port', async (t) => {
   const occupiedPort = net.createServer();
   await new Promise((resolve, reject) => {
     occupiedPort.once('error', reject);
     occupiedPort.listen(0, '127.0.0.1', resolve);
   });
-  t.after(() => new Promise((resolve, reject) => {
-    occupiedPort.close(error => error ? reject(error) : resolve());
-  }));
+  t.after(
+    () =>
+      new Promise((resolve, reject) => {
+        occupiedPort.close((error) => (error ? reject(error) : resolve()));
+      })
+  );
 
   const server = createServer();
   await assert.rejects(server.listen(0, occupiedPort.address().port), { code: 'EADDRINUSE' });
@@ -43,8 +49,14 @@ test('a data-port conflict rejects startup and releases the control port', async
 });
 
 test('generation is deterministic and has the documented population', () => {
-  const a = new Simulation({ seed: 7, agents: 50 }); a.start(); a.step(); a.stop();
-  const b = new Simulation({ seed: 7, agents: 50 }); b.start(); b.step(); b.stop();
+  const a = new Simulation({ seed: 7, agents: 50 });
+  a.start();
+  a.step();
+  a.stop();
+  const b = new Simulation({ seed: 7, agents: 50 });
+  b.start();
+  b.step();
+  b.stop();
   // Format canonique run-<seed>-<12hex> (parité SYNE, A1) : le suffixe du runId
   // est généré par run pour garantir l'unicité entre deux runs de même seed —
   // c'est une étiquette d'identité, pas du contenu du monde. Le déterminisme de
@@ -64,12 +76,12 @@ test('emitted contract identity tracks the real SYNE contract', () => {
   simulation.start();
   const snapshot = simulation.snapshot();
   // Parité de contrat avec SYNE (`ObservabilityContract.cs`) : contrat
-  // d'observabilité 0.4.0, version moteur 0.15.0 et description du monde 1.1.
+  // d'observabilité 0.5.0 (A0-3), version moteur 0.17.0 et description du monde 1.1.
   // Un consommateur (PRISM, ECHOS) ne doit pas lire deux identités différentes
   // selon que la source est le mock ou le moteur réel. Ces valeurs sont verrouillées
   // ici pour qu'une évolution de SYNE force une mise à jour explicite du mock.
-  assert.equal(snapshot.version, '0.4.0');
-  assert.equal(snapshot.engineVersion, '0.15.0');
+  assert.equal(snapshot.version, '0.5.0');
+  assert.equal(snapshot.engineVersion, '0.17.0');
   assert.equal(snapshot.simulatedTimeSeconds, snapshot.tick * 60);
   assert.equal(simulation.worldDescription().version, '1.1');
   assert.equal(simulation.worldDescription().metersPerUnit, 1);
@@ -83,16 +95,22 @@ test('advanced systems are represented in snapshots and events', () => {
     communication: { transmissionRange: 1000 },
     groups: { formationRange: 1000 },
     territories: { enabled: true },
-    books: { enabled: true }
+    books: { enabled: true },
   });
   simulation.start();
   for (let i = 0; i < 100; i++) simulation.step();
-  const types = simulation.events.map(event => event.type);
+  const types = simulation.events.map((event) => event.type);
   assert.ok(types.includes('message_sent') || types.includes('message_received'));
   assert.ok(types.includes('group_decision'));
   assert.ok(types.includes('world.book_written'));
   assert.equal(simulation.snapshot().resources.length, 4);
   assert.equal(simulation.snapshot().territories.length, 1);
+  // Contrat 0.5.0 (additif) : `groups[]` porte les distances des paires liées.
+  // Le mock n'a pas de modèle de liens → `null` (non mesuré), jamais 0.0.
+  const group = simulation.snapshot().groups[0];
+  assert.ok(group, 'un groupe forme attendu');
+  assert.equal(group.maxBondDistance, null);
+  assert.equal(group.meanBondDistance, null);
   simulation.stop();
 });
 
@@ -101,27 +119,41 @@ test('HTTP control and websocket emit contract messages', async (t) => {
   await server.listen(0, 0);
   const controlPort = server.httpServer.address().port;
   const dataPort = server.dataServer.address().port;
-  const messages = []; const client = new WebSocket(`ws://127.0.0.1:${dataPort}`);
-  client.on('message', data => messages.push(JSON.parse(data)));
-  await new Promise(resolve => client.once('open', resolve));
-  await fetch(`http://127.0.0.1:${controlPort}/api/control/start`, { method: 'POST', body: JSON.stringify({ seed: 9, maxTicks: 1 }), headers: { 'content-type': 'application/json' } });
-  await new Promise(resolve => setTimeout(resolve, 50));
-  assert.ok(messages.some(x => x.type === 'snapshot' && x.tick === 1));
+  const messages = [];
+  const client = new WebSocket(`ws://127.0.0.1:${dataPort}`);
+  client.on('message', (data) => messages.push(JSON.parse(data)));
+  await new Promise((resolve) => client.once('open', resolve));
+  await fetch(`http://127.0.0.1:${controlPort}/api/control/start`, {
+    method: 'POST',
+    body: JSON.stringify({ seed: 9, maxTicks: 1 }),
+    headers: { 'content-type': 'application/json' },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  assert.ok(messages.some((x) => x.type === 'snapshot' && x.tick === 1));
   const status = await (await fetch(`http://127.0.0.1:${controlPort}/api/control/status`)).json();
-  assert.equal(status.tick, 1); await closeClient(client);
+  assert.equal(status.tick, 1);
+  await closeClient(client);
 });
 
 test('explicit prepare requires ready and exposes the world contract', async (t) => {
   const server = openServer(t, { agents: 0, ticksPerSecond: 100, maxTicks: 1 });
   await server.listen(0, 0);
   const port = server.httpServer.address().port;
-  const post = (path, body = {}) => fetch(`http://127.0.0.1:${port}${path}`, {
-    method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' }
-  });
+  const post = (path, body = {}) =>
+    fetch(`http://127.0.0.1:${port}${path}`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'content-type': 'application/json' },
+    });
   assert.equal((await post('/api/control/prepare', { seed: 19, ticksPerSecond: 0 })).status, 400);
-  assert.equal((await post('/api/control/prepare', { seed: 19, ticksPerSecond: '24' })).status, 400);
+  assert.equal(
+    (await post('/api/control/prepare', { seed: 19, ticksPerSecond: '24' })).status,
+    400
+  );
   const invalidWorld = await post('/api/control/prepare', {
-    seed: 19, ticksPerSecond: 24, config: { world: { width: 0 } }
+    seed: 19,
+    ticksPerSecond: 24,
+    config: { world: { width: 0 } },
   });
   assert.equal(invalidWorld.status, 400);
   assert.equal(server.simulation.status().worldPrepared, false);
@@ -131,9 +163,9 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
     config: {
       world: {
         obstacles: true,
-        obstacleLayout: [{ id: 'configured-rock', x: 20, y: 20, radius: 3 }]
-      }
-    }
+        obstacleLayout: [{ id: 'configured-rock', x: 20, y: 20, radius: 3 }],
+      },
+    },
   });
   assert.equal(prepared.status, 200);
   const preparedBody = await prepared.json();
@@ -141,7 +173,7 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
   // Parité de contrat WorldDescription : obstacles = géométrie {id, x, y, radius}
   // (SYNE sérialise WorldObstacle sans champ type).
   assert.deepEqual(preparedBody.world.obstacles, [
-    { id: 'configured-rock', x: 20, y: 20, radius: 3 }
+    { id: 'configured-rock', x: 20, y: 20, radius: 3 },
   ]);
   const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
   assert.equal(world.version, '1.1');
@@ -168,11 +200,17 @@ test('prism profile emits the ADR-017 temporal and spatial scale contract', asyn
   // 4 900 cases, cadence 6 TPS, 5 s simulées par tick (R = 30). La configuration
   // testée est celle réellement livrée (`config_prism.json`), pour que le test
   // porte sur ce que PRISM reçoit et pas sur une reconstruction du monde.
-  const server = openServer(t, { ...readConfig(path.join(__dirname, '..', 'config_prism.json')), agents: 0, maxTicks: 3 });
+  const server = openServer(t, {
+    ...readConfig(path.join(__dirname, '..', 'config_prism.json')),
+    agents: 0,
+    maxTicks: 3,
+  });
   await server.listen(0, 0);
   const port = server.httpServer.address().port;
   await fetch(`http://127.0.0.1:${port}/api/control/prepare`, {
-    method: 'POST', body: JSON.stringify({ seed: 42, ticksPerSecond: 6 }), headers: { 'content-type': 'application/json' }
+    method: 'POST',
+    body: JSON.stringify({ seed: 42, ticksPerSecond: 6 }),
+    headers: { 'content-type': 'application/json' },
   });
 
   const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
@@ -188,12 +226,21 @@ test('prism profile emits the ADR-017 temporal and spatial scale contract', asyn
   // Le profil prism declare cinq obstacles : les cases bloquees existent, comme
   // cote moteur (`SimulationProfiles.Prism()` porte le meme layout).
   assert.equal(world.obstacles.length, 5);
-  assert.ok(world.cells.some(cell => !cell.walkable), 'le layout doit bloquer des cases');
-  assert.deepEqual([...new Set(world.cells.map(cell => cell.terrainType))], ['plains']);
-  assert.deepEqual([...new Set(world.cells.map(cell => cell.movementCost))].sort((a, b) => a - b), [1, 100]);
+  assert.ok(
+    world.cells.some((cell) => !cell.walkable),
+    'le layout doit bloquer des cases'
+  );
+  assert.deepEqual([...new Set(world.cells.map((cell) => cell.terrainType))], ['plains']);
+  assert.deepEqual(
+    [...new Set(world.cells.map((cell) => cell.movementCost))].sort((a, b) => a - b),
+    [1, 100]
+  );
   for (const cell of world.cells)
-    assert.equal(cell.walkable, cell.obstacles.length === 0,
-      `case (${cell.x},${cell.y}) : walkable doit suivre les obstacles portes`);
+    assert.equal(
+      cell.walkable,
+      cell.obstacles.length === 0,
+      `case (${cell.x},${cell.y}) : walkable doit suivre les obstacles portes`
+    );
   assert.equal(/null/.test(JSON.stringify(world)), false);
 
   server.simulation.acknowledgeReady('1.1');
@@ -207,18 +254,28 @@ test('prism profile emits the ADR-017 temporal and spatial scale contract', asyn
   assert.equal(server.simulation.status().simulatedSecondsPerTick, 5);
   server.simulation.stop();
 
-  const post = (path, body = {}) => fetch(`http://127.0.0.1:${port}${path}`, {
-    method: 'POST', body: JSON.stringify(body), headers: { 'content-type': 'application/json' }
-  });
+  const post = (path, body = {}) =>
+    fetch(`http://127.0.0.1:${port}${path}`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'content-type': 'application/json' },
+    });
   const rejected = await post('/api/control/prepare', {
-    seed: 1, simulatedSecondsPerTick: 0,
-    config: { simulatedSecondsPerTick: 0 }
+    seed: 1,
+    simulatedSecondsPerTick: 0,
+    config: { simulatedSecondsPerTick: 0 },
   });
   assert.equal(rejected.status, 400);
 });
 
 test('simulated time follows simulatedSecondsPerTick, not the tick rate', () => {
-  const simulation = new Simulation({ seed: 5, agents: 0, ticksPerSecond: 24, maxTicks: 5, simulatedSecondsPerTick: 10 });
+  const simulation = new Simulation({
+    seed: 5,
+    agents: 0,
+    ticksPerSecond: 24,
+    maxTicks: 5,
+    simulatedSecondsPerTick: 10,
+  });
   assert.equal(simulation.simulatedSeconds(17280), 172_800);
   assert.equal(simulation.simulatedMinutes(17280), 2880);
   assert.equal(simulation.simulatedMinutes(3), 0); // 30 s simulées → 0 minute (plancher)
@@ -235,23 +292,26 @@ test('world_initialized precedes a global snapshot and configured obstacles rema
     maxTicks: 1,
     world: {
       obstacles: true,
-      obstacleLayout: [{ id: 'initial-rock', x: 250, y: 250, radius: 10 }]
-    }
+      obstacleLayout: [{ id: 'initial-rock', x: 250, y: 250, radius: 10 }],
+    },
   });
   await server.listen(0, 0);
-  const controlPort = server.httpServer.address().port, dataPort = server.dataServer.address().port;
-  const messages = [], client = new WebSocket(`ws://127.0.0.1:${dataPort}`);
-  client.on('message', data => messages.push(JSON.parse(data)));
-  await new Promise(resolve => client.once('open', resolve));
+  const controlPort = server.httpServer.address().port,
+    dataPort = server.dataServer.address().port;
+  const messages = [],
+    client = new WebSocket(`ws://127.0.0.1:${dataPort}`);
+  client.on('message', (data) => messages.push(JSON.parse(data)));
+  await new Promise((resolve) => client.once('open', resolve));
   await fetch(`http://127.0.0.1:${controlPort}/api/control/start`, {
-    method: 'POST', body: JSON.stringify({ seed: 4, maxTicks: 1 }),
-    headers: { 'content-type': 'application/json' }
+    method: 'POST',
+    body: JSON.stringify({ seed: 4, maxTicks: 1 }),
+    headers: { 'content-type': 'application/json' },
   });
-  await new Promise(resolve => setTimeout(resolve, 50));
-  const initialized = messages.findIndex(x => x.type === 'world_initialized');
-  const snapshot = messages.findIndex(x => x.type === 'snapshot');
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const initialized = messages.findIndex((x) => x.type === 'world_initialized');
+  const snapshot = messages.findIndex((x) => x.type === 'snapshot');
   assert.ok(initialized >= 0 && initialized < snapshot);
-  const snapshots = messages.filter(x => x.type === 'snapshot');
+  const snapshots = messages.filter((x) => x.type === 'snapshot');
   assert.equal(snapshots.length, 1);
   assert.equal(snapshots[0].agents.length, 2);
   assert.equal(snapshots[0].actions.length, 2);
@@ -259,7 +319,10 @@ test('world_initialized precedes a global snapshot and configured obstacles rema
   assert.ok(Array.isArray(snapshots[0].obstacles));
   assert.deepEqual(snapshots[0].obstacles, [{ id: 'initial-rock', x: 250, y: 250, radius: 10 }]);
   assert.deepEqual(snapshots[0].worldChanges, []);
-  assert.equal(messages.some(x => x.type === 'world_delta'), false);
+  assert.equal(
+    messages.some((x) => x.type === 'world_delta'),
+    false
+  );
   await closeClient(client);
 });
 
@@ -269,23 +332,31 @@ test('agent spawning honours published walkable cells across seeds', () => {
   // placement et la grille.
   const obstacleLayout = [
     { id: 'centre', x: 250, y: 250, radius: 30 },
-    { id: 'corner', x: 120, y: 120, radius: 8 }
+    { id: 'corner', x: 120, y: 120, radius: 8 },
   ];
   for (const seed of [1, 2, 7, 56, 123]) {
     for (const agents of [0, 1, 20, 120]) {
       for (const withObstacles of [false, true]) {
         const simulation = new Simulation({
-          seed, agents, world: { obstacles: withObstacles, obstacleLayout: withObstacles ? obstacleLayout : [] }
+          seed,
+          agents,
+          world: { obstacles: withObstacles, obstacleLayout: withObstacles ? obstacleLayout : [] },
         });
         simulation.prepare(seed);
         const world = simulation.worldDescription();
         for (const agent of world.agents) {
           const x = Math.floor(agent.position.x / world.cellSize);
           const y = Math.floor(agent.position.y / world.cellSize);
-          const cell = world.cells.find(candidate => candidate.x === x && candidate.y === y);
-          assert.ok(cell, `seed ${seed}/${agents} agents: cell absente pour ${agent.position.x},${agent.position.y}`);
-          assert.equal(cell.walkable, true,
-            `seed ${seed}/${agents} agents/obstacles=${withObstacles}: agent sur une case non walkable`);
+          const cell = world.cells.find((candidate) => candidate.x === x && candidate.y === y);
+          assert.ok(
+            cell,
+            `seed ${seed}/${agents} agents: cell absente pour ${agent.position.x},${agent.position.y}`
+          );
+          assert.equal(
+            cell.walkable,
+            true,
+            `seed ${seed}/${agents} agents/obstacles=${withObstacles}: agent sur une case non walkable`
+          );
         }
       }
     }
@@ -293,19 +364,22 @@ test('agent spawning honours published walkable cells across seeds', () => {
 });
 
 test('WorldDescription generation is deterministic by seed', () => {
-  const a = new Simulation({ seed: 123 }); a.prepare(123);
-  const b = new Simulation({ seed: 123 }); b.prepare(123);
+  const a = new Simulation({ seed: 123 });
+  a.prepare(123);
+  const b = new Simulation({ seed: 123 });
+  b.prepare(123);
   assert.deepEqual(a.worldDescription(), b.worldDescription());
   assert.equal(a.worldDescription().agents.length, 50);
   assert.equal(a.worldDescription().resources.length, 12);
   for (const kind of ['food', 'water', 'wood', 'mineral']) {
-    const locations = a.worldDescription().resources.filter(resource => resource.kind === kind);
+    const locations = a.worldDescription().resources.filter((resource) => resource.kind === kind);
     assert.equal(locations.length, 3);
-    assert.equal(new Set(locations.map(resource => `${resource.x},${resource.y}`)).size, 3);
+    assert.equal(new Set(locations.map((resource) => `${resource.x},${resource.y}`)).size, 3);
   }
   assert.deepEqual(a.worldDescription().agents[0], {
-    id: 1, species: 'human',
-    position: { x: a.initialAgents[0].x, y: a.initialAgents[0].y }
+    id: 1,
+    species: 'human',
+    position: { x: a.initialAgents[0].x, y: a.initialAgents[0].y },
   });
 });
 
@@ -313,13 +387,15 @@ test('WorldDescription includes configured obstacle geometry and cell references
   const simulation = new Simulation({
     seed: 31,
     agents: 0,
-    world: { obstacles: true, obstacleLayout: [{ id: 'initial-rock', x: 15, y: 15, radius: 2 }] }
+    world: { obstacles: true, obstacleLayout: [{ id: 'initial-rock', x: 15, y: 15, radius: 2 }] },
   });
   simulation.prepare(31);
   const world = simulation.worldDescription();
   assert.deepEqual(world.obstacles, [{ id: 'initial-rock', x: 15, y: 15, radius: 2 }]);
-  assert.deepEqual(world.cells.find(cell => cell.x === 1 && cell.y === 1).obstacles, ['initial-rock']);
-  assert.equal(world.cells.find(cell => cell.x === 1 && cell.y === 1).walkable, false);
+  assert.deepEqual(world.cells.find((cell) => cell.x === 1 && cell.y === 1).obstacles, [
+    'initial-rock',
+  ]);
+  assert.equal(world.cells.find((cell) => cell.x === 1 && cell.y === 1).walkable, false);
 });
 
 test('world generation places resources and agents only on walkable cells', () => {
@@ -328,18 +404,21 @@ test('world generation places resources and agents only on walkable cells', () =
     agents: 20,
     world: {
       obstacles: true,
-      obstacleLayout: [{ id: 'blocked-center', x: 250, y: 250, radius: 30 }]
-    }
+      obstacleLayout: [{ id: 'blocked-center', x: 250, y: 250, radius: 30 }],
+    },
   });
   simulation.prepare(56);
   const world = simulation.worldDescription();
   for (const resource of world.resources) {
-    assert.equal(world.cells.find(cell => cell.x === resource.x && cell.y === resource.y).walkable, true);
+    assert.equal(
+      world.cells.find((cell) => cell.x === resource.x && cell.y === resource.y).walkable,
+      true
+    );
   }
   for (const agent of world.agents) {
     const x = Math.floor(agent.position.x / world.cellSize);
     const y = Math.floor(agent.position.y / world.cellSize);
-    assert.equal(world.cells.find(cell => cell.x === x && cell.y === y).walkable, true);
+    assert.equal(world.cells.find((cell) => cell.x === x && cell.y === y).walkable, true);
   }
 });
 
@@ -352,16 +431,22 @@ test('agent decisions use SYNE need thresholds and configured movement speed', (
       // seuil de faim, pas le calibrage par défaut, qui fait explorer les agents
       // dès le premier tick.
       needs: {
-        hungerRate: 50, thirstRate: 0, fatigueRate: 0, curiosityDriftRate: 0,
-        initial: { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 }
+        hungerRate: 50,
+        thirstRate: 0,
+        fatigueRate: 0,
+        curiosityDriftRate: 0,
+        initial: { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 },
       },
       deliberationIntervalTicks: 1,
-      traits: { speed: 2 }
+      traits: { speed: 2 },
     },
     resources: {
-      food: 10, water: 10, wood: 0, mineral: 0,
-      regeneration: { food: 0, water: 0, wood: 0, mineral: 0 }
-    }
+      food: 10,
+      water: 10,
+      wood: 0,
+      mineral: 0,
+      regeneration: { food: 0, water: 0, wood: 0, mineral: 0 },
+    },
   });
   simulation.start(1, 3);
   const initial = { x: simulation.agents[0].x, y: simulation.agents[0].y };
@@ -382,9 +467,14 @@ test('prepared agent positions are reused by the first simulation snapshot', () 
   simulation.acknowledgeReady('1.1');
   simulation.start(23, 10);
   const snapshotAgents = simulation.snapshot().agents;
-  assert.deepEqual(snapshotAgents.map(agent => ({
-    id: Number(agent.id), species: agent.species, position: agent.position
-  })), initialAgents);
+  assert.deepEqual(
+    snapshotAgents.map((agent) => ({
+      id: Number(agent.id),
+      species: agent.species,
+      position: agent.position,
+    })),
+    initialAgents
+  );
   simulation.stop();
 });
 
@@ -405,7 +495,6 @@ test('simulation finishes only when maxTicks is reached', async () => {
   simulation.stop();
 });
 
-
 test('agents start with the configured initial needs', () => {
   const simulation = new Simulation({ seed: 1, agents: 3 }, () => {});
   simulation.start(1, 1);
@@ -417,19 +506,26 @@ test('agents start with the configured initial needs', () => {
   // moment qu'une population qui n'a rien fait encore.
   for (const agent of simulation.agents)
     assert.deepEqual(
-      { hunger: agent.hunger, thirst: agent.thirst, fatigue: agent.fatigue,
-        safety: agent.safety, social: agent.social, curiosity: agent.curiosity },
+      {
+        hunger: agent.hunger,
+        thirst: agent.thirst,
+        fatigue: agent.fatigue,
+        safety: agent.safety,
+        social: agent.social,
+        curiosity: agent.curiosity,
+      },
       { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 },
-      `besoins de départ inattendus pour l'agent ${agent.id}`);
+      `besoins de départ inattendus pour l'agent ${agent.id}`
+    );
 });
 
 test('a run moves on its first tick instead of stalling for 15 seconds', () => {
   const simulation = new Simulation({ seed: 1, agents: 20 }, () => {});
   simulation.start(1, 5);
-  const start = new Map(simulation.agents.map(agent => [agent.id, { x: agent.x, y: agent.y }]));
+  const start = new Map(simulation.agents.map((agent) => [agent.id, { x: agent.x, y: agent.y }]));
   simulation.step();
 
-  const moved = simulation.agents.filter(agent => {
+  const moved = simulation.agents.filter((agent) => {
     const before = start.get(agent.id);
     return agent.x !== before.x || agent.y !== before.y;
   });
@@ -439,65 +535,126 @@ test('a run moves on its first tick instead of stalling for 15 seconds', () => {
 });
 
 test('initial needs are configurable and validated per need', () => {
-  const withNeeds = initial => {
-    const simulation = new Simulation({
-      seed: 1, agents: 1,
-      agentSimulation: { needs: { initial } }
-    }, () => {});
+  const withNeeds = (initial) => {
+    const simulation = new Simulation(
+      {
+        seed: 1,
+        agents: 1,
+        agentSimulation: { needs: { initial } },
+      },
+      () => {}
+    );
     simulation.start(1, 1);
     simulation.stop();
     return simulation.agents[0];
   };
 
-  const tired = withNeeds({ hunger: 40, thirst: 25, fatigue: 10, safety: 0.8, social: 0.2, curiosity: 0 });
+  const tired = withNeeds({
+    hunger: 40,
+    thirst: 25,
+    fatigue: 10,
+    safety: 0.8,
+    social: 0.2,
+    curiosity: 0,
+  });
   assert.deepEqual(
-    { hunger: tired.hunger, thirst: tired.thirst, fatigue: tired.fatigue,
-      safety: tired.safety, social: tired.social, curiosity: tired.curiosity },
-    { hunger: 40, thirst: 25, fatigue: 10, safety: 0.8, social: 0.2, curiosity: 0 });
+    {
+      hunger: tired.hunger,
+      thirst: tired.thirst,
+      fatigue: tired.fatigue,
+      safety: tired.safety,
+      social: tired.social,
+      curiosity: tired.curiosity,
+    },
+    { hunger: 40, thirst: 25, fatigue: 10, safety: 0.8, social: 0.2, curiosity: 0 }
+  );
 
   // Chaque besoin a son propre domaine : les trois échelles 0-100, les trois
   // fractions 0-1, parce que `curiosity >= 0.3` est un seuil.
   for (const [need, value, domain] of [
-    ['hunger', 101, 100], ['fatigue', -1, 100], ['safety', 1.5, 1], ['social', -0.1, 1], ['curiosity', 2, 1]
+    ['hunger', 101, 100],
+    ['fatigue', -1, 100],
+    ['safety', 1.5, 1],
+    ['social', -0.1, 1],
+    ['curiosity', 2, 1],
   ]) {
     const initial = { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 };
     initial[need] = value;
-    const simulation = new Simulation({ seed: 1, agents: 0, agentSimulation: { needs: { initial } } }, () => {});
-    assert.throws(() => simulation.prepare(1, 10, {}),
-      new RegExp(`agents\\.needs\\.initial\\.${need} must be a finite number between 0 and ${domain}`),
-      `${need}=${value} devrait être refusé`);
+    const simulation = new Simulation(
+      { seed: 1, agents: 0, agentSimulation: { needs: { initial } } },
+      () => {}
+    );
+    assert.throws(
+      () => simulation.prepare(1, 10, {}),
+      new RegExp(
+        `agents\\.needs\\.initial\\.${need} must be a finite number between 0 and ${domain}`
+      ),
+      `${need}=${value} devrait être refusé`
+    );
   }
 });
 
 test('a missing initial block falls back to the historical agent state', () => {
   const { initialNeeds } = require('../src/world/agent-factory');
-  assert.deepEqual(initialNeeds({}), { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 });
-  assert.deepEqual(initialNeeds({ needs: { initial: {} } }),
-    { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0 });
+  assert.deepEqual(initialNeeds({}), {
+    hunger: 0,
+    thirst: 0,
+    fatigue: 0,
+    safety: 1,
+    social: 0,
+    curiosity: 0,
+  });
+  assert.deepEqual(initialNeeds({ needs: { initial: {} } }), {
+    hunger: 0,
+    thirst: 0,
+    fatigue: 0,
+    safety: 1,
+    social: 0,
+    curiosity: 0,
+  });
 });
 
 test('initial needs keep the run deterministic for a given seed', () => {
-  const positions = initial => {
-    const simulation = new Simulation({
-      seed: 42, agents: 8,
-      agentSimulation: { needs: { initial } }
-    }, () => {});
+  const positions = (initial) => {
+    const simulation = new Simulation(
+      {
+        seed: 42,
+        agents: 8,
+        agentSimulation: { needs: { initial } },
+      },
+      () => {}
+    );
     simulation.start(42, 3);
-    const placed = simulation.agents.map(agent => [agent.x, agent.y]);
+    const placed = simulation.agents.map((agent) => [agent.x, agent.y]);
     simulation.step();
-    const after = simulation.agents.map(agent => [agent.x, agent.y, agent.energy, agent.curiosity]);
+    const after = simulation.agents.map((agent) => [
+      agent.x,
+      agent.y,
+      agent.energy,
+      agent.curiosity,
+    ]);
     simulation.stop();
     return { placed, after };
   };
 
   const initial = { hunger: 0, thirst: 0, fatigue: 0, safety: 1, social: 0, curiosity: 0.3 };
-  assert.deepEqual(positions(initial), positions(initial), 'même graine, même configuration, même run');
+  assert.deepEqual(
+    positions(initial),
+    positions(initial),
+    'même graine, même configuration, même run'
+  );
 
   // Le placement ne lit que la graine et le monde : les besoins de départ
   // décalent la trajectoire d'un agent, pas la où il se réveille. C'est ce qui
   // permet de comparer deux calibrages sur la même population.
-  assert.deepEqual(positions(initial).placed, positions({ ...initial, curiosity: 0 }).placed,
-    'la répartition des positions ne doit pas dépendre des besoins de départ');
-  assert.notDeepEqual(positions(initial).after, positions({ ...initial, curiosity: 0 }).after,
-    'des besoins de départ différents doivent produire des trajectoires différentes');
+  assert.deepEqual(
+    positions(initial).placed,
+    positions({ ...initial, curiosity: 0 }).placed,
+    'la répartition des positions ne doit pas dépendre des besoins de départ'
+  );
+  assert.notDeepEqual(
+    positions(initial).after,
+    positions({ ...initial, curiosity: 0 }).after,
+    'des besoins de départ différents doivent produire des trajectoires différentes'
+  );
 });

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -20,7 +23,9 @@ async function freePort() {
     listener.listen(0, '127.0.0.1', resolve);
   });
   const { port } = listener.address();
-  await new Promise((resolve, reject) => listener.close(error => error ? reject(error) : resolve()));
+  await new Promise((resolve, reject) =>
+    listener.close((error) => (error ? reject(error) : resolve()))
+  );
   return port;
 }
 
@@ -36,26 +41,36 @@ async function startMock(t) {
   let controlPort = await freePort();
   while (controlPort === dataPort) controlPort = await freePort();
   const token = 'launcher-test-token';
-  const child = spawn(process.execPath, [
-    path.join(__dirname, '..', 'src', 'cli.js'),
-    '--headless',
-    '--instance-id', 'mock-test',
-    '--control-port', String(controlPort),
-    '--data-port', String(dataPort),
-    '--work-dir', 'unused',
-    '--log-dir', 'unused',
-    '--correlation-id', 'test-correlation'
-  ], {
-    env: { ...process.env, LIVEX_SESSION_TOKEN: token },
-    stdio: 'ignore'
-  });
+  const child = spawn(
+    process.execPath,
+    [
+      path.join(__dirname, '..', 'src', 'cli.js'),
+      '--headless',
+      '--instance-id',
+      'mock-test',
+      '--control-port',
+      String(controlPort),
+      '--data-port',
+      String(dataPort),
+      '--work-dir',
+      'unused',
+      '--log-dir',
+      'unused',
+      '--correlation-id',
+      'test-correlation',
+    ],
+    {
+      env: { ...process.env, LIVEX_SESSION_TOKEN: token },
+      stdio: 'ignore',
+    }
+  );
   const exit = waitForExit(child);
   t.after(async () => {
     if (child.exitCode === null && child.signalCode === null) {
       child.kill('SIGTERM');
       const closed = await Promise.race([
         exit.then(() => true),
-        new Promise(resolve => setTimeout(() => resolve(false), 1000))
+        new Promise((resolve) => setTimeout(() => resolve(false), 1000)),
       ]);
       if (!closed) {
         child.kill('SIGKILL');
@@ -71,7 +86,7 @@ async function startMock(t) {
     try {
       ready = (await fetch(`${endpoint}/api/control/status`)).ok;
     } catch {
-      await new Promise(resolve => setTimeout(resolve, 25));
+      await new Promise((resolve) => setTimeout(resolve, 25));
     }
   }
   assert.equal(ready, true, 'status endpoint should become ready');
@@ -79,10 +94,22 @@ async function startMock(t) {
 }
 
 test('launcher arguments select the allocated control port without hiding unknown options', () => {
-  assert.deepEqual(parseArgs([
-    '--headless', '--instance-id', 'mock-test', '--control-port', '50123',
-    '--work-dir', 'work', '--log-dir', 'logs', '--correlation-id', 'corr'
-  ]), { configPath: null, ports: { controlPort: 50123 }, tickLog: undefined });
+  assert.deepEqual(
+    parseArgs([
+      '--headless',
+      '--instance-id',
+      'mock-test',
+      '--control-port',
+      '50123',
+      '--work-dir',
+      'work',
+      '--log-dir',
+      'logs',
+      '--correlation-id',
+      'corr',
+    ]),
+    { configPath: null, ports: { controlPort: 50123 }, tickLog: undefined }
+  );
   assert.equal(parseArgs(['--tick-log']).tickLog, true);
   assert.equal(parseArgs(['--no-tick-log']).tickLog, false);
   assert.equal(parseArgs([]).tickLog, undefined);
@@ -105,9 +132,13 @@ test('a requested configuration file that does not exist fails instead of fallin
   // vs `config_prism.json`) quand il est unique, et ne propose rien sinon.
   assert.throws(
     () => readConfig(path.join(__dirname, '..', 'config.prism.json')),
-    /introuvable[\s\S]*config_prism\.json/);
+    /introuvable[\s\S]*config_prism\.json/
+  );
   assert.throws(() => readConfig(path.join(__dirname, '..', 'absent.json')), /introuvable/);
-  assert.throws(() => readConfig(path.join(__dirname, '..', 'absent.json')), error => !/Vouliez-vous dire/.test(error.message));
+  assert.throws(
+    () => readConfig(path.join(__dirname, '..', 'absent.json')),
+    (error) => !/Vouliez-vous dire/.test(error.message)
+  );
   // Un chemin absent reste equivalent aux defauts : seul un chemin demande est
   // une erreur.
   assert.deepEqual(readConfig(null), {});
@@ -127,24 +158,32 @@ test('the prism configuration mirrors the engine profile the plugin will consume
   assert.equal(config.world.metersPerUnit, 1);
   // Le profil prism du moteur declare les memes obstacles : sans layout d'aucun
   // cote, PRISM affichait un monde vide et son rendu d'obstacle paraissait casse.
+  // Rayons egaux a ceux de `SimulationProfiles.Prism()` (150/150/150/60/8, dont
+  // l'amer r = 8 plus petit qu'une case de 32) : c'est ce que publie
+  // `--simulation prism` et ce que compare scripts/parity-mock-syne-world.js.
   assert.equal(config.world.obstacles, true);
   assert.deepEqual(config.world.obstacleLayout, [
-    { id: 'cote-sud-1', x: 400, y: 2180, radius: 15 },
-    { id: 'cote-sud-2', x: 1120, y: 2180, radius: 5 },
-    { id: 'cote-sud-3', x: 1840, y: 2180, radius: 120 },
-    { id: 'crete-centre', x: 1120, y: 1120, radius: 90 },
-    { id: 'amer-1', x: 300, y: 300, radius: 80 }
+    { id: 'cote-sud-1', x: 400, y: 2180, radius: 150 },
+    { id: 'cote-sud-2', x: 1120, y: 2180, radius: 150 },
+    { id: 'cote-sud-3', x: 1840, y: 2180, radius: 150 },
+    { id: 'crete-centre', x: 1120, y: 1120, radius: 60 },
+    { id: 'amer-1', x: 300, y: 300, radius: 8 },
   ]);
 });
 
 test('Launcher manifest points to the executable and truthful readiness endpoint', () => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'component.json'), 'utf8'));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', 'component.json'), 'utf8')
+  );
   assert.equal(manifest.id, 'syne-mock');
   assert.equal(manifest.executable.linux, 'src/cli.js');
   if (process.platform !== 'win32') {
     // Le bit d'exécution POSIX n'a aucun sens sur Windows : sans cette garde,
     // le contrôle y est toujours faux sans rien prouver sur l'adaptateur Linux.
-    assert.equal(fs.statSync(path.join(__dirname, '..', manifest.executable.linux)).mode & 0o111, 0o111);
+    assert.equal(
+      fs.statSync(path.join(__dirname, '..', manifest.executable.linux)).mode & 0o111,
+      0o111
+    );
   }
   assert.equal(manifest.executable.windows, 'src/cli.js');
   assert.ok(fs.existsSync(path.join(__dirname, '..', manifest.executable.windows)));
@@ -152,18 +191,18 @@ test('Launcher manifest points to the executable and truthful readiness endpoint
   assert.equal(manifest.endpoints.control.port, 5181);
 });
 
-test('launcher shutdown is authenticated and exits cleanly', async t => {
+test('launcher shutdown is authenticated and exits cleanly', async (t) => {
   const { endpoint, dataPort, exit, token } = await startMock(t);
   const client = new WebSocket(`ws://127.0.0.1:${dataPort}`);
   await new Promise((resolve, reject) => {
     client.once('error', reject);
     client.once('open', resolve);
   });
-  const clientClosed = new Promise(resolve => client.once('close', resolve));
+  const clientClosed = new Promise((resolve) => client.once('close', resolve));
   assert.equal((await fetch(`${endpoint}/control/shutdown`, { method: 'POST' })).status, 401);
   const response = await fetch(`${endpoint}/control/shutdown`, {
     method: 'POST',
-    headers: { authorization: `Bearer ${token}` }
+    headers: { authorization: `Bearer ${token}` },
   });
   assert.equal(response.status, 202);
   assert.deepEqual(await response.json(), { ok: true, action: 'shutdown' });
@@ -171,25 +210,33 @@ test('launcher shutdown is authenticated and exits cleanly', async t => {
   await clientClosed;
 });
 
-test('SIGTERM closes both servers and exits cleanly', {
-  // Windows n'a pas de livraison de signal : `kill(SIGTERM)` y équivaut à un
-  // TerminateProcess (code null, signal 'SIGTERM'), donc la fermeture
-  // gracieuse n'est pas observable. Le chemin POSIX reste couvert par Linux.
-  skip: process.platform === 'win32' && 'SIGTERM non livrable sous Windows',
-}, async t => {
-  const { child, exit } = await startMock(t);
+test(
+  'SIGTERM closes both servers and exits cleanly',
+  {
+    // Windows n'a pas de livraison de signal : `kill(SIGTERM)` y équivaut à un
+    // TerminateProcess (code null, signal 'SIGTERM'), donc la fermeture
+    // gracieuse n'est pas observable. Le chemin POSIX reste couvert par Linux.
+    skip: process.platform === 'win32' && 'SIGTERM non livrable sous Windows',
+  },
+  async (t) => {
+    const { child, exit } = await startMock(t);
 
-  child.kill('SIGTERM');
+    child.kill('SIGTERM');
 
-  assert.deepEqual(await exit, { code: 0, signal: null });
-});
+    assert.deepEqual(await exit, { code: 0, signal: null });
+  }
+);
 
-test('SIGINT closes both servers and exits cleanly', {
-  skip: process.platform === 'win32' && 'SIGINT non livrable sous Windows',
-}, async t => {
-  const { child, exit } = await startMock(t);
+test(
+  'SIGINT closes both servers and exits cleanly',
+  {
+    skip: process.platform === 'win32' && 'SIGINT non livrable sous Windows',
+  },
+  async (t) => {
+    const { child, exit } = await startMock(t);
 
-  child.kill('SIGINT');
+    child.kill('SIGINT');
 
-  assert.deepEqual(await exit, { code: 0, signal: null });
-});
+    assert.deepEqual(await exit, { code: 0, signal: null });
+  }
+);

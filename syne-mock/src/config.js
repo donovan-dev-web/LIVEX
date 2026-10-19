@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -26,7 +29,7 @@ const DEFAULTS = {
     // connaît ni terrain, ni biome, ni obstacle procédural : le moteur n'en
     // produit aucun, donc aucun consommateur (PRISM, ECHOS) ne doit en voir.
     obstacles: false,
-    obstacleLayout: []
+    obstacleLayout: [],
   },
   agentSimulation: {
     species: 'human',
@@ -38,7 +41,7 @@ const DEFAULTS = {
       pessimism: 1,
       aggressiveness: 1,
       strength: 1,
-      speed: 1
+      speed: 1,
     },
     needs: {
       // Besoins de départ, configurables via `agentSimulation.needs.initial`.
@@ -63,7 +66,7 @@ const DEFAULTS = {
       curiosityDriftRate: 0.001,
       hungerTriggerThreshold: 50,
       thirstTriggerThreshold: 50,
-      fatigueTriggerThreshold: 70
+      fatigueTriggerThreshold: 70,
     },
     perceptionRadius: 50,
     deliberationIntervalTicks: 10,
@@ -74,26 +77,26 @@ const DEFAULTS = {
     eatHungerRecovery: 30,
     drinkEnergyCost: 0.2,
     drinkThirstRecovery: 30,
-    reserveConsumption: 1
+    reserveConsumption: 1,
   },
   resources: {
     food: 10000,
     water: 10000,
     wood: 50,
     mineral: 0,
-    regeneration: { food: 5, water: 5, wood: 0.1, mineral: 0 }
+    regeneration: { food: 5, water: 5, wood: 0.1, mineral: 0 },
   },
   communication: {
     enabled: true,
     transmissionRange: 55,
     maxSendsPerTick: 5,
     maxReceivesPerTick: 3,
-    maxHops: 2
+    maxHops: 2,
   },
   groups: { enabled: true, lodInterval: 10, formationRange: 25 },
   territories: {
     enabled: false,
-    zones: [{ id: 'camp', x: 250, y: 250, radius: 40 }]
+    zones: [{ id: 'camp', x: 250, y: 250, radius: 40 }],
   },
   books: { enabled: false },
   // `simulation.events` est un tampon de diagnostic, pas l'historique complet :
@@ -109,30 +112,37 @@ const DEFAULTS = {
     // C'est la trace qui permet de comparer pas à pas la sortie du mock et la
     // projection Unreal (PRISM) ; `config_prism.json` l'active.
     tickLog: false,
-    tickLogSampleSize: 3
+    tickLogSampleSize: 3,
   },
   replay: { file: null, loop: false },
   // Parité de contrat avec SYNE (ObservabilityContract.cs) : la version du
   // contrat d'observabilité et la version moteur annoncées sont celles du
   // moteur réel que le mock émule, pour que les consommateurs (PRISM, ECHOS)
   // lisent la même identité de contrat sur le mock et sur SYNE.
-  // 0.15.0 : jalon calibration B1 (règles recalées) — le mock n'émule pas ces
+  // 0.17.0 : jalon A0-3 (groupes réalignés : objectif collectif retiré,
+  // distances des paires liées instrumentées) — le mock n'émule pas ces
   // règles, il annonce seulement l'identité de contrat courante.
-  engineVersion: '0.15.0',
-  // 0.4.0 : champs additifs simulatedTimeSeconds / simulatedSecondsPerTick /
-  // metersPerUnit — parité du contrat d'observabilité SYNE.
-  contractVersion: '0.4.0'
+  engineVersion: '0.17.0',
+  // 0.5.0 : arbitrage A0-3 — champs additifs maxBondDistance/meanBondDistance
+  // dans `groups[]` du snapshot et dans `group_formed` (null = non mesuré).
+  // Le moteur les publie dans `groups[]` depuis la correction du 18/10/2026
+  // (`ObservabilitySerializer.GroupsJson` les omettait) ; le mock, qui n'a pas
+  // de modèle de liens, publie `null` — non mesuré, jamais 0.
+  contractVersion: '0.5.0',
 };
 
 function merge(base, overlay) {
-  if (Array.isArray(overlay)) return overlay.map(value => structuredClone(value));
+  if (Array.isArray(overlay)) return overlay.map((value) => structuredClone(value));
   if (!overlay || typeof overlay !== 'object') return overlay;
 
   const result = { ...base };
   for (const [key, value] of Object.entries(overlay)) {
-    result[key] = value && typeof value === 'object' && !Array.isArray(value)
-      ? merge(base?.[key] && typeof base[key] === 'object' ? base[key] : {}, value)
-      : Array.isArray(value) ? value.map(item => structuredClone(item)) : value;
+    result[key] =
+      value && typeof value === 'object' && !Array.isArray(value)
+        ? merge(base?.[key] && typeof base[key] === 'object' ? base[key] : {}, value)
+        : Array.isArray(value)
+          ? value.map((item) => structuredClone(item))
+          : value;
   }
   return result;
 }
@@ -140,9 +150,10 @@ function merge(base, overlay) {
 function resolveConfig(options = {}) {
   const config = merge(DEFAULTS, options);
   const configuredAgents = config.agents;
-  config.agentCount = typeof configuredAgents === 'number'
-    ? configuredAgents
-    : configuredAgents?.initialCount ?? DEFAULTS.agents;
+  config.agentCount =
+    typeof configuredAgents === 'number'
+      ? configuredAgents
+      : (configuredAgents?.initialCount ?? DEFAULTS.agents);
 
   if (configuredAgents && typeof configuredAgents === 'object') {
     config.agentSimulation = merge(config.agentSimulation, configuredAgents);

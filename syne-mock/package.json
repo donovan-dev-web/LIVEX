@@ -2,6 +2,7 @@
   "name": "syne-mock",
   "version": "0.1.0",
   "description": "Deterministic Node.js mock of the SYNE observability and control contracts.",
+  "license": "GPL-3.0-or-later",
   "type": "commonjs",
   "main": "src/server.js",
   "scripts": {

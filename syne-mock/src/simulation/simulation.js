@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -70,7 +73,7 @@ class Simulation {
       generated = this.worldGenerator.generate({
         seed: nextOptions.seed,
         ticksPerSecond,
-        config: nextOptions
+        config: nextOptions,
       });
     } catch (error) {
       this.state = previousState;
@@ -100,18 +103,28 @@ class Simulation {
       type: 'world_initialized',
       version: this.worldVersion,
       seed: this.options.seed,
-      world: this.world
+      world: this.world,
     });
-    log('PREPARE complete (world=%sx%s, ticksPerSecond=%s, cells=%s, resources=%s, obstacles=%s, agents=%s)',
-      this.world.width, this.world.height, ticksPerSecond, this.world.cells.length,
-      this.world.resources.length, this.world.obstacles.length, this.world.agents.length);
+    log(
+      'PREPARE complete (world=%sx%s, ticksPerSecond=%s, cells=%s, resources=%s, obstacles=%s, agents=%s)',
+      this.world.width,
+      this.world.height,
+      ticksPerSecond,
+      this.world.cells.length,
+      this.world.resources.length,
+      this.world.obstacles.length,
+      this.world.agents.length
+    );
     return true;
   }
 
   acknowledgeReady(version) {
     if (!this.world || (version && version !== this.worldVersion)) {
-      log('READY rejected (requestedVersion=%s, worldVersion=%s)',
-        version || '<none>', this.worldVersion || '<none>');
+      log(
+        'READY rejected (requestedVersion=%s, worldVersion=%s)',
+        version || '<none>',
+        this.worldVersion || '<none>'
+      );
       return false;
     }
     this.worldReadyAcknowledged = true;
@@ -133,7 +146,9 @@ class Simulation {
     if (this.world && this.explicitPreparation && Number(seed) !== this.options.seed)
       throw Object.assign(new Error('prepared_seed_mismatch'), { code: 'prepared_seed_mismatch' });
     if (this.world && this.explicitPreparation && Object.keys(overlay).length)
-      throw Object.assign(new Error('prepared_config_mismatch'), { code: 'prepared_config_mismatch' });
+      throw Object.assign(new Error('prepared_config_mismatch'), {
+        code: 'prepared_config_mismatch',
+      });
 
     if (!this.world || Number(seed) !== this.options.seed || Object.keys(overlay).length)
       this.prepare(seed, this.options.ticksPerSecond, overlay);
@@ -169,7 +184,7 @@ class Simulation {
     this.state = 'running';
     this.agents = cloneAgents(this.initialAgents);
     this.resources = createStocks(this.options.resources);
-    this.obstacles = this.world.obstacles.map(obstacle => ({ ...obstacle }));
+    this.obstacles = this.world.obstacles.map((obstacle) => ({ ...obstacle }));
     this.groups = this.createInitialGroups();
     this.books = [];
     this.events = [];
@@ -178,10 +193,18 @@ class Simulation {
     this.replayIndex = 0;
     this.replay = replay;
     this.agentDecisionService = new AgentDecisionService(
-      this.options.agentSimulation, this.resources, this.movementService);
+      this.options.agentSimulation,
+      this.resources,
+      this.movementService
+    );
     this.startTimer();
-    log('START complete (runId=%s, agents=%s, ticksPerSecond=%s, maxTicks=%s)',
-      this.runId, this.agents.length, this.options.ticksPerSecond, this.options.maxTicks);
+    log(
+      'START complete (runId=%s, agents=%s, ticksPerSecond=%s, maxTicks=%s)',
+      this.runId,
+      this.agents.length,
+      this.options.ticksPerSecond,
+      this.options.maxTicks
+    );
     return true;
   }
 
@@ -189,7 +212,7 @@ class Simulation {
     if (!this.options.groups.enabled || this.agents.length < 2) return [];
 
     const range = Math.max(0, Number(this.options.groups.formationRange));
-    const unassigned = new Set(this.agents.map(agent => agent.id));
+    const unassigned = new Set(this.agents.map((agent) => agent.id));
     const groups = [];
     for (const first of this.agents) {
       if (!unassigned.has(first.id)) continue;
@@ -200,8 +223,11 @@ class Simulation {
         const agent = frontier.shift();
         members.push(agent.id);
         for (const candidate of this.agents) {
-          if (!unassigned.has(candidate.id) ||
-              Math.hypot(agent.x - candidate.x, agent.y - candidate.y) > range) continue;
+          if (
+            !unassigned.has(candidate.id) ||
+            Math.hypot(agent.x - candidate.x, agent.y - candidate.y) > range
+          )
+            continue;
           unassigned.delete(candidate.id);
           frontier.push(candidate);
         }
@@ -215,7 +241,7 @@ class Simulation {
         bornTick: 0,
         cohesion: 1,
         decision: 'Idle',
-        consensus: 1
+        consensus: 1,
       });
     }
     return groups;
@@ -246,8 +272,12 @@ class Simulation {
     this.timer = null;
     const previousState = this.state;
     if (previousState !== 'idle') this.state = 'idle';
-    log('STOP complete (runId=%s, tick=%s, previousState=%s)',
-      this.runId || '<none>', this.tick, previousState);
+    log(
+      'STOP complete (runId=%s, tick=%s, previousState=%s)',
+      this.runId || '<none>',
+      this.tick,
+      previousState
+    );
   }
 
   reset(seed = this.options.seed, maxTicks = this.options.maxTicks) {
@@ -286,7 +316,12 @@ class Simulation {
 
     const previousPositions = this.captureAgentPositions();
     for (const agent of this.agents) {
-      const result = this.agentDecisionService.execute(agent, this.tick, this.world, this.obstacles);
+      const result = this.agentDecisionService.execute(
+        agent,
+        this.tick,
+        this.world,
+        this.obstacles
+      );
       this.tickActions.push(result);
       events.push({
         type: 'decision_made',
@@ -298,23 +333,28 @@ class Simulation {
           intention: agent.currentIntention,
           utility: result.utility,
           deliberated: result.deliberated,
-          interrupted: false
-        }
+          interrupted: false,
+        },
       });
       events.push({
         type: 'action_completed',
         tick: this.tick,
         agentId: String(agent.id),
         action: result.action,
+        // Parité SYNE : `cause` est portée par l'ÉVÉNEMENT (EventSensor.ActionCompleted),
+        // pas par `value` — un consommateur qui lit `event.cause` (PRISM, ECHOS)
+        // la perdait quand le mock la rangeait dans `value`.
+        ...(result.cause ? { cause: result.cause } : {}),
         value: {
           outcome: result.outcome,
-          cause: result.cause,
           energyDelta: result.energyDelta,
           hungerDelta: result.hungerDelta,
           thirstDelta: result.thirstDelta,
           fatigueDelta: result.fatigueDelta,
-          ...(result.reserve ? { reserve: result.reserve, reserveConsumed: result.reserveConsumed } : {})
-        }
+          ...(result.reserve
+            ? { reserve: result.reserve, reserveConsumed: result.reserveConsumed }
+            : {}),
+        },
       });
     }
 
@@ -328,7 +368,7 @@ class Simulation {
     // les événements du tick dans leur ordre d'émission.
     for (const event of [
       { type: 'tick_summary', tick: this.tick, value: { aliveCount: this.agents.length } },
-      ...events
+      ...events,
     ]) {
       this.emit(event);
     }
@@ -354,8 +394,13 @@ class Simulation {
     const diagnostics = this.options.diagnostics ?? {};
     if (!diagnostics.tickLog) return;
     if (!previousPositions) {
-      log('TICK %s state=%s runId=%s alive=%s (replay)',
-        this.tick, this.state, this.runId || '<none>', this.agents.length);
+      log(
+        'TICK %s state=%s runId=%s alive=%s (replay)',
+        this.tick,
+        this.state,
+        this.runId || '<none>',
+        this.agents.length
+      );
       return;
     }
 
@@ -373,16 +418,26 @@ class Simulation {
     }
 
     const sampleSize = Math.max(0, Number(diagnostics.tickLogSampleSize) || 0);
-    const sample = this.agents.slice(0, sampleSize)
-      .map(agent => `${agent.id}:(${round(agent.x)},${round(agent.y)},${agent.currentIntention})`)
+    const sample = this.agents
+      .slice(0, sampleSize)
+      .map((agent) => `${agent.id}:(${round(agent.x)},${round(agent.y)},${agent.currentIntention})`)
       .join(' ');
-    log('TICK %s state=%s runId=%s seed=%s alive=%s moved=%s blocked=%s res=(food:%s,water:%s,wood:%s,mineral:%s) actions={%s}%s',
-      this.tick, this.state, this.runId || '<none>', this.options.seed,
-      this.agents.length, moved, blocked,
-      round(this.resources.food ?? 0), round(this.resources.water ?? 0),
-      round(this.resources.wood ?? 0), round(this.resources.mineral ?? 0),
+    log(
+      'TICK %s state=%s runId=%s seed=%s alive=%s moved=%s blocked=%s res=(food:%s,water:%s,wood:%s,mineral:%s) actions={%s}%s',
+      this.tick,
+      this.state,
+      this.runId || '<none>',
+      this.options.seed,
+      this.agents.length,
+      moved,
+      blocked,
+      round(this.resources.food ?? 0),
+      round(this.resources.water ?? 0),
+      round(this.resources.wood ?? 0),
+      round(this.resources.mineral ?? 0),
       [...actionCounts.entries()].map(([name, count]) => `${name}:${count}`).join(','),
-      sample ? ` sample=[${sample}]` : '');
+      sample ? ` sample=[${sample}]` : ''
+    );
   }
 
   stepReplay() {
@@ -400,22 +455,32 @@ class Simulation {
    * diffusion est fixé par `step()`, pas ici.
    */
   emitSocialEvents(events) {
-    if (!this.options.communication.enabled || this.agents.length < 2 || this.tick % 5 !== 0) return;
+    if (!this.options.communication.enabled || this.agents.length < 2 || this.tick % 5 !== 0)
+      return;
     const sender = this.agents[0];
     const target = this.agents[1];
-    if (Math.hypot(sender.x - target.x, sender.y - target.y) >
-        this.options.communication.transmissionRange) return;
+    if (
+      Math.hypot(sender.x - target.x, sender.y - target.y) >
+      this.options.communication.transmissionRange
+    )
+      return;
 
     const messageId = `${this.options.seed}-${this.tick}-1`;
     events.push({
-      type: 'message_sent', tick: this.tick, agentId: String(sender.id),
-      targetId: String(target.id), action: 'Information',
-      value: { messageId, hops: 0, confidence: 1, payloadLength: 0 }
+      type: 'message_sent',
+      tick: this.tick,
+      agentId: String(sender.id),
+      targetId: String(target.id),
+      action: 'Information',
+      value: { messageId, hops: 0, confidence: 1, payloadLength: 0 },
     });
     events.push({
-      type: 'message_received', tick: this.tick, agentId: String(target.id),
-      targetId: String(sender.id), action: 'Information',
-      value: { messageId, hops: 0, confidence: 1, understood: true }
+      type: 'message_received',
+      tick: this.tick,
+      agentId: String(target.id),
+      targetId: String(sender.id),
+      action: 'Information',
+      value: { messageId, hops: 0, confidence: 1, understood: true },
     });
   }
 
@@ -425,9 +490,11 @@ class Simulation {
     const group = this.groups[0];
     group.decision = this.agents[0]?.currentIntention ?? 'Idle';
     events.push({
-      type: 'group_decision', tick: this.tick, agentId: String(group.leaderId),
+      type: 'group_decision',
+      tick: this.tick,
+      agentId: String(group.leaderId),
       action: group.decision,
-      value: { groupId: group.groupId, decision: group.decision, consensus: group.consensus }
+      value: { groupId: group.groupId, decision: group.decision, consensus: group.consensus },
     });
   }
 
@@ -441,7 +508,7 @@ class Simulation {
       writtenTick: this.tick,
       cost: 20,
       readers: [],
-      readCount: 0
+      readCount: 0,
     };
     this.books.push(book);
     // Charge utile de SYNE (EventSensor.BookWritten) : {id, title, writtenTick,
@@ -452,7 +519,7 @@ class Simulation {
       tick: this.tick,
       agentId: String(this.agents[0].id),
       targetId: book.id,
-      value: { id: book.id, title: book.title, writtenTick: book.writtenTick, cost: book.cost }
+      value: { id: book.id, title: book.title, writtenTick: book.writtenTick, cost: book.cost },
     });
   }
 
@@ -460,8 +527,12 @@ class Simulation {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     this.state = 'finished';
-    log('FINISH complete (runId=%s, tick=%s, maxTicks=%s)',
-      this.runId, this.tick, this.options.maxTicks);
+    log(
+      'FINISH complete (runId=%s, tick=%s, maxTicks=%s)',
+      this.runId,
+      this.tick,
+      this.options.maxTicks
+    );
   }
 
   emit(event) {
@@ -512,7 +583,7 @@ class Simulation {
       worldChanges: this.tickWorldChanges,
       actions: this.tickActions,
       groups: this.groups,
-      books: this.books
+      books: this.books,
     });
   }
 
@@ -532,7 +603,7 @@ class Simulation {
       simulatedSecondsPerTick: this.world?.simulatedSecondsPerTick ?? null,
       worldPrepared: !!this.world,
       worldVersion: this.worldVersion,
-      worldReadyAcknowledged: this.worldReadyAcknowledged
+      worldReadyAcknowledged: this.worldReadyAcknowledged,
     };
   }
 }
@@ -549,10 +620,11 @@ function randomHex12() {
 function loadReplay(file) {
   const resolved = path.resolve(file);
   if (!fs.existsSync(resolved)) throw new Error(`Replay JSONL introuvable: ${resolved}`);
-  return fs.readFileSync(resolved, 'utf8')
+  return fs
+    .readFileSync(resolved, 'utf8')
     .split(/\r?\n/)
     .filter(Boolean)
-    .map(line => JSON.parse(line));
+    .map((line) => JSON.parse(line));
 }
 
 module.exports = { Simulation, log, loadReplay };

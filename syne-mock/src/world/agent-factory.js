@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -20,7 +23,7 @@ const NEEDS = {
   fatigue: { range: [0, 100], fallback: 0 },
   safety: { range: [0, 1], fallback: 1 },
   social: { range: [0, 1], fallback: 0 },
-  curiosity: { range: [0, 1], fallback: 0 }
+  curiosity: { range: [0, 1], fallback: 0 },
 };
 
 function initialNeeds(agentSettings) {
@@ -45,14 +48,15 @@ function createInitialAgents(seed, count, world, agentSettings) {
   // Le déplacement lit la même grille via cell-grid, doncagent et monde ne peuvent pas
   // diverger sur ce qui est franchissable.
   const blocked = new Set();
-  for (const cell of world.cells || [])
-    if (!cell.walkable) blocked.add(cellIndexOf(world, cell));
+  for (const cell of world.cells || []) if (!cell.walkable) blocked.add(cellIndexOf(world, cell));
 
   // La position arrondie est celle que le monde publie : c'est donc elle qu'il faut valider.
-  const placeable = candidate => {
+  const placeable = (candidate) => {
     const position = { x: round(candidate.x), y: round(candidate.y) };
     if (blocked.has(cellIndexAt(world, position.x, position.y))) return null;
-    const spaced = agents.every(agent => Math.hypot(agent.x - position.x, agent.y - position.y) >= spacing);
+    const spaced = agents.every(
+      (agent) => Math.hypot(agent.x - position.x, agent.y - position.y) >= spacing
+    );
     return spaced ? position : null;
   };
 
@@ -66,7 +70,10 @@ function createInitialAgents(seed, count, world, agentSettings) {
       for (let x = 0; x < world.width && !position; x += world.cellSize)
         position = placeable({ x: x + world.cellSize / 2, y: y + world.cellSize / 2 });
 
-    if (!position) throw new Error(`Unable to place agent ${index + 1}: no unoccupied walkable position remains`);
+    if (!position)
+      throw new Error(
+        `Unable to place agent ${index + 1}: no unoccupied walkable position remains`
+      );
     agents.push({
       id: index + 1,
       species: agentSettings.species ?? 'human',
@@ -84,17 +91,17 @@ function createInitialAgents(seed, count, world, agentSettings) {
       currentAction: 'Idle',
       goals: [],
       intentionSince: 0,
-      memoryCount: 0
+      memoryCount: 0,
     });
   }
   return agents;
 }
 
 function cloneAgents(agents) {
-  return agents.map(agent => ({
+  return agents.map((agent) => ({
     ...agent,
     traits: { ...agent.traits },
-    goals: agent.goals.map(goal => ({ ...goal }))
+    goals: agent.goals.map((goal) => ({ ...goal })),
   }));
 }
 
