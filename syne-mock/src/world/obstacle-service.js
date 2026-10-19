@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Projet : LIVEX (SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
@@ -17,7 +20,7 @@ function normalizeObstacle(rawObstacle) {
     id: String(rawObstacle.id),
     x: Number(rawObstacle.x),
     y: Number(rawObstacle.y),
-    radius: Number(rawObstacle.radius)
+    radius: Number(rawObstacle.radius),
   };
 }
 
@@ -35,8 +38,9 @@ function createInitialObstacles(worldOptions) {
 
 /** Vrai si la position est couverte par un disque (test point contre cercle). */
 function isPositionBlocked(position, obstacles) {
-  return obstacles.some(obstacle =>
-    Math.hypot(position.x - obstacle.x, position.y - obstacle.y) <= obstacle.radius);
+  return obstacles.some(
+    (obstacle) => Math.hypot(position.x - obstacle.x, position.y - obstacle.y) <= obstacle.radius
+  );
 }
 
 /**
@@ -47,8 +51,10 @@ function isPositionBlocked(position, obstacles) {
  */
 function isCellBlocked(cellX, cellY, cellSize, obstacles) {
   const center = { x: (cellX + 0.5) * cellSize, y: (cellY + 0.5) * cellSize };
-  return obstacles.some(obstacle =>
-    Math.hypot(center.x - obstacle.x, center.y - obstacle.y) <= obstacle.radius + cellSize / 2);
+  return obstacles.some(
+    (obstacle) =>
+      Math.hypot(center.x - obstacle.x, center.y - obstacle.y) <= obstacle.radius + cellSize / 2
+  );
 }
 
 module.exports = { createInitialObstacles, isPositionBlocked, isCellBlocked };

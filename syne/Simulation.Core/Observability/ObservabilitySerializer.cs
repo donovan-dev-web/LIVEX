@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Sérialisation déterministe camelCase des messages d'observabilité.
@@ -219,6 +222,17 @@ public static class ObservabilitySerializer
             {
                 json["decision"] = decision;
             }
+
+            // Instrumentation A0-3 (contrat 0.5.0, additif) : distance max/moyenne
+            // des paires liées. `null` JSON = non mesuré, jamais 0.0 — le contrat
+            // (ObservabilityContract.Version, docs/syne/CHANGELOG) les annonce dans
+            // `groups[]`, et les omettait avant cette correction.
+            json["maxBondDistance"] = group.MaxBondDistance is { } maxDistance
+                ? JsonValue.Create(Math.Round(maxDistance, 4))
+                : null;
+            json["meanBondDistance"] = group.MeanBondDistance is { } meanDistance
+                ? JsonValue.Create(Math.Round(meanDistance, 4))
+                : null;
 
             array.Add(json);
         }

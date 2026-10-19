@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import { url } from '../../../utils/url';
@@ -6,8 +9,8 @@ import { url } from '../../../utils/url';
 <BaseLayout
   lang="en"
   translated
-  title="Emergence explained"
-  description="What is emergence in multi-agent simulation? Definition, examples, distinction between simulated agent, learning AI and scripted character, limits of interpretation."
+  title="Emergence explained — multi-agent simulation"
+  description="Definition of emergence, examples, measurement (composite index), distinction simulated agent / learning AI / scripted character, limits of interpretation."
 >
   <PageHeader
     lang="en"
@@ -68,10 +71,19 @@ import { url } from '../../../utils/url';
       <h2>A measure, not a proof.</h2>
       <p>
         LIVEX has a <strong>composite emergence index</strong>: a value bounded between 0 and 1, calculated from six
-        components (diversity of beliefs, diversity of goals, information diffusion delay, clustering coefficient,
-        share of action repetitions, community coverage). The dispersion of beliefs and goals borrows from
-        <strong>Shannon entropy</strong> (<code>H = -Σ p_i log2 p_i</code>),
-        which is zero in the case of unanimity.
+        components:
+      </p>
+      <ul style="margin:8px 0 12px 20px;color:var(--mu);font-size:0.9rem;line-height:1.7">
+        <li>diversity of beliefs;</li>
+        <li>diversity of goals;</li>
+        <li>information diffusion delay;</li>
+        <li>clustering coefficient;</li>
+        <li>share of action repetitions;</li>
+        <li>community coverage.</li>
+      </ul>
+      <p>
+        The dispersion of beliefs and goals borrows from <strong>Shannon entropy</strong>
+        (<code>H = -Σ p_i log2 p_i</code>), which is zero in the case of unanimity.
       </p>
       <div class="cc">
         <p><strong>Methodological warning.</strong> This index is an <em>observational heuristic</em>, not a scientific

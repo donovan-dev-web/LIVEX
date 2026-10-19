@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Graphe des communautés observées, dessiné nativement (pas de page web).
@@ -126,9 +129,11 @@ public sealed class GroupsGraphControl : Control
         var labelText = Measure(label, 11.5, TitleBrush);
         context.DrawText(labelText, new Point(center.X - (labelText.Width / 2), center.Y - (labelText.Height / 2)));
 
-        var detail = $"{group.Size} m.";
+        // Taille publiée : sous l'anneau des membres, jamais dessus — le libellé
+        // posé à `radius + 4` tombait sur le point du membre situé sous le nœud.
+        var detail = $"{group.Size} membre{(group.Size > 1 ? "s" : string.Empty)}";
         var detailText = Measure(detail, 10.5, MutedBrush);
-        context.DrawText(detailText, new Point(center.X - (detailText.Width / 2), center.Y + radius + 4));
+        context.DrawText(detailText, new Point(center.X - (detailText.Width / 2), center.Y + linkRadius + 10));
     }
 
     private static void DrawCentered(

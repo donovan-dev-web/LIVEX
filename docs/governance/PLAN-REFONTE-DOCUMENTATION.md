@@ -36,7 +36,7 @@ Seuls les documents obligatoires suivants restent à la racine. Tout le reste de
 | Fichier | Description |
 |---|---|
 | `../../README.md` | Présentation minimal GitHub. Nettoyé, basé sur l'état réel V0.1. |
-| `LICENSE` | Inchangé (MIT). |
+| `LICENSE` | GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later). |
 | `../../CONTRIBUTING.md` | Guide de contribution aligné sur le projet réel. |
 | `../../CODE_OF_CONDUCT.md` | Éthique. |
 | `../../SECURITY.md` | Politique de signalement. |

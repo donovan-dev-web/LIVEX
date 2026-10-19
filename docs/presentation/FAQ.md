@@ -79,7 +79,7 @@ ECHOS telle quelle.
 
 ## 11. Quelle est la licence et qui possède le projet ?
 
-MIT (voir `LICENSE`), dépôt solo pour l'instant. Les règles de contribution sont dans `../../CONTRIBUTING.md`.
+GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later, voir `LICENSE`) pour SYNE, ECHOS, le Launcher, syne-mock et le site vitrine ; le projet Unreal PRISM reste soumis à l'EULA d'Epic Games et n'est pas couvert par la GPL. Dépôt solo pour l'instant. Les règles de contribution sont dans `../../CONTRIBUTING.md`.
 
 ## 12. Que LIVEX ne cherche-t-il **pas** à prouver ?
 

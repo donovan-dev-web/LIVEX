@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Persistance des territoires (jalon review/refactor, engineVersion 0.12.0).
@@ -8,8 +11,8 @@ using Simulation.Core.Loop;
 using Simulation.Core.Persistence;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests;
 
@@ -143,11 +146,14 @@ public class TerritoryPersistenceTests
     }
 
     [Fact]
-    public void SchemaVersion_IsFour_AndLegacySnapshotsWithoutTerritoriesStillLoad()
+    public void SchemaVersion_IsFive_AndLegacySnapshotsWithoutTerritoriesStillLoad()
     {
         // Rétro-compatibilité : un snapshot v3 (sans champ territories) doit se
         // restaurer avec des listes vides plutôt que de lever.
-        Assert.Equal(4, SimulationSnapshotCodec.SchemaVersion);
+        // 4 → 5 (arbitrage A0-3, engineVersion 0.17.0) : retrait de
+        // `collectiveObjective` dans minds[] et ajout des distances de paires
+        // liées dans groups[].
+        Assert.Equal(5, SimulationSnapshotCodec.SchemaVersion);
 
         string legacy = """
         {

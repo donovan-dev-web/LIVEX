@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Persistance V2 SQLite (SYNE-110/111/112) : le snapshot bit-à-bit capture l'état (monde + cognition + RNG
@@ -301,8 +304,11 @@ public class PersistenceTests
     }
 
     /// <summary>
-    /// SYNE-070 : la persistance émet les quatre réserves globales (dont <c>mineral</c>)
-    /// et la reprise SQLite restaure les niveaux (minéral et valeurs régénérées).
+    /// SYNE-070 + réalignement Phase 0 : la persistance porte les quatre réserves
+    /// publiées (dont <c>mineral</c>) <b>et</b> les gisements localisés dont elles sont
+    /// l'agrégat. La reprise SQLite restaure les niveaux <i>et</i> l'état des
+    /// gisements (quantités entamées comprises) — sans quoi la reprise repartirait
+    /// sur des sources pleines et le tick suivant divergerait du run continu.
     /// </summary>
     [Fact]
     public void Resources_ArePersistedWithFourKindsIncludingMineral()
@@ -318,8 +324,27 @@ public class PersistenceTests
             Reference(loop, ticks: 15);
 
             SimulationSnapshot snapshot = SimulationSnapshotCodec.Capture(loop);
-            Assert.True(snapshot.World.MineralStock >= 25.0, "La réserve de minéraux est persistée.");
-            Assert.True(snapshot.World.WaterStock > 1000.0, "La régénération d'eau s'applique (SYNE-070).");
+            Assert.NotNull(snapshot.World.ResourceNodes);
+            Assert.Contains(snapshot.World.ResourceNodes!, node => node.Kind == (int)ResourceKind.Mineral);
+            Assert.Contains(snapshot.World.ResourceNodes!, node => node.Kind == (int)ResourceKind.Water);
+
+            // L'agrégat publié est la somme des gisements (contrat du modèle localisé).
+            double waterAggregate = snapshot.World.ResourceNodes!
+                .Where(node => node.Kind == (int)ResourceKind.Water)
+                .Sum(node => node.Amount);
+            Assert.Equal(waterAggregate, snapshot.World.WaterStock, 10);
+            Assert.True(waterAggregate > 0.0, "Les gisements d'eau portent une quantité régénérée.");
+
+            // La régénération s'applique aux <b>gisements</b> (et non à un flux
+            // mondial) : chaque source d'eau porte une quantité bornée par sa capacité
+            // et une régénération positive déclarée.
+            Assert.All(
+                snapshot.World.ResourceNodes!.Where(node => node.Kind == (int)ResourceKind.Water),
+                node =>
+                {
+                    Assert.InRange(node.Amount, 0.0, node.Capacity);
+                    Assert.True(node.RegenerationRate > 0.0);
+                });
 
             using (var store = new SqlitePersistenceStore(db))
             {
@@ -334,6 +359,11 @@ public class PersistenceTests
                 Assert.Equal(snapshot.World.MineralStock, resumed.Resources.Stock(World.ResourceKind.Mineral), 10);
                 Assert.Equal(snapshot.World.WaterStock, resumed.Resources.Stock(World.ResourceKind.Water), 10);
                 Assert.Equal(snapshot.World.FoodStock, resumed.Resources.Stock(World.ResourceKind.Food), 10);
+                // Les gisements restaurés portent l'état sauvegardé (mêmes identités,
+                // positions et quantités) : la reprise continue l'économie localisée.
+                Assert.Equal(
+                    snapshot.World.ResourceNodes!.Select(node => (node.Id, node.X, node.Y, node.Amount)),
+                    resumed.World.ResourceNodes.Select(node => (node.Id, node.Position.X, node.Position.Y, node.Amount)));
             }
 
             using (var resourcesConnection = new SqliteConnection($"Data Source={db}"))

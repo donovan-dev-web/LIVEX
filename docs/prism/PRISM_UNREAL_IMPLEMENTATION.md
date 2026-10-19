@@ -68,13 +68,21 @@ Dans le GameInstance Blueprint :
    diagnostic.
 4. Appeler `Connect` uniquement au moment où l'utilisateur ou le Blueprint
    décide de lancer la connexion. Le subsystem ne se connecte pas au démarrage.
-5. Dans `OnConnected`, appeler `Prepare(42, 10)` ou fournir la seed et la
-   fréquence ticks/seconde choisies par l'utilisateur.
+5. Dans `OnConnected`, appeler `Prepare(42, 6, Config.WorldConfigJson)` ou
+   fournir la seed, la fréquence ticks/seconde choisies par l'utilisateur et la
+   surcouche de profil (voir la note ci-dessous).
 
 Le second paramètre `TicksPerSecond` est visible sur le nœud Blueprint
 `Prepare` (valeur par défaut : `10`). Choisir sa valeur à la préparation avant
 de lancer le monde ; le champ sera confirmé sur la structure
 `WorldDescription.TicksPerSecond`.
+
+Le troisième paramètre `ConfigJson` (chaîne, avancé) est la surcouche `config`
+de `POST /api/control/prepare`, **transmise telle quelle** : c'est elle qui fait
+préparer le même monde à SYNE et à `syne-mock`. Sa valeur de référence est le
+profil `prism` (`configs/simulation/prism.json` : 2 240 × 2 240, cellule 32,
+5 s/tick, cinq obstacles). Sans elle, chaque source applique ses propres
+défauts et le `k` de la scène dépend de la source — voir `TRANSPORT_API.md` §3.
 
 Alternative native Blueprint : **Get Game Instance Subsystem** avec la classe
 `PrismLdkSubsystem`, puis conserver directement sa sortie. Dans les deux cas,
@@ -138,7 +146,8 @@ d'exécution de `Connect`. Pour les utiliser :
 3. Unreal crée un `Custom Event` associé au dispatcher. Donner à cet événement
    un nom comme `EVT_SyneConnected`.
 4. Mettre la logique à exécuter dans ce `Custom Event`, par exemple
-   `Prepare(Seed, TicksPerSecond)`, en utilisant la même référence `LDK`.
+   `Prepare(Seed, TicksPerSecond, ConfigJson)`, en utilisant la même référence
+   `LDK`.
 
 Répéter la même opération pour les autres dispatchers :
 
@@ -325,7 +334,7 @@ cellules `plains` uniquement, `movementCost` 1 ou 100, obstacles en disques
 `{id, x, y, radius}`. Aucune clé de terrain ou d'obstacle procédural n'existe
 plus côté mock (elles sont refusées au chargement, pas ignorées), donc ce que
 tu vois dans le mock est ce que SYNE produira. L'égalité se rejoue avec
-[`../../scripts/parity_mock_syne_world.js`](../../scripts/parity_mock_syne_world.js),
+[`../../scripts/parity-mock-syne-world.js`](../../scripts/parity-mock-syne-world.js),
 qui compare les deux sorties réelles champ par champ.
 Les coordonnées et le rayon de cet obstacle sont en unités continues SYNE. Le
 parseur Unreal transforme `x/y` en `FPrismSyneWorldObstacle.Position` et conserve
@@ -372,8 +381,8 @@ Après la génération réussie :
 Le flux normal est :
 
 ```text
-Connect → Prepare(Seed, TicksPerSecond) → OnWorldInitialized → génération Unreal
-→ Ready → OnControlResult(ok) → Start → OnSnapshot
+Connect → Prepare(Seed, TicksPerSecond, ConfigJson) → OnWorldInitialized
+→ génération Unreal → Ready → OnControlResult(ok) → Start → OnSnapshot
 ```
 
 Après un `Prepare` explicite, SYNE refuse `Start` avec `409 world_not_ready`
@@ -427,30 +436,29 @@ coordonnées **continues** ; les ressources initiales et `Cells[]` sont des
 
 ### Cadence de simulation et fréquence de rendu
 
-La fréquence Unreal (FPS) et `TicksPerSecond` sont indépendantes. Un tick SYNE
-représente **une minute simulée** ; le paramètre donné à `Prepare(Seed,
-TicksPerSecond)` règle seulement combien de ticks sont calculés par seconde
+La fréquence Unreal (FPS) et `TicksPerSecond` sont indépendantes. Depuis
+ADR-017, un tick SYNE ne vaut plus forcément une minute simulée : sa durée est
+`simulatedSecondsPerTick`, **reçue** dans `world_initialized` (défaut historique
+`60` ; `5` pour le profil `prism`). Le paramètre donné à `Prepare(Seed,
+TicksPerSecond, ConfigJson)` règle combien de ticks sont calculés par seconde
 réelle. La configuration ne doit donc pas être mise à 60 uniquement parce que
-le jeu vise 60 FPS.
+le jeu vise 60 FPS, et **aucune** de ces valeurs ne se recopie en dur.
 
-À 60 FPS Unreal, les rapports théoriques sont :
+Le rapport temps réel / temps simulé est `R = TicksPerSecond ×
+simulatedSecondsPerTick` (affiché par l'UI, ADR-005). À 60 FPS Unreal :
 
-| Ticks/s configurés | Temps réel par tick | Frames Unreal par tick à 60 FPS | Temps simulé par seconde réelle | Accélération vs temps réel |
+| Ticks/s configurés | Temps réel par tick | Frames Unreal par tick à 60 FPS | Secondes simulées par seconde réelle (`spt = 5`, profil `prism`) | Secondes simulées par seconde réelle (`spt = 60`, défaut historique) |
 |---:|---:|---:|---:|---:|
-| 1 | 1 s | 60 | 1 min | 60× |
-| 5 | 200 ms | 12 | 5 min | 300× |
-| **6 (profil PRISM retenu)** | **166,7 ms** | **10** | **6 min** | **360×** |
-| 10 (défaut) | 100 ms | 6 | 10 min | 600× |
-| 15 | 66,7 ms | 4 | 15 min | 900× |
-| 30 | 33,3 ms | 2 | 30 min | 1 800× |
-| 60 | 16,7 ms | 1 | 60 min | 3 600× |
-| 120 | 8,3 ms | 0,5 (2 ticks/frame) | 120 min | 7 200× |
+| 1 | 1 s | 60 | 5 (R = 5) | 60 (R = 60) |
+| **6 (profil `prism` retenu)** | **166,7 ms** | **10** | **30 (R = 30)** | 360 (R = 360) |
+| 10 (défaut moteur) | 100 ms | 6 | 50 (R = 50) | 600 (R = 600) |
+| 30 | 33,3 ms | 2 | 150 (R = 150) | 1 800 (R = 1 800) |
 
-Exemple d'appel depuis le GameInstance : `Prepare(42, 10)` demande 10 ticks de
-simulation par seconde ; laisser `TicksPerSecond` à 10 (valeur par défaut)
-produit le même réglage. Le profil retenu pour l'immersion temps de jeu est
-**6** (`SCALE_AND_CADENCE_SPEC.md`, ADR-003) : `Prepare(42, 6)`.
-`world.ticksPerSecond` confirme la valeur préparée.
+Exemple d'appel depuis le GameInstance : `Prepare(42, 6, Config.WorldConfigJson)`
+pour le profil `prism` — `world.ticksPerSecond` et
+`world.simulatedSecondsPerTick` confirment les valeurs préparées, et
+`Snapshot.SimulatedTimeSeconds` porte l'horloge (`SimulatedTimeMinutes` reste le
+plancher entier historique).
 `Start` doit réutiliser le seed déjà préparé ; il ne reconstruit pas un monde
 explicitement préparé et refuse un seed différent. Pour changer seed ou cadence,
 relancer `Prepare`, reconstruire la scène, puis accuser `Ready`.

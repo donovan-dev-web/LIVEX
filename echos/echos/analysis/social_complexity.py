@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 3 — SocialComplexityMetrics (complexité sociale).
 
 Mesure la structure des réseaux de relations à partir des
@@ -8,7 +11,7 @@ d'historique (stabilité des communautés) replie sur 0.0.
 
 from __future__ import annotations
 
-from ._common import (
+from .common import (
     agent_ids,
     agents_of,
     alive_count,

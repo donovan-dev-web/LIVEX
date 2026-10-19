@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Stockage d'analyse ECHOS (ECHOS-011 à 013)."""
 
 from echos.storage.aggregation import TickRecord, downsample, summarize

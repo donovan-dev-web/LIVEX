@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Registre des affirmations sensibles (référentiel éditorial §3.6).
  * Chaque affirmation publiée sur le site doit pouvoir citer sa source.
@@ -20,39 +23,39 @@ export const CLAIMS: Claim[] = [
   {
     id: 'tests',
     statement:
-      'Au 12 octobre 2026, les suites locales totalisent 1 258 tests réussis et 16 ignorés, sans échec (SYNE 634, ECHOS 361, Launcher 217, syne-mock 46).',
+      'Au 19 octobre 2026, les suites locales totalisent 1 372 cas : 1 356 réussis, 0 échec (SYNE 695, ECHOS 397, syne-mock 53, Launcher 227).',
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1 et §5',
-    date: '2026-10-12',
+    date: '2026-10-19',
   },
   {
     id: 'coverage',
     statement:
-      'La couverture de lignes mesurée le 12 octobre 2026 est de 90,55 % pour ECHOS et de 87,41 % pour les assemblages SYNE agrégés.',
+      'La couverture partielle mesurée le 19 octobre 2026 est de 91,32 % pour ECHOS et de 81,20 % pour le ratio disponible.',
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1',
-    date: '2026-10-12',
+    date: '2026-10-19',
   },
   {
     id: 'ci',
-    statement: 'La CI compte 13/13 jobs verts sur develop le 11 octobre 2026.',
+    statement: 'La CI compte 13/13 jobs verts sur develop le 19 octobre 2026.',
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1',
-    date: '2026-10-11',
+    date: '2026-10-19',
   },
   {
     id: 'release',
     statement:
-      "Aucune release, publication ni tag n'existe à ce jour ; une version V0.1 est en préparation.",
+      "Aucune release, publication ni tag n'existe à ce jour ; le projet est passé en V0.2.",
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1 ; VERSIONING.md §7',
-    date: '2026-10-12',
+    date: '2026-10-19',
   },
   {
     id: 'prism-scope',
-    statement: "L'expérience de rendu PRISM est hors périmètre V0.1.",
+    statement: "L'expérience de rendu PRISM est hors périmètre V0.2.",
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1',
-    date: '2026-10-12',
+    date: '2026-10-19',
   },
 ];

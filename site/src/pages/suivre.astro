@@ -1,18 +1,21 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { SITE } from '../data/site';
 import { url } from '../utils/url';
 ---
 <BaseLayout
-  title="Suivre le projet"
-  description="Suivre l'actualité de LIVEX sans collecte de données : flux RSS du journal et dépôt GitHub pour les releases. Aucun délai de réponse n'est garanti."
+  title="Suivre le projet — journal RSS et releases"
+  description="Suivre l'actualité de LIVEX sans collecte de données : flux RSS du journal et releases GitHub. Rythme irrégulier, aucun délai garanti."
 >
   <PageHeader
     index="18"
     eyebrow="Suivre"
     title="Suivre, sans y laisser ses données."
-    lead="Les moyens de suivre l'actualité de LIVEX tiennent aujourd'hui en deux canaux, tous deux sans collecte de données. D'autres viendront quand ils existeront — pas avant."
+    lead="Deux canaux suffisent pour suivre LIVEX, et aucun ne collecte de données. D'autres viendront s'ils existent un jour — pas avant."
     crumbs={[{ label: 'Suivre' }]}
   />
 
@@ -20,6 +23,9 @@ import { url } from '../utils/url';
     <div class="w">
       <div class="sh"><b>18.1</b> Canaux disponibles</div>
       <h2>Deux points d'entrée.</h2>
+      <p class="mu">
+        On s'abonne à un flux ou on suit un dépôt — c'est toute la mécanique. Aucun compte, aucune inscription.
+      </p>
       <div class="g2">
         <div class="pl br" style="padding:20px">
           <h3>Flux RSS du journal</h3>
@@ -57,8 +63,8 @@ import { url } from '../utils/url';
         </table>
       </div>
       <p class="mu" style="font-size:0.78rem">
-        Aucun canal n'est listé ici tant qu'il n'est pas ouvert : un espace communautaire, s'il voit le jour, sera
-        annoncé avec ses règles le moment venu.
+        Les articles du journal sont rédigés en français. Aucun canal n'est listé ici tant qu'il n'est pas ouvert : un
+        espace communautaire, s'il voit le jour, sera annoncé avec ses règles le moment venu.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={url('actualites/')}>Lire le journal →</a>

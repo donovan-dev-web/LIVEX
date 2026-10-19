@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteurs de métriques ECHOS (ECHOS-020→026, jalon U2).
 
 Chaque moteur est une fonction pure et déterministe ``compute(snapshot) ->
@@ -492,7 +495,7 @@ def test_action_diversity_counts_decisions_not_goals():
     # Aucune fenêtre d'événements : rien à mesurer (l'ancien repli donnait 0.5
     # sur les objectifs, c'est-à-dire une mesure de buts sous un nom d'action).
     assert cognitive_diversity.compute(base)["ActionDiversity"] == 0.0
-    from echos.analysis._common import measured_flags
+    from echos.analysis.common import measured_flags
 
     assert measured_flags(base, cognitive_diversity)["ActionDiversity"] is False
 

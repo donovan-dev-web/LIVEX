@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
@@ -6,8 +9,8 @@ import { url } from '../../utils/url';
 <BaseLayout
   lang="en"
   translated
-  title="Roadmap"
-  description="Past, current and envisaged milestones of the LIVEX project, by status and with no calendar commitment. What is deliberately out of scope is listed there too."
+  title="LIVEX — Roadmap: phases, milestones, scope"
+  description="LIVEX roadmap: the six framework phases, milestone status per component and what is deliberately out of scope — an order of work, no dates."
 >
   <PageHeader
     lang="en"
@@ -77,6 +80,8 @@ import { url } from '../../utils/url';
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>The phases follow one another without exception: the next one starts only once the
+        milestones of the current one are crossed.</p></div>
     </div>
   </section>
 
@@ -88,14 +93,16 @@ import { url } from '../../utils/url';
         <table class="tb">
           <thead><tr><th>Workstream</th><th>Status</th></tr></thead>
           <tbody>
-            <tr><td>SYNE engine</td><td>Twelve technical phases delivered (foundation, BDI and perception, memory and beliefs, decision, actions, communication, groups, resources, loyalties, observability, performance, tests and persistence). Capabilities in reserve: seasons, territories, constructions, inventory, commitments.</td></tr>
-            <tr><td>ECHOS observatory</td><td>Nine phases delivered, two withdrawn (integrated interface and Electron shell, ADR-007 of 5 October 2026). Main remaining workstream: the dynamic viability index.</td></tr>
-            <tr><td>PRISM rendering</td><td>Working version. Transport contracts stabilised; validation against real SYNE pending.</td></tr>
-            <tr><td>Launcher</td><td>Milestones G0–G4 largely present. G5 (complete session with real ECHOS): delivered on the Launcher side but not crossed. G7 (Immersion mode): locked, for lack of a compliant PRISM.</td></tr>
-            <tr><td>Installer</td><td>At the specification stage, without a line of code. Five milestones defined; Linux first.</td></tr>
+            <tr><td>SYNE engine</td><td><strong>Twelve technical phases delivered</strong> (foundation, BDI and perception, memory and beliefs, decision, actions, communication, groups, resources, loyalties, observability, performance, tests and persistence). Capabilities in reserve: seasons, territories, constructions, inventory, commitments.</td></tr>
+            <tr><td>ECHOS observatory</td><td><strong>Nine phases delivered, two withdrawn</strong> (integrated interface and Electron shell, ADR-007 of 5 October 2026). Main remaining workstream: the dynamic viability index.</td></tr>
+            <tr><td>PRISM rendering</td><td><strong>Working version.</strong> Transport contracts stabilised; validation against real SYNE pending.</td></tr>
+            <tr><td>Launcher</td><td><strong>Milestones G0–G4 largely present.</strong> G5 (complete session with real ECHOS): delivered on the Launcher side but not crossed. G7 (Immersion mode): locked, for lack of a compliant PRISM.</td></tr>
+            <tr><td>Installer</td><td><strong>At the specification stage, without a line of code.</strong> Five milestones defined; Linux first.</td></tr>
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>These statuses describe the repository as measured on the date they were recorded, not a
+        calendar: no dated milestone is set before the phases in progress are consolidated.</p></div>
     </div>
   </section>
 

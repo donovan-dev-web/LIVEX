@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Observation : identité, type, position, confiance, tick, attributs (représentation canonique de type
@@ -73,6 +76,18 @@ public sealed class PerceptionSystem
     /// avant ré-emprunt), déterminisme conservé.
     /// </summary>
     private readonly ObjectPool<(Entity Candidate, double Distance)> _sortBufferPool = new();
+
+    /// <summary>
+    /// Cache d'attributs par entité et par tick : les attributs d'une entité
+    /// (« espèce », « x », « y ») ne dépendent pas de l'observateur, et la position
+    /// d'une entité ne change qu'au commit de fin de tick (fenêtre causale fermée) —
+    /// la même table vaut donc pour tous les observateurs du tick. Sans ce cache,
+    /// chaque observation allouait une table à trois entrées : à forte densité (un
+    /// agent peut percevoir des dizaines de voisins), c'était des milliers
+    /// d'allocations par tick pour des valeurs identiques.
+    /// </summary>
+    private readonly Dictionary<ulong, IReadOnlyDictionary<string, string>> _attributeCache = new();
+    private ulong _attributeCacheTick = ulong.MaxValue;
 
     public PerceptionSystem(Simulation.Core.World.World world, PerceptionSettings settings)
     {
@@ -171,17 +186,66 @@ public sealed class PerceptionSystem
                 attributes));
         }
 
+        // Gisements localisés (Phase 0) : repères statiques du paysage, perçus
+        // dans une portée dédiée (<c>agents.perception.resourceRadius</c>) — la
+        // perception reste partielle (rayon fini, masquage par obstacle), mais un
+        // gisement doit pouvoir être <b>découvert</b> pour que la chaîne
+        // perception → mémoire → croyance → but ait un objet. L'agent perçoit
+        // l'état du gisement (position et quantité courante), pas seulement son
+        // existence : une source épuisée est un fait observable.
+        foreach (ResourceNode node in _world.ResourceNodes)
+        {
+            double distance = subject.Position.DistanceTo(node.Position);
+            if (distance > _settings.ResourceRadius)
+            {
+                continue;
+            }
+
+            if (_settings.LineOfSight &&
+                !LineOfSight.IsClear(subject.Position, node.Position, _world.Obstacles))
+            {
+                continue;
+            }
+
+            var nodeAttributes = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["label"] = node.Id,
+                ["kind"] = ResourceNodePlacement.KindName(node.Kind),
+                ["amount"] = node.Amount.ToString("0.###", CultureInfo.InvariantCulture),
+                ["x"] = node.Position.X.ToString("0.00", CultureInfo.InvariantCulture),
+                ["y"] = node.Position.Y.ToString("0.00", CultureInfo.InvariantCulture),
+            };
+            result.Add(new Observation(
+                node.NumericId,
+                "node",
+                node.Position,
+                ConfidenceAt(distance, _settings.ResourceRadius),
+                tick,
+                nodeAttributes));
+        }
+
         return result;
     }
 
     private Observation ObservationOf(Entity candidate, double distance, ulong tick)
     {
-        var attributes = new Dictionary<string, string>(StringComparer.Ordinal)
+        if (_attributeCacheTick != tick)
         {
-            ["species"] = candidate.Species,
-            ["x"] = candidate.Position.X.ToString("0.00", CultureInfo.InvariantCulture),
-            ["y"] = candidate.Position.Y.ToString("0.00", CultureInfo.InvariantCulture),
-        };
+            _attributeCacheTick = tick;
+            _attributeCache.Clear();
+        }
+
+        if (!_attributeCache.TryGetValue(candidate.Id.Value, out IReadOnlyDictionary<string, string>? attributes))
+        {
+            attributes = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["species"] = candidate.Species,
+                ["x"] = candidate.Position.X.ToString("0.00", CultureInfo.InvariantCulture),
+                ["y"] = candidate.Position.Y.ToString("0.00", CultureInfo.InvariantCulture),
+            };
+            _attributeCache[candidate.Id.Value] = attributes;
+        }
+
         return new Observation(
             candidate.Id.Value,
             "entity",
@@ -192,8 +256,13 @@ public sealed class PerceptionSystem
     }
 
     /// <summary>Confiance = 1 − (distance/radius) × 0.3, clampée [0.7, 1.0].</summary>
-    private double ConfidenceAt(double distance) =>
-        Math.Clamp(1.0 - ((distance / _settings.Radius) * _settings.ConfidenceFalloff), 0.7, 1.0);
+    private double ConfidenceAt(double distance) => ConfidenceAt(distance, _settings.Radius);
+
+    /// <summary>Confiance à une portée donnée (portée des gisements distincte du rayon des entités).</summary>
+    private double ConfidenceAt(double distance, double radius) =>
+        radius <= 0.0
+            ? 0.7
+            : Math.Clamp(1.0 - ((distance / radius) * _settings.ConfidenceFalloff), 0.7, 1.0);
 
     /// <summary>Identifiant déterministe d'un obstacle (FNV-1a canonique).</summary>
     private static ulong DeterministicId(string value) => Fnv1a64.HashUtf8(value);

@@ -38,18 +38,20 @@ Ce livre n'est ni un jeu commercial, ni une preuve d'intelligence, ni une socié
 
 Il faut ajouter une mise en garde qui reviendra souvent : **ce livre ne fournit aucune preuve de l'émergence**. Il fournit un dispositif capable de l'observer, honnêtement, et des résultats de première génération. La différence entre « capable d'observer » et « a observé » est la plus importante du livre. Une grande partie du travail décrit ici consiste à rendre l'observation digne de confiance : distinguer un zéro observé d'un zéro non mesuré, signaler un trou de flux au lieu de l'interpoler, écarter une mesure biaisée plutôt que la publier. Beaucoup de ces choix paraissent ennuyeux à l'écrit. Ils sont pourtant ce qui sépare une intuition d'un résultat.
 
+*Mise à jour (A0-4/BL-04, 17 octobre 2026).* Cette mise en garde devient un **critère opérationnel** : la définition forte d'émergence à cinq critères (chapitre 2b.4) est assortie d'un protocole de verdict — pré-enregistrement des seuils, K ≥ 5 graines, contre-factuel obligatoire, provenance en trois états (mesuré, absent, zéro observé), interdiction de déplacer les critères après observation. La campagne du 17/10 produit un verdict **confirmé** (contraste de quête spatiale, 5/5 graines) et un verdict **non confirmé** (cycle homéostatique social : disparition sous ablation, mais signature de non-saturation non reproduite en monde peuplé). Le score composite demeure **exploratoire** : aucun phénomène ne prouve l'émergence générale. Les critères, protocoles, résultats et limites sont conservés dans le [rapport expérimental de gouvernance](../governance/realignment/EXPERIMENTAL-VALIDATION-2026-10.md).
+
 ## 4. L'état décrit
 
 Le livre couvre l'état réel d'octobre 2026 : un moteur stabilisé et recalibré, un observatoire devenu volontairement sans interface, une scène en construction encadrée, un orchestrateur qui archive à l'octet, un outil d'intégration honnête sur ses limites, et un installateur à l'état de spécification.
 
-Sur le plan factuel, l'inventaire du dépôt au 12 octobre 2026 recense 640 fichiers suivis par Git, répartis en 220 fichiers source, 164 fichiers de tests, 167 documents, 46 fichiers de configuration, 38 assets et 5 fichiers autres. Les suites exécutées localement totalisent 1 258 tests réussis et 16 tests ignorés, sans échec, avec des couvertures mesurées de 90,55 % pour ECHOS et de 87,41 % pour les assemblages SYNE agrégés, au-dessus du seuil de 80 % requis. Ces résultats ne signifient pas que toutes les capacités prévues sont livrées : ils décrivent ce qui est vérifié au moment de la description.
+L'état décrit par le livre est daté du 12 octobre 2026; ses chiffres d'inventaire, de tests et de couverture sont un relevé historique de cette date, pas une mesure du checkout actuel. Le relevé local distinct du 18 octobre 2026 est publié dans le [statut de gouvernance](../governance/LIVEX-STATUS.md) : SYNE 695 tests réussis, ECHOS 382 réussis et 14 ignorés, `syne-mock` 51 réussis et 2 ignorés, Launcher Unit 174/174 et Integration 20/20. Les deux parcours J3 E2E réels échouent dans cette vérification locale (31/33); le total de 1 258 tests verts et les couvertures agrégées du 12/10 ne doivent donc pas être lus comme résultat courant. Aucun de ces résultats ne signifie que toutes les capacités prévues sont livrées.
 
 Les composants à l'état décrit :
 
-- **SYNE 0.15.0** (contrat d'observabilité 0.4.0) : moteur .NET autoritaire, déterministe, persistant, indépendant du rendu. Disponible.
-- **ECHOS 0.1.0** (schéma SQLite v6) : ingestion, stockage, analyse et API REST headless. L'interface web a été retirée par décision ; disponible en tant que service d'analyse.
+- **SYNE 0.17.0** (contrat d'observabilité 0.5.0) : moteur .NET autoritaire, déterministe, persistant, indépendant du rendu. Disponible.
+- **ECHOS 0.1.0** (`SCHEMA_VERSION = 6`) : ingestion, stockage, analyse et API REST headless. La migration BL-09 est appelée v7 dans ses tests/commentaires, mais le compteur courant reste 6; l'interface web a été retirée par décision.
 - **PRISM et PRISM-LDK** : projet Unreal final et plugin d'intégration, en version de travail. L'expérience de rendu complète est hors périmètre V0.1.
-- **Launcher 0.1.0** : application de bureau native d'orchestration et d'archivage, format de paquet `.livexp`. Disponible.
+- **Launcher 0.1.0** : application de bureau native d'orchestration et d'archivage, format de paquet `.livexp`. Les suites unitaires et d'intégration locales passent, mais le parcours E2E J3 réel a deux échecs dans le relevé du 18 octobre; ne pas le qualifier d'accepté sur la base de la seule campagne antérieure à 33/33.
 - **`syne-mock` 0.1.0** : serveur Node.js d'émulation pour le développement. Outil, non moteur équivalent.
 - **Installateur** : spécification seule, aucun code à ce jour. En développement.
 

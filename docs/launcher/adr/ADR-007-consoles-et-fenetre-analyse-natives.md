@@ -89,8 +89,10 @@ dans des fenêtres natives.**
 - La fenêtre porte un **menu de sous-écrans** organisés autour des questions
   (`USER_INTERFACE.md` §9.2) : **Viabilité** (écran par défaut : issue,
   population, besoins, ressources, complétude), **Comportements**, **Statistiques
-  exactes**, **Comparer**, **Relations et groupes**, **Monde et territoires**,
-  **Entités**. Un seul relevé est lancé à la fois, pour l'écran actif.
+  exactes**, **Comparer**, **Relations et groupes**, **Monde observé**,
+  **Entités**, **Chaîne causale** (ajouté après réalignement : trace décisionnelle
+  reconstruite par ECHOS, `GET /api/runs/{id}/causal-chains/{agent}`). Un seul
+  relevé est lancé à la fois, pour l'écran actif.
 - **Formes visuelles (refonte P3, RAPPORT §6.2–6.4)** : courbes en **ticks
   réels** avec trous visibles et provenance par tick (`measured_by_tick`),
   **panneaux par unité** (population / besoins / réserves ne partagent jamais un

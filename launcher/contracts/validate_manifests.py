@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 """Valide le schéma publié et le manifeste de chaque composant de l'espace de travail."""
 

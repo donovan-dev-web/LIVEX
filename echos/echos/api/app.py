@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Fabrique de l'application FastAPI ECHOS (port 5000, ECHOS).
 
 ``create_app`` accepte un ``AnalyticsStore`` (base d'analyse ECHOS) pour les

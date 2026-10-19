@@ -2,7 +2,7 @@
 
 Suivons Charlie. Faim à soixante-douze, énergie à quarante, une réserve de nourriture accessible, un voisin qui bavarde à dix unités. Que va-t-il faire ? Personne ne l'a écrit. C'est toute l'architecture cognitive de SYNE, croyances, désirs et intentions opérationnalisés par une utilité transparente, qui va trancher, chiffres à l'appui, de façon rejouable à l'identique. Ce chapitre détaille cette architecture, puis déroule le calcul complet de Charlie.
 
-Avant cela, une remarque sur le statut. Ce que cette partie décrit est **disponible** dans l'état 0.15.0, sauf mention contraire. Certaines capacités plus récentes (bibliothèque de plans, inventaire, engagements, contrôle de saillance) sont livrées mais désactivées par défaut ; elles sont signalées comme telles.
+Avant cela, une remarque sur le statut. Ce que cette partie décrit est **disponible** dans l'état 0.17.0, sauf mention contraire. Certaines capacités plus récentes (bibliothèque de plans, inventaire, engagements, contrôle de saillance) sont livrées mais désactivées par défaut ; elles sont signalées comme telles.
 
 Ce chapitre est le cœur du livre, parce qu'il répond à la question la plus concrète que pose la question directrice : comment une entité, à partir de règles locales, choisit-elle une action que personne n'a écrite pour elle ? La réponse tient en une chaîne : des besoins produisent des objectifs, des objectifs produisent des actions candidates, une fonction d'utilité les classe, et le maximum l'emporte. Rien de tout cela n'est magique, et rien n'est caché.
 
@@ -43,7 +43,7 @@ Le tirage des traits est **individuel** et non global : deux entités du même t
 
 ## 2. Les besoins
 
-Six besoins montent à leurs rythmes. Deux comportent un mécanisme de satisfaction direct (la faim et la soif) ; les quatre autres dérivent.
+Six besoins montent à leurs rythmes. Tous comportent un mécanisme de satisfaction : la faim et la soif par Eat et Drink à l'arrivée au gisement, la fatigue par Rest, la sécurité par Flee, le social par Socialize et la curiosité par Explore — ces trois derniers apaisés **à l'arrivée** à la cible, non pendant le déplacement.
 
 | Besoin | Taux par tick | Seuil de déclenchement | Action générée |
 | :-- | --: | --: | :-- |
@@ -51,12 +51,14 @@ Six besoins montent à leurs rythmes. Deux comportent un mécanisme de satisfact
 | Soif | 0,7 | 50 | SeekWater, puis Drink si la réserve est disponible |
 | Fatigue | 0,3 | 70 | Rest |
 | Sécurité | 0,001 | 0,5 | Flee |
-| Social | 0,0002 | 0,7 | Socialize |
-| Curiosité | 0,0005 | 0,3 | Explore |
+| Social | 0,003 | 0,7 | Socialize |
+| Curiosité | 0,002 | 0,3 | Explore |
 
-Deux rythmes de dérive sociale et de curiosité ont été abaissés lors de la calibration. La raison mérite d'être notée. Ces besoins n'ont aucun mécanisme de satisfaction : aucun retour à la baisse. Au rythme antérieur, le besoin de social franchissait son seuil vers le tick 700 et déclenchait Socialize en permanence, jusqu'à 96 % des décisions en fin de monde. Le déplacement payé sans gain d'énergie compensé tuait lentement la population. En abaissant les dérives, la calibration a rendu le monde viable sans supprimer la tendance. On reverra cette logique : les contraintes sont ajustées, non les comportements écrits.
+Les dérives sociale et de curiosité ont une histoire de calibration en deux temps, et il faut la suivre pour comprendre pourquoi elles valent aujourd'hui 0,003 et 0,002. Ces besoins n'avaient d'abord aucun mécanisme de satisfaction : aucun retour à la baisse. À leur premier rythme, le besoin de social franchissait son seuil vers le tick 700 et déclenchait Socialize en permanence, jusqu'à 96 % des décisions en fin de monde ; le déplacement payé sans gain d'énergie compensé tuait lentement la population. La calibration a donc ralenti les dérives (0,0002 pour le social, 0,0005 pour la curiosité) afin de rendre le monde viable sans supprimer la tendance. Ce réglage réglait un symptôme : il ne faisait que ralentir un besoin qui ne pouvait de toute façon jamais être comblé.
 
-La distinction entre les besoins « satisfaisables » et les besoins « sans retour » est structurante. La faim et la soif baissent quand on mange et boit, donc elles peuvent être satisfaites. La sécurité, le social et la curiosité n'ont, dans l'état décrit, aucun moyen de redescendre par une action dédiée : leurs effets sont indirects (un conflit dégrade la sécurité, une interaction sociale entretient le lien). Cette asymétrie est une source de tension permanente, et c'est elle qui a failli tuer le monde. Un besoin qui monte sans pouvoir descendre finit par dominer toutes les décisions, et une population qui passe son temps à explorer meurt de faim. La calibration a réduit la vitesse de la montée, mais la tension demeure : elle est le moteur qui pousse les entités vers le collectif.
+Le réalignement a traité la cause plutôt que le symptôme. Socialize et Explore apaisent désormais leur besoin à l'arrivée (§ ci-dessus), ce qui transforme le besoin en véritable **cycle** : seuil franchi, poursuite ciblée, arrivée, redescente sous le seuil. Dès lors, une dérive ralentie n'était plus nécessaire à la survie, et les rythmes ont pu retrouver une valeur de cycle — le social franchit son seuil vers le tick 230, la curiosité vers le tick 150 — mesurée sur le run de référence plutôt que supposée. C'est la même logique de méthode qu'ailleurs dans le projet : quand un besoin tyrannique tue le monde, on cherche s'il manque un exutoire avant de ralentir le besoin, et l'exutoire rend le rythme utile de nouveau.
+
+La distinction entre les besoins « satisfaisables à distance » et les besoins « apaisés à l'arrivée » est structurante. La faim et la soif se comblent au contact de la ressource — l'agent doit y être. La sécurité, le social et la curiosité, eux, ne se comblent qu'à l'arrivée à une cible crue : un déplacement inachevé ne satisfait rien. Cette asymétrie crée une tension durable entre le manque et sa satisfaction différée, et c'est elle qui pousse les entités à sortir, à fuir et à se retrouver — le moteur qui les pousse vers le collectif. Un besoin sans exutoire, on l'a vu plus haut, aurait fini par dominer toutes les décisions ; c'est la présence de l'exutoire, et non son absence, qui rend la dérive fertile plutôt que tyrannique.
 
 ## 3. La perception
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /**
  * Les trois composants d'architecture de LIVEX.
  * Acronymes issus de README.md / GLOSSARY.md (autorité).
@@ -36,15 +39,15 @@ export const COMPONENTS: Component[] = [
     role: 'Moteur de simulation',
     summary:
       "Moteur déterministe de simulation multi-agents : règles, monde, ticks et rejouabilité bit-à-bit à partir d'une graine.",
-    version: '0.15.0',
-    versionLabel: 'SYNE 0.15.0 · moteur .NET (dépôt)',
+    version: '0.17.0',
+    versionLabel: 'SYNE 0.17.0 · moteur .NET (dépôt)',
     status: {
       id: 'experimental',
       label: 'Expérimental',
-      note: "Moteur fonctionnel dans le dépôt (0.15.0) ; aucune distribution publique à ce jour (août 2026).",
+      note: "Moteur fonctionnel dans le dépôt (0.17.0) ; aucune distribution publique à ce jour (octobre 2026).",
     },
     href: 'technique/syne/',
-    contracts: ['Contrat de snapshot 0.4.0', 'run_id « run-<seed>-<12hex> »', 'Schéma de persistance v6'],
+    contracts: ['Contrat de snapshot 0.5.0', 'run_id « run-<seed>-<12hex> »', 'Schéma de persistance v5'],
   },
   {
     key: 'echos',
@@ -75,7 +78,7 @@ export const COMPONENTS: Component[] = [
     status: {
       id: 'developpement',
       label: 'En développement',
-      note: "Projet Unreal et plugin PRISM-LDK en version de travail ; l'expérience de rendu est hors périmètre V0.1.",
+      note: "Projet Unreal et plugin PRISM-LDK en version de travail ; l'expérience de rendu est hors périmètre V0.2.",
     },
     href: 'technique/prism/',
     contracts: [],
@@ -99,15 +102,15 @@ export const COMPONENTS_EN: Component[] = [
     role: 'Simulation engine',
     summary:
       'Deterministic multi-agent simulation engine: rules, world, ticks and bit-for-bit replayability from a seed.',
-    version: '0.15.0',
-    versionLabel: 'SYNE 0.15.0 · .NET engine (repository)',
+    version: '0.17.0',
+    versionLabel: 'SYNE 0.17.0 · .NET engine (repository)',
     status: {
       id: 'experimental',
       label: 'Experimental',
-      note: 'Engine working in the repository (0.15.0); no public distribution to date (August 2026).',
+      note: 'Engine working in the repository (0.17.0); no public distribution to date (October 2026).',
     },
     href: 'technique/syne/',
-    contracts: ['Snapshot contract 0.4.0', 'run_id “run-<seed>-<12hex>”', 'Persistence schema v6'],
+    contracts: ['Snapshot contract 0.5.0', 'run_id “run-<seed>-<12hex>”', 'Persistence schema v5'],
   },
   {
     key: 'echos',
@@ -138,7 +141,7 @@ export const COMPONENTS_EN: Component[] = [
     status: {
       id: 'developpement',
       label: 'In development',
-      note: 'Unreal project and PRISM-LDK plugin at a work-in-progress version; the rendering experience is out of scope for V0.1.',
+      note: 'Unreal project and PRISM-LDK plugin at a work-in-progress version; the rendering experience is out of scope for V0.2.',
     },
     href: 'technique/prism/',
     contracts: [],

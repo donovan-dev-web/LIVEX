@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Fenêtre d'analyse native.
@@ -481,6 +484,64 @@ public sealed class AnalysisWindowViewModelTests
     }
 
     [Fact]
+    public async Task Le_sous_ecran_relations_affiche_les_groupes_natifs_tels_quels()
+    {
+        var source = FakeTelemetry.WithSampleData();
+        var viewModel = new AnalysisWindowViewModel(source)
+        {
+            SelectedSectionId = AnalysisWindowViewModel.SectionRelations,
+        };
+
+        await viewModel.RefreshAsync();
+
+        // Les groupes **natifs SYNE** et les communautés **inférées ECHOS**
+        // cohabitent sur le même sous-écran sans jamais être fusionnés.
+        Assert.Equal(2, viewModel.Groups.Count);
+        Assert.Equal(2, viewModel.NativeGroups.Count);
+        Assert.Equal(10, source.LastNativeGroupsTick);
+
+        var linked = Assert.Single(viewModel.NativeGroups, row => row.GroupId == 7);
+        Assert.Equal("a, b", linked.Members);
+        Assert.Equal("2", linked.Size);
+        Assert.Equal("b", linked.LeaderId);
+        Assert.Equal("1", linked.BornTick);
+        // Valeurs **exactement** celles du flux : aucune moyenne, aucun arrondi local.
+        Assert.Equal("0.3333333333333333", linked.Cohesion);
+        Assert.Equal("SeekFood", linked.Decision);
+        Assert.Equal("0.6666666666666666", linked.Consensus);
+        Assert.Equal("512.5", linked.MaxBondDistance);
+        Assert.Equal("128.25", linked.MeanBondDistance);
+
+        // Groupe sans lien : distances « non mesurées » explicites, jamais 0 ;
+        // chef et décision non publiés restent signalés comme tels.
+        var isolated = Assert.Single(viewModel.NativeGroups, row => row.GroupId == 3);
+        Assert.Equal("non mesurée", isolated.MaxBondDistance);
+        Assert.Equal("non mesurée", isolated.MeanBondDistance);
+        Assert.Equal("non publié", isolated.LeaderId);
+        Assert.Equal("non publiée", isolated.Decision);
+        Assert.Contains("2 groupe(s) natif(s)", viewModel.NativeGroupsText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Un_run_sans_observation_de_groupes_natifs_reste_vide_sans_invention()
+    {
+        // Base antérieure à la route : `tick: -1`, `groups: []`. Rien n'est inventé
+        // et les communautés inférées restent affichées, distinctes.
+        var source = FakeTelemetry.WithSampleData();
+        source.NativeGroups = new EchosNativeGroups { RunId = "EXP-A-RUN-0001", Tick = -1 };
+        var viewModel = new AnalysisWindowViewModel(source)
+        {
+            SelectedSectionId = AnalysisWindowViewModel.SectionRelations,
+        };
+
+        await viewModel.RefreshAsync();
+
+        Assert.Empty(viewModel.NativeGroups);
+        Assert.Equal("aucune observation de groupes natifs pour ce run", viewModel.NativeGroupsText);
+        Assert.Equal(2, viewModel.Groups.Count);
+    }
+
+    [Fact]
     public async Task Le_graphe_de_confiance_suivre_le_curseur_de_relecture()
     {
         // L'évolution des relations sociales se visualise tick par tick : le
@@ -540,6 +601,127 @@ public sealed class AnalysisWindowViewModelTests
     }
 
     [Fact]
+    public async Task Les_reserves_du_tick_sans_position_sont_listees_et_jamais_projetees_a_l_origine()
+    {
+        // Contrat SYNE 0.5 : les réserves d'un tick sont agrégées par type, sans
+        // position publiée. Elles doivent rester visibles (quantité, capacité) et
+        // ne jamais être posées à l'origine du monde faute de point publié.
+        var source = FakeTelemetry.WithSampleData();
+        source.World = new EchosWorld
+        {
+            RunId = "EXP-A-RUN-0001",
+            Tick = 5,
+            Description = new EchosWorldDescription(
+                250, 250, 10,
+                [new EchosWorldCell(0, 0, "plains", true)],
+                [],
+                [new EchosWorldResource("resource-food-1", "food", 4, 6, 100)],
+                []),
+            Agents = [new EchosAgentSnapshot("a", 5, 6, 42, 10, 12, "SeekFood", null)],
+            Resources =
+            [
+                new EchosTickResource("food", null, null, 142, 300),
+                new EchosTickResource("water", 12, 30, 210, 300),
+            ],
+        };
+        var viewModel = new AnalysisWindowViewModel(source)
+        {
+            SelectedSectionId = AnalysisWindowViewModel.SectionWorld,
+        };
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(2, viewModel.WorldResourceRows.Count);
+        var food = viewModel.WorldResourceRows[0];
+        Assert.False(food.Located);
+        Assert.Equal("agrégée par type", food.Provenance);
+        Assert.NotNull(food.PositionTip);
+        Assert.Equal("142", food.Quantity);
+        Assert.Equal("300", food.Capacity);
+        var water = viewModel.WorldResourceRows[1];
+        Assert.True(water.Located);
+        Assert.Equal("position publiée", water.Provenance);
+        Assert.Contains("1 localisée(s)", viewModel.WorldResourcesText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task La_chaine_causale_affiche_les_couches_et_boucles_publiees()
+    {
+        var source = FakeTelemetry.WithSampleData();
+        source.World = new EchosWorld
+        {
+            RunId = "EXP-A-RUN-0001",
+            Tick = 10,
+            Agents = [new EchosAgentSnapshot("a", 5, 6, 42, 10, 12, "Eat", null)],
+        };
+        source.CausalChain = new EchosCausalChain
+        {
+            RunId = "EXP-A-RUN-0001",
+            AgentId = "a",
+            Tick = 9,
+            DepthRequested = 7,
+            Nodes =
+            [
+                new EchosCausalNode("Action", 9, "Eat", "utility = 0.71"),
+                new EchosCausalNode("Besoin", 9, "hunger (82.5)", "needs = {hunger: 82.5}"),
+            ],
+            Cycle = true,
+            Cycles = [new EchosCausalCycle("Action", "Eat", [3, 6, 9])],
+            Truncated = true,
+        };
+        var viewModel = new AnalysisWindowViewModel(source)
+        {
+            SelectedSectionId = AnalysisWindowViewModel.SectionCausality,
+        };
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal("a", source.LastCausalAgentId);
+        Assert.Null(source.LastCausalTick); // vide = dernier tick tracé, choisi par ECHOS
+        Assert.Equal(7, source.LastCausalDepth);
+        Assert.Equal(2, viewModel.CausalNodes.Count);
+        Assert.Equal("Action", viewModel.CausalNodes[0].Layer);
+        Assert.Equal("1", viewModel.CausalNodes[0].StepLabel);
+        Assert.Equal("tick 9", viewModel.CausalNodes[0].TickLabel);
+        Assert.NotEqual(viewModel.CausalNodes[0].Accent, viewModel.CausalNodes[1].Accent);
+        var cycle = Assert.Single(viewModel.CausalCycles);
+        Assert.Contains("3, 6, 9", cycle.Recurrence, StringComparison.Ordinal);
+        Assert.Contains("boucle signalée", viewModel.CausalText, StringComparison.Ordinal);
+        Assert.Contains("tronquée", viewModel.CausalText, StringComparison.Ordinal);
+        Assert.Contains("tick 9", viewModel.CausalHeader, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Une_chaine_causale_absente_est_affichee_sans_remplissage()
+    {
+        var source = FakeTelemetry.WithSampleData();
+        source.World = new EchosWorld
+        {
+            RunId = "EXP-A-RUN-0001",
+            Tick = 10,
+            Agents = [new EchosAgentSnapshot("a", 5, 6, 42, 10, 12, null, null)],
+        };
+        source.CausalFails = true;
+        // Tick et profondeur posés **avant** l'entrée dans le sous-écran : la
+        // sélection du sous-écran déclenche un relevé qui doit déjà les lire.
+        var viewModel = new AnalysisWindowViewModel(source)
+        {
+            CausalTickInput = "4",
+            CausalDepth = 5,
+            SelectedSectionId = AnalysisWindowViewModel.SectionCausality,
+        };
+
+        await viewModel.RefreshAsync();
+
+        Assert.Equal(4, source.LastCausalTick);
+        Assert.Equal(5, source.LastCausalDepth);
+        Assert.Contains("ECHOS indisponible", viewModel.CausalHeader, StringComparison.Ordinal);
+        Assert.Empty(viewModel.CausalNodes);
+        Assert.Empty(viewModel.CausalCycles);
+        Assert.Single(viewModel.Agents); // l'observation de monde reste affichée
+    }
+
+    [Fact]
     public async Task La_fiche_entite_affiche_croyances_relations_et_decisions()
     {
         var source = FakeTelemetry.WithSampleData();
@@ -562,9 +744,9 @@ public sealed class AnalysisWindowViewModelTests
         };
         source.Decisions =
         [
-            new EchosDecision(8, "a", "SeekFood", 0.5, "hunger=30"),
-            new EchosDecision(9, "b", "Rest", 0.1, ""),
-            new EchosDecision(10, "a", "Drink", 0.9, "thirst=40"),
+            new EchosDecision(8, "a", "SeekFood", 0.5, null, "fresh", 8, "hunger=30"),
+            new EchosDecision(9, "b", "Rest", 0.1, null, "fresh", 9, ""),
+            new EchosDecision(10, "a", "Drink", 0.9, null, "fresh", 10, "thirst=40"),
         ];
         var viewModel = new AnalysisWindowViewModel(source)
         {
@@ -576,6 +758,11 @@ public sealed class AnalysisWindowViewModelTests
         Assert.Equal(2, viewModel.Agents.Count);
         Assert.NotNull(viewModel.SelectedAgent);
         Assert.Contains("Entité", viewModel.AgentHeaderText, StringComparison.Ordinal);
+        // Le libellé publié est une **communauté** ECHOS (son plus petit membre),
+        // pas l'identité d'un groupe natif SYNE : le mot affiché doit le dire.
+        Assert.Equal("a · communauté G-1 · SeekFood", viewModel.Agents[0].Label);
+        Assert.Contains("communauté G-1", viewModel.AgentHeaderText, StringComparison.Ordinal);
+        Assert.Equal("b · communauté G-1", viewModel.Agents[1].Label);
         var belief = Assert.Single(viewModel.AgentBeliefs);
         Assert.Equal("0.9", belief.Confidence);
         var relation = Assert.Single(viewModel.AgentTrust);
@@ -584,6 +771,58 @@ public sealed class AnalysisWindowViewModelTests
         Assert.Equal(2, viewModel.AgentDecisions.Count);
         Assert.Equal("Drink", viewModel.AgentDecisions[0].Action);
         Assert.Equal("SeekFood", viewModel.AgentDecisions[1].Action);
+        Assert.Equal("0.9", viewModel.AgentDecisions[0].Utility);
+        Assert.Equal("délibérée", viewModel.AgentDecisions[0].State);
+        Assert.True(viewModel.AgentDecisions[0].Measured);
+    }
+
+    [Fact]
+    public async Task Une_utilite_non_publiee_est_affichee_non_mesuree_jamais_zero()
+    {
+        // BL-09 (S-28 / D-03 / B-10) : SYNE publie ``utility: null`` quand aucune
+        // décision n'a eu lieu au tick courant (absence) et pour un report, dont
+        // le score sort sous ``heldUtility``. Le Launcher ne doit pas rendre un
+        // zéro : « non mesurée » et l'état publié, sous leur propre nom.
+        var source = FakeTelemetry.WithSampleData();
+        source.World = new EchosWorld
+        {
+            RunId = "EXP-A-RUN-0001",
+            Tick = 10,
+            Agents = [new EchosAgentSnapshot("a", 1, 2, 40, 10, 10, "Eat", null)],
+        };
+        source.AgentProfile = new EchosAgentProfile { AgentId = "a", Tick = 10 };
+        source.Decisions =
+        [
+            new EchosDecision(7, "a", "Idle", null, null, null, null, "base antérieure à la v7"),
+            new EchosDecision(8, "a", "Rest", 0.0, null, "fresh", 8, "fatigue=0"),
+            new EchosDecision(9, "a", "Explore", null, 0.71, "holdover", 3, "food=absent"),
+            new EchosDecision(10, "a", "Rest", null, null, "none", null, "fatigue=22"),
+        ];
+        var viewModel = new AnalysisWindowViewModel(source)
+        {
+            SelectedSectionId = AnalysisWindowViewModel.SectionAgents,
+        };
+
+        await viewModel.RefreshAsync();
+
+        var decisions = viewModel.AgentDecisions;
+        Assert.Equal(4, decisions.Count);
+        // Le zéro **publié** reste un zéro mesuré (jamais confondu avec une absence).
+        Assert.Equal("0", decisions[2].Utility);
+        Assert.True(decisions[2].Measured);
+        // Un report : aucune utilité pour ce tick, le score reporté est cité.
+        Assert.Equal("non mesurée", decisions[1].Utility);
+        Assert.False(decisions[1].Measured);
+        Assert.Contains("reportée", decisions[1].State, StringComparison.Ordinal);
+        Assert.Contains("0.71", decisions[1].State, StringComparison.Ordinal);
+        Assert.Contains("tick 3", decisions[1].State, StringComparison.Ordinal);
+        // Une absence : ni utilité ni score reporté.
+        Assert.Equal("non mesurée", decisions[0].Utility);
+        Assert.Equal("absente", decisions[0].State);
+        Assert.False(decisions[0].Measured);
+        // Ligne d'une base antérieure à la v7 : l'état n'est **pas** deviné.
+        Assert.Equal("état non renseigné", decisions[3].State);
+        Assert.Equal("non mesurée", decisions[3].Utility);
     }
 
     [Fact]
@@ -821,6 +1060,8 @@ public sealed class AnalysisWindowViewModelTests
 
         public EchosNetwork Network { get; set; } = new();
 
+        public EchosNativeGroups NativeGroups { get; set; } = new();
+
         public EchosPhenomena Phenomena { get; set; } = new();
 
         public EchosWorld World { get; set; } = new();
@@ -832,6 +1073,16 @@ public sealed class AnalysisWindowViewModelTests
         public EchosAgentProfile AgentProfile { get; set; } = new();
 
         public IReadOnlyList<EchosDecision> Decisions { get; set; } = [];
+
+        public EchosCausalChain CausalChain { get; set; } = new();
+
+        public bool CausalFails { get; set; }
+
+        public int? LastCausalTick { get; private set; }
+
+        public int LastCausalDepth { get; private set; }
+
+        public string? LastCausalAgentId { get; private set; }
 
         public EchosEventFeed Events { get; set; } = new();
 
@@ -991,6 +1242,18 @@ public sealed class AnalysisWindowViewModelTests
                         new EchosGroup("G-2", ["c", "d", "e"], 3),
                     ],
                 },
+                NativeGroups = new EchosNativeGroups
+                {
+                    RunId = "EXP-A-RUN-0001",
+                    Tick = 10,
+                    Groups =
+                    [
+                        new EchosNativeGroup(
+                            7, ["a", "b"], 2, "b", 1,
+                            0.3333333333333333, "SeekFood", 0.6666666666666666, 512.5, 128.25),
+                        new EchosNativeGroup(3, ["c"], 1, null, 4, 1.0, null, 1.0, null, null),
+                    ],
+                },
                 Phenomena = new EchosPhenomena
                 {
                     RunId = "EXP-A-RUN-0001",
@@ -1056,6 +1319,15 @@ public sealed class AnalysisWindowViewModelTests
         public Task<EchosNetwork> ReadNetworkAsync(string? runId, CancellationToken cancellationToken) =>
             Task.FromResult(Network);
 
+        public int? LastNativeGroupsTick { get; private set; }
+
+        public Task<EchosNativeGroups> ReadNativeGroupsAsync(
+            string runId, int? tick, CancellationToken cancellationToken)
+        {
+            LastNativeGroupsTick = tick;
+            return Task.FromResult(NativeGroups);
+        }
+
         public Task<EchosPhenomena> ReadPhenomenaAsync(string? runId, CancellationToken cancellationToken) =>
             Task.FromResult(Phenomena);
 
@@ -1096,6 +1368,23 @@ public sealed class AnalysisWindowViewModelTests
 
         public Task<IReadOnlyList<EchosDecision>> ReadDecisionsAsync(
             string runId, CancellationToken cancellationToken) => Task.FromResult(Decisions);
+
+        public Task<EchosCausalChain> ReadCausalChainAsync(
+            string runId, string agentId, int? tick, int depth, CancellationToken cancellationToken)
+        {
+            // Les paramètres demandés sont enregistrés avant le refus : le test
+            // vérifie ce qui part vers ECHOS, y compris quand la lecture échoue.
+            LastCausalAgentId = agentId;
+            LastCausalTick = tick;
+            LastCausalDepth = depth;
+            if (CausalFails)
+            {
+                throw new InvalidOperationException(
+                    "ECHOS a refusé la demande (404) — aucune trace de décision pour l'entité");
+            }
+
+            return Task.FromResult(CausalChain);
+        }
 
         public Task<EchosEventFeed> ReadEventsAsync(
             string runId, CancellationToken cancellationToken) =>

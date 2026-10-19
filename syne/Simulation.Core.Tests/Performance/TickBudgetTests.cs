@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Budgets par tick (SYNE-090) : la collecte mesure chaque sous-système (perception, mémoire/croyances,
@@ -140,7 +143,11 @@ public class TickBudgetTests
             hash = Fnv1a(log.ToString());
         }
 
-        Assert.Equal("0xf4aaa2733e491935", $"0x{hash:x16}");
+        // Ré-épinglé au réalignement (engineVersion 0.16.0) : 0xf4aaa2733e491935 →
+        // 0xc8116c934c424b28, même valeur que
+        // DeterminismRegressionTests.GoldenChecksum_IsPinned — l'instrumentation
+        // reste bit-à-bit neutre sur la trajectoire (c'est la propriété testée ici).
+        Assert.Equal("0xc8116c934c424b28", $"0x{hash:x16}");
     }
 
     private static SimulationLoop BuildGolden(ulong seed, TickBudgetCollector? budget)

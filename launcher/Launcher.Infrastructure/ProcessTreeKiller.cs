@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (LAUNCHER)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Aucun processus orphelin : - Windows : Job Object avec JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE ; - Linux :

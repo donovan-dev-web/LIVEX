@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -7,8 +10,8 @@ import echosAgents from '../../assets/captures/echos-agents.png';
 import echosRelations from '../../assets/captures/echos-relations.png';
 ---
 <BaseLayout
-  title="ECHOS — observation et analyse"
-  description="ECHOS (Emergent Cognition & Holistic Observation System) ingère les runs, produit des mesures de viabilité et détecte des motifs émergents. API headless."
+  title="ECHOS : observation et analyse des runs"
+  description="ECHOS observe et analyse les runs : ingestion, viabilité, motifs émergents et boucles de rétroaction. API headless, sans toucher au monde simulé."
 >
   <PageHeader
     index="07"
@@ -34,6 +37,10 @@ import echosRelations from '../../assets/captures/echos-relations.png';
         Sa sortie est consommable par d'autres outils via une <strong>API headless</strong> : la présentation n'est pas
         de son ressort.
       </p>
+      <p>
+        L'intérêt : séparer l'observation du moteur évite qu'une mesure réécrive l'histoire. ECHOS lit, stocke et
+        calcule ; il ne modifie jamais le monde simulé.
+      </p>
 
       <figure class="shot">
         <img src={echosAgents.src} alt="Vue d'ECHOS : suivi d'agents" width={echosAgents.width} height={echosAgents.height} loading="lazy" />
@@ -56,7 +63,7 @@ import echosRelations from '../../assets/captures/echos-relations.png';
         <div class="pl br" style="padding:18px"><h3>Boucles</h3><p class="mu" style="margin:0">Rétroactions où le comportement d'un agent infléchit le suivant.</p></div>
         <div class="pl br" style="padding:18px"><h3>Relations</h3><p class="mu" style="margin:0">Interactions entre agents, observées et agrégées.</p></div>
       </div>
-      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS était de 90,55 % au 12 octobre 2026.</p></div>
+      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS était de 91,32 % au 19 octobre 2026.</p></div>
     </div>
   </section>
 

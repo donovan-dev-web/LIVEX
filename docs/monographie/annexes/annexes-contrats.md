@@ -1,6 +1,6 @@
 # Annexe A. Contrats de transport
 
-Cette annexe rassemble les contrats échangés entre composants, dans leur forme courante (contrat d'observabilité 0.4.0, description de monde 1.1, version moteur 0.15.0). Elle ne remplace pas le contrat détaillé du composant : en cas d'écart, le code et le contrat du composant font foi.
+Cette annexe rassemble les contrats échangés entre composants, dans leur forme courante (contrat d'observabilité 0.5.0, description de monde 1.1, version moteur 0.17.0). Elle ne remplace pas le contrat détaillé du composant : en cas d'écart, le code et le contrat du composant font foi.
 
 ## A.1 Ports et transports
 

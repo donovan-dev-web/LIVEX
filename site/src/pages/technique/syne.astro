@@ -1,12 +1,15 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
-  title="SYNE — moteur de simulation"
-  description="SYNE est le moteur déterministe de simulation multi-agents de LIVEX : monde, agents, règles et rejouabilité bit-à-bit à partir d'une graine."
+  title="SYNE : moteur de simulation déterministe"
+  description="SYNE, moteur de simulation multi-agents déterministe de LIVEX : monde, agents, règles explicites et rejouabilité bit-à-bit à partir d'une graine."
 >
   <PageHeader
     index="06"
@@ -18,7 +21,7 @@ import { url } from '../../utils/url';
 
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="experimental" /> <span class="mu">SYNE 0.15.0 · moteur .NET (dépôt)</span></p>
+      <p style="margin-top:0"><StatusBadge status="experimental" /> <span class="mu">SYNE 0.17.0 · moteur .NET (dépôt)</span></p>
       <div class="cc"><p>Expérimental : le moteur est fonctionnel dans le dépôt, mais aucune distribution publique n'existe à ce jour.</p></div>
 
       <div class="sh"><b>6.1</b> Rôle</div>
@@ -27,6 +30,10 @@ import { url } from '../../utils/url';
         SYNE définit un <strong>monde</strong> (espace, ressources, temps) et des <strong>agents</strong> qui agissent
         selon des règles explicites. À chaque tick, le monde avance d'un pas déterministe : aucune décision n'est
         laissée au hasard non enregistré.
+      </p>
+      <p>
+        L'intérêt pour le chercheur : les règles sont lisibles, versionnées et rejouables. Un résultat peut être relu,
+        discuté et reproduit par un tiers, sans dépendre d'un moteur opaque.
       </p>
       <p>
         Le moteur produit un <strong>snapshot</strong> — une photographie structurée de l'état du monde — et une trace
@@ -52,10 +59,10 @@ import { url } from '../../utils/url';
         <table class="tb">
           <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
           <tbody>
-            <tr><td>Version du moteur</td><td>0.15.0</td></tr>
+            <tr><td>Version du moteur</td><td>0.17.0</td></tr>
             <tr><td>Identifiant de run</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td></tr>
-            <tr><td>Contrat de snapshot</td><td>0.4.0</td></tr>
-            <tr><td>Schéma de persistance</td><td>v6</td></tr>
+            <tr><td>Contrat de snapshot</td><td>0.5.0</td></tr>
+            <tr><td>Schéma de persistance</td><td>v5</td></tr>
           </tbody>
         </table>
       </div>

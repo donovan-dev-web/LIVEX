@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Contrat d'observabilité (SYNE-080) : messages JSON camelCase sur WebSocket, versionnés.
@@ -18,8 +21,13 @@ public static class ObservabilityContract
     /// description ``world_initialized`` (version de description 1.0 → 1.1) et
     /// dans ``/api/control/status``. Rétrocompatible : les champs existants
     /// (dont ``simulatedTimeMinutes``, plancher entier) sont inchangés.
+    /// 0.4.0 → 0.5.0 (arbitrage A0-3, engineVersion 0.17.0) : champs additifs
+    /// ``maxBondDistance``/``meanBondDistance`` (nullable = non mesuré) dans
+    /// ``groups[]`` du snapshot et ``maxBondDistance`` dans ``group_formed`` —
+    /// instrumentations de la distance des paires liées de groupe. Aucun champ
+    /// existant retiré ni altéré côté observabilité.
     /// </summary>
-    public const string Version = "0.4.0";
+    public const string Version = "0.5.0";
 
     /// <summary>
     /// Version du moteur : identifie les
@@ -91,8 +99,49 @@ public static class ObservabilityContract
     /// neutres (relais coupé, 1 envoi/1 réception). Objectif : 0 extinction et
     /// énergie stable sur 2500 ticks à 50 et 100 agents. Checksums dorés
     /// re-calés dans le même commit.
+    /// réalignement des divergences fondamentales → 0.16.0 : **altération
+    /// volontaire de trajectoire**, portée par le noyau décisionnel et non par la
+    /// calibration :
+    /// (1) ressources <b>localisées</b> (`resources.localized`) — un gisement est une
+    /// source perceptible, mémorisable, croyable, consommable ; Eat/Drink exigent le
+    /// gisement sous la main, la cible d'une poursuite vient d'une croyance, et
+    /// l'objectif est <b>accompli à l'arrivée</b> (plus d'hystérésis sur un objectif
+    /// terminé) — le modèle global reste disponible et déclaré ;
+    /// (2) <b>fenêtre causale fermée</b> (chapitre III) : déplacements et effets
+    /// inter-entités sont mis en file et appliqués au commit de fin de tick ;
+    /// (3) décision fondée sur la <b>connaissance active</b> (croyances + repli
+    /// mémoire) : candidats, cibles et confiance épistémique — le taux de succès
+    /// observé est désormais distinct de la confiance, et les cibles des primitives
+    /// inter-entités sont crues (aucun balayage global) ;
+    /// (4) <b>une croyance courante par sujet et prédicat</b> (révision ch. XI,
+    /// pénalité de conflit effective pour un sujet mobile) ;
+    /// (5) messages compris → croyance (provenance, confiance dégradée) ;
+    /// (6) dérives social/curiosité rétablies (0,003 / 0,002) parce que
+    /// Socialize/Explore <b>satisfont</b> désormais leur besoin ;
+    /// (7) traces : identité de run (hash de configuration), trace décisionnelle
+    /// complète (cible, preuves, candidats rejetés, résultat, holdover, absence),
+    /// utlité nullable pour une absence (jamais 0.0). Checksums dorés
+    /// ré-épinglés dans le même commit, avec leurs causes.
+    /// arbitrage A0-3 (groupes) → 0.17.0 : **altération volontaire de trajectoire**
+    /// (1) la décision collective n'est plus INJECTÉE dans l'utilité individuelle :
+    /// la propagation SYNE-076 (`PropagateObjectives`, `GroupObjective`, bonus
+    /// `collectiveAlignBonus`) est supprimée — elle reste exposée (état du groupe,
+    /// `group_decision`, snapshot) ;
+    /// (2) la liaison de cohésion n'a plus de clause de proximité explicite
+    /// (`groups.proximityRequired`/`proximityRadius` supprimés) : la confiance
+    /// décroissante éteint les liens distants, et la distance des paires liées est
+    /// instrumentée (`maxBondDistance`/`meanBondDistance`, null = non mesuré) ;
+    /// (3) schemaVersion 4 → 5 (retrait de `collectiveObjective` dans `minds[]`,
+    /// ajout des distances dans `groups[]`).
+    /// **Mesuré le 17/10** : la trajectoire des runs de référence est
+    /// **inchangée** — les pins dorés (`0xc8116c934c424b28`, `0x6f1a7ec30e563337`)
+    /// restent valides et ont été revérifiés après la passe, **sans
+    /// ré-épinglage nécessaire** : sur ces trajectoires aucune décision collective
+    /// n'était adoptée et toutes les paires liées étaient déjà spatialement
+    /// proches — les mécanismes supprimés y étaient inertes. Le bump MINOR porte
+    /// les règles et le schéma, pas une altération mesurée.
     /// </summary>
-    public const string EngineVersion = "0.15.0";
+    public const string EngineVersion = "0.17.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

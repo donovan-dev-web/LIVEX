@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 6 — ResourceSustainabilityMetrics (durabilité des ressources).
 
 Mesure ce qui est **observé** sur les réserves et leur consommation
@@ -31,7 +34,7 @@ complet ne signifie ni « aucune crise » ni « crise non rétablie ».
 
 from __future__ import annotations
 
-from ._common import event_window_published, events_of, event_values, mean, safe_ratio
+from .common import event_window_published, events_of, event_values, mean, safe_ratio
 
 ENGINE_NAME = "ResourceSustainabilityMetrics"
 

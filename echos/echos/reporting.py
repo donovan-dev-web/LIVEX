@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Rapports déterministes des runs ECHOS terminés.
 
 Le rapport est assemblé délibérément à partir des API de lecture de

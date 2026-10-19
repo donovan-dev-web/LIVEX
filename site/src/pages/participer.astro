@@ -1,43 +1,52 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { url } from '../utils/url';
 
 const repo = 'https://github.com/donovan-dev-web/LIVEX';
 const blob = `${repo}/blob/main`;
 ---
 <BaseLayout
-  title="Participer"
-  description="Contribuer à LIVEX : règles de contribution, code de conduite, signalement de sécurité et support. Le dépôt est public sous licence MIT."
+  title="Participer — contribution, sécurité, support"
+  description="Contribuer à LIVEX : règles de contribution, code de conduite, signalement de sécurité privé et support. Dépôt public sous licence GNU GPL v3.0 ou ultérieure (hors projet Unreal PRISM)."
 >
   <PageHeader
     index="19"
     eyebrow="Participer"
     title="Contribuer, dans les règles."
-    lead="Le dépôt est public sous licence MIT. Un projet solo accueille volontiers les contributions, à condition de respecter un cadre simple."
+    lead="Le dépôt est public sous licence GNU GPL v3.0 ou ultérieure (hors projet Unreal PRISM). Un projet solo accueille volontiers les contributions, à condition de respecter un cadre simple — les quatre documents ci-dessous le définissent."
     crumbs={[{ label: 'Participer' }]}
   />
 
   <section class="block">
     <div class="w">
+      <p class="mu">
+        Commencez par CONTRIBUTING.md : il précise les branches, les messages de commit et le périmètre attendu des
+        pull requests. Les trois autres documents traitent du cadre relationnel, de la sécurité et de l'obtention
+        d'aide.
+      </p>
       <div class="g2">
         <div class="pl br" style="padding:20px">
           <h3>Contribuer</h3>
-          <p class="mu">Branches, messages de commit, périmètre des PR. Lisez ce document avant votre première contribution.</p>
+          <p class="mu">Branches, messages de commit, périmètre des PR. À lire avant toute première contribution — c'est le document qui évite le plus d'allers-retours.</p>
           <a class="bt" href={`${blob}/CONTRIBUTING.md`} rel="noopener">CONTRIBUTING.md ↗</a>
         </div>
         <div class="pl br" style="padding:20px">
           <h3>Code de conduite</h3>
-          <p class="mu">Les échanges se tiennent dans un cadre respectueux. Il s'applique à toutes les interactions du projet.</p>
+          <p class="mu">Les échanges se tiennent dans un cadre respectueux. Il s'applique à toutes les interactions du projet, issues comprises.</p>
           <a class="bt" href={`${blob}/CODE_OF_CONDUCT.md`} rel="noopener">CODE_OF_CONDUCT.md ↗</a>
         </div>
         <div class="pl br" style="padding:20px">
           <h3>Sécurité</h3>
-          <p class="mu">Signalez toute vulnérabilité de façon privée, avant toute discussion publique.</p>
+          <p class="mu">Une vulnérabilité se signale en privé, avant toute discussion publique. La marche à suivre y est détaillée.</p>
           <a class="bt" href={`${blob}/SECURITY.md`} rel="noopener">SECURITY.md ↗</a>
         </div>
         <div class="pl br" style="padding:20px">
           <h3>Support</h3>
-          <p class="mu">Où poser une question, ouvrir une issue, ou trouver de l'aide.</p>
+          <p class="mu">Où poser une question, ouvrir une issue, ou trouver de l'aide — sans supposer de délai de réponse.</p>
           <a class="bt" href={`${blob}/SUPPORT.md`} rel="noopener">SUPPORT.md ↗</a>
         </div>
       </div>
@@ -47,6 +56,11 @@ const blob = `${repo}/blob/main`;
           <a href={`${repo}/security/advisories/new`} rel="noopener">GitHub Security Advisories</a> — n'exposez pas la
           faille en issue publique.</p>
       </div>
+      <p style="margin-top:22px">
+        <a class="bt" href={url('suivre/')}>Suivre le projet</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('licence/')}>Licence et réutilisation</a>
+      </p>
     </div>
   </section>
 </BaseLayout>

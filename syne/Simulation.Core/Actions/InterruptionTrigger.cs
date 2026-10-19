@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Déclencheur d'interruption d'action centralisé (SYNE-043) : unique point de décision « l'action en cours
@@ -46,7 +49,8 @@ public sealed class InterruptionTrigger
         DesireKind currentKind,
         Goal? currentIntention,
         ulong currentTick,
-        ulong entityId)
+        ulong entityId,
+        CognitionKnowledge? knowledge = null)
     {
         ArgumentNullException.ThrowIfNull(interruption);
         ArgumentNullException.ThrowIfNull(actions);
@@ -62,7 +66,7 @@ public sealed class InterruptionTrigger
 
         if (needs.Hunger > interruption.CriticalHunger && currentKind != DesireKind.SeekFood && currentKind != DesireKind.Eat)
         {
-            urgents.Add(ResolveHungerResponse());
+            urgents.Add(ResolveHungerResponse(knowledge));
         }
 
         if (urgents.Count == 0)
@@ -78,7 +82,8 @@ public sealed class InterruptionTrigger
             successRate(currentKind),
             goalAge,
             actions,
-            currentKind);
+            currentKind,
+            knowledgeConfidence: knowledge?.EpistemicFor(currentKind));
 
         UtilityScore? best = null;
         foreach (DesireKind kind in urgents)
@@ -90,7 +95,8 @@ public sealed class InterruptionTrigger
                 successRate(kind),
                 goalAge: 0,
                 actions,
-                kind);
+                kind,
+                knowledgeConfidence: knowledge?.EpistemicFor(kind));
 
             if (candidate.Utility > currentScore.Utility + interruption.UtilityExcessMargin &&
                 (best is null ||
@@ -107,9 +113,25 @@ public sealed class InterruptionTrigger
     }
 
     /// <summary>
-    /// Réponse à la faim critique : l'action terminale Eat si la réserve est
-    /// disponible, sinon la poursuite SeekFood (SYNE-042).
+    /// Réponse à la faim critique. Modèle <b>localisé</b> (
+    /// <paramref name="knowledge"/> fourni) : Eat seulement si un gisement est à
+    /// portée, sinon poursuite ciblée, sinon exploration — l'action terminale ne
+    /// peut pas être déclenchée par une source que l'agent n'a pas atteinte.
+    /// Modèle <b>global</b> : Eat si la réserve mondiale est viable, sinon SeekFood
+    /// (SYNE-042, comportement historique).
     /// </summary>
-    private DesireKind ResolveHungerResponse() =>
-        _catalog.IsViable(DesireKind.Eat, _stocks) ? DesireKind.Eat : DesireKind.SeekFood;
+    private DesireKind ResolveHungerResponse(CognitionKnowledge? knowledge)
+    {
+        if (knowledge is { } known)
+        {
+            if (known.AtFoodSource)
+            {
+                return DesireKind.Eat;
+            }
+
+            return known.KnowsFood ? DesireKind.SeekFood : DesireKind.Explore;
+        }
+
+        return _catalog.IsViable(DesireKind.Eat, _stocks) ? DesireKind.Eat : DesireKind.SeekFood;
+    }
 }

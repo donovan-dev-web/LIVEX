@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Cache LRU des analyses causales de l'API REST (ECHOS-063).
 
 Mirroir du ``SeriesCache`` (ECHOS-044) : les chaînes causales reconstruites

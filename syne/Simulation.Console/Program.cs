@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Point d'entrée SYNE — mode CLI/batch.
@@ -9,10 +12,10 @@ using Simulation.Console.Batch;
 using Simulation.Console.Control;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
-using Simulation.Core.Prng;
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Performance;
+using Simulation.Core.Prng;
 
 namespace Simulation.Console;
 
@@ -244,10 +247,10 @@ public static class Program
     }
 
     /// <summary>
-/// FNV-1a canonique de l'état du monde : préfixe
-/// « elément=population;ticks » puis une ligne par entité vivante
-/// (id;x;y;énergie trié par id). Reprodéterminé bit-à-bit à seed égale.
-/// </summary>
+    /// FNV-1a canonique de l'état du monde : préfixe
+    /// « elément=population;ticks » puis une ligne par entité vivante
+    /// (id;x;y;énergie trié par id). Reprodéterminé bit-à-bit à seed égale.
+    /// </summary>
     private static ulong ChecksumState(SimulationLoop loop, ulong population, int ticks)
     {
         var text = new StringBuilder();

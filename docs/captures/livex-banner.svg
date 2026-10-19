@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="430" viewBox="0 0 1600 430" role="img" aria-labelledby="title desc">
+  <title id="title">LIVEX — Living Intelligent Virtual Ecosystem eXperience</title>
+  <desc id="desc">Bannière sombre bleu nuit et turquoise présentant LIVEX, un laboratoire logiciel pour simuler, observer et étudier des mondes multi-agents autonomes.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06111f"/>
+      <stop offset="0.52" stop-color="#071b2b"/>
+      <stop offset="1" stop-color="#030b16"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0b4a62" stop-opacity="0.05"/>
+      <stop offset="0.55" stop-color="#00d9d0" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#1685d8" stop-opacity="0.03"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#79fff0"/>
+      <stop offset="0.48" stop-color="#00d8cf"/>
+      <stop offset="1" stop-color="#0877c9"/>
+    </linearGradient>
+    <linearGradient id="wordmark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.78" stop-color="#e8f4ff"/>
+      <stop offset="1" stop-color="#38e8dd"/>
+    </linearGradient>
+    <radialGradient id="ambient">
+      <stop offset="0" stop-color="#00d9d0" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#00d9d0" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+      <path d="M42 0H0V42" fill="none" stroke="#4ddedb" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Fond et texture -->
+  <rect width="1600" height="430" rx="18" fill="url(#background)"/>
+  <rect width="1600" height="430" rx="18" fill="url(#grid)"/>
+  <ellipse cx="1190" cy="215" rx="500" ry="330" fill="url(#ambient)"/>
+  <path d="M700 430 Q930 275 1130 300 T1600 150 V430Z" fill="url(#glow)"/>
+  <path d="M670 350 C850 260 980 375 1135 250 S1390 205 1600 95" fill="none" stroke="#00d9d0" stroke-opacity="0.12" stroke-width="1.5"/>
+  <path d="M720 400 C925 300 1055 345 1200 265 S1420 245 1600 170" fill="none" stroke="#4caeff" stroke-opacity="0.13" stroke-width="1.2"/>
+
+  <!-- Réseau multi-agents stylisé -->
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#1adbd6" stroke-opacity="0.35" stroke-width="1.6">
+      <path d="M850 245L955 177L1080 218L1190 130L1305 184L1430 115L1530 164"/>
+      <path d="M850 245L925 330L1060 290L1080 218L1195 315L1305 184L1390 300L1530 164"/>
+      <path d="M955 177L1000 95L1190 130L1250 65L1430 115"/>
+      <path d="M1060 290L1195 315L1320 370L1390 300L1530 330"/>
+      <path d="M1190 130L1195 315M1305 184L1530 330M1430 115L1530 164"/>
+    </g>
+    <g stroke="#63aaff" stroke-opacity="0.23" stroke-width="1.2">
+      <path d="M760 165L850 245L780 320L925 330"/>
+      <path d="M1000 95L1080 218L1060 290"/>
+      <path d="M1250 65L1305 184L1320 370"/>
+      <path d="M1430 115L1390 300L1530 330"/>
+    </g>
+  </g>
+  <g fill="#5bfff0" filter="url(#softGlow)">
+    <circle cx="850" cy="245" r="4"/><circle cx="955" cy="177" r="4"/><circle cx="1080" cy="218" r="5"/>
+    <circle cx="1190" cy="130" r="5"/><circle cx="1305" cy="184" r="4"/><circle cx="1430" cy="115" r="5"/>
+    <circle cx="925" cy="330" r="3.5"/><circle cx="1060" cy="290" r="4"/><circle cx="1195" cy="315" r="4.5"/>
+    <circle cx="1390" cy="300" r="4"/><circle cx="1530" cy="164" r="3.5"/><circle cx="1320" cy="370" r="3"/>
+    <circle cx="1000" cy="95" r="3"/><circle cx="1250" cy="65" r="3"/><circle cx="1530" cy="330" r="3.5"/>
+  </g>
+  <g fill="#0d5269" stroke="#31e5df" stroke-width="1.3" stroke-opacity="0.85">
+    <circle cx="850" cy="245" r="10" fill-opacity="0.55"/><circle cx="1080" cy="218" r="12" fill-opacity="0.5"/>
+    <circle cx="1190" cy="130" r="11" fill-opacity="0.55"/><circle cx="1305" cy="184" r="9" fill-opacity="0.5"/>
+    <circle cx="1430" cy="115" r="10" fill-opacity="0.55"/><circle cx="1195" cy="315" r="10" fill-opacity="0.5"/>
+  </g>
+  <g fill="#b9fffb" opacity="0.9">
+    <circle cx="850" cy="241" r="2.5"/><circle cx="1080" cy="214" r="3"/><circle cx="1190" cy="126" r="3"/>
+    <circle cx="1305" cy="180" r="2.5"/><circle cx="1430" cy="111" r="2.5"/><circle cx="1195" cy="311" r="2.5"/>
+  </g>
+
+  <!-- Emblème géométrique original -->
+  <g transform="translate(76 72)" stroke-linejoin="round">
+    <path d="M70 4L112 28L112 73L91 85L91 49L70 37L49 49L49 85L28 73L28 28Z" fill="url(#teal)"/>
+    <path d="M28 73L49 85L70 73L91 85L70 109L28 85Z" fill="#0879bd"/>
+    <path d="M70 37L91 49L91 73L70 85L49 73L49 49Z" fill="#071827" stroke="#4ff8e9" stroke-width="2"/>
+    <path d="M70 37L70 61L91 73L91 49Z" fill="#16cfc9"/>
+    <path d="M49 73L70 85L70 61Z" fill="#0c91b8"/>
+    <path d="M28 28L49 16L70 4L91 16L112 28" fill="none" stroke="#9afff4" stroke-opacity="0.75" stroke-width="2"/>
+  </g>
+  <path d="M220 68V194" stroke="#80d9e5" stroke-opacity="0.55" stroke-width="1.5"/>
+
+  <!-- Identité et signature -->
+  <text x="260" y="132" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" letter-spacing="9" fill="url(#wordmark)">LIVEX</text>
+  <text x="264" y="170" font-family="Arial, Helvetica, sans-serif" font-size="23" letter-spacing="1.1" fill="#d6e9f8">Living Intelligent Virtual Ecosystem eXperience</text>
+  <rect x="264" y="198" width="74" height="4" rx="2" fill="url(#teal)"/>
+  <text x="264" y="246" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="600" fill="#f1f7ff">Construire les conditions.</text>
+  <text x="264" y="282" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="600" fill="#f1f7ff">Observer les conséquences.</text>
+  <text x="264" y="318" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="700" fill="#45eee1">Comprendre ce qui émerge.</text>
+  <text x="264" y="365" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#b6cfe3">Un laboratoire logiciel pour simuler, observer et étudier</text>
+  <text x="264" y="391" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#b6cfe3">des mondes multi-agents autonomes.</text>
+
+  <!-- Repères thématiques -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="2.3" fill="#9ec5df" text-anchor="end">
+    <text x="1510" y="48">SIMULATION</text>
+    <text x="1510" y="76">OBSERVATION</text>
+    <text x="1510" y="104">ANALYSE</text>
+    <text x="1510" y="132">ÉMERGENCE</text>
+  </g>
+  <g stroke="#26e5dc" stroke-width="2" stroke-linecap="round">
+    <path d="M1527 44H1540"/><path d="M1527 72H1540"/><path d="M1527 100H1540"/><path d="M1527 128H1540"/>
+  </g>
+  <path d="M0 419H1600" stroke="#45dcd8" stroke-opacity="0.22"/>
+</svg>

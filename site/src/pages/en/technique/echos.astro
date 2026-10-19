@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
@@ -9,8 +12,8 @@ import echosRelations from '../../../assets/captures/echos-relations.png';
 <BaseLayout
   lang="en"
   translated
-  title="ECHOS — Observation and analysis"
-  description="ECHOS (Emergent Cognition & Holistic Observation System) ingests runs, produces viability measurements and detects emergent patterns. Headless API."
+  title="ECHOS: observation and analysis of runs"
+  description="ECHOS observes and analyses LIVEX runs: ingestion, viability measurements, emergent patterns and feedback loops. Headless API, without touching the world."
 >
   <PageHeader
     lang="en"
@@ -36,6 +39,10 @@ import echosRelations from '../../../assets/captures/echos-relations.png';
       <p>
         Its output is consumable by other tools via a <strong>headless API</strong>: presentation is not its concern.
       </p>
+      <p>
+        The benefit: separating observation from the engine prevents a measurement from rewriting history. ECHOS reads,
+        stores and computes; it never modifies the simulated world.
+      </p>
 
       <figure class="shot">
         <img src={echosAgents.src} alt="ECHOS view: agent tracking" width={echosAgents.width} height={echosAgents.height} loading="lazy" />
@@ -58,7 +65,7 @@ import echosRelations from '../../../assets/captures/echos-relations.png';
         <div class="pl br" style="padding:18px"><h3>Loops</h3><p class="mu" style="margin:0">Feedbacks where one agent's behaviour influences the next.</p></div>
         <div class="pl br" style="padding:18px"><h3>Relationships</h3><p class="mu" style="margin:0">Interactions between agents, observed and aggregated.</p></div>
       </div>
-      <div class="cc" style="margin-top:22px"><p>Line coverage measured for ECHOS was 90.55% as of 12 October 2026.</p></div>
+      <div class="cc" style="margin-top:22px"><p>Line coverage measured for ECHOS was 91.32% as of 19 October 2026.</p></div>
     </div>
   </section>
 

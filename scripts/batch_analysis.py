@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Exécute une simulation SYNE déterministe et génère son rapport ECHOS.
 
 Ce module est délibérément indépendant de la pile de développement

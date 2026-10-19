@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Campagne V3 — cadence, backpressure, lag et pertes.
 
 Scénario (aucun long-run : arbitrage A2) :

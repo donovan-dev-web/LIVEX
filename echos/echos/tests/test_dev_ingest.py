@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Worker d'ingestion local (``echos.dev_ingest``) : configuration d'environnement.
 
 La configuration est lue et validée **avant** toute connexion. Sans cette

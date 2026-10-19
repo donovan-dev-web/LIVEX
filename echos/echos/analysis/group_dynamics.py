@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Moteur 7 — GroupDynamicsMetrics (dynamique des groupes).
 
 Mesure deux choses **distinctes** et le dit :
@@ -31,7 +34,7 @@ Repli neutre 0.0 quand les données font défaut (``measured = false``).
 
 from __future__ import annotations
 
-from ._common import (
+from .common import (
     alive_count,
     community_sizes,
     communities,

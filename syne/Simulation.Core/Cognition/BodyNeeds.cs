@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : État des besoins d'une entité : 6 besoins (faim, soif, fatigue 0-100 ; sécurité, social, curiosité 0-1) +
@@ -96,7 +99,15 @@ public sealed class BodyNeeds
         };
     }
 
-    /// <summary>Dérive périodique des besoins (faim +0.5/tick, soif +0.7/tick, fatigue +0.3/tick).</summary>
+    /// <summary>
+    /// Dérive périodique des besoins (faim +0.5/tick, soif +0.7/tick, fatigue
+    /// +0.3/tick). <b>Sûreté</b> : la dérive va vers l'<b>insécurité</b> —
+    /// <c>Safety</c> <i>diminue</i> de <c>safetyDriftRate</c> par tick (ch. X : le
+    /// besoin se dégrade passivement, il ne se rétablit que par l'action
+    /// <c>Flee</c> ou par l'absence de menace). Le signe était inversé dans
+    /// l'implémentation historique, ce qui rendait <c>Flee</c> inatteignable par
+    /// dérive depuis une sûreté initiale de 1.
+    /// </summary>
     public BodyNeeds Advance(NeedsSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -104,12 +115,21 @@ public sealed class BodyNeeds
         Hunger = Clamp100(Hunger + settings.HungerRate);
         Thirst = Clamp100(Thirst + settings.ThirstRate);
         Fatigue = Clamp100(Fatigue + settings.FatigueRate);
-        Safety = Clamp01(Safety + settings.SafetyDriftRate);
+        Safety = Clamp01(Safety - settings.SafetyDriftRate);
         Social = Clamp01(Social + settings.SocialDriftRate);
         Curiosity = Clamp01(Curiosity + settings.CuriosityDriftRate);
         Energy = Clamp100(Energy);
         return this;
     }
+
+    /// <summary>Rétablissement de la sûreté (exutoire de <c>Flee</c>, réalignement S-13/B-08).</summary>
+    public void RecoverSafety(double amount) => Safety = Clamp01(Safety + amount);
+
+    /// <summary>Réduction du besoin social — exutoire de <c>Socialize</c> : le besoin est désormais <b>fermé</b>.</summary>
+    public void RecoverSocial(double amount) => Social = Clamp01(Social - amount);
+
+    /// <summary>Réduction du besoin de curiosité — exutoire de <c>Explore</c>.</summary>
+    public void RecoverCuriosity(double amount) => Curiosity = Clamp01(Curiosity - amount);
 
     public void ExertEnergy(double cost) => Energy = Clamp100(Energy - cost);
 

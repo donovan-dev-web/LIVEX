@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Analyse causale (ECHOS-060 → ECHOS-063, jalon ph6, preuve J6).
 
 Reconstruction de chaînes causales ``Action ← Intention ← Objectif ← Besoin

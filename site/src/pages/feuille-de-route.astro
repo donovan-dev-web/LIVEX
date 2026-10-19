@@ -1,11 +1,14 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { url } from '../utils/url';
 ---
 <BaseLayout
-  title="Feuille de route"
-  description="Jalons passés, en cours et envisagés du projet LIVEX, par statut et sans engagement de calendrier. Ce qui est volontairement hors périmètre y figure aussi."
+  title="LIVEX — Feuille de route : phases, jalons, périmètre"
+  description="Feuille de route LIVEX : les six phases cadres, l'état des jalons par composant et ce qui reste hors périmètre. Un ordre de travaux sans calendrier."
 >
   <PageHeader
     index="14"
@@ -20,7 +23,7 @@ import { url } from '../utils/url';
       <div class="sh"><b>14.1</b> Principe</div>
       <h2>L'ordre, pas la promesse.</h2>
       <p>
-        Les phases s'enchaînent de manière obligatoire, mais leur calendrier dépend de la disponibilité et des
+        Les phases s'enchaînent dans un ordre obligatoire, mais leur calendrier dépend de la disponibilité et des
         validations intermédiaires. Ce choix préserve la rigueur : mieux vaut un ordre tenu qu'une date non tenue. Les
         jalons de publication sont toujours <strong>en aval de l'acceptation</strong>, jamais l'inverse.
       </p>
@@ -74,6 +77,8 @@ import { url } from '../utils/url';
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>Les phases s'enchaînent sans exception : on ne passe pas à la suivante avant d'avoir franchi
+        les jalons de la précédente.</p></div>
     </div>
   </section>
 
@@ -85,14 +90,16 @@ import { url } from '../utils/url';
         <table class="tb">
           <thead><tr><th>Chantier</th><th>État</th></tr></thead>
           <tbody>
-            <tr><td>Moteur SYNE</td><td>Douze phases techniques livrées (socle, BDI et perception, mémoire et croyances, décision, actions, communication, groupes, ressources, fidélités, observabilité, performance, tests et persistance). Capacités en réserve : saisons, territoires, constructions, inventaire, engagements.</td></tr>
-            <tr><td>Observatoire ECHOS</td><td>Neuf phases livrées, deux retirées (interface intégrée et shell Electron, ADR-007 du 5 octobre 2026). Chantier principal restant : l'indice de viabilité dynamique.</td></tr>
-            <tr><td>Rendu PRISM</td><td>Version de travail. Contrats de transport stabilisés ; validation contre SYNE réel en attente.</td></tr>
-            <tr><td>Launcher</td><td>Jalons G0–G4 largement présents. G5 (session complète avec ECHOS réel) : livré côté Launcher mais non franchi. G7 (mode Immersion) : verrouillé, faute de PRISM conforme.</td></tr>
-            <tr><td>Installateur</td><td>À l'état de spécification, sans ligne de code. Cinq jalons définis ; Linux d'abord.</td></tr>
+            <tr><td>Moteur SYNE</td><td><strong>Douze phases techniques livrées</strong> (socle, BDI et perception, mémoire et croyances, décision, actions, communication, groupes, ressources, fidélités, observabilité, performance, tests et persistance). Capacités en réserve : saisons, territoires, constructions, inventaire, engagements.</td></tr>
+            <tr><td>Observatoire ECHOS</td><td><strong>Neuf phases livrées, deux retirées</strong> (interface intégrée et shell Electron, ADR-007 du 5 octobre 2026). Chantier principal restant : l'indice de viabilité dynamique.</td></tr>
+            <tr><td>Rendu PRISM</td><td><strong>Version de travail.</strong> Contrats de transport stabilisés ; validation contre SYNE réel en attente.</td></tr>
+            <tr><td>Launcher</td><td><strong>Jalons G0–G4 largement présents.</strong> G5 (session complète avec ECHOS réel) : livré côté Launcher mais non franchi. G7 (mode Immersion) : verrouillé, faute de PRISM conforme.</td></tr>
+            <tr><td>Installateur</td><td><strong>À l'état de spécification, sans ligne de code.</strong> Cinq jalons définis ; Linux d'abord.</td></tr>
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>Ces statuts décrivent le dépôt au jour où ils ont été relevés, pas un calendrier : aucun jalon
+        daté n'est fixé avant la consolidation des phases en cours.</p></div>
     </div>
   </section>
 

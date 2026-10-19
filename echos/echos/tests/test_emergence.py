@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Indicateurs d'émergence ECHOS (ECHOS-030→033, jalon ph3).
 
 Le moteur composite ``EmergenceIndicators`` compose les moteurs de métriques

@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import { url } from '../utils/url';
@@ -53,34 +56,40 @@ const groups = [
 ];
 ---
 <BaseLayout
-  title="Documentation"
-  description="Portail de documentation de LIVEX : présentation, architecture, composants, gouvernance et contribution. Accès direct au dépôt et à la monographie."
+  title="LIVEX — Documentation : architecture, guides, gouvernance"
+  description="Portail de documentation LIVEX : présentation, architecture, composants, gouvernance et contribution — dépôt, monographie et guides réunis au même endroit."
 >
   <PageHeader
     index="15"
     eyebrow="Documentation"
     title="Tout est documenté, et vérifiable."
-    lead="La documentation vit dans le dépôt. Ce portail en propose les entrées principales, classées par intention."
+    lead="La documentation vit dans le dépôt, versionnée avec le code. Ce portail en réunit les entrées principales, classées par intention, pour aller droit au but."
     crumbs={[{ label: 'Documentation' }]}
   />
 
   <section class="block">
     <div class="w">
-      <div class="g2">
+      <h2>Les entrées principales, par intention.</h2>
+      <p>Comprendre le projet, construire avec lui, suivre sa gouvernance ou contribuer : choisissez une intention,
+        puis suivez le lien. Le détail complet reste dans le dépôt.</p>
+      <div class="g2" style="margin-top:20px">
         {groups.map((g) => (
           <div class="pl br" style="padding:20px">
             <h3 style="margin-bottom:10px">{g.title}</h3>
             <ul style="list-style:none;padding:0;margin:0">
               {g.items.map((it) => (
                 <li style="padding:4px 0;font-size:0.8rem">
-                  <a href={it.href} rel={it.href.startsWith('http') ? 'noopener' : undefined}>{it.label} ↗</a>
+                  <a href={it.href} rel={it.href.startsWith('http') ? 'noopener' : undefined}>{it.label}{it.href.startsWith('http') ? ' ↗' : ''}</a>
                 </li>
               ))}
             </ul>
           </div>
         ))}
       </div>
-      <div class="cc" style="margin-top:24px"><p>Le portail de référence : <a href={`${repo}/docs/README.md`} rel="noopener">docs/README.md</a>.</p></div>
+      <div class="cc" style="margin-top:24px"><p>Le portail de référence du dépôt :
+        <a href={`${repo}/docs/README.md`} rel="noopener">docs/README.md</a>. Pour une vue courte sans quitter le site :
+        <a href={url('technique/')}>Architecture</a>, <a href={url('feuille-de-route/')}>Feuille de route</a> et
+        <a href={url('faq/')}>FAQ</a>.</p></div>
     </div>
   </section>
 </BaseLayout>

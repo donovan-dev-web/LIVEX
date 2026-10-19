@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Cache de séries temporelles de l'API REST (ECHOS-044).
 
 Les séries servies par ``/api/runs/{id}/metrics`` sont **mises en cache**

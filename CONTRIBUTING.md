@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 19 octobre 2026
 **Dépend de** : `docs/governance/GITFLOW.md`, `VERSIONING.md`, `docs/CI_CD.md`, `docs/NAMING_CONVENTIONS.md`, `docs/governance/*`
 
 ---
@@ -56,6 +56,12 @@ Suivre `docs/governance/GITFLOW.md` :
 | Doc | Docs du composant + CHANGELOG à jour |
 | CI | `.github/workflows/ci.yml` vert |
 | Périmètre | Pas de `[OUVERT]` introduits sans trace dans `docs/governance/ROADMAP.md` |
+
+---
+
+## 8. Licence des contributions
+
+En proposant une contribution (code, documentation, schéma), vous acceptez qu'elle soit distribuée sous la licence du dépôt, GNU GPL v3.0 ou ultérieure (`GPL-3.0-or-later`), sans condition supplémentaire. Cette clause couvre SYNE, ECHOS, le Launcher, syne-mock et le site vitrine ; les contributions au projet Unreal PRISM (`prism/`) ne sont pas couvertes par la GPL et restent soumises aux conditions d'Epic Games. Une contribution ne peut pas introduire de dépendance ou de fichier dont la licence serait incompatible avec la GPLv3 ; tout composant tiers ajouté doit être déclaré dans `THIRD-PARTY-NOTICES.md`.
 
 ---
 

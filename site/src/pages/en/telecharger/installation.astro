@@ -1,19 +1,23 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
+import { PROJECT_STATE } from '../../../data/release';
 ---
 <BaseLayout
   lang="en"
-  title="Installation"
-  description="Install and start LIVEX from source: prerequisites, starting the stack (SYNE, ECHOS), local ports and tests. No public binary to date."
+  title="LIVEX — Installation guide: run the stack from source"
+  description="Install LIVEX from source: prerequisites (.NET, Python, Node.js), a command to start the SYNE and ECHOS stack, local ports and tests."
 >
   <PageHeader
     lang="en"
     index="12"
     eyebrow="Download · Installation"
     title="Start LIVEX from source."
-    lead="No installer is distributed. Here's how to run the stack from the repository, locally — this is a development environment, not a public service."
+    lead="No installer is distributed yet. Here is how to run the SYNE + ECHOS stack from the repository, locally — a development environment, not a public service."
     crumbs={[{ label: 'Download', href: 'telecharger/' }, { label: 'Installation' }]}
   />
 
@@ -23,7 +27,7 @@ import StatusBadge from '../../../components/StatusBadge.astro';
         are not hardened for public exposure.</p></div>
 
       <div class="sh"><b>12.1</b> Prerequisites</div>
-      <h2>What you need.</h2>
+      <h2>The prerequisites at a glance.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Tool</th><th>Version</th><th>For</th></tr></thead>
@@ -31,11 +35,13 @@ import StatusBadge from '../../../components/StatusBadge.astro';
             <tr><td>.NET SDK</td><td>10.0.4xx</td><td>SYNE engine</td></tr>
             <tr><td>Python</td><td>3.11+</td><td>ECHOS (observation, API)</td></tr>
             <tr><td>Node.js</td><td>20+</td><td>syne-mock (integration)</td></tr>
-            <tr><td>Unreal Engine</td><td>5.8</td><td>PRISM and the PRISM-LDK plugin (outside V0.1 scope)</td></tr>
+            <tr><td>Unreal Engine</td><td>5.8</td><td>PRISM and the PRISM-LDK plugin (outside V0.2 scope)</td></tr>
             <tr><td>curl</td><td>—</td><td>Availability checks</td></tr>
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>Three tools are enough for the full stack: .NET SDK, Python and Node.js. Unreal Engine is
+        only needed for PRISM, which is outside the scope of V0.2.</p></div>
     </div>
   </section>
 
@@ -83,6 +89,8 @@ npm start -- config_prism.json</code></pre>
           </tbody>
         </table>
       </div>
+      <div class="cc"><p>No service is exposed outside your machine: all four addresses above point to
+        <code>127.0.0.1</code>.</p></div>
     </div>
   </section>
 
@@ -98,7 +106,8 @@ echos/.venv/bin/python -m pytest -q
 
 # Launcher
 cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
-      <p><StatusBadge status="experimental" lang="en" /> The paths given are indicative and follow the development
+      <p><StatusBadge status="experimental" lang="en" /> Measured on {PROJECT_STATE.observedDate}: <strong>0
+        failures</strong> across these three suites. The paths remain indicative and follow the development
         repository.</p>
       <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Full installation guide ↗</a></p>
     </div>

@@ -267,7 +267,7 @@ Les conventions ci-dessus sont **opposables en revue** (`../CONTRIBUTING.md` §1
 
 ## Points restés ouverts dans ce document
 
-- [ ] Activer un linter JS (ESLint/Prettier) sur `../syne-mock/` pour automatiser la partie §7 (`CI_CD.md`).
+- [x] Activer un linter JS (ESLint/Prettier) sur `../syne-mock/` pour automatiser la partie §7 (`CI_CD.md`). (18/10/2026)
 - [ ] Confirmer la longueur de ligne C# (120) dans `.editorconfig` pour refléter la règle choisie.
 
 ---

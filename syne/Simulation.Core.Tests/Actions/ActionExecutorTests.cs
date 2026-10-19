@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Exécuteur d'actions (SYNE-040) : exécution atomique d'une action par entité par tick, effets issus du
@@ -8,8 +11,8 @@ using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Core.Tests.Actions;
 
@@ -30,6 +33,12 @@ public class ActionExecutorTests
 
     public ActionExecutorTests()
     {
+        // Modèle de ressources <b>global</b> (arbitrage Phase 0) : cette fixture
+        // couvre l'abstraction déclarée « réserve mondiale renouvelable » — Eat/Drink
+        // y prélèvent la réserve globale. Le modèle <b>localisé</b> (défaut du run de
+        // référence : la source est le gisement où l'agent se tient) est couvert par
+        // LocalizedResourceActionTests, avec ses propres gisements.
+        _options.Resources.Localized = false;
         _catalog = new ActionCatalog(_options.Agents.Actions);
         _stocks = new ResourceStocks(_options.Resources);
         _world = new WorldType(new WorldSize(500, 500));

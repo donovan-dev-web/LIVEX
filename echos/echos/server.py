@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Point d'entrée serveur ECHOS (API seule).
 
 ECHOS ne porte aucune interface : c'est un moteur d'analyse et d'ingestion qui

@@ -29,7 +29,7 @@ Le trait plein descendant porte l'état du monde vers la scène. Le seul trait r
 
 ## État et avertissement de portée
 
-PRISM et PRISM-LDK sont, à l'état décrit, en version de travail. Le plugin consomme le contrat d'observabilité SYNE 0.4.0. Dans le dépôt, l'hôte technique `LDK.uproject` sert à compiler et tester le plugin ; son nom n'en fait ni le projet complet LIVEX, ni un second produit.
+PRISM et PRISM-LDK sont, à l'état décrit, en version de travail. Le plugin consomme le contrat d'observabilité SYNE 0.5.0. Dans le dépôt, l'hôte technique `LDK.uproject` sert à compiler et tester le plugin ; son nom n'en fait ni le projet complet LIVEX, ni un second produit.
 
 L'expérience de rendu interactive complète est **hors périmètre** de la version 0.1 : les spécifications de scène, de rendu et d'interaction décrivent des objectifs de présentation, non des fonctions livrées. Toute capture ou image doit être rapportée à sa version, et toute illustration conceptuelle doit être annoncée comme telle, jamais présentée comme une preuve. La validation du plugin dans le projet Unreal ciblé est exigée avant livraison.
 

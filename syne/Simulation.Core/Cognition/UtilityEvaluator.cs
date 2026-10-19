@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Facteurs de personnalité issus des traits (plage 0-2, neutre 1.0) — entrée de la formule d'utilité.
@@ -43,7 +46,18 @@ public sealed class AgentFactors
     public double Aggressiveness { get; }
 }
 
-/// <summary>Score d'utilité d'une action candidate (SYNE-010).</summary>
+/// <summary>
+/// Score d'utilité d'une action candidate (SYNE-010).
+/// <para>
+/// <b>Sémantique des confiances (réalignement S-04 / D-07 / B-09)</b> : <see cref="Confidence"/>
+/// n'est plus « taux de succès déguisé » mais la <b>confiance épistémique</b> de
+/// l'action — <c>0.5 × (0.5 + successRate × 0.5) × (1 + connaissance)</c>, où la
+/// connaissance vient de la cible crue (<see cref="CognitionKnowledge.EpistemicFor"/>,
+/// 0 = aucune connaissance : formule historique exacte). Le <b>taux de succès</b>
+/// observé de l'action est exposé séparément (<see cref="SuccessRate"/>) et
+/// n'est plus alimenté par la simple présence d'observations.
+/// </para>
+/// </summary>
 public readonly record struct UtilityScore(
     DesireKind Kind,
     double Benefit,
@@ -52,7 +66,8 @@ public readonly record struct UtilityScore(
     double Confidence,
     double PersonalityModifier,
     double Urgency,
-    double Utility);
+    double Utility,
+    double SuccessRate = 0.7);
 
 /// <summary>
 /// Évaluateur d'utilité :
@@ -70,8 +85,8 @@ public static class UtilityEvaluator
         ulong goalAge,
         ActionSettings actions,
         DesireKind? currentIntention = null,
-        GroupObjective? collectiveObjective = null,
-        double? benefitOverride = null)
+        double? benefitOverride = null,
+        double? knowledgeConfidence = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -93,26 +108,28 @@ public static class UtilityEvaluator
             benefit *= actions.Deliberation.AlignBonus;
         }
 
-        // Alignement collectif (SYNE-076) : l'objectif adopté par le groupe
-        // rehausse le bénéfice de l'action conforme, pondéré par le consensus
-        // atteint et la confiance du membre envers le leader (aucun alignement
-        // sans consensus ni confiance — ×1 ; bonification maximale quand les
-        // deux valent 1, ×CollectiveAlignBonus).
-        if (collectiveObjective is { } collective && collective.Kind == kind)
-        {
-            double effective = Math.Clamp(collective.Consensus, 0.0, 1.0) *
-                               Math.Clamp(collective.LeaderTrust, 0.0, 1.0);
-            benefit *= 1.0 + ((actions.Deliberation.CollectiveAlignBonus - 1.0) * effective);
-        }
+        // A0-3 (17/10/2026) : l'objectif collectif d'un groupe ne modifie PLUS
+        // aucun terme de l'utilité individuelle (la propagation SYNE-076 et son
+        // bonus `collectiveAlignBonus` ont été supprimés). La décision collective
+        // est exposée (état du groupe, événement group_decision, snapshot) ; un
+        // membre qui en tient compte en fait un candidat individuel tracé, soumis
+        // à cette même formule sans paramètre collectif.
 
         double cost = CostOf(kind, actions);
         double risk = RiskOf(kind);
-        double confidence = 0.5 * (0.5 + (successRate * 0.5));
+
+        // Confiance épistémique (S-04/D-07/B-09) : le taux de succès observé de
+        // l'action reste un facteur (0.5-1) ; la connaissance de la cible le
+        // module de 0 (aucune connaissance : valeur historique) à 1 (cible crue à
+        // 100 % : ×2). Aucun candidat n'accède à une donnée que l'agent ignore.
+        double successFactor = 0.5 + (successRate * 0.5);
+        double epistemic = knowledgeConfidence is { } known ? Math.Clamp(known, 0.0, 1.0) : 0.0;
+        double confidence = 0.5 * successFactor * (1.0 + epistemic);
         double personality = PersonalityModifierOf(kind, factors);
         double urgency = UrgencyOf(kind, needs, goalAge, actions);
 
         double utility = ((benefit - cost - risk) * confidence * personality) + urgency;
-        return new UtilityScore(kind, benefit, cost, risk, confidence, personality, urgency, utility);
+        return new UtilityScore(kind, benefit, cost, risk, confidence, personality, urgency, utility, successRate);
     }
 
     /// <summary>
@@ -275,7 +292,7 @@ public static class UtilityEvaluator
         double successRate,
         ulong goalAge,
         ActionSettings actions,
-        GroupObjective? collectiveObjective = null)
+        double? currentKnowledgeConfidence = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -294,7 +311,7 @@ public static class UtilityEvaluator
             goalAge,
             actions,
             current,
-            collectiveObjective);
+            knowledgeConfidence: currentKnowledgeConfidence);
         if (candidate.Utility < currentScore.Utility + actions.Deliberation.ActionSwitchMargin)
         {
             return currentScore;

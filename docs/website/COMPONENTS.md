@@ -80,7 +80,7 @@ Pied de page.
 | `lang` | `'fr' \| 'en'` | `'fr'` |
 
 Contenu : navigation de pied de page (`FOOTER_NAV`), lien dépôt GitHub, lien
-licence, mention de copyright et double licence (MIT pour le code, CC BY 4.0
+licence, mention de copyright et double licence (GPL-3.0-or-later pour le code, CC BY 4.0
 pour le contenu), et rappel « aucun traceur, aucun cookie, polices
 auto-hébergées ».
 

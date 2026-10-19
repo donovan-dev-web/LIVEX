@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Preuves de clôture de l'observabilité (SYNE-081 / SYNE-082) : SYNE-081 — anti-triche : l'observation
@@ -13,8 +16,8 @@ using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
-using WorldType = Simulation.Core.World.World;
 using Xunit;
+using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Console.Tests;
 
@@ -148,10 +151,11 @@ public class ObservabilityNonIntrusionTests
         // Garde-fou transverse : la preuve d'anti-intrusion s'appuie sur un journal
         // identique à celui de DeterminismRegressionTests ; vérifie la cohérence.
         // Doit rester aligné sur DeterminismRegressionTests.GoldenChecksum_IsPinned
-        // (0xf4aaa2733e491935 depuis la calibration B1 ; 0x46769cfb11c8b3a7
-        // depuis la calibration D1 ; 0xdb57f58566418f5d auparavant, engineVersion
-        // 0.12.0) : toute divergence entre les deux est un signal que l'observabilité
-        // a réintroduit de l'intrusion dans la trajectoire.
+        // (0xc8116c934c424b28 depuis le réalignement, engineVersion 0.16.0 ;
+        // 0xf4aaa2733e491935 en calibration B1 ; 0x46769cfb11c8b3a7 en D1 ;
+        // 0xdb57f58566418f5d auparavant, engineVersion 0.12.0) : toute divergence entre
+        // les deux est un signal que l'observabilité a réintroduit de l'intrusion dans
+        // la trajectoire.
         SimulationLoop loop = BuildScenario(12345, entityCount: 25);
         var rec = new TrajectoryRecorder();
         for (int tick = 1; tick <= 200; tick++)
@@ -160,7 +164,7 @@ public class ObservabilityNonIntrusionTests
             rec.Record(loop);
         }
 
-        Assert.Equal("0xf4aaa2733e491935", $"0x{Fnv1a(rec.Text):x16}");
+        Assert.Equal("0xc8116c934c424b28", $"0x{Fnv1a(rec.Text):x16}");
     }
 
     [Fact]

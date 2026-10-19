@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Donovan Chartrain
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Métriques légitimement non mesurées sur les tirages d'intégration courts.
 
 Le catalogue (``echos.analysis.catalog``) décrit ce qu'une métrique mesure et à

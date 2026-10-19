@@ -1,19 +1,22 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
   lang="en"
-  title="Privacy policy"
-  description="Privacy policy for the LIVEX site: no cookies, no trackers, no audience measurement, self-hosted fonts."
+  title="Privacy policy — no cookies, no trackers"
+  description="Privacy policy for the LIVEX site: no cookies, no trackers, no analytics, no third-party resources — a single local key for your theme."
 >
   <PageHeader
     lang="en"
     index="23"
     eyebrow="Privacy"
     title="The site does not track you."
-    lead="This is a short policy, because there is not much to declare. This site collects nothing."
+    lead="This is a short policy, because there is not much to declare: this site collects nothing."
     crumbs={[{ label: 'Privacy' }]}
   />
 
@@ -21,6 +24,9 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>23.1</b> No trackers</div>
       <h2>No cookies, no audience measurement.</h2>
+      <p class="mu">
+        None of the below is negotiable through a consent banner: there is nothing to consent to.
+      </p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Element</th><th>Status</th></tr></thead>
@@ -45,6 +51,10 @@ import { url } from '../../utils/url';
         (<strong>GitHub Pages</strong>) that is necessary to provide the service. These logs fall under GitHub's policy
         and are not used by this site.
       </p>
+      <p class="mu" style="font-size:0.78rem">
+        The journal's RSS feed is a plain static file: subscribing creates no account and no subscriber identifier, and
+        your feed reader alone knows your address.
+      </p>
     </div>
   </section>
 
@@ -56,7 +66,11 @@ import { url } from '../../utils/url';
         Since this site does not constitute any processing of personal data, there is no account, no form, no
         profiling. The only data stored locally — your theme — remains on your device.
       </p>
-      <p style="margin-top:18px"><a class="bt" href={url('mentions-legales/', 'en')}>Legal notices →</a></p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('mentions-legales/', 'en')}>Legal notices →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={url('suivre/', 'en')}>Follow the project</a>
+      </p>
     </div>
   </section>
 </BaseLayout>

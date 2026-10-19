@@ -1,4 +1,7 @@
 ---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
@@ -9,15 +12,15 @@ const nf = new Intl.NumberFormat('en-US');
 <BaseLayout
   lang="en"
   translated
-  title="Versions"
-  description="LIVEX component versions, project state as of 12 October 2026 and versioning policy. No tags or public release to date."
+  title="LIVEX — Component versions and project status"
+  description={`LIVEX component versions (SYNE, ECHOS, PRISM, Launcher), project state as of ${PROJECT_STATE_EN.observedDate} and versioning policy. No public release.`}
 >
   <PageHeader
     lang="en"
     index="13"
     eyebrow="Versions"
     title="Where the project stands."
-    lead="A factual, dated state. Each component evolves independently; no global version has yet been published."
+    lead="A factual, dated state, component by component. Each module moves at its own pace: the global version V0.2 is in preparation, with no public release."
     crumbs={[{ label: 'Versions' }]}
   />
 
@@ -29,7 +32,7 @@ const nf = new Intl.NumberFormat('en-US');
       </div>
 
       <div class="sh"><b>13.1</b> Versions by component</div>
-      <h2>Three independent rhythms.</h2>
+      <h2>Four components, four versions.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th>Component</th><th>Version</th><th>Note</th><th>Status</th></tr></thead>
@@ -44,7 +47,8 @@ const nf = new Intl.NumberFormat('en-US');
       <p class="mu" style="margin-top:14px;font-size:0.76rem">
         Independent Semantic Versioning per component, combined with a global marker for cross-cutting deliveries.
         Details: <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/VERSIONING.md" rel="noopener">VERSIONING.md</a>.
-        Each published version will get a dedicated page (<code>/versions/&lt;version&gt;/</code>).
+        Each published version will get a dedicated page (<code>/versions/&lt;version&gt;/</code>); none exists yet, as
+        no public tag has been set.
       </p>
     </div>
   </section>
@@ -57,7 +61,7 @@ const nf = new Intl.NumberFormat('en-US');
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>passing tests</h3>
-          <p>{PROJECT_STATE.tests.ignored} ignored, 0 failures across local suites.</p>
+          <p>Measured on {PROJECT_STATE_EN.observedDate}: 0 failures in the unit and integration suites.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.trackedFiles)}</div>
@@ -76,14 +80,16 @@ const nf = new Intl.NumberFormat('en-US');
           <thead><tr><th>Indicator</th><th>Value</th></tr></thead>
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tests per component</td><td>SYNE 634 · ECHOS 361 · Launcher 217 · syne-mock 46</td></tr>
+            <tr><td>Tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
             <tr><td>ECHOS coverage</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
             <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
+            <tr><td>Release</td><td>No public release — {RELEASE.planned} in preparation</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>These figures describe a development repository. They do not constitute functional validation or a promise of stability.</p></div>
+      <div class="cc"><p>These figures describe a development repository, not a product: they constitute neither
+        functional validation nor a promise of stability.</p></div>
 
       <p style="margin-top:18px"><a class="bt" href={RELEASE.changelogUrl} rel="noopener">Changelog ↗</a></p>
     </div>
