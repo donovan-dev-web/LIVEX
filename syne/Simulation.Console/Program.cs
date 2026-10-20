@@ -454,6 +454,16 @@ public static class Program
         server.MarkReady();
         await WriteComponentLogAsync(logDirectory, correlationId, "service_ready");
         System.Console.WriteLine($"SYNE — instance {cli.InstanceId} prête sur 127.0.0.1:{server.Port}.");
+        // Affichage **opt-in** du jeton de session, pour le développement : un
+        // consommateur local (éditeur Unreal en PIE, script) a besoin de le
+        // présenter sur les `POST /api/control/*`. Jamais affiché par défaut —
+        // cette ligne finit dans stdout.log, archivé : en production le secret
+        // ne doit pas y figurer (le Launcher le transmet par l'environnement).
+        if (string.Equals(Environment.GetEnvironmentVariable("LIVEX_SESSION_TOKEN_DISPLAY"), "1", StringComparison.Ordinal))
+        {
+            System.Console.WriteLine($"  jeton de session (dev) : {sessionToken}");
+        }
+
         await WaitForTerminationAsync(server.ShutdownRequested);
         await WriteComponentLogAsync(logDirectory, correlationId, "service_stopping");
         return 0;

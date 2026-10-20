@@ -87,6 +87,17 @@ struct PRISMLDK_API FPrismSyneConnectionOptions
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SYNE") FString WebSocketUrl = TEXT("ws://127.0.0.1:5180");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SYNE") bool bAutoReconnect = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SYNE", meta=(ClampMin="0.1")) float ReconnectDelaySeconds = 2.0f;
+	/**
+	 * Mode développement : si vrai, le jeton `SessionToken` ci-dessous est
+	 * présenté à SYNE à la place de la variable d'environnement
+	 * `LIVEX_SESSION_TOKEN`. Permet de tester en PIE contre un SYNE lancé par le
+	 * Launcher (jeton aléatoire, non exposé à l'éditeur) sans reconditionner le
+	 * projet. **À laisser faux pour le package** : le Launcher injecte alors le
+	 * jeton dans l'environnement et le plugin le récupère tout seul.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SYNE|Session") bool bUseManualSessionToken = false;
+	/** Jeton présenté à SYNE quand `bUseManualSessionToken` est vrai. Ignoré sinon. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SYNE|Session") FString SessionToken;
 };
 
 USTRUCT(BlueprintType)

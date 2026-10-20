@@ -686,7 +686,9 @@ lue sans distinguer la casse.
 
 `LIVEX_SESSION_TOKEN` n'est **jamais** lu sur la ligne de commande : il vient de
 l'environnement. Absent, il est journalisé en avertissement et toute commande de
-contrôle est refusée.
+contrôle **reçue** par PRISM est refusée. La même variable sert aussi de jeton
+**présenté** par PRISM à SYNE (§10.8) : les deux rôles partagent une seule
+source, la variable d'environnement héritée du Launcher.
 
 ### 10.3 Endpoints
 
@@ -763,3 +765,32 @@ Spec `PrismLdk.Service` (Session Frontend → Automation) :
   échoue ; un conflit découvert seulement par le listener n'est pas distinguable.
 - **`StopAllListeners` est global au module moteur** : appelé uniquement quand ce
   service a démarré les listeners, au moment de l'arrêt du processus.
+
+### 10.8 PRISM client : jeton présenté à SYNE
+
+PRISM n'est pas seulement un service : c'est aussi le **client** qui pilote SYNE
+par `POST /api/control/*`. Lancé par le Launcher, SYNE exige sur ces routes le
+jeton `LIVEX_SESSION_TOKEN` et répond `401 unauthorized` sans lui. `syne-mock`,
+plus permissif, ne l'exige pas : un plugin qui omet le jeton fonctionne contre le
+mock mais échoue contre le moteur réel — symptôme observé sur `prepare`.
+
+`UPrismLdkSubsystem` lit donc `LIVEX_SESSION_TOKEN` à l'initialisation et pose
+`Authorization: Bearer <jeton>` sur **chaque** commande de contrôle :
+
+| Élément | Détail |
+| :-- | :-- |
+| Fichier | `Plugins/PrismLdk/Source/PrismLdk/Private/PrismLdk.cpp` (`UPrismLdkSubsystem::SendControl`) + `Public/PrismLdkSubsystem.h` |
+| Header | `Authorization: Bearer <jeton>` ; jeton vide ⇒ aucun header (cause lisible dans `LogPrismLdk`) |
+| Source | environnement `LIVEX_SESSION_TOKEN` (hérité du Launcher, jamais ligne de commande) |
+| Mode dev | `FPrismSyneConnectionOptions::bUseManualSessionToken` + `SessionToken` : si vrai, `Configure` présente ce jeton **à la place** de l'environnement (PIE contre un SYNE lancé par le Launcher, dont le jeton n'est pas hérité par l'éditeur). À laisser **faux** pour le package |
+| API Blueprint | `SetSessionToken` / `GetSessionToken` — robustesse si l'intégration ne dépend pas de l'environnement |
+| Périmètre | seuls les `POST /api/control/*` ; `GET /api/control/status` reste en lecture libre (SYNE le résout avant le contrôle d'auth) |
+| Spec | Automation Spec `PrismLdk.Auth` (`Private/Tests/PrismLdkAuthSpec.cpp`) |
+
+Pour le **dev**, SYNE expose son jeton dans sa console — **uniquement** si
+`LIVEX_SESSION_TOKEN_DISPLAY=1` est posé au lancement du Launcher (opt-in : en
+production, le secret ne doit pas atterrir dans `stdout.log`, archivé). Le flux
+PIE complet est décrit dans le guide Blueprint §1.1.
+Une absence de jeton n'est pas silencieuse : `SetSessionToken` journalise un
+avertissement, et SYNE répond `401` sur la première commande — le `OnError`
+Blueprint reçoit `code=401, name=unauthorized`.

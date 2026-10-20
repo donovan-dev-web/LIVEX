@@ -1044,6 +1044,17 @@ JSON, les unités des métriques et les codes de sortie 0/2/3 : §10.3 et §10.4
 guide d'intégration. L'arrêt exige `Authorization: Bearer <LIVEX_SESSION_TOKEN>`,
 jamais le jeton en ligne de commande.
 
+**Symétrie client** : le même `LIVEX_SESSION_TOKEN` est **présenté** par PRISM à
+SYNE. Les `POST /api/control/*` (prepare, ready, start, pause, resume, stop,
+reset) portent `Authorization: Bearer <jeton>` — SYNE les refuse par `401` sans
+lui (`ControlServer.Routing.cs`), alors que `syne-mock` ne l'exige que pour
+`shutdown`. `GET /api/control/status` reste en lecture libre. Source unique : la
+variable d'environnement héritée du Launcher, lue par `UPrismLdkSubsystem`
+(`SetSessionToken` / `GetSessionToken` pour l'explicite ; mode dev
+`bUseManualSessionToken` + `SessionToken` dans `FPrismSyneConnectionOptions` pour
+le PIE, à décocher avant package) ; §10.8 du guide d'intégration et §3.1 de
+`TRANSPORT_API.md`.
+
 ### 11.3 Manifeste `component.json` PRISM (à livrer en B7)
 
 ```json
