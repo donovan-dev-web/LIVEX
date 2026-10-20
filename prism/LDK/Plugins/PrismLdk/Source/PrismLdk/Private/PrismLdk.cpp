@@ -204,8 +204,8 @@ void UPrismLdkSubsystem::SetSessionToken(const FString& InSessionToken)
 	SessionToken = InSessionToken;
 	if (SessionToken.IsEmpty())
 	{
-		UE_LOG(LogPrismLdk, Warning,
-			TEXT("LIVEX_SESSION_TOKEN absent : les commandes de contrôle SYNE seront refusées (401)."));
+		UE_LOG(LogPrismLdk, Verbose,
+			TEXT("Jeton de session vide (non encore fourni)."));
 	}
 }
 
@@ -221,6 +221,11 @@ void UPrismLdkSubsystem::Configure(const FPrismSyneConnectionOptions& InOptions)
 	// Mode dev : le jeton saisi à la main prime sur l'environnement. Sinon on
 	// conserve celui hérité du Launcher (posé à l'initialisation) ; si aucun des
 	// deux n'est présent, on retombe sur l'environnement (vide ⇒ 401 attendu).
+	UE_LOG(LogPrismLdk, Log,
+		TEXT("Configure: manual=%s, tokenLongueur=%d, environnement=%s"),
+		Options.bUseManualSessionToken ? TEXT("true") : TEXT("false"),
+		Options.SessionToken.Len(),
+		SessionToken.IsEmpty() ? TEXT("vide") : TEXT("renseigné"));
 	if (Options.bUseManualSessionToken)
 	{
 		SetSessionToken(Options.SessionToken);
