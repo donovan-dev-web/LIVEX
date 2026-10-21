@@ -50,7 +50,7 @@ const softwareJsonLd = {
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Target version {RELEASE_EN ? 'V0.2' : 'V0.2'}</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{SITE.license}</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests passing</span>
-          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage {PROJECT_STATE.coverage.echos}</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage {PROJECT_STATE_EN.coverage.echos}</span>
         </div>
         <div class="cta">
           <a class="bt p" href={url('technique/prism/', 'en')}>See the demo</a>
@@ -117,22 +117,25 @@ const softwareJsonLd = {
       </p>
       <div class="g3 br" style="margin-top:28px">
         <CardLink
+          lang="en"
           title="Determinism"
           text="The same starting point replays the same run, bit for bit. Results are reproducible, not narrated."
           href="technique/resultats/"
-          cta="See the measures &rarr;"
+          cta="See the measures →"
         />
         <CardLink
+          lang="en"
           title="Independent observation"
           text="Simulate, measure, make visible: three separate layers, linked by explicit contracts."
           href="technique/echos/"
-          cta="Discover ECHOS &rarr;"
+          cta="Discover ECHOS →"
         />
         <CardLink
+          lang="en"
           title="Versioned contracts"
           text="Public interfaces are frozen and versioned (snapshot 0.5.0). The contract precedes the rendering."
           href="technique/syne/"
-          cta="Read the contract &rarr;"
+          cta="Read the contract →"
         />
       </div>
     </div>

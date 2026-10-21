@@ -26,6 +26,7 @@
 | `preview` | `astro preview` | Sert le build local sous `/LIVEX/`. |
 | `check` | `astro check` | Vérification de types et diagnostics. |
 | `check:links` | `node scripts/check-links.mjs` | Vérifie les liens internes du build. |
+| `check:text` | `node scripts/check-text.mjs` | Audit du texte du build : entités HTML non décodées, mojibake, chaînes françaises en pages anglaises, composants sans `lang="en"`. |
 
 Workflow local recommandé :
 
@@ -35,6 +36,7 @@ npm ci
 npm run check
 npm run build        # déclenche aussi postbuild (Pagefind)
 npm run check:links
+npm run check:text   # audit du texte (entités, langues, lang="en")
 npm run preview      # vérifier sous /LIVEX/
 ```
 
@@ -92,10 +94,15 @@ Le workflow transverse `ci.yml` (voir `../CI_CD.md`) valide la structure du
 dépôt et les composants ; il ne construit **pas** le site. Le contrôle du site
 (type-check + build) est porté par `pages.yml`, déclenché sur `main`.
 
-Le workflow `lighthouse.yml` s'exécute sur les pull requests touchant `site/**`
-(et en manuel). Il installe, construit avec `BASE_PATH=/`, démarre
-`astro preview` sur le port `4321`, puis lance `@lhci/cli` sur trois pages
-(accueil, architecture, résultats) avec `lighthouserc.json`.
+Le workflow `lighthouse.yml` (intitulé « Site CI ») s'exécute sur les pull
+requests touchant `site/**` (et en manuel). Il comporte deux jobs :
+
+- **Texte et liens** : build, `npm run check:links` et `npm run check:text`
+  (entités HTML non décodées, mojibake, chaînes françaises résiduelles en
+  pages anglaises, composants sans `lang="en"`) ;
+- **Lighthouse** : build avec `BASE_PATH=/`, démarrage de `astro preview` sur le
+  port `4321`, puis `@lhci/cli` sur trois pages (accueil, architecture,
+  résultats) avec `lighthouserc.json`.
 
 ## 6. Publication et retour arrière
 

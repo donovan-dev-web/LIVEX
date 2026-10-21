@@ -11,7 +11,7 @@ import { url } from '../utils/url';
 const nf = new Intl.NumberFormat('fr-FR');
 ---
 <BaseLayout
-  title="LIVEX - Démarrer en 5 minutes"
+  title="LIVEX — Démarrer en 5 minutes"
   description="Prérequis, commande de démarrage et état réel de LIVEX : faire tourner le moteur, l'observateur et le rendu depuis les sources, sans release publique."
 >
   <PageHeader
@@ -77,7 +77,7 @@ const nf = new Intl.NumberFormat('fr-FR');
         <code>echos/.venv/Scripts/python.exe</code> pour les commandes Python.
       </p>
       <p style="margin-top:18px">
-        <a class="bt" href={url('telecharger/installation/')}>Guide d'installation complet &rarr;</a>
+        <a class="bt" href={url('telecharger/installation/')}>Guide d'installation complet →</a>
       </p>
     </div>
   </section>
@@ -93,7 +93,7 @@ cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
 echos/.venv/bin/python -m pytest -q</code></pre>
       <p>Relevé du {PROJECT_STATE.observedDate} : <strong>{nf.format(PROJECT_STATE.tests.passed)} tests au vert</strong>.</p>
       <p style="margin-top:18px">
-        <a class="bt" href={url('etat-du-projet/')}>Voir l'état du projet &rarr;</a>
+        <a class="bt" href={url('etat-du-projet/')}>Voir l'état du projet →</a>
       </p>
     </div>
   </section>

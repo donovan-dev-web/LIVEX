@@ -109,6 +109,8 @@ n'est pas servi à la racine, mais sous `/LIVEX/`).
 | Sommaire technique invisible | `TableOfContents` reste `hidden` sans JS ou avec moins de trois sections ; c'est volontaire pour ne pas exposer un contrôle vide. |
 | Clignotement de thème | Le script d'application doit rester en ligne dans le `<head>`, avant le rendu. |
 | Chiffre modifié « à la main » | Le centraliser dans `data/` + `claims.ts`. |
+| Accents affichés en clair (« D&eacute;terminisme ») | Les attributs de composants (`title`, `text`, `cta`) ne décodent pas les entités HTML : écrire les caractères en UTF-8 direct. `npm run check:text` le détecte. |
+| Page anglaise qui affiche « Accueil » ou « jobs verts » | Lire le miroir `*_EN` des données et transmettre `lang="en"` à `PageHeader` et `CardLink`. `npm run check:text` le détecte. |
 | `npm run dev` sans `/LIVEX/` | Le `base` est non racine : utiliser les URLs fournies par le serveur. |
 | Lighthouse CI en échec sur les assets | Le workflow construit avec `BASE_PATH=/` et `SITE_URL=http://localhost:4321` pour que `astro preview` serve la racine ; ne pas retirer ces variables. |
 
@@ -128,6 +130,8 @@ n'est pas servi à la racine, mais sous `/LIVEX/`).
 - [ ] Recherche testée après build (Pagefind) ; modale, focus piégé, `Échap`.
 - [ ] Lighthouse CI (workflow `lighthouse.yml`) vert ou avertissements justifiés.
 - [ ] Aucune chaîne française résiduelle dans `src/pages/en/`.
+- [ ] Aucune entité HTML non décodée dans le HTML produit : `grep -r "&amp;[a-z]*;" dist/` ne doit rien renvoyer (les accents sont écrits en UTF-8 direct, jamais en `&eacute;`).
+- [ ] Chaque composant acceptant `lang` le reçoit bien sur les pages EN (`PageHeader`, `CardLink`, `CtaBand`, `StatusBadge`, `HeroFigure`, `TableOfContents`) : le fil d'Ariane doit dire « Home », pas « Accueil ».
 
 ## 10. Conventions
 

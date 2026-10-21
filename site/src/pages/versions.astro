@@ -69,7 +69,7 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
         <div>
           <div class="n">{ciJobs}</div>
           <h3>jobs CI verts</h3>
-          <p>{PROJECT_STATE.ci}.</p>
+          <p>Intégration continue au vert, relevé du {PROJECT_STATE.observedDate}.</p>
         </div>
       </div>
 
@@ -102,9 +102,9 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
         la référence en attendant.
       </p>
       <p style="margin-top:18px">
-        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Lire le CHANGELOG.md &rarr;</a>
+        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Lire le CHANGELOG.md →</a>
         <span style="display:inline-block;width:8px"></span>
-        <a class="bt" href={RELEASE.releasesUrl} rel="noopener">Tags et releases GitHub &rarr;</a>
+        <a class="bt" href={RELEASE.releasesUrl} rel="noopener">Tags et releases GitHub →</a>
       </p>
     </div>
   </section>

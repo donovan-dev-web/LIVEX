@@ -69,14 +69,14 @@ const nf = new Intl.NumberFormat('en-US');
           <p>0 failures across local suites.</p>
         </div>
         <div>
-          <div class="n">{PROJECT_STATE.coverage.echos}</div>
+          <div class="n">{PROJECT_STATE_EN.coverage.echos}</div>
           <h3>ECHOS coverage</h3>
           <p>Line coverage of the observatory (Python package).</p>
         </div>
         <div>
-          <div class="n">{PROJECT_STATE.coverage.syne}</div>
+          <div class="n">{PROJECT_STATE_EN.coverage.syne}</div>
           <h3>SYNE coverage</h3>
-          <p>Aggregated SYNE assemblies (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole}).</p>
+          <p>Aggregated SYNE assemblies (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole}).</p>
         </div>
       </div>
       <div class="ov" style="margin-top:28px">
@@ -164,7 +164,7 @@ const nf = new Intl.NumberFormat('en-US');
           <thead><tr><th scope="col">Claim</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
           <tbody>
             <tr><td>{nf.format(PROJECT_STATE.tests.passed)} passing tests, {PROJECT_STATE.tests.failed} failures as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>ECHOS coverage {PROJECT_STATE.coverage.echos} / SYNE {PROJECT_STATE.coverage.syne} as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>ECHOS coverage {PROJECT_STATE_EN.coverage.echos} / SYNE {PROJECT_STATE_EN.coverage.syne} as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
             <tr><td>{PROJECT_STATE_EN.ci}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
             <tr><td>Gap ≈ 1.7× below target at 1,000 entities</td><td>Verified</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
