@@ -7,11 +7,11 @@ import StatusBadge from '../../components/StatusBadge.astro';
 import HeroFigure from '../../components/HeroFigure.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import CardLink from '../../components/CardLink.astro';
+import SyneSchema from '../../components/SyneSchema.astro';
 import { SITE } from '../../data/site';
 import { COMPONENTS_EN } from '../../data/components';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN } from '../../data/release';
 import echosAgents from '../../assets/captures/echos-agents.png';
-import launcherHome from '../../assets/captures/launcher-home.png';
 import launcherPrism from '../../assets/captures/launcher-prism.png';
 import { Image } from 'astro:assets';
 import { url } from '../../utils/url';
@@ -198,14 +198,14 @@ const softwareJsonLd = {
             <p style="margin:0 0 12px"><StatusBadge status={c.status.id} lang="en" /></p>
             <a class="bt" href={url(c.href, 'en')} aria-label={`Details about ${c.name}`}>Details →</a>
           </div>
-          {c.key === 'syne' && <Image src={launcherHome} alt="Preview of the LIVEX Launcher" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'syne' && <SyneSchema lang="en" />}
           {c.key === 'echos' && <Image src={echosAgents} alt="Preview of ECHOS: agent tracking" style="width:100%;height:auto" loading="lazy" />}
           {c.key === 'prism' && <Image src={launcherPrism} alt="Preview of PRISM rendering" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
 
       <div class="ct">Public interface contracts — snapshot 0.5.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · persistence schema v5</div>
-      <p class="mu" style="font-size:0.7rem">Captures from the development build (measured {PROJECT_STATE_EN.observedDate}). They document the interface without demonstrating the published version.</p>
+      <p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM (measured {PROJECT_STATE_EN.observedDate}); for SYNE, a conceptual schema — an engine has no interface to capture. None of these visuals demonstrates the published version.</p>
     </div>
   </section>
 

@@ -6,6 +6,10 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import TableOfContents from '../../../components/TableOfContents.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
+import SyneSchema from '../../../components/SyneSchema.astro';
+import { Image } from 'astro:assets';
+import echosAgents from '../../../assets/captures/echos-agents.png';
+import launcherPrism from '../../../assets/captures/launcher-prism.png';
 import { COMPONENTS_EN } from '../../../data/components';
 import { url } from '../../../utils/url';
 ---
@@ -58,10 +62,12 @@ import { url } from '../../../utils/url';
             <p class="mu" style="margin:0 0 12px;font-size:0.76rem">{c.status.note}</p>
             <a class="bt" href={url(c.href, 'en')} aria-label={`Details about ${c.name}`}>Details →</a>
           </div>
-          <div class="ph">Screenshot<br />{c.acronym}</div>
+          {c.key === 'syne' && <SyneSchema lang="en" />}
+          {c.key === 'echos' && <Image src={echosAgents} alt="ECHOS capture: tracking of observed agents" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'prism' && <Image src={launcherPrism} alt="Capture of the PRISM rendering opened from the Launcher" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">Reserved slots: real captures are shown on each component page. No illustration stands in for a screenshot.</p>
+      <p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM; for SYNE, a conceptual schema — an engine has no interface to capture. These visuals come from the development build (October 2026): none of them demonstrates a published version.</p>
     </div>
   </section>
 

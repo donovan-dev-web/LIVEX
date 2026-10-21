@@ -7,12 +7,12 @@ import StatusBadge from '../components/StatusBadge.astro';
 import HeroFigure from '../components/HeroFigure.astro';
 import CtaBand from '../components/CtaBand.astro';
 import CardLink from '../components/CardLink.astro';
+import SyneSchema from '../components/SyneSchema.astro';
 import { SITE } from '../data/site';
 import { COMPONENTS } from '../data/components';
 import { PROJECT_STATE, RELEASE } from '../data/release';
 import { getCollection } from 'astro:content';
 import echosAgents from '../assets/captures/echos-agents.png';
-import launcherHome from '../assets/captures/launcher-home.png';
 import launcherPrism from '../assets/captures/launcher-prism.png';
 import { Image } from 'astro:assets';
 import { url } from '../utils/url';
@@ -196,14 +196,14 @@ const softwareJsonLd = {
             <p style="margin:0 0 12px"><StatusBadge status={c.status.id} /></p>
             <a class="bt" href={url(c.href)} aria-label={`Détails sur ${c.name}`}>Détails →</a>
           </div>
-          {c.key === 'syne' && <Image src={launcherHome} alt="Aperçu du Launcher LIVEX" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'syne' && <SyneSchema lang="fr" />}
           {c.key === 'echos' && <Image src={echosAgents} alt="Aperçu d'ECHOS : suivi d'agents" style="width:100%;height:auto" loading="lazy" />}
           {c.key === 'prism' && <Image src={launcherPrism} alt="Aperçu du rendu PRISM" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
 
       <div class="ct">Contrats d'interface publics — snapshot 0.5.0 · run_id « run-&lt;seed&gt;-&lt;12hex&gt; » · schéma de persistance v5</div>
-      <p class="mu" style="font-size:0.7rem">Captures issues de la version de développement (relevé du {PROJECT_STATE.observedDate}). Elles documentent l'interface, sans constituer une démonstration de la version publiée.</p>
+      <p class="mu" style="font-size:0.7rem">Captures réelles pour ECHOS et PRISM (relevé du {PROJECT_STATE.observedDate}) ; pour SYNE, un schéma conceptuel — un moteur n'a pas d'interface à capturer. Aucun de ces visuels ne vaut démonstration de la version publiée.</p>
     </div>
   </section>
 

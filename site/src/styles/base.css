@@ -381,6 +381,9 @@ header.site[data-nav-open] .nav-burger {
 
   nav.main a.nav-cta {
     margin: 10px 20px;
+    /* `nav.main > a` impose width: 100% : avec des marges latérales, le bouton
+       débordait de 40 px et créait un défilement horizontal dans le menu. */
+    width: auto;
     text-align: center;
     border-bottom: 0;
   }

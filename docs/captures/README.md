@@ -2,14 +2,14 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 19 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 
-Ce dossier regroupe les captures d'écran et les animations (GIF) utilisées pour la présentation du projet LIVEX sur GitHub et sur le site vitrine. Les fichiers sont référencés depuis le `README.md` racine et peuvent être réutilisés dans la documentation.
+Ce dossier regroupe les captures d'écran de présentation du projet LIVEX, utilisées dans le `README.md` racine et réutilisables dans la documentation. Le site vitrine ne sert pas ce dossier tel quel : il rend ses propres visuels optimisés (`site/src/assets/captures/`).
 
 ## Conventions
 
-- Format image : PNG pour les captures statiques, GIF pour les animations courtes.
-- Largeur recommandée : 1280 px pour les captures pleine largeur, 640 px pour les animations.
+- Format image : PNG pour les captures statiques, SVG pour les schémas.
+- Largeur recommandée : 1280 px pour les captures pleine largeur.
 - Nommer les fichiers en `kebab-case`, avec un préfixe de composant (`launcher-`, `echos-`, `prism-`, `syne-`).
 - Ne pas stocker ici de données de run, de journaux ni d'artefacts de build.
 
@@ -22,15 +22,11 @@ Ce dossier regroupe les captures d'écran et les animations (GIF) utilisées pou
 | `launcher-prism.png` | Vue PRISM dans le Launcher |
 | `echos-relations.png` | Vue des relations observées dans ECHOS |
 | `echos-agents.png` | Vue des agents observés dans ECHOS |
+| `livex-banner.svg` | Bannière du projet |
 
-## Animations (GIF)
+## Animations
 
-| Fichier | Sujet | Statut |
-|:--|:--|:--|
-| `livex-overview.gif` | Vue d'ensemble de la pile LIVEX | Placeholder à remplacer par une capture réelle |
-| `echos-analysis.gif` | Parcours d'analyse ECHOS | Placeholder à remplacer par une capture réelle |
-| `launcher-campaign.gif` | Exécution d'une campagne dans le Launcher | Placeholder à remplacer par une capture réelle |
-| `prism-render.gif` | Rendu PRISM et plugin PRISM-LDK | Placeholder à remplacer par une capture réelle |
-
-Les GIF actuels sont des animations de présentation provisoires. Ils doivent être remplacés par des captures réelles du logiciel dès que possible, sans changer leurs noms de fichier pour préserver les références existantes.
-PY
+Le dépôt n'embarque aucune animation GIF : les placeholders provisoires qui
+y figuraient ont été supprimés. Si une animation est un jour nécessaire, elle
+rejoint ce dossier — au format WebP ou MP4 de préférence, pour rester légère
+sur le web.
