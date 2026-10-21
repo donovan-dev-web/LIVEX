@@ -1,0 +1,58 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE } from '../../data/release';
+import { url } from '../../utils/url';
+
+const nf = new Intl.NumberFormat('en-US');
+const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="LIVEX — Project state: tests, coverage and CI"
+  description="Factual, dated state of the LIVEX repository: branch, commit, files, lines of code, tests, coverage, CI and Windows support."
+>
+  <PageHeader
+    lang="en"
+    index="13b"
+    eyebrow="Versions"
+    title="The project state, dated."
+    lead="A factual snapshot of the repository, component by component. These figures describe a development repository, not a product."
+    crumbs={[{ label: 'Versions', href: 'versions/' }, { label: 'Project state' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="cc"><p><strong>No public release.</strong> Target version {RELEASE.planned} in preparation.
+        See <a href={RELEASE.releasesUrl} rel="noopener">GitHub releases</a> and
+        <a href={`${repo}/docs/governance/LIVEX-STATUS.md`} rel="noopener">LIVEX-STATUS.md</a>.</p></div>
+
+      <div class="sh"><b>13b.1</b> Analysed reference</div>
+      <h2>Measured on {PROJECT_STATE_EN.observedDate}.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
+          <tbody>
+            <tr><td>Reference</td><td><code>{PROJECT_STATE.branch}</code> at {PROJECT_STATE.commit}</td></tr>
+            <tr><td>Tracked files</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
+            <tr><td>Lines analysed</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.source)} source, {nf.format(PROJECT_STATE.loc.tests)} tests)</td></tr>
+            <tr><td>Tests</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored</td></tr>
+            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
+            <tr><td>SYNE coverage</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
+            <tr><td>CI</td><td>{PROJECT_STATE_EN.ci}</td></tr>
+            <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('versions/', 'en')}>See component versions →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={`${repo}/docs/governance/LIVEX-STATUS.md`} rel="noopener">LIVEX-STATUS.md →</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

@@ -4,8 +4,11 @@
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
+import TableOfContents from '../../../components/TableOfContents.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
+import { Image } from 'astro:assets';
 import { url } from '../../../utils/url';
+import { PROJECT_STATE_EN } from '../../../data/release';
 import echosAgents from '../../../assets/captures/echos-agents.png';
 import echosRelations from '../../../assets/captures/echos-relations.png';
 ---
@@ -23,6 +26,10 @@ import echosRelations from '../../../assets/captures/echos-relations.png';
     lead="ECHOS (Emergent Cognition & Holistic Observation System) reads the traces produced by SYNE and derives measurements from them. It observes the world without ever intervening in it."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'ECHOS' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents lang="en" />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -45,11 +52,11 @@ import echosRelations from '../../../assets/captures/echos-relations.png';
       </p>
 
       <figure class="shot">
-        <img src={echosAgents.src} alt="ECHOS view: agent tracking" width={echosAgents.width} height={echosAgents.height} loading="lazy" />
+        <Image src={echosAgents} alt="ECHOS view: agent tracking"  loading="lazy" />
         <figcaption>Capture — agent tracking in ECHOS.</figcaption>
       </figure>
       <figure class="shot">
-        <img src={echosRelations.src} alt="ECHOS view: agent relationships" width={echosRelations.width} height={echosRelations.height} loading="lazy" />
+        <Image src={echosRelations} alt="ECHOS view: agent relationships"  loading="lazy" />
         <figcaption>Capture — agent relationships in ECHOS.</figcaption>
       </figure>
     </div>
@@ -65,7 +72,7 @@ import echosRelations from '../../../assets/captures/echos-relations.png';
         <div class="pl br" style="padding:18px"><h3>Loops</h3><p class="mu" style="margin:0">Feedbacks where one agent's behaviour influences the next.</p></div>
         <div class="pl br" style="padding:18px"><h3>Relationships</h3><p class="mu" style="margin:0">Interactions between agents, observed and aggregated.</p></div>
       </div>
-      <div class="cc" style="margin-top:22px"><p>Line coverage measured for ECHOS was 91.32% as of 19 October 2026.</p></div>
+      <div class="cc" style="margin-top:22px"><p>Line coverage measured for ECHOS was {PROJECT_STATE_EN.coverage.echos} as of {PROJECT_STATE_EN.observedDate}.</p></div>
     </div>
   </section>
 

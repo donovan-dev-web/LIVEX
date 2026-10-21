@@ -18,17 +18,33 @@ import {
 } from '../i18n/ui';
 
 import fontSerif from '../assets/fonts/instrument-serif-latin-400-normal.woff2?url';
+import fontSerifItalic from '../assets/fonts/instrument-serif-latin-400-italic.woff2?url';
 import fontMono from '../assets/fonts/jetbrains-mono-latin-400-normal.woff2?url';
 
 interface Props {
   title: string;
   description: string;
   ogType?: 'website' | 'article';
+  /** Métadonnées Open Graph spécifiques aux articles. */
+  article?: {
+    publishedTime?: string;
+    author?: string;
+    section?: string;
+    tags?: string[];
+  };
   image?: string;
   noindex?: boolean;
   lang?: Lang;
+  /** URL canonique explicite (par défaut : chemin courant). */
+  canonical?: string;
   /** Bandeau « traduction automatique » (pages EN de niveau 2). */
   translated?: boolean;
+  /**
+   * JSON-LD additionnel (objet ou tableau d'objets) émis en plus des blocs
+   * par défaut (WebSite, Organization, Person). Utilisé pour SoftwareApplication,
+   * Article, etc.
+   */
+  jsonLd?: Record<string, any> | Array<Record<string, any>>;
   /**
    * Traductions existantes, par langue (chemin sans préfixe de langue).
    * Pour une page FR sans équivalent EN (ex. articles du journal, FR-only),
@@ -44,18 +60,25 @@ const {
   title,
   description,
   ogType = 'website',
+  article,
   image,
   noindex = false,
   lang = 'fr',
   translated = false,
   alternates,
+  jsonLd,
+  canonical: canonicalProp,
 } = Astro.props;
 
 const t = useTranslations(lang);
 
 const pageTitle = title.startsWith('LIVEX') ? title : `${title} · LIVEX`;
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const canonical = canonicalProp ?? new URL(Astro.url.pathname, Astro.site).href;
+const siteUrl = new URL(import.meta.env.BASE_URL, Astro.site).href;
+const siteDescription = lang === 'en' ? SITE.descriptionEn : SITE.description;
 const ogImage = image ?? new URL(url('media/og-livex.png'), Astro.site).href;
+const ogImageAlt =
+  lang === 'en' ? 'LIVEX — multi-agent simulation ecosystem' : 'LIVEX — écosystème de simulation multi-agents';
 
 const langPath = stripLangFromPath(Astro.url.pathname);
 const languages: Record<Lang, string> = { fr: 'fr', en: 'en' };
@@ -76,16 +99,36 @@ const altLocales = publishedLangs
   .filter((l) => l !== lang && langLinks[l] !== undefined)
   .map((l) => ogLocales[l]);
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: SITE.name,
-  url: canonical,
-  description,
-  inLanguage: lang,
-  license: 'https://www.gnu.org/licenses/gpl-3.0.html',
-  sameAs: [SITE.repo],
-};
+const jsonLdBlocks: Array<Record<string, any>> = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE.name,
+    url: siteUrl,
+    description: siteDescription,
+    inLanguage: lang,
+    license: 'https://www.gnu.org/licenses/gpl-3.0.html',
+    sameAs: [SITE.repo],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE.name,
+    url: siteUrl,
+    logo: new URL(url('favicon.svg'), Astro.site!).href,
+    sameAs: [SITE.repo],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: SITE.author,
+    url: 'https://donovan-dev-web.vercel.app',
+  },
+];
+if (jsonLd) {
+  const extra = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+  jsonLdBlocks.push(...extra);
+}
 
 const themeLabels = {
   dark: lang === 'en' ? 'Switch to dark theme' : 'Activer le thème sombre',
@@ -111,6 +154,7 @@ const themeLabels = {
     <link rel="alternate" hreflang="x-default" href={absoluteUrl(langLinks.fr ?? langPath, 'fr')} />
 
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={url('apple-touch-icon.png')} />
     <link rel="manifest" href={url('site.webmanifest')} />
     <meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)" />
@@ -119,22 +163,37 @@ const themeLabels = {
 
     <!-- Open Graph / réseaux sociaux -->
     <meta property="og:type" content={ogType} />
+    {ogType === 'article' && article && (
+      <>
+        {article.publishedTime && <meta property="article:published_time" content={article.publishedTime} />}
+        {article.author && <meta property="article:author" content={article.author} />}
+        {article.section && <meta property="article:section" content={article.section} />}
+        {article.tags?.map((tag) => <meta property="article:tag" content={tag} />)}
+      </>
+    )}
     <meta property="og:site_name" content="LIVEX" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content={ogLocales[lang]} />
     {altLocales.map((loc) => <meta property="og:locale:alternate" content={loc} />)}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <link rel="preload" href={fontSerif} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fontSerifItalic} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={fontMono} as="font" type="font/woff2" crossorigin />
 
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {jsonLdBlocks.map((block) => (
+      <script type="application/ld+json" set:html={JSON.stringify(block)} />
+    ))}
 
     <!-- Thème : appliqué avant le rendu pour éviter tout clignotement -->
     <script is:inline>
@@ -157,7 +216,7 @@ const themeLabels = {
       </div>
     )}
     <Header lang={lang} langLinks={langLinks} />
-    <main id="contenu">
+    <main id="contenu" tabindex="-1" data-pagefind-body={!noindex ? true : undefined}>
       <slot />
     </main>
     <Footer lang={lang} />

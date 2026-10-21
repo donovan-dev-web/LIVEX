@@ -62,7 +62,7 @@ import { url } from '../../utils/url';
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Element</th><th>Value</th></tr></thead>
+          <thead><tr><th scope="col">Element</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Nature</td><td>Personal research project on multi-agent simulation</td></tr>
             <tr><td>Components</td><td>SYNE (engine) · ECHOS (observation) · PRISM (rendering)</td></tr>
@@ -79,6 +79,33 @@ import { url } from '../../utils/url';
         <a class="bt" href={url('documentation/', 'en')}>Documentation</a>
         <span style="display:inline-block;width:8px"></span>
         <a class="bt" href={url('a-propos/transparence-ia/', 'en')}>AI transparency</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.3</b> Citing this project</div>
+      <h2>A stable reference for your work.</h2>
+      <p class="mu">
+        LIVEX is citable via the <code>CITATION.cff</code> file in the repository. Formats below.
+      </p>
+      <div class="ov" style="margin-top:18px">
+        <pre><code>@software{'{'}chartrain2026livex,
+  author = {'{'}Chartrain, Donovan{'}'},
+  title = {'{'}LIVEX: Living Intelligent Virtual Ecosystem eXperience{'}'},
+  year = {'{'}2026{'}'},
+  url = {'{'}https://github.com/donovan-dev-web/LIVEX{'}'},
+  version = {'{'}0.1{'}'},
+  license = {'{'}GPL-3.0-or-later{'}'}
+{'}'}</code></pre>
+      </div>
+      <p style="margin-top:14px;font-size:0.85rem">
+        <strong>APA:</strong> Chartrain, D. (2026). <em>LIVEX: Living Intelligent Virtual Ecosystem eXperience</em>
+        (Version 0.1) [Software]. https://github.com/donovan-dev-web/LIVEX
+      </p>
+      <p style="margin-top:12px">
+        <a class="bt" href={url('CITATION.cff')} rel="noopener">Download CITATION.cff →</a>
       </p>
     </div>
   </section>

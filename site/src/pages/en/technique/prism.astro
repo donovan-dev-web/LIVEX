@@ -4,7 +4,9 @@
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
+import TableOfContents from '../../../components/TableOfContents.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
+import { Image } from 'astro:assets';
 import { url } from '../../../utils/url';
 import prismShot from '../../../assets/captures/launcher-prism.png';
 ---
@@ -23,6 +25,10 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'PRISM' }]}
   />
 
+  <div class="w" style="padding-top:8px">
+    <TableOfContents lang="en" />
+  </div>
+
   <section class="block">
     <div class="w">
       <p style="margin-top:0"><StatusBadge status="developpement" lang="en" /> <span class="mu">Unreal project and PRISM-LDK plugin</span></p>
@@ -37,7 +43,7 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
       </p>
 
       <figure class="shot">
-        <img src={prismShot.src} alt="PRISM rendering preview" width={prismShot.width} height={prismShot.height} loading="lazy" />
+        <Image src={prismShot} alt="PRISM rendering preview"  loading="lazy" />
         <figcaption>Capture — PRISM rendering preview (work-in-progress).</figcaption>
       </figure>
     </div>

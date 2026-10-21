@@ -207,7 +207,9 @@ nav.main a {
   color: var(--mu);
 }
 nav.main a:hover,
-nav.main a[aria-current='page'] {
+nav.main a[aria-current='page'],
+nav.main button.ni-trigger:hover,
+nav.main button.ni-trigger:focus-visible {
   color: var(--ink);
 }
 
@@ -215,10 +217,16 @@ nav.main a[aria-current='page'] {
 nav.main .ni {
   position: relative;
 }
-nav.main .ni > a {
+nav.main .ni > button.ni-trigger {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--mu);
+  cursor: pointer;
 }
 .ni-arrow {
   font-size: 0.7em;
@@ -256,9 +264,12 @@ nav.main .sub::before {
   right: 0;
   height: 10px;
 }
-nav.main .ni:hover .sub,
-nav.main .ni:focus-within .sub {
+/* Ouverture au clic (ou Entrée/Espace) : cohérent avec aria-expanded et Échap. */
+nav.main .ni.open .sub {
   display: flex;
+}
+nav.main .ni.open .ni-arrow {
+  transform: rotate(180deg);
 }
 nav.main .sub a {
   display: block;
@@ -271,6 +282,23 @@ nav.main .sub a:hover,
 nav.main .sub a[aria-current='page'] {
   color: var(--ink);
   background: var(--gr);
+}
+
+/* CTA principal de navigation (Suivre). */
+nav.main a.nav-cta {
+  margin-left: auto;
+  border: 1px solid var(--ink);
+  padding: 4px 10px;
+  border-radius: var(--r);
+  color: var(--ink);
+  background: var(--bg);
+  white-space: nowrap;
+}
+nav.main a.nav-cta:hover,
+nav.main a.nav-cta[aria-current='page'] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
 }
 
 /* Bouton menu (mobile / tablette portrait). */
@@ -337,20 +365,37 @@ header.site[data-nav-open] .nav-burger {
   }
 
   nav.main > a,
-  nav.main .ni > a {
+  nav.main .ni > button.ni-trigger {
     display: block;
     padding: 13px 20px;
     border-bottom: 1px solid var(--ln);
+    width: 100%;
+    text-align: left;
+    background: none;
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: var(--ln);
+    font: inherit;
+    color: var(--ink);
+  }
+
+  nav.main a.nav-cta {
+    margin: 10px 20px;
+    /* `nav.main > a` impose width: 100% : avec des marges latérales, le bouton
+       débordait de 40 px et créait un défilement horizontal dans le menu. */
+    width: auto;
+    text-align: center;
+    border-bottom: 0;
   }
 
   .ni-arrow {
     display: none;
   }
 
-  /* Sous-menus dépliés en ligne, en retrait. */
+  /* Sous-menus repliés par défaut, dépliés au clic (cohérent avec aria-expanded). */
   nav.main .sub {
     position: static;
-    display: flex;
+    display: none;
     min-width: 0;
     margin: 0;
     padding: 0;
@@ -358,6 +403,13 @@ header.site[data-nav-open] .nav-burger {
     border-radius: 0;
     box-shadow: none;
     background: color-mix(in srgb, var(--gr) 45%, transparent);
+  }
+  nav.main .ni.open .sub {
+    display: flex;
+  }
+  nav.main .ni.open > .ni-trigger {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--gr) 55%, transparent);
   }
   nav.main .sub::before {
     display: none;
@@ -488,15 +540,69 @@ header.site[data-nav-open] .nav-burger {
 footer.site {
   margin-top: 72px;
   border-top: 1px solid var(--ink);
-  padding: 28px 0 48px;
+  padding: 40px 0 48px;
   font-size: 0.72rem;
   color: var(--mu);
 }
 footer.site a {
   color: var(--mu);
+  text-decoration: none;
 }
 footer.site a:hover {
   color: var(--ink);
+}
+footer.site .fcols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 2.6fr);
+  gap: 32px 40px;
+  align-items: start;
+}
+footer.site .fbrand .lg {
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: var(--ink);
+  text-decoration: none;
+}
+footer.site .fbrand-desc {
+  margin: 12px 0 8px;
+  max-width: 34ch;
+  color: var(--mu);
+}
+footer.site .fbrand-meta {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+}
+footer.site .fnav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px 24px;
+}
+footer.site .fcol h3 {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 10px;
+  font-weight: 500;
+}
+footer.site .fcol ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+footer.site .fcol a {
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+footer.site hr.fl {
+  border: 0;
+  border-top: 1px solid var(--ln);
+  margin: 24px 0 16px;
 }
 footer.site .fgrid {
   display: flex;
@@ -505,19 +611,45 @@ footer.site .fgrid {
   justify-content: space-between;
   align-items: baseline;
 }
-footer.site nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 16px;
-}
-footer.site hr {
-  border: 0;
-  border-top: 1px solid var(--ln);
-  margin: 16px 0;
-}
 footer.site .fgrid p {
   max-width: 52ch;
   margin: 0;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 900px) {
+  footer.site .fcols {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  footer.site .fnav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  footer.site .fnav {
+    grid-template-columns: 1fr;
+  }
+  footer.site .fgrid {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+/* ==========================================================================
+   Micro-interactions
+   ========================================================================== */
+.bt,
+.cardlink,
+.pl {
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.bt:hover {
+  transform: translateY(-1px);
+}
+.cardlink:hover,
+.pl:hover {
+  transform: translateY(-2px);
 }
 
 /* ==========================================================================

@@ -1,5 +1,6 @@
 ---
 title: "Launcher : orchestration, campagnes reproductibles et paquets .livexp"
+seoTitle: "Launcher : campagnes reproductibles et paquets .livexp"
 description: "Le Launcher enchaîne SYNE, ECHOS et PRISM, exécute des campagnes reproductibles, reprend sans rejouer et scelle des paquets .livexp traçables et vérifiables."
 date: 2026-10-07
 tags: ["launcher", "orchestration", "campagnes", "livexp", "reprise"]

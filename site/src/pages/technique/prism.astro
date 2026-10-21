@@ -4,7 +4,10 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { Image } from 'astro:assets';
 import { url } from '../../utils/url';
 import prismShot from '../../assets/captures/launcher-prism.png';
 ---
@@ -20,6 +23,10 @@ import prismShot from '../../assets/captures/launcher-prism.png';
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'PRISM' }]}
   />
 
+  <div class="w" style="padding-top:8px">
+    <TableOfContents />
+  </div>
+
   <section class="block">
     <div class="w">
       <p style="margin-top:0"><StatusBadge status="developpement" /> <span class="mu">Projet Unreal et plugin PRISM-LDK</span></p>
@@ -34,7 +41,7 @@ import prismShot from '../../assets/captures/launcher-prism.png';
       </p>
 
       <figure class="shot">
-        <img src={prismShot.src} alt="Aperçu du rendu PRISM" width={prismShot.width} height={prismShot.height} loading="lazy" />
+        <Image src={prismShot} alt="Aperçu du rendu PRISM"  loading="lazy" />
         <figcaption>Capture — aperçu du rendu PRISM (version de travail).</figcaption>
       </figure>
     </div>
@@ -58,4 +65,14 @@ import prismShot from '../../assets/captures/launcher-prism.png';
       <p style="margin-top:18px"><a class="bt" href={url('technique/')}>← Vue d'ensemble</a></p>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="8.3 · Conversion"
+    title="Aller plus loin"
+    lead="Le moteur, l'observation et la documentation prolongent le rendu."
+    primaryLabel="SYNE : moteur"
+    primaryHref="technique/syne/"
+    secondaryLabel="Documentation"
+    secondaryHref="documentation/"
+  />
 </BaseLayout>

@@ -62,6 +62,12 @@ import { url } from '../../utils/url';
         checks are not enough: certain uses (screen readers, voice navigation) require a human evaluation that remains
         to be done.
       </p>
+      <p>
+        What was mechanically verified on <strong>21 October 2026</strong>: heading order and absence of level skips,
+        unique identifiers, resolvable internal anchors, presence and relevance of text alternatives, image dimensions,
+        ARIA labels, and a Lighthouse accessibility score of 100/100 on six representative pages. Automated checking
+        does not replace human evaluation.
+      </p>
       <p class="mu" style="font-size:0.78rem">
         The reference applied here is version 2.2 of the
         <a href="https://www.w3.org/TR/WCAG22/" rel="noopener">Web Content Accessibility Guidelines ↗</a> (W3C).
@@ -80,10 +86,10 @@ import { url } from '../../utils/url';
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Element</th><th>Value</th></tr></thead>
+          <thead><tr><th scope="col">Element</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Reporting channel</td><td><a href={SITE.repo + '/issues'} rel="noopener">GitHub Issues ↗</a></td></tr>
-            <tr><td>Last accessibility review</td><td>12 October 2026</td></tr>
+            <tr><td>Last accessibility review</td><td>21 October 2026</td></tr>
             <tr><td>Target standard</td><td>WCAG 2.2, level AA (voluntary statement)</td></tr>
           </tbody>
         </table>

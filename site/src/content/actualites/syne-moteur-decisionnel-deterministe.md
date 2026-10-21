@@ -1,5 +1,6 @@
 ---
 title: "SYNE : un moteur décisionnel déterministe pour l'émergence"
+seoTitle: "SYNE : un moteur déterministe pour l’émergence"
 description: "SYNE, le moteur de LIVEX : un monde à ticks, des agents autonomes, un déterminisme contrôlé et une reprise exacte. Plongée dans la mécanique."
 date: 2026-10-04
 tags: ["syne", "moteur", "agents", "determinisme", "persistance"]
