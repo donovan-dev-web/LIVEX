@@ -1,0 +1,78 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import { url } from '../utils/url';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel?: string;
+  secondaryHref?: string;
+}
+
+const {
+  lang = 'fr',
+  eyebrow,
+  title,
+  lead,
+  primaryLabel,
+  primaryHref,
+  secondaryLabel,
+  secondaryHref,
+} = Astro.props;
+
+const resolve = (href: string) => (href.startsWith('http') ? href : url(href, lang));
+const isExternal = (href: string) => href.startsWith('http');
+---
+
+<section class="block" aria-labelledby="cta-band-title">
+  <div class="w">
+    <div class="ctaband br">
+      {eyebrow && <p class="ey" style="margin:0 0 10px">{eyebrow}</p>}
+      <h2 id="cta-band-title" class="ctaband-title">{title}</h2>
+      {lead && <p class="lead" style="margin:0 0 20px">{lead}</p>}
+      <div class="cta">
+        <a
+          class="bt p"
+          href={resolve(primaryHref)}
+          rel={isExternal(primaryHref) ? 'noopener' : undefined}
+          target={isExternal(primaryHref) ? '_blank' : undefined}
+        >
+          {primaryLabel}
+        </a>
+        {secondaryLabel && secondaryHref && (
+          <a
+            class="bt"
+            href={resolve(secondaryHref)}
+            rel={isExternal(secondaryHref) ? 'noopener' : undefined}
+            target={isExternal(secondaryHref) ? '_blank' : undefined}
+          >
+            {secondaryLabel}
+          </a>
+        )}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ctaband {
+    padding: 28px;
+    background: color-mix(in srgb, var(--sf) 80%, transparent);
+  }
+  .ctaband-title {
+    font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+    margin: 0 0 12px;
+  }
+  @media (max-width: 640px) {
+    .ctaband {
+      padding: 20px;
+    }
+  }
+</style>

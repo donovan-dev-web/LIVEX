@@ -4,10 +4,16 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { Image } from 'astro:assets';
 import { url } from '../../utils/url';
+import { PROJECT_STATE } from '../../data/release';
 import echosAgents from '../../assets/captures/echos-agents.png';
 import echosRelations from '../../assets/captures/echos-relations.png';
+
+const coverageEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%', ' %');
 ---
 <BaseLayout
   title="ECHOS : observation et analyse des runs"
@@ -20,6 +26,10 @@ import echosRelations from '../../assets/captures/echos-relations.png';
     lead="ECHOS (Emergent Cognition & Holistic Observation System) lit les traces produites par SYNE et en tire des mesures. Il observe le monde sans jamais intervenir dessus."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'ECHOS' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -43,11 +53,11 @@ import echosRelations from '../../assets/captures/echos-relations.png';
       </p>
 
       <figure class="shot">
-        <img src={echosAgents.src} alt="Vue d'ECHOS : suivi d'agents" width={echosAgents.width} height={echosAgents.height} loading="lazy" />
+        <Image src={echosAgents} alt="Vue d'ECHOS : suivi d'agents" loading="lazy" />
         <figcaption>Capture — suivi d'agents dans ECHOS.</figcaption>
       </figure>
       <figure class="shot">
-        <img src={echosRelations.src} alt="Vue d'ECHOS : relations entre agents" width={echosRelations.width} height={echosRelations.height} loading="lazy" />
+        <Image src={echosRelations} alt="Vue d'ECHOS : relations entre agents" loading="lazy" />
         <figcaption>Capture — relations entre agents dans ECHOS.</figcaption>
       </figure>
     </div>
@@ -63,7 +73,7 @@ import echosRelations from '../../assets/captures/echos-relations.png';
         <div class="pl br" style="padding:18px"><h3>Boucles</h3><p class="mu" style="margin:0">Rétroactions où le comportement d'un agent infléchit le suivant.</p></div>
         <div class="pl br" style="padding:18px"><h3>Relations</h3><p class="mu" style="margin:0">Interactions entre agents, observées et agrégées.</p></div>
       </div>
-      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS était de 91,32 % au 19 octobre 2026.</p></div>
+      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS était de {coverageEchos} au {PROJECT_STATE.observedDate}.</p></div>
     </div>
   </section>
 
@@ -75,4 +85,14 @@ import echosRelations from '../../assets/captures/echos-relations.png';
       </p>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="7.4 · Conversion"
+    title="Aller plus loin"
+    lead="Le rendu, la documentation et le dépôt prolongent l'observation."
+    primaryLabel="PRISM : rendu"
+    primaryHref="technique/prism/"
+    secondaryLabel="Documentation"
+    secondaryHref="documentation/"
+  />
 </BaseLayout>

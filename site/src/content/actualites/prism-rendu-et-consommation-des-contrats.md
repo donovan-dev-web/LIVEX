@@ -40,7 +40,7 @@ Résultat : le dernier état reçu demeure l'état courant pendant le silence, e
 
 L'interpolation éventuelle à l'écran, entre deux snapshots, est un autre sujet — elle reste visuelle et n'est jamais réinjectée dans le monde. Inventer un tick pour obtenir une image fluide produirait une belle scène et un résultat faux.
 
-![Vue PRISM dans le Launcher](/captures/launcher-prism.png)
+![Vue PRISM dans le Launcher](../../assets/captures/launcher-prism.png)
 
 ## Où en est le travail
 

@@ -8,6 +8,7 @@ import StatusBadge from '../components/StatusBadge.astro';
 import { PROJECT_STATE, RELEASE, VERSION_TABLE } from '../data/release';
 
 const nf = new Intl.NumberFormat('fr-FR');
+const ciJobs = PROJECT_STATE.ci.split(' ')[0];
 ---
 <BaseLayout
   title="LIVEX — Versions des composants et état du projet"
@@ -32,7 +33,7 @@ const nf = new Intl.NumberFormat('fr-FR');
       <h2>Quatre composants, quatre versions.</h2>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Composant</th><th>Version</th><th>Note</th><th>État</th></tr></thead>
+          <thead><tr><th scope="col">Composant</th><th scope="col">Version</th><th scope="col">Note</th><th scope="col">État</th></tr></thead>
           <tbody>
             <tr><td>SYNE</td><td>{VERSION_TABLE[0].version}</td><td>{VERSION_TABLE[0].note}</td><td><StatusBadge status="experimental" /></td></tr>
             <tr><td>ECHOS</td><td>{VERSION_TABLE[1].version}</td><td>{VERSION_TABLE[1].note}</td><td><StatusBadge status="experimental" /></td></tr>
@@ -66,7 +67,7 @@ const nf = new Intl.NumberFormat('fr-FR');
           <p>{nf.format(PROJECT_STATE.loc.total)} lignes analysées (source et tests).</p>
         </div>
         <div>
-          <div class="n">13/13</div>
+          <div class="n">{ciJobs}</div>
           <h3>jobs CI verts</h3>
           <p>{PROJECT_STATE.ci}.</p>
         </div>
@@ -74,7 +75,7 @@ const nf = new Intl.NumberFormat('fr-FR');
 
       <div class="ov" style="margin-top:28px">
         <table class="tb">
-          <thead><tr><th>Indicateur</th><th>Valeur</th></tr></thead>
+          <thead><tr><th scope="col">Indicateur</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests par composant</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
@@ -89,6 +90,22 @@ const nf = new Intl.NumberFormat('fr-FR');
         validation fonctionnelle, ni une promesse de stabilité.</p></div>
 
       <p style="margin-top:18px"><a class="bt" href={RELEASE.changelogUrl} rel="noopener">Journal des changements ↗</a></p>
+    </div>
+  </section>
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>13.3</b> Notes de version</div>
+      <h2>Le changelog et les tags.</h2>
+      <p>
+        Aucune release publique n'est posée à ce jour, donc aucune fiche de version n'existe encore
+        (<code>/versions/&lt;version&gt;/</code>). Le journal des changements du dépôt et les tags GitHub restent
+        la référence en attendant.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Lire le CHANGELOG.md &rarr;</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={RELEASE.releasesUrl} rel="noopener">Tags et releases GitHub &rarr;</a>
+      </p>
     </div>
   </section>
 </BaseLayout>

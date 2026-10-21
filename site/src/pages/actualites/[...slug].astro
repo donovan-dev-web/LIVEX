@@ -5,7 +5,10 @@
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import CardLink from '../../components/CardLink.astro';
 import { url, absoluteUrl } from '../../utils/url';
+import { useTranslations } from '../../i18n/ui';
+import { SITE } from '../../data/site';
 
 export async function getStaticPaths() {
   const entries = await getCollection('actualites', ({ data }) => !data.draft);
@@ -13,14 +16,45 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+const toc = headings.filter((h) => h.depth <= 3);
+const t = useTranslations('fr');
+const articleUrl = absoluteUrl(`actualites/${entry.id}/`);
+const shareTitle = entry.data.title;
+/** Titre court pour `<title>`/Open Graph ; le titre complet reste le H1. */
+const pageTitle = entry.data.seoTitle ?? entry.data.title;
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: entry.data.title,
+  description: entry.data.description,
+  datePublished: entry.data.date.toISOString(),
+  author: { '@type': 'Person', name: 'Donovan Chartrain', url: 'https://donovan-dev-web.vercel.app' },
+  publisher: { '@type': 'Organization', name: SITE.name, url: absoluteUrl(''), logo: absoluteUrl('favicon.svg') },
+  image: absoluteUrl('media/og-livex.png'),
+  mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
+  articleSection: 'Journal',
+  keywords: entry.data.tags.join(', '),
+  inLanguage: 'fr',
+};
+const related = (await getCollection('actualites', ({ data }) => !data.draft))
+  .filter((e) => e.id !== entry.id)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 2);
 ---
 <BaseLayout
-  title={entry.data.title}
+  title={pageTitle}
   description={entry.data.description}
   ogType="article"
-  alternates={{ en: 'actualites/' }}
+  article={{
+    publishedTime: entry.data.date.toISOString(),
+    author: 'Donovan Chartrain',
+    section: 'Journal',
+    tags: entry.data.tags,
+  }}
+  jsonLd={articleJsonLd}
+  alternates={{}}
 >
   <PageHeader
     index="17"
@@ -32,11 +66,94 @@ const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', ye
 
   <section class="block">
     <div class="w">
+      <div class="reading-progress" aria-hidden="true"><span class="reading-progress-bar"></span></div>
       <p class="mu" style="font-size:0.78rem">
         <time datetime={entry.data.date.toISOString()}>{fmt.format(entry.data.date)}</time>
         {entry.data.tags.length > 0 && <> · {entry.data.tags.join(' · ')}</>}
       </p>
+      {toc.length > 0 && (
+        <nav class="toc" aria-label="Sommaire de l'article">
+          {toc.map((h) => (
+            <a href={`#${h.slug}`} style={h.depth > 2 ? 'padding-left:12px' : undefined}>{h.text}</a>
+          ))}
+        </nav>
+      )}
       <Content />
+
+      <section class="share" aria-labelledby="share-title" data-url={articleUrl} data-title={shareTitle}>
+        <h2 id="share-title" class="share-title">{t('article.share')}</h2>
+        <div class="share-actions">
+          <button type="button" class="bt share-copy" data-copy={articleUrl} data-copied={t('article.copied')}>
+            {t('article.copy')}
+          </button>
+          <a class="bt" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(shareTitle)}`} rel="noopener" target="_blank">X / Twitter</a>
+          <a class="bt" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`} rel="noopener" target="_blank">LinkedIn</a>
+          <a class="bt" href={`mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(articleUrl)}`}>E-mail</a>
+        </div>
+        <p class="mu share-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="pl br" style="padding:18px;margin-top:18px" aria-labelledby="cite-title">
+        <h2 id="cite-title" style="margin:0 0 10px">Citer cet article</h2>
+        <p class="mu" style="margin:0 0 12px;font-size:0.78rem">
+          Chartrain, D. ({entry.data.date.getFullYear()}). <em>{entry.data.title}</em>. LIVEX. {articleUrl}
+        </p>
+        <p style="margin:0">
+          <a class="bt" href={url('CITATION.cff')} rel="noopener">CITATION.cff ↗</a>
+          <span style="display:inline-block;width:8px"></span>
+          <a class="bt" href={SITE.repo} rel="noopener">Dépôt GitHub ↗</a>
+        </p>
+      </section>
+
+      <script is:inline>
+        (function () {
+          var btn = document.querySelector('.share-copy');
+          if (!btn) return;
+          var status = document.querySelector('.share-status');
+          var copied = btn.getAttribute('data-copied') || 'Lien copié';
+          btn.addEventListener('click', async function () {
+            var link = btn.getAttribute('data-copy') || '';
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(link);
+              } else {
+                throw new Error('no-clipboard');
+              }
+              if (status) status.textContent = copied;
+            } catch (e) {
+              if (status) status.textContent = link;
+            }
+          });
+          if (navigator.share) {
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'bt';
+            shareBtn.textContent = 'Partager…';
+            shareBtn.addEventListener('click', function () {
+              navigator.share({ title: document.title, url: btn.getAttribute('data-copy') || '' }).catch(function () {});
+            });
+            var actions = document.querySelector('.share-actions');
+            if (actions) actions.appendChild(shareBtn);
+          }
+        })();
+      </script>
+
+      <script is:inline>
+        (function () {
+          var bar = document.querySelector('.reading-progress-bar');
+          if (!bar) return;
+          function update() {
+            var doc = document.documentElement;
+            var scrollTop = window.scrollY || doc.scrollTop;
+            var height = doc.scrollHeight - doc.clientHeight;
+            var pct = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+            bar.style.width = pct + '%';
+          }
+          window.addEventListener('scroll', update, { passive: true });
+          update();
+        })();
+      </script>
+
       <p style="margin-top:24px">
         <a class="bt" href={url('actualites/')}>Toutes les actualités</a>
         <span style="display:inline-block;width:8px"></span>
@@ -44,4 +161,23 @@ const fmt = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', ye
       </p>
     </div>
   </section>
+
+  {related.length > 0 && (
+    <section class="block">
+      <div class="w">
+        <div class="sh"><b>17.1</b> Lire aussi</div>
+        <h2>D'autres jalons récents.</h2>
+        <div class="g2" style="margin-top:18px">
+          {related.map((e) => (
+            <CardLink
+              title={e.data.title}
+              text={e.data.description}
+              href={`actualites/${e.id}/`}
+              cta="Lire l'article →"
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 </BaseLayout>

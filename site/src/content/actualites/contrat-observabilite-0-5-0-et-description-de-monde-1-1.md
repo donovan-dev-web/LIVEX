@@ -1,5 +1,6 @@
 ---
 title: "Contrat d'observabilité 0.5.0 et description de monde 1.1"
+seoTitle: "Contrat d'observabilité 0.5.0 et monde 1.1"
 description: "Le contrat d'observabilité passe en 0.5.0 et la description de monde en 1.1 : champs additifs, convention du null et parité syne-mock mesurée."
 date: 2026-10-18
 tags: ["contrat", "observabilite", "syne", "parite"]

@@ -1,0 +1,57 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url } from '../../utils/url';
+import { MONOGRAPH_GROUPS, MONOGRAPH_REPO, MONOGRAPH_TREE } from '../../data/monograph';
+
+const groups = MONOGRAPH_GROUPS.map((group) => ({
+  title: group.title.en,
+  items: group.items.map((item) => ({ label: item.label.en, href: item.href })),
+}));
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="LIVEX - Monograph: chapters and table of contents"
+  description="The LIVEX monograph, chapter by chapter: SYNE engine, ECHOS observation, PRISM rendering, Launcher, results and annexes."
+>
+  <PageHeader
+    index="15b"
+    eyebrow="Documentation"
+    title="The monograph, chapter by chapter."
+    lead="The monograph lives in the repository, versioned with the code. This portal brings its chapters together, grouped by intent. The chapters themselves are written in French."
+    crumbs={[{ label: 'Documentation', href: 'documentation/' }, { label: 'Monograph' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <h2>Chapters, by block.</h2>
+      <p>Each link opens the corresponding Markdown file on GitHub. The general table of contents remains the reference.</p>
+      <p style="margin-top:18px">
+        <a class="bt" href={`${MONOGRAPH_REPO}/00-SOMMAIRE-GENERAL.md`} rel="noopener">General table of contents ↗</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={MONOGRAPH_TREE} rel="noopener">Full folder ↗</a>
+      </p>
+      <div class="g2" style="margin-top:20px">
+        {groups.map((g) => (
+          <div class="pl br" style="padding:20px">
+            <h3 style="margin-bottom:10px">{g.title}</h3>
+            <ul style="list-style:none;padding:0;margin:0">
+              {g.items.map((it) => (
+                <li style="padding:4px 0;font-size:0.8rem">
+                  <a href={it.href} rel="noopener">{it.label} ↗</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <div class="cc" style="margin-top:24px"><p>Short view: <a href={url('documentation/', 'en')}>Documentation</a> and
+        <a href={url('technique/', 'en')}>Architecture</a>. Full folder:
+        <a href={MONOGRAPH_TREE} rel="noopener">docs/monographie/</a>.</p></div>
+    </div>
+  </section>
+</BaseLayout>

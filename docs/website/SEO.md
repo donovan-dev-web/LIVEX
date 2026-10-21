@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 **Dépend de** : `../../site/src/layouts/BaseLayout.astro`, `../../site/astro.config.mjs`, `../../site/public/`
 
 ---
@@ -28,12 +28,17 @@
 | `og:type` | `website` (ou `article`). |
 | `og:site_name` | `LIVEX`. |
 | `og:title`, `og:description`, `og:url` | Identiques au titre, à la description et à l'URL canonique. |
-| `og:image` | `media/og-livex.png` (ou prop `image`). |
+| `og:image` | `media/og-livex.png` (ou prop `image`), 1200 × 630. |
+| `og:image:alt`, `og:image:width`, `og:image:height` | Texte alternatif localisé, `1200`, `630`. |
 | `og:locale` | `fr_FR` / `en_US`. |
 | `og:locale:alternate` | L'autre langue publiée. |
 | `twitter:card` | `summary_large_image`. |
+| `twitter:title`, `twitter:description`, `twitter:image`, `twitter:image:alt` | Reprise des valeurs Open Graph. |
+| `article:published_time`, `article:author`, `article:section`, `article:tag` | Uniquement avec `ogType="article"` et la prop `article`. |
 
-L'image Open Graph par défaut vit dans `site/public/media/og-livex.png`.
+L'image Open Graph par défaut vit dans `site/public/media/og-livex.png`
+(1200 × 630). Les images par section sont un chantier ultérieur : toutes les
+pages partagent pour l'instant cette image.
 
 ## 3. Multilingue (SEO)
 
@@ -44,9 +49,10 @@ L'image Open Graph par défaut vit dans `site/public/media/og-livex.png`.
 - Aucune redirection automatique côté serveur : les deux versions sont
   accessibles et indexables.
 - **Pages sans équivalent dans l'autre langue** (ex. articles du journal,
-  FR-only) : passer `alternates={{ en: 'actualites/' }}` à `BaseLayout` pour
-  que `hreflang` et le sélecteur de langue pointent vers la page EN la plus
-  proche au lieu d'une URL inexistante (404).
+  FR-only) : passer `alternates={{}}` à `BaseLayout` pour supprimer le
+  `hreflang` et le sélecteur de langue, au lieu de pointer vers une URL
+  inexistante. Le journal EN (`/en/actualites/`) reste une page d'état qui
+  renvoie explicitement vers les articles français.
 
 ## 4. Sitemap
 
@@ -58,20 +64,31 @@ L'image Open Graph par défaut vit dans `site/public/media/og-livex.png`.
 
 ## 5. Données structurées (JSON-LD)
 
-Un nœud `WebSite` est émis sur chaque page :
+Chaque page émet trois nœuds de base — `WebSite`, `Organization` et `Person` —
+puis un nœud additionnel selon le contexte :
 
 ```json
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "LIVEX",
-  "url": "<URL canonique>",
-  "description": "<description>",
+  "url": "https://donovan-dev-web.github.io/LIVEX/",
+  "description": "<description du site>",
   "inLanguage": "fr | en",
   "license": "https://www.gnu.org/licenses/gpl-3.0.html",
   "sameAs": ["https://github.com/donovan-dev-web/LIVEX"]
 }
 ```
+
+- `Organization` : nom, URL racine, logo (`favicon.svg`), dépôt.
+- `Person` : auteur et URL du portfolio.
+- Accueil : `SoftwareApplication` via la prop `jsonLd`.
+- Journal : `Article` via la prop `jsonLd` de `actualites/[...slug].astro`
+  (auteur, éditeur, image, date, section, mots-clés, `mainEntityOfPage`).
+- Les breadcrumbs sont émis par `PageHeader.astro` en `BreadcrumbList`.
+
+`jsonLd` accepte un objet ou un tableau ; les blocs sont sérialisés avec
+`JSON.stringify` et validés à l'audit.
 
 ## 6. Flux RSS
 
@@ -86,11 +103,13 @@ Un nœud `WebSite` est émis sur chaque page :
 
 | Fichier | Rôle |
 | :-- | :-- |
-| `public/favicon.svg` | Favicon. |
+| `public/favicon.svg` | Favicon vectoriel. |
+| `public/icon-192.png`, `public/icon-512.png` | Icônes PWA (manifeste). |
+| `public/apple-touch-icon.png` | Icône iOS (180 × 180). |
 | `public/robots.txt` | `Allow: /` + URL du sitemap. |
-| `public/llms.txt` | Guide destiné aux assistants IA / crawlers (convention [llmstxt.org](https://llmstxt.org/)) : résumé + liens clés. |
-| `public/site.webmanifest` | Manifeste PWA (nom, `start_url`/`scope` `/LIVEX/`, icône). |
-| `public/media/og-livex.png` | Image Open Graph par défaut. |
+| `public/llms.txt` | Guide destiné aux assistants IA / crawlers (convention [llmstxt.org](https://llmstxt.org/)) : résumé + liens clés, y compris `getting-started`, `etat-du-projet` et `monographie`. |
+| `public/site.webmanifest` | Manifeste PWA (nom, `start_url`/`scope` relatifs, icônes SVG et PNG). |
+| `public/media/og-livex.png` | Image Open Graph par défaut (1200 × 630). |
 | `public/.well-known/security.txt` | Contact sécurité, expiration, langues, politique. |
 | `public/.nojekyll` | Empêche GitHub Pages d'ignorer les dossiers commençant par `_`. |
 
@@ -116,3 +135,4 @@ Un nœud `WebSite` est émis sur chaque page :
 | 14 octobre 2026 | Création | Documenter le SEO et les métadonnées du site. |
 | 14 octobre 2026 | Ajout de `public/llms.txt` et note sur la racine de domaine (robots.txt d'un site de projet). | Réponse au constat d'un `404 /llms.txt` et clarification robots. |
 | 14 octobre 2026 | Ajout de la prop `alternates` (pages sans équivalent EN : journal, 404). | Supprimer les liens `hreflang`/sélecteur vers des pages inexistantes (404). |
+| 21 octobre 2026 | Dimensions/alt OG, métadonnées `article:*`, JSON-LD `Organization`/`Person`/`Article`, icônes PWA. | Revue globale du SEO et des métadonnées. |

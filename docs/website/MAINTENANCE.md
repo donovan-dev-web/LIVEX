@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 **Dépend de** : `COMPONENTS.md`, `I18N.md`, `CONTENT.md`, `DEPLOYMENT.md`
 
 ---
@@ -102,24 +102,31 @@ n'est pas servi à la racine, mais sous `/LIVEX/`).
 | Double préfixe `/LIVEX/en/en/…` | Ne pas encapsuler un `crumb.href` dans `url()` : `PageHeader` le fait. |
 | Import introuvable dans `src/pages/en/**` | Corriger la profondeur relative (`../../../` pour un fichier à deux niveaux sous `en/`). |
 | Lien RSS anglais mort | Le flux est français : `url('actualites/feed.xml', 'fr')`. |
-| Sous-menu d'en-tête inatteignable au clavier | Le parent doit rester un `<a>` (pas un bouton) : l'ouverture repose sur `:focus-within`. Ne pas passer les sous-liens en `display:none` hors du couple `.ni`/`.sub` prévu. |
+| Sous-menu d'en-tête inatteignable au clavier | Le parent est un `<button>` avec `aria-expanded`/`aria-controls` ; ne pas revenir à une ouverture au survol ou à `:focus-within`. `Échap` doit rendre le focus au bouton. |
 | Menu mobile qui reste ouvert en passant au bureau | Le script écoute `matchMedia('(min-width: 901px)')` et retire `data-nav-open` ; ne pas casser cet écouteur. |
-| Sous-menu desktop qui se referme pendant la traversée souris | Un pont invisible `.sub::before` (10 px) couvre l'écart ; ne pas le supprimer. |
+| Sous-menu qui reste ouvert après navigation | `set(false)` ferme aussi les `.ni.open` et remet `aria-expanded="false"` ; conserver ce nettoyage. |
+| Recherche vide en développement | L'index Pagefind est produit par `postbuild` ; lancer `npm run build` (ou `pagefind --site dist`) avant de tester la recherche. En dev, la modale affiche une aide. |
+| Sommaire technique invisible | `TableOfContents` reste `hidden` sans JS ou avec moins de trois sections ; c'est volontaire pour ne pas exposer un contrôle vide. |
 | Clignotement de thème | Le script d'application doit rester en ligne dans le `<head>`, avant le rendu. |
 | Chiffre modifié « à la main » | Le centraliser dans `data/` + `claims.ts`. |
 | `npm run dev` sans `/LIVEX/` | Le `base` est non racine : utiliser les URLs fournies par le serveur. |
+| Lighthouse CI en échec sur les assets | Le workflow construit avec `BASE_PATH=/` et `SITE_URL=http://localhost:4321` pour que `astro preview` serve la racine ; ne pas retirer ces variables. |
 
 ## 9. Checklist avant publication
 
 - [ ] `npm run check` : 0 erreur, 0 avertissement, 0 indice.
-- [ ] `npm run build` : succès ; nombre de pages attendu (28 FR + 28 EN + 404 = 57).
-- [ ] Liens internes résolus (aucun 404) ; alternates `hreflang` présents.
+- [ ] `npm run build` : succès ; nombre de pages attendu (80 pages, 404 incluse) et index Pagefind généré (79 pages indexées, FR + EN).
+- [ ] `npm run check:links` : tous les liens internes résolus.
+- [ ] Liens internes et ancres résolus (aucun 404) ; alternates `hreflang` présents.
 - [ ] Bandeau de traduction sur les pages EN de niveau 2 ; absent au niveau 1.
 - [ ] Chiffres alignés sur les sources et le registre d'affirmations.
 - [ ] Thème clair **et** sombre vérifiés ; navigation clavier OK (sous-menus
-      d'en-tête accessibles au clavier).
+      d'en-tête cliquables, `Échap`, focus rendu).
 - [ ] Responsive vérifié : bureau, tablette paysage, tablette portrait et
-      mobile (menu hamburger ≤ 900 px, sous-menus dépliés, cibles tactiles).
+      mobile (menu hamburger ≤ 900 px, sous-menus repliés puis cliquables,
+      cibles tactiles).
+- [ ] Recherche testée après build (Pagefind) ; modale, focus piégé, `Échap`.
+- [ ] Lighthouse CI (workflow `lighthouse.yml`) vert ou avertissements justifiés.
 - [ ] Aucune chaîne française résiduelle dans `src/pages/en/`.
 
 ## 10. Conventions
@@ -138,3 +145,4 @@ numérotées, table de mises à jour).
 | 14 octobre 2026 | Création | Documenter la maintenance et la contribution au site. |
 | 14 octobre 2026 | Section « Ajouter une fiche de version » ; sous-menus et comptage de pages actualisés. | Alignement sur le cahier des charges (S14). |
 | 14 octobre 2026 | Pièges et checklist pour le menu mobile et les sous-menus ; référence de section corrigée. | Ajout du menu mobile responsive. |
+| 21 octobre 2026 | Pièges recherche/sommaire/Lighthouse ; checklist à 80 pages et Pagefind. | Revue globale et validation de la recherche, des sommaires et de la CI. |

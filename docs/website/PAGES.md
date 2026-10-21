@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 **Dépend de** : `../../site/src/pages/`, `../../site/src/data/site.ts`, `I18N.md`
 
 ---
@@ -35,14 +35,18 @@ décrivent cette page utilisent cet index comme préfixe de sous-section
 | 10 | `technique/resultats/` | Reproductibilité et mesures (déterminisme, tests, couverture). |
 | 11 | `telecharger/` | Télécharger : état neutre (aucune release publique). |
 | 12 | `telecharger/installation/` | Installation depuis les sources. |
+| 12b | `getting-started/` | Démarrer en 5 minutes : prérequis, commande unique, vérification. |
 | 13 | `versions/` | Versions des composants et état du dépôt. |
+| 13b | `etat-du-projet/` | Relevé factuel et daté : tests, couverture, CI, Windows. |
 | 14 | `feuille-de-route/` | Feuille de route (jalons, périmètre). |
 | 15 | `documentation/` | Accès à la documentation du dépôt. |
+| 15b | `monographie/` | Portail des chapitres de la monographie (FR et EN). |
 | 16 | `faq/` | Questions fréquentes (accordéons `<details>`). |
 | 17 | `actualites/` | Journal (index) + flux RSS. |
 | 18 | `suivre/` | Suivre le projet (canaux). |
 | 19 | `participer/` | Participer / contribuer. |
 | 20 | `a-propos/` | À propos du projet et de son auteur. |
+| 20.1 | `a-propos/auteur/` | Portrait de l'auteur, parcours et portfolios. |
 | 21 | `a-propos/transparence-ia/` | Transparence sur l'usage de l'IA. |
 | 22 | `mentions-legales/` | Mentions légales. |
 | 23 | `confidentialite/` | Confidentialité (aucun traceur, aucun cookie). |
@@ -60,7 +64,7 @@ tant que la source est vide, sans erreur de build :
 | Chemin | Source | Rôle |
 | :-- | :-- | :-- |
 | `versions/<version>/` | `site/src/data/versions.ts` (`VERSIONS`) | Fiche d'une version publiée (notes, téléchargements, empreintes). Vide à ce jour (aucune release). |
-| `actualites/<slug>/` | collection `actualites` (`src/content/actualites/*.md`) | Article de journal. Vide à ce jour. **Français uniquement** (niveau 3). |
+| `actualites/<slug>/` | collection `actualites` (`src/content/actualites/*.md`) | Article de journal (15 articles publiés). **Français uniquement** (niveau 3). |
 
 ## 3. Miroir anglais (`/en/`)
 
@@ -83,34 +87,35 @@ Le document de niveau 2 affiche un bandeau « traduction automatique ».
 
 ### 4.1 En-tête (`NAV`)
 
-Six entrées, servies par `Header.astro` depuis `site/src/data/site.ts`. Quatre
-d'entre elles ouvrent un **sous-menu déroulant** (`children`) :
+Cinq entrées, servies par `Header.astro` depuis `site/src/data/site.ts`. Toutes
+ouvrent un **sous-menu déroulant** (`children`) :
 
-| Clé | Cible | Libellé FR / EN | Sous-entières |
+| Clé | Cible | Libellé FR / EN | Sous-entrées |
 | :-- | :-- | :-- | :-- |
-| `comprendre` | `comprendre/` | Comprendre / Understand | Limites et portée · L'émergence expliquée · Glossaire |
-| `architecture` | `technique/` | Architecture / Architecture | SYNE · ECHOS · PRISM · Launcher · Reproductibilité et mesures |
-| `telecharger` | `telecharger/` | Télécharger / Download | Installation et prérequis |
-| `journal` | `actualites/` | Journal / Journal | — |
-| `documentation` | `documentation/` | Documentation / Documentation | — |
-| `apropos` | `a-propos/` | À propos / About | Transparence sur l'usage de l'IA |
+| `comprendre` | `comprendre/` | Comprendre / Understand | Vue d'ensemble · Limites et portée · L'émergence expliquée · Glossaire · FAQ |
+| `architecture` | `technique/` | Architecture / Architecture | Vue d'ensemble · SYNE · ECHOS · PRISM · Launcher · Reproductibilité et mesures |
+| `telecharger` | `telecharger/` | Télécharger / Download | Vue d'ensemble · Démarrer en 5 minutes · Installation et prérequis · Versions |
+| `ressources` | `documentation/` | Ressources / Resources | Documentation · État du projet · Monographie · Journal · Plan du site |
+| `apropos` | `a-propos/` | À propos / About | Vue d'ensemble · Auteur · Transparence IA · Participer · Kit média |
 
-Sur **bureau et tablette paysage** (> 900 px), le sous-menu s'ouvre **au
-survol** et **au focus clavier** (`:focus-within`), sans JavaScript : l'`<a>`
-parent reste un lien réel, et ses liens enfants deviennent tabulables dès que
-le parent a le focus.
+Sur **bureau et tablette paysage** (> 900 px), le sous-menu est **cliquable
+uniquement** : le bouton parent (`aria-expanded`, `aria-controls`) ouvre ou
+ferme le panneau, la flèche pivote, et un seul sous-menu reste ouvert à la
+fois. `Échap` ferme le sous-menu et rend le focus au bouton. Ce choix évite les
+ouvertures involontaires au survol et rend l'état `aria-expanded` fiable.
 
 Sur **tablette portrait et mobile** (≤ 900 px), la barre devient un **menu
 déroulant** : un bouton hamburger (`#nav-toggle`, `aria-expanded`) ouvre un
-panneau plein écran où les sous-menus sont **dépliés en ligne**, en retrait.
-Le panneau se ferme au clic sur un lien, au clic à l'extérieur, via `Échap`, et
+panneau plein écran où les sous-menus sont **repliés** et s'ouvrent au clic. Le
+panneau se ferme au clic sur un lien, au clic à l'extérieur, via `Échap`, et
 automatiquement au retour au format bureau. Sans JavaScript, un `<noscript>`
 maintient la barre défilante (les liens restent aussi accessibles via le pied
 de page et le plan du site).
 
 ### 4.2 Pied de page (`FOOTER_NAV`)
 
-Dix-neuf entrées (`../CONTENT.md` §2), dont **Kit média** / **Press kit**, plus
+Vingt-trois entrées (`../CONTENT.md` §2), dont **Démarrer en 5 min**, **État du
+projet**, **Monographie**, **Auteur** et **Kit média** / **Press kit**, plus
 deux liens externes : le dépôt GitHub et la licence.
 
 ## 5. Éléments transverses
@@ -121,7 +126,7 @@ deux liens externes : le dépôt GitHub et la licence.
 | Sitemap | `sitemap-index.xml` | Généré par `@astrojs/sitemap`, avec alternates `hreflang`. |
 | Page 404 | `404.html` | Racine du build, pas de dossier `404/`. |
 | Robots | `robots.txt` | Pointe vers le sitemap. |
-| Manifeste | `site.webmanifest` | `start_url` et `scope` = `/LIVEX/`. |
+| Manifeste | `site.webmanifest` | `start_url` et `scope` relatifs (`"./"`) : le manifeste fonctionne sous n'importe quel `base`. |
 
 ## 6. Ajouter une page
 
@@ -139,3 +144,4 @@ via `children`), et mettre à jour `plan-du-site`.
 | 14 octobre 2026 | Création | Cartographier les pages et la navigation. |
 | 14 octobre 2026 | Ajout de `presse/` (27), des routes dynamiques `versions/<version>/` et `actualites/<slug>/`, des sous-menus d'en-tête et du pied de page à 19 entrées. | Alignement sur le cahier des charges (S14, S18, S23). |
 | 14 octobre 2026 | Menu mobile (≤ 900 px) pour les sous-menus de navigation. | Rendre la navigation utilisable sur tablette portrait et mobile. |
+| 21 octobre 2026 | Ajout de `getting-started/` (12b), `etat-du-projet/` (13b), `monographie/` (15b) et `a-propos/auteur/` (20.1) ; sous-menus désormais cliquables (plus de survol) ; pied de page à 23 entrées. | Revue globale du site et alignement sur l'implémentation réelle. |

@@ -1,0 +1,47 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import { url } from '../utils/url';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+  title: string;
+  text: string;
+  href: string;
+  cta?: string;
+  eyebrow?: string;
+}
+
+const { lang = 'fr', title, text, href, cta, eyebrow } = Astro.props;
+const resolved = href.startsWith('http') ? href : url(href, lang);
+const isExternal = href.startsWith('http');
+---
+
+<article class="pl br cardlink">
+  {eyebrow && <p class="ey" style="margin:0 0 8px;font-size:0.64rem">{eyebrow}</p>}
+  <h3 style="margin:0 0 8px">{title}</h3>
+  <p class="mu" style="margin:0 0 14px">{text}</p>
+  <a
+    class="bt"
+    href={resolved}
+    rel={isExternal ? 'noopener' : undefined}
+    target={isExternal ? '_blank' : undefined}
+  >
+    {cta ?? (lang === 'en' ? 'Learn more →' : 'En savoir plus →')}
+  </a>
+</article>
+
+<style>
+  .cardlink {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px;
+  }
+  .cardlink .bt {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+</style>

@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "Si vous utilisez ce site ou son contenu, merci de le citer comme indiqué ci-dessous."
+title: "LIVEX — site vitrine et documentation"
+type: dataset
+authors:
+  - family-names: Chartrain
+    given-names: Donovan
+    email: donovan.chartrain@gmail.com
+    website: https://donovan-dev-web.github.io/LIVEX/
+version: 0.1
+date-released: 2026-10-20
+license: CC-BY-4.0
+url: "https://donovan-dev-web.github.io/LIVEX/"
+repository-code: "https://github.com/donovan-dev-web/LIVEX"
+abstract: >-
+  Site vitrine et documentation du projet LIVEX (Living Intelligent Virtual
+  Ecosystem eXperience) : écosystème de simulation multi-agents composé du
+  moteur SYNE, de l'observatoire ECHOS et du rendu PRISM. Contenu sous licence
+  CC BY 4.0, code sous licence GNU GPL v3.0 ou ultérieure.
+keywords:
+  - artificial-life
+  - multi-agent-simulation
+  - emergence
+  - documentation
+  - livex

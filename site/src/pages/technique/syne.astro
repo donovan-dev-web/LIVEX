@@ -4,7 +4,9 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
@@ -19,6 +21,9 @@ import { url } from '../../utils/url';
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'SYNE' }]}
   />
 
+  <div class="w" style="padding-top:8px">
+    <TableOfContents />
+  </div>
   <section class="block">
     <div class="w">
       <p style="margin-top:0"><StatusBadge status="experimental" /> <span class="mu">SYNE 0.17.0 · moteur .NET (dépôt)</span></p>
@@ -57,7 +62,7 @@ import { url } from '../../utils/url';
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+          <thead><tr><th scope="col">Élément</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Version du moteur</td><td>0.17.0</td></tr>
             <tr><td>Identifiant de run</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td></tr>
@@ -79,4 +84,14 @@ import { url } from '../../utils/url';
       </p>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="6.4 · Conversion"
+    title="Aller plus loin"
+    lead="L'observation, le rendu et la documentation prolongent le moteur."
+    primaryLabel="ECHOS : observation"
+    primaryHref="technique/echos/"
+    secondaryLabel="Documentation"
+    secondaryHref="documentation/"
+  />
 </BaseLayout>

@@ -4,8 +4,10 @@
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import CtaBand from '../components/CtaBand.astro';
 import { PROJECT_STATE, RELEASE } from '../data/release';
 import { url } from '../utils/url';
+import { SITE } from '../data/site';
 ---
 <BaseLayout
   title="À propos — origine, vision et faits datés"
@@ -60,7 +62,7 @@ import { url } from '../utils/url';
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+          <thead><tr><th scope="col">Élément</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Nature</td><td>Projet de recherche personnel en simulation multi-agents</td></tr>
             <tr><td>Composants</td><td>SYNE (moteur) · ECHOS (observation) · PRISM (rendu)</td></tr>
@@ -80,4 +82,55 @@ import { url } from '../utils/url';
       </p>
     </div>
   </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.2</b> Qui est derrière LIVEX</div>
+      <h2>Un projet porté par une seule personne.</h2>
+      <p>
+        LIVEX est un projet personnel, porté par Donovan Chartrain. La page
+        <a href={url('a-propos/auteur/')}>Auteur</a> présente son parcours, ses compétences et ses autres projets.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('a-propos/auteur/')}>Découvrir l'auteur →</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.3</b> Citer ce projet</div>
+      <h2>Une r&eacute;f&eacute;rence stable pour vos travaux.</h2>
+      <p class="mu">
+        LIVEX est citable via le fichier <code>CITATION.cff</code> du d&eacute;p&ocirc;t. Formats ci-dessous.
+      </p>
+      <div class="ov" style="margin-top:18px">
+        <pre><code>@software{'{'}chartrain2026livex,
+  author = {'{'}Chartrain, Donovan{'}'},
+  title = {'{'}LIVEX: Living Intelligent Virtual Ecosystem eXperience{'}'},
+  year = {'{'}2026{'}'},
+  url = {'{'}https://github.com/donovan-dev-web/LIVEX{'}'},
+  version = {'{'}0.1{'}'},
+  license = {'{'}GPL-3.0-or-later{'}'}
+{'}'}</code></pre>
+      </div>
+      <p style="margin-top:14px;font-size:0.85rem">
+        <strong>APA :</strong> Chartrain, D. (2026). <em>LIVEX: Living Intelligent Virtual Ecosystem eXperience</em>
+        (Version 0.1) [Software]. https://github.com/donovan-dev-web/LIVEX
+      </p>
+      <p style="margin-top:12px">
+        <a class="bt" href={url('CITATION.cff')} rel="noopener">T&eacute;l&eacute;charger CITATION.cff &rarr;</a>
+      </p>
+    </div>
+  </section>
+
+  <CtaBand
+    eyebrow="20.4 – Conversion"
+    title="Suivre le projet et son auteur"
+    lead="Le dépôt, le journal et les portfolios sont les points d'entrée pour aller plus loin."
+    primaryLabel="Dépôt GitHub ↗"
+    primaryHref={SITE.repo}
+    secondaryLabel="Suivre le projet"
+    secondaryHref="suivre/"
+  />
 </BaseLayout>
