@@ -136,7 +136,8 @@ ajoutée ici **avant** sa mise en ligne.
 - Article : `actualites/[...slug].astro` — `getStaticPaths` sur la même
   collection (hors brouillons), corps rendu via `render()` (`astro:content`).
   Sommaire automatique, barre de progression de lecture, citation et
-  partage (copie du lien, X/Twitter, LinkedIn, e-mail).
+  partage (copie du lien, X/Twitter, LinkedIn, et feuille de partage native quand
+  l'appareil la propose).
 - Flux : `actualites/feed.xml.ts` (`@astrojs/rss`), `language: fr`, articles
   non brouillons triés par date décroissante.
 - Les articles ne sont **pas** traduits en anglais (niveau 3, `I18N.md` §4).

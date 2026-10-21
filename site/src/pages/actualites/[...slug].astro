@@ -88,7 +88,6 @@ const related = (await getCollection('actualites', ({ data }) => !data.draft))
           </button>
           <a class="bt" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(shareTitle)}`} rel="noopener" target="_blank">X / Twitter</a>
           <a class="bt" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`} rel="noopener" target="_blank">LinkedIn</a>
-          <a class="bt" href={`mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(articleUrl)}`}>E-mail</a>
         </div>
         <p class="mu share-status" role="status" aria-live="polite"></p>
       </section>
