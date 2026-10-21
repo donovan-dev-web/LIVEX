@@ -11,7 +11,8 @@
     "postbuild": "pagefind --site dist",
     "preview": "astro preview",
     "check": "astro check",
-    "check:links": "node scripts/check-links.mjs"
+    "check:links": "node scripts/check-links.mjs",
+    "check:text": "node scripts/check-text.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "^0.4.3",

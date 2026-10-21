@@ -155,6 +155,16 @@ ajoutée ici **avant** sa mise en ligne.
    `footer` et `licence/`).
 5. **Ton** : sobre, factuel, sans superlatif ; « illustration conceptuelle »
    clairement étiquetée.
+6. **Accents et symboles en UTF-8 direct**, jamais en entités HTML
+   (`&eacute;`, `&rarr;`…) : Astro ne décode pas les entités dans les
+   **attributs** de composants (`title`, `text`, `cta`), il ré-échappe le `&`
+   et le visiteur lit la chaîne brute (« D&eacute;terminisme »). Le HTML
+   produit ne doit contenir aucune entité de la forme `&amp;…;`.
+7. **Pages anglaises** : lire le miroir `*_EN` des données (`PROJECT_STATE_EN`,
+   `RELEASE_EN`, `VERSION_TABLE_EN`) et transmettre `lang="en"` à tous les
+   composants qui l'acceptent (`PageHeader`, `CardLink`, `CtaBand`,
+   `StatusBadge`, `HeroFigure`, `TableOfContents`) — sinon le fil d'Ariane et
+   les libellés d'accessibilité restent en français.
 
 ---
 
@@ -165,3 +175,4 @@ ajoutée ici **avant** sa mise en ligne.
 | 14 octobre 2026 | Création | Documenter les données éditoriales et le registre d'affirmations. |
 | 14 octobre 2026 | Ajout de `data/versions.ts`, de `children` dans `NavItem`, et de la route d'article `actualites/[...slug].astro`. | Alignement sur le cahier des charges (S14, S18). |
 | 21 octobre 2026 | Ajout de `data/monograph.ts` ; `NAV` à 5 entrées et `FOOTER_NAV` à 23 entrées. | Revue globale du site et sommaire bilingue de la monographie. |
+| 21 octobre 2026 | Règles d'écriture : accents en UTF-8 direct (jamais d'entités HTML) et pages EN branchées sur le miroir `*_EN` avec `lang="en"`. | Passe corrective texte/encodage sur les 80 pages. |

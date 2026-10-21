@@ -8,7 +8,7 @@ import StatusBadge from '../../components/StatusBadge.astro';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE, VERSION_TABLE_EN } from '../../data/release';
 
 const nf = new Intl.NumberFormat('en-US');
-const ciJobs = PROJECT_STATE.ci.split(' ')[0];
+const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
 ---
 <BaseLayout
   lang="en"
@@ -72,7 +72,7 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
         <div>
           <div class="n">{ciJobs}</div>
           <h3>CI jobs green</h3>
-          <p>{PROJECT_STATE_EN.ci}.</p>
+          <p>Continuous integration green, measured on {PROJECT_STATE_EN.observedDate}.</p>
         </div>
       </div>
 
@@ -82,8 +82,8 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
-            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
-            <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
+            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
+            <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
             <tr><td>Release</td><td>No public release — {RELEASE.planned} in preparation</td></tr>
           </tbody>
@@ -104,9 +104,9 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
         repository changelog and the GitHub tags remain the reference in the meantime.
       </p>
       <p style="margin-top:18px">
-        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Read CHANGELOG.md &rarr;</a>
+        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Read CHANGELOG.md →</a>
         <span style="display:inline-block;width:8px"></span>
-        <a class="bt" href={RELEASE.releasesUrl} rel="noopener">GitHub tags and releases &rarr;</a>
+        <a class="bt" href={RELEASE.releasesUrl} rel="noopener">GitHub tags and releases →</a>
       </p>
     </div>
   </section>

@@ -13,10 +13,11 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
 <BaseLayout
   lang="en"
   translated
-  title="LIVEX - Project state: tests, coverage and CI"
+  title="LIVEX — Project state: tests, coverage and CI"
   description="Factual, dated state of the LIVEX repository: branch, commit, files, lines of code, tests, coverage, CI and Windows support."
 >
   <PageHeader
+    lang="en"
     index="13b"
     eyebrow="Versions"
     title="The project state, dated."
@@ -40,10 +41,10 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
             <tr><td>Tracked files</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
             <tr><td>Lines analysed</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.source)} source, {nf.format(PROJECT_STATE.loc.tests)} tests)</td></tr>
             <tr><td>Tests</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored</td></tr>
-            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
-            <tr><td>SYNE coverage</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
-            <tr><td>CI</td><td>{PROJECT_STATE.ci}</td></tr>
-            <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
+            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
+            <tr><td>SYNE coverage</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
+            <tr><td>CI</td><td>{PROJECT_STATE_EN.ci}</td></tr>
+            <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
           </tbody>
         </table>
       </div>
