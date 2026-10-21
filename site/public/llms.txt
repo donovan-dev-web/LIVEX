@@ -28,13 +28,16 @@ Dépôt : https://github.com/donovan-dev-web/LIVEX
 ## Logiciel et versions
 
 - [Télécharger](https://donovan-dev-web.github.io/LIVEX/telecharger/): accès au logiciel.
+- [Démarrer en 5 minutes](https://donovan-dev-web.github.io/LIVEX/getting-started/): parcours de prise en main.
 - [Installation et prérequis](https://donovan-dev-web.github.io/LIVEX/telecharger/installation/): mise en route.
-- [Versions](https://donovan-dev-web.github.io/LIVEX/versions/): versions publiées des composants.
+- [Versions](https://donovan-dev-web.github.io/LIVEX/versions/): versions des composants et état du dépôt.
 - [Feuille de route](https://donovan-dev-web.github.io/LIVEX/feuille-de-route/): orientations à venir.
 
 ## Documentation et journal
 
 - [Documentation](https://donovan-dev-web.github.io/LIVEX/documentation/): index de la documentation.
+- [État du projet](https://donovan-dev-web.github.io/LIVEX/etat-du-projet/): état factuel, tests et couverture.
+- [Monographie](https://donovan-dev-web.github.io/LIVEX/monographie/): portail des chapitres (dépôt).
 - [FAQ](https://donovan-dev-web.github.io/LIVEX/faq/): questions fréquentes.
 - [Journal](https://donovan-dev-web.github.io/LIVEX/actualites/): actualités du projet.
 - [Suivre](https://donovan-dev-web.github.io/LIVEX/suivre/): canaux pour suivre le projet.
@@ -56,8 +59,12 @@ Dépôt : https://github.com/donovan-dev-web/LIVEX
 ## English mirror
 
 - [Home](https://donovan-dev-web.github.io/LIVEX/en/): English home page.
+- [Getting started](https://donovan-dev-web.github.io/LIVEX/en/getting-started/): five-minute onboarding.
 - [Architecture](https://donovan-dev-web.github.io/LIVEX/en/technique/): components overview.
+- [Project status](https://donovan-dev-web.github.io/LIVEX/en/etat-du-projet/): facts, tests and coverage.
+- [Monograph](https://donovan-dev-web.github.io/LIVEX/en/monographie/): chapter portal (repository).
 - [Download](https://donovan-dev-web.github.io/LIVEX/en/telecharger/): software access.
+- [Contributing](https://donovan-dev-web.github.io/LIVEX/en/participer/): how to contribute.
 - [FAQ](https://donovan-dev-web.github.io/LIVEX/en/faq/): frequently asked questions.
 
 ## Optional

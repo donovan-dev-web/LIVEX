@@ -4,6 +4,7 @@
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
+import TableOfContents from '../../../components/TableOfContents.astro';
 import { PROJECT_STATE, PROJECT_STATE_EN } from '../../../data/release';
 import { url } from '../../../utils/url';
 
@@ -13,7 +14,7 @@ const nf = new Intl.NumberFormat('en-US');
   lang="en"
   translated
   title="Reproducibility and measures in LIVEX"
-  description="LIVEX tests, coverage and benchmarks: bit-for-bit replay method, measured results and stated limits, dated and sourced."
+  description="LIVEX tests, coverage and benchmarks: bit-for-bit replay method, measured results and stated limits, dated, sourced and reproducible."
 >
   <PageHeader
     lang="en"
@@ -23,6 +24,10 @@ const nf = new Intl.NumberFormat('en-US');
     lead="A numerical claim is only valid if it can be replayed. This page brings together the method, tests, benchmarks and what remains, to date, unmeasured."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Results' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents lang="en" />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -41,7 +46,7 @@ const nf = new Intl.NumberFormat('en-US');
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Ingredient</th><th>Role</th></tr></thead>
+          <thead><tr><th scope="col">Ingredient</th><th scope="col">Role</th></tr></thead>
           <tbody>
             <tr><td>Seed</td><td>Initialises the xoshiro256** PRNG; makes two runs comparable.</td></tr>
             <tr><td>Configuration</td><td>World and entity parameters.</td></tr>
@@ -76,7 +81,7 @@ const nf = new Intl.NumberFormat('en-US');
       </div>
       <div class="ov" style="margin-top:28px">
         <table class="tb">
-          <thead><tr><th>Indicator</th><th>Value</th></tr></thead>
+          <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Passing tests per component</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
@@ -100,7 +105,7 @@ const nf = new Intl.NumberFormat('en-US');
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Population</th><th>Measured throughput (t/s)</th><th>Average tick</th><th>V2 target</th><th>Verdict</th></tr></thead>
+          <thead><tr><th scope="col">Population</th><th scope="col">Measured throughput (t/s)</th><th scope="col">Average tick</th><th scope="col">V2 target</th><th scope="col">Verdict</th></tr></thead>
           <tbody>
             <tr><td>50</td><td>1,354 – 2,257</td><td>0.44 – 0.73 ms</td><td>≥ 30</td><td>Above</td></tr>
             <tr><td>500</td><td>42.8 – 53.9</td><td>18.5 – 23.3 ms</td><td>≥ 20</td><td>Above</td></tr>
@@ -156,11 +161,11 @@ const nf = new Intl.NumberFormat('en-US');
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Claim</th><th>Status</th><th>Source</th></tr></thead>
+          <thead><tr><th scope="col">Claim</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
           <tbody>
-            <tr><td>1,356 passing tests, 0 failures as of 19/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>ECHOS coverage 91.32% / SYNE 81.20% as of 19/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>13/13 CI jobs green on 19/10/2026</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>{nf.format(PROJECT_STATE.tests.passed)} passing tests, {PROJECT_STATE.tests.failed} failures as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1, §5</td></tr>
+            <tr><td>ECHOS coverage {PROJECT_STATE.coverage.echos} / SYNE {PROJECT_STATE.coverage.syne} as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>{PROJECT_STATE_EN.ci}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
             <tr><td>Gap ≈ 1.7× below target at 1,000 entities</td><td>Verified</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
         </table>

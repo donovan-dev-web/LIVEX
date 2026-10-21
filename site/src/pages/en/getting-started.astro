@@ -1,0 +1,102 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN, VERSION_TABLE_EN } from '../../data/release';
+import { url } from '../../utils/url';
+
+const nf = new Intl.NumberFormat('en-US');
+---
+<BaseLayout
+  lang="en"
+  translated
+  title="LIVEX - Get started in 5 minutes"
+  description="Prerequisites, startup command and current status: run the LIVEX engine, observer and renderer from source, without a public release."
+>
+  <PageHeader
+    index="12b"
+    eyebrow="Get started"
+    title="LIVEX in 5 minutes."
+    lead="What runs today, how to launch it, and where V0.2 stops. A development environment, not a distributed product."
+    crumbs={[{ label: 'Get started' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.1</b> What works today</div>
+      <h2>Four components, four states.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Component</th><th scope="col">Version</th><th scope="col">State</th></tr></thead>
+          <tbody>
+            <tr><td>{VERSION_TABLE_EN[0].component}</td><td>{VERSION_TABLE_EN[0].version}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td>{VERSION_TABLE_EN[1].component}</td><td>{VERSION_TABLE_EN[1].version}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td>{VERSION_TABLE_EN[2].component}</td><td>{VERSION_TABLE_EN[2].version}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td>{VERSION_TABLE_EN[3].component}</td><td>{VERSION_TABLE_EN[3].version}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">
+        No public version is downloadable ({RELEASE_EN.plannedLabel}). These states describe the repository.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.2</b> Prerequisites</div>
+      <h2>Three tools are enough.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Tool</th><th scope="col">Version</th><th scope="col">For</th></tr></thead>
+          <tbody>
+            <tr><td>.NET SDK</td><td>10.0.4xx</td><td>SYNE</td></tr>
+            <tr><td>Python</td><td>3.11+</td><td>ECHOS</td></tr>
+            <tr><td>Node.js</td><td>20+</td><td>syne-mock</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 is required only for PRISM.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.3</b> Start</div>
+      <h2>The stack in one command.</h2>
+      <p>From the repository root:</p>
+      <pre><code>./scripts/dev-stack.sh</code></pre>
+      <p>
+        The script prepares the Python environment, builds SYNE, then starts the ECHOS API (port <code>5000</code>),
+        SYNE (control <code>5181</code>, WebSocket <code>5180</code>) and ECHOS ingestion. SYNE stays in the
+        <code>Idle</code> state until the <code>Start</code> command.
+      </p>
+      <p class="mu" style="font-size:0.76rem">
+        On Windows, run the script from Git Bash or WSL and use
+        <code>echos/.venv/Scripts/python.exe</code> for Python commands.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('telecharger/installation/', 'en')}>Full installation guide &rarr;</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.4</b> Verify</div>
+      <h2>0 failures expected.</h2>
+      <pre><code># SYNE
+cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
+
+# ECHOS
+echos/.venv/bin/python -m pytest -q</code></pre>
+      <p>Measured on {PROJECT_STATE_EN.observedDate}: <strong>{nf.format(PROJECT_STATE.tests.passed)} tests passing</strong>.</p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('etat-du-projet/', 'en')}>See project state &rarr;</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

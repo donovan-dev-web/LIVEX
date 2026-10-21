@@ -1,0 +1,83 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+interface Props {
+  lang?: 'fr' | 'en';
+}
+const { lang = 'fr' } = Astro.props;
+const label = lang === 'en' ? 'Table of contents' : 'Sommaire';
+---
+
+<details class="toc" data-toc hidden>
+  <summary>{label}</summary>
+  <nav aria-label={label}></nav>
+</details>
+
+<style>
+  .toc {
+    margin: 0 0 22px;
+    border: 1px solid var(--ln);
+    border-radius: var(--r);
+    padding: 10px 14px;
+    background: var(--gr);
+    font-size: 0.78rem;
+  }
+  .toc summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--ink);
+    list-style: none;
+  }
+  .toc summary::-webkit-details-marker {
+    display: none;
+  }
+  .toc summary::before {
+    content: '▸ ';
+    color: var(--mu);
+  }
+  .toc[open] summary::before {
+    content: '▾ ';
+  }
+  .toc nav ul {
+    list-style: none;
+    padding: 8px 0 0 6px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .toc nav a {
+    color: var(--mu);
+    text-decoration: none;
+  }
+  .toc nav a:hover {
+    color: var(--ink);
+  }
+  .toc:empty,
+  .toc[data-empty] {
+    display: none;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var toc = document.querySelector('[data-toc]');
+    if (!toc) return;
+    var nav = toc.querySelector('nav');
+    var items = document.querySelectorAll('main .sh');
+    if (items.length < 3) return;
+    var ul = document.createElement('ul');
+    items.forEach(function (sh, i) {
+      if (!sh.id) sh.id = 'sec-' + (i + 1);
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + sh.id;
+      a.textContent = sh.textContent.trim();
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+    nav.appendChild(ul);
+    toc.removeAttribute('hidden');
+  })();
+</script>

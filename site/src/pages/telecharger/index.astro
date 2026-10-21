@@ -5,8 +5,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
 import { RELEASE } from '../../data/release';
 import { url } from '../../utils/url';
+import { SITE } from '../../data/site';
 ---
 <BaseLayout
   title="LIVEX — Télécharger : releases et installation"
@@ -47,7 +49,7 @@ import { url } from '../../utils/url';
       <h2>Ce qu'une version contiendra.</h2>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Élément</th><th>Forme attendue</th><th>État</th></tr></thead>
+          <thead><tr><th scope="col">Élément</th><th scope="col">Forme attendue</th><th scope="col">État</th></tr></thead>
           <tbody>
             <tr><td>Launcher (bureau)</td><td>Application de bureau (Avalonia) pour piloter et observer</td><td><StatusBadge status="developpement" /></td></tr>
             <tr><td>Moteur SYNE</td><td>Binaire .NET et paquets du moteur</td><td><StatusBadge status="experimental" /></td></tr>
@@ -76,4 +78,14 @@ import { url } from '../../utils/url';
       </div>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="11.3 · Conversion"
+    title="Explorer le projet dès maintenant"
+    lead="Le dépôt est public : lecture du code, suivi de l'avancement, exécution depuis les sources."
+    primaryLabel="Documentation"
+    primaryHref="documentation/"
+    secondaryLabel="Dépôt GitHub ↗"
+    secondaryHref={SITE.repo}
+  />
 </BaseLayout>

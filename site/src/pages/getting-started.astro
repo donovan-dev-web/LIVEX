@@ -1,0 +1,100 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import { PROJECT_STATE, RELEASE, VERSION_TABLE } from '../data/release';
+import { url } from '../utils/url';
+
+const nf = new Intl.NumberFormat('fr-FR');
+---
+<BaseLayout
+  title="LIVEX - Démarrer en 5 minutes"
+  description="Prérequis, commande de démarrage et état réel de LIVEX : faire tourner le moteur, l'observateur et le rendu depuis les sources, sans release publique."
+>
+  <PageHeader
+    index="12b"
+    eyebrow="Démarrer"
+    title="LIVEX en 5 minutes."
+    lead="Ce qui tourne aujourd'hui, comment le lancer, et où s'arrête la V0.2. Un environnement de développement, pas un produit distribué."
+    crumbs={[{ label: 'Démarrer' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.1</b> Ce qui fonctionne aujourd'hui</div>
+      <h2>Quatre composants, quatre états.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Composant</th><th scope="col">Version</th><th scope="col">État</th></tr></thead>
+          <tbody>
+            <tr><td>{VERSION_TABLE[0].component}</td><td>{VERSION_TABLE[0].version}</td><td><StatusBadge status="experimental" /></td></tr>
+            <tr><td>{VERSION_TABLE[1].component}</td><td>{VERSION_TABLE[1].version}</td><td><StatusBadge status="experimental" /></td></tr>
+            <tr><td>{VERSION_TABLE[2].component}</td><td>{VERSION_TABLE[2].version}</td><td><StatusBadge status="developpement" /></td></tr>
+            <tr><td>{VERSION_TABLE[3].component}</td><td>{VERSION_TABLE[3].version}</td><td><StatusBadge status="developpement" /></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">
+        Aucune version publique n'est téléchargeable ({RELEASE.planned} en préparation). Ces états décrivent le dépôt.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.2</b> Prérequis</div>
+      <h2>Trois outils suffisent.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Outil</th><th scope="col">Version</th><th scope="col">Pour</th></tr></thead>
+          <tbody>
+            <tr><td>.NET SDK</td><td>10.0.4xx</td><td>SYNE</td></tr>
+            <tr><td>Python</td><td>3.11+</td><td>ECHOS</td></tr>
+            <tr><td>Node.js</td><td>20+</td><td>syne-mock</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 n'est requis que pour PRISM.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.3</b> Démarrage</div>
+      <h2>La pile en une commande.</h2>
+      <p>Depuis la racine du dépôt :</p>
+      <pre><code>./scripts/dev-stack.sh</code></pre>
+      <p>
+        Le script prépare l'environnement Python, compile SYNE, puis démarre l'API ECHOS (port <code>5000</code>),
+        SYNE (contrôle <code>5181</code>, WebSocket <code>5180</code>) et l'ingestion ECHOS. SYNE reste à l'état
+        <code>Idle</code> jusqu'à la commande <code>Start</code>.
+      </p>
+      <p class="mu" style="font-size:0.76rem">
+        Sous Windows, lancer le script depuis Git Bash ou WSL et utiliser
+        <code>echos/.venv/Scripts/python.exe</code> pour les commandes Python.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('telecharger/installation/')}>Guide d'installation complet &rarr;</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>12b.4</b> Vérifier</div>
+      <h2>0 échec attendu.</h2>
+      <pre><code># SYNE
+cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
+
+# ECHOS
+echos/.venv/bin/python -m pytest -q</code></pre>
+      <p>Relevé du {PROJECT_STATE.observedDate} : <strong>{nf.format(PROJECT_STATE.tests.passed)} tests au vert</strong>.</p>
+      <p style="margin-top:18px">
+        <a class="bt" href={url('etat-du-projet/')}>Voir l'état du projet &rarr;</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

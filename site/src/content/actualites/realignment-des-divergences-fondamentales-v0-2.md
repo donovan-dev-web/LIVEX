@@ -1,5 +1,6 @@
 ---
 title: "Réalignement des divergences fondamentales : LIVEX passe en V0.2"
+seoTitle: "Réalignement des divergences : LIVEX passe en V0.2"
 description: "LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d'observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel."
 date: 2026-10-19
 tags: ["livex", "v0.2", "syne", "realignement", "contrats"]
@@ -38,7 +39,7 @@ Rendre le moteur cohérent aurait pu signifier casser tout ce qui le lit. Ça n'
 
 L'échelle temporelle (`simulatedSecondsPerTick`) et spatiale (`metersPerUnit`) sont désormais explicites, ce qui évite de raconter le temps d'une façon dans le moteur et d'une autre dans le rendu. ECHOS consomme ce flux et calcule ses métriques de viabilité avec une **provenance explicite** — mesuré, absent, ou zéro observé. Cette distinction, qui paraît technique, sépare une observation d'une croyance : confondre l'absence de données avec une valeur nulle, c'est déjà tirer une conclusion que les données ne soutiennent pas.
 
-![Vue des relations observées dans ECHOS](/captures/echos-relations.png)
+![Vue des relations observées dans ECHOS](../../assets/captures/echos-relations.png)
 
 ## L'épreuve du verdict
 
@@ -50,15 +51,15 @@ Les verdicts sont tombés, y compris là où ils dérangent. La **quête spatial
 
 En aval du moteur, deux composants continuent de tenir leur rang. PRISM, le projet Unreal final de LIVEX, intègre le plugin **PRISM-LDK** et consomme les contrats SYNE sans jamais devenir une source de vérité : il rend le monde visible, il ne le calcule pas. Le **Launcher**, lui, orchestre la pile, supervise les composants et archive les campagnes dans un format scellé `.livexp`, tout en restant indépendant de ce qu'il pilote.
 
-![Accueil du Launcher LIVEX](/captures/launcher-home.png)
+![Accueil du Launcher LIVEX](../../assets/captures/launcher-home.png)
 
-![Vue PRISM dans le Launcher](/captures/launcher-prism.png)
+![Vue PRISM dans le Launcher](../../assets/captures/launcher-prism.png)
 
 ## La documentation, enfin alignée
 
 Une divergence peut aussi se loger dans les mots. README global, versions, contrats, captures et animations ont été réalignés sur le code réel : le projet est présenté en V0.2, avec des valeurs exactes et une mise en page professionnelle. Une documentation qui promet une version que le moteur n'exécute pas est une divergence comme une autre — simplement plus difficile à mesurer.
 
-![Vue des agents observés dans ECHOS](/captures/echos-agents.png)
+![Vue des agents observés dans ECHOS](../../assets/captures/echos-agents.png)
 
 ## Les chiffres du relevé
 

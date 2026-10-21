@@ -5,20 +5,36 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import HeroFigure from '../../components/HeroFigure.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import CardLink from '../../components/CardLink.astro';
 import { SITE } from '../../data/site';
 import { COMPONENTS_EN } from '../../data/components';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN } from '../../data/release';
 import echosAgents from '../../assets/captures/echos-agents.png';
 import launcherHome from '../../assets/captures/launcher-home.png';
 import launcherPrism from '../../assets/captures/launcher-prism.png';
+import { Image } from 'astro:assets';
 import { url } from '../../utils/url';
 
 const nf = new Intl.NumberFormat('en-US');
+const softwareJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: SITE.name,
+  applicationCategory: 'ScientificApplication',
+  operatingSystem: 'Cross-platform',
+  description: SITE.descriptionEn,
+  url: new URL(url('', 'en'), Astro.site).href,
+  author: { '@type': 'Person', name: SITE.author },
+  license: 'https://www.gnu.org/licenses/gpl-3.0.html',
+  codeRepository: SITE.repo,
+};
 ---
 <BaseLayout
   lang="en"
   title="LIVEX — deterministic multi-agent simulation"
   description="Deterministic SYNE engine, ECHOS observation, PRISM rendering: a research platform for reproducible, openly documented multi-agent simulation."
+  jsonLd={softwareJsonLd}
 >
   <div class="w">
     <!-- Hero -->
@@ -30,9 +46,16 @@ const nf = new Intl.NumberFormat('en-US');
           An experimental multi-agent simulation platform, from the engine that keeps the world alive to its 3D
           representation: three separate layers, explicit rules, results to observe.
         </p>
+        <div class="hero-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px">
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Target version {RELEASE_EN ? 'V0.2' : 'V0.2'}</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{SITE.license}</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests passing</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage {PROJECT_STATE.coverage.echos}</span>
+        </div>
         <div class="cta">
-          <a class="bt p" href={url('comprendre/', 'en')}>Understand LIVEX</a>
-          <a class="bt" href={url('technique/', 'en')}>Explore the technology</a>
+          <a class="bt p" href={url('technique/prism/', 'en')}>See the demo</a>
+          <a class="bt" href={url('documentation/', 'en')}>Read the documentation</a>
+          <a class="bt" href={url('participer/', 'en')}>Contribute</a>
         </div>
       </div>
 
@@ -48,6 +71,72 @@ const nf = new Intl.NumberFormat('en-US');
       </p>
     </div>
   </div>
+
+  <!-- Where to start -->
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>00</b> Where to start</div>
+      <h2>A path for your question.</h2>
+      <p class="lead">
+        LIVEX speaks to several audiences. Pick the entry that matches your question; the site keeps the same method
+        (deterministic, separated, documented) at every level.
+      </p>
+      <div class="g3 br" style="margin-top:28px">
+        <CardLink
+          lang="en"
+          title="Understand the project"
+          text="What LIVEX is, its method and what it is not. The best entry point for a first read."
+          href="comprendre/"
+          cta="Read the introduction →"
+        />
+        <CardLink
+          lang="en"
+          title="Check the technology"
+          text="Three-layer architecture, engine, observation, rendering. Evidence and statuses rather than promises."
+          href="technique/"
+          cta="Explore the architecture →"
+        />
+        <CardLink
+          lang="en"
+          title="Follow and contribute"
+          text="Channels, dated journal, contribution, reporting. The project is public and welcomes feedback."
+          href="suivre/"
+          cta="Follow the project →"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Why LIVEX -->
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>00b</b> Why LIVEX</div>
+      <h2>Three reasons to look closer.</h2>
+      <p class="lead">
+        The project makes no promise: it makes what happens observable, with the evidence to match.
+      </p>
+      <div class="g3 br" style="margin-top:28px">
+        <CardLink
+          title="Determinism"
+          text="The same starting point replays the same run, bit for bit. Results are reproducible, not narrated."
+          href="technique/resultats/"
+          cta="See the measures &rarr;"
+        />
+        <CardLink
+          title="Independent observation"
+          text="Simulate, measure, make visible: three separate layers, linked by explicit contracts."
+          href="technique/echos/"
+          cta="Discover ECHOS &rarr;"
+        />
+        <CardLink
+          title="Versioned contracts"
+          text="Public interfaces are frozen and versioned (snapshot 0.5.0). The contract precedes the rendering."
+          href="technique/syne/"
+          cta="Read the contract &rarr;"
+        />
+      </div>
+    </div>
+  </section>
 
   <!-- What LIVEX is -->
   <section class="block">
@@ -104,16 +193,16 @@ const nf = new Intl.NumberFormat('en-US');
           <div>
             <p>{c.summary}</p>
             <p style="margin:0 0 12px"><StatusBadge status={c.status.id} lang="en" /></p>
-            <a class="bt" href={url(c.href, 'en')}>Details →</a>
+            <a class="bt" href={url(c.href, 'en')} aria-label={`Details about ${c.name}`}>Details →</a>
           </div>
-          {c.key === 'syne' && <img src={launcherHome.src} alt="Preview of the LIVEX Launcher" width="100%" loading="lazy" />}
-          {c.key === 'echos' && <img src={echosAgents.src} alt="Preview of ECHOS: agent tracking" width="100%" loading="lazy" />}
-          {c.key === 'prism' && <img src={launcherPrism.src} alt="Preview of PRISM rendering" width="100%" loading="lazy" />}
+          {c.key === 'syne' && <Image src={launcherHome} alt="Preview of the LIVEX Launcher" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'echos' && <Image src={echosAgents} alt="Preview of ECHOS: agent tracking" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'prism' && <Image src={launcherPrism} alt="Preview of PRISM rendering" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
 
       <div class="ct">Public interface contracts — snapshot 0.5.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · persistence schema v5</div>
-      <p class="mu" style="font-size:0.7rem">The “Screenshot” placeholders will be replaced by real captures of the published version. No illustration stands in for a screenshot.</p>
+      <p class="mu" style="font-size:0.7rem">Captures from the development build (measured {PROJECT_STATE_EN.observedDate}). They document the interface without demonstrating the published version.</p>
     </div>
   </section>
 
@@ -131,6 +220,17 @@ const nf = new Intl.NumberFormat('en-US');
       <p style="margin-top:18px"><a class="bt" href={url('actualites/', 'en')}>View the journal →</a></p>
     </div>
   </section>
+
+  <CtaBand
+    lang="en"
+    eyebrow="04 · Conversion"
+    title="Follow LIVEX, at your own pace."
+    lead="The site is the durable source; GitHub, the place for technical transparency. No account, no cookie, no tracker — just links."
+    primaryLabel="Follow the project"
+    primaryHref="suivre/"
+    secondaryLabel="GitHub repository ↗"
+    secondaryHref={SITE.repo}
+  />
 
   <!-- Caution -->
   <section class="block">

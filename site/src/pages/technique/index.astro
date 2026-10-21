@@ -4,7 +4,9 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
 import { COMPONENTS } from '../../data/components';
 import { url } from '../../utils/url';
 ---
@@ -19,6 +21,10 @@ import { url } from '../../utils/url';
     lead="LIVEX relie trois composants par des contrats explicites. Le monde produit des traces, l'observation les mesure, le rendu les donne à voir — sans jamais mélanger les rôles."
     crumbs={[{ label: 'Architecture' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -49,7 +55,7 @@ import { url } from '../../utils/url';
             <p>{c.summary}</p>
             <p style="margin:0 0 6px"><StatusBadge status={c.status.id} /></p>
             <p class="mu" style="margin:0 0 12px;font-size:0.76rem">{c.status.note}</p>
-            <a class="bt" href={url(c.href)}>Détails →</a>
+            <a class="bt" href={url(c.href)} aria-label={`Détails sur ${c.name}`}>Détails →</a>
           </div>
           <div class="ph">Capture<br />{c.acronym}</div>
         </div>
@@ -65,7 +71,7 @@ import { url } from '../../utils/url';
       <div class="ov">
         <table class="tb">
           <thead>
-            <tr><th>Contrat</th><th>Version / forme</th><th>Note</th></tr>
+            <tr><th scope="col">Contrat</th><th scope="col">Version / forme</th><th scope="col">Note</th></tr>
           </thead>
           <tbody>
             <tr><td>Contrat d'observabilité (snapshot)</td><td>0.5.0</td><td>Ajout <code>simulatedTimeSeconds</code> ; description de monde <code>world_initialized</code> 1.1.</td></tr>
@@ -89,7 +95,7 @@ import { url } from '../../utils/url';
       <div class="ov">
         <table class="tb">
           <thead>
-            <tr><th>Répertoire</th><th>Contenu</th><th>État</th></tr>
+            <tr><th scope="col">Répertoire</th><th scope="col">Contenu</th><th scope="col">État</th></tr>
           </thead>
           <tbody>
             <tr><td><code>syne/</code></td><td>Moteur de simulation .NET (SYNE)</td><td><StatusBadge status="experimental" /></td></tr>
@@ -122,4 +128,14 @@ import { url } from '../../utils/url';
       </div>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="5.6 · Conversion"
+    title="Vérifier et contribuer"
+    lead="La documentation, le dépôt et la feuille de route prolongent l'architecture."
+    primaryLabel="Documentation"
+    primaryHref="documentation/"
+    secondaryLabel="Feuille de route"
+    secondaryHref="feuille-de-route/"
+  />
 </BaseLayout>

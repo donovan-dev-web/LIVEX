@@ -4,16 +4,28 @@
   "description": "Écosystème de simulation multi-agents : moteur (SYNE), cognition émergente (ECHOS) et rendu perceptif (PRISM).",
   "lang": "fr",
   "dir": "ltr",
-  "start_url": "/LIVEX/",
-  "scope": "/LIVEX/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#F2F2EC",
   "theme_color": "#090C16",
   "icons": [
     {
-      "src": "/LIVEX/favicon.svg",
+      "src": "favicon.svg",
       "type": "image/svg+xml",
       "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any"
     }
   ]
