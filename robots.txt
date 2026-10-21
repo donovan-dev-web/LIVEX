@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://donovan-dev-web.github.io/LIVEX/sitemap.xml
+Sitemap: https://donovan-dev-web.github.io/LIVEX/sitemap-index.xml

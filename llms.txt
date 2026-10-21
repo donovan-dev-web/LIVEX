@@ -1,0 +1,74 @@
+# LIVEX
+
+> LIVEX (Living Intelligent Virtual Ecosystem eXperience) est un écosystème de simulation
+> multi-agents : un moteur de simulation (SYNE), une cognition émergente (ECHOS) et un
+> rendu perceptif (PRISM).
+
+Documentation publique, en français (langue source) avec un miroir anglais sous `/en/`.
+Code sous licence GNU GPL v3.0 ou ultérieure (GPL-3.0-or-later), contenu sous CC BY 4.0. Auteur : Donovan Chartrain.
+Dépôt : https://github.com/donovan-dev-web/LIVEX
+
+## Présentation
+
+- [Accueil](https://donovan-dev-web.github.io/LIVEX/): vue d'ensemble de LIVEX.
+- [Comprendre](https://donovan-dev-web.github.io/LIVEX/comprendre/): introduction au projet et à ses principes.
+- [Limites et portée](https://donovan-dev-web.github.io/LIVEX/comprendre/limites/): ce que LIVEX fait et ne fait pas.
+- [L'émergence expliquée](https://donovan-dev-web.github.io/LIVEX/comprendre/emergence/): notion d'émergence dans le projet.
+- [Glossaire](https://donovan-dev-web.github.io/LIVEX/comprendre/glossaire/): définitions des termes techniques.
+
+## Architecture technique
+
+- [Architecture](https://donovan-dev-web.github.io/LIVEX/technique/): vue d'ensemble des composants.
+- [SYNE](https://donovan-dev-web.github.io/LIVEX/technique/syne/): moteur de simulation multi-agents.
+- [ECHOS](https://donovan-dev-web.github.io/LIVEX/technique/echos/): système de cognition émergente.
+- [PRISM](https://donovan-dev-web.github.io/LIVEX/technique/prism/): module de rendu perceptif.
+- [Launcher](https://donovan-dev-web.github.io/LIVEX/technique/launcher/): lanceur et outillage.
+- [Reproductibilité et mesures](https://donovan-dev-web.github.io/LIVEX/technique/resultats/): protocoles, seeds et métriques.
+
+## Logiciel et versions
+
+- [Télécharger](https://donovan-dev-web.github.io/LIVEX/telecharger/): accès au logiciel.
+- [Démarrer en 5 minutes](https://donovan-dev-web.github.io/LIVEX/getting-started/): parcours de prise en main.
+- [Installation et prérequis](https://donovan-dev-web.github.io/LIVEX/telecharger/installation/): mise en route.
+- [Versions](https://donovan-dev-web.github.io/LIVEX/versions/): versions des composants et état du dépôt.
+- [Feuille de route](https://donovan-dev-web.github.io/LIVEX/feuille-de-route/): orientations à venir.
+
+## Documentation et journal
+
+- [Documentation](https://donovan-dev-web.github.io/LIVEX/documentation/): index de la documentation.
+- [État du projet](https://donovan-dev-web.github.io/LIVEX/etat-du-projet/): état factuel, tests et couverture.
+- [Monographie](https://donovan-dev-web.github.io/LIVEX/monographie/): portail des chapitres (dépôt).
+- [FAQ](https://donovan-dev-web.github.io/LIVEX/faq/): questions fréquentes.
+- [Journal](https://donovan-dev-web.github.io/LIVEX/actualites/): actualités du projet.
+- [Suivre](https://donovan-dev-web.github.io/LIVEX/suivre/): canaux pour suivre le projet.
+
+## Participation et à propos
+
+- [Participer](https://donovan-dev-web.github.io/LIVEX/participer/): contribuer au projet.
+- [À propos](https://donovan-dev-web.github.io/LIVEX/a-propos/): le projet et son auteur.
+- [Transparence sur l'usage de l'IA](https://donovan-dev-web.github.io/LIVEX/a-propos/transparence-ia/): usage de l'IA dans le projet.
+- [Kit média](https://donovan-dev-web.github.io/LIVEX/presse/): ressources presse.
+
+## Pages légales et de confiance
+
+- [Mentions légales](https://donovan-dev-web.github.io/LIVEX/mentions-legales/)
+- [Confidentialité](https://donovan-dev-web.github.io/LIVEX/confidentialite/)
+- [Accessibilité](https://donovan-dev-web.github.io/LIVEX/accessibilite/)
+- [Licence](https://donovan-dev-web.github.io/LIVEX/licence/)
+
+## English mirror
+
+- [Home](https://donovan-dev-web.github.io/LIVEX/en/): English home page.
+- [Getting started](https://donovan-dev-web.github.io/LIVEX/en/getting-started/): five-minute onboarding.
+- [Architecture](https://donovan-dev-web.github.io/LIVEX/en/technique/): components overview.
+- [Project status](https://donovan-dev-web.github.io/LIVEX/en/etat-du-projet/): facts, tests and coverage.
+- [Monograph](https://donovan-dev-web.github.io/LIVEX/en/monographie/): chapter portal (repository).
+- [Download](https://donovan-dev-web.github.io/LIVEX/en/telecharger/): software access.
+- [Contributing](https://donovan-dev-web.github.io/LIVEX/en/participer/): how to contribute.
+- [FAQ](https://donovan-dev-web.github.io/LIVEX/en/faq/): frequently asked questions.
+
+## Optional
+
+- [Plan du site](https://donovan-dev-web.github.io/LIVEX/plan-du-site/): arborescence complète des pages.
+- [Flux RSS du journal](https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml): flux des actualités.
+- [Dépôt GitHub](https://github.com/donovan-dev-web/LIVEX): code source et suivi des tickets.

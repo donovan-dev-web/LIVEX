@@ -1,0 +1,216 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>LIVEX — FAQ: determinism, emergence, licence, ethics</title><meta name="description" content="LIVEX FAQ: frequently asked questions about multi-agent simulation — goals, determinism, observability, scale, licence and ethics."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/en/faq/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/faq/"><link rel="alternate" hreflang="en" href="https://donovan-dev-web.github.io/LIVEX/en/faq/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/faq/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/LIVEX/apple-touch-icon.png"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="website"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="LIVEX — FAQ: determinism, emergence, licence, ethics"><meta property="og:description" content="LIVEX FAQ: frequently asked questions about multi-agent simulation — goals, determinism, observability, scale, licence and ethics."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/en/faq/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:image:alt" content="LIVEX — multi-agent simulation ecosystem"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="en_US"><meta property="og:locale:alternate" content="fr_FR"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="LIVEX — FAQ: determinism, emergence, licence, ethics"><meta name="twitter:description" content="LIVEX FAQ: frequently asked questions about multi-agent simulation — goals, determinism, observability, scale, licence and ethics."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta name="twitter:image:alt" content="LIVEX — multi-agent simulation ecosystem"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-italic.DKMiL14s.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","description":"LIVEX is a multi-agent simulation ecosystem: an engine (SYNE), an emergent-cognition system (ECHOS) and a perceptual renderer (PRISM). Open documentation and principles.","inLanguage":"en","license":"https://www.gnu.org/licenses/gpl-3.0.html","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Donovan","url":"https://donovan-dev-web.vercel.app"}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CO1ZX8Cv.css"></head><body><a class="skip" href="#contenu">Skip to content</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/en/" aria-label="LIVEX — home"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Main navigation"><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="comprendre-submenu">Understand<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="comprendre-submenu"><li><a href="/LIVEX/en/comprendre/">Overview</a></li><li><a href="/LIVEX/en/comprendre/limites/">Limits and scope</a></li><li><a href="/LIVEX/en/comprendre/emergence/">Emergence explained</a></li><li><a href="/LIVEX/en/comprendre/glossaire/">Glossary</a></li><li><a href="/LIVEX/en/faq/" aria-current="page">FAQ</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="architecture-submenu">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="architecture-submenu"><li><a href="/LIVEX/en/technique/">Overview</a></li><li><a href="/LIVEX/en/technique/syne/">SYNE</a></li><li><a href="/LIVEX/en/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/en/technique/prism/">PRISM</a></li><li><a href="/LIVEX/en/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/en/technique/resultats/">Reproducibility and measures</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="telecharger-submenu">Download<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="telecharger-submenu"><li><a href="/LIVEX/en/telecharger/">Overview</a></li><li><a href="/LIVEX/en/getting-started/">Get started in 5 minutes</a></li><li><a href="/LIVEX/en/telecharger/installation/">Installation and requirements</a></li><li><a href="/LIVEX/en/versions/">Versions</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="ressources-submenu">Resources<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="ressources-submenu"><li><a href="/LIVEX/en/documentation/">Documentation</a></li><li><a href="/LIVEX/en/etat-du-projet/">Project status</a></li><li><a href="/LIVEX/en/monographie/">Monograph</a></li><li><a href="/LIVEX/en/actualites/">Journal</a></li><li><a href="/LIVEX/en/plan-du-site/">Sitemap</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="apropos-submenu">About<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="apropos-submenu"><li><a href="/LIVEX/en/a-propos/">Overview</a></li><li><a href="/LIVEX/en/a-propos/auteur/">Author</a></li><li><a href="/LIVEX/en/a-propos/transparence-ia/">Transparency on the use of AI</a></li><li><a href="/LIVEX/en/participer/">Contribute</a></li><li><a href="/LIVEX/en/presse/">Press kit</a></li></ul></div><a class="nav-cta" href="/LIVEX/en/suivre/">Follow</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener" style="font-size:0.85rem">Issues</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener" style="font-size:0.85rem">Support</a></nav><button type="button" id="search-toggle" class="search-toggle" aria-expanded="false" aria-controls="search-modal" aria-label="Search" title="Search" data-astro-cid-ac66eqjo><span aria-hidden="true" data-astro-cid-ac66eqjo>⌕</span><span class="sr-only" data-astro-cid-ac66eqjo>Search</span></button><div id="search-modal" class="search-modal" hidden data-astro-cid-ac66eqjo><div class="search-backdrop" data-search-close data-astro-cid-ac66eqjo></div><div class="search-panel" role="dialog" aria-modal="true" aria-label="Search" data-astro-cid-ac66eqjo><button type="button" class="search-close" data-search-close aria-label="Close search" data-astro-cid-ac66eqjo>✕</button><div id="pagefind-search" data-astro-cid-ac66eqjo></div><p class="search-hint" data-search-dev hidden data-astro-cid-ac66eqjo>Search is available on the published site.</p></div></div><script>(function(){const pagefindBase = "/LIVEX/pagefind/";
+
+  (function () {
+    var toggle = document.getElementById('search-toggle');
+    var modal = document.getElementById('search-modal');
+    if (!toggle || !modal) return;
+    var loaded = false;
+    var lastFocused = null;
+    function open() {
+      var active = document.activeElement;
+      // Si rien n'était focalisé (activation au clavier, script), on rend la main au bouton.
+      lastFocused = active && active !== document.body ? active : toggle;
+      modal.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      var closeBtn = modal.querySelector('.search-close');
+      if (closeBtn) closeBtn.focus();
+      if (!loaded) {
+        loaded = true;
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = pagefindBase + 'pagefind-ui.css';
+        document.head.appendChild(css);
+        var s = document.createElement('script');
+        s.src = pagefindBase + 'pagefind-ui.js';
+        s.onload = function () {
+          try {
+            // @ts-ignore
+            new window.PagefindUI({ element: '#pagefind-search', bundlePath: pagefindBase, showSubResults: true, showImages: false });
+            var input = document.querySelector('#pagefind-search input');
+            if (input) input.focus();
+          } catch (e) {
+            var hint = document.querySelector('[data-search-dev]');
+            if (hint) hint.removeAttribute('hidden');
+          }
+        };
+        s.onerror = function () {
+          var hint = document.querySelector('[data-search-dev]');
+          if (hint) hint.removeAttribute('hidden');
+        };
+        document.head.appendChild(s);
+      } else {
+        var existing = document.querySelector('#pagefind-search input');
+        if (existing) existing.focus();
+      }
+    }
+    function close() {
+      modal.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      else toggle.focus();
+    }
+    toggle.addEventListener('click', open);
+    modal.querySelectorAll('[data-search-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hasAttribute('hidden')) open(); else close();
+        return;
+      }
+      if (modal.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusables = modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  })();
+})();</script><div class="lang" role="group" aria-label="Language"><a href="/LIVEX/faq/" hreflang="fr" lang="fr" title="Français">FR</a><a href="/LIVEX/en/faq/" hreflang="en" lang="en" aria-current="true" title="English">EN</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Dark theme" title="Dark theme"><span aria-hidden="true">◐</span><span class="sr-only">Dark theme</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    /* Sans JS, les sous-menus doivent rester accessibles (pas de bouton fonctionnel). */
+    nav.main .ni { position: static; }
+    nav.main .sub {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    nav.main .sub::before { display: none; }
+    nav.main .sub a { padding-left: 22px; }
+
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+      nav.main .sub a { padding-left: 18px !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else {
+        header.removeAttribute('data-nav-open');
+        header.querySelectorAll('.ni.open').forEach(function (ni) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var openNi = header.querySelector('.ni.open');
+      if (openNi) {
+        var trigger = openNi.querySelector('.ni-trigger');
+        openNi.classList.remove('open');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    header.querySelectorAll('.ni > button.ni-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ni = btn.parentElement;
+        if (!ni) return;
+        var willOpen = !ni.classList.contains('open');
+        header.querySelectorAll('.ni.open').forEach(function (other) {
+          if (other !== ni) {
+            other.classList.remove('open');
+            var otherBtn = other.querySelector('.ni-trigger');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        ni.classList.toggle('open', willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      header.querySelectorAll('.ni.open').forEach(function (ni) {
+        if (!ni.contains(e.target)) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (header.hasAttribute('data-nav-open') && !header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu" tabindex="-1" data-pagefind-body="true"><div class="w"><nav class="crumb" aria-label="Breadcrumb"><a href="/LIVEX/en/">Home</a><span> · <span aria-current="page">FAQ</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>16</b> FAQ</div><h1 class="ptitle">Frequently asked questions.</h1><p class="lead">Short answers drawn from the project&#39;s documentation. They evolve with implementation decisions.</p></section></div><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://donovan-dev-web.github.io/LIVEX/en/"},{"@type":"ListItem","position":2,"name":"FAQ"}]}</script><section class="block"><div class="w"><h2>13 questions, answered to the point.</h2><p>Open a question to read the answer. Each one restates a documented point — goals, determinism, scale, licence — with no promise and no shortcut.</p><div style="margin-top:20px"><details class="faq"><summary>What is LIVEX trying to demonstrate?</summary><p>LIVEX builds a simulated world where autonomous entities (needs, memory, beliefs, utility) interact, and observes the collective structures that emerge from it: groups, exchanges, conflicts, propagation of knowledge. The project does not claim this emergence proves &quot;intelligence&quot;: it provides observers and measurable metrics.</p></details><details class="faq"><summary>Does LIVEX prove that societies emerge &quot;that way&quot;?</summary><p>No. A sign of emergence is a specific measure, not proof. ECHOS explicitly documents its limitations: the measurement categories reflect the developer&#39;s choices, and a rare phenomenon may go unnoticed.</p></details><details class="faq"><summary>Why is determinism so important?</summary><p>Bit-for-bit determinism (same seed + configuration + engine version → same trajectory) is essential for repeatability: comparing two experiments by changing only one parameter only makes sense if everything else is reproducible.</p></details><details class="faq"><summary>Do the entities &quot;communicate&quot; with each other?</summary><p>Yes, within the simulated world, via local, non-confidential and degraded pulses (seven types of messages). This is distinct from communication between components (SYNE ↔ ECHOS ↔ PRISM via WebSocket/HTTP).</p></details><details class="faq"><summary>Can you &quot;cheat&quot; by giving the world view to the entities?</summary><p>Not by design: partial observability is a first-class feature. An entity only sees what its sensors perceive (range, line of sight), and its memory as well as its beliefs degrade. Anti-cheat is verified by tests.</p></details><details class="faq"><summary>Is there physical modelling (collisions, bodies, morphology)?</summary><p>No. Entities are logical (position, velocity, health), with no detailed physical representation, and may overlap. The PRISM rendering stylises this model.</p></details><details class="faq"><summary>What is the target scale limit?</summary><p>Performance targets exist for a later phase (notably 50 and 500 entities at target rates). Scaling beyond that is a research axis (spatial grid, culling).</p></details><details class="faq"><summary>Is LIVEX multiplayer?</summary><p>Not in V0.2. PRISM envisages a future &quot;player-inhabitant&quot; mode (embodying an entity), but this is a distant evolution, not committed.</p></details><details class="faq"><summary>What is the difference between LIVEX, PRISM and PRISM-LDK?</summary><p>LIVEX is the complete project. PRISM is its final Unreal project. PRISM-LDK is the Unreal plugin (technical name of the PrismLdk module) that exposes the SYNE contracts to Blueprints. LDK designates the plugin, not a separate product. The simulation engine remains decoupled from Unreal: SYNE makes the decisions and holds the authoritative state.</p></details><details class="faq"><summary>Why does a SYNE mock exist?</summary><p>syne-mock is a lightweight Node.js server to advance Unreal integration without running the full .NET engine. It simplifies deliberation, social systems and pathfinding: it serves integration and interface tests, never scientific results.</p></details><details class="faq"><summary>What is the licence, and who owns the project?</summary><p>GNU GPL v3.0 or later (GPL-3.0-or-later, see the LICENSE file) for SYNE, ECHOS, the Launcher, syne-mock and the site. The Unreal PRISM project remains subject to the Epic Games EULA and is not covered by the GPL. The repository is currently maintained by a single person. Contribution rules are in CONTRIBUTING.md.</p></details><details class="faq"><summary>What does LIVEX not seek to prove?</summary><p>That a society formed without the designer knowing; that a metric equals proof of emergence; that the behaviours of entities reproduce real social facts.</p></details><details class="faq"><summary>Where are the ethical risks documented?</summary><p>In ETHICS_AND_SCOPE.md (scope, risks, ethics), itself derived from Part 8 of the monograph.</p></details></div><div class="cta" style="margin-top:24px"><a class="bt p" href="/LIVEX/en/documentation/">Documentation</a><a class="bt" href="/LIVEX/en/comprendre/glossaire/">Glossary</a><a class="bt" href="/LIVEX/en/comprendre/limites/">Limitations and ethics</a></div></div></section></main><footer class="site"><div class="w"><div class="fcols"><div class="fbrand"><a class="lg" href="/LIVEX/en/" aria-label="LIVEX">LIVEX</a><p class="fbrand-desc">Multi-agent simulation ecosystem: engine, emergent cognition and perceptual renderer.</p><p class="fbrand-meta mu">© 2026 Donovan — LIVEX</p></div><nav class="fnav" aria-label="Footer navigation"><div class="fcol"><h2>Navigation</h2><ul><li><a href="/LIVEX/en/comprendre/">Understand</a></li><li><a href="/LIVEX/en/technique/">Architecture</a></li><li><a href="/LIVEX/en/telecharger/">Download</a></li><li><a href="/LIVEX/en/getting-started/">Get started in 5 min</a></li><li><a href="/LIVEX/en/versions/">Versions</a></li><li><a href="/LIVEX/en/feuille-de-route/">Roadmap</a></li><li><a href="/LIVEX/en/actualites/">Journal</a></li></ul></div><div class="fcol"><h2>Resources</h2><ul><li><a href="/LIVEX/en/documentation/">Documentation</a></li><li><a href="/LIVEX/en/faq/">FAQ</a></li><li><a href="/LIVEX/en/comprendre/glossaire/">Glossary</a></li><li><a href="/LIVEX/en/suivre/">Follow</a></li><li><a href="/LIVEX/en/presse/">Press kit</a></li><li><a href="/LIVEX/en/etat-du-projet/">Project state</a></li><li><a href="/LIVEX/en/monographie/">Monograph</a></li></ul></div><div class="fcol"><h2>Project</h2><ul><li><a href="/LIVEX/en/participer/">Contribute</a></li><li><a href="/LIVEX/en/a-propos/">About</a></li><li><a href="/LIVEX/en/a-propos/auteur/">Author</a></li><li><a href="/LIVEX/en/a-propos/transparence-ia/">AI transparency</a></li><li><a href="/LIVEX/en/plan-du-site/">Sitemap</a></li></ul></div><div class="fcol"><h2>Legal</h2><ul><li><a href="/LIVEX/en/mentions-legales/">Legal notice</a></li><li><a href="/LIVEX/en/confidentialite/">Privacy</a></li><li><a href="/LIVEX/en/accessibilite/">Accessibility</a></li><li><a href="/LIVEX/en/licence/">License</a></li></ul></div></nav></div><hr class="fl"><div class="fgrid"><p>Content under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code under the GNU GPL v3.0 or later.</p><p class="mu">No trackers, no cookies. Self-hosted fonts.</p><p class="mu"><a href="/LIVEX/CITATION.cff" rel="noopener">Cite this site (CITATION.cff)</a> · <a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">GitHub repository</a> · <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">Issues</a> · <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener">Support</a> · <a href="/LIVEX/en/participer/">Contributing</a></p></div></div></footer><script>(function(){const themeLabels = {"dark":"Switch to dark theme","light":"Switch to light theme"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>

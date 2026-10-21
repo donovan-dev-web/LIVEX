@@ -1,0 +1,302 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>SYNE : un moteur déterministe pour l’émergence · LIVEX</title><meta name="description" content="SYNE, le moteur de LIVEX : un monde à ticks, des agents autonomes, un déterminisme contrôlé et une reprise exacte. Plongée dans la mécanique."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/LIVEX/apple-touch-icon.png"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="article"><meta property="article:published_time" content="2026-10-04T00:00:00.000Z"><meta property="article:author" content="Donovan Chartrain"><meta property="article:section" content="Journal"><meta property="article:tag" content="syne"><meta property="article:tag" content="moteur"><meta property="article:tag" content="agents"><meta property="article:tag" content="determinisme"><meta property="article:tag" content="persistance"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="SYNE : un moteur déterministe pour l’émergence · LIVEX"><meta property="og:description" content="SYNE, le moteur de LIVEX : un monde à ticks, des agents autonomes, un déterminisme contrôlé et une reprise exacte. Plongée dans la mécanique."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:image:alt" content="LIVEX — écosystème de simulation multi-agents"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="fr_FR"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="SYNE : un moteur déterministe pour l’émergence · LIVEX"><meta name="twitter:description" content="SYNE, le moteur de LIVEX : un monde à ticks, des agents autonomes, un déterminisme contrôlé et une reprise exacte. Plongée dans la mécanique."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta name="twitter:image:alt" content="LIVEX — écosystème de simulation multi-agents"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-italic.DKMiL14s.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","description":"LIVEX est un écosystème de simulation multi-agents : un moteur (SYNE), une cognition émergente (ECHOS) et un rendu perceptif (PRISM). Documentation et principes ouverts.","inLanguage":"fr","license":"https://www.gnu.org/licenses/gpl-3.0.html","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Donovan","url":"https://donovan-dev-web.vercel.app"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"SYNE : un moteur décisionnel déterministe pour l'émergence","description":"SYNE, le moteur de LIVEX : un monde à ticks, des agents autonomes, un déterminisme contrôlé et une reprise exacte. Plongée dans la mécanique.","datePublished":"2026-10-04T00:00:00.000Z","author":{"@type":"Person","name":"Donovan Chartrain","url":"https://donovan-dev-web.vercel.app"},"publisher":{"@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg"},"image":"https://donovan-dev-web.github.io/LIVEX/media/og-livex.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/"},"articleSection":"Journal","keywords":"syne, moteur, agents, determinisme, persistance","inLanguage":"fr"}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CO1ZX8Cv.css"><style>.cardlink[data-astro-cid-23c2ramm]{flex-direction:column;gap:6px;padding:20px;display:flex}.cardlink[data-astro-cid-23c2ramm] .bt[data-astro-cid-23c2ramm]{align-self:flex-start;margin-top:auto}
+</style></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="comprendre-submenu">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="comprendre-submenu"><li><a href="/LIVEX/comprendre/">Vue d’ensemble</a></li><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/faq/">FAQ</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="architecture-submenu">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="architecture-submenu"><li><a href="/LIVEX/technique/">Vue d’ensemble</a></li><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="telecharger-submenu">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="telecharger-submenu"><li><a href="/LIVEX/telecharger/">Vue d&#39;ensemble</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 minutes</a></li><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li><li><a href="/LIVEX/versions/">Versions</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="ressources-submenu">Ressources<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="ressources-submenu"><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li><li><a href="/LIVEX/actualites/">Journal</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="apropos-submenu">À propos<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="apropos-submenu"><li><a href="/LIVEX/a-propos/">Vue d’ensemble</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/presse/">Kit média</a></li></ul></div><a class="nav-cta" href="/LIVEX/suivre/">Suivre</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener" style="font-size:0.85rem">Issues</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener" style="font-size:0.85rem">Support</a></nav><button type="button" id="search-toggle" class="search-toggle" aria-expanded="false" aria-controls="search-modal" aria-label="Rechercher" title="Rechercher" data-astro-cid-ac66eqjo><span aria-hidden="true" data-astro-cid-ac66eqjo>⌕</span><span class="sr-only" data-astro-cid-ac66eqjo>Rechercher</span></button><div id="search-modal" class="search-modal" hidden data-astro-cid-ac66eqjo><div class="search-backdrop" data-search-close data-astro-cid-ac66eqjo></div><div class="search-panel" role="dialog" aria-modal="true" aria-label="Rechercher" data-astro-cid-ac66eqjo><button type="button" class="search-close" data-search-close aria-label="Fermer la recherche" data-astro-cid-ac66eqjo>✕</button><div id="pagefind-search" data-astro-cid-ac66eqjo></div><p class="search-hint" data-search-dev hidden data-astro-cid-ac66eqjo>La recherche est disponible sur le site publié.</p></div></div><script>(function(){const pagefindBase = "/LIVEX/pagefind/";
+
+  (function () {
+    var toggle = document.getElementById('search-toggle');
+    var modal = document.getElementById('search-modal');
+    if (!toggle || !modal) return;
+    var loaded = false;
+    var lastFocused = null;
+    function open() {
+      var active = document.activeElement;
+      // Si rien n'était focalisé (activation au clavier, script), on rend la main au bouton.
+      lastFocused = active && active !== document.body ? active : toggle;
+      modal.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      var closeBtn = modal.querySelector('.search-close');
+      if (closeBtn) closeBtn.focus();
+      if (!loaded) {
+        loaded = true;
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = pagefindBase + 'pagefind-ui.css';
+        document.head.appendChild(css);
+        var s = document.createElement('script');
+        s.src = pagefindBase + 'pagefind-ui.js';
+        s.onload = function () {
+          try {
+            // @ts-ignore
+            new window.PagefindUI({ element: '#pagefind-search', bundlePath: pagefindBase, showSubResults: true, showImages: false });
+            var input = document.querySelector('#pagefind-search input');
+            if (input) input.focus();
+          } catch (e) {
+            var hint = document.querySelector('[data-search-dev]');
+            if (hint) hint.removeAttribute('hidden');
+          }
+        };
+        s.onerror = function () {
+          var hint = document.querySelector('[data-search-dev]');
+          if (hint) hint.removeAttribute('hidden');
+        };
+        document.head.appendChild(s);
+      } else {
+        var existing = document.querySelector('#pagefind-search input');
+        if (existing) existing.focus();
+      }
+    }
+    function close() {
+      modal.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      else toggle.focus();
+    }
+    toggle.addEventListener('click', open);
+    modal.querySelectorAll('[data-search-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hasAttribute('hidden')) open(); else close();
+        return;
+      }
+      if (modal.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusables = modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  })();
+})();</script><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/actualites/syne-moteur-decisionnel-deterministe/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    /* Sans JS, les sous-menus doivent rester accessibles (pas de bouton fonctionnel). */
+    nav.main .ni { position: static; }
+    nav.main .sub {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    nav.main .sub::before { display: none; }
+    nav.main .sub a { padding-left: 22px; }
+
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+      nav.main .sub a { padding-left: 18px !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else {
+        header.removeAttribute('data-nav-open');
+        header.querySelectorAll('.ni.open').forEach(function (ni) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var openNi = header.querySelector('.ni.open');
+      if (openNi) {
+        var trigger = openNi.querySelector('.ni-trigger');
+        openNi.classList.remove('open');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    header.querySelectorAll('.ni > button.ni-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ni = btn.parentElement;
+        if (!ni) return;
+        var willOpen = !ni.classList.contains('open');
+        header.querySelectorAll('.ni.open').forEach(function (other) {
+          if (other !== ni) {
+            other.classList.remove('open');
+            var otherBtn = other.querySelector('.ni-trigger');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        ni.classList.toggle('open', willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      header.querySelectorAll('.ni.open').forEach(function (ni) {
+        if (!ni.contains(e.target)) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (header.hasAttribute('data-nav-open') && !header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu" tabindex="-1" data-pagefind-body="true"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/actualites/">Journal</a></span><span> · <span aria-current="page">SYNE : un moteur décisionnel déterministe pour l&#39;émergence</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>17</b> Journal</div><h1 class="ptitle">SYNE : un moteur décisionnel déterministe pour l&#39;émergence</h1><p class="lead">SYNE, le moteur de LIVEX : un monde à ticks, des agents autonomes, un déterminisme contrôlé et une reprise exacte. Plongée dans la mécanique.</p></section></div><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://donovan-dev-web.github.io/LIVEX/"},{"@type":"ListItem","position":2,"name":"Journal","item":"https://donovan-dev-web.github.io/LIVEX/actualites/"},{"@type":"ListItem","position":3,"name":"SYNE : un moteur décisionnel déterministe pour l'émergence"}]}</script><section class="block"><div class="w"><div class="reading-progress" aria-hidden="true"><span class="reading-progress-bar"></span></div><p class="mu" style="font-size:0.78rem"><time datetime="2026-10-04T00:00:00.000Z">4 octobre 2026</time> · syne · moteur · agents · determinisme · persistance</p><nav class="toc" aria-label="Sommaire de l'article"><a href="#un-seul-endroit-où-les-lois-vivent">Un seul endroit où les lois vivent</a><a href="#cinq-principes-un-espace-étroit">Cinq principes, un espace étroit</a><a href="#un-tick-six-temps">Un tick, six temps</a><a href="#percevoir" style="padding-left:12px">Percevoir</a><a href="#évaluer-et-choisir" style="padding-left:12px">Évaluer et choisir</a><a href="#appliquer-mettre-à-jour-refermer" style="padding-left:12px">Appliquer, mettre à jour, refermer</a><a href="#lagent-de-lintérieur">L’agent, de l’intérieur</a><a href="#le-monde-autour">Le monde autour</a><a href="#sauver-piloter-diffuser">Sauver, piloter, diffuser</a><a href="#deux-profils-deux-intentions">Deux profils, deux intentions</a><a href="#les-preuves-et-ce-quelles-ne-disent-pas">Les preuves, et ce qu’elles ne disent pas</a><a href="#lautorité-pas-la-promesse">L’autorité, pas la promesse</a></nav><p>Retirez l’écran. Il reste un monde qui tourne : une grille de cellules, des réserves qui se renouvellent, des dizaines d’entités qui ont faim, se fatiguent, se souviennent et choisissent. Personne ne regarde, et pourtant tout se décide. C’est <strong>SYNE</strong> (<em>Systems &amp; Emergent Network Engine</em>), le moteur de simulation multi-agents de LIVEX, en version 0.17.0. Sa responsabilité tient en une phrase : détenir la <strong>vérité de l’état du monde</strong>.</p>
+<p>Tout le reste du projet est bâti autour de ce fait. ECHOS mesure ce que SYNE produit, PRISM montre ce que SYNE décide, le Launcher archive ce que SYNE a livré. Aucun de ces composants ne réécrit l’état simulé, et la logique décisionnelle s’exécute indépendamment du rendu. Cette séparation n’est pas décorative : elle est ce qui rend la question de LIVEX testable, puisqu’il n’existe qu’un seul endroit où les lois du monde vivent.</p>
+<h2 id="un-seul-endroit-où-les-lois-vivent">Un seul endroit où les lois vivent</h2>
+<p>On pourrait imaginer un moteur qui décide, un rendu qui influence les décisions et un tableau de bord qui recalcule l’état à sa façon. Ce serait plus simple à brancher, et beaucoup plus difficile à croire. Si trois composants peuvent modifier le monde, une observation ne prouve plus rien : on ne sait plus si le phénomène vient des lois ou de l’un des outils.</p>
+<p>SYNE ferme cette porte. Il expose son état, il ne le délègue pas. Les autres composants ont des rôles précis et bornés : ECHOS observe sans influer, PRISM visualise sans décider, le Launcher orchestre sans réinterpréter. Cette autorité unique est ce qui permet de poser la question « qu’émerge-t-il de ces règles seules ? » — et d’y répondre par un rejeu, pas par une impression.</p>
+<h2 id="cinq-principes-un-espace-étroit">Cinq principes, un espace étroit</h2>
+<p>Le moteur tient sa promesse par cinq principes qui reviennent partout.</p>
+<p>Le <strong>déterminisme</strong>, d’abord : à graine et configuration identiques, l’exécution produit un déroulement reproductible. L’<strong>autonomie locale</strong>, ensuite : les agents décident depuis ce qu’ils perçoivent — une part seulement du monde — avec leur mémoire, leurs croyances, leurs besoins et leurs capacités d’action. L’<strong>émergence traçable</strong> : les structures collectives ne sont pas programmées ; elles résultent d’interactions dont on peut retracer les causes. L’<strong>observation non intrusive</strong> : SYNE diffuse son état sans attendre de retour capable d’influencer ses décisions. Et la <strong>reprise exacte</strong> : une persistance bit-à-bit qui permet de restaurer le monde à un tick donné.</p>
+<p>Cinq principes qui, ensemble, dessinent un espace étroit : presque rien n’est laissé au hasard non contrôlé, presque rien n’est laissé à la discrétion du rendu. C’est exactement l’intention.</p>
+<h2 id="un-tick-six-temps">Un tick, six temps</h2>
+<p>SYNE opère en temps discret : le monde avance par ticks. Et un tick se lit presque comme une phrase.</p>
+<h3 id="percevoir">Percevoir</h3>
+<p>Chaque agent regarde autour de lui — à portée bornée, de travers, avec ce que sa mémoire garde. Le monde est partiellement observable, et c’est voulu. L’information imparfaite n’est pas une approximation regrettable : c’est un moteur de diversité comportementale. Deux agents placés au même endroit ne voient pas la même chose, parce qu’ils n’ont pas la même histoire.</p>
+<h3 id="évaluer-et-choisir">Évaluer et choisir</h3>
+<p>Vient ensuite l’évaluation. Besoins, fatigue, énergie, traits et tempéraments, croyances et contexte social sont pondérés dans une <strong>formule d’utilité</strong>, qui rend l’arbitrage lisible chiffre par chiffre. Puis l’action la plus apte l’emporte, compte tenu des contraintes locales.</p>
+<p>L’agent ne cherche pas l’optimum mondial : il ne peut pas, il ne voit pas le monde. Il cherche un <strong>compromis local plausible</strong>. C’est précisément là que l’intérêt commence. Des compromis locaux, répétés par des entités imparfaites, sont le seul matériau dont disposent les structures collectives.</p>
+<h3 id="appliquer-mettre-à-jour-refermer">Appliquer, mettre à jour, refermer</h3>
+<p>L’action s’applique — déplacement, interaction, consommation, communication. Les mises à jour en tirent les conséquences : besoins, énergie, fatigue, mémoire, croyances, réserves, événements. Enfin, le tick se referme : un snapshot, puis les événements, partent vers les consommateurs.</p>
+<p>Cet ordre est invariant, et aucun tirage ne dépend de l’horloge système pour trancher une décision. Cette phrase est le cœur du moteur : tant que l’ordre tient, la trajectoire tient.</p>
+<h2 id="lagent-de-lintérieur">L’agent, de l’intérieur</h2>
+<p>Un agent SYNE n’est pas un script mobile. Il porte des <strong>besoins</strong> — faim, soif, sécurité, social — avec leurs seuils et leur dérive ; une <strong>énergie et une fatigue</strong> qui coûtent et se réparent ; une <strong>mémoire et des croyances</strong> mises à jour graduellement par les interactions ; une <strong>perception partielle</strong> qui l’empêche de tout savoir ; des <strong>traits</strong> qui biaisent durablement ses évaluations ; un ensemble <strong>borné d’actions</strong> selon le contexte ; et une <strong>communication locale</strong> elle aussi bornée, en envois et réceptions par tick, pour éviter des effets globaux non maîtrisés.</p>
+<p>Prenez une scène ordinaire. Un agent a faim. Il aperçoit un voisin, et doit arbitrer entre manger, s’approcher ou se reposer. Il ne dispose pas d’une carte du monde ni d’un plan général : il a une croyance sur un gisement, une mémoire de la dernière interaction, une jauge d’énergie qui baisse. Sa décision ne sera peut-être pas la meilleure. Elle sera la sienne.</p>
+<p>C’est cette modestie qui rend le système intéressant. Un agent qui optimiserait globalement produirait une trajectoire unique, prévisible, sans histoire. Un agent qui compose avec ce qu’il perçoit produit des trajectoires différentes — et parfois, sans que personne l’ait prévu, des régularités.</p>
+<h2 id="le-monde-autour">Le monde autour</h2>
+<p>Le monde est une grille à <strong>cellules discrètes</strong>. Il gère des <strong>ressources</strong> — nourriture, eau, minéraux — qui se régénèrent ou se dégradent périodiquement selon la configuration ; des <strong>obstacles statiques</strong>, tracés dans le monde, dont la révision rafraîchit le cache de chemin (A*) quand l’environnement change ; un rayon d’interaction borné et une perception locale.</p>
+<p>L’échelle temporelle se règle par <code>simulatedSecondsPerTick</code> (60 par défaut, soit une minute simulée par tick), <code>metersPerUnit</code> restant informatif. L’horloge est instanciée au démarrage : les conversions s’appliquent une fois, et les effets par action demeurent inchangés. Changer la représentation du temps ne change pas ce que le monde fait ; cela change seulement la façon dont on le raconte.</p>
+<h2 id="sauver-piloter-diffuser">Sauver, piloter, diffuser</h2>
+<p>Trois services tiennent le monde à jour et l’ouvrent au reste du système.</p>
+<p>La <strong>persistance SQLite</strong> — schéma versionné, onze tables typiques, transactions atomiques, sauvegarde automatique périodique, rotation de backups bornée — permet la reprise exacte au dernier <code>tick_states</code>. Le <strong>serveur de contrôle HTTP</strong> (<code>--serve</code>, port 5181) expose <code>start</code>, <code>pause</code>, <code>resume</code>, <code>stop</code>, <code>reset</code> et <code>status</code>. <code>reset</code> accepte une surcouche <code>config</code>, avec la même logique que <code>start</code> et <code>prepare</code>, ce qui permet d’enchaîner des runs cohérents sans y penser à chaque fois. Le <strong>flux d’observabilité</strong>, en WebSocket, diffuse <strong>snapshot puis événements</strong> à chaque tick, avec <code>simulatedTimeSeconds</code>, <code>seed</code> et <code>runId</code> ; l’ordre de diffusion y est garanti.</p>
+<p>Le tout se réfère à des contrats écrits : <code>API_CONTRACTS.md</code>, <code>TICK_QUANTITIES.md</code> — l’inventaire des quantités échangées à chaque tick — et <code>OBSERVABILITY.md</code>. Chaque exécution porte son <code>run_id</code> canonique, <code>run-&lt;seed&gt;-&lt;12hex&gt;</code>, lisible de SYNE à ECHOS comme dans les artefacts archivés.</p>
+<h2 id="deux-profils-deux-intentions">Deux profils, deux intentions</h2>
+<p>Le profil <strong><code>reference</code></strong> est calibré pour la stabilité sur 2 500 ticks. Sur six runs — trois graines, deux tailles de population —, l’objectif explicite est de tenir sans extinction : 0 extinction, pente d’énergie sous le seuil, population finale proche de la population initiale. Ce n’est pas une promesse d’immortalité : c’est un cadre de mesure, avec des seuils fixés avant l’exécution.</p>
+<p>Le profil <strong><code>prism</code></strong>, lui, est orienté rendu perceptif : monde plus grand, cellules adaptées, <code>simulatedSecondsPerTick</code> à 5, <code>metersPerUnit</code> à 1. Il est strictement additif : il change la représentation du monde, jamais son ordre causal. On peut donc brancher un rendu sans modifier la science — et c’est exactement ce que PRISM, encore en développement, viendra chercher.</p>
+<h2 id="les-preuves-et-ce-quelles-ne-disent-pas">Les preuves, et ce qu’elles ne disent pas</h2>
+<p>SYNE maintient des <strong>oracles dorés</strong> — des checksums épinglés dont toute variation signale une trajectoire qui a bougé. Un changement volontaire se justifie par un bump <code>engineVersion</code> en MINOR, dans le même commit que le recalcul des empreintes : un changement annoncé est légitime, un changement silencieux ne l’est pas. Les campagnes multi-seeds, les tests de reprise bit-à-bit, les golden tests et les parcours bout-en-bout contre ECHOS réel valident continûment ces garanties. Les suites du moteur affichent <strong>695/695, 0 échec</strong>.</p>
+<p>Il faut pourtant dire ce que ces chiffres ne prouvent pas. La viabilité n’est établie que pour les graines, configurations et horizons explicitement rapportés. Rien ici ne démontre une viabilité universelle, ni une émergence générale. Les tests confirment leurs assertions ; ils ne certifient pas une conformité totale à la monographie.</p>
+<p>Et c’est très bien ainsi. Un moteur qui promettrait l’émergence serait suspect. Un moteur qui promet la <strong>rejouabilité</strong> de ce qui se produit est vérifiable.</p>
+<h2 id="lautorité-pas-la-promesse">L’autorité, pas la promesse</h2>
+<p>Au fond, SYNE est l’autorité : ECHOS observe sans influer, PRISM visualise sans décider. C’est cette séparation qui permet à LIVEX de poser la question « qu’émerge-t-il de ces règles seules ? » — et d’y répondre par un <strong>rejeu reproductible</strong>, pas par une interprétation. Le moteur ne promet pas que quelque chose d’intéressant se produira ; il promet que, si quelque chose se produit, vous pourrez le revoir, le mesurer et le discuter.</p>
+<p>Pour descendre dans le détail, le <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/syne/README.md">guide SYNE</a> décrit le monde, la cognition, la boucle et la persistance ; la page <a href="https://donovan-dev-web.github.io/LIVEX/technique/syne/">SYNE du site</a> en donne la vue courte. Et pour ne manquer ni la prochaine campagne ni ses résultats, le <a href="https://donovan-dev-web.github.io/LIVEX/actualites/">journal</a> reste le fil — en <a href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">RSS</a> si vous préférez que ce soit le flux qui vienne à vous.</p>
+<section class="share" aria-labelledby="share-title" data-url="https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/" data-title="SYNE : un moteur décisionnel déterministe pour l'émergence"><h2 id="share-title" class="share-title">Partager cet article</h2><div class="share-actions"><button type="button" class="bt share-copy" data-copy="https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/" data-copied="Lien copié">Copier le lien</button><a class="bt" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fdonovan-dev-web.github.io%2FLIVEX%2Factualites%2Fsyne-moteur-decisionnel-deterministe%2F&amp;text=SYNE%20%3A%20un%20moteur%20d%C3%A9cisionnel%20d%C3%A9terministe%20pour%20l'%C3%A9mergence" rel="noopener" target="_blank">X / Twitter</a><a class="bt" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fdonovan-dev-web.github.io%2FLIVEX%2Factualites%2Fsyne-moteur-decisionnel-deterministe%2F" rel="noopener" target="_blank">LinkedIn</a></div><p class="mu share-status" role="status" aria-live="polite"></p></section><section class="pl br" style="padding:18px;margin-top:18px" aria-labelledby="cite-title"><h2 id="cite-title" style="margin:0 0 10px">Citer cet article</h2><p class="mu" style="margin:0 0 12px;font-size:0.78rem">Chartrain, D. (2026). <em>SYNE : un moteur décisionnel déterministe pour l&#39;émergence</em>. LIVEX. https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/</p><p style="margin:0"><a class="bt" href="/LIVEX/CITATION.cff" rel="noopener">CITATION.cff ↗</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub ↗</a></p></section><script>
+        (function () {
+          var btn = document.querySelector('.share-copy');
+          if (!btn) return;
+          var status = document.querySelector('.share-status');
+          var copied = btn.getAttribute('data-copied') || 'Lien copié';
+          btn.addEventListener('click', async function () {
+            var link = btn.getAttribute('data-copy') || '';
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(link);
+              } else {
+                throw new Error('no-clipboard');
+              }
+              if (status) status.textContent = copied;
+            } catch (e) {
+              if (status) status.textContent = link;
+            }
+          });
+          if (navigator.share) {
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'bt';
+            shareBtn.textContent = 'Partager…';
+            shareBtn.addEventListener('click', function () {
+              navigator.share({ title: document.title, url: btn.getAttribute('data-copy') || '' }).catch(function () {});
+            });
+            var actions = document.querySelector('.share-actions');
+            if (actions) actions.appendChild(shareBtn);
+          }
+        })();
+      </script><script>
+        (function () {
+          var bar = document.querySelector('.reading-progress-bar');
+          if (!bar) return;
+          function update() {
+            var doc = document.documentElement;
+            var scrollTop = window.scrollY || doc.scrollTop;
+            var height = doc.scrollHeight - doc.clientHeight;
+            var pct = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+            bar.style.width = pct + '%';
+          }
+          window.addEventListener('scroll', update, { passive: true });
+          update();
+        })();
+      </script><p style="margin-top:24px"><a class="bt" href="/LIVEX/actualites/">Toutes les actualités</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">Flux RSS</a></p></div></section><section class="block"><div class="w"><div class="sh"><b>17.1</b> Lire aussi</div><h2>D'autres jalons récents.</h2><div class="g2" style="margin-top:18px"><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>A0-4 : verdicts d&#39;émergence et protocole préenregistré</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Protocole préenregistré, contre-factuel obligatoire, verdicts publiés : comment LIVEX tranche une revendication d&#39;émergence sans déplacer ses seuils.</p><a class="bt" href="/LIVEX/actualites/a0-4-verdicts-emergence-et-protocole-preenregistre/" data-astro-cid-23c2ramm>Lire l&#39;article →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Réalignement des divergences fondamentales : LIVEX passe en V0.2</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d&#39;observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel.</p><a class="bt" href="/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/" data-astro-cid-23c2ramm>Lire l&#39;article →</a></article></div></div></section></main><footer class="site"><div class="w"><div class="fcols"><div class="fbrand"><a class="lg" href="/LIVEX/" aria-label="LIVEX">LIVEX</a><p class="fbrand-desc">Écosystème de simulation multi-agents : moteur, cognition émergente et rendu perceptif.</p><p class="fbrand-meta mu">© 2026 Donovan — LIVEX</p></div><nav class="fnav" aria-label="Navigation de pied de page"><div class="fcol"><h2>Navigation</h2><ul><li><a href="/LIVEX/comprendre/">Comprendre</a></li><li><a href="/LIVEX/technique/">Architecture</a></li><li><a href="/LIVEX/telecharger/">Télécharger</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 min</a></li><li><a href="/LIVEX/versions/">Versions</a></li><li><a href="/LIVEX/feuille-de-route/">Feuille de route</a></li><li><a href="/LIVEX/actualites/">Journal</a></li></ul></div><div class="fcol"><h2>Ressources</h2><ul><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/faq/">FAQ</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/suivre/">Suivre</a></li><li><a href="/LIVEX/presse/">Kit média</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li></ul></div><div class="fcol"><h2>Projet</h2><ul><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/a-propos/">À propos</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="fcol"><h2>Légal</h2><ul><li><a href="/LIVEX/mentions-legales/">Mentions légales</a></li><li><a href="/LIVEX/confidentialite/">Confidentialité</a></li><li><a href="/LIVEX/accessibilite/">Accessibilité</a></li><li><a href="/LIVEX/licence/">Licence</a></li></ul></div></nav></div><hr class="fl"><div class="fgrid"><p>Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence GNU GPL v3.0 ou ultérieure.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p><p class="mu"><a href="/LIVEX/CITATION.cff" rel="noopener">Citer ce site (CITATION.cff)</a> · <a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a> · <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">Issues</a> · <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener">Support</a> · <a href="/LIVEX/participer/">Contribuer</a></p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>
