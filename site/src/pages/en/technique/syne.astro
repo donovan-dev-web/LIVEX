@@ -4,6 +4,7 @@
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
+import SyneSchema from '../../../components/SyneSchema.astro';
 import TableOfContents from '../../../components/TableOfContents.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
 import { url } from '../../../utils/url';
@@ -48,9 +49,14 @@ import { url } from '../../../utils/url';
         It is this trace, not the engine, that drives observation.
       </p>
 
+      <p>
+        An engine has no interface: there is therefore no screenshot to show. Where an image helps, the site shows a
+        <strong>conceptual schema</strong> — as the home hero does.
+      </p>
+
       <div class="pl br" style="margin-top:20px">
-        <div class="ph">SYNE capture<br />to be provided · 16:9</div>
-        <small><b>Fig. 1</b> — Reserved capture slot: no real capture of SYNE is available to date. A visual will only be published once it is authentic.</small>
+        <SyneSchema lang="en" variant="full" />
+        <small><b>Fig. 1</b> — The SYNE computation loop: world, local perception, decision, action, and the traces it produces. <strong>Conceptual illustration, not a capture.</strong></small>
       </div>
     </div>
   </section>

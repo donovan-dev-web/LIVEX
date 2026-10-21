@@ -151,6 +151,27 @@ couches** de LIVEX, en SVG.
 Ce composant est partagé par l'accueil FR et l'accueil EN (mêmes tracés, texte
 localisé).
 
+## 6 bis. `SyneSchema.astro`
+
+Schéma conceptuel de la **boucle de calcul de SYNE**, en SVG.
+
+| Prop | Type | Défaut | Rôle |
+| :-- | :-- | :-- | :-- |
+| `lang` | `'fr' \| 'en'` | `'fr'` | Langue des libellés. |
+| `variant` | `'compact' \| 'full'` | `'compact'` | `compact` : monde, tick, traces (carte, index Architecture). `full` : boucle complète monde → perception → décision → action, et sorties (snapshot, traces). |
+| `class` | `string?` | — | Classes additionnelles. |
+
+Pourquoi un schéma plutôt qu'une capture : **SYNE est un moteur, il n'a pas
+d'interface** — il n'y a donc aucune capture possible à publier. Le schéma
+remplace les emplacements `.ph`, qui sont retirés de la page SYNE.
+
+- Le SVG porte `role="img"` et un `aria-label` localisé ; les libellés sont
+  du texte réel (donc traduits et accessibles), pas des images.
+- Les couleurs viennent de classes `.syne-schema .*` (thématiques : le schéma
+  s'adapte au thème clair et sombre).
+- La légende de la figure rappelle « **illustration conceptuelle, pas une
+  capture** ».
+
 ## 7. `CtaBand.astro`
 
 Bandeau d'appel à l'action réutilisable (conversion).
