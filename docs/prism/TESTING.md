@@ -22,6 +22,7 @@ simulation concurrente.
 | Projection | Automation Spec `PrismLdk.Projection` : valeurs de contrôle du profil (`k = 100`) et paramètres invalides |
 | Registre de monde | Automation Spec `PrismLdk.WorldRegistry` : échelle dérivée une seule fois (`K = TileSizeUu / CellSize`), remplacement d'agent, refus des entrées invalides, acteurs détruits, `ClearAll` |
 | Surface de service | Automation Spec `PrismLdk.Service` : arguments supervisés, jeton de session, codes HTTP par route, métriques et échappement des labels |
+| Authentification client | Automation Spec `PrismLdk.Auth` : forme du header `Authorization: Bearer` présenté à SYNE, absence de header sans jeton, aucun `Bearer ` fabriqué sans valeur, priorité du jeton manuel (`bUseManualSessionToken`) sur l'environnement |
 | Service au runtime | Sondes `/health/live`, `/health/ready`, `/health/details`, `/info`, `/metrics` ; `POST /control/shutdown` refusé sans jeton puis accepté, sortie 0 et marqueur `shutdown.ok` |
 | Transport | Vérifier connexion/déconnexion, perte inattendue, reconnexion configurée, JSON invalide et erreur HTTP |
 | Contrat consommé | Automation Spec `PrismLdk.Contract` : trames SYNE/syne-mock rejouées dans les parseurs réels — description 1.1, `simulatedTimeSeconds` exact et son repli, `leaderId` absent, mesures d'analyse de groupe ignorées sans rejet, fusion du statut et `null` non converti en `10` |
@@ -49,9 +50,9 @@ succès avant le retour correspondant.
   -ReportExportPath="D:\LIVEX\prism\LDK\Saved\AutomationReport"
 ```
 
-État mesuré le 18 octobre 2026 : **69 specs, 0 échec** (`succeeded` 65 +
-`SuccessWithWarnings` 4, `failed` 0) — `Projection`, `WorldRegistry`, `Service`,
-`GapReplay` et `Contract` (6 specs). Le rapport machine est
+État mesuré le 20 octobre 2026 : **76 specs, 0 échec** (`succeeded` 71 +
+`SuccessWithWarnings` 5, `failed` 0) — `Projection`, `WorldRegistry`, `Service`,
+`GapReplay`, `Contract` (6 specs) et `Auth` (7 specs). Le rapport machine est
 `Saved/AutomationReport/index.json`.
 
 ## 3. Usage de syne-mock pour les tests de développement
@@ -73,6 +74,27 @@ Par conséquent :
 - les contrats et tests finaux doivent aussi être validés avec SYNE réel.
 
 Référence : [`../../syne-mock/README.md`](../../syne-mock/README.md).
+
+### 3.1 Quel binaire SYNE le Launcher exécute-t-il ?
+
+Le Launcher ne lance **pas** `dotnet run` ni `bin/Release/net10.0/Simulation.Console.exe` : il lit
+`syne/component.json` et exécute l'`executable` déclaré, soit
+`Simulation.Console/bin/Release/net10.0/win-x64/publish/Simulation.Console.exe`.
+
+**Conséquence** : un simple `dotnet build` (qui met à jour
+`bin/Release/net10.0/Simulation.Console.dll`) **ne suffit pas** à faire tourner
+le code modifié sous le Launcher — l'exe publié reste l'ancien. Il faut
+**republier** :
+
+```powershell
+dotnet publish "D:\LIVEX\syne\Simulation.Console\Simulation.Console.csproj" `
+  -c Release -r win-x64 --self-contained false
+```
+
+Symptôme typique : une modification de `Program.cs` (ex. l'affichage du jeton
+`LIVEX_SESSION_TOKEN_DISPLAY`) n'apparaît jamais dans la console du Launcher,
+car le binaire exécuté est une publication antérieure. Vérifier la date de
+`win-x64/publish/Simulation.Console.exe` après chaque changement de SYNE.
 
 ## 4. Critères d'acceptation
 

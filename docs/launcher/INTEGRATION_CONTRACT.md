@@ -92,6 +92,7 @@ dans [`../../launcher/contracts/INTEGRATION-CONTRACT-v1.md`](../../launcher/cont
 | Variable | Rôle |
 | :-- | :-- |
 | `LIVEX_SESSION_TOKEN` | Jeton de session exigé pour les commandes de contrôle. **Jamais** passé en argument, qui serait visible dans la liste des processus. |
+| `LIVEX_SESSION_TOKEN_DISPLAY` | **Dev uniquement** : si la valeur est `1`, les composants qui le supportent (SYNE) affichent le jeton de session dans leur sortie standard. Jamais posé en production — la sortie est archivée (`stdout.log`). |
 | `LIVEX_INSTALL_ROOT` | Racine d'installation |
 
 ### 3.3 Arguments propres à SYNE

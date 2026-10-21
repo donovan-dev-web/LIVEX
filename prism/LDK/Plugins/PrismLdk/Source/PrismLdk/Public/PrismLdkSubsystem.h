@@ -13,6 +13,17 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogPrismLdk, Log, All);
 
+/**
+ * Construit la valeur du header `Authorization` présenté à SYNE pour une
+ * commande de contrôle : `Bearer <jeton>` si un jeton est fourni, chaîne vide
+ * sinon (aucun header posé). Fonction pure, verrouillée par `PrismLdk.Auth`.
+ *
+ * Le jeton provient de `LIVEX_SESSION_TOKEN` (environnement hérité du Launcher)
+ * ou d'un appel explicite à `UPrismLdkSubsystem::SetSessionToken` ; il n'est
+ * **jamais** lu sur la ligne de commande (contrat d'intégration Launcher v1).
+ */
+PRISMLDK_API FString PrismLdkAuthorizationHeader(const FString& SessionToken);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPrismSyneConnected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPrismSyneDisconnected);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPrismSyneWorldInitialized, const FPrismSyneWorldDescription&, World);
@@ -68,10 +79,22 @@ public:
 	UFUNCTION(BlueprintPure, Category="SYNE|State") bool GetWorldDescription(FPrismSyneWorldDescription& OutWorld) const;
 	UFUNCTION(BlueprintPure, Category="SYNE|State") FPrismSyneStatus GetStatus() const { return Status; }
 
+	/**
+	 * Fixe le jeton de session présenté à SYNE sur les commandes de contrôle
+	 * (`POST /api/control/*`). Robuste à une intégration qui ne dépendrait pas
+	 * de `LIVEX_SESSION_TOKEN` : appelée explicitement, elle prime sur la
+	 * variable d'environnement. Un jeton vide ⇒ plus aucun header `Authorization`
+	 * (les mutations SYNE sont alors refusées par `401`).
+	 */
+	UFUNCTION(BlueprintCallable, Category="SYNE|Connection") void SetSessionToken(const FString& InSessionToken);
+	UFUNCTION(BlueprintPure, Category="SYNE|State") FString GetSessionToken() const { return SessionToken; }
+
 private:
 	struct FQueuedMessage { FString Payload; };
 	void ParseMessage(const FString& Payload);
 	void SendControl(const FString& Action, const FString& Body);
+	/** Jeton de session présenté à SYNE (`Authorization: Bearer`) sur les mutations. */
+	FString SessionToken;
 #if WITH_DEV_AUTOMATION_TESTS
 public:
 	/**

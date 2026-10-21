@@ -1,278 +1,260 @@
-# RELEASE_AND_UPDATE.md — Livraison et mise à jour
+# Production, publication et mise à jour de l'installateur
 
-**Composant** : LIVEX (Installateur)
+**Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 8 octobre 2026
-**Dépend de** : `ARCHITECTURE.md`, `adr/ADR-004`, `../../VERSIONING.md`, `../CI_CD.md`, `../launcher/PACKAGING.md`
-**Source Monographie** : —
+**Dernière mise à jour** : 21 octobre 2026
+**Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TESTING.md`](TESTING.md), `../../VERSIONING.md`
 
 ---
 
 ## 1. Objet
 
-Ce document décrit comment les artefacts installables sont **produits** par la CI,
-**décrits** par un catalogue, **installés** et **mis à jour** par l'installateur,
-et comment leur **intégrité** est garantie.
+Ce document décrit comment une version de l'installateur est construite,
+vérifiée, signée, publiée et mise à jour. Il ne fixe pas de date : il fixe des
+portes et des artefacts.
 
-## 2. Artefacts de release
-
-Les tags existants (`syne-v*`, `echos-v*`, `prism-v*`, `livex-v*`,
-`VERSIONING.md` §4) restent la source. Chaque tag de composant produit un
-artefact par OS ; le tag `livex-v*` produit en plus l'installateur et le
-catalogue.
-
-| Artefact | Contenu | Nommage |
-| :-- | :-- | :-- |
-| Launcher | Application self-contained, assets, modèles | `livex-launcher-<version>-<os>-x64.zip` |
-| SYNE | Binaire publié self-contained + manifeste de release | `syne-<version>-<os>-x64.zip` |
-| ECHOS | Sources, `uv.lock`, lanceur, manifeste de release | `echos-<version>-<os>.zip` |
-| syne-mock | Sources, runtime Node embarqué, manifeste de release | `syne-mock-<version>-<os>-x64.zip` |
-| PRISM-LDK | Plugin `PrismLdk` (sans binaires compilés) | `prism-ldk-<version>.zip` |
-| Documentation | `docs` et documents racine | `livex-docs-<version>.zip` |
-| Installateur | Binaire self-contained | `livex-setup-<version>-win-x64.exe`, `livex-setup-<version>-linux-x64.tar.gz` |
-| Catalogue | Description signée des artefacts | `catalog.json`, `catalog.json.sig` |
-| Empreintes | SHA-256 de chaque artefact | `SHA256SUMS` |
-| Paquet hors-ligne | Installateur + tous les artefacts d'un OS + roues Python | `livex-offline-<version>-<os>.<ext>` (OI-08) |
-
-Un artefact est **immuable** : il n'est jamais réécrit sous le même nom. Une
-correction produit une nouvelle version.
-
-## 3. Catalogue
-
-### 3.1 Rôle
-
-Le catalogue est le **contrat entre la CI et l'installateur** : liste des
-composants installables, de leurs versions, OS, tailles, dépendances et
-empreintes. L'installateur n'a aucune connaissance en dur d'une URL d'artefact.
-
-### 3.2 Format (`catalog.json`, schéma 1)
-
-```json
-{
-  "schema": 1,
-  "livexVersion": "0.1.0",
-  "publishedAt": "2026-10-31T12:00:00Z",
-  "minInstaller": "0.1.0",
-  "components": [
-    {
-      "id": "syne",
-      "name": "SYNE",
-      "version": "0.15.0",
-      "protocolVersion": 1,
-      "requires": ["launcher"],
-      "accepted": { "linux-x64": true, "win-x64": false },
-      "artifacts": {
-        "linux-x64": {
-          "url": "https://…/syne-0.15.0-linux-x64.zip",
-          "sha256": "…",
-          "downloadBytes": 0,
-          "installedBytes": 0
-        }
-      },
-      "systemRequirements": {
-        "linux-x64": { "libraries": [], "minRamMb": 0 }
-      }
-    }
-  ]
-}
-```
-
-| Champ | Règle |
-| :-- | :-- |
-| `schema` | Entier ; un schéma inconnu est refusé avec la version requise et la version lue (même règle que les manifestes, `PACKAGING.md` §4) |
-| `components[].id` | Identique à l'`id` du manifeste de release |
-| `accepted` | Par OS : le composant a passé l'acceptation Launcher (`V1-CAPABILITY-MATRIX.md`). `false` = affiché grisé avec sa cause, non installable |
-| `protocolVersion` | Lu aussi dans le manifeste ; le catalogue permet de refuser avant téléchargement |
-| `downloadBytes`, `installedBytes` | Mesurés par la CI, jamais estimés à la main |
-| `requires` | Identifiants de composants requis, même syntaxe que `requires` du manifeste |
-| `systemRequirements` | Alimente le contrôle de l'étape 3 (bibliothèques, mémoire) |
-
-Un fichier JSON Schema du catalogue sera publié dans `installer/contracts`, sur le
-modèle de `../../launcher/contracts/component-manifest-v1.schema.json`, et validé en CI.
-
-## 4. Manifestes de release
-
-Le manifeste du dépôt est un manifeste **de développement** ; la CI en produit un
-manifeste **de release** par OS, conforme au même schéma
-(`component-manifest-v1.schema.json`, qui accepte les clés `windows` et `linux`
-dans `executable`). Les chemins sont relatifs au répertoire du composant installé.
-
-Exemple — SYNE, release :
-
-```json
-{
-  "schema": 1,
-  "id": "syne",
-  "name": "SYNE",
-  "type": "simulation",
-  "version": "0.15.0",
-  "protocolVersion": 1,
-  "runtime": "dotnet",
-  "executable": {
-    "linux": "bin/Simulation.Console",
-    "windows": "bin/Simulation.Console.exe"
-  },
-  "workingDirectory": ".",
-  "endpoints": {
-    "control": { "transport": "http", "port": 5181, "enabled": true, "launchArgument": "--control-port" },
-    "ws": { "transport": "websocket", "port": 5180, "enabled": true, "launchArgument": "--observe-port" }
-  },
-  "capabilities": ["headless", "control", "observability", "batch"],
-  "health": { "probe": "http", "path": "/health/ready", "intervalMs": 500 },
-  "timeouts": { "startupMs": 30000, "shutdownMs": 15000 }
-}
-```
-
-Différences avec le manifeste de développement : chemin de l'exécutable
-(`bin/…` au lieu de l'arborescence de build) et clé `windows` ajoutée.
-
-| Composant | Exécutable Linux | Exécutable Windows | Statut |
-| :-- | :-- | :-- | :-- |
-| SYNE | `bin/Simulation.Console` | `bin/Simulation.Console.exe` | À produire et accepter (O-39, O-41) |
-| ECHOS | Lanceur `echos-launcher` | Lanceur équivalent | Lanceur Windows à créer |
-| syne-mock | Lanceur appelant le Node embarqué | Idem | À créer |
-
-La CI **valide chaque manifeste de release** avec le schéma et le script
-`../../launcher/contracts/validate_manifests.py` avant publication.
-
-## 5. Pipeline de release
-
-Extension de `release.yml` (`CI_CD.md` §4). Le job de vérification actuel
-(Ubuntu) est conservé ; les jobs suivants sont ajoutés :
-
-| Job | Runner | Rôle |
-| :-- | :-- | :-- |
-| `verify` | `ubuntu-latest` | Existant : build + tests + couverture |
-| `build-launcher` | matrice `windows-latest`, `ubuntu-latest` | `dotnet publish` self-contained du Launcher par OS |
-| `build-syne` | matrice | `dotnet publish` self-contained de SYNE par OS |
-| `package-echos`, `package-mock` | matrice | Sources + lanceur + manifeste ; roues Python et runtime Node pour le paquet hors-ligne |
-| `build-installer` | matrice | `dotnet publish` self-contained fichier unique de l'installateur |
-| `catalog` | `ubuntu-latest` | Mesure les tailles, calcule les SHA-256, génère `catalog.json`, signe (OI-04) |
-| `test-installer-clean` | matrice | Exécute l'installateur en `--unattended` dans un environnement vierge, puis `livex-launcher --check` (`TESTING.md` §5) |
-| `publish` | `ubuntu-latest` | Crée la GitHub Release avec tous les artefacts, `SHA256SUMS` et le catalogue |
-
-Règles :
-
-- aucun artefact n'est publié si `test-installer-clean` échoue ;
-- un composant dont l'acceptation Launcher n'est pas passée sur un OS est publié
-  avec `accepted: false` pour cet OS (ou absent), jamais avec `true` par défaut ;
-- le catalogue référence exactement les artefacts de la release (pas de « latest »
-  implicite).
-
-## 6. Versionnement
+## 2. Versionnement
 
 | Élément | Règle |
 | :-- | :-- |
-| Version de l'installateur | SemVer, indépendante des composants ; tag proposé `setup-v*` ou rattachement à `livex-v*` (à décider, `ADR-004`) |
-| Version du catalogue | `livexVersion` = version de la release assemblée |
-| Composant | Version lue dans le manifeste de release, jamais supposée (`PACKAGING.md` §9) |
-| Compatibilité | Un composant plus récent que l'installateur est autorisé avec avertissement ; un `schema` de manifeste inconnu est refusé |
-| `minInstaller` | Version minimale de l'installateur capable de lire le catalogue |
+| **Version du produit** | SemVer, portée par `distribution.json.version` ; c'est la version annoncée à l'utilisateur |
+| **Version de l'installateur** | SemVer propre au binaire `livex-setup`, affichée par `--version` |
+| **Tag** | `livex-vX.Y.Z` sur la racine du dépôt, conformément à `VERSIONING.md` |
+| **Cohérence** | une release ne publie que des composants dont les versions sont figées dans le manifeste |
 
-## 7. Parcours hors-ligne
+Une release de l'installateur est une **release assemblée** : elle embarque des
+versions précises de Launcher, SYNE et ECHOS. Elle ne suit pas automatiquement
+les releases de composants ; une version de composant n'entre dans une
+distribution qu'après validation de la pile.
 
-Le paquet hors-ligne contient l'installateur, les artefacts d'un OS, les roues
-Python figées et le runtime Node. Il est lancé avec
-`livex-setup --offline <répertoire>`. Le catalogue y est local. Aucun accès réseau
-n'est tenté.
+## 3. Artefacts produits
 
-Le choix entre un paquet unique volumineux et un téléchargement séparé reste
-ouvert (OI-08).
+Pour chaque plateforme (`win-x64`, `linux-x64`) et chaque profil (`core`,
+`full`) :
+
+```text
+livex-<version>-<rid>-<profil>/
+├── livex-setup[.exe]              # binaire d'installation et de maintenance
+├── payload/                       # charge utile ; en profil full, les actifs aussi
+├── distribution.json              # manifeste canonique
+├── distribution.json.sig          # signature Ed25519
+├── SHA256SUMS                     # sommes de tous les fichiers
+├── SHA256SUMS.asc                 # signature détachée GPG
+└── LISEZ-MOI.txt                  # vérification, installation, désinstallation
+```
+
+Actifs facultatifs attachés à la même release GitHub, séparément des archives
+d'installation :
+
+```text
+prism-ldk-<version>.zip
+livex-docs-<version>.zip
+syne-mock-<version>.zip
+```
+
+La build **PRISM** n'est pas un actif séparé : c'est un composant de base, déjà
+présent dans `payload/` de chaque archive d'installation. Un actif PRISM publié à
+part ne serait utilisé par aucune version de l'installateur.
+
+Règles :
+
+- le nom et l'URL de chaque actif sont ceux déclarés dans `distribution.json` ;
+  aucun renommage après publication ;
+- un actif `prism-ldk-<version>.zip` est l'archive exacte du plugin, sans
+  ré-archivage ;
+- un actif dont la taille ou l'empreinte change impose une nouvelle version,
+  jamais un remplacement sur place (ADR-008 §7) ;
+- l'archive d'installation est un `.zip` (Windows) et un `.tar.gz` (Linux). Le
+  contenu décompressé est identique ; aucune installation ne se fait depuis
+  l'archive sans l'avoir décompressée, afin que la vérification des chemins
+  reste simple.
+
+Aucun autre artefact n'est publié : pas d'installateur « web », pas de paquet
+auto-extractible non vérifiable.
+
+## 4. Chaîne de production
+
+```text
+1. geler les versions des composants (manifeste de build)
+2. publier self-contained : livex-launcher, syne
+3. assembler ECHOS : CPython 3.12 + site-packages figés
+4. produire les actifs facultatifs :
+   4a. archive du plugin PrismLdk
+   4b. archive de documentation
+   4c. archive SYNE-Mock + runtime Node
+5. assembler la charge utile `core` et `full` — build **PRISM packagée** par RID
+   dans `payload/` — puis calculer tailles et empreintes
+6. écrire distribution.json canonique (profils, acquisition, actifs)
+7. signer (Ed25519)
+8. vérifier avec Setup.Core (le même code que l'installateur)
+9. publier livex-setup self-contained
+10. signer Authenticode (Windows) et GPG (toutes plateformes)
+11. attacher les actifs à la release, puis vérifier que chaque URL du manifeste
+    répond et que l'empreinte servie correspond
+12. exécuter la recette de TESTING.md §7
+13. publier la release GitHub
+```
+
+Les étapes 2 à 7 sont exécutées par le job `installer` de la CI, sur chaque
+plateforme. L'étape 10 est exécutée sur machine propre avant publication ; un
+échec bloque la release.
+
+## 5. Signature et clés
+
+| Élément | Mécanisme | Portée |
+| :-- | :-- | :-- |
+| `distribution.json` | Ed25519, clé publique embarquée dans `livex-setup` | intégrité et authenticité de la charge utile **et des actifs facultatifs** (par leurs empreintes) |
+| Sommes | GPG, signature détachée | vérification manuelle |
+| `livex-setup.exe` | Authenticode SHA-256 | confiance Windows, SmartScreen |
+| `livex-launcher.exe`, `Simulation.Console.exe` | Authenticode SHA-256 | exécutables lancés par l'utilisateur |
+
+Règles de gestion :
+
+- la clé privée Ed25519 et la clé GPG ne sont jamais dans le dépôt ;
+- elles sont stockées dans le coffre de secrets de la CI et accessibles
+  uniquement au job de release ;
+- l'empreinte publique est publiée dans `SECURITY.md`, ce document et la note
+  de release ;
+- une rotation de clé crée une nouvelle version de l'installateur qui embarque
+  la nouvelle clé publique ; les anciennes versions ne peuvent pas vérifier les
+  nouvelles distributions, ce qui est documenté ;
+- une clé compromise impose une release de correction et la publication d'un
+  avis.
+
+## 6. Vérification par l'utilisateur
+
+**Windows** : propriétés du fichier → Signatures numériques, ou
+`Get-AuthenticodeSignature .\livex-setup.exe`.
+
+**Linux** :
+
+```bash
+sha256sum -c SHA256SUMS
+gpg --verify SHA256SUMS.asc SHA256SUMS
+```
+
+La clé publique et l'empreinte sont publiées dans `SECURITY.md`. Le
+`LISEZ-MOI.txt` de chaque distribution reprend ces commandes : un utilisateur ne
+doit pas avoir à consulter le dépôt pour vérifier ce qu'il exécute.
+
+## 7. Canaux
+
+| Canal | Usage | Signature | Avertissement |
+| :-- | :-- | :-- | :-- |
+| `stable` | release publique | complète | aucun |
+| `dev` | builds internes, tests | Ed25519 seulement | affiché au démarrage de l'assistant |
+
+Le canal est porté par `distribution.json.channel` et affiché dans `--version`.
+Un build `dev` ne doit jamais être présenté comme une release.
 
 ## 8. Mise à jour
 
 ### 8.1 Politique
 
-| Règle | Comportement |
+- **Aucune mise à jour automatique** : l'installateur ne vérifie pas les
+  versions et ne télécharge rien en arrière-plan. Seuls les modules facultatifs
+  explicitement cochés sont acquis, depuis l'URL du manifeste signé (ADR-008).
+- Une mise à jour est une **exécution manuelle** du paquet de version
+  supérieure, qui détecte l'installation et propose la mise à jour en place.
+- Les données sont conservées : racine de données, espace de travail, paquets,
+  archives, sessions et préférences.
+- Un downgrade est refusé par défaut ; l'option de support
+  `--allow-downgrade` existe pour un dépannage documenté, jamais proposée dans
+  l'interface.
+
+### 8.2 Compatibilité
+
+| Élément | Règle |
 | :-- | :-- |
-| Déclenchement | **Manuel** : l'utilisateur lance la vérification (depuis l'installateur ou le Launcher) ; aucune installation en arrière-plan en V0.1 (`PACKAGING.md` §8) |
-| Granularité | **Par composant** : la mise à jour du Launcher n'implique pas celle de SYNE, ECHOS ou PRISM |
-| Données | Le workspace n'est jamais modifié ; les paquets `.livexp` scellés restent relisibles selon leur `schema` |
-| Run actif | Mise à jour refusée (code 9) si un composant concerné est en cours d'exécution |
-| Rétrogradation | Refusée sans option explicite ; refusée si elle rend le workspace illisible |
+| **Format de l'installation** | `.livex-install.json` (`schema`) ; un schéma supérieur est refusé avec la version requise |
+| **Préférences** | `settings.json.schema` ; les clés inconnues sont préservées |
+| **Composants** | versions lues dans les manifestes, jamais supposées |
+| **Paquets `.livexp`** | indépendants de l'installateur ; une mise à jour ne les modifie pas |
+| **Fenêtre de support** | une version N peut être mise à jour directement vers N+1 ; les sauts multiples sont autorisés si le format d'installation le permet, sinon l'assistant l'indique |
 
-### 8.2 Flux
+### 8.3 Échec d'une mise à jour
 
-```mermaid
-flowchart TB
-    A[Lecture du reçu] --> B[Téléchargement du catalogue]
-    B --> C{Signature et schéma valides ?}
-    C -->|non| X[Échec : code 5]
-    C -->|oui| D[Comparaison versions installées / catalogue]
-    D --> E{Mises à jour disponibles ?}
-    E -->|non| Z[À jour]
-    E -->|oui| F[Sélection par l'utilisateur]
-    F --> G{Run actif ?}
-    G -->|oui| Y[Refus : code 9]
-    G -->|non| H[Téléchargement + SHA-256]
-    H --> I[Préparation dans composant.new]
-    I --> J[Validation : manifeste, démarrage, health]
-    J -->|échec| K[Suppression de .new, ancienne version intacte]
-    J -->|succès| L[Renommages atomiques]
-    L --> M[livex-launcher --check]
-    M -->|échec| N[Retour à .prev]
-    M -->|succès| O[Mise à jour du reçu, suppression de .prev après délai]
-```
+Une mise à jour interrompue laisse l'installation précédente utilisable ou un
+état signalé avec les résidus et le journal. Elle ne doit jamais laisser un
+mélange de fichiers anciens et nouveaux présenté comme valide : le point de
+commit est l'écriture de `.livex-install.json` et de l'inventaire.
 
-### 8.3 Retour arrière
+## 9. Checklist de release
 
-- La version précédente (`<id>.prev`) est conservée jusqu'à la validation de
-  l'étape `--check` et, au minimum, jusqu'à la fermeture de l'installateur.
-- `livex-setup --repair --rollback <id>` restaure la version précédente tant
-  qu'elle existe.
-- Si le démarrage de la nouvelle version échoue, l'installateur restaure sans
-  intervention et signale la cause.
+À cocher avant de publier :
 
-### 8.4 Mise à jour du Launcher
+- [ ] `dotnet build -warnaserror` et `dotnet test` verts sur Windows et Linux ;
+- [ ] recette de bout en bout automatisée verte (`TESTING.md` §7.1) ;
+- [ ] recette manuelle sur machine propre Windows et Linux (`TESTING.md` §7.2) ;
+- [ ] version du produit et versions des composants cohérentes dans le manifeste ;
+- [ ] `CHANGELOG.md` mis à jour (section `[Unreleased]` → version) ;
+- [ ] `THIRD-PARTY-NOTICES.md` à jour pour toute dépendance nouvelle ou mise à jour ;
+- [ ] en-têtes SPDX présents sur les nouveaux fichiers source ;
+- [ ] aucune taille, durée ou performance non mesurée dans la documentation ;
+- [ ] signatures vérifiées sur les artefacts publiés ;
+- [ ] `SHA256SUMS` et signature publiés avec l'archive ;
+- [ ] notes de release : versions, taille mesurée de chaque distribution **et
+      de chaque actif facultatif**, limites connues, procédure de vérification ;
+- [ ] actifs facultatifs attachés à la release, avec les noms exacts du
+      manifeste, et URL vérifiée une par une ;
+- [ ] un module sans actif publié est déclaré `unavailable` (il ne doit pas
+      apparaître coché) ;
+- [ ] profil `full` installable sans réseau sur une machine propre ;
+- [ ] lien de téléchargement vérifié depuis la page publique.
 
-Un exécutable en cours d'exécution ne peut pas se remplacer sous Windows. Deux
-options à trancher (OI-06, `ADR-004`) :
+Une case non cochée bloque la publication. Une release partielle n'est pas une
+release.
 
-- **A. Processus assistant** : le Launcher demande à l'installateur (binaire distinct
-  déjà installé) de remplacer `launcher` après sa fermeture ;
-- **B. Bibliothèque de mise à jour tierce** pour l'application (par exemple
-  Velopack), qui fournit mise à jour différentielle et retour arrière pour le seul
-  Launcher, tandis que les composants restent gérés par le catalogue. Cette option
-  est **à évaluer** (compatibilité Avalonia, Linux, signature) avant adoption.
+## 10. Publication
 
-Dans les deux cas, la même politique s'applique : manuelle, par composant,
-conservation des données.
+1. fusion de la PR de release vers `develop` (squash, conformément à
+   `docs/governance/GITFLOW.md`) ;
+2. tag `livex-vX.Y.Z` sur la racine ;
+3. `release.yml` construit, vérifie et attache les artefacts ;
+4. publication de la note de release avec les sommes et les empreintes de clé ;
+5. mise à jour des liens de téléchargement (dépôt, site) ;
+6. vérification post-publication : télécharger l'artefact publié, vérifier les
+   signatures, installer sur machine propre.
 
-## 9. Intégrité et authenticité
+## 11. Retrait d'une version
 
-| Niveau | Mesure | Statut |
-| :-- | :-- | :-- |
-| Artefact | SHA-256 dans le catalogue, vérifié avant extraction | Requis V0.1 |
-| Catalogue | Signature détachée (clé publique embarquée dans l'installateur) | Cible V0.1, OI-04 |
-| Installateur Windows | Signature Authenticode | À décider, OI-04 |
-| Installateur Linux | Empreinte publiée, signature détachée | À décider, OI-04 |
-| Transport | TLS ; aucun repli en clair | Requis |
-| Clé de signature | Générée hors dépôt, stockée comme secret de la CI ; procédure de rotation à documenter | À définir |
+Une version défectueuse est **retirée** (assets supprimés ou marqués) et
+signalée dans la note de release et `CHANGELOG.md`. Les utilisateurs qui l'ont
+installée sont informés par la documentation de correction ; l'installateur ne
+met rien à jour à distance.
 
-Le format `.livexp` n'est pas signé en V0.1 (`ISSUES.md` O-04) ; cette décision
-n'est pas modifiée par l'installateur.
+Les actifs facultatifs d'une version retirée sont conservés tant qu'un
+manifeste publié les référence : une installation existante doit pouvoir
+réparer ou ajouter un module. Seuls les actifs qu'aucun manifeste publié ne
+référence peuvent être supprimés.
 
-## 10. Désinstallation
+Le retrait ne supprime jamais les données des utilisateurs.
 
-| Élément | Retiré par défaut | Sur demande |
-| :-- | :-- | :-- |
-| Programme, composants, runtimes embarqués | Oui | — |
-| Raccourcis, entrée de désinstallation | Oui | — |
-| Variables `LIVEX_DATA`, `LIVEX_HOME` posées par l'installateur | Oui | — |
-| Ligne ajoutée à `components.registry` | Oui | — |
-| `~/.livex` (autres fichiers du Launcher : composant actif, préférences) | Non | Oui |
-| Workspace (paquets, archives, sessions, préférences) | **Non** | Oui, `--purge-workspace`, après confirmation écrite du chemin |
+## 12. Support et fin de vie
 
-Seuls les éléments inscrits au reçu sont retirés ; un fichier que l'installateur
-n'a pas créé n'est jamais supprimé.
+| Élément | Règle |
+| :-- | :-- |
+| **Correctifs de sécurité** | une release de correction pour la dernière version publiée |
+| **Runtimes embarqués** | reconstruits à chaque release avec les correctifs disponibles |
+| **Versions supportées** | la dernière version stable et la précédente mineure |
+| **Fin de vie** | annoncée dans `CHANGELOG.md` et la note de release ; aucune date inventée |
+
+## 13. Ce que ce document ne couvre pas
+
+- la production de la build PRISM elle-même : elle relève de PRISM, pas de
+  l'installateur ; ce document ne couvre que la publication de l'actif et sa
+  vérification (ADR-006) ;
+- l'installation du LDK dans un projet Unreal, qui reste manuelle ;
+- la signature des paquets `.livexp` (sujet distinct) ;
+- la distribution par dépôt Linux (`.deb`, Flatpak), hors V0.2 ;
+- les mises à jour automatiques, hors périmètre.
+
+Ces sujets sont suivis dans `ROADMAP.md` et dans les issues GitHub.
 
 ---
 
-## Points restés ouverts dans ce document
+## Mises à jour
 
-- **Hébergement** des artefacts et du catalogue (OI-07) et conséquences sur la
-  disponibilité à long terme des anciennes versions.
-- **Clé de signature** et procédure de rotation (OI-04).
-- **Canaux** (stable, développement) : un seul canal stable en V0.1 ; le canal de
-  développement n'est pas spécifié.
-- **Délai de conservation** de `<id>.prev` après une mise à jour réussie.
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 21 octobre 2026 | Création | Nouvelle base documentaire |

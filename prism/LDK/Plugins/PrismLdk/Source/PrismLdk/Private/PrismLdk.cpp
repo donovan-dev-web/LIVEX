@@ -7,6 +7,7 @@
 #include "PrismLdkService.h"
 
 #include "GenericPlatform/GenericPlatformMisc.h"
+#include "HAL/PlatformMisc.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpRequest.h"
 #include "Interfaces/IHttpResponse.h"
@@ -16,6 +17,16 @@
 #include "WebSocketsModule.h"
 
 DEFINE_LOG_CATEGORY(LogPrismLdk);
+
+FString PrismLdkAuthorizationHeader(const FString& SessionToken)
+{
+	// Jeton absent ⇒ aucun header : SYNE refusera la mutation par `401`. Poser
+	// `Bearer ` sans valeur donnerait un refus identique mais masquerait la
+	// cause réelle dans le journal.
+	return SessionToken.IsEmpty()
+		? FString()
+		: FString::Printf(TEXT("Bearer %s"), *SessionToken);
+}
 
 namespace PrismJson
 {
@@ -181,6 +192,21 @@ void FPrismLdkModule::ShutdownModule()
 void UPrismLdkSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
+
+	// Jeton de session hérité du Launcher (variable d'environnement, jamais ligne
+	// de commande). Sans lui, SYNE refuse les commandes de contrôle par `401` :
+	// c'est la cause du `prepare` rejeté quand le moteur réel remplace le mock.
+	SetSessionToken(FPlatformMisc::GetEnvironmentVariable(TEXT("LIVEX_SESSION_TOKEN")));
+}
+
+void UPrismLdkSubsystem::SetSessionToken(const FString& InSessionToken)
+{
+	SessionToken = InSessionToken;
+	if (SessionToken.IsEmpty())
+	{
+		UE_LOG(LogPrismLdk, Verbose,
+			TEXT("Jeton de session vide (non encore fourni)."));
+	}
 }
 
 void UPrismLdkSubsystem::Deinitialize()
@@ -192,6 +218,21 @@ void UPrismLdkSubsystem::Deinitialize()
 void UPrismLdkSubsystem::Configure(const FPrismSyneConnectionOptions& InOptions)
 {
 	Options = InOptions;
+	// Mode dev : le jeton saisi à la main prime sur l'environnement. Sinon on
+	// conserve celui hérité du Launcher (posé à l'initialisation) ; si aucun des
+	// deux n'est présent, on retombe sur l'environnement (vide ⇒ 401 attendu).
+	UE_LOG(LogPrismLdk, Log,
+		TEXT("Configure: manual=%s, tokenLongueur=%d, environnement=%s"),
+		Options.bUseManualSessionToken ? TEXT("true") : TEXT("false"),
+		Options.SessionToken.Len(),
+		SessionToken.IsEmpty() ? TEXT("vide") : TEXT("renseigné"));
+	if (Options.bUseManualSessionToken)
+	{
+		SetSessionToken(Options.SessionToken);
+		UE_LOG(LogPrismLdk, Log,
+			TEXT("Jeton de session manuel (mode dev, %s) appliqué ; l'environnement LIVEX_SESSION_TOKEN est ignoré."),
+			Options.SessionToken.IsEmpty() ? TEXT("vide") : TEXT("renseigné"));
+	}
 	FPrismLdkService::Get().ReportConnectionOptions(InOptions.WebSocketUrl);
 }
 
@@ -288,6 +329,14 @@ void UPrismLdkSubsystem::SendControl(const FString& Action, const FString& Body)
 	Request->SetURL(Url);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type"), TEXT("application/json"));
+	// SYNE exige le jeton de session sur tout `POST /api/control/*` quand il a
+	// été lancé par le Launcher (qui l'injecte dans l'environnement). Sans ce
+	// header, la commande est refusée par `401 unauthorized`.
+	const FString Authorization = PrismLdkAuthorizationHeader(SessionToken);
+	if (!Authorization.IsEmpty())
+	{
+		Request->SetHeader(TEXT("Authorization"), Authorization);
+	}
 	Request->SetContentAsString(Body);
 	Request->OnProcessRequestComplete().BindLambda([this, Action](FHttpRequestPtr Req, FHttpResponsePtr Response, bool bSucceeded)
 	{
@@ -363,6 +412,9 @@ void UPrismLdkSubsystem::RequestStatus()
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
 	Request->SetURL(Options.HttpUrl / TEXT("/api/control/status"));
 	Request->SetVerb(TEXT("GET"));
+	// `GET /api/control/status` est en lecture libre côté SYNE (résolu avant le
+	// contrôle d'authentification) : aucun jeton n'est requis ici. Seuls les
+	// `POST /api/control/*` (via `SendControl`) présentent le `Authorization`.
 	Request->OnProcessRequestComplete().BindLambda([this](FHttpRequestPtr Req, FHttpResponsePtr Response, bool bSucceeded)
 	{
 		if (!bSucceeded || !Response.IsValid()) { Error(0, TEXT("status_failed"), TEXT("Unable to request status")); return; }

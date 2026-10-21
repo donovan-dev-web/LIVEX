@@ -1,6 +1,6 @@
 # PRISM — Guide pas à pas de la partie Blueprint
 
-*Pour Donovan · 15 octobre 2026 · Complète `BLUEPRINT_ROADMAP.md` et `PRISM_UNREAL_IMPLEMENTATION.md`*
+*Pour Donovan · 15 octobre 2026 (màj 20 octobre 2026 : jeton de session, §1.1) · Complète `BLUEPRINT_ROADMAP.md` et `PRISM_UNREAL_IMPLEMENTATION.md`*
 
 ## 0. Comment utiliser ce guide
 
@@ -39,7 +39,8 @@ SYNE / mock ──WebSocket + HTTP──► UPrismLdkSubsystem (plugin C++)
 
 ### 0.3 Où tu en es
 
-- **Fait côté C++** : le plugin compile, les 5 Automation Specs sont vertes (`PrismLdk.Projection`, `PrismLdk.WorldRegistry`, `PrismLdk.Service`, `PrismLdk.GapReplay`, `PrismLdk.Contract` — 69 specs, 0 échec au 18/10), le service Launcher existe. Tu n'as plus rien à écrire en C++ pour cette partie.
+- **Fait côté C++** : le plugin compile, les Automation Specs sont vertes (`PrismLdk.Projection`, `PrismLdk.WorldRegistry`, `PrismLdk.Service`, `PrismLdk.GapReplay`, `PrismLdk.Contract`, `PrismLdk.Auth` — 73 specs, 0 échec au 20/10), le service Launcher existe. Tu n'as plus rien à écrire en C++ pour cette partie.
+- **Jeton de session (20/10)** : PRISM présente désormais `Authorization: Bearer <LIVEX_SESSION_TOKEN>` à SYNE sur chaque `POST /api/control/*`. Sans ce jeton, SYNE répond `401 unauthorized` — alors que le mock, plus permissif, l'acceptait. Voir §1.1 ci-dessous pour tester en PIE contre SYNE réel.
 - **Déjà créé côté Content** : `Core/BP_PRISM_GameInstance` et `Core/DA_PRISM_SessionConfig` (probablement vides ou incomplets).
 - **À nettoyer** : `GameInstance_LDK`, `ldk_GameMode` et le doublon `LDK_BaseMap.umap` à la racine du Content.
 
@@ -68,6 +69,64 @@ SYNE / mock ──WebSocket + HTTP──► UPrismLdkSubsystem (plugin C++)
 
 5. **Habitude de travail** : après chaque graphe → **Compile**, **Save**, lancer **PIE**, lire `LogPrismLdk`. Utilise `Print String` pour tracer ce que tu ne comprends pas.
 
+### 1.1 Tester en PIE contre SYNE réel : le jeton de session
+
+**Symptôme** : en PIE, `Phase PREPARE … → HTTP response: prepare -> 401`, `SYNE error code=401 name=unauthorized message=Un jeton de session valide est requis.` — alors que le même graphe fonctionnait contre le mock.
+
+**Cause** : SYNE exige `Authorization: Bearer <jeton>` sur tout `POST /api/control/*` (prepare, ready, start, pause, resume, stop, reset). Le jeton vient de **`LIVEX_SESSION_TOKEN`**, que le Launcher injecte dans l'environnement des processus qu'**il** démarre — SYNE **et** PRISM empaqueté (même jeton pour les deux, `OrchestrationFacade.cs`). En clair : sous le Launcher, rien à faire, ça marche. Mais en **PIE tu lances l'éditeur à la main** : ton éditeur n'a pas la variable, SYNE (lancé par le Launcher) en exige une → `401`.
+
+Deux mécanismes, selon que ton SYNE vient du **Launcher** (flux normal) ou d'un **lancement manuel** :
+
+#### A. SYNE démarré par le Launcher (flux normal) — jeton manuel côté plugin
+
+Le jeton du Launcher est **aléatoire à chaque lancement** (`lxt-<16 hex>`) et n'est pas hérité par l'éditeur. Le flux de dev :
+
+1. **Afficher le jeton dans la console SYNE.** Le Launcher lance SYNE caché et redirige son stdout vers la **fenêtre console** du Launcher. SYNE imprime le jeton — **uniquement** si l'opt-in est posé. Lance donc le Launcher depuis un terminal ainsi :
+
+   ```powershell
+   cd D:\LIVEX
+   $env:LIVEX_SESSION_TOKEN_DISPLAY = "1"
+   dotnet run --project .\launcher\Launcher.App\
+   ```
+
+   Démarre **SYNE en mode prism** depuis l'interface : sa console affiche alors
+   `jeton de session (dev) : lxt-…………`.
+
+   > **\[Piège\]** Sans `LIVEX_SESSION_TOKEN_DISPLAY=1`, **aucune** ligne — en production, le secret ne doit pas se retrouver dans `stdout.log` (archivé). L'opt-in est local au lancement du Launcher : le Launcher **hérite** de son propre environnement et le transmet à SYNE (`ProcessManager`, `UseShellExecute=false`).
+
+2. **Renseigner le jeton dans l'éditeur.** Ouvre `DA_PRISM_SessionConfig` (ou l'endroit où tu appelles `Configure`), active **`bUseManualSessionToken`** et colle le jeton lu dans **`SessionToken`**. Puis **Play (PIE)** → `prepare` répond `200`.
+
+   > **\[Important\]** **Décoche `bUseManualSessionToken` avant de packager.** Coché, le plugin présente le jeton saisi et **ignore** l'environnement — c'est un réglage de dev. Décoché (défaut), le plugin lit `LIVEX_SESSION_TOKEN`, que le Launcher injecte dans le PRISM empaqueté : comportement de production.
+
+#### B. SYNE lancé à la main (dev isolé) — héritage d'environnement
+
+Sans passer par le Launcher, lance **ton propre SYNE de dev** avec un jeton fixe, puis l'éditeur depuis le même terminal (il hérite de la variable). Un seul terminal :
+
+```powershell
+# 1. Jeton de dev, fixe et connu ; corrélation cohérente.
+#    --correlation-id doit être identique à LIVEX_CORRELATION_ID (SYNE le vérifie).
+$env:LIVEX_SESSION_TOKEN = "dev-token"
+$env:LIVEX_CORRELATION_ID = "dev"
+
+# 2. SYNE en mode service PRISM (supervisé, SANS --autostart : c'est PRISM qui pilote).
+#    Adapte le chemin à ta build (Debug/Release) ; ports de dev 5181/5180.
+& "D:\LIVEX\syne\Simulation.Console\bin\Release\net10.0\Simulation.Console.exe" `
+  --instance-id "syne-dev" --correlation-id "dev" `
+  --control-port 5181 --observe-port 5180 `
+  --work-dir "D:\LIVEX\syne\.devrun\work" --log-dir "D:\LIVEX\syne\.devrun\logs"
+
+# 3. (même terminal) l'éditeur hérite de LIVEX_SESSION_TOKEN.
+& "C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe" "D:\LIVEX\prism\LDK\LDK.uproject"
+```
+
+> **\[Piège\]** Ne mets **pas** `--simulation prism` ici. En mode piloté (sans `--autostart`), SYNE rejette `--simulation`, `--seed`, `--config`, `--run-id` (`Program.cs` : « … exigent --autostart en mode supervisé »). Le profil `prism` est porté par le `ConfigJson` du `Prepare` de PRISM. Et SYNE exige `LIVEX_SESSION_TOKEN` **et** `--correlation-id == LIVEX_CORRELATION_ID`, sinon il refuse de démarrer.
+
+> **\[Note\]** SYNE tourne **sans `--autostart`** : il attend que PRISM fasse `Prepare → Ready → Start`. C'est bien le cycle du §3.
+
+`SetSessionToken` / `GetSessionToken` (§2.4 Étape C bis) restent disponibles pour poser le jeton explicitement depuis un graphe — `bUseManualSessionToken` (recette A) est simplement la version déclarative qui passe par `Configure`.
+
+> **\[Important\]** Après un `git pull` qui touche le C++ du plugin : **recompiler** (`Build.bat`, §2.1 de `TESTING.md`) **et fermer/rouvrir l'éditeur Unreal**. Un éditeur déjà ouvert garde l'ancien module en mémoire ; le PIE y utilise l'ancien code (sans le header `Authorization`) et le `401` persiste même après un build réussi.
+
 ## 2. Jalon B1 — Fondations session et connexion
 
 ### 2.1 `DA_PRISM_SessionConfig` : remplir les valeurs
@@ -80,6 +139,8 @@ Ouvre l'asset (`Core/DA_PRISM_SessionConfig`) et compare champ par champ. Si un 
 | `WebSocketUrl` | String | `ws://127.0.0.1:5180` |
 | `bAutoReconnect` | Boolean | `true` |
 | `ReconnectDelaySeconds` | Float (simple précision) | `2.0` |
+| `bUseManualSessionToken` | Boolean | `false` (dev : `true`, cf. §1.1) |
+| `SessionToken` | String | vide (dev : le jeton lu dans la console SYNE) |
 | `DefaultSeed` | Integer64 | `42` |
 | `DefaultTicksPerSecond` | Integer | `6` |
 | `DefaultMaxTicks` | Integer | `400` (valeur par défaut de `Start` dans le plugin ; à ton choix) |
@@ -168,6 +229,22 @@ Event Init
 Pour chaque `Assign`, tire le fil depuis la variable `LDK` (clic droit dans le graphe → cherche `Assign OnConnected`). Unreal crée automatiquement le Custom Event avec les bonnes entrées ; renomme-le comme ci-dessus.
 
 > **\[Piège\]** `Assign` ne déclenche **pas** l'événement tout de suite : il l'enregistre seulement. Et n'appelle jamais `Configure` ni `Connect` avant que `Set LDK` ait été exécuté (sinon `None`).
+
+#### Étape C bis (optionnelle) — jeton de session explicite
+
+Normalement rien à faire : le plugin lit `LIVEX_SESSION_TOKEN` tout seul à son initialisation (héritage du Launcher, §1.1). Deux façons de forcer un jeton pour le **dev** :
+
+- **Déclaratif (recommandé, recette A du §1.1)** : dans les valeurs passées à `Configure` (struct `FPrismSyneConnectionOptions`), coche **`bUseManualSessionToken`** et colle le jeton lu dans la console SYNE dans **`SessionToken`**. `Configure` l'applique alors à la place de l'environnement.
+- **Impératif** : appelle `SetSessionToken` **avant** `Connect` :
+
+```text
+(après « LDK.Configure », avant « LDK.Connect »)
+ → LDK.SetSessionToken (FString)     // par ex. "dev-token", identique à celui de SYNE
+```
+
+`GetSessionToken` permet de vérifier ce qui est effectivement présenté. Un jeton vide (défaut) ⇒ aucun header `Authorization` ⇒ SYNE refuse par `401` : c'est le comportement attendu sans jeton.
+
+> **\[Important\]** **Décoche `bUseManualSessionToken` avant de packager.** Coché, il prime sur l'environnement ; c'est un réglage de dev, pas de production.
 
 #### Étape D — Les 8 Custom Events
 
@@ -701,6 +778,7 @@ Une mutation d'obstacle ne produit **qu'un seul** acteur (ou une seule suppressi
 | Pas de ligne `registre de monde instancié` | plugin non chargé (ou module pas recompilé après un `git pull`) | recompiler, vérifier que `PrismLdk` est activé dans `.uproject` |
 | `OnConnected` jamais reçu | mock non lancé, mauvais ports, `Connect` pas appelé | log du mock, `Config.WebSocketUrl` |
 | `409 world_not_ready` | `Start` envoyé avant l'accord de `Ready` | ordre : Prepare → world\_initialized → Ready → ok → Start |
+| `401 unauthorized` sur `prepare` (et toute commande) | SYNE exige le jeton `LIVEX_SESSION_TOKEN` ; l'éditeur PIE ne le porte pas (lancé hors Launcher) | §1.1 : recette A (afficher le jeton dans la console SYNE via `LIVEX_SESSION_TOKEN_DISPLAY=1`, puis `bUseManualSessionToken` + `SessionToken`) ou recette B (SYNE de dev + éditeur depuis le même terminal) ; après un `git pull` C++, recompiler **et** rouvrir l'éditeur |
 | `run_active` / `run_finished` | commande dans le mauvais état | `Reset` d'abord |
 | `prepared_seed_mismatch` | `Start` avec une autre seed que `Prepare` | utilise `Session.Seed` |
 | Monde à la mauvaise échelle | `TileSizeUu` différent de 3200, ou `CellSize` inattendu | `Print` de `Get Stats` (`K`, `CellSize`) |

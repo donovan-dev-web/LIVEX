@@ -1,324 +1,599 @@
-# ARCHITECTURE.md — Installateur LIVEX
+# Architecture de l'installateur LIVEX
 
-**Composant** : LIVEX (Installateur)
+**Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 8 octobre 2026
-**Dépend de** : `SPECIFICATION.md`, `adr/ADR-001`, `adr/ADR-002`, `adr/ADR-003`, `../launcher/COMPONENTS.md`, `../launcher/PACKAGING.md`
-**Source Monographie** : —
+**Version** : 1.0
+**Dernière mise à jour** : 21 octobre 2026
+**Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`adr/`](adr/README.md)
+**Vérifié contre** : `feature/prism-syne-integration`, 21 octobre 2026
 
 ---
 
-## 1. Principes d'architecture
+## 1. Objet
 
-1. **Cœur sans interface.** Toute la logique vit dans `Setup.Core`, testable sans
-   fenêtre. L'assistant et le mode non interactif sont deux façades du même plan
-   (ADR-001).
-2. **Plan déclaratif.** L'installation est une liste d'étapes calculée avant toute
-   écriture, affichable (`--dry-run`) et annulable.
-3. **Journal de transaction.** Chaque écriture est enregistrée avant d'être faite ;
-   l'annulation rejoue le journal à l'envers.
-4. **Frontières d'assembly vérifiées par test**, comme pour le Launcher
-   (`AssemblyBoundaryTests`, ADR-001 du Launcher).
-5. **Aucune référence de projet** vers SYNE, ECHOS ou PRISM. L'installateur ne
-   connaît les composants que par leur catalogue et leurs manifestes.
+Ce document décrit **comment** l'installateur est construit pour satisfaire la
+[spécification](SPECIFICATION.md). Il ne répète pas les exigences : il explique
+le découpage, les flux, les formats et les mécanismes. Les décisions sont
+justifiées dans les [ADR](adr/README.md).
 
-## 2. Découpage en projets
+## 2. Vue d'ensemble
+
+```text
+                 ┌─────────────────────────────────────────────┐
+                 │              Distribution                   │
+                 │  livex-setup  distribution.json  payload/   │
+                 │  signatures (Ed25519, Authenticode, GPG)    │
+                 └───────────────────┬─────────────────────────┘
+                                     │ vérifie, planifie, écrit
+                                     │
+                 ┌───────────────────┴─────────────────────┐
+                 │  Actifs de release (modules facultatifs) │
+                 │  GitHub Releases : LDK, docs, mock       │
+                 └───────────────────┬─────────────────────┘
+                                     │ HTTPS, empreinte vérifiée
+                                     ▼
+   ┌──────────────────────────────────────────────────────────────────┐
+   │                          livex-setup                             │
+   │  ┌────────────────────┐        ┌──────────────────────────────┐  │
+   │  │ Setup.App          │        │ Setup.Core                   │  │
+   │  │ assistant, i18n,   │───────▶│ préflight, plan, transaction │  │
+   │  │ modes CLI          │        │ enregistrement, préférences  │  │
+   │  └────────────────────┘        │ désinstallation, journal     │  │
+   │                                └──────────────┬───────────────┘  │
+   └───────────────────────────────────────────────┼──────────────────┘
+                                                   │
+             ┌─────────────────────────────────────┼──────────────────────┐
+             ▼                                     ▼                      ▼
+   ┌──────────────────┐                ┌────────────────────┐   ┌──────────────────┐
+   │ Répertoire       │                │ Racine de données  │   │ Intégration OS   │
+   │ logiciel        │                │ settings.json      │   │ HKCU / XDG       │
+   │ livex-launcher  │                │ workspace/         │   │ raccourcis       │
+   │ components/     │                │ packages/ archives/│   │ .desktop / .lnk  │
+   └──────────────────┘                └────────────────────┘   └──────────────────┘
+```
+
+Trois propriétés structurent la conception :
+
+1. **Aucune dépendance au Launcher.** L'installateur applique les contrats
+   publiés (schéma de manifeste, conventions de chemins) mais ne référence aucun
+   de ses assemblages. Il peut donc réparer un Launcher défaillant.
+2. **Le plan précède l'écriture.** Toute opération est calculée, validée et
+   journalisée avant d'être exécutée ; l'interface ne contient aucune règle.
+3. **Une seule source pour la charge utile.** Le manifeste de distribution
+   pilote l'écran Composants, la copie, l'inventaire et la vérification.
+
+## 3. Découpage logiciel
+
+Le code vit dans un nouveau répertoire racine `installer/`, à côté de
+`launcher/`, `syne/`, `echos/` et `prism/` :
 
 ```text
 installer/
-├── Setup.Core/            Plan, étapes, journal, catalogue, intégrité, système de fichiers abstrait
-├── Setup.Platform.Windows/  Variables HKCU, raccourcis, entrée de désinstallation
-├── Setup.Platform.Linux/    XDG, .desktop, environment.d, contrôle des bibliothèques
-├── Setup.App/             Assistant Avalonia (MVVM) et CLI (--unattended, --update, …)
-├── Setup.Tests.Unit/      Plan, journal, annulation — système de fichiers simulé
-├── Setup.Tests.Integration/  Installation réelle dans un répertoire temporaire
-└── Setup.Tests.Clean/     Scénarios sur machines propres (hors CI standard)
+├── Setup.sln
+├── Directory.Build.props        # net10.0, warnings = erreurs, conventions Launcher
+├── Directory.Packages.props     # versions centralisées
+├── Setup.Core/                  # bibliothèque sans interface
+├── Setup.App/                   # exécutable livex-setup
+├── Setup.Tests.Unit/
+├── Setup.Tests.Integration/
+├── Setup.Tests.EndToEnd/
+├── build/                       # production de la distribution
+└── dist/                        # sortie, ignorée par git
 ```
 
-| Assembly | Peut référencer | Ne peut pas référencer |
+### 3.1 `Setup.Core`
+
+| Espace de noms | Responsabilité | Dépend de |
 | :-- | :-- | :-- |
-| `Setup.Core` | BCL uniquement (+ bibliothèque de hachage et de lecture ZIP standard) | Avalonia, projets de plateforme |
-| `Setup.Platform.*` | `Setup.Core` | Avalonia |
-| `Setup.App` | `Setup.Core`, `Setup.Platform.*`, Avalonia | Tout composant LIVEX |
+| `Setup.Core.Distribution` | modèle du manifeste, JSON canonique, vérification de signature | aucune UI |
+| `Setup.Core.Planning` | calcul du plan (installer, mettre à jour, réparer, désinstaller) | Distribution, Platform |
+| `Setup.Core.Preflight` | contrôles préalables et diagnostic `--check` | Distribution, Platform |
+| `Setup.Core.Execution` | transaction, copie, sauvegarde, restauration, empreintes | Platform |
+| `Setup.Core.Platform` | abstraction des opérations système | — |
+| `Setup.Core.Preferences` | `settings.json`, politique de chemins | Platform |
+| `Setup.Core.Lifecycle` | détection, enregistrement, inventaire, versions | Platform |
+| `Setup.Core.Journal` | journal structuré UTF-8 | — |
+| `Setup.Core.Acquisition` | actifs facultatifs : cache, téléchargement reprenable, extraction confinée | Distribution, Platform |
+| `Setup.Core.CommandLine` | analyse des arguments, codes de sortie | — |
 
-La réutilisation de code du Launcher (détection, contrôles `--check`) se fait en
-**référençant les assemblies existants** `Launcher.Infrastructure` pour les
-contrôles et le détecteur de manifestes, à l'exclusion de `Launcher.Presentation`.
-Si la dépendance se révèle couplante, les contrôles communs sont extraits dans un
-assembly partagé `Launcher.Environment` (point ouvert, §10).
+Interfaces système (implémentées par plateforme) :
 
-## 3. Plan d'installation
+| Interface | Windows | Linux |
+| :-- | :-- | :-- |
+| `IInstallationStore` | registre `HKCU` | `installation.json` XDG |
+| `IIntegration` | raccourcis `.lnk`, icône, entrée « Applications et fonctionnalités » | `.desktop`, icône, lien du bureau |
+| `IProcessProbe` | énumération des processus et chemins | `/proc/<pid>/exe` |
+| `IPathPolicy` | chemins système Windows, volumes | racines système POSIX, XDG |
+| `IPrerequisiteProbe` | aucune (tout est embarqué) | `libicu`, `libssl`, affichage |
+| `IFileSync` | `FlushFileBuffers` | `fsync` |
+| `IHttpDownloader` | `HttpClient` (proxy système, TLS), reprise `Range` | identique |
+| `IArchiveExtractor` | `System.IO.Compression` (zip), `tar` natif pour `.tar.gz` | identique |
 
-### 3.1 Modèle
+`Setup.Core` ne référence ni Avalonia, ni `Microsoft.Win32.Registry` en dehors de
+l'implémentation Windows, ni aucun assemblage du Launcher.
+
+### 3.2 `Setup.App`
+
+- Avalonia 11.3.22, même version que le Launcher (`launcher/Directory.Packages.props`).
+- Une machine à états d'écrans, des ViewModels sans logique métier, des
+  ressources `.resx` FR/EN.
+- Un mode `--headless` qui n'initialise jamais Avalonia : `--check`,
+  `--unattended`, `--uninstall`, `--repair`, `--version`.
+- Publication self-contained par RID, un seul binaire `livex-setup[.exe]`.
+
+### 3.3 Ce que l'installateur ne référence pas
+
+- `Launcher.*` (aucun projet, aucun paquet) ;
+- `Launcher.Package` (le format `.livexp` est un paquet de campagne, sans rapport
+  avec l'installation) ;
+- un runtime .NET partagé, Python système ou Node.
+
+`Setup.Core.Acquisition` ne fait aucune requête hors de la résolution d'un actif
+déclaré par le manifeste signé : pas de découverte de version, pas d'API GitHub,
+pas de télémétrie.
+
+## 4. Manifeste de distribution
+
+### 4.1 Modèle
+
+Voir [ADR-007](adr/ADR-007-manifeste-de-distribution-et-confiance.md). Champs
+principaux :
+
+| Champ | Type | Rôle |
+| :-- | :-- | :-- |
+| `schema` | entier | version du format du manifeste |
+| `product` | chaîne | `"LIVEX"` |
+| `version` | SemVer | version du produit installé |
+| `channel` | `stable` \| `dev` | canal de release |
+| `profile` | `core` \| `full` | modules facultatifs à télécharger ou embarqués |
+| `platform` | `win-x64` \| `linux-x64` | plateforme de la charge utile |
+| `releasedAt` | ISO 8601 UTC | date de production |
+| `components[]` | objet | id, version, obligatoire, textes FR/EN, licence, `requires`, fichiers, `acquisition` |
+| `acquisition` | objet | `kind` (`payload` \| `release-asset` \| `unavailable`), `asset`, `url`, `size`, `sha256`, `format`, `stripComponents`, `reason` |
+| `files[]` | objet | chemin relatif, taille, SHA-256 |
+| `signature` | objet | algorithme, clé, valeur (hors document signé) |
+
+### 4.2 Règles de cohérence
+
+- Chaque fichier d'un composant figure dans `files`, et réciproquement.
+- Un composant obligatoire ne peut pas dépendre d'un composant facultatif.
+- `requires` ne peut référencer qu'un composant présent dans le même manifeste.
+- Un `release-asset` porte obligatoirement `size` et `sha256` ; son URL pointe
+  vers le tag de la release courante, sur le dépôt du projet uniquement.
+- Un composant `unavailable` porte une `reason` et aucun fichier ; il n'est pas
+  proposé à la sélection.
+- Un profil `full` ne peut contenir aucun `release-asset` : tous les actifs sont
+  dans `payload/`.
+- Le chemin d'un fichier est **relatif à la racine de la charge utile** et
+  **identique** à son chemin d'installation ; aucun tableau de correspondance
+  n'est autorisé.
+- Un chemin vide, absolu, commençant par `/` ou `\`, contenant `..`, un lecteur
+  Windows ou un composant nul est refusé à la génération **et** à la lecture.
+- Un fichier déclaré pour une autre plateforme est une erreur de build.
+
+### 4.3 Génération
+
+`installer/build/build_distribution.py` (Python, déjà utilisé pour les scripts
+du dépôt) :
+
+1. collecte les sorties de publication de chaque composant ;
+2. copie dans `dist/<rid>/payload/` selon les chemins d'installation ;
+3. calcule tailles et SHA-256 ;
+4. lit les textes et métadonnées depuis `installer/build/components.json` ;
+5. écrit `distribution.json` en JSON canonique ;
+6. signe (Ed25519) ;
+7. produit `SHA256SUMS` et sa signature détachée ;
+8. vérifie le tout en relisant le manifeste avec `Setup.Core` (même code que
+   l'installateur) — le build échoue si la vérification échoue.
+
+## 5. Arborescence installée
+
+```text
+<répertoire logiciel>/
+├── livex-launcher[.exe]          # Launcher à la racine : BaseDirectory/components
+├── *.dll, *.json                 # dépendances du Launcher
+├── livex-setup[.exe]             # copie de maintenance (sans charge utile)
+├── components/
+│   ├── syne/
+│   │   ├── component.json
+│   │   └── …                     # binaire self-contained + fichiers
+│   ├── echos/
+│   │   ├── component.json
+│   │   ├── echos-launcher[.cmd]
+│   │   ├── runtime/              # CPython embarqué
+│   │   └── site-packages/
+│   ├── syne-mock/                # facultatif, archive + runtime Node
+│   └── prism/                    # facultatif, application packagée
+├── plugins/
+│   └── prism-ldk/
+│       └── PrismLdk-<version>.zip # facultatif, archive intacte
+├── contracts/
+│   └── component-manifest-v1.schema.json
+├── docs/                         # seulement si la documentation est choisie
+├── assets/
+│   └── livex.ico / livex.svg
+├── LICENSE
+├── NOTICE
+├── THIRD-PARTY-NOTICES.md
+├── VERSION
+├── .livex-install.json           # identité de l'installation
+├── .livex-inventory.json         # fichiers installés + empreintes
+└── .livex-distribution.json      # manifeste signé d'origine (ajout ultérieur d'un module)
+```
+
+Points structurants :
+
+- **Le Launcher est à la racine**, pas dans `Launcher/`. Son détecteur lit
+  `Path.Combine(AppContext.BaseDirectory, "components")`
+  (`launcher/Launcher.Infrastructure/ManifestDetector.cs`). Le placer dans un
+  sous-répertoire imposerait de modifier le Launcher et casserait la détection
+  des installations existantes. C'est un écart assumé avec l'arborescence de la
+  spécification de base (voir `SPECIFICATION.md` §7).
+- Les manifestes `component.json` sont copiés tels quels ; l'installateur ne les
+  réécrit jamais.
+- **PRISM n'a pas de `component.json`** : c'est une application, pas un service
+  piloté par le Launcher. Son répertoire est donc ignoré par `ManifestDetector`.
+- **L'archive du LDK n'est jamais extraite** : elle est déposée telle quelle,
+  vérifiable par empreinte, et copiée par l'utilisateur dans son projet Unreal.
+- Aucun `livex.json`, aucun fichier de configuration global.
+
+## 6. Emplacements
+
+| Élément | Windows | Linux | Configurable |
+| :-- | :-- | :-- | :-- |
+| Répertoire logiciel | `%LOCALAPPDATA%\Programs\LIVEX` | `~/.local/opt/livex` | oui, à l'installation |
+| Enregistrement | `HKCU\Software\LIVEX\Installer` | `$XDG_DATA_HOME/livex/installer/installation.json` | non |
+| Entrée système | `HKCU\…\Uninstall\LIVEX` | `$XDG_DATA_HOME/applications/livex.desktop` | non |
+| Icône | `assets/livex.ico` | `$XDG_DATA_HOME/icons/hicolor/scalable/apps/livex.svg` | non |
+| Racine de données | `LIVEX_DATA` sinon `%USERPROFILE%\.livex-data` | `LIVEX_DATA` sinon `~/.livex-data` | oui, variable |
+| Espace de travail | `<données>/workspace` par défaut | idem | oui |
+| Préférences | `<données>/settings.json` | idem | non |
+| Journaux | `<données>/logs/` | idem | non |
+
+## 7. Flux d'installation
+
+```text
+[Accueil] → [Langue] → [Licence] → [Composants] → [Chemins]
+   → [Récapitulatif] → [Installation] → [Résultat]
+```
+
+Avant l'étape Installation, l'assistant exécute le **préflight** :
+
+1. plateforme et architecture supportées ;
+2. signature et empreintes du manifeste et de la charge utile ;
+3. droits d'écriture réels sur le répertoire logiciel et l'espace de travail ;
+4. espace disque (taille de la charge utile × 1,5 + marge) ;
+5. politique de chemins (section 6) ;
+6. absence de processus LIVEX dans le répertoire cible ;
+7. prérequis Linux (`libicu`, `libssl`, affichage) ;
+8. cohérence du manifeste (section 4.2).
+
+Puis le plan est calculé :
 
 ```text
 InstallPlan
- ├─ Context        (OS, prefix, workspace, sélection, catalogue résolu)
- └─ Steps[]        (ordonnées, avec dépendances)
-
-Step
- ├─ Id, Libellé, Poids (pour la progression)
- ├─ Preconditions()   → Résultat
- ├─ Do(ctx, journal)  → Résultat
- ├─ Undo(ctx, journal)
- └─ Verify(ctx)       → Résultat
+├── actions[]      : CreateDirectory | WriteFile | ReplaceFile | DeleteFile
+│                    | DownloadAsset | ExtractArchive
+│                    | CreateShortcut | WriteRegistration | MergeSettings
+├── removedComponents[]
+├── bytesToWrite
+├── bytesToDownload
+├── warnings[]
+└── requiresConfirmation
 ```
 
-Propriétés exigées :
+Chaque action porte : cible absolue, source dans la charge utile ou URL et
+empreinte attendues, caractère destructif, étape de progression. Le
+récapitulatif affiche le plan résumé ; l'exécution ne découvre rien.
 
-| Propriété | Règle |
-| :-- | :-- |
-| Idempotence | Rejouer `Do` sur un état déjà conforme ne change rien (réparation, reprise) |
-| Annulation | `Undo` ramène à l'état avant `Do`, y compris les variables et raccourcis |
-| Déterminisme du plan | Même contexte et même catalogue donnent le même plan |
-| Pureté du calcul | Le calcul du plan n'écrit rien |
-
-### 3.2 Étapes types (ordre de V0.1)
-
-| # | Étape | Remarque |
-| :-- | :-- | :-- |
-| 1 | `PrepareDirectories` | Crée le programme et le workspace s'ils n'existent pas |
-| 2 | `FetchArtifacts` | Télécharge, vérifie l'empreinte, extrait dans un répertoire de travail du programme |
-| 3 | `InstallRuntimes` | Runtimes embarqués : `uv`, Node (si mock) — §5 |
-| 4 | `InstallLauncher` | Extraction dans `launcher` |
-| 5 | `InstallComponent(syne)` | Extraction dans `launcher/components/syne` |
-| 6 | `InstallComponent(echos)` | Extraction, puis construction de l'environnement Python — §5.2 |
-| 7 | `InstallComponent(syne-mock)` | Extraction, puis installation des modules Node si nécessaire |
-| 8 | `InstallComponent(prism-ldk)` | Copie du plugin dans le projet Unreal désigné — §5.4 |
-| 9 | `InstallDocs` | Documentation embarquée |
-| 10 | `WriteConfiguration` | Variables, registre, manifestes de release, reçu — §6 |
-| 11 | `CreateShortcuts` | Spécifique à la plateforme |
-| 12 | `RegisterUninstall` | Spécifique à la plateforme |
-| 13 | `VerifyInstallation` | Exécute `livex-launcher --check` |
-
-### 3.3 Journal de transaction
-
-- Fichier `install/transaction.jsonl` dans le répertoire du programme, écrit en
-  ajout avant chaque action : type, cible, état précédent (existence, empreinte).
-- En cas d'échec ou d'annulation, rejoué en ordre inverse.
-- En cas d'arrêt brutal (coupure, processus tué), au relancement, l'installateur
-  détecte un journal non terminé et propose de **restaurer** ou de **reprendre**.
-- Le journal est supprimé à la fin d'une installation réussie ; le reçu
-  (`install-receipt.json`) est le seul état durable.
-
-### 3.4 Remplacement atomique
-
-Un composant est installé dans `components/<id>.new`, validé, puis substitué par
-renommage :
+### 7.1 Acquisition des modules facultatifs
 
 ```text
-components/syne/        ← version en service
-components/syne.new/    ← version préparée et validée
-        ↓ renommages successifs
-components/syne/        ← nouvelle version
-components/syne.prev/   ← version précédente conservée jusqu'à validation finale
+modules cochés
+   │
+   ├── profil `full` ──────────────▶ archive dans payload/  ──┐
+   │                                                          │
+   └── profil `core` ──▶ cache ? ──oui──▶ vérifier empreinte ──┤
+                            │ non                             │
+                            ▼                                 │
+                    téléchargement HTTPS (Range, reprise)     │
+                            │                                 │
+                            ▼                                 │
+                    taille + SHA-256 ──échec──▶ refus, cache purgé
+                            │ ok                              │
+                            └──────────────▶ extraction confinée
+                                                              │
+                                                              ▼
+                                              plan d'écriture + inventaire
 ```
 
-Le renommage est la seule opération non interruptible ; elle est précédée et
-suivie d'une écriture du journal pour que la reprise soit déterministe.
+Règles d'implémentation :
 
-## 4. Arborescence installée
+- le cache vit dans `<racine de données>/cache/downloads/<sha256>` ; un actif
+  vérifié n'est jamais retéléchargé, même après une réinstallation ;
+- le fichier partiel est `<sha256>.part` ; la reprise utilise `Range` quand le
+  serveur l'accepte, sinon repart de zéro ;
+- l'extraction se fait vers un répertoire temporaire **dans le répertoire cible**
+  puis renommage, ce qui conserve l'atomicité par fichier de la transaction ;
+- les entrées `..`, absolues, liens symboliques et périphériques sont refusées
+  avant écriture ; le nombre d'entrées et la taille décompressée sont bornés par
+  le manifeste ;
+- l'annulation laisse le fichier `.part` en cache et ne modifie pas
+  l'installation.
 
-Elle suit `PACKAGING.md` §2.1 : composants dans `components` à côté de
-l'exécutable (priorité 1 du détecteur).
+### 7.2 Échecs d'acquisition
+
+| Situation | Effet |
+| :-- | :-- |
+| pas de réseau | message, choix : archive locale, continuer sans le module, annuler |
+| `404` ou actif absent | module indisponible, aucun échec du socle |
+| taille ou empreinte incorrecte | actif supprimé du cache, refus, journal `SECURITY` |
+| extraction impossible (disque plein, entrée refusée) | module en échec, socle intact, résidus listés |
+| module facultatif en échec | poursuite possible sans lui, sur choix explicite |
+| annulation utilisateur | aucun fichier installé, cache reprenable |
+
+Après l'écriture : vérification des fichiers installés, écriture de
+`.livex-inventory.json`, copie de `.livex-distribution.json`, puis
+`.livex-install.json` (point de commit), intégration système, puis exécution
+informative de `livex-launcher --check` (sortie journalisée ; un échec est un
+avertissement, pas un rollback, car il peut venir d'un conflit de port).
+
+## 8. Transactions et retour arrière
+
+L'installateur n'utilise pas de copie complète en staging (coût disque égal à la
+charge utile). Il applique une transaction **fichier par fichier**, journalisée :
+
+1. écrire le nouveau contenu dans un fichier temporaire **à côté de la cible**
+   (même volume) : `.<nom>.livex-tmp-<id>` ;
+2. si la cible existe, la déplacer vers `.livex-backup-<id>/<chemin>` ;
+3. renommer le temporaire vers la cible (opération atomique sur le volume) ;
+4. consigner l'action dans le journal de transaction (append, fsync).
+
+En cas d'échec, les actions sont annulées dans l'ordre inverse : supprimer les
+fichiers créés, restaurer les sauvegardes, supprimer les répertoires créés et
+vides. Une annulation incomplète est signalée avec la liste des résidus ; elle
+n'est jamais présentée comme un succès.
+
+Limites assumées : pas de garantie de durabilité après coupure de courant (les
+`fsync` sont faits au mieux), pas de retour arrière après redémarrage, pas de
+snapshot du système de fichiers.
+
+## 9. Détection et enregistrement
 
 ```text
-<programme>/
-├── launcher/
-│   ├── livex-launcher[.exe]
-│   ├── *.dll, assets, docs/
-│   └── components/
-│       ├── syne/         component.json, binaires publiés
-│       ├── echos/        component.json, sources, environnement Python
-│       ├── syne-mock/    component.json, sources, modules Node
-│       └── prism-ldk/    présent seulement si PRISM est livré
-├── runtimes/
-│   ├── uv/               binaire uv, installations Python gérées par uv
-│   └── node/             runtime Node, si le mock est installé
-├── templates/            modèles de paquet, de campagne, de profil
-├── install/
-│   ├── install-receipt.json
-│   ├── logs/
-│   └── (transaction.jsonl pendant une installation)
-├── LICENSE
-├── THIRD-PARTY-NOTICES.md
-└── VERSION
-
-<workspace>/             (LIVEX_DATA)
-├── preferences/  sessions/  packages/  archives/  cache/    — propriété du Launcher
+                 ┌──────────────────────────┐
+                 │ IInstallationStore.Read  │
+                 └────────────┬─────────────┘
+                              ▼
+              ┌───────────────────────────────┐
+              │ enregistrement présent ?      │
+              └───────┬───────────────┬───────┘
+                 non  │               │ oui
+                      ▼               ▼
+        ┌─────────────────────┐  ┌──────────────────────────┐
+        │ chercher            │  │ valider : répertoire,    │
+        │ <défaut>/.livex-    │  │ .livex-install.json,     │
+        │ install.json        │  │ launcher                 │
+        └─────────┬───────────┘  └───────┬──────────┬───────┘
+                  │                  valide│          │invalide
+             non  │                       ▼          ▼
+                  ▼                 [maintenance]  [localiser /
+             [installation]                        réparer / purger]
 ```
 
-Le reçu `install-receipt.json` contient : version de l'installateur, version du
-catalogue, composants (id, version, empreinte de l'artefact, chemin), variables
-et fichiers écrits hors du programme, date UTC. Il est la source de la
-désinstallation et de la réparation.
+L'algorithme complet et les clés sont dans
+[ADR-005](adr/ADR-005-enregistrement-et-cycle-de-vie.md). Deux invariants :
 
-## 5. Dépendances
+- **Aucune conclusion « pas installé » sur la seule absence d'enregistrement.**
+- **Aucune écriture dans un répertoire contenant une installation valide sans
+  passer par le parcours de maintenance.**
 
-### 5.1 Stratégie générale
+## 10. Mise à jour, réparation, maintenance
 
-| Dépendance | Besoin | Stratégie | Contrôle à l'étape 3 |
-| :-- | :-- | :-- | :-- |
-| .NET (Launcher, SYNE) | Exécution | **Publication self-contained** par OS ; le SDK n'est pas requis | Aucun |
-| Python (ECHOS) | API FastAPI, ingestion, analyse | **`uv` embarqué** : installation d'un interpréteur géré, puis synchronisation depuis `uv.lock` | Accès réseau, ou artefacts hors-ligne |
-| Node (mock) | Serveur de développement | **Runtime Node embarqué** dans le paquet du mock | Aucun |
-| Bibliothèques système Linux | Interface Avalonia, internationalisation | **Détectées, jamais installées** ; message avec la commande de paquet à lancer | Bloquant pour le Launcher |
-| Unreal Engine 5.8 | Plugin PRISM-LDK | **Détecté**, jamais installé | Information |
-| Navigateur par défaut | Ouverture de la documentation externe | Information (comme `--check`) | Information |
-
-Raison d'ensemble : l'installateur ne doit pas modifier la configuration système
-de l'utilisateur pour fonctionner (ADR-003). Le SDK .NET, Visual Studio et Unreal
-restent des prérequis de **développement**, décrits dans `INSTALLATION.md`.
-
-### 5.2 ECHOS et l'environnement Python
-
-L'étape `InstallComponent(echos)` :
-
-1. extrait les sources d'ECHOS ;
-2. demande à `uv` d'installer l'interpréteur de la version cible (OI-03) dans
-   `runtimes/uv` ;
-3. crée `components/echos/.venv` et y installe les dépendances figées d'après
-   `uv.lock` (`--frozen`) ;
-4. vérifie l'import des dépendances natives (par exemple `pyarrow`) ;
-5. génère le lanceur d'ECHOS pour l'OS (voir §6.3).
-
-Si le réseau est absent, l'étape utilise les roues (*wheels*) fournies par le
-paquet hors-ligne (`RELEASE_AND_UPDATE.md` §7). Si ni l'un ni l'autre n'est
-disponible, ECHOS est désélectionné à l'étape 5 avec la cause.
-
-### 5.3 Linux : bibliothèques
-
-L'étape 3 interroge le système (`ldconfig -p`, présence de fichiers connus) pour la
-liste déclarée par le catalogue. En cas d'absence, l'assistant affiche la liste
-manquante et la commande correspondante pour Ubuntu (`apt install …`), et **ne
-l'exécute pas** : l'élévation est refusée par principe (INS-N01).
-
-### 5.4 PRISM-LDK
-
-PRISM-LDK est un plugin d'Unreal Engine 5.8. L'installateur :
-
-- détecte les installations d'Unreal (registre Epic sous Windows, emplacements
-  usuels sous Linux) ;
-- demande le **projet hôte** auquel ajouter le plugin ;
-- copie `Plugins/PrismLdk` dans ce projet, sans le compiler ;
-- affiche la procédure de compilation (`../prism`).
-
-Tant qu'aucun manifeste PRISM accepté n'existe (ADR-006 du Launcher), l'option est
-affichée **verrouillée** : l'installateur ne prétend pas rendre PRISM utilisable
-depuis le Launcher.
-
-## 6. Configuration automatique
-
-### 6.1 Variables et registre
-
-| Mécanisme | Windows | Linux | Quand |
-| :-- | :-- | :-- | :-- |
-| `LIVEX_DATA` | Variable utilisateur (HKCU\Environment) + diffusion du changement | `~/.config/environment.d/50-livex.conf` + entrée `.desktop` (`Exec=env LIVEX_DATA=… livex-launcher`) | Si le workspace diffère du défaut du Launcher |
-| `LIVEX_HOME` | Idem | Idem | Si les composants ne sont pas dans `components` à côté de l'exécutable |
-| Registre d'installations | Ligne ajoutée à `%USERPROFILE%\.livex\components.registry` | Ligne ajoutée à `~/.livex/components.registry` | Toujours : mécanisme sans variable d'environnement |
-
-Le **registre d'installations** est le mécanisme principal, car il ne dépend
-d'aucun contexte de lancement (raccourci, terminal, session). Les variables ne
-servent qu'à communiquer l'emplacement du workspace. Le risque d'un workspace
-« perdu » quand `LIVEX_DATA` est absent d'un contexte de lancement est le point
-OI-05 : il faut un mécanisme de persistance côté Launcher (par exemple un fichier
-de configuration utilisateur lu avant la variable). Ce changement est un
-**prérequis externe** de l'installateur (`ROADMAP.md` §3).
-
-### 6.2 Manifestes de release
-
-Les `component.json` du dépôt déclarent des chemins de développement (par exemple
-`Simulation.Console/bin/Release/net10.0/publish/Simulation.Console`) et un seul
-OS. L'installateur ne les copie pas tels quels : il écrit, pour chaque composant,
-le manifeste **de release** produit par la CI (`RELEASE_AND_UPDATE.md` §4), avec :
-
-- l'exécutable propre à l'OS d'installation ;
-- les ports (valeurs par défaut ou choisies) ;
-- la version réelle du composant ;
-- les clés `capabilities`, `health`, `timeouts` du manifeste d'origine.
-
-Chaque manifeste écrit est validé par le schéma versionné
-(`../../launcher/contracts/component-manifest-v1.schema.json`) avant d'être activé ;
-un manifeste invalide fait échouer l'étape et déclenche l'annulation.
-
-### 6.3 Lanceurs des composants scripts
-
-| Composant | Linux | Windows |
+| Opération | Plan | Particularités |
 | :-- | :-- | :-- |
-| ECHOS | Script d'amorçage qui choisit l'interpréteur du `.venv` | Lanceur équivalent (fichier de commandes ou exécutable minimal) appelant l'interpréteur du `.venv` |
-| syne-mock | Appel du runtime Node embarqué sur `src/cli.js` | Idem |
+| **Mise à jour** | remplacer les fichiers du produit, conserver données et préférences | refus si version inférieure ; processus arrêtés ; composants facultatifs conservés s'ils existent encore |
+| **Réparation** | comparer l'inventaire au disque, restaurer depuis la distribution | échoue proprement si la distribution d'origine est absente et qu'un fichier corrompu doit être restauré |
+| **Composants** | ajouter/retirer un facultatif | jamais les obligatoires ; retrait = suppression des fichiers du composant uniquement |
+| **Espace de travail** | modifier le chemin mémorisé | validation, écriture de `settings.json` ; l'ancien répertoire n'est ni déplacé ni supprimé |
 
-Ces lanceurs sont des **artefacts de release**, versionnés avec le composant, non
-générés au vol par l'installateur, afin que leur comportement soit testé en CI.
+La comparaison de versions suit SemVer 2.0.0 : une version `pre` est inférieure à
+la version finale correspondante, et un changement de `MAJOR` n'autorise pas un
+downgrade implicite.
 
-### 6.4 Ports
+## 11. Désinstallation
 
-| Port | Composant | Remarque |
+Le planificateur de désinstallation produit un plan distinct, à partir de
+l'inventaire et de la portée choisie :
+
+| Portée | Actions |
+| :-- | :-- |
+| **A** | supprimer fichiers inventoriés (y compris `components/prism/`, `components/syne-mock/`, `plugins/`, `.livex-distribution.json`), raccourcis, `.desktop`, enregistrement, entrée système |
+| **B** | A + supprimer `settings.json` et `cache/` (dont `cache/downloads/`) |
+| **C** | B + supprimer l'espace de travail confirmé |
+| **C + extension** | C + supprimer `packages/`, `archives/`, `sessions/`, `echos/` après seconde confirmation |
+
+Ordre d'exécution : processus → intégrations → fichiers → préférences →
+espace de travail → répertoires vides → enregistrement. Les journaux de
+l'installateur (`<données>/logs/installer-*.log`) ne sont jamais supprimés par
+une portée, y compris l'extension. Le cache de téléchargement est supprimé par
+la portée B ; l'option A le conserve, pour permettre une réinstallation sans
+retélécharger les modules facultatifs.
+
+Cas de l'inventaire absent : l'installateur supprime les répertoires dont il
+connaît la propriété (`components/`, `contracts/`, `docs/`, `assets/`), les
+fichiers d'identité, et signale que des fichiers du Launcher peuvent subsister.
+Il ne supprime le répertoire entier que si l'utilisateur le confirme
+explicitement, après affichage de son contenu.
+
+## 12. Préférences et espace de travail
+
+`Setup.Core.Preferences.WorkspaceSettings` :
+
+```text
+Read(path)      → objet JSON + état (absent | valide | invalide)
+Merge(current, changes) → préserve les clés inconnues
+Write(path)     → fichier temporaire + fsync + rename atomique
+```
+
+Un fichier invalide est déplacé vers `settings.json.corrupt-<horodatage>` avant
+toute écriture, et l'événement est journalisé. Le Launcher doit lire la même
+précédence (`--workspace` > `settings.json.workspace` > `<données>/workspace`) ;
+cette évolution est portée par une issue distincte côté Launcher.
+
+## 13. Runtimes embarqués
+
+| Élément | Production | Contenu installé |
 | :-- | :-- | :-- |
-| 5000 | ECHOS (API) | |
-| 5181 | SYNE ou mock (contrôle HTTP) | Exclusif entre SYNE et mock |
-| 5180 | SYNE ou mock (WebSocket) | Exclusif entre SYNE et mock |
-| 5200–5399 | Launcher (plage interne) | Hors manifestes |
+| `livex-setup` | `dotnet publish -r <rid> --self-contained true` | binaire + bibliothèques |
+| `livex-launcher` | idem | binaire + bibliothèques à la racine |
+| `syne` | idem | `components/syne/` |
+| `echos` | CPython 3.12 autonome + `site-packages` figés | `components/echos/runtime/` et `site-packages/` |
+| `prism` (**base, coché par défaut**) | build packagée du projet PRISM, par RID | `components/prism/` |
+| `prism-ldk` (facultatif) | archive ZIP du plugin `PrismLdk` | `plugins/prism-ldk/PrismLdk-<version>.zip` |
+| `syne-mock` (facultatif) | archive ZIP + runtime Node portable | `components/syne-mock/` |
+| docs (facultatif) | archive ZIP des documents | `docs/` |
 
-Si l'utilisateur garde SYNE et le mock, l'installateur propose de décaler le mock
-(`endpoints.*.port` du manifeste de release) et rappelle qu'un seul est actif à la
-fois par défaut. Le choix est inscrit au reçu.
+Le build vérifie pour chaque RID que : aucun fichier ne manque, aucun binaire
+n'est framework-dependent, et `livex-launcher --check` s'exécute sur un
+répertoire de test. Les prérequis Linux sont détectés, pas installés.
 
-## 7. Plateformes
+## 14. Intégrité et signature
 
-### 7.1 Windows
+Ordre strict (voir [ADR-007](adr/ADR-007-manifeste-de-distribution-et-confiance.md)) :
 
-| Sujet | Choix |
-| :-- | :-- |
-| Portée | Utilisateur (HKCU), sans élévation |
-| Installation par défaut | `%LOCALAPPDATA%\Programs\LIVEX` |
-| Désinstallation | Clé `HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\LIVEX` |
-| Raccourcis | Dossier du menu Démarrer de l'utilisateur |
-| Variables | `HKCU\Environment` + notification de changement de l'environnement |
-| Arrêt propre d'un composant sans console | Dépend d'O-34 (`INTEGRATION_CONTRACT.md` §5.1) |
-| Signature | Authenticode, selon OI-04 ; sans signature, SmartScreen avertit au premier lancement |
+1. lire `distribution.json` et sa signature ;
+2. vérifier la signature Ed25519 avec la clé publique embarquée ;
+3. vérifier taille et SHA-256 de chaque fichier ;
+4. seulement ensuite, construire le plan.
 
-### 7.2 Linux (Ubuntu)
+Le JSON canonique est produit par un sérialiseur dédié (clés triées, UTF-8 sans
+BOM, aucun espace, nombres entiers sans exposant, horodatages UTC). Un test
+compare la forme générée à une forme de référence figée.
 
-| Sujet | Choix |
-| :-- | :-- |
-| Portée | Utilisateur ; installation système hors V0.1 |
-| Installation par défaut | `~/.local/share/livex` (conforme XDG) |
-| Raccourcis | `~/.local/share/applications/livex.desktop`, icône dans le thème utilisateur |
-| Commande | Lien symbolique `~/.local/bin/livex-launcher` ; avertissement si ce dossier n'est pas dans le `PATH` |
-| Variables | `environment.d` pour la session graphique ; pas de modification de `.bashrc` |
-| Désinstallation | `livex-setup --uninstall` (le binaire est copié dans `install`) |
-| Distribution | Archive avec binaire, puis `.deb` (OI-01) ; l'AppImage n'est pas retenue seule |
+## 15. Journalisation
 
-## 8. Sécurité
+Format texte UTF-8, une ligne par événement :
+
+```text
+2026-10-21T09:12:04.113Z INFO  step=install op=write result=ok path=components/syne/...
+2026-10-21T09:12:05.870Z ERROR step=install op=write result=failed code=IO_DENIED path=...
+```
+
+- Niveaux : `DEBUG`, `INFO`, `WARN`, `ERROR`.
+- Emplacement : `<racine de données>/logs/installer-AAAAMMJJ-HHMMSS.log`.
+- Rotation : 10 fichiers, 5 Mio maximum par fichier.
+- Contenu interdit : secrets, jetons, contenu d'expérience, variables
+  d'environnement complètes.
+- Le chemin du journal est affiché à l'écran de résultat et à l'écran d'échec.
+
+## 16. Interface et i18n
+
+- Machine à états : `Welcome → Language → License → Components → Paths →
+  Summary → Progress → Result`, avec branches `Maintenance` et `Uninstall`.
+- Chaque écran valide ses entrées avant d'autoriser « Suivant » ; le retour
+  conserve l'état.
+- Ressources `.resx` (`Strings.fr.resx`, `Strings.en.resx`), résolution par
+  `CultureInfo`, repli anglais, clé manquante journalisée.
+- Accessibilité : `AutomationProperties.Name` sur les contrôles, ordre de
+  tabulation explicite, focus initial par écran, messages d'erreur associés au
+  champ fautif, aucune information portée par la couleur seule.
+
+## 17. Sécurité
 
 | Menace | Mesure |
 | :-- | :-- |
-| Artefact altéré | Empreinte SHA-256 vérifiée avant extraction ; catalogue signé (OI-04) |
-| Archive piégée (chemins `..`, liens) | Règles de nom d'entrée appliquées à l'extraction, sur le modèle de `PackageEntryRules` du Launcher |
-| Rétrogradation malveillante | Version du catalogue comparée au reçu ; rétrogradation refusée sans option explicite |
-| Injection par chemin ou argument | Aucune commande n'est construite par concaténation ; arguments passés en liste |
-| Élévation involontaire | Aucun appel élevé ; refus explicite si lancé en administrateur ou en `root` sans l'option correspondante |
-| Écoute réseau | Aucun service lancé par l'installateur ; les manifestes restent en boucle locale IPv4 (`V1-CAPABILITY-MATRIX.md` §5) |
-| Fuite de données | Aucune télémétrie ; journal limité aux chemins et résultats |
+| Distribution altérée | signature Ed25519 du manifeste, Authenticode, sommes signées |
+| Chemin piégé dans le manifeste | validation stricte, chemin résolu confiné au répertoire cible |
+| Lien symbolique dans la cible | refus de suivre un lien lors de l'écriture, vérification des points de reparse Windows |
+| Écrasement d'une installation valide | détection obligatoire, parcours de maintenance |
+| Suppression de données utilisateur | portées explicites, chemins affichés, confirmations |
+| Course entre vérification et écriture | verrou d'installation, revalidation avant remplacement |
+| Élévation | aucune, aucune écriture système |
+| Fuite d'information dans le journal | liste noire de champs, pas de dump d'environnement |
+| Binaire non signé | avertissement explicite en canal `dev` |
+| Actif distant remplacé ou servi par un autre hôte | URL du manifeste signé, empreinte SHA-256, redirections limitées à GitHub |
+| Empoisonnement du cache | cache adressé par empreinte, revérification à chaque usage, actif non conforme supprimé |
+| Archive piégée (zip-slip, lien, bombe) | extraction confinée, refus des entrées absolues/`..`/liens, bornes de taille et d'entrée |
+| Fuite d'identité vers GitHub | aucune authentification, aucun identifiant d'installation, aucune télémétrie |
 
-## 9. Journalisation et diagnostic
+L'installateur n'exécute aucun script contenu dans la charge utile. Il ne lance
+le Launcher qu'à la demande explicite de l'utilisateur, après installation.
 
-- Journal JSON ligne par ligne (`SPECIFICATION.md` §6).
-- `livex-setup --check` : relit le reçu, vérifie les empreintes des fichiers
-  installés et appelle `livex-launcher --check`.
-- Un échec d'étape affiche : étape, cause, action de restauration, chemin du
-  journal.
+## 18. Modes non interactifs
 
-## 10. Points restés ouverts dans ce document
+| Commande | Effet | Sortie |
+| :-- | :-- | :-- |
+| `--check` | préflight seul, aucune écriture | texte stable, `0`/`2` |
+| `--unattended --config <f>` | installation avec réponses | `0`/`1`/`2`/`3`/`5` |
+| `--uninstall [--scope a\|b\|c] [--purge-research]` | désinstallation | `0`/`4` |
+| `--offline-assets <dir>` | actifs facultatifs lus depuis un répertoire local | `0`/`3`/`6` |
+| `--no-network` | aucune requête réseau autorisée | `0`/`6` |
+| `--repair` | vérification et restauration | `0`/`3` |
+| `--maintenance` | parcours de maintenance | selon l'action |
+| `--version` | versions installateur et manifeste | `0` |
+| `--log <chemin>` | journal à l'emplacement indiqué | — |
+| `--lang fr\|en` | langue de l'assistant | — |
 
-- **Réutilisation du code du Launcher** : référence directe à
-  `Launcher.Infrastructure` ou extraction d'un assembly commun.
-- **Persistance du workspace** (OI-05) : mécanisme côté Launcher.
-- **Registre d'installations** : format actuel (une ligne par répertoire) suffisant
-  pour porter la version et l'OS, ou à enrichir.
-- **Lanceur ECHOS sous Windows** : forme exacte (fichier de commandes, exécutable
-  minimal) à décider avec l'acceptation d'ECHOS sous Windows.
-- **Mise à jour du Launcher** (OI-06) : un exécutable en cours d'exécution ne peut
-  pas se remplacer ; processus assistant ou bibliothèque tierce à évaluer
-  (`adr/ADR-004`).
+Le fichier de réponses de `--unattended` reprend les champs de l'assistant :
+`installDir`, `workspaceDir`, `components`, `acceptLicense`, `desktopShortcut`,
+`launchAfterInstall`, `offlineAssetsDir`. Toute valeur manquante ou invalide fait
+échouer la commande avec `2`, sans valeur par défaut implicite pour les chemins.
+Un module facultatif demandé sans réseau ni actif local fait échouer la commande
+avec `6`, après écriture d'un journal explicite ; le socle n'est pas installé
+partiellement pour autant.
+
+## 19. Build, CI et tests
+
+- `ci.yml` : nouveau filtre de changements `installer`, job matrice
+  `windows-latest` / `ubuntu-latest` : restore, build `-warnaserror`, tests
+  unitaires et d'intégration, publication self-contained, assemblage de la
+  distribution, vérification du manifeste.
+- `release.yml` : sur tag `livex-v*`, attache les distributions signées **et les
+  actifs des modules facultatifs** (LDK, docs, SYNE-Mock) à la release GitHub ;
+  un job vérifie que chaque URL du manifeste répond et que l'empreinte publiée
+  correspond (aucun artefact n'est produit aujourd'hui : c'est un ajout). La
+  build PRISM, elle, entre dans la charge utile du socle.
+- Tests de bout en bout : installation silencieuse dans un répertoire
+  temporaire, `--check`, désinstallation, vérification des résidus ; nettoyage
+  des clés `HKCU` et fichiers XDG sur le runner.
+- Les tests n'exigent jamais d'élévation et ne touchent pas au répertoire
+  personnel réel de l'agent.
+
+Détail des scénarios : [`TESTING.md`](TESTING.md).
+
+## 20. Limites et dettes connues
+
+| Réf. | Limite | Traitement |
+| :-- | :-- | :-- |
+| **INS-L-01** | La distribution de base exige une build PRISM packagée : son absence bloque la release | [ADR-006](adr/ADR-006-perimetre-composants-v02.md), roadmap P2 |
+| **INS-L-09** | PRISM n'est pas détecté par le Launcher (pas de contrat de service) | [ADR-006](adr/ADR-006-perimetre-composants-v02.md), point ouvert INS-O-10 |
+| **INS-L-10** | Un module facultatif en profil `core` dépend de la disponibilité de GitHub | profil `full`, archive locale, cache ([ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md)) |
+| **INS-L-02** | Le Launcher ne lit pas encore `settings.json.workspace` | issue Launcher dédiée, prérequis de recette |
+| **INS-L-03** | Réparation et ajout de composant exigent la distribution d'origine | documenté dans le guide |
+| **INS-L-04** | Pas de mise à jour différentielle : chaque mise à jour retélécharge la distribution | acceptable tant que le paquet reste sous le seuil produit ; les actifs facultatifs déjà en cache ne sont pas retéléchargés |
+| **INS-L-05** | Pas de signature Windows tant que le certificat n'est pas obtenu | release publique bloquée |
+| **INS-L-06** | Copie de maintenance dans le répertoire logiciel | coût de taille mesuré à chaque release |
+| **INS-L-07** | Pas de rollback après redémarrage | hors périmètre V0.2 |
+| **INS-L-08** | Pas de mode machine | hors périmètre V0.2 |
+
+## 21. Références
+
+- [`SPECIFICATION.md`](SPECIFICATION.md) — exigences normatives
+- [`COMPONENTS.md`](COMPONENTS.md) — rôle et installabilité des composants
+- [`adr/README.md`](adr/README.md) — décisions
+- [`ROADMAP.md`](ROADMAP.md) — phases et jalons
+- [`TESTING.md`](TESTING.md) — stratégie de test
+- [`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md) — production et publication
+- `launcher/contracts/component-manifest-v1.schema.json` — contrat de composant
+- `launcher/Launcher.Infrastructure/ManifestDetector.cs` — détection côté Launcher
+- `launcher/Launcher.Infrastructure/WorkspaceLayout.cs` — racine de données
+- `docs/launcher/PACKAGING.md` — packaging historique du Launcher
+
+---
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 21 octobre 2026 | Création | Nouvelle architecture, vérifiée contre le dépôt |
