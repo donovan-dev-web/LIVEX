@@ -8,6 +8,7 @@ import StatusBadge from '../../components/StatusBadge.astro';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE, VERSION_TABLE_EN } from '../../data/release';
 
 const nf = new Intl.NumberFormat('en-US');
+const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
 ---
 <BaseLayout
   lang="en"
@@ -35,7 +36,7 @@ const nf = new Intl.NumberFormat('en-US');
       <h2>Four components, four versions.</h2>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Component</th><th>Version</th><th>Note</th><th>Status</th></tr></thead>
+          <thead><tr><th scope="col">Component</th><th scope="col">Version</th><th scope="col">Note</th><th scope="col">Status</th></tr></thead>
           <tbody>
             <tr><td>SYNE</td><td>{VERSION_TABLE_EN[0].version}</td><td>{VERSION_TABLE_EN[0].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td>ECHOS</td><td>{VERSION_TABLE_EN[1].version}</td><td>{VERSION_TABLE_EN[1].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
@@ -69,20 +70,20 @@ const nf = new Intl.NumberFormat('en-US');
           <p>{nf.format(PROJECT_STATE.loc.total)} lines analysed (source and tests).</p>
         </div>
         <div>
-          <div class="n">13/13</div>
+          <div class="n">{ciJobs}</div>
           <h3>CI jobs green</h3>
-          <p>{PROJECT_STATE_EN.ci}.</p>
+          <p>Continuous integration green, measured on {PROJECT_STATE_EN.observedDate}.</p>
         </div>
       </div>
 
       <div class="ov" style="margin-top:28px">
         <table class="tb">
-          <thead><tr><th>Indicator</th><th>Value</th></tr></thead>
+          <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
-            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
-            <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
+            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
+            <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
             <tr><td>Release</td><td>No public release — {RELEASE.planned} in preparation</td></tr>
           </tbody>
@@ -92,6 +93,21 @@ const nf = new Intl.NumberFormat('en-US');
         functional validation nor a promise of stability.</p></div>
 
       <p style="margin-top:18px"><a class="bt" href={RELEASE.changelogUrl} rel="noopener">Changelog ↗</a></p>
+    </div>
+  </section>
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>13.3</b> Release notes</div>
+      <h2>The changelog and the tags.</h2>
+      <p>
+        No public release exists yet, so no version sheet exists yet (<code>/versions/&lt;version&gt;/</code>). The
+        repository changelog and the GitHub tags remain the reference in the meantime.
+      </p>
+      <p style="margin-top:18px">
+        <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Read CHANGELOG.md →</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href={RELEASE.releasesUrl} rel="noopener">GitHub tags and releases →</a>
+      </p>
     </div>
   </section>
 </BaseLayout>

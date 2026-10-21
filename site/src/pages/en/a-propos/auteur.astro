@@ -1,0 +1,119 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import CtaBand from '../../../components/CtaBand.astro';
+import CardLink from '../../../components/CardLink.astro';
+import { SITE } from '../../../data/site';
+
+const translated = true;
+---
+
+<BaseLayout
+  lang="en"
+  translated={translated}
+  title="Author — Donovan Chartrain, behind LIVEX"
+  description="Who is behind LIVEX: Donovan Chartrain, fullstack web & mobile developer and 3D artist, his background, skills and other projects."
+>
+  <PageHeader
+    lang="en"
+    index="20.1"
+    eyebrow="About · Author"
+    title="Who is behind LIVEX."
+    lead="LIVEX started from a question and a journey. Here is, in its author's own words, what he seeks to explore — and where to find the rest of his work."
+    crumbs={[{ label: 'About', href: 'a-propos/' }, { label: 'Author' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <blockquote class="sf" style="font-size:clamp(1.6rem,3.5vw,2.6rem);line-height:1.3;margin:0 0 24px;border-left:2px solid var(--ve);padding-left:22px;max-width:34ch">
+        Can one build a virtual environment governed by fundamental laws, in which autonomous entities produce behaviours
+        and structures that were never explicitly programmed?
+      </blockquote>
+      <p>
+        I am <strong>Donovan Chartrain</strong>, a fullstack web & mobile developer and 3D artist. My background combines
+        more than <strong>3 years of web development in industry</strong> and more than <strong>10 years of design, 3D and
+        visual production</strong>. This dual skill set led me to both sides of the same problem: how to represent a world,
+        and how to build what makes it work.
+      </p>
+      <p>
+        LIVEX grew from that meeting of visual creation, development and curiosity about complex systems. Before it was a
+        development project, it grew from a curiosity for science-fiction and LitRPG worlds: worlds that feel alive because
+        their entities have needs, perceptions and the ability to decide.
+      </p>
+      <p>
+        My vision is simple: not to program the behaviours I wish to observe, but to build the environment and the laws
+        that may let them emerge. And if something interesting appears, it is not enough to show it — one must be able to
+        observe, measure, analyse and, as far as possible, reproduce it.
+      </p>
+      <p class="sf" style="font-size:1.5rem;margin-top:20px">— Donovan Chartrain</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.1.1</b> Background and skills</div>
+      <h2>A hybrid profile.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:20px">
+          <h3>Web & mobile development</h3>
+          <p class="mu" style="margin:0 0 10px">Web and mobile applications, application architecture, REST APIs, databases.</p>
+          <p class="mu" style="margin:0;font-size:0.74rem">React · Next.js · Angular · Node.js · .NET · PHP · React Native · Expo · Electron</p>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>3D, design and experience</h3>
+          <p class="mu" style="margin:0 0 10px">Creative direction, 3D visualisation, interactive experiences and immersive presentation supports.</p>
+          <p class="mu" style="margin:0;font-size:0.74rem">Blender · Unity · Unreal Engine · Three.js · Figma · UI/UX</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.1.2</b> Portfolios and contact</div>
+      <h2>Discover the rest of the work.</h2>
+      <p class="lead">
+        LIVEX is a personal project. My two portfolios present my other projects, skills and background.
+      </p>
+      <div class="g2" style="margin-top:18px">
+        <CardLink
+          lang="en"
+          title="Web portfolio — development"
+          text="Web and mobile applications, architecture, technical stack and client projects. Fullstack web & mobile developer profile."
+          href="https://donovan-dev-web.vercel.app"
+          cta="Discover the web portfolio →"
+        />
+        <CardLink
+          lang="en"
+          title="3D portfolio — creation and experiences"
+          text="Creative direction, 3D visualisation, interactive experiences and immersive presentation supports."
+          href="https://donovan-dev3d.vercel.app"
+          cta="Discover the 3D portfolio →"
+        />
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt p" href="https://donovan-dev-web.vercel.app/contact" rel="noopener">Contact me (contact form) ↗</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href="https://linkedin.com/in/donovan-chartrain-dev-web" rel="noopener">LinkedIn ↗</a>
+      </p>
+      <p class="mu" style="margin-top:12px;font-size:0.78rem">
+        To reach me, use the contact form on my portfolio: the details are there, and no e-mail address is published
+        on this site.
+      </p>
+    </div>
+  </section>
+
+  <CtaBand
+    lang="en"
+    eyebrow="20.1.3 · Conversion"
+    title="Follow LIVEX and its author"
+    lead="The repository, the journal and the portfolios are the entry points to go further."
+    primaryLabel="GitHub repository ↗"
+    primaryHref={SITE.repo}
+    secondaryLabel="Follow the project"
+    secondaryHref="suivre/"
+  />
+</BaseLayout>

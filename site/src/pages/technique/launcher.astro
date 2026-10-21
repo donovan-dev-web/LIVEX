@@ -4,7 +4,10 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { Image } from 'astro:assets';
 import { url } from '../../utils/url';
 import launcherHome from '../../assets/captures/launcher-home.png';
 import launcherExperiences from '../../assets/captures/launcher-experiences.png';
@@ -21,6 +24,10 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
     lead="Le Launcher est la couche d'orchestration de LIVEX. Il ne simule pas, n'analyse pas et ne rend pas : il coordonne SYNE, ECHOS et PRISM depuis une interface unique."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Launcher' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -48,7 +55,7 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
       </p>
 
       <figure class="shot">
-        <img src={launcherHome.src} alt="Capture — écran d'accueil du LIVEX Launcher" width={launcherHome.width} height={launcherHome.height} loading="lazy" />
+        <Image src={launcherHome} alt="Capture — écran d'accueil du LIVEX Launcher"  loading="lazy" />
         <figcaption>Capture — espace de travail du Launcher (version de travail).</figcaption>
       </figure>
     </div>
@@ -78,11 +85,11 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
       </div>
 
       <figure class="shot" style="margin-top:24px">
-        <img src={launcherExperiences.src} alt="Capture — gestion des expériences et des campagnes dans le Launcher" width={launcherExperiences.width} height={launcherExperiences.height} loading="lazy" />
+        <Image src={launcherExperiences} alt="Capture — gestion des expériences et des campagnes dans le Launcher"  loading="lazy" />
         <figcaption>Capture — gestion des expériences et des campagnes (version de travail).</figcaption>
       </figure>
       <figure class="shot">
-        <img src={launcherPrism.src} alt="Capture — vue de rendu PRISM ouverte depuis le Launcher" width={launcherPrism.width} height={launcherPrism.height} loading="lazy" />
+        <Image src={launcherPrism} alt="Capture — vue de rendu PRISM ouverte depuis le Launcher"  loading="lazy" />
         <figcaption>Capture — accès à une vue de rendu PRISM depuis le Launcher (version de travail).</figcaption>
       </figure>
       <div class="cc">
@@ -98,7 +105,7 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
       <h2>Windows et Linux, en local.</h2>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+          <thead><tr><th scope="col">Élément</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Usage</td><td>Application de bureau native (interface <em>non</em> web)</td></tr>
             <tr><td>Technologie</td><td>.NET (C#), architecture MVVM, rendu multi-plateforme Avalonia</td></tr>
@@ -122,4 +129,14 @@ livex-launcher --package &lt;chemin.livexp&gt;   # ouverture d'une campagne</cod
       </p>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="9.4 · Conversion"
+    title="Aller plus loin"
+    lead="Le moteur, l'observation et la documentation prolongent l'orchestration."
+    primaryLabel="SYNE : moteur"
+    primaryHref="technique/syne/"
+    secondaryLabel="Documentation"
+    secondaryHref="documentation/"
+  />
 </BaseLayout>

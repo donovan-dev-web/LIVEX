@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 **Dépend de** : `../../site/src/styles/tokens.css`, `../../site/src/styles/base.css`, `../../site/src/styles/components.css`
 
 ---
@@ -113,7 +113,7 @@ millimétré ».
 | `details.faq` | Accordéon natif (signe `+`/`–` vermillon). |
 | `.crumb` | Fil d'Ariane. |
 | `.ptitle` | Titre de page intérieure. |
-| `.toc` | Sommaire en ligne. |
+| `.toc` | Sommaire repliable (technique) ou sommaire d'article. |
 | `.tnote` | Bandeau de traduction automatique (`I18N.md` §5). |
 | `.fm` | Barre de formule (serif italique + annotations). |
 | `.vs` | Bandeau d'état (badge + phrase). |
@@ -123,9 +123,9 @@ millimétré ».
 Deux points de rupture structurent la mise en page :
 
 - **`900px`** — bascule de navigation. Au-dessus : barre horizontale et
-  **sous-menus déroulants** (`.ni`, `.sub`, `.ni-arrow`) au survol/focus. En
-  dessous : bouton hamburger (`.nav-burger`) et panneau plein écran
-  (`header.site[data-nav-open] nav.main`) avec sous-menus dépliés en ligne.
+  **sous-menus cliquables** (`.ni`, `.sub`, `.ni-arrow`) ouverts par le bouton
+  parent, sans survol. En dessous : bouton hamburger (`.nav-burger`) et panneau
+  plein écran (`header.site[data-nav-open] nav.main`) avec sous-menus repliés.
 - **`820px`** — passage en une seule colonne (`base.css` global) : `.hero`,
   `.g3` et `.bn` s'empilent, les `.row` aussi.
 
@@ -148,3 +148,4 @@ encoches mobiles.
 | :-- | :-- | :-- |
 | 14 octobre 2026 | Création | Documenter les jetons et les styles du site. |
 | 14 octobre 2026 | Sous-menus d'en-tête, menu mobile et points de rupture 900/820/380 px. | Ajout des menus déroulants et du menu mobile. |
+| 21 octobre 2026 | Sous-menus cliquables (plus de survol) ; sommaire repliable. | Revue globale et accessibilité des sous-menus. |

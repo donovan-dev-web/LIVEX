@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 **Dépend de** : `../../site/astro.config.mjs`, `../CI_CD.md`, `DEPLOYMENT.md`
 
 ---
@@ -18,11 +18,11 @@ construits à partir du dépôt.
 | :-- | :-- | :-- |
 | Génération | Astro (`output: static`) | HTML statique, hébergeable sur GitHub Pages. |
 | Rendu client | Aucun framework (pas de React/Vue) | Jeu de données statique ; économie de poids et de complexité. |
-| Interactivité | `<script is:inline>` (thème, menu mobile, 404) et `<details>` natifs | Fonctionne sans JS de framework ; progressive. |
+| Interactivité | `<script is:inline>` (thème, navigation, recherche, sommaires, article, 404) et `<details>` natifs | Fonctionne sans JS de framework ; progressive. |
 | Multilingue | i18n natif Astro | Routes FR/EN, alternates `hreflang` générés. |
-| Contenu éditorial | Astro Content Layer (loader `glob`) | Articles du journal versionnés en Markdown. |
+| Contenu éditorial | Astro Content Layer (loader `glob`) + plugin `rehype` local | Articles du journal versionnés en Markdown ; `scope="col"` ajouté aux tableaux. |
 | Typographie | Polices auto-hébergées (`woff2`) | Aucun appel tiers (confidentialité). |
-| URL de base | `/LIVEX/` | Publication de projet GitHub Pages. |
+| URL de base | `/LIVEX/` (surchargeable par `BASE_PATH`) | Publication de projet GitHub Pages et builds de test à la racine. |
 
 Le site **ne dépend jamais** du simulateur pour fonctionner : toutes les
 données affichées sont figées dans `site/src/data/` (voir `CONTENT.md`).
@@ -80,18 +80,23 @@ Conséquence directe : **toute URL interne doit passer par le helper `url()`**
 
 ## 4. Rendu et interactivité
 
-Le build produit du HTML statique. Seules quatre bribes de JavaScript
-s'exécutent côté client :
+Le build produit du HTML statique. Les scripts suivants s'exécutent côté client,
+tous en amélioration progressive :
 
 | Script | Emplacement | Rôle |
 | :-- | :-- | :-- |
 | Thème (application) | `BaseLayout.astro`, `<head>` | Lit `localStorage['livex-theme']` **avant le rendu** pour éviter tout clignotement clair→sombre. |
 | Thème (bascule) | `BaseLayout.astro`, fin de `<body>` | Écoute `#theme-toggle`, met à jour `data-theme`, `aria-pressed` et la préférence stockée. |
-| Menu mobile | `Header.astro` (`is:inline`) | Ouvre/ferme le panneau `#main-nav` (`aria-expanded`) sous 900 px ; fermeture au clic, `Échap`, clic extérieur, retour au format bureau. |
+| Navigation | `Header.astro` (`is:inline`) | Ouvre/ferme les sous-menus (clic, `Échap`) et le panneau `#main-nav` (`aria-expanded`) sous 900 px ; fermeture au clic extérieur et au retour au format bureau. |
+| Recherche | `Search.astro` (`is:inline`) | Charge Pagefind au premier clic, gère la modale (focus piégé, `Échap`, défilement verrouillé, focus rendu). |
+| Sommaire | `TableOfContents.astro` (`is:inline`) | Construit la liste depuis `main .sh`, attribue les `id` et révèle le sommaire à partir de trois entrées. |
+| Article | `actualites/[...slug].astro` (`is:inline`) | Boutons de partage, copie du lien, barre de progression de lecture. |
 | 404 (choix de langue) | `404.astro` | Affiche le bloc FR ou EN selon le chemin, ajuste `lang`. |
 
 L'accordéon FAQ utilise l'élément natif `<details>` : aucune ligne de JS. Les
-**sous-menus de bureau** sont en CSS pur (`:hover`, `:focus-within`).
+**sous-menus de bureau** sont cliquables uniquement (bouton + `aria-expanded`),
+sans dépendance au survol. Le site reste lisible sans JavaScript ; la recherche
+et les sommaires sont des améliorations.
 
 ## 5. Flux de données
 
@@ -114,6 +119,11 @@ docs/ (référence) ──► site/src/data/*.ts ──► composants Astro ─�
 
 - **Images et SVG** : importés depuis `src/assets/` (Astro gère le chemin et
   l'empreinte) ; les SVG de marque sont importés via `.src`.
+- **Images dans les articles** : syntaxe Markdown avec un chemin relatif vers
+  `src/assets/` (`![alt](../../assets/captures/fichier.png)`). Astro les
+  optimise (WebP, dimensions, `loading="lazy"`). Un `<img>` écrit en dur dans
+  le Markdown n'est pas optimisé : à éviter. `public/captures/` reste le kit
+  média brut, non optimisé.
 - **Polices** : définies en `@font-face` dans `base.css`, fichiers dans
   `src/assets/fonts/`, préchargées dans `BaseLayout.astro`.
 - **Emplacements de capture** : tant qu'une capture réelle n'existe pas, la
@@ -138,3 +148,4 @@ docs/ (référence) ──► site/src/data/*.ts ──► composants Astro ─�
 | 14 octobre 2026 | Création | Documenter l'architecture du site vitrine. |
 | 14 octobre 2026 | Routes dynamiques (`versions/<version>/`, `actualites/<slug>/`) dans le flux de données. | Alignement sur le cahier des charges (S14, S18). |
 | 14 octobre 2026 | Menu mobile ajouté (4e script client) ; dégradation sans JS documentée. | Menu responsive pour tablette portrait et mobile. |
+| 21 octobre 2026 | Sous-menus cliquables ; scripts recherche, sommaire et article documentés. | Revue globale et ajout de Pagefind, des sommaires et du partage d'articles. |

@@ -1,10 +1,10 @@
 # ROADMAP.md
 
-**Composant** : LIVEX (général)
-**Statut** : [STABLE]
-**Dernière mise à jour** : 19 octobre 2026
-**Dépend de** : `../presentation/VISION.md`, `../../VERSIONING.md`
-**Source Monographie** : Annexe J (feuille de route V2 détaillée), Partie 9 (Conclusions)
+**Composant** : LIVEX (général) 
+**Statut** : [STABLE] 
+**Dernière mise à jour** : 21 octobre 2026 
+**Dépend de** : `../presentation/VISION.md`, `../../VERSIONING.md` 
+**Source Monographie** : Annexe J (feuille de route V2 détaillée), Partie 9 (Conclusions) 
 
 ---
 
@@ -63,8 +63,6 @@ Pistes futures (Monographie §5.15, Partie 9) :
 
 Ces pistes sont documentées dans les ROADMAP de chaque composant ; elles ne sont pas datées.
 
----
-
 ## 6. Backlog unifié SYNE + ECHOS (jalons croisés)
 
 Section de **backlog consolidé** qui référence les issues des deux composants déjà réalisés et aligne la validation croisée (`../syne/ISSUES.md`, `../echos/ISSUES.md`). Elle sert de **base unique** pour la création des issues GitHub et du Kanban LIVEX (cf. `ISSUES.md`, `KANBAN.md`).
@@ -95,5 +93,13 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 ---
 
 ## Points restés ouverts dans ce document
+
 - Pas de dates : aucune jalon daté ne sera fixé avant consolidation des phase 2-4.
 - L'ordre des phases Monographie V2 est conservé tel quel ; si une priorité émerge pendant la documentation (ex. un sous-système à détailler en premier), la route sera mise à jour explicitement.
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 19 octobre 2026 | Création | Documentation de la roadmap projet LIVEX |
+| 21 octobre 2026 | Mise à jour | Alignment with new specification base |

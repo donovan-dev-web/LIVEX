@@ -4,7 +4,12 @@
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
+import TableOfContents from '../../../components/TableOfContents.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
+import SyneSchema from '../../../components/SyneSchema.astro';
+import { Image } from 'astro:assets';
+import echosAgents from '../../../assets/captures/echos-agents.png';
+import launcherPrism from '../../../assets/captures/launcher-prism.png';
 import { COMPONENTS_EN } from '../../../data/components';
 import { url } from '../../../utils/url';
 ---
@@ -21,6 +26,10 @@ import { url } from '../../../utils/url';
     lead="LIVEX links three components by explicit contracts. The world produces traces, observation measures them, rendering makes them visible — never mixing roles."
     crumbs={[{ label: 'Architecture' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents lang="en" />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -51,12 +60,14 @@ import { url } from '../../../utils/url';
             <p>{c.summary}</p>
             <p style="margin:0 0 6px"><StatusBadge status={c.status.id} lang="en" /></p>
             <p class="mu" style="margin:0 0 12px;font-size:0.76rem">{c.status.note}</p>
-            <a class="bt" href={url(c.href, 'en')}>Details →</a>
+            <a class="bt" href={url(c.href, 'en')} aria-label={`Details about ${c.name}`}>Details →</a>
           </div>
-          <div class="ph">Screenshot<br />{c.acronym}</div>
+          {c.key === 'syne' && <SyneSchema lang="en" />}
+          {c.key === 'echos' && <Image src={echosAgents} alt="ECHOS capture: tracking of observed agents" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'prism' && <Image src={launcherPrism} alt="Capture of the PRISM rendering opened from the Launcher" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">Capture slots: replaced by real captures of the published version. No illustration stands in for a screenshot.</p>
+      <p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM; for SYNE, a conceptual schema — an engine has no interface to capture. These visuals come from the development build (October 2026): none of them demonstrates a published version.</p>
     </div>
   </section>
 
@@ -67,7 +78,7 @@ import { url } from '../../../utils/url';
       <div class="ov">
         <table class="tb">
           <thead>
-            <tr><th>Contract</th><th>Version / format</th><th>Note</th></tr>
+            <tr><th scope="col">Contract</th><th scope="col">Version / format</th><th scope="col">Note</th></tr>
           </thead>
           <tbody>
             <tr><td>Observability contract (snapshot)</td><td>0.5.0</td><td>Adds <code>simulatedTimeSeconds</code>; world description <code>world_initialized</code> 1.1.</td></tr>
@@ -91,7 +102,7 @@ import { url } from '../../../utils/url';
       <div class="ov">
         <table class="tb">
           <thead>
-            <tr><th>Directory</th><th>Content</th><th>Status</th></tr>
+            <tr><th scope="col">Directory</th><th scope="col">Content</th><th scope="col">Status</th></tr>
           </thead>
           <tbody>
             <tr><td><code>syne/</code></td><td>.NET simulation engine (SYNE)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>

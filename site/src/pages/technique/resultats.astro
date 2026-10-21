@@ -4,10 +4,14 @@
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import CtaBand from '../../components/CtaBand.astro';
 import { PROJECT_STATE } from '../../data/release';
 import { url } from '../../utils/url';
 
 const nf = new Intl.NumberFormat('fr-FR');
+const covEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%', ' %');
+const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %');
 ---
 <BaseLayout
   title="Reproductibilité et mesures LIVEX"
@@ -20,6 +24,10 @@ const nf = new Intl.NumberFormat('fr-FR');
     lead="Une affirmation chiffrée ne vaut que si l'on peut la rejouer. Cette page rassemble la méthode, les tests, les benchmarks et ce qui reste, à ce jour, non mesuré."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Résultats' }]}
   />
+
+  <div class="w" style="padding-top:8px">
+    <TableOfContents />
+  </div>
 
   <section class="block">
     <div class="w">
@@ -38,7 +46,7 @@ const nf = new Intl.NumberFormat('fr-FR');
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Ingrédient</th><th>Rôle</th></tr></thead>
+          <thead><tr><th scope="col">Ingrédient</th><th scope="col">Rôle</th></tr></thead>
           <tbody>
             <tr><td>Graine (seed)</td><td>Initialise le PRNG xoshiro256** ; rend deux runs comparables.</td></tr>
             <tr><td>Configuration</td><td>Paramètres du monde et des entités.</td></tr>
@@ -73,7 +81,7 @@ const nf = new Intl.NumberFormat('fr-FR');
       </div>
       <div class="ov" style="margin-top:28px">
         <table class="tb">
-          <thead><tr><th>Indicateur</th><th>Valeur</th></tr></thead>
+          <thead><tr><th scope="col">Indicateur</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests au vert par composant</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
@@ -99,7 +107,7 @@ const nf = new Intl.NumberFormat('fr-FR');
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Population</th><th>Débit mesuré (t/s)</th><th>Tick moyen</th><th>Cible V2</th><th>Verdict</th></tr></thead>
+          <thead><tr><th scope="col">Population</th><th scope="col">Débit mesuré (t/s)</th><th scope="col">Tick moyen</th><th scope="col">Cible V2</th><th scope="col">Verdict</th></tr></thead>
           <tbody>
             <tr><td>50</td><td>1 354 – 2 257</td><td>0,44 – 0,73 ms</td><td>≥ 30</td><td>Au-dessus</td></tr>
             <tr><td>500</td><td>42,8 – 53,9</td><td>18,5 – 23,3 ms</td><td>≥ 20</td><td>Au-dessus</td></tr>
@@ -156,11 +164,11 @@ const nf = new Intl.NumberFormat('fr-FR');
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Affirmation</th><th>Statut</th><th>Source</th></tr></thead>
+          <thead><tr><th scope="col">Affirmation</th><th scope="col">Statut</th><th scope="col">Source</th></tr></thead>
           <tbody>
-            <tr><td>1 356 tests réussis, 0 échec au 19/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>Couverture ECHOS 91,32 % / SYNE 81,20 % au 19/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>13/13 jobs CI verts le 19/10/2026</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>{nf.format(PROJECT_STATE.tests.passed)} tests réussis, {PROJECT_STATE.tests.failed} échec au {PROJECT_STATE.observedDate}</td><td>Vérifiée</td><td>LIVEX-STATUS §1, §5</td></tr>
+            <tr><td>Couverture ECHOS {covEchos} / SYNE {covSyne} au {PROJECT_STATE.observedDate}</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>{PROJECT_STATE.ci}</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
             <tr><td>Écart ≈ 1,7× sous la cible à 1 000 entités</td><td>Vérifiée</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
         </table>
@@ -172,4 +180,14 @@ const nf = new Intl.NumberFormat('fr-FR');
       </p>
     </div>
   </section>
+
+  <CtaBand
+    eyebrow="10.6 · Conversion"
+    title="Aller plus loin"
+    lead="L'architecture, la documentation et le dépôt prolongent les mesures."
+    primaryLabel="Documentation"
+    primaryHref="documentation/"
+    secondaryLabel="Feuille de route"
+    secondaryHref="feuille-de-route/"
+  />
 </BaseLayout>

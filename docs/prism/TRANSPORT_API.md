@@ -83,6 +83,39 @@ fournit les fonctions Blueprint `Prepare`, `Ready`, `Start`, `Pause`, `Resume`,
 `/api/control/status`. Le résultat asynchrone d'une commande est transmis par
 `OnControlResult` ; les erreurs réseau ou API sont communiquées par `OnError`.
 
+### 3.1 Authentification des commandes
+
+Lancé par le Launcher, SYNE exige un **jeton de session** sur tout
+`POST /api/control/*` : sans lui, la commande est refusée par
+`401 { error: "unauthorized", detail: "Un jeton de session valide est requis." }`.
+`syne-mock` est plus permissif (seul `shutdown` exige le jeton) : un plugin qui
+omet le jeton fonctionne contre le mock mais échoue contre SYNE réel — c'est
+précisément le cas que le plugin doit éviter.
+
+PRISM présente donc le jeton sur chacune de ses commandes de contrôle :
+
+- source du jeton : la variable d'environnement `LIVEX_SESSION_TOKEN`, héritée du
+  Launcher (jamais ligne de commande ni journal) ; lue à l'initialisation du
+  `UPrismLdkSubsystem` et exposée par `SetSessionToken` / `GetSessionToken` pour
+  une intégration qui ne dépendrait pas de l'environnement ;
+- **mode dev (jeton manuel)** : `FPrismSyneConnectionOptions` porte
+  `bUseManualSessionToken` (bool) et `SessionToken` (FString). Quand le drapeau est
+  vrai, `Configure` présente ce jeton **à la place** de l'environnement — c'est ce
+  qui permet de tester en **PIE** contre un SYNE lancé par le Launcher (dont le
+  jeton est aléatoire et non hérité par l'éditeur). Le drapeau est laissé **faux**
+  pour le package : le Launcher injecte alors le jeton dans l'environnement ;
+- forme du header : `Authorization: Bearer <jeton>` ; un jeton vide ne pose
+  **aucun** header (la cause reste lisible : `401` côté SYNE, avertissement dans
+  `LogPrismLdk`) ;
+- périmètre : seuls les `POST /api/control/*` présentent le header.
+  `GET /api/control/status` est en **lecture libre** côté SYNE (résolu avant le
+  contrôle d'authentification) et reste sans jeton.
+
+Côté serveur, PRISM protège symétriquement **ses propres** mutations
+(`POST /control/shutdown`) par le même `LIVEX_SESSION_TOKEN`
+(`PRISM_UNREAL_IMPLEMENTATION.md` §10).
+
+
 | Méthode | Route | Fonction du plugin | Usage |
 | :-- | :-- | :-- | :-- |
 | POST | `/api/control/prepare` | `Prepare(seed, ticksPerSecond, configJson)` | Préparer un monde, sa cadence et son profil |

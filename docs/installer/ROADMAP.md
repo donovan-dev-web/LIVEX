@@ -1,78 +1,240 @@
-# ROADMAP.md — Installateur LIVEX
+# Feuille de route de l'installateur LIVEX
 
-**Composant** : LIVEX (Installateur)
+**Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 8 octobre 2026
-**Dépend de** : `README.md`, `TESTING.md`, `../launcher/ROADMAP.md`, `../../launcher/ROADMAP-V1.md`
-**Source Monographie** : —
+**Dernière mise à jour** : 21 octobre 2026
+**Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
 ---
 
-## 1. Objet
+## 1. Principe
 
-Séquence de travail pour livrer l'installateur et franchir **G6** sur Linux puis
-sur Windows. Chaque jalon a un critère vérifiable. Les prérequis externes à
-l'installateur sont isolés en §3, car ils ne se règlent pas dans `installer`.
+La feuille de route est exprimée **en ordre, sans dates**, conformément à la
+roadmap générale du projet (`docs/governance/ROADMAP.md` §1). Une phase ne
+commence que lorsque les critères de sortie de la précédente sont satisfaits.
+Les issues GitHub sont le suivi opérationnel ; ce document fixe la séquence et
+les portes.
 
-## 2. Jalons
+Chaque phase a une **sortie vérifiable** : un artefact, une mesure ou une
+recette. Une phase n'est pas « terminée » parce que le code est écrit.
 
-| Jalon | Contenu | Critère de sortie | Dépend de |
+## 2. Vue d'ensemble
+
+| Phase | Intitulé | Sortie principale | Bloque |
 | :-- | :-- | :-- | :-- |
-| **I0 — Décisions** | Validation des quatre ADR ; mise à jour de `PACKAGING.md`, `ISSUES.md`, `README.md`, `INSTALLATION.md`, `CI_CD.md` (`README.md` §7) | ADR [Accepted] ; points OI-01 à OI-08 reportés dans `ISSUES.md` | — |
-| **I1 — Manifestes et artefacts de release** | Manifestes de release Linux et Windows de SYNE, ECHOS, mock ; lanceurs ECHOS et mock pour Windows ; publication self-contained du Launcher et de SYNE ; schéma du catalogue | Chaque manifeste valide au schéma ; un composant extrait dans un répertoire vierge est détecté par le Launcher (clôt O-41 sur Linux) | I0 ; P4 pour ECHOS |
-| **I2 — Cœur de l'installateur** | `Setup.Core` : plan, journal, annulation, intégrité, catalogue ; mode `--unattended`, `--dry-run`, `--uninstall`, `--repair` ; plateformes Linux d'abord | Tests unitaires, propriétés et intégration verts ; TS-02, TS-06, TS-07, TS-08, TS-19 sur Ubuntu | I1 |
-| **I3 — Assistant graphique** | `Setup.App` : les dix étapes, contrôle système, options avec tailles, récapitulatif, reprise après interruption ; format de livraison Linux | TS-01 et TS-03 à TS-14 sur Ubuntu machine propre ; décision OI-01 | I2 |
-| **I4 — Mise à jour, signature, hors-ligne** | Catalogue publié, signature, remplacement atomique, retour arrière, mise à jour du Launcher, paquet hors-ligne | TS-09, TS-10, TS-15 à TS-18, TS-24 ; décisions OI-04, OI-06, OI-07, OI-08 | I3 |
-| **I5 — Windows** | Plateforme Windows : variables, raccourcis, entrée de désinstallation ; acceptation SYNE et ECHOS sous Windows ; signature | Critères de l'acceptation d'un OS (`TESTING.md` §7) sur Windows 10 et 11 | I3, acceptation des composants sous Windows |
+| **P0** | Cadrage | spécification, architecture, ADR, roadmap, issues | P1 |
+| **P1** | Socle sans interface | `Setup.Core` testé, plan et transaction | P2 |
+| **P2** | Charge utile, actifs et confiance | distribution signée, runtimes embarqués, actifs facultatifs publiés | P3 |
+| **P3** | Assistant, acquisition et intégration | installation guidée Windows/Linux, téléchargement vérifié | P4 |
+| **P4** | Cycle de vie | mise à jour, réparation, maintenance, désinstallation | P5 |
+| **P5** | Distribution publique | release signée sur machines propres | P6 |
+| **P6** | Ouverture | PRISM dans le Launcher, mises à jour différentielles, évolutions | — |
 
-L'ordre privilégie **Linux d'abord** parce que SYNE et ECHOS ne sont acceptés que
-sous Linux (`V1-CAPABILITY-MATRIX.md`). Le développement de la plateforme Windows
-(`Setup.Platform.Windows`) peut commencer dès I2, mais l'installateur Windows ne
-proposera les composants qu'à mesure que le catalogue les marque acceptés.
+## 3. Phase 0 — Cadrage
 
-## 3. Prérequis externes à l'installateur
+**Objectif** : remplacer la documentation retirée par une base unique, cohérente
+avec le dépôt, et découper le travail en issues vérifiables.
 
-| # | Prérequis | Pourquoi | Où le suivre |
-| :-- | :-- | :-- | :-- |
-| D-01 | Manifeste de release SYNE avec exécutable publié | Rien à installer sinon | `ISSUES.md` O-41 |
-| D-02 | Persistance du workspace choisi, indépendante de `LIVEX_DATA` (OI-05) | Éviter un workspace « perdu » selon le contexte de lancement | À créer côté Launcher |
-| D-03 | Arrêt propre d'un composant sans console sous Windows | Sans lui, une désinstallation ou mise à jour peut laisser des orphelins | `ISSUES.md` O-34 |
-| D-04 | Acceptation du cycle de vie de SYNE sous Windows | Condition pour `accepted: true` sur `win-x64` | `ISSUES.md` O-39 |
-| D-05 | ECHOS validé et installable sous Windows | Idem | `ROADMAP.md` du Launcher, P4 |
-| D-06 | Détection : fiabiliser le périmètre d'hermétisme | L'installateur écrit dans `~/.livex` ; ce périmètre doit être défini | `ISSUES.md` O-45 |
-| D-07 | Lanceur ECHOS et mock pour Windows | Voir I1 | `ARCHITECTURE.md` §6.3 |
-| D-08 | Publication des tailles et des empreintes par la CI | Alimente options et catalogue | `RELEASE_AND_UPDATE.md` §5 |
+Livrables :
 
-## 4. Risques
+- `README.md`, `COMPONENTS.md`, `SPECIFICATION.md`, `ARCHITECTURE.md`, `ROADMAP.md` ;
+- ADR-001 à ADR-008 ;
+- `TESTING.md`, `RELEASE_AND_UPDATE.md`, `GUIDE-UTILISATEUR.md` ;
+- issues GitHub avec labels `component/installer` et `component/launcher`.
 
-| Risque | Probabilité | Impact | Atténuation |
-| :-- | :-- | :-- | :-- |
-| Acceptation Windows des composants tardive | Élevée | L'installateur Windows livre peu | Linux d'abord ; catalogue honnête ; installateur Windows livrable avec Launcher + mock en attendant |
-| Dérive entre manifeste de développement et manifeste de release | Moyenne | Composants non détectés après installation | Validation de schéma en CI ; test de détection (I1) |
-| Taille ou durée de téléchargement trop élevées | Moyenne | Abandon d'installation | Tailles mesurées par la CI ; options ; reprise ; hors-ligne |
-| `pyarrow` ou autre roue native indisponible pour la version de Python choisie | Moyenne | ECHOS non installable | Version Python fixée avec la CI (OI-03) ; roues dans le paquet hors-ligne |
-| Blocage SmartScreen ou antivirus sur l'installateur non signé | Élevée (Windows) | Défiance des testeurs | Signature (OI-04) ; instructions affichées |
-| Mise à jour du Launcher sous Windows | Moyenne | Mise à jour impossible | Décision OI-06 avant I4 |
-| Variables d'environnement non propagées | Moyenne | Workspace introuvable | Registre d'installations + D-02 |
-| Bibliothèques système Linux variables selon les images Ubuntu | Moyenne | Interface qui ne démarre pas | Contrôle de l'étape 3 ; liste mesurée sur machine propre |
+Critères de sortie :
 
-## 5. Décisions à prendre
+- aucune contradiction entre spécification, architecture et ADR ;
+- chaque exigence `INS-F-*` est traçable vers un test ou une issue ;
+- les écarts avec la spécification de base sont justifiés et listés
+  (`SPECIFICATION.md` §7) ;
+- les labels manquants sont créés et les issues sont créées sans doublon.
 
-| # | Décision | Jalon de décision |
+## 4. Phase 1 — Socle sans interface
+
+**Objectif** : disposer d'un moteur d'installation testable, sans interface,
+avant de dessiner un écran.
+
+Livrables :
+
+| Élément | Contenu | Vérification |
 | :-- | :-- | :-- |
-| OI-01 | Format de livraison Linux | I3 |
-| OI-02 | Emplacement par défaut du workspace | I1 |
-| OI-03 | Version de Python embarquée | I1 |
-| OI-04 | Signature du catalogue et de l'installateur | I4 |
-| OI-05 | Persistance du workspace choisi | I2 |
-| OI-06 | Mise à jour du Launcher | I4 |
-| OI-07 | Hébergement du catalogue et des artefacts | I4 |
-| OI-08 | Parcours hors-ligne | I4 |
+| `Setup.Core.Distribution` | modèle, JSON canonique, signature | tests unitaires, vecteurs figés |
+| `Setup.Core.Planning` | plan d'installation, de mise à jour, de désinstallation | tests de plan sur arborescences factices |
+| `Setup.Core.Preflight` | huit contrôles, sortie stable | tests par contrôle, cas d'échec |
+| `Setup.Core.Execution` | transaction, sauvegarde, restauration | tests d'échec injecté, résidus |
+| `Setup.Core.Lifecycle` | enregistrement, inventaire, détection | tests avec magasins en mémoire |
+| `Setup.Core.Journal` | format, rotation, UTF-8 | tests de contenu interdit |
+| `Setup.Core.Acquisition` | cache, reprise, vérification, extraction | tests avec serveur local et archives piégées |
+| `Setup.Core.CommandLine` | arguments, codes de sortie | tests de table |
 
-## 6. Hors périmètre de la V0.1
+Critères de sortie :
 
-- Mise à jour automatique silencieuse.
-- Installation système (administrateur ou `root`).
-- macOS et architectures arm64.
-- Installation d'Unreal Engine ou du SDK .NET.
-- Canal de développement du catalogue.
+- `Setup.Core` ne référence aucune interface et aucun assemblage du Launcher ;
+- un plan d'installation complet est produit et rejoué sans écrire ;
+- une panne injectée au milieu d'une transaction est annulée et signalée ;
+- couverture des modules de planification et de transaction ≥ 80 %, seuil du
+  dépôt pour ECHOS, à confirmer pour ce projet ;
+- `dotnet test` vert sous Windows et Linux.
+
+## 5. Phase 2 — Charge utile et confiance
+
+**Objectif** : produire une distribution réelle, autonome et vérifiable, pour
+les deux plateformes.
+
+Livrables :
+
+- publications self-contained : `livex-launcher`, `syne` ;
+- ECHOS avec CPython 3.12 et dépendances figées ;
+- **charge utile de base** : build **PRISM packagée** par RID (`payload/`) ;
+- **actifs facultatifs** : archive ZIP du LDK, archive de documentation,
+  archive SYNE-Mock avec runtime Node ;
+- `installer/build/build_distribution.py` et `distribution.json` canonique,
+  profils `core` et `full`, blocs `acquisition` ;
+- signature Ed25519 et vérification par le même code que l'installateur ;
+- `SHA256SUMS` et signature détachée ;
+- job CI `installer` (matrice Windows/Linux) et vérification des URL d'actifs.
+
+Critères de sortie :
+
+- la distribution s'assemble sans réseau et sans fichier manquant ;
+- la vérification refuse un fichier modifié et un manifeste non signé ;
+- chaque actif facultatif publié a une taille et une empreinte dans le
+  manifeste, et une URL qui répond ;
+- le profil `full` s'assemble sans aucun actif manquant ;
+- `livex-launcher --check` s'exécute depuis la charge utile assemblée ;
+- la taille mesurée du paquet par plateforme est publiée dans les notes de
+  release (pas d'estimation dans la documentation) ;
+- aucun binaire framework-dependent ne subsiste dans la charge utile.
+
+## 6. Phase 3 — Assistant et intégration système
+
+**Objectif** : rendre l'installation utilisable par un public non technique,
+sur les deux systèmes, sans élévation.
+
+Livrables :
+
+| Élément | Contenu |
+| :-- | :-- |
+| Assistant | huit écrans, navigation, validation, récapitulatif, progression |
+| i18n | ressources FR/EN, repli anglais, clés manquantes journalisées |
+| Windows | `HKCU`, entrée « Applications et fonctionnalités », raccourcis |
+| Linux | `installation.json` XDG, `.desktop`, icône, bureau optionnel |
+| Détection | installation existante, enregistrement obsolète, adoption |
+| Préférences | `settings.json`, fusion, écriture atomique |
+| Acquisition | téléchargement HTTPS reprenable, cache, vérification, extraction confinée |
+| Hors ligne | archive locale, `--offline-assets`, `--no-network`, profil `full` |
+| Vérification finale | `livex-launcher --check` informative, journalisée |
+
+Critères de sortie :
+
+- installation complète sans UAC ni `sudo` sur les deux plateformes ;
+- aucune écriture hors des emplacements documentés ;
+- l'installation est détectée au lancement suivant ;
+- l'assistant est utilisable entièrement au clavier ;
+- les deux langues sont complètes ;
+- `--unattended` produit une installation identique à l'assistant ;
+- une installation `core` sans module facultatif n'émet aucune requête réseau ;
+- un module facultatif se télécharge, se vérifie et s'installe sans toucher au
+  socle ; une coupure réseau est reprise sans installation partielle.
+
+## 7. Phase 4 — Cycle de vie
+
+**Objectif** : traiter l'installation comme un objet durable, pas comme une
+copie unique.
+
+Livrables :
+
+| Élément | Contenu |
+| :-- | :-- |
+| Mise à jour | en place, conservation des données, refus de downgrade |
+| Réparation | vérification de l'inventaire, restauration depuis la distribution |
+| Maintenance | ajout/retrait d'un module facultatif (cache, manifeste conservé ou archive locale), modification de l'espace de travail |
+| Désinstallation | portées A/B/C, extension « résultats de recherche », résidus |
+| Processus | détection des processus LIVEX, refus explicite |
+| Récupération | enregistrement orphelin, inventaire incomplet, `settings.json` invalide |
+
+Critères de sortie :
+
+- tous les cas de désinstallation de `SPECIFICATION.md` §6.4 sont vérifiés ;
+- une mise à jour interrompue laisse une installation utilisable ou un état
+  signalé, jamais un succès ;
+- aucun paquet `.livexp` ni archive scellée n'est supprimé par A, B ou C sans
+  l'extension explicite ;
+- un fichier étranger dans le répertoire logiciel est conservé et signalé ;
+- le Launcher lit l'espace de travail configuré (issue Launcher close).
+
+## 8. Phase 5 — Distribution publique
+
+**Objectif** : publier une version que l'on peut recommander sans réserve.
+
+Livrables :
+
+- certificat Authenticode et signature de `livex-setup.exe`, `livex-launcher.exe`
+  et `Simulation.Console.exe` ;
+- clé GPG de release publiée dans `SECURITY.md` et
+  `RELEASE_AND_UPDATE.md` ;
+- `release.yml` : construction, signature, sommes, artefacts attachés à la
+  release GitHub sur tag `livex-v*` ;
+- tests sur machines propres Windows et Linux (VM ou runner neuf) ;
+- guide utilisateur et procédure de dépannage ;
+- notes de release avec taille mesurée, versions des composants et limites.
+
+Critères de sortie :
+
+- une installation publique ne déclenche pas d'avertissement SmartScreen sur
+  Windows 11 à jour ;
+- la vérification Linux documentée fonctionne ;
+- les scénarios de `TESTING.md` §7 passent sur machine propre ;
+- aucune régression des tests unitaires, d'intégration et de bout en bout ;
+- la documentation utilisateur ne contient aucune taille ni durée non mesurée.
+
+## 9. Phase 6 — Ouverture
+
+**Objectif** : étendre le périmètre sans refondre le socle.
+
+Candidats, par ordre de valeur :
+
+1. **PRISM dans le Launcher** : bouton d'ouverture ou détection, si PRISM expose
+   un contrat de service. Point ouvert INS-O-10.
+2. **Mise à jour différentielle** : réduire le poids des mises à jour et des
+   actifs facultatifs (delta d'archive).
+3. **Miroir d'actifs** : second hôte de téléchargement pour les réseaux qui
+   filtrent GitHub. Point ouvert INS-O-08.
+4. **Installation machine** : si un besoin organisationnel est démontré.
+5. **Format Linux natif** : `.deb` ou Flatpak, si la distribution par paquet
+   devient la cible.
+
+Aucun de ces éléments n'est nécessaire pour une V0.2 publiable.
+
+## 10. Risques de planification
+
+| Risque | Impact | Mitigation |
+| :-- | :-- | :-- |
+| ECHOS embarqué plus complexe que prévu | bloque P2 | prototype CPython + pyarrow dès P1, avant l'interface |
+| Certificat Windows indisponible | bloque P5 | instruire le coût dès P2, accepter un canal `dev` explicite en attendant |
+| Dérive de l'assistant | retarde P3/P4 | `Setup.Core` d'abord, interface sans logique |
+| Divergence avec le Launcher sur l'espace de travail | installation incohérente | issue Launcher prioritaire, test de contrat partagé |
+| Taille du paquet | rejet utilisateur | mesure par release, documentation honnête, modules facultatifs à la demande |
+| Build PRISM indisponible pour une plateforme | **release bloquée** : PRISM fait partie de la charge utile du socle | build obligatoire en P2 ; aucun contournement par téléchargement (INS-L-01) |
+| GitHub inaccessible (proxy, panne) | module facultatif non installable | archive locale, profil `full`, message explicite |
+
+## 11. Suivi
+
+Les issues GitHub sont créées avec les labels :
+
+- `component/installer` pour l'installateur ;
+- `component/launcher` pour la lecture de l'espace de travail et la tolérance à
+  l'absence de `docs/` ;
+- `type/feature`, `type/docs`, `type/test`, `priority/P*` selon le cas.
+
+Une issue fermée sans preuve de recette est rouverte : la porte de phase est un
+critère, pas une déclaration.
+
+---
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 21 octobre 2026 | Création | Nouvelle base documentaire |

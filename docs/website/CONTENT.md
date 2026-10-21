@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 14 octobre 2026
+**Dernière mise à jour** : 21 octobre 2026
 **Dépend de** : `../../site/src/data/`, `../../site/src/content.config.ts`, `../governance/LIVEX-STATUS.md`, `../../VERSIONING.md`
 
 ---
@@ -19,6 +19,7 @@ Modifier un fait = modifier **un fichier de données**, pas N pages.
 | `data/components.ts` | Les trois composants + statuts | `../ARCHITECTURE.md`, `../presentation/GLOSSARY.md` |
 | `data/release.ts` | État du projet, versions, tests, couverture | `../governance/LIVEX-STATUS.md`, `VERSIONING.md`, `CHANGELOG.md` |
 | `data/versions.ts` | Historique des versions **publiées** (fiches par version) | `VERSIONING.md`, `CHANGELOG.md` |
+| `data/monograph.ts` | Sommaire bilingue de la monographie (titres et liens) | `../monographie/00-SOMMAIRE-GENERAL.md` |
 | `data/claims.ts` | Registre des affirmations sensibles | §5 ci-dessous |
 
 ## 2. `site.ts`
@@ -26,8 +27,8 @@ Modifier un fait = modifier **un fichier de données**, pas N pages.
 | Export | Rôle |
 | :-- | :-- |
 | `SITE` | Nom, titre, descriptions (FR et `descriptionEn`), dépôt, licence, auteur, langue, favicon. |
-| `NAV` | Navigation d'en-tête (6 entrées, dont 4 avec sous-menu). |
-| `FOOTER_NAV` | Navigation de pied de page (19 entrées). |
+| `NAV` | Navigation d'en-tête (5 entrées, toutes avec sous-menu). |
+| `FOOTER_NAV` | Navigation de pied de page (23 entrées). |
 
 Chaque entrée de navigation est un `NavItem` :
 
@@ -125,12 +126,18 @@ ajoutée ici **avant** sa mise en ligne.
 - Schéma : `site/src/content.config.ts`, collection `actualites`, loader `glob`
   sur `site/src/content/actualites/**/*.md`.
 - Champs : `title`, `description`, `date` (coercition date), `draft` (défaut
-  `false`), `tags` (défaut `[]`).
+  `false`), `tags` (défaut `[]`), `seoTitle` (optionnel).
+- `seoTitle` n'est utilisé que pour le `<title>` et Open Graph ; le titre
+  complet reste le H1, le fil d'Ariane et le `headline` JSON-LD. À poser quand
+  le titre dépasse ~60 caractères.
 - Les brouillons (`draft: true`) sont exclus de l'index et du flux.
-- Index : `actualites/index.astro` (état vide assumé tant qu'aucun article) ;
-  chaque titre renvoie vers son article.
+- Index : `actualites/index.astro` (15 articles publiés, triés du plus récent au
+  plus ancien) ; chaque titre renvoie vers son article.
 - Article : `actualites/[...slug].astro` — `getStaticPaths` sur la même
   collection (hors brouillons), corps rendu via `render()` (`astro:content`).
+  Sommaire automatique, barre de progression de lecture, citation et
+  partage (copie du lien, X/Twitter, LinkedIn, et feuille de partage native quand
+  l'appareil la propose).
 - Flux : `actualites/feed.xml.ts` (`@astrojs/rss`), `language: fr`, articles
   non brouillons triés par date décroissante.
 - Les articles ne sont **pas** traduits en anglais (niveau 3, `I18N.md` §4).
@@ -149,6 +156,16 @@ ajoutée ici **avant** sa mise en ligne.
    `footer` et `licence/`).
 5. **Ton** : sobre, factuel, sans superlatif ; « illustration conceptuelle »
    clairement étiquetée.
+6. **Accents et symboles en UTF-8 direct**, jamais en entités HTML
+   (`&eacute;`, `&rarr;`…) : Astro ne décode pas les entités dans les
+   **attributs** de composants (`title`, `text`, `cta`), il ré-échappe le `&`
+   et le visiteur lit la chaîne brute (« D&eacute;terminisme »). Le HTML
+   produit ne doit contenir aucune entité de la forme `&amp;…;`.
+7. **Pages anglaises** : lire le miroir `*_EN` des données (`PROJECT_STATE_EN`,
+   `RELEASE_EN`, `VERSION_TABLE_EN`) et transmettre `lang="en"` à tous les
+   composants qui l'acceptent (`PageHeader`, `CardLink`, `CtaBand`,
+   `StatusBadge`, `HeroFigure`, `TableOfContents`) — sinon le fil d'Ariane et
+   les libellés d'accessibilité restent en français.
 
 ---
 
@@ -158,3 +175,5 @@ ajoutée ici **avant** sa mise en ligne.
 | :-- | :-- | :-- |
 | 14 octobre 2026 | Création | Documenter les données éditoriales et le registre d'affirmations. |
 | 14 octobre 2026 | Ajout de `data/versions.ts`, de `children` dans `NavItem`, et de la route d'article `actualites/[...slug].astro`. | Alignement sur le cahier des charges (S14, S18). |
+| 21 octobre 2026 | Ajout de `data/monograph.ts` ; `NAV` à 5 entrées et `FOOTER_NAV` à 23 entrées. | Revue globale du site et sommaire bilingue de la monographie. |
+| 21 octobre 2026 | Règles d'écriture : accents en UTF-8 direct (jamais d'entités HTML) et pages EN branchées sur le miroir `*_EN` avec `lang="en"`. | Passe corrective texte/encodage sur les 80 pages. |

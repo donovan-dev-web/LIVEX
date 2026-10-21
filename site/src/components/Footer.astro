@@ -12,24 +12,82 @@ interface Props {
 const { lang = 'fr' } = Astro.props;
 const t = useTranslations(lang);
 const year = new Date().getFullYear();
+
+const byKey = Object.fromEntries(FOOTER_NAV.map((item) => [item.key, item]));
+
+const groups = [
+  {
+    title: t('footer.col.navigation'),
+    keys: ['comprendre', 'technique', 'telecharger', 'getting-started', 'versions', 'feuille-de-route', 'journal'],
+  },
+  {
+    title: t('footer.col.resources'),
+    keys: ['documentation', 'faq', 'glossaire', 'suivre', 'presse', 'etat-du-projet', 'monographie'],
+  },
+  {
+    title: t('footer.col.project'),
+    keys: ['participer', 'apropos', 'auteur', 'transparence-ia', 'plan-du-site'],
+  },
+  {
+    title: t('footer.col.legal'),
+    keys: ['mentions', 'confidentialite', 'accessibilite', 'licence'],
+  },
+].map((g) => ({
+  ...g,
+  items: g.keys.map((k) => byKey[k]).filter(Boolean),
+}));
 ---
+
 <footer class="site">
   <div class="w">
-    <nav aria-label={t('footer.nav')}>
-      {FOOTER_NAV.map((item) => <a href={url(item.href, lang)}>{item.label[lang]}</a>)}
-      <a href={SITE.repo} rel="noopener">{t('footer.repo')}</a>
-      <a href={SITE.repo + '/blob/main/LICENSE'} rel="noopener">{t('footer.license')}</a>
-    </nav>
+    <div class="fcols">
+      <div class="fbrand">
+        <a class="lg" href={url('', lang)} aria-label={SITE.name}>{SITE.name}</a>
+        <p class="fbrand-desc">{t('footer.brand')}</p>
+        <p class="fbrand-meta mu">© {year} {SITE.author} — {SITE.name}</p>
+      </div>
+
+      <nav class="fnav" aria-label={t('footer.nav')}>
+        {groups.map((group) => (
+          <div class="fcol">
+            <h2>{group.title}</h2>
+            <ul>
+              {group.items.map((item) => (
+                <li>
+                  <a href={url(item.href, lang)}>{item.label[lang]}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </div>
+
     <hr class="fl" />
+
     <div class="fgrid">
       <p>
         {lang === 'en'
-          ? `© ${year} LIVEX — personal project by ${SITE.author}. Content under `
-          : `© ${year} LIVEX — projet personnel de ${SITE.author}. Contenu sous licence `}
-        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>{lang === 'en' ? ', code under the GNU GPL v3.0 or later.' : ', code sous licence GNU GPL v3.0 ou ultérieure.'}
+          ? `Content under `
+          : `Contenu sous licence `}
+        <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>
+        {lang === 'en' ? ', code under the GNU GPL v3.0 or later.' : ', code sous licence GNU GPL v3.0 ou ultérieure.'}
       </p>
       <p class="mu">
-        {lang === 'en' ? 'No trackers, no cookies. Self-hosted fonts.' : 'Aucun traceur, aucun cookie. Polices auto-hébergées.'}
+        {lang === 'en'
+          ? 'No trackers, no cookies. Self-hosted fonts.'
+          : 'Aucun traceur, aucun cookie. Polices auto-hébergées.'}
+      </p>
+      <p class="mu">
+        <a href={url('CITATION.cff')} rel="noopener">{t('footer.citation')}</a>
+        {' · '}
+        <a href={SITE.repo} rel="noopener">{t('footer.repo')}</a>
+        {' · '}
+        <a href={SITE.repo + '/issues'} rel="noopener">Issues</a>
+        {' · '}
+        <a href={SITE.repo + '/blob/main/SUPPORT.md'} rel="noopener">Support</a>
+        {' · '}
+        <a href={url('participer/', lang)}>{lang === 'en' ? 'Contributing' : 'Contribuer'}</a>
       </p>
     </div>
   </div>

@@ -14,7 +14,7 @@ export const RELEASE = {
   published: false,
   /** Version cible en préparation. */
   planned: 'V0.2',
-  plannedLabel: 'V0.2 - en préparation',
+  plannedLabel: 'V0.2 — en préparation',
   releasesUrl: 'https://github.com/donovan-dev-web/LIVEX/releases',
   changelogUrl: 'https://github.com/donovan-dev-web/LIVEX/blob/main/CHANGELOG.md',
   /** Dernière version publiée (null tant qu'aucune release n'est posée). */
@@ -63,7 +63,7 @@ export const VERSION_TABLE = [
 
 /** Miroir anglais — chaînes localisées uniquement (les chiffres restent dans PROJECT_STATE). */
 export const RELEASE_EN = {
-  plannedLabel: 'V0.2 - in preparation',
+  plannedLabel: 'V0.2 — in preparation',
 } as const;
 
 export const PROJECT_STATE_EN = {

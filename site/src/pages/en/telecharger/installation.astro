@@ -5,7 +5,7 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
-import { PROJECT_STATE } from '../../../data/release';
+import { PROJECT_STATE_EN } from '../../../data/release';
 ---
 <BaseLayout
   lang="en"
@@ -30,7 +30,7 @@ import { PROJECT_STATE } from '../../../data/release';
       <h2>The prerequisites at a glance.</h2>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Tool</th><th>Version</th><th>For</th></tr></thead>
+          <thead><tr><th scope="col">Tool</th><th scope="col">Version</th><th scope="col">For</th></tr></thead>
           <tbody>
             <tr><td>.NET SDK</td><td>10.0.4xx</td><td>SYNE engine</td></tr>
             <tr><td>Python</td><td>3.11+</td><td>ECHOS (observation, API)</td></tr>
@@ -80,7 +80,7 @@ npm start -- config_prism.json</code></pre>
       <h2>Everything stays local.</h2>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Service</th><th>Address</th><th>Role</th></tr></thead>
+          <thead><tr><th scope="col">Service</th><th scope="col">Address</th><th scope="col">Role</th></tr></thead>
           <tbody>
             <tr><td>SYNE WebSocket</td><td><code>127.0.0.1:5180</code></td><td>Snapshots and events from a controlled run.</td></tr>
             <tr><td>SYNE HTTP</td><td><code>127.0.0.1:5181</code></td><td>Control of the server and starting runs.</td></tr>
@@ -106,7 +106,7 @@ echos/.venv/bin/python -m pytest -q
 
 # Launcher
 cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
-      <p><StatusBadge status="experimental" lang="en" /> Measured on {PROJECT_STATE.observedDate}: <strong>0
+      <p><StatusBadge status="experimental" lang="en" /> Measured on {PROJECT_STATE_EN.observedDate}: <strong>0
         failures</strong> across these three suites. The paths remain indicative and follow the development
         repository.</p>
       <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Full installation guide ↗</a></p>

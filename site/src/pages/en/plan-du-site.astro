@@ -32,6 +32,7 @@ const groups = [
     title: 'Software and versions',
     items: [
       { label: 'Download', href: 'telecharger/' },
+      { label: 'Getting started in 5 minutes', href: 'getting-started/' },
       { label: 'Installation and requirements', href: 'telecharger/installation/' },
       { label: 'Versions', href: 'versions/' },
       { label: 'Roadmap', href: 'feuille-de-route/' },
@@ -41,6 +42,8 @@ const groups = [
     title: 'Documentation, FAQ, news',
     items: [
       { label: 'Documentation', href: 'documentation/' },
+      { label: 'Project status', href: 'etat-du-projet/' },
+      { label: 'Monograph', href: 'monographie/' },
       { label: 'FAQ', href: 'faq/' },
       { label: 'Journal', href: 'actualites/' },
       { label: 'Follow the project', href: 'suivre/' },
@@ -51,6 +54,7 @@ const groups = [
     items: [
       { label: 'Contribute', href: 'participer/' },
       { label: 'About', href: 'a-propos/' },
+      { label: 'Author', href: 'a-propos/auteur/' },
       { label: 'Transparency on the use of AI', href: 'a-propos/transparence-ia/' },
       { label: 'Press kit', href: 'presse/' },
     ],
@@ -94,7 +98,7 @@ const groups = [
       <div class="g2">
         {groups.map((g) => (
           <div class="pl br" style="padding:20px">
-            <h3 style="margin-bottom:10px">{g.title}</h3>
+            <h2 style="margin-bottom:10px">{g.title}</h2>
             <ul style="list-style:none;padding:0;margin:0">
               {g.items.map((it) => (
                 <li style="padding:4px 0;font-size:0.8rem">
@@ -105,6 +109,10 @@ const groups = [
           </div>
         ))}
       </div>
+      <p class="mu" style="margin-top:18px;font-size:0.8rem">
+        Dynamic pages: <a href={url('actualites/', 'en')}>every journal article</a> and
+        <a href={url('versions/', 'en')}>every version record</a>.
+      </p>
       <div class="cc" style="margin-top:24px">
         <p><strong>Subscribe:</strong> the journal has an RSS feed —
           <a href={url('actualites/feed.xml', 'fr')}>actualites/feed.xml</a>.</p>

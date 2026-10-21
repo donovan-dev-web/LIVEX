@@ -3,19 +3,23 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { url } from '../utils/url';
+import { url, absoluteUrl } from '../utils/url';
+
+const baseUrl = import.meta.env.BASE_URL;
 ---
 <BaseLayout
   title="Page introuvable (404) · Page not found"
   description="La page demandée n'existe pas ou a été déplacée. · The requested page does not exist or has moved. Retrouvez le contenu via le plan du site."
   noindex={true}
+  canonical={absoluteUrl('404.html')}
   alternates={{ fr: '', en: '' }}
 >
   <div class="w">
+    <h1 class="sr-only">Page introuvable (404) · Page not found</h1>
     <section class="hero" style="grid-template-columns:1fr;padding-top:64px">
       <div data-404="fr" hidden>
         <p class="ey">Erreur 404</p>
-        <h1>Hors du monde<br /><i>connu.</i></h1>
+        <p class="hero-title">Hors du monde<br /><i>connu.</i></p>
         <p class="l">
           Cette page n'existe pas, ou n'existe plus. Le monde simulé continue, lui — mais pas ici. Le plan du site
           recense toutes les pages encore en ligne.
@@ -31,7 +35,7 @@ import { url } from '../utils/url';
 
       <div data-404="en" hidden>
         <p class="ey">Error 404</p>
-        <h1>Beyond the<br /><i>known world.</i></h1>
+        <p class="hero-title">Beyond the<br /><i>known world.</i></p>
         <p class="l">
           This page does not exist, or no longer does. The simulated world goes on — just not here. The sitemap lists
           every page still online.
@@ -45,9 +49,45 @@ import { url } from '../utils/url';
         </div>
       </div>
     </section>
+
+    <section class="block" style="padding-top:0">
+      <div data-404="fr" hidden>
+        <div class="sh"><b>—</b> Pistes</div>
+        <h2>Où aller ensuite ?</h2>
+        <p class="lead">Quelques points d'entrée pour retrouver votre chemin.</p>
+        <ul class="cta" style="list-style:none;padding:0">
+          <li><a class="bt" href={url('')}>Accueil</a></li>
+          <li><a class="bt" href={url('documentation/')}>Documentation</a></li>
+          <li><a class="bt" href={url('technique/')}>Architecture</a></li>
+          <li><a class="bt" href={url('comprendre/')}>Comprendre</a></li>
+          <li><a class="bt" href={url('plan-du-site/')}>Plan du site</a></li>
+          <li><a class="bt" href={url('faq/')}>FAQ</a></li>
+        </ul>
+        <p style="margin-top:18px;font-size:0.82rem;color:var(--mu)">
+          Astuce : <kbd>Ctrl</kbd>+<kbd>K</kbd> (ou <kbd>⌘</kbd>+<kbd>K</kbd>) ouvre la recherche sur le site.
+        </p>
+      </div>
+      <div data-404="en" hidden>
+        <div class="sh"><b>—</b> Leads</div>
+        <h2>Where to next?</h2>
+        <p class="lead">A few entry points to find your way back.</p>
+        <ul class="cta" style="list-style:none;padding:0">
+          <li><a class="bt" href={url('', 'en')}>Home</a></li>
+          <li><a class="bt" href={url('documentation/', 'en')}>Documentation</a></li>
+          <li><a class="bt" href={url('technique/', 'en')}>Architecture</a></li>
+          <li><a class="bt" href={url('comprendre/', 'en')}>Understand</a></li>
+          <li><a class="bt" href={url('plan-du-site/', 'en')}>Sitemap</a></li>
+          <li><a class="bt" href={url('faq/', 'en')}>FAQ</a></li>
+        </ul>
+        <p style="margin-top:18px;font-size:0.82rem;color:var(--mu)">
+          Tip: <kbd>Ctrl</kbd>+<kbd>K</kbd> (or <kbd>⌘</kbd>+<kbd>K</kbd>) opens site search.
+        </p>
+      </div>
+    </section>
   </div>
 
   <noscript>
+    <style>[data-404] { display: block !important; }</style>
     <div class="w">
       <p>
         <a href={url('')}>Accueil (FR)</a> · <a href={url('', 'en')}>Home (EN)</a>
@@ -55,9 +95,9 @@ import { url } from '../utils/url';
     </div>
   </noscript>
 
-  <script is:inline>
+  <script is:inline define:vars={{ baseUrl }}>
     (function () {
-      var base = '/LIVEX/';
+      var base = baseUrl;
       var path = location.pathname;
       if (path.indexOf(base) === 0) path = path.slice(base.length);
       var lang = path.split('/').filter(Boolean)[0] === 'en' ? 'en' : 'fr';

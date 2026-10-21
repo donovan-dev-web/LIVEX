@@ -117,6 +117,8 @@ binaire doit embarquer l'ensemble des notices correspondantes.
 | @astrojs/rss | ^4.0.19 | MIT |
 | @astrojs/sitemap | ^3.7.4 | MIT |
 | @astrojs/check | ^0.9.10 | MIT |
+| @astrojs/markdown-satteri | ^0.4.3 | MIT |
+| pagefind | ^1.5.2 | MIT |
 | typescript | ^6.0.3 | Apache-2.0 |
 
 ## 3. Contenus du dépôt

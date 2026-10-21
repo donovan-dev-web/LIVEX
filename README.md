@@ -143,7 +143,7 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 
 <sub>Captures d’interface : elles présentent le Launcher et les vues d’observation, sans constituer une preuve scientifique ni un engagement sur toutes les capacités du produit.</sub>
 
-Les captures statiques et les animations (GIF) de présentation sont conservées dans `docs/captures/` et inventoriées dans [`docs/captures/README.md`](docs/captures/README.md).
+Les captures statiques de présentation sont conservées dans `docs/captures/` et inventoriées dans [`docs/captures/README.md`](docs/captures/README.md). Le dépôt n’embarque aucune animation GIF : si le projet en a besoin un jour, elle rejoint ce dossier, en WebP ou MP4 de préférence.
 
 <a id="performances"></a>
 <img src="docs/assets/h-performances.svg" alt="Performances" width="100%" />
