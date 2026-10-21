@@ -1,5 +1,6 @@
 ---
 title: "Architecture : trois modules complémentaires (SYNE, ECHOS, PRISM)"
+seoTitle: "Architecture : SYNE, ECHOS et PRISM"
 description: "SYNE, ECHOS, PRISM : comment LIVEX sépare la vérité du monde, son observation et son rendu perceptif pour garantir reproductibilité et traçabilité."
 date: 2026-10-02
 tags: ["architecture", "syne", "echos", "prism"]

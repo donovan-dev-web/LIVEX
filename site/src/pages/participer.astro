@@ -11,7 +11,7 @@ const blob = `${repo}/blob/main`;
 ---
 <BaseLayout
   title="Participer — contribution, sécurité, support"
-  description="Contribuer à LIVEX : règles de contribution, code de conduite, signalement de sécurité privé et support. Dépôt public sous licence GNU GPL v3.0 ou ultérieure (hors projet Unreal PRISM)."
+  description="Contribuer à LIVEX : règles de contribution, code de conduite, signalement de sécurité privé et support. Dépôt public sous GNU GPL v3.0 ou ultérieure."
 >
   <PageHeader
     index="19"
@@ -23,6 +23,7 @@ const blob = `${repo}/blob/main`;
 
   <section class="block">
     <div class="w">
+      <h2>Quatre documents, un cadre clair.</h2>
       <p class="mu">
         Commencez par CONTRIBUTING.md : il précise les branches, les messages de commit et le périmètre attendu des
         pull requests. Les trois autres documents traitent du cadre relationnel, de la sécurité et de l'obtention
@@ -50,6 +51,31 @@ const blob = `${repo}/blob/main`;
           <a class="bt" href={`${blob}/SUPPORT.md`} rel="noopener">SUPPORT.md ↗</a>
         </div>
       </div>
+
+      <section class="block" style="padding-top:0">
+        <div class="sh"><b>19.2</b> Contributeurs</div>
+        <h2>Un projet solo, ouvert aux contributions.</h2>
+        <p class="lead">
+          LIVEX est développé par une seule personne. Toute contribution — code, documentation, traduction, retour
+          d'expérience — est bienvenue et créditée.
+        </p>
+        <div class="g2" style="margin-top:18px">
+          <div class="pl br" style="padding:20px">
+            <h3>Donovan Chartrain</h3>
+            <p class="mu">Auteur et mainteneur. Architecture, moteur, observation, rendu, site.</p>
+            <a class="bt" href="https://github.com/donovan-dev-web" rel="noopener">Profil GitHub ↗</a>
+          </div>
+          <div class="pl br" style="padding:20px">
+            <h3>Vous ?</h3>
+            <p class="mu">Les issues et pull requests sont ouvertes. Lisez CONTRIBUTING.md avant de proposer une modification.</p>
+            <a class="bt" href={`${repo}/contributors`} rel="noopener">Contributeurs GitHub ↗</a>
+          </div>
+        </div>
+        <p style="margin-top:18px;font-size:0.82rem;color:var(--mu)">
+          Les badges du projet (version, licence, tests, couverture) sont affichés dans l'en-tête du dépôt GitHub
+          et dans le hero du site.
+        </p>
+      </section>
 
       <div class="cc" style="margin-top:26px">
         <p><strong>Signaler une vulnérabilité :</strong> ouvrez un avis privé via

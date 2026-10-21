@@ -13,7 +13,7 @@ const blob = `${repo}/blob/main`;
   lang="en"
   translated
   title="Contribute — rules, security and support"
-  description="Contributing to LIVEX: contribution rules, code of conduct, private security reporting and support. Public repository under the GNU GPL v3.0 or later (excluding the Unreal PRISM project)."
+  description="Contributing to LIVEX: contribution rules, code of conduct, private security reporting and support. Public repository under GNU GPL v3.0 or later."
 >
   <PageHeader
     lang="en"
@@ -26,6 +26,7 @@ const blob = `${repo}/blob/main`;
 
   <section class="block">
     <div class="w">
+      <h2>Four documents, one clear framework.</h2>
       <p class="mu">
         Start with CONTRIBUTING.md: it sets out the branches, commit messages and expected scope of pull requests.
         The other three documents cover the social framework, security and getting help.
@@ -52,6 +53,30 @@ const blob = `${repo}/blob/main`;
           <a class="bt" href={`${blob}/SUPPORT.md`} rel="noopener">SUPPORT.md ↗</a>
         </div>
       </div>
+
+      <section class="block" style="padding-top:0">
+        <div class="sh"><b>19.2</b> Contributors</div>
+        <h2>A solo project, open to contributions.</h2>
+        <p class="lead">
+          LIVEX is developed by a single person. Any contribution — code, documentation, translation, feedback — is
+          welcome and credited.
+        </p>
+        <div class="g2" style="margin-top:18px">
+          <div class="pl br" style="padding:20px">
+            <h3>Donovan Chartrain</h3>
+            <p class="mu">Author and maintainer. Architecture, engine, observation, rendering, site.</p>
+            <a class="bt" href="https://github.com/donovan-dev-web" rel="noopener">GitHub profile ↗</a>
+          </div>
+          <div class="pl br" style="padding:20px">
+            <h3>You?</h3>
+            <p class="mu">Issues and pull requests are open. Read CONTRIBUTING.md before proposing a change.</p>
+            <a class="bt" href={`${repo}/contributors`} rel="noopener">GitHub contributors ↗</a>
+          </div>
+        </div>
+        <p style="margin-top:18px;font-size:0.82rem;color:var(--mu)">
+          Project badges (version, licence, tests, coverage) are shown in the GitHub repository header and in the site hero.
+        </p>
+      </section>
 
       <div class="cc" style="margin-top:26px">
         <p><strong>Reporting a vulnerability:</strong> open a private advisory via

@@ -32,6 +32,7 @@ const groups = [
     title: 'Logiciel et versions',
     items: [
       { label: 'Télécharger', href: 'telecharger/' },
+      { label: 'Démarrer en 5 minutes', href: 'getting-started/' },
       { label: 'Installation et prérequis', href: 'telecharger/installation/' },
       { label: 'Versions', href: 'versions/' },
       { label: 'Feuille de route', href: 'feuille-de-route/' },
@@ -41,6 +42,8 @@ const groups = [
     title: 'Documentation, FAQ, actualités',
     items: [
       { label: 'Documentation', href: 'documentation/' },
+      { label: 'État du projet', href: 'etat-du-projet/' },
+      { label: 'Monographie', href: 'monographie/' },
       { label: 'FAQ', href: 'faq/' },
       { label: 'Journal', href: 'actualites/' },
       { label: 'Suivre le projet', href: 'suivre/' },
@@ -51,6 +54,7 @@ const groups = [
     items: [
       { label: 'Participer', href: 'participer/' },
       { label: 'À propos', href: 'a-propos/' },
+      { label: 'Auteur', href: 'a-propos/auteur/' },
       { label: "Transparence sur l'usage de l'IA", href: 'a-propos/transparence-ia/' },
       { label: 'Kit média', href: 'presse/' },
     ],
@@ -91,7 +95,7 @@ const groups = [
       <div class="g2">
         {groups.map((g) => (
           <div class="pl br" style="padding:20px">
-            <h3 style="margin-bottom:10px">{g.title}</h3>
+            <h2 style="margin-bottom:10px">{g.title}</h2>
             <ul style="list-style:none;padding:0;margin:0">
               {g.items.map((it) => (
                 <li style="padding:4px 0;font-size:0.8rem">
@@ -102,12 +106,16 @@ const groups = [
           </div>
         ))}
       </div>
+      <p class="mu" style="margin-top:18px;font-size:0.8rem">
+        Pages dynamiques : <a href={url('actualites/')}>tous les articles du journal</a> et
+        <a href={url('versions/')}>toutes les fiches de version</a>.
+      </p>
       <div class="cc" style="margin-top:24px">
         <p><strong>S'abonner :</strong> le journal dispose d'un flux RSS —
           <a href={url('actualites/feed.xml')}>actualites/feed.xml</a>.</p>
       </div>
       <p class="mu" style="font-size:0.76rem">
-        Une version anglaise du site (miroir sous <code>/en/</code>, mêmes arborescence et adresses) est disponible :
+        Une version anglaise du site (miroir sous <code>/en/</code>, mêmes arborescences et adresses) est disponible :
         <a href={url('', 'en')}>English version ↗</a>.
       </p>
     </div>

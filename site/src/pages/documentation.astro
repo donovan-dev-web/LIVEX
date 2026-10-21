@@ -12,6 +12,7 @@ const groups = [
     title: 'Présentation',
     items: [
       { label: 'Vision', href: `${repo}/docs/presentation/VISION.md` },
+      { label: 'Démarrer en 5 minutes', href: url('getting-started/') },
       { label: 'FAQ', href: url('faq/') },
       { label: 'Glossaire', href: url('comprendre/glossaire/') },
       { label: 'Portée et éthique', href: `${repo}/docs/presentation/ETHICS_AND_SCOPE.md` },
@@ -23,7 +24,8 @@ const groups = [
       { label: "Vue d'ensemble", href: url('technique/') },
       { label: 'Architecture technique', href: `${repo}/docs/ARCHITECTURE.md` },
       { label: 'Contrats inter-composants', href: `${repo}/docs/COMMUNICATION.md` },
-      { label: 'Monographie (PDF)', href: `${repo}/LIVEX-Monographie_SnapV0-1.pdf` },
+      { label: 'Monographie (PDF)', href: `${repo}/docs/presentation/Monographie-Prototype-V01/LIVEX-Monographie_SnapV0-1.pdf` },
+      { label: 'Portail des chapitres', href: url('monographie/') },
     ],
   },
   {
@@ -39,7 +41,8 @@ const groups = [
     title: 'Governance',
     items: [
       { label: 'Feuille de route', href: url('feuille-de-route/') },
-      { label: 'État du projet', href: `${repo}/docs/governance/LIVEX-STATUS.md` },
+      { label: 'État du projet', href: url('etat-du-projet/') },
+      { label: 'État du projet (source)', href: `${repo}/docs/governance/LIVEX-STATUS.md` },
       { label: 'Versionnement', href: `${repo}/VERSIONING.md` },
       { label: 'Gitflow', href: `${repo}/docs/governance/GITFLOW.md` },
     ],
@@ -47,7 +50,7 @@ const groups = [
   {
     title: 'Contribuer',
     items: [
-      { label: 'Contribuer', href: `${repo}/CONTRIBUTING.md` },
+      { label: 'Guide de contribution', href: `${repo}/CONTRIBUTING.md` },
       { label: 'Code de conduite', href: `${repo}/CODE_OF_CONDUCT.md` },
       { label: 'Sécurité', href: `${repo}/SECURITY.md` },
       { label: 'Support', href: `${repo}/SUPPORT.md` },

@@ -1,58 +1,51 @@
-# KANBAN.md
+# KANBAN.md — Governance
 
-**Composant** : LIVEX (général)
-**Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
-**Dépend de** : `ISSUES.md`, `GITFLOW.md`
-**Source Monographie** : Annexe J (feuille de route V2) — pour l'inspiration du flux des jalons
+**Composant** : LIVEX (général) 
+**Statut** : [STABLE] 
+**Dernière mise à jour** : 21 octobre 2026 
 
 ---
 
 ## 1. Objectif
 
-Ce document définit le tableau de bord (Kanban) utilisé pour suivre les tâches de LIVEX, en liant issues, branches et jalons issus de la Monographie (ex. Annexe J pour la route V2).
-
-## 2. Colonnes du tableau
-
-| Colonne | Définition | Critère d'entrée | Critère de sortie |
-| :-- | :-- | :-- | :-- |
-| **Backlog** | Idées non planifiées | — | triée + priorisée |
-| **Todo** | Tâches planifiées dans un jalon | labels/priorité posés | assignée + branch `feature/*` créée |
-| **In Progress** | Tâche en cours | commit sur la branch | PR ouverte |
-| **In Review** | PR en revue | PR ouverte | PR mergée |
-| **Done** | Tâche terminée | fusion + pipeline vert + vérif. critère d'acceptation | — |
-
-## 3. Work-in-Progress (WIP) limit
-
-En mode solo, limite indicative :
-
-| Colonne | Limite WIP |
-| :-- | :-- |
-| In Progress | 3 |
-| In Review | 2 |
-
-Ces limites évitent d'entamer des tâches dont le critère d'acceptation (souvent dépendant des jalons de la Monographie) n'est pas mature. Elles sont réévaluées avec l'arrivée de contributeurs.
-
-## 4. Lien issues ↔ Kanban
-
-- Chaque carte est une **issue** (cf. `ISSUES.md`). Aucune carte sans issue derrière.
-- Passages de colonnes tracés par les transitions de labels/statut (`status/blocked`, `status/needs-input`, etc.) plutôt que par des colonnes supplémentaires.
-
-## 5. Priorisation
-
-- La priorité suit la **roadmap** (`ROADMAP.md` racine et par composant), elle-même alignée sur les jalons de la Monographie (Annexe J).
-- Ordre de tri :
-  1. Jalons critiques (contrats, déterminisme, persistance).
-  2. Blocants signalés `status/blocked`.
-  3. Priorité `P0` → `P1` → ...
-  4. Triant secondaire : plus ancienne date de création.
-
-## 6. Revue de flux
-
-- Revue du tableau à chaque jalon atteint dans le projet (fin d'une phase de `ROADMAP.md`).
-- Objet de la revue : détecter les cartes `status/blocked`, les colonnes au-dessus des limites WIP, et les `[OUVERT]` des documents qui bloquent l'avancement.
+Ce document définit le tableau Kanban unifié pour le projet LIVEX, aligné sur la roadmap et les issues des composants SYNE, ECHOS, PRISM et Launcher. Il sert de base unique pour :
+- La visualisation de l'avancement du travail.
+- Le suivi des issues par milestone et par statut.
+- La gestion du flux de travail de la création à la fermeture des issues.
+- L'alignement sur les décisions ADR et les jalons de la roadmap.
 
 ---
 
-## Points restés ouverts dans ce document
-- Aucun — document stabilisé ; les limites WIP et la fréquence de revue seront affinées avec l'historique réel du projet.
+## 2. Colonnes du tableau
+
+| Colonne | Signification | Action typique |
+| :-- | :-- | :-- |
+| **Backlog** | Issues prêtes à être planifiées | Création d'issue, assignation de milestone, étiquetage |
+| **Todo** | Issues planifiées pour le prochain sprint | Déplacement depuis Backlog, priorisation |
+| **In Progress** | Travail en cours | Début de la PR, développement |
+| **In Review** | Revue en cours | Pull request ouverte, revue en cours |
+| **Done** | Terminé et validé | PR fusionnée, issue fermée |
+
+---
+
+## 3. Règles de suivi
+
+- Toute carte `SYNE-*` ou `ECHOS-*` doit avoir **exactement 1 label de milestone** (`milestone/ph*`, `milestone/v0.1`, `milestone/v1`) et **≥ 1 label de type** (`type/*`).
+- Chaque carte porte la colonne Kanban correspondante à son état (Backlog → Todo → In Progress → In Review → Done, selon `KANBAN.md` §2).
+- Une carte ne passe en **In Review** qu'avec une PR référençant l'issue (lien `Closes #ISSUE-ID`).
+- Une carte **status/blocked** doit référencer le blocage (ADR, décision `[OUVERTE]`, donnée manquante).
+- **Conformité** : toute carte doit tracer sa **décision** d'origine quand elle existe — une valeur non tranchée reste calibrée plus tard, jamais figée par accident (Monographie §9.6.4).
+
+---
+
+## 4. Alignement sur la roadmap
+
+- Les milestones du tableau (`milestone/ph0` … `milestone/ph11`, `milestone/v0.1`, `milestone/v1`) doivent correspondre aux jalons du `ROADMAP.md` général.
+- Chaque jalon atteint (`ROADMAP.md` §4 fin de phase) doit entraîner la mise à jour de ce document et le déplacement des issues correspondantes vers la colonne Done.
+
+---
+
+## 5. Maintenance de ce document
+
+- Document actualisé lors de chaque décision tranchée et de chaque jalon atteint (`ROADMAP.md` §4 fin de phase).
+- Les IDs et conventions sont **stables** : aucune réindexation rétroactive ; un ID consommé est conservé (trace), jamais réutilisé.

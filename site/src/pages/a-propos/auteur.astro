@@ -1,0 +1,118 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import CardLink from '../../components/CardLink.astro';
+import { SITE } from '../../data/site';
+---
+
+<BaseLayout
+  title="Auteur — Donovan Chartrain, à l'origine de LIVEX"
+  description="Qui se cache derrière LIVEX : Donovan Chartrain, développeur web fullstack & mobile et artiste 3D, son parcours, ses compétences et ses autres projets."
+>
+  <PageHeader
+    index="20.1"
+    eyebrow="À propos · Auteur"
+    title="Qui se cache derrière LIVEX."
+    lead="LIVEX est né d'une question et d'un parcours. Voici, dans les mots de son auteur, ce qu'il cherche à explorer — et où retrouver le reste de son travail."
+    crumbs={[{ label: 'À propos', href: 'a-propos/' }, { label: 'Auteur' }]}
+  />
+
+  <section class="block">
+    <div class="w">
+      <blockquote class="sf" style="font-size:clamp(1.6rem,3.5vw,2.6rem);line-height:1.3;margin:0 0 24px;border-left:2px solid var(--ve);padding-left:22px;max-width:34ch">
+        Peut-on construire un environnement virtuel régi par des lois fondamentales, au sein duquel des entités
+        autonomes produisent des comportements et des structures qui n'ont pas été explicitement programmés ?
+      </blockquote>
+      <p>
+        Je suis <strong>Donovan Chartrain</strong>, développeur web fullstack & mobile et artiste 3D. Mon parcours
+        combine plus de <strong>3 ans de développement web en entreprise</strong> et plus de <strong>10 ans de design,
+        de 3D et de production visuelle</strong>. Cette double compétence m'a conduit aux deux faces d'un même
+        problème : comment représenter un monde, et comment construire ce qui le fait fonctionner.
+      </p>
+      <p>
+        LIVEX est né de cette rencontre entre création visuelle, développement et curiosité pour les systèmes complexes.
+        Avant d'être un projet de développement, il est né d'une curiosité pour les mondes de la science-fiction et du
+        LitRPG : des mondes qui paraissent vivants parce que leurs entités ont des besoins, des perceptions et la
+        capacité de décider.
+      </p>
+      <p>
+        Ma vision est simple : ne pas programmer les comportements que je souhaite observer, mais construire
+        l'environnement et les lois qui peuvent leur permettre d'émerger. Et si quelque chose d'intéressant apparaît,
+        il ne suffit pas de le montrer — il faut pouvoir l'observer, le mesurer, l'analyser et, autant que possible, le
+        reproduire.
+      </p>
+      <p class="sf" style="font-size:1.5rem;margin-top:20px">— Donovan Chartrain</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.1.1</b> Parcours et compétences</div>
+      <h2>Un profil hybride.</h2>
+      <div class="g2">
+        <div class="pl br" style="padding:20px">
+          <h3>Développement web & mobile</h3>
+          <p class="mu" style="margin:0 0 10px">Applications web et mobiles, architecture applicative, API REST, bases de données.</p>
+          <p class="mu" style="margin:0;font-size:0.74rem">React · Next.js · Angular · Node.js · .NET · PHP · React Native · Expo · Electron</p>
+        </div>
+        <div class="pl br" style="padding:20px">
+          <h3>3D, design et expérience</h3>
+          <p class="mu" style="margin:0 0 10px">Direction créative, visualisation 3D, expériences interactives et supports de présentation immersifs.</p>
+          <p class="mu" style="margin:0;font-size:0.74rem">Blender · Unity · Unreal Engine · Three.js · Figma · UI/UX</p>
+        </div>
+      </div>
+      <p class="mu" style="margin-top:18px;font-size:0.78rem">
+        Plus de 20 projets réalisés (sites web, applications, 3D), en contexte professionnel et personnel.
+      </p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>20.1.2</b> Portfolios et contact</div>
+      <h2>Découvrir le reste du travail.</h2>
+      <p class="lead">
+        LIVEX est un projet personnel. Mes deux portfolios présentent mes autres projets, mes compétences et mon parcours.
+      </p>
+      <div class="g2" style="margin-top:18px">
+        <CardLink
+          title="Portfolio web — développement"
+          text="Applications web et mobiles, architecture, stack technique et projets clients. Profil développeur fullstack & mobile."
+          href="https://donovan-dev-web.vercel.app"
+          cta="Découvrir le portfolio web →"
+        />
+        <CardLink
+          title="Portfolio 3D — création et expériences"
+          text="Direction créative, visualisation 3D, expériences interactives et supports de présentation immersifs."
+          href="https://donovan-dev3d.vercel.app"
+          cta="Découvrir le portfolio 3D →"
+        />
+      </div>
+      <p style="margin-top:18px">
+        <a class="bt p" href="https://donovan-dev-web.vercel.app/contact" rel="noopener">Me contacter (formulaire) ↗</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href="https://linkedin.com/in/donovan-chartrain-dev-web" rel="noopener">LinkedIn ↗</a>
+        <span style="display:inline-block;width:8px"></span>
+        <a class="bt" href="https://github.com/donovan-dev-web" rel="noopener">GitHub ↗</a>
+      </p>
+      <p class="mu" style="margin-top:12px;font-size:0.78rem">
+        Pour me contacter, utilisez le formulaire de contact de mon portfolio : les coordonnées y sont directes, sans
+        adresse e-mail publiée sur ce site.
+      </p>
+    </div>
+  </section>
+
+  <CtaBand
+    eyebrow="20.1.3 · Conversion"
+    title="Suivre LIVEX et son auteur"
+    lead="Le dépôt, le journal et les portfolios sont les points d'entrée pour aller plus loin."
+    primaryLabel="Dépôt GitHub ↗"
+    primaryHref={SITE.repo}
+    secondaryLabel="Suivre le projet"
+    secondaryHref="suivre/"
+  />
+</BaseLayout>

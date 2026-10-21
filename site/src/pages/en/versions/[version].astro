@@ -59,7 +59,7 @@ const { v } = Astro.props;
           <div class="sh"><b>{v.label}</b> Downloads</div>
           <div class="ov">
             <table class="tb">
-              <thead><tr><th>Platform</th><th>File</th><th>Size</th><th>SHA-256 checksum</th></tr></thead>
+              <thead><tr><th scope="col">Platform</th><th scope="col">File</th><th scope="col">Size</th><th scope="col">SHA-256 checksum</th></tr></thead>
               <tbody>
                 {v.assets.map((a) => (
                   <tr>

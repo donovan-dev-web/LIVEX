@@ -1,0 +1,184 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+/**
+ * Schéma conceptuel de la boucle SYNE.
+ *
+ * SYNE est un moteur : il n'a pas d'interface, donc aucune capture d'écran
+ * ne peut le représenter. Là où la mise en page demande une image, on montre
+ * un schéma — comme le fait le hero — clairement étiqueté « illustration
+ * conceptuelle, pas une capture ».
+ *
+ * `variant="compact"` : schéma reduced, pour une carte ou une colonne.
+ * `variant="full"`   : boucle complète (monde → perception → décision →
+ *                       action) et sorties (snapshot, traces).
+ */
+interface Props {
+  lang?: 'fr' | 'en';
+  variant?: 'compact' | 'full';
+  class?: string;
+}
+const { lang = 'fr', variant = 'compact', class: className } = Astro.props;
+const en = lang === 'en';
+
+const labels = en
+  ? {
+      world: 'World',
+      tick: 'tick',
+      traces: 'Traces',
+      perception: 'perception',
+      decision: 'Decision',
+      action: 'actions',
+      snapshot: 'snapshot',
+      events: 'event trace',
+    }
+  : {
+      world: 'Monde',
+      tick: 'tick',
+      traces: 'Traces',
+      perception: 'perception',
+      decision: 'Décision',
+      action: 'actions',
+      snapshot: 'snapshot',
+      events: "traces d'événements",
+    };
+
+const title = en
+  ? 'Conceptual schema of the SYNE loop: a world of agents, a tick, and the traces it produces. Illustration, not a screenshot.'
+  : "Schéma conceptuel de la boucle SYNE : un monde d'agents, un tick, et les traces qu'il produit. Illustration, pas une capture.";
+---
+
+{
+  variant === 'compact' ? (
+    <svg
+      class:list={['syne-schema', className]}
+      viewBox="0 0 320 190"
+      role="img"
+      aria-label={title}
+    >
+      <rect class="grid" x="12" y="14" width="118" height="118" rx="4" />
+      <path class="rule" d="M12 53h118M12 92h118M51 14v118M90 14v118" />
+      <circle class="agent" cx="36" cy="40" r="5" />
+      <circle class="agent" cx="72" cy="68" r="5" />
+      <circle class="agent" cx="104" cy="44" r="5" />
+      <circle class="agent" cx="60" cy="106" r="5" />
+      <path class="flow" d="M136 73h44" />
+      <path class="tick" d="M176 73a24 24 0 1 1-8-18" />
+      <path class="arrow" d="M180 66l-12-11 14-4z" />
+      <text class="label" x="196" y="34">{labels.tick}</text>
+      <g class="out">
+        <rect class="line" x="212" y="60" width="94" height="6" rx="3" />
+        <rect class="line" x="212" y="76" width="94" height="6" rx="3" />
+        <rect class="line" x="212" y="92" width="94" height="6" rx="3" />
+        <rect class="line" x="212" y="108" width="62" height="6" rx="3" />
+      </g>
+      <text class="label" x="71" y="158" text-anchor="middle">{labels.world}</text>
+      <text class="label" x="259" y="138" text-anchor="middle">{labels.traces}</text>
+    </svg>
+  ) : (
+    <svg
+      class:list={['syne-schema', 'full', className]}
+      viewBox="0 0 760 300"
+      role="img"
+      aria-label={title}
+    >
+      {/* Monde : grille et agents */}
+      <rect class="grid" x="16" y="60" width="140" height="140" rx="4" />
+      <path class="rule" d="M16 106h140M16 153h140M62 60v140M109 60v140" />
+      <circle class="agent" cx="42" cy="86" r="6" />
+      <circle class="agent" cx="90" cy="124" r="6" />
+      <circle class="agent" cx="128" cy="88" r="6" />
+      <circle class="agent" cx="66" cy="176" r="6" />
+      <text class="label" x="86" y="82" text-anchor="middle">{labels.world}</text>
+
+      {/* Perception : vue locale */}
+      <path class="flow" d="M168 118h78" />
+      <path class="arrow" d="M242 112l14 6-14 6z" />
+      <text class="label" x="207" y="104" text-anchor="middle">{labels.perception}</text>
+
+      {/* Décision */}
+      <rect class="box" x="260" y="74" width="140" height="88" rx="4" />
+      <text class="strong" x="330" y="124" text-anchor="middle">{labels.decision}</text>
+
+      {/* Action : retour au monde */}
+      <path class="flow" d="M330 162v58c0 16-16 24-32 24H120c-18 0-30-10-30-26" />
+      <path class="arrow" d="M84 214l6 14 14-6z" />
+      <text class="label" x="207" y="270" text-anchor="middle">{labels.action}</text>
+
+      {/* Sorties : snapshot et traces */}
+      <path class="flow" d="M412 100h38" />
+      <path class="arrow" d="M446 94l14 6-14 6z" />
+      <rect class="box" x="468" y="60" width="140" height="62" rx="4" />
+      <text class="strong" x="538" y="97" text-anchor="middle">{labels.snapshot}</text>
+      <g class="out">
+        <rect class="line" x="468" y="150" width="272" height="8" rx="4" />
+        <rect class="line" x="468" y="170" width="272" height="8" rx="4" />
+        <rect class="line" x="468" y="190" width="272" height="8" rx="4" />
+        <rect class="line" x="468" y="210" width="180" height="8" rx="4" />
+      </g>
+      <text class="label" x="604" y="240" text-anchor="middle">{labels.events}</text>
+    </svg>
+  )
+}
+
+<style>
+  .syne-schema {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .syne-schema .grid {
+    fill: color-mix(in srgb, var(--co) 6%, transparent);
+    stroke: var(--co);
+    stroke-width: 1.4;
+  }
+  .syne-schema .rule {
+    fill: none;
+    stroke: var(--ln);
+    stroke-width: 1;
+  }
+  .syne-schema .agent {
+    fill: var(--ink);
+  }
+  .syne-schema .flow {
+    fill: none;
+    stroke: var(--mu);
+    stroke-width: 1.4;
+  }
+  .syne-schema .tick {
+    fill: none;
+    stroke: var(--co);
+    stroke-width: 1.6;
+  }
+  .syne-schema .arrow {
+    fill: var(--mu);
+  }
+  .syne-schema .box {
+    fill: color-mix(in srgb, var(--co) 8%, transparent);
+    stroke: var(--co);
+    stroke-width: 1.4;
+  }
+  .syne-schema .line {
+    fill: var(--gr);
+    stroke: var(--ln);
+    stroke-width: 1;
+  }
+  .syne-schema .label {
+    fill: var(--mu);
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .syne-schema .strong {
+    fill: var(--ink);
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .syne-schema.full .label {
+    font-size: 12px;
+  }
+</style>

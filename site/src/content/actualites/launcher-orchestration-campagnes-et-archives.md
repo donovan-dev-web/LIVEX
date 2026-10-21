@@ -20,9 +20,9 @@ Derrière ces quatre verbes se tient une philosophie, la même que celle du rest
 
 L'interface Avalonia présente un accueil, une vue des expériences et une colonne d'état permanente. Les cartes de composants reflètent le cycle de vie effectif — démarrer ou arrêter passe réellement par le point de contrôle du composant concerné, il ne s'agit pas d'un bouton décoratif. Le tableau des expériences se construit à partir de paquets réellement présents, le journal de session défile en direct, et les ressources système sont échantillonnées.
 
-![Accueil du Launcher LIVEX](/captures/launcher-home.png)
+![Accueil du Launcher LIVEX](../../assets/captures/launcher-home.png)
 
-![Vue des expériences dans le Launcher](/captures/launcher-experiences.png)
+![Vue des expériences dans le Launcher](../../assets/captures/launcher-experiences.png)
 
 ## Découvrir, démarrer, superviser
 

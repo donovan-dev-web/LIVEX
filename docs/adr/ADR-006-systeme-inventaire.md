@@ -1,5 +1,7 @@
 # ADR-006 : Système d'inventaire (capacité poids/slots, ressources stockables)
+
 Statut : Accepté (30/09/2026) — **implémenté le 30/09/2026 (engineVersion 0.14.0)** :
+
 structure `Inventory` (une entrée par type de ressource, capacité de poids
 capaciteWeight = 20), opérations tout-ou-rien 0 PRNG (`TryTake`/`TryGive`), exposé dans le
 snapshot agent (champ additif `inventory` sous drapeau) et persisté bit-à-bit (DTO additif,
@@ -81,8 +83,7 @@ Conséquences
   ressources) doivent être mises à jour en conséquence.
 
 Points ouverts à trancher séparément
---------------------------------------
-- [OUVERT] Valeur par défaut de `capacitePoids` pour la V0.1.
+--------------------------------------\n- [OUVERT] Valeur par défaut de `capacitePoids` pour la V0.1.
 - [OUVERT] Wood et Mineral font-ils partie du périmètre minimal de la V0.1, ou
   restent-ils réservés à Food/Water tant que le système d'échange n'est pas
   validé sur un cas simple à deux ressources ?

@@ -59,6 +59,12 @@ import { url } from '../utils/url';
         vérifications automatisées ne suffisent pas : certains usages (lecteurs d'écran, navigation vocale) demandent
         une évaluation humaine qui reste à faire.
       </p>
+      <p>
+        Ce qui a été vérifié mécaniquement au <strong>21 octobre 2026</strong> : hiérarchie des titres et absence de
+        saut de niveau, identifiants uniques, ancres internes résolues, présence et pertinence des alternatives
+        textuelles, dimensions des images, libellés ARIA, et score d'accessibilité Lighthouse de 100/100 sur six pages
+        représentatives. Ce contrôle automatisé ne remplace pas une évaluation humaine.
+      </p>
       <p class="mu" style="font-size:0.78rem">
         La référence appliquée ici est la version 2.2 des
         <a href="https://www.w3.org/TR/WCAG22/" rel="noopener">Web Content Accessibility Guidelines ↗</a> (W3C).
@@ -77,10 +83,10 @@ import { url } from '../utils/url';
       </p>
       <div class="ov">
         <table class="tb">
-          <thead><tr><th>Élément</th><th>Valeur</th></tr></thead>
+          <thead><tr><th scope="col">Élément</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Moyen de signalement</td><td><a href={SITE.repo + '/issues'} rel="noopener">Issues GitHub ↗</a></td></tr>
-            <tr><td>Dernière revue d'accessibilité</td><td>12 octobre 2026</td></tr>
+            <tr><td>Dernière revue d'accessibilité</td><td>21 octobre 2026</td></tr>
             <tr><td>Référentiel visé</td><td>WCAG 2.2, niveau AA (déclaration volontaire)</td></tr>
           </tbody>
         </table>
