@@ -6,10 +6,13 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "PrismLdkTypes.h"
+#include "PrismLdkWorldRegistry.h"
 #include "PrismLdkBlueprintLibrary.generated.h"
 
 class UPrismLdkSubsystem;
 class UPrismLdkWorldRegistryBase;
+class UPrismLdkPCGData;
 
 UCLASS()
 class PRISMLDK_API UPrismLdkBlueprintLibrary : public UBlueprintFunctionLibrary
@@ -34,4 +37,26 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category="PRISM|Registry", meta=(WorldContext="WorldContextObject", CompactNodeTitle="PRISM Registry"))
 	static UPrismLdkWorldRegistryBase* GetPrismLdkWorldRegistry(const UObject* WorldContextObject);
+
+	// === Monde Virtuel / PCG ===
+
+	/** Crée et remplit un UPrismLdkPCGData à partir de la description SYNE et du registre courant. */
+	UFUNCTION(BlueprintCallable, Category="PRISM|PCG", meta=(WorldContext="WorldContextObject"))
+	static UPrismLdkPCGData* CreatePCGDataFromWorldDescription(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription);
+
+	/** Retourne les obstacles projetés en Unreal (centres + rayons). */
+	UFUNCTION(BlueprintPure, Category="PRISM|PCG", meta=(WorldContext="WorldContextObject"))
+	static void GetObstaclesUnreal(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription, TArray<FVector>& OutCenters, TArray<double>& OutRadii);
+
+	/** Retourne les cellules de ressources Water ayant une position. */
+	UFUNCTION(BlueprintPure, Category="PRISM|PCG", meta=(WorldContext="WorldContextObject"))
+	static TArray<FIntPoint> GetWaterResourceCells(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription);
+
+	/** Centre de tuile en unités Unreal depuis une cellule (via registre). */
+	UFUNCTION(BlueprintPure, Category="PRISM|PCG", meta=(WorldContext="WorldContextObject"))
+	static FVector CellToTileCenterUnreal(const UObject* WorldContextObject, FIntPoint Cell);
+
+	/** Bornes jouables en unités Unreal (CellCountX*TileSizeUu, CellCountY*TileSizeUu). */
+	UFUNCTION(BlueprintPure, Category="PRISM|PCG", meta=(WorldContext="WorldContextObject"))
+	static FBox GetPlayableBoundsUnreal(const UObject* WorldContextObject);
 };

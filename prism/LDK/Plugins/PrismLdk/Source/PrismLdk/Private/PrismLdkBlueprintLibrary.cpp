@@ -64,3 +64,63 @@ UPrismLdkWorldRegistryBase* UPrismLdkBlueprintLibrary::GetPrismLdkWorldRegistry(
 	}
 	return Registry;
 }
+#include "PrismLdkPCGData.h"
+#include "PrismLdkProjection.h"
+
+UPrismLdkPCGData* UPrismLdkBlueprintLibrary::CreatePCGDataFromWorldDescription(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription)
+{
+	UPrismLdkWorldRegistryBase* Registry = GetPrismLdkWorldRegistry(WorldContextObject);
+	if (!Registry) return nullptr;
+	UPrismLdkPCGData* Data = NewObject<UPrismLdkPCGData>();
+	if (!Data) return nullptr;
+	Data->BuildFromDescription(WorldDescription, Registry->GetStats());
+	return Data;
+}
+
+void UPrismLdkBlueprintLibrary::GetObstaclesUnreal(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription, TArray<FVector>& OutCenters, TArray<double>& OutRadii)
+{
+	OutCenters.Empty(); OutRadii.Empty();
+	UPrismLdkWorldRegistryBase* Registry = GetPrismLdkWorldRegistry(WorldContextObject);
+	if (!Registry) return;
+	const FPrismLdkWorldStats& Stats = Registry->GetStats();
+	if (!Stats.bScaleValid) return;
+
+	OutCenters.Reserve(WorldDescription.Obstacles.Num());
+	OutRadii.Reserve(WorldDescription.Obstacles.Num());
+	for (const auto& Obs : WorldDescription.Obstacles)
+	{
+		OutCenters.Add(UPrismLdkProjection::SyneToUnreal(Obs.Position, Stats.K));
+		OutRadii.Add(UPrismLdkProjection::SyneRadiusToUnreal(Obs.Radius, Stats.K));
+	}
+}
+
+TArray<FIntPoint> UPrismLdkBlueprintLibrary::GetWaterResourceCells(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription)
+{
+	TArray<FIntPoint> Result;
+	for (const auto& Res : WorldDescription.Resources)
+	{
+		if (Res.TypeEnum == EPrismSyneResourceType::Water && Res.bHasPosition)
+			Result.Add(FIntPoint((int32)Res.Position.X, (int32)Res.Position.Y));
+	}
+	return Result;
+}
+
+FVector UPrismLdkBlueprintLibrary::CellToTileCenterUnreal(const UObject* WorldContextObject, FIntPoint Cell)
+{
+	UPrismLdkWorldRegistryBase* Registry = GetPrismLdkWorldRegistry(WorldContextObject);
+	if (!Registry) return FVector::ZeroVector;
+	const FPrismLdkWorldStats& Stats = Registry->GetStats();
+	if (!Stats.bScaleValid) return FVector::ZeroVector;
+	return UPrismLdkProjection::CellToTileCenter(Cell, Stats.CellSize, Stats.K);
+}
+
+FBox UPrismLdkBlueprintLibrary::GetPlayableBoundsUnreal(const UObject* WorldContextObject)
+{
+	UPrismLdkWorldRegistryBase* Registry = GetPrismLdkWorldRegistry(WorldContextObject);
+	if (!Registry) return FBox(ForceInit);
+	const FPrismLdkWorldStats& Stats = Registry->GetStats();
+	if (!Stats.bScaleValid || Stats.CellCountX <= 0 || Stats.CellCountY <= 0) return FBox(ForceInit);
+	const double SizeX = Stats.CellCountX * Stats.TileSizeUu;
+	const double SizeY = Stats.CellCountY * Stats.TileSizeUu;
+	return FBox(FVector(0,0,-100), FVector(SizeX,SizeY,5000));
+}
