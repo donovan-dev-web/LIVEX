@@ -24,10 +24,10 @@ recette. Une phase n'est pas « terminée » parce que le code est écrit.
 | :-- | :-- | :-- | :-- | :-- |
 | **P0** | Cadrage | spécification, architecture, ADR, roadmap, issues | P1 | **fait** (ADR-001 à 010) |
 | **P1** | Socle sans interface | `Setup.Core` testé, plan et transaction | P2 | **fait** en code ; couverture non mesurée |
-| **P2** | Charge utile, actifs et confiance | distribution signée, runtimes embarqués, actifs facultatifs publiés | P3 | **non fait** : aucun `distribution.json`, aucun `payload/`, pas de `build_distribution.py`, PRISM non buildé |
+| **P2** | Charge utile, actifs et confiance | distribution vérifiable (empreintes, `SHA256SUMS`, attestations), runtimes embarqués, actifs facultatifs publiés | P3 | **non fait** : aucun `distribution.json`, aucun `payload/`, pas de `build_distribution.py`, PRISM non buildé |
 | **P3** | Assistant, acquisition et intégration | installation guidée Windows/Linux, téléchargement vérifié | P4 | **partiel** : assistant et CLI écrits et testés en monde fictif ; acquisition non câblée ; recette réelle non exécutée |
 | **P4** | Cycle de vie | mise à jour, réparation, maintenance, désinstallation | P5 | **partiel** : planifié et testé sur moteur ; aucune exécution réelle |
-| **P5** | Distribution publique | release signée sur machines propres | P6 | **non commencé** : pas de job CI `installer`, pas de release |
+| **P5** | Distribution publique | release publiée et vérifiée sur machines propres | P6 | **non commencé** : pas de job CI `installer`, pas de release |
 | **P6** | Ouverture | PRISM dans le Launcher, mises à jour différentielles, évolutions | — | **non commencé** |
 
 La V1 du produit (plan d'alignement du 29 octobre 2026) exige P2 à P5 :
@@ -63,7 +63,7 @@ Livrables :
 
 | Élément | Contenu | Vérification |
 | :-- | :-- | :-- |
-| `Setup.Core.Distribution` | modèle, JSON canonique, signature | tests unitaires, vecteurs figés |
+| `Setup.Core.Distribution` | modèle, JSON canonique, empreintes | tests unitaires, vecteurs figés |
 | `Setup.Core.Planning` | plan d'installation, de mise à jour, de désinstallation | tests de plan sur arborescences factices |
 | `Setup.Core.Preflight` | huit contrôles, sortie stable | tests par contrôle, cas d'échec |
 | `Setup.Core.Execution` | transaction, sauvegarde, restauration | tests d'échec injecté, résidus |

@@ -129,7 +129,7 @@ l'implémentation Windows, ni aucun assemblage du Launcher.
 - un runtime .NET partagé, Python système ou Node.
 
 `Setup.Core.Acquisition` ne fait aucune requête hors de la résolution d'un actif
-déclaré par le manifeste signé : pas de découverte de version, pas d'API GitHub,
+déclaré par le manifeste de distribution : pas de découverte de version, pas d'API GitHub,
 pas de télémétrie.
 
 ## 4. Manifeste de distribution
@@ -228,7 +228,7 @@ d'alignement V1 : ils ne sont pas encore dans le dépôt.
 ├── VERSION
 ├── .livex-install.json           # identité de l'installation
 ├── .livex-inventory.json         # fichiers installés + empreintes
-└── .livex-distribution.json      # manifeste signé d'origine (ajout ultérieur d'un module)
+└── .livex-distribution.json      # manifeste de distribution d'origine (ajout ultérieur d'un module)
 ```
 
 Points structurants :
@@ -527,7 +527,7 @@ Format texte UTF-8, une ligne par événement :
 | Élévation | aucune, aucune écriture système |
 | Fuite d'information dans le journal | liste noire de champs, pas de dump d'environnement |
 | Binaire non signé | avertissement explicite en canal `dev` |
-| Actif distant remplacé ou servi par un autre hôte | URL du manifeste signé, empreinte SHA-256, redirections limitées à GitHub |
+| Actif distant remplacé ou servi par un autre hôte | URL déclarée par le manifeste, empreinte SHA-256, redirections limitées à GitHub |
 | Empoisonnement du cache | cache adressé par empreinte, revérification à chaque usage, actif non conforme supprimé |
 | Archive piégée (zip-slip, lien, bombe) | extraction confinée, refus des entrées absolues/`..`/liens, bornes de taille et d'entrée |
 | Fuite d'identité vers GitHub | aucune authentification, aucun identifiant d'installation, aucune télémétrie |

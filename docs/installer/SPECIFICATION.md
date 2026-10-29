@@ -94,7 +94,7 @@ release ; elles ne sont pas inventées ici.
 | **Résultats de recherche** | paquets `.livexp`, archives scellées, journaux de session, base d'analyse ECHOS |
 | **Installation valide** | enregistrement présent, répertoire présent, `.livex-install.json` lisible, Launcher présent |
 | **Charge utile** (*payload*) | ensemble des fichiers livrés par le paquet de distribution |
-| **Distribution** | dossier ou archive contenant `livex-setup`, la charge utile, le manifeste et les signatures |
+| **Distribution** | dossier ou archive contenant `livex-setup`, la charge utile, le manifeste et ses éventuelles signatures |
 | **Composant de base** | PRISM : embarqué dans la distribution, **coché par défaut**, désactivable ; sa désactivation est avertie |
 | **Module facultatif** | composant décoché par défaut, installable indépendamment : PRISM-LDK, documentation hors ligne, SYNE-Mock |
 | **Actif de release** | fichier attaché à une release GitHub (archive d'un module facultatif) ; désigné par une URL, une taille et un SHA-256 |
@@ -137,7 +137,7 @@ release ; elles ne sont pas inventées ici.
 | Réf. | Exigence |
 | :-- | :-- |
 | **INS-F-100** | Aucune requête réseau ne doit être émise avant que l'utilisateur n'ait coché un module facultatif et validé le récapitulatif ; l'installateur ne doit jamais vérifier les versions ni télécharger en arrière-plan. |
-| **INS-F-101** | Un actif distant doit être téléchargé en HTTPS depuis l'URL du manifeste signé, avec un certificat validé, une reprise par `Range` lorsque le serveur l'accepte, et un cache adressé par empreinte. |
+| **INS-F-101** | Un actif distant doit être téléchargé en HTTPS depuis l'URL déclarée par le manifeste de distribution, avec un certificat validé, une reprise par `Range` lorsque le serveur l'accepte, et un cache adressé par empreinte. |
 | **INS-F-102** | La taille et le SHA-256 d'un actif téléchargé doivent être vérifiés **avant** toute extraction ou copie ; un actif non conforme doit être supprimé du cache et refusé. |
 | **INS-F-103** | L'extraction doit refuser les entrées absolues, `..`, les liens symboliques et les périphériques, et ne jamais écrire hors du répertoire cible du module. |
 | **INS-F-104** | L'utilisateur doit pouvoir annuler un téléchargement ; un échec réseau ne doit ni corrompre le socle ni laisser une installation partielle. |
@@ -218,7 +218,7 @@ release ; elles ne sont pas inventées ici.
 
 | Réf. | Exigence |
 | :-- | :-- |
-| **INS-F-70** | L'installateur doit vérifier la signature du manifeste et l'empreinte SHA-256 de chaque fichier — embarqué ou téléchargé — avant toute écriture. |
+| **INS-F-70** | L'installateur doit vérifier l'empreinte SHA-256 de chaque fichier — embarqué ou téléchargé — et la forme du manifeste avant toute écriture. La signature cryptographique du manifeste **n'est pas vérifiée en V1** (ADR-007 §3 bis) : l'authenticité de la distribution repose sur le `SHA256SUMS` publié et les attestations GitHub, contrôlés par l'utilisateur. |
 | **INS-F-71** | Une altération, un fichier manquant, un actif non conforme ou un manifeste invalide doit interrompre l'opération avant toute modification du répertoire cible. |
 | **INS-F-72** | Une erreur bloquante doit arrêter l'opération, produire un message compréhensible et écrire les informations techniques dans le journal. |
 | **INS-F-73** | Après un échec d'installation, l'installateur doit supprimer les fichiers, raccourcis et enregistrements créés par la tentative, et restaurer les fichiers remplacés lorsqu'il en a conservé une copie. |
