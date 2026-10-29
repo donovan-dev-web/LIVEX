@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT] — guide de la version à venir
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 
 ---
 
@@ -54,17 +54,21 @@ Engine n'est nécessaire pour l'installation décrite ici.
 ### Windows
 
 Clic droit sur `livex-setup.exe` → **Propriétés** → **Signatures numériques**.
-La signature doit être valide et émise au nom du projet LIVEX.
+La signature doit être valide et émise au nom du projet LIVEX. Si la release
+n'est pas signée (aucun certificat disponible), les notes de release le disent
+et SmartScreen peut afficher un avertissement : vérifiez alors les sommes avant
+d'exécuter le fichier.
 
 ### Linux
 
 ```bash
 sha256sum -c SHA256SUMS
-gpg --verify SHA256SUMS.asc SHA256SUMS
+gh attestation verify livex-1.0.0-linux-x64-core.tar.gz -R donovan-dev-web/LIVEX
 ```
 
-L'empreinte de la clé publique est publiée dans `SECURITY.md`. Si une
+Les sommes et les attestations remplacent la signature GPG en V1. Si une
 vérification échoue, **n'exécutez pas** l'installateur et signalez le problème.
+La procédure est reprise dans `SECURITY.md`.
 
 ## 4. Installer
 
@@ -101,6 +105,24 @@ vérification échoue, **n'exécutez pas** l'installateur et signalez le problè
    la fenêtre pendant cette phase.
 9. **Résultat** : en cas de succès, « Lancer LIVEX » est coché ; décochez-le si
    vous préférez démarrer plus tard.
+
+### Profils et composants individuels
+
+Deux paquets d'installation sont publiés pour chaque système :
+
+| Profil | Contenu | Réseau |
+| :-- | :-- | :-- |
+| **`core`** (défaut) | Launcher, SYNE, ECHOS, PRISM et leurs supports ; les modules facultatifs sont proposés au téléchargement | requis pour un module coché |
+| **`full`** | les mêmes composants **et** les trois archives facultatives | aucun |
+
+Choisissez `full` sur un poste isolé ; `core` suffit si vous avez Internet au
+moment d'installer un module.
+
+Chaque composant est aussi publié séparément (`livex-launcher`, `syne`,
+`echos`, `prism`, `prism-ldk`, `livex-docs`, `syne-mock`), sous forme d'archive
+décompressable à la racine d'une installation. C'est un usage **manuel et
+avancé** : l'installateur reste la voie normale, et seule l'archive du LDK, de
+la documentation ou de SYNE-Mock est lue par lui.
 
 ### Si l'installation échoue
 
@@ -222,6 +244,11 @@ diagnostic.
 | Le Launcher ne démarre pas | installation incomplète | lancer `livex-setup` puis **Réparer** |
 | L'installation s'arrête sans message | erreur inattendue | consulter `<racine de données>/logs/installer-*.log` |
 
+Deux commandes aident au diagnostic sans rien modifier : `livex-setup --check`
+(contrôles préalables, aucune écriture) et `livex-setup --repair`. La liste
+complète des options, leurs codes de sortie et l'emplacement du journal sont
+décrits dans [`COMMANDES.md`](COMMANDES.md).
+
 ## 12. Questions fréquentes
 
 **Ai-je besoin d'Internet ?**
@@ -277,3 +304,5 @@ Ne joignez jamais vos données d'expérience à une issue publique.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Guide de la version à venir |
+| 29 octobre 2026 | Profils `core`/`full`, archives de composants, vérification par sommes et attestations, SmartScreen si non signé | Plan d'alignement V1 (D3, D4, ADR-010) |
+| 29 octobre 2026 | §11 : renvoi vers `COMMANDES.md` | Les commandes de diagnostic existent |

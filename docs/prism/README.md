@@ -58,6 +58,7 @@ d'intégration Blueprint et les conventions de projection du monde.
 | `VISUALIZATION_SPEC.md` | Vues d'inspection, sociales et communication |
 | `UX_INTERACTION.md` | Intentions d'interaction et d'interface |
 | `ASSETS_CONVENTIONS.md` | Principes de présentation des éléments |
+| `PACKAGING.md` | Packaging des entrées de release (PRISM Windows/Linux, PRISM-LDK) |
 | `TESTING.md` | Validation du plugin et de l'intégration |
 | `ROADMAP.md` | Étapes d'évolution |
 | `CHANGELOG.md` | Historique de cette documentation |

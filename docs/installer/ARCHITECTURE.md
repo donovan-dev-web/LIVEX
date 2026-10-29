@@ -3,9 +3,9 @@
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
 **Version** : 1.0
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026 (alignement V1)
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`adr/`](adr/README.md)
-**Vérifié contre** : `feature/prism-syne-integration`, 21 octobre 2026
+**Vérifié contre** : `feature/installer-implementation`, 29 octobre 2026
 
 ---
 
@@ -22,7 +22,7 @@ justifiées dans les [ADR](adr/README.md).
                  ┌─────────────────────────────────────────────┐
                  │              Distribution                   │
                  │  livex-setup  distribution.json  payload/   │
-                 │  signatures (Ed25519, Authenticode, GPG)    │
+                 │  SHA-256, SHA256SUMS, attestations          │
                  └───────────────────┬─────────────────────────┘
                                      │ vérifie, planifie, écrit
                                      │
@@ -173,18 +173,28 @@ principaux :
 
 ### 4.3 Génération
 
-`installer/build/build_distribution.py` (Python, déjà utilisé pour les scripts
-du dépôt) :
+`installer/build/build_distribution.py` (Python), avec `installer/build/components.json`
+pour les textes et métadonnées :
 
+0. lit `installer/build/external-inputs.json` (PRISM Windows/Linux, LDK) et
+   refuse un fichier absent ou dont la taille ou le SHA-256 diffère ;
 1. collecte les sorties de publication de chaque composant ;
-2. copie dans `dist/<rid>/payload/` selon les chemins d'installation ;
-3. calcule tailles et SHA-256 ;
-4. lit les textes et métadonnées depuis `installer/build/components.json` ;
-5. écrit `distribution.json` en JSON canonique ;
-6. signe (Ed25519) ;
-7. produit `SHA256SUMS` et sa signature détachée ;
+2. copie dans `dist/<rid>/payload/` selon les chemins d'installation, et
+   recopie les entrées externes vérifiées ;
+3. signe Authenticode les exécutables Windows **si `SIGNING_ENABLED`** — avant
+   tout calcul d'empreinte ;
+4. calcule tailles et SHA-256 ;
+5. écrit `distribution.json` en JSON canonique (le champ `signature` reste
+   optionnel et vide en V1) ;
+6. produit les archives d'installateurs et de composants, déterministes
+   (`SOURCE_DATE_EPOCH`, entrées triées, permissions normalisées) ;
+7. produit `SHA256SUMS`, vérifie que chaque URL pointe vers le tag courant et
+   qu'aucun asset ne dépasse 1,9 GiB ;
 8. vérifie le tout en relisant le manifeste avec `Setup.Core` (même code que
    l'installateur) — le build échoue si la vérification échoue.
+
+Les scripts et le job CI correspondants sont les tâches **T2, T3 et T6** du plan
+d'alignement V1 : ils ne sont pas encore dans le dépôt.
 
 ## 5. Arborescence installée
 
@@ -462,10 +472,15 @@ répertoire de test. Les prérequis Linux sont détectés, pas installés.
 
 Ordre strict (voir [ADR-007](adr/ADR-007-manifeste-de-distribution-et-confiance.md)) :
 
-1. lire `distribution.json` et sa signature ;
-2. vérifier la signature Ed25519 avec la clé publique embarquée ;
-3. vérifier taille et SHA-256 de chaque fichier ;
+1. lire `distribution.json` et valider sa forme (`ManifestValidator`) ;
+2. vérifier taille et SHA-256 de chaque fichier de la charge utile ;
+3. vérifier que chaque actif distant déclare URL, taille et empreinte ;
 4. seulement ensuite, construire le plan.
+
+Aucune vérification cryptographique du manifeste n'a lieu en V1 (ADR-007
+§3 bis) : la confiance vient des empreintes, du `SHA256SUMS` publié et des
+attestations GitHub, vérifiés par l'utilisateur ; Authenticode s'y ajoute sur
+Windows quand un certificat est disponible.
 
 Le JSON canonique est produit par un sérialiseur dédié (clés triées, UTF-8 sans
 BOM, aucun espace, nombres entiers sans exposant, horodatages UTC). Un test
@@ -503,7 +518,7 @@ Format texte UTF-8, une ligne par événement :
 
 | Menace | Mesure |
 | :-- | :-- |
-| Distribution altérée | signature Ed25519 du manifeste, Authenticode, sommes signées |
+| Distribution altérée | empreintes SHA-256 par fichier, `SHA256SUMS`, attestations GitHub, Authenticode conditionnel |
 | Chemin piégé dans le manifeste | validation stricte, chemin résolu confiné au répertoire cible |
 | Lien symbolique dans la cible | refus de suivre un lien lors de l'écriture, vérification des points de reparse Windows |
 | Écrasement d'une installation valide | détection obligatoire, parcours de maintenance |
@@ -522,38 +537,79 @@ le Launcher qu'à la demande explicite de l'utilisateur, après installation.
 
 ## 18. Modes non interactifs
 
+Référence complète, avec exemples : [`COMMANDES.md`](COMMANDES.md).
+
 | Commande | Effet | Sortie |
 | :-- | :-- | :-- |
 | `--check` | préflight seul, aucune écriture | texte stable, `0`/`2` |
-| `--unattended --config <f>` | installation avec réponses | `0`/`1`/`2`/`3`/`5` |
-| `--uninstall [--scope a\|b\|c] [--purge-research]` | désinstallation | `0`/`4` |
+| `--unattended --config <f>` | installation avec réponses | `0`/`2`/`3`/`5`/`6` |
+| `--uninstall [--scope a\|b\|c] [--purge-research] [--confirm-workspace]` | désinstallation | `0`/`2`/`3`/`4` |
 | `--offline-assets <dir>` | actifs facultatifs lus depuis un répertoire local | `0`/`3`/`6` |
 | `--no-network` | aucune requête réseau autorisée | `0`/`6` |
-| `--repair` | vérification et restauration | `0`/`3` |
+| `--repair` | vérification et restauration | `0`/`2`/`3`/`6` |
 | `--maintenance` | parcours de maintenance | selon l'action |
-| `--version` | versions installateur et manifeste | `0` |
-| `--log <chemin>` | journal à l'emplacement indiqué | — |
+| `--version` | versions installateur et distribution | `0` |
 | `--lang fr\|en` | langue de l'assistant | — |
+| `--verbose` | trace de diagnostic sur la sortie d'erreur | — |
+
+Toute option inconnue, comme tout nom de scénario inconnu, est une erreur
+d'usage (`1`) et n'ouvre pas l'assistant : une faute de frappe ne doit jamais
+ressembler à un lancement normal. Il en va de même d'un nom de scénario ou d'une
+portée de désinstallation invalides.
+
+Le drapeau `--log` figure dans la spécification d'origine mais n'a jamais été
+appliqué : il a été retiré de l'aide **et du parseur**, donc refusé comme option
+inconnue (`1`). Le journal reste déterminé par la racine de données
+(`<racine de données>/logs`).
 
 Le fichier de réponses de `--unattended` reprend les champs de l'assistant :
 `installDir`, `workspaceDir`, `components`, `acceptLicense`, `desktopShortcut`,
-`launchAfterInstall`, `offlineAssetsDir`. Toute valeur manquante ou invalide fait
-échouer la commande avec `2`, sans valeur par défaut implicite pour les chemins.
+`launchAfterInstall`, `offlineAssetsDir`, et facultativement `dataRoot` (racine de
+données ; sans elle, l'emplacement par défaut de la plateforme est utilisé).
+`installDir` et `workspaceDir` doivent être des chemins absolus, `acceptLicense`
+vaut `true` (personne ne peut accepter la licence à la place de l'utilisateur) et
+un identifiant de composant absent du manifeste est refusé. Toute valeur
+manquante ou invalide fait échouer la commande avec `2`, sans valeur par défaut
+implicite pour les chemins.
+
+Ces modes sont implémentés dans `Setup.Core/Execution/HeadlessRunner.cs`, qui
+applique seul la table des codes de sortie et n'attend aucune saisie :
+`InstallAsync`, `InstallFromResponsesAsync` (`--unattended --config`),
+`UninstallAsync` (portée C refusée sans confirmation explicite de la suppression
+de l'espace de travail) et `RepairAsync`.
+
+Une installation réelle dont la charge utile manque est refusée dès le
+préflight (`payload`, code `2`) : le manifeste déclare des fichiers, aucun
+`payload/` n'accompagne `livex-setup` et rien ne peut être copié. Le refus est
+explicite plutôt qu'un échec à la première écriture, qui laisserait des résidus
+à compenser.
+
+Le même contrôle vaut pour `--check` sur une distribution réelle : `DryRun`
+suspend les écritures, il ne rend pas le monde fictif. Le champ `Simulated` de
+`InstallRequest` porte cette distinction, et seul le mode démonstration le met
+à vrai ; c'est ce qui permet à `--check` de répondre `2` sur une distribution
+dégradée (INS-A-37) tout en laissant `--check --demo` à `0`. Le fichier de réponses est lu et validé
+par `Setup.Core/CommandLine/UnattendedResponses.cs` ; `Setup.App` ne fait
+qu'appeler le lanceur et propager son code de sortie.
 Un module facultatif demandé sans réseau ni actif local fait échouer la commande
 avec `6`, après écriture d'un journal explicite ; le socle n'est pas installé
 partiellement pour autant.
 
 ## 19. Build, CI et tests
 
-- `ci.yml` : nouveau filtre de changements `installer`, job matrice
+- `ci.yml` : filtre de changements `installer`, job matrice
   `windows-latest` / `ubuntu-latest` : restore, build `-warnaserror`, tests
   unitaires et d'intégration, publication self-contained, assemblage de la
-  distribution, vérification du manifeste.
-- `release.yml` : sur tag `livex-v*`, attache les distributions signées **et les
-  actifs des modules facultatifs** (LDK, docs, SYNE-Mock) à la release GitHub ;
-  un job vérifie que chaque URL du manifeste répond et que l'empreinte publiée
-  correspond (aucun artefact n'est produit aujourd'hui : c'est un ajout). La
-  build PRISM, elle, entre dans la charge utile du socle.
+  distribution, vérification du manifeste. **État au 29 octobre 2026 : ce job
+  n'existe pas encore** (tâche T6 du plan d'alignement) ; les workflows actuels
+  ne testent que les composants.
+- `release.yml` : sur tag `prism-v*`, publie les entrées (PRISM Windows/Linux,
+  LDK) ; sur tag `livex-v*`, télécharge les entrées, vérifie
+  `installer/build/external-inputs.json`, assemble les quatre installateurs, les
+  archives de composants, `SHA256SUMS` et les attestations, et attache le tout
+  en pré-release. Aucun de ces jobs n'existe aujourd'hui : c'est la tâche T6 du
+  plan d'alignement, décrite dans [`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md)
+  §4 et §10.
 - Tests de bout en bout : installation silencieuse dans un répertoire
   temporaire, `--check`, désinstallation, vérification des résidus ; nettoyage
   des clés `HKCU` et fichiers XDG sur le runner.
@@ -569,10 +625,12 @@ Détail des scénarios : [`TESTING.md`](TESTING.md).
 | **INS-L-01** | La distribution de base exige une build PRISM packagée : son absence bloque la release | [ADR-006](adr/ADR-006-perimetre-composants-v02.md), roadmap P2 |
 | **INS-L-09** | PRISM n'est pas détecté par le Launcher (pas de contrat de service) | [ADR-006](adr/ADR-006-perimetre-composants-v02.md), point ouvert INS-O-10 |
 | **INS-L-10** | Un module facultatif en profil `core` dépend de la disponibilité de GitHub | profil `full`, archive locale, cache ([ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md)) |
+| **INS-L-11** | **Aucune signature cryptographique du manifeste en V1** (décision D3) : la confiance repose sur les empreintes SHA-256 de chaque fichier, le `SHA256SUMS` publié et les attestations GitHub. `ManifestValidator` ne contrôle que la forme des champs de signature ; le champ `signature` reste optionnel et vide. Un `distribution.json` forgé, accompagné de fichiers cohérents avec ses empreintes, ne serait donc pas distingué d'un manifeste légitime par l'installateur seul | vérification utilisateur (`sha256sum -c`, `gh attestation verify`) et Authenticode quand un certificat est disponible ; réouverture si une signature centralisée (Sigstore, Azure Trusted Signing) est adoptée |
+| **INS-L-12** | **Acquisition non câblée** : `AcquisitionService` (cache `cache/downloads`, actifs locaux, `--no-network`) n'est appelé nulle part, `InstallerEngine` télécharge directement vers la destination finale, et `WindowsHttpDownloader` ne fait pas de reprise `Range` | tâche T5 du plan d'alignement : brancher l'acquisition, ajouter la reprise et les tests serveur local |
 | **INS-L-02** | Le Launcher ne lit pas encore `settings.json.workspace` | issue Launcher dédiée, prérequis de recette |
 | **INS-L-03** | Réparation et ajout de composant exigent la distribution d'origine | documenté dans le guide |
 | **INS-L-04** | Pas de mise à jour différentielle : chaque mise à jour retélécharge la distribution | acceptable tant que le paquet reste sous le seuil produit ; les actifs facultatifs déjà en cache ne sont pas retéléchargés |
-| **INS-L-05** | Pas de signature Windows tant que le certificat n'est pas obtenu | release publique bloquée |
+| **INS-L-05** | Pas de signature Windows tant que le certificat n'est pas obtenu | release non bloquée : publication non signée avec avertissement SmartScreen documenté (`SIGNING_ENABLED`) |
 | **INS-L-06** | Copie de maintenance dans le répertoire logiciel | coût de taille mesuré à chaque release |
 | **INS-L-07** | Pas de rollback après redémarrage | hors périmètre V0.2 |
 | **INS-L-08** | Pas de mode machine | hors périmètre V0.2 |
@@ -597,3 +655,5 @@ Détail des scénarios : [`TESTING.md`](TESTING.md).
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Nouvelle architecture, vérifiée contre le dépôt |
+| 29 octobre 2026 | §18 : fichier de réponses détaillé, implémentation des modes non interactifs, renvoi vers `COMMANDES.md`, `--log` retiré, CLI strict | `HeadlessRunner` et `UnattendedResponses` existent ; le drapeau `--log` n'était pas appliqué |
+| 29 octobre 2026 | §4.3 (entrées épinglées, Authenticode avant hachage, archives), §19 (état réel de la CI), §20 (INS-L-11 révisé, INS-L-12, INS-L-05) | Plan d'alignement V1 (D3, ADR-010) et check-up documentaire du 29 octobre 2026 |

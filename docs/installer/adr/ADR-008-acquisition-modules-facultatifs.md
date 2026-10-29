@@ -2,8 +2,8 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [Accepted]
-**Dernière mise à jour** : 21 octobre 2026
-**Dépend de** : ADR-003, ADR-006, ADR-007
+**Dernière mise à jour** : 29 octobre 2026
+**Dépend de** : ADR-003, ADR-006, ADR-007, ADR-010
 **Source Monographie** : —
 **Remplace** : la version du 21 octobre 2026 qui incluait PRISM parmi les actifs téléchargés
 
@@ -85,6 +85,10 @@ composant de base coché par défaut mais désactivable.
 Aucune autre source n'est acceptée : pas d'API GitHub, pas de résolution de
 dernière version, pas de miroir tiers. L'URL est celle du tag exact de la
 release ; elle est stable et ne dépend d'aucun quota d'API.
+
+Les actifs recopiés depuis la release d'entrées `prism-v1.0.0` (LDK) pointent
+malgré tout vers le tag **`livex-v1.0.0`** courant : une installation ne consulte
+qu'une seule release, celle de la distribution qu'elle installe (ADR-010 §3).
 
 Règles :
 
@@ -241,3 +245,4 @@ devient nécessaire, ou si un module facultatif rejoint la base.
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Arbitrage : socle hors ligne, modules facultatifs acquis depuis les releases GitHub |
 | 21 octobre 2026 | Révision | PRISM est un composant de base embarqué ; l'acquisition ne concerne que PRISM-LDK, la documentation et SYNE-Mock |
+| 29 octobre 2026 | §2 : URL sur le tag `livex-v` courant, y compris pour les actifs recopiés d'une release d'entrées | Plan V1 (ADR-010) : un installateur ne consulte qu'une seule release, celle de sa distribution |

@@ -178,9 +178,31 @@ Depuis la racine du dépôt :
 dotnet run --project launcher/Launcher.App
 ```
 
+L’**installateur** se lance de la même manière. Le mode fictif déroule tout le
+parcours (accueil, langue, licence, composants, chemins, récapitulatif,
+progression, résultat), plus la maintenance et la désinstallation, **sans rien
+installer ni écrire sur le poste** :
+
+```bash
+# Assistant, mode normal
+dotnet run --project installer/Setup.App
+
+# Monde fictif : parcours complet sans installation
+dotnet run --project installer/Setup.App -- --demo
+
+# Variantes de scénario
+dotnet run --project installer/Setup.App -- --demo --demo-scenario=existing
+dotnet run --project installer/Setup.App -- --demo --demo-scenario=prism
+dotnet run --project installer/Setup.App -- --demo --demo-scenario=failure
+```
+
+Le `--` sépare les arguments de `dotnet run` de ceux de l’installateur. La
+référence complète des options et des codes de sortie est dans
+[`docs/installer/COMMANDES.md`](docs/installer/COMMANDES.md).
+
 Les prérequis, les commandes de compilation et les procédures de démarrage détaillées sont dans le [guide d’installation](docs/INSTALLATION.md).
 
-**Distribution.** Des installateurs pour **Windows et Linux** sont prévus pour installer LIVEX sans lancer les composants à la main : une application accessible depuis le menu du système, avec ses raccourcis. Ils ne sont pas encore disponibles ; leur livraison suivra la finalisation du packaging et des vérifications nécessaires.
+**Distribution.** Des installateurs pour **Windows et Linux** sont prévus pour installer LIVEX sans lancer les composants à la main : une application accessible depuis le menu du système, avec ses raccourcis. Le code de l’installateur existe et se lance depuis les sources (voir [Démarrage rapide](#démarrage-rapide)) ; sa distribution installable n’est pas encore publiée, elle suivra la finalisation du packaging et des vérifications nécessaires.
 
 ## Structure du dépôt
 
@@ -210,7 +232,7 @@ LIVEX/
 │   ├── echos/              # Documentation ECHOS
 │   ├── launcher/           # Spécification complète du Launcher
 │   ├── prism/              # Contrats et feuille de route PRISM
-│   └── installer/          # Spécification de l'installateur (à venir)
+│   └── installer/          # Installateur : code, tests et documentation
 └── LIVEX-Monographie...    # Référence scientifique et technique
 ```
 

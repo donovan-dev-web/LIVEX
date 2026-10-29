@@ -3,7 +3,7 @@
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT] — spécification de référence, en revue
 **Version** : 1.0
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`adr/`](adr/README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Remplace** : la spécification de base v0.2 (document de travail), archivée hors
 de la documentation de référence
@@ -243,7 +243,7 @@ release ; elles ne sont pas inventées ici.
 | :-- | :-- |
 | **INS-F-90** | `livex-setup --check` doit produire un diagnostic textuel stable, sans interface, et un code de sortie documenté. |
 | **INS-F-91** | `livex-setup --unattended --config <fichier>` doit installer avec des réponses fournies, sans interaction, et produire le même résultat que l'assistant. |
-| **INS-F-92** | `livex-setup --uninstall` doit permettre de choisir la portée par arguments ; sans argument, il ouvre l'assistant de désinstallation. |
+| **INS-F-92** | `livex-setup --uninstall` doit permettre de choisir la portée par arguments ; sans argument, il applique la portée A (logiciel et intégrations) sans interaction. Le choix des portées se fait dans l'assistant de maintenance. |
 | **INS-F-93** | `livex-setup --repair` doit vérifier l'installation et restaurer les fichiers disponibles dans la distribution d'origine. |
 | **INS-F-94** | `livex-setup --maintenance` doit ouvrir le parcours de maintenance d'une installation existante. |
 | **INS-F-95** | Les modes non interactifs doivent retourner : `0` succès, `1` erreur d'usage, `2` préflight en échec ou opération annulée, `3` échec d'installation, `4` désinstallation partielle, `5` installation déjà présente, `6` actif facultatif indisponible (réseau, 404, empreinte, `--no-network`). |
@@ -317,7 +317,7 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 ### 6.5 Intégrité, erreurs et journalisation
 
 - [ ] **INS-A-29** Un fichier de charge utile modifié fait échouer l'installation avant toute écriture.
-- [ ] **INS-A-30** Un manifeste dont la signature est invalide est refusé.
+- [ ] **INS-A-30** Un fichier dont le SHA-256 diverge du manifeste est refusé avant écriture. Aucune signature cryptographique du manifeste n'est exigée en V1 (ADR-007 §3 bis).
 - [ ] **INS-A-31** Une erreur simulée en cours d'installation laisse un état signalé, nettoie les fichiers créés et conserve les fichiers préexistants.
 - [ ] **INS-A-32** Le journal contient les étapes, opérations, erreurs et résultats de nettoyage, sans secret ni contenu d'expérience.
 - [ ] **INS-A-33** Le journal reste lisible après une interruption brutale du processus.
@@ -373,7 +373,7 @@ justification vérifiable.
 | :-- | :-- | :-- |
 | **INS-O-01** | Versions Linux minimales supportées (distribution, glibc) | avant P2 |
 | **INS-O-02** | Certificat Authenticode : OV ou Azure Trusted Signing, coût, automatisation | avant P5 |
-| **INS-O-03** | Autorité de signature GPG Linux et publication de la clé | avant P5 |
+| **INS-O-03** | Signature Linux : sans objet en V1 (sommes + attestations, ADR-007 §3 bis) ; rouverte si une signature centralisée est adoptée | clos en V1 |
 | **INS-O-04** | Politique de support des runtimes embarqués (durée, cadence de reconstruction) | avant P2 |
 | **INS-O-05** | Format de distribution Linux à long terme (`.deb`, Flatpak, AppImage) | après V0.2 |
 | **INS-O-06** | Faisabilité d'une variante de maintenance allégée (sans interface) | après mesure de taille |
@@ -390,10 +390,10 @@ justification vérifiable.
 | INS-F-10 à 19 | ADR-006 | manifeste de distribution, écran Composants | INS-A-08 à 10, 41 à 44 |
 | INS-F-20 à 29 | ADR-004, ADR-005 | `WorkspaceSettings`, `PathPolicy`, Launcher | INS-A-11 à 14, 26 |
 | INS-F-30 à 37 | ADR-001 | `Setup.App` (assistant) | INS-A-34 à 36 |
-| INS-F-40 à 46 | ADR-002, ADR-005 | `PlatformIntegration` | INS-A-05, 06, 27 |
-| INS-F-50 à 59 | ADR-005 | `InstallationStore`, `UpgradePlanner`, `WorkspaceSettings` | INS-A-15 à 21 |
+| INS-F-40 à 46 | ADR-002, ADR-005 | `IIntegration` (`WindowsIntegration`, `LinuxIntegration`) | INS-A-05, 06, 27 |
+| INS-F-50 à 59 | ADR-005 | `IInstallationStore`, `MaintenancePlanner`, `WorkspaceSettings` | INS-A-15 à 21 |
 | INS-F-60 à 69 | ADR-004, ADR-005 | `UninstallPlanner` | INS-A-22 à 28 |
-| INS-F-70 à 77 | ADR-007 | `PayloadVerifier`, `Journal` | INS-A-29 à 33 |
+| INS-F-70 à 77 | ADR-007 | `InstallerEngine` (empreintes à la copie), `Journal` | INS-A-29 à 33 |
 | INS-F-80 à 84 | ADR-001 | ressources FR/EN | INS-A-34, 35 |
 | INS-F-90 à 99 | ADR-001 | `CommandLine` | INS-A-37 à 40, 48 |
 | INS-F-100 à 106 | ADR-008 | `Acquisition` (téléchargement, cache, extraction) | INS-A-41, 45 à 49 |
@@ -405,3 +405,4 @@ justification vérifiable.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Remplace la spécification de base v0.2 comme référence |
+| 29 octobre 2026 | INS-F-92 aligné sur le code, INS-A-30 révisé (D3), traçabilité vers les classes réelles | Check-up documentaire et plan d'alignement V1 |
