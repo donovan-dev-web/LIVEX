@@ -57,7 +57,8 @@ export const PROJECT_STATE = {
 export const VERSION_TABLE = [
   { component: 'SYNE', version: '0.17.0', note: 'Moteur de simulation .NET' },
   { component: 'ECHOS', version: '0.1.0', note: 'Paquet Python (observation, API headless)' },
-  { component: 'PRISM', version: '0.x', note: 'Projet Unreal et plugin PRISM-LDK' },
+  { component: 'PRISM', version: '0.x', note: 'Projet Unreal de représentation stylisée par défaut, construit sur PRISM-LDK (hors périmètre V0.2)' },
+  { component: 'PRISM-LDK', version: '0.1.0', note: 'Cœur de la représentation 3D : plugin Unreal (LIVEX Development Kit) traduisant les données SYNE' },
   { component: 'Launcher', version: '0.1.0', note: 'Application de bureau Avalonia' },
 ] as const;
 
@@ -81,6 +82,7 @@ export const PROJECT_STATE_EN = {
 export const VERSION_TABLE_EN = [
   { component: 'SYNE', version: '0.17.0', note: '.NET simulation engine' },
   { component: 'ECHOS', version: '0.1.0', note: 'Python package (observation, headless API)' },
-  { component: 'PRISM', version: '0.x', note: 'Unreal project and PRISM-LDK plugin' },
+  { component: 'PRISM', version: '0.x', note: 'Default stylised Unreal representation project, built on PRISM-LDK (out of scope for V0.2)' },
+  { component: 'PRISM-LDK', version: '0.1.0', note: 'Core of 3D representation: Unreal plugin (LIVEX Development Kit) translating SYNE data' },
   { component: 'Launcher', version: '0.1.0', note: 'Avalonia desktop application' },
 ] as const;

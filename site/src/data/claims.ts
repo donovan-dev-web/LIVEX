@@ -58,4 +58,11 @@ export const CLAIMS: Claim[] = [
     source: 'docs/governance/LIVEX-STATUS.md §1',
     date: '2026-10-19',
   },
+  {
+    id: 'prism-ldk-package',
+    statement: "PRISM-LDK (LIVEX Development Kit) est le cœur de la représentation 3D : plugin Unreal qui traduit les données logiques de SYNE en représentation graphique 3D, réalisé et packagé en version 0.1.0. PRISM en est l'implémentation stylisée par défaut.",
+    status: 'vérifiée',
+    source: 'Commit #596 - feat(prism): LDK Validate V0.1.0 Plugin Package ; docs/prism/PRISM-LDK_Guide_Blueprint.md',
+    date: '2026-10-29',
+  },
 ];
