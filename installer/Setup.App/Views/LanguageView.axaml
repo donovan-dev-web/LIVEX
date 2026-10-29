@@ -1,0 +1,40 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.LanguageView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="18" MaxWidth="640" HorizontalAlignment="Left">
+    <TextBlock Text="{l:Tr languageIntro}" Classes="muted" />
+
+    <Border Classes="card" Padding="18">
+      <RadioButton GroupName="language" IsChecked="{Binding IsFrench}"
+                  AutomationProperties.Name="{l:Tr languageFr}">
+        <StackPanel Spacing="3" Margin="4,0,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{l:Tr languageFr}" Classes="h2" />
+            <Border Classes="inset" Padding="6,1" CornerRadius="4">
+              <TextBlock Text="FR" FontSize="10" />
+            </Border>
+          </StackPanel>
+          <TextBlock Text="{l:Tr languageFrDesc}" Classes="muted" />
+        </StackPanel>
+      </RadioButton>
+    </Border>
+
+    <Border Classes="card" Padding="18">
+      <RadioButton GroupName="language" IsChecked="{Binding IsEnglish}"
+                  AutomationProperties.Name="{l:Tr languageEn}">
+        <StackPanel Spacing="3" Margin="4,0,0,0">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="{l:Tr languageEn}" Classes="h2" />
+            <Border Classes="inset" Padding="6,1" CornerRadius="4">
+              <TextBlock Text="EN" FontSize="10" />
+            </Border>
+          </StackPanel>
+          <TextBlock Text="{l:Tr languageEnDesc}" Classes="muted" />
+        </StackPanel>
+      </RadioButton>
+    </Border>
+
+    <TextBlock Text="{l:Tr languageNote}" Classes="tiny" />
+  </StackPanel>
+</UserControl>

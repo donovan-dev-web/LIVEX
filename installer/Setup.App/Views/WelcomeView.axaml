@@ -1,0 +1,94 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.WelcomeView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="20" MaxWidth="780" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+    <Grid ColumnDefinitions="Auto,*">
+      <Image Width="104" Height="104" VerticalAlignment="Top"
+             Source="avares://livex-setup/Assets/livex-app-icon.png" />
+      <StackPanel Grid.Column="1" Margin="22,4,0,0" Spacing="10">
+        <TextBlock Text="{l:Tr welcomeTitle}" Classes="h1" />
+        <TextBlock Text="{l:Tr welcomeLead}" Classes="muted" MaxWidth="560" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Border Classes="inset" Padding="8,3" CornerRadius="6">
+            <TextBlock Text="{Binding Manifest.Version, StringFormat={}LIVEX {0}}" Classes="tiny" />
+          </Border>
+          <Border Classes="inset" Padding="8,3" CornerRadius="6">
+            <TextBlock Text="{Binding Manifest.Platform}" Classes="tiny" />
+          </Border>
+          <Border Classes="inset" Padding="8,3" CornerRadius="6" IsVisible="{Binding IsDemo}">
+            <TextBlock Text="{l:Tr demoBadge}" Classes="tiny" Foreground="{StaticResource BrandViolet}" />
+          </Border>
+        </StackPanel>
+      </StackPanel>
+    </Grid>
+
+    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+      <Border Grid.Column="0" Classes="card" Padding="14">
+        <StackPanel Spacing="6">
+          <TextBlock Text="▣" FontSize="18" Foreground="{StaticResource BrandGold}" />
+          <TextBlock Text="{l:Tr welcomeFeature1Title}" Classes="h3" />
+          <TextBlock Text="{l:Tr welcomeFeature1Body}" Classes="muted" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" Classes="card" Padding="14">
+        <StackPanel Spacing="6">
+          <TextBlock Text="◈" FontSize="18" Foreground="{StaticResource BrandViolet}" />
+          <TextBlock Text="{l:Tr welcomeFeature2Title}" Classes="h3" />
+          <TextBlock Text="{l:Tr welcomeFeature2Body}" Classes="muted" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="2" Classes="card" Padding="14">
+        <StackPanel Spacing="6">
+          <TextBlock Text="✓" FontSize="18" Foreground="{StaticResource BrandSuccess}" />
+          <TextBlock Text="{l:Tr welcomeFeature3Title}" Classes="h3" />
+          <TextBlock Text="{l:Tr welcomeFeature3Body}" Classes="muted" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- Installation existante -->
+    <Border Classes="card" IsVisible="{Binding HasExistingInstallation}"
+            BorderBrush="#55E2A44A" Background="#1FE2A44A" Padding="16">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{l:Tr welcomeDetectedTitle}" Classes="h3" Foreground="{StaticResource BrandGold}" />
+          <TextBlock Text="{Binding DetectedInstallText}" Classes="muted" />
+          <TextBlock Text="{l:Tr welcomeMaintainBody}" Classes="tiny" />
+        </StackPanel>
+        <Button Grid.Column="1" Content="{l:Tr btnMaintenance}" Classes="primary"
+                Command="{Binding OpenMaintenanceCommand}" VerticalAlignment="Center"
+                AutomationProperties.Name="{l:Tr btnMaintenance}" />
+      </Grid>
+    </Border>
+
+    <!-- Bascule vers le monde fictif (distribution réelle chargée) -->
+    <Border Classes="card" IsVisible="{Binding CanEnableDemo}"
+            BorderBrush="#558B7BE8" Background="#1F8B7BE8" Padding="16">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{l:Tr demoEnableTitle}" Classes="h3" />
+          <TextBlock Text="{l:Tr demoEnableBody}" Classes="muted" />
+        </StackPanel>
+        <Button Grid.Column="1" Content="{l:Tr demoEnableAction}"
+                Command="{Binding EnableDemoCommand}"
+                VerticalAlignment="Center" Margin="16,0,0,0"
+                AutomationProperties.Name="{l:Tr demoEnableAction}" />
+      </Grid>
+    </Border>
+
+    <!-- Monde fictif -->
+    <Border Classes="card" IsVisible="{Binding IsDemo}" Padding="16">
+      <StackPanel Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="◈" Foreground="{StaticResource BrandViolet}" />
+          <TextBlock Text="{l:Tr demoWorldTitle}" Classes="h3" />
+        </StackPanel>
+        <TextBlock Text="{l:Tr demoWorldBody}" Classes="muted" />
+        <TextBlock Text="{l:Tr demoHint}" Classes="tiny" />
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="{l:Tr welcomeHint}" Classes="h3" Foreground="{StaticResource BrandGold}" />
+  </StackPanel>
+</UserControl>

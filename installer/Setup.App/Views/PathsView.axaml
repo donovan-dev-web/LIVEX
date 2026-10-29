@@ -1,0 +1,63 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.PathsView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="18" MaxWidth="760" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+    <TextBlock Text="{l:Tr pathsIntro}" Classes="muted" />
+
+    <StackPanel Spacing="6" IsVisible="{Binding IsInstallPathVisible}">
+      <TextBlock Text="{l:Tr pathsInstallDir}" Classes="h3" />
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Text="{Binding InstallDir}" AutomationProperties.Name="{l:Tr pathsInstallDir}" />
+        <Button Grid.Column="1" Content="{l:Tr btnBrowse}" Margin="8,0,0,0"
+                Command="{Binding BrowseInstallDirCommand}"
+                AutomationProperties.Name="{l:Tr btnBrowse}" />
+      </Grid>
+      <TextBlock Text="{l:Tr pathsInstallHint}" Classes="tiny" />
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="{l:Tr pathsWorkspace}" Classes="h3" />
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBox Text="{Binding WorkspaceDir}" AutomationProperties.Name="{l:Tr pathsWorkspace}" />
+        <Button Grid.Column="1" Content="{l:Tr btnBrowse}" Margin="8,0,0,0"
+                Command="{Binding BrowseWorkspaceDirCommand}"
+                AutomationProperties.Name="{l:Tr btnBrowse}" />
+      </Grid>
+      <TextBlock Text="{l:Tr pathsWorkspaceHint}" Classes="tiny" />
+    </StackPanel>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="{l:Tr pathsDataRoot}" Classes="h3" />
+      <Border Classes="inset" Padding="10,8">
+        <TextBlock Text="{Binding DataRoot}" Classes="mono" Foreground="{DynamicResource BrandTextMuted}" />
+      </Border>
+      <TextBlock Text="{l:Tr pathsDataRootHint}" Classes="tiny" />
+    </StackPanel>
+
+    <Border Classes="card" Padding="12" BorderBrush="#55E5646B" Background="#1FE5646B"
+            IsVisible="{Binding HasPathError}">
+      <TextBlock Text="{Binding PathError}" Foreground="{StaticResource BrandDanger}" />
+    </Border>
+
+    <Grid ColumnDefinitions="*,Auto">
+      <TextBlock Text="{l:Tr pathsValid}" Classes="tiny" Foreground="{StaticResource BrandSuccess}"
+                 IsVisible="{Binding IsPathsValid}" VerticalAlignment="Center" />
+      <TextBlock Grid.Column="1" Text="{Binding DiskAvailableText}" Classes="tiny" HorizontalAlignment="Right" />
+    </Grid>
+
+    <Border Classes="inset" Padding="14" IsVisible="{Binding IsInstallPathVisible}">
+      <StackPanel Spacing="8">
+        <CheckBox IsChecked="{Binding DesktopShortcut}" Content="{l:Tr pathsShortcut}"
+                  AutomationProperties.Name="{l:Tr pathsShortcut}" />
+        <CheckBox IsChecked="{Binding LaunchAfterInstall}" Content="{l:Tr pathsLaunchAfter}"
+                  AutomationProperties.Name="{l:Tr pathsLaunchAfter}" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="card" Padding="12" BorderBrush="#558B7BE8" Background="#1F8B7BE8"
+            IsVisible="{Binding IsWorkspaceChange}">
+      <TextBlock Text="{l:Tr maintenanceWorkspaceBody}" Classes="muted" />
+    </Border>
+  </StackPanel>
+</UserControl>

@@ -1,0 +1,65 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.ResultView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="18" MaxWidth="720" HorizontalAlignment="Stretch" Margin="0,8,0,20">
+    <StackPanel Orientation="Horizontal" Spacing="16">
+      <Border Width="56" Height="56" CornerRadius="28" Background="#254FBF8B" IsVisible="{Binding IsSuccess}">
+        <TextBlock Text="✓" FontSize="26" FontWeight="Bold" Foreground="{StaticResource BrandSuccess}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+      <Border Width="56" Height="56" CornerRadius="28" Background="#25E8B44A" IsVisible="{Binding IsWarning}">
+        <TextBlock Text="!" FontSize="26" FontWeight="Bold" Foreground="{StaticResource BrandWarning}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+      <Border Width="56" Height="56" CornerRadius="28" Background="#25E5646B" IsVisible="{Binding IsFailure}">
+        <TextBlock Text="✕" FontSize="24" FontWeight="Bold" Foreground="{StaticResource BrandDanger}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+      <StackPanel VerticalAlignment="Center" Spacing="4">
+        <TextBlock Text="{Binding ResultTitle}" Classes="h1" FontSize="22" />
+        <TextBlock Text="{Binding ResultBody}" Classes="muted" MaxWidth="600" />
+      </StackPanel>
+    </StackPanel>
+
+    <Border Classes="card" Padding="12" BorderBrush="#55E8B44A" Background="#1FE8B44A"
+            IsVisible="{Binding HasResultWarnings}">
+      <StackPanel Spacing="6">
+        <TextBlock Text="{Binding ResultWarningsTitle}" Classes="h3" />
+        <ItemsControl ItemsSource="{Binding ResultWarnings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" Classes="muted" FontSize="12" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="inset" Padding="12" IsVisible="{Binding HasLog}">
+      <TextBlock Text="{Binding ResultLog}" Classes="mono" TextWrapping="Wrap"
+                 Foreground="{DynamicResource BrandTextMuted}" />
+    </Border>
+
+    <Border Classes="inset" Padding="12" IsVisible="{Binding HasResiduals}">
+      <TextBlock Text="{Binding ResultResiduals}" Classes="mono" TextWrapping="Wrap"
+                 Foreground="{StaticResource BrandDanger}" />
+    </Border>
+
+    <Border Classes="card" Padding="14" BorderBrush="#558B7BE8" Background="#1F8B7BE8"
+            IsVisible="{Binding IsDemo}">
+      <TextBlock Text="{l:Tr resultDemoBody}" Classes="muted" />
+    </Border>
+
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <Button Content="{l:Tr btnOpenFolder}" Command="{Binding OpenFolderCommand}"
+              AutomationProperties.Name="{l:Tr btnOpenFolder}"
+              IsVisible="{Binding ShowOpenFolder}" />
+      <Button Content="{l:Tr btnLaunch}" Classes="primary" Command="{Binding LaunchCommand}"
+              AutomationProperties.Name="{l:Tr btnLaunch}" IsDefault="True"
+              IsVisible="{Binding ShowLaunch}" />
+      <Button Content="{l:Tr btnRetry}" Classes="ghost" Command="{Binding RetryCommand}"
+              AutomationProperties.Name="{l:Tr btnRetry}" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>

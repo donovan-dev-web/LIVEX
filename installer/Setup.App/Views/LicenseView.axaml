@@ -1,0 +1,28 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.LicenseView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="16" MaxWidth="760" HorizontalAlignment="Stretch">
+    <TextBlock Text="{l:Tr licenseIntro}" Classes="muted" />
+
+    <Border Classes="inset" Padding="0" Height="300">
+      <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="14">
+        <TextBlock Text="{Binding LicenseText}" Classes="mono" TextWrapping="Wrap" />
+      </ScrollViewer>
+    </Border>
+
+    <Expander Header="{l:Tr licenseThirdParty}" HorizontalAlignment="Stretch">
+      <Border Classes="inset" Margin="0,8,0,0">
+        <TextBlock Text="{l:Tr licenseThirdPartyBody}" Classes="muted" />
+      </Border>
+    </Expander>
+
+    <Border Classes="card" Padding="16" BorderBrush="#55E2A44A" Background="#1FE2A44A">
+      <CheckBox IsChecked="{Binding AcceptLicense}" Content="{l:Tr licenseAccept}" FontWeight="Medium"
+                AutomationProperties.Name="{l:Tr licenseAccept}" />
+    </Border>
+
+    <TextBlock Text="{l:Tr licenseRequired}" Classes="tiny" Foreground="{StaticResource BrandWarning}"
+               IsVisible="{Binding AcceptLicenseError}" />
+  </StackPanel>
+</UserControl>
