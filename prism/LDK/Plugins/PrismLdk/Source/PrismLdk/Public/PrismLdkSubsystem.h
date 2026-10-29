@@ -6,6 +6,8 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Containers/Queue.h"
+#include "Dom/JsonObject.h"
 #include "Tickable.h"
 #include "IWebSocket.h"
 #include "PrismLdkTypes.h"
@@ -81,7 +83,7 @@ public:
 
 	/**
 	 * Fixe le jeton de session présenté à SYNE sur les commandes de contrôle
-	 * (`POST /api/control/*`). Robuste à une intégration qui ne dépendrait pas
+	 * (`POST /api/control/...`). Robuste à une intégration qui ne dépendrait pas
 	 * de `LIVEX_SESSION_TOKEN` : appelée explicitement, elle prime sur la
 	 * variable d'environnement. Un jeton vide ⇒ plus aucun header `Authorization`
 	 * (les mutations SYNE sont alors refusées par `401`).

@@ -620,6 +620,9 @@ void UPrismLdkSubsystem::ParseWorld(const TSharedPtr<FJsonObject>& Object, FPris
 				Resource.Position.X = PrismJson::Number(R, TEXT("x"));
 				Resource.Position.Y = PrismJson::Number(R, TEXT("y"));
 				Resource.bHasPosition = true;
+				// Le contrat world_initialized publie x/y en indices de cellule
+				// pour WorldResource. En revanche, les positions continues des
+				// ressources dans un snapshot sont dans position{x,y}.
 				Resource.bPositionIsCellIndex = true;
 			}
 			Out.Resources.Add(Resource);
@@ -695,8 +698,11 @@ void UPrismLdkSubsystem::ParseSnapshot(const TSharedPtr<FJsonObject>& Object, FP
 			for (const TSharedPtr<FJsonValue>& Item : *Trusts) { const TSharedPtr<FJsonObject> T = Item->AsObject(); FPrismSyneTrust Trust; Trust.PeerId = PrismJson::String(T, TEXT("peerId")); Trust.Trust = PrismJson::Number(T, TEXT("trust")); Agent.Trust.Add(Trust); }
 		Out.Agents.Add(Agent);
 	}
+	// Les ressources d'un snapshot sont des stocks agrégés (type/quantité),
+	// pas les gisements spatiaux de world_initialized. N'interpréter aucune
+	// coordonnée hypothétique ici : le contrat observabilité ne les fournit pas.
 	if (const auto* Resources = PrismJson::Array(Object, TEXT("resources")))
-	for (const TSharedPtr<FJsonValue>& V : *Resources) { const TSharedPtr<FJsonObject> R = V->AsObject(); FPrismSyneResource Resource; Resource.Id = PrismJson::String(R, TEXT("id")); Resource.Type = PrismJson::String(R, TEXT("type")); Resource.TypeEnum = PrismJson::ResourceType(Resource.Type); Resource.Quantity = PrismJson::Number(R, TEXT("quantity")); const TSharedPtr<FJsonObject> Position = PrismJson::Object(R, TEXT("position")); if (Position.IsValid()) { Resource.Position = PrismJson::Vector(Position); Resource.bHasPosition = true; } else if (R->HasField(TEXT("x")) && R->HasField(TEXT("y"))) { Resource.Position.X = PrismJson::Number(R, TEXT("x")); Resource.Position.Y = PrismJson::Number(R, TEXT("y")); Resource.bHasPosition = true; } Out.Resources.Add(Resource); }
+	for (const TSharedPtr<FJsonValue>& V : *Resources) { const TSharedPtr<FJsonObject> R = V->AsObject(); FPrismSyneResource Resource; Resource.Id = PrismJson::String(R, TEXT("id")); Resource.Type = PrismJson::String(R, TEXT("type")); Resource.TypeEnum = PrismJson::ResourceType(Resource.Type); Resource.Quantity = PrismJson::Number(R, TEXT("quantity")); Out.Resources.Add(Resource); }
 	if (const auto* Obstacles = PrismJson::Array(Object, TEXT("obstacles")))
 	for (const TSharedPtr<FJsonValue>& V : *Obstacles) { const TSharedPtr<FJsonObject> O = V->AsObject(); FPrismSyneObstacle Obstacle; Obstacle.Id = PrismJson::String(O, TEXT("id")); Obstacle.Position = PrismJson::Vector(PrismJson::Object(O, TEXT("position"))); if (O->HasField(TEXT("x"))) Obstacle.Position.X = PrismJson::Number(O, TEXT("x")); if (O->HasField(TEXT("y"))) Obstacle.Position.Y = PrismJson::Number(O, TEXT("y")); Obstacle.Radius = PrismJson::Number(O, TEXT("radius")); Out.Obstacles.Add(Obstacle); }
 	if (const auto* Groups = PrismJson::Array(Object, TEXT("groups")))

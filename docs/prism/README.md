@@ -66,3 +66,13 @@ d'intégration Blueprint et les conventions de projection du monde.
 Les spécifications visuelles décrivent des objectifs de rendu, pas des
 classes Unreal imposées ni des fonctionnalités générées automatiquement par
 le plugin.
+
+## Lancement
+
+Commande avec Token launcher visible pour connection SYNE en DEV : 
+
+   ```powershell
+   cd D:\LIVEX
+   $env:LIVEX_SESSION_TOKEN_DISPLAY = "1"
+   dotnet run --project .\launcher\Launcher.App\
+   ```
