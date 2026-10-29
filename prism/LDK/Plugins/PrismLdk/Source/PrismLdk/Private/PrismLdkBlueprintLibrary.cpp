@@ -8,6 +8,7 @@
 #include "PrismLdkWorldRegistry.h"
 
 #include "Engine/GameInstance.h"
+#include "Engine/World.h"
 
 namespace
 {
@@ -71,7 +72,7 @@ UPrismLdkPCGData* UPrismLdkBlueprintLibrary::CreatePCGDataFromWorldDescription(c
 {
 	UPrismLdkWorldRegistryBase* Registry = GetPrismLdkWorldRegistry(WorldContextObject);
 	if (!Registry) return nullptr;
-	UPrismLdkPCGData* Data = NewObject<UPrismLdkPCGData>();
+	UPrismLdkPCGData* Data = NewObject<UPrismLdkPCGData>(const_cast<UObject*>(WorldContextObject));
 	if (!Data) return nullptr;
 	Data->BuildFromDescription(WorldDescription, Registry->GetStats());
 	return Data;
@@ -97,11 +98,68 @@ void UPrismLdkBlueprintLibrary::GetObstaclesUnreal(const UObject* WorldContextOb
 TArray<FIntPoint> UPrismLdkBlueprintLibrary::GetWaterResourceCells(const UObject* WorldContextObject, const FPrismSyneWorldDescription& WorldDescription)
 {
 	TArray<FIntPoint> Result;
+
+	UPrismLdkWorldRegistryBase* Registry = GetPrismLdkWorldRegistry(WorldContextObject);
+	const FPrismLdkWorldStats RegistryStats = Registry
+		? Registry->GetStats()
+		: FPrismLdkWorldStats();
+	const double CellSize = Registry ? RegistryStats.CellSize : WorldDescription.CellSize;
+	const int32 CellCountX = WorldDescription.CellCountX > 0
+		? WorldDescription.CellCountX
+		: (Registry ? RegistryStats.CellCountX : 0);
+	const int32 CellCountY = WorldDescription.CellCountY > 0
+		? WorldDescription.CellCountY
+		: (Registry ? RegistryStats.CellCountY : 0);
+	const int64 CellTotal64 = static_cast<int64>(CellCountX) * static_cast<int64>(CellCountY);
+	if (!FMath::IsFinite(CellSize) || CellSize <= 0.0 || CellCountX <= 0 || CellCountY <= 0
+		|| CellTotal64 <= 0 || CellTotal64 > TNumericLimits<int32>::Max())
+	{
+		return Result;
+	}
+
 	for (const auto& Res : WorldDescription.Resources)
 	{
-		if (Res.TypeEnum == EPrismSyneResourceType::Water && Res.bHasPosition)
-			Result.Add(FIntPoint((int32)Res.Position.X, (int32)Res.Position.Y));
+		if (Res.TypeEnum != EPrismSyneResourceType::Water || !Res.bHasPosition)
+		{
+			continue;
+		}
+
+		if (!FMath::IsFinite(Res.Position.X) || !FMath::IsFinite(Res.Position.Y))
+		{
+			continue;
+		}
+
+		FIntPoint Cell;
+		if (Res.bPositionIsCellIndex)
+		{
+			if (Res.Position.X < 0.0 || Res.Position.Y < 0.0
+				|| Res.Position.X >= CellCountX || Res.Position.Y >= CellCountY)
+			{
+				continue;
+			}
+			const int32 X = static_cast<int32>(Res.Position.X);
+			const int32 Y = static_cast<int32>(Res.Position.Y);
+			if (static_cast<double>(X) != Res.Position.X || static_cast<double>(Y) != Res.Position.Y)
+			{
+				continue;
+			}
+			Cell = FIntPoint(X, Y);
+		}
+		else
+		{
+			const double CellX = Res.Position.X / CellSize;
+			const double CellY = Res.Position.Y / CellSize;
+			if (!FMath::IsFinite(CellX) || !FMath::IsFinite(CellY)
+				|| CellX < 0.0 || CellY < 0.0 || CellX >= CellCountX || CellY >= CellCountY)
+			{
+				continue;
+			}
+			Cell = FIntPoint(FMath::FloorToInt32(CellX), FMath::FloorToInt32(CellY));
+		}
+
+		Result.Add(Cell);
 	}
+
 	return Result;
 }
 
@@ -122,5 +180,5 @@ FBox UPrismLdkBlueprintLibrary::GetPlayableBoundsUnreal(const UObject* WorldCont
 	if (!Stats.bScaleValid || Stats.CellCountX <= 0 || Stats.CellCountY <= 0) return FBox(ForceInit);
 	const double SizeX = Stats.CellCountX * Stats.TileSizeUu;
 	const double SizeY = Stats.CellCountY * Stats.TileSizeUu;
-	return FBox(FVector(0,0,-100), FVector(SizeX,SizeY,5000));
+	return FBox(FVector(0,0,-10000), FVector(SizeX,SizeY,100000));
 }

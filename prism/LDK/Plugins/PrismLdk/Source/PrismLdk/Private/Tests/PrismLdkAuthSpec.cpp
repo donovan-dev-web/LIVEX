@@ -7,6 +7,8 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "Engine/GameInstance.h"
+#include "UObject/UObjectGlobals.h"
+#include "UObject/Package.h"
 #include "PrismLdkSubsystem.h"
 #include "PrismLdkTypes.h"
 
@@ -24,7 +26,7 @@ namespace
 
 /**
  * Verrouille la forme du header `Authorization` que PRISM, en **client**,
- * présente à SYNE sur les commandes de contrôle (`POST /api/control/*`).
+ * présente à SYNE sur les commandes de contrôle (`POST /api/control/...`).
  *
  * C'est le chaînon qui manquait : sans jeton, SYNE répond `401 unauthorized`
  * et le `prepare` échoue — alors que `syne-mock`, plus permissif, n'exige pas

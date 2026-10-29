@@ -31,6 +31,8 @@ public:
 	// Données brutes utiles au PCG
 	UPROPERTY(BlueprintReadOnly, Category="Prism|PCG") TArray<FPrismSyneWorldObstacle> Obstacles;
 	UPROPERTY(BlueprintReadOnly, Category="Prism|PCG") TArray<FPrismSyneWorldCell> Cells;
+	/** Masque aplati, index = Y * CellCountX + X ; 1 = marchable, 0 = bloquee. */
+	UPROPERTY(BlueprintReadOnly, Category="Prism|PCG") TArray<uint8> CellWalkable;
 	UPROPERTY(BlueprintReadOnly, Category="Prism|PCG") TArray<FPrismSyneResource> Resources;
 	UPROPERTY(BlueprintReadOnly, Category="Prism|PCG") TArray<FPrismSyneWorldRegion> Regions;
 

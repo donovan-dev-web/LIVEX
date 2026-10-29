@@ -9,6 +9,8 @@
 #include "PrismLdkSubsystem.h"
 
 #include "Engine/GameInstance.h"
+#include "UObject/UObjectGlobals.h"
+#include "UObject/Package.h"
 
 /**
  * Alignement PRISM / SYNE / syne-mock (contrat d'observabilité 0.5.0, moteur
@@ -51,7 +53,11 @@ namespace
 			"agents": [],
 			"cells": [],
 			"obstacles": [],
-			"resources": [],
+			"resources": [
+				{"id":"resource-water-1","kind":"water","x":1,"y":1,"quantity":100},
+				{"id":"resource-food-1","kind":"food","x":1.5,"y":1.0,"quantity":100},
+				{"id":"resource-water-2","kind":"water","position":{"x":48.0,"y":48.0},"quantity":100}
+			],
 			"territories": [],
 			"groups": []
 		}
@@ -75,7 +81,10 @@ namespace
 		"season": "spring",
 		"seasonIndex": 0,
 		"agents": [],
-		"resources": [],
+		"resources": [
+			{"id":"global-water","type":"water","quantity":100},
+			{"id":"snapshot-resource","type":"water","quantity":10}
+		],
 		"obstacles": [],
 		"territories": [],
 		"books": [],
@@ -139,6 +148,30 @@ void FPrismLdkContractSpec::Define()
 			TestEqual(TEXT("pas temporel du monde"), World.SimulatedSecondsPerTick, 5);
 			TestTrue(TEXT("échelle métrique"), FMath::IsNearlyEqual(World.MetersPerUnit, 1.0));
 			TestTrue(TEXT("largeur du monde"), FMath::IsNearlyEqual(World.Width, 2240.0));
+			TestEqual(TEXT("ressources de description"), World.Resources.Num(), 3);
+			if (World.Resources.Num() == 3)
+			{
+				TestTrue(TEXT("x/y de world_initialized sont des indices de cellule"), World.Resources[0].bPositionIsCellIndex);
+				TestEqual(TEXT("indice de cellule X"), World.Resources[0].Position.X, 1.0);
+				TestTrue(TEXT("indice de cellule fractionnaire conservé pour validation"), World.Resources[1].bPositionIsCellIndex);
+				TestFalse(TEXT("position imbriquée non interprétée comme indice"), World.Resources[2].bPositionIsCellIndex);
+				TestEqual(TEXT("position world continue X"), World.Resources[2].Position.X, 48.0);
+			}
+
+			// Le mock et SYNE publient aussi la description sur les snapshots de
+			// monde initialisés. Toute ressource de snapshot est un stock global :
+			// aucune n'a de position tant que le contrat ne l'ajoute pas.
+			UPrismLdkSubsystem* SnapshotSubsystem = MakeSubsystem();
+			SnapshotSubsystem->DebugParseMessage(WorldInitializedFrame);
+			SnapshotSubsystem->DebugParseMessage(SnapshotFrame);
+			FPrismSyneWorldSnapshot Snapshot;
+			TestTrue(TEXT("snapshot du contrat reçu"), SnapshotSubsystem->GetLatestSnapshot(Snapshot));
+			TestEqual(TEXT("deux stocks globaux"), Snapshot.Resources.Num(), 2);
+			for (const FPrismSyneResource& Resource : Snapshot.Resources)
+			{
+				TestFalse(FString::Printf(TEXT("stock global sans position: %s"), *Resource.Type), Resource.bHasPosition);
+				TestFalse(FString::Printf(TEXT("stock global non marqué comme indice: %s"), *Resource.Type), Resource.bPositionIsCellIndex);
+			}
 		});
 	});
 
@@ -155,6 +188,15 @@ void FPrismLdkContractSpec::Define()
 			TestEqual(TEXT("tick"), Snapshot.Tick, static_cast<int64>(42));
 			TestTrue(TEXT("minutes simulées (plancher)"), FMath::IsNearlyEqual(Snapshot.SimulatedTimeMinutes, 3.0));
 			TestEqual(TEXT("secondes simulées exactes"), Snapshot.SimulatedTimeSeconds, static_cast<int64>(210));
+			TestEqual(TEXT("deux ressources de snapshot"), Snapshot.Resources.Num(), 2);
+			if (Snapshot.Resources.Num() == 2)
+			{
+				for (const FPrismSyneResource& Resource : Snapshot.Resources)
+				{
+					TestFalse(FString::Printf(TEXT("stock global sans position: %s"), *Resource.Type), Resource.bHasPosition);
+					TestFalse(FString::Printf(TEXT("stock global non marqué comme indice: %s"), *Resource.Type), Resource.bPositionIsCellIndex);
+				}
+			}
 			TestEqual(TEXT("un groupe"), Snapshot.Groups.Num(), 1);
 			if (Snapshot.Groups.Num() != 1)
 			{

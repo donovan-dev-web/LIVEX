@@ -18,8 +18,8 @@ public class PrismLdk : ModuleRules
 			// UBT avertit sinon, et la r�solution �choue sur un syst�me sensible �
 			// la casse (build Linux du Launcher).
 			"HTTPServer",
-			// PCG pour le mode "Monde Virtuel" (hand-painted / g�n�ration runtime)
-			"PCG",
+			// Navigation runtime (volumes NavArea_Null et rebuild du NavMesh).
+			"NavigationSystem",
 			// Maillage procedural runtime (terrain de l'ile, lacs) : le
 			// heightfield est construit en C++, pas en Blueprint.
 			"ProceduralMeshComponent"
