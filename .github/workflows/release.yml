@@ -10,6 +10,11 @@ on:
       - "echos-v*"
       - "prism-v*"
       - "livex-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag à publier (ex. livex-v1.0.0)"
+        required: true
 
 env:
   DOTNET_VERSION: "10.0.x"
