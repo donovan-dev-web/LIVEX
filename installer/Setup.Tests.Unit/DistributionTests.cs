@@ -147,7 +147,7 @@ public class ManifestValidatorTests
         new(1, "LIVEX", "1.0.0", "dev", "core", "win-x64", DateTimeOffset.UtcNow,
             components,
             components.SelectMany(c => c.Files).ToArray(),
-            new SignatureDescriptor("Ed25519", "k", "v"));
+            null);
 
     private static ComponentDescriptor Component(string id, bool mandatory, IReadOnlyList<string>? requires = null) =>
         new(id, "1.0.0", mandatory, id, id, "d", "d", "GPL-3.0-or-later",

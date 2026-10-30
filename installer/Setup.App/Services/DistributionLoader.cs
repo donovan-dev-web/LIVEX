@@ -6,8 +6,8 @@ namespace Setup.App.Services;
 
 /// <summary>
 /// Lit le manifeste de distribution livré à côté de <c>livex-setup</c>.
-/// Aucune vérification de signature ici : c'est le rôle du préflight, qui doit
-/// refuser une distribution non signée avant toute écriture.
+/// Aucune vérification cryptographique du manifeste ici (optionnelle en V1) : la
+/// confiance repose sur les SHA-256 et les attestations GitHub.
 /// </summary>
 public static class DistributionLoader
 {
@@ -50,9 +50,9 @@ public static class DistributionLoader
                 return false;
             }
 
-            if (manifest.Files is null || manifest.Signature is null)
+            if (manifest.Files is null)
             {
-                error = "Le manifeste est incomplet (files ou signature).";
+                error = "Le manifeste est incomplet (files).";
                 return false;
             }
 

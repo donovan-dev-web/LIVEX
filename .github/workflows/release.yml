@@ -10,6 +10,11 @@ on:
       - "echos-v*"
       - "prism-v*"
       - "livex-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag à publier (ex. livex-v1.0.0)"
+        required: true
 
 env:
   DOTNET_VERSION: "10.0.x"
@@ -25,14 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --- SYNE (.NET) ---
       - name: Build & tests SYNE
         if: hashFiles('syne/global.json') != ''
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           global-json-file: syne/global.json
-      - name: dotnet restore/build/test
+      - name: dotnet restore/build/test (SYNE)
         if: hashFiles('syne/global.json') != ''
         working-directory: syne
         run: |
@@ -40,8 +44,7 @@ jobs:
           dotnet build --no-restore --configuration Release --warnaserror
           dotnet test --no-build --configuration Release
 
-      # --- ECHOS (Python, API seule : aucune interface, ADR-007) ---
-      - name: Setup Python
+      - name: Setup Python (ECHOS)
         if: hashFiles('echos/requirements-dev.txt') != ''
         uses: actions/setup-python@v5
         with:
@@ -53,9 +56,169 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           python -m pytest -q
-      # --- GitHub Release ---
-      - name: GitHub Release
+
+      - name: Setup Node (syne-mock)
+        if: hashFiles('syne-mock/package.json') != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Tests syne-mock
+        if: hashFiles('syne-mock/package.json') != ''
+        working-directory: syne-mock
+        run: |
+          npm ci
+          npm test
+
+      - name: GitHub Release (composant)
+        if: startsWith(github.ref, 'refs/tags/syne-v') || startsWith(github.ref, 'refs/tags/echos-v') || startsWith(github.ref, 'refs/tags/prism-v')
         uses: softprops/action-gh-release@v2
         with:
-          body_path: CHANGELOG.md
           generate_release_notes: true
+
+  inputs:
+    name: Vérification des entrées externes
+    runs-on: ubuntu-latest
+    needs: verify
+    if: startsWith(github.ref, 'refs/tags/livex-v')
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extraire la version
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#livex-v}" >> "$GITHUB_OUTPUT"
+      - name: Télécharger la release prism-v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist/inputs
+          gh release download "prism-v${{ steps.ver.outputs.version }}" \
+            --repo "${{ github.repository }}" \
+            --dir dist/inputs
+      - name: Vérifier les empreintes épinglées
+        run: |
+          python scripts/release/check_assets.py --dist-dir dist/inputs
+          sha256sum -c <(python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          d=json.loads(Path("installer/build/external-inputs.json").read_text())
+          for e in d["inputs"]:
+              print(f"{e['sha256']}  dist/inputs/{e['file']}")
+          PY
+          )
+
+  installer:
+    name: Build installateur (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    needs: inputs
+    if: startsWith(github.ref, 'refs/tags/livex-v')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: ubuntu-latest
+            rid: linux-x64
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Publier SYNE
+        working-directory: syne
+        run: dotnet publish Simulation.Console/Simulation.Console.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/syne/Simulation.Console/bin/Release/net10.0/${{ matrix.rid }}/publish"
+      - name: Publier le Launcher
+        working-directory: launcher
+        run: dotnet publish Launcher.App/Launcher.App.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/launcher"
+      - name: Stage ECHOS
+        shell: bash
+        run: |
+          rm -rf "dist/staging/${{ matrix.rid }}/echos"
+          mkdir -p "dist/staging/${{ matrix.rid }}/echos"
+          cp -r echos/. "dist/staging/${{ matrix.rid }}/echos/"
+          rm -rf "dist/staging/${{ matrix.rid }}/echos/.venv" "dist/staging/${{ matrix.rid }}/echos/.pytest_cache" "dist/staging/${{ matrix.rid }}/echos/.coverage"
+          cd "dist/staging/${{ matrix.rid }}/echos"
+          python -m venv .venv
+          if [ -f .venv/Scripts/python.exe ]; then
+            .venv/Scripts/python.exe -m pip install --upgrade pip
+            .venv/Scripts/python.exe -m pip install -r requirements.txt
+          else
+            .venv/bin/python -m pip install --upgrade pip
+            .venv/bin/python -m pip install -r requirements.txt
+          fi
+
+      - name: Télécharger les entrées externes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist/inputs
+          VERSION="${GITHUB_REF_NAME#livex-v}"
+          gh release download "prism-v${VERSION}" --repo "${{ github.repository }}" --dir dist/inputs || true
+      - name: Assembler la distribution
+        shell: bash
+        run: |
+          python scripts/release/build_distribution.py \
+            --rid ${{ matrix.rid }} \
+            --profile core \
+            --tag ${{ github.ref_name }} \
+            --version "${GITHUB_REF_NAME#livex-v}" \
+            --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
+            --dist-inputs "${{ github.workspace }}/dist/inputs"
+          python scripts/release/build_distribution.py \
+            --rid ${{ matrix.rid }} \
+            --profile full \
+            --tag ${{ github.ref_name }} \
+            --version "${GITHUB_REF_NAME#livex-v}" \
+            --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
+            --dist-inputs "${{ github.workspace }}/dist/inputs" \
+            --output "${{ github.workspace }}/dist/${{ matrix.rid }}-full"
+      - name: Vérifier les assets
+        run: python scripts/release/check_assets.py --dist-dir "dist/${{ matrix.rid }}"
+      - name: Upload des artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.rid }}
+          path: dist/${{ matrix.rid }}/**
+
+  publish:
+    name: Publication de la release
+    runs-on: ubuntu-latest
+    needs: [inputs, installer]
+    if: startsWith(github.ref, 'refs/tags/livex-v')
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist/artifacts
+      - name: Extraire le corps de release
+        run: python scripts/release/extract_changelog.py "${GITHUB_REF_NAME#livex-v}" --file CHANGELOG.md --output /tmp/release-notes.md
+      - name: Créer SHA256SUMS
+        run: |
+          cd dist/artifacts
+          find . -type f -exec sha256sum {} \; > SHA256SUMS
+      - name: Attestation de provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: "dist/artifacts/**"
+      - name: Créer la release (pré-release)
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: true
+          body_path: /tmp/release-notes.md
+          files: |
+            dist/artifacts/**/*

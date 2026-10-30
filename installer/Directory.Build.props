@@ -13,7 +13,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest</AnalysisLevel>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <Version>0.1.0</Version>
+    <Version>1.0.0</Version>
     <Company>LIVEX</Company>
     <Product>LIVEX Installer</Product>
     <Copyright>Copyright (C) 2026 Donovan Chartrain</Copyright>

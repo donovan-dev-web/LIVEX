@@ -39,7 +39,7 @@ public static class DemoWorld
             ReleasedAt: new DateTimeOffset(2026, 10, 29, 0, 0, 0, TimeSpan.Zero),
             Components: components,
             Files: files,
-            Signature: new SignatureDescriptor("Ed25519", "demo-key", "demo-signature"));
+            Signature: null);
     }
 
     /// <summary>

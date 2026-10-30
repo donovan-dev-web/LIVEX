@@ -88,11 +88,14 @@ public static class ManifestValidator
         if (manifest.Components.Any(c => c.Acquisition.Kind == "payload") && manifest.Files.Count == 0)
             issues.Add("charge utile déclarée mais files[] vide");
 
-        if (string.IsNullOrWhiteSpace(manifest.Signature.Algorithm) ||
-            string.IsNullOrWhiteSpace(manifest.Signature.KeyId) ||
-            string.IsNullOrWhiteSpace(manifest.Signature.Value))
+        // La signature cryptographique du manifeste est optionnelle en V1 (ADR-007 §3 bis) ;
+        // si elle est présente, ses champs doivent être complets.
+        if (manifest.Signature is not null &&
+            (string.IsNullOrWhiteSpace(manifest.Signature.Algorithm) ||
+             string.IsNullOrWhiteSpace(manifest.Signature.KeyId) ||
+             string.IsNullOrWhiteSpace(manifest.Signature.Value)))
         {
-            issues.Add("signature absente ou incomplète");
+            issues.Add("signature incomplète");
         }
 
         return issues;

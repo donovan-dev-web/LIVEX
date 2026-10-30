@@ -7,7 +7,7 @@ authors:
     given-names: Donovan
     email: donovan.chartrain@gmail.com
     website: https://donovan-dev-web.vercel.app
-version: 0.1
+version: 1.0.0
 date-released: 2026-10-12
 license: GPL-3.0-or-later
 repository-code: "https://github.com/donovan-dev-web/LIVEX"
