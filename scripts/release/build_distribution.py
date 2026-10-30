@@ -68,12 +68,16 @@ def copy_tree(src: Path, dst: Path) -> None:
         shutil.copy2(src, dst)
 
 
-def extract_zip(src: Path, dst: Path) -> None:
+def extract_archive(src: Path, dst: Path) -> None:
     if dst.exists():
         shutil.rmtree(dst)
     dst.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(src) as zf:
-        zf.extractall(dst)
+    if str(src).endswith(".tar.gz") or str(src).endswith(".tgz"):
+        with tarfile.open(src, "r:gz") as tf:
+            tf.extractall(dst)
+    else:
+        with zipfile.ZipFile(src) as zf:
+            zf.extractall(dst)
 
 
 def build_file_list(payload_root: Path) -> list[dict]:
@@ -182,7 +186,7 @@ def main() -> int:
     else:
         entry = ei_by_id["prism-win-x64" if rid == "win-x64" else "prism-linux-x64"]
         archive = dist_inputs / entry["file"]
-        extract_zip(archive, payload_root / prism_comp["installRoot"])
+        extract_archive(archive, payload_root / prism_comp["installRoot"])
     # ldk : archive bit à bit
     ldk_entry = ei_by_id["prism-ldk"]
     ldk_dest = payload_root / next(c for c in components_meta["components"] if c["id"] == "prism-ldk")["installRoot"]
