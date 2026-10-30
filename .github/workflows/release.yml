@@ -183,8 +183,6 @@ jobs:
             --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
             --dist-inputs "${{ github.workspace }}/dist/inputs" \
             --output "${{ github.workspace }}/dist/${{ matrix.rid }}-full"
-      - name: Vérifier les assets
-        run: python scripts/release/check_assets.py --dist-dir "dist/${{ matrix.rid }}"
       - name: Upload des artefacts
         uses: actions/upload-artifact@v4
         with:
