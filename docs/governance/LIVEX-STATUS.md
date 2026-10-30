@@ -12,7 +12,7 @@
 | Versions majeures déclarées | Global LIVEX `V0.2`; SYNE `0.17.0`; ECHOS `0.1.0`; Launcher `0.1.0`; `syne-mock` `0.1.0`; PRISM / PRISM-LDK en version de travail |
 | Contrats / schémas | Observabilité `0.5.0`; `world_initialized` `1.1`; snapshot SYNE `schemaVersion 5`; ECHOS `SCHEMA_VERSION = 6` |
 | Suites locales pertinentes | SYNE 695/695; ECHOS 383 réussis, 14 ignorés; `syne-mock` 51 réussis, 2 ignorés; Launcher Unit 174/174, Integration 20/20, E2E 33/33 avec SYNE publié |
-| Release | Aucune release publique ou distribution installable déclarée |
+| Release | V1 en préparation (installateur, PRISM, composants) |
 
 ## Sommaire
 
@@ -53,7 +53,7 @@ Les tests et campagnes ne prouvent pas l’émergence générale. Les résultats
 | Launcher | `0.1.0`; paquet `.livexp` versionné séparément | Application Avalonia d’orchestration, présentation et archivage. |
 | `syne-mock` | `0.1.0`; contrats SYNE `0.5.0` / monde `1.1` | Émulateur de contrats pour tests clients, pas une simulation équivalente. |
 | PRISM / PRISM-LDK | Version de travail; consommateur observabilité `0.5.0` / monde `1.1` | Plugin Unreal en intégration; ne signifie pas que l’expérience interactive complète est acceptée. |
-| Installateur | Sans version | Spécification, aucun installateur livré. |
+| Installateur | 1.0.0 (V1) | Spécification et code livrés ; release en préparation |
 
 Le code déclare `SCHEMA_VERSION = "6"` dans [`sqlite.py`](../../echos/echos/storage/sqlite.py); une migration y reconstruit `decision_traces` pour rendre `utility` nullable et ajoute `held_utility`, `decision_state` et `decision_tick`. Les tests appellent cela « v7 », mais la valeur écrite dans `_meta.schema_version` est toujours celle de la constante `6`. Les mentions « schéma v7 » doivent donc être qualifiées de révision de migration BL-09 jusqu’à harmonisation du versionnage.
 

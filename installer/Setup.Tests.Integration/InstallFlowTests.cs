@@ -272,7 +272,7 @@ public class InstallFlowTests : IDisposable
             DateTimeOffset.UtcNow,
             new[] { component },
             files,
-            new SignatureDescriptor("Ed25519", "test-key", "test-signature"));
+            null);
 
         return (manifest, payload);
     }

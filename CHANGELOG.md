@@ -7,7 +7,7 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`livex-vX.Y.Z` = triplet SYNE + ECHOS + PRISM).
 
-## [Unreleased]
+## [1.0.0] - 2026-10-30
 
 ### Changed
 - **Site vitrine - SYNE sans visuel de capture, schéma conceptuel à la place** : SYNE est un moteur, sans interface à capturer ; les emplacements `.ph` de la page SYNE et la capture du Launcher affichée à sa place sur l'accueil sont remplacés par `SyneSchema.astro` (SVG en ligne, libellés localisés, adapté aux deux thèmes), légendée comme « illustration conceptuelle, pas une capture ». ECHOS et PRISM gardent leurs captures réelles. Les animations GIF inutiles (site et dépôt) sont supprimées et leurs mentions retirées : les animations éventuelles restent dans le dépôt et sont servies en WebP/MP4.

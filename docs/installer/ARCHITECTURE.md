@@ -181,9 +181,7 @@ pour les textes et métadonnées :
 1. collecte les sorties de publication de chaque composant ;
 2. copie dans `dist/<rid>/payload/` selon les chemins d'installation, et
    recopie les entrées externes vérifiées ;
-3. signe Authenticode les exécutables Windows **si `SIGNING_ENABLED`** — avant
-   tout calcul d'empreinte ;
-4. calcule tailles et SHA-256 ;
+3. calcule tailles et SHA-256 ;
 5. écrit `distribution.json` en JSON canonique (le champ `signature` reste
    optionnel et vide en V1) ;
 6. produit les archives d'installateurs et de composants, déterministes
