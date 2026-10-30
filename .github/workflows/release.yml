@@ -115,12 +115,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        # TEMPORAIRE : build Linux (linux-x64) désactivé en attendant une validation sur machine Linux.
+        # Pour réactiver : remettre ubuntu-latest / linux-x64 dans la matrice ci-dessous.
+        os: [windows-latest]
         include:
           - os: windows-latest
             rid: win-x64
-          - os: ubuntu-latest
-            rid: linux-x64
     permissions:
       contents: read
     steps:
@@ -136,7 +136,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Publier SYNE
         working-directory: syne
-        run: dotnet publish Simulation.Console/Simulation.Console.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/syne/Simulation.Console/bin/Release/net10.0/${{ matrix.rid }}/publish"
+        run: dotnet publish Simulation.Console/Simulation.Console.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/syne"
       - name: Publier le Launcher
         working-directory: launcher
         run: dotnet publish Launcher.App/Launcher.App.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/launcher"

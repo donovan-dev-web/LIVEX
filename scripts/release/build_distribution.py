@@ -187,11 +187,12 @@ def main() -> int:
         entry = ei_by_id["prism-win-x64" if rid == "win-x64" else "prism-linux-x64"]
         archive = dist_inputs / entry["file"]
         extract_archive(archive, payload_root / prism_comp["installRoot"])
-    # ldk : archive bit à bit
+    # ldk : archive intacte, sous plugins/prism-ldk/PrismLdk-<version>.zip
+    ldk_comp = next(c for c in components_meta["components"] if c["id"] == "prism-ldk")
     ldk_entry = ei_by_id["prism-ldk"]
-    ldk_dest = payload_root / next(c for c in components_meta["components"] if c["id"] == "prism-ldk")["installRoot"]
-    ldk_dest.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(dist_inputs / ldk_entry["file"], ldk_dest)
+    ldk_dest = payload_root / ldk_comp["installRoot"]
+    ldk_dest.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(dist_inputs / ldk_entry["file"], ldk_dest / f"PrismLdk-{ldk_comp['version']}.zip")
 
     # Construit le manifeste.
     all_files = build_file_list(payload_root)
@@ -226,60 +227,17 @@ def main() -> int:
         else:
             comp_files = [f for f in all_files if "/" not in f["path"]]
 
-        # acquisition kind
-        if external:
-            if profile == "full":
-                kind = "payload"
-                asset = None
-                url = None
-                size = None
-                sha = None
-            else:
-                kind = "release-asset"
-                ext_id = "prism-win-x64" if (external == "prism" and rid == "win-x64") else ("prism-linux-x64" if external == "prism" else "prism-ldk")
-                entry = ei_by_id[ext_id]
-                asset = entry["file"]
-                url = asset_url(entry["file"])
-                size = entry["size"]
-                sha = entry["sha256"]
-                if not validate_url(url, tag):
-                    print(f"ERREUR: URL hors tag courant pour {cid}: {url}")
-                    return 1
-                comp_files = []
-        elif optional and profile == "core":
-            # module facultatif publié comme archive de composant
-            kind = "release-asset"
-            asset_name = f"{cid}-{comp['version']}-{rid}.zip" if cid != "syne-mock" else f"syne-mock-{comp['version']}-{rid}.tar.gz"
-            # Simplification : zip pour tous
-            asset_name = f"{cid}-{comp['version']}-{rid}.zip"
-            url = asset_url(asset_name)
-            if not validate_url(url, tag):
-                print(f"ERREUR: URL hors tag courant pour {cid}: {url}")
-                return 1
-            asset = asset_name
-            size = None
-            sha = None
-            comp_files = []
-        else:
-            kind = "payload"
-            asset = None
-            url = None
-            size = None
-            sha = None
-
-        if kind == "payload" and comp.get("mandatory", False) and not comp_files and install_root != "root":
-            # autoriser si composant présent mais aucun fichier ? non
-            pass
-
+        # Tous les modules, PRISM et PrismLdk compris, sont embarqués dans
+        # la charge utile : acquisition = payload.
         acquisition = {
-            "kind": kind,
-            "asset": asset,
-            "url": url,
-            "size": size,
-            "sha256": sha,
-            "format": "zip" if kind == "release-asset" else None,
+            "kind": "payload",
+            "asset": None,
+            "url": None,
+            "size": None,
+            "sha256": None,
+            "format": None,
             "stripComponents": None,
-            "reason": None if kind != "unavailable" else "non disponible",
+            "reason": None,
         }
 
         descriptor = {
