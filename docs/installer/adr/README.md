@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`../SPECIFICATION.md`](../SPECIFICATION.md)
 
 ---
@@ -26,8 +26,10 @@ Format : [`../../../docs/adr/0000-template.md`](../../adr/0000-template.md).
 | [ADR-004](ADR-004-racine-de-donnees-et-espace-de-travail.md) | Racine de données, espace de travail et portées de désinstallation | Accepté | modèle de données, `settings.json`, A/B/C |
 | [ADR-005](ADR-005-enregistrement-et-cycle-de-vie.md) | Enregistrement, détection et cycle de vie | Accepté | registre, inventaire, mise à jour, réparation |
 | [ADR-006](ADR-006-perimetre-composants-v02.md) | Périmètre, nature et provenance des composants | Accepté | PRISM packagé, LDK en ZIP, SYNE-Mock, docs, arborescence |
-| [ADR-007](ADR-007-manifeste-de-distribution-et-confiance.md) | Manifeste de distribution, intégrité et chaîne de confiance | Accepté | `distribution.json`, Ed25519, Authenticode, actifs distants |
+| [ADR-007](ADR-007-manifeste-de-distribution-et-confiance.md) | Manifeste de distribution, intégrité et chaîne de confiance | Accepté, amendé le 29 octobre 2026 (§3 bis) | `distribution.json`, empreintes SHA-256, attestations, Authenticode conditionnel, actifs distants |
 | [ADR-008](ADR-008-acquisition-modules-facultatifs.md) | Acquisition des modules facultatifs depuis les releases GitHub | Accepté | profils `core`/`full`, téléchargement, cache, rétention |
+| [ADR-009](ADR-009-association-fichiers-livexp.md) | Association des fichiers `.livexp` au lanceur | Accepté | intégration système, icônes, écart documenté à la spec §8.3 |
+| [ADR-010](ADR-010-production-hors-ci-prism-et-composants-individuels.md) | Production hors CI des entrées PRISM et publication des composants individuels | Accepté | release V1, entrées épinglées, archives de composants |
 
 ## 3. Dépendances entre décisions
 
@@ -40,6 +42,8 @@ ADR-001 (technologie)
     └── ADR-004 (données et désinstallation)
         └── ADR-002 (sans élévation)
 ADR-007 (confiance) ── dépend de ADR-001, ADR-006 et ADR-008
+ADR-009 (association .livexp) ── dépend de ADR-001 et ADR-002
+ADR-010 (entrées hors CI) ── dépend de ADR-006, ADR-007 et ADR-008
 ```
 
 ## 4. Ce qui n'est pas décidé ici
@@ -70,3 +74,6 @@ datée dans la section « Mises à jour » ; elle ne réécrit pas l'historique.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Nouvelle base documentaire de l'installateur |
+| 29 octobre 2026 | Ajout d'ADR-009 | Décision d'associer les fichiers `.livexp` (écart documenté à la spec §8.3) |
+| 29 octobre 2026 | Ajout d'ADR-010 | Production hors CI des entrées PRISM et publication des composants individuels (plan V1) |
+| 29 octobre 2026 | ADR-007 : statut et portée | Amendement §3 bis (décision D3) : empreintes, sommes et attestations remplacent Ed25519 et GPG |

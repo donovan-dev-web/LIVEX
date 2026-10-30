@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
 ---
@@ -36,7 +36,9 @@ Conventions de vérification du dépôt appliquées :
 | :-- | :-- | :-- | :-- |
 | **Unitaire** | `Setup.Tests.Unit` | `Setup.Core`, sans disque réel ni interface | < 30 s |
 | **Intégration** | `Setup.Tests.Integration` | fichiers réels dans un répertoire temporaire, magasins simulés | < 3 min |
-| **Bout en bout** | `Setup.Tests.EndToEnd` | binaire publié, installation silencieuse, `--check`, désinstallation | < 10 min |
+| **Assistant** | `Setup.Tests.App` | `InstallerSession` du mode fictif (manifeste, détection, maintenance, désinstallation) et parité des ressources FR/EN, sans interface | < 1 min |
+| **Bout en bout** | `Setup.Tests.EndToEnd` | monde fictif : les quatre parcours complets, preuve d'absence d'écriture | < 10 min |
+| **Bout en bout réel** | à créer | binaire publié, installation silencieuse, `--check`, désinstallation (voir §7.1) | < 10 min |
 | **Machine propre** | manuel / VM | installation graphique réelle, vérification visuelle et système | par release |
 
 ## 3. Environnements
@@ -62,15 +64,16 @@ phrase de documentation.
 | Enregistrement Linux | `InMemoryInstallationStore` | déterminisme |
 | Processus en cours | `FakeProcessProbe` | simuler un fichier verrouillé |
 | Système de fichiers | répertoire temporaire réel | les sémantiques de renommage/verrou importent |
-| Charge utile | `payload-fixture/` versionnée | petites tailles, empreintes stables |
-| Téléchargement | `FakeDownloader` + serveur HTTP local | reprise, coupure, 404, empreinte fausse, sans GitHub |
-| Horloge | `IClock` | journaux et horodatages déterministes |
+| Charge utile | `payload-fixture/` versionnée — **à créer** (les tests actuels construisent leur charge utile dans un répertoire temporaire) | petites tailles, empreintes stables |
+| Téléchargement | `FakeDownloader` + serveur HTTP local — **à créer** avec le câblage de l'acquisition (T5) | reprise, coupure, 404, empreinte fausse, sans GitHub |
+| Horloge | `IClock` — **non implémenté** ; les horodatages sont ceux du système, jamais comparés dans un test | journaux et horodatages déterministes |
 | Élévation | jamais simulée | les tests échouent si une opération l'exige |
 
-Le `payload-fixture` contient trois composants factices (un obligatoire, un
-facultatif, un « indisponible ») et un manifeste signé avec une clé de test
-dont la clé privée est **versionnée dans le dépôt de test uniquement**, jamais
-utilisée pour une release.
+Le `payload-fixture` prévu contiendra trois composants factices (un obligatoire,
+un facultatif, un « indisponible »). Il n'existe pas encore : les tests
+construisent aujourd'hui un manifeste et une charge utile minimales dans un
+répertoire temporaire. La mention d'un « manifeste signé avec une clé de test »
+est sans objet depuis la décision D3 (aucune signature cryptographique en V1).
 
 ## 5. Cas unitaires
 
@@ -91,7 +94,7 @@ utilisée pour une release.
 | Ligne de commande | chaque option, combinaison invalide, codes de sortie | INS-F-90 à 99 |
 | i18n | clé manquante → anglais + journal, aucune clé brute | INS-F-82 |
 | Acquisition | URL non HTTPS, hôte étranger, actif sans empreinte, `unavailable` proposé | INS-F-12, 100 à 102 |
-| Acquisition | reprise `Range`, serveur sans `Range`, coupure, annulation | INS-F-101, 104 |
+| Acquisition | reprise `Range`, serveur sans `Range`, coupure, annulation — **cible** : non implémenté au 29 octobre 2026 (INS-L-12, tâche T5) | INS-F-101, 104 |
 | Extraction | entrée `..`, chemin absolu, lien symbolique, nombre d'entrées et taille dépassés | INS-F-103 |
 | Cache | actif vérifié réutilisé, actif corrompu purgé, cache absent recréé | INS-F-101, 102 |
 | Hors ligne | actif local accepté par empreinte, refusé sinon, `--no-network` sans requête | INS-F-105, 98, 99 |
@@ -128,7 +131,7 @@ utilisée pour une release.
 
 ```text
 1. construire et signer la distribution de test
-2. livex-setup --check --log <tmp>/check.log          → code 0
+2. livex-setup --check                               → code 0
 3. livex-setup --unattended --config <tmp>/answers.json
 4. vérifier l'arborescence, l'inventaire, l'enregistrement, settings.json
 5. <install>/livex-launcher --check                  → code 0
@@ -144,7 +147,9 @@ utilisée pour une release.
 ```
 
 Chaque étape capture son code de sortie ; un `0` obtenu à travers un pipeline
-filtré n'est pas une preuve.
+filtré n'est pas une preuve. La référence des options et des codes attendus
+est [`COMMANDES.md`](COMMANDES.md) ; le journal de chaque opération est écrit
+dans `<racine de données>/logs`.
 
 ### 7.2 Manuelle (machine propre, par release)
 
@@ -169,6 +174,75 @@ filtré n'est pas une preuve.
 Les captures sont jointes à la PR de release ; elles ne remplacent pas les
 tests automatisés.
 
+### 7.3 Parcours en monde fictif
+
+Le monde fictif (`--demo`, voir `README.md` §5 bis) rend la recette visuelle
+exécutable à tout moment, sans rien installer :
+
+```text
+livex-setup --demo                          → parcours d'installation nominal
+livex-setup --demo --demo-scenario=existing → accueil maintenance
+livex-setup --demo --demo-scenario=prism    → PRISM indisponible
+livex-setup --demo --demo-scenario=failure  → échec en cours d'écriture
+livex-setup --check --demo                  → préflight textuel, contrôles simulés
+```
+
+Toutes les options, leurs codes de sortie et le format du fichier de réponses
+sont détaillés dans [`COMMANDES.md`](COMMANDES.md).
+
+Ce que le mode prouve : les écrans se construisent, les huit étapes s'enchaînent,
+le récapitulatif et la progression reflètent le plan réel, les états de résultat
+(succès, succès avec avertissements, échec) s'affichent, et **aucune écriture**
+n'a lieu — vérifié par les tests, et par l'absence de `<racine de données>/logs`
+après une exécution réelle du binaire en mode démonstration.
+
+Ce que le mode ne prouve pas : la réussite d'une recette `INS-A` (écriture
+effective, intégrations système, empreintes réelles, comportement sur machine
+propre). Une validation en monde fictif ne remplace jamais une installation
+réelle dans un bac à sable (§7.1) ni une passe manuelle (§7.2).
+
+### 7.4 Recette de publication (release assemblée)
+
+À dérouler après la création de la pré-release `livex-v1.0.0`, avant de la
+passer en stable :
+
+1. chaque URL du manifeste répond, avec la taille et le SHA-256 déclarés
+   (`scripts/release/check_assets.py` en mode post-publication) ;
+2. les quatre installateurs sont présents (`win-x64` / `linux-x64`, `core` /
+   `full`), ainsi que les archives de composants, PRISM (2), LDK, docs et
+   SYNE-Mock (2) ;
+3. aucun asset ne dépasse 1,9 GiB ;
+4. `SHA256SUMS` couvre tous les assets et `sha256sum -c` passe sur un
+   téléchargement neuf ;
+5. `gh attestation verify <asset> -R donovan-dev-web/LIVEX` passe ;
+6. profil `core` avec LDK coché : acquisition depuis GitHub, archive déposée
+   intacte ;
+7. profil `full` sans réseau : PRISM et les trois modules présents ;
+8. module sans actif publié : affiché indisponible avec sa raison ;
+9. notes de release : versions, **tailles mesurées**, limites, procédure de
+   vérification ;
+10. `livex-launcher --check` depuis l'installation, puis recette manuelle §7.2.
+
+### 7.5 Recette visuelle écran par écran
+
+À dérouler une fois par évolution d'interface, avec `livex-setup --demo`.
+Chaque ligne se vérifie à l'œil et au clavier.
+
+| # | Écran | À vérifier |
+| :-- | :-- | :-- |
+| V1 | Accueil | badge « mode démonstration » lisible, annonce explicite qu'aucune installation n'aura lieu, action primaire unique, version affichée |
+| V2 | Langue | le basculement FR/EN rafraîchit tout l'écran sans redémarrage, y compris le titre d'étape et le fil d'étapes |
+| V3 | Licence | texte défilable au clavier, case d'acceptation bloquante, action suivante désactivée tant qu'elle n'est pas cochée |
+| V4 | Composants | trois groupes (socle, composant de base, modules facultatifs), compteur et tailles cohérents avec les cases cochées, avertissement visible quand PRISM est décoché, modules indisponibles expliqués |
+| V5 | Chemins | validation en direct (vide, relatif, chevauchement), message d'erreur sous le champ concerné, action suivante bloquée, changement d'espace de travail limité au seul champ utile |
+| V6 | Récapitulatif | opération, version, chemins, composants et taille totale relus depuis le plan, aucune valeur codée en dur |
+| V7 | Progression | pourcentage monotone, libellé d'étape traduit (jamais une clé brute), jalons cochés au fur et à mesure, annulation active puis désactivée en fin d'opération |
+| V8 | Résultat | trois états distincts (succès / succès avec avertissements / échec), chemins du journal et des résidus lisibles, mention explicite de simulation en mode fictif |
+| V9 | Maintenance (`--demo-scenario=existing`) | version et date d'installation détectées, quatre actions proposées, renvoi vers la désinstallation |
+| V10 | Désinstallation | trois portées exclusives, confirmation explicite pour la portée C, suppression des résultats de recherche désactivée hors portée C, volumétrie affichée |
+| V11 | Échec (`--demo-scenario=failure`) | message compréhensible sans jargon, résidus listés, chemin du journal, retour possible sans relancer l'assistant |
+| V12 | Transverse | tabulation cohérente, Entrée valide l'action primaire, Échap n'engage aucune opération, aucun texte tronqué à 1024×768 ni à 125 % de mise à l'échelle |
+
 ## 8. Matrice de traçabilité
 
 | Exigences | Cas de test | Niveau |
@@ -176,13 +250,13 @@ tests automatisés.
 | INS-F-01 à 09 | installation neuve, rollback, préflight | U + I + E2E |
 | INS-F-10 à 19 | composants, disponibilité, retrait | U + I |
 | INS-F-20 à 28 | chemins, préférences, arborescence | U + I |
-| INS-F-30 à 37 | machine à états de l'assistant | U (ViewModel) + manuel |
+| INS-F-30 à 37 | machine à états de l'assistant | E2E (plan) + manuel (§7.5) |
 | INS-F-40 à 46 | intégrations, nettoyage | I + manuel |
 | INS-F-50 à 59 | détection, mise à jour, réparation, espace de travail | U + I + E2E |
 | INS-F-60 à 69 | désinstallation A/B/C, résidus | U + I + E2E |
 | INS-F-70 à 77 | signature, échecs, journal | U + I |
-| INS-F-80 à 84 | langues, accessibilité | U + manuel |
-| INS-F-90 à 99 | modes non interactifs, codes | U + E2E |
+| INS-F-80 à 84 | langues, accessibilité | U (parité FR/EN des ressources) + manuel (accessibilité, §7.5 V12) |
+| INS-F-90 à 99 | modes non interactifs, codes | U (`HeadlessRunner`, fichier de réponses) + E2E |
 | INS-F-100 à 106 | acquisition, cache, extraction, hors ligne | U + I + E2E |
 | INS-N-01 à 12 | sécurité, performance, portabilité, réseau | revue + mesures |
 
@@ -250,3 +324,5 @@ Une phase de la roadmap ne peut pas être déclarée terminée avec des cases
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Nouvelle base documentaire |
+| 29 octobre 2026 | Niveau « Assistant », §7.3 parcours en monde fictif | Le mode démonstration existe et sert de recette visuelle |
+| 29 octobre 2026 | §4/§5 : doubles non impliqués marqués « à créer » ; §7.4 recette de publication ajoutée ; §7.5 renumérotée | Plan d'alignement V1 et check-up : distinguer la cible de l'état réel |

@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [Accepted]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : ADR-003, ADR-008
 **Source Monographie** : —
 **Remplace** : les versions du 21 octobre 2026 qui excluaient PRISM du périmètre, puis qui le traitaient comme un module téléchargé
@@ -146,6 +146,26 @@ distribution ; il n'a pas de cas « indisponible ».
 | `Plugins/PrismLDK.zip` | `plugins/prism-ldk/PrismLdk-<version>.zip` | plusieurs versions du plugin peuvent coexister pour plusieurs projets Unreal ; l'archive reste intacte |
 | `Docs/`, `Assets/` | `docs/`, `assets/` | même convention que le reste du dépôt |
 
+### 7. Publication individuelle des composants (révision du 29 octobre 2026)
+
+La release V1 publie chaque composant comme **archive autonome**, en plus de sa
+présence dans les installateurs (ADR-010) :
+
+| Composant | Archive | Contenu |
+| :-- | :-- | :-- |
+| Launcher | `launcher-0.1.0-<rid>.<ext>` | racine installée |
+| SYNE | `syne-0.17.0-<rid>.<ext>` | `components/syne/` |
+| ECHOS | `echos-0.1.0-<rid>.<ext>` | `components/echos/` |
+| PRISM | `prism-1.0.0-<rid>.<ext>` | `components/prism/` |
+| PRISM-LDK | `prism-ldk-1.0.0.zip` | archive du plugin, bit à bit |
+| Documentation | `livex-docs-1.0.0.zip` | documents Markdown |
+| SYNE-Mock | `syne-mock-0.1.0-<rid>.<ext>` | `components/syne-mock/` + runtime Node |
+
+Ces archives servent un usage manuel et avancé ; seuls le LDK, la documentation
+et SYNE-Mock sont consommés par l'installateur. PRISM est donc livré **en deux
+formes** : dans la charge utile des installateurs, et comme archive individuelle
+produite hors CI (même contenu, même empreinte).
+
 ## Conséquences
 
 ### Positives
@@ -221,3 +241,4 @@ autonome, ou si un module facultatif rejoint la base.
 | 21 octobre 2026 | Révision | PRISM est une application packagée, PRISM-LDK un ZIP de plugin, SYNE-Mock et la documentation des archives |
 | 21 octobre 2026 | Révision | PRISM est un **composant de base embarqué** ; seuls Launcher, SYNE et ECHOS sont obligatoires ; le LDK, la documentation et SYNE-Mock sont les modules téléchargés |
 | 21 octobre 2026 | Révision | PRISM est **coché par défaut** et désactivable ; le décocher affiche l'avertissement §3.3. Écart assumé par rapport à la case « désactivé par défaut » de la base |
+| 29 octobre 2026 | §7 ajouté | Plan V1 (ADR-010) : publication individuelle des composants ; PRISM livré en deux formes, même contenu et même empreinte |

@@ -1,0 +1,50 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Setup.App.App"
+             RequestedThemeVariant="Dark">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="BrandBg" Color="#13101F" />
+          <SolidColorBrush x:Key="BrandSidebar" Color="#171226" />
+          <SolidColorBrush x:Key="BrandSurface" Color="#1E1830" />
+          <SolidColorBrush x:Key="BrandSurfaceAlt" Color="#261F3D" />
+          <SolidColorBrush x:Key="BrandSurfaceHover" Color="#2E2648" />
+          <SolidColorBrush x:Key="BrandBorder" Color="#372C55" />
+          <SolidColorBrush x:Key="BrandBorderStrong" Color="#4A3C6E" />
+          <SolidColorBrush x:Key="BrandText" Color="#F3EEE4" />
+          <SolidColorBrush x:Key="BrandTextMuted" Color="#A79FBB" />
+          <SolidColorBrush x:Key="BrandOverlay" Color="#331B1330" />
+          <Color x:Key="SystemAccentColor">#E2A44A</Color>
+          <Color x:Key="SystemAccentColorLight1">#F2B85F</Color>
+          <Color x:Key="SystemAccentColorLight2">#F8C674</Color>
+          <Color x:Key="SystemAccentColorDark1">#C9862E</Color>
+          <Color x:Key="SystemAccentColorDark2">#A96B1F</Color>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="BrandBg" Color="#FBF8F1" />
+          <SolidColorBrush x:Key="BrandSidebar" Color="#F5EFE3" />
+          <SolidColorBrush x:Key="BrandSurface" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="BrandSurfaceAlt" Color="#F3EDE1" />
+          <SolidColorBrush x:Key="BrandSurfaceHover" Color="#EAE1D1" />
+          <SolidColorBrush x:Key="BrandBorder" Color="#DED3BF" />
+          <SolidColorBrush x:Key="BrandBorderStrong" Color="#C8B99F" />
+          <SolidColorBrush x:Key="BrandText" Color="#221A33" />
+          <SolidColorBrush x:Key="BrandTextMuted" Color="#6E6580" />
+          <SolidColorBrush x:Key="BrandOverlay" Color="#1FE2A44A" />
+          <Color x:Key="SystemAccentColor">#C9862E</Color>
+          <Color x:Key="SystemAccentColorLight1">#E2A44A</Color>
+          <Color x:Key="SystemAccentColorLight2">#F2B85F</Color>
+          <Color x:Key="SystemAccentColorDark1">#A96B1F</Color>
+          <Color x:Key="SystemAccentColorDark2">#8A5414</Color>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://livex-setup/Styles/Theme.axaml" />
+  </Application.Styles>
+</Application>

@@ -1,0 +1,69 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.MaintenanceView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="16" MaxWidth="800" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+    <TextBlock Text="{Binding MaintenanceIntroText}" Classes="muted" />
+
+    <Border Classes="card" Padding="16" BorderBrush="#55E2A44A" Background="#1FE2A44A">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding InstalledSummaryText}" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding WorkspaceSummaryText}" Classes="tiny" />
+        <TextBlock Text="{Binding InstalledOnText}" Classes="tiny" />
+      </StackPanel>
+    </Border>
+
+    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+      <Border Grid.Row="0" Grid.Column="0" Classes="card" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{l:Tr maintenanceUpdateTitle}" Classes="h2" />
+          <TextBlock Text="{Binding UpdateBodyText}" Classes="muted" />
+          <Button Content="{l:Tr btnUpdate}" Classes="primary" Command="{Binding UpdateCommand}"
+                  AutomationProperties.Name="{l:Tr btnUpdate}" IsDefault="True"
+                  HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="0" Grid.Column="1" Classes="card" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{l:Tr maintenanceRepairTitle}" Classes="h2" />
+          <TextBlock Text="{l:Tr maintenanceRepairBody}" Classes="muted" />
+          <Button Content="{l:Tr btnRepair}" Command="{Binding RepairCommand}"
+                  AutomationProperties.Name="{l:Tr btnRepair}" HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="1" Grid.Column="0" Classes="card" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{l:Tr maintenanceComponentsTitle}" Classes="h2" />
+          <TextBlock Text="{l:Tr maintenanceComponentsBody}" Classes="muted" />
+          <Button Content="{l:Tr btnManage}" Command="{Binding ManageComponentsCommand}"
+                  AutomationProperties.Name="{l:Tr btnManage}" HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="1" Grid.Column="1" Classes="card" Padding="16" BorderBrush="#55E5646B">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{l:Tr maintenanceUninstallTitle}" Classes="h2" Foreground="{StaticResource BrandDanger}" />
+          <TextBlock Text="{l:Tr maintenanceUninstallBody}" Classes="muted" />
+          <Button Content="{l:Tr btnUninstall}" Classes="danger" Command="{Binding UninstallCommand}"
+                  AutomationProperties.Name="{l:Tr btnUninstall}" HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Classes="card" Padding="16">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{l:Tr maintenanceWorkspaceTitle}" Classes="h2" />
+            <TextBlock Text="{l:Tr maintenanceWorkspaceBody}" Classes="muted" />
+          </StackPanel>
+          <Button Grid.Column="1" Content="{l:Tr btnChangeWorkspace}" Margin="16,0,0,0"
+                  Command="{Binding ChangeWorkspaceCommand}" VerticalAlignment="Center"
+                  AutomationProperties.Name="{l:Tr btnChangeWorkspace}" />
+        </Grid>
+      </Border>
+    </Grid>
+
+    <TextBlock Text="{l:Tr uninstallKeep}" Classes="tiny" />
+  </StackPanel>
+</UserControl>

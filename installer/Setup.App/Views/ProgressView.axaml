@@ -1,0 +1,40 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.ProgressView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="20" MaxWidth="720" HorizontalAlignment="Stretch" Margin="0,8,0,20">
+    <Grid ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding ProgressStatusText}" Classes="h2" />
+        <TextBlock Text="{Binding ProgressStepText}" Classes="tiny" />
+      </StackPanel>
+      <TextBlock Grid.Column="1" Text="{Binding ProgressPercentText}" FontSize="30" FontWeight="SemiBold"
+                 Foreground="{StaticResource BrandGold}" VerticalAlignment="Center" />
+    </Grid>
+
+    <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Height="10" />
+
+    <Border Classes="card" Padding="14">
+      <ItemsControl ItemsSource="{Binding Stages}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="24,*,Auto" Margin="0,5">
+              <Border Width="20" Height="20" CornerRadius="10"
+                      Background="{Binding MarkerBackground}" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Marker}" FontSize="10" FontWeight="Bold"
+                           Foreground="{Binding MarkerForeground}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="12.5" Margin="10,0,0,0"
+                         Foreground="{Binding LabelForeground}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="2" Text="{Binding StateText}" Classes="tiny" VerticalAlignment="Center" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
+    <TextBlock Text="{l:Tr progressDemoNote}" Classes="tiny" Foreground="{StaticResource BrandViolet}"
+               IsVisible="{Binding IsDemo}" />
+  </StackPanel>
+</UserControl>

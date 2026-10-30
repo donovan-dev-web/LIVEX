@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Setup.Core</RootNamespace>
+    <AssemblyName>Setup.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Pas de dépendance UI ni Launcher. -->
+  </ItemGroup>
+</Project>

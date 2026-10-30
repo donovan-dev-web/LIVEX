@@ -59,6 +59,10 @@ prism/LDK/.vs/
 prism/LDK/Plugins/VisualStudioTools/
 prism/LDK/*.sln
 prism/LDK/*.slnx
+
+# Builds PRISM et archives d'entrées : produits hors CI (ADR-010)
+prism/build/
+prism/LDK_Package/PrismLdk.zip
 docs/campaign-runs/
 echos/data/
 .mcp.json

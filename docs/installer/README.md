@@ -1,8 +1,8 @@
 # Installateur LIVEX — documentation de référence
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — documentation de référence, aucun installateur livré
-**Dernière mise à jour** : 21 octobre 2026
+**Statut** : [DRAFT] — installateur implémenté sur `feature/installer-implementation`, recette réelle non encore exécutée
+**Dernière mise à jour** : 29 octobre 2026 (alignement V1)
 
 ---
 
@@ -17,10 +17,12 @@ Unreal en ZIP), la **documentation hors ligne** et **SYNE-Mock**. Il fonctionne
 **sans privilèges administrateur** et ne touche jamais aux résultats de recherche
 sans demande explicite.
 
-> **État réel :** aucun installateur n'est livré à ce jour. Ce dossier est la
-> documentation de référence qui précède l'implémentation. Il remplace la
-> documentation retirée du dépôt et la spécification de base v0.2, qui n'était
-> qu'un document de travail.
+> **État réel :** l'installateur est en cours d'implémentation sur la branche
+> `feature/installer-implementation` (`installer/`), avec un **mode démonstration**
+> permettant de parcourir tout l'assistant sans rien installer (voir §5 bis).
+> Ce dossier reste la documentation de référence : il remplace la documentation
+> retirée du dépôt et la spécification de base v0.2, qui n'était qu'un document
+> de travail.
 
 ## 2. Ce que l'installateur fait
 
@@ -29,12 +31,13 @@ sans demande explicite.
 | **Installer** | assistant guidé en français et en anglais, huit étapes, sélection des composants |
 | **Acquérir** | modules facultatifs (LDK, documentation, SYNE-Mock) téléchargés depuis la release GitHub, vérifiés par empreinte, ou lus depuis une archive locale |
 | **Choisir les chemins** | répertoire logiciel et espace de travail séparés, validés avant écriture |
-| **Vérifier** | signature de la distribution, empreinte de chaque fichier, droits, espace disque |
+| **Vérifier** | empreinte SHA-256 de chaque fichier, forme du manifeste, droits, espace disque ; la confiance V1 repose sur ces empreintes, le `SHA256SUMS` publié et les attestations GitHub, pas sur une signature du manifeste (ADR-007 §3 bis) |
 | **Enregistrer** | installation par utilisateur, détection au lancement suivant, entrée système |
 | **Mettre à jour** | mise à jour manuelle en place, données conservées, downgrade refusé |
 | **Réparer** | vérification de l'inventaire, restauration des fichiers depuis la distribution |
 | **Désinstaller** | trois portées (logiciel, configuration, espace de travail), résultats de recherche protégés |
 | **Diagnostiquer** | journal UTF-8, mode `--check` sans interface, codes de sortie documentés |
+| **Automatiser** | modes non interactifs `--check`, `--unattended --config`, `--uninstall`, `--repair`, codes de sortie ([`COMMANDES.md`](COMMANDES.md)) |
 
 ## 3. Ce que l'installateur ne fait pas
 
@@ -44,7 +47,9 @@ sans demande explicite.
 - aucun téléchargement pour le socle ni pour PRISM : ils s'installent sans réseau ;
 - aucun module facultatif installé dans un projet Unreal : l'installateur
   dépose l'archive du LDK, il ne modifie pas le projet hôte ;
-- aucune association de fichiers, aucun `PATH`, aucune variable globale ;
+- aucune association de fichiers **autre que `.livexp`** (voir
+  [ADR-009](adr/ADR-009-association-fichiers-livexp.md)), aucun `PATH`, aucune
+  variable globale ;
 - aucune suppression de paquets `.livexp` ou d'archives sans extension
   explicite de la désinstallation ;
 - aucun support de macOS ni des architectures non x64.
@@ -54,6 +59,7 @@ sans demande explicite.
 | Public | Document | Contenu |
 | :-- | :-- | :-- |
 | **Utilisateur** | [`GUIDE-UTILISATEUR.md`](GUIDE-UTILISATEUR.md) | installer, mettre à jour, réparer, désinstaller, dépannage |
+| **Utilisateur / CI** | [`COMMANDES.md`](COMMANDES.md) | toutes les options, codes de sortie, fichier de réponses, journal |
 | **Développeur** | [`COMPONENTS.md`](COMPONENTS.md) | rôle, artefact et installabilité de chaque composant |
 | **Développeur** | [`ARCHITECTURE.md`](ARCHITECTURE.md) | découpage, flux, formats, sécurité, build |
 | **Développeur** | [`SPECIFICATION.md`](SPECIFICATION.md) | exigences normatives et critères d'acceptation |
@@ -101,6 +107,57 @@ dans le projet de l'utilisateur.
 
 Les versions Linux minimales sont fixées par la matrice de [`TESTING.md`](TESTING.md).
 
+## 5 bis. Mode démonstration (monde fictif)
+
+Pour vérifier les écrans, les flux et la mise en page **sans rien installer**,
+l'installateur embarque un **monde fictif** :
+
+| Élément | Comportement |
+| :-- | :-- |
+| Activation | `livex-setup --demo`, ou bascule « Mode démonstration » sur l'écran d'accueil ; activé automatiquement si aucune `distribution.json` n'accompagne l'exécutable |
+| Scénarios | `--demo-scenario fresh` (défaut), `existing`, `prism` (PRISM indisponible), `failure` (échec en cours d'écriture) |
+| Garantie | `DryRun` strict : aucune écriture disque, aucun téléchargement, aucun raccourci, aucune clé de registre, aucun fichier de journal |
+| Contenu | distribution imaginaire complète (socle, PRISM coché par défaut, LDK / documentation / SYNE-Mock en actifs, tailles et empreintes fictives mais déterministes), inventaire et installation existante de démonstration |
+| Plan | le plan réel est calculé puis rejoué action par action ; récapitulatif et progression sont ceux du produit |
+| Périmètre | installation, maintenance (mise à jour, réparation, gestion des composants, espace de travail) et désinstallation (portées logiciel / configuration / espace de travail) |
+| Commandes | `--demo`, `--demo-scenario`, `--check --demo` ; le reste des options est décrit dans [`COMMANDES.md`](COMMANDES.md) |
+
+### Lancer depuis les sources
+
+Prérequis : SDK .NET 10 (version épinglée dans `installer/global.json`).
+
+```bash
+# Lancement normal de l'assistant, depuis installer/
+cd installer
+dotnet run --project Setup.App
+
+# Lancement en mode fictif (aucune installation)
+dotnet run --project Setup.App -- --demo
+
+# Variantes de scénario
+dotnet run --project Setup.App -- --demo --demo-scenario=existing
+dotnet run --project Setup.App -- --demo --demo-scenario=prism
+dotnet run --project Setup.App -- --demo --demo-scenario=failure
+```
+
+Les mêmes commandes depuis la racine du dépôt :
+
+```bash
+dotnet run --project installer/Setup.App
+dotnet run --project installer/Setup.App -- --demo --demo-scenario=failure
+```
+
+Le `--` sépare les arguments de `dotnet run` de ceux de l'installateur : c'est
+la forme à utiliser, la seule dont le comportement est stable d'une version de
+SDK à l'autre. Le mode fictif est aussi accessible depuis l'écran d'accueil
+lorsque l'exécutable tourne sans `distribution.json` à côté de lui.
+
+Le monde fictif vit dans `Setup.Core.Simulation` (`DemoWorld`, `DemoScenario`,
+`SimulationExecutor`) et la plateforme est simulée par `SimulatedIntegration` et
+`InMemoryInstallationStore`. Il est couvert par les trois projets de tests de
+`installer/` (Unit, Integration, EndToEnd), dont un test qui vérifie qu'aucun
+répertoire n'est créé pendant le parcours complet.
+
 ## 6. Principes directeurs
 
 1. **Simplicité** — un parcours guidé, sans jargon, utilisable au clavier.
@@ -131,8 +188,10 @@ Les versions Linux minimales sont fixées par la matrice de [`TESTING.md`](TESTI
 | Données | racine de données, `settings.json`, espace de travail choisi | [ADR-004](adr/ADR-004-racine-de-donnees-et-espace-de-travail.md) |
 | Cycle de vie | enregistrement HKCU/XDG, inventaire, réparation | [ADR-005](adr/ADR-005-enregistrement-et-cycle-de-vie.md) |
 | Composants | socle et PRISM embarqués ; LDK, docs et SYNE-Mock facultatifs, actifs de release | [ADR-006](adr/ADR-006-perimetre-composants-v02.md) |
-| Confiance | manifeste signé Ed25519, Authenticode, GPG | [ADR-007](adr/ADR-007-manifeste-de-distribution-et-confiance.md) |
+| Confiance | empreintes SHA-256, `SHA256SUMS`, attestations GitHub, Authenticode conditionnel | [ADR-007](adr/ADR-007-manifeste-de-distribution-et-confiance.md) |
 | Acquisition | profil `core` (téléchargement explicite) ou `full` (hors ligne complet) | [ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md) |
+| Association `.livexp` | ouverture des paquets de campagne par le Launcher, en HKCU/XDG | [ADR-009](adr/ADR-009-association-fichiers-livexp.md) |
+| Release V1 | entrées PRISM/LDK produites hors CI, épinglées, composants publiés individuellement | [ADR-010](adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md) |
 
 ## 8. Vocabulaire
 
@@ -172,3 +231,7 @@ estimation non mesurée est signalée comme telle.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Remplace la documentation retirée |
+| 29 octobre 2026 | État d'implémentation, §5 bis (mode démonstration), ADR-009 | L'installateur existe en code ; l'association `.livexp` est décidée |
+| 29 octobre 2026 | §2 : la signature n'est pas vérifiée cryptographiquement | Constat de revue, tracé en INS-L-11 |
+| 29 octobre 2026 | Référence [`COMMANDES.md`](COMMANDES.md), statut d'implémentation, §5 bis complété, lancement `dotnet run` documenté | Les commandes sont implémentées et vérifiées |
+| 29 octobre 2026 | Confiance V1 (empreintes + sommes + attestations), ADR-010, état de release | Plan d'alignement V1 : D3, ADR-010 |

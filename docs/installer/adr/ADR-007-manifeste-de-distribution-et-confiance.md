@@ -1,8 +1,8 @@
 # ADR-007 : Manifeste de distribution, intégrité et chaîne de confiance
 
 **Composant** : LIVEX (installateur)
-**Statut** : [Accepted]
-**Dernière mise à jour** : 21 octobre 2026
+**Statut** : [Amended] — révisé le 29 octobre 2026, §3 bis (décision D3 du plan V1 ; production des entrées hors CI : ADR-010)
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : ADR-001, ADR-006
 **Source Monographie** : —
 
@@ -87,8 +87,9 @@ Règles :
 
 Ordre strict, avant toute modification du disque :
 
-1. vérifier la signature du manifeste (clé publique embarquée dans
-   `livex-setup`) ;
+1. vérifier la forme du manifeste (`ManifestValidator`), sans faire confiance à
+   un éventuel champ `signature` : la confiance V1 vient des empreintes
+   SHA-256 et du `SHA256SUMS` publié (§3 bis) ;
 2. vérifier que chaque fichier déclaré existe dans la charge utile, ou que
    chaque actif distant déclaré porte une URL, une taille et une empreinte ;
 3. vérifier taille et SHA-256 de chaque fichier embarqué ;
@@ -105,34 +106,51 @@ flux, sans extraction préalable dans un répertoire temporaire non maîtrisé.
 
 ### 3. Chaîne de confiance par plateforme
 
-| Plateforme | Mécanisme | Portée |
+### 3 bis. Chaîne de confiance V1 (révision du 29 octobre 2026)
+
+**Décision du mainteneur (plan V1, D3)** : la signature Ed25519 du manifeste et
+la signature GPG sont **retirées** de la chaîne de confiance V1. La clé publique
+d'Ed25519 serait embarquée dans l'installateur téléchargé depuis la même
+release : l'installateur ne peut pas garantir sa propre authenticité (voir §5),
+et la gestion de clés ajoutait une charge opérationnelle sans bénéfice réel
+pour une première release.
+
+| Élément | Mécanisme | Portée |
 | :-- | :-- | :-- |
-| Toutes | signature **Ed25519** de `distribution.json`, clé publique embarquée | intégrité et authenticité de la charge utile, vérifiables hors ligne par l'installateur |
-| Toutes | `SHA256SUMS` + signature détachée | vérification manuelle par l'utilisateur avant exécution |
-| Windows | **Authenticode** SHA-256 sur `livex-setup.exe`, `livex-launcher.exe`, `Simulation.Console.exe` | confiance du système, réduction des avertissements SmartScreen |
-| Linux | signature détachée (GPG) du paquet et des sommes | vérification par l'utilisateur et par les distributions |
+| `distribution.json` | **SHA-256 de chaque fichier**, obligatoire, vérifié à la copie et après téléchargement | intégrité de la charge utile et des actifs facultatifs |
+| Sommes | `SHA256SUMS` publié à côté des artefacts | vérification manuelle (`sha256sum -c`) |
+| Provenance | **attestations GitHub** (`actions/attest-build-provenance`) | vérification par `gh attestation verify` |
+| Windows | **Authenticode** SHA-256 sur `livex-setup.exe`, `livex-launcher.exe`, `Simulation.Console.exe` | confiance du système, SmartScreen — **si un certificat est disponible** |
+| Linux | aucune signature détachée | `SHA256SUMS` + attestations |
 
-La clé Ed25519 de release est distincte de la clé de signature de paquet
-`.livexp` (qui n'existe pas encore et relève d'une autre décision). Sa rotation
-est documentée : une nouvelle clé est publiée dans `SECURITY.md` et
-`docs/installer/RELEASE_AND_UPDATE.md` avant la première release qui l'utilise.
+La signature Authenticode, quand elle est active (`SIGNING_ENABLED`), est
+appliquée **avant** le calcul des empreintes : signer un exécutable modifie ses
+octets et invaliderait `files[].sha256`.
 
-La signature du manifeste couvre les empreintes des actifs distants : un actif
-remplacé sur la release est refusé même si l'URL et le nom sont identiques.
+Le schéma du manifeste conserve un champ `signature` **optionnel**, vide en V1,
+pour un usage futur. `ManifestValidator` ne s'en sert pas comme preuve.
 
-### 4. Signature Windows : condition de publication, pas de prototype
+Un actif remplacé sur la release est refusé par l'empreinte du manifeste, même
+si l'URL et le nom sont identiques.
 
-Une release **publique** Windows ne peut pas être diffusée sans signature
-Authenticode. Le certificat (OV ou Azure Trusted Signing), son coût et son
-automatisation sont instruits dans la roadmap ; tant qu'ils ne sont pas
-disponibles, les builds internes sont marqués `dev` dans le manifeste et
-l'installateur affiche un avertissement non bloquant.
+### 4. Signature Windows : activée si un certificat existe
+
+L'Authenticode reste la protection attendue contre SmartScreen, mais la V1 ne
+bloque plus la publication sur son obtention :
+
+- si un certificat est disponible (SignPath Foundation, OV ou Azure Trusted
+  Signing), la CI signe les exécutables avant hachage ;
+- sinon la release est publiée **non signée**, avec un avertissement SmartScreen
+  documenté dans `GUIDE-UTILISATEUR.md` et la note de release.
+
+Le point ouvert `INS-O-02` reste suivi : obtenir un certificat ne change pas la
+chaîne de vérification, seulement le confort de l'utilisateur Windows.
 
 ### 5. Ce que l'installateur ne prétend pas faire
 
-- Il ne vérifie pas sa propre authenticité : sur Linux, c'est à l'utilisateur
-  de vérifier la signature détachée avant exécution ; sur Windows, c'est
-  Authenticode et SmartScreen.
+- Il ne vérifie pas sa propre authenticité : `SHA256SUMS` et les attestations
+  sont vérifiés par l'utilisateur avant exécution, et sur Windows par
+  Authenticode quand il est disponible.
 - Il ne remplace pas un antivirus ni un contrôle de vulnérabilités.
 - Il ne signe pas les composants qu'il installe : chaque artefact est signé au
   build, pas à l'installation.
@@ -179,18 +197,22 @@ l'installateur affiche un avertissement non bloquant.
   sans le dénaturer (il ne porte ni licence, ni taille, ni empreinte, ni textes).
 - **Signer chaque fichier individuellement** : coûteux et lent ; une signature
   du manifeste couvre l'ensemble par transitivité.
-- **Pas de signature, seulement des sommes de contrôle** : détecte la
-  corruption, pas l'altération malveillante ; insuffisant pour une distribution
-  publique.
+- **Signature Ed25519 conservée** (option du plan V1) : rejetée, car la clé
+  publique voyage dans le même téléchargement que le manifeste, et sa rotation
+  crée une charge opérationnelle sans gain démontré pour la V1. Réouverture
+  possible si une infrastructure de signature centralisée (Sigstore, Azure
+  Trusted Signing) est adoptée.
 - **Signature uniquement Authenticode** : ne couvre pas Linux et ne permet pas
-  à l'installateur de vérifier la charge utile fichier par fichier.
+  à l'installateur de vérifier la charge utile fichier par fichier ; conservée
+  comme complément conditionnel, pas comme fondation.
 
 ## Validation / rejet
 
 - Un fichier modifié après signature fait échouer l'installation avant toute
   écriture, avec le nom du fichier fautif.
-- Un manifeste dont la signature ne correspond pas est refusé, même si toutes
-  les empreintes de fichiers sont valides.
+- Un fichier dont le SHA-256 ne correspond pas à `distribution.json` est refusé
+  avant écriture ; l'absence de `SHA256SUMS` publié est signalée à l'utilisateur
+  par la procédure de vérification du guide.
 - Un manifeste valide mais dont un fichier déclaré manque est refusé.
 - La vérification fonctionne sur une machine sans réseau pour le socle.
 - Un actif facultatif dont l'empreinte ne correspond pas est refusé avant
@@ -206,3 +228,4 @@ Réouverture si le projet adopte une infrastructure de signature centralisée
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Absence de manifeste d'installation et de chaîne de confiance |
+| 29 octobre 2026 | §2 à §5 révisés, §3 bis ajouté ; statut [Amended] | Plan V1, décision D3 : retrait d'Ed25519 et de GPG, Authenticode conditionnel, attestations GitHub |

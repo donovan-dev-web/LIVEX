@@ -1,0 +1,297 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="appName" xml:space="preserve"><value>LIVEX</value></data>
+  <data name="appTitle" xml:space="preserve"><value>Installateur LIVEX</value></data>
+  <data name="appTagline" xml:space="preserve"><value>Simulation, observation, représentation</value></data>
+
+  <data name="stepWelcome" xml:space="preserve"><value>Accueil</value></data>
+  <data name="stepLanguage" xml:space="preserve"><value>Langue</value></data>
+  <data name="stepLicense" xml:space="preserve"><value>Licence</value></data>
+  <data name="stepComponents" xml:space="preserve"><value>Composants</value></data>
+  <data name="stepPaths" xml:space="preserve"><value>Emplacements</value></data>
+  <data name="stepSummary" xml:space="preserve"><value>Récapitulatif</value></data>
+  <data name="stepProgress" xml:space="preserve"><value>Installation</value></data>
+  <data name="stepResult" xml:space="preserve"><value>Résultat</value></data>
+  <data name="stepMaintenance" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="stepUninstall" xml:space="preserve"><value>Désinstallation</value></data>
+
+  <data name="btnBack" xml:space="preserve"><value>Précédent</value></data>
+  <data name="btnNext" xml:space="preserve"><value>Suivant</value></data>
+  <data name="btnInstall" xml:space="preserve"><value>Installer</value></data>
+  <data name="btnFinish" xml:space="preserve"><value>Terminer</value></data>
+  <data name="btnCancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="btnBrowse" xml:space="preserve"><value>Parcourir…</value></data>
+  <data name="btnClose" xml:space="preserve"><value>Fermer</value></data>
+  <data name="btnQuit" xml:space="preserve"><value>Quitter</value></data>
+  <data name="btnRetry" xml:space="preserve"><value>Recommencer</value></data>
+  <data name="btnOpenFolder" xml:space="preserve"><value>Ouvrir le dossier</value></data>
+  <data name="btnLaunch" xml:space="preserve"><value>Lancer LIVEX</value></data>
+  <data name="btnUninstall" xml:space="preserve"><value>Désinstaller</value></data>
+  <data name="btnRepair" xml:space="preserve"><value>Réparer</value></data>
+  <data name="btnUpdate" xml:space="preserve"><value>Mettre à jour</value></data>
+  <data name="btnManage" xml:space="preserve"><value>Gérer les composants</value></data>
+  <data name="btnMaintenance" xml:space="preserve"><value>Ouvrir la maintenance</value></data>
+  <data name="btnContinue" xml:space="preserve"><value>Continuer</value></data>
+  <data name="btnConfirm" xml:space="preserve"><value>Confirmer</value></data>
+
+  <data name="badgeRequired" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="badgeBase" xml:space="preserve"><value>Composant de base</value></data>
+  <data name="badgeOptional" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="badgeUnavailable" xml:space="preserve"><value>Indisponible</value></data>
+  <data name="badgeDownload" xml:space="preserve"><value>Téléchargement</value></data>
+  <data name="badgeBundled" xml:space="preserve"><value>Embarqué</value></data>
+
+  <data name="welcomeTitle" xml:space="preserve"><value>Bienvenue dans LIVEX</value></data>
+  <data name="welcomeLead" xml:space="preserve"><value>Cet assistant installe, met à jour, répare et désinstalle la plateforme LIVEX sur votre poste, sans privilèges administrateur.</value></data>
+  <data name="welcomeFeature1Title" xml:space="preserve"><value>Une pile complète</value></data>
+  <data name="welcomeFeature1Body" xml:space="preserve"><value>Launcher, SYNE, ECHOS et PRISM, installés ensemble et prêts à lancer.</value></data>
+  <data name="welcomeFeature2Title" xml:space="preserve"><value>Sans élévation</value></data>
+  <data name="welcomeFeature2Body" xml:space="preserve"><value>Tout reste dans votre profil utilisateur : aucun UAC, aucun sudo.</value></data>
+  <data name="welcomeFeature3Title" xml:space="preserve"><value>Vérifié avant écriture</value></data>
+  <data name="welcomeFeature3Body" xml:space="preserve"><value>Empreintes, droits et espace disque sont contrôlés avant la moindre copie.</value></data>
+  <data name="welcomeHint" xml:space="preserve"><value>Choisissez une langue pour commencer.</value></data>
+  <data name="welcomeDetectedTitle" xml:space="preserve"><value>Installation détectée</value></data>
+  <data name="welcomeDetectedBody" xml:space="preserve"><value>LIVEX {0} est déjà installé dans {1}.</value></data>
+  <data name="welcomeMaintainBody" xml:space="preserve"><value>Une installation valide ne sera jamais écrasée sans passer par la maintenance.</value></data>
+
+  <data name="languageTitle" xml:space="preserve"><value>Langue de l'assistant</value></data>
+  <data name="languageIntro" xml:space="preserve"><value>Choisissez la langue utilisée pendant l'installation. Vous pourrez la modifier plus tard dans les préférences.</value></data>
+  <data name="languageFr" xml:space="preserve"><value>Français</value></data>
+  <data name="languageFrDesc" xml:space="preserve"><value>Interface, licence et messages en français.</value></data>
+  <data name="languageEn" xml:space="preserve"><value>English</value></data>
+  <data name="languageEnDesc" xml:space="preserve"><value>Interface, licence et messages en anglais.</value></data>
+  <data name="languageNote" xml:space="preserve"><value>Le journal technique reste lisible en anglais quelle que soit la langue choisie.</value></data>
+
+  <data name="licenseTitle" xml:space="preserve"><value>Licence et mentions</value></data>
+  <data name="licenseIntro" xml:space="preserve"><value>LIVEX est distribué sous licence GNU General Public License v3.0 ou ultérieure. Les composants tiers conservent leurs propres licences.</value></data>
+  <data name="licenseAccept" xml:space="preserve"><value>J'ai lu et j'accepte les termes de la licence</value></data>
+  <data name="licenseRequired" xml:space="preserve"><value>Vous devez accepter la licence pour continuer.</value></data>
+  <data name="licenseThirdParty" xml:space="preserve"><value>Mentions tierces</value></data>
+  <data name="licenseThirdPartyBody" xml:space="preserve"><value>LIVEX embarque le runtime .NET, Avalonia, SkiaSharp, HarfBuzz, CPython (ECHOS) et leurs dépendances. Le texte intégral des licences est conservé dans THIRD-PARTY-NOTICES.md, installé avec le produit.</value></data>
+
+  <data name="componentsTitle" xml:space="preserve"><value>Composants</value></data>
+  <data name="componentsIntro" xml:space="preserve"><value>Le socle est obligatoire. PRISM est un composant de base coché par défaut ; les modules facultatifs sont décochés et téléchargés à la demande.</value></data>
+  <data name="componentsCore" xml:space="preserve"><value>Socle obligatoire</value></data>
+  <data name="componentsBase" xml:space="preserve"><value>Composant de base</value></data>
+  <data name="componentsOptional" xml:space="preserve"><value>Modules facultatifs</value></data>
+  <data name="componentsUnavailable" xml:space="preserve"><value>Indisponible : {0}</value></data>
+  <data name="componentsPrismWarning" xml:space="preserve"><value>Sans PRISM, le rendu et l'interaction 3D ne seront pas disponibles. Vous pourrez l'ajouter plus tard depuis la maintenance.</value></data>
+  <data name="componentsSelected" xml:space="preserve"><value>{0} composant(s) sélectionné(s)</value></data>
+  <data name="componentsDownload" xml:space="preserve"><value>{0} à télécharger</value></data>
+  <data name="componentsPayload" xml:space="preserve"><value>{0} à installer</value></data>
+  <data name="componentsRequires" xml:space="preserve"><value>Requiert : {0}</value></data>
+  <data name="componentsNone" xml:space="preserve"><value>Aucun module facultatif proposé pour cette plateforme.</value></data>
+
+  <data name="pathsTitle" xml:space="preserve"><value>Emplacements</value></data>
+  <data name="pathsIntro" xml:space="preserve"><value>Choisissez où installer LIVEX et où ranger vos expériences. Rien n'est créé avant le récapitulatif.</value></data>
+  <data name="pathsInstallDir" xml:space="preserve"><value>Répertoire logiciel</value></data>
+  <data name="pathsInstallHint" xml:space="preserve"><value>Le Launcher et ses composants. La valeur proposée convient à la plupart des postes.</value></data>
+  <data name="pathsWorkspace" xml:space="preserve"><value>Espace de travail</value></data>
+  <data name="pathsWorkspaceHint" xml:space="preserve"><value>Vos expériences, paquets et rapports. Aucun résultat existant n'est déplacé.</value></data>
+  <data name="pathsDataRoot" xml:space="preserve"><value>Racine de données</value></data>
+  <data name="pathsDataRootHint" xml:space="preserve"><value>Préférences, cache et journaux. Modifiable par la variable d'environnement LIVEX_DATA.</value></data>
+  <data name="pathsDisk" xml:space="preserve"><value>Espace disque disponible : {0}</value></data>
+  <data name="pathsShortcut" xml:space="preserve"><value>Créer un raccourci sur le Bureau</value></data>
+  <data name="pathsLaunchAfter" xml:space="preserve"><value>Lancer LIVEX à la fin de l'installation</value></data>
+  <data name="pathsValid" xml:space="preserve"><value>Chemins valides.</value></data>
+
+  <data name="errEmpty" xml:space="preserve"><value>Indiquez un chemin.</value></data>
+  <data name="errInvalid" xml:space="preserve"><value>Ce chemin n'est pas valide.</value></data>
+  <data name="errForbidden" xml:space="preserve"><value>Ce répertoire est protégé. Choisissez un dossier de votre profil utilisateur.</value></data>
+  <data name="errHome" xml:space="preserve"><value>Le répertoire personnel ne peut pas être utilisé comme répertoire logiciel.</value></data>
+  <data name="errOverlap" xml:space="preserve"><value>Le répertoire logiciel et l'espace de travail ne peuvent pas se chevaucher.</value></data>
+  <data name="errWorkspaceData" xml:space="preserve"><value>L'espace de travail ne peut pas être la racine de données.</value></data>
+
+  <data name="summaryTitle" xml:space="preserve"><value>Récapitulatif</value></data>
+  <data name="summaryIntro" xml:space="preserve"><value>Vérifiez vos choix avant de lancer l'installation. Rien n'a encore été écrit.</value></data>
+  <data name="summaryOperation" xml:space="preserve"><value>Opération</value></data>
+  <data name="summaryOperationInstall" xml:space="preserve"><value>Installation</value></data>
+  <data name="summaryOperationMaintenance" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="summaryProductVersion" xml:space="preserve"><value>Version du produit</value></data>
+  <data name="summaryInstallDir" xml:space="preserve"><value>Répertoire logiciel</value></data>
+  <data name="summaryWorkspace" xml:space="preserve"><value>Espace de travail</value></data>
+  <data name="summaryDataRoot" xml:space="preserve"><value>Racine de données</value></data>
+  <data name="summaryComponents" xml:space="preserve"><value>Composants</value></data>
+  <data name="summaryDownload" xml:space="preserve"><value>À télécharger</value></data>
+  <data name="summaryPayload" xml:space="preserve"><value>Charge utile</value></data>
+  <data name="summaryWarningPrism" xml:space="preserve"><value>PRISM n'est pas sélectionné : le rendu 3D sera indisponible.</value></data>
+  <data name="summaryDemoNote" xml:space="preserve"><value>Monde fictif : l'installation sera simulée, aucune donnée ne sera écrite.</value></data>
+  <data name="summaryReady" xml:space="preserve"><value>Prêt à installer.</value></data>
+
+  <data name="progressTitle" xml:space="preserve"><value>Installation en cours</value></data>
+  <data name="progressPreparing" xml:space="preserve"><value>Préparation…</value></data>
+  <data name="progressStepOf" xml:space="preserve"><value>Étape {0} sur {1}</value></data>
+  <data name="progressCancel" xml:space="preserve"><value>Annuler l'installation</value></data>
+  <data name="progressCancelling" xml:space="preserve"><value>Annulation en cours…</value></data>
+  <data name="progressDemoNote" xml:space="preserve"><value>Simulation du monde fictif : rien n'est écrit sur le disque.</value></data>
+  <data name="progressDone" xml:space="preserve"><value>Terminé</value></data>
+  <data name="progressWaiting" xml:space="preserve"><value>En attente</value></data>
+  <data name="progressRunning" xml:space="preserve"><value>En cours</value></data>
+
+  <data name="resultSuccessTitle" xml:space="preserve"><value>Installation terminée</value></data>
+  <data name="resultSuccessBody" xml:space="preserve"><value>LIVEX {0} est installé dans {1}.</value></data>
+  <data name="resultWarnTitle" xml:space="preserve"><value>Installation terminée avec avertissements</value></data>
+  <data name="resultFailTitle" xml:space="preserve"><value>L'installation a échoué</value></data>
+  <data name="resultFailBody" xml:space="preserve"><value>Cause : {0}</value></data>
+  <data name="resultLog" xml:space="preserve"><value>Journal : {0}</value></data>
+  <data name="resultResiduals" xml:space="preserve"><value>Résidus : {0}</value></data>
+  <data name="resultDemoTitle" xml:space="preserve"><value>Parcours du monde fictif terminé</value></data>
+  <data name="resultDemoBody" xml:space="preserve"><value>Tous les écrans ont été parcourus. Aucun fichier n'a été écrit sur le disque.</value></data>
+  <data name="resultWarnings" xml:space="preserve"><value>Avertissements</value></data>
+
+  <data name="maintenanceTitle" xml:space="preserve"><value>Maintenance de LIVEX</value></data>
+  <data name="maintenanceIntro" xml:space="preserve"><value>Une installation valide a été détectée. Choisissez l'opération à effectuer ; vos données et votre espace de travail sont conservés par défaut.</value></data>
+  <data name="maintenanceDetected" xml:space="preserve"><value>LIVEX {0} installé dans {1}</value></data>
+  <data name="maintenanceInstalledOn" xml:space="preserve"><value>Installé le {0}</value></data>
+  <data name="maintenanceWorkspace" xml:space="preserve"><value>Espace de travail : {0}</value></data>
+  <data name="maintenanceUpdateTitle" xml:space="preserve"><value>Mettre à jour</value></data>
+  <data name="maintenanceUpdateBody" xml:space="preserve"><value>Installer la version {0} en conservant les données, l'espace de travail et les modules facultatifs. Un downgrade est refusé.</value></data>
+  <data name="maintenanceRepairTitle" xml:space="preserve"><value>Réparer</value></data>
+  <data name="maintenanceRepairBody" xml:space="preserve"><value>Vérifier l'inventaire des fichiers installés et restaurer ceux qui manquent ou sont altérés.</value></data>
+  <data name="maintenanceComponentsTitle" xml:space="preserve"><value>Gérer les composants</value></data>
+  <data name="maintenanceComponentsBody" xml:space="preserve"><value>Ajouter ou retirer un module facultatif sans réinstaller le socle obligatoire.</value></data>
+  <data name="maintenanceUninstallTitle" xml:space="preserve"><value>Désinstaller</value></data>
+  <data name="maintenanceUninstallBody" xml:space="preserve"><value>Retirer LIVEX en choisissant ce qui est conservé : configuration, espace de travail et résultats.</value></data>
+
+  <data name="uninstallTitle" xml:space="preserve"><value>Désinstaller LIVEX</value></data>
+  <data name="uninstallIntro" xml:space="preserve"><value>Choisissez ce qui doit être supprimé. Vos résultats de recherche sont protégés par défaut.</value></data>
+  <data name="uninstallScopeA" xml:space="preserve"><value>A — Logiciel uniquement (recommandé)</value></data>
+  <data name="uninstallScopeADesc" xml:space="preserve"><value>Supprime le Launcher, les composants et les raccourcis. Conserve les préférences, le cache, l'espace de travail et les résultats.</value></data>
+  <data name="uninstallScopeB" xml:space="preserve"><value>B — Logiciel et configuration</value></data>
+  <data name="uninstallScopeBDesc" xml:space="preserve"><value>Ajoute la suppression de settings.json et du cache de téléchargement. Conserve l'espace de travail et les résultats.</value></data>
+  <data name="uninstallScopeC" xml:space="preserve"><value>C — Logiciel, configuration et espace de travail</value></data>
+  <data name="uninstallScopeCDesc" xml:space="preserve"><value>Ajoute la suppression de l'espace de travail. Les paquets, archives et sessions sont conservés sauf extension explicite.</value></data>
+  <data name="uninstallPurge" xml:space="preserve"><value>Supprimer aussi les résultats de recherche</value></data>
+  <data name="uninstallPurgeDesc" xml:space="preserve"><value>Paquets .livexp, archives scellées et sessions. Cette suppression est définitive.</value></data>
+  <data name="uninstallWorkspaceSummary" xml:space="preserve"><value>L'espace de travail {0} contient {1} fichier(s) ({2}).</value></data>
+  <data name="uninstallConfirm" xml:space="preserve"><value>Je comprends que les éléments sélectionnés seront supprimés définitivement.</value></data>
+  <data name="uninstallKeep" xml:space="preserve"><value>Les journaux de l'installateur ne sont jamais supprimés.</value></data>
+  <data name="uninstallAction" xml:space="preserve"><value>Désinstaller</value></data>
+
+  <data name="maintenanceWorkspaceTitle" xml:space="preserve"><value>Changer l'espace de travail</value></data>
+  <data name="maintenanceWorkspaceBody" xml:space="preserve"><value>Choisissez un nouveau dossier pour les expériences et les rapports. L'ancien dossier est conservé tel quel : aucun fichier n'est déplacé ni supprimé.</value></data>
+  <data name="btnChangeWorkspace" xml:space="preserve"><value>Changer l'espace de travail</value></data>
+  <data name="summaryOperationWorkspace" xml:space="preserve"><value>Changer l'espace de travail</value></data>
+  <data name="summaryWorkspaceKeepLabel" xml:space="preserve"><value>Ancien espace</value></data>
+  <data name="summaryWorkspaceKeep" xml:space="preserve"><value>L'ancien dossier est conservé : déplacez vous-même les fichiers que vous souhaitez y reprendre.</value></data>
+
+  <data name="demoBadge" xml:space="preserve"><value>Monde fictif</value></data>
+  <data name="demoBanner" xml:space="preserve"><value>Mode démonstration : parcours complet, aucune écriture réelle, aucun téléchargement.</value></data>
+  <data name="demoScenario" xml:space="preserve"><value>Scénario</value></data>
+  <data name="demoScenarioFresh" xml:space="preserve"><value>Installation neuve</value></data>
+  <data name="demoScenarioExisting" xml:space="preserve"><value>Installation existante</value></data>
+  <data name="demoScenarioFailure" xml:space="preserve"><value>Échec simulé</value></data>
+  <data name="demoExit" xml:space="preserve"><value>Quitter la démo</value></data>
+  <data name="demoHint" xml:space="preserve"><value>Monde fictif : données inventées, parcours réel.</value></data>
+  <data name="demoWorldTitle" xml:space="preserve"><value>Monde fictif</value></data>
+  <data name="demoWorldBody" xml:space="preserve"><value>Une distribution imaginaire « Atelier des Récits » permet de vérifier chaque écran, chaque état et chaque message sans installer LIVEX.</value></data>
+  <data name="demoFailureBody" xml:space="preserve"><value>Scénario d'échec : la vérification d'un fichier de la charge utile échoue, comme sur une distribution altérée.</value></data>
+
+  <data name="demoEnableTitle" xml:space="preserve"><value>Essayer sans installer</value></data>
+  <data name="demoEnableBody" xml:space="preserve"><value>Cette distribution est réelle. Activez le monde fictif pour dérouler tout le parcours (installation, maintenance, désinstallation) sans rien écrire sur ce poste.</value></data>
+  <data name="demoEnableAction" xml:space="preserve"><value>Activer le monde fictif</value></data>
+
+  <data name="checkPlatform" xml:space="preserve"><value>Plateforme</value></data>
+  <data name="checkPathPolicy" xml:space="preserve"><value>Politique de chemins</value></data>
+  <data name="checkWritable" xml:space="preserve"><value>Droits d'écriture</value></data>
+  <data name="checkDisk" xml:space="preserve"><value>Espace disque</value></data>
+  <data name="checkProcess" xml:space="preserve"><value>Processus LIVEX</value></data>
+  <data name="checkPrerequisites" xml:space="preserve"><value>Prérequis système</value></data>
+  <data name="checkManifest" xml:space="preserve"><value>Manifeste</value></data>
+  <data name="checkSignature" xml:space="preserve"><value>Empreintes des fichiers</value></data>
+  <data name="preflightTitle" xml:space="preserve"><value>Contrôles préalables</value></data>
+  <data name="preflightFailed" xml:space="preserve"><value>Certains contrôles ont échoué. Corrigez-les puis réessayez.</value></data>
+
+  <data name="stagePlan" xml:space="preserve"><value>Préparation du plan</value></data>
+  <data name="stageDirectories" xml:space="preserve"><value>Création des répertoires</value></data>
+  <data name="stageCopy" xml:space="preserve"><value>Copie des fichiers</value></data>
+  <data name="stageVerify" xml:space="preserve"><value>Vérification des empreintes</value></data>
+  <data name="stageSettings" xml:space="preserve"><value>Écriture des préférences</value></data>
+  <data name="stageRegister" xml:space="preserve"><value>Enregistrement de l'installation</value></data>
+  <data name="stageShortcuts" xml:space="preserve"><value>Création des raccourcis</value></data>
+  <data name="stageDownload" xml:space="preserve"><value>Téléchargement des modules</value></data>
+  <data name="stageExtract" xml:space="preserve"><value>Extraction des modules</value></data>
+  <data name="stageFinalize" xml:space="preserve"><value>Finalisation</value></data>
+
+  <data name="filesCount" xml:space="preserve"><value>{0} fichier(s)</value></data>
+  <data name="sizeBytes" xml:space="preserve"><value>{0} o</value></data>
+  <data name="destructiveTitle" xml:space="preserve"><value>Suppression définitive</value></data>
+  <data name="welcomeSubtitle" xml:space="preserve"><value>Configuration de LIVEX sur ce poste</value></data>
+  <data name="languageSubtitle" xml:space="preserve"><value>La langue de l'assistant</value></data>
+  <data name="licenseSubtitle" xml:space="preserve"><value>Licence du produit et composants tiers</value></data>
+  <data name="componentsSubtitle" xml:space="preserve"><value>Socle, composant de base et modules facultatifs</value></data>
+  <data name="pathsSubtitle" xml:space="preserve"><value>Répertoire logiciel, espace de travail et données</value></data>
+  <data name="summarySubtitle" xml:space="preserve"><value>Vérification avant écriture</value></data>
+  <data name="progressSubtitle" xml:space="preserve"><value>Écriture des fichiers et intégration système</value></data>
+  <data name="resultTitle" xml:space="preserve"><value>Résultat</value></data>
+  <data name="resultSubtitle" xml:space="preserve"><value>Bilan de l'opération</value></data>
+  <data name="maintenanceSubtitle" xml:space="preserve"><value>Mise à jour, réparation, composants ou désinstallation</value></data>
+  <data name="uninstallSubtitle" xml:space="preserve"><value>Portée de la suppression</value></data>
+  <data name="resultMaintenanceSuccess" xml:space="preserve"><value>Maintenance terminée</value></data>
+  <data name="resultMaintenanceBody" xml:space="preserve"><value>L'opération est terminée. Vos données, votre configuration et votre espace de travail sont conservés.</value></data>
+  <data name="resultUninstallSuccess" xml:space="preserve"><value>Désinstallation terminée</value></data>
+  <data name="resultUninstallBody" xml:space="preserve"><value>LIVEX a été retiré. Les éléments conservés restent dans la racine de données ; les journaux de l'installateur ne sont jamais supprimés.</value></data>
+  <data name="resultCancelTitle" xml:space="preserve"><value>Opération annulée</value></data>
+  <data name="resultCancelBody" xml:space="preserve"><value>Aucune installation partielle n'a été conservée. Le journal contient le détail des actions annulées.</value></data>
+  <data name="demoScenarioPrism" xml:space="preserve"><value>PRISM indisponible</value></data>
+  <data name="btnApply" xml:space="preserve"><value>Appliquer</value></data>
+</root>
