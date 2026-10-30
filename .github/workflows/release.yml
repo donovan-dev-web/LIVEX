@@ -10,6 +10,11 @@ on:
       - "echos-v*"
       - "prism-v*"
       - "livex-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag à publier (ex. livex-v1.0.0)"
+        required: true
 
 env:
   DOTNET_VERSION: "10.0.x"
@@ -135,26 +140,46 @@ jobs:
       - name: Publier le Launcher
         working-directory: launcher
         run: dotnet publish Launcher.App/Launcher.App.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/launcher"
+      - name: Stage ECHOS
+        shell: bash
+        run: |
+          rm -rf "dist/staging/${{ matrix.rid }}/echos"
+          mkdir -p "dist/staging/${{ matrix.rid }}/echos"
+          cp -r echos/. "dist/staging/${{ matrix.rid }}/echos/"
+          rm -rf "dist/staging/${{ matrix.rid }}/echos/.venv" "dist/staging/${{ matrix.rid }}/echos/.pytest_cache" "dist/staging/${{ matrix.rid }}/echos/.coverage"
+          cd "dist/staging/${{ matrix.rid }}/echos"
+          python -m venv .venv
+          if [ -f .venv/Scripts/python.exe ]; then
+            .venv/Scripts/python.exe -m pip install --upgrade pip
+            .venv/Scripts/python.exe -m pip install -r requirements.txt
+          else
+            .venv/bin/python -m pip install --upgrade pip
+            .venv/bin/python -m pip install -r requirements.txt
+          fi
+
       - name: Télécharger les entrées externes
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p dist/inputs
-          gh release download "prism-v${{ github.ref_name#livex-v }}" --repo "${{ github.repository }}" --dir dist/inputs || true
+          VERSION="${GITHUB_REF_NAME#livex-v}"
+          gh release download "prism-v${VERSION}" --repo "${{ github.repository }}" --dir dist/inputs || true
       - name: Assembler la distribution
+        shell: bash
         run: |
           python scripts/release/build_distribution.py \
             --rid ${{ matrix.rid }} \
             --profile core \
             --tag ${{ github.ref_name }} \
-            --version ${{ github.ref_name#livex-v }} \
+            --version "${GITHUB_REF_NAME#livex-v}" \
             --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
             --dist-inputs "${{ github.workspace }}/dist/inputs"
           python scripts/release/build_distribution.py \
             --rid ${{ matrix.rid }} \
             --profile full \
             --tag ${{ github.ref_name }} \
-            --version ${{ github.ref_name#livex-v }} \
+            --version "${GITHUB_REF_NAME#livex-v}" \
             --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
             --dist-inputs "${{ github.workspace }}/dist/inputs" \
             --output "${{ github.workspace }}/dist/${{ matrix.rid }}-full"
@@ -181,7 +206,7 @@ jobs:
         with:
           path: dist/artifacts
       - name: Extraire le corps de release
-        run: python scripts/release/extract_changelog.py "${{ github.ref_name#livex-v }}" --file CHANGELOG.md --output /tmp/release-notes.md
+        run: python scripts/release/extract_changelog.py "${GITHUB_REF_NAME#livex-v}" --file CHANGELOG.md --output /tmp/release-notes.md
       - name: Créer SHA256SUMS
         run: |
           cd dist/artifacts
