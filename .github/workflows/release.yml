@@ -158,6 +158,7 @@ jobs:
           fi
 
       - name: Télécharger les entrées externes
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -165,6 +166,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#livex-v}"
           gh release download "prism-v${VERSION}" --repo "${{ github.repository }}" --dir dist/inputs || true
       - name: Assembler la distribution
+        shell: bash
         run: |
           python scripts/release/build_distribution.py \
             --rid ${{ matrix.rid }} \
