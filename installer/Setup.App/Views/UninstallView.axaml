@@ -1,0 +1,56 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.UninstallView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="14" MaxWidth="800" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+    <TextBlock Text="{l:Tr uninstallIntro}" Classes="muted" />
+
+    <Border Classes="card" Padding="14">
+      <RadioButton GroupName="uninstallScope" IsChecked="{Binding IsScopeA}"
+                   AutomationProperties.Name="{l:Tr uninstallScopeA}">
+        <StackPanel Spacing="3" Margin="4,0,0,0">
+          <TextBlock Text="{l:Tr uninstallScopeA}" Classes="h3" />
+          <TextBlock Text="{l:Tr uninstallScopeADesc}" Classes="muted" />
+        </StackPanel>
+      </RadioButton>
+    </Border>
+
+    <Border Classes="card" Padding="14">
+      <RadioButton GroupName="uninstallScope" IsChecked="{Binding IsScopeB}"
+                   AutomationProperties.Name="{l:Tr uninstallScopeB}">
+        <StackPanel Spacing="3" Margin="4,0,0,0">
+          <TextBlock Text="{l:Tr uninstallScopeB}" Classes="h3" />
+          <TextBlock Text="{l:Tr uninstallScopeBDesc}" Classes="muted" />
+        </StackPanel>
+      </RadioButton>
+    </Border>
+
+    <Border Classes="card" Padding="14" BorderBrush="#55E5646B">
+      <RadioButton GroupName="uninstallScope" IsChecked="{Binding IsScopeC}"
+                   AutomationProperties.Name="{l:Tr uninstallScopeC}">
+        <StackPanel Spacing="3" Margin="4,0,0,0">
+          <TextBlock Text="{l:Tr uninstallScopeC}" Classes="h3" />
+          <TextBlock Text="{l:Tr uninstallScopeCDesc}" Classes="muted" />
+          <TextBlock Text="{Binding UninstallWorkspaceText}" Classes="tiny"
+                     Foreground="{StaticResource BrandDanger}" IsVisible="{Binding IsScopeC}" />
+        </StackPanel>
+      </RadioButton>
+    </Border>
+
+    <Border Classes="card" Padding="14" IsVisible="{Binding IsPurgeAvailable}"
+            BorderBrush="#55E5646B" Background="#1FE5646B">
+      <StackPanel Spacing="4">
+        <CheckBox IsChecked="{Binding PurgeResearch}" Content="{l:Tr uninstallPurge}" FontWeight="Medium"
+                  AutomationProperties.Name="{l:Tr uninstallPurge}" />
+        <TextBlock Text="{l:Tr uninstallPurgeDesc}" Classes="tiny" />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="inset" Padding="14">
+      <CheckBox IsChecked="{Binding UninstallConfirmed}" Content="{l:Tr uninstallConfirm}"
+                AutomationProperties.Name="{l:Tr uninstallConfirm}" />
+    </Border>
+
+    <TextBlock Text="{l:Tr uninstallKeep}" Classes="tiny" />
+  </StackPanel>
+</UserControl>

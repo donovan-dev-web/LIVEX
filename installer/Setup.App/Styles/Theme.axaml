@@ -1,0 +1,195 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <LinearGradientBrush x:Key="BrandGoldGradient" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#F2B85F" Offset="0" />
+      <GradientStop Color="#C9862E" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="BrandGoldGradientHover" StartPoint="0%,0%" EndPoint="100%,100%">
+      <GradientStop Color="#F8C674" Offset="0" />
+      <GradientStop Color="#D6953A" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="BrandGold" Color="#E2A44A" />
+    <SolidColorBrush x:Key="BrandGoldDeep" Color="#C9862E" />
+    <SolidColorBrush x:Key="BrandViolet" Color="#8B7BE8" />
+    <SolidColorBrush x:Key="BrandSuccess" Color="#4FBF8B" />
+    <SolidColorBrush x:Key="BrandWarning" Color="#E8B44A" />
+    <SolidColorBrush x:Key="BrandDanger" Color="#E5646B" />
+  </Styles.Resources>
+
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource BrandBg}" />
+    <Setter Property="FontFamily" Value="Segoe UI, Inter, Noto Sans, sans-serif" />
+  </Style>
+
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource BrandText}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="TextBlock.h1">
+    <Setter Property="FontSize" Value="26" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="-0.3" />
+  </Style>
+
+  <Style Selector="TextBlock.h2">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.h3">
+    <Setter Property="FontSize" Value="13.5" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{DynamicResource BrandTextMuted}" />
+    <Setter Property="FontSize" Value="12.5" />
+  </Style>
+
+  <Style Selector="TextBlock.tiny">
+    <Setter Property="Foreground" Value="{DynamicResource BrandTextMuted}" />
+    <Setter Property="FontSize" Value="11" />
+  </Style>
+
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+    <Setter Property="FontSize" Value="11.5" />
+  </Style>
+
+  <Style Selector="TextBlock.gold">
+    <Setter Property="Foreground" Value="{StaticResource BrandGold}" />
+  </Style>
+
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource BrandSurface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrandBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <Style Selector="Border.inset">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrandBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="12" />
+  </Style>
+
+  <Style Selector="Border.divider">
+    <Setter Property="Background" Value="{DynamicResource BrandBorder}" />
+    <Setter Property="Height" Value="1" />
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="Foreground" Value="{DynamicResource BrandText}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrandBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="18,8" />
+    <Setter Property="MinHeight" Value="38" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceHover}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrandBorderStrong}" />
+  </Style>
+
+  <Style Selector="Button:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+  </Style>
+
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{StaticResource BrandGoldGradient}" />
+    <Setter Property="Foreground" Value="#1B1330" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Padding" Value="22,8" />
+  </Style>
+
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{StaticResource BrandGoldGradientHover}" />
+  </Style>
+
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource BrandTextMuted}" />
+  </Style>
+
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource BrandTextMuted}" />
+  </Style>
+
+  <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource BrandText}" />
+  </Style>
+
+  <Style Selector="Button.danger">
+    <Setter Property="Background" Value="{StaticResource BrandDanger}" />
+    <Setter Property="Foreground" Value="#1B0F12" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#F07A80" />
+  </Style>
+
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{StaticResource BrandGold}" />
+    <Setter Property="Padding" Value="4,2" />
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
+
+  <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="TextElement.Foreground" Value="{StaticResource BrandGoldDeep}" />
+  </Style>
+
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="Foreground" Value="{DynamicResource BrandText}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrandBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+    <Setter Property="Padding" Value="10,8" />
+    <Setter Property="MinHeight" Value="38" />
+    <Setter Property="CaretBrush" Value="{StaticResource BrandGold}" />
+    <Setter Property="SelectionBrush" Value="{StaticResource BrandViolet}" />
+  </Style>
+
+  <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+    <Setter Property="BorderBrush" Value="{StaticResource BrandGold}" />
+  </Style>
+
+  <Style Selector="CheckBox, RadioButton">
+    <Setter Property="Foreground" Value="{DynamicResource BrandText}" />
+    <Setter Property="MinHeight" Value="28" />
+  </Style>
+
+  <Style Selector="ProgressBar">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="Foreground" Value="{StaticResource BrandGoldGradient}" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+
+  <Style Selector="ScrollViewer">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="ToolTip">
+    <Setter Property="Background" Value="{DynamicResource BrandSurfaceAlt}" />
+    <Setter Property="Foreground" Value="{DynamicResource BrandText}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrandBorder}" />
+  </Style>
+</Styles>

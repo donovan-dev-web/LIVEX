@@ -1,0 +1,143 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Setup.App.Localization"
+        xmlns:vm="clr-namespace:Setup.App.ViewModels"
+        x:Class="Setup.App.MainWindow"
+        Title="{l:Tr appTitle}"
+        Width="1060" Height="740"
+        MinWidth="980" MinHeight="680"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BrandBg}">
+
+  <Grid ColumnDefinitions="286,*">
+    <!-- Barre latérale : marque et étapes -->
+    <Border Grid.Column="0"
+            Background="{DynamicResource BrandSidebar}"
+            BorderBrush="{DynamicResource BrandBorder}"
+            BorderThickness="0,0,1,0">
+      <DockPanel Margin="22,26,22,22">
+        <StackPanel DockPanel.Dock="Top" Spacing="14">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <Image Width="44" Height="44"
+                   Source="avares://livex-setup/Assets/livex-app-icon.png" />
+            <StackPanel VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="{l:Tr appName}" FontSize="19" FontWeight="SemiBold" />
+              <TextBlock Text="{l:Tr appTagline}" Classes="tiny" />
+            </StackPanel>
+          </StackPanel>
+
+          <Border Classes="inset" Padding="10,8" IsVisible="{Binding IsDemo}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="◈" Foreground="{StaticResource BrandViolet}" />
+              <TextBlock Text="{l:Tr demoBadge}" FontSize="11.5" Foreground="{StaticResource BrandViolet}" />
+              <TextBlock Text="{Binding Manifest.Version}" Classes="tiny" VerticalAlignment="Center" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="divider" Margin="0,4" />
+
+          <ItemsControl ItemsSource="{Binding Steps}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="28,*" Margin="0,0,0,15">
+                  <Border Width="24" Height="24" CornerRadius="12"
+                          Background="{Binding MarkerBackground}" VerticalAlignment="Top">
+                    <TextBlock Text="{Binding Marker}"
+                               FontSize="11" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="{Binding MarkerForeground}" />
+                  </Border>
+                  <TextBlock Grid.Column="1" Text="{Binding Label}"
+                             FontSize="13" VerticalAlignment="Center"
+                             Foreground="{Binding LabelForeground}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Spacing="6" VerticalAlignment="Bottom">
+          <Border Classes="divider" Margin="0,8" />
+          <TextBlock Classes="tiny" Text="{Binding Manifest.Version, StringFormat={}LIVEX {0}}" />
+          <TextBlock Classes="tiny" Text="GPL-3.0-or-later" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Contenu -->
+    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*,Auto">
+      <StackPanel Grid.Row="0" Margin="34,30,34,10" Spacing="4">
+        <TextBlock Text="{Binding StepTitle}" Classes="h1" />
+        <TextBlock Text="{Binding StepSubtitle}" Classes="muted" />
+      </StackPanel>
+
+      <!-- Bandeau monde fictif -->
+      <Border Grid.Row="1" IsVisible="{Binding IsDemo}"
+              Margin="34,6,34,0" Padding="14,10"
+              CornerRadius="10"
+              Background="#1F8B7BE8" BorderBrush="#668B7BE8" BorderThickness="1">
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+          <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="{l:Tr demoWorldTitle}" FontWeight="SemiBold" FontSize="13"
+                       Foreground="#D8D1FF" />
+            <TextBlock Text="{Binding DemoBannerText}" Classes="muted" FontSize="11.5" />
+          </StackPanel>
+          <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <RadioButton GroupName="demoScenario" Content="{l:Tr demoScenarioFresh}"
+                         IsChecked="{Binding IsDemoFresh, Mode=OneWay}"
+                         Command="{Binding DemoScenarioCommand}" CommandParameter="fresh"
+                         FontSize="11.5" />
+            <RadioButton GroupName="demoScenario" Content="{l:Tr demoScenarioExisting}"
+                         IsChecked="{Binding IsDemoExisting, Mode=OneWay}"
+                         Command="{Binding DemoScenarioCommand}" CommandParameter="existing"
+                         FontSize="11.5" />
+            <RadioButton GroupName="demoScenario" Content="{l:Tr demoScenarioPrism}"
+                         IsChecked="{Binding IsDemoPrismAbsent, Mode=OneWay}"
+                         Command="{Binding DemoScenarioCommand}" CommandParameter="prism"
+                         FontSize="11.5" />
+            <RadioButton GroupName="demoScenario" Content="{l:Tr demoScenarioFailure}"
+                         IsChecked="{Binding IsDemoFailure, Mode=OneWay}"
+                         Command="{Binding DemoScenarioCommand}" CommandParameter="failure"
+                         FontSize="11.5" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Row="2" Margin="34,10,34,0" VerticalScrollBarVisibility="Auto">
+        <ContentControl Content="{Binding CurrentView}" />
+      </ScrollViewer>
+
+      <Border Grid.Row="3" BorderBrush="{DynamicResource BrandBorder}" BorderThickness="0,1,0,0"
+              Background="{DynamicResource BrandBg}" Padding="34,14">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="{l:Tr demoHint}" Classes="tiny" IsVisible="{Binding IsDemo}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="{l:Tr btnQuit}" Classes="ghost" Command="{Binding QuitCommand}"
+                    AutomationProperties.Name="{l:Tr btnQuit}"
+                    IsVisible="{Binding ShowQuit}" />
+            <Button Content="{l:Tr btnBack}" Command="{Binding BackCommand}"
+                    AutomationProperties.Name="{l:Tr btnBack}"
+                    IsVisible="{Binding ShowBack}" />
+            <Button Content="{l:Tr btnNext}" Classes="primary" Command="{Binding NextCommand}"
+                    AutomationProperties.Name="{l:Tr btnNext}" IsDefault="True"
+                    IsVisible="{Binding ShowNext}" IsEnabled="{Binding CanGoNextEnabled}" />
+            <Button Content="{Binding InstallButtonLabel}" Classes="primary" Command="{Binding InstallCommand}"
+                    AutomationProperties.Name="{Binding InstallButtonLabel}" IsDefault="True"
+                    IsVisible="{Binding ShowInstall}" IsEnabled="{Binding CanInstallEnabled}" />
+            <Button Content="{l:Tr progressCancel}" Command="{Binding CancelCommand}"
+                    AutomationProperties.Name="{l:Tr progressCancel}" IsCancel="True"
+                    IsVisible="{Binding ShowCancel}" />
+            <Button Content="{l:Tr btnFinish}" Classes="primary" Command="{Binding FinishCommand}"
+                    AutomationProperties.Name="{l:Tr btnFinish}" IsDefault="True"
+                    IsVisible="{Binding ShowFinish}" />
+            <Button Content="{l:Tr btnUninstall}" Classes="danger" Command="{Binding ConfirmUninstallCommand}"
+                    AutomationProperties.Name="{l:Tr btnUninstall}"
+                    IsVisible="{Binding ShowUninstallConfirm}" IsEnabled="{Binding CanConfirmUninstall}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

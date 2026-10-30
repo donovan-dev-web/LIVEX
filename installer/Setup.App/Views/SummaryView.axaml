@@ -1,0 +1,57 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             x:Class="Setup.App.Views.SummaryView"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="using:Setup.App.Localization">
+  <StackPanel Spacing="16" MaxWidth="800" HorizontalAlignment="Stretch" Margin="0,0,0,20">
+    <TextBlock Text="{l:Tr summaryIntro}" Classes="muted" />
+
+    <Border Classes="card" Padding="6">
+      <ItemsControl ItemsSource="{Binding SummaryRows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="220,*" Margin="12,7">
+              <TextBlock Text="{Binding Label}" Classes="muted" VerticalAlignment="Top" />
+              <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" FontSize="12.5" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </Border>
+
+    <Border Classes="card" Padding="12" BorderBrush="#55E8B44A" Background="#1FE8B44A"
+            IsVisible="{Binding PrismWarningVisible}">
+      <TextBlock Text="{l:Tr summaryWarningPrism}" Classes="muted" />
+    </Border>
+
+    <Border Classes="card" Padding="12" BorderBrush="#558B7BE8" Background="#1F8B7BE8"
+            IsVisible="{Binding IsDemo}">
+      <TextBlock Text="{l:Tr summaryDemoNote}" Classes="muted" />
+    </Border>
+
+    <StackPanel Spacing="8">
+      <TextBlock Text="{l:Tr preflightTitle}" Classes="h2" />
+      <TextBlock Text="{l:Tr progressPreparing}" Classes="tiny" IsVisible="{Binding PreflightRunning}" />
+      <Border Classes="inset" Padding="12">
+        <ItemsControl ItemsSource="{Binding PreflightChecks}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="24,180,*" Margin="0,3">
+                <TextBlock Text="{Binding Marker}" Foreground="{Binding MarkerBrush}" FontWeight="Bold" />
+                <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="12" />
+                <TextBlock Grid.Column="2" Text="{Binding Message}" Classes="tiny" IsVisible="{Binding HasMessage}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Border>
+    </StackPanel>
+
+    <Border Classes="card" Padding="12" BorderBrush="#55E5646B" Background="#1FE5646B"
+            IsVisible="{Binding PreflightFailed}">
+      <TextBlock Text="{l:Tr preflightFailed}" Foreground="{StaticResource BrandDanger}" />
+    </Border>
+
+    <TextBlock Text="{l:Tr summaryReady}" Classes="tiny" Foreground="{StaticResource BrandSuccess}"
+               IsVisible="{Binding !PreflightFailed}" />
+  </StackPanel>
+</UserControl>

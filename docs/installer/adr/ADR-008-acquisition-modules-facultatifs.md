@@ -2,8 +2,8 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [Accepted]
-**Dernière mise à jour** : 21 octobre 2026
-**Dépend de** : ADR-003, ADR-006, ADR-007
+**Dernière mise à jour** : 29 octobre 2026
+**Dépend de** : ADR-003, ADR-006, ADR-007, ADR-010
 **Source Monographie** : —
 **Remplace** : la version du 21 octobre 2026 qui incluait PRISM parmi les actifs téléchargés
 
@@ -57,7 +57,7 @@ les trois archives existent pour la plateforme ; une archive manquante fait
 
 ### 2. Le manifeste décrit les actifs, l'installateur ne devine rien
 
-Chaque module facultatif porte sa provenance dans le manifeste signé :
+Chaque module facultatif porte sa provenance dans le manifeste de distribution :
 
 ```json
 {
@@ -86,6 +86,10 @@ Aucune autre source n'est acceptée : pas d'API GitHub, pas de résolution de
 dernière version, pas de miroir tiers. L'URL est celle du tag exact de la
 release ; elle est stable et ne dépend d'aucun quota d'API.
 
+Les actifs recopiés depuis la release d'entrées `prism-v1.0.0` (LDK) pointent
+malgré tout vers le tag **`livex-v1.0.0`** courant : une installation ne consulte
+qu'une seule release, celle de la distribution qu'elle installe (ADR-010 §3).
+
 Règles :
 
 - un module dont l'actif n'existe pas pour la plateforme est déclaré
@@ -93,8 +97,9 @@ Règles :
 - `size` et `sha256` sont obligatoires pour tout actif distant ;
 - l'URL doit pointer vers le dépôt du projet et vers le tag de la release
   courante ; une URL d'un autre hôte est refusée au build ;
-- la signature du manifeste (ADR-007) couvre les empreintes des actifs
-  distants : un manifeste valide engage donc aussi les archives à télécharger.
+- les empreintes des actifs distants sont couvertes par le `SHA256SUMS` et les
+  attestations de la release (ADR-007 §3 bis) : une distribution vérifiée engage
+  donc aussi les archives à télécharger.
 
 ### 3. Acquisition déclenchée par l'utilisateur, jamais en arrière-plan
 
@@ -116,7 +121,7 @@ Règles :
 | **Transport** | HTTPS uniquement, certificat validé, redirections limitées à `github.com` et `objects.githubusercontent.com`, proxy système respecté |
 | **Reprise** | fichier partiel `<sha256>.part`, reprise par `Range` si le serveur l'accepte, sinon reprise à zéro |
 | **Cache** | `<racine de données>/cache/downloads/<sha256>` ; un actif déjà présent et vérifié n'est pas retéléchargé |
-| **Vérification** | taille puis SHA-256 après réception complète, **avant** toute extraction ou copie ; signature du manifeste vérifiée avant toute requête |
+| **Vérification** | taille puis SHA-256 après réception complète, **avant** toute extraction ou copie ; manifeste lu et validé (forme, URL, empreintes) avant toute requête |
 | **Extraction** | jamais dans un répertoire temporaire non maîtrisé ; extraction en flux vers une destination temporaire du répertoire cible, refus des entrées `..`, absolues, liens et périphériques |
 | **Bornes** | délai de connexion 30 s, délai d'inactivité 60 s, 3 tentatives avec temporisation croissante, taille maximale déclarée par le manifeste |
 | **Progression** | octets reçus, débit, module concerné, annulation possible ; aucune étape silencieuse de plus de 2 s |
@@ -207,7 +212,7 @@ jour silencieuse.
   être disponible sans réseau (ADR-006).
 - **Télécharger via l'API GitHub** : permet de résoudre « la dernière version » ;
   rejeté : quota anonyme, dépendance à un format d'API, et surtout risque
-  d'installer un actif non décrit par le manifeste signé.
+  d'installer un actif non décrit par le manifeste de distribution.
 - **Téléchargement automatique en arrière-plan après installation** : rejeté ;
   contredit la spécification et le contrôle utilisateur.
 - **Lien vers le site du projet plutôt que vers la release** : rejeté ; l'URL
@@ -241,3 +246,5 @@ devient nécessaire, ou si un module facultatif rejoint la base.
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Arbitrage : socle hors ligne, modules facultatifs acquis depuis les releases GitHub |
 | 21 octobre 2026 | Révision | PRISM est un composant de base embarqué ; l'acquisition ne concerne que PRISM-LDK, la documentation et SYNE-Mock |
+| 29 octobre 2026 | §2 : URL sur le tag `livex-v` courant, y compris pour les actifs recopiés d'une release d'entrées | Plan V1 (ADR-010) : un installateur ne consulte qu'une seule release, celle de sa distribution |
+| 29 octobre 2026 | §2 et §4 : « manifeste signé » remplacé par « manifeste de distribution » ; vérification de signature retirée | Plan V1 (D3) : aucune signature cryptographique du manifeste en V1, les empreintes sont couvertes par `SHA256SUMS` et les attestations |

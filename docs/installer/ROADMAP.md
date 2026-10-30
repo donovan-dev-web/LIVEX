@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
 ---
@@ -20,15 +20,19 @@ recette. Une phase n'est pas « terminée » parce que le code est écrit.
 
 ## 2. Vue d'ensemble
 
-| Phase | Intitulé | Sortie principale | Bloque |
-| :-- | :-- | :-- | :-- |
-| **P0** | Cadrage | spécification, architecture, ADR, roadmap, issues | P1 |
-| **P1** | Socle sans interface | `Setup.Core` testé, plan et transaction | P2 |
-| **P2** | Charge utile, actifs et confiance | distribution signée, runtimes embarqués, actifs facultatifs publiés | P3 |
-| **P3** | Assistant, acquisition et intégration | installation guidée Windows/Linux, téléchargement vérifié | P4 |
-| **P4** | Cycle de vie | mise à jour, réparation, maintenance, désinstallation | P5 |
-| **P5** | Distribution publique | release signée sur machines propres | P6 |
-| **P6** | Ouverture | PRISM dans le Launcher, mises à jour différentielles, évolutions | — |
+| Phase | Intitulé | Sortie principale | Bloque | État au 29 octobre 2026 |
+| :-- | :-- | :-- | :-- | :-- |
+| **P0** | Cadrage | spécification, architecture, ADR, roadmap, issues | P1 | **fait** (ADR-001 à 010) |
+| **P1** | Socle sans interface | `Setup.Core` testé, plan et transaction | P2 | **fait** en code ; couverture non mesurée |
+| **P2** | Charge utile, actifs et confiance | distribution vérifiable (empreintes, `SHA256SUMS`, attestations), runtimes embarqués, actifs facultatifs publiés | P3 | **non fait** : aucun `distribution.json`, aucun `payload/`, pas de `build_distribution.py`, PRISM non buildé |
+| **P3** | Assistant, acquisition et intégration | installation guidée Windows/Linux, téléchargement vérifié | P4 | **partiel** : assistant et CLI écrits et testés en monde fictif ; acquisition non câblée ; recette réelle non exécutée |
+| **P4** | Cycle de vie | mise à jour, réparation, maintenance, désinstallation | P5 | **partiel** : planifié et testé sur moteur ; aucune exécution réelle |
+| **P5** | Distribution publique | release publiée et vérifiée sur machines propres | P6 | **non commencé** : pas de job CI `installer`, pas de release |
+| **P6** | Ouverture | PRISM dans le Launcher, mises à jour différentielles, évolutions | — | **non commencé** |
+
+La V1 du produit (plan d'alignement du 29 octobre 2026) exige P2 à P5 :
+[`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md) décrit la cible, les tâches T1
+à T8 du plan restent à exécuter.
 
 ## 3. Phase 0 — Cadrage
 
@@ -59,7 +63,7 @@ Livrables :
 
 | Élément | Contenu | Vérification |
 | :-- | :-- | :-- |
-| `Setup.Core.Distribution` | modèle, JSON canonique, signature | tests unitaires, vecteurs figés |
+| `Setup.Core.Distribution` | modèle, JSON canonique, empreintes | tests unitaires, vecteurs figés |
 | `Setup.Core.Planning` | plan d'installation, de mise à jour, de désinstallation | tests de plan sur arborescences factices |
 | `Setup.Core.Preflight` | huit contrôles, sortie stable | tests par contrôle, cas d'échec |
 | `Setup.Core.Execution` | transaction, sauvegarde, restauration | tests d'échec injecté, résidus |
@@ -91,14 +95,16 @@ Livrables :
   archive SYNE-Mock avec runtime Node ;
 - `installer/build/build_distribution.py` et `distribution.json` canonique,
   profils `core` et `full`, blocs `acquisition` ;
-- signature Ed25519 et vérification par le même code que l'installateur ;
-- `SHA256SUMS` et signature détachée ;
+- entrées externes épinglées (`external-inputs.json`) et vérification par le
+  même code que l'installateur ;
+- `SHA256SUMS` et attestations de provenance ;
 - job CI `installer` (matrice Windows/Linux) et vérification des URL d'actifs.
 
 Critères de sortie :
 
 - la distribution s'assemble sans réseau et sans fichier manquant ;
-- la vérification refuse un fichier modifié et un manifeste non signé ;
+- la vérification refuse un fichier modifié et un actif absent des empreintes
+  épinglées ;
 - chaque actif facultatif publié a une taille et une empreinte dans le
   manifeste, et une URL qui répond ;
 - le profil `full` s'assemble sans aucun actif manquant ;
@@ -171,10 +177,10 @@ Critères de sortie :
 Livrables :
 
 - certificat Authenticode et signature de `livex-setup.exe`, `livex-launcher.exe`
-  et `Simulation.Console.exe` ;
-- clé GPG de release publiée dans `SECURITY.md` et
-  `RELEASE_AND_UPDATE.md` ;
-- `release.yml` : construction, signature, sommes, artefacts attachés à la
+  et `Simulation.Console.exe` (si un certificat est disponible) ;
+- procédure de vérification publiée dans `SECURITY.md` et
+  `RELEASE_AND_UPDATE.md` (sommes et attestations) ;
+- `release.yml` : construction, sommes, attestations, artefacts attachés à la
   release GitHub sur tag `livex-v*` ;
 - tests sur machines propres Windows et Linux (VM ou runner neuf) ;
 - guide utilisateur et procédure de dépannage ;
@@ -238,3 +244,4 @@ critère, pas une déclaration.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Nouvelle base documentaire |
+| 29 octobre 2026 | Colonne « État au 29 octobre 2026 » | Check-up documentaire : les phases ne sont pas « terminées parce que le code est écrit » |

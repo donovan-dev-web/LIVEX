@@ -3,7 +3,7 @@
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT] — spécification de référence, en revue
 **Version** : 1.0
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`adr/`](adr/README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Remplace** : la spécification de base v0.2 (document de travail), archivée hors
 de la documentation de référence
@@ -94,7 +94,7 @@ release ; elles ne sont pas inventées ici.
 | **Résultats de recherche** | paquets `.livexp`, archives scellées, journaux de session, base d'analyse ECHOS |
 | **Installation valide** | enregistrement présent, répertoire présent, `.livex-install.json` lisible, Launcher présent |
 | **Charge utile** (*payload*) | ensemble des fichiers livrés par le paquet de distribution |
-| **Distribution** | dossier ou archive contenant `livex-setup`, la charge utile, le manifeste et les signatures |
+| **Distribution** | dossier ou archive contenant `livex-setup`, la charge utile, le manifeste et ses éventuelles signatures |
 | **Composant de base** | PRISM : embarqué dans la distribution, **coché par défaut**, désactivable ; sa désactivation est avertie |
 | **Module facultatif** | composant décoché par défaut, installable indépendamment : PRISM-LDK, documentation hors ligne, SYNE-Mock |
 | **Actif de release** | fichier attaché à une release GitHub (archive d'un module facultatif) ; désigné par une URL, une taille et un SHA-256 |
@@ -137,7 +137,7 @@ release ; elles ne sont pas inventées ici.
 | Réf. | Exigence |
 | :-- | :-- |
 | **INS-F-100** | Aucune requête réseau ne doit être émise avant que l'utilisateur n'ait coché un module facultatif et validé le récapitulatif ; l'installateur ne doit jamais vérifier les versions ni télécharger en arrière-plan. |
-| **INS-F-101** | Un actif distant doit être téléchargé en HTTPS depuis l'URL du manifeste signé, avec un certificat validé, une reprise par `Range` lorsque le serveur l'accepte, et un cache adressé par empreinte. |
+| **INS-F-101** | Un actif distant doit être téléchargé en HTTPS depuis l'URL déclarée par le manifeste de distribution, avec un certificat validé, une reprise par `Range` lorsque le serveur l'accepte, et un cache adressé par empreinte. |
 | **INS-F-102** | La taille et le SHA-256 d'un actif téléchargé doivent être vérifiés **avant** toute extraction ou copie ; un actif non conforme doit être supprimé du cache et refusé. |
 | **INS-F-103** | L'extraction doit refuser les entrées absolues, `..`, les liens symboliques et les périphériques, et ne jamais écrire hors du répertoire cible du module. |
 | **INS-F-104** | L'utilisateur doit pouvoir annuler un téléchargement ; un échec réseau ne doit ni corrompre le socle ni laisser une installation partielle. |
@@ -218,7 +218,7 @@ release ; elles ne sont pas inventées ici.
 
 | Réf. | Exigence |
 | :-- | :-- |
-| **INS-F-70** | L'installateur doit vérifier la signature du manifeste et l'empreinte SHA-256 de chaque fichier — embarqué ou téléchargé — avant toute écriture. |
+| **INS-F-70** | L'installateur doit vérifier l'empreinte SHA-256 de chaque fichier — embarqué ou téléchargé — et la forme du manifeste avant toute écriture. La signature cryptographique du manifeste **n'est pas vérifiée en V1** (ADR-007 §3 bis) : l'authenticité de la distribution repose sur le `SHA256SUMS` publié et les attestations GitHub, contrôlés par l'utilisateur. |
 | **INS-F-71** | Une altération, un fichier manquant, un actif non conforme ou un manifeste invalide doit interrompre l'opération avant toute modification du répertoire cible. |
 | **INS-F-72** | Une erreur bloquante doit arrêter l'opération, produire un message compréhensible et écrire les informations techniques dans le journal. |
 | **INS-F-73** | Après un échec d'installation, l'installateur doit supprimer les fichiers, raccourcis et enregistrements créés par la tentative, et restaurer les fichiers remplacés lorsqu'il en a conservé une copie. |
@@ -243,7 +243,7 @@ release ; elles ne sont pas inventées ici.
 | :-- | :-- |
 | **INS-F-90** | `livex-setup --check` doit produire un diagnostic textuel stable, sans interface, et un code de sortie documenté. |
 | **INS-F-91** | `livex-setup --unattended --config <fichier>` doit installer avec des réponses fournies, sans interaction, et produire le même résultat que l'assistant. |
-| **INS-F-92** | `livex-setup --uninstall` doit permettre de choisir la portée par arguments ; sans argument, il ouvre l'assistant de désinstallation. |
+| **INS-F-92** | `livex-setup --uninstall` doit permettre de choisir la portée par arguments ; sans argument, il applique la portée A (logiciel et intégrations) sans interaction. Le choix des portées se fait dans l'assistant de maintenance. |
 | **INS-F-93** | `livex-setup --repair` doit vérifier l'installation et restaurer les fichiers disponibles dans la distribution d'origine. |
 | **INS-F-94** | `livex-setup --maintenance` doit ouvrir le parcours de maintenance d'une installation existante. |
 | **INS-F-95** | Les modes non interactifs doivent retourner : `0` succès, `1` erreur d'usage, `2` préflight en échec ou opération annulée, `3` échec d'installation, `4` désinstallation partielle, `5` installation déjà présente, `6` actif facultatif indisponible (réseau, 404, empreinte, `--no-network`). |
@@ -317,7 +317,7 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 ### 6.5 Intégrité, erreurs et journalisation
 
 - [ ] **INS-A-29** Un fichier de charge utile modifié fait échouer l'installation avant toute écriture.
-- [ ] **INS-A-30** Un manifeste dont la signature est invalide est refusé.
+- [ ] **INS-A-30** Un fichier dont le SHA-256 diverge du manifeste est refusé avant écriture. Aucune signature cryptographique du manifeste n'est exigée en V1 (ADR-007 §3 bis).
 - [ ] **INS-A-31** Une erreur simulée en cours d'installation laisse un état signalé, nettoie les fichiers créés et conserve les fichiers préexistants.
 - [ ] **INS-A-32** Le journal contient les étapes, opérations, erreurs et résultats de nettoyage, sans secret ni contenu d'expérience.
 - [ ] **INS-A-33** Le journal reste lisible après une interruption brutale du processus.
@@ -373,7 +373,7 @@ justification vérifiable.
 | :-- | :-- | :-- |
 | **INS-O-01** | Versions Linux minimales supportées (distribution, glibc) | avant P2 |
 | **INS-O-02** | Certificat Authenticode : OV ou Azure Trusted Signing, coût, automatisation | avant P5 |
-| **INS-O-03** | Autorité de signature GPG Linux et publication de la clé | avant P5 |
+| **INS-O-03** | Signature Linux : sans objet en V1 (sommes + attestations, ADR-007 §3 bis) ; rouverte si une signature centralisée est adoptée | clos en V1 |
 | **INS-O-04** | Politique de support des runtimes embarqués (durée, cadence de reconstruction) | avant P2 |
 | **INS-O-05** | Format de distribution Linux à long terme (`.deb`, Flatpak, AppImage) | après V0.2 |
 | **INS-O-06** | Faisabilité d'une variante de maintenance allégée (sans interface) | après mesure de taille |
@@ -390,10 +390,10 @@ justification vérifiable.
 | INS-F-10 à 19 | ADR-006 | manifeste de distribution, écran Composants | INS-A-08 à 10, 41 à 44 |
 | INS-F-20 à 29 | ADR-004, ADR-005 | `WorkspaceSettings`, `PathPolicy`, Launcher | INS-A-11 à 14, 26 |
 | INS-F-30 à 37 | ADR-001 | `Setup.App` (assistant) | INS-A-34 à 36 |
-| INS-F-40 à 46 | ADR-002, ADR-005 | `PlatformIntegration` | INS-A-05, 06, 27 |
-| INS-F-50 à 59 | ADR-005 | `InstallationStore`, `UpgradePlanner`, `WorkspaceSettings` | INS-A-15 à 21 |
+| INS-F-40 à 46 | ADR-002, ADR-005 | `IIntegration` (`WindowsIntegration`, `LinuxIntegration`) | INS-A-05, 06, 27 |
+| INS-F-50 à 59 | ADR-005 | `IInstallationStore`, `MaintenancePlanner`, `WorkspaceSettings` | INS-A-15 à 21 |
 | INS-F-60 à 69 | ADR-004, ADR-005 | `UninstallPlanner` | INS-A-22 à 28 |
-| INS-F-70 à 77 | ADR-007 | `PayloadVerifier`, `Journal` | INS-A-29 à 33 |
+| INS-F-70 à 77 | ADR-007 | `InstallerEngine` (empreintes à la copie), `Journal` | INS-A-29 à 33 |
 | INS-F-80 à 84 | ADR-001 | ressources FR/EN | INS-A-34, 35 |
 | INS-F-90 à 99 | ADR-001 | `CommandLine` | INS-A-37 à 40, 48 |
 | INS-F-100 à 106 | ADR-008 | `Acquisition` (téléchargement, cache, extraction) | INS-A-41, 45 à 49 |
@@ -405,3 +405,4 @@ justification vérifiable.
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Remplace la spécification de base v0.2 comme référence |
+| 29 octobre 2026 | INS-F-92 aligné sur le code, INS-A-30 révisé (D3), traçabilité vers les classes réelles | Check-up documentaire et plan d'alignement V1 |

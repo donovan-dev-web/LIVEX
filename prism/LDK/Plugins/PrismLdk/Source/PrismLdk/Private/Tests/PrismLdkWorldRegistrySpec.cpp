@@ -10,6 +10,8 @@
 
 #include "PrismLdkWorldRegistry.h"
 #include "PrismLdkTypes.h"
+#include "UObject/UObjectGlobals.h"
+#include "UObject/Package.h"
 
 namespace
 {

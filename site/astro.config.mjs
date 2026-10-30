@@ -57,6 +57,9 @@ export default defineConfig({
           en: 'en',
         },
       },
+      customPages: [
+        'https://donovan-dev-web.github.io/LIVEX/llms.txt',
+      ],
     }),
   ],
   devToolbar: {

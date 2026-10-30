@@ -1,0 +1,25 @@
+{
+  "inputs": [
+    {
+      "id": "prism-win-x64",
+      "version": "1.0.0",
+      "file": "prism-1.0.0-win-x64.zip",
+      "size": 422524357,
+      "sha256": "825b1b1db4f6671b7f600b8b8c0f9dee0b4e4b572ae51aafb30e48c3f410babe"
+    },
+    {
+      "id": "prism-linux-x64",
+      "version": "1.0.0",
+      "file": "prism-1.0.0-linux-x64.tar.gz",
+      "size": 394867086,
+      "sha256": "dc660827e281dd592d32cd3359275e450e4c973b636dc49a0d97779f79a26a7d"
+    },
+    {
+      "id": "prism-ldk",
+      "version": "1.1.0",
+      "file": "prism-ldk-1.1.0.zip",
+      "size": 166209572,
+      "sha256": "b6df994cf92ab540ac01aa121c14172c695bd05f1e118d2004cc5ebe042daf79"
+    }
+  ]
+}

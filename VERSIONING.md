@@ -44,6 +44,7 @@ Règles transverses :
 
 - Le tag `livex-vX.Y.Z` référence l'ensemble des tags composants qui le composent (renseignés dans les notes de release).
 - Les tags de composant sont posés sur le répertoire du composant ; le tag `livex-v` est posé sur la racine du dépôt.
+- En V1, `prism-v1.0.0` héberge les entrées externes (PRISM Windows/Linux et PRISM-LDK) consommées par la CI. Les tags `syne-v` et `echos-v` sont facultatifs et ne sont pas posés pour la V1 : leurs versions sont consignées dans les notes de release.
 
 ## 5. Convention de branche
 
@@ -60,7 +61,8 @@ Le versionnement est déclenché par les évènements suivants :
 
 ## 7. Règles d'incrément en pratique (V0.1)
 
-- Le projet est en pré-1.0 : `MAJOR` reste à `0`.
+- Le projet est en pré-1.0 pour les composants : `MAJOR` reste à `0` pour SYNE, ECHOS, Launcher et syne-mock.
+- Le jalon transverse `livex-v1.0.0` est autorisé (V1) : le passage à 1.0 est un jalon global, les composants gardent leur SemVer.
 - Toute libération composant visible publiquement incrémente au minimum `PATCH`.
 - Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `docs/governance/ROADMAP.md`.
 
@@ -81,7 +83,9 @@ Le versionnement est déclenché par les évènements suivants :
 | ECHOS (stockage/calibration) | schéma SQLite **v6** | Migration additive `mean_food`/`mean_water`, rapport de calibration par run avec bloc `viability` |
 | **Launcher** | **0.1.0** | `launcher/Directory.Build.props` (`<Version>`) — statut produit V1 (`launcher/ROADMAP-V1.md`) ; manifeste `.livexp` versionné à part (`Launcher.Protocol`) |
 | **syne-mock** | **0.1.0** | `syne-mock/package.json` ; contrat aligné sur le snapshot SYNE 0.4.0 |
-| **PRISM / PRISM-LDK** | sans version propre | Projet Unreal + plugin `PrismLdk` en [DRAFT] ; ils consomment le contrat SYNE 0.4.0 plutôt que de porter un numéro de version |
+| **PRISM / PRISM-LDK** | **1.0.0** | Version V1 (plan d'alignement) ; le plugin garde son `VersionName` (1.x) non modifié par le packaging |
+| **Installateur** | **1.0.0** | Version V1 |
+| **Global LIVEX** | **1.0.0** | Jalon transverse V1 (release assemblée) |
 | Présentation d'ECHOS | **retirée** (oct. 2026) | `echos-ui` supprimé (ADR-007) : la fenêtre d'analyse du Launcher consomme `outcome`/`extinctionTick` et `/api/compare?light=1` |
 
 ---
