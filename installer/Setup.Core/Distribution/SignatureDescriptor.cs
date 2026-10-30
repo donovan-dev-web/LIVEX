@@ -1,7 +1,7 @@
 namespace Setup.Core.Distribution;
 
 /// <summary>
-/// Signature du manifeste (Ed25519).
+/// Signature optionnelle du manifeste (réservée à un usage futur ; non vérifiée en V1).
 /// </summary>
 public sealed record SignatureDescriptor(
     string Algorithm,

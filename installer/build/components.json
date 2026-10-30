@@ -1,0 +1,89 @@
+{
+  "version": "1.0.0",
+  "components": [
+    {
+      "id": "launcher",
+      "version": "0.1.0",
+      "mandatory": true,
+      "optional": false,
+      "external": null,
+      "nameFr": "Launcher",
+      "nameEn": "Launcher",
+      "descriptionFr": "Orchestration et interface",
+      "descriptionEn": "Orchestration and UI",
+      "license": "GPL-3.0-or-later",
+      "requires": [],
+      "installRoot": "root"
+    },
+    {
+      "id": "syne",
+      "version": "0.17.0",
+      "mandatory": true,
+      "optional": false,
+      "external": null,
+      "nameFr": "SYNE",
+      "nameEn": "SYNE",
+      "descriptionFr": "Moteur de simulation",
+      "descriptionEn": "Simulation engine",
+      "license": "GPL-3.0-or-later",
+      "requires": [],
+      "installRoot": "components/syne"
+    },
+    {
+      "id": "echos",
+      "version": "0.1.0",
+      "mandatory": true,
+      "optional": false,
+      "external": null,
+      "nameFr": "ECHOS",
+      "nameEn": "ECHOS",
+      "descriptionFr": "Observation et analyse",
+      "descriptionEn": "Observation and analysis",
+      "license": "GPL-3.0-or-later",
+      "requires": ["syne"],
+      "installRoot": "components/echos"
+    },
+    {
+      "id": "prism",
+      "version": "1.0.0",
+      "mandatory": false,
+      "optional": true,
+      "external": "prism",
+      "nameFr": "PRISM",
+      "nameEn": "PRISM",
+      "descriptionFr": "Représentation 3D",
+      "descriptionEn": "3D representation",
+      "license": "LicenseRef-EpicGames",
+      "requires": [],
+      "installRoot": "components/prism"
+    },
+    {
+      "id": "prism-ldk",
+      "version": "1.1.0",
+      "mandatory": false,
+      "optional": true,
+      "external": "prism-ldk",
+      "nameFr": "PRISM LDK",
+      "nameEn": "PRISM LDK",
+      "descriptionFr": "Kit de développement PRISM",
+      "descriptionEn": "PRISM development kit",
+      "license": "LicenseRef-EpicGames",
+      "requires": [],
+      "installRoot": "plugins/prism-ldk"
+    },
+    {
+      "id": "syne-mock",
+      "version": "0.1.0",
+      "mandatory": false,
+      "optional": true,
+      "external": null,
+      "nameFr": "SYNE-Mock",
+      "nameEn": "SYNE-Mock",
+      "descriptionFr": "Émulateur de contrats",
+      "descriptionEn": "Contract emulator",
+      "license": "GPL-3.0-or-later",
+      "requires": [],
+      "installRoot": "components/syne-mock"
+    }
+  ]
+}

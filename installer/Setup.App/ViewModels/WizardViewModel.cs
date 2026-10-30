@@ -671,7 +671,6 @@ public sealed class WizardViewModel : ViewModelBase
         "process" => "checkProcess",
         "prerequisites" => "checkPrerequisites",
         "manifest" => "checkManifest",
-        "signature" => "checkSignature",
         "overlap" or "workspace" => "checkPathPolicy",
         _ => "checkManifest",
     }];

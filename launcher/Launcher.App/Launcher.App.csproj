@@ -19,16 +19,10 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\..\docs\**\*.md"
-             Link="docs\%(RecursiveDir)%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
-    <Content Include="..\..\*.md"
-             Link="docs\global\%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
+  <!--
+    La documentation n'est plus embarquée dans le Launcher (COMPONENTS.md §3.7) :
+    ListDocumentation() renvoie une liste vide si le répertoire est absent.
+  -->
 
   <!--
     Textes de licence joints à la distribution (docs/launcher/PACKAGING.md §2.1).
