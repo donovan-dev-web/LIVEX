@@ -5,18 +5,79 @@
   <StackPanel Spacing="18" MaxWidth="760" HorizontalAlignment="Stretch" Margin="0,0,0,20">
     <TextBlock Text="{l:Tr pathsIntro}" Classes="muted" />
 
+    <!-- Racine commune : les emplacements en sont dérivés par défaut. -->
     <StackPanel Spacing="6" IsVisible="{Binding IsInstallPathVisible}">
-      <TextBlock Text="{l:Tr pathsInstallDir}" Classes="h3" />
+      <TextBlock Text="{l:Tr pathsRoot}" Classes="h3" />
       <Grid ColumnDefinitions="*,Auto">
-        <TextBox Text="{Binding InstallDir}" AutomationProperties.Name="{l:Tr pathsInstallDir}" />
+        <TextBox Text="{Binding RootDir}" AutomationProperties.Name="{l:Tr pathsRoot}" />
         <Button Grid.Column="1" Content="{l:Tr btnBrowse}" Margin="8,0,0,0"
-                Command="{Binding BrowseInstallDirCommand}"
+                Command="{Binding BrowseRootDirCommand}"
                 AutomationProperties.Name="{l:Tr btnBrowse}" />
       </Grid>
-      <TextBlock Text="{l:Tr pathsInstallHint}" Classes="tiny" />
+      <TextBlock Text="{l:Tr pathsRootHint}" Classes="tiny" />
     </StackPanel>
 
-    <StackPanel Spacing="6">
+    <Border Classes="card" Padding="14" IsVisible="{Binding IsInstallPathVisible}">
+      <StackPanel Spacing="16">
+        <!-- Répertoire logiciel -->
+        <StackPanel Spacing="6">
+          <CheckBox IsChecked="{Binding CustomizeInstallDir}" Content="{l:Tr pathsCustomize}"
+                    AutomationProperties.Name="{l:Tr pathsCustomize}" />
+          <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding InstallDirEditable}">
+            <TextBox Text="{Binding InstallDir}" AutomationProperties.Name="{l:Tr pathsInstallDir}" />
+            <Button Grid.Column="1" Content="{l:Tr btnBrowse}" Margin="8,0,0,0"
+                    Command="{Binding BrowseInstallDirCommand}"
+                    AutomationProperties.Name="{l:Tr btnBrowse}" />
+          </Grid>
+          <Border Classes="inset" Padding="10,8" IsVisible="{Binding !InstallDirEditable}">
+            <TextBlock Text="{Binding InstallDir}" Classes="mono"
+                       Foreground="{DynamicResource BrandTextMuted}" />
+          </Border>
+          <TextBlock Text="{l:Tr pathsInstallHint}" Classes="tiny" />
+        </StackPanel>
+
+        <Border Classes="divider" />
+
+        <!-- Espace de travail -->
+        <StackPanel Spacing="6">
+          <CheckBox IsChecked="{Binding CustomizeWorkspaceDir}" Content="{l:Tr pathsCustomize}"
+                    AutomationProperties.Name="{l:Tr pathsCustomize}" />
+          <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding WorkspaceDirEditable}">
+            <TextBox Text="{Binding WorkspaceDir}" AutomationProperties.Name="{l:Tr pathsWorkspace}" />
+            <Button Grid.Column="1" Content="{l:Tr btnBrowse}" Margin="8,0,0,0"
+                    Command="{Binding BrowseWorkspaceDirCommand}"
+                    AutomationProperties.Name="{l:Tr btnBrowse}" />
+          </Grid>
+          <Border Classes="inset" Padding="10,8" IsVisible="{Binding !WorkspaceDirEditable}">
+            <TextBlock Text="{Binding WorkspaceDir}" Classes="mono"
+                       Foreground="{DynamicResource BrandTextMuted}" />
+          </Border>
+          <TextBlock Text="{l:Tr pathsWorkspaceHint}" Classes="tiny" />
+        </StackPanel>
+
+        <Border Classes="divider" />
+
+        <!-- Racine de données -->
+        <StackPanel Spacing="6">
+          <CheckBox IsChecked="{Binding CustomizeDataRoot}" Content="{l:Tr pathsCustomize}"
+                    AutomationProperties.Name="{l:Tr pathsCustomize}" />
+          <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding DataRootEditable}">
+            <TextBox Text="{Binding DataRoot}" AutomationProperties.Name="{l:Tr pathsDataRoot}" />
+            <Button Grid.Column="1" Content="{l:Tr btnBrowse}" Margin="8,0,0,0"
+                    Command="{Binding BrowseDataRootCommand}"
+                    AutomationProperties.Name="{l:Tr btnBrowse}" />
+          </Grid>
+          <Border Classes="inset" Padding="10,8" IsVisible="{Binding !DataRootEditable}">
+            <TextBlock Text="{Binding DataRoot}" Classes="mono"
+                       Foreground="{DynamicResource BrandTextMuted}" />
+          </Border>
+          <TextBlock Text="{l:Tr pathsDataRootHint}" Classes="tiny" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Déplacement de l'espace de travail seul (maintenance) -->
+    <StackPanel Spacing="6" IsVisible="{Binding IsWorkspaceChange}">
       <TextBlock Text="{l:Tr pathsWorkspace}" Classes="h3" />
       <Grid ColumnDefinitions="*,Auto">
         <TextBox Text="{Binding WorkspaceDir}" AutomationProperties.Name="{l:Tr pathsWorkspace}" />
@@ -25,14 +86,6 @@
                 AutomationProperties.Name="{l:Tr btnBrowse}" />
       </Grid>
       <TextBlock Text="{l:Tr pathsWorkspaceHint}" Classes="tiny" />
-    </StackPanel>
-
-    <StackPanel Spacing="6">
-      <TextBlock Text="{l:Tr pathsDataRoot}" Classes="h3" />
-      <Border Classes="inset" Padding="10,8">
-        <TextBlock Text="{Binding DataRoot}" Classes="mono" Foreground="{DynamicResource BrandTextMuted}" />
-      </Border>
-      <TextBlock Text="{l:Tr pathsDataRootHint}" Classes="tiny" />
     </StackPanel>
 
     <Border Classes="card" Padding="12" BorderBrush="#55E5646B" Background="#1FE5646B"
@@ -47,12 +100,8 @@
     </Grid>
 
     <Border Classes="inset" Padding="14" IsVisible="{Binding IsInstallPathVisible}">
-      <StackPanel Spacing="8">
-        <CheckBox IsChecked="{Binding DesktopShortcut}" Content="{l:Tr pathsShortcut}"
-                  AutomationProperties.Name="{l:Tr pathsShortcut}" />
-        <CheckBox IsChecked="{Binding LaunchAfterInstall}" Content="{l:Tr pathsLaunchAfter}"
-                  AutomationProperties.Name="{l:Tr pathsLaunchAfter}" />
-      </StackPanel>
+      <CheckBox IsChecked="{Binding DesktopShortcut}" Content="{l:Tr pathsShortcut}"
+                AutomationProperties.Name="{l:Tr pathsShortcut}" />
     </Border>
 
     <Border Classes="card" Padding="12" BorderBrush="#558B7BE8" Background="#1F8B7BE8"

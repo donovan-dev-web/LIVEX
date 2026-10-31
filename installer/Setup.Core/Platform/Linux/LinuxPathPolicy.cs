@@ -27,14 +27,19 @@ public sealed class LinuxPathPolicy : IPathPolicy
         return fa == fb || fa.StartsWith(fb + "/", StringComparison.Ordinal) || fb.StartsWith(fa + "/", StringComparison.Ordinal);
     }
 
-    public string DefaultInstallDir() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "opt", "livex");
+    public string DefaultRootDir()
+        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "livex");
+
+    public string DefaultInstallDir() => Path.Combine(DefaultRootDir(), "software");
 
     public string DefaultDataRoot()
     {
         var env = Environment.GetEnvironmentVariable("LIVEX_DATA");
         if (!string.IsNullOrWhiteSpace(env)) return env;
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".livex-data");
+        return Path.Combine(DefaultRootDir(), "data");
     }
+
+    public string DefaultWorkspaceDir() => Path.Combine(DefaultRootDir(), "workspace");
 
     public string StartMenuShortcutPath(string name)
         => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),

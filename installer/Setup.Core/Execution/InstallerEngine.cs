@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -27,9 +28,14 @@ namespace Setup.Core.Execution;
 public sealed class InstallerEngine : IInstallerEngine
 {
     private const string LauncherExecutable = "livex-launcher";
+    private const string LauncherDirectory = "core/launcher";
+    private const string InstallerDirectory = "core/installer";
     private const string IdentityFileName = ".livex-install.json";
     private const string DistributionFileName = ".livex-distribution.json";
     private const string InventoryFileName = ".livex-inventory.json";
+
+    private static readonly string[] LegalFileNames =
+        { "LICENSE", "NOTICE", "THIRD-PARTY-NOTICES.md" };
 
     private readonly IPathPolicy _pathPolicy;
     private readonly IProcessProbe _processProbe;
@@ -70,7 +76,13 @@ public sealed class InstallerEngine : IInstallerEngine
     }
 
     /// <summary>Contexte minimal d'exécution d'une action.</summary>
-    private sealed record ActionContext(string Product, string Version, string InstallDir, string DataRoot, string WorkspaceDir);
+    private sealed record ActionContext(
+        string Product,
+        string Version,
+        string InstallDir,
+        string DataRoot,
+        string WorkspaceDir,
+        string BundleRoot);
 
     // ---------------------------------------------------------------- détection
 
@@ -132,15 +144,15 @@ public sealed class InstallerEngine : IInstallerEngine
     private static bool IsInstallationValid(InstallationRecord record)
     {
         if (!Directory.Exists(record.InstallDir)) return false;
-        var candidate = Path.Combine(record.InstallDir, OperatingSystem.IsWindows()
-            ? LauncherExecutable + ".exe"
-            : LauncherExecutable);
-        return File.Exists(candidate);
+        return File.Exists(LauncherPath(record.InstallDir));
     }
 
     // ---------------------------------------------------------------- préflight
 
-    public Task<PreflightResult> PreflightAsync(InstallRequest request, CancellationToken ct = default)
+    public Task<PreflightResult> PreflightAsync(InstallRequest request, CancellationToken ct = default) =>
+        Task.Run(() => Preflight(request), ct);
+
+    private PreflightResult Preflight(InstallRequest request)
     {
         var checks = new List<PreflightCheck>();
         var errors = new List<string>();
@@ -230,40 +242,82 @@ public sealed class InstallerEngine : IInstallerEngine
 
         // Charge utile locale. Dans le monde fictif, le contrôle est informatif :
         // aucune charge utile ne peut exister. Sur une distribution réelle, son
-        // absence est un échec, même en dry-run (--check) : le socle n'a rien à
-        // copier, l'installation ne peut pas aboutir (INS-F-01, INS-A-37).
+        // absence est un échec, même en dry-run (--check) (INS-F-01, INS-A-37).
         if (request.Simulated)
         {
             checks.Add(new PreflightCheck("payload", PreflightStatus.Info, "Aucune charge utile (simulation)."));
         }
-        else if (request.PayloadRoot is null)
+        else
         {
-            if (request.Manifest.Files.Count == 0)
+            var payloadComponents = request.Manifest.Components
+                .Where(c => selected.Contains(c.Id) && c.Acquisition.Kind == "payload")
+                .ToList();
+            var archiveComponents = request.Manifest.Components
+                .Where(c => selected.Contains(c.Id) && c.Acquisition.Kind == "bundled-archive")
+                .ToList();
+
+            if (payloadComponents.Count == 0 && archiveComponents.Count == 0)
             {
                 checks.Add(new PreflightCheck("payload", PreflightStatus.Info, "Aucun fichier de charge utile déclaré."));
             }
             else
             {
-                Fail("payload", "Charge utile introuvable : aucun répertoire payload/ n'accompagne livex-setup. " +
-                    "Placez la distribution complète à côté de l'exécutable, ou utilisez --check --demo pour un diagnostic simulé.");
+                var problems = new List<string>();
+
+                foreach (var component in archiveComponents)
+                {
+                    var archive = ResolveArchive(request, component.Acquisition.Asset!);
+                    if (!File.Exists(archive))
+                    {
+                        problems.Add($"{component.Acquisition.Asset} absent");
+                        continue;
+                    }
+
+                    var length = new FileInfo(archive).Length;
+                    if (component.Acquisition.Size is > 0 && length != component.Acquisition.Size)
+                    {
+                        problems.Add($"{component.Acquisition.Asset} : taille {length} au lieu de {component.Acquisition.Size}");
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(component.Acquisition.Sha256) &&
+                        !LooksLikePlaceholder(component.Acquisition.Sha256))
+                    {
+                        using var stream = File.OpenRead(archive);
+                        var actual = Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+                        if (!string.Equals(actual, component.Acquisition.Sha256, StringComparison.OrdinalIgnoreCase))
+                            problems.Add($"{component.Acquisition.Asset} : empreinte invalide");
+                    }
+                }
+
+                if (request.PayloadRoot is null && payloadComponents.Any(c => c.Files.Count > 0))
+                {
+                    problems.Add("aucun répertoire payload/ n'accompagne livex-setup");
+                }
+                else if (request.PayloadRoot is not null)
+                {
+                    problems.AddRange(payloadComponents
+                        .SelectMany(c => c.Files)
+                        .Where(f => !File.Exists(Path.Combine(request.PayloadRoot, f.Path)))
+                        .Select(f => f.Path));
+                }
+
+                if (problems.Count == 0)
+                    Pass("payload", $"{archiveComponents.Count + payloadComponents.Count} composant(s)");
+                else
+                    Fail("payload", "Charge utile incomplète : " + string.Join(", ", problems.Take(5)));
             }
         }
-        else
-        {
-            var missing = request.Manifest.Files
-                .Where(f => !File.Exists(Path.Combine(request.PayloadRoot, f.Path)))
-                .Select(f => f.Path)
-                .ToList();
-            if (missing.Count == 0) Pass("payload", $"{request.Manifest.Files.Count} fichiers");
-            else Fail("payload", "Charge utile incomplète : " + string.Join(", ", missing.Take(5)));
-        }
 
-        return Task.FromResult(new PreflightResult(errors.Count == 0, checks, errors));
+        return new PreflightResult(errors.Count == 0, checks, errors);
     }
 
     // ---------------------------------------------------------------- plan
 
-    public Task<InstallPlan> PlanAsync(InstallRequest request, CancellationToken ct = default)
+    public Task<InstallPlan> PlanAsync(InstallRequest request, CancellationToken ct = default) =>
+        Task.Run(() => Plan(request), ct);
+
+    private InstallPlan Plan(InstallRequest request)
     {
         var actions = new List<PlanAction>();
         var warnings = new List<string>();
@@ -276,17 +330,18 @@ public sealed class InstallerEngine : IInstallerEngine
 
         // Arborescence (aucune création ici : ce sont des actions du plan).
         actions.Add(new CreateDirectoryAction(installDir, ++step));
+        actions.Add(new CreateDirectoryAction(Path.Combine(installDir, LauncherDirectory), ++step));
+        actions.Add(new CreateDirectoryAction(Path.Combine(installDir, InstallerDirectory), ++step));
         actions.Add(new CreateDirectoryAction(Path.Combine(installDir, "components"), ++step));
         actions.Add(new CreateDirectoryAction(Path.Combine(installDir, "contracts"), ++step));
         actions.Add(new CreateDirectoryAction(Path.Combine(installDir, "assets"), ++step));
+        actions.Add(new CreateDirectoryAction(Path.Combine(installDir, "plugins"), ++step));
         actions.Add(new CreateDirectoryAction(request.DataRoot, ++step));
         actions.Add(new CreateDirectoryAction(Path.Combine(request.DataRoot, "logs"), ++step));
         actions.Add(new CreateDirectoryAction(Path.Combine(request.DataRoot, "cache", "downloads"), ++step));
         actions.Add(new CreateDirectoryAction(request.WorkspaceDir, ++step));
 
-        // Fichiers de la charge utile, limités aux composants sélectionnés.
-        // Un composant non coché ne doit écrire aucun fichier, même si le
-        // manifeste décrit ses fichiers (ils sont partagés avec files[]).
+        // Fichiers de la charge utile historique, limités aux composants sélectionnés.
         var selectedFiles = request.Manifest.Components
             .Where(component => selected.Contains(component.Id) && component.Acquisition.Kind == "payload")
             .SelectMany(component => component.Files)
@@ -301,13 +356,40 @@ public sealed class InstallerEngine : IInstallerEngine
             bytesToWrite += file.Size;
         }
 
-        // Modules facultatifs acquis hors charge utile.
+        var inventory = new List<FileEntry>(selectedFiles);
+
+        // Composants livrés sous forme d'archive unique : une seule extraction
+        // remplace des milliers de copies fichier par fichier.
         foreach (var component in request.Manifest.Components)
         {
             if (!selected.Contains(component.Id)) continue;
             if (component.Requires.Any(r => !selected.Contains(r)))
             {
                 warnings.Add($"Composant ignoré : {component.Id} requiert un composant non sélectionné.");
+                continue;
+            }
+
+            if (component.Acquisition.Kind == "bundled-archive" && component.Acquisition.Asset is not null)
+            {
+                var archive = ResolveArchive(request, component.Acquisition.Asset);
+                var destination = ComponentDestination(installDir, component);
+                var entries = ReadArchiveEntries(archive, component.InstallRoot);
+                actions.Add(new CreateDirectoryAction(destination, ++step));
+                actions.Add(new ExtractArchiveAction(
+                    archive, destination, ++step,
+                    Entries: entries.Select(e => e.Path).ToList(),
+                    ComponentId: component.Id));
+                bytesToWrite += component.Acquisition.Size ?? 0;
+                inventory.AddRange(entries);
+            }
+        }
+
+        // Modules facultatifs acquis hors distribution.
+        foreach (var component in request.Manifest.Components)
+        {
+            if (!selected.Contains(component.Id)) continue;
+            if (component.Requires.Any(r => !selected.Contains(r)))
+            {
                 continue;
             }
 
@@ -326,14 +408,16 @@ public sealed class InstallerEngine : IInstallerEngine
                         var destination = Path.Combine(installDir, "plugins", "prism-ldk", asset);
                         actions.Add(new CreateDirectoryAction(Path.GetDirectoryName(destination)!, ++step));
                         actions.Add(new DownloadAssetAction(destination, component.Acquisition.Url, sha, size, ++step));
+                        inventory.Add(new FileEntry(
+                            Path.GetRelativePath(installDir, destination).Replace('\\', '/'), size, sha));
                     }
                     else
                     {
                         var cachePath = Path.Combine(request.DataRoot, "cache", "downloads", sha);
-                        var destination = ComponentDestination(installDir, component.Id);
+                        var destination = ComponentDestination(installDir, component);
                         actions.Add(new DownloadAssetAction(cachePath, component.Acquisition.Url, sha, size, ++step));
                         actions.Add(new CreateDirectoryAction(destination, ++step));
-                        actions.Add(new ExtractArchiveAction(cachePath, destination, ++step));
+                        actions.Add(new ExtractArchiveAction(cachePath, destination, ++step, ComponentId: component.Id));
                     }
 
                     break;
@@ -344,6 +428,30 @@ public sealed class InstallerEngine : IInstallerEngine
                     break;
             }
         }
+
+        // Copie de maintenance : l'installateur installé reste disponible pour
+        // désinstaller ou réparer sans retélécharger quoi que ce soit.
+        var setupSource = request.SetupSourcePath ?? ResolveSetupSource();
+        if (!request.Simulated && setupSource is not null && File.Exists(setupSource))
+        {
+            var setupTarget = Path.Combine(installDir, SetupExecutableName());
+            actions.Add(new WriteFileAction(setupTarget, setupSource, null, null, ++step));
+            inventory.Add(new FileEntry(SetupExecutableName(), new FileInfo(setupSource).Length, string.Empty));
+        }
+
+        // Mentions légales : conservées à la racine, à côté de l'exécutable.
+        foreach (var name in LegalFileNames)
+        {
+            var source = Path.Combine(BundleRoot(request), name);
+            if (!File.Exists(source)) continue;
+            actions.Add(new WriteFileAction(Path.Combine(installDir, name), source, null, null, ++step));
+            inventory.Add(new FileEntry(name, new FileInfo(source).Length, string.Empty));
+        }
+
+        // Manifeste d'origine conservé dans core/installer pour la maintenance.
+        actions.Add(new WriteFileAction(
+            Path.Combine(installDir, InstallerDirectory, "distribution.json"), null, null, null, ++step,
+            Content: Serialize(request.Manifest)));
 
         // Préférences : seul le chemin de l'espace de travail est écrit.
         actions.Add(new MergeSettingsAction(
@@ -372,31 +480,36 @@ public sealed class InstallerEngine : IInstallerEngine
                 request.Manifest.Product,
                 request.Manifest.Version,
                 Guid.NewGuid().ToString("N"),
-                selectedFiles))));
+                inventory))));
 
         // Intégration système : menu, bureau (option), association .livexp.
         var launcherPath = LauncherPath(installDir);
-        actions.Add(new CreateShortcutAction(_pathPolicy.StartMenuShortcutPath("LIVEX"), launcherPath, false, ++step));
+        var shortcutIcon = Path.Combine(installDir, "assets", OperatingSystem.IsWindows() ? "livex.ico" : "livex.svg");
+        actions.Add(new CreateShortcutAction(
+            _pathPolicy.StartMenuShortcutPath("LIVEX"), launcherPath, false, ++step,
+            IconPath: shortcutIcon));
         if (request.CreateDesktopShortcut)
-            actions.Add(new CreateShortcutAction(_pathPolicy.DesktopShortcutPath("LIVEX"), launcherPath, true, ++step));
+            actions.Add(new CreateShortcutAction(
+                _pathPolicy.DesktopShortcutPath("LIVEX"), launcherPath, true, ++step,
+                IconPath: shortcutIcon));
 
         var packageIcon = Path.Combine(installDir, "assets", OperatingSystem.IsWindows() ? "livexp.ico" : "livexp.svg");
         actions.Add(new AssociatePackageAction(launcherPath, packageIcon, ++step));
 
         actions.Add(new WriteRegistrationAction("HKCU", "LIVEX", installDir, ++step));
 
-        return Task.FromResult(new InstallPlan(
+        return new InstallPlan(
             InstallOperation.Install,
             actions,
             Array.Empty<string>(),
             bytesToWrite,
             bytesToDownload,
             warnings,
-            RequiresConfirmation: false));
+            RequiresConfirmation: false);
     }
 
     public Task<InstallPlan> PlanMaintenanceAsync(MaintenanceRequest request, CancellationToken ct = default) =>
-        Task.FromResult(MaintenancePlanner.Plan(request));
+        Task.Run(() => MaintenancePlanner.Plan(request), ct);
 
     // ---------------------------------------------------------------- exécution
 
@@ -416,9 +529,14 @@ public sealed class InstallerEngine : IInstallerEngine
             request.Manifest.Version,
             request.InstallDir,
             request.DataRoot,
-            request.WorkspaceDir);
+            request.WorkspaceDir,
+            BundleRoot(request));
 
-        return await RunActionsAsync(plan.Actions, plan.BytesToWrite, plan.Warnings, context, progress, ct)
+        // Toute l'écriture s'exécute hors du fil d'interface : la progression
+        // est ainsi peinte pendant que les fichiers sont copiés.
+        return await Task.Run(
+                () => RunActionsAsync(plan.Actions, plan.BytesToWrite, plan.Warnings, context, progress, ct),
+                ct)
             .ConfigureAwait(false);
     }
 
@@ -439,10 +557,14 @@ public sealed class InstallerEngine : IInstallerEngine
             record.Version,
             record.InstallDir,
             record.DataRoot,
-            record.WorkspacePath ?? Path.Combine(record.DataRoot, "workspace"));
+            record.WorkspacePath ?? Path.Combine(record.DataRoot, "workspace"),
+            AppContext.BaseDirectory);
 
         var warnings = plan.Warnings.Concat(plan.Residuals).ToList();
-        return await RunActionsAsync(plan.Actions, 0, warnings, context, progress, ct).ConfigureAwait(false);
+        return await Task.Run(
+                () => RunActionsAsync(plan.Actions, 0, warnings, context, progress, ct),
+                ct)
+            .ConfigureAwait(false);
     }
 
     private async Task<ExecutionResult> RunActionsAsync(
@@ -463,6 +585,19 @@ public sealed class InstallerEngine : IInstallerEngine
         var affected = new List<string>();
         var total = actions.Count;
         var current = 0;
+        var lastProgressTick = 0L;
+
+        void Report(ProgressReport report, bool force = false)
+        {
+            var now = Environment.TickCount64;
+            if (!force && now - lastProgressTick < 50)
+            {
+                return;
+            }
+
+            lastProgressTick = now;
+            progress?.Report(report);
+        }
 
         try
         {
@@ -470,16 +605,32 @@ public sealed class InstallerEngine : IInstallerEngine
             {
                 ct.ThrowIfCancellationRequested();
                 current++;
-                progress?.Report(new ProgressReport(
-                    action.GetType().Name, null, current, total,
-                    total == 0 ? 0 : bytesTotal * current / total, bytesTotal,
-                    action.TargetPath, PlanActionLabel.Of(action)));
 
-                Apply(action, context, integration, store, createdFiles, createdDirectories, warnings);
+                var bytesBefore = total == 0 ? 0 : bytesTotal * (current - 1) / total;
+                var bytesPerAction = total == 0 ? 0 : bytesTotal / total;
+                Report(new ProgressReport(
+                    action.GetType().Name, ComponentIdOf(action), current, total,
+                    bytesBefore, bytesTotal, action.TargetPath, PlanActionLabel.Of(action)),
+                    force: true);
+
+                void SubProgress(double fraction, string? entry)
+                {
+                    var bytes = bytesBefore + (long)(bytesPerAction * fraction);
+                    Report(new ProgressReport(
+                        action.GetType().Name, ComponentIdOf(action), current, total,
+                        bytes, bytesTotal, entry ?? action.TargetPath, PlanActionLabel.Of(action),
+                        Math.Clamp(fraction, 0, 1)));
+                }
+
+                Apply(action, context, integration, store, createdFiles, createdDirectories, warnings, SubProgress, ct);
 
                 affected.Add(action.TargetPath);
                 journal.Write(JournalLevel.Info, "execute", PlanActionLabel.Of(action), "ok", path: action.TargetPath);
             }
+
+            Report(new ProgressReport(
+                "complete", null, total, total, bytesTotal, bytesTotal, null, "complete", 1),
+                force: true);
 
             return new ExecutionResult(true, warnings, residuals, journal.LogPath, Simulated: false, affected);
         }
@@ -504,6 +655,12 @@ public sealed class InstallerEngine : IInstallerEngine
         }
     }
 
+    private static string? ComponentIdOf(PlanAction action) => action switch
+    {
+        ExtractArchiveAction extract => extract.ComponentId,
+        _ => null,
+    };
+
     private void Apply(
         PlanAction action,
         ActionContext context,
@@ -511,7 +668,9 @@ public sealed class InstallerEngine : IInstallerEngine
         IInstallationStore store,
         ICollection<string> createdFiles,
         ICollection<string> createdDirectories,
-        ICollection<string> warnings)
+        ICollection<string> warnings,
+        Action<double, string?> subProgress,
+        CancellationToken ct)
     {
         switch (action)
         {
@@ -529,24 +688,30 @@ public sealed class InstallerEngine : IInstallerEngine
                 {
                     File.WriteAllText(w.TargetPath, w.Content, new UTF8Encoding(false));
                     createdFiles.Add(w.TargetPath);
+                    _fileSync.Flush(w.TargetPath);
                 }
                 else
                 {
                     CopyVerified(w.SourcePath, w.TargetPath, w.ExpectedSha256);
                     createdFiles.Add(w.TargetPath);
                 }
-                _fileSync.Flush(w.TargetPath);
                 break;
 
             case ReplaceFileAction r:
                 EnsureParent(r.TargetPath);
-                if (r.Content is not null) File.WriteAllText(r.TargetPath, r.Content, new UTF8Encoding(false));
-                else CopyVerified(r.SourcePath, r.TargetPath, r.ExpectedSha256);
-                _fileSync.Flush(r.TargetPath);
+                if (r.Content is not null)
+                {
+                    File.WriteAllText(r.TargetPath, r.Content, new UTF8Encoding(false));
+                    _fileSync.Flush(r.TargetPath);
+                }
+                else
+                {
+                    CopyVerified(r.SourcePath, r.TargetPath, r.ExpectedSha256);
+                }
                 break;
 
             case DeleteFileAction d:
-                if (File.Exists(d.TargetPath)) File.Delete(d.TargetPath);
+                DeleteFile(d.TargetPath);
                 break;
 
             case DeleteDirectoryAction dd:
@@ -558,7 +723,7 @@ public sealed class InstallerEngine : IInstallerEngine
                 try
                 {
                     var downloader = PlatformServices.CreateHttpDownloader();
-                    downloader.DownloadAsync(dl.Url, dl.TargetPath, dl.ExpectedSize, dl.ExpectedSha256, null, default)
+                    downloader.DownloadAsync(dl.Url, dl.TargetPath, dl.ExpectedSize, dl.ExpectedSha256, null, ct)
                         .GetAwaiter().GetResult();
                     VerifyDownloadedAsset(dl);
                 }
@@ -575,12 +740,25 @@ public sealed class InstallerEngine : IInstallerEngine
 
             case ExtractArchiveAction ex:
                 var extractor = PlatformServices.CreateArchiveExtractor();
-                extractor.ExtractAsync(ex.ArchivePath, ex.DestinationDirectory, default).GetAwaiter().GetResult();
+                var entryCount = ex.Entries?.Count ?? 0;
+                var perEntry = new Progress<int>(value =>
+                {
+                    if (entryCount == 0)
+                    {
+                        return;
+                    }
+
+                    var index = Math.Clamp(value, 0, entryCount);
+                    subProgress((double)index / entryCount, index < entryCount ? ex.Entries![index] : null);
+                });
+                extractor.ExtractAsync(ex.ArchivePath, ex.DestinationDirectory, ct, perEntry)
+                    .GetAwaiter().GetResult();
+                subProgress(1, null);
                 break;
 
             case CreateShortcutAction sc:
             {
-                var icon = IconPathFor(sc.TargetExePath);
+                var icon = sc.IconPath ?? IconPathFor(sc.TargetExePath);
                 if (sc.IsDesktop) integration.CreateDesktopShortcut("LIVEX", sc.TargetExePath, icon);
                 else integration.CreateStartMenuShortcut("LIVEX", sc.TargetExePath, icon);
                 break;
@@ -678,6 +856,42 @@ public sealed class InstallerEngine : IInstallerEngine
         }
     }
 
+    /// <summary>
+    /// Supprime un fichier. L'exécutable de l'installateur peut être en cours
+    /// d'exécution depuis l'installation (désinstallation) : il est d'abord
+    /// renommé pour que le répertoire puisse ensuite être supprimé.
+    /// </summary>
+    private static void DeleteFile(string path)
+    {
+        if (!File.Exists(path)) return;
+
+        try
+        {
+            File.Delete(path);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            if (!IsCurrentProcess(path)) throw;
+            var parked = path + ".old";
+            try
+            {
+                if (File.Exists(parked)) File.Delete(parked);
+                File.Move(path, parked);
+            }
+            catch
+            {
+                // Le fichier restera signalé par le répertoire non supprimé.
+            }
+        }
+    }
+
+    private static bool IsCurrentProcess(string path)
+    {
+        var process = Environment.ProcessPath;
+        return process is not null &&
+               string.Equals(Path.GetFullPath(process), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase);
+    }
+
     private static void MergeInventory(UpdateInventoryAction action)
     {
         InstallationInventory? existing = null;
@@ -716,10 +930,18 @@ public sealed class InstallerEngine : IInstallerEngine
 
     private static string? IconPathFor(string launcherPath)
     {
-        var dir = Path.GetDirectoryName(launcherPath);
-        if (dir is null) return null;
-        var candidate = Path.Combine(dir, "assets", OperatingSystem.IsWindows() ? "livex.ico" : "livex.svg");
-        return File.Exists(candidate) ? candidate : null;
+        try
+        {
+            var launcherDirectory = Path.GetDirectoryName(launcherPath);
+            var installRoot = launcherDirectory is null ? null : Directory.GetParent(launcherDirectory)?.Parent?.FullName;
+            if (installRoot is null) return null;
+            var candidate = Path.Combine(installRoot, "assets", OperatingSystem.IsWindows() ? "livex.ico" : "livex.svg");
+            return File.Exists(candidate) ? candidate : null;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static void EnsureParent(string path)
@@ -770,18 +992,85 @@ public sealed class InstallerEngine : IInstallerEngine
         }
     }
 
-    private static string ComponentDestination(string installDir, string componentId) => componentId switch
+    private static string ComponentDestination(string installDir, ComponentDescriptor component)
     {
-        "prism-ldk" => Path.Combine(installDir, "plugins", "prism-ldk"),
-        "docs" => Path.Combine(installDir, "docs"),
-        _ => Path.Combine(installDir, "components", componentId)
-    };
+        var root = component.InstallRoot;
+        if (!string.IsNullOrWhiteSpace(root) && !string.Equals(root, "root", StringComparison.OrdinalIgnoreCase))
+            return Path.Combine(installDir, root);
+
+        return component.Id switch
+        {
+            "prism-ldk" => Path.Combine(installDir, "plugins", "prism-ldk"),
+            "docs" => Path.Combine(installDir, "docs"),
+            "launcher" => Path.Combine(installDir, LauncherDirectory),
+            _ => Path.Combine(installDir, "components", component.Id)
+        };
+    }
+
+    private static string BundleRoot(InstallRequest request) =>
+        request.BundleRoot ?? AppContext.BaseDirectory;
+
+    private static string ResolveArchive(InstallRequest request, string asset) =>
+        Path.IsPathRooted(asset) ? asset : Path.Combine(BundleRoot(request), asset);
+
+    /// <summary>Liste les entrées d'une archive ZIP sans rien extraire (pour l'inventaire).</summary>
+    private static IReadOnlyList<FileEntry> ReadArchiveEntries(string archivePath, string? installRoot)
+    {
+        var entries = new List<FileEntry>();
+        if (!File.Exists(archivePath) || !archivePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            return entries;
+        }
+
+        try
+        {
+            using var zip = ZipFile.OpenRead(archivePath);
+            var prefix = string.IsNullOrWhiteSpace(installRoot) || installRoot == "root"
+                ? string.Empty
+                : installRoot.Replace('\\', '/').TrimEnd('/') + "/";
+
+            foreach (var entry in zip.Entries)
+            {
+                if (string.IsNullOrEmpty(entry.Name))
+                {
+                    continue; // répertoire
+                }
+
+                var relative = prefix + entry.FullName.Replace('\\', '/');
+                entries.Add(new FileEntry(relative, entry.Length, string.Empty));
+            }
+        }
+        catch (InvalidDataException)
+        {
+            // Archive illisible : le préflight l'aura déjà signalée.
+        }
+
+        return entries;
+    }
 
     internal static string LauncherPath(string installDir) =>
-        Path.Combine(installDir, OperatingSystem.IsWindows() ? LauncherExecutable + ".exe" : LauncherExecutable);
+        Path.Combine(installDir, LauncherDirectory,
+            OperatingSystem.IsWindows() ? LauncherExecutable + ".exe" : LauncherExecutable);
 
     internal static string SetupExecutableName() =>
         OperatingSystem.IsWindows() ? "livex-setup.exe" : "livex-setup";
+
+    /// <summary>
+    /// Source de la copie de maintenance : l'exécutable courant seulement s'il
+    /// s'agit bien de livex-setup, sinon une copie voisine du manifeste.
+    /// </summary>
+    private static string? ResolveSetupSource()
+    {
+        var process = Environment.ProcessPath;
+        if (process is not null &&
+            string.Equals(Path.GetFileNameWithoutExtension(process), "livex-setup", StringComparison.OrdinalIgnoreCase))
+        {
+            return process;
+        }
+
+        var sibling = Path.Combine(AppContext.BaseDirectory, SetupExecutableName());
+        return File.Exists(sibling) ? sibling : null;
+    }
 
     private static string Serialize<T>(T value) =>
         JsonSerializer.Serialize(value, new JsonSerializerOptions { WriteIndented = true });

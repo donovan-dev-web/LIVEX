@@ -26,6 +26,17 @@
             </StackPanel>
           </StackPanel>
 
+          <!-- Langue : liste déroulante toujours visible, hors du parcours d'étapes. -->
+          <StackPanel Spacing="4">
+            <TextBlock Text="{l:Tr languageTitle}" Classes="tiny" />
+            <ComboBox SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      AutomationProperties.Name="{l:Tr languageTitle}">
+              <ComboBoxItem Content="{l:Tr languageFr}" />
+              <ComboBoxItem Content="{l:Tr languageEn}" />
+            </ComboBox>
+          </StackPanel>
+
           <Border Classes="inset" Padding="10,8" IsVisible="{Binding IsDemo}">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <TextBlock Text="◈" Foreground="{StaticResource BrandViolet}" />

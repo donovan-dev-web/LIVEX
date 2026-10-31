@@ -108,7 +108,7 @@
   <data name="welcomeFeature2Body" xml:space="preserve"><value>Tout reste dans votre profil utilisateur : aucun UAC, aucun sudo.</value></data>
   <data name="welcomeFeature3Title" xml:space="preserve"><value>Vérifié avant écriture</value></data>
   <data name="welcomeFeature3Body" xml:space="preserve"><value>Empreintes, droits et espace disque sont contrôlés avant la moindre copie.</value></data>
-  <data name="welcomeHint" xml:space="preserve"><value>Choisissez une langue pour commencer.</value></data>
+  <data name="welcomeHint" xml:space="preserve"><value>La langue de l'assistant se choisit dans le panneau latéral.</value></data>
   <data name="welcomeDetectedTitle" xml:space="preserve"><value>Installation détectée</value></data>
   <data name="welcomeDetectedBody" xml:space="preserve"><value>LIVEX {0} est déjà installé dans {1}.</value></data>
   <data name="welcomeMaintainBody" xml:space="preserve"><value>Une installation valide ne sera jamais écrasée sans passer par la maintenance.</value></data>
@@ -142,7 +142,11 @@
   <data name="componentsNone" xml:space="preserve"><value>Aucun module facultatif proposé pour cette plateforme.</value></data>
 
   <data name="pathsTitle" xml:space="preserve"><value>Emplacements</value></data>
-  <data name="pathsIntro" xml:space="preserve"><value>Choisissez où installer LIVEX et où ranger vos expériences. Rien n'est créé avant le récapitulatif.</value></data>
+  <data name="pathsIntro" xml:space="preserve"><value>Choisissez un répertoire d'installation : LIVEX y crée le logiciel, l'espace de travail et les données. Personnalisez un emplacement seulement si nécessaire. Rien n'est créé avant le récapitulatif.</value></data>
+  <data name="pathsRoot" xml:space="preserve"><value>Répertoire d'installation</value></data>
+  <data name="pathsRootHint" xml:space="preserve"><value>Les trois emplacements ci-dessous en sont dérivés par défaut.</value></data>
+  <data name="pathsCustomize" xml:space="preserve"><value>Personnaliser cet emplacement</value></data>
+  <data name="pathsDerived" xml:space="preserve"><value>Dérivé du répertoire d'installation</value></data>
   <data name="pathsInstallDir" xml:space="preserve"><value>Répertoire logiciel</value></data>
   <data name="pathsInstallHint" xml:space="preserve"><value>Le Launcher et ses composants. La valeur proposée convient à la plupart des postes.</value></data>
   <data name="pathsWorkspace" xml:space="preserve"><value>Espace de travail</value></data>
@@ -151,7 +155,6 @@
   <data name="pathsDataRootHint" xml:space="preserve"><value>Préférences, cache et journaux. Modifiable par la variable d'environnement LIVEX_DATA.</value></data>
   <data name="pathsDisk" xml:space="preserve"><value>Espace disque disponible : {0}</value></data>
   <data name="pathsShortcut" xml:space="preserve"><value>Créer un raccourci sur le Bureau</value></data>
-  <data name="pathsLaunchAfter" xml:space="preserve"><value>Lancer LIVEX à la fin de l'installation</value></data>
   <data name="pathsValid" xml:space="preserve"><value>Chemins valides.</value></data>
 
   <data name="errEmpty" xml:space="preserve"><value>Indiquez un chemin.</value></data>
@@ -167,6 +170,7 @@
   <data name="summaryOperationInstall" xml:space="preserve"><value>Installation</value></data>
   <data name="summaryOperationMaintenance" xml:space="preserve"><value>Maintenance</value></data>
   <data name="summaryProductVersion" xml:space="preserve"><value>Version du produit</value></data>
+  <data name="summaryRootDir" xml:space="preserve"><value>Répertoire d'installation</value></data>
   <data name="summaryInstallDir" xml:space="preserve"><value>Répertoire logiciel</value></data>
   <data name="summaryWorkspace" xml:space="preserve"><value>Espace de travail</value></data>
   <data name="summaryDataRoot" xml:space="preserve"><value>Racine de données</value></data>
@@ -279,7 +283,7 @@
   <data name="languageSubtitle" xml:space="preserve"><value>La langue de l'assistant</value></data>
   <data name="licenseSubtitle" xml:space="preserve"><value>Licence du produit et composants tiers</value></data>
   <data name="componentsSubtitle" xml:space="preserve"><value>Socle, composant de base et modules facultatifs</value></data>
-  <data name="pathsSubtitle" xml:space="preserve"><value>Répertoire logiciel, espace de travail et données</value></data>
+  <data name="pathsSubtitle" xml:space="preserve"><value>Répertoire commun et emplacements dérivés</value></data>
   <data name="summarySubtitle" xml:space="preserve"><value>Vérification avant écriture</value></data>
   <data name="progressSubtitle" xml:space="preserve"><value>Écriture des fichiers et intégration système</value></data>
   <data name="resultTitle" xml:space="preserve"><value>Résultat</value></data>

@@ -108,7 +108,7 @@
   <data name="welcomeFeature2Body" xml:space="preserve"><value>Everything stays in your user profile: no UAC, no sudo.</value></data>
   <data name="welcomeFeature3Title" xml:space="preserve"><value>Verified before writing</value></data>
   <data name="welcomeFeature3Body" xml:space="preserve"><value>Hashes, permissions and disk space are checked before anything is copied.</value></data>
-  <data name="welcomeHint" xml:space="preserve"><value>Choose a language to get started.</value></data>
+  <data name="welcomeHint" xml:space="preserve"><value>The wizard language is chosen in the sidebar.</value></data>
   <data name="welcomeDetectedTitle" xml:space="preserve"><value>Existing installation found</value></data>
   <data name="welcomeDetectedBody" xml:space="preserve"><value>LIVEX {0} is already installed in {1}.</value></data>
   <data name="welcomeMaintainBody" xml:space="preserve"><value>A valid installation is never overwritten without going through maintenance.</value></data>
@@ -142,7 +142,11 @@
   <data name="componentsNone" xml:space="preserve"><value>No optional module offered for this platform.</value></data>
 
   <data name="pathsTitle" xml:space="preserve"><value>Locations</value></data>
-  <data name="pathsIntro" xml:space="preserve"><value>Choose where LIVEX is installed and where your experiments live. Nothing is created before the summary.</value></data>
+  <data name="pathsIntro" xml:space="preserve"><value>Choose an installation root: LIVEX creates the software, workspace and data folders inside it. Customize a location only when needed. Nothing is created before the summary.</value></data>
+  <data name="pathsRoot" xml:space="preserve"><value>Installation root</value></data>
+  <data name="pathsRootHint" xml:space="preserve"><value>The three locations below are derived from it by default.</value></data>
+  <data name="pathsCustomize" xml:space="preserve"><value>Customize this location</value></data>
+  <data name="pathsDerived" xml:space="preserve"><value>Derived from the installation root</value></data>
   <data name="pathsInstallDir" xml:space="preserve"><value>Software directory</value></data>
   <data name="pathsInstallHint" xml:space="preserve"><value>The Launcher and its components. The proposed value suits most computers.</value></data>
   <data name="pathsWorkspace" xml:space="preserve"><value>Workspace</value></data>
@@ -151,7 +155,6 @@
   <data name="pathsDataRootHint" xml:space="preserve"><value>Preferences, cache and logs. Can be overridden with the LIVEX_DATA environment variable.</value></data>
   <data name="pathsDisk" xml:space="preserve"><value>Available disk space: {0}</value></data>
   <data name="pathsShortcut" xml:space="preserve"><value>Create a Desktop shortcut</value></data>
-  <data name="pathsLaunchAfter" xml:space="preserve"><value>Launch LIVEX when setup finishes</value></data>
   <data name="pathsValid" xml:space="preserve"><value>Paths are valid.</value></data>
 
   <data name="errEmpty" xml:space="preserve"><value>Enter a path.</value></data>
@@ -167,6 +170,7 @@
   <data name="summaryOperationInstall" xml:space="preserve"><value>Installation</value></data>
   <data name="summaryOperationMaintenance" xml:space="preserve"><value>Maintenance</value></data>
   <data name="summaryProductVersion" xml:space="preserve"><value>Product version</value></data>
+  <data name="summaryRootDir" xml:space="preserve"><value>Installation root</value></data>
   <data name="summaryInstallDir" xml:space="preserve"><value>Software directory</value></data>
   <data name="summaryWorkspace" xml:space="preserve"><value>Workspace</value></data>
   <data name="summaryDataRoot" xml:space="preserve"><value>Data root</value></data>
@@ -279,7 +283,7 @@
   <data name="languageSubtitle" xml:space="preserve"><value>Wizard language</value></data>
   <data name="licenseSubtitle" xml:space="preserve"><value>Product license and third-party components</value></data>
   <data name="componentsSubtitle" xml:space="preserve"><value>Core, base component and optional modules</value></data>
-  <data name="pathsSubtitle" xml:space="preserve"><value>Software directory, workspace and data</value></data>
+  <data name="pathsSubtitle" xml:space="preserve"><value>Common root and derived locations</value></data>
   <data name="summarySubtitle" xml:space="preserve"><value>Review before writing</value></data>
   <data name="progressSubtitle" xml:space="preserve"><value>Writing files and system integration</value></data>
   <data name="resultTitle" xml:space="preserve"><value>Result</value></data>

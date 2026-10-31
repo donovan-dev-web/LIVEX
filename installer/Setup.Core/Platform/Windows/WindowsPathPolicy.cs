@@ -41,15 +41,19 @@ public sealed class WindowsPathPolicy : IPathPolicy
             || fb.StartsWith(fa + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
     }
 
-    public string DefaultInstallDir()
-        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "LIVEX");
+    public string DefaultRootDir()
+        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LIVEX");
+
+    public string DefaultInstallDir() => Path.Combine(DefaultRootDir(), "software");
 
     public string DefaultDataRoot()
     {
         var env = Environment.GetEnvironmentVariable("LIVEX_DATA");
         if (!string.IsNullOrWhiteSpace(env)) return env;
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".livex-data");
+        return Path.Combine(DefaultRootDir(), "data");
     }
+
+    public string DefaultWorkspaceDir() => Path.Combine(DefaultRootDir(), "workspace");
 
     public string StartMenuShortcutPath(string name)
         => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

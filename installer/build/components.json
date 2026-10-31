@@ -13,7 +13,7 @@
       "descriptionEn": "Orchestration and UI",
       "license": "GPL-3.0-or-later",
       "requires": [],
-      "installRoot": "root"
+      "installRoot": "core/launcher"
     },
     {
       "id": "syne",
@@ -27,7 +27,12 @@
       "descriptionEn": "Simulation engine",
       "license": "GPL-3.0-or-later",
       "requires": [],
-      "installRoot": "components/syne"
+      "installRoot": "components/syne",
+      "manifest": "syne/component.json",
+      "executables": {
+        "win-x64": "Simulation.Console.exe",
+        "linux-x64": "Simulation.Console"
+      }
     },
     {
       "id": "echos",
@@ -41,7 +46,12 @@
       "descriptionEn": "Observation and analysis",
       "license": "GPL-3.0-or-later",
       "requires": ["syne"],
-      "installRoot": "components/echos"
+      "installRoot": "components/echos",
+      "manifest": "echos/component.json",
+      "executables": {
+        "win-x64": "echos-launcher.cmd",
+        "linux-x64": "echos-launcher"
+      }
     },
     {
       "id": "prism",
@@ -83,7 +93,27 @@
       "descriptionEn": "Contract emulator",
       "license": "GPL-3.0-or-later",
       "requires": [],
-      "installRoot": "components/syne-mock"
+      "installRoot": "components/syne-mock",
+      "manifest": "syne-mock/component.json",
+      "executables": {
+        "win-x64": "src/cli.js",
+        "linux-x64": "src/cli.js"
+      }
+    },
+    {
+      "id": "resources",
+      "version": "1.0.0",
+      "mandatory": true,
+      "optional": false,
+      "external": null,
+      "nameFr": "Ressources",
+      "nameEn": "Resources",
+      "descriptionFr": "Icônes et ressources partagées",
+      "descriptionEn": "Icons and shared resources",
+      "license": "GPL-3.0-or-later",
+      "requires": [],
+      "installRoot": "assets",
+      "source": "assets"
     }
   ]
 }

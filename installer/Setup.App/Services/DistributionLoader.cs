@@ -15,6 +15,28 @@ public static class DistributionLoader
 
     public static string DefaultPath => Path.Combine(AppContext.BaseDirectory, FileName);
 
+    /// <summary>
+    /// Manifeste livré avec l'installateur, ou manifeste de maintenance
+    /// conservé dans <c>core/installer</c> quand l'installateur est installé.
+    /// </summary>
+    public static string ResolvePath()
+    {
+        var candidates = new[]
+        {
+            DefaultPath,
+            Path.Combine(AppContext.BaseDirectory, "core", "installer", FileName),
+            Path.Combine(AppContext.BaseDirectory, "..", "core", "installer", FileName),
+        };
+
+        foreach (var candidate in candidates)
+        {
+            var full = Path.GetFullPath(candidate);
+            if (File.Exists(full)) return full;
+        }
+
+        return DefaultPath;
+    }
+
     public static bool TryLoad(string path, out DistributionManifest? manifest, out string? error)
     {
         manifest = null;

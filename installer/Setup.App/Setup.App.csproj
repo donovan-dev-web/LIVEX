@@ -7,6 +7,16 @@
     <ApplicationIcon>Assets\livex-app-icon.ico</ApplicationIcon>
     <AssemblyName>livex-setup</AssemblyName>
     <RootNamespace>Setup.App</RootNamespace>
+
+    <!--
+      L'installateur est copié seul dans l'installation (racine) pour permettre
+      la désinstallation sans retéléchargement : il doit donc être autonome.
+      Ces propriétés ne s'appliquent qu'à une publication avec RID.
+    -->
+    <PublishSingleFile Condition="'$(RuntimeIdentifier)' != ''">true</PublishSingleFile>
+    <SelfContained Condition="'$(RuntimeIdentifier)' != ''">true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" />

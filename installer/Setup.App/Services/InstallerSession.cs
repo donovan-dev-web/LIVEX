@@ -58,7 +58,40 @@ public sealed class InstallerSession
 
     public string DefaultDataRoot => _pathPolicy.DefaultDataRoot();
 
-    public string DefaultWorkspaceDir => Path.Combine(DefaultDataRoot, "workspace");
+    public string DefaultRootDir => _pathPolicy.DefaultRootDir();
+
+    public string DefaultWorkspaceDir => _pathPolicy.DefaultWorkspaceDir();
+
+    /// <summary>Répertoire qui porte la distribution (manifeste, archives de composants).</summary>
+    public string BundleRoot => AppContext.BaseDirectory;
+
+    /// <summary>
+    /// Exécutable d'installation à conserver dans l'installation. Nul quand le
+    /// processus courant n'est pas <c>livex-setup</c> (tests, outillage).
+    /// </summary>
+    public string? SetupSourcePath
+    {
+        get
+        {
+            var process = Environment.ProcessPath;
+            return process is not null &&
+                   string.Equals(
+                       Path.GetFileNameWithoutExtension(process),
+                       "livex-setup",
+                       StringComparison.OrdinalIgnoreCase)
+                ? process
+                : null;
+        }
+    }
+
+    /// <summary>Sous-répertoire logiciel dérivé d'une racine.</summary>
+    public static string InstallDirFor(string root) => Path.Combine(root, "software");
+
+    /// <summary>Sous-répertoire de données dérivé d'une racine.</summary>
+    public static string DataRootFor(string root) => Path.Combine(root, "data");
+
+    /// <summary>Sous-répertoire d'espace de travail dérivé d'une racine.</summary>
+    public static string WorkspaceDirFor(string root) => Path.Combine(root, "workspace");
 
     public bool NoNetwork => _options.NoNetwork;
 
@@ -81,7 +114,7 @@ public sealed class InstallerSession
                 "Mode monde fictif : aucune installation réelle ne sera effectuée.");
         }
 
-        if (DistributionLoader.TryLoad(DistributionLoader.DefaultPath, out var manifest, out var error) && manifest is not null)
+        if (DistributionLoader.TryLoad(DistributionLoader.ResolvePath(), out var manifest, out var error) && manifest is not null)
         {
             return new InstallerSession(options, manifest, isDemo: false, DemoScenario.FreshInstall, null);
         }
@@ -192,7 +225,8 @@ public sealed class InstallerSession
             NewWorkspacePath: action == MaintenanceActionKind.ChangeWorkspace ? request.WorkspaceDir : null,
             Inventory: CurrentInventory(record.InstallDir),
             PayloadRoot: request.PayloadRoot,
-            DryRun: request.DryRun);
+            DryRun: request.DryRun,
+            BundleRoot: request.BundleRoot);
 
         var plan = await _engine.PlanMaintenanceAsync(maintenance, ct).ConfigureAwait(false);
         return await _engine.ExecuteAsync(plan, request, progress, ct).ConfigureAwait(false);

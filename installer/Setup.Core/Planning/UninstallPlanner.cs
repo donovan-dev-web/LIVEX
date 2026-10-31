@@ -89,12 +89,15 @@ public static class UninstallPlanner
         // 3. Répertoires connus, du plus profond au plus haut.
         var knownDirectories = new[]
         {
+            Path.Combine(installDir, "core", "launcher"),
+            Path.Combine(installDir, "core", "installer"),
             Path.Combine(installDir, "plugins", "prism-ldk"),
             Path.Combine(installDir, "plugins"),
             Path.Combine(installDir, "components"),
             Path.Combine(installDir, "contracts"),
             Path.Combine(installDir, "docs"),
             Path.Combine(installDir, "assets"),
+            Path.Combine(installDir, "core"),
             installDir
         };
 
