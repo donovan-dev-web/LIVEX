@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `../../site/src/data/`, `../../site/src/content.config.ts`, `../governance/LIVEX-STATUS.md`, `../../VERSIONING.md`
 
 ---
@@ -16,9 +16,9 @@ Modifier un fait = modifier **un fichier de données**, pas N pages.
 | Fichier | Contenu | Source d'autorité |
 | :-- | :-- | :-- |
 | `data/site.ts` | Métadonnées du site et navigation | `../presentation/VISION.md` |
-| `data/components.ts` | Les trois composants + statuts | `../ARCHITECTURE.md`, `../presentation/GLOSSARY.md` |
-| `data/release.ts` | État du projet, versions, tests, couverture | `../governance/LIVEX-STATUS.md`, `VERSIONING.md`, `CHANGELOG.md` |
-| `data/versions.ts` | Historique des versions **publiées** (fiches par version) | `VERSIONING.md`, `CHANGELOG.md` |
+| `data/components.ts` | Les trois couches de runtime + statuts ; l'installateur est documenté comme composant opérationnel distinct | `../ARCHITECTURE.md`, `../presentation/GLOSSARY.md` |
+| `data/release.ts` | État de la release publique, versions dont l'installateur, inventaire consolidé des tests, Tokei et couverture | `../governance/LIVEX-STATUS.md`, `VERSIONING.md`, `CHANGELOG.md` |
+| `data/versions.ts` | Historique des versions publiées (fiches par version) | `VERSIONING.md`, `CHANGELOG.md`, assets GitHub Releases |
 | `data/monograph.ts` | Sommaire bilingue de la monographie (titres et liens) | `../monographie/00-SOMMAIRE-GENERAL.md` |
 | `data/claims.ts` | Registre des affirmations sensibles | §5 ci-dessous |
 
@@ -84,19 +84,20 @@ assuré par `StatusBadge` (`COMPONENTS.md` §5).
 
 | Export | Contenu |
 | :-- | :-- |
-| `RELEASE` | `published` (aucune release à ce jour), version `planned` (V0.1), URL releases/changelog. |
+| `RELEASE` | État de la release publique LIVEX 1.0.0, URL des releases, dernière version et date de publication. |
 | `PROJECT_STATE` | Date d'observation, branche/commit, fichiers, lignes de code, tests, couverture, CI, Windows. |
 | `VERSION_TABLE` | Tableau des versions par composant (page Versions). |
 | `RELEASE_EN`, `PROJECT_STATE_EN`, `VERSION_TABLE_EN` | Miroirs anglais **des seules chaînes localisées** ; les valeurs numériques restent dans les objets français. |
 
-**Invariant** : `RELEASE.published` reste `false` tant qu'aucun tag public
-n'existe. La page Télécharger demeure neutre en conséquence.
+**Invariant** : `RELEASE.published` correspond à l'existence d'une release
+publique taguée. La release actuelle est `livex-v1.0.0` ; la page Télécharger
+et les fiches de version doivent pointer vers ses assets publiés.
 
 ### 4.1 `versions.ts`
 
 Historique des **versions publiées**, distinct de `VERSION_TABLE` (qui décrit
-les versions *courantes par composant*). Tableau `VERSIONS: VersionEntry[]`,
-**vide à ce jour** (aucune release). Chaque entrée génère une fiche
+les versions *courantes par composant*). `VERSIONS: VersionEntry[]` contient
+la fiche LIVEX 1.0.0. Chaque entrée génère une fiche
 `versions/<slug>/` (FR) et `en/versions/<slug>/` (EN) : résumé, nouveautés,
 corrections, limites connues, table de téléchargements (taille, empreinte
 SHA-256). Champs FR et `*En` pour le miroir anglais. Voir `MAINTENANCE.md` pour

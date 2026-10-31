@@ -7,37 +7,32 @@ import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import { RELEASE } from '../../data/release';
+import { VERSIONS } from '../../data/versions';
 import { url } from '../../utils/url';
 import { SITE } from '../../data/site';
 ---
 <BaseLayout
   title="LIVEX — Télécharger : releases et installation"
-  description="Télécharger LIVEX : aucune release publique à ce jour, V0.2 en préparation. État des versions, installation depuis les sources et dépôt GitHub."
+  description="Télécharger LIVEX 1.0.0 : installateurs Windows et Linux, variantes core et full."
 >
   <PageHeader
     index="11"
     eyebrow="Télécharger"
-    title="Rien à télécharger, pour l'instant."
-    lead="Pas de binaire à télécharger aujourd'hui : la V0.2 est en préparation. Voici ce qui existe, ce qui est prévu, et par où commencer."
+    title="LIVEX 1.0.0 est disponible."
+    lead="La première release publique comprend des installateurs Windows et Linux, en variantes core et full."
     crumbs={[{ label: 'Télécharger' }]}
   />
 
   <section class="block">
     <div class="w">
       <div class="pl br" style="padding:24px;margin-top:8px">
-        <p style="margin:0 0 10px"><StatusBadge status="developpement" label={RELEASE.plannedLabel} /></p>
-        <h2 style="margin-top:0">Aucune release, aucun tag posé.</h2>
-        <p>
-          Il n'existe donc <strong>ni installeur, ni binaire, ni paquet distribuable</strong> à télécharger.
-        </p>
-        <p>
-          La page <a href={RELEASE.releasesUrl} rel="noopener">Releases GitHub</a> restera vide tant que la
-          <strong>{RELEASE.planned}</strong> n'aura pas été validée.
-        </p>
+        <p style="margin:0 0 10px"><StatusBadge status="disponible" label={RELEASE.plannedLabel} /></p>
+        <h2 style="margin-top:0">Installateurs disponibles</h2>
+        <p>Choisissez votre plateforme et votre profil. La variante <code>core</code> télécharge les modules facultatifs au besoin ; <code>full</code> les embarque pour une installation hors ligne.</p>
         <div class="cta">
-          <a class="bt" href={url('versions/')}>État des versions</a>
+          <a class="bt p" href={RELEASE.releaseUrl} rel="noopener">Télécharger depuis GitHub ↗</a>
           <a class="bt" href={url('telecharger/installation/')}>Guide d'installation</a>
-          <a class="bt" href={RELEASE.releasesUrl} rel="noopener">Releases GitHub ↗</a>
+          <a class="bt" href={url(`versions/${VERSIONS[0].slug}/`)}>Notes de version</a>
         </div>
       </div>
     </div>
@@ -45,21 +40,21 @@ import { SITE } from '../../data/site';
 
   <section class="block">
     <div class="w">
-      <div class="sh"><b>11.1</b> Ce qui est prévu</div>
-      <h2>Ce qu'une version contiendra.</h2>
+      <div class="sh"><b>11.1</b> Contenu de LIVEX 1.0.0</div>
+      <h2>Composants distribués.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Élément</th><th scope="col">Forme attendue</th><th scope="col">État</th></tr></thead>
           <tbody>
-            <tr><td>Launcher (bureau)</td><td>Application de bureau (Avalonia) pour piloter et observer</td><td><StatusBadge status="developpement" /></td></tr>
-            <tr><td>Moteur SYNE</td><td>Binaire .NET et paquets du moteur</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td>ECHOS</td><td>Paquet Python (observation, API headless)</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td>PRISM</td><td>Projet Unreal (hors périmètre V0.2)</td><td><StatusBadge status="hors-perimetre" /></td></tr>
+            <tr><td>Launcher</td><td>Application de bureau Avalonia</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>SYNE</td><td>Moteur de simulation .NET</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>ECHOS</td><td>Observation et analyse</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>PRISM</td><td>Application packagée Windows/Linux</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>PRISM-LDK</td><td>Plugin Unreal `PrismLdk` 1.0.0</td><td><StatusBadge status="disponible" /></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>Ces lignes décrivent une <em>intention de forme</em>, pas un engagement de date : aucun jalon
-        daté n'est fixé avant la consolidation des phases en cours.</p></div>
+      <div class="cc"><p>Les versions, limites connues et empreintes de la release sont présentées dans les <a href={url(`versions/${VERSIONS[0].slug}/`)}>notes de version</a>.</p></div>
     </div>
   </section>
 
@@ -73,7 +68,7 @@ import { SITE } from '../../data/site';
       </p>
       <div class="cta">
         <a class="bt p" href={url('documentation/')}>Documentation</a>
-        <a class="bt" href={url('telecharger/installation/')}>Installer depuis les sources</a>
+        <a class="bt" href={url('telecharger/installation/')}>Guide d'installation</a>
         <a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub ↗</a>
       </div>
     </div>

@@ -49,7 +49,7 @@ import { url } from '../../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.2</b> Components</div>
-      <h2>Three blocks, three declared states.</h2>
+      <h2>Three runtime layers and their tools.</h2>
       {COMPONENTS_EN.map((c) => (
         <div class="bn">
           <div>
@@ -67,7 +67,7 @@ import { url } from '../../../utils/url';
           {c.key === 'prism' && <Image src={launcherPrism} alt="Capture of the PRISM rendering opened from the Launcher" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM; for SYNE, a conceptual schema — an engine has no interface to capture. These visuals come from the development build (October 2026): none of them demonstrates a published version.</p>
+      <p class="mu" style="font-size:0.7rem">Real development captures for ECHOS and PRISM; for SYNE, a conceptual schema — an engine has no interface to capture. These images show screens from the repository, not a capture of the installed LIVEX 1.0.0 release binary.</p>
     </div>
   </section>
 
@@ -84,7 +84,7 @@ import { url } from '../../../utils/url';
             <tr><td>Observability contract (snapshot)</td><td>0.5.0</td><td>Adds <code>simulatedTimeSeconds</code>; world description <code>world_initialized</code> 1.1.</td></tr>
             <tr><td>Run identifier format</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>Seed is included in the identifier; ECHOS does not derive it from the ID.</td></tr>
             <tr><td>ECHOS persistence schema</td><td>SQLite v6</td><td>Additive migration <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>Local ports (V0.2)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>local only</strong> (<code>127.0.0.1</code>).</td></tr>
+            <tr><td>Local ports (current configuration)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>local only</strong> (<code>127.0.0.1</code>).</td></tr>
           </tbody>
         </table>
       </div>
@@ -107,7 +107,8 @@ import { url } from '../../../utils/url';
           <tbody>
             <tr><td><code>syne/</code></td><td>.NET simulation engine (SYNE)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td><code>echos/</code></td><td>Observation, analysis, headless API (Python package)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td><code>prism/</code></td><td>Unreal project and PRISM-LDK plugin</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td><code>prism/</code></td><td>Packaged Unreal project and PRISM-LDK / PrismLdk plugin</td><td><StatusBadge status="disponible" lang="en" /></td></tr>
+            <tr><td><code>installer/</code></td><td>Windows/Linux distribution, installation, maintenance and removal assistant</td><td><StatusBadge status="disponible" lang="en" /></td></tr>
             <tr><td><code>launcher/</code></td><td>Desktop application (Avalonia) — orchestration and presentation</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
             <tr><td><code>docs/</code></td><td>Monograph, architecture, governance, documentation</td><td>—</td></tr>
             <tr><td><code>site/</code></td><td>This static showcase site (Astro)</td><td>—</td></tr>
@@ -123,9 +124,9 @@ import { url } from '../../../utils/url';
       <h2>Orchestration and evidence.</h2>
       <div class="g2">
         <div class="pl br" style="padding:20px">
-          <h3>Launcher</h3>
-          <p class="mu">The orchestration layer: drive, combine and archive work carried out with SYNE, ECHOS and PRISM from a single interface.</p>
-          <a class="bt" href={url('technique/launcher/', 'en')}>The Launcher →</a>
+          <h3>LIVEX Installer</h3>
+          <p class="mu">The distribution component that installs public packages, manages maintenance and removes them cleanly.</p>
+          <a class="bt" href={url('technique/installer/', 'en')}>The installer →</a>
         </div>
         <div class="pl br" style="padding:20px">
           <h3>Reproducibility and measurements</h3>

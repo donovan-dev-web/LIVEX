@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 5 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `governance/ROADMAP.md`, `COMMUNICATION.md`
 
 > **Versions courantes** : moteur **SYNE 0.17.0** (défauts intégrés calibrés B1,
@@ -14,7 +14,7 @@
 > ECHOS **schéma v6**. Les versions évoluent indépendamment par composant
 > (`../VERSIONING.md`).
 
-Ce guide permet de démarrer localement **SYNE**, l’API **ECHOS** (sans interface), l’ingestion, le mock SYNE utilisé pour développer l’intégration Unreal de PRISM, et le **Launcher**, qui porte les fenêtres d’observation (consoles de logs, fenêtre d’analyse).
+LIVEX **1.0.0** est également disponible en installateurs Windows et Linux dans la [release publique](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0). Pour installer la version publiée, suivez le [guide utilisateur de l'installateur](installer/GUIDE-UTILISATEUR.md). Ce guide-ci décrit le démarrage local depuis les sources de **SYNE**, **ECHOS**, `syne-mock` et du **Launcher**.
 
 > **PRISM / Unreal** : PRISM est le projet Unreal final de LIVEX ; il intègre
 > le plugin **PRISM-LDK** (`Plugins/PrismLdk`). Dans le checkout courant,

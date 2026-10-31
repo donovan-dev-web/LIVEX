@@ -21,14 +21,14 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
     index="13b"
     eyebrow="Versions"
     title="The project state, dated."
-    lead="A factual snapshot of the repository, component by component. These figures describe a development repository, not a product."
+    lead="A factual snapshot of the release and its repository, component by component: tests, coverage, versions and measured files."
     crumbs={[{ label: 'Versions', href: 'versions/' }, { label: 'Project state' }]}
   />
 
   <section class="block">
     <div class="w">
-      <div class="cc"><p><strong>No public release.</strong> Target version {RELEASE.planned} in preparation.
-        See <a href={RELEASE.releasesUrl} rel="noopener">GitHub releases</a> and
+      <div class="cc"><p><strong>LIVEX {RELEASE.latest} is released.</strong> Windows/Linux installers are available in
+        <a href={RELEASE.releaseUrl} rel="noopener">the GitHub release</a> and
         <a href={`${repo}/docs/governance/LIVEX-STATUS.md`} rel="noopener">LIVEX-STATUS.md</a>.</p></div>
 
       <div class="sh"><b>13b.1</b> Analysed reference</div>
@@ -38,9 +38,11 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
           <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Reference</td><td><code>{PROJECT_STATE.branch}</code> at {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tracked files</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
-            <tr><td>Lines analysed</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.source)} source, {nf.format(PROJECT_STATE.loc.tests)} tests)</td></tr>
-            <tr><td>Tests</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored</td></tr>
+            <tr><td>Files analysed by Tokei</td><td>{nf.format(PROJECT_STATE.filesScanned)}</td></tr>
+            <tr><td>Tokei LOC</td><td>{nf.format(PROJECT_STATE.loc.total)} lines of code</td></tr>
+            <tr><td>Release tests</td><td>{PROJECT_STATE.tests.documentedTotal} cases: {PROJECT_STATE.tests.passed} passed, {PROJECT_STATE.tests.ignored} skipped, {PROJECT_STATE.tests.failed} failed</td></tr>
+            <tr><td>PRISM / PRISM-LDK</td><td>{PROJECT_STATE.tests.prismSpecs} specs: 71 passed, 5 passed with warnings</td></tr>
+            <tr><td>Installer</td><td>{PROJECT_STATE.tests.installerCases} tests executed and passed</td></tr>
             <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
             <tr><td>SYNE coverage</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
             <tr><td>CI</td><td>{PROJECT_STATE_EN.ci}</td></tr>

@@ -8,14 +8,14 @@
 <a href="docs/echos/README.md"><img alt="ECHOS · observation" src="https://img.shields.io/badge/ECHOS-observation-a97bff?style=plastic" /></a>
 <a href="docs/prism/README.md"><img alt="PRISM · rendu 3D" src="https://img.shields.io/badge/PRISM-rendu%203D-f0a846?style=plastic" /></a>
 
-[![Version globale V0.2](https://img.shields.io/badge/LIVEX-V0.2-315c9b?labelColor=090C16)](VERSIONING.md)
+[![Version globale 1.0.0](https://img.shields.io/badge/LIVEX-1.0.0-315c9b?labelColor=090C16)](VERSIONING.md)
 [![Licence GPLv3](https://img.shields.io/badge/Licence-GPLv3-216e5a?logo=gplv3&logoColor=BD0000&labelColor=090C16)](LICENSE)
 [![Moteur SYNE 0.17.0](https://img.shields.io/badge/SYNE-0.17.0-3fb8ea?labelColor=090C16)](syne/component.json)
 [![Contrat d’observabilité 0.5.0](https://img.shields.io/badge/Contrat-0.5.0-a97bff?labelColor=090C16)](docs/syne/API_CONTRACTS.md)
 
 [![CI](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml)
-[![Tests: 1 372](https://img.shields.io/badge/Tests-1372-orange)](docs/governance/LIVEX-STATUS.md#4-inventaire-des-tests)
-[![Couverture: 81,20 %](https://img.shields.io/badge/coverage_Global->80%25-blue)](docs/governance/LIVEX-STATUS.md#couverture)
+[![Tests release: 1 566 réussis](https://img.shields.io/badge/Tests_release-1566%20réussis-orange)](docs/governance/LIVEX-STATUS.md#4-inventaire-des-tests)
+[![Couverture de tests: 81,20 %](https://img.shields.io/badge/Couverture_de_tests-81%2C20%25-blue)](docs/governance/LIVEX-STATUS.md#couverture)
 
 **[Site web](https://donovan-dev-web.github.io/LIVEX/)** &nbsp;·&nbsp; **[Le projet](#le-projet)** &nbsp;·&nbsp; **[Architecture](#architecture)** &nbsp;·&nbsp; **[Performances](#performances)** &nbsp;·&nbsp; **[Démarrage](#démarrage-rapide)** &nbsp;·&nbsp; **[Documentation](#documentation)** &nbsp;·&nbsp; **[Contribuer](#contribuer)**
 
@@ -56,7 +56,7 @@ Le moteur fait évoluer des entités autonomes dans un monde régi par des règl
 <a id="architecture"></a>
 <img src="docs/assets/h-architecture.svg" alt="Architecture" width="80%" />
 
-LIVEX repose sur **trois couches séparées** — SYNE (la simulation), ECHOS (l’observation) et PRISM (la représentation 3D) — reliées par des contrats de communication explicites. Deux outils les entourent : le **Launcher**, qui orchestre la pile, et **syne-mock**, qui sert aux tests. Chaque composant a un périmètre défini.
+LIVEX repose sur **trois couches séparées** — SYNE (la simulation), ECHOS (l’observation) et PRISM (la représentation 3D) — reliées par des contrats de communication explicites. Le **Launcher** orchestre la pile, l’**installateur** distribue et gère son installation, et `syne-mock` aide aux tests d’intégration. Chaque composant a un périmètre défini.
 
 <div align="center">
 
@@ -77,6 +77,10 @@ flowchart LR
     A --> U[Launcher<br/>consoles de logs + fenêtre d'analyse<br/>fenêtres natives Avalonia]
     S -->|contrats de simulation| P[Projet Unreal PRISM]
     P -->|intègre le plugin| L[PRISM-LDK<br/>module PrismLdk]
+    INSTALL[Installateur LIVEX<br/>Windows / Linux] -->|installe et gère| U
+    INSTALL --> S
+    INSTALL --> D
+    INSTALL --> P
     M[syne-mock<br/>serveur Node.js de test] -.->|émule les contrats| P
 ```
 
@@ -88,7 +92,7 @@ flowchart LR
 |:--|:--|:--|
 | **SYNE**<br/><sub>*Systems & Emergent Network Engine*</sub> | Moteur de simulation | Fait évoluer le monde, calcule les interactions et les décisions des entités, puis expose l’état simulé et les événements produits. C’est la **source de vérité** du système. |
 | **ECHOS**<br/><sub>*Emergent Cognition & Holistic Observation System*</sub> | Observation et analyse | Ingère les données de simulation, les stocke, calcule des métriques et expose les résultats par une API REST. Peut participer au pilotage de la simulation sans devenir propriétaire de son état. |
-| **PRISM**<br/><sub>*Perceptual Rendering & Interactive Simulation Module*</sub> | Rendu et interaction | Projet Unreal Engine pour représenter visuellement le monde simulé et interagir avec lui. S’appuie sur **PRISM-LDK**, un plugin qui expose les interfaces de communication de LIVEX à Unreal Engine et à ses Blueprints. En développement. |
+| **PRISM**<br/><sub>*Perceptual Rendering & Interactive Simulation Module*</sub> | Rendu et interaction | Projet Unreal Engine packagé pour Windows et Linux dans LIVEX 1.0.0. S’appuie sur **PRISM-LDK**, le plugin `PrismLdk` qui expose les interfaces de communication de LIVEX à Unreal Engine et à ses Blueprints. |
 
 ### Les outils
 
@@ -96,6 +100,7 @@ flowchart LR
 |:--|:--|:--|
 | **Launcher** | Orchestration | Application de bureau Avalonia : orchestre l’environnement logiciel, supervise les composants et présente journaux et analyses dans une interface native. |
 | **syne-mock** | Test d’intégration | Serveur Node.js qui émule les contrats de communication de SYNE pour tester les clients (notamment PRISM) sans exécuter le moteur complet. Il ne remplace ni la simulation réelle ni sa validation. |
+| **Installateur LIVEX** | Distribution et maintenance | Assistant natif Windows/Linux qui installe le socle LIVEX et PRISM, propose les modules disponibles, puis permet la mise à jour, la réparation et la désinstallation. Il est livré en variantes `core` et `full`. |
 
 ### Communication entre les composants
 
@@ -114,7 +119,7 @@ Cette séparation évite de coupler le moteur à une interface graphique ou à u
 - **Autorité centrale de la simulation** : SYNE reste responsable de l’état du monde. ECHOS et PRISM consomment ses données sans devenir des sources concurrentes de vérité.
 - **Interfaces explicites et versionnées** : des contrats documentés facilitent l’intégration, les tests et l’évolution du système.
 
-L’architecture et les contrats sont détaillés dans la [documentation technique](docs/ARCHITECTURE.md) et la [spécification des échanges inter-composants](docs/COMMUNICATION.md). Le [statut courant](docs/governance/LIVEX-STATUS.md) précise les versions, les vérifications locales du 19 octobre 2026 et les portes qui restent ouvertes. Les badges affichent le total de tests exécutés et les résultats de couverture disponibles, sans présenter la couverture partielle comme une mesure globale complète.
+L’architecture et les contrats sont détaillés dans la [documentation technique](docs/ARCHITECTURE.md) et la [spécification des échanges inter-composants](docs/COMMUNICATION.md). Le [statut courant](docs/governance/LIVEX-STATUS.md) précise les versions, les tests validés pour la release et les portes qui restent ouvertes. Le badge de couverture décrit les rapports disponibles, sans présenter la mesure partielle comme la couverture globale complète.
 
 <a id="garanties-preuves-et-limites"></a>
 <img src="docs/assets/h-garanties.svg" alt="Garanties, preuves et limites" width="100%" />
@@ -125,7 +130,7 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 | **Causalité et explicabilité** | Le pipeline BDI utilise les informations connues par l’agent ; les décisions peuvent porter cibles, preuves et candidats rejetés. Les effets différés ferment la fenêtre causale d’un tick. |
 | **Mesures non intrusives** | ECHOS observe le flux et rend explicites les états mesurés, absents ou manquants ; l’analyse ne devient pas la source de vérité de la simulation. |
 | **Validation documentée** | Les rapports versionnés de [gouvernance](docs/governance/realignment/README.md) conservent décisions, protocoles, résultats et limites du réalignement SYNE 0.15.0 → 0.17.0. Le [statut local courant](docs/governance/LIVEX-STATUS.md) distingue ces campagnes antérieures des tests réellement exécutés dans le checkout. |
-| **Limites assumées** | L’émergence d’une société, d’une intelligence ou d’une conscience n’est pas garantie. Les campagnes sont bornées par leurs graines, horizons, scénarios et critères préenregistrés. PRISM et plusieurs capacités envisagées restent en développement. |
+| **Limites assumées** | L’émergence d’une société, d’une intelligence ou d’une conscience n’est pas garantie. Les campagnes sont bornées par leurs graines, horizons, scénarios et critères préenregistrés. PRISM est livré ; certaines capacités de rendu et d'interaction restent en évolution. |
 
 ### Aperçu des interfaces
 
@@ -133,7 +138,7 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 
 | Launcher · expériences | Launcher · vue PRISM |
 |:--:|:--:|
-| <img src="docs/captures/launcher-experiences.png" alt="Vue des expériences dans le Launcher LIVEX" /> | <img src="docs/captures/launcher-prism.png" alt="Vue PRISM dans le Launcher LIVEX" /> | <img src="docs/captures/launcher-prism.png" alt="Vue PRISM dans le Launcher LIVEX" /> |
+| <img src="docs/captures/launcher-experiences.png" alt="Vue des expériences dans le Launcher LIVEX" /> | <img src="docs/captures/launcher-prism.png" alt="Vue PRISM dans le Launcher LIVEX" /> |
 
 | ECHOS · relations | ECHOS · agents |
 |:--:|:--:|
@@ -142,6 +147,8 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 </div>
 
 <sub>Captures d’interface : elles présentent le Launcher et les vues d’observation, sans constituer une preuve scientifique ni un engagement sur toutes les capacités du produit.</sub>
+
+La capture dédiée de l'assistant d'installation sera ajoutée à `docs/captures/` après une capture réelle de la release 1.0.0 ; elle n'est pas encore disponible.
 
 Les captures statiques de présentation sont conservées dans `docs/captures/` et inventoriées dans [`docs/captures/README.md`](docs/captures/README.md). Le dépôt n’embarque aucune animation GIF : si le projet en a besoin un jour, elle rejoint ce dossier, en WebP ou MP4 de préférence.
 
@@ -167,42 +174,21 @@ Un run long se dimensionne sur le débit **à l’horizon visé**, pas sur celui
 Les mesures sont reproductibles avec le harnais [`scripts/benchmark-windows.py`](scripts/benchmark-windows.py) (le [`scripts/benchmark.py`](scripts/benchmark.py) historique est réservé à Unix) ; la référence moteur publiée reste [`docs/syne/PERFORMANCE.md`](docs/syne/PERFORMANCE.md).
 
 <a id="démarrage-rapide"></a>
-<img src="docs/assets/h-demarrage.svg" alt="Démarrage rapide" width="100%" />
+<img src="docs/assets/h-demarrage.svg" alt="Télécharger et installer LIVEX" width="100%" />
 
-> [!NOTE]
-> LIVEX est en cours de développement. Le **Launcher** est accessible depuis les sources du projet ; sa distribution sous forme d’application installable n’est pas encore finalisée.
+## Installer LIVEX
 
-Depuis la racine du dépôt :
+LIVEX **1.0.0** est publiée sous le tag [`livex-v1.0.0`](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0). Téléchargez l’installateur correspondant à **Windows x64** ou **Linux x64** dans la [release publique](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0), puis suivez le [guide utilisateur](docs/installer/GUIDE-UTILISATEUR.md). Les variantes `core` et `full` sont disponibles pour les deux plateformes.
 
-```bash
-dotnet run --project launcher/Launcher.App
-```
+### livex-setup Captures
+| Installateur · Accueil | Installateur · Choix Composant |
+|:--:|:--:|
+| <img src="docs/captures/Installer_home.png" alt="Vue de l'écran de lancement de l'installateur LIVEX" /> | <img src="docs/captures/Installer_Component.png" alt="Vue de l'écran de choix des composants installable de LIVEX" /> |
 
-L’**installateur** se lance de la même manière. Le mode fictif déroule tout le
-parcours (accueil, langue, licence, composants, chemins, récapitulatif,
-progression, résultat), plus la maintenance et la désinstallation, **sans rien
-installer ni écrire sur le poste** :
 
-```bash
-# Assistant, mode normal
-dotnet run --project installer/Setup.App
+L’assistant installe le socle LIVEX et PRISM, propose les modules facultatifs disponibles, puis permet la mise à jour, la réparation et la désinstallation. Il fonctionne sans privilèges administrateur. PRISM est une application packagée : Unreal Engine n’est pas requis pour l’utiliser. Consultez la [documentation de l’installateur](docs/installer/README.md) pour le détail des composants, plateformes et limites.
 
-# Monde fictif : parcours complet sans installation
-dotnet run --project installer/Setup.App -- --demo
-
-# Variantes de scénario
-dotnet run --project installer/Setup.App -- --demo --demo-scenario=existing
-dotnet run --project installer/Setup.App -- --demo --demo-scenario=prism
-dotnet run --project installer/Setup.App -- --demo --demo-scenario=failure
-```
-
-Le `--` sépare les arguments de `dotnet run` de ceux de l’installateur. La
-référence complète des options et des codes de sortie est dans
-[`docs/installer/COMMANDES.md`](docs/installer/COMMANDES.md).
-
-Les prérequis, les commandes de compilation et les procédures de démarrage détaillées sont dans le [guide d’installation](docs/INSTALLATION.md).
-
-**Distribution.** Des installateurs pour **Windows et Linux** sont prévus pour installer LIVEX sans lancer les composants à la main : une application accessible depuis le menu du système, avec ses raccourcis. Le code de l’installateur existe et se lance depuis les sources (voir [Démarrage rapide](#démarrage-rapide)) ; sa distribution installable n’est pas encore publiée, elle suivra la finalisation du packaging et des vérifications nécessaires.
+Pour lancer les composants depuis les sources ou parcourir le mode démonstration de l’assistant, consultez le [guide de développement et d’installation locale](docs/INSTALLATION.md) et la [documentation du mode démo](docs/installer/README.md#5-bis-mode-démonstration-monde-fictif).
 
 ## Structure du dépôt
 
@@ -252,6 +238,7 @@ LIVEX/
 | [Glossaire](docs/presentation/GLOSSARY.md) | Retrouver le vocabulaire du projet. |
 | [FAQ](docs/presentation/FAQ.md) | Obtenir des réponses aux questions fréquentes. |
 | [Launcher LIVEX](launcher/README.md) · [spécification complète](docs/launcher/README.md) | Comprendre l’état V1, les modes de lancement, l’interface et les limites d’intégration. |
+| [Installateur LIVEX](docs/installer/README.md) · [guide utilisateur](docs/installer/GUIDE-UTILISATEUR.md) | Télécharger, installer, mettre à jour, réparer et désinstaller LIVEX 1.0.0. |
 | [Monographie](LIVEX-Monographie_SnapV0-1.pdf) | Lire les fondements, modèles et choix détaillés. |
 | [SYNE](docs/syne/README.md) · [ECHOS](docs/echos/README.md) · [PRISM](docs/prism/README.md) | Entrer dans la documentation d’un composant. |
 | [État courant et validations](docs/governance/LIVEX-STATUS.md) · [Documentation générale](docs/README.md) | Lire les résultats vérifiés localement, les portes ouvertes, les sources de vérité et les documents historiques. |

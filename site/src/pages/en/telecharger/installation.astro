@@ -4,112 +4,80 @@
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
-import StatusBadge from '../../../components/StatusBadge.astro';
-import { PROJECT_STATE_EN } from '../../../data/release';
+import CtaBand from '../../../components/CtaBand.astro';
+import { Image } from 'astro:assets';
+import installerHome from '../../../assets/captures/installer-home.png';
+import installerComponents from '../../../assets/captures/installer-components.png';
+import { VERSIONS } from '../../../data/versions';
+const [windowsCore, windowsFull, linuxCore, linuxFull] = VERSIONS[0].assets;
 ---
 <BaseLayout
   lang="en"
-  title="LIVEX — Installation guide: run the stack from source"
-  description="Install LIVEX from source: prerequisites (.NET, Python, Node.js), a command to start the SYNE and ECHOS stack, local ports and tests."
+  title="Install LIVEX 1.0.0 on Windows or Linux"
+  description="Download LIVEX, launch livex-setup and follow the assistant: components, licence, folders and installation, step by step."
 >
-  <PageHeader
-    lang="en"
-    index="12"
-    eyebrow="Download · Installation"
-    title="Start LIVEX from source."
-    lead="No installer is distributed yet. Here is how to run the SYNE + ECHOS stack from the repository, locally — a development environment, not a public service."
-    crumbs={[{ label: 'Download', href: 'telecharger/' }, { label: 'Installation' }]}
-  />
+  <PageHeader lang="en" index="12" eyebrow="Download · Installation" title="Install LIVEX step by step."
+    lead="Download the package for your system, launch the LIVEX installer, then choose your components and folders. No .NET, Python or Node.js installation is needed."
+    crumbs={[{ label: 'Download', href: 'telecharger/' }, { label: 'Installation' }]} />
 
-  <section class="block">
-    <div class="w">
-      <div class="cc"><p><strong>Read first.</strong> The development services run locally (<code>127.0.0.1</code>) and
-        are not hardened for public exposure.</p></div>
+  <section class="block"><div class="w">
+    <div class="cc"><p><strong>LIVEX 1.0.0 is released for Windows 10/11 x64 and Linux x64.</strong> On Windows, download and extract the archive, then run <code>livex-setup.exe</code>. On Linux, extract the package and run <code>./livex-setup</code>.</p></div>
+    <div class="sh"><b>12.1</b> Download</div>
+    <h2>Choose your platform and package.</h2>
+    <div class="ov"><table class="tb"><thead><tr><th scope="col">Package</th><th scope="col">Contents</th><th scope="col">Download</th></tr></thead><tbody>
+      <tr><td>Windows x64 · <code>core</code></td><td>LIVEX core and PRISM; optional modules download if selected.</td><td><a href={windowsCore.url}>Download ZIP ↗</a></td></tr>
+      <tr><td>Windows x64 · <code>full</code></td><td>Core, PRISM and bundled optional modules for offline installation.</td><td><a href={windowsFull.url}>Download ZIP ↗</a></td></tr>
+      <tr><td>Linux x64 · <code>core</code></td><td>LIVEX core and PRISM; internet is needed for selected optional modules.</td><td><a href={linuxCore.url}>Download TAR.GZ ↗</a></td></tr>
+      <tr><td>Linux x64 · <code>full</code></td><td>Core, PRISM and bundled optional modules for offline installation.</td><td><a href={linuxFull.url}>Download TAR.GZ ↗</a></td></tr>
+    </tbody></table></div>
+    <p>Packages are published in the <a href="https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0" rel="noopener">`livex-v1.0.0` public release</a>. The installer and core are self-contained: you do not need to install .NET, Python, Node.js or Unreal Engine.</p>
+  </div></section>
 
-      <div class="sh"><b>12.1</b> Prerequisites</div>
-      <h2>The prerequisites at a glance.</h2>
-      <div class="ov">
-        <table class="tb">
-          <thead><tr><th scope="col">Tool</th><th scope="col">Version</th><th scope="col">For</th></tr></thead>
-          <tbody>
-            <tr><td>.NET SDK</td><td>10.0.4xx</td><td>SYNE engine</td></tr>
-            <tr><td>Python</td><td>3.11+</td><td>ECHOS (observation, API)</td></tr>
-            <tr><td>Node.js</td><td>20+</td><td>syne-mock (integration)</td></tr>
-            <tr><td>Unreal Engine</td><td>5.8</td><td>PRISM and the PRISM-LDK plugin (outside V0.2 scope)</td></tr>
-            <tr><td>curl</td><td>—</td><td>Availability checks</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="cc"><p>Three tools are enough for the full stack: .NET SDK, Python and Node.js. Unreal Engine is
-        only needed for PRISM, which is outside the scope of V0.2.</p></div>
-    </div>
-  </section>
+  <section class="block"><div class="w">
+    <div class="sh"><b>12.2</b> Launch the assistant</div>
+    <h2>Start from the welcome screen.</h2>
+    <figure class="shot"><Image src={installerHome} alt="LIVEX 1.0.0 installer welcome screen showing the eight steps and Next button" loading="lazy" /><figcaption>Welcome screen. It lists the steps and explains that installation is per-user and does not require administrator privileges.</figcaption></figure>
+    <ol>
+      <li><strong>Extract the package</strong> you downloaded if your system has not already done so.</li>
+      <li><strong>Launch the installer</strong>: double-click <code>livex-setup.exe</code> on Windows; on Linux, run <code>./livex-setup</code> from the extracted folder.</li>
+      <li><strong>Choose a language</strong> (French or English), then read and accept the licence to continue.</li>
+      <li><strong>Select components</strong> on the next screen. Launcher, SYNE and ECHOS are the required core; PRISM is included and selected by default.</li>
+      <li><strong>Choose locations</strong> for the software and workspace. Keep them separate: the workspace stores your experiments and reports.</li>
+      <li><strong>Review the summary</strong>, confirm, and let the assistant finish installing.</li>
+      <li><strong>Finish</strong>: choose “Launch LIVEX” on the result screen to open the Launcher.</li>
+    </ol>
+  </div></section>
 
-  <section class="block">
-    <div class="w">
-      <div class="sh"><b>12.2</b> Quick start</div>
-      <h2>The stack in one command.</h2>
-      <p>From the root of the repository:</p>
-      <pre><code>./scripts/dev-stack.sh</code></pre>
-      <p>
-        The script prepares the Python environment, compiles SYNE, then starts the ECHOS API (port
-        <code>5000</code>), SYNE (control <code>5181</code>, WebSocket <code>5180</code>) and ECHOS ingestion in order.
-        It does <strong>not</strong> launch any simulation: SYNE remains in the <code>Idle</code> state until the
-        <code>Start</code> command.
-      </p>
-      <p>The API documentation is then available at <code>http://127.0.0.1:5000/docs</code>.</p>
-    </div>
-  </section>
+  <section class="block"><div class="w">
+    <div class="sh"><b>12.3</b> Select components</div>
+    <h2>The core, PRISM and optional modules.</h2>
+    <figure class="shot"><Image src={installerComponents} alt="Installer Components screen: required Launcher, SYNE and ECHOS, PRISM selected by default, and optional modules listed" loading="lazy" /><figcaption>Component selection in the distribution. The exact selection may vary by platform and by assets available in the release.</figcaption></figure>
+    <ul>
+      <li><strong>Required core</strong>: Launcher, SYNE, ECHOS, contracts and resources.</li>
+      <li><strong>PRISM</strong>: packaged 3D rendering application, selected by default. Unreal Engine is not needed to run it.</li>
+      <li><strong>PRISM-LDK</strong>: optional Unreal plugin, provided as an archive for manual integration into an Unreal project you own.</li>
+      <li><strong>Offline documentation</strong> and <strong>SYNE-Mock</strong>: optional modules for offline reference and integration development.</li>
+    </ul>
+    <p>With <code>core</code>, an internet connection is needed if you select an optional module downloaded from the release. With <code>full</code>, those modules are already included. Installing the core and PRISM does not require a network connection.</p>
+  </div></section>
 
-  <section class="block">
-    <div class="w">
-      <div class="sh"><b>12.3</b> Without the full engine</div>
-      <h2>The mock for integration.</h2>
-      <p>To advance Unreal integration without starting SYNE:</p>
-      <pre><code>cd syne-mock
-npm ci
-npm start -- config_prism.json</code></pre>
-      <p class="mu">The mock follows the SYNE observability contract, but simplifies deliberation and pathfinding: it
-        serves integration tests, not scientific results.</p>
-    </div>
-  </section>
+  <section class="block"><div class="w">
+    <div class="sh"><b>12.4</b> System requirements</div>
+    <h2>No application runtimes to install.</h2>
+    <div class="ov"><table class="tb"><thead><tr><th scope="col">System</th><th scope="col">You need</th><th scope="col">Already included</th></tr></thead><tbody>
+      <tr><td>Windows 10/11 x64</td><td>A standard user account and the disk space listed in the release.</td><td>Standalone installer, .NET, Python and component runtimes.</td></tr>
+      <tr><td>Linux x64 (glibc)</td><td>Desktop display stack, `libicu` and `libssl` available on the distribution.</td><td>Standalone installer, .NET, Python and component runtimes.</td></tr>
+    </tbody></table></div>
+    <p>You do not need Unreal Engine or a development environment to use LIVEX or run PRISM. Unreal Engine is only required to develop PRISM or integrate PRISM-LDK into your own project.</p>
+    <p>The installer does not require administrator privileges. It keeps the software folder separate from the workspace; uninstall options let you choose what to remove and protect research results according to your selection.</p>
+  </div></section>
 
-  <section class="block">
-    <div class="w">
-      <div class="sh"><b>12.4</b> Local ports</div>
-      <h2>Everything stays local.</h2>
-      <div class="ov">
-        <table class="tb">
-          <thead><tr><th scope="col">Service</th><th scope="col">Address</th><th scope="col">Role</th></tr></thead>
-          <tbody>
-            <tr><td>SYNE WebSocket</td><td><code>127.0.0.1:5180</code></td><td>Snapshots and events from a controlled run.</td></tr>
-            <tr><td>SYNE HTTP</td><td><code>127.0.0.1:5181</code></td><td>Control of the server and starting runs.</td></tr>
-            <tr><td>ECHOS API</td><td><code>127.0.0.1:5000</code></td><td>Runs, metrics and analyses (API only).</td></tr>
-            <tr><td>syne-mock</td><td><code>127.0.0.1:5180/5181</code></td><td>Integration server (launched separately).</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="cc"><p>No service is exposed outside your machine: all four addresses above point to
-        <code>127.0.0.1</code>.</p></div>
-    </div>
-  </section>
+  <section class="block"><div class="w">
+    <div class="sh"><b>12.5</b> Update and support</div>
+    <h2>Return to the installer when needed.</h2>
+    <p>Run the installer again to update, repair or uninstall an existing installation. It detects LIVEX and shows the relevant maintenance options. If something goes wrong, keep the log path shown by the assistant.</p>
+    <p>For checksum verification, data locations and troubleshooting, see the full <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/GUIDE-UTILISATEUR.md" rel="noopener">user guide</a>. The <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">source installation guide</a> is for developers.</p>
+  </div></section>
 
-  <section class="block">
-    <div class="w">
-      <div class="sh"><b>12.5</b> Tests</div>
-      <h2>Check that everything works.</h2>
-      <pre><code># SYNE
-cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
-
-# ECHOS (from the root)
-echos/.venv/bin/python -m pytest -q
-
-# Launcher
-cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
-      <p><StatusBadge status="experimental" lang="en" /> Measured on {PROJECT_STATE_EN.observedDate}: <strong>0
-        failures</strong> across these three suites. The paths remain indicative and follow the development
-        repository.</p>
-      <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Full installation guide ↗</a></p>
-    </div>
-  </section>
+  <CtaBand eyebrow="12.6 · Get started" title="Download LIVEX 1.0.0" lead="Choose Windows or Linux and the package that fits your network access." primaryLabel="View all four packages" primaryHref="versions/livex-v1-0-0/" secondaryLabel="User guide" secondaryHref="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/GUIDE-UTILISATEUR.md" />
 </BaseLayout>

@@ -1,8 +1,8 @@
 # Production, publication et mise à jour de l'installateur
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — cible V1, aligné sur le plan d'alignement du 29 octobre 2026
-**Dernière mise à jour** : 29 octobre 2026
+**Statut** : [PROCÉDURE DE RELEASE — V1.0.0 PUBLIÉE]
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TESTING.md`](TESTING.md), [`COMPONENTS.md`](COMPONENTS.md), [ADR-010](adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md), `../../VERSIONING.md`
 
 ---
@@ -13,11 +13,10 @@ Ce document décrit comment une version de l'installateur est construite,
 vérifiée, publiée et mise à jour. Il ne fixe pas de date : il fixe des portes et
 des artefacts.
 
-> **État au 29 octobre 2026.** Ce document décrit la chaîne cible de la V1.
-> Les scripts de release (`scripts/release/`, `installer/build/build_distribution.py`),
-> les jobs de CI et les artefacts ne sont pas encore produits : ils sont les
-> livrables des tâches T2, T3 et T6 du plan d'alignement. Aucune taille ni durée
-> n'est écrite ici avant d'être mesurée sur un artefact produit.
+> **État au 31 octobre 2026.** La release `livex-v1.0.0` est publiée avec les
+> installateurs Windows/Linux, les actifs PRISM et les archives listés ci-dessous.
+> Cette procédure décrit les artefacts V1 et sert de référence pour les releases
+> suivantes ; elle ne remplace pas les preuves de recette sur machines propres.
 
 ## 2. Versionnement
 

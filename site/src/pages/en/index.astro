@@ -10,7 +10,7 @@ import CardLink from '../../components/CardLink.astro';
 import SyneSchema from '../../components/SyneSchema.astro';
 import { SITE } from '../../data/site';
 import { COMPONENTS_EN } from '../../data/components';
-import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN } from '../../data/release';
+import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE, RELEASE_EN } from '../../data/release';
 import echosAgents from '../../assets/captures/echos-agents.png';
 import launcherPrism from '../../assets/captures/launcher-prism.png';
 import { Image } from 'astro:assets';
@@ -47,13 +47,14 @@ const softwareJsonLd = {
           representation: three separate layers, explicit rules, results to observe.
         </p>
         <div class="hero-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px">
-          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Target version {RELEASE_EN ? 'V0.2' : 'V0.2'}</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">LIVEX {RELEASE.latest} released</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{SITE.license}</span>
-          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests passing</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests passed for release</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage {PROJECT_STATE_EN.coverage.echos}</span>
         </div>
         <div class="cta">
-          <a class="bt p" href={url('technique/prism/', 'en')}>See the demo</a>
+          <a class="bt p" href={url('telecharger/', 'en')}>Download LIVEX</a>
+          <a class="bt" href={url('technique/installer/', 'en')}>About the installer</a>
           <a class="bt" href={url('documentation/', 'en')}>Read the documentation</a>
           <a class="bt" href={url('participer/', 'en')}>Contribute</a>
         </div>
@@ -64,10 +65,9 @@ const softwareJsonLd = {
 
     <!-- Status banner -->
     <div class="vs br" style="padding-left:16px;padding-right:16px;border:1px solid var(--ln)">
-      <StatusBadge status="developpement" label={RELEASE_EN.plannedLabel} lang="en" />
+      <StatusBadge status="disponible" label={RELEASE_EN.plannedLabel} lang="en" />
       <p>
-        No public version is downloadable to date. The component states described below reflect the
-        <strong> development repository</strong>, not a distribution. See the <a href={url('versions/', 'en')}>Versions</a> page.
+        Windows and Linux installers are available in LIVEX 1.0.0. See the <a href={url('telecharger/', 'en')}>Download</a> and <a href={url('versions/', 'en')}>Versions</a> pages for details and component limits.
       </p>
     </div>
   </div>
@@ -164,14 +164,14 @@ const softwareJsonLd = {
           <p>An engine, an observation system, a rendering module — independent, linked by explicit contracts.</p>
         </div>
         <div>
-          <div class="n">00</div>
+          <div class="n">1.0</div>
           <h3>public version</h3>
-          <p>The project has moved to V0.2. No public release or tag has been placed to date.</p>
+          <p>LIVEX 1.0.0 is published under the <code>livex-v1.0.0</code> tag. Windows and Linux installers are available.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>passing tests</h3>
-          <p>As of {PROJECT_STATE_EN.observedDate}, 0 failures across the local suites. A number of method, not a promise.</p>
+          <p>{PROJECT_STATE.tests.documentedTotal} cases validated for the release, 0 failures. This validates covered scenarios, not scientific outcomes.</p>
         </div>
       </div>
 

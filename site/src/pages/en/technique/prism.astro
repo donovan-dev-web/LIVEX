@@ -13,15 +13,15 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
 <BaseLayout
   lang="en"
   translated
-  title="PRISM: perceptual rendering (beyond V0.2)"
-  description="PRISM makes the simulated LIVEX world perceptible: Unreal project and PRISM-LDK integration plugin. Component in development, out of scope for V0.2."
+  title="PRISM 1.0.0: perceptual rendering"
+  description="PRISM 1.0.0 is packaged for Windows and Linux with the PRISM-LDK PrismLdk Unreal plugin."
 >
   <PageHeader
     lang="en"
     index="08"
     eyebrow="Architecture · PRISM"
     title="Rendering."
-    lead="PRISM (Perceptual Rendering & Interactive Simulation Module) gives form and presence to the simulated world. It is the least advanced component of the project, and we say so."
+    lead="PRISM (Perceptual Rendering & Interactive Simulation Module) gives form and presence to the simulated world. PRISM 1.0.0 is delivered for Windows and Linux."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'PRISM' }]}
   />
 
@@ -31,32 +31,63 @@ import prismShot from '../../../assets/captures/launcher-prism.png';
 
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="developpement" lang="en" /> <span class="mu">Unreal project and PRISM-LDK plugin</span></p>
-      <div class="cc"><p><strong>PRISM-LDK</strong> (LIVEX Development Kit) is the core of 3D representation: the Unreal plugin that translates SYNE's logical data into a 3D graphical representation, <strong>realised and packaged as version 0.1.0</strong>. <strong>PRISM</strong> is the Unreal project built around it: the default stylised representation, according to the author's vision. PRISM remains <strong>out of scope for V0.2</strong>: no playable rendering experience is claimed yet.</p></div>
+      <p style="margin-top:0"><StatusBadge status="disponible" lang="en" /> <span class="mu">PRISM 1.0.0 · PRISM-LDK 1.0.0</span></p>
+      <div class="cc"><p><strong>PRISM-LDK 1.0.0</strong> (Unreal module <code>PrismLdk</code>) exposes SYNE contracts to Blueprint. <strong>PRISM 1.0.0</strong>, built around the plugin, is packaged for Windows and Linux. Packaging confirms delivery of the applications; it does not mean every rendering function in the project vision is complete or validated.</p></div>
 
       <div class="sh"><b>8.1</b> Role</div>
       <h2>Making dynamics visible.</h2>
       <p>
-        Where SYNE computes and ECHOS measures, PRISM <strong>makes things perceptible</strong>: it transforms the world state
-        and its events into an observable and interactive scene. It consists of an Unreal project and an integration
-        plugin, <strong>PRISM-LDK</strong>.
+        Where SYNE computes and ECHOS measures, PRISM <strong>renders the simulated world as a 3D scene</strong>.
+        The Unreal project owns the environment, objects and visual representations, along with the interface and
+        interactions used to inspect the world. It consists of the PRISM project and the integration plugin
+        <strong>PRISM-LDK</strong>.
       </p>
 
       <figure class="shot">
         <Image src={prismShot} alt="PRISM rendering preview"  loading="lazy" />
-        <figcaption>Capture — PRISM rendering preview (work-in-progress).</figcaption>
+        <figcaption>PRISM rendering shown from the Launcher. This capture presents the interface in the repository; the delivered scope and evolving features are described below.</figcaption>
       </figure>
     </div>
   </section>
 
   <section class="block">
     <div class="w">
-      <div class="sh"><b>8.2</b> State</div>
-      <h2>The youngest component.</h2>
-      <p>
-        PRISM is a work-in-progress. No timeline is promised: rendering is deliberately out of scope for V0.2, so that
-        validation of the engine and observation is not diluted.
-      </p>
+      <div class="sh"><b>8.2</b> What PRISM does</div>
+      <h2>A world computed by SYNE, rendered by Unreal.</h2>
+      <p>PRISM receives the description of a prepared world, then the full snapshots and events sent by SYNE. It uses them to build or update the scene: each agent remains associated with its SYNE identifier, and displayed positions and states follow the authoritative state of the received tick. Visual effects can signal events without applying mutations a second time when they are already reflected in a snapshot.</p>
+      <p>PRISM can participate in an experiment's lifecycle: connect, prepare the presentation, confirm it is ready, then request start, pause, resume or stop using the contract. Decision-making, world progression and authoritative data remain in SYNE.</p>
+      <div class="ov"><table class="tb"><thead><tr><th scope="col">Element</th><th scope="col">Responsibility</th></tr></thead><tbody>
+        <tr><td>Environment and objects</td><td>The PRISM project chooses how to represent the logical world's dimensions and data in 3D.</td></tr>
+        <tr><td>Agents</td><td>The scene creates and updates their representation while preserving their SYNE identifier.</td></tr>
+        <tr><td>Interaction</td><td>The interface can control the lifecycle and present received states and events.</td></tr>
+        <tr><td>Simulation</td><td>SYNE alone owns the rules, decisions, ticks and authoritative state.</td></tr>
+      </tbody></table></div>
+      <p class="mu">The Unreal project chooses its scene, scale, navigation and interface; the plugin does not generate them automatically.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>8.3</b> PRISM-LDK / PrismLdk</div>
+      <h2>The Unreal integration kit.</h2>
+      <p><strong>PRISM-LDK</strong> means <em>LIVEX Development Kit</em>; <code>PrismLdk</code> is the Unreal module name. This C++ plugin connects SYNE to the Unreal project. It exposes contracts, structures, control functions and events to Blueprints so PRISM can connect the transport and respond to updates without reimplementing the protocol.</p>
+      <ul>
+        <li>Local WebSocket on port 5180: world descriptions, snapshots, deltas and events;</li>
+        <li>Local HTTP on port 5181: control commands and status;</li>
+        <li>Blueprint nodes to obtain the subsystem, configure and connect the client, send commands and receive results;</li>
+        <li>an actor registry indexed by SYNE identifier, exposed through the plugin's registry subsystem.</li>
+      </ul>
+      <p>The plugin is packaged separately for Unreal Engine 5.8 projects. By itself it creates no terrain, actors, collisions, navigation, user interface or animations. It does not contain a parallel simulation engine.</p>
+      <p><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/prism/PRISM_UNREAL_IMPLEMENTATION.md" rel="noopener">Blueprint integration guide ↗</a> <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/prism/TRANSPORT_API.md" rel="noopener">Transport contracts ↗</a></p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>8.4</b> Delivery and scope</div>
+      <h2>Release status.</h2>
+      <p>PRISM 1.0.0 is packaged for Windows and Linux and runs from the distribution without Unreal Engine installed. The 76 PRISM/PrismLdk Automation Specs executed for the release are validated: 71 passed, 5 passed with warnings, 0 failed.</p>
+      <p>Packaging and tests validate the behavior covered by their scenarios; they do not mean every feature described in the rendering specifications is complete. The roadmap details the work still evolving.</p>
       <p class="mu" style="font-size:0.82rem">
         The project's roadmap is authoritative for the steps ahead.
       </p>
