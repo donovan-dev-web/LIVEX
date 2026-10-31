@@ -52,13 +52,14 @@ const softwareJsonLd = {
           représentation 3D : trois couches séparées, des règles explicites, des résultats à observer.
         </p>
         <div class="hero-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px">
-          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Version cible {RELEASE.planned}</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">LIVEX {RELEASE.latest} publiée</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{SITE.license}</span>
-          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests au vert</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests réussis pour la release</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Couverture ECHOS {coverageEchos}</span>
         </div>
         <div class="cta">
-          <a class="bt p" href={url('technique/prism/')}>Voir la démo</a>
+          <a class="bt p" href={url('telecharger/')}>Télécharger LIVEX</a>
+          <a class="bt" href={url('technique/installer/')}>Découvrir l'installateur</a>
           <a class="bt" href={url('documentation/')}>Lire la documentation</a>
           <a class="bt" href={url('participer/')}>Contribuer</a>
         </div>
@@ -69,10 +70,9 @@ const softwareJsonLd = {
 
     <!-- Bandeau d'état -->
     <div class="vs br" style="padding-left:16px;padding-right:16px;border:1px solid var(--ln)">
-      <StatusBadge status="developpement" label={RELEASE.plannedLabel} />
+      <StatusBadge status="disponible" label={RELEASE.plannedLabel} />
       <p>
-        Aucune version publique n'est téléchargeable à ce jour. L'état des composants décrit ci-dessous reflète le
-        <strong> dépôt de développement</strong>, et non une distribution. Voir la page <a href={url('versions/')}>Versions</a>.
+        Les installateurs Windows et Linux sont disponibles dans LIVEX 1.0.0. Consultez la page <a href={url('telecharger/')}>Télécharger</a>, la page <a href={url('technique/installer/')}>Installateur</a> ou la page <a href={url('versions/')}>Versions</a> pour les détails et limites par composant.
       </p>
     </div>
   </div>
@@ -162,14 +162,14 @@ const softwareJsonLd = {
           <p>Un moteur, un système d'observation, un module de rendu — indépendants, reliés par des contrats explicites.</p>
         </div>
         <div>
-          <div class="n">00</div>
+          <div class="n">1.0</div>
           <h3>version publique</h3>
-          <p>Le projet est passé en V0.2. Aucune release publique ni tag n'est posé à ce jour.</p>
+          <p>LIVEX 1.0.0 est publiée sous le tag <code>livex-v1.0.0</code>. Les installateurs Windows et Linux sont disponibles.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>tests au vert</h3>
-          <p>Au {PROJECT_STATE.observedDate}, 0 échec sur les suites locales. Un chiffre de méthode, pas une promesse.</p>
+          <p>{PROJECT_STATE.tests.documentedTotal} cas validés pour la release, 0 échec. Cela valide les scénarios couverts, pas une promesse de résultat scientifique.</p>
         </div>
       </div>
 

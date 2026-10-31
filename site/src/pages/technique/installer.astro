@@ -1,0 +1,51 @@
+---
+// SPDX-FileCopyrightText: 2026 Donovan Chartrain
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import CtaBand from '../../components/CtaBand.astro';
+---
+<BaseLayout
+  title="Installateur LIVEX 1.0.0 : installer et gérer la distribution"
+  description="L'installateur LIVEX est un composant à part entière : assistant Windows et Linux pour installer, mettre à jour, réparer et désinstaller LIVEX."
+>
+  <PageHeader
+    index="08b"
+    eyebrow="Distribution · Installateur"
+    title="Installer et gérer LIVEX."
+    lead="L'installateur est l'application qui relie les paquets publics à un environnement LIVEX prêt à utiliser. Il accompagne l'installation, la maintenance et le retrait du produit."
+    crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'Installateur' }]}
+  />
+
+  <section class="block"><div class="w">
+    <div class="cc"><p><strong>L'installateur LIVEX 1.0.0 est publié pour Windows x64 et Linux x64</strong> dans la release <code>livex-v1.0.0</code>. Les variantes <code>core</code> et <code>full</code> sont disponibles pour chaque plateforme.</p></div>
+    <div class="sh"><b>8b.1</b> Son rôle</div>
+    <h2>Un composant produit, pas une simple commande.</h2>
+    <p>L'assistant graphique présente la licence, le choix des composants et les chemins d'installation, puis affiche le récapitulatif, la progression et le résultat. Il est bilingue français/anglais et s'exécute pour l'utilisateur courant, sans privilèges administrateur ni installation séparée de .NET ou Python.</p>
+    <p>Le socle réunit le Launcher, SYNE, ECHOS, leurs contrats et leurs ressources. PRISM est un composant de base inclus et coché par défaut. PRISM-LDK, la documentation hors ligne et SYNE-Mock sont proposés comme modules facultatifs lorsque leurs archives sont disponibles. Le profil <code>full</code> embarque ces actifs pour les installations sans réseau.</p>
+    <p><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0" rel="noopener">Télécharger la release ↗</a> <a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/GUIDE-UTILISATEUR.md" rel="noopener">Guide utilisateur ↗</a></p>
+  </div></section>
+
+  <section class="block"><div class="w">
+    <div class="sh"><b>8b.2</b> Après l'installation</div>
+    <h2>Le cycle de vie de l'installation.</h2>
+    <div class="ov"><table class="tb"><thead><tr><th scope="col">Opération</th><th scope="col">Ce que l'assistant gère</th></tr></thead><tbody>
+      <tr><td>Installer</td><td>Déploie les composants choisis, enregistre l'installation et crée les raccourcis nécessaires.</td></tr>
+      <tr><td>Mettre à jour</td><td>Remplace les fichiers de la distribution en conservant la configuration et l'espace de travail.</td></tr>
+      <tr><td>Réparer</td><td>Vérifie l'inventaire et restaure les fichiers manquants ou modifiés depuis le paquet.</td></tr>
+      <tr><td>Désinstaller</td><td>Propose des portées distinctes pour le logiciel, les réglages et l'espace de travail, afin de protéger les résultats de recherche.</td></tr>
+    </tbody></table></div>
+    <p>Le dossier logiciel, les données de configuration et l'espace de travail sont séparés. L'installation ne modifie pas les variables système et ne requiert pas d'élévation de privilèges.</p>
+  </div></section>
+
+  <section class="block"><div class="w">
+    <div class="sh"><b>8b.3</b> Tests et documentation</div>
+    <h2>Validé avec la release 1.0.0.</h2>
+    <p>Les quatre suites de tests automatisés de l'installateur — Unit, App, Integration et EndToEnd — ont été exécutées pour la release : <strong>118 tests réussis</strong>. Le projet couvre les plans d'installation, l'application, les interactions système simulées et les parcours de l'assistant.</p>
+    <p>Le mode démonstration permet également de parcourir l'assistant et les scénarios de maintenance sans installation réelle ni écriture sur le poste. Il est destiné à la démonstration et à la vérification visuelle.</p>
+    <p>Pour les instructions complètes et les limites de la V1, consultez la <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/README.md" rel="noopener">documentation technique</a>, le <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/GUIDE-UTILISATEUR.md" rel="noopener">guide utilisateur</a> et le <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/TESTING.md" rel="noopener">plan de tests</a>.</p>
+  </div></section>
+
+  <CtaBand eyebrow="8b.4 · Utiliser LIVEX" title="Télécharger la version publiée" lead="Choisissez le paquet qui correspond à votre système et suivez le guide d'installation." primaryLabel="Télécharger LIVEX" primaryHref="telecharger/" secondaryLabel="Guide utilisateur" secondaryHref="documentation/" />
+</BaseLayout>

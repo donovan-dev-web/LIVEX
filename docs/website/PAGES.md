@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `../../site/src/pages/`, `../../site/src/data/site.ts`, `I18N.md`
 
 ---
@@ -31,9 +31,10 @@ décrivent cette page utilisent cet index comme préfixe de sous-section
 | 06 | `technique/syne/` | SYNE — moteur de simulation. |
 | 07 | `technique/echos/` | ECHOS — observation et analyse. |
 | 08 | `technique/prism/` | PRISM — rendu perceptif. |
+| 08b | `technique/installer/` | Installateur LIVEX — distribution, installation, maintenance et désinstallation. |
 | 09 | `technique/launcher/` | Launcher — orchestration de la pile. |
 | 10 | `technique/resultats/` | Reproductibilité et mesures (déterminisme, tests, couverture). |
-| 11 | `telecharger/` | Télécharger : état neutre (aucune release publique). |
+| 11 | `telecharger/` | Télécharger : release LIVEX 1.0.0, installateurs Windows/Linux et guide d'installation. |
 | 12 | `telecharger/installation/` | Installation depuis les sources. |
 | 12b | `getting-started/` | Démarrer en 5 minutes : prérequis, commande unique, vérification. |
 | 13 | `versions/` | Versions des composants et état du dépôt. |
@@ -63,8 +64,8 @@ tant que la source est vide, sans erreur de build :
 
 | Chemin | Source | Rôle |
 | :-- | :-- | :-- |
-| `versions/<version>/` | `site/src/data/versions.ts` (`VERSIONS`) | Fiche d'une version publiée (notes, téléchargements, empreintes). Vide à ce jour (aucune release). |
-| `actualites/<slug>/` | collection `actualites` (`src/content/actualites/*.md`) | Article de journal (15 articles publiés). **Français uniquement** (niveau 3). |
+| `versions/<version>/` | `site/src/data/versions.ts` (`VERSIONS`) | Fiche des versions publiées (notes, téléchargements, empreintes). Contient LIVEX 1.0.0. |
+| `actualites/<slug>/` | collection `actualites` (`src/content/actualites/*.md`) | Article de journal (22 articles publiés). **Français uniquement** (niveau 3). |
 
 ## 3. Miroir anglais (`/en/`)
 

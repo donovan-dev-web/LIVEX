@@ -12,33 +12,37 @@ const nf = new Intl.NumberFormat('fr-FR');
 ---
 <BaseLayout
   title="LIVEX — Démarrer en 5 minutes"
-  description="Prérequis, commande de démarrage et état réel de LIVEX : faire tourner le moteur, l'observateur et le rendu depuis les sources, sans release publique."
+  description="Installer LIVEX 1.0.0 ou démarrer SYNE, ECHOS et le Launcher depuis les sources."
 >
   <PageHeader
     index="12b"
     eyebrow="Démarrer"
     title="LIVEX en 5 minutes."
-    lead="Ce qui tourne aujourd'hui, comment le lancer, et où s'arrête la V0.2. Un environnement de développement, pas un produit distribué."
+    lead="Téléchargez l'installateur public LIVEX 1.0.0, ou suivez les instructions dédiées pour développer depuis les sources."
     crumbs={[{ label: 'Démarrer' }]}
   />
+
+  <section class="block"><div class="w"><div class="cc"><p><strong>Pour utiliser LIVEX :</strong> téléchargez l'installateur Windows ou Linux de la <a href={RELEASE.releaseUrl}>release 1.0.0</a> et suivez le <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/installer/GUIDE-UTILISATEUR.md" rel="noopener">guide utilisateur</a>. Les commandes ci-dessous concernent le démarrage depuis le dépôt pour le développement.</p><p><a class="bt" href={url('technique/installer/')}>Découvrir l'installateur →</a></p></div></div></section>
 
   <section class="block">
     <div class="w">
       <div class="sh"><b>12b.1</b> Ce qui fonctionne aujourd'hui</div>
-      <h2>Quatre composants, quatre états.</h2>
+      <h2>Composants de LIVEX 1.0.0.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Composant</th><th scope="col">Version</th><th scope="col">État</th></tr></thead>
           <tbody>
             <tr><td>{VERSION_TABLE[0].component}</td><td>{VERSION_TABLE[0].version}</td><td><StatusBadge status="experimental" /></td></tr>
             <tr><td>{VERSION_TABLE[1].component}</td><td>{VERSION_TABLE[1].version}</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td>{VERSION_TABLE[2].component}</td><td>{VERSION_TABLE[2].version}</td><td><StatusBadge status="developpement" /></td></tr>
-            <tr><td>{VERSION_TABLE[3].component}</td><td>{VERSION_TABLE[3].version}</td><td><StatusBadge status="developpement" /></td></tr>
+            <tr><td>{VERSION_TABLE[2].component}</td><td>{VERSION_TABLE[2].version}</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>{VERSION_TABLE[3].component}</td><td>{VERSION_TABLE[3].version}</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>{VERSION_TABLE[4].component}</td><td>{VERSION_TABLE[4].version}</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td>{VERSION_TABLE[5].component}</td><td>{VERSION_TABLE[5].version}</td><td><StatusBadge status="disponible" /></td></tr>
           </tbody>
         </table>
       </div>
       <p class="mu" style="margin-top:14px;font-size:0.76rem">
-        Aucune version publique n'est téléchargeable ({RELEASE.planned} en préparation). Ces états décrivent le dépôt.
+        <a href={RELEASE.releaseUrl}>Télécharger LIVEX 1.0.0</a> ou consulter les <a href={url('versions/livex-v1-0-0/')}>notes de version</a>.
       </p>
     </div>
   </section>
@@ -46,7 +50,7 @@ const nf = new Intl.NumberFormat('fr-FR');
   <section class="block">
     <div class="w">
       <div class="sh"><b>12b.2</b> Prérequis</div>
-      <h2>Trois outils suffisent.</h2>
+      <h2>Prérequis pour compiler les sources.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Outil</th><th scope="col">Version</th><th scope="col">Pour</th></tr></thead>
@@ -57,7 +61,7 @@ const nf = new Intl.NumberFormat('fr-FR');
           </tbody>
         </table>
       </div>
-      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 n'est requis que pour PRISM.</p>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 est requis pour développer PRISM ou intégrer PRISM-LDK ; il n'est pas nécessaire pour lancer l'application PRISM packagée.</p>
     </div>
   </section>
 
@@ -91,7 +95,7 @@ cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
 
 # ECHOS
 echos/.venv/bin/python -m pytest -q</code></pre>
-      <p>Relevé du {PROJECT_STATE.observedDate} : <strong>{nf.format(PROJECT_STATE.tests.passed)} tests au vert</strong>.</p>
+      <p>Pour la release, <strong>{nf.format(PROJECT_STATE.tests.documentedTotal)} cas sont validés</strong> : {nf.format(PROJECT_STATE.tests.passed)} réussis, {PROJECT_STATE.tests.ignored} ignorés et 0 échec.</p>
       <p style="margin-top:18px">
         <a class="bt" href={url('etat-du-projet/')}>Voir l'état du projet →</a>
       </p>

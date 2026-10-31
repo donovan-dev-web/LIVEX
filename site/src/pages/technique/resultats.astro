@@ -66,7 +66,7 @@ const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %')
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>tests au vert</h3>
-          <p>0 échec sur les suites locales.</p>
+          <p>{nf.format(PROJECT_STATE.tests.documentedTotal)} cas validés pour la release, 0 échec.</p>
         </div>
         <div>
           <div class="n">{PROJECT_STATE.coverage.echos}</div>
@@ -84,14 +84,13 @@ const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %')
           <thead><tr><th scope="col">Indicateur</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
             <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tests au vert par composant</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
+            <tr><td>Tests de la release</td><td>{PROJECT_STATE.tests.documentedTotal} cas : SYNE 695 · ECHOS 397 · Launcher 227 · syne-mock 53 · PRISM/PrismLdk 76 · installateur 118</td></tr>
             <tr><td>Intégration continue</td><td>{PROJECT_STATE.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>Ces chiffres décrivent un dépôt de développement à une date donnée. Ils ne valent ni validation
-        fonctionnelle, ni promesse de stabilité.</p></div>
+      <div class="cc"><p>Ces chiffres résument les tests et rapports de la release. Ils ne garantissent pas les comportements hors des scénarios couverts ni les résultats scientifiques.</p></div>
     </div>
   </section>
 

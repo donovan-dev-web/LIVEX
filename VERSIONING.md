@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 19 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : —
 **Source Monographie** : §7.1 (organisation du monorepo), Annexe J (roadmap V2)
 
@@ -59,14 +59,14 @@ Le versionnement est déclenché par les évènements suivants :
 - Les entrées sont regroupées en `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
 - Chaque entrée mineure/majeure référence les exigeabilités issues de la Monographie quand applicable (ex. « ajout du moteur `FeedbackLoopDetector` (Monographie §4.3.5) »).
 
-## 7. Règles d'incrément en pratique (V0.1)
+## 7. Règles d'incrément en pratique
 
 - Le projet est en pré-1.0 pour les composants : `MAJOR` reste à `0` pour SYNE, ECHOS, Launcher et syne-mock.
-- Le jalon transverse `livex-v1.0.0` est autorisé (V1) : le passage à 1.0 est un jalon global, les composants gardent leur SemVer.
+- Le jalon transverse `livex-v1.0.0` a été publié : le passage à 1.0 est un jalon global, les composants gardent leur SemVer propre.
 - Toute libération composant visible publiquement incrémente au minimum `PATCH`.
-- Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est posé au moment des jalons définis dans `docs/governance/ROADMAP.md`.
+- Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est réservé aux releases assemblées.
 
-## 8. État courant des versions (octobre 2026)
+## 8. État courant des versions (31 octobre 2026)
 
 > Synoptique de référence après la campagne de correctifs
 > de runs du 29/09/2026 (ADR-015). L'état détaillé et les
@@ -75,20 +75,19 @@ Le versionnement est déclenché par les évènements suivants :
 
 | Composant / contrat | Version | Évolution |
 | :-- | :-- | :-- |
-| **Global LIVEX** | **V0.2** | Jalon transverse : réalignement des divergences fondamentales clos (37/37 BL, 7/7 phases), contrat d'observabilité 0.5.0, moteur SYNE 0.17.0. |
+| **Global LIVEX** | **1.0.0** | Release publique taguée `livex-v1.0.0`; installateur Windows/Linux, PRISM et PRISM-LDK packagés. |
 | **SYNE** | **0.17.0** | MINOR : calibration **B1** des défauts intégrés (ADR-016) — coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives social/curiosité abaissées, réserves 20 000 avec régénération nette, coûts de communication neutres ; stabilité 2500 ticks à 50 et 100 agents, goldens re-épinglés. (0.14.0 : jalon ADR cognitifs, drapeaux inerte — 0.13.0 : calibration D1, ADR-015) — **inchangée par ADR-017** (échelle temporelle : profil par défaut bit-à-bit identique) |
 | Contrat d'observabilité (snapshot) | **0.5.0** | **ADR-017 (additif)** : `simulatedTimeSeconds` dans le snapshot ; description `world_initialized` 1.0 → **1.1** (`simulatedSecondsPerTick`, `metersPerUnit`) ; `/api/control/status` + `simulatedSecondsPerTick`. `simulatedTimeMinutes` (plancher entier, stockage ECHOS) inchangé. (0.3.0 : champs additifs sous drapeaux — 0.2.1 : champ `seed`) |
 | Format `run_id` | `run-<seed>-<12hex>` | Seed explicite dans l'identifiant ; ECHOS ne dérive plus le seed de l'id (repli `_seed_of` conservé) |
 | **ECHOS** (paquet Python) | **0.1.0** | Version du paquet `echos` (`echos/echos/__init__.py`) — pré-1.0, sans lien automatique avec le schéma de stockage |
 | ECHOS (stockage/calibration) | schéma SQLite **v6** | Migration additive `mean_food`/`mean_water`, rapport de calibration par run avec bloc `viability` |
 | **Launcher** | **0.1.0** | `launcher/Directory.Build.props` (`<Version>`) — statut produit V1 (`launcher/ROADMAP-V1.md`) ; manifeste `.livexp` versionné à part (`Launcher.Protocol`) |
-| **syne-mock** | **0.1.0** | `syne-mock/package.json` ; contrat aligné sur le snapshot SYNE 0.4.0 |
-| **PRISM / PRISM-LDK** | **1.0.0** | Version V1 (plan d'alignement) ; le plugin garde son `VersionName` (1.x) non modifié par le packaging |
-| **Installateur** | **1.0.0** | Version V1 |
-| **Global LIVEX** | **1.0.0** | Jalon transverse V1 (release assemblée) |
+| **syne-mock** | **0.1.0** | `syne-mock/package.json` ; contrats SYNE `0.5.0` / monde `1.1` |
+| **PRISM / PRISM-LDK** | **1.0.0** | PRISM packagé Windows/Linux ; plugin Unreal `PrismLdk` 1.0.0 |
+| **Installateur** | **1.0.0** | Installateur publié pour Windows et Linux |
 | Présentation d'ECHOS | **retirée** (oct. 2026) | `echos-ui` supprimé (ADR-007) : la fenêtre d'analyse du Launcher consomme `outcome`/`extinctionTick` et `/api/compare?light=1` |
 
 ---
 
 ## Points restés ouverts dans ce document
-- Aucun — document stabilisé. Le rythme de pose des tags `livex-v` sera affiné lors de la première release assemblée (phase CI/CD réelle).
+- Les prochaines versions globales `livex-v` suivront les règles de release assemblée ci-dessus.

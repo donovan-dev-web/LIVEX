@@ -1,10 +1,10 @@
 # PRISM — Perceptual Rendering & Interactive Simulation Module
 
 **Composant** : PRISM
-**Statut** : [DRAFT]
-**Version** : sans version propre (DRAFT) — consomme le contrat SYNE `0.5.0`
+**Statut** : [LIVRÉ — PACKAGÉ]
+**Version** : PRISM `1.0.0`, PRISM-LDK `1.0.0` — consomme le contrat SYNE `0.5.0`
 **Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Dernière mise à jour** : 18 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
 
 ---
@@ -64,9 +64,7 @@ d'intégration Blueprint et les conventions de projection du monde.
 | `CHANGELOG.md` | Historique de cette documentation |
 | `adr` | Décisions historiques et références transverses |
 
-Les spécifications visuelles décrivent des objectifs de rendu, pas des
-classes Unreal imposées ni des fonctionnalités générées automatiquement par
-le plugin.
+PRISM et son plugin `PrismLdk` sont packagés dans la release 1.0.0 ; les paquets PRISM ciblent Windows et Linux. Le package plugin est destiné à l'intégration dans Unreal Engine 5.8. La livraison et le packaging ne signifient pas que toutes les fonctions de rendu décrites dans les spécifications sont disponibles ou validées. Les spécifications visuelles décrivent des objectifs, pas des classes Unreal imposées ni des fonctionnalités générées automatiquement par le plugin.
 
 ## Lancement
 

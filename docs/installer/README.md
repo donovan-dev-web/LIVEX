@@ -1,8 +1,8 @@
 # Installateur LIVEX — documentation de référence
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — installateur implémenté sur `feature/installer-implementation`, recette réelle non encore exécutée
-**Dernière mise à jour** : 29 octobre 2026 (alignement V1)
+**Statut** : [LIVRÉ ET VALIDÉ] — installateur 1.0.0 inclus dans la release publique Windows/Linux `livex-v1.0.0`; suites automatisées exécutées
+**Dernière mise à jour** : 31 octobre 2026
 
 ---
 
@@ -17,8 +17,7 @@ Unreal en ZIP), la **documentation hors ligne** et **SYNE-Mock**. Il fonctionne
 **sans privilèges administrateur** et ne touche jamais aux résultats de recherche
 sans demande explicite.
 
-> **État réel :** l'installateur est en cours d'implémentation sur la branche
-> `feature/installer-implementation` (`installer/`), avec un **mode démonstration**
+> **État réel :** l'installateur est implémenté dans `installer/` et livré avec LIVEX 1.0.0 pour Windows et Linux. Son **mode démonstration**
 > permettant de parcourir tout l'assistant sans rien installer (voir §5 bis).
 > Ce dossier reste la documentation de référence : il remplace la documentation
 > retirée du dépôt et la spécification de base v0.2, qui n'était qu'un document
@@ -29,7 +28,7 @@ sans demande explicite.
 | Fonction | Détail |
 | :-- | :-- |
 | **Installer** | assistant guidé en français et en anglais, huit étapes, sélection des composants |
-| **Acquérir** | modules facultatifs (LDK, documentation, SYNE-Mock) téléchargés depuis la release GitHub, vérifiés par empreinte, ou lus depuis une archive locale |
+| **Acquérir** | modules facultatifs (LDK, documentation, SYNE-Mock) téléchargés depuis la release GitHub et vérifiés par empreinte, ou embarqués dans la variante `full` |
 | **Choisir les chemins** | répertoire logiciel et espace de travail séparés, validés avant écriture |
 | **Vérifier** | empreinte SHA-256 de chaque fichier, forme du manifeste, droits, espace disque ; la confiance V1 repose sur ces empreintes, le `SHA256SUMS` publié et les attestations GitHub, pas sur une signature du manifeste (ADR-007 §3 bis) |
 | **Enregistrer** | installation par utilisateur, détection au lancement suivant, entrée système |
@@ -71,7 +70,7 @@ sans demande explicite.
 Ordre de lecture recommandé : ce README, le guide utilisateur, puis la
 spécification, l'architecture et les ADR.
 
-## 5. Périmètre de la V0.2
+## 5. Périmètre livré en V1.0.0
 
 ### Composants installés
 
@@ -154,8 +153,8 @@ lorsque l'exécutable tourne sans `distribution.json` à côté de lui.
 
 Le monde fictif vit dans `Setup.Core.Simulation` (`DemoWorld`, `DemoScenario`,
 `SimulationExecutor`) et la plateforme est simulée par `SimulatedIntegration` et
-`InMemoryInstallationStore`. Il est couvert par les trois projets de tests de
-`installer/` (Unit, Integration, EndToEnd), dont un test qui vérifie qu'aucun
+`InMemoryInstallationStore`. Il est couvert par les quatre projets de tests de
+`installer/` (Unit, App, Integration, EndToEnd), dont un test qui vérifie qu'aucun
 répertoire n'est créé pendant le parcours complet.
 
 ## 6. Principes directeurs

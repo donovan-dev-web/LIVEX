@@ -48,7 +48,7 @@ import { url } from '../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.2</b> Les composants</div>
-      <h2>Trois blocs, trois états déclarés.</h2>
+      <h2>Trois couches de runtime et leurs outils.</h2>
       {COMPONENTS.map((c) => (
         <div class="bn">
           <div>
@@ -66,7 +66,7 @@ import { url } from '../../utils/url';
           {c.key === 'prism' && <Image src={launcherPrism} alt="Capture du rendu PRISM ouvert depuis le Launcher" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">Captures réelles pour ECHOS et PRISM ; pour SYNE, un schéma conceptuel — un moteur n'a pas d'interface à capturer. Ces visuels datent de la version de développement (octobre 2026) : aucun ne vaut démonstration d'une version publiée.</p>
+      <p class="mu" style="font-size:0.7rem">Captures réelles de développement pour ECHOS et PRISM ; pour SYNE, un schéma conceptuel — un moteur n'a pas d'interface à capturer. Ces images illustrent des écrans du dépôt, mais ne constituent pas une capture du binaire installé de la release 1.0.0.</p>
     </div>
   </section>
 
@@ -83,7 +83,7 @@ import { url } from '../../utils/url';
             <tr><td>Contrat d'observabilité (snapshot)</td><td>0.5.0</td><td>Ajout <code>simulatedTimeSeconds</code> ; description de monde <code>world_initialized</code> 1.1.</td></tr>
             <tr><td>Format d'identifiant de run</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>La graine figure dans l'identifiant ; ECHOS ne la dérive pas de l'id.</td></tr>
             <tr><td>Schéma de persistance ECHOS</td><td>SQLite v6</td><td>Migration additive <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>Ports locaux (V0.2)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>locaux uniquement</strong> (<code>127.0.0.1</code>).</td></tr>
+            <tr><td>Ports locaux (configuration actuelle)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>locaux uniquement</strong> (<code>127.0.0.1</code>).</td></tr>
           </tbody>
         </table>
       </div>
@@ -106,7 +106,8 @@ import { url } from '../../utils/url';
           <tbody>
             <tr><td><code>syne/</code></td><td>Moteur de simulation .NET (SYNE)</td><td><StatusBadge status="experimental" /></td></tr>
             <tr><td><code>echos/</code></td><td>Observation, analyse, API headless (paquet Python)</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td><code>prism/</code></td><td>Projet Unreal et plugin PRISM-LDK</td><td><StatusBadge status="developpement" /></td></tr>
+            <tr><td><code>prism/</code></td><td>Projet Unreal packagé et plugin PRISM-LDK / PrismLdk</td><td><StatusBadge status="disponible" /></td></tr>
+            <tr><td><code>installer/</code></td><td>Assistant de distribution, installation, maintenance et désinstallation Windows/Linux</td><td><StatusBadge status="disponible" /></td></tr>
             <tr><td><code>launcher/</code></td><td>Application de bureau (Avalonia) — orchestration et présentation</td><td><StatusBadge status="developpement" /></td></tr>
             <tr><td><code>docs/</code></td><td>Monographie, architecture, gouvernance, documentation</td><td>—</td></tr>
             <tr><td><code>site/</code></td><td>Ce site vitrine statique (Astro)</td><td>—</td></tr>
@@ -122,9 +123,9 @@ import { url } from '../../utils/url';
       <h2>Orchestration et preuves.</h2>
       <div class="g2">
         <div class="pl br" style="padding:20px">
-          <h3>Launcher</h3>
-          <p class="mu">La couche d'orchestration : piloter, combiner et archiver les travaux conduits avec SYNE, ECHOS et PRISM depuis une interface unique.</p>
-          <a class="bt" href={url('technique/launcher/')}>Le Launcher →</a>
+          <h3>Installateur LIVEX</h3>
+          <p class="mu">Le composant de distribution qui installe les paquets publiés, gère leur maintenance et les désinstalle proprement.</p>
+          <a class="bt" href={url('technique/installer/')}>L'installateur →</a>
         </div>
         <div class="pl br" style="padding:20px">
           <h3>Reproductibilité et mesures</h3>

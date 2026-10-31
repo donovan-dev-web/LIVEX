@@ -595,19 +595,15 @@ partiellement pour autant.
 
 ## 19. Build, CI et tests
 
-- `ci.yml` : filtre de changements `installer`, job matrice
-  `windows-latest` / `ubuntu-latest` : restore, build `-warnaserror`, tests
-  unitaires et d'intégration, publication self-contained, assemblage de la
-  distribution, vérification du manifeste. **État au 29 octobre 2026 : ce job
-  n'existe pas encore** (tâche T6 du plan d'alignement) ; les workflows actuels
-  ne testent que les composants.
+- `ci.yml` : aucun job installer dédié actuellement. Les suites xUnit
+  `Setup.Tests.*` sont présentes, mais ce workflow ne rapporte pas leur
+  exécution.
 - `release.yml` : sur tag `prism-v*`, publie les entrées (PRISM Windows/Linux,
   LDK) ; sur tag `livex-v*`, télécharge les entrées, vérifie
   `installer/build/external-inputs.json`, assemble les quatre installateurs, les
   archives de composants, `SHA256SUMS` et les attestations, et attache le tout
-  en pré-release. Aucun de ces jobs n'existe aujourd'hui : c'est la tâche T6 du
-  plan d'alignement, décrite dans [`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md)
-  §4 et §10.
+  à la release publique. Le tag `livex-v1.0.0` a utilisé cette chaîne ; voir
+  [`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md) pour la procédure.
 - Tests de bout en bout : installation silencieuse dans un répertoire
   temporaire, `--check`, désinstallation, vérification des résidus ; nettoyage
   des clés `HKCU` et fichiers XDG sur le runner.
@@ -622,7 +618,7 @@ Détail des scénarios : [`TESTING.md`](TESTING.md).
 | :-- | :-- | :-- |
 | **INS-L-01** | La distribution de base exige une build PRISM packagée : son absence bloque la release | [ADR-006](adr/ADR-006-perimetre-composants-v02.md), roadmap P2 |
 | **INS-L-09** | PRISM n'est pas détecté par le Launcher (pas de contrat de service) | [ADR-006](adr/ADR-006-perimetre-composants-v02.md), point ouvert INS-O-10 |
-| **INS-L-10** | Un module facultatif en profil `core` dépend de la disponibilité de GitHub | profil `full`, archive locale, cache ([ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md)) |
+| **INS-L-10** | Un module facultatif en profil `core` dépend de la disponibilité de GitHub ; l'option `--offline-assets` et le cache ne sont pas encore câblés dans le moteur | profil `full` qui embarque les actifs ([ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md)) |
 | **INS-L-11** | **Aucune signature cryptographique du manifeste en V1** (décision D3) : la confiance repose sur les empreintes SHA-256 de chaque fichier, le `SHA256SUMS` publié et les attestations GitHub. `ManifestValidator` ne contrôle que la forme des champs de signature ; le champ `signature` reste optionnel et vide. Un `distribution.json` forgé, accompagné de fichiers cohérents avec ses empreintes, ne serait donc pas distingué d'un manifeste légitime par l'installateur seul | vérification utilisateur (`sha256sum -c`, `gh attestation verify`) et Authenticode quand un certificat est disponible ; réouverture si une signature centralisée (Sigstore, Azure Trusted Signing) est adoptée |
 | **INS-L-12** | **Acquisition non câblée** : `AcquisitionService` (cache `cache/downloads`, actifs locaux, `--no-network`) n'est appelé nulle part, `InstallerEngine` télécharge directement vers la destination finale, et `WindowsHttpDownloader` ne fait pas de reprise `Range` | tâche T5 du plan d'alignement : brancher l'acquisition, ajouter la reprise et les tests serveur local |
 | **INS-L-02** | Le Launcher ne lit pas encore `settings.json.workspace` | issue Launcher dédiée, prérequis de recette |

@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 12 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `ARCHITECTURE.md`, `NAMING_CONVENTIONS.md`
 
 ---
@@ -21,7 +21,7 @@ docs/
 ├── adr/              # ADR transverses (filtre : Accepted + implémenté)
 ├── syne/  echos/  launcher/  prism/   # Documentation par composant
 ├── website/          # Site vitrine : architecture, pages, design, i18n, déploiement
-└── installer/        # Spécification seule — aucun code à ce jour
+└── installer/        # Installateur V1, code, tests, distributions et documentation
 ```
 
 Les fichiers techniques transverses (`ARCHITECTURE.md`, `COMMUNICATION.md`,
@@ -57,12 +57,13 @@ CONTRIBUTING…) restent à la racine du dépôt.
 | [ECHOS](echos/README.md) | Ingestion, analyse, stockage et API headless (interface retirée — ADR-007). |
 | [PRISM](prism/README.md) | Projet Unreal final de LIVEX et plugin PRISM-LDK (`PrismLdk`), API Blueprint et intégration. |
 | [Launcher](launcher/README.md) | Orchestrateur de la pile : matrice des modes, campagnes, supervision à six niveaux, réseau et Gateway, flux de données et format de paquet `.livexp`. |
-| [Installateur](installer/README.md) | **Spécification à venir** — aucun code implémenté ; description de l'assistant d'installation (jalon G6). |
+| [Installateur](installer/README.md) | Installateur LIVEX 1.0.0 : parcours graphique et CLI, installation Windows/Linux, maintenance et désinstallation. |
 | [syne-mock](../syne-mock/README.md) | Serveur Node.js de développement, ses scénarios, contrats et limites. |
 
 ## Site vitrine
 
-Le site public (https://donovan-dev-web.github.io/LIVEX/) est un site statique
+Le site public (https://donovan-dev-web.github.io/LIVEX/) présente la release LIVEX 1.0.0,
+les paquets Windows/Linux, les versions des composants et leur état actuel. C'est un site statique
 Astro documenté dans [`website/`](website/README.md) : architecture, pages,
 design system, composants, multilinguisme FR/EN, données éditoriales, SEO,
 accessibilité, déploiement et maintenance.

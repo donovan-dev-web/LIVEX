@@ -2,7 +2,7 @@
 
 **Composant** : Site vitrine (LIVEX)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `ARCHITECTURE.md`, `../presentation/VISION.md`, `../../VERSIONING.md`
 
 ---
@@ -34,8 +34,8 @@ capture trompeuse. Trois principes gouvernent son contenu :
 
 1. **Source et datation** — toute affirmation chiffrée renvoie à une source
    interne datée (`CONTENT.md` §5).
-2. **Neutralité de l'état** — aucune version publique n'existe à ce jour ;
-   les pages de téléchargement restent volontairement neutres.
+2. **État réel** — LIVEX 1.0.0 est une release publique ; les pages de
+   téléchargement et les fiches de version pointent vers ses actifs.
 3. **Séparation des couches** — le site ne prétend pas reproduire le
    comportement du moteur ; il le décrit.
 

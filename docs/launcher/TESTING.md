@@ -6,6 +6,11 @@
 **Dépend de** : `ARCHITECTURE.md`, `PACKAGE_FORMAT.md`, `COMPONENTS.md`
 **Source Monographie** : —
 
+> **Dernier relevé exécuté consigné (19/10/2026)** : Unit 174/174, Integration
+> 20/20 et EndToEnd 33/33 avec SYNE publié, soit 227 cas. Ce résultat n'a pas
+> été relancé dans la mise à jour documentaire du 31/10 ; le compte global et
+> ses réserves figurent dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md#4-inventaire-des-tests).
+
 ---
 
 ## 1. Objet
