@@ -8,48 +8,42 @@ import StatusBadge from '../../components/StatusBadge.astro';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE, VERSION_TABLE_EN } from '../../data/release';
 
 const nf = new Intl.NumberFormat('en-US');
-const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
 ---
 <BaseLayout
   lang="en"
   translated
   title="LIVEX — Component versions and project status"
-  description={`LIVEX component versions (SYNE, ECHOS, PRISM, Launcher), project state as of ${PROJECT_STATE_EN.observedDate} and versioning policy. No public release.`}
+  description={`LIVEX component versions and project state as of ${PROJECT_STATE_EN.observedDate}. LIVEX 1.0.0 is publicly released.`}
 >
   <PageHeader
     lang="en"
     index="13"
     eyebrow="Versions"
     title="Where the project stands."
-    lead="A factual, dated state, component by component. Each module moves at its own pace: the global version V0.2 is in preparation, with no public release."
+    lead="A factual, dated state, component by component. The public LIVEX 1.0.0 release is available."
     crumbs={[{ label: 'Versions' }]}
   />
 
   <section class="block">
     <div class="w">
       <div class="cc" style="padding:18px 20px">
-        <p><strong>No public release, no tags.</strong> The global version <strong>{RELEASE.planned}</strong> is
-          in preparation. See <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a>.</p>
+        <p><strong>LIVEX {RELEASE.latest} is released.</strong> See the <a href={RELEASE.releaseUrl} rel="noopener">release downloads</a>.</p>
       </div>
 
       <div class="sh"><b>13.1</b> Versions by component</div>
-      <h2>Four components, four versions.</h2>
+      <h2>Versions of the distributed components.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Component</th><th scope="col">Version</th><th scope="col">Note</th><th scope="col">Status</th></tr></thead>
           <tbody>
-            <tr><td>SYNE</td><td>{VERSION_TABLE_EN[0].version}</td><td>{VERSION_TABLE_EN[0].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>ECHOS</td><td>{VERSION_TABLE_EN[1].version}</td><td>{VERSION_TABLE_EN[1].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>PRISM</td><td>{VERSION_TABLE_EN[2].version}</td><td>{VERSION_TABLE_EN[2].note}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
-            <tr><td>Launcher</td><td>{VERSION_TABLE_EN[3].version}</td><td>{VERSION_TABLE_EN[3].note}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            {VERSION_TABLE_EN.map((component) => <tr><td>{component.component}</td><td>{component.version}</td><td>{component.note}</td><td><StatusBadge status="disponible" lang="en" /></td></tr>)}
           </tbody>
         </table>
       </div>
       <p class="mu" style="margin-top:14px;font-size:0.76rem">
         Independent Semantic Versioning per component, combined with a global marker for cross-cutting deliveries.
         Details: <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/VERSIONING.md" rel="noopener">VERSIONING.md</a>.
-        Each published version will get a dedicated page (<code>/versions/&lt;version&gt;/</code>); none exists yet, as
-        no public tag has been set.
+        <a href="../versions/livex-v1-0-0/">Read the LIVEX 1.0.0 release page</a> or browse the release tags.
       </p>
     </div>
   </section>
@@ -61,18 +55,18 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
       <div class="g3 br">
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
-          <h3>passing tests</h3>
-          <p>Measured on {PROJECT_STATE_EN.observedDate}: 0 failures in the unit and integration suites.</p>
+          <h3>tests passing for the release</h3>
+          <p>{nf.format(PROJECT_STATE.tests.documentedTotal)} cases validated across all components: {nf.format(PROJECT_STATE.tests.passed)} passed, {PROJECT_STATE.tests.ignored} skipped, {PROJECT_STATE.tests.failed} failed.</p>
         </div>
         <div>
-          <div class="n">{nf.format(PROJECT_STATE.trackedFiles)}</div>
-          <h3>tracked files</h3>
-          <p>{nf.format(PROJECT_STATE.loc.total)} lines analysed (source and tests).</p>
+          <div class="n">{nf.format(PROJECT_STATE.filesScanned)}</div>
+          <h3>files analysed</h3>
+          <p>{nf.format(PROJECT_STATE.loc.total)} lines of code per Tokei 13.0.0.</p>
         </div>
         <div>
-          <div class="n">{ciJobs}</div>
-          <h3>CI jobs green</h3>
-          <p>Continuous integration green, measured on {PROJECT_STATE_EN.observedDate}.</p>
+          <div class="n">1.0.0</div>
+          <h3>public release</h3>
+          <p>Tag <code>livex-v1.0.0</code>, published on 31 October 2026.</p>
         </div>
       </div>
 
@@ -82,15 +76,16 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
+            <tr><td>PRISM / PRISM-LDK</td><td>{PROJECT_STATE.tests.prismSpecs} Automation Specs: 71 passed, 5 passed with warnings</td></tr>
+            <tr><td>Installer</td><td>{PROJECT_STATE.tests.installerCases} tests executed and passed</td></tr>
             <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
             <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
-            <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
-            <tr><td>Release</td><td>No public release — {RELEASE.planned} in preparation</td></tr>
+            <tr><td>CI (19 October)</td><td>{PROJECT_STATE.ci}</td></tr>
+            <tr><td>Release</td><td>LIVEX {RELEASE.latest} — tag `livex-v1.0.0`</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>These figures describe a development repository, not a product: they constitute neither
-        functional validation nor a promise of stability.</p></div>
+      <div class="cc"><p>The public release is available. These counters summarize the measured checkout and the tests run for the release; they do not guarantee behaviour outside covered scenarios or scientific outcomes.</p></div>
 
       <p style="margin-top:18px"><a class="bt" href={RELEASE.changelogUrl} rel="noopener">Changelog ↗</a></p>
     </div>
@@ -98,10 +93,9 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
   <section class="block">
     <div class="w">
       <div class="sh"><b>13.3</b> Release notes</div>
-      <h2>The changelog and the tags.</h2>
+      <h2>Release notes, changelog and tags.</h2>
       <p>
-        No public release exists yet, so no version sheet exists yet (<code>/versions/&lt;version&gt;/</code>). The
-        repository changelog and the GitHub tags remain the reference in the meantime.
+        The LIVEX 1.0.0 page summarizes changes and links to packages. The repository changelog and GitHub tag remain the references.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Read CHANGELOG.md →</a>

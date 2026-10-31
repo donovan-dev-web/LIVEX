@@ -53,6 +53,7 @@ export const NAV: NavItem[] = [
       { key: 'syne', href: 'technique/syne/', label: { fr: 'SYNE', en: 'SYNE' } },
       { key: 'echos', href: 'technique/echos/', label: { fr: 'ECHOS', en: 'ECHOS' } },
       { key: 'prism', href: 'technique/prism/', label: { fr: 'PRISM', en: 'PRISM' } },
+      { key: 'installer', href: 'technique/installer/', label: { fr: 'Installateur LIVEX', en: 'LIVEX Installer' } },
       { key: 'launcher', href: 'technique/launcher/', label: { fr: 'Launcher', en: 'Launcher' } },
       { key: 'resultats', href: 'technique/resultats/', label: { fr: 'Reproductibilité et mesures', en: 'Reproducibility and measures' } },
     ],

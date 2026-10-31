@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 5 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `presentation/VISION.md`, `CI_CD.md`
 **Source Monographie** : Partie 2 (Présentation du Projet), §7.1–7.3 (monorepo, diagrammes, contrats)
 
@@ -10,7 +10,7 @@
 
 ## 1. Vue d'ensemble
 
-LIVEX réunit trois composants applicatifs et un outil de développement :
+LIVEX réunit trois couches de runtime — SYNE, ECHOS et PRISM — avec deux applications de support livrées : le Launcher, qui orchestre la pile, et l'installateur, qui distribue et gère les installations. `syne-mock` sert au développement et aux tests clients.
 
 ```mermaid
 flowchart TB
@@ -31,15 +31,20 @@ flowchart TB
     subgraph LAUNCHER["Launcher — orchestration et présentation"]
         LUI[Fenêtres natives : consoles de logs + fenêtre d'analyse]
     end
+    INSTALLER["Installateur LIVEX<br/>Windows et Linux — installation et maintenance"]
     MOCK["syne-mock<br/>serveur Node.js de développement"]
     SYNE -- "WebSocket 5180 + HTTP 5181" --> ECHOS
     SYNE -- "WebSocket 5180 (snapshots/events)" --> PRISM
     MOCK -. "contrats simulés pour intégration" .-> PLUGIN
     ECHOS -- "contrôle (HTTP relayé)" --> SYNE
     ECHOS -- "API REST 5000 (séries, métriques, rapport)" --> LUI
+    INSTALLER -. "installe et maintient les composants" .-> LAUNCHER
+    INSTALLER -.-> SYNE
+    INSTALLER -.-> ECHOS
+    INSTALLER -.-> PRISM
 ```
 
-## 2. Les trois composants
+## 2. Couches runtime et composants de support
 
 ### 2.1 SYNE — Systems & Emergent Network Engine
 
@@ -82,14 +87,22 @@ Voir `prism/ARCHITECTURE.md`.
 - **Couverture** : cycle de contrôle, initialisation du monde, messages WebSocket, snapshots globaux, événements et scénario configurable (par défaut 50 agents, jusqu'à 400 ticks).
 - **Limite** : ce n'est pas SYNE, ne remplace ni ses tests ni sa validation scientifique et n'en reproduit pas fidèlement les algorithmes. Les décisions sociales et le pathfinding notamment sont simplifiés ; voir `../syne-mock/README.md`.
 
+### 2.5 Installateur LIVEX
+
+L'installateur 1.0.0 est le composant de distribution livré avec la release
+publique `livex-v1.0.0` pour Windows x64 et Linux x64. Il installe le socle et
+PRISM, propose les modules facultatifs, puis prend en charge mise à jour,
+réparation et désinstallation. Les variantes `core` et `full` existent pour
+chaque plateforme. Le détail est dans [`installer/README.md`](installer/README.md).
+
 ## 3. Communication inter-composants
 
 Détaillé dans `COMMUNICATION.md`. Résumé contractuel :
 
 | Flux | Transport | Port | Payload (JSON camelCase) |
 | :-- | :-- | :-- | :-- |
-| SYNE → ECHOS/PRISM | WebSocket | 5180 par défaut | `world_initialized`, snapshot global par tick (contrat **0.4.0** — `seed` additif depuis 0.2.1, `simulatedTimeSeconds` depuis 0.4.0) et événements |
-| Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état (moteur **0.15.0** — `409 run_finished` sur relance après fin, depuis 0.13.0) |
+| SYNE → ECHOS/PRISM | WebSocket | 5180 par défaut | `world_initialized` 1.1, snapshots et événements (contrat d'observabilité **0.5.0**) |
+| Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état (moteur **0.17.0**) |
 | ECHOS API | HTTP REST | 5000 (V0.1 FastAPI) | runs (avec `outcome` de population), métriques, export, comparaison (`?light=1`) |
 
 Les valeurs par défaut ne remplacent pas la configuration du serveur. Le détail

@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`, `REFERENCE_SCENARIOS.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -12,12 +12,11 @@
 
 Garantir la **correction et la stabilité des métriques**. Objectif de couverture : **≥ 80 %** (Annexe I.3).
 
-État courant au 11/10/2026 : **375 tests** (361 exécutés + 14 ignorés en local — les
-13 ignorés d'intégration SYNE exigent un build Release publié, exécuté par le job CI
-U8, et 1 `syne-mock` est levé par le job CI « Intégration mock → ECHOS »),
-couverture lignes **90,5 %** (`pytest` + pytest-cov, seuil `--cov-fail-under=80`),
-flake8 sans alerte. Les décomptes « Suite : N tests » ci-dessous sont des jalons
-historiques ; le chiffre courant vit dans `pytest` et dans le badge du README.
+Dernier résultat d'exécution consigné, le **19/10/2026** : **397 cas** (383 réussis,
+14 ignorés, 0 échec), couverture **91,32 %** (`pytest-cov`). Les tests d'intégration
+SYNE et `syne-mock` sont compris parmi les 14 ignorés. Ce résultat est daté et n'a
+pas été relancé lors de la mise à jour documentaire du 31/10. Voir l'inventaire
+global dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md#4-inventaire-des-tests).
 
 ## 2. Référence validée dans le prototype V1 (Annexe §4.9.2)
 

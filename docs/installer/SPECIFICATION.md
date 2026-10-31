@@ -1,9 +1,9 @@
 # Spécification de l'installateur LIVEX
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — spécification de référence, en revue
+**Statut** : [RÉFÉRENCE V1.0.0 LIVRÉE] — exigences de référence de l'installateur
 **Version** : 1.0
-**Dernière mise à jour** : 29 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`adr/`](adr/README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Remplace** : la spécification de base v0.2 (document de travail), archivée hors
 de la documentation de référence

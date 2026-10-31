@@ -27,6 +27,8 @@ Ce sont les sources utilisées par le site. Astro les optimise à la compilation
 | `launcher-home.png` | Capture réelle | Page Launcher, article V0.2 | Disponible |
 | `launcher-experiences.png` | Capture réelle | Page Launcher (campagnes), article Launcher | Disponible |
 | `launcher-prism.png` | Capture réelle | Accueil (PRISM), page PRISM, index Architecture, articles | Disponible |
+| `installer-home.png` | Capture réelle | Page publique d'installation (accueil de l'assistant) | Disponible |
+| `installer-components.png` | Capture réelle | Page publique d'installation (sélection des composants) | Disponible |
 
 Dans les articles du journal, les images sont référencées en Markdown relatif
 (`![alt](../../assets/captures/fichier.png)`) afin de bénéficier de la même

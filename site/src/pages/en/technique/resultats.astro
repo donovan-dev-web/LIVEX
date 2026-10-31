@@ -66,7 +66,7 @@ const nf = new Intl.NumberFormat('en-US');
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
           <h3>passing tests</h3>
-          <p>0 failures across local suites.</p>
+          <p>{nf.format(PROJECT_STATE.tests.documentedTotal)} cases validated for the release, 0 failures.</p>
         </div>
         <div>
           <div class="n">{PROJECT_STATE_EN.coverage.echos}</div>
@@ -84,13 +84,13 @@ const nf = new Intl.NumberFormat('en-US');
           <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Passing tests per component</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
+            <tr><td>Release tests</td><td>{PROJECT_STATE.tests.documentedTotal} cases: SYNE 695 · ECHOS 397 · Launcher 227 · syne-mock 53 · PRISM/PrismLdk 76 · Installer 118</td></tr>
             <tr><td>Continuous integration</td><td>{PROJECT_STATE_EN.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>These figures describe a development repository on a given date. They do not constitute functional validation or a promise of stability.</p></div>
+      <div class="cc"><p>These figures summarize release tests and reports. They do not guarantee behaviour outside covered scenarios or scientific outcomes.</p></div>
     </div>
   </section>
 

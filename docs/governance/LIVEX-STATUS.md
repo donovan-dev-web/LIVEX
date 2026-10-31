@@ -1,18 +1,21 @@
 # LIVEX — état du projet
 
-**Composant** : LIVEX (général) · **Statut** : [EN VALIDATION] · **Dernière mise à jour** : 19 octobre 2026
+**Composant** : LIVEX (général) · **Statut** : [RELEASE 1.0.0] · **Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`ROADMAP.md`](ROADMAP.md), [`VERSIONING.md`](../../VERSIONING.md), manifestes, contrats et tests des composants
 
-> État de référence documentaire, non release. Les mesures locales du 19/10 sont distinguées des résultats historiques et des rapports de campagne antérieurs; un résultat d’un composant ne certifie pas toute la pile.
+> État documentaire du checkout au 31/10/2026. La release publique `livex-v1.0.0` est publiée et taguée. Les suites des composants ont été exécutées et validées pour la release ; ce relevé en consolide les compteurs documentés. Un test vert valide le comportement couvert, pas toute la pile ni une conclusion scientifique générale.
 
 | Référence | Valeur |
 | :-- | :-- |
-| Date des vérifications locales | 19 octobre 2026 |
-| Branche et HEAD | `feature/livex-realignement-divergences-v0.2` — `a229c6a` (checkout local avec modifications en cours) |
-| Versions majeures déclarées | Global LIVEX `V0.2`; SYNE `0.17.0`; ECHOS `0.1.0`; Launcher `0.1.0`; `syne-mock` `0.1.0`; PRISM / PRISM-LDK en version de travail |
+| État de la release | LIVEX `1.0.0`, tag public `livex-v1.0.0`; paquets installateur Windows et Linux |
+| PRISM | PRISM packagé Windows/Linux; PRISM-LDK / `PrismLdk` compilé et packagé |
+| Validation de tests pour la release | 1 566 cas comptabilisés sur l'ensemble des composants; 1 550 réussis (dont 5 `SuccessWithWarnings` Unreal), 16 ignorés, 0 échec |
+| Tokei | 13.0.0; 1 152 fichiers, 111 608 lignes de code, 58 105 commentaires, 31 086 lignes blanches (200 799 lignes classées; checkout visible, exclusions décrites au §5) |
+| Branche et HEAD | `main` / tag `livex-v1.0.0` — `196ad077a7a91722943eb0c62010068160fd3129` |
+| Versions majeures déclarées | Global LIVEX `1.0.0`; SYNE `0.17.0`; ECHOS `0.1.0`; Launcher `0.1.0`; `syne-mock` `0.1.0`; PRISM et PRISM-LDK `1.0.0` |
 | Contrats / schémas | Observabilité `0.5.0`; `world_initialized` `1.1`; snapshot SYNE `schemaVersion 5`; ECHOS `SCHEMA_VERSION = 6` |
-| Suites locales pertinentes | SYNE 695/695; ECHOS 383 réussis, 14 ignorés; `syne-mock` 51 réussis, 2 ignorés; Launcher Unit 174/174, Integration 20/20, E2E 33/33 avec SYNE publié |
-| Release | V1 en préparation (installateur, PRISM, composants) |
+| Tests de la release | 1 566 cas exécutés : 1 550 réussis (dont 5 `SuccessWithWarnings` Unreal), 16 ignorés, 0 échec |
+| Release | Publique, taguée : `livex-v1.0.0` |
 
 ## Sommaire
 
@@ -21,27 +24,26 @@
 3. [Versions et contrats](#3-versions-et-contrats)
 4. [Inventaire des tests](#4-inventaire-des-tests)
 5. [Inventaire du code, des fichiers et des langages](#5-inventaire-du-code-des-fichiers-et-des-langages)
-6. [Vérifications exécutées le 19 octobre](#6-vérifications-exécutées-le-19-octobre)
+6. [Détail de validation des composants](#6-détail-de-validation-des-composants)
 7. [État fonctionnel par composant](#7-état-fonctionnel-par-composant)
 8. [Limites et portes non franchies](#8-limites-et-portes-non-franchies)
 9. [Sources de référence](#9-sources-de-référence)
 
 ## 1. Synthèse
 
-LIVEX réunit le moteur déterministe SYNE, l’observatoire headless ECHOS, le projet Unreal PRISM et le plugin PRISM-LDK, l’application native d’orchestration Launcher et l’émulateur de contrats `syne-mock`. SYNE reste l’autorité de l’état simulé; ECHOS observe et analyse; PRISM consomme les contrats pour le rendu; le Launcher orchestre et archive. Le mock aide au développement, mais ne constitue pas un moteur scientifique équivalent.
+LIVEX réunit le moteur déterministe SYNE, l’observatoire headless ECHOS, le projet Unreal PRISM et le plugin PRISM-LDK, le Launcher d’orchestration, l’installateur de distribution et l’émulateur de contrats `syne-mock`. SYNE reste l’autorité de l’état simulé; ECHOS observe et analyse; PRISM consomme les contrats pour le rendu; le Launcher orchestre et archive; l’installateur déploie et maintient les composants. Le mock aide au développement, mais ne constitue pas un moteur scientifique équivalent.
 
-Les identifiants vérifiés dans le code et les manifestes sont SYNE `0.17.0`, contrat d’observabilité `0.5.0`, description `world_initialized` `1.1`, snapshot `schemaVersion 5`, ECHOS `0.1.0`, Launcher `0.1.0` et `syne-mock` `0.1.0`. Le schéma ECHOS demande une réserve : `SCHEMA_VERSION` vaut encore `"6"`, alors que la migration BL-09 et ses tests nomment v7 la reconstruction de `decision_traces`. Ce rapport ne confond pas cette migration avec le compteur de schéma effectivement écrit dans `_meta`.
+Les versions principales sont LIVEX `1.0.0` (release publique `livex-v1.0.0`), SYNE `0.17.0`, ECHOS `0.1.0`, Launcher `0.1.0`, `syne-mock` `0.1.0`, PRISM `1.0.0` et PRISM-LDK `1.0.0`. Le contrat d’observabilité est `0.5.0`, la description `world_initialized` `1.1` et le snapshot `schemaVersion 5`. Le schéma ECHOS demande une réserve : `SCHEMA_VERSION` vaut encore `"6"`, alors que la migration BL-09 et ses tests nomment v7 la reconstruction de `decision_traces`.
 
-Le 19/10, SYNE a passé 604 tests Core et 91 Console. ECHOS a passé 383 tests, avec 14 ignorés (couverture mesurée 91,32 %); `syne-mock` a passé 51 tests, avec 2 ignorés sous Windows. Launcher Unit et Integration sont verts (174/174 et 20/20). Avec un SYNE publié réellement installé selon la disposition attendue, Launcher EndToEnd donne **33 réussis et 0 échec** : les deux parcours J3 réels (SYNE publié + ECHOS réel) passent désormais, la régression d’ingestion ECHOS qui bloquait leur assertion de persistance ayant été corrigée (voir § 8). Dans un run séparé sans le prérequis SYNE, les 4 tests gatés sont comptés comme échecs au lieu d’être marqués ignorés par le runner; ce run n’est pas inclus dans les 33 cas exécutés avec SYNE publié. Le parcours J3 complet est donc **accepté par la vérification locale du 19/10**.
+Les tests de SYNE, ECHOS, `syne-mock`, Launcher, PRISM/PRISM-LDK et de l'installateur ont tous été exécutés et validés pour la release publique. Le décompte consolidé est **1 566 cas : 1 550 réussis, 16 ignorés et 0 échec**. Les 5 `SuccessWithWarnings` Unreal sont inclus dans les réussites. La ventilation conserve les compteurs propres à chaque runner, car xUnit, pytest, Node et Unreal Automation n'emploient pas tous la même terminologie.
 
-Les tests et campagnes ne prouvent pas l’émergence générale. Les résultats expérimentaux pérennes rapportent un contraste préenregistré de quête spatiale confirmé, un cycle homéostatique social non confirmé et un verdict général « émergence non établie ». La viabilité locale est établie seulement pour les graines, configurations et horizons explicitement rapportés. PRISM, l’installateur et les livraisons restent soumis à leurs propres portes; aucune release publique n’est déclarée.
+Les tests et campagnes ne prouvent pas l’émergence générale. Les résultats expérimentaux pérennes rapportent un contraste préenregistré de quête spatiale confirmé, un cycle homéostatique social non confirmé et un verdict général « émergence non établie ». La release publique existe ; les limites d'acceptation des composants restent celles précisées ci-dessous.
 
 ## 2. Périmètre et méthode
 
-- Ce relevé porte sur le checkout local de la branche `feature/livex-realignement-divergences-v0.2`; le nom de branche et le HEAD sont ceux observés au début de cette révision. Le checkout est modifié; il ne décrit ni un arbre propre ni un état distant `develop`.
-- Les versions sont relevées dans le code et les manifestes. Les résultats de test sont ceux de commandes locales; les rapports de campagne et d’acceptation d’autres dates sont cités comme tels, jamais présentés comme des exécutions du 19/10.
-- Les sections 4 et 5 ci-dessous donnent un inventaire recalculé sur le checkout présent : inventaire de code du 18/10/2026 (§5, non relancé le 19/10) et résultats de test du 19/10/2026 (§4). Tokei analyse les fichiers visibles et non ignorés après exclusion explicite des dépendances, builds et caches indiqués; le checkout est fortement modifié et contient des suppressions, ajouts non suivis et fichiers locaux. Les métriques ne sont donc pas un instantané de `HEAD` seul ni un décompte des seuls fichiers suivis par Git.
-- Les chiffres de tests exécutés sont les résultats locaux consignés pour le 19/10; les catégories unit/integration/E2E suivent le type des suites/projets, et un total logique sans double compte est fourni seulement pour les suites dont le nombre et le résultat sont connus. Les 69 specs PRISM documentées ne sont pas ajoutées au total exécuté, car elles n’ont pas été relancées dans cette vérification.
+- Ce relevé décrit le checkout au tag public `livex-v1.0.0` (`196ad077a7a91722943eb0c62010068160fd3129`), observé le 31/10/2026.
+- Les versions sont relevées dans le code et les manifestes. Les résultats des suites exécutées pour la release sont consolidés par composant ci-dessous.
+- Le relevé Tokei (§5) a été recalculé le 31/10/2026 sur les fichiers visibles après les exclusions listées. Les résultats de tests consignés sont ceux des suites exécutées et validées pour produire la release.
 - Un test vert valide le comportement couvert; il ne certifie ni toute la compatibilité inter-composants ni une conclusion scientifique générale.
 
 ## 3. Versions et contrats
@@ -52,18 +54,18 @@ Les tests et campagnes ne prouvent pas l’émergence générale. Les résultats
 | ECHOS | Paquet `0.1.0`; métriques `2.0.0`; SQLite `SCHEMA_VERSION = "6"` | Service headless d’ingestion et d’analyse. Migration nullable BL-09 est nommée v7 dans les commentaires/tests, sans incrément du compteur global. |
 | Launcher | `0.1.0`; paquet `.livexp` versionné séparément | Application Avalonia d’orchestration, présentation et archivage. |
 | `syne-mock` | `0.1.0`; contrats SYNE `0.5.0` / monde `1.1` | Émulateur de contrats pour tests clients, pas une simulation équivalente. |
-| PRISM / PRISM-LDK | Version de travail; consommateur observabilité `0.5.0` / monde `1.1` | Plugin Unreal en intégration; ne signifie pas que l’expérience interactive complète est acceptée. |
-| Installateur | 1.0.0 (V1) | Spécification et code livrés ; release en préparation |
+| PRISM / PRISM-LDK | `1.0.0`; consommateur observabilité `0.5.0` / monde `1.1` | PRISM packagé Windows/Linux; plugin Unreal `PrismLdk` réalisé et packagé. |
+| Installateur | `1.0.0` (V1) | Implémenté et inclus dans les distributions publiques Windows/Linux. |
 
 Le code déclare `SCHEMA_VERSION = "6"` dans [`sqlite.py`](../../echos/echos/storage/sqlite.py); une migration y reconstruit `decision_traces` pour rendre `utility` nullable et ajoute `held_utility`, `decision_state` et `decision_tick`. Les tests appellent cela « v7 », mais la valeur écrite dans `_meta.schema_version` est toujours celle de la constante `6`. Les mentions « schéma v7 » doivent donc être qualifiées de révision de migration BL-09 jusqu’à harmonisation du versionnage.
 
 ## 4. Inventaire des tests
 
-### Nombre de tests et état observé
+### Résultats de validation de la release
 
-Le relevé local du 19/10/2026 compte **1 372 cas de test distincts** dans les suites exécutées : **1 356 réussis, 16 ignorés et 0 échec**. Le total additionne SYNE (695), ECHOS (383 réussis + 14 ignorés = 397), `syne-mock` (51 + 2 ignorés = 53) et Launcher avec SYNE publié (174 + 20 + 33 = 227). Un run Launcher distinct sans SYNE publié compte 4 erreurs de prérequis; il est hors de cette série E2E de 33 tests et donc hors total. Les 69 cas PRISM rapportés dans sa documentation antérieure ne sont pas inclus, car ils n’ont pas été exécutés pendant cette vérification.
+Le bilan consolidé des suites exécutées pour LIVEX 1.0.0 compte **1 566 cas : 1 550 réussis, 16 ignorés et 0 échec**. Il comprend les suites de tous les composants, y compris PRISM/PRISM-LDK et l'installateur. Les avertissements Unreal `SuccessWithWarnings` restent des réussites avec avertissement.
 
-| Composant | Type de suite | Cas détectés / résultat consigné le 19/10 | Interprétation |
+| Composant | Type de suite | Résultat validé pour la release | Interprétation |
 | :-- | :-- | :-- | :-- |
 | SYNE | Unitaire (Core) | 604 réussis, 0 échec | Suite `Simulation.Core.Tests`. |
 | SYNE | Intégration (Console) | 91 réussis, 0 échec | Suite `Simulation.Console.Tests`; total SYNE 695/695. |
@@ -74,11 +76,12 @@ Le relevé local du 19/10/2026 compte **1 372 cas de test distincts** dans les s
 | Launcher | Unitaire | 174 réussis, 0 échec | `Launcher.Tests.Unit`. |
 | Launcher | Intégration | 20 réussis, 0 échec | `Launcher.Tests.Integration`. |
 | Launcher | End-to-end réel | 33 cas : 33 réussis, 0 échec | SYNE publié; les deux parcours J3 réels passent. |
-| PRISM / PRISM-LDK | Automation Specs Unreal | 69 annoncées dans `docs/prism/TESTING.md` : 65 réussies, 4 avec avertissements | Rapport documentaire UE 5.8, non relancé le 19/10; exclu du total exécuté le 19/10. |
+| PRISM / PRISM-LDK | Automation Specs Unreal | 76 specs : 71 `succeeded`, 5 `SuccessWithWarnings`, 0 `failed` | Validation UE 5.8 consignée dans [`docs/prism/TESTING.md`](../prism/TESTING.md). |
+| Installateur | Tests xUnit `Setup.Tests.*` | 118 cas : Unit 72, App 34, Integration 6, EndToEnd 6; tous réussis | Suites Unit, App, Integration et EndToEnd exécutées pour la release. |
 
-**Bilan local du 19/10 : 1 372 cas de test = 1 356 réussis + 16 ignorés + 0 échec.** Il additionne SYNE, ECHOS, `syne-mock` et Launcher; les résultats PRISM antérieurs (69 specs documentées) sont exclus de ce total.
+**Bilan de validation de la release : 1 566 cas = 1 550 réussis + 16 ignorés + 0 échec.** Ce total comprend SYNE (695), ECHOS (397), `syne-mock` (53), Launcher (227), PRISM/PRISM-LDK (76) et installateur (118). Les totaux de sous-suites suivent les sorties des runners respectifs.
 
-> Les chiffres suivent les compteurs des runners, et non les fichiers de test. Les tests d’intégration ECHOS sont inclus dans la suite pytest et ne sont pas additionnés une seconde fois. Le résultat Launcher E2E de référence est celui obtenu avec SYNE publié (33/33, exit 0); le run distinct sans prérequis, où quatre cas deviennent des erreurs, n’est pas dans ce décompte.
+> Les chiffres suivent les compteurs des runners, et non les fichiers de test. Les tests d’intégration ECHOS sont inclus dans la suite pytest et ne sont pas additionnés une seconde fois. Le résultat Launcher E2E de référence est celui obtenu avec SYNE publié (33/33, exit 0).
 
 ### Ventilation par niveau
 
@@ -88,81 +91,45 @@ Le relevé local du 19/10/2026 compte **1 372 cas de test distincts** dans les s
 | Intégration (suite dédiée) | SYNE Console + Launcher Integration | **111** (91 + 20) | Catégorie fiable à partir des projets de tests dédiés. |
 | End-to-end | Launcher E2E réel | **33** (33 réussis, 0 échoué) | J3 sur SYNE publié + ECHOS réel : vert. |
 | Types mêlés / non ventilés dans leur runner | ECHOS + `syne-mock` | **450** (397 + 53) | pytest et Node.js réunissent tests unitaires, API, stockage et intégration; le statut disponible ne permet pas d’attribuer honnêtement chaque cas à un seul niveau. Leurs 16 skips sont déjà compris dans 450. |
-| Unreal Automation | PRISM / PRISM-LDK | 69 documentés, non exécutés le 19/10 : 65 réussis, 4 `SuccessWithWarnings` | Résultat antérieur, exclu du total exécuté le 19/10. |
+| Unreal Automation | PRISM / PRISM-LDK | 76 (71 réussis, 5 `SuccessWithWarnings`) | Inclus dans le bilan de release. |
+| Installateur | Unit + App + Integration + EndToEnd | **118** | Quatre projets xUnit, exécutés et validés pour la release. |
 
-La ventilation des suites totalise **1 372 cas comptabilisés** : 778 tests dans les projets unitaires dédiés + 111 dans les projets d’intégration + 33 E2E + 450 cas ECHOS/`syne-mock`, dont le type interne n’est pas séparé. Elle inclut les 16 skips ECHOS/mock et aucun échec. Les 69 tests Unreal sont antérieurs et rapportés séparément.
+La ventilation complète totalise **1 566 cas exécutés** : 1 372 pour SYNE, ECHOS, `syne-mock` et Launcher; 76 pour Unreal Automation; 118 pour l'installateur. Elle comprend 16 ignorés et aucun échec.
 
 ## 5. Inventaire du code, des fichiers et des langages
 
 ### Périmètre et règles de comptage
 
-Inventaire exécuté sur le checkout local visible le 18/10/2026 avec **Tokei 13.0.0**. Commande reproductible depuis la racine :
+Relevé du checkout au **31/10/2026**, avec **Tokei 13.0.0**, depuis la racine :
 
-```bash
-tokei . --exclude .git --exclude node_modules --exclude bin --exclude obj \\
-  --exclude .venv --exclude .pytest_cache --exclude __pycache__ \\
-  --exclude dist --exclude .astro --exclude coverage -C
+```powershell
+tokei . --exclude .git --exclude node_modules --exclude bin --exclude obj `
+  --exclude .venv --exclude .pytest_cache --exclude __pycache__ `
+  --exclude dist --exclude .astro --exclude coverage
 ```
 
-La commande compte les fichiers visibles/non ignorés par Tokei, pas tous les fichiers physiquement présents. Elle reconnaît **905 fichiers répartis dans 22 langages/formats** (dont **11 langages de programmation, d’interface ou de script**, hors HTML documentaire; le rapport global inclut aussi des blocs de code embarqués dans Markdown/HTML, détaillés séparément ci-dessous). L’index Git contient 888 chemins; à cette date, 885 des chemins indexés existent encore, 3 sont supprimés, et 91 fichiers non suivis/non ignorés sont présents. Il ne faut donc pas assimiler « 905 fichiers analysés », « chemins suivis Git » et « fichiers physiques ».
+Tokei a reconnu **1 152 fichiers** : **111 608 lignes de code**, **58 105 commentaires** et **31 086 lignes blanches**, soit 200 799 lignes classées. Les LOC sont les lignes classées comme code par Tokei, pas un nombre de lignes physiques de source. L'inventaire comprend les formats de documentation, configuration, assets, exemples intégrés et fichiers générés encore visibles hors des répertoires exclus. Il compte aussi les deux copies du plugin PrismLdk (`prism/LDK/` et `prism/LDK_Package/`). Ce total n'est donc ni le nombre de fichiers suivis par Git ni une mesure de sources produit uniquement.
 
-Le tableau sépare les langages de programmation et formats de code, les fichiers de configuration/données, la documentation et les manifestes. Les LOC Tokei sont des lignes classées comme code par le tokenizer, pas des lignes physiques; elles peuvent compter des fichiers générés locaux encore visibles et des exemples source embarqués dans la documentation. Le rapport JSON détaillé de Tokei fournit des comptes par fichier/langage (88 859 LOC primaires) et un total global (91 268 LOC), dont l’écart de 2 409 LOC correspond aux blocs embarqués dans les documents. Le tableau indique la somme par format, puis cet écart et le total global; les blocs embarqués ne sont pas ventilés par langage.
+### Fichiers de code et tests par composant
 
-### Langages/formats reconnus par Tokei
+La ventilation suivante agrège les langages de programmation, d'interface et de script reconnus par Tokei. Les fichiers de test sont identifiés par chemin ou nom (`tests/`, `test_`, `*Tests.cs`, `*Spec.cpp`, etc.) ; cette classification ne dénombre pas les cas exécutés.
 
-| Langage / format | Fichiers | Lignes code Tokei |
-| :-- | --: | --: |
-| C# | 343 | 45 466 |
-| Python | 81 | 17 619 |
-| JavaScript | 23 | 3 308 |
-| C++ | 11 | 2 649 |
-| AXAML | 4 | 2 120 |
-| Astro | 66 | 5 714 |
-| CSS | 3 | 960 |
-| C Header | 8 | 681 |
-| TypeScript | 9 | 480 |
-| Shell | 2 | 102 |
-| Batch | 1 | 9 |
-| **Sous-total langages/scripts (HTML exclu)** | **551** | **79 108** |
-| HTML documentaire (exemples) | 3 | 839 |
-| **Langages/scripts + HTML documentaire** | **554** | **79 947** |
-| JSON | 33 | 7 257 |
-| MSBuild | 20 | 313 |
-| INI | 4 | 244 |
-| Visual Studio Solution | 2 | 168 |
-| TOML | 1 | 25 |
-| Unreal Project | 1 | 31 |
-| Unreal Plugin | 1 | 24 |
-| SVG | 30 | 850 |
-| Markdown | 254 | 0 |
-| Plain Text | 5 | 0 |
-| **Somme des lignes par format (blocs embarqués exclus)** | **905 fichiers distincts** | **88 859** |
-| LOC dans les blocs embarqués Markdown/HTML | Fichiers déjà comptés ci-dessus | 2 409 |
-| **Total Tokei global** | **905 fichiers distincts** | **91 268** |
+| Composant | Fichiers source | LOC source | Fichiers de test | LOC tests |
+| :-- | --: | --: | --: | --: |
+| SYNE | 143 | 12 937 | 90 | 12 343 |
+| ECHOS | 43 | 8 660 | 33 | 6 514 |
+| Launcher | 79 | 16 041 | 32 | 6 291 |
+| Installateur | 96 | 6 219 | 12 | 1 518 |
+| PRISM / PrismLdk | 39 | 9 617 | 16 | 3 156 |
+| `syne-mock` | 15 | 1 778 | 5 | 1 335 |
+| Site | 100 | 10 346 | 0 | 0 |
+| Scripts partagés | 13 | 3 080 | 1 | 16 |
 
-Tokei distingue également **163 532 lignes physiques reconnues** au total, dont 91 268 code au total global (88 859 LOC des rapports primaires + 2 409 LOC dans les blocs embarqués), 47 602 commentaires et 24 662 lignes blanches. Les langages de programmation, d’interface et scripts comptent **79 108 LOC dans 551 fichiers**; les trois exemples HTML documentaires ajoutent **839 LOC dans 3 fichiers**. Ces métriques sont un snapshot du checkout modifié, pas une mesure de la branche distante.
+Les nombres PRISM comptent les deux arborescences présentes localement, y compris le doublon du plugin empaqueté. Les catégories et périmètres sont ceux du checkout décrit ci-dessus ; les résultats de test exécutés restent ceux de la section 4.
 
-### Fichiers de code source et de tests par composant
+## 6. Détail de validation des composants
 
-Pour cette ventilation, « source » désigne les fichiers Tokei des langages de programmation/UI/scripts (C#, Python, JavaScript/TypeScript, C/C++, Astro, AXAML, CSS, Shell, Batch), hors les 3 exemples HTML documentaires. Un fichier est classé test selon son chemin (`tests/`) ou son nom (`test_`, `*_test.py`, `*.test.*`, `*Tests.cs`, `*Spec.cpp`). Cette heuristique identifie **163 fichiers de test** (27 275 LOC) dans 551 fichiers code/scripts; les 388 autres fichiers totalisent 51 833 LOC. Ces comptes de fichiers ne sont pas le nombre de cas de test exécutés.
-
-| Répertoire / composant | Fichiers code (non-tests) | LOC code (non-tests) | Fichiers de tests | LOC tests | Fichiers code total | LOC total |
-| :-- | --: | --: | --: | --: | --: | --: |
-| SYNE (`syne/`) | 144 | 12 940 | 89 | 12 336 | 233 | 25 276 |
-| Launcher (`launcher/`) | 80 | 16 108 | 31 | 6 224 | 111 | 22 332 |
-| ECHOS (`echos/`) | 43 | 8 656 | 33 | 6 473 | 76 | 15 129 |
-| `syne-mock/` | 15 | 1 778 | 5 | 1 335 | 20 | 3 113 |
-| PRISM (`prism/`) | 18 | 2 470 | 5 | 907 | 23 | 3 377 |
-| Scripts partagés | 7 | 2 059 | 0 | 0 | 7 | 2 059 |
-| Site (`site/`) | 79 | 7 185 | 0 | 0 | 79 | 7 185 |
-| Documentation outillée (`docs/`) | 2 | 637 | 0 | 0 | 2 | 637 |
-| **Total code/scripts** | **388** | **51 833** | **163** | **27 275** | **551** | **79 108** |
-
-PRISM comprend cinq fichiers dont le chemin relève de la convention de test (spécifications/tests Unreal), mais cela ne représente pas cinq tests exécutés ici. L’inventaire de code ne contient pas les exemples HTML (839 LOC), les formats de configuration/données (dont 7 257 LOC JSON), les assets SVG, ni les exemples de code embarqués dans Markdown; ces catégories figurent dans la table Tokei générale. Les sources de vérité des résultats exécutés restent les tableaux de la section 4.
-
-## 6. Vérifications exécutées le 19 octobre
-
-| Suite | Résultat local | Notes |
+| Composant / suite | Résultat validé pour la release | Notes |
 | :-- | :-- | :-- |
 | SYNE Core | 604 réussis, 0 échec | Release; inclus dans `Syne.sln`. |
 | SYNE Console | 91 réussis, 0 échec | Release; 695/695 au total SYNE. |
@@ -171,10 +138,10 @@ PRISM comprend cinq fichiers dont le chemin relève de la convention de test (sp
 | Launcher Unit | 174 réussis, 0 échec | Release. |
 | Launcher Integration | 20 réussis, 0 échec | Release. |
 | Launcher EndToEnd avec SYNE publié | **33 réussis, 0 échec** | Les deux parcours J3 réels (SYNE publié + ECHOS réel) passent; exit 0, durée 4 m 23 s. Vérification effectuée avec la disposition de publication attendue par le banc. |
-| Launcher EndToEnd sans prérequis publié | **4 échecs de prérequis dans un run distinct** | Les tests demandent un skip via `SkipException.ForSkip`, mais ce runner les comptabilise comme échecs. Pas une preuve d’échec du produit; ce run sans prérequis n’est pas inclus dans les 33 cas exécutés avec SYNE publié. |
-| PRISM / PRISM-LDK | Non exécuté pendant cette vérification | [`docs/prism/TESTING.md`](../prism/TESTING.md) rapporte 69 Automation Specs UE 5.8 (65 réussies, 4 `SuccessWithWarnings`, 0 échec); rapport documentaire distinct. |
+| PRISM / PRISM-LDK | 76 specs; 71 réussies, 5 `SuccessWithWarnings`, 0 échec | Unreal Engine 5.8; inclus au bilan de la release. |
+| Installateur | 118 réussis, 0 échec | Unit 72, App 34, Integration 6, EndToEnd 6; suites exécutées pour la release. |
 
-Le total local comptabilisé par les runners (1 372) comprend 1 356 réussites, 16 skips (ECHOS et `syne-mock`) et 0 échec. Les 69 Automation Specs Unreal (65 succès et 4 avertissements) sont un résultat documentaire antérieur et ne sont pas ajoutées à ce relevé du 19/10. Le run Launcher E2E de référence est celui avec SYNE publié.
+Le total consolidé comprend 1 550 réussites, dont 5 réussites avec avertissement Unreal, 16 skips ECHOS/`syne-mock` et 0 échec.
 
 ### Couverture
 
@@ -195,7 +162,7 @@ ECHOS `0.1.0` ingère les flux et fichiers batch, stocke les analyses et expose 
 
 ### Launcher
 
-Application Avalonia `0.1.0`. Unit et Integration passent 174/174 et 20/20. EndToEnd passe **33/33 avec SYNE publié** (durée 4 m 23 s, exit 0) : les deux parcours J3 réels passent après la correction de la régression d’ingestion ECHOS. Le rapport d’acceptation archivé documentait déjà un run à 33/33 le 17 octobre; le relevé local du 19/10 le reproduit. Sans `LIVEX_SYNE_PUBLISHED_ROOT`, quatre tests conditionnels sont comptés comme échecs par le runner. L’acceptation complète J3 est donc **verte** dans le présent relevé.
+Application Avalonia `0.1.0`. Unit et Integration passent 174/174 et 20/20. EndToEnd passe **33/33 avec SYNE publié** (durée 4 m 23 s, exit 0) : les deux parcours J3 réels passent après la correction de la régression d’ingestion ECHOS. L’acceptation complète J3 est verte.
 
 ### `syne-mock`
 
@@ -203,7 +170,7 @@ Serveur Node.js `0.1.0`, outil d’intégration qui émule des contrats. La suit
 
 ### PRISM / PRISM-LDK et installateur
 
-PRISM/PRISM-LDK sont en version de travail; l’hôte `LDK.uproject` est un hôte technique, et non l’expérience produit complète. Les 69 Automation Specs UE 5.8 figurent dans le relevé de `docs/prism/TESTING.md`; elles n’ont pas été réexécutées pendant ce statut. Le rendu interactif complet et son acceptation restent des portes distinctes. L’installateur demeure une spécification sans artefact livré.
+PRISM et PRISM-LDK `1.0.0` sont réalisés et packagés pour la release ; PRISM est disponible en paquets Windows/Linux. `LDK.uproject` est l'hôte Unreal technique du plugin, et non l'expérience PRISM finale. Les 76 Automation Specs UE 5.8 ont été exécutées et validées : 71 réussies, 5 réussies avec avertissements, 0 échec. L'installateur est livré dans la release ; ses 118 tests xUnit (Unit 72, App 34, Integration 6, EndToEnd 6) ont été exécutés et réussis.
 
 ## 8. Limites et portes non franchies
 
@@ -212,7 +179,7 @@ PRISM/PRISM-LDK sont en version de travail; l’hôte `LDK.uproject` est un hôt
 3. **ECHOS DVI :** le profil de viabilité observable et l’endpoint existants ne doivent pas être confondus avec l’indice dynamique spécifié dans ECHOS VII; l’implémentation/calibration DVI n’est pas présente dans le code consulté.
 4. **Numéro de schéma ECHOS :** code et tests/commentaires divergent sur v6/v7; ne pas publier « v7 » comme valeur courante de `SCHEMA_VERSION` sans harmoniser migrations et code.
 5. **Portée scientifique :** les campagnes sont bornées à leurs graines, configurations, critères et horizons. Verdict global conservé : « émergence non établie ».
-6. **PRISM, CI et release :** aucun test Unreal ni accès CI distant n’a été effectué et aucune release n’a été créée lors de cette mise à jour. L’inventaire de fichiers/LOC est présenté en §5, mais porte sur le checkout modifié et ses fichiers visibles, pas sur la branche distante propre.
+6. **PRISM, CI et release :** PRISM/PrismLdk et l'installateur sont livrés dans la release publique `livex-v1.0.0`. Les résultats de validation de toutes les suites exécutées pour la release sont consolidés aux §4 et §6. Tokei décrit les fichiers visibles dans le checkout du tag, avec les limites de périmètre du §5.
 7. **Mesures de performance bornées :** le relevé [`LIVEX-PERFORMANCE-2026-10.md`](LIVEX-PERFORMANCE-2026-10.md) porte sur une machine de bureau unique (i7-8750H, 15,8 Go). Le débit SYNE dépend fortement de l’horizon (accumulation mémoire/croyances) — un débit à horizon court ne vaut pas pour un run long — et la pile SYNE+ECHOS est bornée par l’ingestion ECHOS mono-thread (~13 t/s à 100 agents, 6 t/s visés à la cadence PRISM). PRISM n’a pas été mesuré (éditeur Unreal absent).
 
 Les roadmaps transverse et composants font foi pour les travaux à venir. Les rapports versionnés de réalignement et d’acceptation sont indexés dans [`realignment/README.md`](realignment/README.md).

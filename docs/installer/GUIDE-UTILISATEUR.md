@@ -1,8 +1,8 @@
 # Guide utilisateur — installer LIVEX
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — guide de la version à venir
-**Dernière mise à jour** : 29 octobre 2026
+**Statut** : [LIVRÉ] — guide utilisateur de l'installateur LIVEX 1.0.0
+**Dernière mise à jour** : 31 octobre 2026
 
 ---
 
@@ -13,8 +13,8 @@ les fichiers à la main : chercheur, utilisateur non technique, développeur qui
 veut une pile propre. Aucune connaissance de .NET, de Python ou d'Unreal
 Engine n'est nécessaire pour l'installation décrite ici.
 
-> **Disponibilité :** l'installateur n'est pas encore publié. Ce guide décrit
-> le parcours cible ; il ne remplace pas une release.
+> **Disponibilité :** l'installateur LIVEX 1.0.0 est publié pour Windows x64
+> et Linux x64 dans la [release `livex-v1.0.0`](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0).
 
 ## 2. Avant de commencer
 
@@ -28,8 +28,10 @@ Engine n'est nécessaire pour l'installation décrite ici.
 - **aucun accès Internet pour le socle** : Launcher, SYNE, ECHOS et PRISM
   s'installent hors ligne ;
 - une connexion Internet **seulement si vous cochez un module facultatif**
-  (PRISM-LDK, documentation, SYNE-Mock), ou une archive locale / la variante
-  complète `full`.
+  (PRISM-LDK, documentation, SYNE-Mock), sauf si vous utilisez la variante
+  complète `full`, qui embarque les actifs facultatifs. Le chargement depuis
+  une archive locale et les options `--offline-assets` / `--no-network` ne
+  sont pas encore reliés au moteur d'installation.
 
 ### Ce que vous n'avez pas besoin d'installer
 
@@ -239,8 +241,8 @@ diagnostic.
 | « Enregistrement introuvable » | entrée système supprimée | laisser l'assistant retrouver l'installation, ou la localiser |
 | « Fichier corrompu » | distribution incomplète | retélécharger et vérifier les signatures |
 | « libicu introuvable » (Linux) | distribution minimale | installer le paquet `libicu` de votre distribution |
-| « Connexion impossible » pendant un module | réseau, proxy ou GitHub inaccessible | réessayer, choisir une archive locale, ou utiliser la variante `full` |
-| « Empreinte incorrecte » | archive altérée ou téléchargement incomplet | supprimer le module du cache et réessayer ; ne pas forcer l'installation |
+| « Connexion impossible » pendant un module | réseau, proxy ou GitHub inaccessible | réessayer avec un réseau autorisant GitHub ou utiliser la variante `full` |
+| « Empreinte incorrecte » | archive altérée ou téléchargement incomplet | retélécharger le paquet `full` ou l'actif concerné et vérifier son empreinte ; ne pas forcer l'installation |
 | Le Launcher ne démarre pas | installation incomplète | lancer `livex-setup` puis **Réparer** |
 | L'installation s'arrête sans message | erreur inattendue | consulter `<racine de données>/logs/installer-*.log` |
 
@@ -254,8 +256,9 @@ décrits dans [`COMMANDES.md`](COMMANDES.md).
 **Ai-je besoin d'Internet ?**
 Pas pour le socle : Launcher, SYNE et ECHOS s'installent avec la distribution
 seule, et la vérification des signatures se fait hors ligne. Un module
-facultatif coché est téléchargé depuis la release ; sans réseau, choisissez une
-archive locale ou la variante complète `full`.
+facultatif coché est téléchargé depuis la release ; sans réseau, choisissez la
+variante complète `full`. L'installation depuis une archive locale n'est pas
+encore disponible dans le parcours livré.
 
 **Puis-je installer sans être administrateur ?**
 Oui. L'installateur n'écrit que dans votre profil utilisateur et ne demande

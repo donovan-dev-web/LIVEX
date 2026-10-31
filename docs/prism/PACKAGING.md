@@ -1,8 +1,8 @@
 # PRISM — Packaging pour une release LIVEX
 
 **Composant** : PRISM
-**Statut** : [DRAFT] — procédure de la V1, non encore exécutée
-**Dernière mise à jour** : 29 octobre 2026
+**Statut** : [EXÉCUTÉ POUR LIVEX 1.0.0] — PRISM Windows/Linux et PRISM-LDK produits et publiés
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`README.md`](README.md), [`../installer/adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md`](../installer/adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md), [`../installer/RELEASE_AND_UPDATE.md`](../installer/RELEASE_AND_UPDATE.md)
 
 ---
@@ -68,8 +68,8 @@ déterministe, épinglés, puis consommés par la CI au tag `livex-v`.
 6. **Contrôler** : `size` et `sha256` de `external-inputs.json` correspondent
    aux fichiers de `dist/inputs/` ; l'archive LDK est identique octet pour octet
    à `prism/LDK_Package/PrismLdk.zip`.
-7. **Publier les entrées** sur `prism-v1.0.0` (confirmation du mainteneur), puis
-   attendre que la CI ait créé la release avant l'upload.
+7. **Publication réalisée** : les entrées versionnées sont publiées sur le tag
+   `prism-v1.0.0` et consommées par la release assemblée `livex-v1.0.0`.
 
 ## 5. Règles
 

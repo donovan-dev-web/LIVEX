@@ -40,11 +40,11 @@ export const COMPONENTS: Component[] = [
     summary:
       "Moteur déterministe de simulation multi-agents : règles, monde, ticks et rejouabilité bit-à-bit à partir d'une graine.",
     version: '0.17.0',
-    versionLabel: 'SYNE 0.17.0 · moteur .NET (dépôt)',
+    versionLabel: 'SYNE 0.17.0 · moteur .NET',
     status: {
       id: 'experimental',
       label: 'Expérimental',
-      note: "Moteur fonctionnel dans le dépôt (0.17.0) ; aucune distribution publique à ce jour (octobre 2026).",
+      note: 'Moteur inclus dans la distribution LIVEX 1.0.0 ; résultats détaillés dans les rapports datés.',
     },
     href: 'technique/syne/',
     contracts: ['Contrat de snapshot 0.5.0', 'run_id « run-<seed>-<12hex> »', 'Schéma de persistance v5'],
@@ -57,11 +57,11 @@ export const COMPONENTS: Component[] = [
     summary:
       "Ingestion, analyse et API headless : lecture des runs, métriques de viabilité, détection de boucles et de motifs émergents.",
     version: '0.1.0',
-    versionLabel: 'ECHOS 0.1.0 · paquet Python (dépôt)',
+    versionLabel: 'ECHOS 0.1.0 · paquet Python',
     status: {
       id: 'experimental',
       label: 'Expérimental',
-      note: "API headless fonctionnelle dans le dépôt (paquet 0.1.0) ; non distribuée publiquement.",
+      note: "Paquet d'observation inclus dans la distribution LIVEX 1.0.0 ; API headless.",
     },
     href: 'technique/echos/',
     contracts: ['Schéma de stockage SQLite v6', 'Rapport de calibration par run'],
@@ -73,12 +73,12 @@ export const COMPONENTS: Component[] = [
     role: 'Rendu perceptif',
     summary:
       "Rendu perceptif et module de simulation interactive : projet Unreal et plugin d'intégration PRISM-LDK.",
-    version: '0.x',
-    versionLabel: 'PRISM · projet Unreal (dépôt)',
+    version: '1.0.0',
+    versionLabel: 'PRISM 1.0.0 · Windows/Linux',
     status: {
-      id: 'developpement',
-      label: 'En développement',
-      note: "Projet Unreal et plugin PRISM-LDK en version de travail ; l'expérience de rendu est hors périmètre V0.2.",
+      id: 'disponible',
+      label: 'Disponible',
+      note: 'Projet PRISM packagé pour Windows/Linux ; plugin PRISM-LDK PrismLdk 1.0.0.',
     },
     href: 'technique/prism/',
     contracts: [],
@@ -103,11 +103,11 @@ export const COMPONENTS_EN: Component[] = [
     summary:
       'Deterministic multi-agent simulation engine: rules, world, ticks and bit-for-bit replayability from a seed.',
     version: '0.17.0',
-    versionLabel: 'SYNE 0.17.0 · .NET engine (repository)',
+    versionLabel: 'SYNE 0.17.0 · .NET engine',
     status: {
       id: 'experimental',
       label: 'Experimental',
-      note: 'Engine working in the repository (0.17.0); no public distribution to date (October 2026).',
+      note: 'Engine included in the LIVEX 1.0.0 distribution; results are detailed in dated reports.',
     },
     href: 'technique/syne/',
     contracts: ['Snapshot contract 0.5.0', 'run_id “run-<seed>-<12hex>”', 'Persistence schema v5'],
@@ -120,11 +120,11 @@ export const COMPONENTS_EN: Component[] = [
     summary:
       'Ingestion, analysis and headless API: reading runs, viability metrics, detection of loops and emergent patterns.',
     version: '0.1.0',
-    versionLabel: 'ECHOS 0.1.0 · Python package (repository)',
+    versionLabel: 'ECHOS 0.1.0 · Python package',
     status: {
       id: 'experimental',
       label: 'Experimental',
-      note: 'Headless API working in the repository (package 0.1.0); not publicly distributed.',
+      note: 'Observation package included in the LIVEX 1.0.0 distribution; headless API.',
     },
     href: 'technique/echos/',
     contracts: ['SQLite storage schema v6', 'Per-run calibration report'],
@@ -136,12 +136,12 @@ export const COMPONENTS_EN: Component[] = [
     role: 'Perceptual rendering',
     summary:
       'Perceptual rendering and interactive simulation module: Unreal project and PRISM-LDK integration plugin.',
-    version: '0.x',
-    versionLabel: 'PRISM · Unreal project (repository)',
+    version: '1.0.0',
+    versionLabel: 'PRISM 1.0.0 · Windows/Linux',
     status: {
-      id: 'developpement',
-      label: 'In development',
-      note: 'Unreal project and PRISM-LDK plugin at a work-in-progress version; the rendering experience is out of scope for V0.2.',
+      id: 'disponible',
+      label: 'Available',
+      note: 'PRISM project packaged for Windows/Linux; PRISM-LDK PrismLdk plugin 1.0.0.',
     },
     href: 'technique/prism/',
     contracts: [],

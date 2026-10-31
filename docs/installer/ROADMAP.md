@@ -1,8 +1,8 @@
 # Feuille de route de l'installateur LIVEX
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT]
-**Dernière mise à jour** : 29 octobre 2026
+**Statut** : [V1.0.0 LIVRÉE — feuille de route des évolutions]
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
 ---
@@ -20,19 +20,17 @@ recette. Une phase n'est pas « terminée » parce que le code est écrit.
 
 ## 2. Vue d'ensemble
 
-| Phase | Intitulé | Sortie principale | Bloque | État au 29 octobre 2026 |
+| Phase | Intitulé | Sortie principale | Bloque | État au 31 octobre 2026 |
 | :-- | :-- | :-- | :-- | :-- |
 | **P0** | Cadrage | spécification, architecture, ADR, roadmap, issues | P1 | **fait** (ADR-001 à 010) |
 | **P1** | Socle sans interface | `Setup.Core` testé, plan et transaction | P2 | **fait** en code ; couverture non mesurée |
-| **P2** | Charge utile, actifs et confiance | distribution vérifiable (empreintes, `SHA256SUMS`, attestations), runtimes embarqués, actifs facultatifs publiés | P3 | **non fait** : aucun `distribution.json`, aucun `payload/`, pas de `build_distribution.py`, PRISM non buildé |
-| **P3** | Assistant, acquisition et intégration | installation guidée Windows/Linux, téléchargement vérifié | P4 | **partiel** : assistant et CLI écrits et testés en monde fictif ; acquisition non câblée ; recette réelle non exécutée |
-| **P4** | Cycle de vie | mise à jour, réparation, maintenance, désinstallation | P5 | **partiel** : planifié et testé sur moteur ; aucune exécution réelle |
-| **P5** | Distribution publique | release publiée et vérifiée sur machines propres | P6 | **non commencé** : pas de job CI `installer`, pas de release |
-| **P6** | Ouverture | PRISM dans le Launcher, mises à jour différentielles, évolutions | — | **non commencé** |
+| **P2** | Charge utile, actifs et confiance | manifeste, paquets et vérification d'intégrité | P3 | **livré dans LIVEX 1.0.0** ; artefacts et sommes sont attachés à la release |
+| **P3** | Assistant, acquisition et intégration | installation guidée Windows/Linux, téléchargement vérifié | P4 | **livré** ; installer et acquisition de modules disponibles dans les variantes distribuées |
+| **P4** | Cycle de vie | mise à jour, réparation, maintenance, désinstallation | P5 | **implémenté et livré** ; les scénarios et preuves d'exécution doivent être consultés dans les rapports de recette s'ils sont publiés |
+| **P5** | Distribution publique | release publiée et vérifiée sur machines propres | P6 | **release publique `livex-v1.0.0` publiée** ; les recettes manuelles machines propres restent distinctes du simple packaging |
+| **P6** | Ouverture | PRISM dans le Launcher, mises à jour différentielles, évolutions | — | **travaux d'évolution** ; hors de la livraison V1 actuelle |
 
-La V1 du produit (plan d'alignement du 29 octobre 2026) exige P2 à P5 :
-[`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md) décrit la cible, les tâches T1
-à T8 du plan restent à exécuter.
+La V1 est publiée sous le tag [`livex-v1.0.0`](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0). [`RELEASE_AND_UPDATE.md`](RELEASE_AND_UPDATE.md) décrit la chaîne utilisée et les opérations à reprendre pour les versions suivantes.
 
 ## 3. Phase 0 — Cadrage
 
@@ -211,7 +209,7 @@ Candidats, par ordre de valeur :
 5. **Format Linux natif** : `.deb` ou Flatpak, si la distribution par paquet
    devient la cible.
 
-Aucun de ces éléments n'est nécessaire pour une V0.2 publiable.
+Ces évolutions ne bloquent pas la release LIVEX 1.0.0 publiée ; elles restent des pistes postérieures, à prioriser selon les besoins constatés.
 
 ## 10. Risques de planification
 
