@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>LIVEX — deterministic multi-agent simulation</title><meta name="description" content="Deterministic SYNE engine, ECHOS observation, PRISM rendering: a research platform for reproducible, openly documented multi-agent simulation."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/en/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/"><link rel="alternate" hreflang="en" href="https://donovan-dev-web.github.io/LIVEX/en/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/LIVEX/apple-touch-icon.png"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="website"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="LIVEX — deterministic multi-agent simulation"><meta property="og:description" content="Deterministic SYNE engine, ECHOS observation, PRISM rendering: a research platform for reproducible, openly documented multi-agent simulation."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/en/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:image:alt" content="LIVEX — multi-agent simulation ecosystem"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="en_US"><meta property="og:locale:alternate" content="fr_FR"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="LIVEX — deterministic multi-agent simulation"><meta name="twitter:description" content="Deterministic SYNE engine, ECHOS observation, PRISM rendering: a research platform for reproducible, openly documented multi-agent simulation."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta name="twitter:image:alt" content="LIVEX — multi-agent simulation ecosystem"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-italic.DKMiL14s.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","description":"LIVEX is a multi-agent simulation ecosystem: an engine (SYNE), an emergent-cognition system (ECHOS) and a perceptual renderer (PRISM). Open documentation and principles.","inLanguage":"en","license":"https://www.gnu.org/licenses/gpl-3.0.html","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Donovan","url":"https://donovan-dev-web.vercel.app"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"LIVEX","applicationCategory":"ScientificApplication","operatingSystem":"Cross-platform","description":"LIVEX is a multi-agent simulation ecosystem: an engine (SYNE), an emergent-cognition system (ECHOS) and a perceptual renderer (PRISM). Open documentation and principles.","url":"https://donovan-dev-web.github.io/LIVEX/en/","author":{"@type":"Person","name":"Donovan"},"license":"https://www.gnu.org/licenses/gpl-3.0.html","codeRepository":"https://github.com/donovan-dev-web/LIVEX"}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CO1ZX8Cv.css"><style>.ctaband[data-astro-cid-hwvj6ntz]{background:color-mix(in srgb, var(--sf) 80%, transparent);padding:28px}.ctaband-title[data-astro-cid-hwvj6ntz]{margin:0 0 12px;font-size:clamp(1.6rem,3.6vw,2.4rem)}@media (width<=640px){.ctaband[data-astro-cid-hwvj6ntz]{padding:20px}}
+.cardlink[data-astro-cid-23c2ramm]{flex-direction:column;gap:6px;padding:20px;display:flex}.cardlink[data-astro-cid-23c2ramm] .bt[data-astro-cid-23c2ramm]{align-self:flex-start;margin-top:auto}
+.syne-schema[data-astro-cid-loz6nt5q]{width:100%;height:auto;display:block;overflow:visible}.syne-schema[data-astro-cid-loz6nt5q] .grid[data-astro-cid-loz6nt5q]{fill:color-mix(in srgb, var(--co) 6%, transparent);stroke:var(--co);stroke-width:1.4px}.syne-schema[data-astro-cid-loz6nt5q] .rule[data-astro-cid-loz6nt5q]{fill:none;stroke:var(--ln);stroke-width:1px}.syne-schema[data-astro-cid-loz6nt5q] .agent[data-astro-cid-loz6nt5q]{fill:var(--ink)}.syne-schema[data-astro-cid-loz6nt5q] .flow[data-astro-cid-loz6nt5q]{fill:none;stroke:var(--mu);stroke-width:1.4px}.syne-schema[data-astro-cid-loz6nt5q] .tick[data-astro-cid-loz6nt5q]{fill:none;stroke:var(--co);stroke-width:1.6px}.syne-schema[data-astro-cid-loz6nt5q] .arrow[data-astro-cid-loz6nt5q]{fill:var(--mu)}.syne-schema[data-astro-cid-loz6nt5q] .box[data-astro-cid-loz6nt5q]{fill:color-mix(in srgb, var(--co) 8%, transparent);stroke:var(--co);stroke-width:1.4px}.syne-schema[data-astro-cid-loz6nt5q] .line[data-astro-cid-loz6nt5q]{fill:var(--gr);stroke:var(--ln);stroke-width:1px}.syne-schema[data-astro-cid-loz6nt5q] .label[data-astro-cid-loz6nt5q]{fill:var(--mu);letter-spacing:.04em;font-family:JetBrains Mono,ui-monospace,Menlo,monospace;font-size:11px}.syne-schema[data-astro-cid-loz6nt5q] .strong[data-astro-cid-loz6nt5q]{fill:var(--ink);letter-spacing:.04em;font-family:JetBrains Mono,ui-monospace,Menlo,monospace;font-size:13px;font-weight:700}.syne-schema[data-astro-cid-loz6nt5q].full .label[data-astro-cid-loz6nt5q]{font-size:12px}
+</style></head><body><a class="skip" href="#contenu">Skip to content</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/en/" aria-label="LIVEX — home"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Main navigation"><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="comprendre-submenu">Understand<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="comprendre-submenu"><li><a href="/LIVEX/en/comprendre/">Overview</a></li><li><a href="/LIVEX/en/comprendre/limites/">Limits and scope</a></li><li><a href="/LIVEX/en/comprendre/emergence/">Emergence explained</a></li><li><a href="/LIVEX/en/comprendre/glossaire/">Glossary</a></li><li><a href="/LIVEX/en/faq/">FAQ</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="architecture-submenu">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="architecture-submenu"><li><a href="/LIVEX/en/technique/">Overview</a></li><li><a href="/LIVEX/en/technique/syne/">SYNE</a></li><li><a href="/LIVEX/en/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/en/technique/prism/">PRISM</a></li><li><a href="/LIVEX/en/technique/installer/">LIVEX Installer</a></li><li><a href="/LIVEX/en/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/en/technique/resultats/">Reproducibility and measures</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="telecharger-submenu">Download<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="telecharger-submenu"><li><a href="/LIVEX/en/telecharger/">Overview</a></li><li><a href="/LIVEX/en/getting-started/">Get started in 5 minutes</a></li><li><a href="/LIVEX/en/telecharger/installation/">Installation and requirements</a></li><li><a href="/LIVEX/en/versions/">Versions</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="ressources-submenu">Resources<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="ressources-submenu"><li><a href="/LIVEX/en/documentation/">Documentation</a></li><li><a href="/LIVEX/en/etat-du-projet/">Project status</a></li><li><a href="/LIVEX/en/monographie/">Monograph</a></li><li><a href="/LIVEX/en/actualites/">Journal</a></li><li><a href="/LIVEX/en/plan-du-site/">Sitemap</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="apropos-submenu">About<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="apropos-submenu"><li><a href="/LIVEX/en/a-propos/">Overview</a></li><li><a href="/LIVEX/en/a-propos/auteur/">Author</a></li><li><a href="/LIVEX/en/a-propos/transparence-ia/">Transparency on the use of AI</a></li><li><a href="/LIVEX/en/participer/">Contribute</a></li><li><a href="/LIVEX/en/presse/">Press kit</a></li></ul></div><a class="nav-cta" href="/LIVEX/en/suivre/">Follow</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener" style="font-size:0.85rem">Issues</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener" style="font-size:0.85rem">Support</a></nav><button type="button" id="search-toggle" class="search-toggle" aria-expanded="false" aria-controls="search-modal" aria-label="Search" title="Search" data-astro-cid-ac66eqjo><span aria-hidden="true" data-astro-cid-ac66eqjo>⌕</span><span class="sr-only" data-astro-cid-ac66eqjo>Search</span></button><div id="search-modal" class="search-modal" hidden data-astro-cid-ac66eqjo><div class="search-backdrop" data-search-close data-astro-cid-ac66eqjo></div><div class="search-panel" role="dialog" aria-modal="true" aria-label="Search" data-astro-cid-ac66eqjo><button type="button" class="search-close" data-search-close aria-label="Close search" data-astro-cid-ac66eqjo>✕</button><div id="pagefind-search" data-astro-cid-ac66eqjo></div><p class="search-hint" data-search-dev hidden data-astro-cid-ac66eqjo>Search is available on the published site.</p></div></div><script>(function(){const pagefindBase = "/LIVEX/pagefind/";
+
+  (function () {
+    var toggle = document.getElementById('search-toggle');
+    var modal = document.getElementById('search-modal');
+    if (!toggle || !modal) return;
+    var loaded = false;
+    var lastFocused = null;
+    function open() {
+      var active = document.activeElement;
+      // Si rien n'était focalisé (activation au clavier, script), on rend la main au bouton.
+      lastFocused = active && active !== document.body ? active : toggle;
+      modal.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      var closeBtn = modal.querySelector('.search-close');
+      if (closeBtn) closeBtn.focus();
+      if (!loaded) {
+        loaded = true;
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = pagefindBase + 'pagefind-ui.css';
+        document.head.appendChild(css);
+        var s = document.createElement('script');
+        s.src = pagefindBase + 'pagefind-ui.js';
+        s.onload = function () {
+          try {
+            // @ts-ignore
+            new window.PagefindUI({ element: '#pagefind-search', bundlePath: pagefindBase, showSubResults: true, showImages: false });
+            var input = document.querySelector('#pagefind-search input');
+            if (input) input.focus();
+          } catch (e) {
+            var hint = document.querySelector('[data-search-dev]');
+            if (hint) hint.removeAttribute('hidden');
+          }
+        };
+        s.onerror = function () {
+          var hint = document.querySelector('[data-search-dev]');
+          if (hint) hint.removeAttribute('hidden');
+        };
+        document.head.appendChild(s);
+      } else {
+        var existing = document.querySelector('#pagefind-search input');
+        if (existing) existing.focus();
+      }
+    }
+    function close() {
+      modal.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      else toggle.focus();
+    }
+    toggle.addEventListener('click', open);
+    modal.querySelectorAll('[data-search-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hasAttribute('hidden')) open(); else close();
+        return;
+      }
+      if (modal.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusables = modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  })();
+})();</script><div class="lang" role="group" aria-label="Language"><a href="/LIVEX/" hreflang="fr" lang="fr" title="Français">FR</a><a href="/LIVEX/en/" hreflang="en" lang="en" aria-current="true" title="English">EN</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Dark theme" title="Dark theme"><span aria-hidden="true">◐</span><span class="sr-only">Dark theme</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    /* Sans JS, les sous-menus doivent rester accessibles (pas de bouton fonctionnel). */
+    nav.main .ni { position: static; }
+    nav.main .sub {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    nav.main .sub::before { display: none; }
+    nav.main .sub a { padding-left: 22px; }
+
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+      nav.main .sub a { padding-left: 18px !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else {
+        header.removeAttribute('data-nav-open');
+        header.querySelectorAll('.ni.open').forEach(function (ni) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var openNi = header.querySelector('.ni.open');
+      if (openNi) {
+        var trigger = openNi.querySelector('.ni-trigger');
+        openNi.classList.remove('open');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    header.querySelectorAll('.ni > button.ni-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ni = btn.parentElement;
+        if (!ni) return;
+        var willOpen = !ni.classList.contains('open');
+        header.querySelectorAll('.ni.open').forEach(function (other) {
+          if (other !== ni) {
+            other.classList.remove('open');
+            var otherBtn = other.querySelector('.ni-trigger');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        ni.classList.toggle('open', willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      header.querySelectorAll('.ni.open').forEach(function (ni) {
+        if (!ni.contains(e.target)) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (header.hasAttribute('data-nav-open') && !header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu" tabindex="-1" data-pagefind-body="true"><div class="w"><!-- Hero --><section class="hero"><div><p class="ey">Living Intelligent Virtual Ecosystem eXperience</p><h1>Observe what <i>emerges.</i></h1><p class="l">An experimental multi-agent simulation platform, from the engine that keeps the world alive to its 3D representation: three separate layers, explicit rules, results to observe.</p><div class="hero-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px"><span class="badge br" style="font-size:0.78rem;padding:4px 10px">LIVEX 1.0.0 released</span><span class="badge br" style="font-size:0.78rem;padding:4px 10px">GPL-3.0-or-later</span><span class="badge br" style="font-size:0.78rem;padding:4px 10px">1,550 tests passed for release</span><span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage 91.32%</span></div><div class="cta"><a class="bt p" href="/LIVEX/en/telecharger/">Download LIVEX</a><a class="bt" href="/LIVEX/en/technique/installer/">About the installer</a><a class="bt" href="/LIVEX/en/documentation/">Read the documentation</a><a class="bt" href="/LIVEX/en/participer/">Contribute</a></div></div><figure class="pl br"><svg viewBox="-250 -420 600 720" class="hero-svg" role="img" aria-label="Exploded isometric view of three stacked layers: a logical world with agents, an observation layer with curves and measurements, a 3D representation layer of blocks"><path class="dl" d="M0 0L0 -330"></path><path class="dl" d="M230 133L230 -197"></path><path class="dl" d="M0 266L0 -64"></path><path class="dl" d="M-230 133L-230 -197"></path><polygon class="pa" points="0,0 230,133 0,266 -230,133"></polygon><path class="gl" d="M33 19L-197 152M-33 19L197 152"></path><path class="gl" d="M66 38L-165 171M-66 38L165 171"></path><path class="gl" d="M99 57L-132 190M-99 57L132 190"></path><path class="gl" d="M132 76L-99 209M-132 76L99 209"></path><path class="gl" d="M165 95L-66 228M-165 95L66 228"></path><path class="gl" d="M197 114L-33 247M-197 114L33 247"></path><path class="lk" d="M-7 42L-10 70"></path><path class="lk" d="M-7 42L36 70"></path><path class="lk" d="M-10 70L36 70"></path><path class="lk" d="M-10 70L-53 76"></path><path class="lk" d="M-10 70L-3 97"></path><path class="lk" d="M-10 70L43 93"></path><path class="lk" d="M36 70L-3 97"></path><path class="lk" d="M36 70L43 93"></path><path class="lk" d="M-53 76L-3 97"></path><path class="lk" d="M-3 97L43 93"></path><path class="lk" d="M-7 179L-10 207"></path><path class="lk" d="M-7 179L43 200"></path><path class="lk" d="M-7 179L43 173"></path><path class="lk" d="M-10 207L43 200"></path><path class="lk" d="M-10 207L10 226"></path><path class="lk" d="M43 200L43 173"></path><path class="lk" d="M43 200L10 226"></path><circle class="dt" cx="-7" cy="42" r="3.6"></circle><circle class="dt" cx="-10" cy="70" r="3.6"></circle><circle class="dt" cx="36" cy="70" r="3.6"></circle><circle class="dt" cx="-53" cy="76" r="3.6"></circle><circle class="dt" cx="-3" cy="97" r="3.6"></circle><circle class="dt" cx="43" cy="93" r="3.6"></circle><circle class="dt" cx="-7" cy="179" r="3.6"></circle><circle class="dt" cx="-10" cy="207" r="3.6"></circle><circle class="dt" cx="43" cy="200" r="3.6"></circle><circle class="dt" cx="43" cy="173" r="3.6"></circle><circle class="dt" cx="10" cy="226" r="3.6"></circle><circle class="dt" cx="-79" cy="175" r="3.6"></circle><circle class="dt" cx="-158" cy="122" r="3.6"></circle><circle class="dt" cx="151" cy="125" r="3.6"></circle><polygon class="rg" points="-38,138 -15,138 -15,151 -38,151"></polygon><polygon class="rg" points="100,142 123,142 123,155 100,155"></polygon><polygon class="pa" points="0,-165 230,-32 0,101 -230,-32"></polygon><path class="gl" d="M66 -127L-165 6M-66 -127L165 6"></path><path class="gl" d="M132 -89L-99 44M-132 -89L99 44"></path><path class="gl" d="M197 -51L-33 82M-197 -51L33 82"></path><path class="dl" d="M-3 70L-3 -95"></path><circle class="cm" cx="-3" cy="-95" r="6"></circle><circle class="rg2" cx="-3" cy="-95" r="13"></circle><path class="dl" d="M13 198L13 33"></path><circle class="cm" cx="13" cy="33" r="6"></circle><circle class="rg2" cx="13" cy="33" r="13"></circle><polygon class="fl" points="-181,-22 -168,-15 -168,-29 -181,-36"></polygon><polygon class="fr" points="-155,-22 -168,-15 -168,-29 -155,-36"></polygon><polygon class="fa" points="-168,-44 -155,-36 -168,-29 -181,-36"></polygon><polygon class="fl" points="-163,-12 -150,-4 -150,-34 -163,-42"></polygon><polygon class="fr" points="-137,-12 -150,-4 -150,-34 -137,-42"></polygon><polygon class="fa" points="-150,-50 -137,-42 -150,-34 -163,-42"></polygon><polygon class="fl" points="-145,-2 -132,6 -132,-16 -145,-24"></polygon><polygon class="fr" points="-118,-2 -132,6 -132,-16 -118,-24"></polygon><polygon class="fa" points="-132,-31 -118,-24 -132,-16 -145,-24"></polygon><polygon class="fl" points="-127,9 -114,16 -114,-24 -127,-31"></polygon><polygon class="fr" points="-100,9 -114,16 -114,-24 -100,-31"></polygon><polygon class="fa" points="-114,-39 -100,-31 -114,-24 -127,-31"></polygon><polygon class="fl" points="-109,19 -95,27 -95,1 -109,-7"></polygon><polygon class="fr" points="-82,19 -95,27 -95,1 -82,-7"></polygon><polygon class="fa" points="-95,-14 -82,-7 -95,1 -109,-7"></polygon><polyline class="cv" points="-145,-51 -86,-40 -63,-15 13,-21 43,8 118,6"></polyline><polygon class="pa" points="0,-330 230,-197 0,-64 -230,-197"></polygon><path class="gl" d="M33 -311L-197 -178M-33 -311L197 -178"></path><path class="gl" d="M66 -292L-165 -159M-66 -292L165 -159"></path><path class="gl" d="M99 -273L-132 -140M-99 -273L132 -140"></path><path class="gl" d="M132 -254L-99 -121M-132 -254L99 -121"></path><path class="gl" d="M165 -235L-66 -102M-165 -235L66 -102"></path><path class="gl" d="M197 -216L-33 -83M-197 -216L33 -83"></path><path class="dl" d="M-3 -95L-3 -260"></path><path class="dl" d="M13 33L13 -132"></path><polygon class="fl" points="-30,-282 0,-265 0,-291 -30,-308"></polygon><polygon class="fr" points="30,-282 0,-265 0,-291 30,-308"></polygon><polygon class="fa" points="0,-326 30,-308 0,-291 -30,-308"></polygon><polygon class="fl" points="10,-256 39,-239 39,-283 10,-300"></polygon><polygon class="fr" points="69,-256 39,-239 39,-283 69,-300"></polygon><polygon class="fa" points="39,-317 69,-300 39,-283 10,-300"></polygon><polygon class="fl" points="-76,-252 -46,-235 -46,-253 -76,-270"></polygon><polygon class="fr" points="-16,-252 -46,-235 -46,-253 -16,-270"></polygon><polygon class="fa" points="-46,-287 -16,-270 -46,-253 -76,-270"></polygon><polygon class="fl" points="76,-206 105,-189 105,-223 76,-240"></polygon><polygon class="fr" points="135,-206 105,-189 105,-223 135,-240"></polygon><polygon class="fa" points="105,-258 135,-240 105,-223 76,-240"></polygon><polygon class="fl" points="-3,-199 26,-182 26,-212 -3,-229"></polygon><polygon class="fr" points="56,-199 26,-182 26,-212 56,-229"></polygon><polygon class="fa" points="26,-246 56,-229 26,-212 -3,-229"></polygon><polygon class="fl" points="-158,-186 -128,-168 -128,-206 -158,-224"></polygon><polygon class="fr" points="-99,-186 -128,-168 -128,-206 -99,-224"></polygon><polygon class="fa" points="-128,-241 -99,-224 -128,-206 -158,-224"></polygon><polygon class="fl" points="-79,-174 -49,-157 -49,-179 -79,-196"></polygon><polygon class="fr" points="-20,-174 -49,-157 -49,-179 -20,-196"></polygon><polygon class="fa" points="-49,-213 -20,-196 -49,-179 -79,-196"></polygon><polygon class="fl" points="53,-155 82,-138 82,-194 53,-211"></polygon><polygon class="fr" points="112,-155 82,-138 82,-194 112,-211"></polygon><polygon class="fv" points="82,-228 112,-211 82,-194 53,-211"></polygon><polygon class="fl" points="-36,-119 -7,-102 -7,-122 -36,-139"></polygon><polygon class="fr" points="23,-119 -7,-102 -7,-122 23,-139"></polygon><polygon class="fa" points="-7,-156 23,-139 -7,-122 -36,-139"></polygon><path class="dl" d="M230 133L270 127"></path><text class="tx" x="276" y="131">01</text><path class="dl" d="M230 -32L270 -38"></path><text class="tx" x="276" y="-34">02</text><path class="dl" d="M230 -197L270 -203"></path><text class="tx" x="276" y="-199">03</text></svg><figcaption><b>Fig. 1</b> — Exploded view of LIVEX's three layers. <b>Conceptual illustration</b>, not a screenshot.<br><b class="ve">01</b> SYNE · world truth · <b class="ve">02</b> ECHOS · observation · <b class="ve">03</b> PRISM · 3D representation</figcaption></figure></section><!-- Status banner --><div class="vs br" style="padding-left:16px;padding-right:16px;border:1px solid var(--ln)"><span class="bd ok"><span aria-hidden="true">●</span>LIVEX 1.0.0 — released</span><p>Windows and Linux installers are available in LIVEX 1.0.0. See the <a href="/LIVEX/en/telecharger/">Download</a> and <a href="/LIVEX/en/versions/">Versions</a> pages for details and component limits.</p></div></div><section class="block"><div class="w"><div class="sh"><b>00</b> Where to start</div><h2>A path for your question.</h2><p class="lead">LIVEX speaks to several audiences. Pick the entry that matches your question; the site keeps the same method (deterministic, separated, documented) at every level.</p><div class="g3 br" style="margin-top:28px"><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Understand the project</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>What LIVEX is, its method and what it is not. The best entry point for a first read.</p><a class="bt" href="/LIVEX/en/comprendre/" data-astro-cid-23c2ramm>Read the introduction →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Check the technology</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Three-layer architecture, engine, observation, rendering. Evidence and statuses rather than promises.</p><a class="bt" href="/LIVEX/en/technique/" data-astro-cid-23c2ramm>Explore the architecture →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Follow and contribute</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Channels, dated journal, contribution, reporting. The project is public and welcomes feedback.</p><a class="bt" href="/LIVEX/en/suivre/" data-astro-cid-23c2ramm>Follow the project →</a></article></div></div></section><section class="block"><div class="w"><div class="sh"><b>00b</b> Why LIVEX</div><h2>Three reasons to look closer.</h2><p class="lead">The project makes no promise: it makes what happens observable, with the evidence to match.</p><div class="g3 br" style="margin-top:28px"><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Determinism</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>The same starting point replays the same run, bit for bit. Results are reproducible, not narrated.</p><a class="bt" href="/LIVEX/en/technique/resultats/" data-astro-cid-23c2ramm>See the measures →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Independent observation</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Simulate, measure, make visible: three separate layers, linked by explicit contracts.</p><a class="bt" href="/LIVEX/en/technique/echos/" data-astro-cid-23c2ramm>Discover ECHOS →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>Versioned contracts</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Public interfaces are frozen and versioned (snapshot 0.5.0). The contract precedes the rendering.</p><a class="bt" href="/LIVEX/en/technique/syne/" data-astro-cid-23c2ramm>Read the contract →</a></article></div></div></section><section class="block"><div class="w"><div class="sh"><b>01</b> The premise</div><h2>Make legible what no one wrote.</h2><p class="lead">LIVEX seeks to make observable a collective behaviour that was never programmed by hand. Its method rests on two requirements: a <strong>deterministic</strong> engine (the same starting point replays the same run, bit for bit) and a <strong>clean separation</strong> between what happens (the engine) and what is said about it (the observation).</p><ul style="margin:16px 0 0 20px;color:var(--mu);font-size:0.88rem;line-height:1.7"><li><strong>Deterministic</strong> — same seed, same configuration, same trajectory.</li><li><strong>Separated</strong> — simulate, measure, make visible: three independent layers.</li><li><strong>Documented</strong> — every published figure has a dated internal source.</li></ul><div class="g3 br" style="margin-top:28px"><div><div class="n">03</div><h3>components</h3><p>An engine, an observation system, a rendering module — independent, linked by explicit contracts.</p></div><div><div class="n">1.0</div><h3>public version</h3><p>LIVEX 1.0.0 is published under the <code>livex-v1.0.0</code> tag. Windows and Linux installers are available.</p></div><div><div class="n">1,550</div><h3>passing tests</h3><p>1566 cases validated for the release, 0 failures. This validates covered scenarios, not scientific outcomes.</p></div></div><div class="fm" style="margin-top:36px">world <span>SYNE · simulates</span> traces <span>ECHOS · measures</span> understanding <span>PRISM · makes visible</span> <span class="q">→</span></div></div></section><section class="block" id="architecture"><div class="w"><div class="sh"><b>02</b> Architecture</div><h2>Three components, explicit contracts.</h2><div class="bn"><div><span class="k">Systems &amp; Emergent Network Engine</span><h3>SYNE</h3></div><div><p>Deterministic multi-agent simulation engine: rules, world, ticks and bit-for-bit replayability from a seed.</p><p style="margin:0 0 12px"><span class="bd ex"><span aria-hidden="true">▲</span>Experimental</span></p><a class="bt" href="/LIVEX/en/technique/syne/" aria-label="Details about SYNE">Details →</a></div><svg class="syne-schema" viewBox="0 0 320 190" role="img" aria-label="Conceptual schema of the SYNE loop: a world of agents, a tick, and the traces it produces. Illustration, not a screenshot." data-astro-cid-loz6nt5q><rect class="grid" x="12" y="14" width="118" height="118" rx="4" data-astro-cid-loz6nt5q></rect><path class="rule" d="M12 53h118M12 92h118M51 14v118M90 14v118" data-astro-cid-loz6nt5q></path><circle class="agent" cx="36" cy="40" r="5" data-astro-cid-loz6nt5q></circle><circle class="agent" cx="72" cy="68" r="5" data-astro-cid-loz6nt5q></circle><circle class="agent" cx="104" cy="44" r="5" data-astro-cid-loz6nt5q></circle><circle class="agent" cx="60" cy="106" r="5" data-astro-cid-loz6nt5q></circle><path class="flow" d="M136 73h44" data-astro-cid-loz6nt5q></path><path class="tick" d="M176 73a24 24 0 1 1-8-18" data-astro-cid-loz6nt5q></path><path class="arrow" d="M180 66l-12-11 14-4z" data-astro-cid-loz6nt5q></path><text class="label" x="196" y="34" data-astro-cid-loz6nt5q>tick</text><g class="out" data-astro-cid-loz6nt5q><rect class="line" x="212" y="60" width="94" height="6" rx="3" data-astro-cid-loz6nt5q></rect><rect class="line" x="212" y="76" width="94" height="6" rx="3" data-astro-cid-loz6nt5q></rect><rect class="line" x="212" y="92" width="94" height="6" rx="3" data-astro-cid-loz6nt5q></rect><rect class="line" x="212" y="108" width="62" height="6" rx="3" data-astro-cid-loz6nt5q></rect></g><text class="label" x="71" y="158" text-anchor="middle" data-astro-cid-loz6nt5q>World</text><text class="label" x="259" y="138" text-anchor="middle" data-astro-cid-loz6nt5q>Traces</text></svg></div><div class="bn"><div><span class="k">Emergent Cognition &amp; Holistic Observation System</span><h3>ECHOS</h3></div><div><p>Ingestion, analysis and headless API: reading runs, viability metrics, detection of loops and emergent patterns.</p><p style="margin:0 0 12px"><span class="bd ex"><span aria-hidden="true">▲</span>Experimental</span></p><a class="bt" href="/LIVEX/en/technique/echos/" aria-label="Details about ECHOS">Details →</a></div><img src="/LIVEX/_astro/echos-agents.Dp98P4MQ_rBFjg.webp" alt="Preview of ECHOS: agent tracking" style="width:100%;height:auto" loading="lazy" decoding="async" width="1360" height="920"></div><div class="bn"><div><span class="k">Perceptual Rendering &amp; Interactive Simulation Module</span><h3>PRISM</h3></div><div><p>Perceptual rendering and interactive simulation module: Unreal project and PRISM-LDK integration plugin.</p><p style="margin:0 0 12px"><span class="bd ok"><span aria-hidden="true">●</span>Available</span></p><a class="bt" href="/LIVEX/en/technique/prism/" aria-label="Details about PRISM">Details →</a></div><img src="/LIVEX/_astro/launcher-prism.p92cvD6N_Z1huEHz.webp" alt="Preview of PRISM rendering" style="width:100%;height:auto" loading="lazy" decoding="async" width="1480" height="1024"></div><div class="ct">Public interface contracts — snapshot 0.5.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · persistence schema v5</div><p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM (measured 31 October 2026); for SYNE, a conceptual schema — an engine has no interface to capture. None of these visuals demonstrates the published version.</p></div></section><section class="block"><div class="w"><div class="sh"><b>03</b> Journal</div><h2>What moves, dated.</h2><p class="lead">The journal records milestones and technical decisions, with their date. In-depth articles are added progressively.</p><div class="row"><span class="mu">31 October 2026</span><span class="t"><a href="/LIVEX/en/actualites/">Repository and component status: versions, tests, coverage.</a></span><span><span class="bd ex"><span aria-hidden="true">▲</span>In progress</span></span></div><p style="margin-top:18px"><a class="bt" href="/LIVEX/en/actualites/">View the journal →</a></p></div></section><section class="block" aria-labelledby="cta-band-title" data-astro-cid-hwvj6ntz><div class="w" data-astro-cid-hwvj6ntz><div class="ctaband br" data-astro-cid-hwvj6ntz><p class="ey" style="margin:0 0 10px" data-astro-cid-hwvj6ntz>04 · Conversion</p><h2 id="cta-band-title" class="ctaband-title" data-astro-cid-hwvj6ntz>Follow LIVEX, at your own pace.</h2><p class="lead" style="margin:0 0 20px" data-astro-cid-hwvj6ntz>The site is the durable source; GitHub, the place for technical transparency. No account, no cookie, no tracker — just links.</p><div class="cta" data-astro-cid-hwvj6ntz><a class="bt p" href="/LIVEX/en/suivre/" data-astro-cid-hwvj6ntz>Follow the project</a><a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener" target="_blank" data-astro-cid-hwvj6ntz>GitHub repository ↗</a></div></div></div></section><section class="block"><div class="w"><div class="cc br" style="padding:18px 20px"><p><strong>Method note.</strong> LIVEX publishes its limitations as readily as its results. The states (<em>available, experimental, in development, envisaged, out of scope</em>) describe the repository, never an intention. No claim on this site is published without a dated internal source.</p></div><div class="ct" style="border:0;margin-top:28px"><a class="bt p" href="/LIVEX/en/comprendre/">Read the introduction</a><span style="display:inline-block;width:10px"></span><a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">GitHub repository ↗</a></div></div></section></main><footer class="site"><div class="w"><div class="fcols"><div class="fbrand"><a class="lg" href="/LIVEX/en/" aria-label="LIVEX">LIVEX</a><p class="fbrand-desc">Multi-agent simulation ecosystem: engine, emergent cognition and perceptual renderer.</p><p class="fbrand-meta mu">© 2026 Donovan — LIVEX</p></div><nav class="fnav" aria-label="Footer navigation"><div class="fcol"><h2>Navigation</h2><ul><li><a href="/LIVEX/en/comprendre/">Understand</a></li><li><a href="/LIVEX/en/technique/">Architecture</a></li><li><a href="/LIVEX/en/telecharger/">Download</a></li><li><a href="/LIVEX/en/getting-started/">Get started in 5 min</a></li><li><a href="/LIVEX/en/versions/">Versions</a></li><li><a href="/LIVEX/en/feuille-de-route/">Roadmap</a></li><li><a href="/LIVEX/en/actualites/">Journal</a></li></ul></div><div class="fcol"><h2>Resources</h2><ul><li><a href="/LIVEX/en/documentation/">Documentation</a></li><li><a href="/LIVEX/en/faq/">FAQ</a></li><li><a href="/LIVEX/en/comprendre/glossaire/">Glossary</a></li><li><a href="/LIVEX/en/suivre/">Follow</a></li><li><a href="/LIVEX/en/presse/">Press kit</a></li><li><a href="/LIVEX/en/etat-du-projet/">Project state</a></li><li><a href="/LIVEX/en/monographie/">Monograph</a></li></ul></div><div class="fcol"><h2>Project</h2><ul><li><a href="/LIVEX/en/participer/">Contribute</a></li><li><a href="/LIVEX/en/a-propos/">About</a></li><li><a href="/LIVEX/en/a-propos/auteur/">Author</a></li><li><a href="/LIVEX/en/a-propos/transparence-ia/">AI transparency</a></li><li><a href="/LIVEX/en/plan-du-site/">Sitemap</a></li></ul></div><div class="fcol"><h2>Legal</h2><ul><li><a href="/LIVEX/en/mentions-legales/">Legal notice</a></li><li><a href="/LIVEX/en/confidentialite/">Privacy</a></li><li><a href="/LIVEX/en/accessibilite/">Accessibility</a></li><li><a href="/LIVEX/en/licence/">License</a></li></ul></div></nav></div><hr class="fl"><div class="fgrid"><p>Content under <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code under the GNU GPL v3.0 or later.</p><p class="mu">No trackers, no cookies. Self-hosted fonts.</p><p class="mu"><a href="/LIVEX/CITATION.cff" rel="noopener">Cite this site (CITATION.cff)</a> · <a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">GitHub repository</a> · <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">Issues</a> · <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener">Support</a> · <a href="/LIVEX/en/participer/">Contributing</a></p></div></div></footer><script>(function(){const themeLabels = {"dark":"Switch to dark theme","light":"Switch to light theme"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>

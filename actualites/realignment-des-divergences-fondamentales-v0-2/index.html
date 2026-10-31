@@ -1,0 +1,335 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Réalignement des divergences : LIVEX passe en V0.2 · LIVEX</title><meta name="description" content="LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d'observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/LIVEX/apple-touch-icon.png"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="article"><meta property="article:published_time" content="2026-10-19T00:00:00.000Z"><meta property="article:author" content="Donovan Chartrain"><meta property="article:section" content="Journal"><meta property="article:tag" content="livex"><meta property="article:tag" content="v0.2"><meta property="article:tag" content="syne"><meta property="article:tag" content="realignement"><meta property="article:tag" content="contrats"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="Réalignement des divergences : LIVEX passe en V0.2 · LIVEX"><meta property="og:description" content="LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d'observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:image:alt" content="LIVEX — écosystème de simulation multi-agents"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="fr_FR"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Réalignement des divergences : LIVEX passe en V0.2 · LIVEX"><meta name="twitter:description" content="LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d'observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta name="twitter:image:alt" content="LIVEX — écosystème de simulation multi-agents"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-italic.DKMiL14s.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","description":"LIVEX est un écosystème de simulation multi-agents : un moteur (SYNE), une cognition émergente (ECHOS) et un rendu perceptif (PRISM). Documentation et principes ouverts.","inLanguage":"fr","license":"https://www.gnu.org/licenses/gpl-3.0.html","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Donovan","url":"https://donovan-dev-web.vercel.app"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Réalignement des divergences fondamentales : LIVEX passe en V0.2","description":"LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d'observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel.","datePublished":"2026-10-19T00:00:00.000Z","author":{"@type":"Person","name":"Donovan Chartrain","url":"https://donovan-dev-web.vercel.app"},"publisher":{"@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg"},"image":"https://donovan-dev-web.github.io/LIVEX/media/og-livex.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/"},"articleSection":"Journal","keywords":"livex, v0.2, syne, realignement, contrats","inLanguage":"fr"}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CO1ZX8Cv.css"><style>.cardlink[data-astro-cid-23c2ramm]{flex-direction:column;gap:6px;padding:20px;display:flex}.cardlink[data-astro-cid-23c2ramm] .bt[data-astro-cid-23c2ramm]{align-self:flex-start;margin-top:auto}
+</style></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="comprendre-submenu">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="comprendre-submenu"><li><a href="/LIVEX/comprendre/">Vue d’ensemble</a></li><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/faq/">FAQ</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="architecture-submenu">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="architecture-submenu"><li><a href="/LIVEX/technique/">Vue d’ensemble</a></li><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/installer/">Installateur LIVEX</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="telecharger-submenu">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="telecharger-submenu"><li><a href="/LIVEX/telecharger/">Vue d&#39;ensemble</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 minutes</a></li><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li><li><a href="/LIVEX/versions/">Versions</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="ressources-submenu">Ressources<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="ressources-submenu"><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li><li><a href="/LIVEX/actualites/">Journal</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="apropos-submenu">À propos<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="apropos-submenu"><li><a href="/LIVEX/a-propos/">Vue d’ensemble</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/presse/">Kit média</a></li></ul></div><a class="nav-cta" href="/LIVEX/suivre/">Suivre</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener" style="font-size:0.85rem">Issues</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener" style="font-size:0.85rem">Support</a></nav><button type="button" id="search-toggle" class="search-toggle" aria-expanded="false" aria-controls="search-modal" aria-label="Rechercher" title="Rechercher" data-astro-cid-ac66eqjo><span aria-hidden="true" data-astro-cid-ac66eqjo>⌕</span><span class="sr-only" data-astro-cid-ac66eqjo>Rechercher</span></button><div id="search-modal" class="search-modal" hidden data-astro-cid-ac66eqjo><div class="search-backdrop" data-search-close data-astro-cid-ac66eqjo></div><div class="search-panel" role="dialog" aria-modal="true" aria-label="Rechercher" data-astro-cid-ac66eqjo><button type="button" class="search-close" data-search-close aria-label="Fermer la recherche" data-astro-cid-ac66eqjo>✕</button><div id="pagefind-search" data-astro-cid-ac66eqjo></div><p class="search-hint" data-search-dev hidden data-astro-cid-ac66eqjo>La recherche est disponible sur le site publié.</p></div></div><script>(function(){const pagefindBase = "/LIVEX/pagefind/";
+
+  (function () {
+    var toggle = document.getElementById('search-toggle');
+    var modal = document.getElementById('search-modal');
+    if (!toggle || !modal) return;
+    var loaded = false;
+    var lastFocused = null;
+    function open() {
+      var active = document.activeElement;
+      // Si rien n'était focalisé (activation au clavier, script), on rend la main au bouton.
+      lastFocused = active && active !== document.body ? active : toggle;
+      modal.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      var closeBtn = modal.querySelector('.search-close');
+      if (closeBtn) closeBtn.focus();
+      if (!loaded) {
+        loaded = true;
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = pagefindBase + 'pagefind-ui.css';
+        document.head.appendChild(css);
+        var s = document.createElement('script');
+        s.src = pagefindBase + 'pagefind-ui.js';
+        s.onload = function () {
+          try {
+            // @ts-ignore
+            new window.PagefindUI({ element: '#pagefind-search', bundlePath: pagefindBase, showSubResults: true, showImages: false });
+            var input = document.querySelector('#pagefind-search input');
+            if (input) input.focus();
+          } catch (e) {
+            var hint = document.querySelector('[data-search-dev]');
+            if (hint) hint.removeAttribute('hidden');
+          }
+        };
+        s.onerror = function () {
+          var hint = document.querySelector('[data-search-dev]');
+          if (hint) hint.removeAttribute('hidden');
+        };
+        document.head.appendChild(s);
+      } else {
+        var existing = document.querySelector('#pagefind-search input');
+        if (existing) existing.focus();
+      }
+    }
+    function close() {
+      modal.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      else toggle.focus();
+    }
+    toggle.addEventListener('click', open);
+    modal.querySelectorAll('[data-search-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hasAttribute('hidden')) open(); else close();
+        return;
+      }
+      if (modal.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusables = modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  })();
+})();</script><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    /* Sans JS, les sous-menus doivent rester accessibles (pas de bouton fonctionnel). */
+    nav.main .ni { position: static; }
+    nav.main .sub {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    nav.main .sub::before { display: none; }
+    nav.main .sub a { padding-left: 22px; }
+
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+      nav.main .sub a { padding-left: 18px !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else {
+        header.removeAttribute('data-nav-open');
+        header.querySelectorAll('.ni.open').forEach(function (ni) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var openNi = header.querySelector('.ni.open');
+      if (openNi) {
+        var trigger = openNi.querySelector('.ni-trigger');
+        openNi.classList.remove('open');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    header.querySelectorAll('.ni > button.ni-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ni = btn.parentElement;
+        if (!ni) return;
+        var willOpen = !ni.classList.contains('open');
+        header.querySelectorAll('.ni.open').forEach(function (other) {
+          if (other !== ni) {
+            other.classList.remove('open');
+            var otherBtn = other.querySelector('.ni-trigger');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        ni.classList.toggle('open', willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      header.querySelectorAll('.ni.open').forEach(function (ni) {
+        if (!ni.contains(e.target)) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (header.hasAttribute('data-nav-open') && !header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu" tabindex="-1" data-pagefind-body="true"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/actualites/">Journal</a></span><span> · <span aria-current="page">Réalignement des divergences fondamentales : LIVEX passe en V0.2</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>17</b> Journal</div><h1 class="ptitle">Réalignement des divergences fondamentales : LIVEX passe en V0.2</h1><p class="lead">LIVEX passe en V0.2 : moteur SYNE 0.17.0, contrat d&#39;observabilité 0.5.0, verdicts préenregistrés et documentation alignée sur le code réel.</p></section></div><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://donovan-dev-web.github.io/LIVEX/"},{"@type":"ListItem","position":2,"name":"Journal","item":"https://donovan-dev-web.github.io/LIVEX/actualites/"},{"@type":"ListItem","position":3,"name":"Réalignement des divergences fondamentales : LIVEX passe en V0.2"}]}</script><section class="block"><div class="w"><div class="reading-progress" aria-hidden="true"><span class="reading-progress-bar"></span></div><p class="mu" style="font-size:0.78rem"><time datetime="2026-10-19T00:00:00.000Z">19 octobre 2026</time> · livex · v0.2 · syne · realignement · contrats</p><nav class="toc" aria-label="Sommaire de l'article"><a href="#pourquoi-un-réalignement">Pourquoi un réalignement</a><a href="#ce-qui-a-changé-dans-le-moteur">Ce qui a changé dans le moteur</a><a href="#refermer-la-fenêtre-causale" style="padding-left:12px">Refermer la fenêtre causale</a><a href="#une-décision-collective-exposée-jamais-injectée" style="padding-left:12px">Une décision collective exposée, jamais injectée</a><a href="#le-profil-localisé-comme-modèle-cible" style="padding-left:12px">Le profil localisé comme modèle cible</a><a href="#des-contrats-additifs-pas-des-ruptures">Des contrats additifs, pas des ruptures</a><a href="#lépreuve-du-verdict">L’épreuve du verdict</a><a href="#montrer-et-orchestrer-sans-décider">Montrer et orchestrer, sans décider</a><a href="#la-documentation-enfin-alignée">La documentation, enfin alignée</a><a href="#les-chiffres-du-relevé">Les chiffres du relevé</a><a href="#ce-que-v02-laisse-derrière-lui">Ce que V0.2 laisse derrière lui</a></nav><p>Imaginez trois instruments braqués sur le même monde. Le premier le produit, le second le mesure, le troisième le montre. Pris isolément, chacun dit la vérité. Mis côte à côte, ils racontent des histoires légèrement différentes. C’est précisément ce genre d’écart que LIVEX vient de traquer, puis de refermer. La campagne de réalignement des divergences fondamentales est close : le projet passe en <strong>V0.2</strong>.</p>
+<p>Ce chantier n’a rien ajouté de spectaculaire à l’écran. Il n’a produit aucune fonctionnalité dont on puisse faire la démonstration en une capture d’écran. Il a fait quelque chose de moins visible et de plus exigeant : rendre cohérents le moteur, les contrats, l’observation et la documentation. L’objectif tient en une phrase — ce qui est simulé, ce qui est mesuré et ce qui est documenté doivent dire la même chose.</p>
+<h2 id="pourquoi-un-réalignement">Pourquoi un réalignement</h2>
+<p>Une simulation multi-agents crédible repose sur une séparation stricte des responsabilités. SYNE détient l’état du monde, ECHOS l’observe, PRISM le rend visible. Personne n’empiète sur le voisin, et c’est exactement ce qui rend une conclusion possible : s’il n’existe qu’un seul endroit où les lois du monde vivent, alors un phénomène observé vient des lois, pas d’un outil.</p>
+<p>Le problème commence quand les couches se mettent à diverger, même de quelques degrés. Une trace qui confond l’absence de mesure avec un zéro. Un ordre d’exécution qui devient, sans le dire, une cause. Une décision collective qui se glisse dans l’arbitrage individuel alors qu’elle prétendait seulement le décrire. Rien de tout cela ne casse une démonstration. Tout cela fausse une expérience.</p>
+<p>Le réalignement a donc porté sur quatre axes : la <strong>causalité</strong> et l’ordre des décisions dans le moteur, la <strong>cognition active</strong> et la portée réelle de la décision collective, la <strong>viabilité</strong> du profil localisé face au profil global, et la <strong>validation expérimentale</strong> avec des critères préenregistrés.</p>
+<h2 id="ce-qui-a-changé-dans-le-moteur">Ce qui a changé dans le moteur</h2>
+<h3 id="refermer-la-fenêtre-causale">Refermer la fenêtre causale</h3>
+<p>Dans un simulateur, l’ordre dans lequel on parcourt les entités ne devrait jamais être une cause. Si l’agent numéro 3 décide avant l’agent numéro 4 — et que cela change le monde — alors l’ordre d’itération est devenu une loi cachée. Dans SYNE, la fenêtre causale est désormais fermée par <code>TickCommitBuffer</code> : tous les agents perçoivent et délibèrent sur l’état figé au début du tick, et les effets sont appliqués à sa fermeture. L’invariance à l’ordre d’insertion n’est pas postulée, elle est prouvée par les tests <code>CausalWindowTests</code> et <code>CausalOrderInvarianceTests</code>.</p>
+<h3 id="une-décision-collective-exposée-jamais-injectée">Une décision collective exposée, jamais injectée</h3>
+<p>Un groupe qui « prend une décision » est un fait observable. En faire une force qui pousse l’utilité individuelle serait autre chose : une politique prescrite glissée dans l’arbitrage, sous un nom qui ne l’annonce pas. LIVEX a tranché. La décision collective demeure <strong>exposée</strong> dans les snapshots et l’événement <code>group_decision</code>, mais elle n’est <strong>jamais injectée</strong> dans le choix d’un agent. Les mécanismes de propagation d’objectifs collectifs ont été retirés. Et parce que l’observateur doit pouvoir mesurer sans inventer, les distances entre paires liées sont instrumentées : elles valent <code>null</code> lorsqu’elles ne sont pas mesurées, jamais zéro.</p>
+<h3 id="le-profil-localisé-comme-modèle-cible">Le profil localisé comme modèle cible</h3>
+<p>Le profil localisé — où les agents cherchent de véritables gisements — est devenu le modèle de référence ; le profil global, où les réserves sont des quantités abstraites, sert désormais de baseline explicitement déclarée. Le gate de viabilité qui autorisait ce basculement a été publié puis franchi, avec des critères fixés avant l’exécution et non ajustés après.</p>
+<h2 id="des-contrats-additifs-pas-des-ruptures">Des contrats additifs, pas des ruptures</h2>
+<p>Rendre le moteur cohérent aurait pu signifier casser tout ce qui le lit. Ça n’a pas été le cas. Le contrat d’observabilité passe en <strong>0.5.0</strong> et la description de monde en <strong>1.1</strong>, en <strong>ajout seul</strong> : les consommateurs existants restent compatibles, aucun champ requis n’a disparu.</p>
+<p>L’échelle temporelle (<code>simulatedSecondsPerTick</code>) et spatiale (<code>metersPerUnit</code>) sont désormais explicites, ce qui évite de raconter le temps d’une façon dans le moteur et d’une autre dans le rendu. ECHOS consomme ce flux et calcule ses métriques de viabilité avec une <strong>provenance explicite</strong> — mesuré, absent, ou zéro observé. Cette distinction, qui paraît technique, sépare une observation d’une croyance : confondre l’absence de données avec une valeur nulle, c’est déjà tirer une conclusion que les données ne soutiennent pas.</p>
+<p><img alt="Vue des relations observées dans ECHOS" loading="lazy" decoding="async" width="1360" height="920" src="/LIVEX/_astro/echos-relations.Bl-ajriC_Z29D6Xd.webp"></p>
+<h2 id="lépreuve-du-verdict">L’épreuve du verdict</h2>
+<p>Un réalignement qui ne se vérifie pas ne vaut pas mieux qu’un discours. La campagne A0-4 a donc appliqué un protocole strict : seuils préenregistrés et lus par le code, au moins cinq graines, contre-factuel obligatoire, provenance en trois états, et interdiction absolue de déplacer un critère après observation.</p>
+<p>Les verdicts sont tombés, y compris là où ils dérangent. La <strong>quête spatiale</strong> vers un gisement connu est confirmée sur les 5 graines : le contraste est net, entre 0,87 et 0,91 de décisions ciblant un nœud, contre 0,00 en zéro observé. Le <strong>cycle social</strong> homéostatique, lui, n’est pas confirmé : sa saturation médiane dépasse le seuil préenregistré. Le verdict scientifique général reste <strong>« émergence non établie »</strong>, et il est publié tel quel. Une méthode incapable de dire « non » ne dit rien de solide quand elle dit « oui ».</p>
+<h2 id="montrer-et-orchestrer-sans-décider">Montrer et orchestrer, sans décider</h2>
+<p>En aval du moteur, deux composants continuent de tenir leur rang. PRISM, le projet Unreal final de LIVEX, intègre le plugin <strong>PRISM-LDK</strong> et consomme les contrats SYNE sans jamais devenir une source de vérité : il rend le monde visible, il ne le calcule pas. Le <strong>Launcher</strong>, lui, orchestre la pile, supervise les composants et archive les campagnes dans un format scellé <code>.livexp</code>, tout en restant indépendant de ce qu’il pilote.</p>
+<p><img alt="Accueil du Launcher LIVEX" loading="lazy" decoding="async" width="1480" height="1024" src="/LIVEX/_astro/launcher-home.CDPwsv9l_1wyqyD.webp"></p>
+<p><img alt="Vue PRISM dans le Launcher" loading="lazy" decoding="async" width="1480" height="1024" src="/LIVEX/_astro/launcher-prism.p92cvD6N_Z1huEHz.webp"></p>
+<h2 id="la-documentation-enfin-alignée">La documentation, enfin alignée</h2>
+<p>Une divergence peut aussi se loger dans les mots. README global, versions, contrats, captures et animations ont été réalignés sur le code réel : le projet est présenté en V0.2, avec des valeurs exactes et une mise en page professionnelle. Une documentation qui promet une version que le moteur n’exécute pas est une divergence comme une autre — simplement plus difficile à mesurer.</p>
+<p><img alt="Vue des agents observés dans ECHOS" loading="lazy" decoding="async" width="1360" height="920" src="/LIVEX/_astro/echos-agents.Dp98P4MQ_rBFjg.webp"></p>
+<h2 id="les-chiffres-du-relevé">Les chiffres du relevé</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left" scope="col">Élément</th>
+<th style="text-align: left" scope="col">Valeur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left">Version globale</td>
+<td style="text-align: left">V0.2</td>
+</tr>
+<tr>
+<td style="text-align: left">Moteur SYNE</td>
+<td style="text-align: left">0.17.0</td>
+</tr>
+<tr>
+<td style="text-align: left">Contrat d’observabilité</td>
+<td style="text-align: left">0.5.0</td>
+</tr>
+<tr>
+<td style="text-align: left">Description de monde</td>
+<td style="text-align: left">1.1</td>
+</tr>
+<tr>
+<td style="text-align: left">Tests SYNE</td>
+<td style="text-align: left">695/695, 0 échec (604 Core + 91 Console)</td>
+</tr>
+<tr>
+<td style="text-align: left">Tests ECHOS</td>
+<td style="text-align: left">383 réussis, 0 échec</td>
+</tr>
+<tr>
+<td style="text-align: left">Tests syne-mock</td>
+<td style="text-align: left">51 réussis, 0 échec</td>
+</tr>
+<tr>
+<td style="text-align: left">Tests Launcher</td>
+<td style="text-align: left">174 unitaires, 20 intégration, 33 E2E, 0 échec</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ce-que-v02-laisse-derrière-lui">Ce que V0.2 laisse derrière lui</h2>
+<p>V0.2 marque la clôture d’un travail qui ne se voit pas mais qui commande tout le reste. Le moteur, les contrats, l’observation et la documentation sont alignés : quand SYNE dit une chose, ECHOS la mesure et la documentation la rapporte. Ce n’est pas une promesse d’émergence — le verdict reste « non établie » —, c’est une garantie de cohérence.</p>
+<p>La suite porte sur les tâches intermédiaires et la préparation du commit final, sans modification silencieuse des seuils ni des oracles. Pour suivre le détail des décisions, le <a href="https://donovan-dev-web.github.io/LIVEX/documentation/">portail de documentation</a> rassemble les textes de référence, et ce <a href="https://donovan-dev-web.github.io/LIVEX/actualites/">journal</a> publie les relevés au fil de l’eau — également disponible en <a href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">flux RSS</a> si vous préférez que le flux vienne à vous.</p>
+<section class="share" aria-labelledby="share-title" data-url="https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/" data-title="Réalignement des divergences fondamentales : LIVEX passe en V0.2"><h2 id="share-title" class="share-title">Partager cet article</h2><div class="share-actions"><button type="button" class="bt share-copy" data-copy="https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/" data-copied="Lien copié">Copier le lien</button><a class="bt" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fdonovan-dev-web.github.io%2FLIVEX%2Factualites%2Frealignment-des-divergences-fondamentales-v0-2%2F&amp;text=R%C3%A9alignement%20des%20divergences%20fondamentales%20%3A%20LIVEX%20passe%20en%20V0.2" rel="noopener" target="_blank">X / Twitter</a><a class="bt" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fdonovan-dev-web.github.io%2FLIVEX%2Factualites%2Frealignment-des-divergences-fondamentales-v0-2%2F" rel="noopener" target="_blank">LinkedIn</a></div><p class="mu share-status" role="status" aria-live="polite"></p></section><section class="pl br" style="padding:18px;margin-top:18px" aria-labelledby="cite-title"><h2 id="cite-title" style="margin:0 0 10px">Citer cet article</h2><p class="mu" style="margin:0 0 12px;font-size:0.78rem">Chartrain, D. (2026). <em>Réalignement des divergences fondamentales : LIVEX passe en V0.2</em>. LIVEX. https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/</p><p style="margin:0"><a class="bt" href="/LIVEX/CITATION.cff" rel="noopener">CITATION.cff ↗</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub ↗</a></p></section><script>
+        (function () {
+          var btn = document.querySelector('.share-copy');
+          if (!btn) return;
+          var status = document.querySelector('.share-status');
+          var copied = btn.getAttribute('data-copied') || 'Lien copié';
+          btn.addEventListener('click', async function () {
+            var link = btn.getAttribute('data-copy') || '';
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(link);
+              } else {
+                throw new Error('no-clipboard');
+              }
+              if (status) status.textContent = copied;
+            } catch (e) {
+              if (status) status.textContent = link;
+            }
+          });
+          if (navigator.share) {
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'bt';
+            shareBtn.textContent = 'Partager…';
+            shareBtn.addEventListener('click', function () {
+              navigator.share({ title: document.title, url: btn.getAttribute('data-copy') || '' }).catch(function () {});
+            });
+            var actions = document.querySelector('.share-actions');
+            if (actions) actions.appendChild(shareBtn);
+          }
+        })();
+      </script><script>
+        (function () {
+          var bar = document.querySelector('.reading-progress-bar');
+          if (!bar) return;
+          function update() {
+            var doc = document.documentElement;
+            var scrollTop = window.scrollY || doc.scrollTop;
+            var height = doc.scrollHeight - doc.clientHeight;
+            var pct = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+            bar.style.width = pct + '%';
+          }
+          window.addEventListener('scroll', update, { passive: true });
+          update();
+        })();
+      </script><p style="margin-top:24px"><a class="bt" href="/LIVEX/actualites/">Toutes les actualités</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">Flux RSS</a></p></div></section><section class="block"><div class="w"><div class="sh"><b>17.1</b> Lire aussi</div><h2>D'autres jalons récents.</h2><div class="g2" style="margin-top:18px"><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>L&#39;installateur LIVEX : du paquet à une installation maîtrisée</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Présentation de l&#39;assistant LIVEX 1.0.0, de ses profils core et full, de la maintenance et des choix faits pour protéger les espaces de travail.</p><a class="bt" href="/LIVEX/actualites/installateur-livex-installer-mettre-a-jour-reparer/" data-astro-cid-23c2ramm>Lire l&#39;article →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>LIVEX 1.0.0 : première release publique pour Windows et Linux</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>La release livex-v1.0.0 rassemble l&#39;installateur, SYNE, ECHOS, le Launcher, PRISM et PRISM-LDK, avec des paquets core et full pour Windows et Linux.</p><a class="bt" href="/LIVEX/actualites/livex-1-0-0-premiere-release-publique/" data-astro-cid-23c2ramm>Lire l&#39;article →</a></article></div></div></section></main><footer class="site"><div class="w"><div class="fcols"><div class="fbrand"><a class="lg" href="/LIVEX/" aria-label="LIVEX">LIVEX</a><p class="fbrand-desc">Écosystème de simulation multi-agents : moteur, cognition émergente et rendu perceptif.</p><p class="fbrand-meta mu">© 2026 Donovan — LIVEX</p></div><nav class="fnav" aria-label="Navigation de pied de page"><div class="fcol"><h2>Navigation</h2><ul><li><a href="/LIVEX/comprendre/">Comprendre</a></li><li><a href="/LIVEX/technique/">Architecture</a></li><li><a href="/LIVEX/telecharger/">Télécharger</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 min</a></li><li><a href="/LIVEX/versions/">Versions</a></li><li><a href="/LIVEX/feuille-de-route/">Feuille de route</a></li><li><a href="/LIVEX/actualites/">Journal</a></li></ul></div><div class="fcol"><h2>Ressources</h2><ul><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/faq/">FAQ</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/suivre/">Suivre</a></li><li><a href="/LIVEX/presse/">Kit média</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li></ul></div><div class="fcol"><h2>Projet</h2><ul><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/a-propos/">À propos</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="fcol"><h2>Légal</h2><ul><li><a href="/LIVEX/mentions-legales/">Mentions légales</a></li><li><a href="/LIVEX/confidentialite/">Confidentialité</a></li><li><a href="/LIVEX/accessibilite/">Accessibilité</a></li><li><a href="/LIVEX/licence/">Licence</a></li></ul></div></nav></div><hr class="fl"><div class="fgrid"><p>Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence GNU GPL v3.0 ou ultérieure.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p><p class="mu"><a href="/LIVEX/CITATION.cff" rel="noopener">Citer ce site (CITATION.cff)</a> · <a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a> · <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">Issues</a> · <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener">Support</a> · <a href="/LIVEX/participer/">Contribuer</a></p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>

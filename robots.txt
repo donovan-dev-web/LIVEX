@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://donovan-dev-web.github.io/LIVEX/sitemap.xml
+
+# LLMs: présentation détaillée pour les modèles de langage
+# https://donovan-dev-web.github.io/LIVEX/llms.txt

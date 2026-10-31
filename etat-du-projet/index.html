@@ -1,0 +1,216 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>LIVEX — État du projet : tests, couverture et CI</title><meta name="description" content="État factuel et daté du dépôt LIVEX : branche, commit, fichiers, lignes de code, tests, couverture, CI et support Windows."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/etat-du-projet/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/etat-du-projet/"><link rel="alternate" hreflang="en" href="https://donovan-dev-web.github.io/LIVEX/en/etat-du-projet/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/etat-du-projet/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/LIVEX/apple-touch-icon.png"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="website"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="LIVEX — État du projet : tests, couverture et CI"><meta property="og:description" content="État factuel et daté du dépôt LIVEX : branche, commit, fichiers, lignes de code, tests, couverture, CI et support Windows."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/etat-du-projet/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:image:alt" content="LIVEX — écosystème de simulation multi-agents"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="fr_FR"><meta property="og:locale:alternate" content="en_US"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="LIVEX — État du projet : tests, couverture et CI"><meta name="twitter:description" content="État factuel et daté du dépôt LIVEX : branche, commit, fichiers, lignes de code, tests, couverture, CI et support Windows."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta name="twitter:image:alt" content="LIVEX — écosystème de simulation multi-agents"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-italic.DKMiL14s.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","description":"LIVEX est un écosystème de simulation multi-agents : un moteur (SYNE), une cognition émergente (ECHOS) et un rendu perceptif (PRISM). Documentation et principes ouverts.","inLanguage":"fr","license":"https://www.gnu.org/licenses/gpl-3.0.html","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Donovan","url":"https://donovan-dev-web.vercel.app"}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CO1ZX8Cv.css"></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="comprendre-submenu">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="comprendre-submenu"><li><a href="/LIVEX/comprendre/">Vue d’ensemble</a></li><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/faq/">FAQ</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="architecture-submenu">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="architecture-submenu"><li><a href="/LIVEX/technique/">Vue d’ensemble</a></li><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/installer/">Installateur LIVEX</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="telecharger-submenu">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="telecharger-submenu"><li><a href="/LIVEX/telecharger/">Vue d&#39;ensemble</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 minutes</a></li><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li><li><a href="/LIVEX/versions/">Versions</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="ressources-submenu">Ressources<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="ressources-submenu"><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/etat-du-projet/" aria-current="page">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li><li><a href="/LIVEX/actualites/">Journal</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="apropos-submenu">À propos<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="apropos-submenu"><li><a href="/LIVEX/a-propos/">Vue d’ensemble</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/presse/">Kit média</a></li></ul></div><a class="nav-cta" href="/LIVEX/suivre/">Suivre</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener" style="font-size:0.85rem">Issues</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener" style="font-size:0.85rem">Support</a></nav><button type="button" id="search-toggle" class="search-toggle" aria-expanded="false" aria-controls="search-modal" aria-label="Rechercher" title="Rechercher" data-astro-cid-ac66eqjo><span aria-hidden="true" data-astro-cid-ac66eqjo>⌕</span><span class="sr-only" data-astro-cid-ac66eqjo>Rechercher</span></button><div id="search-modal" class="search-modal" hidden data-astro-cid-ac66eqjo><div class="search-backdrop" data-search-close data-astro-cid-ac66eqjo></div><div class="search-panel" role="dialog" aria-modal="true" aria-label="Rechercher" data-astro-cid-ac66eqjo><button type="button" class="search-close" data-search-close aria-label="Fermer la recherche" data-astro-cid-ac66eqjo>✕</button><div id="pagefind-search" data-astro-cid-ac66eqjo></div><p class="search-hint" data-search-dev hidden data-astro-cid-ac66eqjo>La recherche est disponible sur le site publié.</p></div></div><script>(function(){const pagefindBase = "/LIVEX/pagefind/";
+
+  (function () {
+    var toggle = document.getElementById('search-toggle');
+    var modal = document.getElementById('search-modal');
+    if (!toggle || !modal) return;
+    var loaded = false;
+    var lastFocused = null;
+    function open() {
+      var active = document.activeElement;
+      // Si rien n'était focalisé (activation au clavier, script), on rend la main au bouton.
+      lastFocused = active && active !== document.body ? active : toggle;
+      modal.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      var closeBtn = modal.querySelector('.search-close');
+      if (closeBtn) closeBtn.focus();
+      if (!loaded) {
+        loaded = true;
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = pagefindBase + 'pagefind-ui.css';
+        document.head.appendChild(css);
+        var s = document.createElement('script');
+        s.src = pagefindBase + 'pagefind-ui.js';
+        s.onload = function () {
+          try {
+            // @ts-ignore
+            new window.PagefindUI({ element: '#pagefind-search', bundlePath: pagefindBase, showSubResults: true, showImages: false });
+            var input = document.querySelector('#pagefind-search input');
+            if (input) input.focus();
+          } catch (e) {
+            var hint = document.querySelector('[data-search-dev]');
+            if (hint) hint.removeAttribute('hidden');
+          }
+        };
+        s.onerror = function () {
+          var hint = document.querySelector('[data-search-dev]');
+          if (hint) hint.removeAttribute('hidden');
+        };
+        document.head.appendChild(s);
+      } else {
+        var existing = document.querySelector('#pagefind-search input');
+        if (existing) existing.focus();
+      }
+    }
+    function close() {
+      modal.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      else toggle.focus();
+    }
+    toggle.addEventListener('click', open);
+    modal.querySelectorAll('[data-search-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hasAttribute('hidden')) open(); else close();
+        return;
+      }
+      if (modal.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusables = modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  })();
+})();</script><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/etat-du-projet/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a><a href="/LIVEX/en/etat-du-projet/" hreflang="en" lang="en" title="English">EN</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    /* Sans JS, les sous-menus doivent rester accessibles (pas de bouton fonctionnel). */
+    nav.main .ni { position: static; }
+    nav.main .sub {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    nav.main .sub::before { display: none; }
+    nav.main .sub a { padding-left: 22px; }
+
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+      nav.main .sub a { padding-left: 18px !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else {
+        header.removeAttribute('data-nav-open');
+        header.querySelectorAll('.ni.open').forEach(function (ni) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var openNi = header.querySelector('.ni.open');
+      if (openNi) {
+        var trigger = openNi.querySelector('.ni-trigger');
+        openNi.classList.remove('open');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    header.querySelectorAll('.ni > button.ni-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ni = btn.parentElement;
+        if (!ni) return;
+        var willOpen = !ni.classList.contains('open');
+        header.querySelectorAll('.ni.open').forEach(function (other) {
+          if (other !== ni) {
+            other.classList.remove('open');
+            var otherBtn = other.querySelector('.ni-trigger');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        ni.classList.toggle('open', willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      header.querySelectorAll('.ni.open').forEach(function (ni) {
+        if (!ni.contains(e.target)) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (header.hasAttribute('data-nav-open') && !header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu" tabindex="-1" data-pagefind-body="true"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/versions/">Versions</a></span><span> · <span aria-current="page">État du projet</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>13b</b> Versions</div><h1 class="ptitle">L&#39;état du projet, daté.</h1><p class="lead">Un relevé factuel de la release et du dépôt associé, composant par composant : tests, couverture, versions et fichiers mesurés.</p></section></div><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://donovan-dev-web.github.io/LIVEX/"},{"@type":"ListItem","position":2,"name":"Versions","item":"https://donovan-dev-web.github.io/LIVEX/versions/"},{"@type":"ListItem","position":3,"name":"État du projet"}]}</script><section class="block"><div class="w"><div class="cc"><p><strong>LIVEX 1.0.0 est publiée.</strong> Les installateurs Windows/Linux sont disponibles dans<a href="https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0" rel="noopener">la release GitHub</a> et<a href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/governance/LIVEX-STATUS.md" rel="noopener">LIVEX-STATUS.md</a>.</p></div><div class="sh"><b>13b.1</b> Référence analysée</div><h2>Mesuré le 31 octobre 2026.</h2><div class="ov"><table class="tb"><thead><tr><th scope="col">Indicateur</th><th scope="col">Valeur</th></tr></thead><tbody><tr><td>Référence</td><td><code>main · tag livex-v1.0.0</code> à 196ad077</td></tr><tr><td>Fichiers analysés par Tokei</td><td>1 152</td></tr><tr><td>LOC Tokei</td><td>111 608 lignes de code</td></tr><tr><td>Tests validés pour la release</td><td>1566 cas : 1550 réussis, 16 ignorés, 0 échec</td></tr><tr><td>PRISM / PRISM-LDK</td><td>76 specs : 71 réussies, 5 réussies avec avertissements</td></tr><tr><td>Installateur</td><td>118 tests exécutés et réussis</td></tr><tr><td>Couverture ECHOS</td><td>91,32 %</td></tr><tr><td>Couverture SYNE</td><td>81,20 % (Core 91,17 %, Console 63,46 %)</td></tr><tr><td>CI</td><td>13/13 jobs verts, 19/10/2026</td></tr><tr><td>Windows</td><td>Support Windows validé localement depuis le 08/10/2026</td></tr></tbody></table></div><p style="margin-top:18px"><a class="bt" href="/LIVEX/versions/">Voir les versions par composant →</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/governance/LIVEX-STATUS.md" rel="noopener">LIVEX-STATUS.md →</a></p></div></section></main><footer class="site"><div class="w"><div class="fcols"><div class="fbrand"><a class="lg" href="/LIVEX/" aria-label="LIVEX">LIVEX</a><p class="fbrand-desc">Écosystème de simulation multi-agents : moteur, cognition émergente et rendu perceptif.</p><p class="fbrand-meta mu">© 2026 Donovan — LIVEX</p></div><nav class="fnav" aria-label="Navigation de pied de page"><div class="fcol"><h2>Navigation</h2><ul><li><a href="/LIVEX/comprendre/">Comprendre</a></li><li><a href="/LIVEX/technique/">Architecture</a></li><li><a href="/LIVEX/telecharger/">Télécharger</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 min</a></li><li><a href="/LIVEX/versions/">Versions</a></li><li><a href="/LIVEX/feuille-de-route/">Feuille de route</a></li><li><a href="/LIVEX/actualites/">Journal</a></li></ul></div><div class="fcol"><h2>Ressources</h2><ul><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/faq/">FAQ</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/suivre/">Suivre</a></li><li><a href="/LIVEX/presse/">Kit média</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li></ul></div><div class="fcol"><h2>Projet</h2><ul><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/a-propos/">À propos</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="fcol"><h2>Légal</h2><ul><li><a href="/LIVEX/mentions-legales/">Mentions légales</a></li><li><a href="/LIVEX/confidentialite/">Confidentialité</a></li><li><a href="/LIVEX/accessibilite/">Accessibilité</a></li><li><a href="/LIVEX/licence/">Licence</a></li></ul></div></nav></div><hr class="fl"><div class="fgrid"><p>Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence GNU GPL v3.0 ou ultérieure.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p><p class="mu"><a href="/LIVEX/CITATION.cff" rel="noopener">Citer ce site (CITATION.cff)</a> · <a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a> · <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">Issues</a> · <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener">Support</a> · <a href="/LIVEX/participer/">Contribuer</a></p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>

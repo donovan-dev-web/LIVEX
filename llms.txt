@@ -1,0 +1,270 @@
+# LIVEX
+
+> LIVEX (Living Intelligent Virtual Ecosystem eXperience) est une plateforme de simulation
+> multi-agents à émergence, persistante, temps réel et observable, construite sur trois
+> modules complémentaires : SYNE (moteur), ECHOS (observation/analyse) et PRISM (rendu
+> perceptif). Le projet est ouvert, sous licence GNU GPL v3.0 ou ultérieure pour le code et
+> CC BY 4.0 pour le contenu. Auteur : Donovan Chartrain.
+
+Documentation publique, en français (langue source) avec un miroir anglais sous `/en/`.
+Dépôt : https://github.com/donovan-dev-web/LIVEX
+Site : https://donovan-dev-web.github.io/LIVEX/
+Auteur (portfolio web) : https://donovan-dev-web.vercel.app
+
+## Comment lire ce fichier (pour un modèle de langage)
+
+Ce fichier est une présentation structurée et auto-suffisante du projet LIVEX, destinée
+aux modèles de langage (Gemini, ChatGPT, Claude, etc.) et aux outils d'indexation. Il
+résume le projet, ses composants, ses statuts réels et ses liens canoniques. Il ne remplace
+pas la documentation détaillée du dépôt, mais en donne la carte et les repères.
+
+Règles d'interprétation importantes :
+- SYNE est la seule source de vérité du monde simulé. ECHOS et PRISM ne décident jamais.
+- PRISM est le projet Unreal final de LIVEX ; PRISM-LDK est le plugin Unreal qui l'intègre.
+  Ne pas confondre les deux (voir la section dédiée).
+- Les statuts ("expérimental", "en développement", "hors périmètre V0.2") sont factuels :
+  ne pas présenter PRISM comme un produit jouable ni SYNE/ECHOS comme distribués publiquement.
+- `syne-mock` est un serveur de développement pour tester les contrats ; il ne remplace pas SYNE
+  et ne produit pas de résultats scientifiques valides.
+- En cas de divergence entre ce fichier et le contrat d'un composant, la documentation détaillée
+  et l'implémentation testée du composant priment.
+
+## Présentation du projet
+
+LIVEX — Living Intelligent Virtual Ecosystem eXperience — est une plateforme de simulation
+multi-agents à émergence. Elle propose une troisième voie entre deux extrêmes : scripter des
+comportements prédéfinis, ou déléguer la cognition à un réseau de neurones. À la place, LIVEX
+construit un moteur où des entités autonomes — dotées de besoins, de mémoire, de croyances et
+de capacités d'action — interagissent dans un environnement persistant et partiellement
+observable. Les structures collectives (regroupements, flux d'échange, spécialisations,
+conflits) ne sont pas programmées : elles émergent.
+
+Trois exigences dominantes structurent le projet :
+1. Déterminisme : deux exécutions identiques produisent exactement la même trajectoire
+   (reproductibilité bit-à-bit).
+2. Observabilité : rien de ce qui se passe dans le monde n'est opaque ; tout est traçable
+   (perceptions, décisions, actions, communications).
+3. Indépendance du rendu : la vérité du monde appartient au moteur ; la visualisation n'est
+   jamais la source de vérité.
+
+Piliers de conception :
+- Autonomie des entités : le moteur fournit des structures (état, besoins, perception, mémoire,
+  croyances), jamais de script de conduite.
+- Cognition à la source : architecture BDI (croyances, désirs, intentions) pour chaque entité.
+- Observabilité partielle : une entité ne connaît qu'une partie du monde ; l'information imparfaite
+  est un moteur de diversité comportementale, d'erreur et d'exploration.
+- Émergence par contraintes : mémoire dégradée, communication non confidentielle, énergie comme
+  monnaie d'action ; les comportements collectifs naissent des contraintes, pas des règles globales.
+- Déterminisme scientifique : PRNG reproductible (xoshiro256**) et persistance de l'état complet.
+- Indépendance du rendu : SYNE fonctionne sans interface graphique ; PRISM communique par contrats
+  de transport, sans modifier la source de vérité.
+
+Ambition : outil scientifique (comparer des trajectoires, tester un paramètre, reconstruire des
+chaînes causales), œuvre contemplative (observer un monde qui vit, se groupe, parle, meurt) et
+plateforme d'expérimentation philosophique (qu'est-ce qui rend un système "vivant" ou
+"intelligent" ?).
+
+Avertissement méthodologique : LIVEX ne prétend pas démontrer l'existence d'une intelligence ou
+d'une société. Un score d'émergence est une mesure particulière, jamais une preuve.
+
+Limites assumées : pas de simulation physique morphologique réaliste (entités logiques pouvant se
+chevaucher) ; pas d'IA d'apprentissage (cognition explicite et inspectable) ; pas d'objectif de
+"jeu" ni de "réalisme graphique" avant la maturité.
+
+## Architecture : trois modules complémentaires
+
+| Module | Nom complet | Rôle |
+| :-- | :-- | :-- |
+| SYNE | Systems & Emergent Network Engine | Moteur de simulation ; possède la vérité du monde ; indépendant du rendu. |
+| ECHOS | Emergent Cognition & Holistic Observation System | Système d'observation, d'analyse et de pilotage. |
+| PRISM | Perceptual Rendering & Interactive Simulation Module | Projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK. |
+
+- **SYNE** : moteur déterministe de simulation multi-agents. Règles, monde, ticks, déterminisme
+  bit-à-bit à partir d'une graine. Peut fonctionner en mode headless. Publie son état par des
+  contrats d'observabilité versionnés. Version 0.17.0 (moteur .NET), statut expérimental, non
+  distribué publiquement.
+- **ECHOS** : ingestion, analyse et API headless. Lecture des runs, métriques de viabilité,
+  détection de boucles et de motifs émergents. Calcule des métriques d'émergence (diversité
+  cognitive, propagation de l'information, complexité sociale, dynamiques de groupes). Analyse
+  sans jamais écrire dans le monde. Version 0.1.0 (paquet Python), statut expérimental, non
+  distribué publiquement.
+- **PRISM** : rendu perceptif et module de simulation interactive. Projet Unreal + plugin
+  d'intégration PRISM-LDK. Statut en développement, hors périmètre V0.2. Aucune expérience de
+  rendu jouable revendiquée.
+
+Composants transverses :
+- **Launcher** : orchestrateur de la pile. Matrice des modes, campagnes, supervision à six
+  niveaux, réseau et Gateway, flux de données, format de paquet `.livexp`. Évalue le
+  déverrouillage Immersion, sélectionne le profil approprié (dont `prism`), démarre et arrête
+  les composants dans l'ordre.
+- **Installateur** : spécification à venir, aucun code implémenté (jalon G6).
+- **syne-mock** : serveur Node.js de développement pour tester les contrats et l'intégration
+  PRISM sans démarrer le moteur complet. Émule le transport et une partie du comportement ;
+  ne reproduit pas les décisions, le pathfinding ni tous les systèmes sociaux de SYNE.
+
+## PRISM et PRISM-LDK : quelle différence ?
+
+Ne pas confondre deux choses qui portent un nom proche :
+
+- **PRISM** est le *projet Unreal final* de LIVEX : l'application de rendu perceptif, le monde
+  affiché, les scènes, l'immersion. PRISM reste en version de travail et hors périmètre V0.2.
+- **PRISM-LDK** (LIVEX Development Kit) est le *plugin Unreal* qui formalise l'interface entre
+  PRISM et l'écosystème LIVEX. C'est une pièce d'infrastructure : il expose les types, fonctions
+  et événements Blueprint pour se connecter à SYNE, consommer ses contrats, projeter le monde et
+  orchestrer le rendu. PRISM-LDK est réalisé et empaqueté en **version 0.1.0**
+  (archive `prism/LDK_Package/PrismLdk.zip`, module Unreal nommé `PrismLdk`).
+
+En résumé : PRISM est ce que l'utilisateur voit ; PRISM-LDK est ce qui permet de le construire et
+de le connecter au moteur. Le plugin est vérifiable et testé indépendamment de l'expérience de
+rendu complète.
+
+## Monde logique et représentation procédurale (PRISM-LDK)
+
+PRISM-LDK distingue deux niveaux de monde, cœur de son approche :
+
+- **Monde logique** : la description fidèle du monde fournie par SYNE (tuiles, obstacles,
+  ressources, agents, dimensions, cellule, cadence). C'est la vérité géométrique et sémantique du
+  monde simulé, sans embellissement.
+- **Représentation procédurale** : la génération visuelle du terrain et de la végétation à partir
+  de cette description logique, via le PCG (Procedural Content Generation) d'Unreal. Le plugin
+  convertit la description de monde SYNE en données PCG consommables, puis construit la scène de
+  manière asynchrone.
+
+Cette séparation permet de régénérer la représentation sans toucher à la vérité simulée, et de
+garder la traçabilité : tout élément visible remonte à un tick et à un snapshot identifiables.
+
+Discipline de tolérance du plugin :
+- champs inconnus ignorés (compatibilité dans les deux sens du temps) ;
+- `null` préservé, jamais converti en valeur par défaut (ex. `null` n'est jamais `10`) ;
+- aucun tick manquant inventé (rejeu troué : ticks 41 puis 47 laisse l'état courant inchangé) ;
+- état dégradé déclaré à la déconnexion, état reçu restant consultable ;
+- mesures d'analyse des liens (`maxBondDistance`, `meanBondDistance`) présentes dans la trame mais
+  délibérément ignorées : PRISM est un rendu 3D, c'est l'observatoire (ECHOS) qui les lit.
+
+## Transport et contrats
+
+- WebSocket `ws://127.0.0.1:5180` : réception de `world_initialized`, snapshot par tick,
+  `world_delta`, événements.
+- HTTP `http://127.0.0.1:5181` : commandes de préparation, confirmation, démarrage, pause,
+  reprise, arrêt, réinitialisation, statut.
+- Contrat d'observabilité 0.5.0 et description de monde 1.1. PRISM et syne-mock consomment les
+  mêmes trames.
+- Cycle de contrôle : phases `prepare`, `ready`, `start`, `pause`, `resume`, `stop`, `reset`.
+- `Prepare(seed, ticksPerSecond, configJson)` : la surcouche config est transmise telle quelle
+  pour éviter deux `CellSize`/`k` selon la source.
+- Statut fusionné, pas écrasé : une réponse de commande n'est pas un statut complet.
+- Absence ≠ zéro : `simulatedTimeSeconds` absent → repli `tick × simulatedSecondsPerTick` ;
+  `leaderId` peut être `null` → exposé avec `bHasLeader`.
+
+## Statuts et versions (résumé factuel)
+
+- SYNE : 0.17.0, moteur .NET, expérimental, non distribué publiquement.
+- ECHOS : 0.1.0, paquet Python, expérimental, non distribué publiquement.
+- PRISM : projet Unreal en développement, hors périmètre V0.2.
+- PRISM-LDK : plugin Unreal, version 0.1.0, empaqueté (`prism/LDK_Package/PrismLdk.zip`).
+- Site vitrine : Astro 7, publié sur GitHub Pages.
+- Code : GPL-3.0-or-later. Contenu : CC BY 4.0.
+
+## Auteur du projet
+
+Donovan Chartrain — développeur web fullstack & mobile et artiste 3D. Plus de 3 ans de
+développement web en entreprise et plus de 10 ans de design, de 3D et de production visuelle.
+LIVEX est né de cette rencontre entre création visuelle, développement et curiosité pour les
+systèmes complexes, et d'une question fondatrice : peut-on construire un environnement virtuel
+régi par des lois fondamentales, au sein duquel des entités autonomes produisent des
+comportements et des structures non explicitement programmés ?
+
+Portfolio web (développement) : https://donovan-dev-web.vercel.app
+Portfolio 3D (création et expériences) : https://donovan-dev3d.vercel.app
+GitHub : https://github.com/donovan-dev-web
+LinkedIn : https://linkedin.com/in/donovan-chartrain-dev-web
+Contact : https://donovan-dev-web.vercel.app/contact (formulaire, pas d'e-mail publié)
+
+## Architecture technique détaillée (pages du site)
+
+- [Architecture](https://donovan-dev-web.github.io/LIVEX/technique/): vue d'ensemble des composants.
+- [SYNE](https://donovan-dev-web.github.io/LIVEX/technique/syne/): moteur de simulation multi-agents.
+- [ECHOS](https://donovan-dev-web.github.io/LIVEX/technique/echos/): système de cognition émergente.
+- [PRISM](https://donovan-dev-web.github.io/LIVEX/technique/prism/): module de rendu perceptif (et différence avec PRISM-LDK).
+- [Launcher](https://donovan-dev-web.github.io/LIVEX/technique/launcher/): lanceur et outillage.
+- [Reproductibilité et mesures](https://donovan-dev-web.github.io/LIVEX/technique/resultats/): protocoles, seeds et métriques.
+
+## Comprendre le projet
+
+- [Accueil](https://donovan-dev-web.github.io/LIVEX/): vue d'ensemble de LIVEX.
+- [Comprendre](https://donovan-dev-web.github.io/LIVEX/comprendre/): introduction au projet et à ses principes.
+- [Limites et portée](https://donovan-dev-web.github.io/LIVEX/comprendre/limites/): ce que LIVEX fait et ne fait pas.
+- [L'émergence expliquée](https://donovan-dev-web.github.io/LIVEX/comprendre/emergence/): notion d'émergence dans le projet.
+- [Glossaire](https://donovan-dev-web.github.io/LIVEX/comprendre/glossaire/): définitions des termes techniques.
+
+## Logiciel et versions
+
+- [Télécharger](https://donovan-dev-web.github.io/LIVEX/telecharger/): accès au logiciel.
+- [Démarrer en 5 minutes](https://donovan-dev-web.github.io/LIVEX/getting-started/): parcours de prise en main.
+- [Installation et prérequis](https://donovan-dev-web.github.io/LIVEX/telecharger/installation/): mise en route.
+- [Versions](https://donovan-dev-web.github.io/LIVEX/versions/): versions des composants et état du dépôt.
+- [Feuille de route](https://donovan-dev-web.github.io/LIVEX/feuille-de-route/): orientations à venir.
+
+## Documentation et journal
+
+- [Documentation](https://donovan-dev-web.github.io/LIVEX/documentation/): index de la documentation.
+- [État du projet](https://donovan-dev-web.github.io/LIVEX/etat-du-projet/): état factuel, tests et couverture.
+- [Monographie](https://donovan-dev-web.github.io/LIVEX/monographie/): portail des chapitres (dépôt).
+- [FAQ](https://donovan-dev-web.github.io/LIVEX/faq/): questions fréquentes.
+- [Journal](https://donovan-dev-web.github.io/LIVEX/actualites/): actualités du projet.
+- [Suivre](https://donovan-dev-web.github.io/LIVEX/suivre/): canaux pour suivre le projet.
+
+## Articles du journal (sélection)
+
+- [LIVEX : naître d'une question](https://donovan-dev-web.github.io/LIVEX/actualites/livex-naissance-d-une-question/)
+- [Architecture : trois modules complémentaires (SYNE, ECHOS, PRISM)](https://donovan-dev-web.github.io/LIVEX/actualites/architecture-trois-modules-complementaires/)
+- [SYNE : un moteur décisionnel déterministe pour l'émergence](https://donovan-dev-web.github.io/LIVEX/actualites/syne-moteur-decisionnel-deterministe/)
+- [Reproductibilité et déterminisme au cœur de LIVEX](https://donovan-dev-web.github.io/LIVEX/actualites/reproductibilite-et-determinisme-au-coeur-de-livex/)
+- [Contrat d'observabilité 0.5.0 et description de monde 1.1](https://donovan-dev-web.github.io/LIVEX/actualites/contrat-observabilite-0-5-0-et-description-de-monde-1-1/)
+- [syne-mock : parité et tests clients](https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/)
+- [ECHOS : observation, analyse et calibration rigoureuses](https://donovan-dev-web.github.io/LIVEX/actualites/echos-observation-analyse-et-calibration/)
+- [ECHOS : observation, viabilité et provenance](https://donovan-dev-web.github.io/LIVEX/actualites/echos-observation-viabilite-et-provenance/)
+- [PRISM : le projet Unreal final et le plugin PRISM-LDK](https://donovan-dev-web.github.io/LIVEX/actualites/prism-unreal-et-plugin-prism-ldk/)
+- [PRISM : rendu et consommation des contrats](https://donovan-dev-web.github.io/LIVEX/actualites/prism-rendu-et-consommation-des-contrats/)
+- [PRISM-LDK V0.1.0 : le kit de développement Unreal](https://donovan-dev-web.github.io/LIVEX/actualites/prism-ldk-v0-1-0-kit-de-developpement-unreal/)
+- [PRISM et PRISM-LDK : deux rôles, une frontière](https://donovan-dev-web.github.io/LIVEX/actualites/prism-et-prism-ldk-deux-roles-une-frontiere/)
+- [Le monde logique et sa représentation procédurale](https://donovan-dev-web.github.io/LIVEX/actualites/monde-logique-et-representation-procedurale/)
+- [Pourquoi représenter le monde en 3D](https://donovan-dev-web.github.io/LIVEX/actualites/pourquoi-representer-le-monde-en-3d/)
+- [A0-4 : verdicts d'émergence et protocole préenregistré](https://donovan-dev-web.github.io/LIVEX/actualites/a0-4-verdicts-emergence-et-protocole-preenregistre/)
+- [Campagnes reproductibles et validation multi-seeds](https://donovan-dev-web.github.io/LIVEX/actualites/campagnes-reproductibles-et-validation-multi-seeds/)
+- [Launcher : orchestration, campagnes et archives](https://donovan-dev-web.github.io/LIVEX/actualites/launcher-orchestration-campagnes-et-archives/)
+- [Launcher : orchestration, campagnes reproductibles et paquets .livexp](https://donovan-dev-web.github.io/LIVEX/actualites/launcher-orchestration-campagnes-reproductibles/)
+- [Réalignement des divergences fondamentales : LIVEX passe en V0.2](https://donovan-dev-web.github.io/LIVEX/actualites/realignment-des-divergences-fondamentales-v0-2/)
+
+## Participation et à propos
+
+- [Participer](https://donovan-dev-web.github.io/LIVEX/participer/): contribuer au projet.
+- [À propos](https://donovan-dev-web.github.io/LIVEX/a-propos/): le projet et son auteur.
+- [Transparence sur l'usage de l'IA](https://donovan-dev-web.github.io/LIVEX/a-propos/transparence-ia/): usage de l'IA dans le projet.
+- [Kit média](https://donovan-dev-web.github.io/LIVEX/presse/): ressources presse.
+- [Auteur](https://donovan-dev-web.github.io/LIVEX/a-propos/auteur/): Donovan Chartrain, parcours et portfolios.
+
+## Pages légales et de confiance
+
+- [Mentions légales](https://donovan-dev-web.github.io/LIVEX/mentions-legales/)
+- [Confidentialité](https://donovan-dev-web.github.io/LIVEX/confidentialite/)
+- [Accessibilité](https://donovan-dev-web.github.io/LIVEX/accessibilite/)
+- [Licence](https://donovan-dev-web.github.io/LIVEX/licence/)
+
+## English mirror
+
+- [Home](https://donovan-dev-web.github.io/LIVEX/en/): English home page.
+- [Getting started](https://donovan-dev-web.github.io/LIVEX/en/getting-started/): five-minute onboarding.
+- [Architecture](https://donovan-dev-web.github.io/LIVEX/en/technique/): components overview.
+- [Project status](https://donovan-dev-web.github.io/LIVEX/en/etat-du-projet/): facts, tests and coverage.
+- [Monograph](https://donovan-dev-web.github.io/LIVEX/en/monographie/): chapter portal (repository).
+- [Download](https://donovan-dev-web.github.io/LIVEX/en/telecharger/): software access.
+- [Contributing](https://donovan-dev-web.github.io/LIVEX/en/participer/): how to contribute.
+- [FAQ](https://donovan-dev-web.github.io/LIVEX/en/faq/): frequently asked questions.
+
+## Optional
+
+- [Plan du site](https://donovan-dev-web.github.io/LIVEX/plan-du-site/): arborescence complète des pages.
+- [Flux RSS du journal](https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml): flux des actualités.
+- [Dépôt GitHub](https://github.com/donovan-dev-web/LIVEX): code source et suivi des tickets.
+- [llms.txt](https://donovan-dev-web.github.io/LIVEX/llms.txt): cette présentation.

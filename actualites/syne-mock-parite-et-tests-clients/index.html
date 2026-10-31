@@ -1,0 +1,285 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>syne-mock : parité et tests clients · LIVEX</title><meta name="description" content="syne-mock émule les contrats SYNE pour tester un client sans lancer le moteur .NET : transport, description de monde 1.1 et parité mesurée champ par champ."><link rel="canonical" href="https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/"><link rel="alternate" hreflang="fr" href="https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/"><link rel="alternate" hreflang="x-default" href="https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/"><link rel="icon" href="/LIVEX/favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="/LIVEX/apple-touch-icon.png"><link rel="manifest" href="/LIVEX/site.webmanifest"><meta name="theme-color" content="#F2F2EC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#090C16" media="(prefers-color-scheme: dark)"><link rel="alternate" type="application/rss+xml" title="Journal LIVEX" href="/LIVEX/actualites/feed.xml"><!-- Open Graph / réseaux sociaux --><meta property="og:type" content="article"><meta property="article:published_time" content="2026-10-18T00:00:00.000Z"><meta property="article:author" content="Donovan Chartrain"><meta property="article:section" content="Journal"><meta property="article:tag" content="syne-mock"><meta property="article:tag" content="parite"><meta property="article:tag" content="contrats"><meta property="article:tag" content="tests"><meta property="og:site_name" content="LIVEX"><meta property="og:title" content="syne-mock : parité et tests clients · LIVEX"><meta property="og:description" content="syne-mock émule les contrats SYNE pour tester un client sans lancer le moteur .NET : transport, description de monde 1.1 et parité mesurée champ par champ."><meta property="og:url" content="https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/"><meta property="og:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta property="og:image:alt" content="LIVEX — écosystème de simulation multi-agents"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:locale" content="fr_FR"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="syne-mock : parité et tests clients · LIVEX"><meta name="twitter:description" content="syne-mock émule les contrats SYNE pour tester un client sans lancer le moteur .NET : transport, description de monde 1.1 et parité mesurée champ par champ."><meta name="twitter:image" content="https://donovan-dev-web.github.io/LIVEX/media/og-livex.png"><meta name="twitter:image:alt" content="LIVEX — écosystème de simulation multi-agents"><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-normal.DnYpCC2O.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/instrument-serif-latin-400-italic.DKMiL14s.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="/LIVEX/_astro/jetbrains-mono-latin-400-normal.6fWv1k7M.woff2" as="font" type="font/woff2" crossorigin><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","description":"LIVEX est un écosystème de simulation multi-agents : un moteur (SYNE), une cognition émergente (ECHOS) et un rendu perceptif (PRISM). Documentation et principes ouverts.","inLanguage":"fr","license":"https://www.gnu.org/licenses/gpl-3.0.html","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg","sameAs":["https://github.com/donovan-dev-web/LIVEX"]}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Donovan","url":"https://donovan-dev-web.vercel.app"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"syne-mock : parité et tests clients","description":"syne-mock émule les contrats SYNE pour tester un client sans lancer le moteur .NET : transport, description de monde 1.1 et parité mesurée champ par champ.","datePublished":"2026-10-18T00:00:00.000Z","author":{"@type":"Person","name":"Donovan Chartrain","url":"https://donovan-dev-web.vercel.app"},"publisher":{"@type":"Organization","name":"LIVEX","url":"https://donovan-dev-web.github.io/LIVEX/","logo":"https://donovan-dev-web.github.io/LIVEX/favicon.svg"},"image":"https://donovan-dev-web.github.io/LIVEX/media/og-livex.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/"},"articleSection":"Journal","keywords":"syne-mock, parite, contrats, tests","inLanguage":"fr"}</script><!-- Thème : appliqué avant le rendu pour éviter tout clignotement --><script>
+      (function () {
+        try {
+          var t = localStorage.getItem('livex-theme');
+          if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        } catch (e) {}
+      })();
+    </script><link rel="stylesheet" href="/LIVEX/_astro/BaseLayout.CO1ZX8Cv.css"><style>.cardlink[data-astro-cid-23c2ramm]{flex-direction:column;gap:6px;padding:20px;display:flex}.cardlink[data-astro-cid-23c2ramm] .bt[data-astro-cid-23c2ramm]{align-self:flex-start;margin-top:auto}
+</style></head><body><a class="skip" href="#contenu">Aller au contenu</a><header class="site"><div class="w hb"><a class="lg" href="/LIVEX/" aria-label="LIVEX — accueil"><img src="/LIVEX/_astro/livex-mark.CPvqjT42.svg" alt="" width="24" height="24"><span>LIVEX</span></a><nav class="main" id="main-nav" aria-label="Navigation principale"><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="comprendre-submenu">Comprendre<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="comprendre-submenu"><li><a href="/LIVEX/comprendre/">Vue d’ensemble</a></li><li><a href="/LIVEX/comprendre/limites/">Limites et portée</a></li><li><a href="/LIVEX/comprendre/emergence/">L&#39;émergence expliquée</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/faq/">FAQ</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="architecture-submenu">Architecture<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="architecture-submenu"><li><a href="/LIVEX/technique/">Vue d’ensemble</a></li><li><a href="/LIVEX/technique/syne/">SYNE</a></li><li><a href="/LIVEX/technique/echos/">ECHOS</a></li><li><a href="/LIVEX/technique/prism/">PRISM</a></li><li><a href="/LIVEX/technique/installer/">Installateur LIVEX</a></li><li><a href="/LIVEX/technique/launcher/">Launcher</a></li><li><a href="/LIVEX/technique/resultats/">Reproductibilité et mesures</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="telecharger-submenu">Télécharger<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="telecharger-submenu"><li><a href="/LIVEX/telecharger/">Vue d&#39;ensemble</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 minutes</a></li><li><a href="/LIVEX/telecharger/installation/">Installation et prérequis</a></li><li><a href="/LIVEX/versions/">Versions</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="ressources-submenu">Ressources<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="ressources-submenu"><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li><li><a href="/LIVEX/actualites/">Journal</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="ni"><button type="button" class="ni-trigger" aria-expanded="false" aria-controls="apropos-submenu">À propos<span class="ni-arrow" aria-hidden="true">▾</span></button><ul class="sub" id="apropos-submenu"><li><a href="/LIVEX/a-propos/">Vue d’ensemble</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence sur l&#39;usage de l&#39;IA</a></li><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/presse/">Kit média</a></li></ul></div><a class="nav-cta" href="/LIVEX/suivre/">Suivre</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener" style="font-size:0.85rem">Issues</a><a class="nav-community" href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener" style="font-size:0.85rem">Support</a></nav><button type="button" id="search-toggle" class="search-toggle" aria-expanded="false" aria-controls="search-modal" aria-label="Rechercher" title="Rechercher" data-astro-cid-ac66eqjo><span aria-hidden="true" data-astro-cid-ac66eqjo>⌕</span><span class="sr-only" data-astro-cid-ac66eqjo>Rechercher</span></button><div id="search-modal" class="search-modal" hidden data-astro-cid-ac66eqjo><div class="search-backdrop" data-search-close data-astro-cid-ac66eqjo></div><div class="search-panel" role="dialog" aria-modal="true" aria-label="Rechercher" data-astro-cid-ac66eqjo><button type="button" class="search-close" data-search-close aria-label="Fermer la recherche" data-astro-cid-ac66eqjo>✕</button><div id="pagefind-search" data-astro-cid-ac66eqjo></div><p class="search-hint" data-search-dev hidden data-astro-cid-ac66eqjo>La recherche est disponible sur le site publié.</p></div></div><script>(function(){const pagefindBase = "/LIVEX/pagefind/";
+
+  (function () {
+    var toggle = document.getElementById('search-toggle');
+    var modal = document.getElementById('search-modal');
+    if (!toggle || !modal) return;
+    var loaded = false;
+    var lastFocused = null;
+    function open() {
+      var active = document.activeElement;
+      // Si rien n'était focalisé (activation au clavier, script), on rend la main au bouton.
+      lastFocused = active && active !== document.body ? active : toggle;
+      modal.removeAttribute('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      var closeBtn = modal.querySelector('.search-close');
+      if (closeBtn) closeBtn.focus();
+      if (!loaded) {
+        loaded = true;
+        var css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = pagefindBase + 'pagefind-ui.css';
+        document.head.appendChild(css);
+        var s = document.createElement('script');
+        s.src = pagefindBase + 'pagefind-ui.js';
+        s.onload = function () {
+          try {
+            // @ts-ignore
+            new window.PagefindUI({ element: '#pagefind-search', bundlePath: pagefindBase, showSubResults: true, showImages: false });
+            var input = document.querySelector('#pagefind-search input');
+            if (input) input.focus();
+          } catch (e) {
+            var hint = document.querySelector('[data-search-dev]');
+            if (hint) hint.removeAttribute('hidden');
+          }
+        };
+        s.onerror = function () {
+          var hint = document.querySelector('[data-search-dev]');
+          if (hint) hint.removeAttribute('hidden');
+        };
+        document.head.appendChild(s);
+      } else {
+        var existing = document.querySelector('#pagefind-search input');
+        if (existing) existing.focus();
+      }
+    }
+    function close() {
+      modal.setAttribute('hidden', '');
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+      else toggle.focus();
+    }
+    toggle.addEventListener('click', open);
+    modal.querySelectorAll('[data-search-close]').forEach(function (el) {
+      el.addEventListener('click', close);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (modal.hasAttribute('hidden')) open(); else close();
+        return;
+      }
+      if (modal.hasAttribute('hidden')) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      var focusables = modal.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  })();
+})();</script><div class="lang" role="group" aria-label="Langue"><a href="/LIVEX/actualites/syne-mock-parite-et-tests-clients/" hreflang="fr" lang="fr" aria-current="true" title="Français">FR</a></div><button type="button" id="theme-toggle" aria-pressed="false" aria-label="Thème sombre" title="Thème sombre"><span aria-hidden="true">◐</span><span class="sr-only">Thème sombre</span></button><button type="button" id="nav-toggle" class="nav-burger" aria-expanded="false" aria-controls="main-nav" aria-label="Menu" title="Menu"><span class="nav-burger-icon" aria-hidden="true"></span><span class="sr-only">Menu</span></button></div></header><noscript><style>
+    /* Sans JS, les sous-menus doivent rester accessibles (pas de bouton fonctionnel). */
+    nav.main .ni { position: static; }
+    nav.main .sub {
+      position: static !important;
+      display: flex !important;
+      flex-direction: column;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+    }
+    nav.main .sub::before { display: none; }
+    nav.main .sub a { padding-left: 22px; }
+
+    @media (max-width: 900px) {
+      .nav-burger { display: none !important; }
+      nav.main {
+        position: static !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+      nav.main > a,
+      nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+      nav.main .sub a { padding-left: 18px !important; }
+    }
+  </style></noscript><script>
+  (function () {
+    var header = document.querySelector('header.site');
+    var btn = document.getElementById('nav-toggle');
+    if (!header || !btn) return;
+    var mq = window.matchMedia('(min-width: 901px)');
+    function set(open) {
+      if (open) header.setAttribute('data-nav-open', '');
+      else {
+        header.removeAttribute('data-nav-open');
+        header.querySelectorAll('.ni.open').forEach(function (ni) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function () {
+      set(!header.hasAttribute('data-nav-open'));
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var openNi = header.querySelector('.ni.open');
+      if (openNi) {
+        var trigger = openNi.querySelector('.ni-trigger');
+        openNi.classList.remove('open');
+        if (trigger) {
+          trigger.setAttribute('aria-expanded', 'false');
+          trigger.focus();
+        }
+        e.preventDefault();
+        return;
+      }
+      if (header.hasAttribute('data-nav-open')) {
+        set(false);
+        btn.focus();
+      }
+    });
+    header.querySelectorAll('nav.main a').forEach(function (a) {
+      a.addEventListener('click', function () { set(false); });
+    });
+    header.querySelectorAll('.ni > button.ni-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ni = btn.parentElement;
+        if (!ni) return;
+        var willOpen = !ni.classList.contains('open');
+        header.querySelectorAll('.ni.open').forEach(function (other) {
+          if (other !== ni) {
+            other.classList.remove('open');
+            var otherBtn = other.querySelector('.ni-trigger');
+            if (otherBtn) otherBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+        ni.classList.toggle('open', willOpen);
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      header.querySelectorAll('.ni.open').forEach(function (ni) {
+        if (!ni.contains(e.target)) {
+          ni.classList.remove('open');
+          var t = ni.querySelector('.ni-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        }
+      });
+      if (header.hasAttribute('data-nav-open') && !header.contains(e.target)) set(false);
+    });
+    mq.addEventListener('change', function (m) { if (m.matches) set(false); });
+  })();
+</script><main id="contenu" tabindex="-1" data-pagefind-body="true"><div class="w"><nav class="crumb" aria-label="Fil d'Ariane"><a href="/LIVEX/">Accueil</a><span> · <a href="/LIVEX/actualites/">Journal</a></span><span> · <span aria-current="page">syne-mock : parité et tests clients</span></span></nav><section class="block" style="padding-top:26px"><div class="sh"><b>17</b> Journal</div><h1 class="ptitle">syne-mock : parité et tests clients</h1><p class="lead">syne-mock émule les contrats SYNE pour tester un client sans lancer le moteur .NET : transport, description de monde 1.1 et parité mesurée champ par champ.</p></section></div><script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://donovan-dev-web.github.io/LIVEX/"},{"@type":"ListItem","position":2,"name":"Journal","item":"https://donovan-dev-web.github.io/LIVEX/actualites/"},{"@type":"ListItem","position":3,"name":"syne-mock : parité et tests clients"}]}</script><section class="block"><div class="w"><div class="reading-progress" aria-hidden="true"><span class="reading-progress-bar"></span></div><p class="mu" style="font-size:0.78rem"><time datetime="2026-10-18T00:00:00.000Z">18 octobre 2026</time> · syne-mock · parite · contrats · tests</p><nav class="toc" aria-label="Sommaire de l'article"><a href="#un-serveur-déterministe-pas-un-moteur-de-secours">Un serveur déterministe, pas un moteur de secours</a><a href="#le-piège-du-mauvais-monde">Le piège du mauvais monde</a><a href="#un-harnais-de-parité-champ-par-champ">Un harnais de parité, champ par champ</a><a href="#comment-sen-servir">Comment s’en servir</a><a href="#ce-que-la-parité-garantit-et-ce-quelle-ne-garantit-pas">Ce que la parité garantit, et ce qu’elle ne garantit pas</a><a href="#les-vérifications">Les vérifications</a><a href="#la-doublure-à-sa-juste-place">La doublure, à sa juste place</a></nav><p>Comment tester un écran de rendu quand la chose qu’il doit afficher n’existe pas encore ? Attendre que le moteur soit compilé, publié, lancé et branché, à chaque modification d’une ligne de Blueprint ? Cette dépendance-là tue la vitesse de développement. Elle tue aussi la qualité : on finit par tester rarement, donc mal.</p>
+<p><strong>syne-mock</strong> est né de ce problème très concret. C’est un petit serveur Node.js qui parle le même langage que SYNE — le même transport, les mêmes messages, la même description de monde — sans exécuter la simulation. Un doublure, en somme. À condition de ne jamais oublier ce qu’une doublure ne peut pas faire.</p>
+<h2 id="un-serveur-déterministe-pas-un-moteur-de-secours">Un serveur déterministe, pas un moteur de secours</h2>
+<p>syne-mock est en version 0.1.0, mais il ne vit pas isolé : il émet le contrat d’observabilité <strong>0.5.0</strong> et se déclare aligné sur le moteur <strong>0.17.0</strong>. Ces valeurs ne sont pas recopiées à la main — elles proviennent d’un seul endroit, vérifié par les tests, pour qu’un décalage silencieux soit détecté plutôt que toléré.</p>
+<p>Ce qu’il fait, il le fait bien : il émet <code>world_initialized</code>, puis, à chaque tick, un <code>snapshot</code>, un <code>tick_summary</code>, un <code>decision_made</code> et un <code>action_completed</code> par agent. Le WebSocket texte JSON parle sur <code>ws://127.0.0.1:5180/</code>, le contrôle HTTP sur <code>http://127.0.0.1:5181</code>. Le cycle de vie est celui du contrat : <code>prepare</code>, <code>ready</code>, <code>start</code>, <code>pause</code>, <code>resume</code>, <code>stop</code>, <code>reset</code>.</p>
+<h2 id="le-piège-du-mauvais-monde">Le piège du mauvais monde</h2>
+<p>Il y a un piège classique, et syne-mock l’illustre bien. Lancer le mock sans configuration fait démarrer un monde de 500 × 500, alors que PRISM attend, dans une session d’immersion, un monde de 2 240 × 2 240. Les deux plateformes se mettent alors à raconter des géométries différentes — et l’on cherche longtemps pourquoi le rendu est faux.</p>
+<p>La solution est un fichier de configuration dédié, <code>config_prism.json</code>, miroir du profil <code>prism</code> du moteur : 2 240 × 2 240, cellule 32, 6 TPS, 5 secondes par tick, 100 agents, cinq obstacles — côte sud, crête centrale, amer — exactement comme dans <code>SimulationProfiles.Prism()</code>. Et un durcissement appris à la dure : un chemin de configuration demandé mais introuvable <strong>arrête le démarrage</strong>, plutôt que de retomber silencieusement sur les valeurs par défaut. Le repli silencieux, c’était justement lui, le piège.</p>
+<h2 id="un-harnais-de-parité-champ-par-champ">Un harnais de parité, champ par champ</h2>
+<p>Une doublure ne vaut que si elle ressemble. Pour mesurer la ressemblance, un harnais lance le moteur réel et le mock sur la même géométrie et le même agencement d’obstacles, puis compare leurs descriptions de monde <strong>champ par champ</strong>.</p>
+<p>Le résultat est net : <strong>4 900 cases identiques, 11 bloquées, 0 divergence</strong>. La parité ne porte pas seulement sur les nombres, elle porte sur les types et sur le périmètre : le mock ne publie que ce que le moteur sait produire. Cellules <code>plains</code>, coût 1 ou 100, obstacles en disques <code>{id, x, y, radius}</code>. Ni terrain, ni biome, ni obstacle procédural : ces clés sont <strong>refusées</strong>, pas ignorées. Une clé inconnue doit faire du bruit, pas disparaître.</p>
+<h2 id="comment-sen-servir">Comment s’en servir</h2>
+<p>Le mode d’emploi tient en trois gestes. Installer et démarrer le serveur, en pointant explicitement une configuration — <code>npm start -- config_prism.json</code> — plutôt qu’en laissant les défauts décider. Connecter le client à l’URL du mock au lieu de SYNE, ses ports par défaut coïncidant déjà avec ceux attendus par ECHOS. Puis vérifier l’alignement avec le harnais : <code>node scripts/parity-mock-syne-world.js</code>.</p>
+<p>Le mock s’intègre aussi au Launcher, via un <code>component.json</code> qui déclare son mode de démarrage, sa sonde de statut et un arrêt propre protégé par un jeton de session. Il sait se faire superviser comme les autres — mais il ne prétend pas gérer les campagnes scientifiques de SYNE.</p>
+<h2 id="ce-que-la-parité-garantit-et-ce-quelle-ne-garantit-pas">Ce que la parité garantit, et ce qu’elle ne garantit pas</h2>
+<p>C’est ici qu’il faut être précis, car c’est ici que les malentendus coûtent cher.</p>
+<p>La parité garantit que, pour une même entrée, le mock et le moteur publient <strong>les mêmes champs, avec les mêmes types et les mêmes valeurs bornées</strong>. Un client qui se branche correctement sur le mock se branchera correctement sur SYNE. C’est exactement ce qu’il faut pour tester un rendu, une liaison de transport ou un parseur.</p>
+<p>La parité ne garantit <strong>pas</strong> que le mock simule le même monde. Il ne reproduit pas fidèlement les décisions des agents — ni la formule d’utilité, ni la cognition —, pas davantage le pathfinding A*, ni les systèmes sociaux. Son détour local d’obstacle n’est pas l’A* du moteur, et ses trajectoires ne sont pas garanties identiques bit à bit. Plusieurs zones sont volontairement décoratives : les croyances et la confiance sont publiées vides, la fuite reste inatteignable, la mémoire, les livres, la perception et la mort n’ont pas de portée réelle.</p>
+<h2 id="les-vérifications">Les vérifications</h2>
+<p>Les tests du mock passent avec <strong>51 réussis, 0 échec</strong>. Le harnais de parité tourne en intégration continue, et un test dédié couvre le trajet complet ECHOS ↔ mock : contrôle HTTP, flux WebSocket, ingestion, stockage. Un <code>test_ingestion_states_contract.py</code> vérifie que les états de données — mesuré, non mesuré, absent, trou — sont correctement distingués sur les deux voies, streaming et batch.</p>
+<h2 id="la-doublure-à-sa-juste-place">La doublure, à sa juste place</h2>
+<p>syne-mock rend un service précis : il débarrasse le développement client de la dépendance au moteur .NET, et il rend cette indépendance <strong>vérifiable</strong>. Sa parité est mesurée, pas supposée. Mais il faut lui garder sa juste place : c’est un outil de développement des contrats, pas un moteur de simulation. Toute conclusion scientifique doit être produite avec SYNE réel, et tout contrat final validé contre lui.</p>
+<p>La référence de contrat, les routes et les limites du mock sont détaillées dans son <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/syne-mock/README.md">README</a> et le <a href="https://donovan-dev-web.github.io/LIVEX/documentation/">portail de documentation</a>. Les évolutions de contrat, elles, seront annoncées dans ce <a href="https://donovan-dev-web.github.io/LIVEX/actualites/">journal</a>, disponible en <a href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">flux RSS</a>.</p>
+<section class="share" aria-labelledby="share-title" data-url="https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/" data-title="syne-mock : parité et tests clients"><h2 id="share-title" class="share-title">Partager cet article</h2><div class="share-actions"><button type="button" class="bt share-copy" data-copy="https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/" data-copied="Lien copié">Copier le lien</button><a class="bt" href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fdonovan-dev-web.github.io%2FLIVEX%2Factualites%2Fsyne-mock-parite-et-tests-clients%2F&amp;text=syne-mock%20%3A%20parit%C3%A9%20et%20tests%20clients" rel="noopener" target="_blank">X / Twitter</a><a class="bt" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fdonovan-dev-web.github.io%2FLIVEX%2Factualites%2Fsyne-mock-parite-et-tests-clients%2F" rel="noopener" target="_blank">LinkedIn</a></div><p class="mu share-status" role="status" aria-live="polite"></p></section><section class="pl br" style="padding:18px;margin-top:18px" aria-labelledby="cite-title"><h2 id="cite-title" style="margin:0 0 10px">Citer cet article</h2><p class="mu" style="margin:0 0 12px;font-size:0.78rem">Chartrain, D. (2026). <em>syne-mock : parité et tests clients</em>. LIVEX. https://donovan-dev-web.github.io/LIVEX/actualites/syne-mock-parite-et-tests-clients/</p><p style="margin:0"><a class="bt" href="/LIVEX/CITATION.cff" rel="noopener">CITATION.cff ↗</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub ↗</a></p></section><script>
+        (function () {
+          var btn = document.querySelector('.share-copy');
+          if (!btn) return;
+          var status = document.querySelector('.share-status');
+          var copied = btn.getAttribute('data-copied') || 'Lien copié';
+          btn.addEventListener('click', async function () {
+            var link = btn.getAttribute('data-copy') || '';
+            try {
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(link);
+              } else {
+                throw new Error('no-clipboard');
+              }
+              if (status) status.textContent = copied;
+            } catch (e) {
+              if (status) status.textContent = link;
+            }
+          });
+          if (navigator.share) {
+            var shareBtn = document.createElement('button');
+            shareBtn.type = 'button';
+            shareBtn.className = 'bt';
+            shareBtn.textContent = 'Partager…';
+            shareBtn.addEventListener('click', function () {
+              navigator.share({ title: document.title, url: btn.getAttribute('data-copy') || '' }).catch(function () {});
+            });
+            var actions = document.querySelector('.share-actions');
+            if (actions) actions.appendChild(shareBtn);
+          }
+        })();
+      </script><script>
+        (function () {
+          var bar = document.querySelector('.reading-progress-bar');
+          if (!bar) return;
+          function update() {
+            var doc = document.documentElement;
+            var scrollTop = window.scrollY || doc.scrollTop;
+            var height = doc.scrollHeight - doc.clientHeight;
+            var pct = height > 0 ? Math.min(100, (scrollTop / height) * 100) : 0;
+            bar.style.width = pct + '%';
+          }
+          window.addEventListener('scroll', update, { passive: true });
+          update();
+        })();
+      </script><p style="margin-top:24px"><a class="bt" href="/LIVEX/actualites/">Toutes les actualités</a><span style="display:inline-block;width:8px"></span><a class="bt" href="https://donovan-dev-web.github.io/LIVEX/actualites/feed.xml">Flux RSS</a></p></div></section><section class="block"><div class="w"><div class="sh"><b>17.1</b> Lire aussi</div><h2>D'autres jalons récents.</h2><div class="g2" style="margin-top:18px"><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>L&#39;installateur LIVEX : du paquet à une installation maîtrisée</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>Présentation de l&#39;assistant LIVEX 1.0.0, de ses profils core et full, de la maintenance et des choix faits pour protéger les espaces de travail.</p><a class="bt" href="/LIVEX/actualites/installateur-livex-installer-mettre-a-jour-reparer/" data-astro-cid-23c2ramm>Lire l&#39;article →</a></article><article class="pl br cardlink" data-astro-cid-23c2ramm><h3 style="margin:0 0 8px" data-astro-cid-23c2ramm>LIVEX 1.0.0 : première release publique pour Windows et Linux</h3><p class="mu" style="margin:0 0 14px" data-astro-cid-23c2ramm>La release livex-v1.0.0 rassemble l&#39;installateur, SYNE, ECHOS, le Launcher, PRISM et PRISM-LDK, avec des paquets core et full pour Windows et Linux.</p><a class="bt" href="/LIVEX/actualites/livex-1-0-0-premiere-release-publique/" data-astro-cid-23c2ramm>Lire l&#39;article →</a></article></div></div></section></main><footer class="site"><div class="w"><div class="fcols"><div class="fbrand"><a class="lg" href="/LIVEX/" aria-label="LIVEX">LIVEX</a><p class="fbrand-desc">Écosystème de simulation multi-agents : moteur, cognition émergente et rendu perceptif.</p><p class="fbrand-meta mu">© 2026 Donovan — LIVEX</p></div><nav class="fnav" aria-label="Navigation de pied de page"><div class="fcol"><h2>Navigation</h2><ul><li><a href="/LIVEX/comprendre/">Comprendre</a></li><li><a href="/LIVEX/technique/">Architecture</a></li><li><a href="/LIVEX/telecharger/">Télécharger</a></li><li><a href="/LIVEX/getting-started/">Démarrer en 5 min</a></li><li><a href="/LIVEX/versions/">Versions</a></li><li><a href="/LIVEX/feuille-de-route/">Feuille de route</a></li><li><a href="/LIVEX/actualites/">Journal</a></li></ul></div><div class="fcol"><h2>Ressources</h2><ul><li><a href="/LIVEX/documentation/">Documentation</a></li><li><a href="/LIVEX/faq/">FAQ</a></li><li><a href="/LIVEX/comprendre/glossaire/">Glossaire</a></li><li><a href="/LIVEX/suivre/">Suivre</a></li><li><a href="/LIVEX/presse/">Kit média</a></li><li><a href="/LIVEX/etat-du-projet/">État du projet</a></li><li><a href="/LIVEX/monographie/">Monographie</a></li></ul></div><div class="fcol"><h2>Projet</h2><ul><li><a href="/LIVEX/participer/">Participer</a></li><li><a href="/LIVEX/a-propos/">À propos</a></li><li><a href="/LIVEX/a-propos/auteur/">Auteur</a></li><li><a href="/LIVEX/a-propos/transparence-ia/">Transparence IA</a></li><li><a href="/LIVEX/plan-du-site/">Plan du site</a></li></ul></div><div class="fcol"><h2>Légal</h2><ul><li><a href="/LIVEX/mentions-legales/">Mentions légales</a></li><li><a href="/LIVEX/confidentialite/">Confidentialité</a></li><li><a href="/LIVEX/accessibilite/">Accessibilité</a></li><li><a href="/LIVEX/licence/">Licence</a></li></ul></div></nav></div><hr class="fl"><div class="fgrid"><p>Contenu sous licence <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener">CC BY 4.0</a>, code sous licence GNU GPL v3.0 ou ultérieure.</p><p class="mu">Aucun traceur, aucun cookie. Polices auto-hébergées.</p><p class="mu"><a href="/LIVEX/CITATION.cff" rel="noopener">Citer ce site (CITATION.cff)</a> · <a href="https://github.com/donovan-dev-web/LIVEX" rel="noopener">Dépôt GitHub</a> · <a href="https://github.com/donovan-dev-web/LIVEX/issues" rel="noopener">Issues</a> · <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SUPPORT.md" rel="noopener">Support</a> · <a href="/LIVEX/participer/">Contribuer</a></p></div></div></footer><script>(function(){const themeLabels = {"dark":"Activer le thème sombre","light":"Activer le thème clair"};
+
+      (function () {
+        var btn = document.getElementById('theme-toggle');
+        if (!btn) return;
+        var root = document.documentElement;
+        function update() {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+          btn.setAttribute('aria-label', dark ? themeLabels.light : themeLabels.dark);
+        }
+        update();
+        btn.addEventListener('click', function () {
+          var dark = root.getAttribute('data-theme') === 'dark';
+          if (dark) root.removeAttribute('data-theme');
+          else root.setAttribute('data-theme', 'dark');
+          try {
+            localStorage.setItem('livex-theme', dark ? 'light' : 'dark');
+          } catch (e) {}
+          update();
+        });
+      })();
+    })();</script></body></html>
