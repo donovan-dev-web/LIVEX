@@ -207,12 +207,22 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        try
+        // Windows garde le .exe du stub verrouillé quelques instants après son arrêt : on réessaie.
+        for (var attempt = 0; ; attempt++)
         {
-            Directory.Delete(_root, recursive: true);
-        }
-        catch (DirectoryNotFoundException)
-        {
+            try
+            {
+                Directory.Delete(_root, recursive: true);
+                return;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return;
+            }
+            catch (Exception exception) when ((exception is IOException or UnauthorizedAccessException) && attempt < 50)
+            {
+                Thread.Sleep(100);
+            }
         }
     }
 }
