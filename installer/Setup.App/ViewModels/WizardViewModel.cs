@@ -597,11 +597,23 @@ public sealed class WizardViewModel : ViewModelBase
         _ = RefreshValidationAsync();
     }
 
+    /// <summary>Développe un préfixe <c>~</c> vers le dossier utilisateur (Path.GetFullPath ne le fait pas).</summary>
+    private static string ExpandHome(string path)
+    {
+        if (path == "~" || path.StartsWith("~/", StringComparison.Ordinal) || path.StartsWith("~\\", StringComparison.Ordinal))
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(home, path.Length > 1 ? path[2..] : string.Empty);
+        }
+
+        return path;
+    }
+
     private string? ComputePathError()
     {
         var install = InstallDir?.Trim() ?? string.Empty;
         var workspace = WorkspaceDir?.Trim() ?? string.Empty;
-        var data = DataRoot?.Trim() ?? string.Empty;
+        var data = ExpandHome(DataRoot?.Trim() ?? string.Empty);
         var root = RootDir?.Trim() ?? string.Empty;
 
         if (install.Length == 0 || workspace.Length == 0 || data.Length == 0)
@@ -1083,12 +1095,12 @@ public sealed class WizardViewModel : ViewModelBase
     private InstallRequest BuildRequest() => new(
         _session.Manifest,
         InstallDir,
-        DataRoot,
+        ExpandHome(DataRoot?.Trim() ?? string.Empty),
         WorkspaceDir,
         AllComponents.Where(c => c.IsSelected).Select(c => c.Id).ToList(),
         AcceptLicense,
         DesktopShortcut,
-        LaunchAfterInstall: true,
+        LaunchAfterInstall: false,
         DryRun: _session.IsDemo,
         Simulated: _session.IsDemo,
         OfflineAssetsDir: _options.Core.OfflineAssetsDir,

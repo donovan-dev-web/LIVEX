@@ -212,7 +212,8 @@ public sealed class InstallerEngine : IInstallerEngine
         }
         else
         {
-            if (_pathPolicy.IsWritable(request.InstallDir) && _pathPolicy.IsWritable(request.WorkspaceDir)) Pass("writable");
+            if (_pathPolicy.IsWritable(request.InstallDir) && _pathPolicy.IsWritable(request.WorkspaceDir)
+                && _pathPolicy.IsWritable(request.DataRoot)) Pass("writable");
             else Fail("writable", "Les chemins choisis ne sont pas inscriptibles par l'utilisateur courant.");
 
             if (_processProbe.IsProcessRunningFrom(request.InstallDir))
@@ -608,10 +609,10 @@ public sealed class InstallerEngine : IInstallerEngine
 
                 var bytesBefore = total == 0 ? 0 : bytesTotal * (current - 1) / total;
                 var bytesPerAction = total == 0 ? 0 : bytesTotal / total;
+                // Limité par le seuil de 50 ms : un rapport forcé par action noie le fil d'interface.
                 Report(new ProgressReport(
                     action.GetType().Name, ComponentIdOf(action), current, total,
-                    bytesBefore, bytesTotal, action.TargetPath, PlanActionLabel.Of(action)),
-                    force: true);
+                    bytesBefore, bytesTotal, action.TargetPath, PlanActionLabel.Of(action)));
 
                 void SubProgress(double fraction, string? entry)
                 {

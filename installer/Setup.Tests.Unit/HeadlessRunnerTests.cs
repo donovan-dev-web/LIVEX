@@ -66,6 +66,28 @@ public class HeadlessRunnerTests
     }
 
     [Fact]
+    public async Task Installation_Orpheline_N_Empeche_Pas_Une_Nouvelle_Installation()
+    {
+        var (_, policy) = TestEngine.Create();
+        var manifest = DemoWorld.CreateManifest(DemoScenario.ExistingInstall);
+        var stale = DemoWorld.CreateExistingInstallation(
+            policy.InstallDir, policy.DataDir, Path.Combine(policy.DataDir, "workspace")) with
+        {
+            Version = manifest.Version,
+        };
+        var engine = new StubEngine
+        {
+            Detection = new DetectionResult(true, stale.InstallDir, stale, false, new[] { "Launcher absent du répertoire logiciel." }),
+        };
+        var request = TestEngine.DemoRequest(policy, manifest: manifest, dryRun: false);
+
+        var outcome = await HeadlessRunner.InstallAsync(engine, request, new StringWriter());
+
+        Assert.Equal(ExitCodes.Success, outcome.ExitCode);
+        Assert.Equal(1, engine.Executions);
+    }
+
+    [Fact]
     public async Task Actif_Facultatif_Indisponible_Retourne_6()
     {
         var (_, policy) = TestEngine.Create();

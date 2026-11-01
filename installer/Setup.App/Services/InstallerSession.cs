@@ -163,11 +163,32 @@ public sealed class InstallerSession
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             return Manifest.Components
-                .Where(component => component.Files.Count > 0
-                                    && component.Files.All(file => paths.Contains(file.Path)))
+                .Where(component => IsComponentInstalled(component, paths))
                 .Select(component => component.Id)
                 .ToList();
         }
+    }
+
+    /// <summary>
+    /// Un composant est présent quand tous ses fichiers listés figurent dans l'inventaire.
+    /// Le manifeste public ne liste pas les fichiers des archives : on se rabat alors sur
+    /// la présence d'au moins un fichier sous sa racine d'installation.
+    /// </summary>
+    private static bool IsComponentInstalled(ComponentDescriptor component, HashSet<string> paths)
+    {
+        if (component.Files.Count > 0)
+        {
+            return component.Files.All(file => paths.Contains(file.Path));
+        }
+
+        var root = component.InstallRoot;
+        if (string.IsNullOrWhiteSpace(root) || string.Equals(root, "root", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var prefix = root.Replace('\\', '/').TrimEnd('/') + "/";
+        return paths.Any(path => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task<DetectionResult> DetectAsync(CancellationToken ct = default)

@@ -1,8 +1,8 @@
 # Production, publication et mise à jour de l'installateur
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — cible V1, aligné sur le plan d'alignement du 29 octobre 2026
-**Dernière mise à jour** : 29 octobre 2026
+**Statut** : [DRAFT] — chaîne locale V1
+**Dernière mise à jour** : 1er novembre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TESTING.md`](TESTING.md), [`COMPONENTS.md`](COMPONENTS.md), [ADR-010](adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md), `../../VERSIONING.md`
 
 ---
@@ -13,11 +13,10 @@ Ce document décrit comment une version de l'installateur est construite,
 vérifiée, publiée et mise à jour. Il ne fixe pas de date : il fixe des portes et
 des artefacts.
 
-> **État au 29 octobre 2026.** Ce document décrit la chaîne cible de la V1.
-> Les scripts de release (`scripts/release/`, `installer/build/build_distribution.py`),
-> les jobs de CI et les artefacts ne sont pas encore produits : ils sont les
-> livrables des tâches T2, T3 et T6 du plan d'alignement. Aucune taille ni durée
-> n'est écrite ici avant d'être mesurée sur un artefact produit.
+> **État au 1er novembre 2026.** La chaîne est **locale** : `build-release.ps1`
+> publie les binaires, assemble la distribution et produit le ZIP public.
+> GitHub Actions ne compile ni ne signe rien ; le workflow `release.yml` se
+> limite à créer la release qui recevra l'upload local.
 
 ## 2. Versionnement
 
@@ -54,29 +53,35 @@ composants sont consignées dans les notes de release.
 
 | Catégorie | Nom | Origine |
 | :-- | :-- | :-- |
-| Installateurs | `livex-1.0.0-win-x64-core.zip`, `livex-1.0.0-win-x64-full.zip`, `livex-1.0.0-linux-x64-core.tar.gz`, `livex-1.0.0-linux-x64-full.tar.gz` | CI |
-| Composants | `launcher-0.1.0-<rid>.<ext>`, `syne-0.17.0-<rid>.<ext>`, `echos-0.1.0-<rid>.<ext>` | CI |
-| PRISM | `prism-1.0.0-win-x64.zip`, `prism-1.0.0-linux-x64.tar.gz` | entrée externe, recopiée |
-| Modules | `prism-ldk-1.0.0.zip`, `livex-docs-1.0.0.zip`, `syne-mock-0.1.0-<rid>.<ext>` | LDK : entrée externe ; docs et mock : CI |
-| Intégrité | `SHA256SUMS` couvrant tous les assets ; attestations GitHub de provenance | CI |
+| ZIP public | `LIVEX-1.0.0-win-x64-core.zip` (et `full`, `linux-x64`) | build local |
+| Composants | `packages/<id>-<version>-<rid>.zip` **à l'intérieur** du ZIP | build local |
+| PRISM | `prism-1.0.0-win-x64.zip`, `prism-1.0.0-linux-x64.tar.gz` | entrée externe (profil `core`) |
+| Modules | `prism-ldk-1.0.0.zip` (actif externe) ; `syne-mock` embarqué | LDK externe ; mock local |
 
-Contenu d'un installateur (identique pour les deux profils, à la charge utile
-près) :
+Contenu du ZIP public :
 
 ```text
-livex-1.0.0-<rid>-<profil>/
-├── livex-setup[.exe]              # binaire d'installation et de maintenance
-├── payload/                       # charge utile ; en profil full, les actifs aussi
-├── distribution.json              # manifeste canonique
-├── SHA256SUMS                     # sommes de tous les fichiers de l'archive
-└── LISEZ-MOI.txt                  # vérification, installation, désinstallation
+LIVEX-1.0.0-win-x64-core.zip
+└── LIVEX-1.0.0-win-x64-core/
+    ├── livex-setup.exe            # binaire d'installation et de maintenance
+    ├── distribution.json          # manifeste (acquisition bundled-archive)
+    ├── packages/                  # un ZIP par composant embarqué
+    │   ├── launcher-0.1.0-win-x64.zip
+    │   ├── syne-0.17.0-win-x64.zip
+    │   ├── echos-0.1.0-win-x64.zip
+    │   ├── syne-mock-0.1.0-win-x64.zip
+    │   └── resources-1.0.0-win-x64.zip
+    ├── assets/                    # icônes et ressources racine
+    ├── LICENSE
+    ├── NOTICE
+    ├── THIRD-PARTY-NOTICES.md
+    └── LISEZ-MOI.txt
 ```
 
-Contenu d'une archive de composant : exactement le sous-arbre installé
-(`components/syne/…`, `components/echos/…`, `components/prism/…`, racine pour le
-Launcher), décompressable à la racine d'une installation. Ces archives servent à
-un usage manuel et avancé ; seuls LDK, docs et mock sont consommés par
-l'installateur.
+Chaque ZIP de composant contient exactement le sous-arbre installé
+(`core/launcher/`, `components/syne/`, `assets/`, etc.) et le `component.json`
+normalisé lorsqu'il existe. L'installateur extrait ces archives ; le manifeste
+public ne duplique pas la liste des fichiers.
 
 ### 3.2 Release d'entrées `prism-v1.0.0`
 
@@ -86,52 +91,53 @@ prism-1.0.0-linux-x64.tar.gz
 prism-ldk-1.0.0.zip        # copie bit à bit de prism/LDK_Package/PrismLdk.zip
 ```
 
+Ces actifs restent nécessaires au profil `core` ; le profil `full` les embarque
+dans `packages/`.
+
 ### 3.3 Règles
 
 - le nom et l'URL de chaque actif sont ceux déclarés dans `distribution.json` ;
   aucun renommage ni remplacement après publication ;
-- les URL des modules facultatifs pointent vers le tag **`livex-v1.0.0`** courant,
+- les URL des actifs externes pointent vers le tag **`livex-v1.0.0`** courant,
   y compris pour le LDK recopié depuis `prism-v1.0.0` (ADR-008 §2) ;
-- les archives sont **déterministes** : entrées triées, horodatages
-  `SOURCE_DATE_EPOCH`, permissions normalisées ; un fichier présent dans un
-  installateur et dans une archive de composant a la même empreinte ;
-- une archive embarquée dans le profil `full` est identique, octet pour octet, à
-  l'asset publié ;
-- la CI échoue si un asset dépasse **1,9 GiB** ; le découpage en parties
-  vérifiables n'est pas implémenté tant qu'il n'est pas nécessaire ;
-- l'archive d'installation est un `.zip` (Windows) et un `.tar.gz` (Linux) ; le
-  contenu décompressé est identique ; aucune installation ne se fait depuis
-  l'archive sans l'avoir décompressée ;
+- les ZIP sont **déterministes** : entrées triées, horodatages
+  `SOURCE_DATE_EPOCH`, permissions normalisées ;
+- le ZIP public final est l'unique fichier à télécharger ; les archives de
+  composants ne sont pas publiées séparément ;
+- aucune compilation ni signature n'a lieu dans GitHub Actions ;
 - aucun autre artefact n'est publié : pas d'installateur « web », pas de paquet
   auto-extractible non vérifiable.
 
 ## 4. Chaîne de production
 
+Entièrement locale, sur le poste du mainteneur :
+
 ```text
 0. entrées externes : PRISM Windows/Linux et LDK buildés hors CI, archivés de
    façon déterministe dans dist/inputs/, empreintes épinglées dans
-   installer/build/external-inputs.json, publiés sur prism-v1.0.0
-1. geler les versions des composants (manifeste de build)
-2. publier self-contained : livex-launcher, syne
-3. assembler ECHOS : CPython 3.12 + site-packages figés
-4. produire les actifs facultatifs : archive de documentation, archive SYNE-Mock
-   + runtime Node
-5. télécharger les entrées de prism-v1.0.0 et vérifier external-inputs.json
-6. assembler la charge utile core et full (PRISM depuis l'entrée vérifiée) puis
-   calculer tailles et empreintes
-7. signer Authenticode les exécutables Windows (si SIGNING_ENABLED), PUIS
-   calculer les empreintes : signer après hachage invaliderait files[].sha256
-8. écrire distribution.json canonique (profils, acquisition, actifs)
-9. vérifier le manifeste avec Setup.Core (le même code que l'installateur)
-10. produire les archives d'installateurs et de composants
-11. calculer SHA256SUMS et les attestations de provenance
-12. créer la release livex-v1.0.0 en PRÉ-RELEASE, attacher tous les assets
-13. vérifier chaque URL, taille et empreinte du manifeste publié
-14. exécuter la recette de TESTING.md §7 ; passer la release en stable
+   installer/build/external-inputs.json
+1. pwsh scripts/release/build-release.ps1 -Version 1.0.0 -Tag livex-v1.0.0
+2. publication self-contained : livex-launcher (core/launcher), livex-setup
+   (single-file) et syne ; copie de syne/component.json
+3. assemblage ECHOS : CPython 3.12 + site-packages figés
+4. assemblage SYNE-Mock
+5. vérification des entrées externes (check_assets.py)
+6. build_distribution.py :
+   - normalise les component.json,
+   - compresse un ZIP par composant dans packages/,
+   - calcule taille et SHA-256,
+   - écrit distribution.json,
+   - copie livex-setup, mentions légales et LISEZ-MOI.txt,
+   - produit LIVEX-<version>-<rid>-<profile>.zip
+7. tests : dotnet test installer/Setup.sln, dotnet build launcher/Launcher.sln
+8. recette de TESTING.md §7 sur une machine propre
+9. création manuelle de la release GitHub (workflow release.yml), puis :
+   pwsh scripts/release/build-release.ps1 ... -Upload
+10. vérification du ZIP téléchargé, passage en stable
 ```
 
-L'ordre est contraignant : **signer avant de hacher**, publier les entrées
-**avant** la distribution assemblée, vérifier **avant** de passer en stable.
+L'ordre est contraignant : les entrées externes sont vérifiées **avant**
+l'assemblage, et le ZIP public est testé **avant** l'upload final.
 
 ## 5. Confiance, signature et clés
 
@@ -139,11 +145,11 @@ Décision V1 (plan d'alignement, D3 ; [ADR-007](adr/ADR-007-manifeste-de-distrib
 
 | Élément | Mécanisme | Portée |
 | :-- | :-- | :-- |
-| `distribution.json` | SHA-256 de chaque fichier, obligatoire | intégrité de la charge utile et des actifs facultatifs |
-| Sommes | `SHA256SUMS` | vérification manuelle (`sha256sum -c`) |
-| Provenance | attestations GitHub (`actions/attest-build-provenance`) | vérification par `gh attestation verify` |
-| Windows | Authenticode SHA-256, si un certificat est disponible | SmartScreen ; appliqué avant hachage |
-| Linux | aucune signature détachée en V1 | sommes + attestations |
+| `distribution.json` | SHA-256 de chaque archive `packages/` | intégrité de la charge utile et des actifs facultatifs |
+| ZIP public | empreinte SHA-256 publiée par GitHub pour l'asset téléchargé | vérification manuelle |
+| Provenance | aucun build CI en V1 | la confiance repose sur le poste de build |
+| Windows | Authenticode SHA-256, si un certificat est disponible | SmartScreen ; appliqué avant le calcul des empreintes |
+| Linux | aucune signature détachée en V1 | sommes manuelles |
 
 Règles :
 
@@ -152,11 +158,9 @@ Règles :
   l'installateur ne peut pas garantir sa propre authenticité ;
 - le champ `signature` du manifeste reste **optionnel** dans le schéma, vide en
   V1, pour un usage futur ;
-- `SIGNING_ENABLED` (variable de dépôt) active l'Authenticode ; désactivé par
-  défaut, la release est publiée non signée avec un avertissement SmartScreen
-  documenté ;
-- aucun secret, certificat `.pfx` ni clé n'est dans le dépôt ; ils restent dans
-  les secrets de la CI, accessibles au seul job de publication ;
+- l'Authenticode est appliqué **localement avant** le calcul des empreintes du
+  manifeste ;
+- aucun secret, certificat `.pfx` ni clé n'est dans le dépôt ;
 - un asset publié n'est jamais remplacé : un contenu modifié impose une nouvelle
   version (ADR-008 §7).
 
@@ -166,16 +170,19 @@ Règles :
 `Get-AuthenticodeSignature .\livex-setup.exe`. Une release non signée l'indique
 dans ses notes : SmartScreen peut afficher un avertissement.
 
-**Linux** :
+**Toutes plateformes** : comparer le SHA-256 du ZIP téléchargé à celui affiché
+par la release GitHub, puis décompresser le ZIP et lancer `livex-setup`.
 
-```bash
-sha256sum -c SHA256SUMS
-gh attestation verify livex-1.0.0-linux-x64-core.tar.gz -R donovan-dev-web/LIVEX
+```powershell
+Get-FileHash .\LIVEX-1.0.0-win-x64-core.zip -Algorithm SHA256
 ```
 
-Le `LISEZ-MOI.txt` de chaque distribution reprend ces commandes : un utilisateur
-ne doit pas avoir à consulter le dépôt pour vérifier ce qu'il exécute. La
-procédure et les empreintes éventuelles sont publiées dans `SECURITY.md`.
+```bash
+sha256sum LIVEX-1.0.0-linux-x64-core.zip
+```
+
+Le `LISEZ-MOI.txt` de chaque distribution reprend ces étapes : un utilisateur
+ne doit pas avoir à consulter le dépôt pour vérifier ce qu'il exécute.
 
 ## 7. Canaux
 
@@ -233,12 +240,14 @@ commit est l'écriture de `.livex-install.json` et de l'inventaire.
 - [ ] `THIRD-PARTY-NOTICES.md` à jour, relevé sur les artefacts réels ;
 - [ ] en-têtes SPDX présents sur les nouveaux fichiers source ;
 - [ ] aucune taille, durée ou performance non mesurée dans la documentation ;
-- [ ] `SHA256SUMS` et attestations produits et publiés ;
-- [ ] aucun asset au-dessus de 1,9 GiB ; `check_assets.py` vert ;
-- [ ] notes de release : versions, **taille mesurée** de chaque distribution
-      **et de chaque actif facultatif**, limites connues, procédure de vérification ;
-- [ ] actifs facultatifs attachés à la release, avec les noms exacts du
-      manifeste, et URL vérifiée une par une ;
+- [ ] ZIP public unique produit localement et SHA-256 relevé ;
+- [ ] `packages/` contient un ZIP par composant et aucun `payload/` résiduel ;
+- [ ] `distribution.json` ne référence que des `bundled-archive` présentes ou
+      des `release-asset` réellement publiés ;
+- [ ] notes de release : versions, **taille mesurée** du ZIP, limites connues,
+      procédure de vérification ;
+- [ ] actifs externes attachés à la release, avec les noms exacts du manifeste,
+      et URL vérifiée une par une ;
 - [ ] un module sans actif publié est déclaré `unavailable` (il ne doit pas
       apparaître coché) ;
 - [ ] profil `full` installable sans réseau sur une machine propre ;
@@ -257,13 +266,13 @@ Flux conforme à `docs/governance/GITFLOW.md` :
 3. build des entrées externes sur le HEAD gelé, puis tag **`prism-v1.0.0`** sur
    `release/1.0.0` et upload des trois archives d'entrée ;
 4. PR `release/1.0.0` → `main` (CI verte, aucune fonctionnalité nouvelle) ;
-5. tag **`livex-v1.0.0`** sur `main` : `release.yml` exécute `verify`,
-   `inputs`, `installer` (matrice Windows/Linux) et `publish` ;
-6. release créée en **pré-release** ; vérification des URL, tailles, SHA-256 et
-   attestations ;
-7. recette de `TESTING.md` §7.2 sur machine propre ;
-8. passage en stable (`--prerelease=false --latest`) après confirmation du
-   mainteneur ;
+5. création de la release GitHub `livex-v1.0.0` via le workflow
+   `release.yml` (aucun build) ;
+6. build local : `build-release.ps1 -Version 1.0.0 -Tag livex-v1.0.0` ;
+7. recette locale du ZIP produit, puis upload :
+   `build-release.ps1 ... -Upload` (ou `gh release upload`) ;
+8. vérification des URL, tailles et SHA-256, puis passage en stable si la
+   release a été créée en pré-release ;
 9. retour `main` → `develop`, suppression de `release/1.0.0` ;
 10. PR de publication (README, `docs/INSTALLATION.md`, site FR/EN) fusionnée
     **seulement après** vérification de la release publique.
@@ -315,3 +324,4 @@ GitHub.
 | :-- | :-- | :-- |
 | 21 octobre 2026 | Création | Nouvelle base documentaire |
 | 29 octobre 2026 | §2 versions V1, §3 artefacts (4 installateurs, archives de composants, entrées), §4 chaîne (entrées épinglées, Authenticode avant hachage, attestations, garde-fou 1,9 GiB, pré-release), §5/§6/§7 confiance D3, §9 checklist, §10 Gitflow et deux tags, §13 renvoi PACKAGING | Plan d'alignement V1 : corrections C6a/C6b/C6c, décisions D1 à D6, ADR-010 |
+| 1er novembre 2026 | §1 chaîne locale, §3 ZIP unique et `packages/`, §4 build-release local, §5/§6 vérification sans build CI, §9 checklist, §10 publication manuelle | Corrections V1 de l'installateur et du workflow de release |

@@ -67,6 +67,8 @@ if (-not $SkipComponents) {
 
     Invoke-Step "Publication de SYNE" {
         Publish-DotNet (Join-Path $Root "syne/Simulation.Console/Simulation.Console.csproj") (Join-Path $Staging "syne")
+        # Le manifeste de composant accompagne toujours le binaire publié.
+        Copy-Item -LiteralPath (Join-Path $Root "syne/component.json") -Destination (Join-Path $Staging "syne/component.json") -Force
     }
 
     Invoke-Step "Staging d'ECHOS" {

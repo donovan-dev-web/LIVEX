@@ -82,17 +82,17 @@ spécification, l'architecture et les ADR.
 | ECHOS | obligatoire | `distribution.json`, contrôlée contre `echos/component.json` |
 | Contrats | support obligatoire, non décochable | `distribution.json` (`launcher/contracts/`) |
 | Ressources | support obligatoire, non décochable | `distribution.json` (`assets/`) |
-| PRISM | **composant de base, coché par défaut** | `distribution.json` (`payload/`, `components/prism/`) |
+| PRISM | **composant de base, coché par défaut** | `distribution.json` (`bundled-archive` en `full`, `release-asset` en `core`, `components/prism/`) |
 | PRISM-LDK | module facultatif, décoché | actif `prism-ldk-<version>.zip`, `plugins/prism-ldk/` |
-| Documentation hors ligne | module facultatif, décoché | actif `livex-docs-<version>.zip`, `docs/` |
-| SYNE-Mock | module facultatif, décoché | actif `syne-mock-<version>.zip`, `components/syne-mock/` |
+| Documentation hors ligne | non livrée en V1 | — |
+| SYNE-Mock | module facultatif, décoché | `packages/syne-mock-<version>.zip`, `components/syne-mock/` |
 
 **Seuls Launcher, SYNE et ECHOS sont obligatoires.** PRISM est un composant de
-base : il est embarqué, **coché par défaut**, et le décocher affiche
-l'avertissement prévu par la base (§3.3). Les **trois modules facultatifs** sont
-acquis depuis les actifs de la release GitHub (profil `core`), ou embarqués dans
-la variante `full`. Un module dont l'actif n'est pas publié pour la plateforme
-est affiché **indisponible**, avec sa raison, jamais comme une case sans effet.
+base : **coché par défaut**, et le décocher affiche l'avertissement prévu par la
+base (§3.3). Les modules facultatifs sont soit embarqués dans `packages/`, soit
+acquis depuis les actifs de la release (profil `core`). Un module dont l'actif
+n'est pas publié pour la plateforme est affiché **indisponible**, avec sa raison,
+jamais comme une case sans effet.
 
 PRISM est une **application packagée** Windows/Linux : Unreal Engine n'est pas
 requis sur le poste. PRISM-LDK est le seul élément qui exige Unreal Engine,
@@ -191,23 +191,23 @@ répertoire n'est créé pendant le parcours complet.
 | Confiance | empreintes SHA-256, `SHA256SUMS`, attestations GitHub, Authenticode conditionnel | [ADR-007](adr/ADR-007-manifeste-de-distribution-et-confiance.md) |
 | Acquisition | profil `core` (téléchargement explicite) ou `full` (hors ligne complet) | [ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md) |
 | Association `.livexp` | ouverture des paquets de campagne par le Launcher, en HKCU/XDG | [ADR-009](adr/ADR-009-association-fichiers-livexp.md) |
-| Release V1 | entrées PRISM/LDK produites hors CI, épinglées, composants publiés individuellement | [ADR-010](adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md) |
+| Release V1 | entrées PRISM/LDK produites hors CI, ZIP public unique avec un ZIP par composant | [ADR-010](adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md) |
 
 ## 8. Vocabulaire
 
 | Terme | Sens |
 | :-- | :-- |
-| **Répertoire logiciel** | dossier qui contient le Launcher, ses composants et leurs ressources |
-| **Racine de données** | `LIVEX_DATA` ou `~/.livex-data` : paquets, archives, sessions, préférences |
+| **Répertoire logiciel** | dossier qui contient `core/launcher`, ses composants et leurs ressources |
+| **Racine de données** | `LIVEX_DATA`, chemin installé, ou `%LOCALAPPDATA%\LIVEX\data` : paquets, archives, sessions, préférences |
 | **Espace de travail** | dossier choisi pour les expériences et les rapports |
 | **Résultats de recherche** | paquets `.livexp`, archives scellées, sessions, base d'analyse |
-| **Distribution** | dossier téléchargé : `livex-setup`, `payload/`, manifeste, signatures |
-| **Composant de base** | PRISM : embarqué, coché par défaut, désactivable ; sa désactivation est avertie |
-| **Module facultatif** | composant décoché par défaut : PRISM-LDK, documentation, SYNE-Mock |
+| **Distribution** | ZIP public : `livex-setup.exe`, `packages/`, `assets/`, manifeste, mentions légales |
+| **Composant de base** | PRISM : coché par défaut, désactivable ; sa désactivation est avertie |
+| **Module facultatif** | composant décoché par défaut : PRISM-LDK, SYNE-Mock |
 | **Actif de release** | archive attachée à une release GitHub, vérifiée par taille et SHA-256 |
-| **Profil** | `core` (socle seul, modules à la demande) ou `full` (tout embarqué) |
+| **Profil** | `core` (socle embarqué, actifs à la demande) ou `full` (tout embarqué) |
 | **Maintenance** | mise à jour, réparation, ajout/retrait de composant, désinstallation |
-| **Charge utile** | fichiers réellement copiés dans l'installation |
+| **Charge utile** | archives `packages/` réellement extraites dans l'installation |
 
 ## 9. Signaler un problème
 

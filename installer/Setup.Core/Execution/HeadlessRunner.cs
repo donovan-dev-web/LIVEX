@@ -49,7 +49,10 @@ public static class HeadlessRunner
         if (!request.DryRun)
         {
             var detection = await engine.DetectAsync(ct).ConfigureAwait(false);
-            if (detection is { IsInstalled: true, Record: { } record } &&
+            // Un enregistrement orphelin (répertoire supprimé, launcher absent) ne
+            // doit pas bloquer une nouvelle installation : seule une installation
+            // réellement valide justifie le code 5.
+            if (detection is { IsInstalled: true, IsValid: true, Record: { } record } &&
                 string.Equals(record.Version, request.Manifest.Version, StringComparison.OrdinalIgnoreCase))
             {
                 return new HeadlessOutcome(
