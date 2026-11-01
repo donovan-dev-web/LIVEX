@@ -198,6 +198,10 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
         }
 
         Assert.Equal(WellKnownSimulations.Prism, simulation);
+
+        // Arrêt explicite : le stub tourne encore ici ; sans cela, Dispose supprime un .exe en cours d'exécution (Windows).
+        var stopError = await composition.Facade.ToggleComponentAsync("syne", false);
+        Assert.Null(stopError);
     }
 
     /// <inheritdoc />
