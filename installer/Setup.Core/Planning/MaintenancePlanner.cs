@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+using System.IO.Compression;
 using System.Text.Json;
 using Setup.Core.Distribution;
 using Setup.Core.Lifecycle;
@@ -28,7 +29,8 @@ public sealed record MaintenanceRequest(
     string? NewWorkspacePath = null,
     IReadOnlyList<FileEntry>? Inventory = null,
     string? PayloadRoot = null,
-    bool DryRun = true);
+    bool DryRun = true,
+    string? BundleRoot = null);
 
 /// <summary>
 /// Plans de maintenance. Aucun plan ne touche à un composant obligatoire, et
@@ -112,13 +114,31 @@ public static class MaintenancePlanner
             .ToList();
 
         var updated = new List<FileEntry>();
-        foreach (var file in components.SelectMany(c => c.Files).DistinctBy(f => f.Path, StringComparer.OrdinalIgnoreCase))
+        foreach (var component in components)
         {
-            var target = Path.Combine(installDir, file.Path);
-            var source = request.PayloadRoot is null ? null : Path.Combine(request.PayloadRoot, file.Path);
-            actions.Add(new ReplaceFileAction(target, source, file.Sha256, file.Size, ++step));
-            bytesToWrite += file.Size;
-            updated.Add(file);
+            if (component.Acquisition.Kind == "bundled-archive" && component.Acquisition.Asset is not null)
+            {
+                var archive = ResolveArchive(request, component.Acquisition.Asset);
+                var destination = ComponentDestination(installDir, component);
+                var entries = ReadArchiveEntries(archive, component.InstallRoot);
+                actions.Add(new CreateDirectoryAction(destination, ++step));
+                actions.Add(new ExtractArchiveAction(
+                    archive, destination, ++step,
+                    Entries: entries.Select(e => e.Path).ToList(),
+                    ComponentId: component.Id));
+                bytesToWrite += component.Acquisition.Size ?? 0;
+                updated.AddRange(entries);
+                continue;
+            }
+
+            foreach (var file in component.Files)
+            {
+                var target = Path.Combine(installDir, file.Path);
+                var source = request.PayloadRoot is null ? null : Path.Combine(request.PayloadRoot, file.Path);
+                actions.Add(new ReplaceFileAction(target, source, file.Sha256, file.Size, ++step));
+                bytesToWrite += file.Size;
+                updated.Add(file);
+            }
         }
 
         actions.Add(new ReplaceFileAction(
@@ -157,33 +177,74 @@ public static class MaintenancePlanner
         }
 
         var inventory = request.Inventory ?? Array.Empty<FileEntry>();
-        if (inventory.Count == 0)
+        var installDir = request.Record.InstallDir;
+        var restored = 0;
+
+        // Distribution en archives : re-extraire l'archive d'un composant
+        // restaure tous ses fichiers d'un coup, sans liste fichier par fichier.
+        var archiveComponents = manifest.Components
+            .Where(c => c.Acquisition.Kind == "bundled-archive" && c.Acquisition.Asset is not null)
+            .ToList();
+
+        foreach (var component in archiveComponents)
+        {
+            var root = string.IsNullOrWhiteSpace(component.InstallRoot) || component.InstallRoot == "root"
+                ? string.Empty
+                : component.InstallRoot.Replace('\\', '/').TrimEnd('/') + "/";
+            var missing = inventory.Count == 0
+                          || inventory.Any(entry =>
+                              entry.Path.StartsWith(root, StringComparison.OrdinalIgnoreCase)
+                              && !File.Exists(Path.Combine(installDir, entry.Path)));
+
+            if (!missing && !request.DryRun)
+            {
+                continue;
+            }
+
+            var archive = ResolveArchive(request, component.Acquisition.Asset!);
+            var destination = ComponentDestination(installDir, component);
+            var entries = ReadArchiveEntries(archive, component.InstallRoot);
+            actions.Add(new CreateDirectoryAction(destination, ++step));
+            actions.Add(new ExtractArchiveAction(
+                archive, destination, ++step,
+                Entries: entries.Select(e => e.Path).ToList(),
+                ComponentId: component.Id));
+            bytesToWrite += component.Acquisition.Size ?? 0;
+            restored += entries.Count;
+        }
+
+        if (archiveComponents.Count == 0 && inventory.Count == 0)
         {
             warnings.Add("Inventaire absent : la réparation ne peut pas déterminer les fichiers à restaurer.");
             return;
         }
 
-        var installDir = request.Record.InstallDir;
-        var missing = inventory
-            .Where(entry => request.DryRun || !File.Exists(Path.Combine(installDir, entry.Path)))
-            .Take(request.DryRun ? 3 : int.MaxValue)
-            .ToList();
-
-        if (missing.Count == 0)
+        if (archiveComponents.Count == 0)
         {
-            warnings.Add("Aucune réparation nécessaire : tous les fichiers inventoriés sont présents.");
-            return;
+            var missing = inventory
+                .Where(entry => request.DryRun || !File.Exists(Path.Combine(installDir, entry.Path)))
+                .Take(request.DryRun ? 3 : int.MaxValue)
+                .ToList();
+
+            if (missing.Count == 0)
+            {
+                warnings.Add("Aucune réparation nécessaire : tous les fichiers inventoriés sont présents.");
+                return;
+            }
+
+            foreach (var entry in missing)
+            {
+                var target = Path.Combine(installDir, entry.Path);
+                var source = request.PayloadRoot is null ? null : Path.Combine(request.PayloadRoot, entry.Path);
+                actions.Add(new WriteFileAction(target, source, entry.Sha256, entry.Size, ++step));
+                bytesToWrite += entry.Size;
+                restored++;
+            }
         }
 
-        foreach (var entry in missing)
-        {
-            var target = Path.Combine(installDir, entry.Path);
-            var source = request.PayloadRoot is null ? null : Path.Combine(request.PayloadRoot, entry.Path);
-            actions.Add(new WriteFileAction(target, source, entry.Sha256, entry.Size, ++step));
-            bytesToWrite += entry.Size;
-        }
-
-        warnings.Add($"{missing.Count} fichier(s) seront restaurés depuis la distribution d'origine.");
+        warnings.Add(restored == 0
+            ? "Aucune réparation nécessaire : les fichiers inventoriés sont présents."
+            : $"{restored} fichier(s) seront restaurés depuis la distribution.");
     }
 
     // ------------------------------------------------------------- composants
@@ -219,6 +280,28 @@ public static class MaintenancePlanner
 
         var installDir = request.Record.InstallDir;
         var added = new List<FileEntry>();
+
+        if (component.Acquisition.Kind == "bundled-archive" && component.Acquisition.Asset is not null)
+        {
+            var archive = ResolveArchive(request, component.Acquisition.Asset);
+            var destination = ComponentDestination(installDir, component);
+            var entries = ReadArchiveEntries(archive, component.InstallRoot);
+            actions.Add(new CreateDirectoryAction(destination, ++step));
+            actions.Add(new ExtractArchiveAction(
+                archive, destination, ++step,
+                Entries: entries.Select(e => e.Path).ToList(),
+                ComponentId: component.Id));
+            bytesToWrite += component.Acquisition.Size ?? 0;
+            added.AddRange(entries);
+            actions.Add(new UpdateInventoryAction(
+                Path.Combine(installDir, ".livex-inventory.json"),
+                request.Record.Product,
+                request.Record.Version,
+                added,
+                Array.Empty<string>(),
+                ++step));
+            return;
+        }
 
         foreach (var file in component.Files)
         {
@@ -280,7 +363,29 @@ public static class MaintenancePlanner
 
         var removed = new List<string>();
 
-        if (component is not null && component.Files.Count > 0)
+        if (component is not null && component.Acquisition.Kind == "bundled-archive")
+        {
+            var root = string.IsNullOrWhiteSpace(component.InstallRoot) || component.InstallRoot == "root"
+                ? string.Empty
+                : component.InstallRoot.Replace('\\', '/').TrimEnd('/') + "/";
+            var inventory = request.Inventory ?? Array.Empty<FileEntry>();
+
+            foreach (var file in inventory.Where(f =>
+                         root.Length == 0
+                             ? !f.Path.Contains('/')
+                             : f.Path.StartsWith(root, StringComparison.OrdinalIgnoreCase)))
+            {
+                actions.Add(new DeleteFileAction(Path.Combine(installDir, file.Path), ++step));
+                removed.Add(file.Path);
+            }
+
+            if (root.Length > 0)
+            {
+                actions.Add(new DeleteDirectoryAction(
+                    Path.Combine(installDir, root.TrimEnd('/')), ++step, Recursive: true));
+            }
+        }
+        else if (component is not null && component.Files.Count > 0)
         {
             foreach (var file in component.Files)
             {
@@ -353,6 +458,55 @@ public static class MaintenancePlanner
         {
             warnings.Add($"L'ancien espace de travail « {previous} » est conservé tel quel : aucun fichier n'est déplacé ni supprimé.");
         }
+    }
+
+    private static string ResolveArchive(MaintenanceRequest request, string asset)
+    {
+        if (Path.IsPathRooted(asset)) return asset;
+        var root = request.BundleRoot ?? AppContext.BaseDirectory;
+        return Path.Combine(root, asset);
+    }
+
+    private static string ComponentDestination(string installDir, ComponentDescriptor component)
+    {
+        var root = component.InstallRoot;
+        if (!string.IsNullOrWhiteSpace(root) && !string.Equals(root, "root", StringComparison.OrdinalIgnoreCase))
+            return Path.Combine(installDir, root);
+
+        return component.Id switch
+        {
+            "launcher" => Path.Combine(installDir, "core", "launcher"),
+            "prism-ldk" => Path.Combine(installDir, "plugins", "prism-ldk"),
+            "docs" => Path.Combine(installDir, "docs"),
+            _ => Path.Combine(installDir, "components", component.Id)
+        };
+    }
+
+    private static IReadOnlyList<FileEntry> ReadArchiveEntries(string archivePath, string? installRoot)
+    {
+        var entries = new List<FileEntry>();
+        if (!File.Exists(archivePath) || !archivePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            return entries;
+
+        try
+        {
+            using var zip = ZipFile.OpenRead(archivePath);
+            var prefix = string.IsNullOrWhiteSpace(installRoot) || installRoot == "root"
+                ? string.Empty
+                : installRoot.Replace('\\', '/').TrimEnd('/') + "/";
+
+            foreach (var entry in zip.Entries)
+            {
+                if (string.IsNullOrEmpty(entry.Name)) continue;
+                entries.Add(new FileEntry(prefix + entry.FullName.Replace('\\', '/'), entry.Length, string.Empty));
+            }
+        }
+        catch (InvalidDataException)
+        {
+            // Archive illisible : la réparation échouera explicitement plus tard.
+        }
+
+        return entries;
     }
 
     private static string Serialize<T>(T value) =>

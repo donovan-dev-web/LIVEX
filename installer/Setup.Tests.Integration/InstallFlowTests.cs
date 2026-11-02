@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -65,7 +66,7 @@ public class InstallFlowTests : IDisposable
         Assert.True(result.Success, string.Join("; ", result.Residuals));
         Assert.False(result.Simulated);
 
-        Assert.True(File.Exists(Path.Combine(_policy.InstallDir, "livex-launcher.exe")));
+        Assert.True(File.Exists(Path.Combine(_policy.InstallDir, "core", "launcher", "livex-launcher.exe")));
         Assert.True(File.Exists(Path.Combine(_policy.InstallDir, "components", "syne", "syne.dll")));
         Assert.True(File.Exists(Path.Combine(_policy.InstallDir, ".livex-install.json")));
         Assert.True(File.Exists(Path.Combine(_policy.InstallDir, ".livex-inventory.json")));
@@ -114,7 +115,7 @@ public class InstallFlowTests : IDisposable
             record, UninstallScope.Software, Array.Empty<FileEntry>(), DryRun: false));
 
         Assert.True(result.Success, string.Join("; ", result.Residuals));
-        Assert.False(File.Exists(Path.Combine(_policy.InstallDir, "livex-launcher.exe")));
+        Assert.False(File.Exists(Path.Combine(_policy.InstallDir, "core", "launcher", "livex-launcher.exe")));
         Assert.False(File.Exists(Path.Combine(_policy.InstallDir, ".livex-install.json")));
         Assert.True(File.Exists(Path.Combine(_policy.DataDir, "settings.json")));
         Assert.True(Directory.Exists(request.WorkspaceDir));
@@ -181,7 +182,7 @@ public class InstallFlowTests : IDisposable
             File.ReadAllText(Path.Combine(_policy.InstallDir, ".livex-inventory.json")))!;
 
         Assert.Contains(inventory.Files, entry => entry.Path == "components/extra/extra.dll");
-        Assert.Contains(inventory.Files, entry => entry.Path == "livex-launcher.exe");
+        Assert.Contains(inventory.Files, entry => entry.Path == "core/launcher/livex-launcher.exe");
         Assert.True(File.Exists(Path.Combine(_policy.InstallDir, "components", "extra", "extra.dll")));
     }
 
@@ -199,6 +200,55 @@ public class InstallFlowTests : IDisposable
         var settings = WorkspaceSettings.Read(settingsPath);
         Assert.Equal(request.WorkspaceDir, settings.WorkspacePath);
         Assert.True(settings.Extra.ContainsKey("theme"));
+    }
+
+    [Fact]
+    public async Task Installation_Depuis_Une_Archive_De_Composant_Extrait_Le_Zip()
+    {
+        var bundle = Path.Combine(_root, "bundle");
+        var packages = Path.Combine(bundle, "packages");
+        Directory.CreateDirectory(packages);
+        var archive = Path.Combine(packages, "core-1.0.0.zip");
+
+        using (var zip = ZipFile.Open(archive, ZipArchiveMode.Create))
+        {
+            var entry = zip.CreateEntry("syne.dll");
+            await using var writer = new StreamWriter(entry.Open());
+            await writer.WriteAsync("syne-binaire");
+        }
+
+        var bytes = await File.ReadAllBytesAsync(archive);
+        var sha = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var component = new ComponentDescriptor(
+            "core", "1.0.0", true, "Socle", "Core", "Composants obligatoires", "Mandatory components",
+            "GPL-3.0-or-later", Array.Empty<string>(), Array.Empty<FileEntry>(),
+            new AcquisitionDescriptor(
+                "bundled-archive", "packages/core-1.0.0.zip", null,
+                bytes.Length, sha, "zip", null, null),
+            "components/syne");
+
+        var manifest = new DistributionManifest(
+            1, "LIVEX", "1.0.0", "test", "core",
+            OperatingSystem.IsWindows() ? "win-x64" : "linux-x64",
+            DateTimeOffset.UtcNow, new[] { component }, Array.Empty<FileEntry>(), null);
+
+        var request = RealRequest(manifest, payload: null!) with
+        {
+            BundleRoot = bundle,
+            SetupSourcePath = null,
+        };
+
+        var preflight = await _engine.PreflightAsync(request);
+        Assert.True(preflight.Success, string.Join("; ", preflight.Errors));
+
+        var result = await _engine.ExecuteAsync(await _engine.PlanAsync(request), request);
+
+        Assert.True(result.Success, string.Join("; ", result.Residuals));
+        Assert.True(File.Exists(Path.Combine(_policy.InstallDir, "components", "syne", "syne.dll")));
+
+        var inventory = JsonSerializer.Deserialize<InstallationInventory>(
+            File.ReadAllText(Path.Combine(_policy.InstallDir, ".livex-inventory.json")))!;
+        Assert.Contains(inventory.Files, entry => entry.Path == "components/syne/syne.dll");
     }
 
     // ------------------------------------------------------------- utilitaires
@@ -243,7 +293,7 @@ public class InstallFlowTests : IDisposable
 
         var sources = new (string Path, string Content)[]
         {
-            ("livex-launcher.exe", "launcher-binaire"),
+            ("core/launcher/livex-launcher.exe", "launcher-binaire"),
             ("components/syne/syne.dll", "syne-binaire"),
             ("assets/livex.ico", "icone")
         };

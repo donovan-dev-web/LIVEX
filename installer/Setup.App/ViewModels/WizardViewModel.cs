@@ -19,7 +19,6 @@ namespace Setup.App.ViewModels;
 public enum WizardStep
 {
     Welcome,
-    Language,
     License,
     Components,
     Paths,
@@ -69,9 +68,17 @@ public sealed class WizardViewModel : ViewModelBase
 
         Strings.Instance.SetLanguage(options.Language);
 
+        RootDir = session.DefaultRootDir;
         InstallDir = session.DefaultInstallDir;
         WorkspaceDir = session.DefaultWorkspaceDir;
         DataRoot = session.DefaultDataRoot;
+
+        // Une racine de données imposée par l'environnement (LIVEX_DATA) ne suit
+        // pas la racine commune : elle est marquée comme personnalisée.
+        CustomizeDataRoot = !string.Equals(
+            Path.GetFullPath(DataRoot),
+            Path.GetFullPath(InstallerSession.DataRootFor(RootDir)),
+            StringComparison.OrdinalIgnoreCase);
 
         BuildComponents();
         BuildViews();
@@ -121,7 +128,6 @@ public sealed class WizardViewModel : ViewModelBase
     private void BuildViews()
     {
         _views[WizardStep.Welcome] = new WelcomeView { DataContext = this };
-        _views[WizardStep.Language] = new LanguageView { DataContext = this };
         _views[WizardStep.License] = new LicenseView { DataContext = this };
         _views[WizardStep.Components] = new ComponentsView { DataContext = this };
         _views[WizardStep.Paths] = new PathsView { DataContext = this };
@@ -160,14 +166,14 @@ public sealed class WizardViewModel : ViewModelBase
             FlowKind.Uninstall =>
                 new[] { "stepWelcome", "stepMaintenance", "stepUninstall", "stepProgress", "stepResult" },
             _ =>
-                new[] { "stepWelcome", "stepLanguage", "stepLicense", "stepComponents", "stepPaths", "stepSummary", "stepProgress", "stepResult" },
+                new[] { "stepWelcome", "stepLicense", "stepComponents", "stepPaths", "stepSummary", "stepProgress", "stepResult" },
         };
 
         var stepKeys = _flow switch
         {
             FlowKind.Maintenance => new[] { WizardStep.Welcome, WizardStep.Maintenance, WizardStep.Summary, WizardStep.Progress, WizardStep.Result },
             FlowKind.Uninstall => new[] { WizardStep.Welcome, WizardStep.Maintenance, WizardStep.Uninstall, WizardStep.Progress, WizardStep.Result },
-            _ => new[] { WizardStep.Welcome, WizardStep.Language, WizardStep.License, WizardStep.Components, WizardStep.Paths, WizardStep.Summary, WizardStep.Progress, WizardStep.Result },
+            _ => new[] { WizardStep.Welcome, WizardStep.License, WizardStep.Components, WizardStep.Paths, WizardStep.Summary, WizardStep.Progress, WizardStep.Result },
         };
 
         var currentIndex = Array.IndexOf(stepKeys, Step);
@@ -187,7 +193,6 @@ public sealed class WizardViewModel : ViewModelBase
     private static string StepTitleKey(WizardStep step) => step switch
     {
         WizardStep.Welcome => "welcomeTitle",
-        WizardStep.Language => "languageTitle",
         WizardStep.License => "licenseTitle",
         WizardStep.Components => "componentsTitle",
         WizardStep.Paths => "pathsTitle",
@@ -201,7 +206,6 @@ public sealed class WizardViewModel : ViewModelBase
     private static string StepSubtitleKey(WizardStep step) => step switch
     {
         WizardStep.Welcome => "welcomeSubtitle",
-        WizardStep.Language => "languageSubtitle",
         WizardStep.License => "licenseSubtitle",
         WizardStep.Components => "componentsSubtitle",
         WizardStep.Paths => "pathsSubtitle",
@@ -280,8 +284,11 @@ public sealed class WizardViewModel : ViewModelBase
 
     public string DownloadSizeText => Strings.Instance.Format("componentsDownload", SizeFormatter.Format(DownloadBytes));
 
-    public long PayloadBytes => AllComponents.Where(c => c.IsSelected && c.AcquisitionKind != "release-asset")
-        .SelectMany(c => c.Descriptor.Files).Sum(f => f.Size);
+    public long PayloadBytes => AllComponents
+        .Where(c => c.IsSelected && c.AcquisitionKind != "release-asset")
+        .Sum(c => c.AcquisitionKind == "bundled-archive"
+            ? c.Descriptor.Acquisition.Size ?? 0
+            : c.Descriptor.Files.Sum(f => f.Size));
 
     public long DownloadBytes => AllComponents.Where(c => c.IsSelected)
         .Sum(c => c.Descriptor.Acquisition.Kind == "release-asset" ? c.Descriptor.Acquisition.Size ?? 0 : 0);
@@ -294,19 +301,24 @@ public sealed class WizardViewModel : ViewModelBase
 
     // ---------------------------------------------------------------- langue
 
-    public bool IsFrench
+    /// <summary>
+    /// Langue de l'assistant, exposée comme index de liste (0 = français,
+    /// 1 = anglais) pour la liste déroulante toujours visible du panneau latéral.
+    /// </summary>
+    public int LanguageIndex
     {
-        get => Strings.Instance.Language == "fr";
-        set { if (value) SelectLanguage("fr"); }
+        get => Strings.Instance.Language == "en" ? 1 : 0;
+        set
+        {
+            var language = value == 1 ? "en" : "fr";
+            if (Strings.Instance.Language != language)
+            {
+                SelectLanguage(language);
+            }
+        }
     }
 
-    public bool IsEnglish
-    {
-        get => Strings.Instance.Language == "en";
-        set { if (value) SelectLanguage("en"); }
-    }
-
-    private void SelectLanguage(string language)
+    public void SelectLanguage(string language)
     {
         Strings.Instance.SetLanguage(language);
         foreach (var component in AllComponents)
@@ -334,8 +346,7 @@ public sealed class WizardViewModel : ViewModelBase
 
     private void RaiseLocalizedProperties()
     {
-        OnPropertyChanged(nameof(IsFrench));
-        OnPropertyChanged(nameof(IsEnglish));
+        OnPropertyChanged(nameof(LanguageIndex));
         OnPropertyChanged(nameof(StepTitle));
         OnPropertyChanged(nameof(StepSubtitle));
         OnPropertyChanged(nameof(SelectedCountText));
@@ -344,7 +355,6 @@ public sealed class WizardViewModel : ViewModelBase
         OnPropertyChanged(nameof(SelectedSummary));
         OnPropertyChanged(nameof(PrismWarningVisible));
         OnPropertyChanged(nameof(ShortcutLabel));
-        OnPropertyChanged(nameof(LaunchAfterLabel));
         OnPropertyChanged(nameof(AcceptLicenseLabel));
         OnPropertyChanged(nameof(ResultTitle));
         OnPropertyChanged(nameof(ResultBody));
@@ -361,7 +371,6 @@ public sealed class WizardViewModel : ViewModelBase
     }
 
     public string ShortcutLabel => Strings.Instance["pathsShortcut"];
-    public string LaunchAfterLabel => Strings.Instance["pathsLaunchAfter"];
     public string AcceptLicenseLabel => Strings.Instance["licenseAccept"];
     public string ResultWarningsTitle => Strings.Instance["resultWarnings"];
     public string PreflightTitle => Strings.Instance["preflightTitle"];
@@ -403,6 +412,29 @@ public sealed class WizardViewModel : ViewModelBase
 
     // ---------------------------------------------------------------- chemins
 
+    private string _rootDir = string.Empty;
+
+    /// <summary>
+    /// Racine commune de l'installation. Les emplacements logiciel, espace de
+    /// travail et données en sont dérivés, sauf personnalisation explicite.
+    /// </summary>
+    public string RootDir
+    {
+        get => _rootDir;
+        set
+        {
+            if (!SetField(ref _rootDir, value))
+            {
+                return;
+            }
+
+            if (!CustomizeInstallDir) SetDerivedInstallDir();
+            if (!CustomizeWorkspaceDir) SetDerivedWorkspaceDir();
+            if (!CustomizeDataRoot) SetDerivedDataRoot();
+            ValidatePaths();
+        }
+    }
+
     private string _installDir = string.Empty;
     public string InstallDir
     {
@@ -417,7 +449,103 @@ public sealed class WizardViewModel : ViewModelBase
         set { if (SetField(ref _workspaceDir, value)) ValidatePaths(); }
     }
 
-    public string DataRoot { get; }
+    private string _dataRoot = string.Empty;
+    public string DataRoot
+    {
+        get => _dataRoot;
+        set { if (SetField(ref _dataRoot, value)) ValidatePaths(); }
+    }
+
+    private bool _customizeInstallDir;
+    public bool CustomizeInstallDir
+    {
+        get => _customizeInstallDir;
+        set
+        {
+            if (!SetField(ref _customizeInstallDir, value))
+            {
+                return;
+            }
+
+            if (!value)
+            {
+                SetDerivedInstallDir();
+            }
+
+            OnPropertyChanged(nameof(InstallDirEditable));
+            ValidatePaths();
+        }
+    }
+
+    private bool _customizeWorkspaceDir;
+    public bool CustomizeWorkspaceDir
+    {
+        get => _customizeWorkspaceDir;
+        set
+        {
+            if (!SetField(ref _customizeWorkspaceDir, value))
+            {
+                return;
+            }
+
+            if (!value)
+            {
+                SetDerivedWorkspaceDir();
+            }
+
+            OnPropertyChanged(nameof(WorkspaceDirEditable));
+            ValidatePaths();
+        }
+    }
+
+    private bool _customizeDataRoot;
+    public bool CustomizeDataRoot
+    {
+        get => _customizeDataRoot;
+        set
+        {
+            if (!SetField(ref _customizeDataRoot, value))
+            {
+                return;
+            }
+
+            if (!value)
+            {
+                SetDerivedDataRoot();
+            }
+
+            OnPropertyChanged(nameof(DataRootEditable));
+            ValidatePaths();
+        }
+    }
+
+    public bool InstallDirEditable => CustomizeInstallDir;
+    public bool WorkspaceDirEditable => CustomizeWorkspaceDir;
+    public bool DataRootEditable => CustomizeDataRoot;
+
+    private static string Derive(string root, string child) =>
+        string.IsNullOrWhiteSpace(root) ? string.Empty : Path.Combine(root, child);
+
+    private void SetDerivedInstallDir() =>
+        SetRef(ref _installDir, Derive(RootDir, "software"), nameof(InstallDir));
+
+    private void SetDerivedWorkspaceDir() =>
+        SetRef(ref _workspaceDir, Derive(RootDir, "workspace"), nameof(WorkspaceDir));
+
+    private void SetDerivedDataRoot() =>
+        SetRef(ref _dataRoot, Derive(RootDir, "data"), nameof(DataRoot));
+
+    /// <summary>Affecte un champ dérivé et notifie, sans repasser par le setter validant.</summary>
+    private void SetRef(ref string field, string value, string propertyName)
+    {
+        if (string.Equals(field, value, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        field = value;
+        OnPropertyChanged(propertyName);
+    }
 
     private string? _pathError;
     public string? PathError
@@ -469,22 +597,41 @@ public sealed class WizardViewModel : ViewModelBase
         _ = RefreshValidationAsync();
     }
 
+    /// <summary>Développe un préfixe <c>~</c> vers le dossier utilisateur (Path.GetFullPath ne le fait pas).</summary>
+    private static string ExpandHome(string path)
+    {
+        if (path == "~" || path.StartsWith("~/", StringComparison.Ordinal) || path.StartsWith("~\\", StringComparison.Ordinal))
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(home, path.Length > 1 ? path[2..] : string.Empty);
+        }
+
+        return path;
+    }
+
     private string? ComputePathError()
     {
         var install = InstallDir?.Trim() ?? string.Empty;
         var workspace = WorkspaceDir?.Trim() ?? string.Empty;
+        var data = ExpandHome(DataRoot?.Trim() ?? string.Empty);
+        var root = RootDir?.Trim() ?? string.Empty;
 
-        if (install.Length == 0 || workspace.Length == 0)
+        if (install.Length == 0 || workspace.Length == 0 || data.Length == 0)
         {
             return Strings.Instance["errEmpty"];
         }
 
         try
         {
+            if (root.Length > 0 && !Path.IsPathRooted(root))
+            {
+                return Strings.Instance["errInvalid"];
+            }
+
             var policy = Setup.Core.Platform.PlatformServices.CreatePathPolicy();
             var fullInstall = Path.GetFullPath(install);
             var fullWorkspace = Path.GetFullPath(workspace);
-            var fullData = Path.GetFullPath(DataRoot);
+            var fullData = Path.GetFullPath(data);
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             if (string.Equals(fullInstall, home, StringComparison.OrdinalIgnoreCase))
@@ -538,20 +685,25 @@ public sealed class WizardViewModel : ViewModelBase
         set => SetField(ref _desktopShortcut, value);
     }
 
-    private bool _launchAfterInstall = true;
-    public bool LaunchAfterInstall
+    private enum PathTarget
     {
-        get => _launchAfterInstall;
-        set => SetField(ref _launchAfterInstall, value);
+        Root,
+        Install,
+        Workspace,
+        Data,
     }
 
-    public ICommand BrowseInstallDirCommand => _browseInstall ??= new RelayCommand(() => _ = BrowseAsync(false));
-    public ICommand BrowseWorkspaceDirCommand => _browseWorkspace ??= new RelayCommand(() => _ = BrowseAsync(true));
+    public ICommand BrowseRootDirCommand => _browseRoot ??= new RelayCommand(() => _ = BrowseAsync(PathTarget.Root));
+    public ICommand BrowseInstallDirCommand => _browseInstall ??= new RelayCommand(() => _ = BrowseAsync(PathTarget.Install));
+    public ICommand BrowseWorkspaceDirCommand => _browseWorkspace ??= new RelayCommand(() => _ = BrowseAsync(PathTarget.Workspace));
+    public ICommand BrowseDataRootCommand => _browseData ??= new RelayCommand(() => _ = BrowseAsync(PathTarget.Data));
 
+    private RelayCommand? _browseRoot;
     private RelayCommand? _browseInstall;
     private RelayCommand? _browseWorkspace;
+    private RelayCommand? _browseData;
 
-    private async Task BrowseAsync(bool workspace)
+    private async Task BrowseAsync(PathTarget target)
     {
         var window = App.MainWindow;
         if (window is null)
@@ -559,7 +711,14 @@ public sealed class WizardViewModel : ViewModelBase
             return;
         }
 
-        var current = workspace ? WorkspaceDir : InstallDir;
+        var current = target switch
+        {
+            PathTarget.Install => InstallDir,
+            PathTarget.Workspace => WorkspaceDir,
+            PathTarget.Data => DataRoot,
+            _ => RootDir,
+        };
+
         IStorageFolder? start = null;
         try
         {
@@ -575,7 +734,13 @@ public sealed class WizardViewModel : ViewModelBase
 
         var folders = await window.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = Strings.Instance[workspace ? "pathsWorkspace" : "pathsInstallDir"],
+            Title = Strings.Instance[target switch
+            {
+                PathTarget.Install => "pathsInstallDir",
+                PathTarget.Workspace => "pathsWorkspace",
+                PathTarget.Data => "pathsDataRoot",
+                _ => "pathsRoot",
+            }],
             AllowMultiple = false,
             SuggestedStartLocation = start,
         });
@@ -591,13 +756,23 @@ public sealed class WizardViewModel : ViewModelBase
             return;
         }
 
-        if (workspace)
+        switch (target)
         {
-            WorkspaceDir = path;
-        }
-        else
-        {
-            InstallDir = path;
+            case PathTarget.Install:
+                CustomizeInstallDir = true;
+                InstallDir = path;
+                break;
+            case PathTarget.Workspace:
+                CustomizeWorkspaceDir = true;
+                WorkspaceDir = path;
+                break;
+            case PathTarget.Data:
+                CustomizeDataRoot = true;
+                DataRoot = path;
+                break;
+            default:
+                RootDir = path;
+                break;
         }
     }
 
@@ -696,6 +871,7 @@ public sealed class WizardViewModel : ViewModelBase
 
         SummaryRows.Add(new SummaryRow(Strings.Instance["summaryOperation"], operation));
         SummaryRows.Add(new SummaryRow(Strings.Instance["summaryProductVersion"], _session.Manifest.Version));
+        SummaryRows.Add(new SummaryRow(Strings.Instance["summaryRootDir"], RootDir, Mono: true));
         SummaryRows.Add(new SummaryRow(Strings.Instance["summaryInstallDir"], InstallDir, Mono: true));
         SummaryRows.Add(new SummaryRow(Strings.Instance["summaryWorkspace"], WorkspaceDir, Mono: true));
         SummaryRows.Add(new SummaryRow(Strings.Instance["summaryDataRoot"], DataRoot, Mono: true));
@@ -878,7 +1054,7 @@ public sealed class WizardViewModel : ViewModelBase
 
     public bool HasResiduals => ResultResiduals.Length > 0;
 
-    public bool ShowLaunch => IsSuccess && !_session.IsDemo && LaunchAfterInstall;
+    public bool ShowLaunch => IsSuccess && !_session.IsDemo;
 
     public bool ShowOpenFolder => IsSuccess && !_session.IsDemo;
 
@@ -919,12 +1095,12 @@ public sealed class WizardViewModel : ViewModelBase
     private InstallRequest BuildRequest() => new(
         _session.Manifest,
         InstallDir,
-        DataRoot,
+        ExpandHome(DataRoot?.Trim() ?? string.Empty),
         WorkspaceDir,
         AllComponents.Where(c => c.IsSelected).Select(c => c.Id).ToList(),
         AcceptLicense,
         DesktopShortcut,
-        LaunchAfterInstall,
+        LaunchAfterInstall: false,
         DryRun: _session.IsDemo,
         Simulated: _session.IsDemo,
         OfflineAssetsDir: _options.Core.OfflineAssetsDir,
@@ -932,7 +1108,9 @@ public sealed class WizardViewModel : ViewModelBase
         PayloadRoot: Directory.Exists(Path.Combine(AppContext.BaseDirectory, "payload"))
             ? Path.Combine(AppContext.BaseDirectory, "payload")
             : null,
-        Scenario: _session.Scenario);
+        Scenario: _session.Scenario,
+        BundleRoot: _session.BundleRoot,
+        SetupSourcePath: _session.SetupSourcePath);
 
     private async Task RunOperationAsync()
     {
@@ -1381,10 +1559,10 @@ public sealed class WizardViewModel : ViewModelBase
 
     // ------------------------------------------------------------------ boutons
 
-    public bool ShowBack => Step is WizardStep.Language or WizardStep.License or WizardStep.Components
+    public bool ShowBack => Step is WizardStep.License or WizardStep.Components
         or WizardStep.Paths or WizardStep.Summary or WizardStep.Maintenance or WizardStep.Uninstall;
 
-    public bool ShowNext => Step is WizardStep.Welcome or WizardStep.Language or WizardStep.License
+    public bool ShowNext => Step is WizardStep.Welcome or WizardStep.License
         or WizardStep.Components or WizardStep.Paths;
 
     public bool ShowInstall => Step == WizardStep.Summary;
@@ -1485,7 +1663,9 @@ public sealed class WizardViewModel : ViewModelBase
     {
         try
         {
-            var exe = Path.Combine(InstallDir, OperatingSystem.IsWindows() ? "livex-launcher.exe" : "livex-launcher");
+            var exe = Path.Combine(
+                InstallDir, "core", "launcher",
+                OperatingSystem.IsWindows() ? "livex-launcher.exe" : "livex-launcher");
             if (File.Exists(exe))
             {
                 Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true });
@@ -1499,8 +1679,7 @@ public sealed class WizardViewModel : ViewModelBase
 
     private WizardStep NextStep() => Step switch
     {
-        WizardStep.Welcome => WizardStep.Language,
-        WizardStep.Language => WizardStep.License,
+        WizardStep.Welcome => WizardStep.License,
         WizardStep.License => WizardStep.Components,
         WizardStep.Components => _flow == FlowKind.Maintenance ? WizardStep.Summary : WizardStep.Paths,
         WizardStep.Paths => WizardStep.Summary,
@@ -1509,8 +1688,7 @@ public sealed class WizardViewModel : ViewModelBase
 
     private WizardStep PreviousStep() => Step switch
     {
-        WizardStep.Language => WizardStep.Welcome,
-        WizardStep.License => WizardStep.Language,
+        WizardStep.License => WizardStep.Welcome,
         WizardStep.Components => _flow == FlowKind.Maintenance ? WizardStep.Maintenance : WizardStep.License,
         WizardStep.Paths => WizardStep.Components,
         WizardStep.Summary => _flow == FlowKind.Maintenance ? WizardStep.Maintenance : WizardStep.Paths,

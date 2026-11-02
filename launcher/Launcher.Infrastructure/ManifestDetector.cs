@@ -137,27 +137,35 @@ public sealed class ManifestDetector
 
     private static IEnumerable<string> SourceRoots()
     {
-        var roots = new List<string>
-        {
-            // 1. Arborescence de l'application : components/ à côté de l'exécutable.
-            Path.Combine(AppContext.BaseDirectory, "components"),
-        };
+        var roots = new List<string>();
 
-        // 2. LIVEX_HOME.
+        // 1. Arborescence de l'installation : le Launcher vit dans
+        //    <installation>/core/launcher, les composants dans
+        //    <installation>/components. Cette racine prime sur la précédente.
+        var installationRoot = InstallationRoot();
+        if (installationRoot is not null)
+        {
+            roots.Add(Path.Combine(installationRoot, "components"));
+        }
+
+        // 2. Arborescence portable : components/ à côté de l'exécutable.
+        roots.Add(Path.Combine(AppContext.BaseDirectory, "components"));
+
+        // 3. LIVEX_HOME.
         var livexHome = System.Environment.GetEnvironmentVariable("LIVEX_HOME");
         if (!string.IsNullOrWhiteSpace(livexHome))
         {
             roots.Add(livexHome);
         }
 
-        // 3. Répertoire de l'utilisateur : développements locaux de composants.
+        // 4. Répertoire de l'utilisateur : développements locaux de composants.
         var userProfile = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrEmpty(userProfile))
         {
             roots.Add(Path.Combine(userProfile, ".livex", "components"));
         }
 
-        // 4. Registre de composants : fichier déclaré par l'utilisateur.
+        // 5. Registre de composants : fichier déclaré par l'utilisateur.
         var registryFile = Path.Combine(userProfile, ".livex", "components.registry");
         if (File.Exists(registryFile))
         {
@@ -171,6 +179,23 @@ public sealed class ManifestDetector
         }
 
         return roots;
+    }
+
+    /// <summary>
+    /// Racine de l'installation quand le Launcher est installé dans
+    /// <c>&lt;racine&gt;/core/launcher</c>. Nulle en exécution depuis les sources
+    /// ou dans une arborescence portable.
+    /// </summary>
+    private static string? InstallationRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        if (directory.Name.Equals("launcher", StringComparison.OrdinalIgnoreCase)
+            && directory.Parent?.Name.Equals("core", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return directory.Parent?.Parent?.FullName;
+        }
+
+        return null;
     }
 
     private static int ReadSchema(JsonElement root) =>

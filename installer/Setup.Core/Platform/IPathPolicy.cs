@@ -9,6 +9,12 @@ public interface IPathPolicy
     string DefaultInstallDir();
     string DefaultDataRoot();
 
+    /// <summary>Racine commune proposée : logiciel, espace de travail et données en dérivent.</summary>
+    string DefaultRootDir();
+
+    /// <summary>Espace de travail proposé par défaut (sous la racine commune).</summary>
+    string DefaultWorkspaceDir();
+
     /// <summary>Chemin du raccourci du menu des applications.</summary>
     string StartMenuShortcutPath(string name);
 

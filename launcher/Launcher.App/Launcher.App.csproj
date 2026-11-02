@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\livex.ico</ApplicationIcon>
     <AssemblyName>livex-launcher</AssemblyName>
     <RootNamespace>Launcher.App</RootNamespace>
   </PropertyGroup>

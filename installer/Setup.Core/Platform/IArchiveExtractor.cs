@@ -2,5 +2,9 @@ namespace Setup.Core.Platform;
 
 public interface IArchiveExtractor
 {
-    Task ExtractAsync(string archivePath, string destinationDirectory, CancellationToken ct);
+    Task ExtractAsync(
+        string archivePath,
+        string destinationDirectory,
+        CancellationToken ct,
+        IProgress<int>? progress = null);
 }

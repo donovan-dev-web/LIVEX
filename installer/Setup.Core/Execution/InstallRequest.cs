@@ -33,4 +33,6 @@ public sealed record InstallRequest(
     string? PayloadRoot = null,
     DemoScenario Scenario = DemoScenario.FreshInstall,
     int SimulationDelayMs = 45,
-    bool Simulated = false);
+    bool Simulated = false,
+    string? BundleRoot = null,
+    string? SetupSourcePath = null);
