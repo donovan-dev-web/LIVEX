@@ -1,9 +1,9 @@
 # Spécification de l'installateur LIVEX
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — spécification de référence, en revue
+**Statut** : [RÉFÉRENCE V1.0.0 LIVRÉE] — exigences de référence de l'installateur
 **Version** : 1.0
-**Dernière mise à jour** : 29 octobre 2026
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`adr/`](adr/README.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 **Remplace** : la spécification de base v0.2 (document de travail), archivée hors
 de la documentation de référence
@@ -89,12 +89,12 @@ release ; elles ne sont pas inventées ici.
 | :-- | :-- |
 | **Utilisateur** | personne qui installe, met à jour ou désinstalle LIVEX sur son compte |
 | **Répertoire logiciel** | répertoire qui contient le Launcher, ses composants et leurs ressources |
-| **Racine de données** | `LIVEX_DATA` si définie, sinon `<racine commune>/data` (Windows : `%LOCALAPPDATA%\LIVEX\data`) |
-| **Espace de travail** | répertoire choisi par l'utilisateur pour ses expériences et rapports ; par défaut `<racine commune>/workspace` |
+| **Racine de données** | `LIVEX_DATA` si définie, sinon `~/.livex-data` (Windows : `%USERPROFILE%\.livex-data`) |
+| **Espace de travail** | répertoire choisi par l'utilisateur pour ses expériences et rapports |
 | **Résultats de recherche** | paquets `.livexp`, archives scellées, journaux de session, base d'analyse ECHOS |
-| **Installation valide** | enregistrement présent, répertoire présent, `.livex-install.json` lisible, Launcher présent dans `core/launcher` |
-| **Charge utile** (*payload*) | ensemble des archives `packages/<composant>.zip` et fichiers racine livrés par la distribution |
-| **Distribution** | dossier ou archive contenant `livex-setup`, `packages/`, `assets/`, le manifeste et les mentions légales |
+| **Installation valide** | enregistrement présent, répertoire présent, `.livex-install.json` lisible, Launcher présent |
+| **Charge utile** (*payload*) | ensemble des fichiers livrés par le paquet de distribution |
+| **Distribution** | dossier ou archive contenant `livex-setup`, la charge utile, le manifeste et ses éventuelles signatures |
 | **Composant de base** | PRISM : embarqué dans la distribution, **coché par défaut**, désactivable ; sa désactivation est avertie |
 | **Module facultatif** | composant décoché par défaut, installable indépendamment : PRISM-LDK, documentation hors ligne, SYNE-Mock |
 | **Actif de release** | fichier attaché à une release GitHub (archive d'un module facultatif) ; désigné par une URL, une taille et un SHA-256 |
@@ -113,7 +113,7 @@ release ; elles ne sont pas inventées ici.
 | **INS-F-04** | L'installateur doit refuser un répertoire logiciel qui est la racine d'un volume, le répertoire personnel, un répertoire système, ou qui chevauche la racine de données ou l'espace de travail. |
 | **INS-F-05** | Avant toute écriture, l'installateur doit vérifier l'intégrité de la charge utile, les droits d'écriture, l'espace disque et la compatibilité de la plateforme. |
 | **INS-F-06** | Une installation réussie doit produire un Launcher démarrable et une détection de SYNE et ECHOS par `livex-launcher --check`. |
-| **INS-F-07** | L'installateur doit offrir, sur l'écran de résultat, un bouton « Lancer LIVEX » après une installation réussie. |
+| **INS-F-07** | L'installateur doit proposer de lancer LIVEX à la fin d'une installation réussie, option cochée par défaut. |
 | **INS-F-08** | L'installateur doit pouvoir être interrompu par l'utilisateur aux étapes de saisie ; une interruption pendant l'écriture doit déclencher le nettoyage de la section 4.8. |
 | **INS-F-09** | Aucune installation partielle ne doit être présentée comme réussie. |
 
@@ -122,12 +122,12 @@ release ; elles ne sont pas inventées ici.
 | Réf. | Exigence |
 | :-- | :-- |
 | **INS-F-10** | Les trois composants obligatoires — Launcher, SYNE, ECHOS — et leurs éléments de support (contrats, ressources) doivent être installés et ne doivent pas pouvoir être désélectionnés. |
-| **INS-F-11** | PRISM, **composant de base**, doit être proposé et **coché par défaut** ; les modules facultatifs — PRISM-LDK et SYNE-Mock — doivent être proposés **lorsqu'un actif vérifiable existe pour la plateforme**, indépendamment l'un de l'autre, et **décochés par défaut** ; sinon ils sont déclarés indisponibles (INS-F-18). |
+| **INS-F-11** | PRISM, **composant de base**, doit être proposé et **coché par défaut** ; les trois modules facultatifs — PRISM-LDK, documentation hors ligne, SYNE-Mock — doivent être proposés **lorsqu'un actif vérifiable existe pour la plateforme**, indépendamment les uns des autres, et **décochés par défaut** ; sinon ils sont déclarés indisponibles (INS-F-18). |
 | **INS-F-12** | L'écran de sélection doit être généré à partir du manifeste de distribution : un module n'est proposé que si son actif existe, embarqué ou publié, et vérifiable. |
 | **INS-F-13** | Si PRISM est décoché, l'installateur doit afficher une description visible indiquant que les fonctionnalités de rendu et d'interaction 3D ne seront pas disponibles, sans bloquer la poursuite. |
 | **INS-F-14** | Ajouter ou retirer un module facultatif après installation doit passer par le mode maintenance, sans réinstaller les composants obligatoires. |
 | **INS-F-15** | Un composant facultatif retiré ne doit pas empêcher le démarrage des composants qui ne dépendent pas de lui. |
-| **INS-F-16** | L'installateur doit traiter PRISM comme une **application packagée** : embarquée dans le profil `full`, acquise comme actif vérifié dans le profil `core`, installée dans `components/prism/` avec son propre raccourci, sans exiger Unreal Engine sur le poste. |
+| **INS-F-16** | L'installateur doit traiter PRISM comme une **application packagée embarquée** dans la distribution, installée dans `components/prism/` avec son propre raccourci, sans téléchargement et sans exiger Unreal Engine sur le poste. |
 | **INS-F-17** | L'installateur doit installer PRISM-LDK sous forme d'**archive ZIP intacte** dans `plugins/prism-ldk/`, et indiquer dans sa description qu'il est destiné à un projet Unreal Engine hôte ; il ne doit ni l'extraire dans LIVEX ni modifier un projet Unreal. |
 | **INS-F-18** | Un module facultatif indisponible pour la plateforme doit être signalé comme indisponible avec sa raison, sans case à cocher, et ne doit jamais être installé partiellement. |
 | **INS-F-19** | Un module facultatif déclaré `unavailable` ne doit pas empêcher l'installation du socle ni des autres modules sélectionnés. |
@@ -148,22 +148,22 @@ release ; elles ne sont pas inventées ici.
 
 | Réf. | Exigence |
 | :-- | :-- |
-| **INS-F-20** | L'installateur doit proposer une **racine commune** unique et en dériver le répertoire logiciel, l'espace de travail et la racine de données ; chaque emplacement peut ensuite être personnalisé séparément par une case à cocher. |
-| **INS-F-21** | La racine commune par défaut doit être `%LOCALAPPDATA%\LIVEX` (Windows) et `~/.local/share/livex` (Linux) ; le répertoire logiciel est `<racine>/software`. |
-| **INS-F-22** | L'espace de travail par défaut doit être `<racine>/workspace` et la racine de données `<racine>/data`. |
+| **INS-F-20** | L'installateur doit demander séparément le répertoire logiciel et l'espace de travail, avec des valeurs par défaut proposées. |
+| **INS-F-21** | Le répertoire logiciel par défaut doit être `%LOCALAPPDATA%\Programs\LIVEX` (Windows) et `~/.local/opt/livex` (Linux). |
+| **INS-F-22** | L'espace de travail par défaut doit être `<racine de données>/workspace`. |
 | **INS-F-23** | L'installateur doit refuser un espace de travail égal à la racine de données, ancêtre de celle-ci, égal au répertoire logiciel, ou contenant celui-ci. |
 | **INS-F-24** | L'installateur doit écrire le chemin de l'espace de travail dans `<racine de données>/settings.json`, en préservant les clés inconnues et en écrivant atomiquement. |
 | **INS-F-25** | L'installateur ne doit créer aucun fichier `livex.json` ni aucun fichier global jouant le même rôle (chemins d'installation, registre de composants). |
 | **INS-F-26** | L'installateur doit créer la racine de données si elle n'existe pas, sans supprimer ni écraser son contenu existant. |
 | **INS-F-27** | Un `settings.json` illisible ou invalide doit être conservé sous un nom d'archivage et signalé, jamais écrasé silencieusement. |
-| **INS-F-28** | L'installateur doit placer le Launcher dans `<répertoire logiciel>/core/launcher/`, les métadonnées de maintenance dans `<répertoire logiciel>/core/installer/`, les composants dans `<répertoire logiciel>/components/<id>/` et l'archive du LDK dans `<répertoire logiciel>/plugins/prism-ldk/`, afin que la détection du Launcher fonctionne sans modification. |
+| **INS-F-28** | L'installateur doit placer le Launcher à la racine du répertoire logiciel, les composants dans `<répertoire logiciel>/components/<id>/` et l'archive du LDK dans `<répertoire logiciel>/plugins/prism-ldk/`, afin que la détection du Launcher fonctionne sans modification. |
 | **INS-F-29** | Si le chemin mémorisé de l'espace de travail est inaccessible au lancement, le Launcher doit le signaler et permettre d'en choisir un autre ; il ne doit ni créer ni supprimer de données silencieusement. |
 
 ### 4.4 Parcours de l'assistant
 
 | Réf. | Exigence |
 | :-- | :-- |
-| **INS-F-30** | Le parcours d'installation doit comporter les étapes : accueil, licence, composants, chemins, récapitulatif, installation, résultat. La langue est choisie par un sélecteur toujours visible dans le panneau latéral, pas par une étape dédiée. |
+| **INS-F-30** | Le parcours d'installation doit comporter les étapes : accueil, langue, licence, composants, chemins, récapitulatif, installation, résultat. |
 | **INS-F-31** | L'étape licence doit exiger l'acceptation de la licence LIVEX (GPL-3.0-or-later) avant de poursuivre, et rendre accessibles les mentions tierces. |
 | **INS-F-32** | L'étape chemins doit valider chaque chemin au moment de la saisie et afficher la valeur effective ainsi que l'espace disque disponible. |
 | **INS-F-33** | L'étape récapitulatif doit afficher : répertoire logiciel, espace de travail, composants sélectionnés, taille de la charge utile, taille à télécharger pour les modules facultatifs cochés, et opérations prévues (installation, mise à jour, réparation, téléchargement). |
@@ -179,7 +179,7 @@ release ; elles ne sont pas inventées ici.
 | **INS-F-40** | L'installateur doit créer un raccourci de menu Démarrer (Windows) ou une entrée `.desktop` (Linux) pointant vers le Launcher. |
 | **INS-F-41** | Le raccourci sur le bureau doit être proposé en option et décoché par défaut. |
 | **INS-F-42** | Aucun raccourci séparé vers SYNE, ECHOS, SYNE-Mock ou le LDK ne doit être créé. Un raccourci vers PRISM est créé avec PRISM, car c'est une application destinée à l'utilisateur. |
-| **INS-F-43** | L'installateur ne doit modifier ni le `PATH` ni les variables d'environnement globales. Il associe les fichiers `.livexp` au Launcher pour l'utilisateur courant et assigne leur icône. |
+| **INS-F-43** | L'installateur ne doit créer aucune association de fichiers, aucune modification du `PATH` et aucune variable d'environnement globale. |
 | **INS-F-44** | L'installateur doit enregistrer l'installation pour l'utilisateur courant : clés `HKCU` sous Windows, fichiers XDG sous Linux (voir [ADR-005](adr/ADR-005-enregistrement-et-cycle-de-vie.md)). |
 | **INS-F-45** | L'installateur doit écrire une entrée « Applications et fonctionnalités » sous Windows et un fichier d'installation XDG sous Linux, contenant le chemin et la version. |
 | **INS-F-46** | Toutes les intégrations créées doivent être supprimables par la désinstallation, sans toucher aux intégrations préexistantes ou étrangères. |
@@ -231,7 +231,7 @@ release ; elles ne sont pas inventées ici.
 
 | Réf. | Exigence |
 | :-- | :-- |
-| **INS-F-80** | L'interface de l'installateur doit être disponible en français et en anglais, avec un sélecteur de langue toujours visible dans le panneau latéral et une valeur par défaut déduite de la langue du système. |
+| **INS-F-80** | L'interface de l'installateur doit être disponible en français et en anglais, avec sélection à l'étape 2 et valeur par défaut déduite de la langue du système. |
 | **INS-F-81** | La langue choisie doit s'appliquer à tous les écrans, messages, avertissements et récapitulatifs de l'installateur. |
 | **INS-F-82** | Une traduction manquante doit retomber sur l'anglais et être signalée dans le journal, jamais afficher une clé brute à l'utilisateur. |
 | **INS-F-83** | L'assistant doit être utilisable au clavier, avec un ordre de tabulation cohérent, des libellés d'accessibilité sur les contrôles et un contraste conforme aux règles d'accessibilité du projet. |
@@ -282,14 +282,14 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 - [ ] **INS-A-04** Aucune élévation demandée ; aucune écriture `HKLM` ni hors du répertoire personnel.
 - [ ] **INS-A-05** `livex-launcher --check` retourne `0` après installation, avec SYNE et ECHOS détectés.
 - [ ] **INS-A-06** Le Launcher démarre depuis le raccourci créé.
-- [ ] **INS-A-07** Le bouton « Lancer LIVEX » apparaît sur l'écran de résultat et démarre `core/launcher/livex-launcher`.
+- [ ] **INS-A-07** L'option « Lancer LIVEX » est cochée par défaut et fonctionne.
 
 ### 6.2 Composants et chemins
 
 - [ ] **INS-A-08** Les composants obligatoires ne peuvent pas être désélectionnés.
-- [ ] **INS-A-09** PRISM est coché par défaut, SYNE-Mock et PRISM-LDK sont décochés par défaut ; l'absence d'un actif le rend indisponible.
+- [ ] **INS-A-09** PRISM est coché par défaut, les trois modules facultatifs sont décochés par défaut ; l'absence de documentation hors ligne ne gêne pas le Launcher.
 - [ ] **INS-A-10** PRISM décoché affiche la description des fonctionnalités indisponibles, sans bloquer l'installation.
-- [ ] **INS-A-11** Une racine commune est proposée ; les trois emplacements en sont dérivés et chaque personnalisation est optionnelle.
+- [ ] **INS-A-11** Le répertoire logiciel et l'espace de travail sont choisis séparément et affichés au récapitulatif.
 - [ ] **INS-A-12** `settings.json` contient le chemin de l'espace de travail, les clés inconnues sont préservées, l'écriture est atomique.
 - [ ] **INS-A-13** Aucun `livex.json` n'est créé, ni requis.
 - [ ] **INS-A-14** Un espace de travail égal à la racine de données est refusé avec un message explicite.
@@ -297,9 +297,9 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 ### 6.3 Détection et cycle de vie
 
 - [ ] **INS-A-15** Une installation dans un répertoire personnalisé est détectée au lancement suivant.
-- [ ] **INS-A-16** Une seconde installation valide est refusée ; la maintenance est proposée.
+- [ ] **INS-A-16** Une seconde installation est refusée ; la maintenance est proposée.
 - [ ] **INS-A-17** Un enregistrement supprimé est récupéré depuis `.livex-install.json` après confirmation.
-- [ ] **INS-A-18** Un répertoire logiciel supprimé produit un message d'enregistrement orphelin et n'empêche pas une nouvelle installation (code `5` réservé aux installations valides).
+- [ ] **INS-A-18** Un répertoire logiciel supprimé produit un message d'enregistrement orphelin et une proposition de nettoyage.
 - [ ] **INS-A-19** Une mise à jour conserve `settings.json`, l'espace de travail et les paquets.
 - [ ] **INS-A-20** Une mise à jour vers une version inférieure est refusée.
 - [ ] **INS-A-21** Une réparation signale un fichier corrompu et le restaure depuis la distribution d'origine.
@@ -325,7 +325,7 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 ### 6.6 Interface, langues et modes non interactifs
 
 - [ ] **INS-A-34** L'assistant est complet en français et en anglais.
-- [ ] **INS-A-35** Le sélecteur de langue reste visible dans le panneau latéral et met à jour tous les écrans sans redémarrer.
+- [ ] **INS-A-35** Un changement de langue met à jour tous les écrans sans redémarrer.
 - [ ] **INS-A-36** L'assistant est utilisable entièrement au clavier.
 - [ ] **INS-A-37** `--check` retourne `0` sur une installation conforme et `2` sur une installation dégradée, avec une sortie textuelle stable.
 - [ ] **INS-A-38** `--unattended` produit une installation identique à l'assistant et ne demande aucune saisie.
@@ -337,10 +337,10 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 - [ ] **INS-A-41** PRISM packagé : installation depuis la distribution **sans réseau** dans `components/prism/`, raccourci fonctionnel, sans Unreal Engine installé.
 - [ ] **INS-A-42** PRISM-LDK : l'archive installée dans `plugins/prism-ldk/` est identique bit à bit à l'actif de la release ; aucune extraction dans LIVEX, aucune écriture dans un projet Unreal.
 - [ ] **INS-A-43** SYNE-Mock : installé et démarrable sans Node système ; jamais lancé simultanément avec SYNE par l'installateur.
-- [ ] **INS-A-44** Chaque composant embarqué possède un `component.json` détectable par le Launcher après installation.
+- [ ] **INS-A-44** Documentation hors ligne : archive installée dans `docs/`, lisible sans réseau.
 - [ ] **INS-A-45** Un actif dont l'empreinte est modifiée est refusé avant extraction ; le socle et le cache restent cohérents.
 - [ ] **INS-A-46** Une coupure réseau pendant le téléchargement permet la reprise ; aucun fichier partiel n'est installé.
-- [ ] **INS-A-47** Profil `full` : PRISM et les modules embarqués s'installent sur une machine sans réseau.
+- [ ] **INS-A-47** Profil `full` : PRISM et les trois modules s'installent sur une machine sans réseau.
 - [ ] **INS-A-48** `--no-network` échoue avec le code `6` lorsqu'un actif manque, et réussit sans requête lorsqu'il est dans le cache.
 - [ ] **INS-A-49** Aucune requête réseau n'est émise lors d'une installation `core` sans module facultatif (vérifié par capture réseau).
 
@@ -354,13 +354,13 @@ plateformes supportées, avec les preuves de [`TESTING.md`](TESTING.md).
 | PRISM « facultatif » sans statut de base | PRISM est un **composant de base embarqué** ; seuls Launcher, SYNE et ECHOS sont obligatoires | c'est ce qui donne un sens à l'avertissement §3.3 et garantit le rendu hors ligne |
 | PRISM « désactivé par défaut » (§3.2, checklist §14) | PRISM est **coché par défaut** et **désactivable** ; le décocher déclenche l'avertissement §3.3 | arbitrage produit du 21 octobre 2026 : composant de base, son absence est une perte fonctionnelle, pas un choix neutre ; l'avertissement garde son rôle |
 | Avertissement si PRISM non coché | **conservé** (base §3.3), affiché seulement si PRISM est disponible | une case réelle existe : l'avertissement a un sens ; il est remplacé par la raison d'indisponibilité sinon |
-| Installation strictement hors ligne | socle embarqué ; PRISM et les modules facultatifs sont acquis depuis la release ou embarqués dans le profil `full` | [ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md) ; la base admet l'hors-ligne « lorsque les fichiers sont intégrés au paquet » (§1.1) |
+| Installation strictement hors ligne | socle **et PRISM** hors ligne ; les trois modules facultatifs sont acquis depuis la release, ou embarqués dans le profil `full` | [ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md) ; la base admet l'hors-ligne « lorsque les fichiers sont intégrés au paquet » (§1.1) |
 | « Téléchargement automatique » hors périmètre (§1.3) | aucun téléchargement automatique ; l'acquisition d'un module **choisi par l'utilisateur** est autorisée | distinguer automatique et explicite ; rien n'est demandé au réseau avant validation du récapitulatif |
 | `Plugins/PrismLDK.zip` | `plugins/prism-ldk/PrismLdk-<version>.zip`, archive intacte | plusieurs versions du plugin peuvent coexister pour plusieurs projets Unreal |
 | « Espace de travail » non défini | répertoire d'expériences distinct de la racine de données | [ADR-004](adr/ADR-004-racine-de-donnees-et-espace-de-travail.md) |
 | Persistance « adaptée au système » | `settings.json` dans la racine de données | [ADR-004](adr/ADR-004-racine-de-donnees-et-espace-de-travail.md) |
 | Trois options de désinstallation | A/B/C + extension explicite pour les résultats de recherche | concilie protection des données et suppression complète |
-| Arborescence `LIVEX/Launcher/` + `LIVEX/Components/` | Launcher dans `core/launcher/`, composants dans `components/` | le Launcher résout la racine d'installation (`core/launcher` → deux niveaux au-dessus) puis lit `components/` |
+| Arborescence `LIVEX/Launcher/` + `LIVEX/Components/` | Launcher à la racine, composants dans `components/` | la détection du Launcher lit `BaseDirectory/components` ; l'arborescence de la base casserait la détection sans modification du code |
 | « Mise à jour automatique » hors périmètre | mise à jour manuelle en place supportée | une réinstallation guidée est nécessaire pour corriger une version |
 | Deux chemins seulement | plus la racine de données (existante dans le code) | le modèle réel du Launcher comporte déjà paquets, archives, sessions |
 

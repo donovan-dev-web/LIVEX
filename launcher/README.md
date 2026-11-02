@@ -182,9 +182,8 @@ est occupé (§4).
 
 ## Données utilisateur
 
-La racine des données est `%LOCALAPPDATA%\LIVEX\data` sous Windows et
-`~/.local/share/livex/data` sous Linux, ou le chemin enregistré par
-l'installateur (`LIVEX_DATA` reste prioritaire). Paquets vivants dans `packages/`, journaux de session
+La racine des données est `~/.livex-data` par défaut, déplaçable par la variable
+d'environnement `LIVEX_DATA`. Paquets vivants dans `packages/`, journaux de session
 dans `sessions/` (rotation quotidienne). L'installation reste remplaçable sans perte
 de données (`PACKAGING.md` §2.2).
 

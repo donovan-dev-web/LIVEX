@@ -5,6 +5,12 @@
 **Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
+> **Validation V1.0.0 :** 118 cas xUnit exécutés et réussis pour la release
+> des attributs `[Fact]` et `[InlineData]` : Unit 72, App 34, Integration 6,
+> EndToEnd 6. Il s'agit du nombre de cas définis dans le code, pas d'un rapport
+> d'exécution. Les critères de recette réelle et manuelle ci-dessous restent
+> à confirmer avec leurs preuves de release.
+
 ---
 
 ## 1. Principe
@@ -65,7 +71,7 @@ phrase de documentation.
 | Processus en cours | `FakeProcessProbe` | simuler un fichier verrouillé |
 | Système de fichiers | répertoire temporaire réel | les sémantiques de renommage/verrou importent |
 | Charge utile | `payload-fixture/` versionnée — **à créer** (les tests actuels construisent leur charge utile dans un répertoire temporaire) | petites tailles, empreintes stables |
-| Téléchargement | `FakeDownloader` + serveur HTTP local — **à créer** avec le câblage de l'acquisition (T5) | reprise, coupure, 404, empreinte fausse, sans GitHub |
+| Téléchargement | `FakeDownloader` + serveur HTTP local — non câblés au moteur de release au 31/10/2026 | cible : reprise, coupure, 404, empreinte fausse, sans GitHub |
 | Horloge | `IClock` — **non implémenté** ; les horodatages sont ceux du système, jamais comparés dans un test | journaux et horodatages déterministes |
 | Élévation | jamais simulée | les tests échouent si une opération l'exige |
 
@@ -94,7 +100,7 @@ est sans objet depuis la décision D3 (aucune signature cryptographique en V1).
 | Ligne de commande | chaque option, combinaison invalide, codes de sortie | INS-F-90 à 99 |
 | i18n | clé manquante → anglais + journal, aucune clé brute | INS-F-82 |
 | Acquisition | URL non HTTPS, hôte étranger, actif sans empreinte, `unavailable` proposé | INS-F-12, 100 à 102 |
-| Acquisition | reprise `Range`, serveur sans `Range`, coupure, annulation — **cible** : non implémenté au 29 octobre 2026 (INS-L-12, tâche T5) | INS-F-101, 104 |
+| Acquisition | reprise `Range`, serveur sans `Range`, coupure, annulation — non implémentées dans le downloader utilisé par le moteur (INS-L-12) | INS-F-101, 104 |
 | Extraction | entrée `..`, chemin absolu, lien symbolique, nombre d'entrées et taille dépassés | INS-F-103 |
 | Cache | actif vérifié réutilisé, actif corrompu purgé, cache absent recréé | INS-F-101, 102 |
 | Hors ligne | actif local accepté par empreinte, refusé sinon, `--no-network` sans requête | INS-F-105, 98, 99 |
@@ -292,7 +298,7 @@ d'avoir été mesurée sur la version concernée.
 | Processus LIVEX en cours | refus d'écraser, message |
 | Journal après une erreur contenant un chemin utilisateur | chemin présent, aucun secret |
 
-## 11. Ce qui n'est pas testé en V0.2
+## 11. Limites de test de la V1.0.0
 
 - installation machine et multi-utilisateur (hors périmètre) ;
 - coupure de courant pendant une écriture (limite documentée) ;
@@ -310,7 +316,7 @@ code de sortie, chemin du journal, capture éventuelle. Il distingue
 explicitement :
 
 - **[R+V]** : exécuté, résultat cité ;
-- **[R]** : implémenté, non exécuté ;
+- **[R]** : exigence réalisée ; le résultat individuel n'est pas ventilé dans cette matrice ;
 - **[P]** : partiel ;
 - **[A]** : non commencé.
 

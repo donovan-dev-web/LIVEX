@@ -1,8 +1,8 @@
 # Guide utilisateur — installer LIVEX
 
 **Composant** : LIVEX (installateur)
-**Statut** : [DRAFT] — guide de la version à venir
-**Dernière mise à jour** : 29 octobre 2026
+**Statut** : [LIVRÉ] — guide utilisateur de l'installateur LIVEX 1.0.0
+**Dernière mise à jour** : 31 octobre 2026
 
 ---
 
@@ -13,8 +13,8 @@ les fichiers à la main : chercheur, utilisateur non technique, développeur qui
 veut une pile propre. Aucune connaissance de .NET, de Python ou d'Unreal
 Engine n'est nécessaire pour l'installation décrite ici.
 
-> **Disponibilité :** l'installateur n'est pas encore publié. Ce guide décrit
-> le parcours cible ; il ne remplace pas une release.
+> **Disponibilité :** l'installateur LIVEX 1.0.0 est publié pour Windows x64
+> et Linux x64 dans la [release `livex-v1.0.0`](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0).
 
 ## 2. Avant de commencer
 
@@ -23,13 +23,15 @@ Engine n'est nécessaire pour l'installation décrite ici.
 - un ordinateur **Windows 10/11 64 bits** ou **Linux 64 bits** (glibc) ;
 - l'espace disque nécessaire, indiqué dans les notes de release (il dépend de
   la plateforme **et des modules cochés** ; il n'est pas estimé ici) ;
-- le dossier de distribution téléchargé (`livex-setup.exe`, `packages/`,
-  `assets/`, `distribution.json`, mentions légales, `LISEZ-MOI.txt`) ;
+- le dossier de distribution téléchargé (`livex-setup`, `payload/`,
+  `distribution.json`, signatures) ;
 - **aucun accès Internet pour le socle** : Launcher, SYNE, ECHOS et PRISM
   s'installent hors ligne ;
 - une connexion Internet **seulement si vous cochez un module facultatif**
-  (PRISM-LDK, documentation, SYNE-Mock), ou une archive locale / la variante
-  complète `full`.
+  (PRISM-LDK, documentation, SYNE-Mock), sauf si vous utilisez la variante
+  complète `full`, qui embarque les actifs facultatifs. Le chargement depuis
+  une archive locale et les options `--offline-assets` / `--no-network` ne
+  sont pas encore reliés au moteur d'installation.
 
 ### Ce que vous n'avez pas besoin d'installer
 
@@ -42,8 +44,8 @@ Engine n'est nécessaire pour l'installation décrite ici.
 ### Ce que l'installateur ne fera pas
 
 - il ne demande pas de mot de passe administrateur ;
-- il ne modifie pas le `PATH` ni les variables d'environnement ; il associe
-  seulement les fichiers `.livexp` au Launcher pour votre compte ;
+- il ne modifie pas le `PATH`, les associations de fichiers ni les variables
+  d'environnement ;
 - il ne télécharge jamais le socle, ne vérifie pas les mises à jour et ne
   télécharge rien en arrière-plan ;
 - il n'installe pas PRISM-LDK dans un projet Unreal : il dépose l'archive, vous
@@ -73,35 +75,38 @@ La procédure est reprise dans `SECURITY.md`.
 ## 4. Installer
 
 1. Lancez `livex-setup` (double-clic, ou `./livex-setup` sous Linux).
-2. **Accueil** : l'assistant présente LIVEX. Si une installation valide existe
-   déjà, il ouvre l'écran de maintenance au lieu d'une nouvelle installation.
-   La langue se choisit à tout moment dans le panneau latéral (français ou
-   anglais) et s'applique immédiatement.
-3. **Licence** : lisez la licence GPL-3.0-or-later et acceptez-la pour
+2. **Accueil** : l'assistant présente LIVEX. Si une installation existe déjà, il
+   ouvre l'écran de maintenance au lieu d'une nouvelle installation.
+3. **Langue** : français ou anglais. Le changement s'applique immédiatement.
+4. **Licence** : lisez la licence GPL-3.0-or-later et acceptez-la pour
    poursuivre. Les mentions des composants tiers sont accessibles depuis cet
    écran.
-4. **Composants** : le Launcher, SYNE et ECHOS sont inclus et ne peuvent pas
-   être décochés. **PRISM** est proposé **coché par défaut** ; les modules
-   facultatifs sont proposés **décochés par défaut** :
-   - **PRISM** — l'application de rendu et d'interaction, packagée pour votre
-     système ; elle ne demande pas Unreal Engine ;
+5. **Composants** : le Launcher, SYNE et ECHOS sont inclus et ne peuvent pas
+   être décochés. **PRISM** est un composant de base, **coché par défaut** ; les
+   trois modules facultatifs sont proposés **décochés par défaut** :
+   - **PRISM** — déjà présent dans la distribution :
+     l'application de rendu et d'interaction, packagée pour votre système ;
+     elle ne demande pas Unreal Engine ;
    - **PRISM-LDK** — le plugin pour un projet Unreal Engine que vous possédez ;
      il est déposé sous forme d'archive, prête à copier ;
+   - **Documentation hors ligne** — les documents consultables sans réseau ;
    - **SYNE-Mock** — l'émulateur du moteur pour le développement.
    Si PRISM n'est pas coché, l'assistant précise que le rendu et l'interaction
    3D ne seront pas disponibles ; vous pouvez continuer. Un module absent de la
    version publiée apparaît comme **indisponible**, avec la raison, sans case.
-5. **Chemins** : choisissez **une racine commune** (par défaut
-   `%LOCALAPPDATA%\LIVEX` ou `~/.local/share/livex`). Trois emplacements en
-   sont dérivés : `software/`, `workspace/` et `data/`. Cochez « Personnaliser »
-   seulement pour l'emplacement que vous voulez déplacer.
-   L'assistant vérifie que les dossiers sont utilisables avant de continuer.
-6. **Récapitulatif** : vérifiez la racine, les dossiers, les composants et
-   l'espace disque. Revenez en arrière si nécessaire.
-7. **Installation** : la progression s'affiche étape par étape. Ne fermez pas
+6. **Chemins** : choisissez deux dossiers différents.
+   - **Logiciel** : là où LIVEX est installé (par défaut
+     `%LOCALAPPDATA%\Programs\LIVEX` ou `~/.local/opt/livex`).
+   - **Espace de travail** : là où vous organiserez vos expériences et vos
+     rapports (par défaut `<données>/workspace`).
+   L'assistant vérifie que les deux dossiers sont utilisables avant de
+   continuer.
+7. **Récapitulatif** : vérifiez les dossiers, les composants et l'espace
+   disque. Revenez en arrière si nécessaire.
+8. **Installation** : la progression s'affiche étape par étape. Ne fermez pas
    la fenêtre pendant cette phase.
-8. **Résultat** : en cas de succès, cliquez sur « Lancer LIVEX » pour démarrer
-   l'application, ou fermez l'assistant pour la lancer plus tard.
+9. **Résultat** : en cas de succès, « Lancer LIVEX » est coché ; décochez-le si
+   vous préférez démarrer plus tard.
 
 ### Profils et composants individuels
 
@@ -109,15 +114,17 @@ Deux paquets d'installation sont publiés pour chaque système :
 
 | Profil | Contenu | Réseau |
 | :-- | :-- | :-- |
-| **`core`** (défaut) | Launcher, SYNE, ECHOS, ressources, SYNE-Mock ; PRISM et le LDK peuvent être acquis séparément | requis pour un actif non embarqué |
-| **`full`** | les mêmes composants **et** PRISM embarqué | aucun |
+| **`core`** (défaut) | Launcher, SYNE, ECHOS, PRISM et leurs supports ; les modules facultatifs sont proposés au téléchargement | requis pour un module coché |
+| **`full`** | les mêmes composants **et** les trois archives facultatives | aucun |
 
 Choisissez `full` sur un poste isolé ; `core` suffit si vous avez Internet au
 moment d'installer un module.
 
-La distribution est un **ZIP unique** contenant `livex-setup.exe` et un ZIP par
-composant dans `packages/`. L'installateur extrait ces archives : vous n'avez pas
-à les décompresser vous-même.
+Chaque composant est aussi publié séparément (`livex-launcher`, `syne`,
+`echos`, `prism`, `prism-ldk`, `livex-docs`, `syne-mock`), sous forme d'archive
+décompressable à la racine d'une installation. C'est un usage **manuel et
+avancé** : l'installateur reste la voie normale, et seule l'archive du LDK, de
+la documentation ou de SYNE-Mock est lue par lui.
 
 ### Si l'installation échoue
 
@@ -132,7 +139,7 @@ LIVEX démarre avec le Launcher. Il détecte SYNE et ECHOS installés et affiche
 leur état. Pour vérifier l'installation sans ouvrir l'interface :
 
 ```bash
-<répertoire logiciel>/core/launcher/livex-launcher --check
+<répertoire logiciel>/livex-launcher --check
 ```
 
 La commande affiche une ligne par contrôle et retourne `0` si tout est
@@ -143,10 +150,10 @@ correspondante donne la cause.
 
 | Donnée | Emplacement |
 | :-- | :-- |
-| Logiciel | répertoire choisi à l'installation (`software/` par défaut) |
+| Logiciel | répertoire choisi à l'installation |
 | Préférences | `<racine de données>/settings.json` |
-| Espace de travail | dossier choisi à l'installation (`workspace/` par défaut) |
-| Modules facultatifs | `<répertoire logiciel>/components/prism/`, `components/syne-mock/`, `plugins/prism-ldk/` |
+| Espace de travail | dossier choisi à l'installation |
+| Modules facultatifs | `<répertoire logiciel>/components/prism/`, `components/syne-mock/`, `plugins/prism-ldk/`, `docs/` |
 | Téléchargements en cache | `<racine de données>/cache/downloads/` |
 | Paquets `.livexp` | `<racine de données>/packages/` |
 | Archives scellées | `<racine de données>/archives/` |
@@ -155,8 +162,7 @@ correspondante donne la cause.
 | Base d'analyse ECHOS | `<racine de données>/echos/` |
 
 La **racine de données** est `LIVEX_DATA` si cette variable est définie, sinon
-le chemin choisi dans l'installateur, sinon `%LOCALAPPDATA%\LIVEX\data`
-(`~/.local/share/livex/data` sous Linux).
+`~/.livex-data` (Windows : `%USERPROFILE%\.livex-data`).
 
 ## 7. Mettre à jour
 
@@ -187,9 +193,9 @@ composant.
 ## 9. Ajouter ou retirer PRISM ou un module facultatif
 
 Lancez `livex-setup`, choisissez **Gérer les composants**, puis cochez ou
-décochez PRISM, PRISM-LDK ou SYNE-Mock. Les composants obligatoires ne sont pas
-modifiables. Cocher PRISM ne demande aucun téléchargement s'il est déjà fourni
-par la distribution.
+décochez PRISM, PRISM-LDK, la documentation ou SYNE-Mock. Les composants
+obligatoires ne sont pas modifiables. Cocher PRISM ne demande aucun
+téléchargement : il vient de la distribution déjà téléchargée.
 
 Pour un ajout, l'installateur utilise d'abord le cache local, puis l'adresse de
 la release d'origine. Sans réseau, il vous propose de choisir une archive
@@ -235,8 +241,8 @@ diagnostic.
 | « Enregistrement introuvable » | entrée système supprimée | laisser l'assistant retrouver l'installation, ou la localiser |
 | « Fichier corrompu » | distribution incomplète | retélécharger et vérifier les signatures |
 | « libicu introuvable » (Linux) | distribution minimale | installer le paquet `libicu` de votre distribution |
-| « Connexion impossible » pendant un module | réseau, proxy ou GitHub inaccessible | réessayer, choisir une archive locale, ou utiliser la variante `full` |
-| « Empreinte incorrecte » | archive altérée ou téléchargement incomplet | supprimer le module du cache et réessayer ; ne pas forcer l'installation |
+| « Connexion impossible » pendant un module | réseau, proxy ou GitHub inaccessible | réessayer avec un réseau autorisant GitHub ou utiliser la variante `full` |
+| « Empreinte incorrecte » | archive altérée ou téléchargement incomplet | retélécharger le paquet `full` ou l'actif concerné et vérifier son empreinte ; ne pas forcer l'installation |
 | Le Launcher ne démarre pas | installation incomplète | lancer `livex-setup` puis **Réparer** |
 | L'installation s'arrête sans message | erreur inattendue | consulter `<racine de données>/logs/installer-*.log` |
 
@@ -250,8 +256,9 @@ décrits dans [`COMMANDES.md`](COMMANDES.md).
 **Ai-je besoin d'Internet ?**
 Pas pour le socle : Launcher, SYNE et ECHOS s'installent avec la distribution
 seule, et la vérification des signatures se fait hors ligne. Un module
-facultatif coché est téléchargé depuis la release ; sans réseau, choisissez une
-archive locale ou la variante complète `full`.
+facultatif coché est téléchargé depuis la release ; sans réseau, choisissez la
+variante complète `full`. L'installation depuis une archive locale n'est pas
+encore disponible dans le parcours livré.
 
 **Puis-je installer sans être administrateur ?**
 Oui. L'installateur n'écrit que dans votre profil utilisateur et ne demande

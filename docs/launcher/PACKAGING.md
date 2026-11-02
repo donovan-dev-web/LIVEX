@@ -39,35 +39,34 @@ lieu naturel d'une arborescence de composants cohérente.
 ### 2.1 Arborescence d'installation
 
 ```text
-<répertoire logiciel>/
-├── livex-setup.exe              # installateur / maintenance
-├── core/
-│   ├── launcher/
-│   │   ├── livex-launcher       # exécutable principal
-│   │   ├── *.dll               # dépendances gérées
-│   │   └── docs/               # documentation embarquée (lecteur Markdown)
-│   └── installer/
-│       └── distribution.json   # manifeste d'origine pour la maintenance
-├── components/
-│   ├── syne/
-│   │   ├── component.json      # manifeste
-│   │   └── ...
-│   ├── echos/
-│   │   ├── component.json
-│   │   └── ...
-│   └── prism/                  # application packagée, sans component.json
-├── contracts/                  # schémas et contrats
-├── assets/                     # icônes partagées (livex.ico, livexp.ico)
+livex/
+├── launcher/
+│   ├── livex-launcher            # exécutable principal
+│   ├── *.dll                    # dépendances managées
+│   ├── docs/                    # documentation embarquée — rendue par le lecteur Markdown du Launcher (USER_INTERFACE §3.1)
+│   └── components/
+│       ├── syne/
+│       │   ├── component.json   # manifeste
+│       │   └── ...
+│       ├── echos/
+│       │   ├── component.json
+│       │   └── ...
+│       └── prism/               # présent seulement si PRISM est livré
+│           ├── component.json
+│           └── ...
+├── templates/                   # modèles de paquet, de campagne, de profil
 ├── LICENSE
-├── NOTICE
 ├── THIRD-PARTY-NOTICES.md
-└── .livex-install.json         # chemins choisis par l'installateur
+└── VERSION
 ```
 
+> **État transitoire (19/10/2026).** En attendant l'installeur, `dotnet publish`
+> place `LICENSE`, `NOTICE` et `THIRD-PARTY-NOTICES.md` à la racine du dossier
+> `launcher/` (voir `launcher/Launcher.App/Launcher.App.csproj`). L'installeur
+> devra les remonter à la racine de l'installation (`livex/`) et y ajouter `VERSION`.
+
 Le Launcher est installé **sans** ses composants. Il détecte ceux qui sont présents
-et signale ceux qui manquent, conformément à `COMPONENTS.md` §12. Depuis
-`core/launcher`, `WorkspaceLayout.InstallationRoot()` remonte de deux niveaux
-pour lire `<installation>/components` et `.livex-install.json`.
+et signale ceux qui manquent, conformément à `COMPONENTS.md` §12.
 
 ### 2.2 Répertoire de données utilisateur
 
