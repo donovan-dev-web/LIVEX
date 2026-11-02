@@ -1,70 +1,82 @@
-# VISION — PRISM
+# VISION — PRISM (V2)
 
 **Composant** : PRISM
-**Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Statut** : [DRAFT]
-**Dernière mise à jour** : 11 octobre 2026
-**Dépend de** : [`../presentation/VISION.md`](../presentation/VISION.md)
+**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Dernière mise à jour** : 1er novembre 2026
+**Dépend de** : [`../presentation/VISION.md`](../presentation/VISION.md), [`adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md`](adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md)
+**Source Monographie** : —
 
 ---
 
-## Rôle
+## 1. Le problème
 
-**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
-complet. **PRISM** (*Perceptual Rendering & Interactive Simulation Module*)
-est son projet Unreal final pour rendre le monde perceptible et interactif.
-PRISM intègre **PRISM-LDK** (*LIVEX Development Kit*), plugin Unreal dont le
-nom technique de module est `PrismLdk`. LDK désigne le plugin, pas un projet
-complet distinct. Le fichier `../../prism/LDK/LDK.uproject` fourni dans ce checkout
-est un hôte technique de build/test ; il ne représente pas un produit LIVEX
-séparé.
+Dans LIVEX V1, un agent vit dans un monde pauvre : deux besoins matériels (eau, nourriture) se satisfont en « allant chercher » une réserve globale. Il n'y a rien à fabriquer, stocker, transporter ni bâtir, donc **aucune raison structurelle de coopérer**. Dans le même temps, SYNE porte à la fois la cognition des agents *et* le monde (grille, obstacles, ressources, saisons, navigation, perception géométrique), ce qui alourdit le moteur et brouille ses responsabilités.
 
-PRISM reflète l'état de SYNE ; **il n'est jamais co-auteur de la simulation**.
+PRISM V2 répond à ce double problème : **élargir ce que les agents peuvent faire** et **alléger SYNE de la gestion du monde**.
 
-## Responsabilités
+## 2. Objectifs
 
-- Se connecter aux interfaces de transport SYNE et convertir les messages en
-  contrats/types Unreal utilisables depuis Blueprint.
-- Exposer l'état de connexion, les commandes de contrôle et les événements de
-  transport en Blueprint.
-- Permettre à PRISM d'afficher le monde et d'inspecter les informations
-  reçues et de présenter les résultats de SYNE.
-- Garder la présentation et les conventions de rendu dans le projet Unreal
-  PRISM, plutôt que de faire du plugin un jeu ou une simulation autonome.
+| # | Objectif | Mesure de réussite |
+| :-- | :-- | :-- |
+| O1 | **Étendre le champ des possibles** : chaînes de production (extraction, outils, agriculture, stockage, construction) à la place de « aller chercher » | Cinq chaînes jouables de bout en bout par des agents (jalon G4) |
+| O2 | **Créer des raisons de coopérer** sans les imposer par script | Effet mesurable des mécanismes de coopération par ablation (jalon G7) |
+| O3 | **Séparer les responsabilités** : SYNE = cognition ; PRISM = matière, espace, temps physique | Aucune classe de géométrie ou de ressource dans `Simulation.Core` (jalon G5) |
+| O4 | **Rendre le contenu extensible par la donnée** | Un matériau, une recette ou une culture s'ajoute sans recompiler (test de non-régression de contenu) |
+| O5 | **Donner à PRISM une identité visuelle forte** : monde voxel lisible, cohérent avec l'idée d'un monde simulé | Visualiseur Silk.NET livré (phase P11) |
+| O6 | **Préserver l'existant** : déterminisme par seed, runs headless, comparaison dans ECHOS, orchestration par le Launcher | Reprise bit-à-bit, empreintes dorées, manifestes conformes (jalons G3, G6) |
 
-## Frontière avec SYNE
+## 3. Principes de conception
 
-SYNE reste l'autorité pour l'état canonique du monde, les décisions, les
-actions et l'évolution des entités. Le plugin ne doit pas :
+1. **Autorité du monde.** PRISM est la seule source de vérité sur l'espace, la matière et le temps physique. SYNE est la seule source de vérité sur la cognition. Aucun des deux ne duplique l'état de l'autre.
+2. **Information locale.** Un agent n'agit que sur ce qu'il a perçu ou mémorisé. PRISM ne répond jamais à un agent par une connaissance globale du monde (voir [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) §5).
+3. **Conservation de la matière.** Rien n'apparaît ni ne disparaît sans règle déclarée. Un registre d'audit le vérifie.
+4. **Données avant code.** Matériaux, objets, recettes, gabarits et paramètres sont des fichiers de données validés par schéma. Les agents et les recettes raisonnent sur des **tags**, jamais sur des identifiants.
+5. **Déterminisme d'abord.** Arithmétique entière ou à virgule fixe pour tout ce qui influence l'état. Le virgule flottante est réservé au rendu.
+6. **Headless d'abord.** La simulation ne dépend d'aucune bibliothèque graphique. Le rendu est un client qui ne peut jamais ralentir le tick.
+7. **Pas de coopération scriptée.** Le monde fournit des coûts, des délais, des biens non rivaux et des risques ; il ne fournit aucune récompense directe pour « être en groupe ».
 
-- posséder un état de simulation concurrent ou prendre des décisions à la
-  place de SYNE ;
-- recalculer les règles de comportement, les croyances ou la vérité du monde ;
-- modifier directement le monde simulé : les commandes passent par l'API de
-  contrôle SYNE ;
-- transformer les projections visuelles Unreal (NavMesh, hauteur, animation)
-  en vérité simulée ou les renvoyer comme état autoritaire.
+## 4. Périmètre
 
-## Conception du plugin
+### Dans le périmètre V2
 
-Le C++ de `PrismLdk` doit rester mince. Il sert de couche d'intégration :
-contrats, `USTRUCT`/`UENUM`, conversion du transport, fonctions Blueprint,
-état de connexion et dispatchers d'événements. Le rendu, les acteurs, les
-widgets, les choix d'expérience et toute logique propre au produit relèvent du
-projet Unreal PRISM. Toute logique de décision et l'état canonique restent
-dans SYNE.
+- Monde voxel borné (défaut 256 × 256 × 64), chunks 16³, génération par seed.
+- Matériaux, objets, recettes, gabarits de structures, cultures : tout par données.
+- Agents physiques (corps, inventaire, navigation 3D, conflits).
+- Chaînes de production, stockage, péremption, outils à durabilité, paliers.
+- Structures et chantiers par gabarits, propriété et accès, usure (optionnelle).
+- Contrat SYNE↔PRISM versionné, flux de lecture pour ECHOS et le visualiseur.
+- Hôte headless, persistance et reprise bit-à-bit, visualiseur Silk.NET.
 
-```text
-Projet complet LIVEX
-  ├─ SYNE : moteur décisionnel et état autoritaire
-  ├─ ECHOS : observation et analyse
-  └─ PRISM : projet Unreal final
-       ├─ présentation, monde, acteurs, UI et interactions
-       └─ PRISM-LDK / PrismLdk : plugin d'intégration
-            ├─ contrats et types exposés à Blueprint
-            ├─ réception WebSocket SYNE
-            └─ commandes HTTP vers SYNE
-```
+### Hors périmètre V2 (décidé)
 
-Les détails d'intégration sont dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et
-[`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md).
+| Sujet | Raison | Piste ultérieure |
+| :-- | :-- | :-- |
+| Monde infini / génération à la volée | Risque pour le déterminisme, aucun apport scientifique | Augmenter les dimensions par paramètre |
+| Écoulement de l'eau | Règle coûteuse, difficile à rendre déterministe | Extension après validation (ADR-010) |
+| Construction libre bloc par bloc | Explose l'espace d'actions et la planification | Étendre le catalogue de gabarits |
+| LLM dans la boucle de décision | Coût, non-déterminisme, hors objet | Génération hors boucle de recettes/noms, figée dans les données |
+| Combat, faune, météo dynamique | Hors question de recherche | Évolutions futures documentées dans `ROADMAP.md` §9 |
+| Modding tiers / API de plugins | Surface de support | Packs de contenu signés (post-V2) |
+| Mode joueur-habitant | Dépend d'un monde stable | Après V2 |
+
+## 5. Questions de recherche que le monde doit rendre posables
+
+- Former des groupes, partager des stocks et bâtir des ouvrages collectifs devient-il avantageux, et dans quelles conditions ?
+- Quels mécanismes (coûts fixes partagés, division du travail, lissage du risque, logistique, biens collectifs, partage d'information, travail parallèle) pèsent le plus ? (Ablations : [`TESTING.md`](TESTING.md) §6.)
+- Que se passe-t-il si les recettes se découvrent par essai plutôt que d'être connues ? (Variante riche : [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) §7.)
+
+> **Position scientifique** (héritée du README racine). PRISM fournit un dispositif d'expérimentation, pas une preuve d'émergence. L'hypothèse de l'auteur — les chaînes de production créent des situations où coopérer rapporte — tient *sous conditions* et peut échouer ; la documentation prévoit de la tester, y compris pour la réfuter.
+
+## 6. Identité
+
+Un monde de blocs **lisible** (on comprend d'un coup d'œil ce qui s'y passe), **modifiable** (par les données, par les agents, et par des interventions journalisées) et **cohérent** avec l'idée d'un monde simulé : palette sobre à portée scientifique, lumière et jour/nuit qui portent l'information, aucune animation décorative qui laisserait croire à de la vie là où il n'y a que de l'état (voir [`RENDERING_SPEC.md`](RENDERING_SPEC.md)).
+
+## Points restés ouverts dans ce document
+
+Aucun : les questions ouvertes de la V2 sont tenues dans [`adr/README.md`](adr/README.md) §3.
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 1er novembre 2026 | Création | Refonte V2 |

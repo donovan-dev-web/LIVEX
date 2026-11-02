@@ -1,77 +1,69 @@
-# PRISM — Perceptual Rendering & Interactive Simulation Module
+# PRISM — Persistent Reality & Interactive Simulation Module (V2)
 
 **Composant** : PRISM
-**Statut** : [LIVRÉ — PACKAGÉ]
-**Version** : PRISM `1.0.0`, PRISM-LDK `1.0.0` — consomme le contrat SYNE `0.5.0`
-**Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK (`PrismLdk`)
-**Dernière mise à jour** : 31 octobre 2026
-**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
+**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Version cible** : PRISM `2.0.0` — consomme et produit le contrat SYNE↔PRISM `1.0.0` (voir [`API_CONTRACTS.md`](API_CONTRACTS.md))
+**Implémentation visée** : .NET (C#), noyau headless `Prism.Core` + hôte `Prism.Host` + visualiseur `Prism.Viewer` (Silk.NET / OpenGL)
+**Dernière mise à jour** : 1er novembre 2026
+**Dépend de** : [`VISION.md`](VISION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`RESPONSIBILITIES.md`](RESPONSIBILITIES.md)
+**Source Monographie** : —
 
 ---
 
-## Rôle et intégration
+> **Lecture obligatoire avant tout.** Ce dossier décrit PRISM **V2**, une refonte de scope. Il remplace la documentation de PRISM V1 (projet Unreal + plugin PRISM-LDK, livré en `1.0.0`), qui doit être archivée dans `docs/prism/legacy-unreal/` au moment de la fusion. Rien de ce qui est décrit ici n'est implémenté : le statut de chaque document le rappelle (ADR-006 du Launcher : *concevoir au niveau du modèle, sans simuler l'implémentation*).
 
-**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
-complet. **PRISM** en est le projet Unreal final pour la représentation et
-l'interaction visuelle. PRISM intègre **PRISM-LDK** (*LIVEX Development Kit*),
-le plugin Unreal situé actuellement dans `../../prism/LDK/Plugins/PrismLdk`
-(nom de module Unreal : `PrismLdk`). Il expose les types, fonctions et
-événements Blueprint pour se connecter à SYNE et consommer ses contrats.
-LIVEX n'est pas un projet séparé qui viendrait après PRISM.
+## Rôle en une phrase
 
-Dans ce checkout, `../../prism/LDK/LDK.uproject` est un hôte Unreal technique fourni
-pour compiler et tester PRISM-LDK. Le nom du fichier et du dossier ne désigne
-pas le projet complet LIVEX ni un second projet produit.
+PRISM V2 est **l'autorité du monde** : un monde voxel borné, déterministe, piloté par des données, qui porte la matière, l'espace, le temps physique, la navigation et les structures. SYNE ne conserve que la **cognition des agents** ; ECHOS observe les deux.
 
-**SYNE reste l'unique moteur décisionnel et l'autorité de l'état simulé.**
-PrismLdk est un adaptateur d'intégration : il ne décide pas du comportement des
-entités et ne doit pas devenir un moteur de simulation parallèle. Le code C++
-du plugin reste mince et se limite aux contrats, au transport, à leur
-conversion en types Blueprint et à la diffusion d'événements/résultats.
+## Ce qui change par rapport à V1
 
-## Flux en bref
-
-- WebSocket `ws:/127.0.0.1:5180` : réception de `world_initialized`, du
-  snapshot global de chaque tick, de `world_delta` et des événements.
-- HTTP `http://127.0.0.1:5181` : commandes de préparation, confirmation,
-  démarrage, pause, reprise, arrêt, réinitialisation et lecture du statut.
-- Les snapshots sont la source de vérité de l'état dynamique ; les événements
-  servent aux notifications et effets ponctuels. Éviter de traiter deux fois
-  une mutation présente dans les deux flux.
-
-Voir [TRANSPORT_API.md](TRANSPORT_API.md) pour les contrats et
-[PRISM_UNREAL_IMPLEMENTATION.md](PRISM_UNREAL_IMPLEMENTATION.md) pour le guide
-d'intégration Blueprint et les conventions de projection du monde.
+| Sujet | PRISM V1 (Unreal, `1.0.0`) | PRISM V2 (voxel, `2.0.0`) |
+| :-- | :-- | :-- |
+| Rôle | Rendu d'une représentation logique ; jamais co-auteur | Autorité de l'état du monde, de l'espace et de la matière |
+| Sens du flux | SYNE → PRISM (lecture) + commandes HTTP de contrôle | SYNE ↔ PRISM bidirectionnel : commandes, observations, événements |
+| Technologie | Unreal Engine 5.8, C++ mince + Blueprint | .NET, noyau sans dépendance graphique ; rendu Silk.NET OpenGL optionnel |
+| Exécution | Nécessite le moteur de rendu | **Headless par défaut** ; le visualiseur est un client de lecture |
+| Monde | Grille logique 2D + obstacles disques (dans SYNE) | Grille voxel 256 × 256 × 64, chunks 16³, blocs décrits par des données |
+| Ressources | Réserves globales (`Food`, `Water`, `Wood`, `Mineral`) | Objets physiques, inventaires, conteneurs, chaînes de production |
+| Échelle SYNE↔moteur | `k`, TPS, cellules World Partition (ADR-003) | Supprimée : 1 bloc = 1 m, aucune conversion |
 
 ## Documents
 
 | Document | Rôle |
 | :-- | :-- |
-| `VISION.md` | Rôle, frontières et responsabilité de SYNE |
-| `ARCHITECTURE.md` | Projet PRISM, plugin PRISM-LDK et flux d'intégration |
-| `SCENE_SPEC.md` | Responsabilités de PRISM pour le monde présenté |
-| `SCALE_AND_CADENCE_SPEC.md` | Échelle SYNE ↔ Unreal, cadence et profil de monde |
-| `TRANSPORT_API.md` | WebSocket et HTTP SYNE |
-| `PRISM_UNREAL_IMPLEMENTATION.md` | Guide d'intégration PRISM-LDK et Blueprint |
-| `BLUEPRINT_ROADMAP.md` | Plan de travail temporaire de la partie Blueprint (éléments à créer, jalons, empaquetage) |
-| `RENDERING_SPEC.md` | Objectifs de représentation visuelle |
-| `VISUALIZATION_SPEC.md` | Vues d'inspection, sociales et communication |
-| `UX_INTERACTION.md` | Intentions d'interaction et d'interface |
-| `ASSETS_CONVENTIONS.md` | Principes de présentation des éléments |
-| `PACKAGING.md` | Packaging des entrées de release (PRISM Windows/Linux, PRISM-LDK) |
-| `TESTING.md` | Validation du plugin et de l'intégration |
-| `ROADMAP.md` | Étapes d'évolution |
-| `CHANGELOG.md` | Historique de cette documentation |
-| `adr` | Décisions historiques et références transverses |
+| [`VISION.md`](VISION.md) | Objectifs, principes, périmètre et hors-périmètre |
+| [`PRISM_SYNTHESIS.md`](PRISM_SYNTHESIS.md) | Synthèse d'une page, pour lecteurs pressés et recruteurs |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Projets .NET, couches, threads, flux, dépendances |
+| [`RESPONSIBILITIES.md`](RESPONSIBILITIES.md) | Répartition SYNE / PRISM / ECHOS / Launcher et plan d'extraction du monde de SYNE |
+| [`DATA_MODEL.md`](DATA_MODEL.md) | Grille, chunks, blocs, objets, inventaires, agents physiques, structures |
+| [`WORLD_GENERATION.md`](WORLD_GENERATION.md) | Génération par seed : bruit entier, couches, zones, filons |
+| [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md) | Tick, ordre d'exécution, mises à jour programmées/aléatoires, conflits, calendrier |
+| [`CONTENT_SPEC.md`](CONTENT_SPEC.md) | Format des fichiers de données, contenu minimal, paramètres de calibrage |
+| [`SYSTEMS_SPEC.md`](SYSTEMS_SPEC.md) | Chaînes de production, structures, chantiers, propriété, coopération |
+| [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md) | Impact sur les agents BDI : croyances, planification, macro-actions, savoir des recettes |
+| [`API_CONTRACTS.md`](API_CONTRACTS.md) | Contrat d'interface SYNE↔PRISM et flux de lecture |
+| [`DETERMINISM.md`](DETERMINISM.md) | Arithmétique entière, flux de hasard, empreintes, vérifications |
+| [`PERSISTENCE.md`](PERSISTENCE.md) | Points de reprise, format des chunks, reprise bit-à-bit |
+| [`CONFIGURATION.md`](CONFIGURATION.md) | Clés de configuration et profils |
+| [`PERFORMANCE.md`](PERFORMANCE.md) | Budgets, cibles, benchmarks à écrire en premier |
+| [`RENDERING_SPEC.md`](RENDERING_SPEC.md) | Visualiseur Silk.NET, identité visuelle, interaction |
+| [`TESTING.md`](TESTING.md) | Plan de test et de calibrage, ablations, critères de viabilité |
+| [`PACKAGING.md`](PACKAGING.md) | Publication, manifestes Launcher, installateur |
+| [`ROADMAP.md`](ROADMAP.md) | Feuille de route de bout en bout (phases, jalons, portes de décision, risques) |
+| [`ISSUES.md`](ISSUES.md) | Backlog complet prêt pour GitHub/Kanban |
+| [`CHANGELOG.md`](CHANGELOG.md) | Historique de cette documentation |
+| [`adr/`](adr/README.md) | Décisions d'architecture (ADR-004 à ADR-010 pour la V2) |
 
-PRISM et son plugin `PrismLdk` sont packagés dans la release 1.0.0 ; les paquets PRISM ciblent Windows et Linux. Le package plugin est destiné à l'intégration dans Unreal Engine 5.8. La livraison et le packaging ne signifient pas que toutes les fonctions de rendu décrites dans les spécifications sont disponibles ou validées. Les spécifications visuelles décrivent des objectifs, pas des classes Unreal imposées ni des fonctionnalités générées automatiquement par le plugin.
+## Où lire quoi
 
-## Lancement
+- **Comprendre le pourquoi** : `VISION.md`, `PRISM_SYNTHESIS.md`, `adr/ADR-004`.
+- **Implémenter le noyau** : `DATA_MODEL.md`, `SIMULATION_LOOP.md`, `DETERMINISM.md`, `CONTENT_SPEC.md`.
+- **Implémenter le côté agent (SYNE)** : `API_CONTRACTS.md`, `AGENT_INTERFACE.md`, `RESPONSIBILITIES.md` §4.
+- **Planifier** : `ROADMAP.md`, `ISSUES.md`, `PERFORMANCE.md`.
 
-Commande avec Token launcher visible pour connection SYNE en DEV : 
+## Mises à jour
 
-   ```powershell
-   cd D:\LIVEX
-   $env:LIVEX_SESSION_TOKEN_DISPLAY = "1"
-   dotnet run --project .\launcher\Launcher.App\
-   ```
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 1er novembre 2026 | Création | Refonte de scope V2 (monde voxel autoritaire) |

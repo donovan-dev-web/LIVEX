@@ -1,53 +1,75 @@
-# RENDERING_SPEC — Objectifs de rendu PRISM
+# RENDERING_SPEC — Visualiseur Silk.NET, identité visuelle et interaction
 
 **Composant** : PRISM
-**Statut** : [DRAFT]
-**Dernière mise à jour** : 11 octobre 2026
-**Dépend de** : [`SCENE_SPEC.md`](SCENE_SPEC.md)
+**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Dernière mise à jour** : 1er novembre 2026
+**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`API_CONTRACTS.md`](API_CONTRACTS.md) §6, [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md)
+**Source Monographie** : —
 
 ---
 
-## 1. Statut
+## 1. Rôle et frontières
 
-Les points ci-dessous sont des objectifs visuels issus des spécifications
-historiques PRISM. Ils ne décrivent pas des fonctionnalités déjà fournies par
-`PrismLdk` et ne prescrivent pas de classes ou d'assets Unreal. Leur
-implémentation relève du projet Unreal PRISM.
+Le visualiseur est un **client de lecture**. Il ne simule rien, ne décide de rien et peut être arrêté sans conséquence pour le run. Son seul droit d'écriture est l'envoi d'**interventions** journalisées (§6), désactivées par défaut.
 
-## 2. Entités et ressources
+## 2. Rendu
 
-- Représenter les agents d'une manière lisible et cohérente avec leur état
-  reçu : position, action ou indicateurs de besoin disponibles dans le
-  snapshot.
-- Interpoler visuellement entre états si nécessaire, sans altérer ni retarder
-  l'état autoritaire SYNE.
-- Distinguer les ressources par type et présenter leur quantité avec
-  discernement. Les snapshots donnent des stocks globaux par type ; ne pas
-  les traiter comme des stocks locaux attachés à des objets du décor.
-- Permettre l'identification et l'inspection d'un agent via son identifiant
-  stable SYNE.
+| Sujet | Spécification |
+| :-- | :-- |
+| API graphique | OpenGL 3.3 *core* minimum via Silk.NET (fenêtre GLFW) |
+| Meshing | Un maillage par chunk ; **faces visibles uniquement** ; fusion gloutonne des faces coplanaires de même type ; remaillage incrémental des chunks *dirty* ; file de remaillage bornée par image |
+| Atlas | Atlas de textures **généré par programme** au démarrage (palette sobre, pas de ressources externes lourdes) ; une tuile par type de matériau, une couleur de repli |
+| Lumière | Éclairage directionnel + occlusion ambiante par sommet ; **cycle jour/nuit** synchronisé sur le calendrier du monde ; la nuit se lit dans l'image (pas seulement sur une horloge) |
+| Culling | Frustum culling par chunk ; distance de rendu paramétrable |
+| Agents | Silhouettes simples (boîtes 1 × 1 × 2) colorées par état ; interpolation visuelle entre ticks **uniquement dans le rendu** ; marqueur de l'action en cours |
+| Chantiers | Blocs planifiés rendus en **fantômes** (plan visible), blocs posés progressivement |
+| Eau | Surface semi-transparente statique (pas de simulation d'écoulement) |
+| Interface | Interface en mode immédiat : HUD (tick, jour/saison, vitesse), inspecteur |
 
-Les valeurs exactes, champs optionnels et extensions du snapshot sont définis
-dans [`../syne/API_CONTRACTS.md`](../syne/API_CONTRACTS.md).
+## 3. Identité visuelle
 
-## 3. Principes de lisibilité
+Objectif : « un monde voxel **lisible**, **modifiable** et cohérent avec l'idée d'un monde simulé ».
 
-- Les codes couleur (état, groupe, sélection ou type d'événement) doivent
-  rester distinguables et accompagnés d'un indice accessible lorsque la
-  couleur seule est ambiguë.
-- L'animation et l'interpolation sont des projections de présentation ; elles
-  ne constituent pas une nouvelle trajectoire simulée.
-- La topologie, les obstacles et la taille du monde reçus de SYNE guident la
-  représentation ; PRISM reste responsable du rendu, du culling et
-  des performances.
+- **Palette sobre et scientifique** (cohérente avec la charte du site LIVEX) : couleurs désaturées pour le terrain, accents **par signification** (ressources, structures, agents) plutôt que décoratifs.
+- **Aucune animation décorative** qui laisserait croire à de la vie là où il n'y a que de l'état : le mouvement vient des agents, du cycle jour/nuit et des chantiers.
+- Mode **inspection** : calques de lecture (voir §5).
+- Capture d'écran et export de séquences reproductibles (même run, même vue).
 
-## 4. Limites de données à respecter
+## 4. Caméras et navigation
 
-- SYNE fournit des coordonnées logiques 2D ; l'altitude et la projection 3D
-  sont des choix de présentation.
-- Les ressources initiales de `WorldDescription` sont des marqueurs de
-  placement ; les quantités des snapshots sont des stocks globaux.
-- Les détails de terrain, hauteur ou navigation ne doivent pas être inventés
-  comme s'ils étaient simulés si le contrat ne les fournit pas.
-- `OnSnapshot` donne l'état courant complet. Les événements/deltas ne doivent
-  pas faire appliquer deux fois les mêmes mutations.
+| Mode | Usage |
+| :-- | :-- |
+| Orbite | Vue d'ensemble, rotation autour d'un point |
+| Libre | Exploration |
+| Suivi d'un agent | Pointe sur un `agentId` |
+| Vue en coupe | Plan de coupe horizontal réglable (lire sous la surface) |
+
+## 5. Inspection et calques
+
+Clic sur un agent : inventaire, action active, maîtrises, recette en cours (PRISM) ; croyances, désirs, plan (si SYNE publie sa vue cognitive, sinon masqué). Clic sur un bloc : type, état, tags, durabilité d'une structure. Calques : zones, ressources par tag, fraîcheur des stocks, chemins fréquentés (carte de chaleur), structures et accès, propriété, chantiers.
+
+## 6. Interventions (« monde modifiable »)
+
+Désactivées par défaut. Quand elles sont activées par configuration, une intervention (poser/retirer un bloc, déposer un objet) est émise comme **commande journalisée** (`DETERMINISM.md` §7) ; le run est marqué `interventions: true`. Ce n'est pas un mode jeu : c'est un outil d'expérimentation (perturber le monde et observer la réponse).
+
+## 7. Modes d'exécution
+
+| Mode | Description |
+| :-- | :-- |
+| **Client** | `Prism.Viewer --connect` : se connecte au flux de lecture d'un host |
+| **Embarqué** | `Prism.Viewer --embedded` : héberge un host sur un thread dédié (développement, démonstration) |
+| **Rejeu** | Relit un run enregistré (deltas) ; contrôle de vitesse |
+
+## 8. Performance et robustesse
+
+Le rendu ne verrouille jamais le tick (double tampon de chunks) ; si le flux est plus rapide que le rendu, le visualiseur **saute** des deltas intermédiaires en conservant la cohérence (ré-instantané). Cible : `PERFORMANCE.md` §6.
+
+## 9. Tests
+
+Tests de meshing déterministes (même chunk → même maillage), tests d'interface par captures de référence sous rendu logiciel (Mesa) en CI optionnelle, test d'indépendance (run identique avec/sans visualiseur).
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 1er novembre 2026 | Création | Refonte V2 |

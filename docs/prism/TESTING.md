@@ -1,134 +1,104 @@
-# TESTING — PRISM / PrismLdk
+# TESTING — Plan de test et de calibrage PRISM
 
 **Composant** : PRISM
-**Statut** : [VALIDÉ POUR LA RELEASE LIVEX 1.0.0]
-**Dernière mise à jour** : 31 octobre 2026
-**Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
+**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Dernière mise à jour** : 1er novembre 2026
+**Dépend de** : [`PERFORMANCE.md`](PERFORMANCE.md), [`DETERMINISM.md`](DETERMINISM.md), [`SYSTEMS_SPEC.md`](SYSTEMS_SPEC.md), `../syne/TESTING.md`
+**Source Monographie** : Annexe J.2
 
 ---
 
-## 1. Objectif
+## 1. Objectifs
 
-Valider que PRISM intègre et compile le plugin PRISM-LDK (`PrismLdk`), expose les contrats attendus à Blueprint et
-transmet correctement les messages SYNE sans introduire de logique de
-simulation concurrente.
+1. Prouver que le monde est **correct** (règles, conservation).
+2. Prouver qu'il est **reproductible** (déterminisme, reprise).
+3. Prouver qu'il est **viable** (agents peuvent y vivre) puis **utile** (la coopération y est mesurable).
+4. Éviter la confusion entre « la simulation tourne » et « le monde sert l'hypothèse ».
 
-## 2. Vérifications
+## 2. Pyramide
 
-| Niveau | Vérifications |
+| Niveau | Contenu | Outils |
+| :-- | :-- | :-- |
+| Unitaire | Indices, chunks, hachage, bruit, recettes, durabilité, péremption | xUnit |
+| Par propriétés | Conservation, absence de duplication, idempotence, ordre | FsCheck (ou équivalent) |
+| Contenu | Validation de pack : schéma, références, graphe de recettes, amorçage à mains nues | Tests du validateur |
+| Génération | Mondes dorés, contrôles de jouabilité | Empreintes figées |
+| Contrat | Mêmes cas sur liaison réseau et embarquée ; versions inconnues ; échecs motivés | `Prism.Contracts.Tests` |
+| Intégration | Host + bots, runs courts | `Prism.Host.Tests` |
+| Bout en bout | SYNE + PRISM + ECHOS via Launcher | `Launcher.Tests.EndToEnd` |
+| Performance | B1…B8 | `Prism.Benchmarks` |
+| Rendu | Meshing, captures | CI optionnelle |
+
+## 3. Tests de non-régression clés
+
+| Test | Critère |
 | :-- | :-- |
-| Build Unreal | Compiler PRISM-LDK depuis l'hôte technique et depuis le projet Unreal PRISM |
-| API Blueprint | Vérifier l'accès au subsystem, les types/enums, les dispatchers, les fonctions de contrôle attendus et l'accès au registre de monde (nœud `PRISM Registry`) |
-| Projection | Automation Spec `PrismLdk.Projection` : valeurs de contrôle du profil (`k = 100`) et paramètres invalides |
-| Registre de monde | Automation Spec `PrismLdk.WorldRegistry` : échelle dérivée une seule fois (`K = TileSizeUu / CellSize`), remplacement d'agent, refus des entrées invalides, acteurs détruits, `ClearAll` |
-| Surface de service | Automation Spec `PrismLdk.Service` : arguments supervisés, jeton de session, codes HTTP par route, métriques et échappement des labels |
-| Authentification client | Automation Spec `PrismLdk.Auth` : forme du header `Authorization: Bearer` présenté à SYNE, absence de header sans jeton, aucun `Bearer ` fabriqué sans valeur, priorité du jeton manuel (`bUseManualSessionToken`) sur l'environnement |
-| Service au runtime | Sondes `/health/live`, `/health/ready`, `/health/details`, `/info`, `/metrics` ; `POST /control/shutdown` refusé sans jeton puis accepté, sortie 0 et marqueur `shutdown.ok` |
-| Transport | Vérifier connexion/déconnexion, perte inattendue, reconnexion configurée, JSON invalide et erreur HTTP |
-| Contrat consommé | Automation Spec `PrismLdk.Contract` : trames SYNE/syne-mock rejouées dans les parseurs réels — description 1.1, `simulatedTimeSeconds` exact et son repli, `leaderId` absent, mesures d'analyse de groupe ignorées sans rejet, fusion du statut et `null` non converti en `10` |
-| Contrats | Vérifier l'ordre `world_initialized` avant snapshots, parsing de snapshots/deltas/événements et conservation de valeurs inconnues |
-| Cycle de vie | Vérifier `Prepare` → réception du monde → `Ready` → résultat positif → `Start`, ainsi que pause/reprise/arrêt/reset/statut |
-| Projet PRISM | Vérifier que la scène reste cohérente avec les données initiales puis les snapshots, sans doubler les mutations |
+| **Monde doré** | Empreinte du monde généré inchangée pour `(seed, worldGenVersion, contentHash)` de référence |
+| **Run doré** | Empreintes de run (bots, 5 000 ticks, 3 seeds) inchangées |
+| **Conservation** | `MatterLedger` équilibré à chaque intervalle pour tous les runs de test |
+| **Reprise** | Run restauré = run continu (empreintes) |
+| **Parallélisme** | 1, 2, 8 threads → même résultat |
+| **Plateformes** | Windows = Linux |
+| **Ablation sans effet de bord** | Un mécanisme désactivé ne modifie pas ce qui n'en dépend pas |
+| **Contenu minimal** | Les 5 chaînes sont jouables par un bot scripté de bout en bout |
+| **Couverture** | ≥ 80 % sur `Prism.Core` et `Prism.Content` (même seuil que le projet) |
 
-Les résultats réseau sont asynchrones ; vérifier les callbacks `OnControlResult`
-et `OnError`, et ne pas considérer un appel Blueprint comme confirmation de
-succès avant le retour correspondant.
+## 4. Runs de référence
 
-### 2.1 Exécution (UE 5.8, projet `prism/LDK/LDK.uproject`)
+| Run | Agents | Ticks | Rôle |
+| :-- | :-- | :-- | :-- |
+| R0 | bots (marche aléatoire) | 1 000 | Fumée |
+| R1 | bots planificateurs, 50 | 5 000 | Validation des chaînes |
+| R2 | agents SYNE (adaptateur minimal), 50 | 5 000 | Validation du contrat avec la cognition actuelle (G3) |
+| R3 | agents SYNE refondus, 100 | 5 000 | Run de référence V2 (G5) |
+| R4 | agents SYNE refondus, 1 000 | 2 000 | Charge (G5/P12) |
+| R5 | ablations | 10 000 | Effet des mécanismes (G7) |
 
-```text
-# Compilation du module éditeur (un nouveau fichier de spec exige une
-# régénération du makefile : toucher PrismLdk.Build.cs si la spec n'apparaît pas)
-"C:\Program Files\Epic Games\UE_5.8\Engine\Build\BatchFiles\Build.bat" ^
-  LDKEditor Win64 Development -project="D:\LIVEX\prism\LDK\LDK.uproject" -waitmutex -NoUBA
+> **Durée.** Les runs de référence actuels du dépôt sont de **2 500 ticks** (ADR-016 de SYNE), insuffisants pour un cycle agricole complet (plusieurs centaines de ticks par culture, ≈ 1 920 ticks par saison). Les runs de validation V2 durent **au moins 5 000 ticks**. (Le brouillon évoquait 400 ticks : valeur antérieure aux campagnes d'octobre.)
 
-# Automation
-"C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe" ^
-  "D:\LIVEX\prism\LDK\LDK.uproject" ^
-  -ExecCmds="Automation RunTests PrismLdk;Quit" ^
-  -unattended -nopause -nosplash -nullrhi ^
-  -ReportExportPath="D:\LIVEX\prism\LDK\Saved\AutomationReport"
-```
+## 5. Critères de viabilité (hypothèses à confirmer)
 
-Validation Unreal Engine 5.8 pour la release LIVEX 1.0.0 : **76 specs, 0 échec** (`succeeded` 71 +
-`SuccessWithWarnings` 5, `failed` 0) — `Projection`, `WorldRegistry`, `Service`,
-`GapReplay`, `Contract` (6 specs) et `Auth` (7 specs). Le rapport machine est
-`Saved/AutomationReport/index.json`.
+Évalués sur 3 graines (`12345`, `424242`, `999`), profil `reference`, 100 agents, 5 000 ticks.
 
-## 3. Usage de syne-mock pour les tests de développement
+| # | Critère | Seuil de départ |
+| :-- | :-- | :-- |
+| V1 | Pas d'extinction | 0 extinction sur 3 graines |
+| V2 | Survie | ≥ 70 % des agents vivants à 5 000 ticks |
+| V3 | Les chaînes sont jouées | ≥ 80 % des agents ont fabriqué un outil de palier 1 ; ≥ 1 outil de palier 2 par run |
+| V4 | Agriculture effective | ≥ 1 récolte complète par saison ; ≥ 50 % de la nourriture consommée issue de production |
+| V5 | Pas de duplication | Audit de conservation vert |
+| V6 | Pas de blocage | < 5 % des agents sans action utile pendant 200 ticks consécutifs |
+| V7 | Exploration | Couverture de ≥ 60 % des chunks par la mémoire spatiale collective |
 
-`syne-mock` est utile pour tester les connexions et l'intégration Blueprint
-sans exécuter SYNE. Il permet de parcourir les routes, les transitions de
-contrôle et les messages qu'il implémente. Son comportement est déterministe
-dans les limites de son modèle, mais ses délibérations et systèmes sociaux
-sont approximatifs ; son détour local d'obstacle n'est pas l'A* de SYNE, et
-ses trajectoires ne sont pas garanties bit à bit. Le replay rejoue les
-messages enregistrés sans restaurer l'état interne de SYNE.
+## 6. Expériences d'ablation (test de l'hypothèse)
 
-Par conséquent :
+Chaque expérience compare le profil `reference` à un profil où **un mécanisme** est désactivé (`CONFIGURATION.md` §3), sur ≥ 5 graines, 10 000 ticks.
 
-- le mock peut valider une liaison de transport ou un rendu à partir des
-  données émises par lui ;
-- il ne prouve pas l'équivalence des décisions, trajectoires ni résultats de
-  simulation ;
-- les contrats et tests finaux doivent aussi être validés avec SYNE réel.
+| Ablation | Mécanisme retiré | Observable attendu s'il compte |
+| :-- | :-- | :-- |
+| A1 | Structures partagées / coûts fixes | Moins de structures collectives, plus d'autarcie |
+| A2 | Maîtrise (division du travail) | Moins de spécialisation et d'échanges |
+| A3 | Péremption | Moins de recours aux greniers, moins de cuisson |
+| A4 | Limite de transport | Moins de logistique, moins de dépôts partagés |
+| A5 | Usure des outils | Baisse de la demande et des échanges d'outils |
+| A6 | Partage d'information (messages locaux) | Découverte plus lente des ressources |
+| A7 | Savoir riche (compare à simple) | Plus de formation de groupes pour la transmission |
+| A8 | Usure des structures | Pas de dilemme d'entretien collectif |
 
-Référence : [`../../syne-mock/README.md`](../../syne-mock/README.md).
+**Lecture.** ECHOS compare les distributions (taille des groupes, indice de coopération, inégalité des stocks, spécialisation, usage des infrastructures) entre profils. Un effet doit dépasser la variabilité inter-graines (critère statistique défini dans `ECHOS/EXPERIMENT_COMPARISON.md`). **Un résultat nul ou négatif est un résultat** : il est publié avec ses limites.
 
-### 3.1 Quel binaire SYNE le Launcher exécute-t-il ?
+## 7. Calibrage
 
-Le Launcher ne lance **pas** `dotnet run` ni `bin/Release/net10.0/Simulation.Console.exe` : il lit
-`syne/component.json` et exécute l'`executable` déclaré, soit
-`Simulation.Console/bin/Release/net10.0/win-x64/publish/Simulation.Console.exe`.
+Procédure itérative, comme les ADR-014/015/016 de SYNE :
 
-**Conséquence** : un simple `dotnet build` (qui met à jour
-`bin/Release/net10.0/Simulation.Console.dll`) **ne suffit pas** à faire tourner
-le code modifié sous le Launcher — l'exe publié reste l'ancien. Il faut
-**republier** :
+1. Fixer un paramètre de `CONTENT_SPEC.md` §7 ; 2. lancer R1 sur 3 graines ; 3. lire V1…V7 ; 4. consigner l'itération dans un **ADR de calibrage** (`ADR-0xx-calibration-…`) ; 5. figer les empreintes dorées si un paramètre change. Ordre conseillé : durée des extractions → capacité de transport → croissance et eau → péremption → coûts de structures → maîtrise → seuils d'usure.
 
-```powershell
-dotnet publish "D:\LIVEX\syne\Simulation.Console\Simulation.Console.csproj" `
-  -c Release -r win-x64 --self-contained false
-```
+## 8. Mock et bots
 
-Symptôme typique : une modification de `Program.cs` (ex. l'affichage du jeton
-`LIVEX_SESSION_TOKEN_DISPLAY`) n'apparaît jamais dans la console du Launcher,
-car le binaire exécuté est une publication antérieure. Vérifier la date de
-`win-x64/publish/Simulation.Console.exe` après chaque changement de SYNE.
+Le mock Node.js de SYNE ne sert plus. `Prism.Bots` fournit trois bots : *marche aléatoire* (fumée), *glouton* (bouclage simple besoin → source), *planificateur* (chaînage arrière sur recettes, sert aussi de **référence** pour le futur planificateur de SYNE). Les bots ne remplacent pas la validation contre le SYNE réel.
 
-## 4. Critères d'acceptation
+## Mises à jour
 
-- Le projet Unreal PRISM compile avec le plugin PRISM-LDK activé.
-- L'Automation Spec `PrismLdk.Projection` est verte : la projection d'espace
-  (`UPrismLdkProjection`) est testée sans éditeur, et aucune formule équivalente
-  n'est recopiée dans un graphe Blueprint.
-- L'Automation Spec `PrismLdk.WorldRegistry` est verte : l'échelle
-  (`K = TileSizeUu / CellSize`) est dérivée en un seul point
-  (`UPrismLdkWorldRegistryBase`) et le registre `Id SYNE → acteur` est testé
-  sans monde ; aucun registre parallèle n'est construit dans un graphe.
-- Le registre est le sous-système C++ `UPrismLdkWorldRegistryBase` (aucun
-  Blueprint enfant) et son instanciation est confirmée dans un build empaqueté
-  (ligne `registre de monde instancié` de `LogPrismLdk`, `BLUEPRINT_ROADMAP.md`
-  §11.4).
-- L'Automation Spec `PrismLdk.Service` est verte : la surface de service est
-  testée sans réseau, et un build supervisé répond à la readiness du Launcher
-  puis s'arrête proprement sur commande authentifiée.
-- Le flux préparé respecte l'ordre prévu et les erreurs de cycle de vie sont
-  visibles côté Blueprint.
-- Un snapshot complet actualise l'état affiché ; événements et deltas ne
-  doublent pas ses mutations.
-- L'Automation Spec `PrismLdk.Contract` est verte : le plugin lit la même
-  identité (contrat 0.5.0, moteur 0.17.0, description 1.1) et les mêmes champs
-  sur une trame SYNE et sur une trame `syne-mock`, y compris les valeurs
-  facultatives (`leaderId` absent) et l'absence de `simulatedTimeSeconds`
-  (repli `tick × simulatedSecondsPerTick`). Les mesures d'analyse des groupes
-  (`maxBondDistance` / `meanBondDistance`, mesurées par SYNE, `null` côté mock)
-  sont présentes dans les trames et **ignorées** par le plugin : PRISM est un
-  rendu 3D, un consommateur d'analyse les lit dans l'observatoire.
-- `Prepare` transmet la surcouche `config` : le monde préparé par le mock et
-  par SYNE est le même (géométrie, cadence, pas temporel), donc `k` et
-  l'horloge de PRISM ne dépendent pas de la source.
-- Les données inconnues restent diagnostiquables plutôt que converties
-  silencieusement en état simulé valide.
-- Les tests de comportement décisionnel et de trajectoire sont exécutés contre
-  SYNE, jamais inférés du seul succès du mock.
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 1er novembre 2026 | Création | Refonte V2 |
