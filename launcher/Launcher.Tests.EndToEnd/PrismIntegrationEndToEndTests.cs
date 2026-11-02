@@ -199,9 +199,17 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
 
         Assert.Equal(WellKnownSimulations.Prism, simulation);
 
-        // Arrêt explicite : le stub tourne encore ici ; sans cela, Dispose supprime un .exe en cours d'exécution (Windows).
-        var stopError = await composition.Facade.ToggleComponentAsync("syne", false);
-        Assert.Null(stopError);
+        // Fin de vie : sans horizon imposé, le stub boucle dix ticks puis sort seul ; un arrêt
+        // explicite l'est donc parfois déjà. Les deux issues sont normales. On attend que le
+        // Launcher constate la fin avant Dispose, qui supprime le dossier : Windows refuse de
+        // retirer le .exe d'un processus encore vivant.
+        _ = await composition.Facade.ToggleComponentAsync("syne", false);
+        for (var attempt = 0; attempt < 200 && composition.Orchestration.Registry.FindByComponent("syne") is not null; attempt++)
+        {
+            await Task.Delay(25);
+        }
+
+        Assert.Null(composition.Orchestration.Registry.FindByComponent("syne"));
     }
 
     /// <inheritdoc />
