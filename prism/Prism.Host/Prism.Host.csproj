@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Prism.Content\Prism.Content.csproj" />
+    <ProjectReference Include="..\Prism.Contracts\Prism.Contracts.csproj" />
+    <ProjectReference Include="..\Prism.Core\Prism.Core.csproj" />
+  </ItemGroup>
+</Project>

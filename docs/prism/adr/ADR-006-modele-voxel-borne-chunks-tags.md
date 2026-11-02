@@ -1,8 +1,8 @@
-# ADR-006 : Modèle voxel borné, chunks, bloc de 3 octets, tags
+# ADR-006 : Monde borné, régions, blocs et tags
 
 **Composant** : PRISM
-**Statut** : [Proposed]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [Accepted — géométrie précisée par ADR-011]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : ADR-004
 **Source Monographie** : —
 
@@ -10,38 +10,60 @@
 
 ## Contexte
 
-Le monde doit être vaste face à la population, borné pour le déterminisme, économe en mémoire, et extensible sans toucher au code.
+Le monde doit être vaste face à la population, borné pour le déterminisme,
+économe en mémoire et extensible sans toucher au code. Le volume voxel dense
+envisagé initialement a été remplacé par le modèle 2.5D d'ADR-011 avant
+l'implémentation.
 
 ## Décision
 
-- **Grille bornée** 256 × 256 × 64 blocs (paramètre), 1 bloc = 1 m, pas de génération infinie.
-- **Chunks** 16 × 16 × 16 : 1 024 chunks de 4 096 blocs.
-- **Bloc = 3 octets** : identifiant de type 16 bits + octet d'état. Stockage en tableaux séparés par chunk (`ushort[4096]`, `byte[4096]`) avec représentation uniforme (chunk entièrement d'air) sans tableau. ≈ 12,6 Mo pour le monde dense.
-- **Types** : jusqu'à 65 536 ; identifiants **stables pendant un run**, résolus depuis des clés textuelles (`"stone"`) à la compilation du contenu.
-- **Tags** : les agents et les recettes raisonnent sur des tags (`combustible`, `bois`, `comestible`…), jamais sur des identifiants.
-- **Blocs ≠ objets** : un bloc occupe la grille ; un objet vit dans un inventaire, un conteneur ou au sol.
+- Monde borné de 256 × 256 colonnes horizontales, altitude entière 0…63,
+  1 unité = 1 mètre ; aucune génération infinie.
+- Régions horizontales de 16 × 16 colonnes : 256 régions pour le monde de
+  référence, sans partition verticale.
+- Une colonne stocke en tableaux SoA son altitude de surface (`byte`), son
+  matériau de surface (`ushort`), son état (`byte`) et son profil de strates
+  (`ushort`), soit 6 octets par colonne et ≈ 384 Kio pour les métadonnées de
+  surface.
+- Les couches géologiques de base sont déterminées par le profil de contenu ;
+  les blocs minés, posés ou altérés sont des surcharges clairsemées.
+- Jusqu'à 65 536 types de blocs, identifiés de manière stable pendant un run
+  et résolus depuis des clés textuelles au chargement du contenu.
+- Les agents et recettes raisonnent sur des tags, jamais sur des identifiants
+  internes de blocs.
+- Les blocs occupent une colonne à une altitude ; les objets vivent dans un
+  inventaire, un conteneur ou au sol.
 
 ## Conséquences
 
 ### Positives
-- Mémoire prévisible, hachage et sérialisation par chunk, mises à jour localisées.
+- Mémoire de surface prévisible, hachage et sérialisation par région, mises à
+  jour localisées.
 - Ajout de contenu sans recompilation.
 
 ### Négatives
-- Un octet d'état limite l'information par bloc ; les données riches vont dans des tables annexes (conteneurs, structures).
-- Monde borné : un plus grand monde se paie en mémoire (linéaire).
+- Les couches de base sont dérivées des profils ; les modifications
+  individuelles nécessitent une surcharge clairsemée.
+- Monde borné : augmenter sa superficie augmente linéairement les métadonnées.
 
 ### Risques
-- 256 × 256 insuffisant pour 1 000 agents : la taille est un paramètre, la densité (1 agent pour 65 colonnes) est à vérifier au calibrage.
+- La densité d'agents et le coût des surcharges sont à vérifier au calibrage.
+- L'ordre d'itération des modifications ne doit jamais influer sur les
+  empreintes.
 
 ## Alternatives considérées
 
-- **Quadtree/octree creux** : refusé, complexité sans gain à cette taille.
-- **Blocs porteurs de données arbitraires** : refusé, rompt la compacité et la sérialisation.
+- **Volume dense 3D par chunks** : remplacé par ADR-011 ; la géométrie
+  volumique n'est pas nécessaire au périmètre V2.
+- **Quadtree/octree creux** : écarté, complexité sans gain pour la carte bornée.
+- **Blocs porteurs de données arbitraires** : écarté, rompt la compacité et la
+  sérialisation.
 
 ## Validation / rejet
 
-Validé au jalon G2 (tests de round-trip, empreinte stable, budget mémoire). Réouvert si la mémoire par monde dépasse le budget de `PERFORMANCE.md` §5.
+Les limites, identifiants stables et tags sont acceptés. La géométrie 2.5D est
+validée au jalon G2 (round-trip, empreinte stable, jouabilité et budget
+mémoire), selon ADR-011.
 
 ---
 
@@ -49,4 +71,5 @@ Validé au jalon G2 (tests de round-trip, empreinte stable, budget mémoire). R�
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Géométrie dense remplacée par le modèle 2.5D d'ADR-011 | Optimisation décidée avant l'implémentation |
 | 1er novembre 2026 | Création | Refonte V2 |

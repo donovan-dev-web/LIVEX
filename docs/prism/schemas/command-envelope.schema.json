@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://livex.dev/schemas/prism/1.0.0/command-envelope.schema.json",
+  "title": "PRISM command envelope",
+  "type": "object",
+  "required": ["protocolVersion", "tick", "commandId", "agentId", "kind", "payload"],
+  "properties": {
+    "protocolVersion": { "$ref": "#/$defs/protocolVersion" },
+    "tick": { "type": "integer", "minimum": 0 },
+    "commandId": { "type": "string", "minLength": 1 },
+    "agentId": { "type": "integer", "minimum": 0 },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "Aller", "Miner", "Poser", "Fabriquer", "Labourer", "Planter",
+        "Recolter", "Prendre", "Deposer", "Consommer", "DemarrerChantier",
+        "Contribuer", "Transferer", "DefinirAcces", "Incarner", "Retirer",
+        "Annuler", "ObtenirObjet", "Cultiver", "Construire"
+      ]
+    },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "protocolVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    }
+  }
+}

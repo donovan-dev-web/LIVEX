@@ -1,0 +1,108 @@
+[
+  {
+    "id": "shelter_3x3",
+    "size": [3, 3, 3],
+    "blocks": [
+      { "at": [0, 0, 0], "block": "planks" },
+      { "at": [1, 0, 0], "block": "planks" },
+      { "at": [2, 0, 0], "block": "planks" },
+      { "at": [0, 1, 0], "block": "planks" },
+      { "at": [2, 1, 0], "block": "planks" },
+      { "at": [0, 2, 0], "block": "planks" },
+      { "at": [1, 2, 0], "block": "planks" },
+      { "at": [2, 2, 0], "block": "planks" },
+      { "at": [0, 0, 2], "block": "planks" },
+      { "at": [1, 0, 2], "block": "planks" },
+      { "at": [2, 0, 2], "block": "planks" }
+    ],
+    "materials": [{ "item": "plank", "qty": 24 }, { "item": "log", "qty": 4 }],
+    "workTicks": 120,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "effect": { "type": "shelter", "volume": [[0, 0, 0], [2, 2, 2]], "fatigueRecoveryBonusPermille": 500 },
+    "integrityThresholdPermille": 800
+  },
+  {
+    "id": "well",
+    "size": [3, 3, 2],
+    "blocks": [{ "at": [1, 1, 0], "block": "stone" }],
+    "materials": [{ "item": "stone", "qty": 12 }],
+    "workTicks": 100,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "effect": { "type": "water_access", "volume": [[0, 0, 0], [2, 2, 1]], "fatigueRecoveryBonusPermille": 0 },
+    "integrityThresholdPermille": 800
+  },
+  {
+    "id": "path_segment",
+    "size": [1, 1, 1],
+    "blocks": [{ "at": [0, 0, 0], "block": "planks" }],
+    "materials": [{ "item": "plank", "qty": 1 }],
+    "workTicks": 2,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "effect": { "type": "path_speed", "volume": [[0, 0, 0], [0, 0, 0]], "fatigueRecoveryBonusPermille": 0 },
+    "integrityThresholdPermille": 800
+  },
+  {
+    "id": "granary",
+    "size": [3, 3, 3],
+    "blocks": [{ "at": [1, 1, 0], "block": "planks" }],
+    "materials": [{ "item": "plank", "qty": 16 }, { "item": "log", "qty": 4 }],
+    "workTicks": 150,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "effect": { "type": "storage", "volume": [[0, 0, 0], [2, 2, 2]], "fatigueRecoveryBonusPermille": 0 },
+    "integrityThresholdPermille": 800
+  },
+  {
+    "id": "stair",
+    "size": [1, 1, 2],
+    "blocks": [{ "at": [0, 0, 0], "block": "planks" }, { "at": [0, 0, 1], "block": "planks" }],
+    "materials": [{ "item": "plank", "qty": 2 }],
+    "workTicks": 8,
+    "placement": { "flatGround": false, "clearVolume": true },
+    "effect": { "type": "stair", "volume": [[0, 0, 0], [0, 0, 1]], "fatigueRecoveryBonusPermille": 0 },
+    "integrityThresholdPermille": 800
+  },
+  {
+    "id": "bridge_segment",
+    "size": [3, 1, 1],
+    "blocks": [
+      { "at": [0, 0, 0], "block": "planks" },
+      { "at": [1, 0, 0], "block": "planks" },
+      { "at": [2, 0, 0], "block": "planks" }
+    ],
+    "materials": [{ "item": "plank", "qty": 6 }],
+    "workTicks": 20,
+    "placement": { "flatGround": false, "clearVolume": true },
+    "effect": { "type": "bridge", "volume": [[0, 0, 0], [2, 0, 0]], "fatigueRecoveryBonusPermille": 0 },
+    "integrityThresholdPermille": 800
+  },
+  {
+    "id": "tree_oak_small",
+    "size": [1, 1, 3],
+    "blocks": [
+      { "at": [0, 0, 0], "block": "log" },
+      { "at": [0, 0, 1], "block": "log" },
+      { "at": [0, 0, 2], "block": "leaves" }
+    ],
+    "materials": [],
+    "workTicks": 0,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "integrityThresholdPermille": 1000,
+    "isTree": true
+  },
+  {
+    "id": "tree_oak_tall",
+    "size": [1, 1, 5],
+    "blocks": [
+      { "at": [0, 0, 0], "block": "log" },
+      { "at": [0, 0, 1], "block": "log" },
+      { "at": [0, 0, 2], "block": "log" },
+      { "at": [0, 0, 3], "block": "leaves" },
+      { "at": [0, 0, 4], "block": "leaves" }
+    ],
+    "materials": [],
+    "workTicks": 0,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "integrityThresholdPermille": 1000,
+    "isTree": true
+  }
+]

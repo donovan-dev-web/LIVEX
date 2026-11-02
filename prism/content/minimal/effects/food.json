@@ -1,0 +1,5 @@
+[
+  { "id": "eat_wheat", "values": { "hunger": -100, "energyRecovery": 5 } },
+  { "id": "eat_flatbread", "values": { "hunger": -300, "energyRecovery": 20 } },
+  { "id": "drink_water", "values": { "thirst": -300 } }
+]

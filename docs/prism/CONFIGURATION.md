@@ -1,8 +1,8 @@
 # CONFIGURATION — Clés de configuration et profils PRISM
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [SPÉCIFICATION V2 — 2.5D DÉCIDÉ]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`CONTENT_SPEC.md`](CONTENT_SPEC.md), `../syne/CONFIGURATION.md`, `../NAMING_CONVENTIONS.md`
 **Source Monographie** : Annexe H
 
@@ -18,7 +18,7 @@ La configuration est un **contrat reproductible** : même `config.json`, même s
 {
   "world": {
     "size": [256, 256, 64],
-    "chunkSize": [16, 16, 16],
+    "regionSize": [16, 16],
     "seaLevelZ": 26,
     "borderWidth": 6,
     "genMaxAttempts": 8
@@ -51,7 +51,7 @@ Chaque clé désactive **un** mécanisme de coopération pour une expérience (`
 | Profil | Rôle | Particularités |
 | :-- | :-- | :-- |
 | `reference` | Référence de calibrage | 100 agents, 5 000 ticks, savoir simple, tous mécanismes actifs |
-| `scale` | Montée en charge | 1 000 agents, 256 × 256 × 64, mesure de performance |
+| `scale` | Montée en charge | 1 000 agents, 256 × 256 colonnes, altitude 0…63, mesure de performance |
 | `ablation-*` | Un mécanisme désactivé | Dérivés de `reference` |
 | `rich-knowledge` | Variante riche | `knowledge.mode = "rich"` |
 | `viewer-demo` | Démonstration | Plus petit monde, agents scriptés |

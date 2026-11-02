@@ -1,8 +1,8 @@
 # SYSTEMS_SPEC — Chaînes de production, structures, chantiers et coopération
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [SPÉCIFICATION V2 — LEDGER ET SOCLE DES ACTIONS/CONTENEURS IMPLÉMENTÉS]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`DATA_MODEL.md`](DATA_MODEL.md), [`CONTENT_SPEC.md`](CONTENT_SPEC.md), [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md)
 **Source Monographie** : —
 
@@ -22,13 +22,17 @@
 
 Le **registre d'audit** (`MatterLedger`) compte créations et destructions par `ruleId`. En build de test, l'invariant est vérifié tous les `auditIntervalTicks` ; sa violation fait échouer le run. Il fonde aussi les métriques d'ECHOS (production, consommation, pertes).
 
+La consommation d'un objet retire exactement une unité et l'enregistre sous `consume`. Boire auprès d'un matériau `drinkable` perçu et adjacent transmet ses effets via `item_consumed` sans détruire ni modifier la source, qui est infinie dans le contenu minimal.
+
 ## 2. Outils et durabilité
 
-Un outil s'use à chaque action qui l'emploie (`durability` décrémentée de `usePerAction`). À zéro, il est détruit (`wear`). Cela crée une **demande continue** d'outils, donc un échange possible. Le palier d'outil détermine les blocs minables ; la vitesse de minage est `hardness × baseTicksPerHardness ÷ (1 + tierBonus)`, réduite par la maîtrise.
+Un outil s'use à chaque action réussie qui l'emploie (`durability` décrémentée de `usePerAction`, défaut 1). La durabilité restante est portée par sa pile, qui ne peut contenir qu'un outil ; dépôts et retraits de conteneur la préservent. À zéro, l'outil est retiré et détruit au ledger sous `wear`. Le socle applique cette règle au minage, au labourage avec houe et aux recettes déclarant un outil. Cela crée une **demande continue** d'outils, donc un échange possible. Le palier d'outil détermine les blocs minables ; la vitesse de minage est `hardness × baseTicksPerHardness ÷ (1 + tierBonus)`, réduite par la maîtrise.
 
 ## 3. Péremption et stockage
 
 Chaque objet périssable a `shelfLifeTicks`. La fraîcheur décroît au rythme du conteneur (agent : 1 000 ‰ ; coffre : 800 ‰ ; grenier : 500 ‰). Un objet périmé est détruit (`spoil`) ; l'événement est publié. Cuire (`flatbread`) augmente valeur nutritive et durée de conservation : **stocker et cuire deviennent utiles**.
+
+Le socle d'exécution conserve la fraîcheur restante en permille-ticks et le tick de dernière matérialisation. À l'accès ou au transfert, la durée écoulée est appliquée au taux du contenant source ; un transfert matérialise d'abord ce taux avant que le contenant de destination soit utilisé pour la suite. À zéro, la pile entière est retirée, un événement de péremption est retourné et `MatterLedger` enregistre `spoil`. Le sweep périodique peut appeler la même opération d'accès pour éviter un parcours exhaustif à chaque tick.
 
 ## 4. Les sept mécanismes qui rendent la coopération rentable
 
@@ -75,7 +79,11 @@ Voir ADR-010. Les agents choisissent gabarit, position, rotation (4) et moment.
 
 ### 5.4 Propriété et accès (Q-02)
 
-PRISM stocke pour chaque structure et conteneur une `accessList` : identifiants autorisés (agents ou **identifiants de groupe opaques**) avec droits `use`, `take`, `put`, `build`. **PRISM ne sait pas ce qu'est un groupe** : SYNE traduit l'appartenance en identifiants et met la liste à jour par commande (`DéfinirAccès`, réservée au propriétaire). Sans règle d'accès, vol et passager clandestin n'existent pas ; avec elle, ils deviennent possibles et mesurables (refus `access_denied` observables).
+PRISM stocke pour chaque structure et conteneur une `accessList` : identifiants autorisés (agents ou **identifiants de groupe opaques**) avec droits `use`, `take`, `put`, `build`. Une liste vide laisse l'accès ouvert ; une liste configurée refuse tout principal non autorisé, tandis que le propriétaire conserve tous les droits. **PRISM ne sait pas ce qu'est un groupe** : SYNE traduit l'appartenance en identifiants et met la liste à jour par commande (`DéfinirAccès`, réservée au propriétaire). Sans règle d'accès, vol et passager clandestin n'existent pas ; avec elle, ils deviennent possibles et mesurables (refus `access_denied` observables).
+
+Le socle de conteneur implémente la capacité par emplacements, l'accès propriétaire/agent/groupe opaque et les opérations atomiques `Prendre`/`Deposer`. La prise en charge de la fraîcheur dans les piles d'inventaire, les transferts via les taux de décroissance et leur émission d'événements restent à intégrer.
+
+Le socle de fabrication compile les recettes vers des identifiants stables, développe les tags en ensembles d'objets admissibles, prévalide les ingrédients et la place de sortie, puis échange les entrées/sorties tout-ou-rien avec le ledger. Les recettes à station vérifient le matériau présent, la portée, la perception et une réservation jusqu'au tick de fin ; le temps est ajusté par la maîtrise. La finalisation différée des actions, leur raccordement au tick et l'usure des outils restent à intégrer.
 
 ### 5.5 Usure et entretien (optionnel)
 
@@ -97,4 +105,5 @@ Q-02 (modèle d'accès) à trancher à la porte G4.
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Registre de création/destruction et audit de conservation amorcés dans Prism.Core | PRISM-027 |
 | 1er novembre 2026 | Création | Refonte V2 |

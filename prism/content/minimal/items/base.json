@@ -1,0 +1,21 @@
+[
+  { "id": "log", "tags": ["wood", "fuel"], "maxStack": 64, "weight": 2 },
+  { "id": "plank", "tags": ["wood", "fuel"], "maxStack": 64, "weight": 1 },
+  { "id": "handle", "tags": ["handle", "wood"], "maxStack": 32, "weight": 1 },
+  { "id": "stone", "tags": ["stone"], "maxStack": 64, "weight": 2 },
+  { "id": "stone_head", "tags": ["stone_head", "stone"], "maxStack": 16, "weight": 2 },
+  { "id": "coal", "tags": ["fuel"], "maxStack": 64, "weight": 1 },
+  { "id": "iron_ore_chunk", "tags": ["ore", "stone"], "maxStack": 64, "weight": 2 },
+  { "id": "iron_ingot", "tags": ["ore"], "maxStack": 64, "weight": 2 },
+  { "id": "wheat_seed", "tags": ["crop"], "maxStack": 64, "weight": 1 },
+  { "id": "wheat", "tags": ["crop", "edible"], "maxStack": 64, "weight": 1, "effects": "eat_wheat", "shelfLifeTicks": 600 },
+  { "id": "flatbread", "tags": ["edible"], "maxStack": 32, "weight": 1, "effects": "eat_flatbread", "shelfLifeTicks": 2400 },
+  { "id": "wooden_bucket", "tags": ["wood", "container"], "maxStack": 1, "weight": 3 },
+  { "id": "water_bucket", "tags": ["container", "drinkable"], "maxStack": 1, "weight": 4 },
+  { "id": "stone_pickaxe", "tags": ["tool", "pickaxe"], "maxStack": 1, "toolTier": 1, "durability": 60, "weight": 3 },
+  { "id": "iron_pickaxe", "tags": ["tool", "pickaxe"], "maxStack": 1, "toolTier": 2, "durability": 200, "weight": 3 },
+  { "id": "stone_hoe", "tags": ["tool", "hoe"], "maxStack": 1, "toolTier": 1, "durability": 60, "weight": 3 },
+  { "id": "workbench", "tags": ["station"], "maxStack": 1, "weight": 10 },
+  { "id": "furnace", "tags": ["station"], "maxStack": 1, "weight": 15 },
+  { "id": "chest", "tags": ["container"], "maxStack": 1, "weight": 8 }
+]

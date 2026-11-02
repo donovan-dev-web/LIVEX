@@ -11,38 +11,21 @@ Ce fichier recense les composants tiers utilisés par LIVEX et les fichiers
 dont les droits ne relèvent pas du projet. Il ne remplace pas les textes de
 licence des éditeurs, qui restent seuls opposables.
 
-Le code propre à LIVEX couvert par la GPL est celui de **SYNE**, **ECHOS**,
-du **Launcher**, de **syne-mock** et du **site vitrine** : il est distribué
-sous GNU GPL v3.0 ou ultérieure (`GPL-3.0-or-later`, voir `LICENSE` et
-`NOTICE`). Les dépendances listées ci-dessous sont compatibles avec la
+Le code propre à LIVEX couvert par la GPL est celui de **PRISM V2**, **SYNE**,
+**ECHOS**, du **Launcher**, de **syne-mock** et du **site vitrine** : il est
+distribué sous GNU GPL v3.0 ou ultérieure (`GPL-3.0-or-later`, voir `LICENSE`
+et `NOTICE`). Les dépendances listées ci-dessous sont compatibles avec la
 GPLv3 : MIT et BSD-3-Clause sont compatibles ; Apache-2.0 est compatible avec
 la GPLv3 dans le sens Apache-2.0 → GPLv3.
 
 ## 1. Fichiers et composants non couverts par la GPL du projet
 
-### Projet Unreal PRISM et plugin PRISM-LDK
+### Ancien projet Unreal PRISM (archivé hors dépôt)
 
-`prism/` est un projet Unreal Engine. Il n'est **pas** distribué sous la GPL
-du projet : aucun fichier de `prism/` — code source du plugin PRISM-LDK,
-assets, configurations, projet hôte — n'est couvert par
-`GPL-3.0-or-later`. Son utilisation et sa distribution restent soumises à
-l'Unreal Engine End User License Agreement d'Epic Games.
-
-Les fichiers suivants, issus des modèles de projet Unreal, portent la mention
-`Copyright Epic Games, Inc. All Rights Reserved.` et ne sont pas revendiqués
-comme œuvre du projet :
-
-- `prism/LDK/Source/LDK.Target.cs`
-- `prism/LDK/Source/LDKEditor.Target.cs`
-- `prism/LDK/Source/LDK/LDK.Build.cs`
-- `prism/LDK/Source/LDK/LDK.cpp`
-- `prism/LDK/Source/LDK/LDK.h`
-- `prism/LDK/Plugins/PrismLdk/Source/PrismLdk/Public/PrismLdk.h`
-
-Les autres fichiers de `prism/` sont des œuvres du projet, mais restent hors
-du périmètre de la GPL et soumis aux conditions d'Epic Games applicables à
-Unreal Engine. Ils ne portent volontairement pas d'en-tête SPDX
-`GPL-3.0-or-later`.
+L'ancien projet Unreal PRISM et son plugin PRISM-LDK ont été archivés hors de
+ce dépôt. Ils ne font pas partie de la présente distribution source PRISM V2 ;
+une archive distincte de ces éléments reste soumise à l'Unreal Engine End
+User License Agreement d'Epic Games.
 
 ### Polices auto-hébergées
 
@@ -71,6 +54,15 @@ binaire doit embarquer l'ensemble des notices correspondantes.
 | xunit | 2.9.2 | Apache-2.0 |
 | xunit.runner.visualstudio | 2.8.2 | Apache-2.0 |
 | coverlet.collector | 6.0.2 | MIT |
+
+### PRISM V2 (.NET)
+
+| Paquet | Version | Licence |
+| :-- | :-- | :-- |
+| Silk.NET.Input, Silk.NET.OpenGL, Silk.NET.Windowing | 2.22.0 | MIT |
+| Microsoft.NET.Test.Sdk | 17.14.1 | MIT |
+| xunit | 2.9.3 | Apache-2.0 |
+| xunit.runner.visualstudio | 3.1.4 | Apache-2.0 |
 
 ### Launcher (.NET / Avalonia)
 
@@ -135,6 +127,5 @@ Foundation et est utilisé pour identifier la licence du projet.
 Mettre à jour ce fichier à chaque ajout ou mise à jour significative d'une
 dépendance directe, et avant toute distribution binaire (installeur, archive,
 paquet NuGet/PyPI/npm). Les textes de licence des dépendances doivent alors
-être joints à la distribution. Toute évolution du périmètre GPL — notamment
-un changement de licence du projet Unreal PRISM — doit être répercutée ici,
-dans `NOTICE` et dans les pages Licence du site.
+être joints à la distribution. Toute évolution du périmètre GPL doit être
+répercutée ici, dans `NOTICE` et dans les pages Licence du site.

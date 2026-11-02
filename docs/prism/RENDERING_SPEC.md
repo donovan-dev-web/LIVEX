@@ -1,7 +1,7 @@
 # RENDERING_SPEC — Visualiseur Silk.NET, identité visuelle et interaction
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Statut** : [IMPLÉMENTATION EN COURS — PRISM-038 (SOCLE)]
 **Dernière mise à jour** : 1er novembre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`API_CONTRACTS.md`](API_CONTRACTS.md) §6, [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md)
 **Source Monographie** : —
@@ -17,10 +17,10 @@ Le visualiseur est un **client de lecture**. Il ne simule rien, ne décide de ri
 | Sujet | Spécification |
 | :-- | :-- |
 | API graphique | OpenGL 3.3 *core* minimum via Silk.NET (fenêtre GLFW) |
-| Meshing | Un maillage par chunk ; **faces visibles uniquement** ; fusion gloutonne des faces coplanaires de même type ; remaillage incrémental des chunks *dirty* ; file de remaillage bornée par image |
+| Meshing | Un maillage par région horizontale ; **surfaces et façades visibles uniquement** ; fusion gloutonne des faces coplanaires de même type ; remaillage incrémental des régions *dirty* ; file de remaillage bornée par image |
 | Atlas | Atlas de textures **généré par programme** au démarrage (palette sobre, pas de ressources externes lourdes) ; une tuile par type de matériau, une couleur de repli |
 | Lumière | Éclairage directionnel + occlusion ambiante par sommet ; **cycle jour/nuit** synchronisé sur le calendrier du monde ; la nuit se lit dans l'image (pas seulement sur une horloge) |
-| Culling | Frustum culling par chunk ; distance de rendu paramétrable |
+| Culling | Frustum culling par région ; distance de rendu paramétrable |
 | Agents | Silhouettes simples (boîtes 1 × 1 × 2) colorées par état ; interpolation visuelle entre ticks **uniquement dans le rendu** ; marqueur de l'action en cours |
 | Chantiers | Blocs planifiés rendus en **fantômes** (plan visible), blocs posés progressivement |
 | Eau | Surface semi-transparente statique (pas de simulation d'écoulement) |
@@ -68,8 +68,15 @@ Le rendu ne verrouille jamais le tick (double tampon de chunks) ; si le flux est
 
 Tests de meshing déterministes (même chunk → même maillage), tests d'interface par captures de référence sous rendu logiciel (Mesa) en CI optionnelle, test d'indépendance (run identique avec/sans visualiseur).
 
+### Implémentation v0
+
+`Prism.Viewer` génère un monde de débogage déterministe et ouvre une fenêtre OpenGL 3.3. Les faces supérieures et les façades exposées sont maillées par région ; les surcharges solides les plus hautes (dont l'eau statique) déterminent la surface visible. La caméra libre se pilote au clavier : `WASD` pour se déplacer, `Q/E` pour descendre/monter, flèches pour regarder, `Échap` pour fermer. La seed et la taille sont configurables avec `--seed` et `--size` (`16` à `512`) ; `--help` affiche l'aide.
+
+Ce socle n'inclut pas encore l'interface HUD, les calques, la mise à jour incrémentale, les modes client/rejeu, les agents ni les interventions. La validation d'exécution graphique Windows/Linux est également en attente.
+
 ## Mises à jour
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Viewer OpenGL v0, maillage par région et caméra clavier ajoutés | PRISM-038 |
 | 1er novembre 2026 | Création | Refonte V2 |

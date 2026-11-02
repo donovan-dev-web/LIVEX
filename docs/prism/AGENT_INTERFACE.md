@@ -18,7 +18,7 @@ Un agent croit des choses sur un monde qu'il ne voit qu'en partie.
 
 | Croyance | Source | Remarque |
 | :-- | :-- | :-- |
-| **Mémoire spatiale** : carte mentale par chunk — « du fer vu ici, il y a tant de ticks », confiance décroissante | Observations proche/moyen | 1 000 agents × 1 024 chunks ≈ 1 M d'entrées ; à 16 octets l'entrée ≈ 16 Mo. Entrée = `(chunkId, masque de tags u32, tickVu u32, confiance u8, divers)` : **un masque de tags par chunk**, pas une entrée par tag |
+| **Mémoire spatiale** : carte mentale par région — « du fer vu ici, il y a tant de ticks », confiance décroissante | Observations proche/moyen | 1 000 agents × 256 régions = 256 k entrées ; à 16 octets l'entrée ≈ 4 Mo. Entrée = `(regionId, masque de tags u32, tickVu u32, confiance u8, divers)` : **un masque de tags par région**, pas une entrée par tag |
 | **Inventaire et outils** | Observation de soi (PRISM) | Source de vérité : PRISM |
 | **Recettes connues** | Savoir (§7) | Variante simple ou riche |
 | **Chantiers et structures observés / accessibles** | Observations | Avec droits d'accès connus |

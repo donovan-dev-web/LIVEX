@@ -25,6 +25,7 @@
 | Génération | Mondes dorés, contrôles de jouabilité | Empreintes figées |
 | Contrat | Mêmes cas sur liaison réseau et embarquée ; versions inconnues ; échecs motivés | `Prism.Contracts.Tests` |
 | Intégration | Host + bots, runs courts | `Prism.Host.Tests` |
+| Rendu | Faces visibles par région, déterminisme du maillage, overlays de hauteur | `Prism.Viewer.Tests` |
 | Bout en bout | SYNE + PRISM + ECHOS via Launcher | `Launcher.Tests.EndToEnd` |
 | Performance | B1…B8 | `Prism.Benchmarks` |
 | Rendu | Meshing, captures | CI optionnelle |

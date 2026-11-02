@@ -1,8 +1,8 @@
 # CONTENT_SPEC — Document de contenu : formats de données, contenu minimal, calibrage
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [SPÉCIFICATION V2 — COMPILATEUR PRISM-021 ET PACK MINIMAL PRISM-022 IMPLÉMENTÉS ; EXTENSIONS DE PACK EN ATTENTE]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`DATA_MODEL.md`](DATA_MODEL.md), [`SYSTEMS_SPEC.md`](SYSTEMS_SPEC.md), `../NAMING_CONVENTIONS.md`
 **Source Monographie** : —
 
@@ -66,6 +66,12 @@ Culture (bloc avec évolution) :
 }
 ```
 
+`qty` accepte un entier ou une plage inclusive `[min, max]`. `chancePermille` (défaut 1 000) et `whenState` (facultatif) définissent respectivement une probabilité de drop et son état requis. Le validateur refuse les plages inversées/non positives, les probabilités hors `[0, 1000]` et les états négatifs.
+
+Les matériaux de sol peuvent déclarer `"tillable": true` (matériau solide). Un matériau avec croissance peut déclarer `"seedItem": "wheat_seed"` pour lier explicitement sa graine à `Planter`; les drops filtrés par `whenState` définissent la récolte. La houe requise pour labourer est l'objet portant le tag `hoe` (y compris un tag enfant).
+
+Les tags acceptent les champs facultatifs `description` et `parent`. Un parent doit être déclaré dans le pack et la hiérarchie ne peut pas contenir de cycle.
+
 ### 3.2 Objet
 
 ```json
@@ -81,6 +87,11 @@ Culture (bloc avec évolution) :
 ```
 
 Objet consommable : `effects: "eat_flatbread"` pointant vers `effects/*.json` (`{"hunger": -300, "energyRecovery": 20}`, valeurs en entiers ; les valeurs sont transmises à SYNE qui les applique à ses besoins), `shelfLifeTicks`.
+Pour être consommable, l'objet porte aussi le tag `edible`. La consommation retire une unité et enregistre `consume` au ledger ; les effets configurés sont transmis dans l'événement `item_consumed`.
+
+Une matière portant le tag `drinkable` peut déclarer le même champ `effects` (par exemple `water` → `drink_water`, avec `{"thirst": -300}`). Boire à une source ne modifie pas le bloc : ces sources sont infinies dans le modèle actuel. Le champ n'est compilé comme source de boisson que pour les matériaux `drinkable`.
+
+Les outils déclarent `durability` (points d'usure maximaux) et `usePerAction` (points retirés à chaque action réussie, défaut `1`). Un objet avec une durabilité positive doit avoir `maxStack: 1`.
 
 ### 3.3 Recette
 
@@ -171,7 +182,7 @@ flowchart TD
 
 **Tags** : `wood`, `stone`, `ore`, `fuel`, `edible`, `crop`, `tool`, `pickaxe`, `hoe`, `handle`, `stone_head`, `container`, `station`, `drinkable`, `walkable_path`.
 
-Le tag `fuel` couvre `log`, `plank`, `coal` et la paille : une recette qui demande un combustible fonctionne avec chacun.
+Le tag `fuel` couvre `log`, `plank` et `coal` dans le pack v0 : une recette qui demande un combustible fonctionne avec chacun. La paille reste une extension de contenu.
 
 **Origine des graines.** Miner `grass` donne une `wheat_seed` avec probabilité `chancePermille` (hasard à compteur sur `(position, tick)`) : le premier cycle agricole est amorçable sans bloc supplémentaire.
 
@@ -191,12 +202,14 @@ Toutes les valeurs ci-dessous sont des **hypothèses de départ**. Elles vivent 
 
 | Paramètre | Défaut | Unité | Sensibilité attendue |
 | :-- | :-- | :-- | :-- |
-| `world.size` | 256 × 256 × 64 | blocs | Densité d'agents |
+| `world.size` | 256 × 256 colonnes, altitude 0…63 | blocs | Densité d'agents |
+| `world.regionSize` | 16 × 16 | colonnes | Partitionnement du monde |
 | `perception.nearRadius` | 16 | blocs | Charge d'observation, mémoire spatiale |
 | `perception.midRadiusChunks` | 3 | chunks | Découverte, exploration |
 | `communication.radius` | 50 | blocs (côté SYNE) | Partage d'information |
 | `agent.inventorySlots` | 12 | emplacements | Logistique |
 | `agent.moveBudgetPerTick` | 1 000 | milli-blocs | Durée des trajets |
+| `movement.pathSpeedupPermille` | 2 000 | ‰ | Coût divisé par deux sur les segments de chemin |
 | `time.dayLengthTicks` | 480 | ticks | Cycle agricole |
 | `time.seasonLengthDays` | 4 | jours | Pression saisonnière |
 | `growth.wheat.stageTicks` | 150 ± 25 | ticks | Délai production |
@@ -210,6 +223,7 @@ Toutes les valeurs ci-dessous sont des **hypothèses de départ**. Elles vivent 
 | `mastery.gainPerActionPermille` | 5 | ‰ | Spécialisation |
 | `mastery.maxSpeedupPermille` | 500 | ‰ | Division du travail |
 | `randomTicksPerChunkPerTick` | 3 | blocs | Coût de monde |
+| `updates.grassSpreadChancePermille` | 100 (pack minimal) | ‰ par random tick valide | Propagation des surfaces d'herbe |
 | `wear.structure.decayPerTickPermille` | 0 (désactivé) | ‰ | Entretien collectif |
 
 ## 8. Compatibilité et évolutions
@@ -226,4 +240,6 @@ Les valeurs de §7 sont calibrées en phase P12. La liste du contenu minimal peu
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Pack minimal v0 compilé ; schéma des paramètres, hiérarchie des tags, versions/identifiants, recettes et drops validés | PRISM-021/022 |
+| 2 novembre 2026 | Compilateur initial : manifest, tags, matériaux, objets, recettes, références, cycles et hash SHA-256 ; couverture restante explicitée | PRISM-021 |
 | 1er novembre 2026 | Création | Refonte V2 |

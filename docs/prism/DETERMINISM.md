@@ -1,8 +1,8 @@
 # DETERMINISM — Déterminisme du monde PRISM
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [IMPLÉMENTATION EN COURS — PRISM-024/025/030]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`adr/ADR-007-determinisme-entier-flux-hasard.md`](adr/ADR-007-determinisme-entier-flux-hasard.md), `../syne/DETERMINISM.md`
 **Source Monographie** : §2.3.4
 
@@ -34,19 +34,21 @@
 | `ores` | séquentiel / treillis | Filons | `(ix, iy, iz)` |
 | `forest` | compteur | Placement des arbres | `(cellX, cellY)` |
 | `spawn` | compteur | Sites d'apparition | `(candidateIndex)` |
-| `randomTicks` | **compteur** | Mises à jour aléatoires | `(tick, chunkId, k)` |
+| `randomTicks` | **compteur** | Permutation des colonnes à mettre à jour | `(tick, regionId, role)` |
 | `conflicts` | **compteur** | Priorité d'arbitrage | `(tick, agentId)` |
-| `growthJitter` | **compteur** | Gigue de croissance | `(blockIndex, plantTick)` |
+| `growthJitter` | **compteur** | Gigue de croissance | `(blockIndex, cycleStartTick, stage)` |
 | `drops` | **compteur** | Drops probabilistes | `(blockIndex, tick)` |
 
-`Mix64` : fonction de mélange 64 bits à entiers (SplitMix64), implémentée à l'identique sur toutes les plateformes. Ajouter un flux ne décale jamais les autres ; ajouter un tirage dans un flux à compteur ne décale rien.
+`Mix64` : fonction de mélange 64 bits à entiers (SplitMix64), implémentée à l'identique sur toutes les plateformes. L'arbitrage des intentions calcule une priorité par `(runSeed, conflicts, tick, agentId)`, puis départage les égalités par identifiant stable et cible canonique. Ajouter un flux ne décale jamais les autres ; ajouter un tirage dans un flux à compteur ne décale rien.
+
+Les mises à jour aléatoires sélectionnent des colonnes sans doublon dans chaque région à l'aide d'un départ et d'un pas premiers entre eux, dérivés du tick et de la région. Les calculs peuvent s'exécuter en parallèle ; les intentions d'écriture sont ensuite appliquées séquentiellement dans l'ordre canonique région/ordinal.
 
 ## 4. Empreintes
 
 | Empreinte | Définition |
 | :-- | :-- |
-| Chunk | FNV-1a 64 de `ids ‖ states` |
-| Monde | FNV-1a 64 de la suite ordonnée (`chunkId` croissant) des empreintes de chunks, plus des tables d'état (agents, conteneurs, chantiers, structures, calendrier, files programmées) en ordre canonique |
+| Région | FNV-1a 64 des colonnes et surcharges triées canoniquement |
+| Monde | FNV-1a 64 de la suite ordonnée (`regionId` croissant) des empreintes de régions, plus des tables d'état (agents, conteneurs, chantiers, structures, calendrier, files programmées) en ordre canonique |
 | Run | Suite des empreintes de monde aux ticks `k × checksumIntervalTicks` + empreinte finale |
 
 Les empreintes sont publiées dans `checksum` (flux de lecture) et consignées dans les résultats de run. ECHOS peut comparer deux runs et situer **le premier tick de divergence**.
@@ -81,4 +83,6 @@ Preuve inter-plateformes à produire en phase P7.
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Mix64, flux nommés, xoshiro256**, hasard à compteur et FNV-1a canonique amorcés dans Prism.Core | PRISM-024/025 |
+| 2 novembre 2026 | Bruit de valeurs, octaves et domaine déformé en entier/16.16 avec vecteurs fixes | PRISM-030 |
 | 1er novembre 2026 | Création | Refonte V2 |

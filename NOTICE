@@ -18,10 +18,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-Périmètre : la GPL-3.0-or-later couvre le code de SYNE, ECHOS, du Launcher,
-de syne-mock et du site vitrine. Le projet Unreal PRISM (`prism/`, dont le
-plugin PRISM-LDK) n'est pas couvert par la GPL et reste soumis aux
-conditions d'Epic Games applicables à Unreal Engine.
+Périmètre : la GPL-3.0-or-later couvre le code de PRISM V2, SYNE, ECHOS, du
+Launcher, de syne-mock et du site vitrine. L'ancien projet Unreal PRISM a été
+archivé hors de ce dépôt ; toute archive distribuée séparément reste soumise
+aux conditions d'Epic Games applicables à Unreal Engine.
 
 Les composants tiers, les polices et les fichiers non couverts par la
 GPL sont recensés dans THIRD-PARTY-NOTICES.md.

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Prism.Core\Prism.Core.csproj" />
+  </ItemGroup>
+</Project>

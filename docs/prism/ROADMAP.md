@@ -1,8 +1,8 @@
 # ROADMAP — PRISM V2 (de bout en bout)
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [IMPLÉMENTATION EN COURS — P5 ; G1 EN ATTENTE]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`../governance/ROADMAP.md`](../governance/ROADMAP.md), [`VISION.md`](VISION.md), [`PERFORMANCE.md`](PERFORMANCE.md), [`TESTING.md`](TESTING.md)
 **Source Monographie** : Annexe J (feuille de route V2)
 
@@ -12,10 +12,26 @@
 
 - Road map **en ordre, sans dates**, comme celle du projet : l'ordre reflète les dépendances ; l'effort est donné en **taille relative** (S, M, L, XL), jamais en calendrier.
 - **Portes de décision (G0…G8)** : une phase n'est franchie que si ses critères sont atteints ; une porte peut conclure à un repli.
-- **Risque d'abord** : les benchmarks (P1) précèdent le code de production.
+- **Risque d'abord** : les benchmarks ciblent les risques importants ; selon la priorité du propriétaire, P2 peut avancer avant la clôture de G1, qui reste obligatoire avant validation d'intégration.
 - **Contrat avant refonte cognitive** : le contrat est validé avec la cognition *actuelle* de SYNE (G3) avant la refonte de SYNE (G5).
 - **Ablation avant conclusion** : aucune affirmation sur la coopération sans l'expérience d'ablation correspondante (G7).
 - Aucune phase ne casse la V1 `1.x` tant que `2.0.0` n'est pas livrée (branche d'intégration dédiée).
+
+## Suivi d'exécution
+
+| Phase | État | Avancement / prochaine action |
+| :-- | :-- | :-- |
+| P0 — Cadrage | Implémentée | PRISM-001 à 003 implémentées ; build/tests Windows et cross-build des 12 projets pour `linux-x64` réussis. Exécution native Linux/CI reste à confirmer sur runner distant. |
+| P1 — Spikes et benchmarks | Reportée à l'optimisation | Baseline indicative 250 ms/tick et seuil G1 3 ticks/s conservés comme repères provisoires ; B1–B6 initiaux documentés, dont B4 synthétique non représentatif du contrat différentiel. Le tick complet, les plafonds, le rendu Windows/Linux et les benchmarks seront réévalués lors d'une phase d'optimisation avec SYNE. G1 reste ouverte sans bloquer l'implémentation fonctionnelle. |
+| P2 — Noyau du monde | Implémentée | PRISM-020–028 livrés et testés : registres, compilateur/validateur, pack minimal amorçable, grille 2.5D, RNG, empreintes, roue temporelle, ledger et tests générés d'ordre/idempotence. Les dépendances de packs restent une extension hors V2. |
+| P3 — Génération et visualiseur de debug | En cours | PRISM-030–035 sont implémentées (socle). PRISM-036 fournit la sélection des sites sur six ressources accessibles et huit tentatives dérivées avec erreur structurée ; les planchers globaux de ressources restent à intégrer. PRISM-037 verrouille trois empreintes locales ; la comparaison CI Windows/Linux est reportée à une phase de validation ultérieure. PRISM-038 dispose d'un viewer OpenGL v0 avec maillage par région et caméra libre ; le test de démarrage Windows a réussi. Le benchmark PRISM-039 est reporté à la phase d'optimisation, conformément à la priorité du propriétaire. |
+| P4 — Temps et mises à jour | Socle implémenté | PRISM-040–045 : calendrier, ordonnanceur, random ticks, croissance saisonnière, péremption paresseuse et propagation d'herbe configurée par le pack. PRISM-046 (benchmark B3) est reportée à la phase d'optimisation. |
+| P5 — Corps, navigation, perception | Socle fonctionnel implémenté | PRISM-050–052 et 054–056 : cycle de vie, mouvement 2.5D/A*, perception différentielle plafonnée, arbitrage et accélération des chemins configurée par les tags/gabarits. Restent le pathfinding hiérarchique PRISM-053 et les benchmarks PRISM-057, reportés à l'optimisation ; structures/chantiers et raccordement complet au tick restent à faire. |
+| P6 — Actions, macro-actions, conservation | En cours | PRISM-060–069 ont un socle testé : actions d'objets, macro-actions d'obtention/fabrication/culture, transfert agent-agent et fuzz déterministe de 1 M de commandes. Restent la fraîcheur/péremption dans les piles et le raccordement des actions/macros aux commandes et à la boucle de tick. |
+| P7 — Contrat, hôte headless, persistance | En cours — prochaine : PRISM-073 | PRISM-070/071 fournissent les DTO JSON versionnés, les premiers schémas lockstep et la fenêtre d'idempotence bornée utilisée par le dispatch. PRISM-072 est terminée : `IWorldHost.Step` valide/copie les requêtes, impose les ticks consécutifs et exécute les 12 phases en ordre déterministe ; le dispatch émet des événements d'action et rejoue les résultats sans répéter les effets. La prochaine issue est PRISM-073 (hôte headless et contrôle HTTP). Restent les autres issues P7, la persistance, les bots et la preuve de déterminisme. G1 reste ouverte ; G2 à G8 ne sont pas franchies. |
+| P8–P13 | À faire | Phases suivantes non démarrées. |
+
+Le choix de géométrie 2.5D et le transport de référence sont décidés par ADR-011/012. Selon la priorité donnée par le propriétaire, l'implémentation fonctionnelle des phases P2–P5 avance en parallèle de G1 : les budgets détaillés et les optimisations seront réévalués sur l'intégration PRISM/SYNE. G1 n'est pas considérée franchie et reste un jalon de validation avant l'intégration complète.
 
 ## 2. Position dans la feuille de route du projet
 
@@ -29,12 +45,12 @@ La phase 4 de `docs/governance/ROADMAP.md` (*Intégration Unreal*) est **close**
 
 | Phase | Intitulé | Taille | Porte | Sortie principale |
 | :-- | :-- | :-- | :-- | :-- |
-| **P0** | Cadrage | S | G0 | Documentation V2 relue, ADR `Proposed`, solution et CI |
-| **P1** | Spikes et benchmarks | M | **G1** | Rapport B1…B8 ; décision 3D vs 2.5D ; transport (Q-01) |
+| **P0** | Cadrage | S | G0 | Documentation V2 relue, décision géométrie/transport enregistrée, solution et CI |
+| **P1** | Spikes et benchmarks 2.5D | M | **G1** | Rapports initiaux B1…B6 ; tick complet ≥ 3 ticks/s à 1 000 agents ; HTTP/WebSocket JSON et rendu validés par mesures représentatives |
 | **P2** | Noyau du monde | L | — | Registres, contenu validé, chunks, PRNG, empreintes, planificateur d'événements, audit |
 | **P3** | Génération et visualiseur de debug | L | **G2** | Mondes dorés, générateur par seed, viewer v0 |
 | **P4** | Temps et mises à jour | M | — | Calendrier, croissance, péremption, mises à jour |
-| **P5** | Corps, navigation, perception | XL | — | Agent physique, A* 3D, perception, conflits |
+| **P5** | Corps, navigation, perception | XL | — | Agent physique, A* 2.5D à transitions d'altitude, perception, conflits |
 | **P6** | Actions, macro-actions, conservation | L | — | Primitives, macro-actions, audit de conservation |
 | **P7** | Contrat, hôte headless, persistance | XL | **G3** | Contrat 1.0.0 gelé, hôte, reprise bit-à-bit, validation avec la cognition actuelle |
 | **P8** | Contenu, structures, chantiers | L | **G4** | Cinq chaînes jouées de bout en bout, structures, accès |
@@ -65,7 +81,7 @@ Après la porte G3, trois voies avancent **en parallèle** : *monde* (P8), *cogn
 | Porte | Question posée | Critères de passage | Si échec |
 | :-- | :-- | :-- | :-- |
 | **G0** | La conception est-elle assez cohérente pour démarrer ? | Revue croisée terminée ; ADR-004…010 relus ; solution, CI et analyseur d'architecture en place | Corriger la documentation |
-| **G1** | Le 3D tient-il le budget ? | B1…B5 atteignent les cibles de `PERFORMANCE.md` §1 à 100 agents, et à 1 000 agents au moins 60 % de la cible ; transport tranché (Q-01) ; spike Silk.NET fonctionne sous Windows et Linux | Optimiser (une itération) puis **repli 2.5D** (§8) ou réduction de l'ambition de population |
+| **G1** | Le modèle 2.5D et le transport tiennent-ils les budgets ? | B1…B6 mesurés ; le budget de `PERFORMANCE.md` §1 est atteint à 100 agents et le tick complet atteint ≥ 3 ticks/s à 1 000 ; B4/B5 mesurent les DTO réalistes ; spike Silk.NET montre les surfaces 2.5D sous Windows et Linux | Une itération d'optimisation ciblée ; si nécessaire réviser le budget sur les mesures du tick complet ou ouvrir une décision de transport sur preuve |
 | **G2** | Le monde généré est-il reproductible et jouable ? | Mondes dorés sur 3 graines ; empreintes identiques Windows/Linux ; contrôles de jouabilité passent ; viewer v0 montre le monde | Revoir paramètres de bruit, structure de génération |
 | **G3** | Le contrat tient-il avec une vraie cognition ? | Contrat 1.0.0 gelé ; tests de contrat sur 2 liaisons ; reprise bit-à-bit ; run R2 (SYNE actuel + PRISM) reproductible ; analyseur : aucun flottant dans Core | Ne pas démarrer P8/P9 ; réviser le contrat (MAJOR en pré-release) |
 | **G4** | Les chaînes existent-elles vraiment ? | Les 5 chaînes jouées par bots (R1) ; audit de conservation vert ; graphe amorçable à mains nues | Revoir contenu, recettes, durées |
@@ -82,13 +98,13 @@ Après la porte G3, trois voies avancent **en parallèle** : *monde* (P8), *cogn
 **Sortie** : G0.
 
 ### P1 — Spikes et benchmarks
-**Objectif** : tuer les risques de performance et de transport **avant** d'investir.
-**Travaux** : prototypes jetables (grille + générateur minimal) ; B1…B5 ; spike Silk.NET (fenêtre, un chunk maillé) ; spike planificateur (B7, côté SYNE) ; rapport et décisions (Q-01, 3D vs 2.5D).
-**Sortie** : G1. Le code de prototype est **jeté** ou réécrit proprement.
+**Objectif** : identifier les risques de performance et de transport sans retarder les fondations de production.
+**Travaux** : prototypes jetables (colonnes 2.5D + générateur de surface) ; B1…B6 ; comparaison WebSocket/embarqué et compression des régions ; spike Silk.NET (fenêtre, une région maillée) ; spike planificateur (B7, côté SYNE). La baseline reste indicative à 250 ms/tick (+25 % par rapport à l'hypothèse initiale), avec une marge de 10 ms. B1 (81,2 ms/1 000 routes) et B2 (32,7 ms de calcul, 34,8 ms d'encodage) cadrent les coûts isolés. B4 montre qu'un snapshot synthétique complet est trop coûteux (p95 93,67 ms/tick), mais le contrat est différentiel ; aucune optimisation supplémentaire n'est lancée avant la mesure sur l'intégration PRISM/SYNE. Les résultats servent de repères et G1 reste ouverte.
+**Sortie** : G1 avant la validation d'intégration complète ; P2 peut avancer en parallèle selon la priorité du propriétaire. Le code de prototype est **jeté** ou réécrit proprement.
 
 ### P2 — Noyau du monde
-**Travaux** : registres d'identifiants stables ; compilateur/validateur de contenu ; pack minimal ; chunks et grille ; `Mix64`, flux nommés, `xoshiro256**` ; empreintes ; roue temporelle ; registre d'audit ; analyseur de dépendances et de flottants.
-**Critères** : tests de vecteurs de PRNG, chunk round-trip, validation de pack avec erreurs structurées.
+**Travaux** : registres d'identifiants stables ; compilateur/validateur de contenu ; pack minimal ; colonnes et régions 2.5D ; `Mix64`, flux nommés, `xoshiro256**` ; empreintes ; roue temporelle ; registre d'audit ; analyseur de dépendances et de flottants. PRISM-020/023/024/025/026/027 sont implémentées et testées. PRISM-021 valide les références et contraintes principales du schéma, y compris les paramètres de calibrage, les tags hiérarchiques et les drops conditionnels ; les dépendances entre packs et les extensions post-V2 restent hors du compilateur courant. PRISM-022 est implémentée avec un pack v0 et un test de progression amorçable. Les seuils de performance restent à revisiter sur le tick intégré.
+**Critères** : tests de vecteurs de PRNG, round-trip colonnes/régions/surcharges, validation de pack avec erreurs structurées.
 
 ### P3 — Génération et visualiseur de debug
 **Travaux** : bruit entier, relief, bordure, zones, strates, filons, eau, forêts, sites d'apparition, contrôles de jouabilité et tentatives ; mondes dorés ; **viewer v0** (fenêtre, meshing naïf, caméra libre) qui sert d'outil de réglage.
@@ -98,13 +114,13 @@ Après la porte G3, trois voies avancent **en parallèle** : *monde* (P8), *cogn
 **Travaux** : calendrier, mises à jour programmées avec gigue, mises à jour aléatoires à compteur, croissance du blé et flétrissement, péremption paresseuse, propagation d'herbe ; B3 sur code de production.
 
 ### P5 — Corps, navigation, perception
-**Travaux** : agents physiques, graphe de mouvement 3D, A* entier borné, pathfinding hiérarchique par chunks, perception à trois niveaux et différentielle, arbitrage de conflits, chemins aménagés ; B1/B2 sur code de production.
+**Travaux** : agents physiques, graphe de mouvement de surface 2.5D, A* entier borné, pathfinding hiérarchique par régions, perception à trois niveaux et différentielle, arbitrage de conflits, chemins aménagés ; B1/B2 sur code de production. PRISM-050–052 et 054–056 sont implémentées au niveau du noyau. La hiérarchie et les benchmarks sont reportés à l'optimisation ; le raccordement aux commandes/ticks et la modélisation complète des structures/chantiers restent à faire.
 
 ### P6 — Actions, macro-actions, conservation
-**Travaux** : miner, poser, conteneurs, fabriquer, planter/récolter, consommer/boire, durabilité, transfert atomique, macro-actions (machines à états, indices de croyance, échecs motivés) ; audit de conservation et tests par propriétés (fuzz de commandes).
+**Travaux** : miner, poser, conteneurs, fabriquer, planter/récolter, consommer/boire, durabilité, transfert atomique, macro-actions (machines à états, indices de croyance, échecs motivés) ; audit de conservation et tests par propriétés (fuzz de commandes). PRISM-060/061 disposent d'un socle testé : résolution du bloc de surface/surcharge, garde de portée/perception, palier d'outil, durée selon dureté/maîtrise, drops déterministes probabilistes, inventaire/sol, ledger, association explicite objet-matériau, refus des cases occupées par un agent. PRISM-062 ajoute le stockage borné par emplacements, les accès propriétaire/agent/groupe opaque et les transferts tout-ou-rien. PRISM-063 compile les entrées exactes/par tags, vérifie station/outils/maîtrise, réserve la station selon la durée et échange entrées/sorties atomiquement avec le ledger. PRISM-064 lie les graines explicitement aux cultures, laboure les sols déclarés avec une houe, plante avec conditions eau/sol et récolte les drops configurés uniquement à maturité. PRISM-065 consomme une unité d'objet `edible` ou boit à une source `drinkable`, transmet les effets configurés dans `item_consumed` et audite la destruction des objets ; les sources sont inchangées. PRISM-066 conserve la durabilité restante dans chaque pile d'outil, use selon `usePerAction`, détruit l'outil à zéro et audite `wear` pour le minage, le labourage et les recettes avec outil ; les transferts agent/conteneur préservent cet état. PRISM-067 orchestre l'obtention depuis les sources perçues uniquement, la fabrication et le cycle labourage→plantation→attente de maturité→récolte sur ordre ; la perception ne donne lieu à aucune recherche globale. PRISM-068 transfère agents à agents de manière tout-ou-rien. PRISM-069 exécute un million de transferts/consommations à seed fixe avec audits globaux périodiques. La fraîcheur reste non matérialisée dans les inventaires/conteneurs et les primitives ne sont pas encore raccordées à la boucle de tick.
 
 ### P7 — Contrat, hôte headless, persistance
-**Travaux** : `Prism.Contracts` et schémas JSON ; idempotence ; boucle de tick à ordre fixe ; hôte headless et contrôle HTTP ; liaison WebSocket en pas de verrouillage ; flux de lecture ; points de reprise ; bots ; manifeste Launcher ; **adaptateur minimal côté SYNE** (agents actuels qui marchent, mangent, boivent via contrat) ; preuve Windows/Linux ; run R2.
+**Travaux** : `Prism.Contracts` et schémas JSON ; idempotence ; boucle de tick à ordre fixe ; hôte headless et contrôle HTTP ; liaison WebSocket en pas de verrouillage ; flux de lecture ; points de reprise ; bots ; manifeste Launcher ; **adaptateur minimal côté SYNE** (agents actuels qui marchent, mangent, boivent via contrat) ; preuve Windows/Linux ; run R2. PRISM-070 fournit les enveloppes DTO, la sérialisation camelCase, la compatibilité ascendante de même majeure et les premiers schémas JSON pour commande, événement, observation et échanges tick. PRISM-071 fournit une fenêtre d'idempotence mémoire bornée, utilisée dans le dispatch pour rejouer un résultat sans répéter son handler et détecter les collisions ; la persistance de la fenêtre reste à réaliser. PRISM-072 est terminée : `IWorldHost.Step` snapshotte et valide chaque requête, impose les ticks consécutifs et orchestre les douze phases dans l'ordre spécifié ; la réception prévalide les collisions d'ID et le dispatch produit les événements de résultat. **Prochaine issue : PRISM-073**, hôte headless et contrôle HTTP. Les liaisons des systèmes métier aux phases et les autres intégrations restent suivies à leur périmètre fonctionnel respectif.
 **Sortie** : G3 — **le contrat est gelé en `1.0.0`** ; tout changement ultérieur est une version.
 
 ### P8 — Contenu, structures, chantiers
@@ -145,7 +161,7 @@ Après la porte G3, trois voies avancent **en parallèle** : *monde* (P8), *cogn
 
 | # | Risque | Prob. | Impact | Réponse | Porte |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| R1 | Pathfinding 3D / perception hors budget à 1 000 agents | Moy. | Élevé | Benchmarks d'abord, pathfinding hiérarchique, perception incrémentale ; repli 2.5D | G1 |
+| R1 | Pathfinding 2.5D / perception hors budget à 1 000 agents | Moy. | Élevé | Benchmarks d'abord, pathfinding hiérarchique, perception incrémentale ; ajuster les budgets sur preuve | G1 |
 | R2 | La coopération n'émerge pas | Moy. | Élevé (scientifique) | Ablations ; publier le résultat négatif ; ajuster les coûts | G7 |
 | R3 | Le planificateur dépasse le budget de SYNE | Moy. | Élevé | Profondeur bornée, cache, replan sur échec seulement | G5 |
 | R4 | Déterminisme rompu par un flottant ou un ordre | Moy. | Élevé | Analyseur CI, empreintes, test Windows/Linux dès P3 | G2, G3 |
@@ -156,13 +172,13 @@ Après la porte G3, trois voies avancent **en parallèle** : *monde* (P8), *cogn
 | R9 | Charge de travail d'une seule personne | Élevée | Élevé | Voies parallèles limitées ; tailles relatives ; périmètre minimal d'abord | toutes |
 | R10 | Dépendances graphiques (pilotes, Wayland) | Moy. | Moyen | CI rendu logiciel, tests Windows/Linux, `--embedded` optionnel | P11 |
 
-## 8. Plan de repli (porte G1 / G5)
+## 8. Optimisation du modèle retenu (portes G1 / G5)
 
-Le modèle de données de PRISM (matériaux, recettes, structures, contrat) est **indépendant de la géométrie**. Si le pathfinding 3D ou le rendu reste hors budget après optimisation :
+Le modèle de données de PRISM (matériaux, recettes, structures, contrat) est **indépendant de la géométrie**. La géométrie 2.5D est retenue par ADR-011. Si navigation, perception ou rendu restent hors budget :
 
-1. **Grille 2.5D** : hauteur par colonne + quelques couches ; pas de surplombs ni de cavernes ; navigation 2D avec transitions de hauteur.
-2. Conserver **tout le contenu** et le contrat ; seuls `Prism.Core` (géométrie) et le viewer changent.
-3. Option complémentaire : réduire la population de référence (500 agents) et conserver 1 000 comme objectif de charge.
+1. Optimiser l'indexation des régions, le pathfinding hiérarchique, les caches et les observations différentielles.
+2. Conserver **tout le contenu** et le contrat ; mesurer chaque changement contre les rapports B1…B8.
+3. En dernier recours, réduire par décision documentée la population de référence et garder 1 000 comme objectif de charge.
 
 ## 9. Après la V2 (non planifié)
 
@@ -185,4 +201,5 @@ Le modèle de données de PRISM (matériaux, recettes, structures, contrat) est 
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Suivi d'implémentation P0/G0 et état des validations ajouté | Démarrage PRISM V2 |
 | 1er novembre 2026 | Création | Refonte V2 |

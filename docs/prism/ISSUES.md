@@ -1,8 +1,8 @@
 # ISSUES — Backlog PRISM V2
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [BACKLOG ACTIF — P7 ; G1 EN ATTENTE]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`ROADMAP.md`](ROADMAP.md), `../governance/ISSUES.md`, `../governance/KANBAN.md`
 **Source Monographie** : Annexe K
 
@@ -17,6 +17,66 @@ Backlog complet du composant PRISM V2, **source unique de création des cartes K
 - PRISM ne décide pas du comportement des agents ; aucune issue ne l'y autorise.
 - Toute issue qui modifie un monde généré ou une règle met à jour `worldGenVersion`/`engineVersion` et les empreintes dorées dans la même PR.
 - Toute issue touchant un contrat suit `API_CONTRACTS.md` §8.
+
+## Suivi d'exécution
+
+| ID | État | Référence |
+| :-- | :-- | :-- |
+| PRISM-001 | Terminée | Documentation V2 lue ; travaux et décisions ouvertes conservés dans cette roadmap. |
+| PRISM-002 | Implémentée ; cross-build `linux-x64` réussi, runner Linux en attente | [#617](https://github.com/donovan-dev-web/LIVEX/issues/617) |
+| PRISM-003 | Implémentée ; tests Windows réussis, validation CI native en attente | [#618](https://github.com/donovan-dev-web/LIVEX/issues/618) |
+| PRISM-010 | Prototype initial mesuré | Génération 2.5D, transitions de pente et parallélisme régional mesurés ; code jetable. Voir [`rapport B6`](benchmarks/B6-generation-25d.md). |
+| PRISM-011 | Mesure initiale terminée ; sous l'allocation révisée | 0 échec ; médiane 81,23 ms/1 000 routes en parallèle, sous le poste indicatif révisé à 90 ms. Voir [`rapport B1`](benchmarks/B1-pathfinding-25d.md) ; hiérarchie/cache et tick complet à confirmer. |
+| PRISM-012 | Mesure initiale terminée ; sous l'allocation révisée | Calcul médian récent 32,70 ms ; encodage JSON 34,78 ms/1 000 observations, sous les postes de 35/40 ms avec faible marge. Voir [`rapport B2`](benchmarks/B2-perception-25d.md) ; différences, plafond et structures restent non modélisés. |
+| PRISM-013 | Mesure initiale terminée ; recommandation documentée | Croissance programmée plus rapide dans le microbenchmark, avec un résultat fonctionnel différent ; la Q-09 reste alignée sur la croissance programmée. Voir [`rapport B3`](benchmarks/B3-growth-25d.md). |
+| PRISM-014 | Mesure synthétique complète ; delta contractuel à faire | 100 locksteps loopback, 1 000 commandes/tick : réponse avec snapshots complets + événements, p95 93,67 ms/tick, au-dessus du poste 40 ms. Les différences contractuelles et leurs taux de changement restent à mesurer ; voir [`rapport B4`](benchmarks/B4-transport-25d.md). |
+| PRISM-015 | Mesure initiale terminée ; charges synthétiques | Snapshot JSON 4 794 556 o ; delta JSON 111 364 o pour 1 024 colonnes modifiées. Voir [`rapport B5`](benchmarks/B5-region-streaming-25d.md) ; contenu moins compressible et vrai flux à mesurer. |
+| PRISM-016–018 | En cours | B6 : génération 3,43 ms séquentielle / 0,94 ms parallèle, tableaux identiques. La fenêtre OpenGL v0 démarre localement sous Windows ; la validation Linux et B8 restent à faire. Transport HTTP/WebSocket JSON décidé ; G1 reste ouverte. |
+| PRISM-020 | Implémentée | Registre ordinal canonique clé ↔ identifiant sur 16 bits ; unicité, bornes et round-trip couverts. |
+| PRISM-023 | Implémentée (socle) | Grille/régions 2.5D, colonnes SoA uniformes matérialisées à la première modification, surcharges clairsemées triées `(z,y,x)` et dirty flags ; tests de bornes/écriture. |
+| PRISM-024 | Implémentée | `Mix64`, dérivation de graines par nom, flux `xoshiro256**` et hasard à compteur ; vecteurs fixes et indépendance testés. |
+| PRISM-025 | Implémentée (socle) | Empreintes FNV-1a des régions et du monde avec encodage little-endian et ordre canonique des surcharges ; tests d'ordre et de mutation. |
+| PRISM-026 | Implémentée (socle) | Roue temporelle circulaire, événements dus en ordre `(tick, séquence)`, annulation et garde contre le retour en arrière ; tests de rotation et d'égalité de tick. |
+| PRISM-027 | Implémentée (socle) | Ledger de création/destruction par objet et règle, audit contre l'inventaire courant, violations ordonnées ; tests d'équilibre et de déséquilibre. |
+| PRISM-021 | Implémentée (socle) | Validation structurée des manifestes/version, identifiants, tags hiérarchiques, matériaux, objets, recettes, gabarits, croissance, effets, références, paramètres documentés et drops conditionnels/probabilistes/plage. Dépendances entre packs et extensions post-V2 non prises en charge. |
+| PRISM-022 | Implémentée | Pack minimal v0 dans `prism/content/minimal` ; compilation et graphe amorçable à mains nues jusqu'aux pioches de pierre et de fer couverts par tests. |
+| PRISM-028 | Implémentée | Tests générés à seed fixe : écriture/récupération de colonnes et surcharges, empreinte invariante à l'ordre d'insertion. |
+| PRISM-030 | Implémentée (socle) | Bruit de valeurs 2D et fractal en virgule fixe 16.16, coordonnées négatives, flux nommés, domaine déformé et vecteurs fixes testés. |
+| PRISM-031 | Implémentée (socle) | Génération déterministe d'une carte de hauteur bornée avec amplitudes, octaves, déformation de domaine et falaise de bordure ; tests de seed, bornes et configuration. |
+| PRISM-032 | Implémentée (socle) | Classification déterministe plaine/forêt/roche/bord d'eau ; profils de strates résolvant surface, terre, pierre et bedrock. |
+| PRISM-033 | Implémentée (socle) | Échantillonnage de filons 3D en bruit entier, profondeur relative à la surface, flux ores isolé et placement déterministe. |
+| PRISM-034 | Implémentée (socle) | Remplissage statique des colonnes sous le niveau marin sans écraser les blocs déjà générés. |
+| PRISM-035 | Implémentée (socle) | Placement déterministe et clairsemé de gabarits d'arbres avec jitter de cellule, densités par zone et vérification de volume libre. |
+| PRISM-036 | Implémentée (socle) | Sélection déterministe de sites avec accès aux six catégories de ressources ; huit tentatives de graines dérivées et échec structuré testés. Les planchers globaux de ressources restent à intégrer. |
+| PRISM-037 | Empreintes dorées locales ajoutées | Trois graines de référence verrouillées par test. L'exécution et la comparaison interplateformes dans CI restent à faire. |
+| PRISM-038 | Implémentée (socle) | Fenêtre Silk.NET/OpenGL 3.3, monde seedable, maillage des faces visibles par région, caméra libre clavier ; tests du maillage réussis. Validation de l'affichage sur runners Windows/Linux, overlays et réglage en direct des paramètres restent à faire. |
+| PRISM-039 | Reportée à l'optimisation | Benchmark de génération sur le code de production ; aucun benchmark synthétique supplémentaire avant une phase d'optimisation avec SYNE. |
+| PRISM-040 | Implémentée (socle) | Calendrier déterministe jour/heure/saison, transitions jour/saison émises dans l'ordre et garde contre le retour en arrière ; tests de frontières et de débordement. |
+| PRISM-041 | Implémentée (socle) | Ordonnancement générique à gigue déterministe sur flux `growthJitter`, délais toujours strictement futurs ; tests de répétabilité et bornes. |
+| PRISM-042 | Implémentée (socle) | Tirages uniques par région, calculables en parallèle et application des écritures dans l'ordre canonique ; test identique avec 1 et 8 workers. |
+| PRISM-043 | Implémentée (socle) | Le compilateur de contenu lie les règles aux matériaux ; plantation vérifie sol/eau, progression saisonnière gigue comprise, reprise à la saison propice, maturité et flétrissement sont testés. La récolte d'action est implémentée avec PRISM-064 ; la fraîcheur des piles et les commandes restent à intégrer. |
+| PRISM-044 | Implémentée (socle) | Fraîcheur entière en permille-ticks calculée à l'accès ou au transfert selon le taux du conteneur ; expiration détruit la pile, retourne un événement de péremption et alimente `MatterLedger` avec `spoil`. |
+| PRISM-045 | Implémentée (socle) | Propagation de l'herbe déterministe à partir des mises à jour aléatoires, configurable par `updates.grassSpreadChancePermille`, limitée à la terre exposée adjacente. |
+| PRISM-050 | Implémentée (socle) | Corps 1×1×2 validé sur le terrain, profil vitesse/capacité, inventaire à emplacements et dépôt des piles au sol au retrait ; API de cycle de vie du noyau testée. Les commandes du protocole et la fusion des objets au sol restent à intégrer. |
+| PRISM-051 | Implémentée (socle) | Graphe de surface 2.5D, 8 voisins, montée 1/descente 3, corps bloqué par solides et liquides, diagonales sans coupe de coin ; cas limites testés. |
+| PRISM-052 | Implémentée (socle) | A* à coûts entiers 1000/1414, ordre de départage déterministe, plafond d'expansion et cache LRU lié au monde, sa révision et au budget ; optimalité, répétabilité, invalidation et budget testés. |
+| PRISM-054 | Implémentée (socle) | Perception proche des blocs exposés, objets au sol et agents ; résumés régionaux de tags exposés ; différences apparu/modifié/disparu, état de soi et plafond appliqué aux deltas. Les structures/chantiers restent à modéliser. |
+| PRISM-055 | Implémentée (socle) | Arbitrage stateless par flux `conflicts`, tick, agent et cible ; ordre indépendant de l'entrée, doublons refusés et équilibre vérifié sur 10 000 ticks. L'émission des événements perdants sera raccordée à la boucle de commandes. |
+| PRISM-056 | Implémentée (socle) | Coût cardinal/diagonal réduit sur les transitions entre blocs de chemin, avec facteur entier configurable ; les tags `walkable_path` et les blocs de gabarits à effet `path_speed` sont compilés. |
+| PRISM-060 | Implémentée (socle) | Minage du bloc de surface ou d'une surcharge, proximité/perception, palier d'outil, durée dureté/maîtrise, drops probabilistes déterministes, inventaire ou dépôt au sol ; erreurs motivées et créations au ledger couvertes. Le raccordement au tick/contrat, la durabilité et le minage géologique profond restent à faire. |
+| PRISM-061 | Implémentée (socle) | Pose sur case libre dans le monde, lien explicite objet-matériau, proximité/perception, refus si un agent occupe le volume et destruction de l'objet au ledger ; tests d'occupation et de conservation. Le raccordement au tick/contrat reste à faire. |
+| PRISM-062 | Implémentée (socle) | Conteneur borné par emplacements, propriétaire et droits `take`/`put` sur agents ou groupes opaques ; dépôts/retraits atomiques, portée/perception et `access_denied` testés. Fraîcheur dans les piles, péremption intégrée aux transferts, raccordement au tick/contrat et événementiel restent à faire. |
+| PRISM-063 | Implémentée (socle) | Compilation runtime des recettes avec entrées par item/tag, outils, station et produits ; fabrication vérifie ingrédients, outil, maîtrise, station libre/proche/perçue, durée configurée et échange inventaire/ledger atomique. Test du pack minimal et refus station occupée/capacité. Les actions restent à raccorder au tick/contrat. |
+| PRISM-064 | Implémentée (socle) | Labourage des sols déclarés avec houe, plantation consommant la graine liée au contenu après validation sol/eau/saison, récolte déterministe des drops filtrés par état mûr avec garde capacité ; cycle graine → culture → graines et ledger testés avec le pack minimal. Les commandes et le tick restent à raccorder. |
+| PRISM-065 | Implémentée (socle) | Consomme une unité d'objet `edible`, vérifie perception, émet `item_consumed` avec effets ; boire exige une source `drinkable` perçue et adjacente, sans modifier la source. Règles compilées depuis les effets d'items/matériaux ; ledger `consume` et pack minimal testés. Raccordement aux commandes et à la boucle de tick reste à faire. |
+| PRISM-066 | Implémentée (socle) | `durability` et `usePerAction` sont compilés vers les règles runtime ; chaque outil utilisé s'use au succès, sa durabilité restante suit la pile lors des transferts agent/conteneur et sa casse détruit une unité au ledger sous `wear`. Minage, labourage, outil de recette, échecs sans usure et validation de contenu testés. Usure des outils par les commandes intégrées au tick reste à raccorder. |
+| PRISM-067 | Implémentée (socle) | Machines d'états par agent pour `ObtenirObjet` (source choisie uniquement dans la perception fournie, filtre type/tag et indice, ordre déterministe, progrès conservé, `source_not_found` si l'indice n'est pas perçu), `Fabriquer` et `Cultiver` (attente de maturité, récolte sur ordre). Les étapes restent à raccorder à la boucle de tick ; construire/contribuer restent à réaliser. |
+| PRISM-068 | Implémentée (socle) | Transfert atomique entre agents avec portée configurable (défaut 3 blocs), contrôle de perception, capacité tout-ou-rien et préservation de l'état de durabilité ; erreurs et tests de non-mutation en cas d'échec. Raccordement aux commandes et à l'accord SYNE reste à faire. |
+| PRISM-069 | Implémentée (socle) | Test déterministe d'un million de commandes aléatoires de transfert/consommation ; audit global périodique des stocks des agents contre le ledger, sans violation. La génération n'exerce pas encore toutes les primitives/actions. |
+| PRISM-070 | Implémentée (socle) | Types versionnés de commande, événement, observation et lockstep tick ; sérialisation JSON camelCase, champs inconnus ignorés, validation de version majeure et cohérence des ticks. Schémas JSON publiés pour enveloppes et échanges lockstep ; validation des payloads spécifiques par commande à compléter. |
+| PRISM-071 | Implémentée (socle) | Fenêtre idempotente bornée par capacité (100 000 par défaut), replay renvoie le résultat mémorisé, réutilisation d'un ID avec requête différente refusée, et échec d'exécution non mémorisé. Le dispatch du host réutilise maintenant la fenêtre pour les résultats de commandes et revalide les collisions en phase Réception ; persistance au checkpoint reste à faire. |
+| PRISM-072 | Implémentée | `IWorldHost.Step` valide et copie la requête, impose des ticks consécutifs et exécute exactement une fois chaque handler dans l'ordre des 12 phases de `SIMULATION_LOOP.md`. Réception/idempotence, dispatch, rejouabilité, échecs motivés, conflits d'ID, panne après exécution partielle et ordre de sortie sont couverts par tests. Le branchement de systèmes métier supplémentaires aux handlers de phase relève des composants/étapes d'intégration ultérieurs ; il ne fait pas partie du critère d'acceptation de l'orchestrateur. |
+| PRISM-029, 047–049, 053, 057–059, 073–135 | À faire | Les autres issues restent à réaliser ; P6/P7 sont en cours sans franchir G1/G2/G3. PRISM-046 (benchmark B3), PRISM-053 (hiérarchie) et PRISM-057 (B1/B2) sont reportées à la phase d'optimisation. |
 
 ## 3. Backlog PRISM
 
@@ -34,24 +94,24 @@ Backlog complet du composant PRISM V2, **source unique de création des cartes K
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| PRISM-010 | Prototype jetable : grille + générateur minimal | perf | P0 | 002 | Monde 256×256×64 généré ; code marqué jetable |
-| PRISM-011 | B1 — pathfinding 1 000 agents | perf | P0 | 010 | Rapport : ms/tick, taux d'échec, mémoire |
-| PRISM-012 | B2 — perception trois niveaux, 1 000 agents | perf | P0 | 010 | Rapport : ms/tick, octets/observation |
-| PRISM-013 | B3 — croissance : programmée vs aléatoire, monde cultivé | perf | P0 | 010 | Rapport comparatif ; recommandation Q-09 |
-| PRISM-014 | B4 — débit de commandes, JSON vs binaire, pas de verrouillage | perf, contract | P0 | 010 | Rapport ; recommandation Q-01 |
-| PRISM-015 | B5 — diffusion de chunks, Deflate vs Brotli | perf | P1 | 010 | Rapport : octets, ms |
-| PRISM-016 | Spike Silk.NET : fenêtre, un chunk maillé, Windows + Linux | viewer | P0 | 002 | Capture sur les deux OS |
+| PRISM-010 | Prototype jetable : colonnes 2.5D + générateur de surface | perf | P0 | 002 | Carte de surface 256×256 générée ; génération séquentielle et parallèle identiques ; code marqué jetable |
+| PRISM-011 | B1 — pathfinding 2.5D, 1 000 agents | perf | P0 | 010 | Rapport initial publié ; zéro échec, transitions mesurées ; sous le poste indicatif de 90 ms ; hiérarchie/cache à évaluer |
+| PRISM-012 | B2 — perception trois niveaux, 1 000 agents | perf | P0 | 010 | Rapport initial publié : calcul, taille JSON et positions globales ; écarts et plafond à mesurer |
+| PRISM-013 | B3 — croissance : programmée vs aléatoire, monde cultivé | perf | P0 | 010 | Rapport comparatif initial et recommandation Q-09 publiés ; conditions de culture et parallélisme restent à mesurer |
+| PRISM-014 | B4 — débit lockstep WebSocket JSON et liaison embarquée | perf, contract | P0 | 010 | Rapport initial avec vrai WebSocket et comparaison embarquée publié ; réponse d'observation complète et allocations à mesurer avant décision transport |
+| PRISM-015 | B5 — diffusion de régions, JSON et compression BCL | perf | P1 | 010 | Rapport initial publié : snapshots et deltas JSON/Deflate/Brotli ; charge réaliste et limites documentées |
+| PRISM-016 | Spike Silk.NET : fenêtre et région 2.5D maillée, Windows + Linux | viewer | P0 | 002 | Capture des surfaces et façades sur les deux OS |
 | PRISM-017 | B8 — meshing et dessin d'un monde complet | perf, viewer | P1 | 016 | Rapport : ms/chunk, images/s |
-| PRISM-018 | Rapport de porte G1 et décisions (3D vs 2.5D, Q-01) | docs | P0 | 011–017, SYNE-200 | Rapport versionné ; ADR-005/008 mis à jour |
+| PRISM-018 | Rapport de porte G1 et budgets 2.5D/transport | docs | P0 | 011–017, SYNE-200 | Rapport versionné ; ADR-011/012 validés par les mesures |
 
 ### Milestone ph2 — Noyau du monde
 
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
-| PRISM-020 | Registres d'identifiants stables (blocs, objets, tags, recettes) | core | P0 | 018 | Round-trip clé ↔ identifiant ; stabilité intra-run |
+| PRISM-020 | Registres d'identifiants stables (blocs, objets, tags, recettes) | core | P0 | 018 | Round-trip clé ↔ identifiant ; stabilité déterministe sur un ensemble de clés identique |
 | PRISM-021 | Compilateur et validateur de contenu (schémas JSON, graphe de recettes) | content | P0 | 020 | Erreurs structurées complètes ; pack invalide = démarrage refusé |
 | PRISM-022 | Pack de contenu minimal v0 (`CONTENT_SPEC.md` §5) | content | P0 | 021 | Valide ; graphe amorçable à mains nues (test) |
-| PRISM-023 | Grille et chunks (tableaux SoA, chunks uniformes, *dirty flags*) | core | P0 | 020 | Accès, bornes, mémoire ≈ 12,6 Mo dense |
+| PRISM-023 | Grille et régions 2.5D (colonnes SoA uniformes, surcharges, *dirty flags*) | core | P0 | 020 | Accès/bornes testés ; région uniforme compacte ; surcharges canoniques ; environ 384 Kio de métadonnées denses à 6 octets/colonne pour 256 × 256 |
 | PRISM-024 | `Mix64`, flux nommés, `xoshiro256**`, hasard à compteur | core | P0 | 002 | Vecteurs de test figés ; indépendance des flux |
 | PRISM-025 | Hachage FNV-1a chunk/monde, empreintes canoniques | core | P0 | 023 | Empreinte stable ; ordre canonique |
 | PRISM-026 | Roue temporelle (événements programmés) | core | P0 | 023 | Ordre d'exécution déterministe, millions d'événements |
@@ -91,7 +151,7 @@ Backlog complet du composant PRISM V2, **source unique de création des cartes K
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | PRISM-050 | Agent physique : corps 1×1×2, inventaire, `Incarner`/`Retirer` | core | P0 | 023 | Inventaire déposé au sol au retrait |
 | PRISM-051 | Graphe de mouvement (montée 1, descente ≤ 3, liquides infranchissables) | core | P0 | 050 | Tests de cas limites |
-| PRISM-052 | A* 3D entier borné + cache de chemins | core | P0 | 051 | Optimal ; déterministe ; budget de nœuds |
+| PRISM-052 | A* 2.5D entier borné + cache de chemins | core | P0 | 051 | Optimal sur le graphe de surface ; déterministe ; budget de nœuds |
 | PRISM-053 | Pathfinding hiérarchique (portails de chunks) | perf | P1 | 052 | B1 atteint la cible |
 | PRISM-054 | Perception à trois niveaux, blocs exposés, différences | core | P0 | 023, 050 | Pas de « rayons X » ; plafond par agent |
 | PRISM-055 | Arbitrage des conflits (clés `Mix64`) | core | P0 | 024 | Équité sur grand nombre de ticks |
@@ -220,4 +280,5 @@ G0 : 001–005 · G1 : 010–018 · G2 : 020–039 · G3 : 040–082 · G4 : 090
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | État d'exécution et références des issues GitHub ajoutés | Démarrage PRISM V2 |
 | 1er novembre 2026 | Création | Refonte V2 |

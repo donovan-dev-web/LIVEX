@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://livex.dev/schemas/prism/1.0.0/tick-request.schema.json",
+  "title": "PRISM tick request",
+  "type": "object",
+  "required": ["protocolVersion", "tick", "commands"],
+  "properties": {
+    "protocolVersion": { "$ref": "command-envelope.schema.json#/$defs/protocolVersion" },
+    "tick": { "type": "integer", "minimum": 0 },
+    "commands": {
+      "type": "array",
+      "items": { "$ref": "command-envelope.schema.json" }
+    }
+  },
+  "additionalProperties": true
+}

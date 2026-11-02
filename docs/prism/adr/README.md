@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [STABLE]
-**Dernière mise à jour** : 1er novembre 2026
+**Dernière mise à jour** : 2 novembre 2026
 
 ---
 
@@ -19,8 +19,10 @@
 | [ADR-008](ADR-008-contrat-syne-prism-macro-actions.md) | Contrat SYNE↔PRISM : quatre familles, macro-actions, transport (réponse à la décision n°28) | [Proposed] | — |
 | [ADR-009](ADR-009-planification-dans-syne-savoir-des-recettes.md) | Planification dans SYNE (GOAP/HTN) et savoir des recettes | [Proposed] | — |
 | [ADR-010](ADR-010-eau-statique-gabarits-conservation.md) | Eau statique, gabarits, conservation de la matière | [Proposed] | — |
+| [ADR-011](ADR-011-modele-25d.md) | Géométrie 2.5D par colonnes et navigation de surface | [Accepted] | ADR-006 (géométrie) |
+| [ADR-012](ADR-012-transport.md) | Transport de référence HTTP et WebSocket JSON | [Accepted] | ADR-008 (liaison de référence) |
 
-Les ADR passent à `[Accepted]` quand le jalon qui les valide (colonne « Validation » de chacun) est franchi. Gabarit : [`0000-template.md`](0000-template.md).
+Les décisions ADR-011 et ADR-012 ont été acceptées le 2 novembre 2026 par décision du propriétaire du projet ; leurs preuves techniques restent vérifiées aux portes indiquées. Les ADR antérieurs suivent leur jalon de validation. Gabarit : [`0000-template.md`](0000-template.md).
 
 ## 2. Règle
 
@@ -32,7 +34,7 @@ Chaque question porte une **recommandation** et la **porte** (jalon) à laquelle
 
 | ID | Question | Recommandation | Porte |
 | :-- | :-- | :-- | :-- |
-| Q-01 | Transport SYNE↔PRISM (décision n°28) | Contrat indépendant du transport ; liaison de référence WebSocket JSON, codec binaire derrière le même schéma si le benchmark B4 l'exige ; hôte embarqué pour les lots (ADR-008) | G1 |
+| Q-01 | Transport SYNE↔PRISM (décision n°28) | **Tranché** : contrôle HTTP JSON, ticks et lecture WebSocket JSON, appels directs `IWorldHost` pour les lots ; codec binaire uniquement si B4/B5 prouve que JSON dépasse le budget (ADR-012) | Validé par décision utilisateur le 2 novembre 2026 ; mesuré en G1/G3 |
 | Q-02 | Modèle de propriété et d'accès | Liste d'identifiants autorisés par structure/conteneur, opaque pour PRISM ; droits `take`, `put`, `use` distincts (`SYSTEMS_SPEC.md` §5) | G4 |
 | Q-03 | Écoulement de l'eau | Reporté ; source statique en V2 (ADR-010) | G7 |
 | Q-04 | Durée du jour et de la saison en ticks | `dayLengthTicks = 480`, 4 jours par saison (hypothèse) ; fixés par calibrage | G7 |

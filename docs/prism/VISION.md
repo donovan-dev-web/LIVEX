@@ -39,7 +39,7 @@ PRISM V2 répond à ce double problème : **élargir ce que les agents peuvent f
 
 ### Dans le périmètre V2
 
-- Monde voxel borné (défaut 256 × 256 × 64), chunks 16³, génération par seed.
+- Monde de colonnes 2.5D borné (défaut 256 × 256, altitude 0…63), régions horizontales 16 × 16 et génération par seed ; pas de cavernes ni de surplombs.
 - Matériaux, objets, recettes, gabarits de structures, cultures : tout par données.
 - Agents physiques (corps, inventaire, navigation 3D, conflits).
 - Chaînes de production, stockage, péremption, outils à durabilité, paliers.
