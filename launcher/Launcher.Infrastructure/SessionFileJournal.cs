@@ -22,6 +22,7 @@ public sealed class SessionFileJournal : ISessionJournal, IDisposable
     private readonly object _gate = new();
     private StreamWriter? _writer;
     private string _currentDate = string.Empty;
+    private bool _disposed;
 
     /// <summary>Initialise le journal dans le répertoire de sessions donné.</summary>
     public SessionFileJournal(string directory)
@@ -35,6 +36,13 @@ public sealed class SessionFileJournal : ISessionJournal, IDisposable
     {
         lock (_gate)
         {
+            // Après Dispose, une tâche de fond encore en vol ne doit pas rouvrir le fichier :
+            // sous Windows il resterait verrouillé et bloquerait la suppression du répertoire.
+            if (_disposed)
+            {
+                return;
+            }
+
             EnsureWriter();
             _writer!.WriteLine(JsonSerializer.Serialize(entry, Launcher.Protocol.ContractJson.Compact));
             _writer.Flush();
@@ -109,6 +117,7 @@ public sealed class SessionFileJournal : ISessionJournal, IDisposable
     {
         lock (_gate)
         {
+            _disposed = true;
             _writer?.Dispose();
             _writer = null;
         }

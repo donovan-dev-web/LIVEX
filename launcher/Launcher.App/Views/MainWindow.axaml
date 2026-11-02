@@ -8,6 +8,7 @@
         xmlns:md="using:Markdown.Avalonia"
         x:Class="Launcher.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
+        Icon="avares://livex-launcher/Assets/livex.ico"
         Title="LIVEX Launcher"
         Width="1480" Height="1024"
         MinWidth="1280" MinHeight="720"

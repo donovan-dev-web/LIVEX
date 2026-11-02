@@ -59,6 +59,10 @@ public sealed class FakePathPolicy : IPathPolicy
 
     public string DefaultDataRoot() => DataDir;
 
+    public string DefaultRootDir() => Path.GetDirectoryName(InstallDir) ?? InstallDir;
+
+    public string DefaultWorkspaceDir() => Path.Combine(Path.GetDirectoryName(DataDir) ?? DataDir, "workspace");
+
     public string StartMenuShortcutPath(string name) => Path.Combine(ShortcutDir, name + ".lnk");
 
     public string DesktopShortcutPath(string name) => Path.Combine(DesktopDir, name + ".lnk");

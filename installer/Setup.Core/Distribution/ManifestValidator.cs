@@ -7,7 +7,8 @@ namespace Setup.Core.Distribution;
 /// </summary>
 public static class ManifestValidator
 {
-    private static readonly string[] AcquisitionKinds = { "payload", "release-asset", "unavailable" };
+    private static readonly string[] AcquisitionKinds =
+        { "payload", "bundled-archive", "release-asset", "unavailable" };
 
     public static IReadOnlyList<string> Validate(DistributionManifest manifest)
     {
@@ -33,8 +34,27 @@ public static class ManifestValidator
             if (!AcquisitionKinds.Contains(component.Acquisition.Kind, StringComparer.Ordinal))
                 issues.Add($"mode d'acquisition inconnu pour {component.Id} : {component.Acquisition.Kind}");
 
+            if (component.Acquisition.Kind == "bundled-archive")
+            {
+                if (string.IsNullOrWhiteSpace(component.InstallRoot))
+                    issues.Add($"racine d'installation absente pour {component.Id}");
+                else
+                {
+                    foreach (var issue in PathIssues(component.InstallRoot))
+                        issues.Add($"racine d'installation invalide pour {component.Id} : {issue}");
+                }
+            }
+
             switch (component.Acquisition.Kind)
             {
+                case "bundled-archive":
+                    if (string.IsNullOrWhiteSpace(component.Acquisition.Asset))
+                        issues.Add($"archive absente pour le composant {component.Id}");
+                    if (component.Acquisition.Size is null or <= 0)
+                        issues.Add($"taille absente pour l'archive {component.Id}");
+                    if (string.IsNullOrWhiteSpace(component.Acquisition.Sha256))
+                        issues.Add($"empreinte absente pour l'archive {component.Id}");
+                    break;
                 case "release-asset":
                     if (string.IsNullOrWhiteSpace(component.Acquisition.Url))
                         issues.Add($"URL absente pour l'actif {component.Id}");

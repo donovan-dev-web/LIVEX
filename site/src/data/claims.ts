@@ -23,10 +23,10 @@ export const CLAIMS: Claim[] = [
   {
     id: 'tests',
     statement:
-      'Les tests exécutés pour LIVEX 1.0.0 totalisent 1 566 cas : 1 550 réussis (dont cinq Unreal Automation avec avertissements), 16 ignorés et zéro échec. Les suites couvrent SYNE, ECHOS, syne-mock, Launcher, PRISM/PrismLdk et l’installateur.',
+      'Au 19 octobre 2026, les suites locales totalisent 1 372 cas : 1 356 réussis, 0 échec (SYNE 695, ECHOS 397, syne-mock 53, Launcher 227).',
     status: 'vérifiée',
-    source: 'docs/governance/LIVEX-STATUS.md §4',
-    date: '2026-10-31',
+    source: 'docs/governance/LIVEX-STATUS.md §1 et §5',
+    date: '2026-10-19',
   },
   {
     id: 'coverage',
@@ -46,30 +46,23 @@ export const CLAIMS: Claim[] = [
   {
     id: 'release',
     statement:
-      'LIVEX 1.0.0 est publié sous le tag livex-v1.0.0 avec des paquets Windows et Linux.',
+      "Aucune release, publication ni tag n'existe à ce jour ; le projet est passé en V0.2.",
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1 ; VERSIONING.md §7',
-    date: '2026-10-31',
+    date: '2026-10-19',
   },
   {
     id: 'prism-scope',
-    statement: 'PRISM 1.0.0 est packagé pour Windows et Linux ; le packaging ne certifie pas toutes les fonctions de rendu visées.',
+    statement: "L'expérience de rendu PRISM est hors périmètre V0.2.",
     status: 'vérifiée',
     source: 'docs/governance/LIVEX-STATUS.md §1',
-    date: '2026-10-31',
+    date: '2026-10-19',
   },
   {
     id: 'prism-ldk-package',
-    statement: 'PRISM-LDK (LIVEX Development Kit), module Unreal PrismLdk, est réalisé et packagé en version 1.0.0.',
+    statement: "PRISM-LDK (LIVEX Development Kit) est le cœur de la représentation 3D : plugin Unreal qui traduit les données logiques de SYNE en représentation graphique 3D, réalisé et packagé en version 0.1.0. PRISM en est l'implémentation stylisée par défaut.",
     status: 'vérifiée',
-    source: 'docs/prism/README.md ; docs/prism/TESTING.md ; docs/governance/LIVEX-STATUS.md §1',
-    date: '2026-10-31',
-  },
-  {
-    id: 'code-inventory',
-    statement: 'Tokei 13.0.0 a relevé 1 152 fichiers et 111 608 lignes de code dans le checkout au 31 octobre 2026, selon les exclusions du statut du projet.',
-    status: 'vérifiée',
-    source: 'docs/governance/LIVEX-STATUS.md §5',
-    date: '2026-10-31',
+    source: 'Commit #596 - feat(prism): LDK Validate V0.1.0 Plugin Package ; docs/prism/PRISM-LDK_Guide_Blueprint.md',
+    date: '2026-10-29',
   },
 ];

@@ -14,4 +14,5 @@ public sealed record ComponentDescriptor(
     string License,
     IReadOnlyList<string> Requires,
     IReadOnlyList<FileEntry> Files,
-    AcquisitionDescriptor Acquisition);
+    AcquisitionDescriptor Acquisition,
+    string? InstallRoot = null);

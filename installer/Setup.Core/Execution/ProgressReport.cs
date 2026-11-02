@@ -14,4 +14,5 @@ public sealed record ProgressReport(
     long BytesProcessed,
     long BytesTotal,
     string? TargetPath = null,
-    string? Kind = null);
+    string? Kind = null,
+    double? Fraction = null);

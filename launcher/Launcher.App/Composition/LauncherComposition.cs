@@ -50,6 +50,7 @@ public sealed class LauncherComposition : IDisposable
     private readonly string _packagesRoot;
     private readonly string _componentsRoot;
     private readonly string _dataRoot;
+    private readonly string _workspaceRoot;
     private bool _disposed;
 
     /// <summary>
@@ -65,29 +66,41 @@ public sealed class LauncherComposition : IDisposable
     public LauncherComposition()
         : this(
             Path.Combine(WorkspaceLayout.UserDataRoot(), "packages"),
-            Path.Combine(AppContext.BaseDirectory, "components"),
+            Path.Combine(WorkspaceLayout.InstallationRoot() ?? AppContext.BaseDirectory, "components"),
             WorkspaceLayout.UserDataRoot(),
+            WorkspaceLayout.WorkspaceRoot(),
             detectStandardSources: true)
     {
     }
 
     /// <summary>Initialise la composition avec des racines explicites (bancs de tests, installation portable).</summary>
     public LauncherComposition(string packagesRoot, string componentsRoot)
-        : this(packagesRoot, componentsRoot, WorkspaceLayout.UserDataRoot(), detectStandardSources: false)
+        : this(
+            packagesRoot,
+            componentsRoot,
+            WorkspaceLayout.UserDataRoot(),
+            Path.Combine(WorkspaceLayout.UserDataRoot(), "workspace"),
+            detectStandardSources: false)
     {
     }
 
     /// <summary>Initialise la composition avec des racines de données explicites (bancs de tests hermétiques).</summary>
     public LauncherComposition(string packagesRoot, string componentsRoot, string dataRoot)
-        : this(packagesRoot, componentsRoot, dataRoot, detectStandardSources: false)
+        : this(packagesRoot, componentsRoot, dataRoot, Path.Combine(dataRoot, "workspace"), detectStandardSources: false)
     {
     }
 
-    private LauncherComposition(string packagesRoot, string componentsRoot, string dataRoot, bool detectStandardSources)
+    private LauncherComposition(
+        string packagesRoot,
+        string componentsRoot,
+        string dataRoot,
+        string workspaceRoot,
+        bool detectStandardSources)
     {
         _packagesRoot = packagesRoot;
         _componentsRoot = componentsRoot;
         _dataRoot = dataRoot;
+        _workspaceRoot = workspaceRoot;
         _detectStandardSources = detectStandardSources;
         _journal = new SessionFileJournal(Path.Combine(dataRoot, "sessions"));
         _registry = new ServiceRegistry();
@@ -207,7 +220,7 @@ public sealed class LauncherComposition : IDisposable
             _ports,
             _journal,
             _packagesRoot,
-            Path.Combine(_dataRoot, "workspace"),
+            _workspaceRoot,
             Path.Combine(_dataRoot, "sessions"),
             Path.Combine(AppContext.BaseDirectory, "docs"),
             _campaigns);

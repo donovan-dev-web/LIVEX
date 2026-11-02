@@ -52,7 +52,9 @@ public sealed record ExtractArchiveAction(
     string ArchivePath,
     string DestinationDirectory,
     int Step,
-    bool IsDestructive = false)
+    bool IsDestructive = false,
+    IReadOnlyList<string>? Entries = null,
+    string? ComponentId = null)
     : PlanAction(DestinationDirectory, Step, IsDestructive);
 
 public sealed record CreateShortcutAction(
@@ -60,7 +62,8 @@ public sealed record CreateShortcutAction(
     string TargetExePath,
     bool IsDesktop,
     int Step,
-    bool IsDestructive = false)
+    bool IsDestructive = false,
+    string? IconPath = null)
     : PlanAction(ShortcutPath, Step, IsDestructive);
 
 public sealed record WriteRegistrationAction(

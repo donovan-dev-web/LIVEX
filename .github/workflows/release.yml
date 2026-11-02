@@ -1,225 +1,55 @@
 # SPDX-FileCopyrightText: 2026 Donovan Chartrain
 # SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Publication uniquement : aucune compilation, aucune signature ici.
+# Le ZIP public est construit localement avec
+#   pwsh scripts/release/build-release.ps1 -Version <version> -Tag <tag> -Upload
+# Ce workflow crée la release (notes générées) pour que l'upload local
+# dispose d'une cible stable.
 
 name: Release
 
 on:
-  push:
-    tags:
-      - "syne-v*"
-      - "echos-v*"
-      - "prism-v*"
-      - "livex-v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag à publier (ex. livex-v1.0.0)"
+        description: "Tag de la release (ex. livex-v1.0.0)"
         required: true
+      version:
+        description: "Version affichée (ex. 1.0.0)"
+        required: true
+      draft:
+        description: "Créer en brouillon"
+        type: boolean
+        default: true
+      prerelease:
+        description: "Marquer comme pré-release"
+        type: boolean
+        default: true
 
-env:
-  DOTNET_VERSION: "10.0.x"
-  PYTHON_VERSION: "3.12"
-  NODE_VERSION: "20"
+permissions:
+  contents: write
 
 jobs:
-  verify:
-    name: Vérification finale build + tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build & tests SYNE
-        if: hashFiles('syne/global.json') != ''
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-          global-json-file: syne/global.json
-      - name: dotnet restore/build/test (SYNE)
-        if: hashFiles('syne/global.json') != ''
-        working-directory: syne
-        run: |
-          dotnet restore
-          dotnet build --no-restore --configuration Release --warnaserror
-          dotnet test --no-build --configuration Release
-
-      - name: Setup Python (ECHOS)
-        if: hashFiles('echos/requirements-dev.txt') != ''
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: pytest ECHOS
-        if: hashFiles('echos/requirements-dev.txt') != ''
-        working-directory: echos
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          python -m pytest -q
-
-      - name: Setup Node (syne-mock)
-        if: hashFiles('syne-mock/package.json') != ''
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Tests syne-mock
-        if: hashFiles('syne-mock/package.json') != ''
-        working-directory: syne-mock
-        run: |
-          npm ci
-          npm test
-
-      - name: GitHub Release (composant)
-        if: startsWith(github.ref, 'refs/tags/syne-v') || startsWith(github.ref, 'refs/tags/echos-v') || startsWith(github.ref, 'refs/tags/prism-v')
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-
-  inputs:
-    name: Vérification des entrées externes
-    runs-on: ubuntu-latest
-    needs: verify
-    if: startsWith(github.ref, 'refs/tags/livex-v')
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - name: Extraire la version
-        id: ver
-        run: echo "version=${GITHUB_REF_NAME#livex-v}" >> "$GITHUB_OUTPUT"
-      - name: Télécharger la release prism-v
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p dist/inputs
-          gh release download "prism-v${{ steps.ver.outputs.version }}" \
-            --repo "${{ github.repository }}" \
-            --dir dist/inputs
-      - name: Vérifier les empreintes épinglées
-        run: |
-          python scripts/release/check_assets.py --dist-dir dist/inputs
-          sha256sum -c <(python - <<'PY'
-          import json,hashlib
-          from pathlib import Path
-          d=json.loads(Path("installer/build/external-inputs.json").read_text())
-          for e in d["inputs"]:
-              print(f"{e['sha256']}  dist/inputs/{e['file']}")
-          PY
-          )
-
-  installer:
-    name: Build installateur (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    needs: inputs
-    if: startsWith(github.ref, 'refs/tags/livex-v')
-    strategy:
-      fail-fast: false
-      matrix:
-        # TEMPORAIRE : build Linux (linux-x64) désactivé en attendant une validation sur machine Linux.
-        # Pour réactiver : remettre ubuntu-latest / linux-x64 dans la matrice ci-dessous.
-        os: [windows-latest]
-        include:
-          - os: windows-latest
-            rid: win-x64
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Publier SYNE
-        working-directory: syne
-        run: dotnet publish Simulation.Console/Simulation.Console.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/syne"
-      - name: Publier le Launcher
-        working-directory: launcher
-        run: dotnet publish Launcher.App/Launcher.App.csproj --configuration Release -r ${{ matrix.rid }} --self-contained true -o "${{ github.workspace }}/dist/staging/${{ matrix.rid }}/launcher"
-      - name: Stage ECHOS
-        shell: bash
-        run: |
-          rm -rf "dist/staging/${{ matrix.rid }}/echos"
-          mkdir -p "dist/staging/${{ matrix.rid }}/echos"
-          cp -r echos/. "dist/staging/${{ matrix.rid }}/echos/"
-          rm -rf "dist/staging/${{ matrix.rid }}/echos/.venv" "dist/staging/${{ matrix.rid }}/echos/.pytest_cache" "dist/staging/${{ matrix.rid }}/echos/.coverage"
-          cd "dist/staging/${{ matrix.rid }}/echos"
-          python -m venv .venv
-          if [ -f .venv/Scripts/python.exe ]; then
-            .venv/Scripts/python.exe -m pip install --upgrade pip
-            .venv/Scripts/python.exe -m pip install -r requirements.txt
-          else
-            .venv/bin/python -m pip install --upgrade pip
-            .venv/bin/python -m pip install -r requirements.txt
-          fi
-
-      - name: Télécharger les entrées externes
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p dist/inputs
-          VERSION="${GITHUB_REF_NAME#livex-v}"
-          gh release download "prism-v${VERSION}" --repo "${{ github.repository }}" --dir dist/inputs || true
-      - name: Assembler la distribution
-        shell: bash
-        run: |
-          python scripts/release/build_distribution.py \
-            --rid ${{ matrix.rid }} \
-            --profile core \
-            --tag ${{ github.ref_name }} \
-            --version "${GITHUB_REF_NAME#livex-v}" \
-            --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
-            --dist-inputs "${{ github.workspace }}/dist/inputs"
-          python scripts/release/build_distribution.py \
-            --rid ${{ matrix.rid }} \
-            --profile full \
-            --tag ${{ github.ref_name }} \
-            --version "${GITHUB_REF_NAME#livex-v}" \
-            --staging "${{ github.workspace }}/dist/staging/${{ matrix.rid }}" \
-            --dist-inputs "${{ github.workspace }}/dist/inputs" \
-            --output "${{ github.workspace }}/dist/${{ matrix.rid }}-full"
-      - name: Upload des artefacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: installer-${{ matrix.rid }}
-          path: |
-            dist/${{ matrix.rid }}/*.zip
-            dist/${{ matrix.rid }}/*.tar.gz
-            dist/${{ matrix.rid }}/distribution.json
-
   publish:
-    name: Publication de la release
+    name: Créer la release
     runs-on: ubuntu-latest
-    needs: [inputs, installer]
-    if: startsWith(github.ref, 'refs/tags/livex-v')
-    permissions:
-      contents: write
-      id-token: write
-      attestations: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: dist/artifacts
-      - name: Extraire le corps de release
-        run: python scripts/release/extract_changelog.py "${GITHUB_REF_NAME#livex-v}" --file CHANGELOG.md --output /tmp/release-notes.md
-      - name: Créer SHA256SUMS
-        run: |
-          cd dist/artifacts
-          find . -type f -exec sha256sum {} \; > SHA256SUMS
-      - name: Attestation de provenance
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-path: "dist/artifacts/**"
-      - name: Créer la release (pré-release)
+      - name: Créer la release sans artefact
         uses: softprops/action-gh-release@v2
         with:
-          prerelease: true
-          body_path: /tmp/release-notes.md
-          files: |
-            dist/artifacts/**/*
+          tag_name: ${{ inputs.tag }}
+          name: LIVEX ${{ inputs.version }}
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ inputs.prerelease }}
+          generate_release_notes: true
+          body: |
+            Release **LIVEX ${{ inputs.version }}**.
+
+            Aucune compilation n'est effectuée par GitHub Actions. Le ZIP public
+            a été construit localement puis téléversé sur cette release :
+
+                pwsh scripts/release/build-release.ps1 -Version ${{ inputs.version }} -Tag ${{ inputs.tag }} -Upload
+
+            Téléchargez uniquement `LIVEX-${{ inputs.version }}-win-x64-core.zip`,
+            puis lancez `livex-setup.exe` qu'il contient.
