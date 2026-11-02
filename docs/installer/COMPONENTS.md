@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 1er novembre 2026
+**Dernière mise à jour** : 29 octobre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md),
 [ADR-006](adr/ADR-006-perimetre-composants-v02.md),
 [ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md),
@@ -52,14 +52,14 @@ hiérarchie : il installe des artefacts et vérifie leur présence.
 | **Rôle** | fenêtre native, orchestration des composants, consoles de logs, analyse, paquets `.livexp` |
 | **Langage / runtime** | C# / .NET 10 (`net10.0`), Avalonia 11.3.22 |
 | **Artefact** | `livex-launcher[.exe]` + bibliothèques managées |
-| **Contrat** | détecte `component.json` dans `<installation>/components/`, la racine étant déduite de `core/launcher` |
+| **Contrat** | détecte `component.json` dans `components/` à côté de son exécutable |
 | **Ports** | aucun port propre ; il réserve ceux des composants |
-| **Données** | `LIVEX_DATA`, sinon chemin enregistré par l'installateur, sinon `%LOCALAPPDATA%\LIVEX\data` (Linux : `~/.local/share/livex/data`) |
+| **Données** | `LIVEX_DATA` ou `~/.livex-data` (`workspace/`, `packages/`, `archives/`, `sessions/`, `cache/`, `echos/`) |
 | **CLI** | `--check`, `--package <fichier>` |
-| **Installation** | `core/launcher/` ; la racine d'installation est remontée de deux niveaux pour trouver `components/` |
-| **Provenance** | socle, archive `packages/launcher-<version>-<rid>.zip` |
-| **Archive publiée** | `launcher-0.1.0-<rid>.zip` dans `packages/` de la distribution |
-| **Rôle de l'installateur** | extraire la publication self-contained vers `core/launcher/`, créer les raccourcis, ne jamais réécrire son code |
+| **Installation** | **à la racine du répertoire logiciel** ; sinon `BaseDirectory/components` ne résout plus |
+| **Provenance** | socle, charge utile de la distribution |
+| **Archive publiée** | `launcher-0.1.0-<rid>.<ext>` (usage manuel ; racine installée) |
+| **Rôle de l'installateur** | copier la publication self-contained, créer les raccourcis, ne jamais réécrire son code |
 
 Le Launcher n'installe pas ses composants : il les détecte et signale ceux qui
 manquent. L'installateur ne doit donc pas lui déléguer l'installation.
@@ -77,8 +77,8 @@ manquent. L'installateur ne doit donc pas lui déléguer l'installation.
 | **Délais** | démarrage 30 s, arrêt 15 s |
 | **Installation** | `components/syne/`, manifeste copié tel quel |
 | **Provenance** | socle |
-| **Archive publiée** | `syne-0.17.0-<rid>.zip` dans `packages/` de la distribution |
-| **Rôle de l'installateur** | extraire le ZIP, vérifier la présence du binaire et du manifeste |
+| **Archive publiée** | `syne-0.17.0-<rid>.<ext>` (usage manuel ; sous-arbre `components/syne/`) |
+| **Rôle de l'installateur** | publier self-contained, copier, vérifier la présence du binaire et du manifeste |
 
 ### 3.3 ECHOS
 
@@ -94,7 +94,7 @@ manquent. L'installateur ne doit donc pas lui déléguer l'installation.
 | **Données** | base d'analyse `<LIVEX_DATA>/echos/analytics.sqlite` (hors work-dir) |
 | **Installation** | `components/echos/` + `runtime/` CPython + `site-packages/` |
 | **Provenance** | socle |
-| **Archive publiée** | `echos-0.1.0-<rid>.zip` dans `packages/` de la distribution |
+| **Archive publiée** | `echos-0.1.0-<rid>.<ext>` (usage manuel ; sous-arbre `components/echos/`) |
 | **Rôle de l'installateur** | embarquer le runtime et les dépendances, ne jamais dépendre du Python système |
 
 ### 3.4 Contrats
@@ -120,9 +120,9 @@ manquent. L'installateur ne doit donc pas lui déléguer l'installation.
 | **Installation** | `components/prism/` |
 | **Intégration** | raccourci de menu propre à PRISM (application destinée à l'utilisateur) |
 | **Statut** | **composant de base** : proposé **coché par défaut**, désactivable ; sa désactivation est avertie |
-| **Provenance** | composant embarqué (`acquisition.kind = "bundled-archive"`) dans `packages/` ; la build est produite **hors CI** dans `prism/build/win/` et `prism/build/linux/` |
-| **Archive publiée** | `prism-1.0.0-win-x64.zip`, `prism-1.0.0-linux-x64.tar.gz` ; en profil `core`, elle peut rester un `release-asset` externe |
-| **Rôle de l'installateur** | extraire le ZIP vers `components/prism/`, créer le raccourci ; ne jamais modifier la build |
+| **Provenance** | charge utile de la distribution (`acquisition.kind = "payload"`), aucun téléchargement — la build est produite **hors CI** dans `prism/build/win/` et `prism/build/linux/` |
+| **Archive publiée** | `prism-1.0.0-win-x64.zip`, `prism-1.0.0-linux-x64.tar.gz` (même contenu que la charge utile, même empreinte) |
+| **Rôle de l'installateur** | extraire depuis la charge utile vers `components/prism/`, créer le raccourci ; ne jamais modifier la build |
 
 PRISM n'est donc **pas** décrit ici comme un projet à compiler par
 l'utilisateur, ni comme un composant du Launcher. La chaîne de production de la
@@ -159,12 +159,15 @@ Deux règles :
 | **Rôle** | documentation consultable sans réseau, rendue par le lecteur Markdown du Launcher |
 | **Nature livrée** | archive ZIP de documents Markdown |
 | **Installation** | `docs/` |
-| **Statut V1** | **non livrée** : aucun composant `docs` n'est présent dans `installer/build/components.json` ; la documentation reste consultable dans le dépôt. |
-| **Rôle futur de l'installateur** | vérifier, extraire ; ne pas dupliquer les textes dans ses ressources |
+| **Provenance** | module facultatif : actif `livex-docs-<version>.zip` |
+| **Rôle de l'installateur** | télécharger (ou embarquer en profil `full`), vérifier, extraire ; ne pas dupliquer les textes dans ses ressources |
 
-Le module de documentation reste un point ouvert : l'ajouter exigera une entrée
-`components.json`, un manifeste et un actif vérifiable. Il ne doit pas être
-présenté comme installable tant que ces éléments n'existent pas.
+**Prérequis côté Launcher :** la publication du Launcher embarque aujourd'hui
+`docs/**/*.md` (`Launcher.App.csproj`) ; pour que la documentation soit réellement
+facultative, cette copie doit être retirée de la charge utile du socle et le
+Launcher doit fonctionner sans `docs/`. C'est un **prérequis de la V1** (tâche
+T4 du plan d'alignement), suivi par une issue dédiée : sans lui, le module
+« documentation » est toujours installé avec le socle.
 
 ### 3.8 SYNE-Mock
 
@@ -175,8 +178,8 @@ présenté comme installable tant que ces éléments n'existent pas.
 | **Manifeste** | `syne-mock/component.json`, version `0.1.0`, `runtime: script` |
 | **Endpoints** | contrôle HTTP `5181`, WebSocket `5180` — **conflit avec SYNE** |
 | **Installation** | `components/syne-mock/` |
-| **Provenance** | composant facultatif embarqué (`bundled-archive`) dans `packages/` |
-| **Rôle de l'installateur** | extraire le ZIP après vérification ; ne jamais lancer le mock ni l'opposer à SYNE |
+| **Provenance** | module facultatif : actif `syne-mock-<version>.zip` |
+| **Rôle de l'installateur** | télécharger, vérifier, extraire ; ne jamais lancer le mock ni l'opposer à SYNE |
 
 Une archive SYNE-Mock sans runtime Node ne doit pas être publiée : le module
 serait inutilisable sur une machine sans Node. L'installateur ne propose que ce
@@ -191,24 +194,23 @@ qui est réellement exécutable.
 | ECHOS | service Python | socle | oui (CPython embarqué) | **oui, verrouillé** | analyse |
 | Contrats | documents | socle | sans objet | **oui, support non décochable** | référence |
 | Ressources | fichiers | socle | sans objet | **oui, support non décochable** | icônes, licences |
-| PRISM | application packagée | **socle `full` / actif `core`** | oui | **non, composant de base coché par défaut** | rendu et interaction |
-| PRISM-LDK | archive de plugin | actif de release (`release-asset`) | non (projet Unreal hôte) | **non, facultatif** | intégration Unreal |
-| Documentation | archive Markdown | non livrée en V1 | sans objet | **non** | point ouvert |
-| SYNE-Mock | service Node | **socle (`bundled-archive`)** | oui (Node dans l'archive) | **non, facultatif** | développement |
+| PRISM | application packagée | **socle (payload)** | oui | **non, composant de base coché par défaut** | rendu et interaction |
+| PRISM-LDK | archive de plugin | actif de release | non (projet Unreal hôte) | **non, facultatif** | intégration Unreal |
+| Documentation | archive Markdown | actif de release | sans objet | **non, facultatif** | confort hors ligne |
+| SYNE-Mock | service Node | actif de release | oui (Node dans l'archive) | **non, facultatif** | développement |
 
-### Archives individuelles (V1)
+### Archives individuelles publiées (V1)
 
-La distribution publique est un **ZIP unique** `LIVEX-<version>-<rid>-<profile>.zip`.
-Il contient un ZIP par composant dans `packages/` (`launcher`, `syne`, `echos`,
-`syne-mock`, `resources`, et `prism` en profil `full`) ainsi que les actifs
-externes éventuels. Chaque ZIP contient exactement le sous-arbre installé
-(`core/launcher/`, `components/syne/`, `assets/`, etc.) et un `component.json`
-lorsque le composant en déclare un. Le profil `core` peut référencer PRISM et
-PRISM-LDK comme `release-asset` ; ils ne sont alors pas dans `packages/`.
+Chaque composant est aussi publié hors installateur, pour un usage manuel et
+avancé (ADR-010) : `launcher-0.1.0-<rid>`, `syne-0.17.0-<rid>`,
+`echos-0.1.0-<rid>`, `prism-1.0.0-<rid>`, `prism-ldk-1.0.0.zip`,
+`livex-docs-1.0.0.zip`, `syne-mock-0.1.0-<rid>`. Une archive contient exactement
+le sous-arbre installé, décompressable à la racine d'une installation. Seuls le
+LDK, la documentation et SYNE-Mock sont consommés par l'installateur.
 
-Un module dont l'actif manque pour la plateforme est déclaré **indisponible**,
-avec sa raison (ADR-006 §5). PRISM, embarqué en profil `full`, est toujours
-disponible ; seule sa sélection est facultative.
+Un module dont l'actif manque pour la plateforme n'apparaît pas comme une case :
+il est déclaré **indisponible**, avec sa raison (ADR-006 §5). PRISM, embarqué,
+est toujours disponible avec la distribution ; seule sa sélection est facultative.
 
 ## 5. Ports et dépendances
 
@@ -225,14 +227,13 @@ c'est le Launcher qui résout les conflits au démarrage (`--check` les signale)
 
 ## 6. Conséquences pour l'installateur
 
-1. **Deux profils** : `core` (socle embarqué ; PRISM et modules facultatifs
-   acquis à la demande) et `full` (socle, PRISM et modules embarqués). Le socle
-   ne dépend jamais du réseau.
-2. **Placement** : le Launcher va dans `core/launcher/` ; les composants dans
+1. **Deux profils** : `core` (socle **et PRISM** ; modules facultatifs à la
+   demande) et `full` (socle, PRISM et les trois modules embarqués). Le socle et
+   PRISM ne dépendent jamais du réseau.
+2. **Placement** : le Launcher reste à la racine ; les composants dans
    `components/<id>/` — SYNE, ECHOS, PRISM (base) et SYNE-Mock (module) ; le LDK
-   en archive dans `plugins/prism-ldk/` ; les métadonnées de maintenance dans
-   `core/installer/`. La racine ne garde que `livex-setup`, les mentions légales
-   et les fichiers d'identité cachés.
+   en archive dans `plugins/prism-ldk/`. Toute autre arborescence casse la
+   détection ou la copie du plugin.
 3. **Pas d'orchestration** : l'installateur ne démarre pas les composants, ne
    réserve pas les ports, ne réécrit pas les manifestes et n'extrait pas le LDK
    dans un projet Unreal.
@@ -244,9 +245,9 @@ c'est le Launcher qui résout les conflits au démarrage (`--check` les signale)
 5. **Mise à jour** : les composants ont des cycles indépendants, mais
    l'installateur publie un ensemble cohérent ; une version de composant n'entre
    dans une distribution qu'après validation de la pile.
-6. **Disponibilité** : un composant embarqué est toujours proposé ; un composant
-   `release-asset` n'est proposé que si son actif est publié pour la plateforme,
-   avec sa taille et son empreinte. Un actif absent est déclaré indisponible.
+6. **Disponibilité** : un module facultatif n'est proposé que si son actif est
+   publié pour la plateforme, avec sa taille et son empreinte ; PRISM, embarqué,
+   est toujours disponible avec la distribution.
 
 ## 7. Références
 
@@ -268,4 +269,3 @@ c'est le Launcher qui résout les conflits au démarrage (`--check` les signale)
 | 21 octobre 2026 | Création | Analyse des composants pour le périmètre de l'installateur |
 | 21 octobre 2026 | Révision | PRISM packagé, LDK en ZIP, SYNE-Mock et documentation en archives facultatives ; provenance et runtime corrigés |
 | 29 octobre 2026 | Archives individuelles, provenance PRISM hors CI, contenu réel du LDK, prérequis Launcher V1 | Plan d'alignement V1 (ADR-010) : la release publie chaque composant séparément |
-| 1er novembre 2026 | Arborescence `core/launcher` et `core/installer`, ZIP par composant, racine de données `%LOCALAPPDATA%\LIVEX\data`, documentation hors ligne non livrée | Corrections V1 de l'installateur |

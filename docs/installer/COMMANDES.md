@@ -26,10 +26,9 @@ demandent jamais de saisie et répondent toujours par un code de sortie.
 | Windows | `livex-setup.exe` |
 | Linux | `./livex-setup` |
 
-L'exécutable vit à la racine de la distribution, à côté de `distribution.json`,
-du répertoire `packages/` et des mentions légales. S'il est lancé sans
-distribution valide à côté de lui, l'assistant bascule en monde fictif (voir §6)
-— et l'indique à l'écran.
+L'exécutable vit à la racine de la distribution, à côté de `distribution.json`
+et du répertoire `payload/`. S'il est lancé sans distribution valide à côté de
+lui, l'assistant bascule en monde fictif (voir §6) — et l'indique à l'écran.
 
 ## 3. Référence des options
 
@@ -65,10 +64,9 @@ insensibles à la casse.
 livex-setup            # Windows : livex-setup.exe
 ```
 
-Sept étapes : accueil, licence, composants, chemins, récapitulatif, progression,
-résultat. La langue est un sélecteur permanent du panneau latéral ; les branches
-maintenance et désinstallation partent de l'accueil lorsqu'une installation est
-détectée.
+Huit étapes : accueil, langue, licence, composants, chemins, récapitulatif,
+progression, résultat. Les branches maintenance et désinstallation partent de
+l'accueil lorsqu'une installation est détectée.
 
 `--maintenance` ouvre directement la branche maintenance (mise à jour,
 réparation, gestion des composants, changement d'espace de travail).
@@ -107,12 +105,12 @@ aucun contrôle réel n'a été effectué.
 | Situation | Sortie |
 | :-- | :-- |
 | distribution conforme | `PREFLIGHT_OK`, code `0` |
-| distribution dégradée (archive `packages/` manquante, chemin non inscriptible…) | `[Fail] …` puis `PREFLIGHT_FAIL`, code `2` |
+| distribution dégradée (charge utile manquante, chemin non inscriptible…) | `[Fail] …` puis `PREFLIGHT_FAIL`, code `2` |
 
-Sur une distribution réelle, l'absence d'une archive `packages/` déclarée est un
-échec : `--check` ne se contente pas de suspendre les écritures, il diagnostique.
-Avec `--demo`, les contrôles qui dépendent de la machine sont marqués
-`[Simulated]` et la sortie se termine par `PREFLIGHT_OK`.
+Sur une distribution réelle, l'absence de `payload/` est un échec : `--check` ne
+se contente pas de suspendre les écritures, il diagnostique. Avec `--demo`, les
+contrôles qui dépendent de la machine sont marqués `[Simulated]` et la sortie se
+termine par `PREFLIGHT_OK`.
 
 ### 5.2 `--unattended --config <fichier>`
 
@@ -125,10 +123,9 @@ commande avec le code `2` avant toute écriture.
 livex-setup --unattended --config answers.json
 ```
 
-Une installation valide déjà présente dans la même version sort en `5` ; un
-enregistrement orphelin (répertoire supprimé) ne bloque pas une nouvelle
-installation. Un actif facultatif demandé mais indisponible (réseau, 404,
-empreinte, `--no-network`) sort en `6`.
+Une installation déjà présente dans la même version sort en `5` ; un actif
+facultatif demandé mais indisponible (réseau, 404, empreinte, `--no-network`)
+sort en `6`.
 
 ### 5.3 `--uninstall`
 
@@ -237,28 +234,27 @@ Objet JSON, commentaires et virgules finales tolérés, champs inconnus ignorés
 | `workspaceDir` | chaîne | oui | chemin **absolu** de l'espace de travail |
 | `acceptLicense` | booléen | oui | doit valoir `true` ; personne n'accepte la licence à la place de l'utilisateur |
 | `components` | tableau | non | identifiants du manifeste ; les composants obligatoires sont ajoutés d'office, un identifiant inconnu est refusé |
-| `dataRoot` | chaîne | non | racine de données ; par défaut `LIVEX_DATA` ou `%LOCALAPPDATA%\LIVEX\data` (`~/.local/share/livex/data` sous Linux) |
+| `dataRoot` | chaîne | non | racine de données ; par défaut `LIVEX_DATA` ou `~/.livex-data` |
 | `desktopShortcut` | booléen | non | raccourci sur le bureau (défaut `false`) |
+| `launchAfterInstall` | booléen | non | lance le Launcher à la fin (défaut `false`) |
 | `offlineAssetsDir` | chaîne | non | actifs facultatifs lus depuis ce répertoire |
-
-`launchAfterInstall` reste accepté pour compatibilité mais n'a plus d'effet :
-le lancement se fait par le bouton « Lancer LIVEX » de l'écran de résultat.
 
 Exemple complet :
 
 ```json
 {
-  "installDir": "C:/Users/alice/AppData/Local/LIVEX/software",
-  "workspaceDir": "C:/Users/alice/AppData/Local/LIVEX/workspace",
-  "dataRoot": "C:/Users/alice/AppData/Local/LIVEX/data",
-  "components": ["launcher", "syne", "echos", "resources", "prism"],
+  "installDir": "C:/Users/alice/AppData/Local/Programs/LIVEX",
+  "workspaceDir": "D:/LIVEX/workspace",
+  "dataRoot": "D:/LIVEX/data",
+  "components": ["launcher", "syne", "echos", "contracts", "resources", "prism"],
   "acceptLicense": true,
-  "desktopShortcut": true
+  "desktopShortcut": true,
+  "launchAfterInstall": false
 }
 ```
 
 Sous Linux, les mêmes champs avec des chemins POSIX
-(`/home/alice/.local/share/livex/software`, `/home/alice/.local/share/livex/workspace`).
+(`/home/alice/.local/opt/livex`, `/home/alice/LIVEX/workspace`).
 
 ## 8. Codes de sortie
 
@@ -281,8 +277,8 @@ Le journal est écrit dans la racine de données, un fichier par opération :
 
 | Plateforme | Emplacement |
 | :-- | :-- |
-| Windows | `%LIVEX_DATA%` ou `%LOCALAPPDATA%\LIVEX\data`, sous `logs\installer-<AAAAMMJJ-HHMMSS>.log` |
-| Linux | `$LIVEX_DATA` ou `~/.local/share/livex/data`, sous `logs/installer-<AAAAMMJJ-HHMMSS>.log` |
+| Windows | `%LIVEX_DATA%` ou `%USERPROFILE%\.livex-data`, sous `logs\installer-<AAAAMMJJ-HHMMSS>.log` |
+| Linux | `$LIVEX_DATA` ou `~/.livex-data`, sous `logs/installer-<AAAAMMJJ-HHMMSS>.log` |
 
 Une ligne par événement, en UTF-8 : horodatage ISO 8601, niveau, étape,
 opération, résultat, code et chemin éventuels. Le chemin exact du journal est
@@ -334,18 +330,18 @@ Réparer une installation :
 livex-setup --repair
 ```
 
-## 11. État d'implémentation des options (au 29 octobre 2026)
+## 11. État d'implémentation des options (au 31 octobre 2026)
 
-Deux options sont **reconnues par le parseur mais sans effet** aujourd'hui :
+Deux options sont **reconnues par le parseur mais sans effet dans le chemin d'installation actuel** :
 
 | Option | État | Conséquence |
 | :-- | :-- | :-- |
-| `--offline-assets <dir>` | acceptée, transportée jusqu'à `InstallRequest`, jamais lue par le plan ni l'exécution | un module coché est téléchargé, pas lu depuis le répertoire local |
-| `--no-network` | idem | aucune requête n'est bloquée par cette option |
+| `--offline-assets <dir>` | acceptée et transportée jusqu'à `InstallRequest`; le `AcquisitionService` qui sait lire ce dossier n'est pas branché sur `InstallerEngine` | un module coché est téléchargé, pas lu depuis le répertoire local |
+| `--no-network` | acceptée et transportée jusqu'à `InstallRequest`, mais non vérifiée par le chemin `DownloadAssetAction` | l'option ne bloque pas les requêtes réseau |
 
 Le cache `cache/downloads` et la reprise `Range` décrits dans `ARCHITECTURE.md`
-§7.1 ne sont pas branchés non plus : `InstallerEngine` télécharge directement
-vers la destination finale (dette `INS-L-12`, tâche T5 du plan d'alignement).
+§7.1 ne sont pas branchés au moteur d'installation : `InstallerEngine` télécharge directement
+les actifs de la distribution et ne transmet pas ces options au downloader (dette `INS-L-12`).
 Tant que ce câblage n'est pas fait, une installation `core` sans module
 facultatif n'émet aucune requête, mais un module coché dépend du réseau.
 
@@ -369,5 +365,5 @@ facultatif n'émet aucune requête, mais un module coché dépend du réseau.
 | :-- | :-- | :-- |
 | 29 octobre 2026 | Création | Les commandes existent et sont vérifiées sur exécution ; `--log`, non appliqué, est retiré (refusé comme option inconnue) et signalé §9 |
 | 29 octobre 2026 | §3 validation stricte, §5.3 portée inconnue, §6 distinction distribution / installation réelle | Revue croisée : `--scope` et `--log` durcis ; `--uninstall` ne dépend pas de `distribution.json` |
-| 29 octobre 2026 | §5.1 sortie réelle, §11 état d'implémentation, §12 renuméroté | Check-up : `--offline-assets` et `--no-network` sans effet au 29 octobre 2026 |
+| 31 octobre 2026 | §11 état d'implémentation | Vérification du chemin d'exécution : les options restent non appliquées même si `AcquisitionService` est présent mais non câblé |
 | 29 octobre 2026 | §5.5 note de version | Plan V1 (D1) : le bump `1.0.0` relève de la phase de gel, pas de l'état actuel |

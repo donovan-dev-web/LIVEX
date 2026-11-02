@@ -1,8 +1,8 @@
 # TESTING — PRISM / PrismLdk
 
 **Composant** : PRISM
-**Statut** : [DRAFT]
-**Dernière mise à jour** : 18 octobre 2026
+**Statut** : [VALIDÉ POUR LA RELEASE LIVEX 1.0.0]
+**Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
 
 ---
@@ -50,7 +50,7 @@ succès avant le retour correspondant.
   -ReportExportPath="D:\LIVEX\prism\LDK\Saved\AutomationReport"
 ```
 
-État mesuré le 20 octobre 2026 : **76 specs, 0 échec** (`succeeded` 71 +
+Validation Unreal Engine 5.8 pour la release LIVEX 1.0.0 : **76 specs, 0 échec** (`succeeded` 71 +
 `SuccessWithWarnings` 5, `failed` 0) — `Projection`, `WorldRegistry`, `Service`,
 `GapReplay`, `Contract` (6 specs) et `Auth` (7 specs). Le rapport machine est
 `Saved/AutomationReport/index.json`.
