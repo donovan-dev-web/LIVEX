@@ -34,6 +34,7 @@ _ENDPOINTS = [
     "/api/control/status",
     "/api/control/{action}",
     "/api/runs/{id}",
+    "/api/runs/{id}/prism-stream",
     "/api/runs/{id}/metrics",
     "/api/runs/{id}/calibration",
     "/api/runs/{id}/export",

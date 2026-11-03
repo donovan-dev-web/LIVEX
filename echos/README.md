@@ -19,7 +19,7 @@ echos/
 │   ├── api/app.py            # application FastAPI (create_app, /health)
 │   ├── analysis/headless.py  # opérations d'analyse sans interface
 │   ├── analysis/             # 7 moteurs de métriques (METRICS_SPEC §1)
-│   └── ingestion/            # contrats + clients SYNE (API_CONTRACTS §2-3)
+│   └── ingestion/            # contrats/clients SYNE et flux PRISM (API_CONTRACTS §2-6)
 ```
 
 ## API local (jalon U4 — API REST)
@@ -108,6 +108,27 @@ garde anti-doublon, donc l'archive valide ne pourrait plus jamais être ingéré
 Comme le Launcher archive ce flux dans le paquet `.livexp`, la réanalyse d'une
 campagne terminée ne dépend plus de SYNE : elle relit l'archive et rend les
 **mêmes octets** que l'analyse faite pendant la campagne.
+
+### Flux de lecture PRISM (socle ECHOS-100)
+
+Le consommateur `PrismReadEnvelope` valide les messages camelCase `1.x` du
+WebSocket PRISM ; `prism_envelopes(client)` utilise le transport brut partagé
+avec SYNE sans confondre les deux contrats. Pour un flux terminé, le socle
+`ingest_prism_stream(store, run_id, seed, content_hash, envelopes)` conserve
+atomiquement les enveloppes ordonnées dans `prism_read_envelopes` (schéma
+SQLite v8). Une première connexion peut commencer à n'importe quelle séquence
+si elle reçoit un `world_snapshot` ; après une perte de messages, un saut n'est
+accepté que si le host renvoie un nouveau snapshot complet. Le résumé du run
+expose le dernier tick/séquence et le nombre d'enveloppes par type.
+
+Les enveloppes conservées se lisent par pages bornées via
+`GET /api/runs/{run_id}/prism-stream?after_sequence=-1&limit=500`; la réponse
+inclut le résumé, le `contentHash` et l'indicateur `has_more`, sans mélanger les
+événements PRISM aux métriques SYNE.
+
+Ce socle n'est pas encore lancé automatiquement avec le cycle de vie Launcher ;
+il ne calcule pas non plus de métriques de stocks/production ni de comparaison
+de runs. Aucun benchmark n'est effectué ici.
 
 ## Intégration au Launcher LIVEX
 
