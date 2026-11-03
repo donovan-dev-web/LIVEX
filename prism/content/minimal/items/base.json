@@ -1,8 +1,8 @@
 [
-  { "id": "log", "tags": ["wood", "fuel"], "maxStack": 64, "weight": 2 },
-  { "id": "plank", "tags": ["wood", "fuel"], "maxStack": 64, "weight": 1 },
+  { "id": "log", "tags": ["wood", "fuel"], "maxStack": 64, "weight": 2, "places": "log" },
+  { "id": "plank", "tags": ["wood", "fuel"], "maxStack": 64, "weight": 1, "places": "planks" },
   { "id": "handle", "tags": ["handle", "wood"], "maxStack": 32, "weight": 1 },
-  { "id": "stone", "tags": ["stone"], "maxStack": 64, "weight": 2 },
+  { "id": "stone", "tags": ["stone"], "maxStack": 64, "weight": 2, "places": "stone" },
   { "id": "stone_head", "tags": ["stone_head", "stone"], "maxStack": 16, "weight": 2 },
   { "id": "coal", "tags": ["fuel"], "maxStack": 64, "weight": 1 },
   { "id": "iron_ore_chunk", "tags": ["ore", "stone"], "maxStack": 64, "weight": 2 },
@@ -15,7 +15,7 @@
   { "id": "stone_pickaxe", "tags": ["tool", "pickaxe"], "maxStack": 1, "toolTier": 1, "durability": 60, "weight": 3 },
   { "id": "iron_pickaxe", "tags": ["tool", "pickaxe"], "maxStack": 1, "toolTier": 2, "durability": 200, "weight": 3 },
   { "id": "stone_hoe", "tags": ["tool", "hoe"], "maxStack": 1, "toolTier": 1, "durability": 60, "weight": 3 },
-  { "id": "workbench", "tags": ["station"], "maxStack": 1, "weight": 10 },
-  { "id": "furnace", "tags": ["station"], "maxStack": 1, "weight": 15 },
-  { "id": "chest", "tags": ["container"], "maxStack": 1, "weight": 8 }
+  { "id": "workbench", "tags": ["station"], "maxStack": 1, "weight": 10, "places": "workbench" },
+  { "id": "furnace", "tags": ["station"], "maxStack": 1, "weight": 15, "places": "furnace" },
+  { "id": "chest", "tags": ["container"], "maxStack": 1, "weight": 8, "places": "chest" }
 ]

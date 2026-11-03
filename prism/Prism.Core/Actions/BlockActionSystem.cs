@@ -458,7 +458,7 @@ public static class BlockActionSystem
         }).ToList();
     }
 
-    internal static bool IsAdjacent(AgentPosition position, BlockCoordinate target)
+    public static bool IsAdjacent(AgentPosition position, BlockCoordinate target)
     {
         var distance = Math.Abs((long)position.CellX - target.X) +
                        Math.Abs((long)position.CellY - target.Y) +

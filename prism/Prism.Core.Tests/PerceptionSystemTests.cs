@@ -49,11 +49,14 @@ public sealed class PerceptionSystemTests
         Assert.Contains(appeared.Changes, change =>
             change.Change == PerceptionChangeKind.Appeared &&
             change.Entry.Kind == PerceptionEntityKind.Block);
-        Assert.Empty(system.Observe(observer, world, registry, groundItems, CreateRules(), settings).Changes);
+        var restoredSystem = new PerceptionSystem();
+        restoredSystem.RestoreState(system.CaptureState());
+        Assert.Empty(restoredSystem.Observe(
+            observer, world, registry, groundItems, CreateRules(), settings).Changes);
 
         var target = new BlockCoordinate(1, 0, 4);
         world.SetBlockOverride(target, new BlockOverride(2, 3, false));
-        var changed = system.Observe(observer, world, registry, groundItems, CreateRules(), settings);
+        var changed = restoredSystem.Observe(observer, world, registry, groundItems, CreateRules(), settings);
         Assert.Contains(changed.Changes, change =>
             change.Change == PerceptionChangeKind.Changed &&
             change.Entry.Kind == PerceptionEntityKind.Block &&
@@ -65,7 +68,7 @@ public sealed class PerceptionSystemTests
             change.Entry.TagMask == 2);
 
         world.SetBlockOverride(target, new BlockOverride(0, 0, true));
-        var disappeared = system.Observe(observer, world, registry, groundItems, CreateRules(), settings);
+        var disappeared = restoredSystem.Observe(observer, world, registry, groundItems, CreateRules(), settings);
         Assert.Contains(disappeared.Changes, change =>
             change.Change == PerceptionChangeKind.Disappeared &&
             change.Entry.Kind == PerceptionEntityKind.Block &&
@@ -74,7 +77,7 @@ public sealed class PerceptionSystemTests
             change.Change == PerceptionChangeKind.Disappeared &&
             change.Entry.Kind == PerceptionEntityKind.RegionSummary);
         Assert.DoesNotContain(
-            system.Observe(observer, world, registry, groundItems, CreateRules(), settings).Changes,
+            restoredSystem.Observe(observer, world, registry, groundItems, CreateRules(), settings).Changes,
             change => change.Change == PerceptionChangeKind.Disappeared);
     }
 
@@ -131,6 +134,84 @@ public sealed class PerceptionSystemTests
                       change.Entry.X == target.X &&
                       change.Entry.Y == target.Y &&
                       change.Entry.Z == target.Z);
+    }
+
+    [Fact]
+    public void NearbyConstructionSitesAppearChangeAndDisappearOnAbandon()
+    {
+        var world = CreateFlatWorld(16, 16);
+        var registry = new AgentRegistry();
+        var observer = Incarnate(registry, world, 0, 0, 1);
+        var construction = new StructureConstructionSystem(world);
+        var template = new StructureTemplateRule(
+            "hut",
+            1,
+            1,
+            1,
+            [new StructureBlockRule(0, 0, 0, 1)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 2,
+            IntegrityThresholdPermille: 800);
+        Assert.True(construction.CreateSite("hut-1", template, new BlockCoordinate(2, 2, 5)).Succeeded);
+        Assert.True(construction.CreateSite("hut-far", template, new BlockCoordinate(14, 14, 5)).Succeeded);
+        var system = new PerceptionSystem();
+        var settings = new PerceptionSettings(NearRadius: 4, MidRadiusRegions: 0, MaximumObservedPerAgent: 64);
+        var rules = CreateRules();
+
+        var appeared = system.Observe(
+            observer, world, registry, new GroundItemStore(), rules, settings, construction.Sites);
+
+        var site = Assert.Single(
+            appeared.Changes,
+            change => change.Entry.Kind == PerceptionEntityKind.ConstructionSite);
+        Assert.Equal(PerceptionChangeKind.Appeared, site.Change);
+        Assert.Equal("hut-1", site.Entry.SiteId);
+        Assert.Equal(new BlockCoordinate(2, 2, 5), new BlockCoordinate(site.Entry.X, site.Entry.Y, site.Entry.Z));
+        Assert.Equal((byte)StructureConstructionState.Planned, site.Entry.State);
+        Assert.Equal(2, site.Entry.WorkRequired);
+        Assert.Equal(0, site.Entry.Quantity);
+        Assert.DoesNotContain(appeared.Changes, change => change.Entry.SiteId == "hut-far");
+
+        Assert.True(construction.ContributeWork("hut-1", "agent-1", 0).Succeeded);
+        var changed = system.Observe(
+            observer, world, registry, new GroundItemStore(), rules, settings, construction.Sites);
+        var progress = Assert.Single(
+            changed.Changes,
+            change => change.Entry.Kind == PerceptionEntityKind.ConstructionSite);
+        Assert.Equal(PerceptionChangeKind.Changed, progress.Change);
+        Assert.Equal((byte)StructureConstructionState.InProgress, progress.Entry.State);
+        Assert.Equal(1, progress.Entry.Quantity);
+
+        Assert.True(construction.AbandonSite("hut-1").Succeeded);
+        var disappeared = system.Observe(
+            observer, world, registry, new GroundItemStore(), rules, settings, construction.Sites);
+        var gone = Assert.Single(
+            disappeared.Changes,
+            change => change.Entry.Kind == PerceptionEntityKind.ConstructionSite);
+        Assert.Equal(PerceptionChangeKind.Disappeared, gone.Change);
+        Assert.Equal("hut-1", gone.Entry.SiteId);
+    }
+
+    [Fact]
+    public void SelfObservationCarriesShelterStatusAndFatigueBonus()
+    {
+        var world = CreateFlatWorld(3, 3);
+        var registry = new AgentRegistry();
+        var observer = Incarnate(registry, world, 0, 0, 1);
+        var frame = new PerceptionSystem().Observe(
+            observer,
+            world,
+            registry,
+            new GroundItemStore(),
+            CreateRules(),
+            new PerceptionSettings(NearRadius: 0, MidRadiusRegions: 0, MaximumObservedPerAgent: 8),
+            null,
+            new StructureUsage("shelter-1", StructureEffectConsumer.ShelterEffectType, 500));
+
+        Assert.True(frame.Self.Sheltered);
+        Assert.Equal("shelter-1", frame.Self.ShelterSiteId);
+        Assert.Equal(500, frame.Self.FatigueRecoveryBonusPermille);
     }
 
     private static AgentBody Incarnate(AgentRegistry registry, WorldGrid world, int x, int y, ulong id)

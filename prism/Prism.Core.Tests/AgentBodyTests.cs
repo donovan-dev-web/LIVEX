@@ -74,6 +74,43 @@ public sealed class AgentBodyTests
         Assert.Equal(1, inventory.Count(5));
     }
 
+    [Fact]
+    public void AgentLifecycleCheckpointPreservesAgentsInventoriesAndGroundItemIds()
+    {
+        var world = CreateFlatWorld(3, 3);
+        var lifecycle = new AgentLifecycleSystem(
+            world,
+            new MovementRules([1], [2], pathMaterials: [1]));
+        var agent = lifecycle.Incarnate(
+            7,
+            AgentPosition.AtCell(1, 2, 5),
+            new AgentBodyProfile(SpeedPermille: 1250, CarrySlots: 4));
+        Assert.True(agent.Inventory.TryAdd(10, 5, 4, out var remaining));
+        Assert.Equal(0, remaining);
+
+        var restored = new AgentLifecycleSystem(world, new MovementRules([], []));
+        restored.RestoreState(lifecycle.CaptureState());
+
+        var snapshot = Assert.Single(restored.SnapshotAgents());
+        Assert.Equal(7UL, snapshot.AgentId);
+        Assert.Equal(agent.Position, snapshot.Position);
+        Assert.Equal(agent.Profile, snapshot.Profile);
+        Assert.Equal(5, snapshot.Inventory.Sum(stack => stack.Quantity));
+        Assert.True(restored.Retire(7));
+        Assert.Equal([0UL, 1UL], restored.SnapshotGroundItems().Select(item => item.Id));
+
+        var restoredAgain = new AgentLifecycleSystem(world, new MovementRules([], []));
+        restoredAgain.RestoreState(restored.CaptureState());
+        Assert.Equal(restored.Revision, restoredAgain.Revision);
+        Assert.Equal(restored.SnapshotGroundItems(), restoredAgain.SnapshotGroundItems());
+
+        var nextAgent = restoredAgain.Incarnate(8, AgentPosition.AtCell(0, 0, 5), new());
+        Assert.True(nextAgent.Inventory.TryAdd(11, 1, 10, out remaining));
+        Assert.Equal(0, remaining);
+        Assert.True(restoredAgain.Retire(8));
+        Assert.Equal(2UL, restoredAgain.SnapshotGroundItems().Last().Id);
+    }
+
     private static WorldGrid CreateFlatWorld(int width, int height)
     {
         var world = new WorldGrid(width, height, verticalSize: 16);

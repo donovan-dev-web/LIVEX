@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Prism.Core.World;
 
 namespace Prism.Core.Time;
@@ -36,6 +37,52 @@ public sealed class EventWheel
             scheduledEvent.Kind == kind &&
             scheduledEvent.Target == target &&
             scheduledEvent.State == state));
+    }
+
+    public byte[] CaptureState()
+    {
+        var events = _buckets
+            .SelectMany(static bucket => bucket)
+            .OrderBy(static scheduledEvent => scheduledEvent.DueTick)
+            .ThenBy(static scheduledEvent => scheduledEvent.Sequence)
+            .ToArray();
+        return JsonSerializer.SerializeToUtf8Bytes(
+            new EventWheelCheckpoint(1, _buckets.Length, CurrentTick, _nextSequence, events));
+    }
+
+    public void RestoreState(ReadOnlySpan<byte> checkpoint)
+    {
+        if (Count != 0 || CurrentTick != 0 || _nextSequence != 0)
+        {
+            throw new InvalidOperationException("Event wheel state can only be restored into a new wheel.");
+        }
+
+        var snapshot = JsonSerializer.Deserialize<EventWheelCheckpoint>(checkpoint)
+                       ?? throw new InvalidDataException("Event wheel checkpoint is empty.");
+        if (snapshot.Version != 1 ||
+            snapshot.BucketCount != _buckets.Length ||
+            snapshot.CurrentTick < 0 ||
+            snapshot.Events is null ||
+            snapshot.Events.Length > int.MaxValue ||
+            snapshot.Events.Any(scheduledEvent =>
+                scheduledEvent.DueTick < snapshot.CurrentTick ||
+                string.IsNullOrWhiteSpace(scheduledEvent.Kind) ||
+                scheduledEvent.ContextTick < 0 ||
+                scheduledEvent.Sequence >= snapshot.NextSequence) ||
+            snapshot.Events.Select(static scheduledEvent => scheduledEvent.Sequence).Distinct().Count() !=
+            snapshot.Events.Length)
+        {
+            throw new InvalidDataException("Event wheel checkpoint metadata or events are invalid.");
+        }
+
+        CurrentTick = snapshot.CurrentTick;
+        _nextSequence = snapshot.NextSequence;
+        foreach (var scheduledEvent in snapshot.Events)
+        {
+            GetBucket(scheduledEvent.DueTick).Add(scheduledEvent);
+        }
+
+        Count = snapshot.Events.Length;
     }
 
     public ScheduledWorldEvent Schedule(
@@ -117,4 +164,11 @@ public sealed class EventWheel
 
     private List<ScheduledWorldEvent> GetBucket(long dueTick) =>
         _buckets[(int)(dueTick % _buckets.Length)];
+
+    private sealed record EventWheelCheckpoint(
+        int Version,
+        int BucketCount,
+        long CurrentTick,
+        ulong NextSequence,
+        ScheduledWorldEvent[] Events);
 }

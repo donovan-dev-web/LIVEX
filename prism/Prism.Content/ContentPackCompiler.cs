@@ -211,7 +211,7 @@ public sealed class ContentPackCompiler
         var parentByTag = definition.Tags.ToDictionary(tag => tag.Id, tag => tag.Parent, StringComparer.Ordinal);
         ValidateTagHierarchy(definition.Tags, tagKeys, errors);
         ValidateMaterials(definition.Materials, tagKeys, itemKeys, errors);
-        ValidateItems(definition.Items, tagKeys, errors);
+        ValidateItems(definition.Items, tagKeys, materialKeys, errors);
         ValidateRecipes(definition.Recipes, tagKeys, materialKeys, stationKeys, itemKeys, errors);
         ValidateMaterialRequirements(definition.Materials, materialKeys, growthKeys, errors);
         ValidateTemplateReferences(
@@ -356,6 +356,7 @@ public sealed class ContentPackCompiler
     private static void ValidateItems(
         IReadOnlyList<ItemDefinition> items,
         HashSet<string> tagKeys,
+        HashSet<string> materialKeys,
         List<ContentValidationError> errors)
     {
         foreach (var item in items.OrderBy(value => value.Id, StringComparer.Ordinal))
@@ -373,6 +374,12 @@ public sealed class ContentPackCompiler
             {
                 AddError(errors, "item.durability.stack.invalid", path,
                     "Items with durability must have a maximum stack size of one.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.Places) && !materialKeys.Contains(item.Places))
+            {
+                AddError(errors, "item.place.material.missing", path,
+                    $"Placeable item references unknown material '{item.Places}'.");
             }
         }
     }
@@ -498,14 +505,37 @@ public sealed class ContentPackCompiler
             }
 
             if (template.Effect is { } effect &&
-                (string.IsNullOrWhiteSpace(effect.Type) || effect.Volume is not { Length: 2 } ||
-                 effect.Volume.Any(point => point is not { Length: 3 }) ||
-                 effect.FatigueRecoveryBonusPermille < 0))
+                !IsTemplateEffectValid(effect, template.Size))
             {
                 AddError(errors, "template.effect.invalid", path,
-                    "Template effect must have a type, two 3D volume corners, and a non-negative bonus.");
+                    "Template effect must have a type, two in-bounds 3D volume corners, and a non-negative bonus.");
             }
         }
+    }
+
+    private static bool IsTemplateEffectValid(TemplateEffect effect, int[]? templateSize)
+    {
+        if (string.IsNullOrWhiteSpace(effect.Type) ||
+            effect.Volume is not { Length: 2 } ||
+            effect.Volume.Any(point => point is not { Length: 3 }) ||
+            effect.FatigueRecoveryBonusPermille < 0 ||
+            templateSize is not { Length: 3 } ||
+            templateSize.Any(size => size <= 0))
+        {
+            return false;
+        }
+
+        for (var axis = 0; axis < 3; axis++)
+        {
+            var minimum = Math.Min(effect.Volume[0][axis], effect.Volume[1][axis]);
+            var maximum = Math.Max(effect.Volume[0][axis], effect.Volume[1][axis]);
+            if (minimum < 0 || maximum >= templateSize[axis])
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static void ValidateGrowthRules(

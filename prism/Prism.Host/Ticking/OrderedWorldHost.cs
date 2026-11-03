@@ -1,8 +1,9 @@
+using System.Text.Json;
 using Prism.Contracts;
 
 namespace Prism.Host.Ticking;
 
-public sealed class OrderedWorldHost : IWorldHost
+public sealed class OrderedWorldHost : ICheckpointableWorldHost
 {
     private readonly object _gate = new();
     private readonly IReadOnlyList<IWorldTickPhaseHandler> _phases;
@@ -37,6 +38,87 @@ public sealed class OrderedWorldHost : IWorldHost
             lock (_gate)
             {
                 return _lastCompletedTick;
+            }
+        }
+    }
+
+    public bool IsFaulted
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _faulted;
+            }
+        }
+    }
+
+    public byte[] CaptureCheckpoint()
+    {
+        lock (_gate)
+        {
+            if (_stepping || _faulted)
+            {
+                throw new InvalidOperationException("A checkpoint requires a stable, healthy world host.");
+            }
+
+            var phaseStates = _phases
+                .OfType<ICheckpointableWorldTickPhaseHandler>()
+                .ToDictionary(
+                    static phase => phase.Phase.ToString(),
+                    static phase => phase.CaptureState(),
+                    StringComparer.Ordinal);
+            return JsonSerializer.SerializeToUtf8Bytes(
+                new WorldHostCheckpoint(1, _lastCompletedTick, phaseStates),
+                ProtocolJson.Options);
+        }
+    }
+
+    public void RestoreCheckpoint(ReadOnlySpan<byte> checkpoint)
+    {
+        lock (_gate)
+        {
+            if (_stepping || _faulted || _lastCompletedTick != -1)
+            {
+                throw new InvalidOperationException("A checkpoint can only be restored into a new, healthy world host.");
+            }
+
+            var snapshot = JsonSerializer.Deserialize<WorldHostCheckpoint>(checkpoint, ProtocolJson.Options)
+                           ?? throw new JsonException("The world host checkpoint is empty.");
+            var statefulPhases = _phases.OfType<ICheckpointableWorldTickPhaseHandler>()
+                .ToDictionary(static phase => phase.Phase.ToString(), StringComparer.Ordinal);
+            if (snapshot.FormatVersion != 1 ||
+                snapshot.LastCompletedTick < -1 ||
+                snapshot.PhaseStates is null ||
+                snapshot.PhaseStates.Keys.Any(key => !statefulPhases.ContainsKey(key)) ||
+                statefulPhases.Any(entry =>
+                    !snapshot.PhaseStates.ContainsKey(entry.Key) &&
+                    entry.Value is not IOptionalCheckpointableWorldTickPhaseHandler))
+            {
+                throw new JsonException("The world host checkpoint does not match the current phase handlers.");
+            }
+
+            try
+            {
+                foreach (var phase in statefulPhases.OrderBy(
+                             entry => Enum.Parse<WorldTickPhase>(entry.Key)))
+                {
+                    if (snapshot.PhaseStates.TryGetValue(phase.Key, out var state))
+                    {
+                        phase.Value.RestoreState(state);
+                    }
+                    else
+                    {
+                        ((IOptionalCheckpointableWorldTickPhaseHandler)phase.Value).RestoreEmptyState();
+                    }
+                }
+
+                _lastCompletedTick = snapshot.LastCompletedTick;
+            }
+            catch
+            {
+                _faulted = true;
+                throw;
             }
         }
     }
@@ -97,4 +179,9 @@ public sealed class OrderedWorldHost : IWorldHost
             }
         }
     }
+
+    private sealed record WorldHostCheckpoint(
+        int FormatVersion,
+        long LastCompletedTick,
+        Dictionary<string, JsonElement> PhaseStates);
 }

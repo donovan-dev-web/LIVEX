@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Text.Json;
 using Prism.Core.Accounting;
 using Prism.Core.World;
 
@@ -89,11 +90,56 @@ public sealed class CraftingStationRegistry
 {
     private readonly Dictionary<BlockCoordinate, StationReservation> _reservations = [];
 
+    public bool IsEmpty => _reservations.Count == 0;
+
+    public int ReservationCount => _reservations.Count;
+
     public bool IsBusy(BlockCoordinate position, long tick)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(tick);
         return _reservations.TryGetValue(position, out var reservation) &&
                reservation.AvailableAtTick > tick;
+    }
+
+    public byte[] CaptureState()
+    {
+        var reservations = _reservations
+            .OrderBy(static entry => entry.Key.Z)
+            .ThenBy(static entry => entry.Key.Y)
+            .ThenBy(static entry => entry.Key.X)
+            .Select(static entry => new StationReservationSnapshot(
+                entry.Key,
+                entry.Value.AgentId,
+                entry.Value.AvailableAtTick))
+            .ToArray();
+        return JsonSerializer.SerializeToUtf8Bytes(new StationRegistryCheckpoint(1, reservations));
+    }
+
+    public void RestoreState(ReadOnlySpan<byte> checkpointBytes)
+    {
+        if (_reservations.Count != 0)
+        {
+            throw new InvalidOperationException("Crafting station state can only be restored into a new registry.");
+        }
+
+        var checkpoint = JsonSerializer.Deserialize<StationRegistryCheckpoint>(checkpointBytes)
+                         ?? throw new InvalidDataException("Crafting station checkpoint is empty.");
+        if (checkpoint.Version != 1 ||
+            checkpoint.Reservations is null ||
+            checkpoint.Reservations.Any(static reservation =>
+                reservation.AvailableAtTick < 0) ||
+            checkpoint.Reservations.Select(static reservation => reservation.Position).Distinct().Count() !=
+            checkpoint.Reservations.Length)
+        {
+            throw new InvalidDataException("Crafting station checkpoint metadata or reservations are invalid.");
+        }
+
+        foreach (var reservation in checkpoint.Reservations)
+        {
+            _reservations.Add(
+                reservation.Position,
+                new StationReservation(reservation.AgentId, reservation.AvailableAtTick));
+        }
     }
 
     internal bool TryReserve(BlockCoordinate position, ulong agentId, long tick, int durationTicks)
@@ -125,6 +171,15 @@ public sealed class CraftingStationRegistry
     }
 
     private readonly record struct StationReservation(ulong AgentId, long AvailableAtTick);
+
+    private sealed record StationReservationSnapshot(
+        BlockCoordinate Position,
+        ulong AgentId,
+        long AvailableAtTick);
+
+    private sealed record StationRegistryCheckpoint(
+        int Version,
+        StationReservationSnapshot[] Reservations);
 }
 
 public sealed record CraftingActionResult(

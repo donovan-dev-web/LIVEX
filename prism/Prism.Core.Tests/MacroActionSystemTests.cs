@@ -169,6 +169,73 @@ public sealed class MacroActionSystemTests
         Assert.True(macroActions.GetNextStep(agent.AgentId, agent.Position, []).Completed);
     }
 
+    [Fact]
+    public void MacroCheckpointPreservesPerceivedSourcesAndInProgressSequence()
+    {
+        var (agent, _) = CreateAgents();
+        var source = new PerceivedMacroSource(
+            55,
+            MacroSourceKind.GroundItem,
+            new BlockCoordinate(1, 0, 6),
+            10,
+            2,
+            new HashSet<string>(StringComparer.Ordinal) { "wood", "material" });
+        var original = new MacroActionSystem();
+        var started = original.StartObtainObject(
+            agent,
+            new ObtainObjectRequest(ItemTypeId: 10, TagId: null, Quantity: 2),
+            [source]);
+        Assert.Equal(MacroStepKind.Move, started.Step!.Kind);
+
+        var restored = new MacroActionSystem();
+        restored.RestoreState(original.CaptureState());
+        Assert.Equal([agent.AgentId], restored.ActiveAgentIds);
+        Assert.True(restored.CompleteCurrentStep(agent.AgentId, succeeded: true).Succeeded);
+        var acquiredStep = restored.GetNextStep(
+            agent.AgentId,
+            AgentPosition.AtCell(1, 0, 5),
+            [source]);
+        Assert.Equal(MacroStepKind.Take, acquiredStep.Step!.Kind);
+
+        var resumed = new MacroActionSystem();
+        resumed.RestoreState(restored.CaptureState());
+        Assert.Equal(
+            acquiredStep.Step,
+            resumed.GetNextStep(agent.AgentId, AgentPosition.AtCell(1, 0, 5), [source]).Step);
+        Assert.True(resumed.CompleteCurrentStep(agent.AgentId, true, quantityAcquired: 1).Succeeded);
+        Assert.Equal(1, resumed.GetNextStep(
+            agent.AgentId,
+            AgentPosition.AtCell(1, 0, 5),
+            [source]).QuantityAcquired);
+    }
+
+    [Fact]
+    public void CultivateMacroUsesTheGroundCellForTillingAndSurvivesCheckpoint()
+    {
+        var (agent, _) = CreateAgents();
+        var macroActions = new MacroActionSystem();
+        var cropCell = new BlockCoordinate(0, 0, 5);
+        var started = macroActions.StartCultivate(
+            agent,
+            cropCell,
+            seedItemTypeId: 10,
+            needsTilling: true);
+
+        Assert.Equal(new BlockCoordinate(0, 0, 4), started.Step!.Target);
+        Assert.True(macroActions.CompleteCurrentStep(agent.AgentId, succeeded: true).Succeeded);
+        Assert.Equal(cropCell, macroActions.GetNextStep(agent.AgentId, agent.Position, []).Step!.Target);
+        Assert.True(macroActions.CompleteCurrentStep(agent.AgentId, succeeded: true).Succeeded);
+        Assert.Equal(
+            MacroStepKind.WaitForRipe,
+            macroActions.GetNextStep(agent.AgentId, agent.Position, []).Step!.Kind);
+        Assert.True(macroActions.CompleteCurrentStep(agent.AgentId, succeeded: true).Succeeded);
+
+        var restored = new MacroActionSystem();
+        restored.RestoreState(macroActions.CaptureState());
+        Assert.True(restored.IsWaitingForHarvest(agent.AgentId));
+        Assert.True(restored.RequestCultivateHarvest(agent.AgentId).Succeeded);
+    }
+
     private static (AgentBody Agent, WorldGrid World) CreateAgents()
     {
         var world = new WorldGrid(2, 1, verticalSize: 16);

@@ -1,8 +1,8 @@
 # AGENT_INTERFACE — Impact sur les agents BDI (côté SYNE)
 
 **Composant** : PRISM (impact SYNE)
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [SOCLE DE TRANSPORT — ADAPTATION COGNITIVE NON IMPLÉMENTÉE]
+**Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`API_CONTRACTS.md`](API_CONTRACTS.md), [`adr/ADR-009-planification-dans-syne-savoir-des-recettes.md`](adr/ADR-009-planification-dans-syne-savoir-des-recettes.md), `../syne/COGNITIVE_ARCHITECTURE.md`
 **Source Monographie** : —
 
@@ -65,7 +65,7 @@ Recommandation : commencer par la variante simple, activer la riche par configur
 
 ## 8. Compatibilité avec l'existant
 
-Le contrat PRISM peut être validé avec la **cognition actuelle de SYNE** avant la fin de la V2 : l'interface compte plus que la sophistication de l'agent. Un **adaptateur minimal** (`PrismClient`) traduit les actions actuelles de SYNE (déplacement, manger, boire) en commandes de contrat, ce qui permet de valider P7 avant la refonte cognitive complète (P9). Un LLM dans la boucle reste hors périmètre ; un usage hors boucle (génération de recettes ou de noms, figés ensuite dans les données) est une piste ultérieure.
+Le contrat PRISM peut être validé avec la **cognition actuelle de SYNE** avant la fin de la V2 : l'interface compte plus que la sophistication de l'agent. `Simulation.Console.Integration.PrismClient` fournit maintenant le transport HTTP authentifié prepare/start/tick/stop et valide les réponses lockstep. Il n'est pas encore branché au contrôleur ou à la boucle BDI et ne traduit pas les intentions de déplacement, manger ou boire en commandes PRISM ; SYNE conserve encore son monde local. Le LLM dans la boucle reste hors périmètre ; un usage hors boucle (génération de recettes ou de noms, figés ensuite dans les données) est une piste ultérieure.
 
 ## 9. Impact sur le déterminisme de SYNE
 
@@ -79,4 +79,5 @@ Choix GOAP vs HTN : spike en P9 (ISSUES `SYNE-2xx`).
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Ajout du client HTTP lockstep ; mapping d'actions et extraction du monde restent ouverts | SYNE-210/220 |
 | 1er novembre 2026 | Création | Refonte V2 |

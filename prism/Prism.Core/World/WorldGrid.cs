@@ -98,7 +98,7 @@ public sealed class WorldGrid
         var (regionId, localIndex) = GetRegionAndLocalIndex(x, y);
         if (_regions[regionId].SetSurfaceColumn(localIndex, column))
         {
-            _regions[regionId].IsDirty = true;
+            MarkRegionDirty(x, y);
             Revision = checked(Revision + 1);
         }
     }
@@ -240,6 +240,19 @@ public sealed class WorldGrid
     {
         var (regionId, _) = GetRegionAndLocalIndex(x, y);
         _regions[regionId].IsDirty = true;
+        MarkNeighborRegionDirty(x - 1, y, regionId);
+        MarkNeighborRegionDirty(x + 1, y, regionId);
+        MarkNeighborRegionDirty(x, y - 1, regionId);
+        MarkNeighborRegionDirty(x, y + 1, regionId);
+    }
+
+    private void MarkNeighborRegionDirty(int x, int y, int currentRegionId)
+    {
+        if (TryGetRegionId(x, y, out var neighborRegionId) &&
+            neighborRegionId != currentRegionId)
+        {
+            _regions[neighborRegionId].IsDirty = true;
+        }
     }
 
     private sealed class WorldRegion(int cellCount)

@@ -25,6 +25,59 @@ public sealed class CommandIdempotencyWindow<TResult>
         }
     }
 
+    public IReadOnlyList<IdempotencyCacheEntry<TResult>> SnapshotEntries()
+    {
+        lock (_gate)
+        {
+            return _insertionOrder
+                .Select(commandId =>
+                {
+                    var cached = _results[commandId];
+                    return new IdempotencyCacheEntry<TResult>(
+                        commandId,
+                        cached.Fingerprint,
+                        ProtocolJson.Deserialize<TResult>(cached.SerializedResult));
+                })
+                .ToArray();
+        }
+    }
+
+    public void RestoreEntries(IEnumerable<IdempotencyCacheEntry<TResult>> entries)
+    {
+        ArgumentNullException.ThrowIfNull(entries);
+        var snapshot = entries.ToArray();
+        if (snapshot.Length > _capacity ||
+            snapshot.Any(static entry =>
+                string.IsNullOrWhiteSpace(entry.CommandId) ||
+                string.IsNullOrWhiteSpace(entry.Fingerprint) ||
+                entry.Result is null) ||
+            snapshot.Select(static entry => entry.CommandId).Distinct(StringComparer.Ordinal).Count() != snapshot.Length)
+        {
+            throw new ArgumentException("The idempotency checkpoint is invalid or exceeds the configured capacity.", nameof(entries));
+        }
+
+        var serializedResults = snapshot
+            .Select(entry => (entry.CommandId, entry.Fingerprint, SerializedResult: ProtocolJson.Serialize(entry.Result)))
+            .ToArray();
+        lock (_gate)
+        {
+            if (_executing.Count != 0)
+            {
+                throw new InvalidOperationException("The idempotency window cannot be restored during command execution.");
+            }
+
+            _results.Clear();
+            _insertionOrder.Clear();
+            foreach (var entry in serializedResults)
+            {
+                _results.Add(
+                    entry.CommandId,
+                    new CachedResult(entry.Fingerprint, entry.SerializedResult));
+                _insertionOrder.Enqueue(entry.CommandId);
+            }
+        }
+    }
+
     public string Validate(
         CommandEnvelope command,
         Func<CommandEnvelope, string>? fingerprint = null)
@@ -109,6 +162,11 @@ public sealed class CommandIdempotencyWindow<TResult>
         }
     }
 }
+
+public sealed record IdempotencyCacheEntry<TResult>(
+    string CommandId,
+    string Fingerprint,
+    TResult Result);
 
 public sealed class CommandIdConflictException(string commandId)
     : InvalidOperationException($"Command id '{commandId}' was reused with a different request.")

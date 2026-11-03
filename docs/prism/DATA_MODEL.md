@@ -80,14 +80,14 @@ perception ne remontent que les blocs exposés (anti-« rayons X », Q-07).
 | Concept | Description |
 | :-- | :-- |
 | `ItemType` | Fiche d'objet (données) : tags, `maxStack`, `toolTier`, `durability`, `shelfLifeTicks`, `effects` (besoins), `weight` |
-| `ItemStack` | `(itemTypeId, quantity, freshnessBucket, durabilityRemaining)` ; état de durabilité par outil (pile de quantité 1), fraîcheur encore en attente |
+| `ItemStack` | `(itemTypeId, quantity, maxStackSize, durabilityRemaining, freshnessPermilleTicks, freshnessUpdatedTick)` ; durabilité par outil (pile de quantité 1), fraîcheur portée par la pile et jamais moyennée lors d'une fusion |
 | Fraîcheur | Durée de vie restante en ticks en virgule fixe, décrémentée **paresseusement** (à l'accès ou tous les `freshnessSweepTicks`) selon le taux de décroissance du conteneur |
 | Durabilité | Points restants par outil ; un outil est une pile de quantité 1 avec sa durabilité. Une valeur non initialisée signifie la durabilité maximale déclarée au contenu. |
 | Inventaire d'agent | `inventorySlots` emplacements (défaut 12) + un emplacement « outil en main » |
 | Conteneur | Associé à un bloc (`coffre`) ou à une structure (`grenier`) ; capacité et taux de péremption propres ; liste d'accès |
 | Objet au sol | `GroundItem{id, position, stack}` ; fusion des piles compatibles sur la même case |
 
-Le noyau implémente actuellement les piles simples, la capacité par emplacements et les transferts de conteneur. La fraîcheur (`freshnessBucket`) n'est pas encore portée par les inventaires et n'est donc pas matérialisée par ces transferts.
+Le noyau implémente les piles simples avec fraîcheur et durabilité, la capacité par emplacements et les transferts de conteneur. Les transferts conservent l'état de fraîcheur de la pile et un conteneur applique son taux de décroissance à la prise (`ApplyDecay`, destruction comptée `spoil`). Le balayage des inventaires d'agents est raccordé au tick de cycle de vie (1 000 ‰/tick) et les péremptions sont publiées en événements `item_spoiled`.
 
 ## 6. Agents physiques
 

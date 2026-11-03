@@ -67,6 +67,36 @@ public sealed class WorldTickHostTests
     }
 
     [Fact]
+    public void RestoreAcceptsCheckpointCreatedBeforeOptionalConstructionStateWasAdded()
+    {
+        var sourceDispatch = new CommandDispatchPhase([]);
+        var source = new OrderedWorldHost(Enum.GetValues<WorldTickPhase>()
+            .Select(phase => phase switch
+            {
+                WorldTickPhase.Receive => (IWorldTickPhaseHandler)sourceDispatch.ReceivePhase,
+                WorldTickPhase.StartOrCancelActions => sourceDispatch,
+                _ => new RecordingPhase(phase, []),
+            }));
+        _ = source.Step(new TickRequest(ProtocolVersion.Current.ToString(), 0, []));
+        var checkpoint = source.CaptureCheckpoint();
+
+        var targetDispatch = new CommandDispatchPhase([]);
+        var target = new OrderedWorldHost(Enum.GetValues<WorldTickPhase>()
+            .Select(phase => phase switch
+            {
+                WorldTickPhase.Receive => (IWorldTickPhaseHandler)targetDispatch.ReceivePhase,
+                WorldTickPhase.StartOrCancelActions => targetDispatch,
+                WorldTickPhase.WearExpiryAndConstruction => new StructureConstructionTickPhase(null),
+                _ => new RecordingPhase(phase, []),
+            }));
+
+        target.RestoreCheckpoint(checkpoint);
+
+        Assert.Equal(0, target.LastCompletedTick);
+        Assert.Equal(1, target.Step(new TickRequest(ProtocolVersion.Current.ToString(), 1, [])).Tick);
+    }
+
+    [Fact]
     public void CommandDispatchRunsHandlersOnceAndReplaysPriorOutcomeOnRetry()
     {
         using var payload = JsonDocument.Parse("""{"amount":3}""");

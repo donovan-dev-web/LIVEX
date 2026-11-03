@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using Prism.Core.World;
 
 namespace Prism.Core.Perception;
@@ -28,6 +29,11 @@ public sealed class PerceptionRules
     }
 
     public ushort AirMaterialId { get; }
+    public bool ContainsMaterial(ushort materialId) => _materials.ContainsKey(materialId);
+    public int MaterialCount => _materials.Count;
+
+    internal KeyValuePair<ushort, PerceptionMaterialRule>[] SnapshotMaterials() =>
+        _materials.OrderBy(static entry => entry.Key).ToArray();
 
     internal PerceptionMaterialRule GetMaterial(ushort materialId) =>
         _materials.TryGetValue(materialId, out var rule)
@@ -58,6 +64,7 @@ public enum PerceptionEntityKind : byte
     GroundItem,
     Agent,
     RegionSummary,
+    ConstructionSite,
 }
 
 public enum PerceptionChangeKind : byte
@@ -77,7 +84,9 @@ public readonly record struct PerceptionEntry(
     byte State,
     ushort ItemTypeId,
     int Quantity,
-    uint TagMask);
+    uint TagMask,
+    string? SiteId = null,
+    int WorkRequired = 0);
 
 public readonly record struct PerceptionChange(
     PerceptionChangeKind Change,
@@ -85,7 +94,10 @@ public readonly record struct PerceptionChange(
 
 public sealed record SelfObservation(
     AgentPosition Position,
-    IReadOnlyList<AgentItemStack> Inventory);
+    IReadOnlyList<AgentItemStack> Inventory,
+    bool Sheltered = false,
+    string? ShelterSiteId = null,
+    int FatigueRecoveryBonusPermille = 0);
 
 public sealed record PerceptionFrame(
     IReadOnlyList<PerceptionChange> Changes,
@@ -93,7 +105,11 @@ public sealed record PerceptionFrame(
 
 public sealed class PerceptionSystem
 {
+    private const int CheckpointVersion = 1;
+    private static readonly JsonSerializerOptions CheckpointJsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ConcurrentDictionary<ulong, SortedDictionary<ObservationKey, PerceptionEntry>> _previous = [];
+
+    public IReadOnlyCollection<ulong> KnownAgents => _previous.Keys.ToArray();
 
     public PerceptionFrame Observe(
         AgentBody observer,
@@ -101,7 +117,9 @@ public sealed class PerceptionSystem
         AgentRegistry agents,
         GroundItemStore groundItems,
         PerceptionRules rules,
-        PerceptionSettings settings)
+        PerceptionSettings settings,
+        IReadOnlyList<StructureConstructionSite>? constructionSites = null,
+        StructureUsage? shelter = null)
     {
         ArgumentNullException.ThrowIfNull(observer);
         ArgumentNullException.ThrowIfNull(world);
@@ -115,6 +133,7 @@ public sealed class PerceptionSystem
         AddNearbyBlocks(candidates, observer.Position, world, rules, settings.NearRadius);
         AddNearbyGroundItems(candidates, observer.Position, groundItems, settings.NearRadius);
         AddNearbyAgents(candidates, observer, agents, settings.NearRadius);
+        AddNearbyConstructionSites(candidates, observer.Position, constructionSites, settings.NearRadius);
         AddRegionSummaries(candidates, observer.Position, world, rules, settings.MidRadiusRegions);
 
         var previous = _previous.TryGetValue(observer.AgentId, out var last)
@@ -175,10 +194,98 @@ public sealed class PerceptionSystem
         _previous[observer.AgentId] = next;
         return new PerceptionFrame(
             Array.AsReadOnly(changes),
-            new SelfObservation(observer.Position, Array.AsReadOnly(observer.Inventory.Snapshot().ToArray())));
+            new SelfObservation(
+                observer.Position,
+                Array.AsReadOnly(observer.Inventory.Snapshot().ToArray()),
+                shelter is not null,
+                shelter?.SiteId,
+                shelter?.FatigueRecoveryBonusPermille ?? 0));
     }
 
     public bool ForgetAgent(ulong agentId) => _previous.TryRemove(agentId, out _);
+
+    public bool HasPerceivedBlock(ulong agentId, BlockCoordinate position) =>
+        _previous.TryGetValue(agentId, out var entries) &&
+        entries.Values.Any(entry =>
+            entry.Kind == PerceptionEntityKind.Block &&
+            entry.X == position.X &&
+            entry.Y == position.Y &&
+            entry.Z == position.Z);
+
+    public bool HasPerceivedAgent(ulong observerAgentId, ulong targetAgentId) =>
+        _previous.TryGetValue(observerAgentId, out var entries) &&
+        entries.Values.Any(entry =>
+            entry.Kind == PerceptionEntityKind.Agent &&
+            entry.Id == targetAgentId);
+
+    public IReadOnlyList<PerceptionEntry> GetPerceivedEntries(ulong agentId) =>
+        _previous.TryGetValue(agentId, out var entries)
+            ? entries.Values.ToArray()
+            : [];
+
+    public byte[] CaptureState()
+    {
+        var checkpoint = new PerceptionCheckpoint(
+            CheckpointVersion,
+            _previous
+                .OrderBy(static entry => entry.Key)
+                .Select(static entry => new AgentPerceptionCheckpoint(
+                    entry.Key,
+                    entry.Value.Values.ToArray()))
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(checkpoint, CheckpointJsonOptions);
+    }
+
+    public void RestoreState(ReadOnlySpan<byte> checkpointBytes)
+    {
+        if (!_previous.IsEmpty)
+        {
+            throw new InvalidOperationException("Perception state can only be restored into a new system.");
+        }
+
+        var checkpoint = JsonSerializer.Deserialize<PerceptionCheckpoint>(
+                             checkpointBytes,
+                             CheckpointJsonOptions)
+                         ?? throw new InvalidDataException("Perception checkpoint is empty.");
+        if (checkpoint.Version != CheckpointVersion || checkpoint.Agents is null)
+        {
+            throw new InvalidDataException("Perception checkpoint version or contents are invalid.");
+        }
+
+        var restored = new SortedDictionary<ulong, SortedDictionary<ObservationKey, PerceptionEntry>>();
+        foreach (var agent in checkpoint.Agents)
+        {
+            if (agent is null || agent.Entries is null || restored.ContainsKey(agent.AgentId))
+            {
+                throw new InvalidDataException("Perception checkpoint contains an invalid or duplicate agent.");
+            }
+
+            var entries = new SortedDictionary<ObservationKey, PerceptionEntry>();
+            foreach (var entry in agent.Entries)
+            {
+                if (!Enum.IsDefined(entry.Kind))
+                {
+                    throw new InvalidDataException("Perception checkpoint contains an invalid entity kind.");
+                }
+
+                var key = new ObservationKey(entry.Kind, entry.X, entry.Y, entry.Z, entry.Id);
+                if (!entries.TryAdd(key, entry))
+                {
+                    throw new InvalidDataException("Perception checkpoint contains duplicate observations.");
+                }
+            }
+
+            restored.Add(agent.AgentId, entries);
+        }
+
+        foreach (var entry in restored)
+        {
+            if (!_previous.TryAdd(entry.Key, entry.Value))
+            {
+                throw new InvalidOperationException("Perception checkpoint restoration conflicted with existing state.");
+            }
+        }
+    }
 
     private static int CompareChanges(PerceptionChange left, PerceptionChange right)
     {
@@ -197,9 +304,10 @@ public sealed class PerceptionSystem
     private static int GetPriority(PerceptionEntityKind kind) => kind switch
     {
         PerceptionEntityKind.Agent => 0,
-        PerceptionEntityKind.GroundItem => 1,
-        PerceptionEntityKind.Block => 2,
-        PerceptionEntityKind.RegionSummary => 3,
+        PerceptionEntityKind.ConstructionSite => 1,
+        PerceptionEntityKind.GroundItem => 2,
+        PerceptionEntityKind.Block => 3,
+        PerceptionEntityKind.RegionSummary => 4,
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
@@ -405,6 +513,57 @@ public sealed class PerceptionSystem
         }
     }
 
+    private static void AddNearbyConstructionSites(
+        SortedDictionary<ObservationKey, PerceptionEntry> candidates,
+        AgentPosition position,
+        IReadOnlyList<StructureConstructionSite>? sites,
+        int radius)
+    {
+        if (sites is null)
+        {
+            return;
+        }
+
+        var radiusSquared = (long)radius * radius;
+        foreach (var site in sites)
+        {
+            if (site.State == StructureConstructionState.Abandoned ||
+                !WithinRadius(position.CellX, position.CellY, site.Origin.X, site.Origin.Y, radiusSquared))
+            {
+                continue;
+            }
+
+            var entry = new PerceptionEntry(
+                PerceptionEntityKind.ConstructionSite,
+                site.Origin.X,
+                site.Origin.Y,
+                site.Origin.Z,
+                StableSiteId(site.Id),
+                0,
+                (byte)site.State,
+                0,
+                site.WorkCompleted,
+                0,
+                site.Id,
+                site.WorkRequired);
+            candidates[new ObservationKey(entry.Kind, entry.X, entry.Y, entry.Z, entry.Id)] = entry;
+        }
+    }
+
+    private static ulong StableSiteId(string siteId)
+    {
+        const ulong offset = 14695981039346656037UL;
+        const ulong prime = 1099511628211UL;
+        var hash = offset;
+        foreach (var character in siteId)
+        {
+            hash ^= character;
+            hash *= prime;
+        }
+
+        return hash;
+    }
+
     private static void AddRegionSummaries(
         SortedDictionary<ObservationKey, PerceptionEntry> candidates,
         AgentPosition position,
@@ -528,5 +687,10 @@ public sealed class PerceptionSystem
             comparison = X.CompareTo(other.X);
             return comparison != 0 ? comparison : Id.CompareTo(other.Id);
         }
+
     }
+
+    private sealed record PerceptionCheckpoint(int Version, AgentPerceptionCheckpoint[] Agents);
+
+    private sealed record AgentPerceptionCheckpoint(ulong AgentId, PerceptionEntry[] Entries);
 }

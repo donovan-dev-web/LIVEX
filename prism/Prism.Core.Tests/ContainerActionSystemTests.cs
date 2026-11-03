@@ -144,6 +144,38 @@ public sealed class ContainerActionSystemTests
         Assert.Equal(4, Assert.Single(agent.Inventory.Snapshot()).DurabilityRemaining);
     }
 
+    [Fact]
+    public void ContainerStoreCheckpointPreservesContentsOwnershipAndAccessRules()
+    {
+        var (movement, agents) = CreateAgents(2);
+        var owner = Incarnate(agents, movement, 8, 0);
+        var other = Incarnate(agents, movement, 7, 1);
+        Assert.True(owner.Inventory.TryAdd(10, 2, 5, out var remaining));
+        Assert.Equal(0, remaining);
+        var position = new BlockCoordinate(1, 0, 5);
+        var container = new ContainerInventory(
+            capacitySlots: 2,
+            decayPermillePerTick: 800,
+            position,
+            AccessPrincipal.ForAgent(owner.AgentId));
+        Assert.True(container.SetAccessList(
+            AccessPrincipal.ForAgent(owner.AgentId),
+            [new ContainerAccessRule(AccessPrincipal.ForGroup(55), ContainerAccessRights.Put)]).Succeeded);
+        Assert.True(ContainerActionSystem.Deposit(owner, container, CreateRules(), 10, 2).Succeeded);
+        var store = new WorldContainerStore();
+        Assert.True(store.TryAdd(container));
+
+        var restoredStore = new WorldContainerStore();
+        restoredStore.RestoreState(store.CaptureState());
+
+        Assert.True(restoredStore.TryGet(position, out var restored));
+        Assert.Equal(container.Snapshot(), restored!.Snapshot());
+        Assert.Equal(AccessPrincipal.ForAgent(owner.AgentId), restored.Owner);
+        Assert.Equal(
+            "access_denied",
+            ContainerActionSystem.Take(other, restored, CreateRules(), 10, 1).ErrorCode);
+    }
+
     private static BlockActionRules CreateRules() =>
         new(
             [],

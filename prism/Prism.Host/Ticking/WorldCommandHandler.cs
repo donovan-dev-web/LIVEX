@@ -6,16 +6,38 @@ namespace Prism.Host.Ticking;
 public interface IWorldCommandHandler
 {
     string Kind { get; }
+
+    /// <summary>
+    /// Contract-level validation of the command payload, executed before <see cref="Execute"/>.
+    /// Handlers that carry a documented payload schema override it; simple handlers accept any object.
+    /// </summary>
+    bool ValidatePayload(JsonElement payload, out string? detail)
+    {
+        detail = null;
+        return true;
+    }
+
     CommandExecutionResult Execute(CommandEnvelope command, WorldTickContext context);
+
+    /// <summary>
+    /// Resolves a command whose effect was deferred at scheduling time. Handlers that defer work
+    /// override it; the default re-executes the command.
+    /// </summary>
+    CommandExecutionResult ResolveDeferred(CommandEnvelope command, WorldTickContext context) =>
+        Execute(command, context);
 }
 
 public sealed record CommandExecutionResult(
     bool Succeeded,
     string? ErrorCode,
-    JsonElement Payload)
+    JsonElement Payload,
+    bool Deferred = false)
 {
     public static CommandExecutionResult Success(JsonElement payload) =>
         new(true, null, RequireObjectPayload(payload));
+
+    public static CommandExecutionResult Scheduled(JsonElement payload) =>
+        new(true, null, RequireObjectPayload(payload), Deferred: true);
 
     public static CommandExecutionResult Failure(string errorCode, JsonElement? payload = null)
     {

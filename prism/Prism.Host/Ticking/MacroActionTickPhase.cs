@@ -1,0 +1,387 @@
+using System.Text.Json;
+using Prism.Content;
+using Prism.Contracts;
+using Prism.Core.Actions;
+using Prism.Core.World;
+
+namespace Prism.Host.Ticking;
+
+public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhaseHandler
+{
+    private readonly MacroActionSystem _macros;
+    private readonly AgentLifecycleSystem? _lifecycle;
+    private readonly CompiledContentPack? _content;
+    private readonly WorldGrid? _world;
+    private readonly CropActionRules? _cropRules;
+    private readonly WorldContainerStore _containers;
+    private readonly BlockActionRules? _blockRules;
+    private readonly IReadOnlyDictionary<string, IWorldCommandHandler> _commandHandlers;
+    private readonly Dictionary<ulong, string> _commandIds;
+
+    public MacroActionTickPhase(
+        MacroActionSystem macros,
+        AgentLifecycleSystem? lifecycle,
+        CompiledContentPack? content,
+        WorldGrid? world,
+        CropActionRules? cropRules,
+        BlockActionRules? blockRules,
+        WorldContainerStore containers,
+        Dictionary<ulong, string> commandIds,
+        IEnumerable<IWorldCommandHandler> commandHandlers,
+        ActionDurationTracker? durations = null)
+    {
+        ArgumentNullException.ThrowIfNull(macros);
+        ArgumentNullException.ThrowIfNull(containers);
+        ArgumentNullException.ThrowIfNull(commandIds);
+        ArgumentNullException.ThrowIfNull(commandHandlers);
+        _macros = macros;
+        _lifecycle = lifecycle;
+        _content = content;
+        _world = world;
+        _cropRules = cropRules;
+        _blockRules = blockRules;
+        _containers = containers;
+        _commandIds = commandIds;
+        _durations = durations;
+        _commandHandlers = commandHandlers.ToDictionary(handler => handler.Kind, StringComparer.Ordinal);
+    }
+
+    private const string DeferredKind = "Fabriquer";
+    private readonly ActionDurationTracker? _durations;
+
+    public WorldTickPhase Phase => WorldTickPhase.AdvanceMacroActions;
+
+    public void Execute(WorldTickContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (_lifecycle is null || _content is null || _world is null || _cropRules is null || _blockRules is null)
+        {
+            return;
+        }
+
+        foreach (var agentId in _macros.ActiveAgentIds)
+        {
+            if (_durations is not null &&
+                _durations.TryGetActive(agentId, context.Tick, out var activeAction) &&
+                string.Equals(activeAction.Kind, DeferredKind, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (!_lifecycle.TryGetAgent(agentId, out var agent))
+            {
+                var commandId = _commandIds.GetValueOrDefault(agentId, $"macro:{agentId}");
+                _commandIds.Remove(agentId);
+                AddMacroEvent(context, commandId, agentId, "action_failed", "agent_not_found", null);
+                _macros.Cancel(agentId);
+                continue;
+            }
+
+            var sources = MacroPerceptionCompiler.Compile(
+                agentId,
+                _lifecycle,
+                _content,
+                _world,
+                _cropRules,
+                _containers);
+            var next = _macros.GetNextStep(agentId, agent!.Position, sources);
+            if (!next.Succeeded)
+            {
+                var failedId = _commandIds.GetValueOrDefault(agentId, $"macro:{agentId}");
+                _commandIds.Remove(agentId);
+                AddMacroEvent(
+                    context,
+                    failedId,
+                    agentId,
+                    "action_failed",
+                    next.ErrorCode,
+                    new { quantityAcquired = next.QuantityAcquired });
+                continue;
+            }
+
+            if (next.Completed)
+            {
+                var completedId = _commandIds.GetValueOrDefault(agentId, $"macro:{agentId}");
+                _commandIds.Remove(agentId);
+                AddMacroEvent(
+                    context,
+                    completedId,
+                    agentId,
+                    "action_completed",
+                    null,
+                    new { quantityAcquired = next.QuantityAcquired, completed = true });
+                continue;
+            }
+
+            if (next.Step is not { } step)
+            {
+                if (_macros.TryGetWaitingCrop(agentId, out var cropPosition) &&
+                    IsRipe(cropPosition))
+                {
+                    var harvest = _macros.RequestCultivateHarvest(agentId);
+                    if (harvest.Succeeded && harvest.Step is { } harvestStep)
+                    {
+                        QueueStep(context, agentId, harvestStep, sources);
+                    }
+                }
+
+                continue;
+            }
+
+            if (step.Kind == MacroStepKind.WaitForRipe)
+            {
+                var wait = _macros.CompleteCurrentStep(agentId, succeeded: true);
+                if (!wait.Succeeded)
+                {
+                    FailMacro(context, agentId, wait.ErrorCode, wait.QuantityAcquired);
+                }
+
+                continue;
+            }
+
+            QueueStep(context, agentId, step, sources);
+        }
+    }
+
+    public JsonElement CaptureState() =>
+        JsonSerializer.SerializeToElement(
+            new MacroPhaseCheckpoint(
+                _macros.CaptureState(),
+                _commandIds.OrderBy(static entry => entry.Key)
+                    .Select(static entry => new MacroCommandId(entry.Key, entry.Value))
+                    .ToArray()),
+            ProtocolJson.Options);
+
+    public void RestoreEmptyState()
+    {
+        if (_macros.ActiveAgentIds.Count != 0 || _commandIds.Count != 0)
+        {
+            throw new JsonException("Macro-action state can only be initialized as empty in a new runtime.");
+        }
+    }
+
+    public void RestoreState(JsonElement state)
+    {
+        var checkpoint = state.Deserialize<MacroPhaseCheckpoint>(ProtocolJson.Options)
+                         ?? throw new JsonException("The macro-action checkpoint is empty.");
+        if (checkpoint.Macros is null || checkpoint.Commands is null)
+        {
+            throw new JsonException("The macro-action checkpoint is incomplete.");
+        }
+
+        _macros.RestoreState(checkpoint.Macros);
+        foreach (var command in checkpoint.Commands)
+        {
+            if (command is null ||
+                string.IsNullOrWhiteSpace(command.CommandId) ||
+                !_commandIds.TryAdd(command.AgentId, command.CommandId))
+            {
+                throw new JsonException("The macro-action checkpoint contains invalid command state.");
+            }
+        }
+
+        if (!_commandIds.Keys.Order().SequenceEqual(_macros.ActiveAgentIds.Order()))
+        {
+            throw new JsonException("Macro-action command IDs do not match active macro states.");
+        }
+    }
+
+    private void QueueStep(
+        WorldTickContext context,
+        ulong agentId,
+        MacroActionStep step,
+        IReadOnlyList<PerceivedMacroSource> perceivedSources)
+    {
+        var commandId = _commandIds.GetValueOrDefault(agentId, $"macro:{agentId}");
+        context.QueueWorldWrite(() =>
+        {
+            var execution = ExecuteStep(context, agentId, step, perceivedSources);
+            var completed = _macros.CompleteCurrentStep(
+                agentId,
+                execution.Succeeded,
+                execution.QuantityAcquired,
+                execution.ErrorCode);
+            if (!execution.Succeeded || !completed.Succeeded)
+            {
+                _commandIds.Remove(agentId);
+                AddMacroEvent(
+                    context,
+                    commandId,
+                    agentId,
+                    "action_failed",
+                    execution.ErrorCode ?? completed.ErrorCode,
+                    new { quantityAcquired = completed.QuantityAcquired });
+                return;
+            }
+
+            AddMacroEvent(
+                context,
+                commandId,
+                agentId,
+                "macro_step_completed",
+                null,
+                new { step = step.Kind.ToString(), quantityAcquired = execution.QuantityAcquired });
+        });
+    }
+
+    private StepExecution ExecuteStep(
+        WorldTickContext context,
+        ulong agentId,
+        MacroActionStep step,
+        IReadOnlyList<PerceivedMacroSource> sources)
+    {
+        if (step.Kind == MacroStepKind.Move)
+        {
+            var moved = _lifecycle!.TryMoveOneStep(agentId, step.Target, out var moveError);
+            return new StepExecution(moved, 0, moveError);
+        }
+
+        if (step.Kind == MacroStepKind.Take)
+        {
+            var source = sources.FirstOrDefault(candidate => candidate.SourceId == step.SourceId);
+            if (source is null)
+            {
+                return new StepExecution(false, 0, "source_not_found");
+            }
+
+            if (source.Kind == MacroSourceKind.GroundItem)
+            {
+                var taken = _lifecycle!.TakeGroundItem(
+                    agentId,
+                    source.SourceId,
+                    step.Quantity,
+                    _blockRules!,
+                    out var takeError);
+                return new StepExecution(taken, taken ? step.Quantity : 0, takeError);
+            }
+
+            return InvokeActionHandler(
+                "Prendre",
+                context,
+                agentId,
+                JsonSerializer.SerializeToElement(
+                    new { container = step.Target, item = step.ItemTypeId, quantity = step.Quantity },
+                    ProtocolJson.Options),
+                step);
+        }
+
+        var (kind, payload) = step.Kind switch
+        {
+            MacroStepKind.Mine => ("Miner", new { target = step.Target }),
+            MacroStepKind.Harvest => ("Recolter", new { target = step.Target }),
+            MacroStepKind.Craft => ("Fabriquer", step.UsesStation
+                ? (object)new { recipeId = step.RecipeId, station = step.Target }
+                : new { recipeId = step.RecipeId }),
+            MacroStepKind.Till => ("Labourer", new { target = step.Target }),
+            MacroStepKind.Plant => ("Planter", new { target = step.Target, seed = step.ItemTypeId }),
+            _ => (string.Empty, (object)new { }),
+        };
+        if (string.IsNullOrEmpty(kind))
+        {
+            return new StepExecution(false, 0, "unsupported_macro_step");
+        }
+
+        return InvokeActionHandler(
+            kind,
+            context,
+            agentId,
+            JsonSerializer.SerializeToElement(payload, ProtocolJson.Options),
+            step);
+    }
+
+    private StepExecution InvokeActionHandler(
+        string kind,
+        WorldTickContext context,
+        ulong agentId,
+        JsonElement payload,
+        MacroActionStep step)
+    {
+        if (!_commandHandlers.TryGetValue(kind, out var handler))
+        {
+            return new StepExecution(false, 0, "unknown_command");
+        }
+
+        var synthetic = new CommandEnvelope(
+            ProtocolVersion.Current.ToString(),
+            context.Tick,
+            $"macro:{agentId}:{context.Tick}:{kind}",
+            agentId,
+            kind,
+            payload);
+        var execution = handler.Execute(synthetic, context);
+        if (!execution.Succeeded)
+        {
+            return new StepExecution(false, 0, execution.ErrorCode);
+        }
+
+        if (step.Kind is MacroStepKind.Mine or MacroStepKind.Harvest)
+        {
+            var acquired = execution.Payload.GetProperty("produced")
+                .EnumerateArray()
+                .Where(stack => stack.GetProperty("itemTypeId").GetUInt16() == step.ItemTypeId)
+                .Sum(stack => stack.GetProperty("quantity").GetInt32());
+            return new StepExecution(true, Math.Min(acquired, step.Quantity), null);
+        }
+
+        if (step.Kind is MacroStepKind.Take)
+        {
+            return new StepExecution(
+                true,
+                execution.Payload.GetProperty("quantity").GetInt32(),
+                null);
+        }
+
+        return new StepExecution(true, 0, null);
+    }
+
+    private bool IsRipe(BlockCoordinate position)
+    {
+        if (_world is null || _cropRules is null ||
+            !_world.TryGetBlockOverride(position, out var block) ||
+            block.IsAir)
+        {
+            return false;
+        }
+
+        return _cropRules.CropRules.Any(rule =>
+            rule.Growth.CropMaterialId == block.MaterialId &&
+            block.State >= rule.Growth.Stages - 1);
+    }
+
+    private void FailMacro(WorldTickContext context, ulong agentId, string? errorCode, int quantityAcquired)
+    {
+        var commandId = _commandIds.GetValueOrDefault(agentId, $"macro:{agentId}");
+        _commandIds.Remove(agentId);
+        AddMacroEvent(
+            context,
+            commandId,
+            agentId,
+            "action_failed",
+            errorCode,
+            new { quantityAcquired });
+    }
+
+    private static void AddMacroEvent(
+        WorldTickContext context,
+        string commandId,
+        ulong agentId,
+        string kind,
+        string? reason,
+        object? result)
+    {
+        var payload = JsonSerializer.SerializeToElement(
+            new { commandId, reason, result },
+            ProtocolJson.Options);
+        context.AddEvent(new EventEnvelope(
+            ProtocolVersion.Current.ToString(),
+            context.Tick,
+            $"{commandId}:{kind}:{context.Tick}",
+            kind,
+            agentId,
+            payload));
+    }
+
+    private sealed record StepExecution(bool Succeeded, int QuantityAcquired, string? ErrorCode);
+    private sealed record MacroPhaseCheckpoint(byte[] Macros, MacroCommandId[] Commands);
+    private sealed record MacroCommandId(ulong AgentId, string CommandId);
+}

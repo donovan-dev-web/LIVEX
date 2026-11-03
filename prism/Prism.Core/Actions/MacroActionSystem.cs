@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Prism.Core.World;
 
 namespace Prism.Core.Actions;
@@ -43,7 +44,8 @@ public sealed record MacroActionStep(
     ulong SourceId,
     ushort ItemTypeId,
     int Quantity,
-    ushort? RecipeId = null);
+    ushort? RecipeId = null,
+    bool UsesStation = false);
 
 public sealed record MacroActionResult(
     bool Succeeded,
@@ -58,8 +60,155 @@ public sealed record MacroActionResult(
 
 public sealed class MacroActionSystem
 {
+    private const int CheckpointVersion = 1;
+    private static readonly JsonSerializerOptions CheckpointJsonOptions = new(JsonSerializerDefaults.Web);
     private readonly Dictionary<ulong, ObtainState> _active = [];
     private readonly Dictionary<ulong, SequenceState> _sequences = [];
+
+    public IReadOnlyCollection<ulong> ActiveAgentIds =>
+        _active.Keys.Concat(_sequences.Keys).Distinct().Order().ToArray();
+
+    public bool IsWaitingForHarvest(ulong agentId) =>
+        _sequences.TryGetValue(agentId, out var state) && state.WaitingForHarvest;
+
+    public bool TryGetWaitingCrop(ulong agentId, out BlockCoordinate position)
+    {
+        position = default;
+        if (!_sequences.TryGetValue(agentId, out var state) ||
+            !state.WaitingForHarvest ||
+            state.Steps.Count == 0)
+        {
+            return false;
+        }
+
+        position = state.Steps[^1].Target;
+        return true;
+    }
+
+    public bool Cancel(ulong agentId) =>
+        _active.Remove(agentId) || _sequences.Remove(agentId);
+
+    public byte[] CaptureState()
+    {
+        var checkpoint = new MacroActionCheckpoint(
+            CheckpointVersion,
+            _active.OrderBy(static entry => entry.Key)
+                .Select(static entry => new ObtainCheckpoint(
+                    entry.Key,
+                    entry.Value.Request,
+                    entry.Value.Acquired,
+                    entry.Value.Source is { } source
+                        ? new SourceCheckpoint(
+                            source.SourceId,
+                            source.Kind,
+                            source.Position,
+                            source.ItemTypeId,
+                            source.AvailableQuantity,
+                            source.Tags.Order(StringComparer.Ordinal).ToArray())
+                        : null,
+                    entry.Value.CurrentStep,
+                    entry.Value.ExhaustedSources.Order().ToArray(),
+                    entry.Value.AcquiredBySource.OrderBy(static value => value.Key)
+                        .Select(static value => new AcquiredSource(value.Key, value.Value))
+                        .ToArray()))
+                .ToArray(),
+            _sequences.OrderBy(static entry => entry.Key)
+                .Select(static entry => new SequenceCheckpoint(
+                    entry.Key,
+                    entry.Value.Steps.ToArray(),
+                    entry.Value.Index,
+                    entry.Value.WaitingForHarvest))
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(checkpoint, CheckpointJsonOptions);
+    }
+
+    public void RestoreState(ReadOnlySpan<byte> checkpointBytes)
+    {
+        if (_active.Count != 0 || _sequences.Count != 0)
+        {
+            throw new InvalidOperationException("Macro-action state can only be restored into a new system.");
+        }
+
+        var checkpoint = JsonSerializer.Deserialize<MacroActionCheckpoint>(
+                             checkpointBytes,
+                             CheckpointJsonOptions)
+                         ?? throw new InvalidDataException("Macro-action checkpoint is empty.");
+        if (checkpoint.Version != CheckpointVersion ||
+            checkpoint.Obtains is null ||
+            checkpoint.Sequences is null)
+        {
+            throw new InvalidDataException("Macro-action checkpoint version or contents are invalid.");
+        }
+
+        var agentIds = new HashSet<ulong>();
+        foreach (var obtain in checkpoint.Obtains)
+        {
+            if (obtain is null ||
+                obtain.Request is null ||
+                obtain.ExhaustedSources is null ||
+                obtain.AcquiredBySource is null ||
+                obtain.Acquired < 0 ||
+                obtain.Request.Quantity <= 0 ||
+                obtain.Acquired > obtain.Request.Quantity ||
+                !agentIds.Add(obtain.AgentId))
+            {
+                throw new InvalidDataException("Macro-action checkpoint contains an invalid obtain action.");
+            }
+
+            var state = new ObtainState(obtain.Request)
+            {
+                Acquired = obtain.Acquired,
+                Source = obtain.Source is { } source
+                    ? new PerceivedMacroSource(
+                        source.SourceId,
+                        source.Kind,
+                        source.Position,
+                        source.ItemTypeId,
+                        source.AvailableQuantity,
+                        new HashSet<string>(source.Tags, StringComparer.Ordinal))
+                    : null,
+                CurrentStep = obtain.CurrentStep,
+            };
+            foreach (var sourceId in obtain.ExhaustedSources)
+            {
+                if (!state.ExhaustedSources.Add(sourceId))
+                {
+                    throw new InvalidDataException("Macro-action checkpoint contains duplicate exhausted sources.");
+                }
+            }
+
+            foreach (var acquired in obtain.AcquiredBySource)
+            {
+                if (acquired.Quantity <= 0 || !state.AcquiredBySource.TryAdd(acquired.SourceId, acquired.Quantity))
+                {
+                    throw new InvalidDataException("Macro-action checkpoint contains invalid source progress.");
+                }
+            }
+
+            _active.Add(obtain.AgentId, state);
+        }
+
+        foreach (var sequence in checkpoint.Sequences)
+        {
+            if (sequence is null ||
+                sequence.Steps is null ||
+                sequence.Steps.Length == 0 ||
+                sequence.Index < 0 ||
+                sequence.Index > sequence.Steps.Length ||
+                sequence.WaitingForHarvest && sequence.Index == 0 ||
+                !agentIds.Add(sequence.AgentId))
+            {
+                throw new InvalidDataException("Macro-action checkpoint contains an invalid sequence.");
+            }
+
+            var state = new SequenceState(sequence.Steps)
+            {
+                Index = sequence.Index,
+                WaitingForHarvest = sequence.WaitingForHarvest,
+            };
+            _sequences.Add(sequence.AgentId, state);
+        }
+    }
 
     public MacroActionResult StartObtainObject(
         AgentBody agent,
@@ -120,7 +269,14 @@ public sealed class MacroActionSystem
             steps.Add(new MacroActionStep(MacroStepKind.Move, station, 0, 0, 0));
         }
 
-        steps.Add(new MacroActionStep(MacroStepKind.Craft, target, 0, 0, 0, recipeId));
+        steps.Add(new MacroActionStep(
+        MacroStepKind.Craft,
+        target,
+        0,
+        0,
+        0,
+        recipeId,
+        stationPosition is not null));
         return StartSequence(agent.AgentId, steps);
     }
 
@@ -150,7 +306,17 @@ public sealed class MacroActionSystem
 
         if (needsTilling)
         {
-            steps.Add(new MacroActionStep(MacroStepKind.Till, parcel, 0, seedItemTypeId, 0));
+            if (parcel.Z == 0)
+            {
+                return MacroActionResult.Failure("soil_unsuitable", 0);
+            }
+
+            steps.Add(new MacroActionStep(
+                MacroStepKind.Till,
+                parcel with { Z = parcel.Z - 1 },
+                0,
+                seedItemTypeId,
+                0));
         }
 
         steps.Add(new MacroActionStep(MacroStepKind.Plant, parcel, 0, seedItemTypeId, 1));
@@ -313,7 +479,7 @@ public sealed class MacroActionSystem
 
             if (completedStep.Kind is MacroStepKind.Harvest or MacroStepKind.Take or MacroStepKind.Mine)
             {
-                if (quantityAcquired < 0)
+                if (quantityAcquired < 0 || quantityAcquired > completedStep.Quantity && completedStep.Quantity > 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(quantityAcquired));
                 }
@@ -352,7 +518,7 @@ public sealed class MacroActionSystem
         }
         else
         {
-            if (quantityAcquired <= 0 || quantityAcquired > step.Quantity)
+            if (quantityAcquired < 0 || quantityAcquired > step.Quantity)
             {
                 throw new ArgumentOutOfRangeException(nameof(quantityAcquired));
             }
@@ -448,4 +614,34 @@ public sealed class MacroActionSystem
         public int Index { get; set; }
         public bool WaitingForHarvest { get; set; }
     }
+
+    private sealed record MacroActionCheckpoint(
+        int Version,
+        ObtainCheckpoint[] Obtains,
+        SequenceCheckpoint[] Sequences);
+
+    private sealed record ObtainCheckpoint(
+        ulong AgentId,
+        ObtainObjectRequest Request,
+        int Acquired,
+        SourceCheckpoint? Source,
+        MacroActionStep? CurrentStep,
+        ulong[] ExhaustedSources,
+        AcquiredSource[] AcquiredBySource);
+
+    private sealed record SequenceCheckpoint(
+        ulong AgentId,
+        MacroActionStep[] Steps,
+        int Index,
+        bool WaitingForHarvest);
+
+    private sealed record AcquiredSource(ulong SourceId, int Quantity);
+
+    private sealed record SourceCheckpoint(
+        ulong SourceId,
+        MacroSourceKind Kind,
+        BlockCoordinate Position,
+        ushort ItemTypeId,
+        int AvailableQuantity,
+        string[] Tags);
 }

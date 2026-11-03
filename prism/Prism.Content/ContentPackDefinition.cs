@@ -43,7 +43,8 @@ public sealed record ItemDefinition(
     int Weight = 0,
     string? Effects = null,
     int ShelfLifeTicks = 0,
-    int UsePerAction = 1);
+    int UsePerAction = 1,
+    string? Places = null);
 
 public sealed record ItemDrop(
     string Item,

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Prism.Content;
+using Prism.Core.Actions;
 using Prism.Core.Perception;
 using Prism.Core.World;
 
@@ -83,6 +84,34 @@ public sealed class ContentPackCompilerTests
         Assert.False(result.Succeeded);
         Assert.Contains(result.Errors, error => error.Code == "item.durability.stack.invalid");
         Assert.Contains(result.Errors, error => error.Code == "item.value.invalid");
+    }
+
+    [Fact]
+    public void CompilesItemPlacementMappingAndRejectsUnknownMaterial()
+    {
+        var valid = CreateValidPack() with
+        {
+            Items =
+            [
+                new ItemDefinition("ore_chunk", ["ore"], 64, Places: "stone"),
+                new ItemDefinition("iron_ingot", [], 64),
+            ],
+        };
+        var compiled = _compiler.Compile(valid);
+
+        Assert.True(compiled.Succeeded);
+        Assert.NotNull(BlockActionRuleRuntimeCompiler.Compile(compiled.Pack!));
+
+        var invalid = valid with
+        {
+            Items =
+            [
+                valid.Items[0] with { Places = "missing_material" },
+                valid.Items[1],
+            ],
+        };
+        var rejected = _compiler.Compile(invalid);
+        Assert.Contains(rejected.Errors, error => error.Code == "item.place.material.missing");
     }
 
     [Fact]
@@ -208,6 +237,20 @@ public sealed class ContentPackCompilerTests
         Assert.Single(result.Pack!.Templates);
         Assert.Single(result.Pack.GrowthRules);
         Assert.Single(result.Pack.Effects);
+
+        var invalidEffectPack = complete with
+        {
+            Templates =
+            [
+                complete.Templates![0] with
+                {
+                    Effect = new TemplateEffect("shelter", [[0, 0, 0], [1, 0, 0]], 500),
+                },
+            ],
+        };
+        Assert.Contains(
+            _compiler.Compile(invalidEffectPack).Errors,
+            error => error.Code == "template.effect.invalid");
     }
 
     [Fact]

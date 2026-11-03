@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Prism.Core.Accounting;
 
 public readonly record struct MatterLedgerEntry(
@@ -29,6 +31,8 @@ public sealed class MatterLedger
     private readonly SortedDictionary<(ushort ItemTypeId, string RuleId), MutableEntry> _entries =
         new(EntryComparer);
 
+    public bool IsEmpty => _initialCounts.Count == 0 && _entries.Count == 0;
+
     public void SetInitialCount(ushort itemTypeId, long quantity)
     {
         if (quantity < 0)
@@ -50,6 +54,56 @@ public sealed class MatterLedger
         foreach (var (key, value) in _entries)
         {
             yield return new MatterLedgerEntry(key.ItemTypeId, key.RuleId, value.Created, value.Destroyed);
+        }
+    }
+
+    public byte[] CaptureState()
+    {
+        var checkpoint = new MatterLedgerCheckpoint(
+            1,
+            _initialCounts.Select(static entry => new MatterInitialCount(entry.Key, entry.Value)).ToArray(),
+            EnumerateEntries().ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(checkpoint);
+    }
+
+    public void RestoreState(ReadOnlySpan<byte> checkpointBytes)
+    {
+        if (_initialCounts.Count != 0 || _entries.Count != 0)
+        {
+            throw new InvalidOperationException("Matter ledger state can only be restored into a new ledger.");
+        }
+
+        var checkpoint = JsonSerializer.Deserialize<MatterLedgerCheckpoint>(checkpointBytes)
+                        ?? throw new InvalidDataException("Matter ledger checkpoint is empty.");
+        if (checkpoint.Version != 1 ||
+            checkpoint.InitialCounts is null ||
+            checkpoint.Entries is null ||
+            checkpoint.InitialCounts.Any(static entry => entry.Quantity < 0) ||
+            checkpoint.Entries.Any(static entry =>
+                string.IsNullOrWhiteSpace(entry.RuleId) ||
+                entry.Created < 0 ||
+                entry.Destroyed < 0 ||
+                entry.Created == 0 && entry.Destroyed == 0) ||
+            checkpoint.InitialCounts.Select(static entry => entry.ItemTypeId).Distinct().Count() !=
+            checkpoint.InitialCounts.Length ||
+            checkpoint.Entries.Select(static entry => (entry.ItemTypeId, entry.RuleId))
+                .Distinct().Count() != checkpoint.Entries.Length)
+        {
+            throw new InvalidDataException("Matter ledger checkpoint metadata or entries are invalid.");
+        }
+
+        foreach (var entry in checkpoint.InitialCounts)
+        {
+            _initialCounts.Add(entry.ItemTypeId, entry.Quantity);
+        }
+
+        foreach (var entry in checkpoint.Entries)
+        {
+            _entries.Add((entry.ItemTypeId, entry.RuleId), new MutableEntry
+            {
+                Created = entry.Created,
+                Destroyed = entry.Destroyed,
+            });
         }
     }
 
@@ -124,4 +178,11 @@ public sealed class MatterLedger
         public long Created { get; set; }
         public long Destroyed { get; set; }
     }
+
+    private sealed record MatterInitialCount(ushort ItemTypeId, long Quantity);
+
+    private sealed record MatterLedgerCheckpoint(
+        int Version,
+        MatterInitialCount[] InitialCounts,
+        MatterLedgerEntry[] Entries);
 }

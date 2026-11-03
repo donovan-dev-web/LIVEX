@@ -6,6 +6,7 @@ public sealed class WorldTickContext
 {
     private readonly List<ObservationEnvelope> _observations = [];
     private readonly List<EventEnvelope> _events = [];
+    private readonly List<Action> _worldWrites = [];
 
     internal WorldTickContext(TickRequest request) => Request = request;
 
@@ -32,6 +33,22 @@ public sealed class WorldTickContext
         }
 
         _events.Add(eventEnvelope);
+    }
+
+    internal void QueueWorldWrite(Action write)
+    {
+        ArgumentNullException.ThrowIfNull(write);
+        _worldWrites.Add(write);
+    }
+
+    internal void ApplyWorldWrites()
+    {
+        foreach (var write in _worldWrites)
+        {
+            write();
+        }
+
+        _worldWrites.Clear();
     }
 
     internal TickResult CreateResult() =>

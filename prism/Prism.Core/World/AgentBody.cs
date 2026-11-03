@@ -35,7 +35,64 @@ public readonly record struct AgentItemStack(
     ushort ItemTypeId,
     int Quantity,
     int MaxStackSize,
-    int? DurabilityRemaining = null);
+    int? DurabilityRemaining = null,
+    int? FreshnessPermilleTicks = null,
+    long FreshnessUpdatedTick = 0)
+{
+    public bool IsMergeableWith(AgentItemStack other) =>
+        ItemTypeId == other.ItemTypeId &&
+        MaxStackSize == other.MaxStackSize &&
+        DurabilityRemaining is null &&
+        other.DurabilityRemaining is null &&
+        FreshnessPermilleTicks == other.FreshnessPermilleTicks &&
+        FreshnessUpdatedTick == other.FreshnessUpdatedTick;
+
+    public AgentItemStackAdvance AdvanceFreshness(long tick, int decayPermillePerTick)
+    {
+        if (decayPermillePerTick is < 0 or > 10_000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(decayPermillePerTick));
+        }
+
+        if (!HasValidState)
+        {
+            throw new InvalidOperationException("The stack is invalid and cannot be aged.");
+        }
+
+        if (FreshnessPermilleTicks is not { } freshness)
+        {
+            return new AgentItemStackAdvance(this, 0);
+        }
+
+        if (tick < FreshnessUpdatedTick)
+        {
+            throw new ArgumentOutOfRangeException(nameof(tick), "Freshness cannot move backwards.");
+        }
+
+        var elapsed = tick - FreshnessUpdatedTick;
+        var decay = (Int128)elapsed * decayPermillePerTick;
+        var consumed = decay >= freshness ? freshness : (long)decay;
+        var remaining = freshness - consumed;
+        return remaining == 0
+            ? new AgentItemStackAdvance(null, Quantity)
+            : new AgentItemStackAdvance(
+                this with
+                {
+                    FreshnessPermilleTicks = checked((int)remaining),
+                    FreshnessUpdatedTick = tick,
+                },
+                0);
+    }
+
+    public bool HasValidState =>
+        Quantity > 0 &&
+        MaxStackSize > 0 &&
+        Quantity <= MaxStackSize &&
+        DurabilityRemaining is not < 0 &&
+        (DurabilityRemaining is null or 0 || MaxStackSize == 1) &&
+        FreshnessPermilleTicks is not < 0 &&
+        FreshnessUpdatedTick >= 0;
+}
 
 public sealed class AgentInventory
 {
@@ -142,6 +199,16 @@ public sealed class AgentInventory
         return remaining == 0;
     }
 
+    public bool TryAdd(AgentItemStack stack)
+    {
+        if (!stack.HasValidState)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stack), "The inventory stack is invalid.");
+        }
+
+        return TryAddStacks([stack]);
+    }
+
     internal bool TryAddStacks(IReadOnlyList<AgentItemStack> additions)
     {
         ArgumentNullException.ThrowIfNull(additions);
@@ -169,9 +236,8 @@ public sealed class AgentInventory
             {
                 for (var index = 0; index < staged.Length && remaining > 0; index++)
                 {
-                    if (staged[index] is not { ItemTypeId: var id, Quantity: var quantity } stack ||
-                        id != addition.ItemTypeId ||
-                        stack.DurabilityRemaining is not null)
+                    if (staged[index] is not { Quantity: var quantity } stack ||
+                        !addition.IsMergeableWith(stack))
                     {
                         continue;
                     }
@@ -294,6 +360,36 @@ public sealed class AgentInventory
         return false;
     }
 
+    public IReadOnlyList<Accounting.SpoilageEvent> ApplyDecay(
+        long tick,
+        int decayPermillePerTick,
+        Accounting.MatterLedger ledger)
+    {
+        ArgumentNullException.ThrowIfNull(ledger);
+        ArgumentOutOfRangeException.ThrowIfNegative(tick);
+        var spoiled = new List<Accounting.SpoilageEvent>();
+        for (var index = 0; index < _slots.Length; index++)
+        {
+            if (_slots[index] is not { } stack)
+            {
+                continue;
+            }
+
+            var advance = stack.AdvanceFreshness(tick, decayPermillePerTick);
+            if (advance.Stack is { } updated)
+            {
+                _slots[index] = updated;
+                continue;
+            }
+
+            spoiled.Add(new Accounting.SpoilageEvent(tick, stack.ItemTypeId, advance.SpoiledQuantity));
+            ledger.RecordDestroyed(stack.ItemTypeId, advance.SpoiledQuantity, "spoil");
+            _slots[index] = null;
+        }
+
+        return spoiled;
+    }
+
     internal bool TryExchange(
         IReadOnlyDictionary<ushort, int> removals,
         IReadOnlyList<AgentItemStack> additions)
@@ -390,9 +486,46 @@ public sealed class AgentInventory
         return true;
     }
 
+    internal bool TryConsume(IReadOnlyDictionary<ushort, int> removals) =>
+        TryExchange(removals, []);
+
     public int Count(ushort itemTypeId) =>
         _slots.Where(slot => slot is { ItemTypeId: var id } && id == itemTypeId)
             .Sum(slot => slot!.Value.Quantity);
+
+    internal AgentItemStack?[] CaptureSlots() => (AgentItemStack?[])_slots.Clone();
+
+    internal void RestoreSlots(IReadOnlyList<AgentItemStack?> slots)
+    {
+        ArgumentNullException.ThrowIfNull(slots);
+        if (slots.Count != _slots.Length)
+        {
+            throw new InvalidDataException("Agent inventory checkpoint capacity is inconsistent.");
+        }
+
+        var itemStackLimits = new Dictionary<ushort, int>();
+        foreach (var stack in slots)
+        {
+            if (stack is not { } value)
+            {
+                continue;
+            }
+
+            if (!value.HasValidState ||
+                (itemStackLimits.TryGetValue(value.ItemTypeId, out var maxStackSize) &&
+                 maxStackSize != value.MaxStackSize))
+            {
+                throw new InvalidDataException("Agent inventory checkpoint contains an invalid stack.");
+            }
+
+            itemStackLimits[value.ItemTypeId] = value.MaxStackSize;
+        }
+
+        for (var index = 0; index < slots.Count; index++)
+        {
+            _slots[index] = slots[index];
+        }
+    }
 
     internal void Clear() => Array.Clear(_slots);
 }
@@ -415,6 +548,8 @@ public sealed class AgentBody
     public AgentInventory Inventory { get; }
 }
 
+public readonly record struct AgentItemStackAdvance(AgentItemStack? Stack, long SpoiledQuantity);
+
 public readonly record struct GroundItem(
     ulong Id,
     BlockCoordinate Position,
@@ -429,11 +564,41 @@ public sealed class GroundItemStore
 
     public IReadOnlyList<GroundItem> Snapshot() => _items.Values.ToArray();
 
+    internal ulong NextId => _nextId;
+
     public bool CanAdd(long stackCount)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(stackCount);
         return (ulong)stackCount <= ulong.MaxValue - _nextId;
     }
+
+    public bool TryTake(ulong id, int quantity, out AgentItemStack taken)
+    {
+        if (quantity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantity));
+        }
+
+        if (!_items.TryGetValue(id, out var item) || item.Stack.Quantity < quantity)
+        {
+            taken = default;
+            return false;
+        }
+
+        taken = item.Stack with { Quantity = quantity };
+        if (quantity == item.Stack.Quantity)
+        {
+            _items.Remove(id);
+        }
+        else
+        {
+            _items[id] = item with { Stack = item.Stack with { Quantity = item.Stack.Quantity - quantity } };
+        }
+
+        return true;
+    }
+
+    public bool TryGet(ulong id, out GroundItem item) => _items.TryGetValue(id, out item);
 
     public void AddStack(
         ushort itemTypeId,
@@ -447,13 +612,41 @@ public sealed class GroundItemStore
         }
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxStackSize);
-        var requiredIds = (ulong)((quantity - 1) / maxStackSize + 1);
+        var remaining = quantity;
+        foreach (var id in _items
+                     .Where(entry =>
+                         entry.Value.Position == position &&
+                         entry.Value.Stack.ItemTypeId == itemTypeId &&
+                         entry.Value.Stack.MaxStackSize == maxStackSize &&
+                         entry.Value.Stack.DurabilityRemaining is null &&
+                         entry.Value.Stack.FreshnessPermilleTicks is null &&
+                         entry.Value.Stack.FreshnessUpdatedTick == 0 &&
+                         entry.Value.Stack.Quantity < maxStackSize)
+                     .Select(static entry => entry.Key)
+                     .ToArray())
+        {
+            if (remaining == 0)
+            {
+                break;
+            }
+
+            var item = _items[id];
+            var moved = Math.Min(maxStackSize - item.Stack.Quantity, remaining);
+            _items[id] = item with { Stack = item.Stack with { Quantity = item.Stack.Quantity + moved } };
+            remaining -= moved;
+        }
+
+        if (remaining == 0)
+        {
+            return;
+        }
+
+        var requiredIds = (ulong)((remaining - 1) / maxStackSize + 1);
         if (requiredIds > ulong.MaxValue - _nextId)
         {
             throw new InvalidOperationException("The ground-item identifier space is exhausted.");
         }
 
-        var remaining = quantity;
         while (remaining > 0)
         {
             var stackQuantity = Math.Min(remaining, maxStackSize);
@@ -461,6 +654,50 @@ public sealed class GroundItemStore
                 _nextId++,
                 position,
                 new AgentItemStack(itemTypeId, stackQuantity, maxStackSize));
+            _items.Add(item.Id, item);
+            remaining -= stackQuantity;
+        }
+    }
+
+    public void AddItem(AgentItemStack stack, BlockCoordinate position)
+    {
+        if (!stack.HasValidState)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stack), "The ground-item stack is invalid.");
+        }
+
+        var remaining = stack.Quantity;
+        foreach (var id in _items
+                     .Where(entry =>
+                         entry.Value.Position == position &&
+                         entry.Value.Stack.IsMergeableWith(stack) &&
+                         entry.Value.Stack.Quantity < stack.MaxStackSize)
+                     .Select(static entry => entry.Key)
+                     .ToArray())
+        {
+            if (remaining == 0)
+            {
+                break;
+            }
+
+            var item = _items[id];
+            var moved = Math.Min(stack.MaxStackSize - item.Stack.Quantity, remaining);
+            _items[id] = item with { Stack = item.Stack with { Quantity = item.Stack.Quantity + moved } };
+            remaining -= moved;
+        }
+
+        while (remaining > 0)
+        {
+            if (_nextId == ulong.MaxValue)
+            {
+                throw new InvalidOperationException("The ground-item identifier space is exhausted.");
+            }
+
+            var stackQuantity = Math.Min(remaining, stack.MaxStackSize);
+            var item = new GroundItem(
+                _nextId++,
+                position,
+                stack with { Quantity = stackQuantity });
             _items.Add(item.Id, item);
             remaining -= stackQuantity;
         }
@@ -481,6 +718,38 @@ public sealed class GroundItemStore
         }
 
         inventory.Clear();
+    }
+
+    internal void Restore(IReadOnlyList<GroundItem> items, ulong nextId)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        if (_items.Count != 0 || _nextId != 0)
+        {
+            throw new InvalidOperationException("Ground items can only be restored into a new store.");
+        }
+
+        var restored = new SortedDictionary<ulong, GroundItem>();
+        foreach (var item in items)
+        {
+            var stack = item.Stack;
+            if (stack.Quantity <= 0 ||
+                stack.MaxStackSize <= 0 ||
+                stack.Quantity > stack.MaxStackSize ||
+                stack.DurabilityRemaining is < 0 ||
+                stack.DurabilityRemaining is > 0 && stack.MaxStackSize != 1 ||
+                item.Id >= nextId ||
+                !restored.TryAdd(item.Id, item))
+            {
+                throw new InvalidDataException("Ground-item checkpoint contains an invalid or duplicate item.");
+            }
+        }
+
+        foreach (var item in restored)
+        {
+            _items.Add(item.Key, item.Value);
+        }
+
+        _nextId = nextId;
     }
 }
 
@@ -532,6 +801,15 @@ public sealed class AgentRegistry
             new BlockCoordinate(agent.Position.CellX, agent.Position.CellY, agent.Position.FeetZ));
         _agents.Remove(agentId);
         return true;
+    }
+
+    internal void AddRestored(AgentBody agent)
+    {
+        ArgumentNullException.ThrowIfNull(agent);
+        if (!_agents.TryAdd(agent.AgentId, agent))
+        {
+            throw new InvalidDataException($"Agent checkpoint duplicates agent '{agent.AgentId}'.");
+        }
     }
 }
 

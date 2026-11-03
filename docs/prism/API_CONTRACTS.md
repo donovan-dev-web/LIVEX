@@ -1,7 +1,7 @@
 # API_CONTRACTS — Contrat d'interface SYNE↔PRISM
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — TRANSPORT DE RÉFÉRENCE DÉCIDÉ]
+**Statut** : [IMPLÉMENTATION EN COURS — DTO ET TRANSPORT HOST (SOCLES)]
 **Version de contrat** : `1.0.0` (cible) — remplace la consommation PRISM de `../syne/API_CONTRACTS.md` `0.5.0`
 **Dernière mise à jour** : 2 novembre 2026
 **Dépend de** : [`adr/ADR-008-contrat-syne-prism-macro-actions.md`](adr/ADR-008-contrat-syne-prism-macro-actions.md), [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md), `../launcher/INTEGRATION_CONTRACT.md`
@@ -47,28 +47,40 @@ Prepare(config, seed, contentHash)
 
 ## 3. Commandes (SYNE → PRISM)
 
-Toutes portent `{ commandId, agentId, tick }`.
+Toutes portent `{ commandId, agentId, tick }`. Chaque handler valide la forme de son payload avant exécution (`invalid_payload`) : `CommandPayloadValidator` couvre les champs obligatoires documentés ici (coordonnées, identifiants, quantités, listes de droits) et les handlers conservent leurs contrôles métier.
+
+Un agent qui exécute une action à durée (`Miner`, `Fabriquer`, `Labourer`, `Planter`, `Recolter`) reste occupé jusqu'à `tick + durée` : toute action à durée reçue avant l'échéance échoue avec `agent_busy`, après validation des préconditions propres à l'action (un bloc non perçu ou un conteneur non vide reste signalé par son propre code). L'occupation est portée par `ActionDurationTracker`, exposée par `snapshot` et checkpointée avec la fenêtre d'idempotence du dispatch.
+
+Une action à effet différé (`Fabriquer`) est enregistrée par le dispatch et résolue au tick `busyUntilTick` : l'événement `action_started` acquitte le début, `action_completed` ou `action_failed` arrive à l'échéance avec le même `commandId`. `Annuler` interrompt une action en attente sans appliquer d'effet et libère l'agent ; l'état en attente est checkpointé avec la fenêtre d'idempotence.
+
+Chaque tick de cycle de vie applique la décroissance de fraîcheur des inventaires d'agents (1 000 ‰/tick) : une pile dont la fraîcheur atteint zéro est détruite, comptée `spoil` dans le ledger et publiée par un événement `item_spoiled` (`{itemTypeId, quantity}`).
 
 | Commande | Paramètres | Durée | Échecs fréquents |
 | :-- | :-- | :-- | :-- |
-| `Aller` | Cible (position ou objet/structure perçue) | Selon la distance | `path_not_found`, `obstacle_appeared`, `target_out_of_world` |
-| `Miner` | Bloc | Selon dureté, outil, maîtrise | `tool_tier_insufficient`, `block_not_mineable`, `block_already_mined`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
+| `Aller` | `{target:{x,y,z}}` (ou `position`) ; chemin A* calculé à la réception | Un pas par tick | `path_not_found`, `path_budget_exceeded`, `path_interrupted`, `target_out_of_bounds`, `agent_not_found` |
+| `Miner` | Bloc | Selon dureté, outil, maîtrise ; agent occupé jusqu'à l'échéance, effet appliqué au tick de la commande | `agent_busy`, `tool_tier_insufficient`, `block_not_mineable`, `block_already_mined`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
 | `Poser` | Bloc, objet consommé | Courte | `block_not_placeable`, `item_block_mismatch`, `cell_occupied`, `item_missing`, `agent_in_cell`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
-| `Fabriquer` | Recette, station (si requise) | Durée de la recette | `input_missing`, `tool_missing`, `station_absent`, `station_busy`, `mastery_insufficient`, `capacity_reached`, `not_adjacent`, `not_perceived`, `unknown_recipe` |
-| `Labourer` | Sol | Courte | `soil_unsuitable`, `tool_missing`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
-| `Planter` / `Recolter` | Parcelle, graine / culture | Courte | `soil_unsuitable`, `cell_occupied`, `not_ripe`, `no_water`, `item_missing`, `seed_not_plantable`, `capacity_reached`, `crop_not_found`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
-| `Prendre` / `Deposer` | Conteneur, objet, quantité | Courte | `access_denied`, `capacity_reached`, `container_empty`, `item_missing`, `not_adjacent`, `not_perceived` |
+| `Fabriquer` | Recette, station (si requise) | Durée de la recette : `action_started` au tick de la commande, effet et `action_completed` à l'échéance | `agent_busy`, `input_missing`, `tool_missing`, `station_absent`, `station_busy`, `mastery_insufficient`, `capacity_reached`, `not_adjacent`, `not_perceived`, `unknown_recipe` |
+| `Labourer` | Sol | Courte ; agent occupé jusqu'à l'échéance, effet appliqué au tick de la commande | `agent_busy`, `soil_unsuitable`, `tool_missing`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
+| `Planter` / `Recolter` | Parcelle, graine / culture | Courte ; agent occupé jusqu'à l'échéance, effet appliqué au tick de la commande | `agent_busy`, `soil_unsuitable`, `cell_occupied`, `not_ripe`, `no_water`, `item_missing`, `seed_not_plantable`, `capacity_reached`, `crop_not_found`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
+| `Prendre` / `Deposer` | `{container:{x,y,z}, item, quantity}` | Courte ; `Prendre` applique le taux de décroissance du conteneur avant le retrait | `access_denied`, `capacity_reached`, `container_empty`, `container_not_found`, `container_not_empty`, `item_missing`, `item_spoiled`, `not_adjacent`, `not_perceived` |
 | `Consommer` | Objet `edible` ou bloc `drinkable` perçu et adjacent | Courte | `item_missing`, `not_edible`, `not_drinkable`, `not_adjacent`, `not_perceived`, `target_out_of_world` |
-| `DemarrerChantier` | Gabarit, position, rotation | Courte | `terrain_unsuitable`, `volume_not_clear`, `unknown_template` |
-| `Contribuer` | Chantier, matériaux ou travail | Selon l'apport | `site_completed`, `site_destroyed`, `item_missing` |
+| `DemarrerChantier` | `{siteId, templateId, origin:{x,y,z}}` (ou `position`) | Courte | `target_out_of_world`, `terrain_unsuitable`, `volume_not_clear`, `unknown_template`, `site_overlaps` |
+| `Contribuer` | `{siteId}` ; une unité de travail et les matériaux dus par agent et par tick | Un tick par contribution | `site_not_found`, `site_not_active`, `duplicate_contribution`, `construction_block_obstructed`, `materials_missing`, `access_denied` |
 | `Transferer` | Agent destinataire, objet, quantité | Courte | `refused`, `too_far`, `capacity_reached`, `item_missing`, `not_perceived` |
-| `DefinirAcces` | Structure/conteneur, liste, droits | Courte | `not_owner`, `unknown_target` |
-| `Incarner` / `Retirer` | Profil, position / raison | Immédiate | `invalid_position`, `agent_exists` |
+| `DefinirAcces` | `{siteId, rules:[{kind:"agent"|"group", id, rights:["build", ...]}]}` | Courte | `not_owner`, `unknown_target`, `invalid_payload` |
+| `Incarner` / `Retirer` | `Incarner`: `{position:{x,y,z}, profile?}` ; `Retirer`: raison facultative | Immédiate | `invalid_position`, `agent_exists`, `agent_not_found` |
 | `Annuler` | — | Immédiate | `nothing_to_cancel` |
 
-**Macro-actions** (même enveloppe) : `ObtenirObjet{ type|tag, qty, hint }`, `Fabriquer{ recipeId }`, `Cultiver{ parcel }`, `Construire{ templateId, position }`, `Contribuer{ siteId }`. PRISM les décompose en commandes élémentaires sur plusieurs ticks. `Demander`/`Offrir` sont des accords **SYNE-only** ; seul `Transferer` traverse le contrat.
+**Macro-actions** (même enveloppe) : `ObtenirObjet{ type|tag, qty, hint }`, `Fabriquer{ recipeId }`, `Cultiver{ parcel }`, `Construire{ templateId, position }`, `Contribuer{ siteId }`. Il s'agit du contrat cible : `ObtenirObjet` et `Cultiver` ne sont pas encore dispatchées par le host comme séquences multi-ticks. `Fabriquer` y est dispatchée comme action à effet différé (voir §3) ; `ObtenirObjet` et `Cultiver` restent des séquences multi-ticks pilotées par la phase `AdvanceMacroActions`. `Demander`/`Offrir` sont des accords **SYNE-only** ; seul `Transferer` traverse le contrat.
 
 **Transfert entre agents.** Il n'a lieu qu'après un accord conclu côté SYNE ; PRISM l'exécute de façon **atomique** (tout ou rien).
+
+**Chantiers (socle host).** Avec un pack compilé, `DemarrerChantier`, `Contribuer` et `DefinirAcces` sont dispatchées de façon idempotente dans le tick. Chaque contribution apporte une unité de travail et débite atomiquement de l'inventaire les matériaux dus au prorata du travail ; une contribution refusée ne consomme rien. Le propriétaire et les droits `build` sont contrôlés, et matériaux consommés/manquants, progression, gabarits compilés et blocs posés survivent au checkpoint. La perception des chantiers est raccordée au flux d'observations ; les consommateurs d'effets restent à raccorder.
+
+**Actions atomiques (socle host).** Avec un pack compilé, `Miner`, `Poser`, `Fabriquer`, `Labourer`, `Planter`, `Recolter`, `Consommer`, `Transferer`, `Prendre` et `Deposer` sont dispatchées dans le tick. `Fabriquer` applique son effet à l'échéance ; les autres primitives s'exécutent au tick de la commande tout en occupant l'agent jusqu'à `tick + durée`. `Poser` crée un inventaire de conteneur pour un objet portant le tag `container` ; la capacité host par défaut est de 24 emplacements. `Prendre`/`Deposer` prennent `{container:{x,y,z}, item, quantity}` et exigent un conteneur perçu et adjacent. Les conteneurs non vides empêchent le minage de leur bloc, et contenus, propriétaire et ACL du noyau survivent au checkpoint ; la configuration des ACL par commande et la péremption des piles sont raccordées, et les macro-actions attendent l'échéance de l'action différée avant d'avancer.
+
+**Cycle de vie (socle host).** `Incarner` prend `agentId` dans l'enveloppe et une position `x/y/z` en cellules de grille (z = niveau des pieds) ; `profile` accepte `speedPermille` et `carrySlots`, avec valeurs par défaut du noyau. `Retirer` dépose l'inventaire au sol et les piles identiques de même taille se regroupent. `Aller` prend `{target:{x,y,z}}`, calcule un chemin A* à la réception puis avance d'une case par tick ; l'arrivée émet `action_completed` avec `result{completed:true}` et une interruption émet `action_failed` avec `path_interrupted`. Ordres de déplacement et position sont checkpointés. Ces commandes sont idempotentes, leurs entités et objets au sol apparaissent dans le flux de lecture et leur état survit aux checkpoints ; cela ne constitue pas encore une observation filtrée par agent.
 
 ## 4. Événements (PRISM → SYNE)
 
@@ -99,7 +111,7 @@ Chaque événement porte `{ eventId, tick, kind, agentId?, payload }`.
 | **Moyen** | **Résumé par région** : masque de tags présents (blocs exposés seulement), présence de structures, sans détail | 3 régions |
 | **Lointain** | **Rien** : l'agent s'appuie sur sa mémoire spatiale | — |
 
-Les observations sont envoyées sous forme de **différences** par rapport au tick précédent (apparu / modifié / disparu), pas d'instantanés complets, avec un plafond `maxObservedPerAgent`. L'observation contient aussi l'**état de soi** : position, inventaire, outil en main, maîtrises, `status{ sheltered, onPath, night }`. Le noyau expose actuellement les blocs, objets au sol, agents et masques de tags régionaux ; les structures/chantiers, outil en main, maîtrises et statuts seront ajoutés avec leurs modèles respectifs.
+Les observations sont envoyées sous forme de **différences** par rapport au tick précédent (apparu / modifié / disparu), pas d'instantanés complets, avec un plafond `maxObservedPerAgent`. L'observation contient aussi l'**état de soi** : position, inventaire, outil en main, maîtrises, `status{ sheltered, onPath, night }`. Le noyau expose les blocs, objets au sol, agents, chantiers et masques de tags régionaux ; une entrée `ConstructionSite` porte `siteId`, état (`planned`/`in_progress`/`completed`), travail requis et achevé, et suit le même diff apparu/modifié/disparu. Le statut `sheltered` et le bonus de récupération sont calculés à partir des effets actifs, sous réserve du droit `use` de la structure ; l'outil en main, les maîtrises, `onPath` et `night` restent à raccorder.
 
 ### 5.2 Positions
 
@@ -109,28 +121,33 @@ Les observations sont envoyées sous forme de **différences** par rapport au ti
 
 | Message | Contenu |
 | :-- | :-- |
-| `world_snapshot` | À la connexion : métadonnées, calendrier, régions complètes (compressées) |
-| `region_delta` | Régions *dirty* du tick, ou liste de modifications ; empreinte de région |
-| `entities` | Agents (position, `activeAction`), objets au sol, chantiers, structures |
-| `metrics` | Stocks par type, production/consommation par `ruleId`, utilisation des stations et structures, distances transportées, durées de chantier, échecs par raison |
+| `world_snapshot` | À la connexion : métadonnées, régions complètes, empreinte et, si disponibles, agents/inventaires, objets au sol, chantiers, intégrité et effets actifs |
+| `region_delta` | État complet de chaque région modifiée (colonnes et surcharges, permettant aussi les suppressions), tick et empreintes de région/monde |
+| `entity_snapshot` | Après `Incarner`/`Retirer` : agents (position, profil, inventaire) et objets au sol |
+| `entities` | Cible future : agents (`activeAction`), chantiers et structures |
+| `metrics` | `{tick, stocks[], matter[], structures[], reservedStations, activeStructureEffects, failures[]}` : stocks par type (agents, conteneurs, sol), production/consommation par `ruleId`, avancement/intégrité/effets par chantier, réservations de stations et échecs de commande par raison. Publié à la même cadence que `checksum` (100 ticks par défaut). |
 | `checksum` | Empreinte du monde tous les `checksumIntervalTicks` |
 
 Le flux de lecture est **non intrusif** : ECHOS et le visualiseur ne modifient jamais le monde. Une interruption du visualiseur n'interrompt jamais le run.
 
+Le host émet `checksum` et `metrics` tous les 100 ticks par défaut (intervalle configurable dans `PrismHostRuntime`) ; l'empreinte porte sur l'état courant de la grille et ses métadonnées de génération. La route HTTP `/metrics` expose les mêmes agrégats au format Prometheus (stocks, matière créée/détruite, échecs par raison, réservations et effets actifs).
+Chaque enveloppe porte `protocolVersion`, `sequence`, `tick`, `kind` et `payload`. La séquence est strictement croissante pour le host, mais un lecteur peut observer un saut lorsque le host remplace une file saturée par un nouveau `world_snapshot` complet. ECHOS accepte un démarrage sur un tel snapshot et un saut uniquement lorsqu'il est suivi d'un snapshot complet ; les messages différentiels après ce point doivent reprendre sans autre saut. ECHOS v8 conserve les enveloppes reçues et leur `contentHash` sans les projeter en métriques SYNE non présentes dans le contrat.
+L'adaptateur SYNE consomme également ces enveloppes via `PrismReadStreamClient`; les enveloppes `tick_result` exposent les observations agent/tick sans les traduire encore en croyances. Le lecteur accepte les resynchronisations par snapshot et refuse une version majeure ou un message incohérent.
+
 ## 7. Plan de contrôle (HTTP)
 
-Conforme au manifeste Launcher v1 : `GET /health/ready`, `POST /control/prepare`, `/control/start`, `/control/pause`, `/control/resume`, `/control/stop`, `GET /control/status` ; transport HTTP JSON et authentification par jeton de session. La liaison de données utilise WebSocket JSON en lockstep ; le flux de lecture utilise WebSocket JSON. Les campagnes locales appellent directement `IWorldHost` avec les mêmes DTO. Détails : [`adr/ADR-012-transport.md`](adr/ADR-012-transport.md).
+Le host expose la readiness et le cycle de contrôle HTTP authentifié ; le lockstep et la lecture utilisent WebSocket JSON. Il lie actuellement le serveur à `127.0.0.1`. Avec `contentDirectory`, `Prepare` compile le pack et génère le monde ; `Incarner`/`Retirer` mettent à jour les agents/objets au sol, les observations différentielles par agent sont émises à la phase perception du tick, et les snapshots d'entités sont diffusés aux lecteurs. Les snapshots incluent aussi chantiers, intégrité et effets actifs ; `Contribuer` débite atomiquement les matériaux requis. Après une mutation de grille, `region_delta` publie l'état complet des régions concernées et leurs empreintes ; les checksums périodiques sont émis. Les métriques sont publiées dans le flux et exposées par `/metrics` ; la compression du flux reste à implémenter, comme la perception des chantiers et les consommateurs d'effets de structure. Détails : [`adr/ADR-012-transport.md`](adr/ADR-012-transport.md).
 
 ## 8. Versionnement et compatibilité
 
 | Cas | Règle |
 | :-- | :-- |
-| Version majeure inconnue | Refus au `Prepare` avec `protocol_unsupported` |
+| Version majeure inconnue | Refus du message avec `protocol_unsupported` avant traitement ; HTTP `400` et erreur WebSocket |
 | Ajout de champ facultatif / nouveau code d'échec | MINOR |
 | Retrait ou changement de sémantique | MAJOR |
 | Pack de contenu | Le `contentHash` est échangé et vérifié à `Prepare` |
 
-Le contrat est distribué sous forme de **schémas JSON** dans [`schemas/`](schemas/) et de types `Prism.Contracts` ; les tests de contrat s'exécutent sur la liaison réseau et la liaison embarquée avec les mêmes jeux de cas. Les enveloppes lockstep sont versionnées ; les versions de même majeure sont acceptées, les majeures inconnues sont refusées avec `protocol_unsupported`.
+Le contrat est distribué sous forme de **schémas JSON** dans [`schemas/`](schemas/) et de types `Prism.Contracts` ; les tests de contrat s'exécutent sur la liaison réseau et la liaison embarquée avec les mêmes jeux de cas. Les enveloppes lockstep sont versionnées ; les versions de même majeure sont acceptées, les majeures inconnues sont refusées avec `protocol_unsupported`. Le host applique également cette règle aux routes HTTP de données et au lockstep WebSocket ; les champs inconnus restent ignorés.
 
 ## 9. Tailles de départ
 
@@ -150,6 +167,8 @@ Q-02 (accès). Le transport de référence est tranché par ADR-012 ; les schém
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 2 novembre 2026 | Erreurs de version majeure cohérentes entre HTTP et WebSocket documentées | PRISM-078 |
+| 2 novembre 2026 | Implémentation partielle du host HTTP/WebSocket documentée | P7 |
 | 2 novembre 2026 | Perception et flux de lecture adaptés aux régions 2.5D | ADR-011/012 |
 | 2 novembre 2026 | Transport de référence documenté | ADR-012 |
 | 1er novembre 2026 | Création | Refonte V2 |

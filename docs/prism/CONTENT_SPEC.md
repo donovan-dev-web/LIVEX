@@ -93,6 +93,9 @@ Une matière portant le tag `drinkable` peut déclarer le même champ `effects` 
 
 Les outils déclarent `durability` (points d'usure maximaux) et `usePerAction` (points retirés à chaque action réussie, défaut `1`). Un objet avec une durabilité positive doit avoir `maxStack: 1`.
 
+Un objet plaçable peut déclarer `places: "<materialId>"`. Le compilateur vérifie que le matériau existe et le runtime n'autorise la pose que pour le matériau associé à l'objet.
+Un objet portant le tag `container` crée un inventaire de conteneur lorsqu'il est posé par le host (24 emplacements par défaut). Le contenu d'un conteneur non vide doit être retiré avant de pouvoir miner son bloc.
+
 ### 3.3 Recette
 
 ```json
@@ -127,7 +130,12 @@ Une entrée peut viser un **objet** (`item`) ou un **tag** (`tag`) : la recette 
 }
 ```
 
-Les gabarits d'arbres du générateur sont des gabarits sans effet ni matériaux.
+Les deux coins de `effect.volume` sont des offsets entiers inclusifs dans le
+volume du gabarit ; leur ordre est sans importance. Le compilateur rejette tout
+volume qui sort de `size`. L'intégrité vaut le ratio permille des blocs du
+gabarit encore présents ; les effets sont actifs sur un chantier achevé lorsque
+ce ratio atteint `integrityThresholdPermille`. Les gabarits d'arbres du
+générateur sont des gabarits sans effet ni matériaux.
 
 ### 3.5 Règle de croissance
 

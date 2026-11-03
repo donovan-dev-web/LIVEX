@@ -1,4 +1,6 @@
+using Prism.Core.Accounting;
 using Prism.Core.World;
+using System.Text.Json;
 
 namespace Prism.Core.Actions;
 
@@ -31,8 +33,74 @@ public readonly record struct ContainerAccessRule(
     AccessPrincipal Principal,
     ContainerAccessRights Rights);
 
+public static class ContainerAccessRuleParser
+{
+    public static bool TryParse(JsonElement element, out ContainerAccessRule rule)
+    {
+        rule = default;
+        if (element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty("kind", out var kindElement) ||
+            kindElement.ValueKind != JsonValueKind.String ||
+            !element.TryGetProperty("id", out var idElement) ||
+            idElement.ValueKind != JsonValueKind.Number ||
+            !idElement.TryGetUInt64(out var principalId) ||
+            !element.TryGetProperty("rights", out var rightsElement) ||
+            rightsElement.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        var principalKind = kindElement.GetString() switch
+        {
+            "agent" => AccessPrincipalKind.Agent,
+            "group" => AccessPrincipalKind.Group,
+            _ => (AccessPrincipalKind?)null,
+        };
+        if (principalKind is null)
+        {
+            return false;
+        }
+
+        var rights = ContainerAccessRights.None;
+        foreach (var rightElement in rightsElement.EnumerateArray())
+        {
+            if (rightElement.ValueKind != JsonValueKind.String)
+            {
+                return false;
+            }
+
+            var right = rightElement.GetString() switch
+            {
+                "use" => ContainerAccessRights.Use,
+                "take" => ContainerAccessRights.Take,
+                "put" => ContainerAccessRights.Put,
+                "build" => ContainerAccessRights.Build,
+                _ => (ContainerAccessRights?)null,
+            };
+            if (right is null)
+            {
+                return false;
+            }
+
+            rights |= right.Value;
+        }
+
+        if (rights == ContainerAccessRights.None)
+        {
+            return false;
+        }
+
+        rule = new ContainerAccessRule(
+            new AccessPrincipal(principalKind.Value, principalId),
+            rights);
+        return true;
+    }
+}
+
 public sealed class ContainerInventory
 {
+    private const int CheckpointVersion = 1;
+    private static readonly JsonSerializerOptions CheckpointJsonOptions = new(JsonSerializerDefaults.Web);
     private const ContainerAccessRights AllRights =
         ContainerAccessRights.Use |
         ContainerAccessRights.Take |
@@ -72,6 +140,94 @@ public sealed class ContainerInventory
     public AccessPrincipal Owner { get; }
 
     public IReadOnlyList<AgentItemStack> Snapshot() => _stacks.ToArray();
+
+    public byte[] CaptureState()
+    {
+        var checkpoint = new ContainerCheckpoint(
+            CheckpointVersion,
+            CapacitySlots,
+            DecayPermillePerTick,
+            Position,
+            Owner,
+            _stacks.ToArray(),
+            _access.OrderBy(static entry => entry.Key.Kind)
+                .ThenBy(static entry => entry.Key.Id)
+                .Select(static entry => new ContainerAccessRule(entry.Key, entry.Value))
+                .ToArray());
+        return JsonSerializer.SerializeToUtf8Bytes(checkpoint, CheckpointJsonOptions);
+    }
+
+    public static ContainerInventory RestoreState(ReadOnlySpan<byte> checkpointBytes)
+    {
+        var checkpoint = JsonSerializer.Deserialize<ContainerCheckpoint>(
+                             checkpointBytes,
+                             CheckpointJsonOptions)
+                         ?? throw new InvalidDataException("Container checkpoint is empty.");
+        if (checkpoint.Version != CheckpointVersion ||
+            checkpoint.Stacks is null ||
+            checkpoint.AccessRules is null)
+        {
+            throw new InvalidDataException("Container checkpoint has an unsupported or incomplete format.");
+        }
+
+        ContainerInventory restored;
+        try
+        {
+            restored = new ContainerInventory(
+                checkpoint.CapacitySlots,
+                checkpoint.DecayPermillePerTick,
+                checkpoint.Position,
+                checkpoint.Owner);
+        }
+        catch (ArgumentOutOfRangeException exception)
+        {
+            throw new InvalidDataException("Container checkpoint contains invalid metadata.", exception);
+        }
+
+        if (!restored.TryAddStacks(checkpoint.Stacks))
+        {
+            throw new InvalidDataException("Container checkpoint contents exceed its capacity.");
+        }
+
+        try
+        {
+            var result = restored.SetAccessList(checkpoint.Owner, checkpoint.AccessRules);
+            if (!result.Succeeded)
+            {
+                throw new InvalidDataException("Container checkpoint access rules are invalid.");
+            }
+        }
+        catch (ArgumentException exception)
+        {
+            throw new InvalidDataException("Container checkpoint access rules are invalid.", exception);
+        }
+
+        return restored;
+    }
+
+    public IReadOnlyList<SpoilageEvent> ApplyDecay(long tick, MatterLedger ledger)
+    {
+        ArgumentNullException.ThrowIfNull(ledger);
+        ArgumentOutOfRangeException.ThrowIfNegative(tick);
+        var spoiled = new List<SpoilageEvent>();
+        for (var index = 0; index < _stacks.Count;)
+        {
+            var stack = _stacks[index];
+            var advance = stack.AdvanceFreshness(tick, DecayPermillePerTick);
+            if (advance.Stack is { } updated)
+            {
+                _stacks[index] = updated;
+                index++;
+                continue;
+            }
+
+            spoiled.Add(new SpoilageEvent(tick, stack.ItemTypeId, advance.SpoiledQuantity));
+            ledger.RecordDestroyed(stack.ItemTypeId, advance.SpoiledQuantity, "spoil");
+            _stacks.RemoveAt(index);
+        }
+
+        return spoiled;
+    }
 
     public ContainerActionResult SetAccessList(
         AccessPrincipal requester,
@@ -153,16 +309,23 @@ public sealed class ContainerInventory
         return quantity <= available;
     }
 
+    public bool TryAdd(AgentItemStack stack)
+    {
+        if (!stack.HasValidState)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stack), "The container stack is invalid.");
+        }
+
+        return TryAddStacks([stack]);
+    }
+
     internal bool TryAddStacks(IReadOnlyList<AgentItemStack> additions)
     {
         ArgumentNullException.ThrowIfNull(additions);
         var staged = _stacks.ToList();
         foreach (var addition in additions)
         {
-            if (addition.Quantity <= 0 ||
-                addition.MaxStackSize <= 0 ||
-                addition.DurabilityRemaining is < 0 ||
-                addition.DurabilityRemaining is > 0 && addition.MaxStackSize != 1)
+            if (!addition.HasValidState)
             {
                 throw new ArgumentOutOfRangeException(nameof(additions));
             }
@@ -180,8 +343,7 @@ public sealed class ContainerInventory
                 for (var index = 0; index < staged.Count && remaining > 0; index++)
                 {
                     var stack = staged[index];
-                    if (stack.ItemTypeId != addition.ItemTypeId ||
-                        stack.DurabilityRemaining is not null)
+                    if (!addition.IsMergeableWith(stack))
                     {
                         continue;
                     }
@@ -262,6 +424,77 @@ public sealed class ContainerInventory
         removedStacks = taken;
         return true;
     }
+
+    private sealed record ContainerCheckpoint(
+        int Version,
+        int CapacitySlots,
+        int DecayPermillePerTick,
+        BlockCoordinate Position,
+        AccessPrincipal Owner,
+        AgentItemStack[] Stacks,
+        ContainerAccessRule[] AccessRules);
+}
+
+public sealed class WorldContainerStore
+{
+    private readonly SortedDictionary<BlockCoordinate, ContainerInventory> _containers = new(
+        Comparer<BlockCoordinate>.Create(static (left, right) =>
+        {
+            var comparison = left.Z.CompareTo(right.Z);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            comparison = left.Y.CompareTo(right.Y);
+            return comparison != 0 ? comparison : left.X.CompareTo(right.X);
+        }));
+
+    public int Count => _containers.Count;
+    public bool IsEmpty => _containers.Count == 0;
+    public IReadOnlyCollection<ContainerInventory> Snapshot() => _containers.Values.ToArray();
+
+    public bool TryGet(BlockCoordinate position, out ContainerInventory? container) =>
+        _containers.TryGetValue(position, out container);
+
+    public bool TryAdd(ContainerInventory container)
+    {
+        ArgumentNullException.ThrowIfNull(container);
+        return _containers.TryAdd(container.Position, container);
+    }
+
+    public bool Remove(BlockCoordinate position) => _containers.Remove(position);
+
+    public byte[] CaptureState() =>
+        JsonSerializer.SerializeToUtf8Bytes(
+            _containers.Values.Select(static container => container.CaptureState()).ToArray(),
+            new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+    public void RestoreState(ReadOnlySpan<byte> checkpointBytes)
+    {
+        if (_containers.Count != 0)
+        {
+            throw new InvalidOperationException("Container state can only be restored into a new store.");
+        }
+
+        var checkpoints = JsonSerializer.Deserialize<byte[][]>(
+                             checkpointBytes,
+                             new JsonSerializerOptions(JsonSerializerDefaults.Web))
+                         ?? throw new InvalidDataException("Container store checkpoint is empty.");
+        foreach (var bytes in checkpoints)
+        {
+            if (bytes is null)
+            {
+                throw new InvalidDataException("Container store checkpoint contains an empty entry.");
+            }
+
+            var container = ContainerInventory.RestoreState(bytes);
+            if (!_containers.TryAdd(container.Position, container))
+            {
+                throw new InvalidDataException("Container store checkpoint contains duplicate positions.");
+            }
+        }
+    }
 }
 
 public sealed record ContainerActionResult(bool Succeeded, string? ErrorCode, int Quantity)
@@ -338,12 +571,18 @@ public static class ContainerActionSystem
         ushort itemTypeId,
         int quantity,
         IEnumerable<AccessPrincipal>? groupPrincipals = null,
-        bool targetPerceived = true)
+        bool targetPerceived = true,
+        long tick = -1,
+        MatterLedger? ledger = null)
     {
         ArgumentNullException.ThrowIfNull(agent);
         ArgumentNullException.ThrowIfNull(container);
         ArgumentNullException.ThrowIfNull(rules);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
+        if ((ledger is null) != (tick < 0))
+        {
+            throw new ArgumentException("Aging a container requires both the current tick and a ledger.");
+        }
 
         if (!targetPerceived)
         {
@@ -369,6 +608,12 @@ public static class ContainerActionSystem
         if (!container.CanTake(itemTypeId, quantity))
         {
             return ContainerActionResult.Failure("container_empty");
+        }
+
+        if (ledger is not null && container.ApplyDecay(tick, ledger).Count > 0 &&
+            !container.CanTake(itemTypeId, quantity))
+        {
+            return ContainerActionResult.Failure("item_spoiled");
         }
 
         if (!agent.Inventory.CanAdd(itemTypeId, quantity, item.MaxStackSize))
