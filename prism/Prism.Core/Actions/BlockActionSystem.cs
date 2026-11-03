@@ -144,6 +144,32 @@ public static class BlockActionSystem
         return checked((int)Math.Max(1, (duration + 999) / 1000));
     }
 
+    /// <summary>
+    /// Duration the given target would take to mine, without applying any effect. Used to accept an
+    /// action whose effect is resolved at its due tick.
+    /// </summary>
+    public static int GetMiningDurationTicks(
+        WorldGrid world,
+        BlockActionRules rules,
+        BlockCoordinate target,
+        int masteryPermille)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(rules);
+        if (!TryResolveTarget(world, target, out var materialId, out _) ||
+            !rules.TryGetMaterial(materialId, out var material) ||
+            material is null)
+        {
+            return 0;
+        }
+
+        return GetMiningDuration(
+            material.Hardness,
+            masteryPermille,
+            rules.BaseTicksPerHardness,
+            rules.MaximumMasterySpeedupPermille);
+    }
+
     public static BlockActionResult Mine(
         WorldGrid world,
         AgentBody agent,

@@ -6,16 +6,18 @@ namespace Prism.Host.Ticking;
 
 public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
 {
-    private const int DispatchCheckpointVersion = 1;
+    private const int DispatchCheckpointVersion = 3;
     private readonly IReadOnlyDictionary<string, IWorldCommandHandler> _handlers;
     private readonly CommandIdempotencyWindow<CommandExecutionResult> _idempotencyWindow;
     private readonly ActionDurationTracker? _durations;
+    private readonly DeferredActionResolutions? _resolutions;
     private readonly SortedDictionary<ulong, PendingAction> _pending = [];
 
     public CommandDispatchPhase(
         IEnumerable<IWorldCommandHandler> handlers,
         CommandIdempotencyWindow<CommandExecutionResult>? idempotencyWindow = null,
-        ActionDurationTracker? durations = null)
+        ActionDurationTracker? durations = null,
+        DeferredActionResolutions? resolutions = null)
     {
         ArgumentNullException.ThrowIfNull(handlers);
         var handlerMap = new Dictionary<string, IWorldCommandHandler>(StringComparer.Ordinal);
@@ -32,6 +34,7 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
         _handlers = handlerMap;
         _idempotencyWindow = idempotencyWindow ?? new CommandIdempotencyWindow<CommandExecutionResult>();
         _durations = durations;
+        _resolutions = resolutions;
         ReceivePhase = new CommandReceivePhase(_idempotencyWindow, CreateFingerprint);
     }
 
@@ -44,7 +47,8 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
                 DispatchCheckpointVersion,
                 _idempotencyWindow.SnapshotEntries(),
                 _durations?.CaptureState(),
-                _pending.Values.ToArray()),
+                _pending.Values.ToArray(),
+                CaptureResolutions()),
             ProtocolJson.Options);
 
     public void RestoreState(JsonElement state)
@@ -59,7 +63,7 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
 
         var checkpoint = state.Deserialize<DispatchCheckpoint>(ProtocolJson.Options)
                          ?? throw new JsonException("The command dispatch checkpoint is empty.");
-        if (checkpoint.Version is not (1 or DispatchCheckpointVersion))
+        if (checkpoint.Version is not (1 or 2 or DispatchCheckpointVersion))
         {
             throw new JsonException("The command dispatch checkpoint version is unsupported.");
         }
@@ -76,6 +80,17 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
             _durations.RestoreState(durations);
         }
 
+        if (checkpoint.Resolutions is { } resolutions)
+        {
+            if (_resolutions is null)
+            {
+                throw new JsonException(
+                    "The command dispatch checkpoint carries deferred resolutions but no channel is configured.");
+            }
+
+            _resolutions.RestoreState(resolutions);
+        }
+
         foreach (var pending in checkpoint.Pending ?? [])
         {
             if (pending is null ||
@@ -89,11 +104,22 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
         }
     }
 
+    private byte[]? CaptureResolutions()
+    {
+        if (_resolutions is null || _resolutions.PendingCount == 0 && _resolutions.ResolvedCount == 0)
+        {
+            return null;
+        }
+
+        return _resolutions.CaptureState();
+    }
+
     private sealed record DispatchCheckpoint(
         int Version,
         IReadOnlyList<IdempotencyCacheEntry<CommandExecutionResult>>? Entries,
         byte[]? Durations,
-        PendingAction[]? Pending = null);
+        PendingAction[]? Pending = null,
+        byte[]? Resolutions = null);
 
     private sealed record PendingAction(
         string CommandId,
@@ -110,10 +136,17 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
         var emittedCommands = new HashSet<string>(StringComparer.Ordinal);
         foreach (var command in context.Request.Commands)
         {
-            var cancelled = command.Kind == "Annuler" && _pending.Remove(command.AgentId);
-            if (cancelled)
+            var cancelled = false;
+            if (command.Kind == "Annuler")
             {
-                _durations?.Release(command.AgentId);
+                cancelled = _pending.Remove(command.AgentId, out var cancelledAction);
+                if (cancelled && cancelledAction is not null)
+                {
+                    _durations?.Release(command.AgentId);
+                    _resolutions?.Record(
+                        cancelledAction.CommandId,
+                        CommandExecutionResult.Failure("cancelled"));
+                }
             }
 
             var result = _idempotencyWindow.ExecuteOnce(
@@ -133,13 +166,7 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
 
             if (result.Deferred)
             {
-                _pending[command.AgentId] = new PendingAction(
-                    command.CommandId,
-                    command.Kind,
-                    command.AgentId,
-                    command.Tick,
-                    ReadResolveTick(command, result.Payload),
-                    command.Payload.Clone());
+                Schedule(command, result);
             }
 
             if (emittedCommands.Add(command.CommandId))
@@ -147,6 +174,29 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
                 context.AddEvent(CreateEvent(command, context.Tick, result));
             }
         }
+    }
+
+    /// <summary>
+    /// Registers an action whose effect must be applied at its due tick. Host commands are scheduled
+    /// by <see cref="Execute"/>; macro steps schedule their own synthetic commands here.
+    /// </summary>
+    public bool Schedule(CommandEnvelope command, CommandExecutionResult result)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(result);
+        if (!result.Deferred)
+        {
+            return false;
+        }
+
+        _pending[command.AgentId] = new PendingAction(
+            command.CommandId,
+            command.Kind,
+            command.AgentId,
+            command.Tick,
+            ReadResolveTick(command, result.Payload),
+            command.Payload.Clone());
+        return true;
     }
 
     private void ResolveDueActions(WorldTickContext context)
@@ -173,6 +223,7 @@ public sealed class CommandDispatchPhase : ICheckpointableWorldTickPhaseHandler
             var result = _handlers.TryGetValue(pending.Kind, out var handler)
                 ? handler.ResolveDeferred(command, context)
                 : CommandExecutionResult.Failure("unknown_command");
+            _resolutions?.Record(pending.CommandId, result);
             context.AddEvent(CreateEvent(command, context.Tick, result));
         }
     }

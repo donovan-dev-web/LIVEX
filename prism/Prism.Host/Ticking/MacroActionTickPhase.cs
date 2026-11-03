@@ -17,6 +17,8 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
     private readonly BlockActionRules? _blockRules;
     private readonly IReadOnlyDictionary<string, IWorldCommandHandler> _commandHandlers;
     private readonly Dictionary<ulong, string> _commandIds;
+    private readonly DeferredActionResolutions? _deferred;
+    private readonly CommandDispatchPhase? _dispatch;
 
     public MacroActionTickPhase(
         MacroActionSystem macros,
@@ -28,7 +30,9 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
         WorldContainerStore containers,
         Dictionary<ulong, string> commandIds,
         IEnumerable<IWorldCommandHandler> commandHandlers,
-        ActionDurationTracker? durations = null)
+        ActionDurationTracker? durations = null,
+        DeferredActionResolutions? deferred = null,
+        CommandDispatchPhase? dispatch = null)
     {
         ArgumentNullException.ThrowIfNull(macros);
         ArgumentNullException.ThrowIfNull(containers);
@@ -43,10 +47,11 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
         _containers = containers;
         _commandIds = commandIds;
         _durations = durations;
+        _deferred = deferred;
+        _dispatch = dispatch;
         _commandHandlers = commandHandlers.ToDictionary(handler => handler.Kind, StringComparer.Ordinal);
     }
 
-    private const string DeferredKind = "Fabriquer";
     private readonly ActionDurationTracker? _durations;
 
     public WorldTickPhase Phase => WorldTickPhase.AdvanceMacroActions;
@@ -59,11 +64,21 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
             return;
         }
 
+        if (_deferred is not null)
+        {
+            _deferred.Prune(_macros.ActiveAgentIds);
+        }
+
         foreach (var agentId in _macros.ActiveAgentIds)
         {
-            if (_durations is not null &&
-                _durations.TryGetActive(agentId, context.Tick, out var activeAction) &&
-                string.Equals(activeAction.Kind, DeferredKind, StringComparison.Ordinal))
+            if (_deferred is not null && _deferred.TryTake(agentId, out var resolution))
+            {
+                CompleteDeferredStep(context, agentId, resolution);
+                continue;
+            }
+
+            if (_deferred is not null && _deferred.IsPending(agentId) ||
+                _durations is not null && _durations.IsBusy(agentId, context.Tick))
             {
                 continue;
             }
@@ -196,6 +211,18 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
         context.QueueWorldWrite(() =>
         {
             var execution = ExecuteStep(context, agentId, step, perceivedSources);
+            if (execution.Deferred)
+            {
+                AddMacroEvent(
+                    context,
+                    commandId,
+                    agentId,
+                    "macro_step_deferred",
+                    null,
+                    new { step = step.Kind.ToString() });
+                return;
+            }
+
             var completed = _macros.CompleteCurrentStep(
                 agentId,
                 execution.Succeeded,
@@ -309,29 +336,110 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
             kind,
             payload);
         var execution = handler.Execute(synthetic, context);
-        if (!execution.Succeeded)
+        if (execution.Deferred)
         {
-            return new StepExecution(false, 0, execution.ErrorCode);
+            if (_dispatch is null || _deferred is null)
+            {
+                return new StepExecution(false, 0, "deferred_channel_unavailable");
+            }
+
+            _dispatch.Schedule(synthetic, execution);
+            _deferred.Expect(agentId, synthetic.CommandId, step);
+            return new StepExecution(true, 0, null, Deferred: true);
         }
 
-        if (step.Kind is MacroStepKind.Mine or MacroStepKind.Harvest)
+        return execution.Succeeded
+            ? Interpret(step.Kind, step.ItemTypeId, step.Quantity, execution.Payload)
+            : new StepExecution(false, 0, execution.ErrorCode);
+    }
+
+    /// <summary>
+    /// Reads the quantity the macro asked for out of an action payload, whether the action was
+    /// applied immediately or resolved later by the dispatch.
+    /// </summary>
+    private static StepExecution Interpret(
+        MacroStepKind kind,
+        ushort itemTypeId,
+        int requestedQuantity,
+        JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object)
         {
-            var acquired = execution.Payload.GetProperty("produced")
-                .EnumerateArray()
-                .Where(stack => stack.GetProperty("itemTypeId").GetUInt16() == step.ItemTypeId)
+            return new StepExecution(true, 0, null);
+        }
+
+        if (kind is MacroStepKind.Mine or MacroStepKind.Harvest)
+        {
+            if (!payload.TryGetProperty("produced", out var produced) ||
+                produced.ValueKind != JsonValueKind.Array)
+            {
+                return new StepExecution(true, 0, null);
+            }
+
+            var acquired = produced.EnumerateArray()
+                .Where(stack =>
+                    stack.ValueKind == JsonValueKind.Object &&
+                    stack.TryGetProperty("itemTypeId", out var stackItem) &&
+                    stackItem.ValueKind == JsonValueKind.Number &&
+                    stackItem.GetUInt16() == itemTypeId &&
+                    stack.TryGetProperty("quantity", out var stackQuantity) &&
+                    stackQuantity.TryGetInt32(out _))
                 .Sum(stack => stack.GetProperty("quantity").GetInt32());
-            return new StepExecution(true, Math.Min(acquired, step.Quantity), null);
-        }
-
-        if (step.Kind is MacroStepKind.Take)
-        {
             return new StepExecution(
                 true,
-                execution.Payload.GetProperty("quantity").GetInt32(),
+                requestedQuantity > 0 ? Math.Min(acquired, requestedQuantity) : acquired,
                 null);
         }
 
+        if (kind is MacroStepKind.Take)
+        {
+            return payload.TryGetProperty("quantity", out var quantity) &&
+                   quantity.TryGetInt32(out var taken)
+                ? new StepExecution(true, taken, null)
+                : new StepExecution(true, 0, null);
+        }
+
         return new StepExecution(true, 0, null);
+    }
+
+    private void CompleteDeferredStep(
+        WorldTickContext context,
+        ulong agentId,
+        ResolvedMacroStep resolution)
+    {
+        var commandId = _commandIds.GetValueOrDefault(agentId, resolution.Step.CommandId);
+        var execution = resolution.Succeeded
+            ? Interpret(
+                resolution.Step.Kind,
+                resolution.Step.ItemTypeId,
+                resolution.Step.Quantity,
+                resolution.Payload)
+            : new StepExecution(false, 0, resolution.ErrorCode ?? "action_failed");
+        var completed = _macros.CompleteCurrentStep(
+            agentId,
+            execution.Succeeded,
+            execution.QuantityAcquired,
+            execution.ErrorCode);
+        if (!execution.Succeeded || !completed.Succeeded)
+        {
+            _commandIds.Remove(agentId);
+            AddMacroEvent(
+                context,
+                commandId,
+                agentId,
+                "action_failed",
+                execution.ErrorCode ?? completed.ErrorCode,
+                new { quantityAcquired = completed.QuantityAcquired });
+            return;
+        }
+
+        AddMacroEvent(
+            context,
+            commandId,
+            agentId,
+            "macro_step_completed",
+            null,
+            new { step = resolution.Step.Kind.ToString(), quantityAcquired = execution.QuantityAcquired });
     }
 
     private bool IsRipe(BlockCoordinate position)
@@ -381,7 +489,11 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
             payload));
     }
 
-    private sealed record StepExecution(bool Succeeded, int QuantityAcquired, string? ErrorCode);
+    private sealed record StepExecution(
+        bool Succeeded,
+        int QuantityAcquired,
+        string? ErrorCode,
+        bool Deferred = false);
     private sealed record MacroPhaseCheckpoint(byte[] Macros, MacroCommandId[] Commands);
     private sealed record MacroCommandId(ulong AgentId, string CommandId);
 }

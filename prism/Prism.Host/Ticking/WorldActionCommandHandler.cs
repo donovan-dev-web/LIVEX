@@ -128,7 +128,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         var gated = _durations is not null &&
                     DurationGatedKinds.Contains(command.Kind, StringComparer.Ordinal);
         var result = Dispatch(command, context, agent!);
-        if (gated && result.Succeeded)
+        if (gated && result.Succeeded && !result.Deferred)
         {
             _durations!.TryBegin(
                 command.AgentId,
@@ -146,12 +146,12 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         WorldTickContext context,
         AgentBody agent) => command.Kind switch
         {
-            "Miner" => Mine(command),
+            "Miner" => Mine(command, allowDefer: true),
             "Poser" => Place(command),
             "Fabriquer" => Craft(command),
-            "Labourer" => Till(command),
-            "Planter" => Plant(command),
-            "Recolter" => Harvest(command),
+            "Labourer" => Till(command, allowDefer: true),
+            "Planter" => Plant(command, allowDefer: true),
+            "Recolter" => Harvest(command, allowDefer: true),
             "Consommer" => Consume(command, context, agent),
             "Transferer" => Transfer(command),
             "Deposer" => TransferToContainer(command, agent, deposit: true),
@@ -173,7 +173,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
             ? ticks
             : 0;
 
-    private CommandExecutionResult Mine(CommandEnvelope command)
+    private CommandExecutionResult Mine(CommandEnvelope command, bool allowDefer)
     {
         if (!TryReadCoordinate(command.Payload, out var target))
         {
@@ -193,6 +193,19 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (BusyFailure(command) is { } busy)
         {
             return busy;
+        }
+
+        if (allowDefer && _durations is not null)
+        {
+            var duration = BlockActionSystem.GetMiningDurationTicks(
+                _world,
+                _blockRules,
+                target,
+                _mastery.GetPermille(command.AgentId, MasteryCategories.Mining));
+            if (duration > 0)
+            {
+                return Schedule(command, "Miner", duration);
+            }
         }
 
         var result = _lifecycle.MineBlock(
@@ -254,10 +267,38 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         });
     }
 
-    public CommandExecutionResult ResolveDeferred(CommandEnvelope command, WorldTickContext context) =>
-        command.Kind == "Fabriquer"
-            ? CraftCore(command, allowDefer: false)
-            : Execute(command, context);
+    public CommandExecutionResult ResolveDeferred(CommandEnvelope command, WorldTickContext context)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(context);
+        return command.Kind switch
+        {
+            "Fabriquer" => CraftCore(command, allowDefer: false),
+            "Miner" => Mine(command, allowDefer: false),
+            "Labourer" => Till(command, allowDefer: false),
+            "Planter" => Plant(command, allowDefer: false),
+            "Recolter" => Harvest(command, allowDefer: false),
+            _ => Execute(command, context),
+        };
+    }
+
+    private CommandExecutionResult Schedule(CommandEnvelope command, string kind, int durationTicks)
+    {
+        if (!_durations!.TryBegin(command.AgentId, kind, command.CommandId, command.Tick, durationTicks))
+        {
+            return CommandExecutionResult.Failure("agent_busy");
+        }
+
+        return CommandExecutionResult.Scheduled(JsonSerializer.SerializeToElement(
+            new
+            {
+                accepted = true,
+                action = kind,
+                durationTicks,
+                busyUntilTick = checked(command.Tick + durationTicks),
+            },
+            ProtocolJson.Options));
+    }
 
     private CommandExecutionResult Craft(CommandEnvelope command) => CraftCore(command, allowDefer: true);
 
@@ -335,7 +376,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         });
     }
 
-    private CommandExecutionResult Till(CommandEnvelope command)
+    private CommandExecutionResult Till(CommandEnvelope command, bool allowDefer)
     {
         if (!TryReadCoordinate(command.Payload, out var target))
         {
@@ -345,6 +386,13 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (BusyFailure(command) is { } busy)
         {
             return busy;
+        }
+
+        if (allowDefer && _durations is not null)
+        {
+            return _lifecycle.HasPerceivedBlock(command.AgentId, target)
+                ? Schedule(command, "Labourer", 1)
+                : CommandExecutionResult.Failure("not_perceived");
         }
 
         var result = CropActionSystem.Till(
@@ -368,7 +416,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         });
     }
 
-    private CommandExecutionResult Plant(CommandEnvelope command)
+    private CommandExecutionResult Plant(CommandEnvelope command, bool allowDefer)
     {
         if (!TryReadCoordinate(command.Payload, out var target) ||
             !TryReadId(command.Payload, ["seed", "seedItemId", "item", "itemId"], _content.Registries.Items, out var seedItemId))
@@ -379,6 +427,13 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (BusyFailure(command) is { } busy)
         {
             return busy;
+        }
+
+        if (allowDefer && _durations is not null)
+        {
+            return _lifecycle.HasPerceivedBlock(command.AgentId, target)
+                ? Schedule(command, "Planter", 1)
+                : CommandExecutionResult.Failure("not_perceived");
         }
 
         var result = CropActionSystem.Plant(
@@ -407,7 +462,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         });
     }
 
-    private CommandExecutionResult Harvest(CommandEnvelope command)
+    private CommandExecutionResult Harvest(CommandEnvelope command, bool allowDefer)
     {
         if (!TryReadCoordinate(command.Payload, out var target))
         {
@@ -417,6 +472,13 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (BusyFailure(command) is { } busy)
         {
             return busy;
+        }
+
+        if (allowDefer && _durations is not null)
+        {
+            return _lifecycle.HasPerceivedBlock(command.AgentId, target)
+                ? Schedule(command, "Recolter", 1)
+                : CommandExecutionResult.Failure("not_perceived");
         }
 
         var result = CropActionSystem.Harvest(

@@ -193,40 +193,57 @@ public sealed class PrismHostRuntimeTests
                 ]));
             Assert.Equal("action_completed", Assert.Single(incarnate.Events).Kind);
 
+            long tick = 1;
+            bool AdvanceUntil(PrismHostRuntime host, Func<EventEnvelope, bool> predicate, int maxTicks = 200)
+            {
+                for (var attempt = 0; attempt < maxTicks; attempt++)
+                {
+                    var advanced = host.Step(new TickRequest(ProtocolVersion.Current.ToString(), tick++, []));
+                    if (advanced.Events.Any(predicate))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
             using var obtainPayload = JsonDocument.Parse(JsonSerializer.Serialize(
                 new { item = "stone", quantity = 1, hint = target, hintRadius = 0 },
                 ProtocolJson.Options));
+            var obtainTick = tick++;
             var obtaining = runtime.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                1,
+                obtainTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        1,
+                        obtainTick,
                         "obtain-nearby-stone",
                         42,
                         "ObtenirObjet",
                         obtainPayload.RootElement.Clone()),
                 ]));
-            Assert.Contains(obtaining.Events, static entry => entry.Kind == "macro_step_completed");
+            Assert.Contains(obtaining.Events, static entry => entry.Kind == "macro_step_deferred");
 
-            var obtained = runtime.Step(new TickRequest(
-                ProtocolVersion.Current.ToString(),
-                2,
-                []));
-            Assert.Contains(
-                obtained.Events,
-                static entry => entry.Kind == "action_completed" &&
-                                entry.Payload.GetProperty("commandId").GetString() == "obtain-nearby-stone");
+            Assert.True(
+                AdvanceUntil(runtime, static entry => entry.Kind == "macro_step_completed"),
+                "The deferred mining step never resolved.");
+            Assert.True(
+                AdvanceUntil(runtime, static entry =>
+                    entry.Kind == "action_completed" &&
+                    entry.Payload.GetProperty("commandId").GetString() == "obtain-nearby-stone"),
+                "The obtain-object macro did not complete after its mining step resolved.");
 
             using var consumePayload = JsonDocument.Parse("""{"item":"stone"}""");
+            var consumeTick = tick++;
             var consumed = runtime.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                3,
+                consumeTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        3,
+                        consumeTick,
                         "consume-mined-stone",
                         42,
                         "Consommer",
@@ -243,13 +260,14 @@ public sealed class PrismHostRuntimeTests
             using var placeContainerPayload = JsonDocument.Parse(JsonSerializer.Serialize(
                 new { target = containerPosition, item = "chest", material = "chest" },
                 ProtocolJson.Options));
+            var placeTick = tick++;
             var placed = runtime.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                4,
+                placeTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        4,
+                        placeTick,
                         "place-test-container",
                         42,
                         "Poser",
@@ -260,13 +278,14 @@ public sealed class PrismHostRuntimeTests
             using var depositPayload = JsonDocument.Parse(JsonSerializer.Serialize(
                 new { container = containerPosition, item = "stone", quantity = 1 },
                 ProtocolJson.Options));
+            var depositTick = tick++;
             var deposited = runtime.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                5,
+                depositTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        5,
+                        depositTick,
                         "deposit-in-test-container",
                         42,
                         "Deposer",
@@ -277,13 +296,14 @@ public sealed class PrismHostRuntimeTests
             using var mineContainerPayload = JsonDocument.Parse(JsonSerializer.Serialize(
                 new { target = containerPosition },
                 ProtocolJson.Options));
+            var protectedTick = tick++;
             var protectedContainer = runtime.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                6,
+                protectedTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        6,
+                        protectedTick,
                         "mine-nonempty-container",
                         42,
                         "Miner",
@@ -303,13 +323,14 @@ public sealed class PrismHostRuntimeTests
             using var takePayload = JsonDocument.Parse(JsonSerializer.Serialize(
                 new { container = containerPosition, item = "stone", quantity = 1 },
                 ProtocolJson.Options));
+            var takeTick = tick++;
             var taken = restored.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                7,
+                takeTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        7,
+                        takeTick,
                         "take-from-restored-container",
                         42,
                         "Prendre",
@@ -327,13 +348,14 @@ public sealed class PrismHostRuntimeTests
             using var distantObtainPayload = JsonDocument.Parse(JsonSerializer.Serialize(
                 new { item = "stone", quantity = 1, hint = distantTarget, hintRadius = 0 },
                 ProtocolJson.Options));
+            var distantTick = tick++;
             var travelling = restored.Step(new TickRequest(
                 ProtocolVersion.Current.ToString(),
-                8,
+                distantTick,
                 [
                     new CommandEnvelope(
                         ProtocolVersion.Current.ToString(),
-                        8,
+                        distantTick,
                         "obtain-distant-stone",
                         42,
                         "ObtenirObjet",
@@ -345,19 +367,13 @@ public sealed class PrismHostRuntimeTests
             var resumed = new PrismHostRuntime(checkpointStore: store, checkpointOnStop: false);
             resumed.RestoreCheckpoint("macro-checkpoint", compilation.Pack.ContentHash);
             resumed.Start(new StartWorldRequest());
-            var macroCompleted = false;
-            for (var tick = 9; tick <= 20 && !macroCompleted; tick++)
-            {
-                var result = resumed.Step(new TickRequest(
-                    ProtocolVersion.Current.ToString(),
-                    tick,
-                    []));
-                macroCompleted = result.Events.Any(entry =>
-                    entry.Kind == "action_completed" &&
-                    entry.Payload.GetProperty("commandId").GetString() == "obtain-distant-stone");
-            }
-
-            Assert.True(macroCompleted, "The restored obtain-object macro did not complete.");
+            Assert.True(
+                AdvanceUntil(
+                    resumed,
+                    static entry =>
+                        entry.Kind == "action_completed" &&
+                        entry.Payload.GetProperty("commandId").GetString() == "obtain-distant-stone"),
+                "The restored obtain-object macro did not complete.");
         }
         finally
         {
@@ -749,6 +765,21 @@ public sealed class PrismHostRuntimeTests
         }
 
         File.WriteAllText(materialsPath, JsonSerializer.Serialize(materials, ProtocolJson.Options));
+
+        // Mining is deferred to the end of its duration; keep that duration short so the dispatch
+        // timing stays observable without spending a hundred ticks per swing.
+        var parametersPath = Path.Combine(root, "params.json");
+        var parameters = JsonNode.Parse(File.ReadAllText(parametersPath))!.AsObject();
+        if (parameters["mining"] is JsonObject mining)
+        {
+            mining["baseTicksPerHardness"] = 1;
+        }
+        else
+        {
+            parameters["mining"] = new JsonObject { ["baseTicksPerHardness"] = 1 };
+        }
+
+        File.WriteAllText(parametersPath, JsonSerializer.Serialize(parameters, ProtocolJson.Options));
     }
 
     private static BlockCoordinate FindClearSurfaceOrigin(GeneratedWorldSnapshot world)

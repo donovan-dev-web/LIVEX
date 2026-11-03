@@ -1060,6 +1060,7 @@ public sealed class PrismHostRuntime
         stationRegistryOut = stations;
         var macros = new MacroActionSystem();
         var actionDurations = new ActionDurationTracker();
+        var deferredResolutions = new DeferredActionResolutions();
         var macroCommandIds = new Dictionary<ulong, string>();
         var eventWheel = new EventWheel();
         var calendar = CreateCalendar(compiledPack);
@@ -1124,7 +1125,10 @@ public sealed class PrismHostRuntime
             }
         }
 
-        var dispatch = new CommandDispatchPhase(handlers, durations: actionDurations);
+        var dispatch = new CommandDispatchPhase(
+            handlers,
+            durations: actionDurations,
+            resolutions: deferredResolutions);
         var actionState = new WorldActionStateTickPhase(ledger, stations, containers, mastery);
         var macroActions = new MacroActionTickPhase(
             macros,
@@ -1136,7 +1140,9 @@ public sealed class PrismHostRuntime
             containers,
             macroCommandIds,
             handlers,
-            actionDurations);
+            actionDurations,
+            deferredResolutions,
+            dispatch);
         var phases = Enum.GetValues<WorldTickPhase>()
             .Select(phase => phase switch
             {
