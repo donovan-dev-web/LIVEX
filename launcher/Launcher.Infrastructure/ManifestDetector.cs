@@ -308,6 +308,11 @@ public sealed class ManifestDetector
                 {
                     problems.Add($"argument invalide pour le point d'accès « {name} »");
                 }
+
+                if (endpoint.Path is { } endpointPath && !IsSafeEndpointPath(endpointPath))
+                {
+                    problems.Add($"chemin invalide pour le point d'accès « {name} »");
+                }
             }
         }
 
@@ -354,6 +359,27 @@ public sealed class ManifestDetector
 
         return path.Split(['/', '\\'], StringSplitOptions.None)
             .All(segment => segment.Length > 0 && segment != "..");
+    }
+
+    private static bool IsSafeEndpointPath(string path)
+    {
+        if (path == "/")
+        {
+            return true;
+        }
+
+        if (!path.StartsWith("/", StringComparison.Ordinal) ||
+            path.StartsWith("//", StringComparison.Ordinal) ||
+            path.IndexOfAny(['\\', '?', '#', '\r', '\n', '%']) >= 0)
+        {
+            return false;
+        }
+
+        return path.Split('/').Skip(1).All(segment =>
+            segment.Length > 0 &&
+            segment is not ("." or "..") &&
+            segment.All(character =>
+                char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.' or '~'));
     }
 
     private static string? ResolveExecutable(ComponentManifest? manifest)

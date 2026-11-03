@@ -128,6 +128,11 @@ public sealed class JsonEndpoint
     [JsonPropertyName("launchArgument")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? LaunchArgument { get; set; }
+
+    /// <summary>Chemin HTTP/WebSocket associé à l'endpoint.</summary>
+    [JsonPropertyName("path")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Path { get; set; }
 }
 
 /// <summary>Sonde de santé déclarée.</summary>
