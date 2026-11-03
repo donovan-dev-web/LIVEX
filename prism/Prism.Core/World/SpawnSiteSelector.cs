@@ -28,11 +28,46 @@ public sealed record SpawnSiteConfig(
     int Count = 1,
     int MinimumSpacing = 24,
     int MaximumResourceDistance = 120,
-    int MaximumCandidates = 128);
+    int MaximumCandidates = 128,
+    SpawnResourceFloors? Floors = null);
+
+/// <summary>
+/// Minimum number of cells carrying each resource category in the whole world, independent of
+/// any spawn site. A world below a floor is rejected before sites are searched: a spawn site can
+/// only reach resources that exist, so a global deficit must fail the generation attempt itself.
+/// </summary>
+public sealed record SpawnResourceFloors(
+    int Water = 1,
+    int Wood = 1,
+    int Stone = 1,
+    int Coal = 1,
+    int ExposedIronOre = 1,
+    int Farmland = 1)
+{
+    public void Validate()
+    {
+        if (Water < 0 || Wood < 0 || Stone < 0 || Coal < 0 || ExposedIronOre < 0 || Farmland < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(SpawnResourceFloors), "Resource floors must be non-negative.");
+        }
+    }
+
+    public int For(SpawnResourceMask resource) => resource switch
+    {
+        SpawnResourceMask.Water => Water,
+        SpawnResourceMask.Wood => Wood,
+        SpawnResourceMask.Stone => Stone,
+        SpawnResourceMask.Coal => Coal,
+        SpawnResourceMask.ExposedIronOre => ExposedIronOre,
+        SpawnResourceMask.Farmland => Farmland,
+        _ => throw new ArgumentOutOfRangeException(nameof(resource), "A resource floor needs a single resource category."),
+    };
+}
 
 public sealed record SpawnSiteSelectionResult(
     IReadOnlyList<BlockCoordinate> Sites,
-    string? Error)
+    string? Error,
+    string? ErrorCode = null)
 {
     public bool Succeeded => Error is null;
 }
@@ -75,7 +110,18 @@ public static class SpawnSiteSelector
             throw new ArgumentOutOfRangeException(nameof(config));
         }
 
+        var floors = config.Floors ?? new SpawnResourceFloors();
+        floors.Validate();
         var resources = BuildResourceMap(world, materials);
+        var deficits = CollectFloorDeficits(resources, floors);
+        if (deficits.Count > 0)
+        {
+            return new SpawnSiteSelectionResult(
+                [],
+                $"World resource floors are not met: {string.Join(", ", deficits)}.",
+                "world.resources.below_floor");
+        }
+
         ExpandResourcesToReachableNeighbors(resources, world.Width, world.Height);
         var candidates = new List<(ulong Priority, int X, int Y)>();
         for (var y = 0; y < world.Height; y++)
@@ -138,6 +184,55 @@ public static class SpawnSiteSelector
             selected,
             $"Only {selected.Count} of {config.Count} spawn sites met terrain, spacing, and resource-distance requirements.");
     }
+
+    private static List<string> CollectFloorDeficits(SpawnResourceMask[] resources, SpawnResourceFloors floors)
+    {
+        var counts = new Dictionary<SpawnResourceMask, int>();
+        foreach (var mask in resources)
+        {
+            foreach (var resource in RequiredResources)
+            {
+                if ((mask & resource) != 0)
+                {
+                    counts[resource] = counts.GetValueOrDefault(resource) + 1;
+                }
+            }
+        }
+
+        var deficits = new List<string>();
+        foreach (var resource in RequiredResources)
+        {
+            var floor = floors.For(resource);
+            var count = counts.GetValueOrDefault(resource);
+            if (count < floor)
+            {
+                deficits.Add($"{Describe(resource)} {count} < {floor}");
+            }
+        }
+
+        return deficits;
+    }
+
+    private static readonly SpawnResourceMask[] RequiredResources =
+    [
+        SpawnResourceMask.Water,
+        SpawnResourceMask.Wood,
+        SpawnResourceMask.Stone,
+        SpawnResourceMask.Coal,
+        SpawnResourceMask.ExposedIronOre,
+        SpawnResourceMask.Farmland,
+    ];
+
+    private static string Describe(SpawnResourceMask resource) => resource switch
+    {
+        SpawnResourceMask.Water => "water",
+        SpawnResourceMask.Wood => "wood",
+        SpawnResourceMask.Stone => "stone",
+        SpawnResourceMask.Coal => "coal",
+        SpawnResourceMask.ExposedIronOre => "exposed iron ore",
+        SpawnResourceMask.Farmland => "farmland",
+        _ => resource.ToString(),
+    };
 
     private static SpawnResourceMask[] BuildResourceMap(WorldGrid world, WorldResourceMaterials materials)
     {

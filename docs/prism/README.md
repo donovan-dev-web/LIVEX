@@ -1,10 +1,10 @@
 # PRISM — Persistent Reality & Interactive Simulation Module (V2)
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION EN COURS — P6]
+**Statut** : [IMPLÉMENTATION EN COURS — SOCLES P0–P11 ; P12/P13 À FAIRE ; G1–G8 EN ATTENTE]
 **Version cible** : PRISM `2.0.0` — consomme et produit le contrat SYNE↔PRISM `1.0.0` (voir [`API_CONTRACTS.md`](API_CONTRACTS.md))
 **Implémentation visée** : .NET (C#), noyau headless `Prism.Core` + hôte `Prism.Host` + visualiseur `Prism.Viewer` (Silk.NET / OpenGL)
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`VISION.md`](VISION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`RESPONSIBILITIES.md`](RESPONSIBILITIES.md)
 **Source Monographie** : —
 
@@ -12,7 +12,7 @@
 
 > **Lecture obligatoire avant tout.** Ce dossier décrit PRISM **V2**, une refonte de scope. Il remplace la documentation de PRISM V1 (projet Unreal + plugin PRISM-LDK, livré en `1.0.0`), archivée séparément. La simulation V2 est en cours d'implémentation ; consulter la roadmap et le backlog pour l'état réel des phases et les validations différées.
 
-**État d'avancement :** le noyau fonctionnel progresse jusqu'à P6. Les phases P2–P5 disposent de socles implémentés ; les primitives de minage, de pose, de conteneur, de fabrication et de culture PRISM-060–064 sont maintenant testées. La validation Linux et les optimisations détaillées sont reportées ; G1/G2 ne sont pas franchies. Le suivi détaillé est dans [`ROADMAP.md`](ROADMAP.md) et [`ISSUES.md`](ISSUES.md).
+**État d'avancement :** les socles P0–P11 sont amorcés : noyau du monde (P2–P6), hôte headless, contrat et persistance (P7), structures et chantiers (P8), adaptateurs SYNE/ECHOS (P9–P10) et viewer (P11). La matrice contractuelle PRISM-078 couvre les 21 kinds sur les trois liaisons ; les bots, le cycle jour/nuit et le client de lecture du viewer sont en place. Les phases P12–P13 (calibrage, validation, livraison) restent à faire ; la validation Linux et les benchmarks sont reportés et G1–G8 ne sont pas franchies. Le suivi détaillé est dans [`ROADMAP.md`](ROADMAP.md) et [`ISSUES.md`](ISSUES.md).
 
 ## Rôle en une phrase
 
@@ -68,5 +68,6 @@ PRISM V2 est **l'autorité du monde** : un monde voxel borné, déterministe, pi
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Statut et état d'avancement alignés sur les socles P0–P11 | Audit de cohérence avec le code |
 | 2 novembre 2026 | Début d'implémentation P0/G0 et ajout du suivi | PRISM V2 |
 | 1er novembre 2026 | Création | Refonte de scope V2 (monde voxel autoritaire) |

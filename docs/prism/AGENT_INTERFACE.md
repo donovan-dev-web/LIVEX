@@ -2,7 +2,7 @@
 
 **Composant** : PRISM (impact SYNE)
 **Statut** : [SOCLE DE TRANSPORT — ADAPTATION COGNITIVE NON IMPLÉMENTÉE]
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`API_CONTRACTS.md`](API_CONTRACTS.md), [`adr/ADR-009-planification-dans-syne-savoir-des-recettes.md`](adr/ADR-009-planification-dans-syne-savoir-des-recettes.md), `../syne/COGNITIVE_ARCHITECTURE.md`
 **Source Monographie** : —
 
@@ -44,7 +44,7 @@ Un planificateur **intégré à la délibération** (GOAP ou HTN, choix par spik
 
 ## 5. Macro-actions et information locale
 
-SYNE n'envoie pas un ordre par bloc : il émet des macro-actions (`ObtenirObjet`, `Fabriquer`, `Cultiver`, `Construire`/`Contribuer`, `Demander`/`Offrir`).
+SYNE n'envoie pas un ordre par bloc : il émet des macro-actions (`ObtenirObjet`, `Fabriquer`/`FabriquerMacro`, `Cultiver`, `DemarrerChantier`/`Contribuer`, `Demander`/`Offrir`).
 
 **Règle d'honnêteté épistémique.** Une macro-action porte un **indice** (`hint`) tiré des croyances de l'agent (position ou chunk). PRISM ne cherche jamais « le fer le plus proche » dans le monde entier ; il exécute vers l'indice et ne reconnaît que des sources **perçues par cet agent**. Si rien n'est trouvé, il échoue avec `source_not_found`, et SYNE **révise la croyance** (le fer n'est plus là). Cela préserve le principe « information locale » et rend l'exploration utile.
 
@@ -79,5 +79,6 @@ Choix GOAP vs HTN : spike en P9 (ISSUES `SYNE-2xx`).
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Vocabulaire des macro-actions aligné (`FabriquerMacro`, `DemarrerChantier`) | Audit de cohérence avec le code |
 | 2 novembre 2026 | Ajout du client HTTP lockstep ; mapping d'actions et extraction du monde restent ouverts | SYNE-210/220 |
 | 1er novembre 2026 | Création | Refonte V2 |

@@ -102,17 +102,7 @@ public sealed class ProtocolContractTests
     [Fact]
     public void PublishedSchemasAreValidJsonDocuments()
     {
-        DirectoryInfo? directory = new(AppContext.BaseDirectory);
-        while (directory is not null &&
-               !Directory.Exists(Path.Combine(directory.FullName, "docs", "prism", "schemas")))
-        {
-            directory = directory.Parent;
-        }
-
-        Assert.NotNull(directory);
-        var schemaFiles = Directory.GetFiles(
-            Path.Combine(directory!.FullName, "docs", "prism", "schemas"),
-            "*.schema.json");
+        var schemaFiles = Directory.GetFiles(FindSchemasDirectory(), "*.schema.json");
         Assert.Equal(5, schemaFiles.Length);
         foreach (var schemaFile in schemaFiles)
         {
@@ -122,6 +112,39 @@ public sealed class ProtocolContractTests
                 "https://json-schema.org/draft/2020-12/schema",
                 document.RootElement.GetProperty("$schema").GetString());
         }
+    }
+
+    [Fact]
+    public void PublishedCommandSchemaMatchesTheCanonicalCommandVocabulary()
+    {
+        using var document = JsonDocument.Parse(
+            File.ReadAllText(Path.Combine(FindSchemasDirectory(), "command-envelope.schema.json")));
+        var declared = document.RootElement
+            .GetProperty("properties")
+            .GetProperty("kind")
+            .GetProperty("enum")
+            .EnumerateArray()
+            .Select(element => element.GetString())
+            .OfType<string>()
+            .ToArray();
+
+        Assert.Equal(CommandKinds.All.Count, declared.Length);
+        Assert.Equal(
+            CommandKinds.All.OrderBy(kind => kind, StringComparer.Ordinal),
+            declared.OrderBy(kind => kind, StringComparer.Ordinal));
+    }
+
+    private static string FindSchemasDirectory()
+    {
+        DirectoryInfo? directory = new(AppContext.BaseDirectory);
+        while (directory is not null &&
+               !Directory.Exists(Path.Combine(directory.FullName, "docs", "prism", "schemas")))
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.NotNull(directory);
+        return Path.Combine(directory!.FullName, "docs", "prism", "schemas");
     }
 
     [Fact]

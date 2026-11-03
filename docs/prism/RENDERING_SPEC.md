@@ -1,8 +1,8 @@
 # RENDERING_SPEC — Visualiseur Silk.NET, identité visuelle et interaction
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION EN COURS — PRISM-038/110 (SOCLES)]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [IMPLÉMENTATION EN COURS — PRISM-038/110/111/115 (SOCLES)]
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`ARCHITECTURE.md`](ARCHITECTURE.md), [`API_CONTRACTS.md`](API_CONTRACTS.md) §6, [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md)
 **Source Monographie** : —
 
@@ -60,6 +60,8 @@ Désactivées par défaut. Quand elles sont activées par configuration, une int
 | **Embarqué** | `Prism.Viewer --embedded` : héberge un host sur un thread dédié (développement, démonstration) |
 | **Rejeu** | Relit un run enregistré (deltas) ; contrôle de vitesse |
 
+Le socle du mode client existe : `ViewerReadStreamClient`/`ViewerLiveSession` valident versions et séquences, appliquent snapshots d'entités, résultats de tick et checksums au magasin, et resynchronisent sur un `world_snapshot` complet après un saut. L'option `--connect` n'est pas encore exposée par le CLI ; les modes embarqué et rejeu restent à câbler.
+
 ## 8. Performance et robustesse
 
 Le rendu ne verrouille jamais le tick (double tampon de chunks) ; si le flux est plus rapide que le rendu, le visualiseur **saute** des deltas intermédiaires en conservant la cohérence (ré-instantané). Cible : `PERFORMANCE.md` §6.
@@ -88,6 +90,7 @@ L'inspecteur courant est limité aux snapshots statiques de démonstration ; `Ta
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Socle du mode client (`ViewerReadStreamClient`/`ViewerLiveSession`) et resynchronisation documentés ; support Linux précisé | PRISM-115 |
 | 3 novembre 2026 | Magasin d'entités live, interpolation et suivi d'action | PRISM-112 |
 | 3 novembre 2026 | Cycle jour/nuit déterministe, teinte lumineuse et HUD calendrier | PRISM-111 |
 | 2 novembre 2026 | Occlusion ambiante par sommet aux ruptures de relief | P11 |

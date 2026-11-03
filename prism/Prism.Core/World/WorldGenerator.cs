@@ -60,6 +60,7 @@ public static class WorldGenerator
 
         var attempts = config.SpawnConfig is null ? 1 : MaximumAttempts;
         string? lastSpawnError = null;
+        var lastErrorCode = "world.spawn.unsatisfied";
         for (var attempt = 0; attempt < attempts; attempt++)
         {
             var attemptSeed = attempt == 0
@@ -89,6 +90,7 @@ public static class WorldGenerator
                 if (!selection.Succeeded)
                 {
                     lastSpawnError = selection.Error;
+                    lastErrorCode = selection.ErrorCode ?? lastErrorCode;
                     continue;
                 }
 
@@ -119,7 +121,7 @@ public static class WorldGenerator
         }
 
         throw new WorldGenerationException(
-            "world.spawn.unsatisfied",
+            lastErrorCode,
             attempts,
             $"No generated world met spawn-site requirements after {attempts} attempts. {lastSpawnError}");
     }

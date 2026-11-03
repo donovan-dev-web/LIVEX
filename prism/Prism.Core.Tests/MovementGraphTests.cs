@@ -145,6 +145,117 @@ public sealed class MovementGraphTests
         Assert.Equal(2, cache.Statistics.Misses);
     }
 
+    [Fact]
+    public void RegionGraphReportsCheapestPortalsBetweenAdjacentRegions()
+    {
+        var world = CreateRegionedWorld(32, 32, regionSize: 8);
+        var regions = RegionGraph.Build(CreateMovement(world));
+
+        Assert.Equal(4, regions.RegionCountX);
+        Assert.Equal(4, regions.RegionCountY);
+        Assert.Equal(16, regions.RegionCount);
+
+        // An interior region touches its four cardinal and four diagonal neighbours.
+        var middle = regions.GetPortals(1 + 4 * 1);
+        Assert.Equal(8, middle.Count);
+        // Region 5 is (1,1) in a 4x4 map: cardinal neighbours are up 1, left 4, right 6, down 9.
+        Assert.Equal([1, 4, 6, 9], middle
+            .Where(static portal => portal.Cost == 1000)
+            .Select(static portal => portal.ToRegion));
+        Assert.All(middle, static portal => Assert.Contains(portal.Cost, new[] { 1000, 1414 }));
+        Assert.True(regions.TryFindRegionPath(0, 15, out var path));
+        Assert.Equal(0, path[0]);
+        Assert.Equal(15, path[^1]);
+    }
+
+    [Fact]
+    public void HierarchicalSearchKeepsTheOptimalCostOnAnOpenMapAndIsDeterministic()
+    {
+        var world = CreateRegionedWorld(64, 64, regionSize: 8);
+        var graph = CreateMovement(world);
+        var regions = RegionGraph.Build(graph);
+
+        var plain = AStarPathfinder.FindPath(graph, 2, 3, 61, 58, 65536);
+        var first = HierarchicalPathfinder.FindPath(graph, 2, 3, 61, 58, 65536, regions);
+        var second = HierarchicalPathfinder.FindPath(graph, 2, 3, 61, 58, 65536, regions);
+
+        Assert.Equal(PathfindingStatus.Found, first.Status);
+        Assert.Equal(plain.Cost, first.Cost);
+        Assert.Equal(first.Path, second.Path);
+        Assert.Equal(first.ExpandedNodes, second.ExpandedNodes);
+    }
+
+    [Fact]
+    public void HierarchicalSearchExpandsFewerNodesThroughAWallAtTheCostOfALongerCorridor()
+    {
+        var world = CreateRegionedWorld(64, 64, regionSize: 8);
+        // A wall splits the world in two; the only passage is the gap around y = 32.
+        for (var y = 0; y < 64; y++)
+        {
+            if (y is 32 or 33)
+            {
+                continue;
+            }
+
+            world.SetBlockOverride(new BlockCoordinate(32, y, 5), new BlockOverride(1, 0, false));
+            world.SetBlockOverride(new BlockCoordinate(32, y, 6), new BlockOverride(1, 0, false));
+        }
+
+        var graph = CreateMovement(world);
+        var regions = RegionGraph.Build(graph);
+
+        var plain = AStarPathfinder.FindPath(graph, 1, 1, 62, 62, 65536);
+        var hierarchical = HierarchicalPathfinder.FindPath(graph, 1, 1, 62, 62, 65536, regions);
+        var again = HierarchicalPathfinder.FindPath(graph, 1, 1, 62, 62, 65536, regions);
+
+        Assert.Equal(PathfindingStatus.Found, hierarchical.Status);
+        Assert.Equal(hierarchical.Path, again.Path);
+        // The corridor search is a performance trade-off, not an optimality claim: the region
+        // corridors bound the work, and the path may be longer than the exhaustive search.
+        Assert.True(hierarchical.Cost >= plain.Cost);
+        Assert.True(
+            hierarchical.ExpandedNodes < plain.ExpandedNodes,
+            $"expected fewer expansions than {plain.ExpandedNodes}, got {hierarchical.ExpandedNodes}");
+    }
+
+    [Fact]
+    public void HierarchicalSearchFallsBackToThePlainSearchWhenTheRegionPathIsMissing()
+    {
+        var world = CreateRegionedWorld(32, 32, regionSize: 8);
+        var graph = CreateMovement(world);
+        // Portals of an unrelated, fully blocked world: the corridor search cannot rely on them.
+        var blocked = CreateRegionedWorld(32, 32, regionSize: 8);
+        for (var y = 0; y < 8; y++)
+        {
+            for (var x = 0; x < 8; x++)
+            {
+                blocked.SetBlockOverride(new BlockCoordinate(x, y, 5), new BlockOverride(1, 0, false));
+                blocked.SetBlockOverride(new BlockCoordinate(x, y, 6), new BlockOverride(1, 0, false));
+            }
+        }
+
+        var disconnected = RegionGraph.Build(CreateMovement(blocked));
+        var plain = AStarPathfinder.FindPath(graph, 0, 0, 31, 31, 65536);
+        var hierarchical = HierarchicalPathfinder.FindPath(graph, 0, 0, 31, 31, 65536, disconnected);
+
+        Assert.Equal(PathfindingStatus.Found, hierarchical.Status);
+        Assert.Equal(plain.Cost, hierarchical.Cost);
+    }
+
+    private static WorldGrid CreateRegionedWorld(int width, int height, int regionSize, byte surfaceZ = 4)
+    {
+        var world = new WorldGrid(width, height, regionSize, verticalSize: 16);
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                world.SetSurfaceColumn(x, y, new SurfaceColumn(surfaceZ, 1, 0, 0));
+            }
+        }
+
+        return world;
+    }
+
     private static WorldGrid CreateFlatWorld(int width, int height, byte surfaceZ = 4)
     {
         var world = new WorldGrid(width, height, verticalSize: 16);

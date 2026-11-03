@@ -466,8 +466,55 @@ public sealed class WorldGridTests
 
         var exception = Assert.Throws<WorldGenerationException>(() => WorldGenerator.Generate(123, config));
 
-        Assert.Equal("world.spawn.unsatisfied", exception.Code);
+        // This world cannot hold wood at all, so the failure is now reported by the global
+        // resource floors (PRISM-036) rather than by the spawn-site search that follows them.
+        Assert.Equal("world.resources.below_floor", exception.Code);
         Assert.Equal(8, exception.Attempts);
+    }
+
+    [Fact]
+    public void SpawnSiteFloorsRejectWorldsBelowGlobalResourceMinimums()
+    {
+        var world = CreateFlatWorld(9, 9, 20);
+        world.SetSurfaceColumn(3, 3, new SurfaceColumn(20, 3, 0, 0));
+        world.SetSurfaceColumn(2, 4, new SurfaceColumn(20, 4, 0, 0));
+        world.SetBlockOverride(new BlockCoordinate(4, 3, 21), new BlockOverride(99, 0, false));
+        world.SetBlockOverride(new BlockCoordinate(4, 5, 21), new BlockOverride(5, 0, false));
+        world.SetBlockOverride(new BlockCoordinate(5, 4, 12), new BlockOverride(6, 0, false));
+        world.SetBlockOverride(new BlockCoordinate(6, 4, 20), new BlockOverride(7, 0, false));
+        var zones = Enumerable.Repeat(WorldZone.Plains, 9 * 9).ToArray();
+        var materials = new WorldResourceMaterials(
+            Water: 99,
+            Wood: new HashSet<ushort> { 5 },
+            Stone: 3,
+            Coal: 6,
+            IronOre: 7,
+            Farmland: 4,
+            SolidMaterials: new HashSet<ushort> { 1, 3, 4, 5, 6, 7 });
+
+        var passing = SpawnSiteSelector.Select(
+            world,
+            zones,
+            materials,
+            77,
+            new SpawnSiteConfig(Count: 1, MinimumSpacing: 4, MaximumResourceDistance: 12, MaximumCandidates: 81));
+        var raised = SpawnSiteSelector.Select(
+            world,
+            zones,
+            materials,
+            77,
+            new SpawnSiteConfig(
+                Count: 1,
+                MinimumSpacing: 4,
+                MaximumResourceDistance: 12,
+                MaximumCandidates: 81,
+                Floors: new SpawnResourceFloors(Coal: 2)));
+
+        Assert.True(passing.Succeeded, passing.Error);
+        Assert.False(raised.Succeeded);
+        Assert.Equal("world.resources.below_floor", raised.ErrorCode);
+        Assert.Contains("coal 1 < 2", raised.Error);
+        Assert.Empty(raised.Sites);
     }
 
     [Fact]

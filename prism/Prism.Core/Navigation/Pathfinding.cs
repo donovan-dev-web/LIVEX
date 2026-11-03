@@ -157,11 +157,34 @@ public static class AStarPathfinder
         return result;
     }
 
+    /// <summary>
+    /// Searches inside a restricted set of nodes (used by the hierarchical corridor search).
+    /// The caller keeps the fallback to the unrestricted search when the restriction fails.
+    /// </summary>
+    public static PathfindingResult FindPathRestricted(
+        MovementGraph graph,
+        MovementNode start,
+        MovementNode goal,
+        int maximumExpandedNodes,
+        Func<MovementNode, bool> allowed)
+    {
+        ArgumentNullException.ThrowIfNull(graph);
+        ArgumentNullException.ThrowIfNull(allowed);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumExpandedNodes);
+        if (!allowed(start) || !allowed(goal))
+        {
+            return new PathfindingResult(PathfindingStatus.NotFound, [], 0, 0);
+        }
+
+        return Search(graph, start, goal, maximumExpandedNodes, allowed);
+    }
+
     private static PathfindingResult Search(
         MovementGraph graph,
         MovementNode start,
         MovementNode goal,
-        int maximumExpandedNodes)
+        int maximumExpandedNodes,
+        Func<MovementNode, bool>? allowed = null)
     {
         var frontier = new PriorityQueue<MovementNode, NodePriority>();
         var costs = new Dictionary<MovementNode, int> { [start] = 0 };
@@ -201,6 +224,11 @@ public static class AStarPathfinder
             expanded++;
             foreach (var edge in graph.GetNeighbors(current))
             {
+                if (allowed is not null && !allowed(edge.Destination))
+                {
+                    continue;
+                }
+
                 var candidateCost = checked(currentCost + edge.Cost);
                 if (costs.TryGetValue(edge.Destination, out var knownCost) &&
                     candidateCost >= knownCost)

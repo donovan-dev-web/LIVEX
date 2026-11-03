@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`VISION.md`](VISION.md), [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md), [`API_CONTRACTS.md`](API_CONTRACTS.md)
 **Source Monographie** : —
 
@@ -34,9 +34,10 @@ prism/
 ├── Prism.Viewer/          # exécutable client : Silk.NET (OpenGL), meshing, interface
 ├── Prism.Bots/            # agents de test et de benchmark
 ├── Prism.Benchmarks/      # B1…B5 + B6 (rendu)
-├── Prism.Core.Tests/  Prism.Host.Tests/  Prism.Content.Tests/  Prism.Contracts.Tests/
+├── Prism.Core.Tests/  Prism.Viewer.Tests/  Prism.Content.Tests/  Prism.Contracts.Tests/
+├── Prism.Host.Tests/  Prism.Bots.Tests/  Prism.Architecture.Tests/
 ├── content/               # pack de contenu par défaut (JSON) — voir CONTENT_SPEC.md
-└── component.json         # manifeste Launcher (host) ; viewer.component.json (viewer)
+└── component.json         # manifeste Launcher (host) ; le manifeste viewer reste à produire (PRISM-118)
 ```
 
 Règles de dépendance : `Core` ← `Content` ← `Host` ; `Viewer` ne référence que `Contracts` (et `Core` en lecture pour le meshing partagé via un sous-ensemble `Prism.Core.Readonly`). Aucune flèche ne va de `Core` vers un projet graphique. Un test d'architecture (analyseur de références) l'impose en CI.
@@ -95,4 +96,5 @@ Voir [`adr/README.md`](adr/README.md) §3 (Q-01, Q-05).
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Arborescence des tests complétée (14 projets) ; manifeste viewer signalé comme restant à produire | Audit de cohérence avec le code |
 | 1er novembre 2026 | Création | Refonte V2 |

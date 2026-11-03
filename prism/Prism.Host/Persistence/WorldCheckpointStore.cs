@@ -27,7 +27,11 @@ public sealed class WorldCheckpointStore
         {
             DataSource = fullPath,
             Mode = SqliteOpenMode.ReadWriteCreate,
-            Cache = SqliteCacheMode.Shared,
+            // Chaque opération ouvre puis referme sa propre connexion : le cache partagé et
+            // le pooling ne servent à rien ici et gardent le fichier verrouillé après Dispose
+            // (suppression du répertoire impossible sous Windows).
+            Cache = SqliteCacheMode.Private,
+            Pooling = false,
         }.ToString();
         Initialize();
     }

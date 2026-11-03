@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`PERFORMANCE.md`](PERFORMANCE.md), [`DETERMINISM.md`](DETERMINISM.md), [`SYSTEMS_SPEC.md`](SYSTEMS_SPEC.md), `../syne/TESTING.md`
 **Source Monographie** : Annexe J.2
 
@@ -25,6 +25,7 @@
 | Génération | Mondes dorés, contrôles de jouabilité | Empreintes figées |
 | Contrat | Mêmes cas sur liaison réseau et embarquée ; versions inconnues ; échecs motivés | `Prism.Contracts.Tests` |
 | Intégration | Host + bots, runs courts | `Prism.Host.Tests` |
+| Bots | Runner limité au contrat, empreintes de run, bout-en-bout sur le pack minimal | `Prism.Bots.Tests` |
 | Rendu | Faces visibles par région, déterminisme du maillage, overlays de hauteur | `Prism.Viewer.Tests` |
 | Bout en bout | SYNE + PRISM + ECHOS via Launcher | `Launcher.Tests.EndToEnd` |
 | Performance | B1…B8 | `Prism.Benchmarks` |
@@ -96,10 +97,11 @@ Procédure itérative, comme les ADR-014/015/016 de SYNE :
 
 ## 8. Mock et bots
 
-Le mock Node.js de SYNE ne sert plus. `Prism.Bots` fournit trois bots : *marche aléatoire* (fumée), *glouton* (bouclage simple besoin → source), *planificateur* (chaînage arrière sur recettes, sert aussi de **référence** pour le futur planificateur de SYNE). Les bots ne remplacent pas la validation contre le SYNE réel.
+Le mock Node.js de SYNE ne sert plus. `Prism.Bots` fournit quatre bots : *marche aléatoire* (fumée), *glouton* (bouclage simple besoin → source), *planificateur* (chaînage arrière sur recettes, sert aussi de **référence** pour le futur planificateur de SYNE) et *inactif* (`idle`, mesure du coût du tick sans commande). Les bots ne remplacent pas la validation contre le SYNE réel.
 
 ## Mises à jour
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Matrice de tests complétée (`Prism.Bots.Tests`) et quatre bots documentés | PRISM-077 |
 | 1er novembre 2026 | Création | Refonte V2 |

@@ -3,7 +3,7 @@
 **Composant** : PRISM
 **Statut** : [IMPLÉMENTATION EN COURS — DTO ET TRANSPORT HOST (SOCLES)]
 **Version de contrat** : `1.0.0` (cible) — remplace la consommation PRISM de `../syne/API_CONTRACTS.md` `0.5.0`
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`adr/ADR-008-contrat-syne-prism-macro-actions.md`](adr/ADR-008-contrat-syne-prism-macro-actions.md), [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md), `../launcher/INTEGRATION_CONTRACT.md`
 **Source Monographie** : §2.4
 
@@ -68,11 +68,12 @@ Chaque tick de cycle de vie applique la décroissance de fraîcheur des inventai
 | `DemarrerChantier` | `{siteId, templateId, origin:{x,y,z}}` (ou `position`) | Courte | `target_out_of_world`, `terrain_unsuitable`, `volume_not_clear`, `unknown_template`, `site_overlaps` |
 | `Contribuer` | `{siteId}` ; une unité de travail et les matériaux dus par agent et par tick | Un tick par contribution | `site_not_found`, `site_not_active`, `duplicate_contribution`, `construction_block_obstructed`, `materials_missing`, `access_denied` |
 | `Transferer` | Agent destinataire, objet, quantité | Courte | `refused`, `too_far`, `capacity_reached`, `item_missing`, `not_perceived` |
-| `DefinirAcces` | `{siteId, rules:[{kind:"agent"|"group", id, rights:["build", ...]}]}` | Courte | `not_owner`, `unknown_target`, `invalid_payload` |
+| `DefinirAcces` | `{siteId, rules:[{kind:"agent"\|"group", id, rights:["build", ...]}]}` | Courte | `not_owner`, `unknown_target`, `invalid_payload` |
+| `DefinirAccesConteneur` | `{container:{x,y,z}, rules:[{kind:"agent"\|"group", id, rights:["take"\|"put", ...]}]}` | Courte | `not_owner`, `container_not_found`, `not_adjacent`, `not_perceived`, `invalid_payload` |
 | `Incarner` / `Retirer` | `Incarner`: `{position:{x,y,z}, profile?}` ; `Retirer`: raison facultative | Immédiate | `invalid_position`, `agent_exists`, `agent_not_found` |
 | `Annuler` | — | Immédiate | `nothing_to_cancel` |
 
-**Macro-actions** (même enveloppe) : `ObtenirObjet{ type|tag, qty, hint }`, `Fabriquer{ recipeId }`, `Cultiver{ parcel }`, `Construire{ templateId, position }`, `Contribuer{ siteId }`. Il s'agit du contrat cible : `ObtenirObjet` et `Cultiver` ne sont pas encore dispatchées par le host comme séquences multi-ticks. `Fabriquer` y est dispatchée comme action à effet différé (voir §3) ; `ObtenirObjet` et `Cultiver` restent des séquences multi-ticks pilotées par la phase `AdvanceMacroActions`. `Demander`/`Offrir` sont des accords **SYNE-only** ; seul `Transferer` traverse le contrat.
+**Macro-actions** (même enveloppe) : `ObtenirObjet{ type|tag, qty, hint }`, `Fabriquer{ recipeId }`, `FabriquerMacro{ recipeId }`, `Cultiver{ parcel }`, `Contribuer{ siteId }`. `ObtenirObjet`, `FabriquerMacro`, `Cultiver` et `Annuler` sont dispatchées par le host comme séquences multi-ticks pilotées par la phase `AdvanceMacroActions` ; `Fabriquer` reste l'action à effet différé décrite ci-dessus. La construction passe par `DemarrerChantier{ templateId, position }` puis `Contribuer{ siteId }` : il n'existe pas de kind `Construire` dispatché. `Demander`/`Offrir` sont des accords **SYNE-only** ; seul `Transferer` traverse le contrat.
 
 **Transfert entre agents.** Il n'a lieu qu'après un accord conclu côté SYNE ; PRISM l'exécute de façon **atomique** (tout ou rien).
 
@@ -124,7 +125,8 @@ Les observations sont envoyées sous forme de **différences** par rapport au ti
 | `world_snapshot` | À la connexion : métadonnées, régions complètes, empreinte et, si disponibles, agents/inventaires, objets au sol, chantiers, intégrité et effets actifs |
 | `region_delta` | État complet de chaque région modifiée (colonnes et surcharges, permettant aussi les suppressions), tick et empreintes de région/monde |
 | `entity_snapshot` | Après `Incarner`/`Retirer` : agents (position, profil, inventaire) et objets au sol |
-| `entities` | Cible future : agents (`activeAction`), chantiers et structures |
+| `tick_result` | Résultat du tick : observations par agent, événements, positions et objets au sol ; consommé par `PrismReadStreamClient` et `ViewerLiveSession` |
+| `entities` | Cible future, non émis : agents (`activeAction`), chantiers et structures ; agents et objets au sol sont couverts par `entity_snapshot` et `tick_result` |
 | `metrics` | `{tick, stocks[], matter[], structures[], reservedStations, activeStructureEffects, failures[]}` : stocks par type (agents, conteneurs, sol), production/consommation par `ruleId`, avancement/intégrité/effets par chantier, réservations de stations et échecs de commande par raison. Publié à la même cadence que `checksum` (100 ticks par défaut). |
 | `checksum` | Empreinte du monde tous les `checksumIntervalTicks` |
 
@@ -132,11 +134,11 @@ Le flux de lecture est **non intrusif** : ECHOS et le visualiseur ne modifient j
 
 Le host émet `checksum` et `metrics` tous les 100 ticks par défaut (intervalle configurable dans `PrismHostRuntime`) ; l'empreinte porte sur l'état courant de la grille et ses métadonnées de génération. La route HTTP `/metrics` expose les mêmes agrégats au format Prometheus (stocks, matière créée/détruite, échecs par raison, réservations et effets actifs).
 Chaque enveloppe porte `protocolVersion`, `sequence`, `tick`, `kind` et `payload`. La séquence est strictement croissante pour le host, mais un lecteur peut observer un saut lorsque le host remplace une file saturée par un nouveau `world_snapshot` complet. ECHOS accepte un démarrage sur un tel snapshot et un saut uniquement lorsqu'il est suivi d'un snapshot complet ; les messages différentiels après ce point doivent reprendre sans autre saut. ECHOS v8 conserve les enveloppes reçues et leur `contentHash` sans les projeter en métriques SYNE non présentes dans le contrat.
-L'adaptateur SYNE consomme également ces enveloppes via `PrismReadStreamClient`; les enveloppes `tick_result` exposent les observations agent/tick sans les traduire encore en croyances. Le lecteur accepte les resynchronisations par snapshot et refuse une version majeure ou un message incohérent.
+L'adaptateur SYNE consomme également ces enveloppes via `PrismReadStreamClient`; les enveloppes `tick_result` exposent les observations agent/tick sans les traduire encore en croyances. Le lecteur accepte les resynchronisations par snapshot et refuse une version majeure ou un message incohérent. Le visualiseur dispose du même socle (`ViewerReadStreamClient`/`ViewerLiveSession`, resynchronisation comprise) ; l'option `--connect` n'est pas encore exposée par son CLI.
 
 ## 7. Plan de contrôle (HTTP)
 
-Le host expose la readiness et le cycle de contrôle HTTP authentifié ; le lockstep et la lecture utilisent WebSocket JSON. Il lie actuellement le serveur à `127.0.0.1`. Avec `contentDirectory`, `Prepare` compile le pack et génère le monde ; `Incarner`/`Retirer` mettent à jour les agents/objets au sol, les observations différentielles par agent sont émises à la phase perception du tick, et les snapshots d'entités sont diffusés aux lecteurs. Les snapshots incluent aussi chantiers, intégrité et effets actifs ; `Contribuer` débite atomiquement les matériaux requis. Après une mutation de grille, `region_delta` publie l'état complet des régions concernées et leurs empreintes ; les checksums périodiques sont émis. Les métriques sont publiées dans le flux et exposées par `/metrics` ; la compression du flux reste à implémenter, comme la perception des chantiers et les consommateurs d'effets de structure. Détails : [`adr/ADR-012-transport.md`](adr/ADR-012-transport.md).
+Le host expose la readiness et le cycle de contrôle HTTP authentifié ; le lockstep et la lecture utilisent WebSocket JSON. Il lie actuellement le serveur à `127.0.0.1`. Avec `contentDirectory`, `Prepare` compile le pack et génère le monde ; `Incarner`/`Retirer` mettent à jour les agents/objets au sol, les observations différentielles par agent sont émises à la phase perception du tick, et les snapshots d'entités sont diffusés aux lecteurs. Les snapshots incluent aussi chantiers, intégrité et effets actifs ; `Contribuer` débite atomiquement les matériaux requis. Après une mutation de grille, `region_delta` publie l'état complet des régions concernées et leurs empreintes ; les checksums périodiques sont émis. Les métriques sont publiées dans le flux et exposées par `/metrics` ; la perception des chantiers et le consommateur d'effets d'abri sont raccordés, la compression du flux reste à implémenter. Détails : [`adr/ADR-012-transport.md`](adr/ADR-012-transport.md).
 
 ## 8. Versionnement et compatibilité
 
@@ -167,6 +169,7 @@ Q-02 (accès). Le transport de référence est tranché par ADR-012 ; les schém
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Dispatch des macro-actions (`ObtenirObjet`, `FabriquerMacro`, `Cultiver`, `Annuler`), `DefinirAccesConteneur`, `tick_result` et client de lecture du viewer documentés ; `Construire` retiré du vocabulaire dispatché | Audit de cohérence avec le code |
 | 2 novembre 2026 | Erreurs de version majeure cohérentes entre HTTP et WebSocket documentées | PRISM-078 |
 | 2 novembre 2026 | Implémentation partielle du host HTTP/WebSocket documentée | P7 |
 | 2 novembre 2026 | Perception et flux de lecture adaptés aux régions 2.5D | ADR-011/012 |

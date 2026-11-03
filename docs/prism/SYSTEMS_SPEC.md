@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [SPÉCIFICATION V2 — LEDGER ET SOCLE DES ACTIONS/CONTENEURS IMPLÉMENTÉS]
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`DATA_MODEL.md`](DATA_MODEL.md), [`CONTENT_SPEC.md`](CONTENT_SPEC.md), [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md)
 **Source Monographie** : —
 
@@ -83,9 +83,9 @@ PRISM stocke pour chaque structure et conteneur une `accessList` : identifiants 
 
 Le socle de conteneur implémente la capacité par emplacements, l'accès propriétaire/agent/groupe opaque et les opérations atomiques `Prendre`/`Deposer`. La fraîcheur est portée par les piles d'inventaire et au sol, et les fusions refusent de mélanger deux états de fraîcheur différents. Un conteneur applique son taux de décroissance à la prise, détruit les piles périmées et les compte dans le ledger (`spoil`) ; la prise échoue alors avec `item_spoiled`. Les inventaires d'agents sont balayés à chaque tick de cycle de vie (1 000 ‰/tick) et chaque péremption publie un événement `item_spoiled` avec le type d'objet et la quantité détruite.
 
-Le socle de chantier porte aussi un propriétaire et une ACL agent/groupe : seul le propriétaire peut la remplacer, une liste vide reste ouverte et le droit `build` contrôle les contributions. Ce contrôle n'est pas encore raccordé à une commande `DéfinirAccès` ni aux usages concrets des structures ; l'état est exportable par le checkpoint autonome du système, pas encore par le host.
+Le socle de chantier porte aussi un propriétaire et une ACL agent/groupe : seul le propriétaire peut la remplacer, une liste vide reste ouverte et le droit `build` contrôle les contributions. `DefinirAcces` est dispatchée par le host et l'état survit au checkpoint ; le droit `use` est appliqué par la consommation d'effets d'abri (propriétaire, agent ou groupe), les autres usages restent à raccorder.
 
-Le socle de fabrication compile les recettes vers des identifiants stables, développe les tags en ensembles d'objets admissibles, prévalide les ingrédients et la place de sortie, puis échange les entrées/sorties tout-ou-rien avec le ledger. Les recettes à station vérifient le matériau présent, la portée, la perception et une réservation jusqu'au tick de fin ; le temps est ajusté par la maîtrise. La finalisation différée des actions, leur raccordement au tick et l'usure des outils restent à intégrer.
+Le socle de fabrication compile les recettes vers des identifiants stables, développe les tags en ensembles d'objets admissibles, prévalide les ingrédients et la place de sortie, puis échange les entrées/sorties tout-ou-rien avec le ledger. Les recettes à station vérifient le matériau présent, la portée, la perception et une réservation jusqu'au tick de fin ; le temps est ajusté par la maîtrise. La finalisation différée des actions et leur raccordement au tick sont en place (`action_started`/`action_completed`, canal `DeferredActionResolutions`) ; l'usure des outils est appliquée à chaque usage réussi.
 
 ### 5.5 Usure et entretien (optionnel)
 
@@ -107,5 +107,6 @@ Q-02 (modèle d'accès) à trancher à la porte G4.
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | ACL de chantier raccordées à `DefinirAcces` ; finalisation différée et usure des outils documentées comme en place | Audit de cohérence avec le code |
 | 2 novembre 2026 | Registre de création/destruction et audit de conservation amorcés dans Prism.Core | PRISM-027 |
 | 1er novembre 2026 | Création | Refonte V2 |

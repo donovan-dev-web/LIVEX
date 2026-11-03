@@ -12,10 +12,11 @@
     "kind": {
       "type": "string",
       "enum": [
-        "Aller", "Miner", "Poser", "Fabriquer", "Labourer", "Planter",
-        "Recolter", "Prendre", "Deposer", "Consommer", "DemarrerChantier",
-        "Contribuer", "Transferer", "DefinirAcces", "Incarner", "Retirer",
-        "Annuler", "ObtenirObjet", "Cultiver", "Construire"
+        "Incarner", "Retirer", "Aller", "Miner", "Labourer", "Recolter",
+        "Poser", "Fabriquer", "FabriquerMacro", "Planter", "Consommer",
+        "Transferer", "Prendre", "Deposer", "DefinirAccesConteneur",
+        "DemarrerChantier", "Contribuer", "DefinirAcces", "ObtenirObjet",
+        "Cultiver", "Annuler"
       ]
     },
     "payload": { "type": "object" }

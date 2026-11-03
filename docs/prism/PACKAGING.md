@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : `../launcher/PACKAGE_FORMAT.md`, `../installer/COMPONENTS.md`, `../../VERSIONING.md`
 **Source Monographie** : —
 
@@ -25,20 +25,33 @@ Le tag est `prism-v2.0.0` (`VERSIONING.md` §4) ; il héberge les entrées conso
 ```json
 {
   "schema": 1,
-  "id": "prism",
-  "name": "PRISM",
+  "id": "prism-host",
+  "name": "PRISM World Host",
   "type": "world",
-  "version": "2.0.0",
+  "version": "2.0.0-preview.1",
+  "runtime": "native",
+  "executable": { "windows": "bin/prism-host.exe", "linux": "bin/prism-host" },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": { "transport": "http" },
+    "readStream": {
+      "transport": "websocket",
+      "launchArgument": "--read-port",
+      "path": "/data/read"
+    }
+  },
+  "capabilities": ["headless", "snapshotStream"],
+  "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
+  "timeouts": { "startupMs": 30000, "shutdownMs": 5000 },
   "protocolVersion": 1,
-  "runtime": "dotnet",
-  "contributesTo": ["analysis", "immersion"],
-  "endpoints": { "control": { "transport": "http", "port": 5182, "enabled": true, "launchArgument": "--control-port" } },
-  "capabilities": ["headless", "control", "worldAuthority", "snapshotStream", "chunkStream", "batch", "resume"],
-  "health": { "probe": "http", "path": "/health/ready", "intervalMs": 500 }
+  "contributesTo": [],
+  "requires": []
 }
 ```
 
-Le visualiseur a son manifeste distinct (`type: "viewer"`, `contributesTo: ["immersion"]`, capacité `renderCadence`). Les exigences de PRISM du Launcher (`INTEGRATION_CONTRACT.md` §11) sont **réécrites** : *autorité du monde*, *flux de lecture*, *indépendance du rendu*.
+Le Launcher résout l'endpoint `readStream` par son `path` (`/data/read`) et transmet `--read-port` ; `prism/scripts/publish.sh` produit les binaires autonomes du host et du viewer (`win-x64`/`linux-x64`).
+
+Le visualiseur aura son manifeste distinct (`type: "viewer"`, `contributesTo: ["immersion"]`, capacité `renderCadence`), à produire avec PRISM-118. Les exigences de PRISM du Launcher (`INTEGRATION_CONTRACT.md` §11) sont **réécrites** : *autorité du monde*, *flux de lecture*, *indépendance du rendu*.
 
 ## 3. Intégration au format de paquet `.livexp`
 
@@ -67,4 +80,5 @@ Toute dépendance (Silk.NET, bibliothèque d'interface, SQLite, outils de test) 
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Exemple `component.json` aligné sur le manifeste réel (`prism-host`, endpoint `readStream.path`) et `publish.sh` documenté | PRISM-080 |
 | 1er novembre 2026 | Création | Refonte V2 |

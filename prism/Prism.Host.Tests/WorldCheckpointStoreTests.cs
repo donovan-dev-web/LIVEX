@@ -117,7 +117,7 @@ public sealed class WorldCheckpointStoreTests
         try
         {
             var databasePath = Path.Combine(directory, "world.sqlite");
-            using (var connection = new SqliteConnection($"Data Source={databasePath}"))
+            using (var connection = new SqliteConnection($"Data Source={databasePath};Pooling=False"))
             {
                 connection.Open();
                 using var command = connection.CreateCommand();

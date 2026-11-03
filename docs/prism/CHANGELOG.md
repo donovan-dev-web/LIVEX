@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [STABLE]
-**Dernière mise à jour** : 1er novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 
 Format : Keep a Changelog. Ce fichier retrace la **documentation** de la V2 ; l'historique de PRISM V1 (`1.0.0`) est archivé dans `legacy-unreal/CHANGELOG.md`.
 
@@ -14,6 +14,7 @@ Format : Keep a Changelog. Ce fichier retrace la **documentation** de la V2 ; l'
 - Feuille de route de bout en bout et backlog (`ROADMAP.md`, `ISSUES.md`).
 
 ### Changed
+- Alignement de la documentation P0–P11 sur le code : matrice contractuelle PRISM-078, quatre bots dont `idle`, cycle jour/nuit et client de lecture du viewer, support Linux, comptage des tests (371) et manifeste Launcher `prism-host`.
 - ADR-002 et ADR-003 passent à `[Superseded]` (au moment de la fusion de la V2).
 - Le contrat PRISM cesse d'être une consommation de `syne/API_CONTRACTS.md` 0.5.0.
 

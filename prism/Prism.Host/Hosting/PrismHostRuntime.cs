@@ -124,7 +124,7 @@ public sealed record AgentEntitySnapshotEnvelope(
     AgentEntitySnapshot[] Agents,
     GroundItem[] GroundItems);
 
-public sealed class PrismHostRuntime
+public sealed class PrismHostRuntime : IWorldHost
 {
     private readonly object _gate = new();
     private readonly Func<IWorldHost>? _customWorldHostFactory;

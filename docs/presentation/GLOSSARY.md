@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : —
 **Source Monographie** : Annexe E (glossaire), Partie 6 (concepts détaillés)
 
@@ -29,10 +29,19 @@ Tension comportementale (faim, soif, fatigue, sécurité, social, curiosité) ex
 ### BDI (Belief-Desire-Intention)
 Architecture cognitive : Croyances (ce que l'entité tient pour vrai), Désirs/objectifs (ce qu'elle cherche), Intentions (ce qu'elle s'engage à faire). (Monographie §3.8)
 
+### Bloc
+Unité élémentaire du monde voxel de PRISM V2 : une cellule `(x, y, z)` porte un **matériau** (identifiant stable 16 bits), un **état** (0-255 : stade de croissance, variante) et éventuellement une surcharge clairsemée lorsqu'il diffère de la colonne uniforme de surface. Un bloc peut être solide, liquide ou non perceptible ; ses propriétés (dureté, palier d'outil, drops, tags) viennent du pack de contenu, jamais du code. (`../../docs/prism/ARCHITECTURE.md`, PRISM-023)
+
 ### Boucle de simulation
 Séquence d'opérations causales exécutée à chaque tick. Cible V0.1 : 15 étapes (Percevoir → … → Nouvelles perceptions). (Monographie §3.3.4)
 
 ## C
+
+### Chantier
+Structure en cours de construction dans PRISM V2 : un **gabarit** (template) posé sur un site, avec un volume, un travail requis en ticks et des matériaux dus. Un chantier est réservé par son initiateur, progresse par contributions horodatées (plusieurs agents, sans message dirigé), publie son avancement par la **perception différentielle** et peut être abandonné. Ses droits (`build`, `use`) séparent propriétaire, agents et groupes. (PRISM-090/091/093)
+
+### Chunk / Région
+Subdivision horizontale du monde de PRISM V2 : `regionSize` blocs de côté (16 par défaut), indexée `regionId = regionX + regionCountX * regionY`. La région est l'unité de **dirty flag**, de maillage incrémental (PRISM-110) et de mise à jour aléatoire parallèle (PRISM-042) ; « chunk » désigne la même subdivision dans la documentation de génération et de rendu. Le protocole de lecture parle de **delta régional**. (ADR-011, PRISM-023)
 
 ### Croyance (Belief)
 Représentation structurée d'un fait avec une **confiance** (0-1) et une source (perception, mémoire, communication, inférence). Une croyance est « vraie » pour l'entité si confiance ≥ 0.5. (Monographie §3.11)
@@ -71,6 +80,9 @@ Structure de données (cellules uniformes) accélérant les requêtes de percept
 
 ## M
 
+### Macro-action
+Action composée, pilotée par une **machine à états** côté PRISM V2 (`ObtenirObjet`, `FabriquerMacro`, `Cultiver`) : elle enchaîne des actions primitives (se déplacer, prendre, miner, planter) pour atteindre un but exprimé en objet, en recette ou en parcelle. Elle n'écrit jamais de décision : elle exécute une intention reçue, renvoie un échec motivé (`source_not_found`, `agent_busy`…) et son avancement survit au point de reprise. (PRISM-067)
+
 ### Mémoire
 Enregistrement des expériences passées selon une décroissance exponentielle de la salience. Capacité bornée (jusqu'à 1000 entrées). À ne pas confondre avec les croyances. (Monographie §3.10)
 
@@ -95,6 +107,9 @@ Sous-système de navigation de SYNE calculant des chemins 2D autour des obstacle
 
 ### Perception
 Première étape de la boucle BDI : transformation de l'état du monde en observations locales, potentiellement inexactes. (Monographie §3.9)
+
+### Pack (pack de contenu)
+Jeu de fichiers JSON versionné qui **définit** les règles de PRISM V2 : manifeste, matériaux, objets, recettes, gabarits, croissance, effets, tags et paramètres. Il est compilé et validé au démarrage (erreurs structurées, pack invalide = démarrage refusé) et résumé par un `contentHash` : deux runs ne sont comparables que si le hash est identique. Le pack minimal `prism/content/minimal` est le pack de référence. (PRISM-021/022)
 
 ### PRISM
 Perceptual Rendering & Interactive Simulation Module — projet Unreal final de LIVEX pour la représentation et l'interaction ; il n'est jamais source de vérité de la simulation.
@@ -132,8 +147,11 @@ Nom complet du plugin PRISM-LDK. LDK ne désigne pas le projet complet : celui-c
 
 ## T
 
+### Tag
+Étiquette hiérarchique nommée d'un pack de contenu, rattachée à des objets, des matériaux ou des recettes. Les tags permettent d'écrire des règles génériques (« tout ce qui est `fuel` ») sans énumérer les identifiants, et de sélectionner des entrées de recette par tag. Un tag est résolu en **masque de bits** au chargement du pack pour que la perception et les filtres restent entiers et déterministes. (PRISM-021, PRISM-054)
+
 ### Tick
-Unité de temps simulé : 1 tick = 1 minute simulée par défaut (défaut 10 ticks/seconde réelle → 1 s = 10 min simulées). (Monographie §3.6.1)
+Unité de temps simulé : 1 tick = 1 minute simulée par défaut (défaut 10 ticks/seconde réelle → 1 s = 10 min simulées). (Monographie §3.6.1) En PRISM V2, le tick est l'unité de **pas de verrouillage** : l'hôte exécute exactement une fois chaque phase dans l'ordre fixe de `SIMULATION_LOOP.md`, refuse un tick non consécutif (`unexpected_tick`) et rejoue une commande déjà appliquée à l'identique sans la réexécuter (fenêtre d'idempotence). (PRISM-071/072)
 
 ### Trait
 Paramètre de personnalité (bravery, curiosity, sociability, greed, pessimism, aggression, strength, speed), plage 0-2, neutre 1.0, modulant la fonction d'utilité. (Monographie §3.7.4)

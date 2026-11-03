@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [IMPLÉMENTATION EN COURS — PRISM-030 À 037]
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`DATA_MODEL.md`](DATA_MODEL.md), [`DETERMINISM.md`](DETERMINISM.md), [`adr/ADR-007-determinisme-entier-flux-hasard.md`](adr/ADR-007-determinisme-entier-flux-hasard.md), [`adr/ADR-011-modele-25d.md`](adr/ADR-011-modele-25d.md)
 **Source Monographie** : —
 
@@ -72,7 +72,7 @@ En cas d'échec, la génération **réessaie avec une graine dérivée** (`attem
 - Monde (tableaux de chunks), `WorldMetadata{ worldGenVersion, attempt, zoneMap, spawnSites[], contentHash }`.
 - **Empreinte du monde généré** (hachage ordonné des chunks) : référence de test (« mondes dorés », `TESTING.md` §3).
 
-L'orchestrateur fournit le sélecteur d'apparition et les tentatives dérivées. `WorldGenerationResult` expose la seed initiale, l'index de tentative, les sites sélectionnés, le hash de contenu et une empreinte intégrant ces métadonnées. Les planchers globaux de ressources et la validation croisée des empreintes sur runners Windows/Linux restent à compléter. Trois empreintes de référence locales sont couvertes par tests.
+L'orchestrateur fournit le sélecteur d'apparition et les tentatives dérivées. `WorldGenerationResult` expose la seed initiale, l'index de tentative, les sites sélectionnés, le hash de contenu et une empreinte intégrant ces métadonnées. Les planchers globaux de ressources sont vérifiés avant la recherche (code motivé `world.resources.below_floor`) ; la validation croisée des empreintes sur runners Windows/Linux reste à compléter. Trois empreintes de référence locales sont couvertes par tests.
 
 ## 6. Performance attendue
 
@@ -86,6 +86,7 @@ Les valeurs de bruit (fréquences, seuils) se fixent par itération visuelle dan
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Planchers globaux de ressources documentés comme vérifiés avant la recherche (`world.resources.below_floor`) | Audit de cohérence avec le code |
 | 2 novembre 2026 | Bruit entier, relief, zones/strates, filons, nappes statiques et placement d'arbres implémentés ; apparition, jouabilité, mondes dorés et viewer restent à faire | PRISM-030/035 |
 | 2 novembre 2026 | Sélecteur de sites et retries déterministes intégrés au pipeline ; trois empreintes dorées locales ajoutées | PRISM-036/037 (socle ; contrôles globaux et CI multiplateforme en attente) |
 | 1er novembre 2026 | Création | Refonte V2 |

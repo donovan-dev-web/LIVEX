@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [IMPLÉMENTATION EN COURS — PRISM-026, 040–042, 050–056, 070–072 (SOCLE)]
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 3 novembre 2026
 **Dépend de** : [`DATA_MODEL.md`](DATA_MODEL.md), [`DETERMINISM.md`](DETERMINISM.md), [`API_CONTRACTS.md`](API_CONTRACTS.md)
 **Source Monographie** : —
 
@@ -44,8 +44,8 @@ Une macro-action est une machine à états exécutée par PRISM sur plusieurs ti
 | `ObtenirObjet(type|tag, qty, hint)` | Se rendre à l'indice → vérifier la source *perçue* → s'orienter → miner/récolter/prendre → répéter jusqu'à `qty` → (option) revenir |
 | `Fabriquer(recette)` | Aller à la station → déposer les entrées → attendre `durationTicks` (réduit par la maîtrise) → récupérer les sorties |
 | `Cultiver(parcelle)` | Labourer → planter → arroser/s'assurer de l'eau → signaler la maturité (événement) → récolter sur ordre |
-| `Construire(gabarit, position)` | Créer le chantier ; puis `Contribuer(chantier)` par apports de matériaux ou de travail |
-| `Demander / Offrir` | Les accords vivent dans SYNE ; PRISM n'exécute que `Transférer` après accord |
+| `DemarrerChantier(gabarit, position)` | Créer le chantier ; puis `Contribuer(chantier)` par apports de matériaux ou de travail |
+| `Demander / Offrir` | Les accords vivent dans SYNE ; PRISM n'exécute que `Transferer` après accord |
 
 Chaque étape a une **durée en ticks** et une **liste d'échecs motivés** (`API_CONTRACTS.md` §4). Un échec n'efface pas le progrès déjà accompli (objets déjà minés restent dans l'inventaire).
 
@@ -106,6 +106,7 @@ Q-04, Q-09 (`adr/README.md` §3).
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 3 novembre 2026 | Macro-action de construction alignée sur la commande `DemarrerChantier` (puis `Contribuer`) | Audit de cohérence avec le code |
 | 2 novembre 2026 | Péremption paresseuse par contenant et propagation d'herbe configurable raccordée aux random ticks | PRISM-044/045 |
 | 2 novembre 2026 | Croissance de culture saisonnière et flétrissement, règles JSON liées aux matériaux compilés | PRISM-043 |
 | 2 novembre 2026 | Orchestrateur `IWorldHost.Step`, validation/snapshot des requêtes, ordre fixe des 12 phases et dispatch idempotent | PRISM-072 |
