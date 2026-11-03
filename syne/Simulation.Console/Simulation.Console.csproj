@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Simulation.Core\Simulation.Core.csproj" />
+    <ProjectReference Include="..\..\prism\Prism.Contracts\Prism.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
