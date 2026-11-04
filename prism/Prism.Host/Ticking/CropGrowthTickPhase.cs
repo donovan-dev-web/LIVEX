@@ -12,6 +12,8 @@ public sealed class CropGrowthTickPhase(
     WorldCalendar calendar,
     IReadOnlyCollection<CropGrowthRule> rules) : IOptionalCheckpointableWorldTickPhaseHandler
 {
+    private bool _resumed;
+
     public WorldTickPhase Phase => WorldTickPhase.ScheduledUpdates;
 
     public void Execute(WorldTickContext context)
@@ -24,9 +26,17 @@ public sealed class CropGrowthTickPhase(
         }
 
         var season = calendar.GetSnapshot(context.Tick).Season;
-        foreach (var rule in rules)
+        if (!_resumed)
         {
-            CropGrowthSystem.ResumeGrowingCrops(world, eventWheel, runSeed, context.Tick, season, rule);
+            // Resuming scans every override in the world. It only exists to adopt crops that were
+            // never scheduled (restored or externally written state): planting schedules the next
+            // stage itself, so running it on every tick was pure duplicated work - one full world
+            // scan per tick, per crop rule, even with zero crops.
+            _resumed = true;
+            foreach (var rule in rules)
+            {
+                CropGrowthSystem.ResumeGrowingCrops(world, eventWheel, runSeed, context.Tick, season, rule);
+            }
         }
 
         var dueEvents = eventWheel.AdvanceTo(context.Tick);

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Prism.Contracts;
 
@@ -5,6 +6,13 @@ namespace Prism.Host.Ticking;
 
 public sealed class OrderedWorldHost : ICheckpointableWorldHost
 {
+    /// <summary>
+    /// Opt-in per-phase profiling. Off by default and free when off; enable with
+    /// <c>PRISM_TICK_PROFILE=1</c> to see where a tick spends its time (perf runs, R1/R2).
+    /// </summary>
+    private static readonly bool TickProfiling =
+        Environment.GetEnvironmentVariable("PRISM_TICK_PROFILE") == "1";
+
     private readonly object _gate = new();
     private readonly IReadOnlyList<IWorldTickPhaseHandler> _phases;
     private long _lastCompletedTick = -1;
@@ -160,7 +168,16 @@ public sealed class OrderedWorldHost : ICheckpointableWorldHost
                         worldExecutionStarted = true;
                     }
 
+                    if (!TickProfiling)
+                    {
+                        phase.Execute(context);
+                        continue;
+                    }
+
+                    var phaseStarted = Stopwatch.GetTimestamp();
                     phase.Execute(context);
+                    Console.Error.WriteLine(
+                        $"[profile] phase {phase.Phase}: {Stopwatch.GetElapsedTime(phaseStarted).TotalMilliseconds:F1} ms");
                 }
 
                 var result = context.CreateResult();

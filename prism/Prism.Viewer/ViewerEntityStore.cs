@@ -31,11 +31,22 @@ public sealed record ViewerGroundItemSample(
     ushort ItemTypeId,
     int Quantity);
 
+    public sealed record ViewerConstructionSiteSample(
+    string SiteId,
+    string TemplateId,
+    int X,
+    int Y,
+    int Z,
+    string State,
+    int WorkRequired,
+    int WorkCompleted);
+
 public sealed class ViewerEntityStore
 {
     private const float MilliCellsPerCell = 1000f;
     private readonly Dictionary<ulong, AgentEntry> _agents = [];
     private readonly List<ViewerGroundItemSample> _groundItems = [];
+    private readonly List<ViewerConstructionSiteSample> _constructionSites = [];
     private readonly HashSet<ViewerLayer> _layers = [];
     private long _revision;
 
@@ -44,6 +55,7 @@ public sealed class ViewerEntityStore
     public int AgentCount => _agents.Count;
 
     public IReadOnlyList<ViewerGroundItemSample> GroundItems => _groundItems;
+    public IReadOnlyList<ViewerConstructionSiteSample> ConstructionSites => _constructionSites;
 
     public IReadOnlyCollection<ViewerLayer> EnabledLayers => _layers;
 
@@ -56,6 +68,31 @@ public sealed class ViewerEntityStore
         {
             ArgumentNullException.ThrowIfNull(agent);
             _agents.Add(agent.AgentId, new AgentEntry(agent, agent, tick, tick));
+        }
+
+        _revision++;
+    }
+
+    public void ApplyConstructionSites(
+        IReadOnlyList<StructureConstructionSite> sites,
+        long tick)
+    {
+        ArgumentNullException.ThrowIfNull(sites);
+        ArgumentOutOfRangeException.ThrowIfNegative(tick);
+
+        _constructionSites.Clear();
+        foreach (var site in sites)
+        {
+            ArgumentNullException.ThrowIfNull(site);
+            _constructionSites.Add(new ViewerConstructionSiteSample(
+                site.Id,
+                site.TemplateId,
+                site.Origin.X,
+                site.Origin.Y,
+                site.Origin.Z,
+                site.State.ToString(),
+                site.WorkRequired,
+                site.WorkCompleted));
         }
 
         _revision++;

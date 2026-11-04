@@ -754,6 +754,40 @@ public sealed class WorldGridTests
     }
 
     [Fact]
+    public void RegionOverridesStayIndexedInCanonicalOrderAfterAddUpdateAndRemove()
+    {
+        var world = new WorldGrid(width: 32, height: 16);
+        var later = new BlockCoordinate(3, 0, 4);
+        var earlier = new BlockCoordinate(9, 1, 2);
+        var other = new BlockCoordinate(20, 0, 3);
+
+        world.SetBlockOverride(later, new BlockOverride(7, 1, IsAir: false));
+        world.SetBlockOverride(earlier, new BlockOverride(7, 1, IsAir: false));
+        world.SetBlockOverride(other, new BlockOverride(7, 1, IsAir: false));
+
+        Assert.Equal(
+            [earlier, later],
+            world.EnumerateRegionOverrides(0).Select(entry => entry.Key));
+        Assert.Equal([other], world.EnumerateRegionOverrides(1).Select(entry => entry.Key));
+        Assert.Equal(2, world.GetRegionOverrideCount(0));
+
+        world.SetBlockOverride(later, new BlockOverride(8, 2, IsAir: false));
+        Assert.Equal(
+            [earlier, later],
+            world.EnumerateRegionOverrides(0).Select(entry => entry.Key));
+        Assert.Equal(new BlockOverride(8, 2, IsAir: false), world.EnumerateRegionOverrides(0).Last().Value);
+        Assert.Equal(2, world.GetRegionOverrideCount(0));
+
+        Assert.True(world.RemoveBlockOverride(earlier));
+        Assert.Equal([later], world.EnumerateRegionOverrides(0).Select(entry => entry.Key));
+        Assert.Equal(1, world.GetRegionOverrideCount(0));
+
+        Assert.True(world.RemoveBlockOverride(later));
+        Assert.Empty(world.EnumerateRegionOverrides(0));
+        Assert.Equal(0, world.GetRegionOverrideCount(0));
+    }
+
+    [Fact]
     public void RemovingNonexistentOverrideDoesNotDirtyRegion()
     {
         var world = new WorldGrid(width: 16, height: 16);

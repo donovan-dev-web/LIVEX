@@ -31,7 +31,8 @@ public static class CraftingRuleRuntimeCompiler
             item.MaxStack,
             item.ToolTier,
             Durability: item.Durability,
-            WearPerAction: item.UsePerAction));
+            WearPerAction: item.UsePerAction,
+            ShelfLifeTicks: item.ShelfLifeTicks));
         var recipeRules = pack.Recipes.Select(recipe =>
         {
             ushort? stationMaterialId = null;

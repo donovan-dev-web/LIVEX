@@ -81,6 +81,18 @@ public sealed class ViewerReadStreamClientTests
     }
 
     [Fact]
+    public void WorldSnapshotAppliesConstructionSites()
+    {
+        var session = new ViewerLiveSession();
+        var status = session.Apply(ViewerStreamEnvelope.Parse(WorldSnapshotWithSites(0, tick: 7)));
+
+        Assert.Equal(ViewerApplyStatus.Applied, status);
+        Assert.Single(session.Store.ConstructionSites);
+        Assert.Equal("site-1", session.Store.ConstructionSites[0].SiteId);
+        Assert.Equal(4, session.Store.ConstructionSites[0].WorkCompleted);
+    }
+
+    [Fact]
     public void ChecksumUpdatesTheWorldHash()
     {
         var session = new ViewerLiveSession();
@@ -123,6 +135,30 @@ public sealed class ViewerReadStreamClientTests
             tick,
             "world_snapshot",
             Payload(new { tick, worldHash = 123UL, agents = Array.Empty<AgentEntitySnapshot>() }));
+
+    private static string WorldSnapshotWithSites(long sequence, long tick) =>
+        EnvelopeJson(
+            ProtocolVersion.Current.ToString(),
+            sequence,
+            tick,
+            "world_snapshot",
+            Payload(new
+            {
+                tick,
+                worldHash = 123UL,
+                agents = Array.Empty<AgentEntitySnapshot>(),
+                constructionSites = new[]
+                {
+                    new StructureConstructionSite(
+                        "site-1",
+                        "template-1",
+                        new BlockCoordinate(1, 2, 3),
+                        StructureConstructionState.InProgress,
+                        10,
+                        4,
+                        2),
+                },
+            }));
 
     private static JsonElement Payload(object value) =>
         JsonSerializer.SerializeToElement(value, ProtocolJson.Options);

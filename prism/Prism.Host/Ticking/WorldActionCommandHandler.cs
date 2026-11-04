@@ -26,6 +26,9 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
     private readonly MasterySystem _mastery;
     private readonly ulong _runSeed;
     private readonly ActionDurationTracker? _durations;
+    private readonly StructureEffectConsumer? _structureEffects;
+    private readonly ushort? _waterMaterialId;
+    private readonly int _containerDecayPermillePerTick;
 
     public WorldActionCommandHandler(
         AgentLifecycleSystem lifecycle,
@@ -43,7 +46,9 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         MasterySystem mastery,
         ulong runSeed,
         string kind,
-        ActionDurationTracker? durations = null)
+        ActionDurationTracker? durations = null,
+        StructureEffectConsumer? structureEffects = null,
+        ContainerDecayRules? containerDecayRules = null)
     {
         ArgumentNullException.ThrowIfNull(lifecycle);
         ArgumentNullException.ThrowIfNull(content);
@@ -79,6 +84,11 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         _mastery = mastery;
         _runSeed = runSeed;
         _durations = durations;
+        _structureEffects = structureEffects;
+        _containerDecayPermillePerTick = (containerDecayRules ?? new ContainerDecayRules()).BasePermillePerTick;
+        _waterMaterialId = content.Registries.Materials.TryGetId("water", out var waterMaterialId)
+            ? waterMaterialId
+            : null;
         Kind = kind;
     }
 
@@ -250,7 +260,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         {
             var container = new ContainerInventory(
                 capacitySlots: 24,
-                decayPermillePerTick: 0,
+                decayPermillePerTick: _containerDecayPermillePerTick,
                 target,
                 AccessPrincipal.ForAgent(command.AgentId));
             if (!_containers.TryAdd(container))
@@ -536,6 +546,11 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
             _consumptionRules,
             source,
             _lifecycle.HasPerceivedBlock(command.AgentId, source));
+        if (!drinkResult.Succeeded && drinkResult.ErrorCode == "not_drinkable")
+        {
+            drinkResult = TryDrinkFromWaterAccess(agent) ?? drinkResult;
+        }
+
         if (!drinkResult.Succeeded)
         {
             return CommandExecutionResult.Failure(drinkResult.ErrorCode!);
@@ -545,6 +560,29 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         return CommandExecutionResult.Success(JsonSerializer.SerializeToElement(
             new { drinkResult.DurationTicks, drinkResult.Event },
             ProtocolJson.Options));
+    }
+
+    /// <summary>
+    /// A well (or any structure effect of type <c>water_access</c>) makes its volume drinkable, so an
+    /// agent standing inside it can drink without an adjacent water block.
+    /// </summary>
+    private ConsumptionActionResult? TryDrinkFromWaterAccess(AgentBody agent)
+    {
+        if (_structureEffects is null || _waterMaterialId is null)
+        {
+            return null;
+        }
+
+        var access = _structureEffects.QueryWaterAccess(
+            agent.AgentId,
+            new BlockCoordinate(agent.Position.CellX, agent.Position.CellY, agent.Position.FeetZ));
+        return access is null
+            ? null
+            : ConsumptionSystem.DrinkFromStructure(
+                agent,
+                _consumptionRules,
+                _waterMaterialId.Value,
+                access.SiteId);
     }
 
     private CommandExecutionResult Transfer(CommandEnvelope command)

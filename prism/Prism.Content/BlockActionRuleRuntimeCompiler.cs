@@ -23,7 +23,8 @@ public static class BlockActionRuleRuntimeCompiler
                 item.ToolTier,
                 placeMaterialId,
                 item.Durability,
-                item.UsePerAction);
+                item.UsePerAction,
+                item.ShelfLifeTicks);
         }).ToArray();
         var materials = pack.Materials.Select(material => new MiningMaterialRule(
             pack.Registries.Materials.GetId(material.Id),

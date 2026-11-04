@@ -1,17 +1,57 @@
 using System.Globalization;
 using System.Text.Json;
 using Prism.Contracts;
+using Prism.Core.Accounting;
 using Prism.Core.Actions;
 using Prism.Core.World;
 
 namespace Prism.Host.Ticking;
 
+/// <summary>
+/// Wear/expiry slot of the tick: applies container spoilage (slowed inside a storage structure) in
+/// addition to the construction-system state, which is checkpointed under the same phase name.
+/// </summary>
 public sealed class StructureConstructionTickPhase(
-    StructureConstructionSystem? construction) : IOptionalCheckpointableWorldTickPhaseHandler
+    StructureConstructionSystem? construction,
+    WorldContainerStore? containers = null,
+    MatterLedger? ledger = null,
+    StructureEffectConsumer? structureEffects = null,
+    ContainerDecayRules? containerDecayRules = null) : IOptionalCheckpointableWorldTickPhaseHandler
 {
+    private readonly ContainerDecayRules _decayRules = containerDecayRules ?? new ContainerDecayRules();
+
     public WorldTickPhase Phase => WorldTickPhase.WearExpiryAndConstruction;
 
-    public void Execute(WorldTickContext context) => ArgumentNullException.ThrowIfNull(context);
+    public void Execute(WorldTickContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (containers is null || ledger is null || _decayRules.BasePermillePerTick == 0)
+        {
+            return;
+        }
+
+        foreach (var placed in containers.Enumerate())
+        {
+            var insideStorage =
+                _decayRules.StorageSlowdownPermille > 0 &&
+                structureEffects?.QueryVolume(
+                    placed.Position,
+                    StructureEffectConsumer.StorageEffectType) is not null;
+            var rate = _decayRules.EffectivePermillePerTick(insideStorage);
+            foreach (var spoilage in placed.Container.ApplyDecay(context.Tick, ledger, rate))
+            {
+                context.AddEvent(new EventEnvelope(
+                    ProtocolVersion.Current.ToString(),
+                    context.Tick,
+                    $"spoilage:{context.Tick}:container:{placed.Position.X}:{placed.Position.Y}:{placed.Position.Z}:{spoilage.ItemTypeId}",
+                    "item_spoiled",
+                    null,
+                    JsonSerializer.SerializeToElement(
+                        new { itemTypeId = spoilage.ItemTypeId, quantity = spoilage.Quantity },
+                        ProtocolJson.Options)));
+            }
+        }
+    }
 
     public JsonElement CaptureState() =>
         JsonSerializer.SerializeToElement(construction?.CaptureState(), ProtocolJson.Options);

@@ -145,7 +145,21 @@ public sealed class AgentInventory
         return quantity <= available;
     }
 
-    public bool TryAdd(ushort itemTypeId, int quantity, int maxStackSize, out int remaining)
+    public bool TryAdd(ushort itemTypeId, int quantity, int maxStackSize, out int remaining) =>
+        TryAdd(itemTypeId, quantity, maxStackSize, out remaining, null, 0);
+
+    /// <summary>
+    /// Adds items that carry a freshness budget. Fresh stacks only merge with stacks of the same
+    /// remaining freshness and creation tick, so a baked loaf never silently extends the life of
+    /// an older one.
+    /// </summary>
+    public bool TryAdd(
+        ushort itemTypeId,
+        int quantity,
+        int maxStackSize,
+        out int remaining,
+        int? freshnessPermilleTicks,
+        long freshnessUpdatedTick)
     {
         if (quantity <= 0)
         {
@@ -153,6 +167,12 @@ public sealed class AgentInventory
         }
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxStackSize);
+        if (freshnessPermilleTicks is < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(freshnessPermilleTicks));
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegative(freshnessUpdatedTick);
         if (quantity > int.MaxValue - Count(itemTypeId))
         {
             throw new ArgumentOutOfRangeException(nameof(quantity), "The item total exceeds the supported quantity.");
@@ -170,6 +190,13 @@ public sealed class AgentInventory
         for (var index = 0; index < _slots.Length && remaining > 0; index++)
         {
             if (_slots[index] is not { } stack || stack.ItemTypeId != itemTypeId)
+            {
+                continue;
+            }
+
+            if (freshnessPermilleTicks is { } freshness &&
+                (stack.FreshnessPermilleTicks != freshness ||
+                 stack.FreshnessUpdatedTick != freshnessUpdatedTick))
             {
                 continue;
             }
@@ -192,7 +219,12 @@ public sealed class AgentInventory
             }
 
             var moved = Math.Min(remaining, maxStackSize);
-            _slots[index] = new AgentItemStack(itemTypeId, moved, maxStackSize);
+            _slots[index] = new AgentItemStack(
+                itemTypeId,
+                moved,
+                maxStackSize,
+                FreshnessPermilleTicks: freshnessPermilleTicks,
+                FreshnessUpdatedTick: freshnessPermilleTicks is null ? 0 : freshnessUpdatedTick);
             remaining -= moved;
         }
 
@@ -449,7 +481,9 @@ public sealed class AgentInventory
             for (var index = 0; index < staged.Length && remaining > 0; index++)
             {
                 if (staged[index] is not { ItemTypeId: var id, Quantity: var current } stack ||
-                    id != addition.ItemTypeId)
+                    id != addition.ItemTypeId ||
+                    stack.FreshnessPermilleTicks != addition.FreshnessPermilleTicks ||
+                    stack.FreshnessUpdatedTick != addition.FreshnessUpdatedTick)
                 {
                     continue;
                 }
@@ -472,7 +506,12 @@ public sealed class AgentInventory
                 }
 
                 var moved = Math.Min(remaining, addition.MaxStackSize);
-                staged[index] = new AgentItemStack(addition.ItemTypeId, moved, addition.MaxStackSize);
+                staged[index] = new AgentItemStack(
+                    addition.ItemTypeId,
+                    moved,
+                    addition.MaxStackSize,
+                    FreshnessPermilleTicks: addition.FreshnessPermilleTicks,
+                    FreshnessUpdatedTick: addition.FreshnessUpdatedTick);
                 remaining -= moved;
             }
 

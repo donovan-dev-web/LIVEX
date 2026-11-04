@@ -111,6 +111,37 @@ public static class ConsumptionSystem
                 itemRule.Effects));
     }
 
+    /// <summary>
+    /// Drinks from a structure effect volume (for example a well) that grants
+    /// <c>water_access</c>. The event reuses the <c>source</c> channel so existing SYNE consumers
+    /// keep working: it carries the pack's water material and its effects, with no new payload field.
+    /// </summary>
+    public static ConsumptionActionResult DrinkFromStructure(
+        AgentBody agent,
+        ConsumptionRules rules,
+        ushort waterMaterialId,
+        string structureId)
+    {
+        ArgumentNullException.ThrowIfNull(agent);
+        ArgumentNullException.ThrowIfNull(rules);
+        ArgumentException.ThrowIfNullOrWhiteSpace(structureId);
+        if (!rules.TryGetSource(waterMaterialId, out var sourceRule) || sourceRule is null)
+        {
+            return ConsumptionActionResult.Failure("not_drinkable");
+        }
+
+        return new ConsumptionActionResult(
+            true,
+            null,
+            1,
+            new ItemConsumedEvent(
+                agent.AgentId,
+                "source",
+                null,
+                waterMaterialId,
+                sourceRule.Effects));
+    }
+
     public static ConsumptionActionResult DrinkFromSource(
         WorldGrid world,
         AgentBody agent,

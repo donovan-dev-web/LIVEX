@@ -696,6 +696,63 @@ public sealed class PrismHostRuntimeTests
         Assert.Equal("ready", reader.Current.Payload.GetProperty("state").GetString());
     }
 
+    [Fact]
+    public void HostAppliesThePerceptionSettingsDeclaredByTheContentPack()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"prism-perception-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            CopyContentDirectory(Path.Combine(FindPrismRoot(), "content", "minimal"), directory);
+            var parametersPath = Path.Combine(directory, "params.json");
+            var parameters = JsonNode.Parse(File.ReadAllText(parametersPath))!.AsObject();
+            parameters["perception"] = new JsonObject
+            {
+                ["nearRadius"] = 16,
+                ["midRadiusChunks"] = 3,
+                ["maxObservedPerAgent"] = 1,
+            };
+            File.WriteAllText(parametersPath, JsonSerializer.Serialize(parameters, ProtocolJson.Options));
+
+            var compilation = new ContentPackCompiler().CompileDirectory(directory);
+            Assert.True(compilation.Succeeded, string.Join(Environment.NewLine, compilation.Errors));
+            var runtime = new PrismHostRuntime();
+            runtime.Prepare(new PrepareWorldRequest(123, compilation.Pack!.ContentHash, directory));
+            var origin = FindClearSurfaceOrigin(runtime.WorldSnapshot!);
+            runtime.Start(new StartWorldRequest());
+            using var payload = JsonDocument.Parse(JsonSerializer.Serialize(
+                new
+                {
+                    position = new { x = origin.X, y = origin.Y, z = origin.Z },
+                    profile = new { carrySlots = 4 },
+                },
+                ProtocolJson.Options));
+            var result = runtime.Step(new TickRequest(
+                ProtocolVersion.Current.ToString(),
+                0,
+                [
+                    new CommandEnvelope(
+                        ProtocolVersion.Current.ToString(),
+                        0,
+                        "incarnate-agent",
+                        42,
+                        "Incarner",
+                        payload.RootElement.Clone()),
+                ]));
+
+            var observation = Assert.Single(result.Observations);
+            Assert.Equal(42UL, observation.AgentId);
+
+            // The reference pack declares 256 observed changes per agent; this pack declares 1, so the
+            // host must be reading `perception.maxObservedPerAgent` instead of the runtime defaults.
+            Assert.Equal(1, observation.Changes.GetProperty("changes").GetArrayLength());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static string FindPrismRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

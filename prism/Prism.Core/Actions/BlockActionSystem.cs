@@ -11,7 +11,8 @@ public readonly record struct ActionItemRule(
     int ToolTier,
     ushort? PlaceMaterialId = null,
     int Durability = 0,
-    int WearPerAction = 1);
+    int WearPerAction = 1,
+    int ShelfLifeTicks = 0);
 
 public readonly record struct ActionDropRule(
     ushort ItemTypeId,
@@ -228,7 +229,7 @@ public static class BlockActionSystem
         }
 
         var drops = RollDrops(material, state, world, target, rules, runSeed, tick);
-        var stacks = MergeDrops(drops);
+        var stacks = MergeDrops(drops, tick);
         var inventorySnapshot = agent.Inventory.Snapshot();
         foreach (var stack in stacks)
         {
@@ -255,7 +256,13 @@ public static class BlockActionSystem
         world.SetBlockOverride(target, new BlockOverride(0, 0, IsAir: true));
         foreach (var stack in stacks)
         {
-            if (!agent.Inventory.TryAdd(stack.ItemTypeId, stack.Quantity, stack.MaxStackSize, out var remaining))
+            if (!agent.Inventory.TryAdd(
+                    stack.ItemTypeId,
+                    stack.Quantity,
+                    stack.MaxStackSize,
+                    out var remaining,
+                    stack.FreshnessPermilleTicks,
+                    stack.FreshnessUpdatedTick))
             {
                 var placed = stack.Quantity - remaining;
                 if (placed > 0)
@@ -263,11 +270,7 @@ public static class BlockActionSystem
                     ledger.RecordCreated(stack.ItemTypeId, placed, $"mine:{materialId}");
                 }
 
-                groundItems.AddStack(
-                    stack.ItemTypeId,
-                    remaining,
-                    stack.MaxStackSize,
-                    target);
+                groundItems.AddItem(stack with { Quantity = remaining }, target);
                 ledger.RecordCreated(stack.ItemTypeId, remaining, $"mine:{materialId}");
             }
             else
@@ -407,7 +410,7 @@ public static class BlockActionSystem
         return true;
     }
 
-    private static List<(ushort ItemTypeId, int Quantity, int MaxStackSize)> RollDrops(
+    private static List<(ushort ItemTypeId, int Quantity, int MaxStackSize, int ShelfLifeTicks)> RollDrops(
         MiningMaterialRule material,
         byte state,
         WorldGrid world,
@@ -416,7 +419,7 @@ public static class BlockActionSystem
         ulong runSeed,
         long tick)
     {
-        var drops = new List<(ushort ItemTypeId, int Quantity, int MaxStackSize)>();
+        var drops = new List<(ushort ItemTypeId, int Quantity, int MaxStackSize, int ShelfLifeTicks)>();
         var blockIndex = checked(
             (ulong)(uint)target.X +
             (ulong)(uint)world.Width *
@@ -447,25 +450,29 @@ public static class BlockActionSystem
                 key ^ 0xD1B54A32D192ED03UL);
             var quantity = drop.MinimumQuantity + (int)(quantityRoll % (uint)quantityRange);
             var item = rules.GetItem(drop.ItemTypeId);
-            drops.Add((drop.ItemTypeId, quantity, item.MaxStackSize));
+            drops.Add((drop.ItemTypeId, quantity, item.MaxStackSize, item.ShelfLifeTicks));
         }
 
         return drops;
     }
 
     private static List<AgentItemStack> MergeDrops(
-        IReadOnlyList<(ushort ItemTypeId, int Quantity, int MaxStackSize)> drops)
+        IReadOnlyList<(ushort ItemTypeId, int Quantity, int MaxStackSize, int ShelfLifeTicks)> drops,
+        long tick)
     {
-        var merged = new SortedDictionary<ushort, (int Quantity, int MaxStackSize)>();
+        var merged = new SortedDictionary<ushort, (int Quantity, int MaxStackSize, int ShelfLifeTicks)>();
         foreach (var drop in drops)
         {
             if (merged.TryGetValue(drop.ItemTypeId, out var existing))
             {
-                merged[drop.ItemTypeId] = (checked(existing.Quantity + drop.Quantity), existing.MaxStackSize);
+                merged[drop.ItemTypeId] = (
+                    checked(existing.Quantity + drop.Quantity),
+                    existing.MaxStackSize,
+                    existing.ShelfLifeTicks);
             }
             else
             {
-                merged.Add(drop.ItemTypeId, (drop.Quantity, drop.MaxStackSize));
+                merged.Add(drop.ItemTypeId, (drop.Quantity, drop.MaxStackSize, drop.ShelfLifeTicks));
             }
         }
 
@@ -473,10 +480,16 @@ public static class BlockActionSystem
         {
             var stacks = new List<AgentItemStack>();
             var remaining = pair.Value.Quantity;
+            var freshness = pair.Value.ShelfLifeTicks > 0 ? pair.Value.ShelfLifeTicks * 1000 : (int?)null;
             while (remaining > 0)
             {
                 var quantity = Math.Min(remaining, pair.Value.MaxStackSize);
-                stacks.Add(new AgentItemStack(pair.Key, quantity, pair.Value.MaxStackSize));
+                stacks.Add(new AgentItemStack(
+                    pair.Key,
+                    quantity,
+                    pair.Value.MaxStackSize,
+                    FreshnessPermilleTicks: freshness,
+                    FreshnessUpdatedTick: freshness is null ? 0 : tick));
                 remaining -= quantity;
             }
 

@@ -17,6 +17,7 @@ public sealed class WorldGrid
 
     private readonly WorldRegion[] _regions;
     private readonly int[] _overrideCountsByRegion;
+    private readonly SortedSet<BlockCoordinate>[] _overridesByRegion;
     private readonly SortedDictionary<BlockCoordinate, BlockOverride> _overrides =
         new(CanonicalCoordinateComparer);
 
@@ -51,9 +52,13 @@ public sealed class WorldGrid
         var regionCount = checked(RegionCountX * RegionCountY);
         _regions = new WorldRegion[regionCount];
         _overrideCountsByRegion = new int[regionCount];
+        _overridesByRegion = new SortedSet<BlockCoordinate>[regionCount];
         for (var regionId = 0; regionId < _regions.Length; regionId++)
         {
             _regions[regionId] = new WorldRegion(checked(regionSize * regionSize));
+            // Same comparer as the global index, so a region enumeration stays in canonical Z/Y/X
+            // order and every hash computed from it is unchanged.
+            _overridesByRegion[regionId] = new SortedSet<BlockCoordinate>(CanonicalCoordinateComparer);
         }
     }
 
@@ -143,6 +148,7 @@ public sealed class WorldGrid
         {
             var (regionId, _) = GetRegionAndLocalIndex(coordinate.X, coordinate.Y);
             _overrideCountsByRegion[regionId]++;
+            _overridesByRegion[regionId].Add(coordinate);
         }
 
         _overrides[coordinate] = block;
@@ -160,6 +166,7 @@ public sealed class WorldGrid
 
         var (regionId, _) = GetRegionAndLocalIndex(coordinate.X, coordinate.Y);
         _overrideCountsByRegion[regionId]--;
+        _overridesByRegion[regionId].Remove(coordinate);
         MarkRegionDirty(coordinate.X, coordinate.Y);
         Revision = checked(Revision + 1);
         return true;
@@ -176,21 +183,12 @@ public sealed class WorldGrid
     public IEnumerable<KeyValuePair<BlockCoordinate, BlockOverride>> EnumerateRegionOverrides(int regionId)
     {
         _ = GetRegion(regionId);
-        var regionX = regionId % RegionCountX;
-        var regionY = regionId / RegionCountX;
-        var minX = regionX * RegionSize;
-        var minY = regionY * RegionSize;
-        var maxX = Math.Min(minX + RegionSize, Width);
-        var maxY = Math.Min(minY + RegionSize, Height);
-
-        foreach (var entry in _overrides)
+        // Index-backed: walks only this region's overrides, in the same canonical order as the
+        // global index, so hashes stay byte-for-byte identical while the cost drops from
+        // O(all overrides in the world) to O(overrides in the region).
+        foreach (var coordinate in _overridesByRegion[regionId])
         {
-            var coordinate = entry.Key;
-            if (coordinate.X >= minX && coordinate.X < maxX &&
-                coordinate.Y >= minY && coordinate.Y < maxY)
-            {
-                yield return entry;
-            }
+            yield return new KeyValuePair<BlockCoordinate, BlockOverride>(coordinate, _overrides[coordinate]);
         }
     }
 

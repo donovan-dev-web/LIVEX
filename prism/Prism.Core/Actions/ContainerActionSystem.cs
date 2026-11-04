@@ -208,12 +208,30 @@ public sealed class ContainerInventory
     public IReadOnlyList<SpoilageEvent> ApplyDecay(long tick, MatterLedger ledger)
     {
         ArgumentNullException.ThrowIfNull(ledger);
+        return ApplyDecay(tick, ledger, DecayPermillePerTick);
+    }
+
+    /// <summary>
+    /// Applies spoilage with an explicit rate, so a container can sit inside a storage structure and
+    /// decay slower than its own base rate.
+    /// </summary>
+    public IReadOnlyList<SpoilageEvent> ApplyDecay(
+        long tick,
+        MatterLedger ledger,
+        int decayPermillePerTick)
+    {
+        ArgumentNullException.ThrowIfNull(ledger);
         ArgumentOutOfRangeException.ThrowIfNegative(tick);
+        if (decayPermillePerTick is < 0 or > 10_000)
+        {
+            throw new ArgumentOutOfRangeException(nameof(decayPermillePerTick));
+        }
+
         var spoiled = new List<SpoilageEvent>();
         for (var index = 0; index < _stacks.Count;)
         {
             var stack = _stacks[index];
-            var advance = stack.AdvanceFreshness(tick, DecayPermillePerTick);
+            var advance = stack.AdvanceFreshness(tick, decayPermillePerTick);
             if (advance.Stack is { } updated)
             {
                 _stacks[index] = updated;
@@ -435,6 +453,8 @@ public sealed class ContainerInventory
         ContainerAccessRule[] AccessRules);
 }
 
+public sealed record PlacedContainer(BlockCoordinate Position, ContainerInventory Container);
+
 public sealed class WorldContainerStore
 {
     private readonly SortedDictionary<BlockCoordinate, ContainerInventory> _containers = new(
@@ -453,6 +473,12 @@ public sealed class WorldContainerStore
     public int Count => _containers.Count;
     public bool IsEmpty => _containers.Count == 0;
     public IReadOnlyCollection<ContainerInventory> Snapshot() => _containers.Values.ToArray();
+
+    /// <summary>
+    /// Containers in canonical Z/Y/X order, with their world position.
+    /// </summary>
+    public IReadOnlyList<PlacedContainer> Enumerate() =>
+        _containers.Select(static entry => new PlacedContainer(entry.Key, entry.Value)).ToArray();
 
     public bool TryGet(BlockCoordinate position, out ContainerInventory? container) =>
         _containers.TryGetValue(position, out container);

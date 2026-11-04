@@ -410,7 +410,12 @@ public sealed class AgentLifecycleSystem
         }
 
         var activeAgents = _agents.Agents.ToArray();
-        var activeIds = activeAgents.Select(static agent => agent.AgentId).ToHashSet();
+        var activeIds = new HashSet<ulong>(activeAgents.Length);
+        foreach (var agent in activeAgents)
+        {
+            activeIds.Add(agent.AgentId);
+        }
+
         foreach (var previousAgentId in _perception.KnownAgents.Where(id => !activeIds.Contains(id)))
         {
             _perception.ForgetAgent(previousAgentId);

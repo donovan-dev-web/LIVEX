@@ -1,9 +1,9 @@
 # API_CONTRACTS — Contrat d'interface SYNE↔PRISM
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION EN COURS — DTO ET TRANSPORT HOST (SOCLES)]
-**Version de contrat** : `1.0.0` (cible) — remplace la consommation PRISM de `../syne/API_CONTRACTS.md` `0.5.0`
-**Dernière mise à jour** : 3 novembre 2026
+**Statut** : [CONTRAT GELÉ EN 1.0.0 (4 NOVEMBRE 2026) — DTO ET TRANSPORT HOST VALIDÉS]
+**Version de contrat** : `1.0.0` (gelée le 4 novembre 2026) — remplace la consommation PRISM de `../syne/API_CONTRACTS.md` `0.5.0`
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : [`adr/ADR-008-contrat-syne-prism-macro-actions.md`](adr/ADR-008-contrat-syne-prism-macro-actions.md), [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md), `../launcher/INTEGRATION_CONTRACT.md`
 **Source Monographie** : §2.4
 
@@ -53,7 +53,7 @@ Un agent qui exécute une action à durée (`Miner`, `Fabriquer`, `Labourer`, `P
 
 Une action à effet différé (`Miner`, `Fabriquer`, `Labourer`, `Planter`, `Recolter`) est enregistrée par le dispatch et résolue au tick `busyUntilTick` : l'événement `action_started` acquitte le début, `action_completed` ou `action_failed` arrive à l'échéance avec le même `commandId`. `Annuler` interrompt une action en attente sans appliquer d'effet et libère l'agent ; l'état en attente est checkpointé avec la fenêtre d'idempotence. Quand l'action vient d'une macro-étape, le dispatch renvoie son résultat à l'étape en attente (canal `DeferredActionResolutions`) : la macro publie `macro_step_deferred` au départ, n'avance pas tant que l'effet n'est pas appliqué, puis valide l'étape avec les quantités réellement produites. Une annulation annule aussi l'étape (`action_failed`, raison `cancelled`).
 
-Chaque tick de cycle de vie applique la décroissance de fraîcheur des inventaires d'agents (1 000 ‰/tick) : une pile dont la fraîcheur atteint zéro est détruite, comptée `spoil` dans le ledger et publiée par un événement `item_spoiled` (`{itemTypeId, quantity}`).
+Chaque tick de cycle de vie applique la décroissance de fraîcheur des inventaires d'agents (1 000 ‰/tick) : une pile dont la fraîcheur atteint zéro est détruite, comptée `spoil` dans le ledger et publiée par un événement `item_spoiled` (`{itemTypeId, quantity}`). Les conteneurs posés suivent la même règle à chaque tick (`container.decayPermillePerTick`, défaut 1 000), avec un taux réduit dans le volume d'une structure `storage` achevée (`granary.decaySlowdownPermille`, 500 ‰ = taux divisé par deux) ; leur péremption publie le même événement `item_spoiled`.
 
 | Commande | Paramètres | Durée | Échecs fréquents |
 | :-- | :-- | :-- | :-- |
@@ -64,7 +64,7 @@ Chaque tick de cycle de vie applique la décroissance de fraîcheur des inventai
 | `Labourer` | Sol | 1 tick : `action_started` au tick de la commande, effet et `action_completed` à l'échéance | `agent_busy`, `soil_unsuitable`, `tool_missing`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
 | `Planter` / `Recolter` | Parcelle, graine / culture | 1 tick : `action_started` au tick de la commande, effet et `action_completed` à l'échéance | `agent_busy`, `soil_unsuitable`, `cell_occupied`, `not_ripe`, `no_water`, `item_missing`, `seed_not_plantable`, `capacity_reached`, `crop_not_found`, `target_out_of_world`, `not_adjacent`, `not_perceived` |
 | `Prendre` / `Deposer` | `{container:{x,y,z}, item, quantity}` | Courte ; `Prendre` applique le taux de décroissance du conteneur avant le retrait | `access_denied`, `capacity_reached`, `container_empty`, `container_not_found`, `container_not_empty`, `item_missing`, `item_spoiled`, `not_adjacent`, `not_perceived` |
-| `Consommer` | Objet `edible` ou bloc `drinkable` perçu et adjacent | Courte | `item_missing`, `not_edible`, `not_drinkable`, `not_adjacent`, `not_perceived`, `target_out_of_world` |
+| `Consommer` | Objet `edible`, bloc `drinkable` perçu et adjacent, ou volume `water_access` d'une structure achevée où se tient l'agent (le puits rend son volume buvable) | Courte | `item_missing`, `not_edible`, `not_drinkable`, `not_adjacent`, `not_perceived`, `target_out_of_world` |
 | `DemarrerChantier` | `{siteId, templateId, origin:{x,y,z}}` (ou `position`) | Courte | `target_out_of_world`, `terrain_unsuitable`, `volume_not_clear`, `unknown_template`, `site_overlaps` |
 | `Contribuer` | `{siteId}` ; une unité de travail et les matériaux dus par agent et par tick | Un tick par contribution | `site_not_found`, `site_not_active`, `duplicate_contribution`, `construction_block_obstructed`, `materials_missing`, `access_denied` |
 | `Transferer` | Agent destinataire, objet, quantité | Courte | `refused`, `too_far`, `capacity_reached`, `item_missing`, `not_perceived` |
@@ -142,6 +142,8 @@ Le host expose la readiness et le cycle de contrôle HTTP authentifié ; le lock
 
 ## 8. Versionnement et compatibilité
 
+> **Contrat gelé en `1.0.0` le 4 novembre 2026** (PRISM-081) : `ProtocolVersion.Current` vaut `1.0.0` ; la matrice contractuelle `CommandMatrixContractTests` couvre les 21 kinds de commande sur les trois liaisons (23/23 verts) et la campagne dorée réduite de `Prism.Bots.Tests` a produit des empreintes identiques avant et après l'optimisation du tick. Tout changement ultérieur du vocabulaire, des payloads ou de la sémantique est une **version MAJOR en pré-release** ; un ajout de champ facultatif reste MINOR.
+
 | Cas | Règle |
 | :-- | :-- |
 | Version majeure inconnue | Refus du message avec `protocol_unsupported` avant traitement ; HTTP `400` et erreur WebSocket |
@@ -169,6 +171,9 @@ Q-02 (accès). Le transport de référence est tranché par ADR-012 ; les schém
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 4 novembre 2026 | Péremption des conteneurs à chaque tick, ralentie dans le volume d'une structure `storage` ; `item_spoiled` est aussi publié pour les conteneurs (même payload) | PRISM-098 |
+| 4 novembre 2026 | `Consommer` accepte en plus le volume `water_access` d'une structure achevée : même payload, même événement `item_consumed` (canal `source`, matériau d'eau du pack) — ajout compatible MINOR, aucun champ nouveau | PRISM-096 |
+| 4 novembre 2026 | Contrat gelé en `1.0.0` : `ProtocolVersion.Current = 1.0.0`, matrice 23/23 sur les trois liaisons, empreintes de run identiques avant/après l'optimisation du tick | PRISM-081 |
 | 3 novembre 2026 | Dispatch des macro-actions (`ObtenirObjet`, `FabriquerMacro`, `Cultiver`, `Annuler`), `DefinirAccesConteneur`, `tick_result` et client de lecture du viewer documentés ; `Construire` retiré du vocabulaire dispatché | Audit de cohérence avec le code |
 | 2 novembre 2026 | Erreurs de version majeure cohérentes entre HTTP et WebSocket documentées | PRISM-078 |
 | 2 novembre 2026 | Implémentation partielle du host HTTP/WebSocket documentée | P7 |

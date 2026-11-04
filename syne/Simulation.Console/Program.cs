@@ -10,12 +10,14 @@ using System.Net;
 using System.Text;
 using Simulation.Console.Batch;
 using Simulation.Console.Control;
+using Simulation.Console.Integration;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Observability;
 using Simulation.Core.Performance;
 using Simulation.Core.Prng;
+using Prism.Contracts;
 
 namespace Simulation.Console;
 
@@ -57,6 +59,11 @@ public static class Program
             if (cli.ControlPort is not null)
             {
                 return await RunSupervisedAsync(options, cli);
+            }
+
+            if (cli.PrismUrl is not null)
+            {
+                return await RunPrismCoupledAsync(cli);
             }
 
             if (cli.Observe == true)
@@ -141,6 +148,91 @@ public static class Program
         }
 
         return options;
+    }
+
+    private static async Task<int> RunPrismCoupledAsync(CliOptions cli)
+    {
+        if (string.IsNullOrWhiteSpace(cli.PrismUrl))
+        {
+            throw new ArgumentException("--prism-url est obligatoire.");
+        }
+
+        if (!Uri.TryCreate(cli.PrismUrl, UriKind.Absolute, out Uri? baseUri))
+        {
+            throw new ArgumentException($"URL PRISM invalide : {cli.PrismUrl}");
+        }
+
+        int ticks = cli.PrismTicks ?? 100;
+        if (ticks <= 0)
+        {
+            throw new ArgumentException("--prism-ticks doit être strictement positif.");
+        }
+
+        using var httpClient = new HttpClient { BaseAddress = baseUri };
+        string sessionToken = Environment.GetEnvironmentVariable("LIVEX_SESSION_TOKEN") ?? "dev-token";
+        var client = new PrismClient(httpClient, sessionToken);
+
+        if (cli.PrismSeed is { } seed && cli.PrismContentHash is { } contentHash)
+        {
+            var prepared = await client.PrepareAsync(seed, contentHash, cli.PrismContentDir);
+            System.Console.WriteLine($"PRISM prepare : {prepared.State} (tick {prepared.LastCompletedTick})");
+        }
+
+        if (cli.PrismTicks is not null)
+        {
+            var started = await client.StartAsync(maxTicks: ticks);
+            System.Console.WriteLine($"PRISM start : {started.State}");
+        }
+
+        SimulationLoop? loop = null;
+        Dictionary<ulong, Entity>? entitiesById = null;
+        int agents = cli.PrismAgents ?? 0;
+        if (agents > 0)
+        {
+            var options = ConfigLoader.LoadDefaults();
+            options.Agents.InitialCount = agents;
+            options.Random.Seed = cli.PrismSeed ?? 1UL;
+            (_, _, loop, _) = BuildSimulation(options, (ulong)agents, options.Random.Seed);
+            entitiesById = loop!.World.Entities.ToDictionary(e => e.Id.Value);
+            System.Console.WriteLine($"SYNE cognition : {agents} agent(s) initialisé(s).");
+        }
+
+        var runner = new PrismCoupledRunner(
+            (request, ct) => client.StepAsync(request, ct),
+            onObservations: (agentId, obs, tick) =>
+            {
+                if (loop is not null && entitiesById is not null &&
+                    entitiesById.TryGetValue(agentId, out Entity? entity))
+                {
+                    loop.Cognition.ApplyExternalObservations(entity, obs, (ulong)tick);
+                }
+            });
+
+        System.Console.WriteLine($"SYNE — boucle couplée PRISM : {ticks} ticks...");
+        var run = await runner.RunAsync(ticks);
+
+        try
+        {
+            await client.StopAsync();
+        }
+        catch (PrismClientException exception) when (exception.ResponseBody.Contains("invalid_state", StringComparison.Ordinal))
+        {
+            // L'hôte s'est déjà arrêté à l'échéance de maxTicks : rien à faire.
+        }
+        catch (Exception exception)
+        {
+            System.Console.Error.WriteLine($"PRISM stop : {exception.Message}");
+        }
+
+        if (run.Succeeded)
+        {
+            System.Console.WriteLine($"SYNE — boucle couplée terminée : {run.TicksCompleted}/{ticks} ticks OK.");
+            return 0;
+        }
+
+        System.Console.Error.WriteLine(
+            $"SYNE — échec au tick {run.FailedAtTick} : {run.Failure?.Message}");
+        return 1;
     }
 
     private static async Task RunBatchAsync(SimulationOptions options, CliOptions cli)

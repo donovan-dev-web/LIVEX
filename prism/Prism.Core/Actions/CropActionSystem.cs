@@ -299,7 +299,7 @@ public static class CropActionSystem
             (ulong)(uint)target.X +
             (ulong)(uint)world.Width *
             ((ulong)(uint)target.Y + (ulong)world.Height * (ulong)(uint)target.Z));
-        var drops = new SortedDictionary<ushort, (long Quantity, int MaxStackSize)>();
+        var drops = new SortedDictionary<ushort, (long Quantity, int MaxStackSize, int ShelfLifeTicks)>();
         for (var index = 0; index < crop.HarvestDrops.Count; index++)
         {
             var drop = crop.HarvestDrops[index];
@@ -328,17 +328,26 @@ public static class CropActionSystem
             var quantity = drop.MinimumQuantity + (int)(quantityRoll % (uint)quantityRange);
             var item = rules.GetItem(drop.ItemTypeId);
             var current = drops.GetValueOrDefault(drop.ItemTypeId);
-            drops[drop.ItemTypeId] = (checked(current.Quantity + quantity), item.MaxStackSize);
+            drops[drop.ItemTypeId] = (
+                checked(current.Quantity + quantity),
+                item.MaxStackSize,
+                item.ShelfLifeTicks);
         }
 
         var stacks = new List<AgentItemStack>();
         foreach (var (itemTypeId, value) in drops)
         {
             var remaining = value.Quantity;
+            var freshness = value.ShelfLifeTicks > 0 ? value.ShelfLifeTicks * 1000 : (int?)null;
             while (remaining > 0)
             {
                 var quantity = (int)Math.Min(remaining, value.MaxStackSize);
-                stacks.Add(new AgentItemStack(itemTypeId, quantity, value.MaxStackSize));
+                stacks.Add(new AgentItemStack(
+                    itemTypeId,
+                    quantity,
+                    value.MaxStackSize,
+                    FreshnessPermilleTicks: freshness,
+                    FreshnessUpdatedTick: freshness is null ? 0 : tick));
                 remaining -= quantity;
             }
         }

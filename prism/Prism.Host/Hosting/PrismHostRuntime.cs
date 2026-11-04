@@ -1045,16 +1045,23 @@ public sealed class PrismHostRuntime : IWorldHost
             ? null
             : new StructureConstructionSystem(generatedWorld.Grid, templates);
         construction = constructionSystem;
+        var perceptionSettings = compiledPack is null
+            ? null
+            : Prism.Content.PerceptionSettingsRuntimeCompiler.Compile(compiledPack);
         var agentLifecycleSystem = generatedWorld is null
             ? null
             : new AgentLifecycleSystem(
                 generatedWorld.Grid,
                 movementRules ?? new MovementRules([], []),
-                perceptionRules);
+                perceptionRules,
+                perceptionSettings);
         agentLifecycle = agentLifecycleSystem;
         var ledger = new MatterLedger();
         var stations = new CraftingStationRegistry();
         var containers = new WorldContainerStore();
+        var containerDecayRules = compiledPack is null
+            ? null
+            : ContainerDecayRuntimeCompiler.Compile(compiledPack);
         matterLedgerOut = ledger;
         containerStoreOut = containers;
         stationRegistryOut = stations;
@@ -1109,7 +1116,9 @@ public sealed class PrismHostRuntime : IWorldHost
                     mastery,
                     generatedWorld.Seed,
                     kind,
-                    actionDurations));
+                    actionDurations,
+                    constructionSystem is null ? null : new StructureEffectConsumer(constructionSystem),
+                    containerDecayRules));
             }
 
             foreach (var kind in new[] { "ObtenirObjet", "FabriquerMacro", "Cultiver", "Annuler" })
@@ -1159,7 +1168,12 @@ public sealed class PrismHostRuntime : IWorldHost
                     calendar,
                     cropActionRules?.CropRules.Select(static rule => rule.Growth).ToArray() ?? []),
                 WorldTickPhase.Perception => new AgentPerceptionTickPhase(agentLifecycleSystem, constructionSystem),
-                WorldTickPhase.WearExpiryAndConstruction => new StructureConstructionTickPhase(constructionSystem),
+                WorldTickPhase.WearExpiryAndConstruction => new StructureConstructionTickPhase(
+                    constructionSystem,
+                    containers,
+                    ledger,
+                    constructionSystem is null ? null : new StructureEffectConsumer(constructionSystem),
+                    containerDecayRules),
                 WorldTickPhase.Calendar => new CalendarEventTickPhase(calendar),
                 _ => new NoOpWorldTickPhase(phase),
             });

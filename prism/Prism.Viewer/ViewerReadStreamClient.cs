@@ -127,6 +127,13 @@ public sealed class ViewerLiveSession(ViewerEntityStore? store = null)
             var parsed = agents.Deserialize<AgentEntitySnapshot[]>(ProtocolJson.Options) ?? [];
             Store.ApplySnapshot(parsed, ReadGroundItems(envelope.Payload), envelope.Tick);
         }
+
+        if (envelope.Payload.TryGetProperty("constructionSites", out var sites) &&
+            sites.ValueKind == JsonValueKind.Array)
+        {
+            var parsed = sites.Deserialize<StructureConstructionSite[]>(ProtocolJson.Options) ?? [];
+            Store.ApplyConstructionSites(parsed, envelope.Tick);
+        }
     }
 
     private void ApplyEntitySnapshot(ViewerStreamEnvelope envelope)
@@ -142,6 +149,13 @@ public sealed class ViewerLiveSession(ViewerEntityStore? store = null)
             ? payloadTick.GetInt64()
             : envelope.Tick;
         Store.ApplySnapshot(parsed, ReadGroundItems(envelope.Payload), tick);
+
+        if (envelope.Payload.TryGetProperty("constructionSites", out var sites) &&
+            sites.ValueKind == JsonValueKind.Array)
+        {
+            var parsedSites = sites.Deserialize<StructureConstructionSite[]>(ProtocolJson.Options) ?? [];
+            Store.ApplyConstructionSites(parsedSites, tick);
+        }
     }
 
     private void ApplyTickResult(ViewerStreamEnvelope envelope)

@@ -37,6 +37,23 @@ La répartition initiale de 200 ms était une hypothèse avant mesure. Les mesur
 
 Référence de passage G1 : les budgets de 50 ms à 100 agents restent inchangés ; à 1 000 agents, seuil minimal explicite de **3 ticks/s** (≤ 333 ms) plutôt que d'étendre mécaniquement chaque budget de phase. Le budget nominal de 250 ms vise 4 ticks/s. Aucun benchmark isolé ne suffit : le seuil s'applique à un tick complet incluant SYNE, PRISM et transport, avec mesures représentatives. La réallocation rapproche les postes mesurés sans faire passer G1 : le tick complet reste à instrumenter.
 
+### Mesures de production du tick (4 novembre 2026)
+
+Windows, Release, pack minimal 256×256 (593 245 surcharges, 256 régions), `prism-bots --timings` et profilage `PRISM_TICK_PROFILE=1` :
+
+| Poste | Avant | Après |
+| :-- | :-- | :-- |
+| `Prepare` (génération comprise) | 21–27 s | 2,0–2,4 s |
+| Tick sans agent | 53 ms | ~2,0 ms |
+| Tick, 1 agent inactif | 1,26–1,49 s | ~13,6 ms |
+| Tick, 3 agents | — | ~30,4 ms |
+| Campagne 3 graines × 200 ticks × 3 bots | plusieurs heures (non exécutée) | ~24 s |
+| Campagne 3 graines × 5 000 ticks × 3 bots | — | 24–71 s par run selon contention, ≈3 min au total |
+
+Trois scans mondiaux par tick ont été supprimés : énumération de toutes les surcharges par agent (`AddNearbyBlocks`), recalcul des résumés de 49 régions par agent, et `ResumeGrowingCrops` rejoué à chaque tick alors que la plantation programme déjà l'événement. Les empreintes de run sont identiques avant/après (1 graine × 20 ticks × 3 bots, worktree `HEAD`).
+
+Reste à faire pour R1 : ~9 ms/tick/agent (perception : ~800 colonnes + diff d'observation), soit ~9 s/tick à 1 000 agents, très au-dessus du seuil de 333 ms. Les paramètres `perception` du pack (`nearRadius`, `midRadiusChunks`, `maxObservedPerAgent`) sont désormais compilés par `PerceptionSettingsRuntimeCompiler` et appliqués au cycle de vie des agents par `PrismHostRuntime` ; le calibrage B2/R1 peut donc réduire le rayon et le plafond d'observation depuis `params.json` sans reconstruire le host.
+
 ## 3. Benchmarks à écrire en premier
 
 Écrits **avant** l'optimisation de production (phase P1), sur un prototype jetable de colonnes 2.5D et des bots. Ils mesurent les budgets et identifient les optimisations nécessaires ; le choix de géométrie n'est plus un critère de G1 (ADR-011).

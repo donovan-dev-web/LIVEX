@@ -87,6 +87,7 @@ Les tags acceptent les champs facultatifs `description` et `parent`. Un parent d
 ```
 
 Objet consommable : `effects: "eat_flatbread"` pointant vers `effects/*.json` (`{"hunger": -300, "energyRecovery": 20}`, valeurs en entiers ; les valeurs sont transmises à SYNE qui les applique à ses besoins), `shelfLifeTicks`.
+`ShelfLifeTicks` est un budget de fraîcheur en ticks, appliqué **à la création** de la pile : minage, récolte et artisanat créent `freshnessPermilleTicks = shelfLifeTicks × 1000` avec le tick de création, et la fusion (`TryAdd`, `TryExchange`, `TryAddStacks`, dépôt au sol) n'unit que des piles de fraîcheur et de tick de création identiques. Les piles fraîches vieillissent par les phases de balayage (inventaires et conteneurs) au taux `container.decayPermillePerTick`, divisé dans un volume de grenier. Une valeur absente ou nulle rend la pile impérissable.
 Pour être consommable, l'objet porte aussi le tag `edible`. La consommation retire une unité et enregistre `consume` au ledger ; les effets configurés sont transmis dans l'événement `item_consumed`.
 
 Une matière portant le tag `drinkable` peut déclarer le même champ `effects` (par exemple `water` → `drink_water`, avec `{"thirst": -300}`). Boire à une source ne modifie pas le bloc : ces sources sont infinies dans le modèle actuel. Le champ n'est compilé comme source de boisson que pour les matériaux `drinkable`.
@@ -214,6 +215,7 @@ Toutes les valeurs ci-dessous sont des **hypothèses de départ**. Elles vivent 
 | `world.regionSize` | 16 × 16 | colonnes | Partitionnement du monde |
 | `perception.nearRadius` | 16 | blocs | Charge d'observation, mémoire spatiale |
 | `perception.midRadiusChunks` | 3 | chunks | Découverte, exploration |
+| `perception.maxObservedPerAgent` | 256 | entrées | Plafond du diff d'observation : plus bas = moins de bande passante, plus de perception manquante |
 | `communication.radius` | 50 | blocs (côté SYNE) | Partage d'information |
 | `agent.inventorySlots` | 12 | emplacements | Logistique |
 | `agent.moveBudgetPerTick` | 1 000 | milli-blocs | Durée des trajets |
@@ -228,11 +230,14 @@ Toutes les valeurs ci-dessous sont des **hypothèses de départ**. Elles vivent 
 | `food.rawWheat.nutrition` / `shelfLifeTicks` | 10 / 600 | pts / ticks | Valeur du stockage |
 | `food.flatbread.nutrition` / `shelfLifeTicks` | 30 / 2 400 | pts / ticks | Valeur de la cuisson |
 | `granary.decaySlowdownPermille` | 500 | ‰ | Valeur de la structure |
+| `container.decayPermillePerTick` | 1 000 | ‰/tick | Péremption des conteneurs posés ; le grenier retranche son ralentissement |
 | `mastery.gainPerActionPermille` | 5 | ‰ | Spécialisation |
 | `mastery.maxSpeedupPermille` | 500 | ‰ | Division du travail |
 | `randomTicksPerChunkPerTick` | 3 | blocs | Coût de monde |
 | `updates.grassSpreadChancePermille` | 100 (pack minimal) | ‰ par random tick valide | Propagation des surfaces d'herbe |
 | `wear.structure.decayPerTickPermille` | 0 (désactivé) | ‰ | Entretien collectif |
+
+Les trois clés `perception.*` sont compilées en `PerceptionSettings` par `PerceptionSettingsRuntimeCompiler` au moment du `Prepare` : une clé absente garde sa valeur par défaut, une valeur hors bornes (`nearRadius ≥ 64`, valeur négative, `maxObservedPerAgent ≤ 0`) est refusée avant le premier tick. Le pack minimal déclare exactement les valeurs par défaut, donc les empreintes de run ne changent pas quand le câblage est actif. De même, `container.decayPermillePerTick` et `granary.decaySlowdownPermille` sont compilés par `ContainerDecayRuntimeCompiler` (bornes 0–10 000 et 0–1 000), une clé absente gardant son défaut.
 
 ## 8. Compatibilité et évolutions
 

@@ -12,6 +12,8 @@ public sealed record StructureUsage(string SiteId, string EffectType, int Fatigu
 public sealed class StructureEffectConsumer
 {
     public const string ShelterEffectType = "shelter";
+    public const string WaterAccessEffectType = "water_access";
+    public const string StorageEffectType = "storage";
     private readonly StructureConstructionSystem _construction;
 
     public StructureEffectConsumer(StructureConstructionSystem construction)
@@ -23,24 +25,61 @@ public sealed class StructureEffectConsumer
     public StructureUsage? QueryShelter(
         ulong agentId,
         BlockCoordinate feetPosition,
-        IEnumerable<AccessPrincipal>? groupPrincipals = null)
-    {        var principals = new List<AccessPrincipal> { AccessPrincipal.ForAgent(agentId) };
-        if (groupPrincipals is not null)
-        {
-            principals.AddRange(groupPrincipals);
-            principals = principals
-                .Distinct()
-                .OrderBy(static principal => principal.Kind)
-                .ThenBy(static principal => principal.Id)
-                .ToList();
-        }
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, ShelterEffectType, groupPrincipals);
 
+    public StructureUsage? QueryWaterAccess(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, WaterAccessEffectType, groupPrincipals);
+
+    public StructureUsage? QueryStorage(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, StorageEffectType, groupPrincipals);
+
+    public StructureUsage? QueryShelterWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryShelter(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    public StructureUsage? QueryWaterAccessWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryWaterAccess(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    public StructureUsage? QueryStorageWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryStorage(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    /// <summary>
+    /// Returns the canonical active structure of <paramref name="effectType"/> whose volume contains
+    /// <paramref name="position"/>, ignoring access rules. Used by world-side effects such as the
+    /// storage slowdown, which belongs to the container and not to a specific agent.
+    /// </summary>
+    public StructureUsage? QueryVolume(BlockCoordinate position, string effectType)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(effectType);
         StructureUsage? selected = null;
         foreach (var effect in _construction.GetActiveEffects())
         {
-            if (!string.Equals(effect.Type, ShelterEffectType, StringComparison.Ordinal) ||
-                !Contains(effect, feetPosition) ||
-                !_construction.CheckAccess(effect.SiteId, principals, ContainerAccessRights.Use).Allowed)
+            if (!string.Equals(effect.Type, effectType, StringComparison.Ordinal) ||
+                !Contains(effect, position))
             {
                 continue;
             }
@@ -55,13 +94,46 @@ public sealed class StructureEffectConsumer
         return selected;
     }
 
-    public StructureUsage? QueryShelterWithGroups(
+    /// <summary>
+    /// Returns the canonical (lowest <c>siteId</c>) active structure of <paramref name="effectType"/>
+    /// whose volume contains <paramref name="feetPosition"/> and whose access rules admit the agent.
+    /// </summary>
+    public StructureUsage? QueryEffect(
         ulong agentId,
         BlockCoordinate feetPosition,
-        GroupMembership membership)
+        string effectType,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null)
     {
-        ArgumentNullException.ThrowIfNull(membership);
-        return QueryShelter(agentId, feetPosition, membership.PrincipalsOf(agentId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(effectType);
+        var principals = new List<AccessPrincipal> { AccessPrincipal.ForAgent(agentId) };
+        if (groupPrincipals is not null)
+        {
+            principals.AddRange(groupPrincipals);
+            principals = principals
+                .Distinct()
+                .OrderBy(static principal => principal.Kind)
+                .ThenBy(static principal => principal.Id)
+                .ToList();
+        }
+
+        StructureUsage? selected = null;
+        foreach (var effect in _construction.GetActiveEffects())
+        {
+            if (!string.Equals(effect.Type, effectType, StringComparison.Ordinal) ||
+                !Contains(effect, feetPosition) ||
+                !_construction.CheckAccess(effect.SiteId, principals, ContainerAccessRights.Use).Allowed)
+            {
+                continue;
+            }
+
+            var usage = new StructureUsage(effect.SiteId, effect.Type, effect.FatigueRecoveryBonusPermille);
+            if (selected is null || string.CompareOrdinal(usage.SiteId, selected.SiteId) < 0)
+            {
+                selected = usage;
+            }
+        }
+
+        return selected;
     }
 
     private static bool Contains(ActiveStructureEffect effect, BlockCoordinate position) =>

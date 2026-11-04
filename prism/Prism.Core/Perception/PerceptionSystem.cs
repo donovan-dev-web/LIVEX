@@ -108,6 +108,7 @@ public sealed class PerceptionSystem
     private const int CheckpointVersion = 1;
     private static readonly JsonSerializerOptions CheckpointJsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ConcurrentDictionary<ulong, SortedDictionary<ObservationKey, PerceptionEntry>> _previous = [];
+    private readonly Dictionary<int, CachedRegionMask> _regionMasks = [];
 
     public IReadOnlyCollection<ulong> KnownAgents => _previous.Keys.ToArray();
 
@@ -243,6 +244,7 @@ public sealed class PerceptionSystem
             throw new InvalidOperationException("Perception state can only be restored into a new system.");
         }
 
+        _regionMasks.Clear();
         var checkpoint = JsonSerializer.Deserialize<PerceptionCheckpoint>(
                              checkpointBytes,
                              CheckpointJsonOptions)
@@ -354,21 +356,35 @@ public sealed class PerceptionSystem
             }
         }
 
-        foreach (var (coordinate, block) in world.EnumerateOverrides())
+        // Overrides above the surface (placed blocks, trees, structures) are read through the
+        // per-region index instead of the whole world: the previous global scan made perception
+        // cost grow with the world's override count on every agent and every tick.
+        var minRegionX = Math.Max(0, (centerX - radius) / world.RegionSize);
+        var maxRegionX = Math.Min(world.RegionCountX - 1, (centerX + radius) / world.RegionSize);
+        var minRegionY = Math.Max(0, (centerY - radius) / world.RegionSize);
+        var maxRegionY = Math.Min(world.RegionCountY - 1, (centerY + radius) / world.RegionSize);
+        for (var regionY = minRegionY; regionY <= maxRegionY; regionY++)
         {
-            if (block.IsAir || coordinate.Z < world.GetSurfaceColumn(coordinate.X, coordinate.Y).SurfaceZ ||
-                !WithinRadius(centerX, centerY, coordinate.X, coordinate.Y, radiusSquared))
+            for (var regionX = minRegionX; regionX <= maxRegionX; regionX++)
             {
-                continue;
-            }
+                var regionId = regionX + world.RegionCountX * regionY;
+                foreach (var (coordinate, block) in world.EnumerateRegionOverrides(regionId))
+                {
+                    if (block.IsAir ||
+                        !WithinRadius(centerX, centerY, coordinate.X, coordinate.Y, radiusSquared))
+                    {
+                        continue;
+                    }
 
-            var surface = world.GetSurfaceColumn(coordinate.X, coordinate.Y);
-            if (coordinate.Z == surface.SurfaceZ)
-            {
-                continue;
-            }
+                    var surface = world.GetSurfaceColumn(coordinate.X, coordinate.Y);
+                    if (coordinate.Z < surface.SurfaceZ || coordinate.Z == surface.SurfaceZ)
+                    {
+                        continue;
+                    }
 
-            AddBlockIfVisible(candidates, coordinate, block.MaterialId, block.State, world, rules);
+                    AddBlockIfVisible(candidates, coordinate, block.MaterialId, block.State, world, rules);
+                }
+            }
         }
     }
 
@@ -564,7 +580,7 @@ public sealed class PerceptionSystem
         return hash;
     }
 
-    private static void AddRegionSummaries(
+    private void AddRegionSummaries(
         SortedDictionary<ObservationKey, PerceptionEntry> candidates,
         AgentPosition position,
         WorldGrid world,
@@ -587,7 +603,7 @@ public sealed class PerceptionSystem
                  regionX++)
             {
                 var regionId = regionX + world.RegionCountX * regionY;
-                var tagMask = GetExposedRegionTagMask(world, rules, regionX, regionY);
+                var tagMask = GetExposedRegionTagMask(world, rules, regionX, regionY, regionId);
                 if (tagMask == 0)
                 {
                     continue;
@@ -609,11 +625,37 @@ public sealed class PerceptionSystem
         }
     }
 
-    private static uint GetExposedRegionTagMask(
+    /// <summary>
+    /// Region summaries only depend on the region's contents, so their tag mask is cached against
+    /// the region version. Without it every agent rescanned up to 49 regions' worth of columns on
+    /// every tick, which dominated the tick cost long before any agent did real work.
+    /// </summary>
+    private uint GetExposedRegionTagMask(
         WorldGrid world,
         PerceptionRules rules,
         int regionX,
-        int regionY)
+        int regionY,
+        int regionId)
+    {
+        var version = world.Revision;
+        if (_regionMasks.TryGetValue(regionId, out var cached) &&
+            cached.Version == version &&
+            ReferenceEquals(cached.Rules, rules))
+        {
+            return cached.Mask;
+        }
+
+        var mask = ComputeExposedRegionTagMask(world, rules, regionX, regionY, regionId);
+        _regionMasks[regionId] = new CachedRegionMask(version, rules, mask);
+        return mask;
+    }
+
+    private uint ComputeExposedRegionTagMask(
+        WorldGrid world,
+        PerceptionRules rules,
+        int regionX,
+        int regionY,
+        int regionId)
     {
         var mask = 0u;
         var minX = regionX * world.RegionSize;
@@ -644,8 +686,7 @@ public sealed class PerceptionSystem
             }
         }
 
-        foreach (var (coordinate, block) in world.EnumerateRegionOverrides(
-                     regionX + world.RegionCountX * regionY))
+        foreach (var (coordinate, block) in world.EnumerateRegionOverrides(regionId))
         {
             if (block.IsAir || coordinate.Z < world.GetSurfaceColumn(coordinate.X, coordinate.Y).SurfaceZ)
             {
@@ -691,6 +732,8 @@ public sealed class PerceptionSystem
     }
 
     private sealed record PerceptionCheckpoint(int Version, AgentPerceptionCheckpoint[] Agents);
+
+    private readonly record struct CachedRegionMask(long Version, PerceptionRules Rules, uint Mask);
 
     private sealed record AgentPerceptionCheckpoint(ulong AgentId, PerceptionEntry[] Entries);
 }

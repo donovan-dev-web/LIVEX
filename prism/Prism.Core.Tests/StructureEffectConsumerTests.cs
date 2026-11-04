@@ -117,6 +117,51 @@ public sealed class StructureEffectConsumerTests
         Assert.Equal(0, membership.GroupCount);
     }
 
+    [Fact]
+    public void WaterAccessAndStorageEffectsAreConsumedByTypeInsideTheirVolumeOnly()
+    {
+        var world = CreateWorld(6, 6);
+        var construction = new StructureConstructionSystem(world);
+        Assert.True(construction.CreateSite(
+            "well-1",
+            CreateEffectTemplate(StructureEffectConsumer.WaterAccessEffectType),
+            new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(construction.ContributeWork("well-1", "builder", 0).Succeeded);
+        Assert.True(construction.CreateSite(
+            "granary-1",
+            CreateEffectTemplate(StructureEffectConsumer.StorageEffectType),
+            new BlockCoordinate(3, 3, 5)).Succeeded);
+        Assert.True(construction.ContributeWork("granary-1", "builder", 0).Succeeded);
+        var consumer = new StructureEffectConsumer(construction);
+
+        Assert.Equal("well-1", consumer.QueryWaterAccess(7, new BlockCoordinate(1, 1, 5))?.SiteId);
+        Assert.Equal("granary-1", consumer.QueryStorage(7, new BlockCoordinate(3, 3, 5))?.SiteId);
+        Assert.Null(consumer.QueryWaterAccess(7, new BlockCoordinate(3, 3, 5)));
+        Assert.Null(consumer.QueryStorage(7, new BlockCoordinate(1, 1, 5)));
+        Assert.Null(consumer.QueryShelter(7, new BlockCoordinate(1, 1, 5)));
+        Assert.Equal("well-1", consumer.QueryEffect(
+            7,
+            new BlockCoordinate(1, 1, 5),
+            StructureEffectConsumer.WaterAccessEffectType)?.SiteId);
+    }
+
+    private static StructureTemplateRule CreateEffectTemplate(string effectType) =>
+        new(
+            $"effect-{effectType}",
+            1,
+            1,
+            1,
+            [new StructureBlockRule(0, 0, 0, 1)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 1,
+            IntegrityThresholdPermille: 500,
+            Effect: new StructureEffectRule(
+                effectType,
+                new BlockCoordinate(0, 0, 0),
+                new BlockCoordinate(0, 0, 0),
+                FatigueRecoveryBonusPermille: 0));
+
     private static StructureTemplateRule CreateShelterTemplate() =>        new(
             "lean-to",
             1,

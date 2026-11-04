@@ -96,6 +96,24 @@ public sealed class ConsumptionSystemTests
         Assert.Equal((ushort)3, Assert.Single(world.EnumerateOverrides()).Value.MaterialId);
     }
 
+    [Fact]
+    public void DrinkingFromAWaterAccessStructureEmitsTheWaterSourceEffects()
+    {
+        var (_, agent) = CreateAgent();
+        var rules = new ConsumptionRules(
+            [],
+            [new DrinkSourceRule(2, new Dictionary<string, int> { ["thirst"] = -300 })]);
+
+        var result = ConsumptionSystem.DrinkFromStructure(agent, rules, 2, "well-1");
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(1, result.DurationTicks);
+        Assert.Equal("source", result.Event!.Source);
+        Assert.Equal((ushort)2, result.Event.MaterialId);
+        Assert.Equal(-300, result.Event.Effects["thirst"]);
+        Assert.Equal("not_drinkable", ConsumptionSystem.DrinkFromStructure(agent, rules, 3, "well-1").ErrorCode);
+    }
+
     private static (WorldGrid World, AgentBody Agent) CreateAgent()
     {
         var world = new WorldGrid(2, 1, verticalSize: 16);

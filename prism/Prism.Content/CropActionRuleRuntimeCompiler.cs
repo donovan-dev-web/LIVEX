@@ -54,7 +54,8 @@ public static class CropActionRuleRuntimeCompiler
             item.MaxStack,
             item.ToolTier,
             Durability: item.Durability,
-            WearPerAction: item.UsePerAction)).ToArray();
+            WearPerAction: item.UsePerAction,
+            ShelfLifeTicks: item.ShelfLifeTicks)).ToArray();
         var parentByTag = pack.Tags.ToDictionary(tag => tag.Id, tag => tag.Parent, StringComparer.Ordinal);
         var hoeItemId = pack.Items
             .Where(item => HasTagOrAncestor(item.Tags, hoeTagId, parentByTag))

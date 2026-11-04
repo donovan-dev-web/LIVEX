@@ -272,12 +272,18 @@ public static class CraftingSystem
             .SelectMany(product =>
             {
                 var item = rules.GetItem(product.ItemTypeId);
+                var freshness = item.ShelfLifeTicks > 0 ? item.ShelfLifeTicks * 1000 : (int?)null;
                 var stacks = new List<AgentItemStack>();
                 var remaining = product.Quantity;
                 while (remaining > 0)
                 {
                     var quantity = Math.Min(remaining, item.MaxStackSize);
-                    stacks.Add(new AgentItemStack(product.ItemTypeId, quantity, item.MaxStackSize));
+                    stacks.Add(new AgentItemStack(
+                        product.ItemTypeId,
+                        quantity,
+                        item.MaxStackSize,
+                        FreshnessPermilleTicks: freshness,
+                        FreshnessUpdatedTick: freshness is null ? 0 : tick));
                     remaining -= quantity;
                 }
 
