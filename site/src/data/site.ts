@@ -69,6 +69,11 @@ export const NAV: NavItem[] = [
     ],
   },
   {
+    key: 'blog',
+    href: 'actualites/',
+    label: { fr: 'Blog', en: 'Blog' },
+  },
+  {
     key: 'ressources',
     href: 'documentation/',
     label: { fr: 'Ressources', en: 'Resources' },
@@ -76,7 +81,6 @@ export const NAV: NavItem[] = [
       { key: 'documentation', href: 'documentation/', label: { fr: 'Documentation', en: 'Documentation' } },
       { key: 'etat-du-projet', href: 'etat-du-projet/', label: { fr: 'État du projet', en: 'Project status' } },
       { key: 'monographie', href: 'monographie/', label: { fr: 'Monographie', en: 'Monograph' } },
-      { key: 'journal', href: 'actualites/', label: { fr: 'Journal', en: 'Journal' } },
       { key: 'plan-du-site', href: 'plan-du-site/', label: { fr: 'Plan du site', en: 'Sitemap' } },
     ],
   },
@@ -103,7 +107,7 @@ export const FOOTER_NAV: NavItem[] = [
   { key: 'etat-du-projet', href: 'etat-du-projet/', label: { fr: 'État du projet', en: 'Project state' } },
   { key: 'monographie', href: 'monographie/', label: { fr: 'Monographie', en: 'Monograph' } },
   { key: 'feuille-de-route', href: 'feuille-de-route/', label: { fr: 'Feuille de route', en: 'Roadmap' } },
-  { key: 'journal', href: 'actualites/', label: { fr: 'Journal', en: 'Journal' } },
+  { key: 'journal', href: 'actualites/', label: { fr: 'Blog', en: 'Blog' } },
   { key: 'suivre', href: 'suivre/', label: { fr: 'Suivre', en: 'Follow' } },
   { key: 'documentation', href: 'documentation/', label: { fr: 'Documentation', en: 'Documentation' } },
   { key: 'faq', href: 'faq/', label: { fr: 'FAQ', en: 'FAQ' } },

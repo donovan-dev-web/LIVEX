@@ -4,6 +4,7 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
+import { absoluteUrl } from '../../utils/url';
 
 export const prerender = true;
 
@@ -18,7 +19,8 @@ export async function GET(context: APIContext) {
     title: 'Journal LIVEX',
     description:
       'Jalons, décisions techniques et articles de fond du projet LIVEX — datés et sourcés.',
-    site: new URL(base, context.site ?? 'https://donovan-dev-web.github.io').href,
+    // Jamais l'origine seule : GitHub Pages de type projet, l'URL de base inclut /LIVEX/.
+    site: context.site ? new URL(base, context.site).href : absoluteUrl(),
     trailingSlash: true,
     items: entries.map((e) => ({
       title: e.data.title,

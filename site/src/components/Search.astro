@@ -55,6 +55,14 @@ const pagefindBase = `${import.meta.env.BASE_URL}pagefind/`;
     position: fixed;
     inset: 0;
     z-index: 50;
+    display: grid;
+    place-items: center;
+    padding: clamp(12px, 4vh, 40px);
+    overscroll-behavior: contain;
+  }
+  /* `display: grid` l'emporterait sur l'attribut `hidden` : on le rétablit explicitement. */
+  .search-modal[hidden] {
+    display: none;
   }
   .search-backdrop {
     position: absolute;
@@ -63,10 +71,10 @@ const pagefindBase = `${import.meta.env.BASE_URL}pagefind/`;
   }
   .search-panel {
     position: relative;
-    width: min(640px, calc(100% - 32px));
-    max-height: 80vh;
+    width: min(640px, 100%);
+    max-height: 100%;
     overflow-y: auto;
-    margin: 8vh auto 0;
+    margin: 0;
     background: var(--bg);
     border: 1px solid var(--ln);
     border-radius: var(--r);
@@ -116,6 +124,12 @@ const pagefindBase = `${import.meta.env.BASE_URL}pagefind/`;
     var toggle = document.getElementById('search-toggle');
     var modal = document.getElementById('search-modal');
     if (!toggle || !modal) return;
+    /*
+     * L'en-tête est `position: sticky` avec `backdrop-filter` : ce filtre en fait le bloc
+     * conteneur des descendants `position: fixed`. La modale y resterait donc bornée à la
+     * hauteur du bandeau. On la sort du header pour qu'elle couvre toute la page.
+     */
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
     var loaded = false;
     var lastFocused = null;
     function open() {

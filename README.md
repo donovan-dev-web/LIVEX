@@ -184,7 +184,7 @@ LIVEX **1.0.0** est publiée sous le tag [`livex-v1.0.0`](https://github.com/don
 ### livex-setup Captures
 | Installateur · Accueil | Installateur · Choix Composant |
 |:--:|:--:|
-| <img src="docs/captures/Installer_home.png" alt="Vue de l'écran de lancement de l'installateur LIVEX" /> | <img src="docs/captures/Installer_Component.png" alt="Vue de l'écran de choix des composants installable de LIVEX" /> |
+| <img src="docs/captures/Installer_home.png" alt="Vue de l'écran de lancement de l'installateur LIVEX" /> | <img src="docs/captures/installer_ChoixComposant.png" alt="Vue de l'écran de choix des composants installable de LIVEX" /> |
 
 
 Le guide et les captures d’installateur décrivent la distribution V1. La cible V2 prévoit le host PRISM .NET et un viewer distinct facultatif ; son mode de distribution sera précisé avant publication. Consultez la [documentation de l’installateur](docs/installer/README.md) pour le périmètre V1.

@@ -72,6 +72,8 @@ h2 {
   margin: 18px 0 20px;
 }
 
+.fnav-title {font-size: clamp(1.5rem, 2.5vw, 1.75rem);}
+
 h3 {
   font-size: 1.4rem;
 }
