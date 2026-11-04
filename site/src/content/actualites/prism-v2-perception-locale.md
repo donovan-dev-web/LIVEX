@@ -4,7 +4,7 @@ description: "La perception prévue dans PRISM V2 distingue proximité détaill�
 seoTitle: "Perception locale et mémoire dans PRISM V2"
 date: 2026-11-04
 tags: ["prism", "v2", "perception", "syne"]
-draft: true
+draft: false
 ---
 
 Pour choisir une action, un agent a besoin d'informations. Mais s'il connaît en permanence la position de chaque ressource et de chaque autre agent, l'exploration perd son sens. La cible PRISM V2 prévoit donc une perception locale, transmise à SYNE sans transformer celui-ci en observateur omniscient.

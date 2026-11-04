@@ -4,7 +4,7 @@ description: "Pourquoi la cible PRISM V2 choisit un monde 2.5D borné, découpé
 seoTitle: "Le monde voxel 2.5D de PRISM V2"
 date: 2026-11-04
 tags: ["prism", "v2", "voxel", "monde"]
-draft: true
+draft: false
 ---
 
 Un monde en trois dimensions n'a pas besoin d'être sans limites ni rempli de cavernes pour offrir de vrais choix. Pour PRISM V2, la spécification retient un monde de colonnes : chaque position horizontale possède une surface et des couches de matière en altitude.
