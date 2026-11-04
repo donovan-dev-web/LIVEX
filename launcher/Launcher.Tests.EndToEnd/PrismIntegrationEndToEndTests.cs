@@ -56,6 +56,7 @@ public sealed class PrismUnlockEndToEndTests : IDisposable
         Assert.NotNull(instance);
         Assert.Equal(_prismPort, instance!.Endpoints["control"].Port);
         Assert.Equal("ws", new Uri(instance.Endpoints["ws"].Url).Scheme);
+        Assert.Equal("/data/read", new Uri(instance.Endpoints["ws"].Url).AbsolutePath);
         await StubInstall.WaitForHealthyAsync(instance.Endpoints["control"].Url);
 
         // Arguments : communs seulement — aucun argument de lot SYNE sur PRISM.
@@ -269,7 +270,11 @@ internal static class Manifests
           "capabilities": ["headless", "snapshotStream", "renderCadence"],
           "endpoints": {
             "control": { "transport": "http", "port": {{port}} },
-            "ws": { "transport": "websocket", "launchArgument": "--data-port" }
+            "ws": {
+              "transport": "websocket",
+              "launchArgument": "--data-port",
+              "path": "/data/read"
+            }
           },
           "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
           "timeouts": { "startupMs": 30000, "shutdownMs": 15000 },

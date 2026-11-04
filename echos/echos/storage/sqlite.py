@@ -29,7 +29,7 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "7"
+SCHEMA_VERSION = "8"
 """Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
 
 v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces``.
@@ -43,6 +43,9 @@ v6 (viabilité B2, campagne-runs) : colonnes ``tick_summaries.mean_food``/
 ``mean_water`` — régime des ressources du monde (moyenne des réserves du
 snapshot). Migration additive ``DEFAULT 0.0`` : les lignes antérieures exposent
 un régime vide (0.0) et le rapport de calibration les signale comme absentes.
+v7 (BL-09) : colonnes cognitives des traces de décision et utilité nullable.
+v8 (ECHOS-100) : flux de lecture PRISM conservé par enveloppe séquencée, avec
+contentHash, sans inventer de métriques SYNE absentes du contrat PRISM.
 """
 
 _DDL = """
@@ -125,6 +128,16 @@ CREATE TABLE IF NOT EXISTS decision_traces (
 CREATE TABLE IF NOT EXISTS calibration_reports (
     run_id TEXT PRIMARY KEY REFERENCES runs(run_id) ON DELETE CASCADE,
     report_json TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS prism_read_envelopes (
+    run_id TEXT NOT NULL REFERENCES runs(run_id) ON DELETE CASCADE,
+    sequence INTEGER NOT NULL CHECK (sequence >= 0),
+    tick INTEGER NOT NULL CHECK (tick >= -1),
+    kind TEXT NOT NULL,
+    content_hash TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    PRIMARY KEY (run_id, sequence)
 );
 
 CREATE INDEX IF NOT EXISTS idx_tick_summaries_run ON tick_summaries(run_id);
@@ -290,6 +303,150 @@ class AnalyticsStore:
             )
             self._conn.commit()
             self._bump()
+
+    def append_prism_read_stream(
+        self,
+        run_id: str,
+        seed: str,
+        content_hash: str,
+        envelopes: list[dict],
+    ) -> int:
+        """Store a complete PRISM read stream atomically, preserving sequence."""
+        if not run_id.strip() or not content_hash.strip():
+            raise ValueError("PRISM run identity and content hash are required")
+        if not envelopes:
+            raise ValueError("A PRISM read stream must contain at least one envelope")
+        previous_sequence = -1
+        previous_tick = -1
+        for envelope in envelopes:
+            sequence = int(envelope["sequence"])
+            if sequence <= previous_sequence:
+                raise ValueError("PRISM envelope sequences must be strictly increasing")
+            kind = str(envelope["kind"])
+            if previous_sequence < 0 and kind != "world_snapshot":
+                raise ValueError("A PRISM read stream must start with a full snapshot")
+            if (
+                previous_sequence >= 0
+                and sequence != previous_sequence + 1
+                and kind != "world_snapshot"
+            ):
+                raise ValueError("A sequence gap must be followed by a full snapshot")
+            tick = int(envelope["tick"])
+            if tick < -1 or tick < previous_tick:
+                raise ValueError("PRISM envelope ticks must be valid and non-decreasing")
+            if not kind.strip():
+                raise ValueError("PRISM envelope kind must not be empty")
+            previous_sequence = sequence
+            previous_tick = tick
+
+        with self._lock:
+            try:
+                existing = self._conn.execute(
+                    "SELECT COUNT(*) FROM prism_read_envelopes WHERE run_id = ?",
+                    (run_id,),
+                ).fetchone()[0]
+                if existing:
+                    raise ValueError(f"PRISM read stream already exists for run '{run_id}'")
+                existing_run = self._conn.execute(
+                    "SELECT version, seed FROM runs WHERE run_id = ?", (run_id,)
+                ).fetchone()
+                if existing_run is not None and not str(existing_run[0]).startswith("PRISM"):
+                    raise ValueError(f"Run '{run_id}' is already owned by another producer")
+                if existing_run is not None and str(existing_run[1]) != seed:
+                    raise ValueError(f"Run '{run_id}' already has a different seed")
+                self._conn.execute(
+                    "INSERT OR IGNORE INTO runs (run_id, version, seed) VALUES (?, ?, ?)",
+                    (run_id, "PRISM-1.0", seed),
+                )
+                self._conn.executemany(
+                    """
+                    INSERT INTO prism_read_envelopes
+                        (run_id, sequence, tick, kind, content_hash, payload)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    [
+                        (
+                            run_id,
+                            int(envelope["sequence"]),
+                            int(envelope["tick"]),
+                            str(envelope["kind"]),
+                            content_hash,
+                            json.dumps(
+                                envelope,
+                                ensure_ascii=False,
+                                sort_keys=True,
+                                separators=(",", ":"),
+                            ),
+                        )
+                        for envelope in envelopes
+                    ],
+                )
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
+            self._bump()
+            return len(envelopes)
+
+    def prism_read_summary(self, run_id: str) -> dict | None:
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT COUNT(*), MAX(sequence), MAX(tick), MAX(content_hash)
+                FROM prism_read_envelopes
+                WHERE run_id = ?
+                """,
+                (run_id,),
+            ).fetchone()
+            if rows[0] == 0:
+                return None
+            kinds = self._conn.execute(
+                """
+                SELECT kind, COUNT(*) FROM prism_read_envelopes
+                WHERE run_id = ? GROUP BY kind ORDER BY kind
+                """,
+                (run_id,),
+            ).fetchall()
+            return {
+                "runId": run_id,
+                "envelopes": int(rows[0]),
+                "lastSequence": int(rows[1]),
+                "lastTick": int(rows[2]),
+                "contentHash": str(rows[3]),
+                "kinds": {str(kind): int(count) for kind, count in kinds},
+            }
+
+    def prism_read_envelopes(
+        self,
+        run_id: str,
+        after_sequence: int = -1,
+        limit: int = 500,
+    ) -> list[dict]:
+        if after_sequence < -1:
+            raise ValueError("after_sequence must be at least -1")
+        if limit <= 0:
+            raise ValueError("limit must be positive")
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT sequence, tick, kind, content_hash, payload
+                FROM prism_read_envelopes
+                WHERE run_id = ? AND sequence > ?
+                ORDER BY sequence
+                LIMIT ?
+                """,
+                (run_id, after_sequence, limit),
+            ).fetchall()
+        return [
+            {
+                "sequence": int(sequence),
+                "tick": int(tick),
+                "kind": str(kind),
+                "contentHash": str(content_hash),
+                "payload": json.loads(payload),
+            }
+            for sequence, tick, kind, content_hash, payload in rows
+        ]
 
     def append_tick(self, record: TickRecord) -> None:
         with self._lock:

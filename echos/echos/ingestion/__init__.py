@@ -12,6 +12,7 @@
 """
 
 from .control_client import ControlClient, ControlError, DEFAULT_BASE_URL
+from .prism_stream import PrismReadEnvelope, ingest_prism_stream, prism_envelopes
 from .models import (
     Agent,
     ExternalEvent,
@@ -35,6 +36,7 @@ __all__ = [
     "InvalidMessageError",
     "Message",
     "Position",
+    "PrismReadEnvelope",
     "Resource",
     "StreamClosed",
     "TickAlignmentError",
@@ -44,5 +46,7 @@ __all__ = [
     "WsClient",
     "WsTransport",
     "aligned_ticks",
+    "ingest_prism_stream",
     "parse_message",
+    "prism_envelopes",
 ]

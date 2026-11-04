@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "prism-host",
+  "name": "PRISM World Host",
+  "type": "world",
+  "version": "2.0.0-preview.1",
+  "runtime": "native",
+  "executable": {
+    "windows": "bin/prism-host.exe",
+    "linux": "bin/prism-host"
+  },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": {
+      "transport": "http"
+    },
+    "readStream": {
+      "transport": "websocket",
+      "launchArgument": "--read-port",
+      "path": "/data/read"
+    }
+  },
+  "capabilities": [
+    "headless",
+    "snapshotStream"
+  ],
+  "health": {
+    "probe": "http",
+    "path": "/health/ready",
+    "intervalMs": 1000
+  },
+  "timeouts": {
+    "startupMs": 30000,
+    "shutdownMs": 5000
+  },
+  "protocolVersion": 1,
+  "contributesTo": [],
+  "requires": []
+}

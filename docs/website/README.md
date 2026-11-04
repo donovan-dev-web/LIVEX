@@ -39,6 +39,12 @@ capture trompeuse. Trois principes gouvernent son contenu :
 3. **Séparation des couches** — le site ne prétend pas reproduire le
    comportement du moteur ; il le décrit.
 
+La présentation PRISM distingue explicitement la génération Unreal/PRISM-LDK
+de V1 et la cible V2 prévue : monde physique autoritaire .NET, SYNE pour la
+cognition, ECHOS pour l'analyse et viewer Silk.NET facultatif. Les descriptions
+de cette cible ne sont pas des constats de livraison ; les champs datés d'état
+du dépôt gardent leurs sources et périodes de mesure.
+
 ## 3. Structure de cette documentation
 
 | Document | Contenu |

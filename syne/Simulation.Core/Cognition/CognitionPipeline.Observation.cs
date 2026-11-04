@@ -19,6 +19,28 @@ using Simulation.Core.Social;
 
 public sealed partial class CognitionPipeline
 {
+    /// <summary>
+    /// Applique des observations externes (par exemple perçues par PRISM) aux
+    /// croyances et à la mémoire d'une entité, sans passer par la perception
+    /// locale de SYNE. Utilisé par la boucle couplée SYNE ↔ PRISM (R2).
+    /// </summary>
+    public void ApplyExternalObservations(
+        Entity self,
+        IReadOnlyList<Observation> observations,
+        ulong currentTick,
+        string source = "prism")
+    {
+        ArgumentNullException.ThrowIfNull(self);
+        ArgumentNullException.ThrowIfNull(observations);
+        ArgumentException.ThrowIfNullOrWhiteSpace(source);
+
+        MindState mind = GetOrCreate(self.Id.Value, self);
+        mind.Factors ??= new AgentFactors(self.Traits);
+        foreach (Observation observation in observations)
+        {
+            StoreObservation(mind, self, observation, currentTick, source);
+        }
+    }
 
     /// <summary>
     /// Stockage d'une observation : <b>mémoire</b> (récit canonique, source) puis

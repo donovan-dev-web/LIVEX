@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://livex.dev/schemas/prism/1.0.0/observation-envelope.schema.json",
+  "title": "PRISM observation envelope",
+  "type": "object",
+  "required": ["protocolVersion", "tick", "agentId", "changes", "self"],
+  "properties": {
+    "protocolVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "tick": { "type": "integer", "minimum": 0 },
+    "agentId": { "type": "integer", "minimum": 0 },
+    "changes": { "type": "object" },
+    "self": { "type": "object" }
+  },
+  "additionalProperties": true
+}

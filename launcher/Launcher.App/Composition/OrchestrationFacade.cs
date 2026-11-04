@@ -781,7 +781,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
                 var resolved = _ports.Resolve(componentId, instanceId, kind, endpoint.Port);
                 if (string.Equals(endpoint.Transport, "websocket", StringComparison.OrdinalIgnoreCase))
                 {
-                    resolved = resolved with { Url = $"ws://127.0.0.1:{resolved.Port}/" };
+                    var path = string.IsNullOrEmpty(endpoint.Path) ? "/" : endpoint.Path;
+                    resolved = resolved with { Url = $"ws://127.0.0.1:{resolved.Port}{path}" };
                 }
 
                 resolvedEndpoints.Add(kind, resolved);

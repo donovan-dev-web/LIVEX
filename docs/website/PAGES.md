@@ -30,7 +30,7 @@ décrivent cette page utilisent cet index comme préfixe de sous-section
 | 05 | `technique/` | Architecture : aperçu des couches et des composants. |
 | 06 | `technique/syne/` | SYNE — moteur de simulation. |
 | 07 | `technique/echos/` | ECHOS — observation et analyse. |
-| 08 | `technique/prism/` | PRISM — rendu perceptif. |
+| 08 | `technique/prism/` | PRISM — cible V2 : monde physique .NET ; PRISM Unreal/LDK est replacé en V1 historique. |
 | 08b | `technique/installer/` | Installateur LIVEX — distribution, installation, maintenance et désinstallation. |
 | 09 | `technique/launcher/` | Launcher — orchestration de la pile. |
 | 10 | `technique/resultats/` | Reproductibilité et mesures (déterminisme, tests, couverture). |

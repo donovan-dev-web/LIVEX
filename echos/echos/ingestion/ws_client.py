@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import queue
 import threading
+from collections.abc import Iterator
 from typing import Protocol
 
 from echos.ingestion.models import Message, InvalidMessageError, parse_message
@@ -104,12 +105,32 @@ class WsClient:
 
     def receive(self, timeout: float | None = None) -> Message:
         """Reçoit et valide le prochain message de façon déterministe."""
+        return parse_message(self.receive_raw(timeout))
+
+    def receive_raw(self, timeout: float | None = None) -> str | bytes:
+        """Reçoit le payload brut pour un flux versionné par un autre composant."""
         if self._transport is None:
             raise InvalidMessageError("transport", "client non connecté")
         payload = self._transport.recv(timeout=timeout)
         if payload is None:
             raise StreamClosed("connexion fermée (None)")
-        return parse_message(payload)
+        return payload
+
+    def raw_messages(self) -> Iterator[str | bytes]:
+        """Itère sur les trames brutes en traitant la fermeture comme fin normale."""
+        while True:
+            try:
+                yield self.receive_raw()
+            except StreamClosed:
+                return
+            except Exception as exc:
+                try:
+                    from websockets.exceptions import ConnectionClosed
+                except ImportError:
+                    raise exc
+                if isinstance(exc, ConnectionClosed):
+                    return
+                raise
 
     def send(self, payload: str | bytes) -> None:
         """Envoi brut (contrôle applicatif réservé au HTTP :5181)."""
