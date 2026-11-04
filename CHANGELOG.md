@@ -7,6 +7,12 @@
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`livex-vX.Y.Z` = triplet SYNE + ECHOS + PRISM).
 
+## [Unreleased]
+
+### Documentation
+- Mise à jour de la documentation générale pour présenter la cible PRISM V2 : autorité du monde physique, noyau .NET headless, contrat SYNE↔PRISM et visualiseur facultatif ; PRISM Unreal/PRISM-LDK est explicitement replacé dans l'historique V1.
+- Précision du périmètre scientifique de LIVEX : émergence collective dite faible, distincte de l'apprentissage ou de l'amélioration individuelle des agents.
+
 ## [1.0.0] - 2026-10-30
 
 ### Changed
