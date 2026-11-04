@@ -1,0 +1,5 @@
+Contact: https://github.com/donovan-dev-web/LIVEX/security/advisories/new
+Expires: 2027-12-31T00:00:00.000Z
+Preferred-Languages: fr, en
+Canonical: https://donovan-dev-web.github.io/LIVEX/.well-known/security.txt
+Policy: https://github.com/donovan-dev-web/LIVEX/blob/main/SECURITY.md
