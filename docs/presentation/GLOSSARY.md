@@ -60,7 +60,7 @@ Trace complète d'une décision : besoins, croyances considérées, scores d'uti
 Emergent Cognition & Holistic Observation System — module d'observation, d'analyse et de pilotage. (Monographie §2.3.2)
 
 ### Emergence
-Apparition de structures collectives (groupes, spécialisations, conflits, marchés) non programmées : elles résultent d'interactions locales sous contraintes. (Monographie §1.1, Partie 6)
+Dans le cadrage LIVEX, apparition de motifs collectifs (groupes, échanges, spécialisations, conflits) qui ne sont pas prescrits par un scénario et résultent d'interactions locales sous contraintes. Le projet parle d'émergence collective « faible » : les causes restent traçables aux règles explicites. L'apprentissage individuel n'est pas l'objet de recherche ; un changement d'état ou de maîtrise défini par une règle n'est pas, à lui seul, une émergence collective. (Monographie §1.1, Partie 6)
 
 ### Événement (event)
 Fait observable et horodaté produit par la simulation (`spawn`, `mort`, `décision`, `message`...). (Monographie §3.15)
@@ -112,10 +112,10 @@ Première étape de la boucle BDI : transformation de l'état du monde en observ
 Jeu de fichiers JSON versionné qui **définit** les règles de PRISM V2 : manifeste, matériaux, objets, recettes, gabarits, croissance, effets, tags et paramètres. Il est compilé et validé au démarrage (erreurs structurées, pack invalide = démarrage refusé) et résumé par un `contentHash` : deux runs ne sont comparables que si le hash est identique. Le pack minimal `prism/content/minimal` est le pack de référence. (PRISM-021/022)
 
 ### PRISM
-Perceptual Rendering & Interactive Simulation Module — projet Unreal final de LIVEX pour la représentation et l'interaction ; il n'est jamais source de vérité de la simulation.
+Pour la V1 : *Perceptual Rendering & Interactive Simulation Module*, projet Unreal de représentation livré dans LIVEX 1.0.0. Pour la cible V2 : *Persistent Reality & Interactive Simulation Module*, autorité .NET headless du monde physique ; SYNE conserve la cognition et le viewer Silk.NET facultatif lit le flux publié.
 
 ### PRISM-LDK
-Plugin Unreal (*LIVEX Development Kit*) intégré au projet PRISM. Son nom de module/dossier actuel est `PrismLdk`. Il expose le contrat SYNE aux Blueprints et garde le C++ limité à l'intégration.
+Plugin Unreal historique (*LIVEX Development Kit*) de PRISM V1 ; module `PrismLdk`. La cible PRISM V2 abandonne cette architecture au profit d'un noyau .NET headless.
 
 ### PRNG (xoshiro256\*\*)
 Générateur pseudo-aléatoire rapide et de haute qualité, utilisé pour tous les tirages — initialisation splitmix64(seed). `System.Random` est **interdit**. (Monographie §3.6.3)
@@ -143,7 +143,7 @@ Systems & Emergent Network Engine — moteur de simulation ; possède la vérit�
 Serveur Node.js de développement qui émule une partie du protocole et du cycle de simulation de SYNE pour tester les clients, en particulier le plugin Unreal. Ses algorithmes sont simplifiés ; il n'est pas le moteur de simulation et ses résultats ne sont pas interchangeables avec ceux de SYNE.
 
 ### LIVEX Development Kit (LDK)
-Nom complet du plugin PRISM-LDK. LDK ne désigne pas le projet complet : celui-ci est LIVEX ; PRISM en est le projet Unreal final. `../../prism/LDK/LDK.uproject` est un hôte Unreal technique présent pour le développement et la compilation du plugin.
+Nom complet du plugin PRISM-LDK de la V1. LDK ne désigne pas le projet complet : celui-ci est LIVEX. Le plugin et l'hôte Unreal sont conservés comme historique de la V1 ; la cible PRISM V2 est documentée dans `docs/prism/`.
 
 ## T
 

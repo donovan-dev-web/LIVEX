@@ -24,6 +24,12 @@ LIVEX propose une **troisième voie** entre deux extrêmes :
 
 À la place, le projet construit un moteur où des entités autonomes — dotées de besoins, de mémoire, de croyances et de capacités d'action — interagissent dans un environnement persistant et partiellement observable. Les structures collectives (regroupements, flux d'échange, spécialisations, conflits) **ne sont pas programmées : elles émergent** (Monographie §1.1).
 
+### Portée de l'émergence étudiée
+
+LIVEX cible l'**émergence collective dite faible** : des motifs observables à l'échelle d'un groupe apparaissent à partir d'interactions locales et de règles explicites, sans qu'un scénario prescrive leur forme collective. Les causes doivent rester traçables dans le modèle et les observations ; le terme ne signifie ni conscience ni autonomie mystérieuse.
+
+L'apprentissage ou l'amélioration d'un agent pris individuellement n'est pas l'objet de recherche de LIVEX. Les croyances, la mémoire ou une maîtrise peuvent évoluer selon des mécanismes explicitement définis ; une telle évolution d'état individuel n'est pas en soi une émergence collective.
+
 ## 2. Le problème adressé
 
 Les simulations multi-agents classiques sont soit **émergentes mais imprécises** (simulations à base de règles simples), soit **précises mais scriptées** (déterminées par avance). LIVEX cherche une voie intermédiaire : un terrain d'expérimentation où la complexité sociale et cognitive émerge de mécanismes explicites, reproductibles et observables (Monographie §1.2).
@@ -39,7 +45,7 @@ Trois exigences dominantes structurent le projet :
 1. **Autonomie des entités** — le moteur fournit des structures (état, besoins, perception, mémoire, croyances), jamais de script de conduite (Monographie §1.4).
 2. **À la source de la cognition** — architecture BDI (croyances, désirs, intentions) pour chaque entité.
 3. **Observabilité partielle** — une entité ne connaît qu'une partie du monde ; l'information imparfaite est un moteur de diversité comportementale, d'erreur et d'exploration.
-4. **Émergence par contraintes** — mémoire dégradée, communication non confidentielle, énergie comme monnaie d'action : les comportements collectifs naissent des contraintes, pas des règles globales.
+4. **Émergence collective par contraintes** — mémoire dégradée, communication non confidentielle, énergie comme monnaie d'action : les motifs de groupe naissent des contraintes et interactions locales, pas d'un scénario collectif. L'apprentissage individuel n'est pas la cible.
 5. **Déterminisme scientifique** — grâce à un PRNG reproductible (xoshiro256\*\*) et une persistance de l'état complet, LIVEX est un instrument valide pour l'étude de l'émergence.
 6. **Indépendance du rendu** — SYNE fonctionne sans interface graphique ; PRISM communique avec lui par des contrats de transport, sans modifier la source de vérité du moteur.
 

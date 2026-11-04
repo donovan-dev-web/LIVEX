@@ -6,7 +6,7 @@
 
 <a href="docs/syne/README.md"><img alt="SYNE · simulation" src="https://img.shields.io/badge/SYNE-simulation-3fb8ea?style=plastic" /></a>
 <a href="docs/echos/README.md"><img alt="ECHOS · observation" src="https://img.shields.io/badge/ECHOS-observation-a97bff?style=plastic" /></a>
-<a href="docs/prism/README.md"><img alt="PRISM · rendu 3D" src="https://img.shields.io/badge/PRISM-rendu%203D-f0a846?style=plastic" /></a>
+<a href="docs/prism/README.md"><img alt="PRISM · monde physique V2 prévu" src="https://img.shields.io/badge/PRISM-monde%20physique%20V2%20pr%C3%A9vu-f0a846?style=plastic" /></a>
 
 [![Version globale 1.0.0](https://img.shields.io/badge/LIVEX-1.0.0-315c9b?labelColor=090C16)](VERSIONING.md)
 [![Licence GPLv3](https://img.shields.io/badge/Licence-GPLv3-216e5a?logo=gplv3&logoColor=BD0000&labelColor=090C16)](LICENSE)
@@ -27,6 +27,8 @@
 <img src="docs/assets/h-projet.svg" alt="Le projet" width="100%" />
 
 **LIVEX explore une question : comment des comportements collectifs peuvent-ils émerger de règles locales simples, sans scénario qui les impose ?**
+
+Dans LIVEX, « émergence » désigne d'abord des **motifs collectifs** — regroupements, échanges, spécialisations ou conflits — qui apparaissent à partir d'interactions locales. Le projet s'intéresse à cette émergence collective, dite faible dans son cadrage : les causes restent traçables aux règles explicites du modèle. Il n'étudie pas l'apprentissage ni l'amélioration individuelle comme objectif de recherche. Un état ou une maîtrise d'agent peut évoluer si une règle le prévoit ; cela ne constitue pas, à lui seul, l'émergence collective visée.
 
 Le moteur fait évoluer des entités autonomes dans un monde régi par des règles explicites. Chaque entité perçoit une partie de son environnement, possède des besoins, des croyances et une mémoire, puis choisit ses actions selon une architecture cognitive BDI (*Beliefs, Desires, Intentions*). Le système observe les résultats sans les dicter.
 
@@ -56,32 +58,31 @@ Le moteur fait évoluer des entités autonomes dans un monde régi par des règl
 <a id="architecture"></a>
 <img src="docs/assets/h-architecture.svg" alt="Architecture" width="80%" />
 
-LIVEX repose sur **trois couches séparées** — SYNE (la simulation), ECHOS (l’observation) et PRISM (la représentation 3D) — reliées par des contrats de communication explicites. Le **Launcher** orchestre la pile, l’**installateur** distribue et gère son installation, et `syne-mock` aide aux tests d’intégration. Chaque composant a un périmètre défini.
+LIVEX repose sur **trois composants séparés** — SYNE (cognition et décisions), PRISM (monde physique) et ECHOS (observation et analyse) — reliés par des contrats explicites. Après la release V1, la V2 prévoit une refonte complète de PRISM : il devient l’autorité du monde, tandis que SYNE conserve la cognition des agents. Le Launcher orchestre la pile et l’installateur la distribue. Cette présentation décrit la cible V2 prévue ; elle ne constitue pas un bilan de réalisation.
 
 <div align="center">
 
-<img src="docs/assets/architecture.svg" alt="Schéma d’architecture : SYNE diffuse ses snapshots par WebSocket vers ECHOS, dont l’API REST alimente le Launcher ; SYNE expose ses contrats à PRISM, que syne-mock peut émuler pour les tests." width="100%" />
+<img src="docs/assets/architecture.svg" alt="Schéma historique de l’architecture LIVEX V1 ; voir la description textuelle pour la cible V2." width="100%" />
 
 </div>
 
-<sub>Vue logique des responsabilités et des principaux échanges. Le stockage représente les données exploitées par ECHOS ; les contours pointillés signalent ce qui est en développement (PRISM) ou une fonction de test (syne-mock), et non un flux de simulation.</sub>
+<sub>Schéma conservé pour l’architecture V1 ; il ne représente pas la refonte PRISM V2 décrite ci-dessous.</sub>
 
 <details>
 <summary>Version texte du schéma (Mermaid)</summary>
 
 ```mermaid
 flowchart LR
-    S[SYNE<br/>Simulation et monde] -->|WebSocket :5180<br/>snapshots et événements| I[Ingestion ECHOS]
+    S[SYNE<br/>Cognition et décisions] <-->|Contrat 1.0<br/>commandes, observations, événements| P[PRISM<br/>Monde voxel autoritaire]
+    P -->|Flux de lecture| I[Ingestion ECHOS]
     I --> D[(SQLite + Parquet)]
     D --> A[API ECHOS<br/>REST :5000]
     A --> U[Launcher<br/>consoles de logs + fenêtre d'analyse<br/>fenêtres natives Avalonia]
-    S -->|contrats de simulation| P[Projet Unreal PRISM]
-    P -->|intègre le plugin| L[PRISM-LDK<br/>module PrismLdk]
     INSTALL[Installateur LIVEX<br/>Windows / Linux] -->|installe et gère| U
     INSTALL --> S
     INSTALL --> D
     INSTALL --> P
-    M[syne-mock<br/>serveur Node.js de test] -.->|émule les contrats| P
+    INSTALL -.->|distribution V2 prévue| V
 ```
 
 </details>
@@ -90,33 +91,33 @@ flowchart LR
 
 | Composant | Rôle | Responsabilité |
 |:--|:--|:--|
-| **SYNE**<br/><sub>*Systems & Emergent Network Engine*</sub> | Moteur de simulation | Fait évoluer le monde, calcule les interactions et les décisions des entités, puis expose l’état simulé et les événements produits. C’est la **source de vérité** du système. |
-| **ECHOS**<br/><sub>*Emergent Cognition & Holistic Observation System*</sub> | Observation et analyse | Ingère les données de simulation, les stocke, calcule des métriques et expose les résultats par une API REST. Peut participer au pilotage de la simulation sans devenir propriétaire de son état. |
-| **PRISM**<br/><sub>*Perceptual Rendering & Interactive Simulation Module*</sub> | Rendu et interaction | Projet Unreal Engine packagé pour Windows et Linux dans LIVEX 1.0.0. S’appuie sur **PRISM-LDK**, le plugin `PrismLdk` qui expose les interfaces de communication de LIVEX à Unreal Engine et à ses Blueprints. |
+| **SYNE**<br/><sub>*Systems & Emergent Network Engine*</sub> | Cognition multi-agents | Porte besoins, croyances, mémoire, relations, groupes et décisions ; émet des commandes au monde et intègre observations et événements de PRISM. |
+| **ECHOS**<br/><sub>*Emergent Cognition & Holistic Observation System*</sub> | Observation et analyse | Ingère les flux de SYNE et le flux de lecture PRISM, les stocke, calcule des métriques et expose les résultats par une API REST. |
+| **PRISM**<br/><sub>*Persistent Reality & Interactive Simulation Module (V2)*</sub> | Monde physique autoritaire | Cible V2 : noyau .NET headless pour le monde voxel 2.5D, la matière, les actions, la navigation, le temps physique et les structures. Un visualiseur Silk.NET/OpenGL facultatif lit son flux sans piloter le tick. |
 
 ### Les outils
 
 | Outil | Rôle | Responsabilité |
 |:--|:--|:--|
 | **Launcher** | Orchestration | Application de bureau Avalonia : orchestre l’environnement logiciel, supervise les composants et présente journaux et analyses dans une interface native. |
-| **syne-mock** | Test d’intégration | Serveur Node.js qui émule les contrats de communication de SYNE pour tester les clients (notamment PRISM) sans exécuter le moteur complet. Il ne remplace ni la simulation réelle ni sa validation. |
-| **Installateur LIVEX** | Distribution et maintenance | Assistant natif Windows/Linux qui installe le socle LIVEX et PRISM, propose les modules disponibles, puis permet la mise à jour, la réparation et la désinstallation. Il est livré en variantes `core` et `full`. |
+| **syne-mock** | Test d’intégration V1 | Outil Node.js conservé pour les contrats hérités ; la cible V2 prévoit des bots de scénario PRISM. |
+| **Installateur LIVEX** | Distribution et maintenance | La distribution V2 prévoit des paquets du host PRISM et, séparément, du visualiseur facultatif, avec maintenance via l’installateur. |
 
 ### Communication entre les composants
 
 Les applications communiquent par des interfaces réseau documentées, indépendantes de leurs langages et de leurs frameworks.
 
-- **WebSocket** : SYNE diffuse l’initialisation du monde, les instantanés de simulation (*snapshots*) et les événements aux composants consommateurs.
-- **HTTP REST** : l’API de contrôle de SYNE et l’API d’analyse d’ECHOS permettent respectivement de piloter la simulation et de consulter les résultats.
-- **Contrats versionnés** : ils définissent les structures des messages et permettent de faire évoluer les composants en maîtrisant leur compatibilité.
+- **Contrat SYNE↔PRISM 1.0.0 (cible)** : commandes SYNE→PRISM, observations et événements PRISM→SYNE, et flux de lecture PRISM→ECHOS / visualiseur. Le tick reste verrouillé sur l’horloge de SYNE.
+- **Plan de contrôle HTTP** : préparation et cycle de vie du run ; le plan de données de tick est indépendant du transport.
+- **Contrats versionnés** : ils cadrent l’évolution des composants et la compatibilité des messages.
 
 Cette séparation évite de coupler le moteur à une interface graphique ou à un système d’analyse particulier.
 
 ### Principes structurants
 
-- **Séparation des responsabilités** : simulation, analyse, visualisation et orchestration sont confiées à des composants distincts.
+- **Séparation des responsabilités** : cognition, monde physique, analyse, visualisation et orchestration sont confiées à des composants distincts.
 - **Indépendance technologique** : les composants se développent et se testent séparément, sans dépendre des implémentations internes des autres.
-- **Autorité centrale de la simulation** : SYNE reste responsable de l’état du monde. ECHOS et PRISM consomment ses données sans devenir des sources concurrentes de vérité.
+- **Responsabilités séparées** : PRISM est l’autorité de l’espace, de la matière et du temps physique ; SYNE est l’autorité de la cognition ; ECHOS observe les flux sans modifier le run.
 - **Interfaces explicites et versionnées** : des contrats documentés facilitent l’intégration, les tests et l’évolution du système.
 
 L’architecture et les contrats sont détaillés dans la [documentation technique](docs/ARCHITECTURE.md) et la [spécification des échanges inter-composants](docs/COMMUNICATION.md). Le [statut courant](docs/governance/LIVEX-STATUS.md) précise les versions, les tests validés pour la release et les portes qui restent ouvertes. Le badge de couverture décrit les rapports disponibles, sans présenter la mesure partielle comme la couverture globale complète.
@@ -130,7 +131,7 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 | **Causalité et explicabilité** | Le pipeline BDI utilise les informations connues par l’agent ; les décisions peuvent porter cibles, preuves et candidats rejetés. Les effets différés ferment la fenêtre causale d’un tick. |
 | **Mesures non intrusives** | ECHOS observe le flux et rend explicites les états mesurés, absents ou manquants ; l’analyse ne devient pas la source de vérité de la simulation. |
 | **Validation documentée** | Les rapports versionnés de [gouvernance](docs/governance/realignment/README.md) conservent décisions, protocoles, résultats et limites du réalignement SYNE 0.15.0 → 0.17.0. Le [statut local courant](docs/governance/LIVEX-STATUS.md) distingue ces campagnes antérieures des tests réellement exécutés dans le checkout. |
-| **Limites assumées** | L’émergence d’une société, d’une intelligence ou d’une conscience n’est pas garantie. Les campagnes sont bornées par leurs graines, horizons, scénarios et critères préenregistrés. PRISM est livré ; certaines capacités de rendu et d'interaction restent en évolution. |
+| **Limites assumées** | L’émergence d’une société, d’une intelligence ou d’une conscience n’est pas garantie. Les campagnes sont bornées par leurs graines, horizons, scénarios et critères préenregistrés. La cible PRISM V2 prévoit une nouvelle autorité du monde et un viewer facultatif ; les résultats seront documentés avant publication. |
 
 ### Aperçu des interfaces
 
@@ -146,7 +147,7 @@ L’architecture et les contrats sont détaillés dans la [documentation techniq
 
 </div>
 
-<sub>Captures d’interface : elles présentent le Launcher et les vues d’observation, sans constituer une preuve scientifique ni un engagement sur toutes les capacités du produit.</sub>
+<sub>Captures d’interface : elles présentent le Launcher et des vues de la génération V1. Elles ne représentent pas le viewer PRISM V2 prévu et ne constituent pas une preuve scientifique.</sub>
 
 La capture dédiée de l'assistant d'installation sera ajoutée à `docs/captures/` après une capture réelle de la release 1.0.0 ; elle n'est pas encore disponible.
 
@@ -155,7 +156,7 @@ Les captures statiques de présentation sont conservées dans `docs/captures/` e
 <a id="performances"></a>
 <img src="docs/assets/h-performances.svg" alt="Performances" width="100%" />
 
-Les chiffres ci-dessous proviennent d’un **relevé local** (une seule machine de bureau, octobre 2026) : ce sont des observations, pas des engagements de performance. Le détail des protocoles, la ventilation par composant et par scénario, la capacité maximale et les limites figurent dans le [rapport de performance et de tests](docs/governance/LIVEX-PERFORMANCE-2026-10.md).
+Les chiffres ci-dessous proviennent d’un **relevé local V1** (une seule machine de bureau, octobre 2026) : ce sont des observations historiques, pas des engagements de performance pour PRISM V2. Les objectifs V2 figurent dans la [spécification PRISM](docs/prism/PERFORMANCE.md) ; les mesures V1 sont détaillées dans le [rapport de performance et de tests](docs/governance/LIVEX-PERFORMANCE-2026-10.md).
 
 | Mesure | Cadence observée | Lecture |
 |:--|--:|:--|
@@ -186,7 +187,7 @@ LIVEX **1.0.0** est publiée sous le tag [`livex-v1.0.0`](https://github.com/don
 | <img src="docs/captures/Installer_home.png" alt="Vue de l'écran de lancement de l'installateur LIVEX" /> | <img src="docs/captures/Installer_Component.png" alt="Vue de l'écran de choix des composants installable de LIVEX" /> |
 
 
-L’assistant installe le socle LIVEX et PRISM, propose les modules facultatifs disponibles, puis permet la mise à jour, la réparation et la désinstallation. Il fonctionne sans privilèges administrateur. PRISM est une application packagée : Unreal Engine n’est pas requis pour l’utiliser. Consultez la [documentation de l’installateur](docs/installer/README.md) pour le détail des composants, plateformes et limites.
+Le guide et les captures d’installateur décrivent la distribution V1. La cible V2 prévoit le host PRISM .NET et un viewer distinct facultatif ; son mode de distribution sera précisé avant publication. Consultez la [documentation de l’installateur](docs/installer/README.md) pour le périmètre V1.
 
 Pour lancer les composants depuis les sources ou parcourir le mode démonstration de l’assistant, consultez le [guide de développement et d’installation locale](docs/INSTALLATION.md) et la [documentation du mode démo](docs/installer/README.md#5-bis-mode-démonstration-monde-fictif).
 
@@ -201,7 +202,7 @@ LIVEX/
 ├── echos/
 │   └── echos/              # API, analyse, ingestion et stockage (sans interface)
 ├── prism/
-│   └── LDK/                # Plugin PRISM-LDK + hôte technique de build/test
+│   └── LDK/                # PRISM-LDK V1 + hôte technique historique
 │       ├── LDK.uproject    # Hôte, pas le projet LIVEX complet
 │       └── Plugins/PrismLdk/
 ├── syne-mock/              # Serveur Node.js de test des contrats SYNE
@@ -237,7 +238,7 @@ LIVEX/
 | [Communication](docs/COMMUNICATION.md) | Consulter les protocoles et ports inter-composants. |
 | [Glossaire](docs/presentation/GLOSSARY.md) | Retrouver le vocabulaire du projet. |
 | [FAQ](docs/presentation/FAQ.md) | Obtenir des réponses aux questions fréquentes. |
-| [Launcher LIVEX](launcher/README.md) · [spécification complète](docs/launcher/README.md) | Comprendre l’état V1, les modes de lancement, l’interface et les limites d’intégration. |
+| [Launcher LIVEX](launcher/README.md) · [spécification complète](docs/launcher/README.md) | Lire la release V1 et les évolutions prévues pour son orchestration de la pile V2. |
 | [Installateur LIVEX](docs/installer/README.md) · [guide utilisateur](docs/installer/GUIDE-UTILISATEUR.md) | Télécharger, installer, mettre à jour, réparer et désinstaller LIVEX 1.0.0. |
 | [Monographie](LIVEX-Monographie_SnapV0-1.pdf) | Lire les fondements, modèles et choix détaillés. |
 | [SYNE](docs/syne/README.md) · [ECHOS](docs/echos/README.md) · [PRISM](docs/prism/README.md) | Entrer dans la documentation d’un composant. |
@@ -249,7 +250,7 @@ Les contributions suivent les conventions du dépôt. Avant de proposer un chang
 
 ## Licence et auteur
 
-Distribué sous licence [GNU GPL v3.0 ou ultérieure](LICENSE) (SPDX : `GPL-3.0-or-later`). Copyright (C) 2026 Donovan Chartrain. Le texte complet de la licence figure dans [`LICENSE`](LICENSE), la déclaration de copyright dans [`NOTICE`](NOTICE) ; les composants tiers et les fichiers non couverts par la GPL sont recensés dans [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md). Cette licence couvre le code de SYNE, ECHOS, du Launcher, de syne-mock et du site vitrine ; le projet Unreal PRISM (`prism/`, dont le plugin PRISM-LDK) reste soumis aux conditions d'Epic Games et n'est pas couvert par la GPL.
+Distribué sous licence [GNU GPL v3.0 ou ultérieure](LICENSE) (SPDX : `GPL-3.0-or-later`). Copyright (C) 2026 Donovan Chartrain. Le texte complet de la licence figure dans [`LICENSE`](LICENSE), la déclaration de copyright dans [`NOTICE`](NOTICE) ; les composants tiers et les fichiers non couverts par la GPL sont recensés dans [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md). Les éléments Unreal de PRISM V1 restent soumis aux conditions d'Epic Games ; la cible V2 .NET et ses dépendances seront documentées dans les notices avant distribution.
 
 <img src="docs/assets/gplv3-or-later.png" alt="Logo GNU GPL v3.0 ou ultérieure" width="100px">
 

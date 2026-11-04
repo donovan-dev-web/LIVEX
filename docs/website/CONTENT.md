@@ -69,7 +69,8 @@ Décrit SYNE, ECHOS et PRISM, avec un miroir anglais `COMPONENTS_EN` (mêmes
 | :-- | :-- |
 | SYNE | Systems & Emergent Network Engine |
 | ECHOS | Emergent Cognition & Holistic Observation System |
-| PRISM | Perceptual Rendering & Interactive Simulation Module |
+| PRISM V1 | Perceptual Rendering & Interactive Simulation Module |
+| PRISM V2 | Persistent Reality & Interactive Simulation Module |
 
 ### 3.1 Statuts (`StatusId`)
 
@@ -77,21 +78,22 @@ Cinq statuts, dans l'ordre `STATUS_ORDER` :
 
 `disponible` · `experimental` · `developpement` · `envisage` · `hors-perimetre`.
 
-Un statut **décrit l'état du dépôt**, jamais une intention. Le rendu visuel est
-assuré par `StatusBadge` (`COMPONENTS.md` §5).
+Les statuts couvrent l'état mesuré et les cibles prévues. Pour PRISM,
+`envisage` indique que la page décrit le périmètre V2 prévu, pas sa livraison.
+Le rendu visuel est assuré par `StatusBadge` (`COMPONENTS.md` §5).
 
 ## 4. `release.ts`
 
 | Export | Contenu |
 | :-- | :-- |
-| `RELEASE` | État de la release publique LIVEX 1.0.0, URL des releases, dernière version et date de publication. |
+| `RELEASE` | Release publique LIVEX 1.0.0, cible V2 en préparation, URL des releases, dernière version et date de publication. |
 | `PROJECT_STATE` | Date d'observation, branche/commit, fichiers, lignes de code, tests, couverture, CI, Windows. |
 | `VERSION_TABLE` | Tableau des versions par composant (page Versions). |
 | `RELEASE_EN`, `PROJECT_STATE_EN`, `VERSION_TABLE_EN` | Miroirs anglais **des seules chaînes localisées** ; les valeurs numériques restent dans les objets français. |
 
 **Invariant** : `RELEASE.published` correspond à l'existence d'une release
-publique taguée. La release actuelle est `livex-v1.0.0` ; la page Télécharger
-et les fiches de version doivent pointer vers ses assets publiés.
+publique taguée. La dernière release est `livex-v1.0.0` ; la page Télécharger
+la distingue de la cible globale V2 en préparation.
 
 ### 4.1 `versions.ts`
 
@@ -117,6 +119,10 @@ interface Claim {
   date: string;          // date de vérification (AAAA-MM-JJ)
 }
 ```
+
+Les affirmations sur la cible PRISM V2 référencent les spécifications
+`docs/prism/` et portent le statut `prudente` jusqu'à la validation de leur
+réalisation. Les données mesurées gardent leur date historique.
 
 Affirmations enregistrées à ce jour : `tests`, `coverage`, `ci`, `release`,
 `prism-scope` (voir le fichier). Toute nouvelle affirmation publiée doit être

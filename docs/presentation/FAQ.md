@@ -10,7 +10,9 @@
 
 ## 1. Qu'est-ce que LIVEX cherche à démontrer ?
 
-LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les **structures collectives qui émergent** — groupes, échanges, conflits, propagation du savoir. LIVEX n'affirme pas que cette émergence prouve une « intelligence » : il fournit des **observateurs et des métriques mesurables**.
+LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les **structures collectives qui émergent** — groupes, échanges, conflits, spécialisations. Le cadrage du projet est celui d'une émergence collective dite faible : les motifs ne sont pas prescrits comme un scénario et leurs causes restent reliées aux règles explicites et aux interactions locales.
+
+LIVEX ne cherche pas à étudier l'apprentissage ou l'amélioration individuelle comme phénomène central. La mémoire, les croyances ou une maîtrise peuvent changer si les règles le prévoient ; ces évolutions individuelles ne sont pas, à elles seules, l'émergence collective étudiée. LIVEX n'affirme pas non plus que les motifs observés prouvent une « intelligence » : il fournit des **observateurs et des métriques mesurables**.
 
 ## 2. LIVEX prouve-t-il que les sociétés émergent « comme ça » ?
 
