@@ -1,91 +1,100 @@
-# ARCHITECTURE — PRISM / PrismLdk
+# ARCHITECTURE — PRISM (V2)
 
 **Composant** : PRISM
-**Implémentation actuelle** : projet Unreal PRISM intégrant le plugin PRISM-LDK
-**Statut** : [STABLE]
-**Dernière mise à jour** : 11 octobre 2026
-**Dépend de** : [`VISION.md`](VISION.md), [`TRANSPORT_API.md`](TRANSPORT_API.md)
+**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Dernière mise à jour** : 3 novembre 2026
+**Dépend de** : [`VISION.md`](VISION.md), [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md), [`API_CONTRACTS.md`](API_CONTRACTS.md)
+**Source Monographie** : —
 
 ---
 
-## 1. Packaging et usage
-
-**LIVEX** est le projet complet. **PRISM** est son projet Unreal final :
-il porte le monde présenté, l'interface et les interactions. PRISM intègre
-**PRISM-LDK** (*LIVEX Development Kit*), le plugin d'intégration situé dans
-`../../prism/LDK/Plugins/PrismLdk` (nom technique du module : `PrismLdk`).
-LDK désigne le plugin, pas un produit Unreal autonome.
-
-Le dépôt fournit `../../prism/LDK/LDK.uproject` comme hôte technique pour compiler et
-tester PRISM-LDK. Le nom de ce fichier n'en fait pas le projet complet LIVEX
-ni un second projet produit. Les étapes d'installation et de configuration de
-PRISM sont décrites dans
-[`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md).
-
-## 2. Responsabilité de PrismLdk
-
-Le plugin est une couche d'intégration C++ légère, exposée à Blueprint. Il
-fournit les types et contrats SYNE, les fonctions de connexion/contrôle,
-l'adaptation des messages et des dispatchers tels que `OnWorldInitialized`,
-`OnSnapshot`, `OnWorldDelta`, `OnSyneEvent`, `OnControlResult` et `OnError`.
-Un `UGameInstanceSubsystem` porte l'accès au service et les fonctions
-Blueprint ; `Get Prism Ldk Subsystem` permet au Blueprint d'obtenir cette
-instance.
-
-Le plugin ne crée pas automatiquement le terrain, les acteurs, les widgets,
-les animations ou les règles de navigation. Il ne prend aucune décision
-simulée. Le projet PRISM consomme les données Blueprint et produit leur représentation
-visuelle.
-
-## 3. Flux de données et de contrôle
+## 1. Vue d'ensemble
 
 ```mermaid
 flowchart LR
-    P[Projet Unreal PRISM] -->|Blueprint : utilise contrats, types et événements| L[Plugin PRISM-LDK / PrismLdk]
-    L -->|WebSocket :5180, réception des états et événements| S[SYNE : moteur décisionnel]
-    L -->|HTTP :5181, commandes de contrôle| S
+    L[Launcher] -->|HTTP contrôle, santé| H
+    L -->|HTTP contrôle| S[SYNE : cognition]
+    S <-->|tick : commandes / observations + événements| H[Prism.Host : monde autoritaire]
+    H -->|flux de lecture : chunks, deltas, métriques| E[ECHOS]
+    H -->|flux de lecture| V[Prism.Viewer : rendu Silk.NET]
+    S -->|snapshots cognitifs| E
 ```
 
-Le flux normal de préparation explicite est :
+Un run complet démarre **SYNE + PRISM (headless) + ECHOS**. Le visualiseur est facultatif (mode Immersion). SYNE reste l'horloge maîtresse : PRISM n'avance que sur un `tick` reçu.
+
+## 2. Solution .NET
 
 ```text
-Connect
- → réception WebSocket de world_initialized
- → générer/préparer la présentation du monde dans PRISM
- → Ready(worldVersion)
- → attendre le résultat HTTP positif
- → Start(seed, maxTicks)
- → recevoir les snapshots et événements de SYNE
+prism/
+├── Prism.sln
+├── Prism.Core/            # monde, génération, tick, entités, navigation, recettes — BCL seule
+├── Prism.Contracts/       # messages, versions, codecs, IWorldHost
+├── Prism.Content/         # schémas JSON, validateur, compilateur de contenu → tables en mémoire
+├── Prism.Host/            # exécutable headless : contrôle HTTP, liaison WebSocket, persistance SQLite
+├── Prism.Viewer/          # exécutable client : Silk.NET (OpenGL), meshing, interface
+├── Prism.Bots/            # agents de test et de benchmark
+├── Prism.Benchmarks/      # B1…B5 + B6 (rendu)
+├── Prism.Core.Tests/  Prism.Viewer.Tests/  Prism.Content.Tests/  Prism.Contracts.Tests/
+├── Prism.Host.Tests/  Prism.Bots.Tests/  Prism.Architecture.Tests/
+├── content/               # pack de contenu par défaut (JSON) — voir CONTENT_SPEC.md
+└── component.json         # manifeste Launcher (host) ; le manifeste viewer reste à produire (PRISM-118)
 ```
 
-Ce séquencement permet à PRISM de préparer son rendu avant le premier
-tick simulé. Une commande est asynchrone ; le résultat est rapporté par
-`OnControlResult`, et une erreur par `OnError`. Voir
-[`TRANSPORT_API.md`](TRANSPORT_API.md) pour les routes et les contrats.
+Règles de dépendance : `Core` ← `Content` ← `Host` ; `Viewer` ne référence que `Contracts` (et `Core` en lecture pour le meshing partagé via un sous-ensemble `Prism.Core.Readonly`). Aucune flèche ne va de `Core` vers un projet graphique. Un test d'architecture (analyseur de références) l'impose en CI.
 
-## 4. Règles de consommation
+## 3. Modèle d'exécution du noyau
 
-- `world_initialized` décrit le monde préparé et précède les snapshots.
-- `OnSnapshot` fournit l'état dynamique complet du tick et constitue la source
-  de vérité pour mettre à jour la scène.
-- `world_delta` et les événements sont utiles aux notifications et effets
-  ponctuels ; les changements qu'ils décrivent peuvent aussi apparaître dans
-  le snapshot. Ne pas appliquer deux fois une même mutation.
-- Distinguer les coordonnées continues SYNE des indices de cellule. Les
-  conversions vers les unités Unreal et les particularités des types exposés
-  sont détaillées dans
-  [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md).
-- Les appels réseau et les callbacks Blueprint ne doivent pas faire dépendre
-  l'état autoritaire du framerate ou de l'animation visuelle.
+| Élément | Règle |
+| :-- | :-- |
+| Thread de simulation | Un seul thread orchestre le tick ; il peut paralléliser des phases **sans état partagé mutable** (mises à jour de chunks, perception) |
+| Parallélisme | Par chunk (mises à jour aléatoires/programmées), par agent (perception en lecture seule). Les écritures du monde se font en une phase **séquentielle ordonnée** |
+| Visualiseur embarqué | Tick sur son propre thread ; le rendu lit un instantané de chunks à double tampon ; le rendu ne verrouille jamais le tick |
+| Temps réel | Aucun. Un run headless va aussi vite que la machine le permet |
 
-## 5. Principes d'évolution
+## 4. Flux de données
 
-- Garder les décisions, la simulation et leur état dans SYNE.
-- Garder le C++ du plugin centré sur l'intégration et les contrats Blueprint.
-- Ajouter les choix de rendu et de gameplay au projet Unreal PRISM, sauf
-  nécessité démontrée d'étendre l'API du plugin.
-- Faire évoluer les schémas de transport selon les contrats et le
-  versionnage partagés, pas au moyen d'un contrat PRISM concurrent.
+1. **Entrée** : `TickRequest(t, commands[])` de SYNE (ou `IWorldHost.Step`).
+2. **Traitement** : l'ordre fixe de [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md) §2.
+3. **Sortie** : `TickResult(t, observations[], events[], worldChecksum?)` à SYNE.
+4. **Lecture** : après le tick, les chunks modifiés (*dirty*) et les métriques sont publiés pour ECHOS et le visualiseur ; l'instantané complet est envoyé à la connexion, puis des deltas.
 
-Les spécifications de scène, de rendu et d'interaction de ce dossier décrivent
-les intentions produit pour PRISM sans imposer une implémentation interne.
+## 5. Cycle de vie
+
+| État | Description | Transitions |
+| :-- | :-- | :-- |
+| `Idle` | Process vivant, contenu non chargé | `Prepare` → `Loading` |
+| `Loading` | Contenu validé, monde généré ou restauré | → `Ready` ou `Failed` |
+| `Ready` | Monde prêt, `world_ready` diffusé (version de monde, empreinte) | `Start` → `Running` |
+| `Running` | Avance sur `tick` | `Pause`, `Stop` |
+| `Paused` | Aucun tick accepté, lecture disponible | `Resume`, `Stop` |
+| `Stopped` / `Failed` | Fin ; résultats et empreinte finaux écrits | — |
+
+Le contrôle HTTP (santé `/health/ready`, préparation, démarrage, pause, reprise, arrêt) suit l'esprit de l'`INTEGRATION_CONTRACT` du Launcher ; PRISM n'ajoute aucune route de simulation sur ce plan.
+
+## 6. Dépendances externes (à valider en notices tierces)
+
+| Dépendance | Usage | Projet |
+| :-- | :-- | :-- |
+| SQLite (Microsoft.Data.Sqlite) | Persistance des points de reprise | `Host` |
+| Silk.NET (OpenGL, Windowing, Input) | Fenêtre, contexte GL, entrées | `Viewer` |
+| Bibliothèque d'interface immédiate | Inspecteur, HUD | `Viewer` |
+| xUnit + FsCheck (ou équivalent) | Tests, tests par propriétés | Tests |
+
+Aucune dépendance de simulation hors BCL. Les licences exactes sont à vérifier et à porter dans `THIRD-PARTY-NOTICES.md` avant toute publication (ROADMAP P13).
+
+## 7. Sécurité et robustesse
+
+- Écoute locale par défaut (comme SYNE) ; jeton de session du Launcher exigé sur les routes de contrôle.
+- Contenu **validé par schéma** avant chargement ; un pack invalide empêche le démarrage avec une erreur structurée (jamais un état partiel).
+- Toute commande est validée : identifiants inconnus, position hors monde, droits d'accès, version de protocole inconnue → échec motivé, pas de plantage.
+
+## Points restés ouverts dans ce document
+
+Voir [`adr/README.md`](adr/README.md) §3 (Q-01, Q-05).
+
+## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 3 novembre 2026 | Arborescence des tests complétée (14 projets) ; manifeste viewer signalé comme restant à produire | Audit de cohérence avec le code |
+| 1er novembre 2026 | Création | Refonte V2 |

@@ -559,6 +559,36 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             },
         }
 
+    @app.get("/api/runs/{run_id}/prism-stream", tags=["api"])
+    def run_prism_stream(
+        run_id: str,
+        after_sequence: int = Query(default=-1, ge=-1),
+        limit: int = Query(default=500, ge=1, le=5000),
+    ) -> dict:
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+        summary = active.prism_read_summary(resolved)
+        if summary is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"aucun flux de lecture PRISM pour le run : {resolved}",
+            )
+        envelopes = active.prism_read_envelopes(
+            resolved,
+            after_sequence=after_sequence,
+            limit=limit + 1,
+        )
+        has_more = len(envelopes) > limit
+        if has_more:
+            envelopes = envelopes[:limit]
+        return {
+            "run_id": resolved,
+            "summary": summary,
+            "after_sequence": after_sequence,
+            "envelopes": envelopes,
+            "has_more": has_more,
+        }
+
     @app.get("/api/runs/{run_id}/calibration", tags=["api"])
     def run_calibration(run_id: str) -> dict:
         """Read the deterministic post-run calibration evidence (SYNE-131)."""

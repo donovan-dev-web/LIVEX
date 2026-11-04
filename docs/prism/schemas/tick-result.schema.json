@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://livex.dev/schemas/prism/1.0.0/tick-result.schema.json",
+  "title": "PRISM tick result",
+  "type": "object",
+  "required": ["protocolVersion", "tick", "observations", "events"],
+  "properties": {
+    "protocolVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "tick": { "type": "integer", "minimum": 0 },
+    "observations": {
+      "type": "array",
+      "items": { "$ref": "observation-envelope.schema.json" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "event-envelope.schema.json" }
+    }
+  },
+  "additionalProperties": true
+}

@@ -36,7 +36,13 @@ public sealed record CliOptions(
     int? ControlPort = null,
     string? WorkDirectory = null,
     string? LogDirectory = null,
-    string? CorrelationId = null)
+    string? CorrelationId = null,
+    string? PrismUrl = null,
+    int? PrismTicks = null,
+    ulong? PrismSeed = null,
+    string? PrismContentHash = null,
+    string? PrismContentDir = null,
+    int? PrismAgents = null)
 {
     /// <summary>Ports d'écoute acceptés par les écouteurs BCL.</summary>
     public const int MinPort = 1;
@@ -150,6 +156,12 @@ public sealed record CliOptions(
         string? workDirectory = null;
         string? logDirectory = null;
         string? correlationId = null;
+        string? prismUrl = null;
+        int? prismTicks = null;
+        ulong? prismSeed = null;
+        string? prismContentHash = null;
+        string? prismContentDir = null;
+        int? prismAgents = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -193,6 +205,24 @@ public sealed record CliOptions(
                     break;
                 case "--correlation-id":
                     correlationId = RequireValue(args, ref i, "--correlation-id");
+                    break;
+                case "--prism-url":
+                    prismUrl = RequireValue(args, ref i, "--prism-url");
+                    break;
+                case "--prism-ticks":
+                    prismTicks = ParseInt(RequireValue(args, ref i, "--prism-ticks"), "--prism-ticks");
+                    break;
+                case "--prism-seed":
+                    prismSeed = ParseULong(RequireValue(args, ref i, "--prism-seed"), "--prism-seed");
+                    break;
+                case "--prism-content-hash":
+                    prismContentHash = RequireValue(args, ref i, "--prism-content-hash");
+                    break;
+                case "--prism-content-dir":
+                    prismContentDir = RequireValue(args, ref i, "--prism-content-dir");
+                    break;
+                case "--prism-agents":
+                    prismAgents = ParseInt(RequireValue(args, ref i, "--prism-agents"), "--prism-agents");
                     break;
                 case "--world-size":
                     // Deux valeurs : les lire d'un coup. Appeler RequireValue deux
@@ -307,7 +337,8 @@ public sealed record CliOptions(
             seed, maxTicks, worldSize, headless, configPath,
             observe, observePort, benchmark, benchmarkTicks, benchmarkPopulations,
             serve, servePort, help, simulation, ticks, exportDirectory, runId, exportStream, autoStart,
-            instanceId, controlPort, workDirectory, logDirectory, correlationId);
+            instanceId, controlPort, workDirectory, logDirectory, correlationId,
+            prismUrl, prismTicks, prismSeed, prismContentHash, prismContentDir, prismAgents);
     }
 
     /// <summary>

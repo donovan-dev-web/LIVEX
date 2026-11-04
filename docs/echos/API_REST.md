@@ -27,6 +27,7 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | POST | `/api/control/{action}` | Relais ECHOS→SYNE pour `start`, `pause`, `resume`, `stop`, `reset` |
 | GET | `/api/runs` | Liste des runs enregistrés |
 | GET | `/api/runs/{id}` | Métriques complètes du run (dernier tick) + phénomènes |
+| GET | `/api/runs/{id}/prism-stream` | Enveloppes du flux de lecture PRISM, pages `?after_sequence=`/`?limit=` |
 | GET | `/api/runs/{id}/metrics` | Séries de métriques (JSON, `?engine=`, `?metric=`, `?every=N`) |
 | GET | `/api/runs/{id}/export` | Export des métriques (`?format=json\|csv`), reproductible |
 | GET | `/api/runs/{id}/decisions` | Traces de décision des entités (analyse causale) |
@@ -86,6 +87,42 @@ Seed introuvable des deux côtés → `seed: ""` + avertissement d'ingestion
 Métadonnées + **dernières métriques** de tous les moteurs (`{engine: {metric: value}}`) + contexte `phenomena` (`detected` + `disclaimer`).
 
 - `measured` : `{engine: {metric: bool}}` — provenance des **dernières** valeurs (voir §3.3).
+
+### 3.2.1 `GET /api/runs/{id}/prism-stream`
+
+Retourne les enveloppes PRISM persistées, sans les agréger aux tables de
+métriques SYNE. `after_sequence` est exclusif (défaut `-1`) et `limit` est
+compris entre 1 et 5 000 (défaut 500).
+
+```json
+{
+  "run_id": "prism-run-1",
+  "summary": {
+    "runId": "prism-run-1",
+    "envelopes": 120,
+    "lastSequence": 119,
+    "lastTick": 30,
+    "contentHash": "abc123",
+    "kinds": {"world_snapshot": 1, "tick_result": 30}
+  },
+  "after_sequence": 99,
+  "envelopes": [
+    {
+      "sequence": 100,
+      "tick": 25,
+      "kind": "tick_result",
+      "contentHash": "abc123",
+      "payload": {}
+    }
+  ],
+  "has_more": true
+}
+```
+
+Un run connu mais sans flux PRISM répond 404 ; un run absent répond également
+404. Le client poursuit en passant le dernier `sequence` reçu dans
+`after_sequence`. Chaque requête est bornée et peut être répétée sans modifier
+les données persistées.
 
 ### 3.3 `GET /api/runs/{id}/metrics`
 

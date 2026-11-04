@@ -144,8 +144,8 @@ couches** de LIVEX, en SVG.
 
 - Le SVG porte un `role="img"` et un `aria-label` descriptif localisé.
 - La légende précise explicitement « **illustration conceptuelle, pas une
-  capture** » et nomme les couches : **01** SYNE · vérité du monde · **02**
-  ECHOS · observation · **03** PRISM · représentation 3D.
+  capture** » et nomme les rôles prévus : SYNE · cognition · PRISM · monde
+  physique (cible V2) · ECHOS · observation.
 - Les couleurs internes viennent de classes `.hero-svg .*` (thématiques).
 
 Ce composant est partagé par l'accueil FR et l'accueil EN (mêmes tracés, texte

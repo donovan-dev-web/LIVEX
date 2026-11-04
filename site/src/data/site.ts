@@ -10,11 +10,11 @@ export const SITE = {
   name: 'LIVEX',
   title: 'LIVEX — Living Intelligent Virtual Ecosystem eXperience',
   description:
-    "LIVEX est un écosystème de simulation multi-agents : un moteur (SYNE), une cognition émergente (ECHOS) et un rendu perceptif (PRISM). Documentation et principes ouverts.",
+    "LIVEX étudie l'émergence collective faible dans une simulation multi-agents : SYNE porte la cognition, PRISM le monde physique (cible V2) et ECHOS l'observation.",
   descriptionEn:
-    'LIVEX is a multi-agent simulation ecosystem: an engine (SYNE), an emergent-cognition system (ECHOS) and a perceptual renderer (PRISM). Open documentation and principles.',
+    'LIVEX studies weak collective emergence in a multi-agent simulation: SYNE owns cognition, PRISM the physical world (V2 target), and ECHOS observation and analysis.',
   shortDescription:
-    "Écosystème de simulation multi-agents : moteur, cognition émergente et rendu perceptif.",
+    "Émergence collective faible : cognition SYNE, monde physique PRISM (cible V2), observation et analyse ECHOS.",
   repo: 'https://github.com/donovan-dev-web/LIVEX',
   license: 'GPL-3.0-or-later',
   author: 'Donovan',
@@ -69,6 +69,11 @@ export const NAV: NavItem[] = [
     ],
   },
   {
+    key: 'blog',
+    href: 'actualites/',
+    label: { fr: 'Blog', en: 'Blog' },
+  },
+  {
     key: 'ressources',
     href: 'documentation/',
     label: { fr: 'Ressources', en: 'Resources' },
@@ -76,7 +81,6 @@ export const NAV: NavItem[] = [
       { key: 'documentation', href: 'documentation/', label: { fr: 'Documentation', en: 'Documentation' } },
       { key: 'etat-du-projet', href: 'etat-du-projet/', label: { fr: 'État du projet', en: 'Project status' } },
       { key: 'monographie', href: 'monographie/', label: { fr: 'Monographie', en: 'Monograph' } },
-      { key: 'journal', href: 'actualites/', label: { fr: 'Journal', en: 'Journal' } },
       { key: 'plan-du-site', href: 'plan-du-site/', label: { fr: 'Plan du site', en: 'Sitemap' } },
     ],
   },
@@ -103,7 +107,7 @@ export const FOOTER_NAV: NavItem[] = [
   { key: 'etat-du-projet', href: 'etat-du-projet/', label: { fr: 'État du projet', en: 'Project state' } },
   { key: 'monographie', href: 'monographie/', label: { fr: 'Monographie', en: 'Monograph' } },
   { key: 'feuille-de-route', href: 'feuille-de-route/', label: { fr: 'Feuille de route', en: 'Roadmap' } },
-  { key: 'journal', href: 'actualites/', label: { fr: 'Journal', en: 'Journal' } },
+  { key: 'journal', href: 'actualites/', label: { fr: 'Blog', en: 'Blog' } },
   { key: 'suivre', href: 'suivre/', label: { fr: 'Suivre', en: 'Follow' } },
   { key: 'documentation', href: 'documentation/', label: { fr: 'Documentation', en: 'Documentation' } },
   { key: 'faq', href: 'faq/', label: { fr: 'FAQ', en: 'FAQ' } },

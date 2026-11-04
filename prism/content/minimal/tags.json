@@ -1,0 +1,17 @@
+[
+  { "id": "wood" },
+  { "id": "stone" },
+  { "id": "ore" },
+  { "id": "fuel" },
+  { "id": "edible" },
+  { "id": "crop" },
+  { "id": "tool" },
+  { "id": "pickaxe" },
+  { "id": "hoe" },
+  { "id": "handle" },
+  { "id": "stone_head" },
+  { "id": "container" },
+  { "id": "station" },
+  { "id": "drinkable" },
+  { "id": "walkable_path" }
+]

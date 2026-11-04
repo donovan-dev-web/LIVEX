@@ -1,0 +1,19 @@
+[
+  { "id": "air", "solid": false, "hardness": 0, "minToolTier": 0, "tags": [], "drops": [], "perceivable": false },
+  { "id": "bedrock", "solid": true, "hardness": 0, "minToolTier": 0, "tags": [], "drops": [], "perceivable": false },
+  { "id": "dirt", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [], "perceivable": true, "tillable": true },
+  { "id": "grass", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [{ "item": "wheat_seed", "qty": 1, "chancePermille": 250 }], "perceivable": true, "tillable": true },
+  { "id": "stone", "solid": true, "hardness": 8, "minToolTier": 0, "tags": ["stone"], "drops": [{ "item": "stone", "qty": 1 }], "perceivable": true },
+  { "id": "sand", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [], "perceivable": true },
+  { "id": "water", "solid": false, "hardness": 0, "minToolTier": 0, "tags": ["drinkable"], "drops": [], "perceivable": true, "effects": "drink_water" },
+  { "id": "log", "solid": true, "hardness": 3, "minToolTier": 0, "tags": ["wood"], "drops": [{ "item": "log", "qty": 1 }], "perceivable": true },
+  { "id": "leaves", "solid": false, "hardness": 1, "minToolTier": 0, "tags": ["wood"], "drops": [], "perceivable": true },
+  { "id": "iron_ore", "solid": true, "hardness": 12, "minToolTier": 1, "tags": ["ore", "stone"], "drops": [{ "item": "iron_ore_chunk", "qty": 1 }], "perceivable": true },
+  { "id": "coal_ore", "solid": true, "hardness": 6, "minToolTier": 0, "tags": ["ore", "fuel"], "drops": [{ "item": "coal", "qty": 1 }], "perceivable": true },
+  { "id": "farmland", "solid": true, "hardness": 2, "minToolTier": 0, "tags": ["walkable_path"], "drops": [], "perceivable": true },
+  { "id": "wheat_crop", "solid": false, "hardness": 0, "minToolTier": 0, "tags": ["crop"], "drops": [{ "item": "wheat", "qty": [2, 3], "whenState": 3 }, { "item": "wheat_seed", "qty": [1, 2], "whenState": 3 }], "perceivable": true, "growth": "wheat_growth", "requires": { "below": "farmland", "waterWithin": 4 }, "seedItem": "wheat_seed" },
+  { "id": "workbench", "solid": true, "hardness": 4, "minToolTier": 0, "tags": ["station"], "drops": [{ "item": "workbench", "qty": 1 }], "perceivable": true, "station": "workbench" },
+  { "id": "furnace", "solid": true, "hardness": 6, "minToolTier": 0, "tags": ["station"], "drops": [{ "item": "furnace", "qty": 1 }], "perceivable": true, "station": "furnace" },
+  { "id": "chest", "solid": true, "hardness": 3, "minToolTier": 0, "tags": ["container"], "drops": [{ "item": "chest", "qty": 1 }], "perceivable": true },
+  { "id": "planks", "solid": true, "hardness": 2, "minToolTier": 0, "tags": ["wood"], "drops": [{ "item": "plank", "qty": 1 }], "perceivable": true }
+]

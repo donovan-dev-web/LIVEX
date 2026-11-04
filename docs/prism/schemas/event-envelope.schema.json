@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://livex.dev/schemas/prism/1.0.0/event-envelope.schema.json",
+  "title": "PRISM event envelope",
+  "type": "object",
+  "required": ["protocolVersion", "tick", "eventId", "kind", "payload"],
+  "properties": {
+    "protocolVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "tick": { "type": "integer", "minimum": 0 },
+    "eventId": { "type": "string", "minLength": 1 },
+    "kind": { "type": "string", "minLength": 1 },
+    "agentId": { "type": ["integer", "null"], "minimum": 0 },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": true
+}

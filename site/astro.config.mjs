@@ -9,10 +9,15 @@ import { satteri } from '@astrojs/markdown-satteri';
 /**
  * Site vitrine statique de LIVEX.
  * Publie sur GitHub Pages (branche `gh-pages`) via `.github/workflows/pages.yml`.
- * URL de projet : https://donovan-dev-web.github.io/LIVEX/
+ *
+ * GitHub Pages de type « projet » : l'URL de base du site est toujours
+ * https://donovan-dev-web.github.io/LIVEX/ — jamais l'origine seule.
+ * Astro n'accepte que l'origine dans `site` ; le préfixe de projet va dans `base`.
+ * Les deux sont dérivés de cette URL unique pour qu'aucun chemin ne puisse être perdu.
  */
-const site = process.env.SITE_URL || 'https://donovan-dev-web.github.io';
-const base = process.env.BASE_PATH || '/LIVEX/';
+const publicUrl = new URL(process.env.SITE_URL || 'https://donovan-dev-web.github.io/LIVEX/');
+const site = publicUrl.origin;
+const base = process.env.BASE_PATH || publicUrl.pathname.replace(/\/?$/, '/');
 
 /**
  * Les tableaux Markdown ne portent pas d'attributs : on ajoute `scope="col"`
@@ -57,9 +62,7 @@ export default defineConfig({
           en: 'en',
         },
       },
-      customPages: [
-        'https://donovan-dev-web.github.io/LIVEX/llms.txt',
-      ],
+      customPages: [new URL('llms.txt', publicUrl).href],
     }),
   ],
   devToolbar: {

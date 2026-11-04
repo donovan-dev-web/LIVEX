@@ -34,6 +34,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Historique complet requis par scripts/fix-sitemap.mjs, qui date chaque
+          # URL du sitemap d'après le dernier commit de son fichier source.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4

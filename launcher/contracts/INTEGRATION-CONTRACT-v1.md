@@ -59,7 +59,9 @@ La spécification cible plus détaillée reste dans
 6. Le Launcher transmet le port de contrôle sous `--control-port`. Pour tout
    autre endpoint qui déclare `launchArgument`, il transmet le port résolu à
    cet argument. `launchArgument` est un seul token CLI, pas un fragment de
-   commande.
+   commande. Un endpoint peut déclarer `path` (chemin absolu local, sans
+   autorité, query ni fragment) ; il est ajouté à l'URL de l'endpoint, sans
+   modifier le port alloué.
 7. `--headless` ne s’applique que si le lancement demandé est headless et que
    cette capacité est déclarée. Le Launcher ne doit pas l’ajouter
    inconditionnellement à un composant qui ne prend pas en charge ce mode.

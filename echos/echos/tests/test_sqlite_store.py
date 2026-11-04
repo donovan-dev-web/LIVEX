@@ -37,6 +37,7 @@ def test_schema_is_stable_and_distinct_from_syne(tmp_path):
             "calibration_reports",
             "decision_traces",
             "events_log",
+            "prism_read_envelopes",
             "runs",
             "tick_contexts",
             "tick_metrics",
@@ -48,6 +49,25 @@ def test_schema_is_stable_and_distinct_from_syne(tmp_path):
         assert version_row and version_row[0] == SCHEMA_VERSION
 
     assert path.exists()
+
+
+def test_a_v7_database_adds_prism_envelope_storage_without_losing_runs(tmp_path):
+    path = tmp_path / "avant-prism-ingestion.db"
+    with AnalyticsStore(path) as store:
+        store.record_run("run-v7", "0.1.0", seed="7")
+        store._conn.execute("DROP TABLE prism_read_envelopes")
+        store._conn.execute(
+            "UPDATE _meta SET value = '7' WHERE key = 'schema_version'"
+        )
+        store._conn.commit()
+
+    with AnalyticsStore(path) as store:
+        assert store.has_run("run-v7")
+        assert "prism_read_envelopes" in store.schema_tables()
+        version = store._conn.execute(
+            "SELECT value FROM _meta WHERE key = 'schema_version'"
+        ).fetchone()
+        assert version[0] == SCHEMA_VERSION
 
 
 def test_tick_summary_roundtrip_is_deterministic(tmp_path):

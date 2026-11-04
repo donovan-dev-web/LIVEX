@@ -33,6 +33,7 @@ jobs:
       echos: ${{ steps.diff.outputs.echos }}
       syne_mock: ${{ steps.diff.outputs.syne_mock }}
       launcher: ${{ steps.diff.outputs.launcher }}
+      prism: ${{ steps.diff.outputs.prism }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,7 +42,7 @@ jobs:
         run: |
           BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
           if [ -z "$BASE" ]; then BASE="develop"; fi
-          for comp in syne echos syne-mock launcher; do
+          for comp in syne echos syne-mock launcher prism; do
             count=$(git diff --name-only "$BASE...HEAD" -- "$comp/" 2>/dev/null | wc -l | tr -d ' ')
             key=$(echo "$comp" | tr '-' '_')
             if [ "$count" -gt 0 ]; then echo "$key=true" >> "$GITHUB_OUTPUT"; else echo "$key=false" >> "$GITHUB_OUTPUT"; fi
@@ -119,6 +120,40 @@ jobs:
         with:
           name: syne-test-results
           path: syne/TestResults
+          retention-days: 7
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------
+  # PRISM — .NET (build, tests et garde-fous d'architecture)
+  # ---------------------------------------------------------------------
+  prism-dotnet:
+    name: Build & tests (PRISM .NET - ${{ matrix.os }})
+    needs: [changes, repo-check]
+    if: needs.changes.outputs.prism == 'true'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: prism
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: prism/global.json
+      - name: Restore
+        run: dotnet restore Prism.sln
+      - name: Build
+        run: dotnet build Prism.sln --no-restore --configuration Release --warnaserror
+      - name: Tests and architecture guard
+        run: dotnet test Prism.sln --no-build --configuration Release --logger "trx;LogFileName=prism.trx" --results-directory TestResults
+      - name: Upload résultats
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-test-results
+          path: prism/TestResults
           retention-days: 7
           if-no-files-found: error
 

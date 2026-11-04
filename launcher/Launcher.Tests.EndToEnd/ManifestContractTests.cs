@@ -46,6 +46,26 @@ public sealed class ManifestContractTests
     }
 
     [Theory]
+    [InlineData("/data/read", true)]
+    [InlineData("//other-host/read", false)]
+    [InlineData("/data/read?token=value", false)]
+    [InlineData("/data\\read", false)]
+    [InlineData("/data/../read", false)]
+    [InlineData("/data/./read", false)]
+    public void Chemin_endpoint_est_valide_et_relatif_au_service(string path, bool expectedValid)
+    {
+        using var installation = new TemporaryInstallation(endpointPath: path);
+        var detected = new ManifestDetector(new InMemoryJournalAdapter()).Inspect(installation.Path);
+
+        Assert.NotNull(detected);
+        Assert.Equal(expectedValid, detected.ManifestValid);
+        if (!expectedValid)
+        {
+            Assert.Contains("chemin invalide", detected.DetectionCause, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    [Theory]
     [InlineData("../outside", null, "chemins")]
     [InlineData("bin/service", 70000, "port invalide")]
     [InlineData("bin/service", 5181, "timeouts")]
@@ -99,7 +119,8 @@ public sealed class ManifestContractTests
             string executable = "bin/service",
             int? controlPort = null,
             bool includeTimeouts = true,
-            int schemaVersion = 1)
+            int schemaVersion = 1,
+            string? endpointPath = null)
         {
             Directory.CreateDirectory(Path);
             var binaryPath = System.IO.Path.Combine(Path, "bin", "service");
@@ -110,6 +131,9 @@ public sealed class ManifestContractTests
             var timeouts = includeTimeouts
                 ? "\"timeouts\":{\"startupMs\":30000,\"shutdownMs\":5000},"
                 : "\"timeouts\":{\"startupMs\":30000},";
+            var path = endpointPath is null
+                ? string.Empty
+                : $",\"path\":{System.Text.Json.JsonSerializer.Serialize(endpointPath)}";
             File.WriteAllText(System.IO.Path.Combine(Path, "component.json"),
                 $$"""
                 {
@@ -119,7 +143,10 @@ public sealed class ManifestContractTests
                   "type": "utility",
                   "version": "1.0.0",
                   "executable": { "path": {{System.Text.Json.JsonSerializer.Serialize(executable)}} },
-                  "endpoints": { "control": { "transport": "http"{{port}} } },
+                  "endpoints": {
+                    "control": { "transport": "http"{{port}} },
+                    "observe": { "transport": "websocket"{{path}} }
+                  },
                   "capabilities": ["headless"],
                   "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
                   {{timeouts}}

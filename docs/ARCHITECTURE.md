@@ -1,8 +1,8 @@
 # ARCHITECTURE.md
 
 **Composant** : LIVEX (général)
-**Statut** : [STABLE]
-**Dernière mise à jour** : 31 octobre 2026
+**Statut** : [V1 LIVRÉE — ARCHITECTURE V2 PRÉVUE]
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `presentation/VISION.md`, `CI_CD.md`
 **Source Monographie** : Partie 2 (Présentation du Projet), §7.1–7.3 (monorepo, diagrammes, contrats)
 
@@ -10,47 +10,46 @@
 
 ## 1. Vue d'ensemble
 
-LIVEX réunit trois couches de runtime — SYNE, ECHOS et PRISM — avec deux applications de support livrées : le Launcher, qui orchestre la pile, et l'installateur, qui distribue et gère les installations. `syne-mock` sert au développement et aux tests clients.
+Après la release V1, LIVEX prépare une V2 dont PRISM est profondément refondu. Le schéma et les responsabilités ci-dessous décrivent la **cible V2** ; les sections explicitement marquées V1 et les statuts de release gardent leur sens historique. SYNE portera la cognition, PRISM l'autorité du monde physique, ECHOS l'observation et l'analyse. Le Launcher orchestrera les composants.
 
 ```mermaid
 flowchart TB
-    subgraph SYNE["SYNE — Moteur de simulation"]
-        CORE[Simulation.Core]
-        CONSOLE[Simulation.Console / serveur]
-        TESTS1[Tests xUnit]
+    subgraph SYNE["SYNE — Cognition des agents"]
+        CORE[Agents, BDI, mémoire, groupes]
     end
     subgraph ECHOS["ECHOS — Observation & analyse"]
         ACORE[Analyzer.Core — 7 moteurs de métriques]
         AAPI[Analyzer API REST]
     end
-    subgraph PRISM["PRISM — Projet Unreal final de LIVEX"]
-        APP["PRISM<br/>projet Unreal final"]
-        PLUGIN["PRISM-LDK<br/>plugin Unreal (module PrismLdk)"]
-        APP -->|"intègre"| PLUGIN
+    subgraph PRISM["PRISM V2 — Monde autoritaire"]
+        CORE2[Prism.Core<br/>noyau .NET headless]
+        HOST[Prism.Host<br/>contrôle, ticks, persistance]
+        VIEW[Prism.Viewer<br/>Silk.NET / OpenGL facultatif]
+        CORE2 --> HOST
+        HOST --> VIEW
     end
     subgraph LAUNCHER["Launcher — orchestration et présentation"]
         LUI[Fenêtres natives : consoles de logs + fenêtre d'analyse]
     end
     INSTALLER["Installateur LIVEX<br/>Windows et Linux — installation et maintenance"]
     MOCK["syne-mock<br/>serveur Node.js de développement"]
-    SYNE -- "WebSocket 5180 + HTTP 5181" --> ECHOS
-    SYNE -- "WebSocket 5180 (snapshots/events)" --> PRISM
-    MOCK -. "contrats simulés pour intégration" .-> PLUGIN
-    ECHOS -- "contrôle (HTTP relayé)" --> SYNE
+    SYNE <-->|"Contrat 1.0.0 cible : commandes, observations, événements"| HOST
+    HOST -->|"flux de lecture"| ECHOS
+    HOST --> VIEW
     ECHOS -- "API REST 5000 (séries, métriques, rapport)" --> LUI
     INSTALLER -. "installe et maintient les composants" .-> LAUNCHER
     INSTALLER -.-> SYNE
     INSTALLER -.-> ECHOS
-    INSTALLER -.-> PRISM
+    INSTALLER -.-> HOST
 ```
 
 ## 2. Couches runtime et composants de support
 
-### 2.1 SYNE — Systems & Emergent Network Engine
+### 2.1 SYNE — Systems & Emergent Network Engine (cible V2)
 
 Source : Monographie §2.3, Partie 3.
 
-- **Rôle** : possède la vérité du monde simulé ; calcule états, interactions, décisions.
+- **Rôle** : autorité de la cognition des agents — besoins, croyances, mémoire, relations, groupes et décisions. Le monde physique relève de PRISM dans la cible V2.
 - **Contraintes** : indépendant du rendu, fonctionne headless, déterministe pour un seed, une configuration et une version identiques, persistant.
 - **Sous-systèmes** : World, Agents, Cognition, Actions, Interaction, Spatial (grille spatiale), Nav (pathfinding).
 - **Contrats de sortie** : `WorldSnapshot` et `ExternalEvent` (JSON camelCase) via WebSocket 5180 ; API de contrôle HTTP 5181.
@@ -70,18 +69,18 @@ Source : Monographie Partie 4.
 
 Voir `echos/ARCHITECTURE.md`.
 
-### 2.3 PRISM — Perceptual Rendering & Interactive Simulation Module
+### 2.3 PRISM — Persistent Reality & Interactive Simulation Module (V2)
 
 Source : Monographie Partie 5.
 
-- **Rôle** : projet Unreal final de LIVEX, qui porte la représentation et l'expérience interactive en Blueprint.
-- **Plugin** : PRISM intègre **PRISM-LDK** (*LIVEX Development Kit* ; nom technique du module `PrismLdk`). LDK est le plugin, pas un projet complet distinct. Il expose types, fonctions et événements Blueprint avec une couche C++ limitée au transport, au parsing et au cycle de connexion.
-- **Hôte de développement** : le dépôt contient `../prism/LDK/LDK.uproject`, environnement Unreal technique pour développer/compiler/tester le plugin. Ce fichier hôte ne constitue pas un second produit ni le projet LIVEX complet.
-- **Contrats** : consomme le flux WebSocket de SYNE (initialisation du monde puis snapshots globaux et événements) et ses commandes HTTP. Les adresses et ports par défaut sont documentés dans `COMMUNICATION.md` et les contrats SYNE.
+- **Rôle prévu** : autorité de l'espace, de la matière et du temps physique ; monde borné 2.5D défini par des packs de données, corps et navigation, actions, agriculture, fabrication, structures et chantiers.
+- **Architecture prévue** : solution .NET avec `Prism.Core` sans dépendance graphique, `Prism.Contracts`, `Prism.Content`, `Prism.Host` headless, `Prism.Viewer` Silk.NET/OpenGL facultatif et outils de bots/benchmarks.
+- **Contrat cible** : SYNE↔PRISM 1.0.0 indépendant du transport — commandes, observations, événements, plus un flux de lecture PRISM→ECHOS et visualiseur. SYNE reste l'horloge maîtresse ; le viewer ne fait pas avancer la simulation.
+- **V1** : le projet Unreal et le plugin PRISM-LDK livrés en 1.0.0 sont conservés comme référence historique de la version précédente.
 
 Voir `prism/ARCHITECTURE.md`.
 
-### 2.4 syne-mock — serveur de simulation de contrat
+### 2.4 syne-mock — serveur de simulation de contrat V1
 
 - **Rôle** : serveur Node.js autonome pour développer et tester l'intégration PRISM sans lancer le moteur SYNE complet.
 - **Couverture** : cycle de contrôle, initialisation du monde, messages WebSocket, snapshots globaux, événements et scénario configurable (par défaut 50 agents, jusqu'à 400 ticks).
@@ -101,7 +100,9 @@ Détaillé dans `COMMUNICATION.md`. Résumé contractuel :
 
 | Flux | Transport | Port | Payload (JSON camelCase) |
 | :-- | :-- | :-- | :-- |
-| SYNE → ECHOS/PRISM | WebSocket | 5180 par défaut | `world_initialized` 1.1, snapshots et événements (contrat d'observabilité **0.5.0**) |
+| SYNE ↔ PRISM (cible V2) | Contrat versionné, transport indépendant | Défini par le host | Commandes, observations et événements (`API_CONTRACTS.md` 1.0.0 cible) |
+| PRISM → ECHOS / viewer (cible V2) | Flux de lecture | Défini par le host | Instantanés/deltas régionaux, métriques et état des chantiers |
+| SYNE → ECHOS (V1) | WebSocket | 5180 par défaut | `world_initialized` 1.1, snapshots et événements (contrat 0.5.0) |
 | Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état (moteur **0.17.0**) |
 | ECHOS API | HTTP REST | 5000 (V0.1 FastAPI) | runs (avec `outcome` de population), métriques, export, comparaison (`?light=1`) |
 
@@ -115,15 +116,14 @@ des schémas et du cycle de préparation est dans
 | :-- | :-- |
 | `Simulation.Console` | Référence en processus à `Simulation.Core`. |
 | ECHOS | Client externe des contrats HTTP/WebSocket ; ne référence pas les assemblies C# de SYNE. |
-| Projet PRISM | Projet Unreal final de LIVEX ; intègre PRISM-LDK et porte l'expérience graphique/Blueprint. |
-| Plugin PRISM-LDK | Plugin d'intégration Unreal, module technique `PrismLdk`, qui expose les contrats SYNE à Blueprint. |
-| `../prism/LDK/LDK.uproject` | Hôte Unreal technique de développement/build du plugin dans le checkout actuel ; n'est pas un produit distinct. |
-| SYNE ↔ PRISM | Échange des contrats HTTP/WebSocket ; le projet Unreal ne référence pas les assemblies C# de SYNE. |
-| `syne-mock` | Émule les échanges réseau destinés aux clients ; ne référence pas le moteur et n'en remplace pas la logique. |
+| PRISM V2 | Cible .NET composée d'un noyau headless, d'un host et d'un viewer facultatif. |
+| PRISM V1 / PRISM-LDK | Projet et plugin Unreal livrés dans la release 1.0.0 ; référence historique V1. |
+| SYNE ↔ PRISM V2 | Contrat indépendant du transport ; aucun partage d'assemblies nécessaire. |
+| `syne-mock` | Outil d'intégration hérité de V1 ; la cible V2 prévoit `Prism.Bots` pour les scénarios de validation. |
 
-Règle structurante : les clients présentent ou analysent des données venant de
-SYNE par des contrats versionnés. Ils ne partagent pas les abstractions de
-rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
+Règle V1 : les clients présentaient les données de SYNE sans en devenir
+propriétaires. Dans la cible V2, PRISM est propriétaire de l'état physique,
+SYNE de l'état cognitif, et le viewer/ECHOS n'altèrent ni l'un ni l'autre.
 
 ## 5. Stacks (Monographie §7.1)
 
@@ -132,7 +132,8 @@ rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
 | Moteur de simulation | C#/.NET, SDK 10.0.400 (pinné `global.json`) — [HÉRITÉ] |
 | Analyse ECHOS | Prototype C#/.NET ; **V0.1 : Python (FastAPI)** |
 | Interface ECHOS | **Retirée** — présentation portée par le Launcher (Avalonia, ADR-007) |
-| PRISM | Projet Unreal final de LIVEX, intégrant PRISM-LDK (`PrismLdk`) |
+| PRISM V2 | .NET headless (`Prism.Core`/`Prism.Host`) ; viewer Silk.NET/OpenGL facultatif |
+| PRISM V1 | Projet Unreal livré en 1.0.0 avec PRISM-LDK (`PrismLdk`) |
 | Mock SYNE | Node.js ; outil de développement, non moteur scientifique |
 | Tests C# | xUnit + Moq |
 | Tests interface | Avalonia headless + xUnit (Launcher) ; Vitest + ESLint + Prettier **retirés** avec `echos-ui` |
@@ -145,10 +146,7 @@ rendu avec le cœur et ne deviennent pas propriétaires de l'état simulé.
 LIVEX/
 ├── syne/                  # Moteur de simulation (C#/.NET)
 ├── echos/                 # Observation & analyse (Python/FastAPI, API seule)
-├── prism/                 # Projet Unreal PRISM et plugin PRISM-LDK
-│   └── LDK/               # Emplacement actuel du plugin et de son hôte technique
-│       ├── LDK.uproject   # Hôte de développement/build, pas le produit LIVEX complet
-│       └── Plugins/PrismLdk/
+├── prism/                 # Cible V2 .NET ; V1 Unreal gardée en historique
 ├── syne-mock/             # Serveur Node.js de simulation du contrat SYNE
 ├── launcher/              # Orchestrateur de la pile (Avalonia)
 ├── docs/                  # Documentation technique
@@ -165,7 +163,7 @@ LIVEX/
 
 > Note : l'archive `docs/docs_prototype/` (spécifications historiques du prototype Godot) a été retirée par la revue documentaire V0.1 (PR #502) ; la [Monographie](../LIVEX-Monographie_SnapV0-1.md) reste la référence historique. Les références à Godot dans les documents historiques ne décrivent pas l'implémentation PRISM actuelle.
 
-## 7. Flux de données de référence
+## 7. Flux de données de référence V1 (historique)
 
 ```mermaid
 sequenceDiagram
@@ -185,10 +183,15 @@ sequenceDiagram
 
 ### 7.1 Déterminisme transverse
 
-Le **déterminisme bit-à-bit** est un contrat transverse : le format `WorldSnapshot` et l'ordre causal des événements sont des engagements stables de SYNE vers ECHOS et PRISM. Toute évolution de ce contrat est gérée selon `../VERSIONING.md` (MINOR si rétrocompatible, sinon MAJOR).
+En V1, le déterminisme s'appuyait sur le `WorldSnapshot` de SYNE. Dans la cible
+V2, PRISM fixe l'état physique et ses empreintes ; SYNE fixe l'état cognitif.
+Le contrat SYNE↔PRISM versionne les commandes, observations, événements et
+références de run conformément à `../VERSIONING.md`.
 
 ---
 
-## Points restés ouverts dans ce document
-- Le dépôt LIVEX contient le projet Unreal PRISM et le plugin PRISM-LDK ; le `LDK.uproject` actuel sous `../prism/LDK/` sert d'hôte technique au plugin et n'est pas un second produit.
-- Le plugin Unreal n'est pas encore validé par une matrice CI dédiée ; valider le build dans la version d'Unreal ciblée avant une livraison.
+## Notes historiques V1
+
+Le projet Unreal et le plugin PRISM-LDK sont les éléments PRISM de la release
+1.0.0. Les recommandations de build Unreal ci-dessus ne s'appliquent pas à la
+cible .NET PRISM V2 ; voir [`prism/README.md`](prism/README.md).

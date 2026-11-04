@@ -1,109 +1,84 @@
-# PRISM — Packaging pour une release LIVEX
+# PACKAGING — Publication de PRISM V2
 
 **Composant** : PRISM
-**Statut** : [EXÉCUTÉ POUR LIVEX 1.0.0] — PRISM Windows/Linux et PRISM-LDK produits et publiés
-**Dernière mise à jour** : 31 octobre 2026
-**Dépend de** : [`README.md`](README.md), [`../installer/adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md`](../installer/adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md), [`../installer/RELEASE_AND_UPDATE.md`](../installer/RELEASE_AND_UPDATE.md)
+**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
+**Dernière mise à jour** : 3 novembre 2026
+**Dépend de** : `../launcher/PACKAGE_FORMAT.md`, `../installer/COMPONENTS.md`, `../../VERSIONING.md`
+**Source Monographie** : —
 
 ---
 
-## 1. Objet
+## 1. Entrées de release
 
-Ce document décrit la production des **entrées externes** de la release LIVEX :
-la build PRISM packagée (Windows et Linux) et l'archive PRISM-LDK. Ces artefacts
-ne peuvent pas être produits par la CI : aucun runner n'a Unreal Engine
-(ADR-010). Ils sont donc buildés par le mainteneur, archivés de façon
-déterministe, épinglés, puis consommés par la CI au tag `livex-v`.
-
-> **Périmètre du dépôt.** Ce checkout contient le plugin (`prism/LDK/`) et son
-> hôte technique (`prism/LDK/LDK.uproject`), pas le projet Unreal PRISM complet,
-> qui vit hors de ce dépôt. La build PRISM se fait donc dans ce projet externe ;
-> seuls les **résultats** arrivent ici, dans des chemins ignorés par git.
-
-## 2. Prérequis
-
-| Élément | Valeur |
-| :-- | :-- |
-| Unreal Engine | **5.8.0** (`EngineVersion` de `prism/LDK/PrismLdk.uplugin`) |
-| Cible Windows | `win-x64`, build packagée |
-| Cible Linux | `linux-x64`, build packagée |
-| Version PRISM | **1.0.0** (plan V1, D1) |
-| Version PRISM-LDK | **1.0.0** (`VersionName` du `.uplugin`, non modifié par le packaging) |
-
-## 3. Chemins
-
-| Sortie | Chemin local | Suivi par git |
+| Entrée | Contenu | Cibles |
 | :-- | :-- | :-- |
-| Build PRISM Windows | `prism/build/win/` | non |
-| Build PRISM Linux | `prism/build/linux/` | non |
-| Archive LDK source | `prism/LDK_Package/PrismLdk.zip` | **non** (à désuivre, T1) |
-| Archives prêtes à publier | `dist/inputs/` | non |
+| `prism-host` | `Prism.Host` publié **autonome** (self-contained), pack de contenu par défaut, `component.json` | Windows x64, Linux x86-64 |
+| `prism-viewer` | `Prism.Viewer` publié autonome ; dépendances natives GLFW | Windows x64, Linux x86-64 |
+| `prism-content` | Pack de contenu par défaut seul (mise à jour indépendante) | Toutes |
 
-`prism/build/` et `dist/` sont ignorés par git ; `PrismLdk.zip` ne doit plus
-être suivi (le blob déjà présent dans l'historique reste, ce qui est accepté).
+Le tag est `prism-v2.0.0` (`VERSIONING.md` §4) ; il héberge les entrées consommées par la CI. Les paquets Unreal (`prism-v1.x`) restent disponibles jusqu'à la release `2.0.0`.
 
-## 4. Procédure
+## 2. Manifestes Launcher (schéma v1)
 
-1. **Geler la source** : partir du HEAD de `release/1.0.0` (aucune build depuis
-   une branche de travail).
-2. **Builder PRISM Windows** dans le projet Unreal (Package Project, cible
-   Windows, configuration Shipping) et copier le dossier packagé dans
-   `prism/build/win/`.
-3. **Builder PRISM Linux** de la même façon et copier le résultat dans
-   `prism/build/linux/`.
-4. **Builder le LDK** : compiler le plugin pour Unreal Engine 5.8 et produire
-   `prism/LDK_Package/PrismLdk.zip` (contenu actuel : `Source/`, `Content/`,
-   `Resources/`, `PrismLdk.uplugin`, `Binaries/Win64`, `Intermediate/Build`).
-   Le `.uplugin` n'est pas modifié.
-5. **Archiver de façon déterministe** avec le script de release (T2) :
+`component.json` de l'hôte (extrait) :
 
-   ```bash
-   python scripts/release/package_prism.py --version 1.0.0
-   ```
+```json
+{
+  "schema": 1,
+  "id": "prism-host",
+  "name": "PRISM World Host",
+  "type": "world",
+  "version": "2.0.0-preview.1",
+  "runtime": "native",
+  "executable": { "windows": "bin/prism-host.exe", "linux": "bin/prism-host" },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": { "transport": "http" },
+    "readStream": {
+      "transport": "websocket",
+      "launchArgument": "--read-port",
+      "path": "/data/read"
+    }
+  },
+  "capabilities": ["headless", "snapshotStream"],
+  "health": { "probe": "http", "path": "/health/ready", "intervalMs": 1000 },
+  "timeouts": { "startupMs": 30000, "shutdownMs": 5000 },
+  "protocolVersion": 1,
+  "contributesTo": [],
+  "requires": []
+}
+```
 
-   Le script produit `dist/inputs/prism-1.0.0-win-x64.zip`,
-   `prism-1.0.0-linux-x64.tar.gz` et `prism-ldk-1.0.0.zip`, copie le LDK **bit
-   à bit**, calcule taille et SHA-256, et met à jour
-   `installer/build/external-inputs.json`.
-6. **Contrôler** : `size` et `sha256` de `external-inputs.json` correspondent
-   aux fichiers de `dist/inputs/` ; l'archive LDK est identique octet pour octet
-   à `prism/LDK_Package/PrismLdk.zip`.
-7. **Publication réalisée** : les entrées versionnées sont publiées sur le tag
-   `prism-v1.0.0` et consommées par la release assemblée `livex-v1.0.0`.
+Le Launcher résout l'endpoint `readStream` par son `path` (`/data/read`) et transmet `--read-port` ; `prism/scripts/publish.sh` produit les binaires autonomes du host et du viewer (`win-x64`/`linux-x64`).
 
-## 5. Règles
+Le visualiseur aura son manifeste distinct (`type: "viewer"`, `contributesTo: ["immersion"]`, capacité `renderCadence`), à produire avec PRISM-118. Les exigences de PRISM du Launcher (`INTEGRATION_CONTRACT.md` §11) sont **réécrites** : *autorité du monde*, *flux de lecture*, *indépendance du rendu*.
 
-- les archives sont **déterministes** : entrées triées, horodatages
-  `SOURCE_DATE_EPOCH`, permissions normalisées ; une même build produit la même
-  empreinte ;
-- le nom des archives est **définitif** : aucun renommage ni remplacement après
-  publication ; un contenu modifié impose une nouvelle version (ADR-008 §7) ;
-- l'archive LDK est publiée **telle quelle**, sans ré-archivage ni nettoyage :
-  retirer `Intermediate/` est un changement de contenu, donc une nouvelle
-  version ; l'étude d'une variante source seule est une issue de suivi (D2) ;
-- aucune archive PRISM n'est commitée ; `prism/build/` reste ignoré ;
-- la CI échoue si un asset dépasse 1,9 GiB.
+## 3. Intégration au format de paquet `.livexp`
 
-## 6. Limites connues
+Un paquet d'expérience enregistre, en plus de la configuration SYNE : la configuration PRISM, le **`contentHash`** et la version du pack, les empreintes de run. Un résultat n'est comparable que si ces éléments sont identiques (sauf expérience déclarée).
 
-| Limite | Traitement |
+## 4. Installateur
+
+Les composants PRISM remplacent les paquets Unreal ; leur taille est **sensiblement plus petite**. Options d'installation : *hôte seul* (par défaut), *visualiseur* (facultatif, dépendances GL), *packs de contenu*. ADR-010 de l'installateur (production d'Unreal hors CI) devient caduc pour PRISM.
+
+## 5. CI
+
+| Job | Contenu |
 | :-- | :-- |
-| La build PRISM dépend d'un projet Unreal **hors de ce dépôt** | procédure documentée ici, exécution par le mainteneur |
-| L'archive LDK est Windows uniquement (53 118 444 octets, ~250 Mo décompressé) | publiée telle quelle (D2) ; variante source seule à l'étude |
-| Aucune reproductibilité bit à bit d'Unreal Engine | archives déterministes, contenu dépendant de la version 5.8.0 consignée |
-| Conditions du moteur Epic Games | à vérifier dans `THIRD-PARTY-NOTICES.md` avant publication |
+| `prism-build` | Build + analyseur d'architecture (pas de GL dans `Core`, pas de flottant) |
+| `prism-test` | Tests unitaires, propriétés, contenu, contrat, intégration |
+| `prism-determinism` | Rejeu + parallélisme + Windows/Linux |
+| `prism-bench` | B1…B6 ; échec si dérive > seuil |
+| `prism-render` (optionnel) | Rendu logiciel, captures |
+| `prism-publish` | Publication autonome, notices tierces, signature (si adoptée) |
 
-## 7. Références
+## 6. Notices tierces
 
-- [`../installer/adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md`](../installer/adr/ADR-010-production-hors-ci-prism-et-composants-individuels.md)
-- [`../installer/RELEASE_AND_UPDATE.md`](../installer/RELEASE_AND_UPDATE.md) §3, §4, §10
-- [`PRISM_UNREAL_IMPLEMENTATION.md`](PRISM_UNREAL_IMPLEMENTATION.md)
-- [`BLUEPRINT_ROADMAP.md`](BLUEPRINT_ROADMAP.md) (empaquetage)
-
----
+Toute dépendance (Silk.NET, bibliothèque d'interface, SQLite, outils de test) est ajoutée à `THIRD-PARTY-NOTICES.md` avec **notices transitives** (dette déjà identifiée dans `docs/governance/ROADMAP.md` §7), vérifiées avant toute publication binaire.
 
 ## Mises à jour
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
-| 29 octobre 2026 | Création | Plan d'alignement V1 : production hors CI des entrées PRISM et LDK (ADR-010) |
+| 3 novembre 2026 | Exemple `component.json` aligné sur le manifeste réel (`prism-host`, endpoint `readStream.path`) et `publish.sh` documenté | PRISM-080 |
+| 1er novembre 2026 | Création | Refonte V2 |

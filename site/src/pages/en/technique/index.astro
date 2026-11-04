@@ -9,21 +9,20 @@ import StatusBadge from '../../../components/StatusBadge.astro';
 import SyneSchema from '../../../components/SyneSchema.astro';
 import { Image } from 'astro:assets';
 import echosAgents from '../../../assets/captures/echos-agents.png';
-import launcherPrism from '../../../assets/captures/launcher-prism.png';
 import { COMPONENTS_EN } from '../../../data/components';
 import { url } from '../../../utils/url';
 ---
 <BaseLayout
   lang="en"
   title="LIVEX architecture: SYNE, ECHOS, PRISM"
-  description="LIVEX architecture: deterministic SYNE simulation engine, ECHOS observation and PRISM perceptual rendering, linked by versioned interface contracts."
+  description="LIVEX V2 target architecture: SYNE cognition, PRISM’s authoritative physical world and ECHOS analysis, linked by versioned contracts."
 >
   <PageHeader
     lang="en"
     index="05"
     eyebrow="Architecture"
-    title="A pipeline, three responsibilities."
-    lead="LIVEX links three components by explicit contracts. The world produces traces, observation measures them, rendering makes them visible — never mixing roles."
+    title="Three components, separate responsibilities."
+    lead="In the V2 target, SYNE owns cognition, PRISM the physical world and ECHOS observation. The PRISM viewer reads the world without governing the simulation."
     crumbs={[{ label: 'Architecture' }]}
   />
 
@@ -34,14 +33,14 @@ import { url } from '../../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.1</b> Overview</div>
-      <h2>From world to perception.</h2>
+      <h2>From intention to observable world.</h2>
       <div class="fm">
-        world <span>SYNE</span> traces <span>ECHOS</span> measures <span>PRISM</span> perception
+        cognition <span>SYNE</span> physical world <span>PRISM</span> analysis <span>ECHOS</span>
       </div>
       <p>
-        Each stage is independent and versioned separately: any component can be replaced without breaking the others,
-        as long as transport and persistence contracts are respected. That decoupling is what makes the stack testable
-        and evolvable.
+        This architecture describes the planned V2 scope. SYNE and PRISM exchange commands, observations and events;
+        ECHOS receives their traces and PRISM publishes a read stream. The viewer is optional. Implementation and
+        validation information will be revised before publication.
       </p>
     </div>
   </section>
@@ -49,7 +48,7 @@ import { url } from '../../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.2</b> Components</div>
-      <h2>Three blocks, three declared states.</h2>
+      <h2>Components and their planned roles.</h2>
       {COMPONENTS_EN.map((c) => (
         <div class="bn">
           <div>
@@ -64,27 +63,27 @@ import { url } from '../../../utils/url';
           </div>
           {c.key === 'syne' && <SyneSchema lang="en" />}
           {c.key === 'echos' && <Image src={echosAgents} alt="ECHOS capture: tracking of observed agents" style="width:100%;height:auto" loading="lazy" />}
-          {c.key === 'prism' && <Image src={launcherPrism} alt="Capture of the PRISM rendering opened from the Launcher" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'prism' && <p class="mu">The associated capture shows the V1 generation; it does not illustrate the planned V2 viewer.</p>}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM; for SYNE, a conceptual schema — an engine has no interface to capture. These visuals come from the development build (October 2026): none of them demonstrates a published version.</p>
+      <p class="mu" style="font-size:0.7rem">The SYNE diagram is conceptual. The ECHOS capture and the earlier PRISM capture show V1/development versions; they do not demonstrate delivery of the V2 target.</p>
     </div>
   </section>
 
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.3</b> Interface contracts</div>
-      <h2>What links the stages.</h2>
+      <h2>Planned contract and data flows.</h2>
       <div class="ov">
         <table class="tb">
           <thead>
             <tr><th scope="col">Contract</th><th scope="col">Version / format</th><th scope="col">Note</th></tr>
           </thead>
           <tbody>
-            <tr><td>Observability contract (snapshot)</td><td>0.5.0</td><td>Adds <code>simulatedTimeSeconds</code>; world description <code>world_initialized</code> 1.1.</td></tr>
+            <tr><td>SYNE↔PRISM contract (V2 target)</td><td>1.0.0</td><td>Commands, observations, events and world read stream; target described in PRISM specifications.</td></tr>
             <tr><td>Run identifier format</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>Seed is included in the identifier; ECHOS does not derive it from the ID.</td></tr>
             <tr><td>ECHOS persistence schema</td><td>SQLite v6</td><td>Additive migration <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>Local ports (V0.2)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>local only</strong> (<code>127.0.0.1</code>).</td></tr>
+            <tr><td>PRISM read stream</td><td>V2 target</td><td>Regional deltas and world state for ECHOS and the optional viewer.</td></tr>
           </tbody>
         </table>
       </div>
@@ -105,9 +104,9 @@ import { url } from '../../../utils/url';
             <tr><th scope="col">Directory</th><th scope="col">Content</th><th scope="col">Status</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>syne/</code></td><td>.NET simulation engine (SYNE)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td><code>syne/</code></td><td>Agent cognition and decisions</td><td>V2 target</td></tr>
             <tr><td><code>echos/</code></td><td>Observation, analysis, headless API (Python package)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td><code>prism/</code></td><td>Unreal project and PRISM-LDK plugin</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td><code>prism/</code></td><td>Headless .NET physical world; optional Silk.NET viewer</td><td>V2 target</td></tr>
             <tr><td><code>launcher/</code></td><td>Desktop application (Avalonia) — orchestration and presentation</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
             <tr><td><code>docs/</code></td><td>Monograph, architecture, governance, documentation</td><td>—</td></tr>
             <tr><td><code>site/</code></td><td>This static showcase site (Astro)</td><td>—</td></tr>
