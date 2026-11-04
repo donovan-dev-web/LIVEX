@@ -38,9 +38,10 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
           <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
             <tr><td>Reference</td><td><code>{PROJECT_STATE.branch}</code> at {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tracked files</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
-            <tr><td>Lines analysed</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.source)} source, {nf.format(PROJECT_STATE.loc.tests)} tests)</td></tr>
-            <tr><td>Tests</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored</td></tr>
+            <tr><td>Tracked files (Git)</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
+            <tr><td>Files recognised (Tokei)</td><td>{nf.format(PROJECT_STATE.loc.files)}</td></tr>
+            <tr><td>Lines (Tokei)</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.code)} code, {nf.format(PROJECT_STATE.loc.comments)} comments, {nf.format(PROJECT_STATE.loc.blank)} blank)</td></tr>
+            <tr><td>Tests (release 1.0.0 validation)</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing out of {nf.format(PROJECT_STATE.tests.total)} cases, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored</td></tr>
             <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
             <tr><td>SYNE coverage</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
             <tr><td>CI</td><td>{PROJECT_STATE_EN.ci}</td></tr>

@@ -204,6 +204,46 @@ const themeLabels = {
         } catch (e) {}
       })();
     </script>
+    <!--
+      Sans JS, les sous-menus du menu principal restent accessibles. Ces règles
+      doivent vivre dans l'élément head : un élément style placé dans le body
+      n'accepte que des règles @scope et est rejeté par le validateur HTML.
+    -->
+    <noscript>
+      <style>
+        /* Sans JS : sous-menus du menu accessibles, blocs de langue de la 404 visibles. */
+        nav.main .ni { position: static; }
+        nav.main .sub {
+          position: static !important;
+          display: flex !important;
+          flex-direction: column;
+          min-width: 0;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+          background: transparent;
+        }
+        nav.main .sub::before { display: none; }
+        nav.main .sub a { padding-left: 22px; }
+
+        @media (max-width: 900px) {
+          .nav-burger { display: none !important; }
+          nav.main {
+            position: static !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+          }
+          nav.main > a,
+          nav.main .ni > button.ni-trigger { display: block !important; padding: 10px 0 !important; border: 0 !important; }
+          nav.main .sub a { padding-left: 18px !important; }
+        }
+        [data-404] { display: block !important; }
+      </style>
+    </noscript>
   </head>
   <body>
     <a class="skip" href="#contenu">{t('nav.skip')}</a>
