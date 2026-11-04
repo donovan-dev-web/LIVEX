@@ -14,22 +14,21 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
   lang="en"
   translated
   title="LIVEX — Component versions and project status"
-  description={`LIVEX component versions (SYNE, ECHOS, PRISM, Launcher), project state as of ${PROJECT_STATE_EN.observedDate} and versioning policy. No public release.`}
+  description={`LIVEX component versions (SYNE, ECHOS, PRISM, Launcher), V2 target and measured project state as of ${PROJECT_STATE_EN.observedDate}.`}
 >
   <PageHeader
     lang="en"
     index="13"
     eyebrow="Versions"
     title="Where the project stands."
-    lead="A factual, dated state, component by component. Each module moves at its own pace: the global version V0.2 is in preparation, with no public release."
+    lead="V1.0.0 is released; the global V2.0.0 version is in preparation. Implementation figures remain dated and do not describe PRISM V2 target progress."
     crumbs={[{ label: 'Versions' }]}
   />
 
   <section class="block">
     <div class="w">
       <div class="cc" style="padding:18px 20px">
-        <p><strong>No public release, no tags.</strong> The global version <strong>{RELEASE.planned}</strong> is
-          in preparation. See <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a>.</p>
+        <p><strong>Latest release: V1.0.0.</strong> The global version <strong>{RELEASE.planned}</strong> is in preparation. See <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a>.</p>
       </div>
 
       <div class="sh"><b>13.1</b> Versions by component</div>
@@ -40,7 +39,7 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
           <tbody>
             <tr><td>SYNE</td><td>{VERSION_TABLE_EN[0].version}</td><td>{VERSION_TABLE_EN[0].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td>ECHOS</td><td>{VERSION_TABLE_EN[1].version}</td><td>{VERSION_TABLE_EN[1].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>PRISM</td><td>{VERSION_TABLE_EN[2].version}</td><td>{VERSION_TABLE_EN[2].note}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td>PRISM</td><td>{VERSION_TABLE_EN[2].version}</td><td>{VERSION_TABLE_EN[2].note}</td><td><StatusBadge status="envisage" lang="en" /></td></tr>
             <tr><td>Launcher</td><td>{VERSION_TABLE_EN[3].version}</td><td>{VERSION_TABLE_EN[3].note}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
           </tbody>
         </table>
@@ -49,7 +48,7 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
         Independent Semantic Versioning per component, combined with a global marker for cross-cutting deliveries.
         Details: <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/VERSIONING.md" rel="noopener">VERSIONING.md</a>.
         Each published version will get a dedicated page (<code>/versions/&lt;version&gt;/</code>); none exists yet, as
-        no public tag has been set.
+        in the site's editorial registry; V1.0.0 is available on GitHub Releases.
       </p>
     </div>
   </section>
@@ -85,7 +84,7 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
             <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
             <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
-            <tr><td>Release</td><td>No public release — {RELEASE.planned} in preparation</td></tr>
+            <tr><td>Release</td><td>V1.0.0 released — {RELEASE.planned} in preparation</td></tr>
           </tbody>
         </table>
       </div>
@@ -100,8 +99,8 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
       <div class="sh"><b>13.3</b> Release notes</div>
       <h2>The changelog and the tags.</h2>
       <p>
-        No public release exists yet, so no version sheet exists yet (<code>/versions/&lt;version&gt;/</code>). The
-        repository changelog and the GitHub tags remain the reference in the meantime.
+        V1.0.0 has been released. The dated figures above correspond to the stated repository snapshot; they do not
+        describe delivery of the V2.0.0 target. The repository changelog and GitHub releases are authoritative.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Read CHANGELOG.md →</a>

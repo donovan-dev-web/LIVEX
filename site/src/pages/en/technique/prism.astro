@@ -1,69 +1,77 @@
----
 // SPDX-FileCopyrightText: 2026 Donovan Chartrain
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
-import TableOfContents from '../../../components/TableOfContents.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
-import { Image } from 'astro:assets';
+import CtaBand from '../../../components/CtaBand.astro';
 import { url } from '../../../utils/url';
-import prismShot from '../../../assets/captures/launcher-prism.png';
 ---
 <BaseLayout
   lang="en"
   translated
-  title="PRISM: perceptual rendering (beyond V0.2)"
-  description="PRISM makes the simulated LIVEX world perceptible: Unreal project and PRISM-LDK integration plugin. Component in development, out of scope for V0.2."
+  title="PRISM V2: LIVEX’s physical world"
+  description="The PRISM V2 target makes PRISM the authority for LIVEX’s physical world: a headless .NET core, a contract with SYNE and an optional viewer."
 >
   <PageHeader
     lang="en"
     index="08"
-    eyebrow="Architecture · PRISM"
-    title="Rendering."
-    lead="PRISM (Perceptual Rendering & Interactive Simulation Module) gives form and presence to the simulated world. It is the least advanced component of the project, and we say so."
+    eyebrow="Architecture · PRISM V2"
+    title="The world becomes a component."
+    lead="After the V1 release, PRISM is being redesigned from the ground up: it owns space, matter and physical time. SYNE keeps agent cognition; rendering becomes an optional client."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'PRISM' }]}
   />
 
-  <div class="w" style="padding-top:8px">
-    <TableOfContents lang="en" />
-  </div>
-
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="developpement" lang="en" /> <span class="mu">Unreal project and PRISM-LDK plugin</span></p>
-      <div class="cc"><p><strong>PRISM-LDK</strong> (LIVEX Development Kit) is the core of 3D representation: the Unreal plugin that translates SYNE's logical data into a 3D graphical representation, <strong>realised and packaged as version 0.1.0</strong>. <strong>PRISM</strong> is the Unreal project built around it: the default stylised representation, according to the author's vision. PRISM remains <strong>out of scope for V0.2</strong>: no playable rendering experience is claimed yet.</p></div>
+      <p style="margin-top:0"><StatusBadge status="envisage" lang="en" /> <span class="mu">PRISM 2.0.0 target · planned scope</span></p>
+      <div class="cc"><p>This page describes <strong>the planned V2 target</strong> and assumes the full specified scope will be delivered. It is not an audit of the current implementation. The documentation will be checked against implementation and validation before public release.</p></div>
 
-      <div class="sh"><b>8.1</b> Role</div>
-      <h2>Making dynamics visible.</h2>
-      <p>
-        Where SYNE computes and ECHOS measures, PRISM <strong>makes things perceptible</strong>: it transforms the world state
-        and its events into an observable and interactive scene. It consists of an Unreal project and an integration
-        plugin, <strong>PRISM-LDK</strong>.
-      </p>
-
-      <figure class="shot">
-        <Image src={prismShot} alt="PRISM rendering preview"  loading="lazy" />
-        <figcaption>Capture — PRISM rendering preview (work-in-progress).</figcaption>
-      </figure>
+      <div class="sh"><b>8.1</b> Responsibilities</div>
+      <h2>PRISM owns the material world.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Component</th><th scope="col">V2 responsibility</th></tr></thead>
+          <tbody>
+            <tr><td><strong>PRISM</strong></td><td>Voxel world state, blocks and items, physical bodies, movement, actions, structures, construction sites and physical time.</td></tr>
+            <tr><td><strong>SYNE</strong></td><td>Agent needs, beliefs, memory, relationships, groups, intentions and decisions.</td></tr>
+            <tr><td><strong>ECHOS</strong></td><td>Observation and analysis of SYNE traces and PRISM’s read stream.</td></tr>
+            <tr><td><strong>Viewer</strong></td><td>Visualization and read-only inspection; its absence does not block a headless simulation.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
   <section class="block">
     <div class="w">
-      <div class="sh"><b>8.2</b> State</div>
-      <h2>The youngest component.</h2>
-      <p>
-        PRISM is a work-in-progress. No timeline is promised: rendering is deliberately out of scope for V0.2, so that
-        validation of the engine and observation is not diluted.
-      </p>
-      <p class="mu" style="font-size:0.82rem">
-        The project's roadmap is authoritative for the steps ahead.
-      </p>
-      <div class="cc">
-        <p>Do not assume that local protections in the engine or mock secure distribution of the PRISM project. See <a href="https://github.com/donovan-dev-web/LIVEX/blob/main/SECURITY.md" rel="noopener">SECURITY.md</a>.</p>
-      </div>
+      <div class="sh"><b>8.2</b> World and simulation</div>
+      <h2>A bounded, data-defined world.</h2>
+      <p>The target is a 2.5D column world divided into regions, generated from a seed and defined by content packs. Materials, items, recipes, crops and templates determine world rules, so content can be extended without recompiling for every addition.</p>
+      <p>Agents can move, extract resources, craft and store items, farm, build from templates and cooperate on construction sites. Perception is local and differential: PRISM tells SYNE what an agent can observe, while SYNE keeps its memories and beliefs.</p>
+      <p>A rendering-independent .NET core is designed to support headless runs. Integer arithmetic, deterministic random streams, checksums and checkpoints target reproducible simulations.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>8.3</b> Contract and visualization</div>
+      <h2>From intentions to consequences.</h2>
+      <p>The target SYNE↔PRISM 1.0 contract organizes exchanges into commands, observations and events. Commands are idempotent and failures carry reasons. A separate read stream sends snapshots, regional deltas and analysis data to ECHOS and the viewer.</p>
+      <p>The headless host manages the run lifecycle and advances on SYNE ticks. The planned viewer uses Silk.NET and OpenGL; it reads published state without owning the world or setting its pace.</p>
+      <div class="cc"><p>Cooperation is a hypothesis to be measured through experiments and ablations. World systems can create opportunities for cooperation; they do not guarantee its emergence or any particular social outcome.</p></div>
       <p style="margin-top:18px"><a class="bt" href={url('technique/', 'en')}>← Overview</a></p>
     </div>
   </section>
+
+  <CtaBand
+    lang="en"
+    eyebrow="8.4 · Documentation"
+    title="Explore the V2 design"
+    lead="PRISM specifications detail the planned world, systems, contract and validation criteria."
+    primaryLabel="PRISM documentation"
+    primaryHref="documentation/"
+    secondaryLabel="LIVEX architecture"
+    secondaryHref="technique/"
+  />
 </BaseLayout>

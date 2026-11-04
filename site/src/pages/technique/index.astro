@@ -10,19 +10,18 @@ import CtaBand from '../../components/CtaBand.astro';
 import SyneSchema from '../../components/SyneSchema.astro';
 import { Image } from 'astro:assets';
 import echosAgents from '../../assets/captures/echos-agents.png';
-import launcherPrism from '../../assets/captures/launcher-prism.png';
 import { COMPONENTS } from '../../data/components';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
   title="Architecture LIVEX : SYNE, ECHOS, PRISM"
-  description="Architecture de LIVEX : moteur de simulation déterministe SYNE, observation ECHOS, rendu perceptif PRISM, reliés par des contrats d'interface versionnés."
+  description="Architecture cible V2 de LIVEX : cognition SYNE, monde physique autoritaire PRISM et analyse ECHOS, reliés par des contrats versionnés."
 >
   <PageHeader
     index="05"
     eyebrow="Architecture"
-    title="Un pipeline, trois responsabilités."
-    lead="LIVEX relie trois composants par des contrats explicites. Le monde produit des traces, l'observation les mesure, le rendu les donne à voir — sans jamais mélanger les rôles."
+    title="Trois composants, des responsabilités séparées."
+    lead="Dans la cible V2, SYNE porte la cognition, PRISM le monde physique et ECHOS l'observation. Le visualiseur PRISM lit le monde sans gouverner la simulation."
     crumbs={[{ label: 'Architecture' }]}
   />
 
@@ -33,14 +32,14 @@ import { url } from '../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.1</b> Vue d'ensemble</div>
-      <h2>Du monde à la perception.</h2>
+      <h2>De l’intention au monde observable.</h2>
       <div class="fm">
-        monde <span>SYNE</span> traces <span>ECHOS</span> mesures <span>PRISM</span> perception
+        cognition <span>SYNE</span> monde physique <span>PRISM</span> analyse <span>ECHOS</span>
       </div>
       <p>
-        Chaque étage est indépendant et versionné séparément : un composant peut être remplacé sans casser les autres,
-        pourvu que les contrats de transport et de persistance soient respectés. C'est ce découplage qui rend la pile
-        testable et évolutive.
+        Cette architecture décrit le périmètre prévu de la V2. SYNE et PRISM échangent commandes, observations et
+        événements ; ECHOS reçoit leurs traces et PRISM publie un flux de lecture. Le visualiseur est facultatif.
+        Les informations de réalisation et de validation seront révisées avant publication.
       </p>
     </div>
   </section>
@@ -48,7 +47,7 @@ import { url } from '../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.2</b> Les composants</div>
-      <h2>Trois blocs, trois états déclarés.</h2>
+      <h2>Les composants et leur rôle prévu.</h2>
       {COMPONENTS.map((c) => (
         <div class="bn">
           <div>
@@ -63,27 +62,27 @@ import { url } from '../../utils/url';
           </div>
           {c.key === 'syne' && <SyneSchema lang="fr" />}
           {c.key === 'echos' && <Image src={echosAgents} alt="Capture d'ECHOS : suivi des agents observés" style="width:100%;height:auto" loading="lazy" />}
-          {c.key === 'prism' && <Image src={launcherPrism} alt="Capture du rendu PRISM ouvert depuis le Launcher" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'prism' && <p class="mu">La capture associée à PRISM présente la génération V1 ; elle n’illustre pas le visualiseur V2 prévu.</p>}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">Captures réelles pour ECHOS et PRISM ; pour SYNE, un schéma conceptuel — un moteur n'a pas d'interface à capturer. Ces visuels datent de la version de développement (octobre 2026) : aucun ne vaut démonstration d'une version publiée.</p>
+      <p class="mu" style="font-size:0.7rem">Le schéma SYNE est conceptuel. La capture ECHOS et l’ancienne capture PRISM illustrent des versions V1/de développement ; elles ne démontrent pas la réalisation de la cible V2.</p>
     </div>
   </section>
 
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.3</b> Contrats d'interface</div>
-      <h2>Ce qui relie les étages.</h2>
+      <h2>Contrat et flux prévus.</h2>
       <div class="ov">
         <table class="tb">
           <thead>
             <tr><th scope="col">Contrat</th><th scope="col">Version / forme</th><th scope="col">Note</th></tr>
           </thead>
           <tbody>
-            <tr><td>Contrat d'observabilité (snapshot)</td><td>0.5.0</td><td>Ajout <code>simulatedTimeSeconds</code> ; description de monde <code>world_initialized</code> 1.1.</td></tr>
+            <tr><td>Contrat SYNE↔PRISM (cible V2)</td><td>1.0.0</td><td>Commandes, observations, événements et lecture du monde ; cible décrite dans les spécifications PRISM.</td></tr>
             <tr><td>Format d'identifiant de run</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>La graine figure dans l'identifiant ; ECHOS ne la dérive pas de l'id.</td></tr>
             <tr><td>Schéma de persistance ECHOS</td><td>SQLite v6</td><td>Migration additive <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>Ports locaux (V0.2)</td><td>5180 / 5181 / 5000</td><td>Bindings <strong>locaux uniquement</strong> (<code>127.0.0.1</code>).</td></tr>
+            <tr><td>Flux de lecture PRISM</td><td>Cible V2</td><td>Deltas régionaux et état du monde pour ECHOS et le visualiseur facultatif.</td></tr>
           </tbody>
         </table>
       </div>
@@ -104,9 +103,9 @@ import { url } from '../../utils/url';
             <tr><th scope="col">Répertoire</th><th scope="col">Contenu</th><th scope="col">État</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>syne/</code></td><td>Moteur de simulation .NET (SYNE)</td><td><StatusBadge status="experimental" /></td></tr>
+            <tr><td><code>syne/</code></td><td>Cognition et décisions des agents</td><td>Cible V2</td></tr>
             <tr><td><code>echos/</code></td><td>Observation, analyse, API headless (paquet Python)</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td><code>prism/</code></td><td>Projet Unreal et plugin PRISM-LDK</td><td><StatusBadge status="developpement" /></td></tr>
+            <tr><td><code>prism/</code></td><td>Monde physique .NET headless ; viewer Silk.NET facultatif</td><td>Cible V2</td></tr>
             <tr><td><code>launcher/</code></td><td>Application de bureau (Avalonia) — orchestration et présentation</td><td><StatusBadge status="developpement" /></td></tr>
             <tr><td><code>docs/</code></td><td>Monographie, architecture, gouvernance, documentation</td><td>—</td></tr>
             <tr><td><code>site/</code></td><td>Ce site vitrine statique (Astro)</td><td>—</td></tr>
