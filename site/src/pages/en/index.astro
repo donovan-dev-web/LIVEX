@@ -43,17 +43,17 @@ const softwareJsonLd = {
         <p class="ey">Living Intelligent Virtual Ecosystem eXperience</p>
         <h1>Observe what <i>emerges.</i></h1>
         <p class="l">
-          An experimental multi-agent simulation platform, from the engine that keeps the world alive to its 3D
-          representation: three separate layers, explicit rules, results to observe.
+          An experimental multi-agent simulation platform: SYNE owns cognition, PRISM the physical world (V2 target),
+          and ECHOS observation and analysis. LIVEX studies collective emergence, not individual agent learning.
         </p>
         <div class="hero-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px">
-          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Target version {RELEASE_EN ? 'V0.2' : 'V0.2'}</span>
+          <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Target version V2.0.0</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{SITE.license}</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">{nf.format(PROJECT_STATE.tests.passed)} tests passing</span>
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage {PROJECT_STATE_EN.coverage.echos}</span>
         </div>
         <div class="cta">
-          <a class="bt p" href={url('technique/prism/', 'en')}>See the demo</a>
+          <a class="bt p" href={url('technique/prism/', 'en')}>Explore the PRISM V2 target</a>
           <a class="bt" href={url('documentation/', 'en')}>Read the documentation</a>
           <a class="bt" href={url('participer/', 'en')}>Contribute</a>
         </div>
@@ -66,8 +66,8 @@ const softwareJsonLd = {
     <div class="vs br" style="padding-left:16px;padding-right:16px;border:1px solid var(--ln)">
       <StatusBadge status="developpement" label={RELEASE_EN.plannedLabel} lang="en" />
       <p>
-        No public version is downloadable to date. The component states described below reflect the
-        <strong> development repository</strong>, not a distribution. See the <a href={url('versions/', 'en')}>Versions</a> page.
+        LIVEX 1.0.0 is the public release. Version V2.0.0 is in preparation; the PRISM V2 target below describes planned
+        scope, not validation status. See the <a href={url('versions/', 'en')}>Versions</a> page.
       </p>
     </div>
   </div>
@@ -92,7 +92,7 @@ const softwareJsonLd = {
         <CardLink
           lang="en"
           title="Check the technology"
-          text="Three-layer architecture, engine, observation, rendering. Evidence and statuses rather than promises."
+          text="SYNE cognition, the PRISM physical world and ECHOS observation. Explicit contracts and documented V2 scope."
           href="technique/"
           cta="Explore the architecture →"
         />
@@ -126,14 +126,14 @@ const softwareJsonLd = {
         <CardLink
           lang="en"
           title="Independent observation"
-          text="Simulate, measure, make visible: three separate layers, linked by explicit contracts."
+          text="SYNE decides, PRISM executes and records the world, ECHOS analyses traces: three separate roles."
           href="technique/echos/"
           cta="Discover ECHOS →"
         />
         <CardLink
           lang="en"
           title="Versioned contracts"
-          text="Public interfaces are frozen and versioned (snapshot 0.5.0). The contract precedes the rendering."
+          text="The SYNE↔PRISM 1.0 contract is planned for commands, observations and events in the V2 target."
           href="technique/syne/"
           cta="Read the contract →"
         />
@@ -166,7 +166,7 @@ const softwareJsonLd = {
         <div>
           <div class="n">00</div>
           <h3>public version</h3>
-          <p>The project has moved to V0.2. No public release or tag has been placed to date.</p>
+          <p>V1.0.0 is available. The planned V2.0.0 includes a complete PRISM redesign.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
@@ -176,7 +176,7 @@ const softwareJsonLd = {
       </div>
 
       <div class="fm" style="margin-top:36px">
-        world <span>SYNE · simulates</span> traces <span>ECHOS · measures</span> understanding <span>PRISM · makes visible</span> <span class="q">→</span>
+        cognition <span>SYNE · decides</span> physical world <span>PRISM · executes</span> analysis <span>ECHOS · observes</span> <span class="q">→</span>
       </div>
     </div>
   </section>

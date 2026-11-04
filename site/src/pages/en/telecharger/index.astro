@@ -11,14 +11,14 @@ import { url } from '../../../utils/url';
 <BaseLayout
   lang="en"
   title="LIVEX — Download: releases and source install"
-  description="Download LIVEX: no public release to date, V0.2 in preparation. Component versions, how to install from source, and the GitHub repository."
+  description="Download LIVEX: V1.0.0 release available and V2.0.0 in preparation. Component versions, installation and the GitHub repository."
 >
   <PageHeader
     lang="en"
     index="11"
     eyebrow="Download"
-    title="Nothing to download yet."
-    lead="No binary to download today: V0.2 is in preparation. Here is what exists, what is planned, and where to start."
+    title="V1 released, V2 in preparation."
+    lead="LIVEX 1.0.0 is the first public release. The next global target is V2.0.0, with a complete PRISM redesign."
     crumbs={[{ label: 'Download' }]}
   />
 
@@ -26,14 +26,9 @@ import { url } from '../../../utils/url';
     <div class="w">
       <div class="pl br" style="padding:24px;margin-top:8px">
         <p style="margin:0 0 10px"><StatusBadge status="developpement" label={RELEASE_EN.plannedLabel} lang="en" /></p>
-        <h2 style="margin-top:0">No release, no tag.</h2>
-        <p>
-          There is therefore <strong>no installer, no binary and no distributable package</strong> to download.
-        </p>
-        <p>
-          The <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a> page will stay empty until
-          <strong>{RELEASE.planned}</strong> has been validated.
-        </p>
+        <h2 style="margin-top:0">Next planned version: {RELEASE.planned}.</h2>
+        <p>The V1.0.0 release marks the first public version. V2.0.0 is in preparation; this page presents its planned scope and does not claim PRISM V2 has been validated.</p>
+        <p>See <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a> for published versions.</p>
         <div class="cta">
           <a class="bt" href={url('versions/', 'en')}>Version status</a>
           <a class="bt" href={url('telecharger/installation/', 'en')}>Installation guide</a>
@@ -45,8 +40,8 @@ import { url } from '../../../utils/url';
 
   <section class="block">
     <div class="w">
-      <div class="sh"><b>11.1</b> What is planned</div>
-      <h2>What a version will contain.</h2>
+      <div class="sh"><b>11.1</b> V2 target</div>
+      <h2>Components planned for V2.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Item</th><th scope="col">Expected form</th><th scope="col">State</th></tr></thead>
@@ -54,7 +49,7 @@ import { url } from '../../../utils/url';
             <tr><td>Launcher (desktop)</td><td>Desktop application (Avalonia) to pilot and observe</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
             <tr><td>SYNE engine</td><td>.NET binary and engine packages</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td>ECHOS</td><td>Python package (observation, headless API)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>PRISM</td><td>Unreal project (outside V0.2 scope)</td><td><StatusBadge status="hors-perimetre" lang="en" /></td></tr>
+            <tr><td>PRISM</td><td>Headless .NET physical world core and host, with optional Silk.NET viewer</td><td><StatusBadge status="envisage" lang="en" /></td></tr>
           </tbody>
         </table>
       </div>

@@ -9,7 +9,15 @@ import { url } from '../utils/url';
 const faq = [
   {
     q: "Qu'est-ce que LIVEX cherche à démontrer ?",
-    a: "LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les structures collectives qui en émergent : groupes, échanges, conflits, propagation du savoir. Le projet ne prétend pas que cette émergence prouve une « intelligence » : il fournit des observateurs et des métriques mesurables.",
+    a: "LIVEX construit un monde simulé où des entités autonomes (besoins, mémoire, croyances, utilité) interagissent, et observe les structures collectives qui en émergent : groupes, échanges, conflits, spécialisations. Le cadrage est celui d'une émergence collective dite faible : les motifs ne sont pas prescrits et leurs causes restent traçables aux interactions locales. LIVEX n'étudie pas l'apprentissage individuel comme objectif central et ne prétend pas que les motifs collectifs prouvent une « intelligence ».",
+  },
+  {
+    q: 'Que signifie « émergence collective faible » dans LIVEX ?',
+    a: "C'est le périmètre de recherche choisi par le projet : étudier des motifs qui apparaissent à l'échelle du groupe à partir de règles et d'interactions locales explicites. Le qualificatif « faible » souligne que les causes restent traçables dans le modèle. Il ne désigne ni l'apprentissage individuel, ni la conscience, et ne constitue pas à lui seul une preuve scientifique.",
+  },
+  {
+    q: 'Les agents apprennent-ils ou s’améliorent-ils ?',
+    a: "L'apprentissage individuel n'est pas le phénomène que LIVEX cherche à étudier. Certaines variables d'un agent — croyances, mémoire ou maîtrise — peuvent évoluer quand une règle le prévoit. Ce changement d'état individuel reste distinct des motifs collectifs étudiés.",
   },
   {
     q: 'LIVEX prouve-t-il que les sociétés émergent « comme ça » ?',
@@ -37,11 +45,11 @@ const faq = [
   },
   {
     q: 'LIVEX est-il multijoueur ?',
-    a: "Pas en V0.2. PRISM envisage un futur mode « joueur-habitant » (incarner une entité), mais c'est une évolution lointaine, non engagée.",
+    a: "Le mode joueur-habitant (incarner une entité) n'est pas prévu dans le périmètre PRISM V2 décrit actuellement.",
   },
   {
     q: 'Quelle différence entre LIVEX, PRISM et PRISM-LDK ?',
-    a: "LIVEX est le projet complet. PRISM est son projet Unreal final. PRISM-LDK est le plugin Unreal (nom technique du module PrismLdk) qui expose les contrats SYNE aux Blueprints. LDK désigne le plugin, pas un produit distinct. Le moteur de simulation reste découplé d'Unreal : SYNE prend les décisions et détient l'état qui fait autorité.",
+    a: "LIVEX est le projet complet. PRISM V1 était le projet Unreal avec le plugin PRISM-LDK. Après la release V1, la cible PRISM V2 devient un monde physique autoritaire .NET ; SYNE garde la cognition des agents et le viewer Silk.NET prévu reste facultatif. La page PRISM présente ce périmètre cible.",
   },
   {
     q: 'Pourquoi existe-t-il un mock SYNE ?',
