@@ -4,7 +4,7 @@ description: "La cible PRISM V2 déplace l'autorité du monde physique vers un n
 seoTitle: "PRISM V2 : refondre le monde de LIVEX"
 date: 2026-11-04
 tags: ["prism", "v2", "architecture", "livex"]
-draft: false
+draft: true
 ---
 
 Dans la première version de LIVEX, PRISM donne une forme visuelle au monde calculé par SYNE. La cible V2 change cette relation en profondeur : PRISM ne représente plus seulement le monde, il en porte l'état physique.

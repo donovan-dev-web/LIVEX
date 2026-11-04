@@ -4,7 +4,7 @@ description: "Ce que signifie l'émergence collective dite faible dans LIVEX, et
 seoTitle: "Émergence collective faible : le sujet de LIVEX"
 date: 2026-11-04
 tags: ["emergence", "collectif", "methode", "livex"]
-draft: false
+draft: true
 ---
 
 Le mot « émergence » peut faire penser à un agent qui apprend, devient plus habile ou découvre seul une nouvelle stratégie. Ce n'est pas la question centrale de LIVEX. Le projet s'intéresse à ce qui apparaît **entre les agents**, à l'échelle d'un groupe.

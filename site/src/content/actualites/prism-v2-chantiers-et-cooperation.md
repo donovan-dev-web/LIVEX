@@ -4,7 +4,7 @@ description: "Les structures de PRISM V2 sont prévues sous forme de gabarits et
 seoTitle: "Chantiers, structures et coopération dans PRISM V2"
 date: 2026-11-04
 tags: ["prism", "v2", "construction", "cooperation"]
-draft: false
+draft: true
 ---
 
 Construire un abri ou un grenier ne se résume pas à faire apparaître un bâtiment. Dans la cible PRISM V2, une structure part d'un gabarit : une forme, des matériaux et un travail requis. Le chantier rend visibles les besoins et la progression avant que l'ouvrage soit terminé.
