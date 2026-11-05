@@ -528,6 +528,177 @@ public sealed class StructurePlacementTests
             ContainerAccessRights.Use).Allowed);
     }
 
+    [Fact]
+    public void AbandonedSitesCanBePurgedIndividuallyAndInBulk()
+    {
+        var world = CreateWorld(6, 6);
+        var construction = new StructureConstructionSystem(world);
+        var template = new StructureTemplateRule(
+            "hut",
+            2,
+            2,
+            2,
+            [new StructureBlockRule(0, 0, 0, 2), new StructureBlockRule(1, 0, 0, 3)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 2,
+            IntegrityThresholdPermille: 800);
+
+        Assert.True(construction.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(construction.CreateSite("site-2", template, new BlockCoordinate(3, 1, 5)).Succeeded);
+        Assert.True(construction.ContributeWork("site-1", "agent-1", 0).Succeeded);
+        Assert.True(construction.AbandonSite("site-1").Succeeded);
+
+        // Active site is not purged.
+        Assert.False(construction.RemoveAbandonedSite("site-2"));
+        Assert.Equal(2, construction.Sites.Count);
+
+        // Abandoned site is purged individually.
+        Assert.True(construction.RemoveAbandonedSite("site-1"));
+        Assert.Single(construction.Sites);
+        Assert.False(construction.RemoveAbandonedSite("site-1"));
+
+        // Bulk purge removes any remaining abandoned sites and reports the count.
+        Assert.True(construction.AbandonSite("site-2").Succeeded);
+        Assert.Equal(1, construction.PurgeAbandonedSites());
+        Assert.Empty(construction.Sites);
+        Assert.Equal(0, construction.PurgeAbandonedSites());
+    }
+
+    [Fact]
+    public void PurgedAbandonedSitesAreNotRestoredFromCheckpoint()
+    {
+        var world = CreateWorld(6, 6);
+        var construction = new StructureConstructionSystem(world);
+        var template = new StructureTemplateRule(
+            "hut",
+            2,
+            2,
+            2,
+            [new StructureBlockRule(0, 0, 0, 2), new StructureBlockRule(1, 0, 0, 3)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 2,
+            IntegrityThresholdPermille: 800);
+
+        Assert.True(construction.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(construction.AbandonSite("site-1").Succeeded);
+        Assert.True(construction.RemoveAbandonedSite("site-1"));
+        var checkpoint = construction.CaptureState();
+
+        var restoredWorld = CreateWorld(6, 6);
+        var restored = new StructureConstructionSystem(restoredWorld);
+        restored.RestoreState(
+            checkpoint,
+            new Dictionary<string, StructureTemplateRule>(StringComparer.Ordinal)
+            {
+                [template.Id] = template,
+            });
+
+        Assert.Empty(restored.Sites);
+    }
+
+    [Fact]
+    public void OptionalStructureWearIsDisabledByDefaultAndDamagesCompletedSitesWhenEnabled()
+    {
+        var world = CreateWorld(4, 4);
+        var construction = new StructureConstructionSystem(world);
+        var template = new StructureTemplateRule(
+            "hut",
+            1,
+            1,
+            1,
+            [new StructureBlockRule(0, 0, 0, 2)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 1,
+            IntegrityThresholdPermille: 800);
+        Assert.True(construction.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(construction.ContributeWork("site-1", "agent-1", 0).Succeeded);
+        Assert.False(construction.WearEnabled);
+
+        // Disabled by default: no-op even on a multiple tick.
+        Assert.Equal(0, construction.ApplyWear(2));
+        Assert.True(world.TryGetBlockOverride(new BlockCoordinate(1, 1, 5), out _));
+
+        var wearingWorld = CreateWorld(4, 4);
+        var wearing = new StructureConstructionSystem(wearingWorld, wearIntervalTicks: 2);
+        Assert.True(wearing.WearEnabled);
+        Assert.True(wearing.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(wearing.ContributeWork("site-1", "agent-1", 0).Succeeded);
+
+        Assert.Equal(0, wearing.ApplyWear(1));
+        Assert.True(wearingWorld.TryGetBlockOverride(new BlockCoordinate(1, 1, 5), out _));
+        Assert.Equal(1, wearing.ApplyWear(2));
+        Assert.False(wearingWorld.TryGetBlockOverride(new BlockCoordinate(1, 1, 5), out _));
+        Assert.Equal(0, wearing.InspectIntegrity("site-1").IntegrityPermille);
+    }
+
+    [Fact]
+    public void GetDamagedSitesListsCompletedStructuresBelowIntegrityThreshold()
+    {
+        var world = CreateWorld(4, 4);
+        var construction = new StructureConstructionSystem(world);
+        var template = new StructureTemplateRule(
+            "hut",
+            1,
+            1,
+            1,
+            [new StructureBlockRule(0, 0, 0, 2)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 1,
+            IntegrityThresholdPermille: 800);
+        Assert.True(construction.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(construction.ContributeWork("site-1", "agent-1", 0).Succeeded);
+        Assert.Empty(construction.GetDamagedSites());
+
+        world.SetBlockOverride(new BlockCoordinate(1, 1, 5), new BlockOverride(2, 0, IsAir: true));
+        var damaged = construction.GetDamagedSites();
+        Assert.Single(damaged);
+        Assert.Equal("site-1", damaged[0].Id);
+    }
+
+    [Fact]
+    public void AblationMechanismsDisableIndividualEffectsInIsolation()
+    {
+        var world = CreateWorld(4, 4);
+        var template = new StructureTemplateRule(
+            "granary",
+            1,
+            1,
+            1,
+            [new StructureBlockRule(0, 0, 0, 2)],
+            RequiresFlatGround: true,
+            RequiresClearVolume: true,
+            WorkTicks: 1,
+            IntegrityThresholdPermille: 800,
+            Effect: new StructureEffectRule("storage", new BlockCoordinate(0, 0, 0), new BlockCoordinate(0, 0, 0), 0));
+
+        // All enabled: effect active.
+        var allOn = new StructureConstructionSystem(world, mechanisms: AblationMechanisms.AllEnabled);
+        Assert.True(allOn.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(allOn.ContributeWork("site-1", "agent-1", 0).Succeeded);
+        Assert.Single(allOn.GetActiveEffects());
+
+        // Storage lever off alone: effect filtered out.
+        var storageOff = new AblationMechanisms(Storage: false);
+        var world2 = CreateWorld(4, 4);
+        var ablated = new StructureConstructionSystem(world2, mechanisms: storageOff);
+        Assert.True(ablated.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(ablated.ContributeWork("site-1", "agent-1", 0).Succeeded);
+        Assert.Empty(ablated.GetActiveEffects());
+
+        // Wear lever off alone: ApplyWear is a no-op even when enabled by interval.
+        var wearOff = new AblationMechanisms(Wear: false);
+        var world3 = CreateWorld(4, 4);
+        var wearing = new StructureConstructionSystem(world3, wearIntervalTicks: 1, mechanisms: wearOff);
+        Assert.True(wearing.CreateSite("site-1", template, new BlockCoordinate(1, 1, 5)).Succeeded);
+        Assert.True(wearing.ContributeWork("site-1", "agent-1", 0).Succeeded);
+        Assert.Equal(0, wearing.ApplyWear(1));
+        Assert.True(world3.TryGetBlockOverride(new BlockCoordinate(1, 1, 5), out _));
+    }
+
     private static WorldGrid CreateWorld(int width, int height)
     {
         var world = new WorldGrid(width, height, verticalSize: 16);

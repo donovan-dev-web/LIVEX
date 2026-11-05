@@ -104,5 +104,15 @@
     "placement": { "flatGround": true, "clearVolume": true },
     "integrityThresholdPermille": 1000,
     "isTree": true
+  },
+  {
+    "id": "workshop",
+    "size": [3, 3, 2],
+    "blocks": [{ "at": [1, 1, 0], "block": "planks" }],
+    "materials": [{ "item": "plank", "qty": 8 }],
+    "workTicks": 20,
+    "placement": { "flatGround": true, "clearVolume": true },
+    "effect": { "type": "production", "volume": [[0, 0, 0], [2, 2, 1]], "fatigueRecoveryBonusPermille": 0 },
+    "integrityThresholdPermille": 800
   }
 ]

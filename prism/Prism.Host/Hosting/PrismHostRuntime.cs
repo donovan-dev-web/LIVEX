@@ -1041,9 +1041,23 @@ public sealed class PrismHostRuntime : IWorldHost
         out WorldContainerStore? containerStoreOut,
         out CraftingStationRegistry? stationRegistryOut)
     {
+        var wearDecayPermille = 0;
+        if (compiledPack?.Parameters is { ValueKind: JsonValueKind.Object } wp &&
+            wp.TryGetProperty("wear", out var wearObj) &&
+            wearObj.ValueKind == JsonValueKind.Object &&
+            wearObj.TryGetProperty("structure", out var structObj) &&
+            structObj.ValueKind == JsonValueKind.Object &&
+            structObj.TryGetProperty("decayPerTickPermille", out var decayEl) &&
+            decayEl.TryGetInt32(out var decayValue))
+        {
+            wearDecayPermille = decayValue;
+        }
+        var wearIntervalTicks = wearDecayPermille > 0
+            ? Math.Max(1, 1000 / wearDecayPermille)
+            : 0;
         var constructionSystem = generatedWorld is null
             ? null
-            : new StructureConstructionSystem(generatedWorld.Grid, templates);
+            : new StructureConstructionSystem(generatedWorld.Grid, templates, wearIntervalTicks);
         construction = constructionSystem;
         var perceptionSettings = compiledPack is null
             ? null

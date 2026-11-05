@@ -331,6 +331,18 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         }
 
         var baseDurationTicks = GetRecipeDurationTicks(recipeId);
+        // A production workshop (structure effect of type 'production') speeds up crafting.
+        if (_structureEffects is not null && baseDurationTicks > 0)
+        {
+            var agent = GetAgent(command.AgentId);
+            var usage = _structureEffects.QueryProduction(
+                command.AgentId,
+                new BlockCoordinate(agent.Position.CellX, agent.Position.CellY, agent.Position.FeetZ));
+            if (usage is not null)
+            {
+                baseDurationTicks = Math.Max(1, baseDurationTicks * 4 / 5);
+            }
+        }
         var stationPerceived = stationPosition is null ||
                                _lifecycle.HasPerceivedBlock(command.AgentId, stationPosition.Value);
         if (allowDefer && !stationPerceived)

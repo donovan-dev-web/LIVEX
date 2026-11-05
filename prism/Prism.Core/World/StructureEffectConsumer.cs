@@ -14,6 +14,7 @@ public sealed class StructureEffectConsumer
     public const string ShelterEffectType = "shelter";
     public const string WaterAccessEffectType = "water_access";
     public const string StorageEffectType = "storage";
+    public const string ProductionEffectType = "production";
     private readonly StructureConstructionSystem _construction;
 
     public StructureEffectConsumer(StructureConstructionSystem construction)
@@ -40,6 +41,12 @@ public sealed class StructureEffectConsumer
         IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
         QueryEffect(agentId, feetPosition, StorageEffectType, groupPrincipals);
 
+    public StructureUsage? QueryProduction(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, ProductionEffectType, groupPrincipals);
+
     public StructureUsage? QueryShelterWithGroups(
         ulong agentId,
         BlockCoordinate feetPosition,
@@ -65,6 +72,15 @@ public sealed class StructureEffectConsumer
     {
         ArgumentNullException.ThrowIfNull(membership);
         return QueryStorage(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    public StructureUsage? QueryProductionWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryProduction(agentId, feetPosition, membership.PrincipalsOf(agentId));
     }
 
     /// <summary>

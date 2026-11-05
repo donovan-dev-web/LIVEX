@@ -76,17 +76,86 @@ public sealed class StructureConstructionSystem
     private readonly WorldGrid _world;
     private readonly SortedDictionary<string, SiteState> _sites = new(StringComparer.Ordinal);
     private readonly SortedDictionary<string, StructureTemplateRule> _templates = new(StringComparer.Ordinal);
+    private readonly int _wearIntervalTicks;
+    private readonly AblationMechanisms _mechanisms;
 
     public StructureConstructionSystem(
         WorldGrid world,
-        IReadOnlyDictionary<string, StructureTemplateRule>? templates = null)
+        IReadOnlyDictionary<string, StructureTemplateRule>? templates = null,
+        int wearIntervalTicks = 0,
+        AblationMechanisms? mechanisms = null)
     {
         ArgumentNullException.ThrowIfNull(world);
+        if (wearIntervalTicks < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(wearIntervalTicks));
+        }
+
         _world = world;
+        _wearIntervalTicks = wearIntervalTicks;
+        _mechanisms = mechanisms ?? AblationMechanisms.AllEnabled;
         if (templates is not null)
         {
             RegisterTemplates(templates.Values);
         }
+    }
+
+    public AblationMechanisms Mechanisms => _mechanisms;
+
+    public bool WearEnabled => _wearIntervalTicks > 0;
+    public int WearIntervalTicks => _wearIntervalTicks;
+
+    /// <summary>
+    /// Returns the completed sites whose current integrity is strictly below their configured
+    /// threshold (i.e. damaged structures whose effects are no longer active). Useful for
+    /// emitting damage events or driving repairs.
+    /// </summary>
+    public IReadOnlyList<StructureConstructionSite> GetDamagedSites() =>
+        _sites.Values
+            .Where(static site => site.State == StructureConstructionState.Completed)
+            .Select(site => (site, integrity: InspectIntegrity(site.Id)))
+            .Where(pair => !pair.integrity.EffectsActive && pair.integrity.TotalBlocks > 0)
+            .Select(pair => pair.site.ToSnapshot())
+            .ToArray();
+
+    /// <summary>
+    /// Applies optional, deterministic structure wear. When <see cref="WearEnabled"/> is false
+    /// (the default) this is a no-op. Otherwise, for every completed site whose
+    /// <paramref name="tick"/> is a positive multiple of <see cref="WearIntervalTicks"/>,
+    /// the last placed block of the site is removed from the world, lowering its integrity
+    /// and possibly deactivating its effects. Construction progress and checkpoints are
+    /// left untouched: wear is damage, not deconstruction.
+    /// </summary>
+    public int ApplyWear(long tick)
+    {
+        if (!WearEnabled || !_mechanisms.Wear || tick <= 0 || tick % _wearIntervalTicks != 0)
+        {
+            return 0;
+        }
+
+        var worn = 0;
+        foreach (var site in _sites.Values.ToArray())
+        {
+            if (site.State != StructureConstructionState.Completed || site.BlocksPlaced == 0)
+            {
+                continue;
+            }
+
+            var block = site.Template.Blocks[site.BlocksPlaced - 1];
+            var coordinate = new BlockCoordinate(
+                site.Origin.X + block.X,
+                site.Origin.Y + block.Y,
+                site.Origin.Z + block.Z);
+            if (_world.TryGetBlockOverride(coordinate, out var current) &&
+                !current.IsAir &&
+                current.MaterialId == block.MaterialId)
+            {
+                _world.RemoveBlockOverride(coordinate);
+                worn++;
+            }
+        }
+
+        return worn;
     }
 
     public IReadOnlyList<StructureConstructionSite> Sites =>
@@ -149,6 +218,11 @@ public sealed class StructureConstructionSystem
         {
             if (site.Template.Effect is not { } effect ||
                 !InspectIntegrity(site.Id).EffectsActive)
+            {
+                continue;
+            }
+
+            if (!_mechanisms.IsEnabled(effect.Type))
             {
                 continue;
             }
@@ -533,6 +607,44 @@ public sealed class StructureConstructionSystem
         site.RemovePlacedBlocks();
         site.State = StructureConstructionState.Abandoned;
         return StructureConstructionResult.Success(site.ToSnapshot());
+    }
+
+    /// <summary>
+    /// Removes a single abandoned site from the system. Returns <c>true</c> when the site existed
+    /// and was in the <see cref="StructureConstructionState.Abandoned"/> state and has been purged;
+    /// <c>false</c> otherwise (unknown site or site still active/completed).
+    /// </summary>
+    public bool RemoveAbandonedSite(string siteId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(siteId);
+        if (!_sites.TryGetValue(siteId, out var site) ||
+            site.State != StructureConstructionState.Abandoned)
+        {
+            return false;
+        }
+
+        _sites.Remove(siteId);
+        return true;
+    }
+
+    /// <summary>
+    /// Purges every site currently in the <see cref="StructureConstructionState.Abandoned"/> state.
+    /// Returns the number of sites removed. Abandoned sites are not restored on checkpoint load
+    /// because they are no longer part of the persisted collection.
+    /// </summary>
+    public int PurgeAbandonedSites()
+    {
+        var abandonedIds = _sites
+            .Where(static pair => pair.Value.State == StructureConstructionState.Abandoned)
+            .Select(static pair => pair.Key)
+            .ToArray();
+
+        foreach (var id in abandonedIds)
+        {
+            _sites.Remove(id);
+        }
+
+        return abandonedIds.Length;
     }
 
     private static bool Overlaps(

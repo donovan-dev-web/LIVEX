@@ -312,7 +312,7 @@ public sealed class ContentPackCompilerTests
         Assert.True(result.Succeeded, string.Join(Environment.NewLine, result.Errors));
         Assert.Equal(17, result.Pack!.Materials.Count);
         Assert.Equal(19, result.Pack.Items.Count);
-        Assert.Equal(8, result.Pack.Templates.Count);
+        Assert.Equal(9, result.Pack.Templates.Count);
         Assert.Single(result.Pack.GrowthRules);
         Assert.Equal(3, result.Pack.Effects.Count);
         Assert.Equal(250, result.Pack.Materials.Single(material => material.Id == "grass")

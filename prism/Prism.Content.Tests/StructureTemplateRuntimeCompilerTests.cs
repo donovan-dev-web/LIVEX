@@ -13,7 +13,7 @@ public sealed class StructureTemplateRuntimeCompilerTests
 
         var templates = StructureTemplateRuntimeCompiler.Compile(compilation.Pack!);
 
-        Assert.Equal(8, templates.Count);
+        Assert.Equal(9, templates.Count);
         Assert.Equal(120, templates["shelter_3x3"].WorkTicks);
         Assert.Equal(
             compilation.Pack!.Registries.Materials.GetId("planks"),
