@@ -51,6 +51,9 @@ public sealed class StructureConstructionTickPhase(
                         ProtocolJson.Options)));
             }
         }
+
+        // Optional structure wear (disabled unless configured via content).
+        construction?.ApplyWear(context.Tick);
     }
 
     public JsonElement CaptureState() =>

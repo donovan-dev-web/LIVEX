@@ -1,5 +1,14 @@
 # Annexe L. Feuille de route
 
+> **Mise à jour au 4 novembre 2026.** Les jalons ci-dessous conservent la
+> feuille de route établie pour la coupe historique d'octobre. PRISM V2 a
+> depuis reçu une implémentation partielle : host, contrat `1.0.0`, actions,
+> contenu, bots, ingestion brute ECHOS et boucle SYNE exercée sur 1 000 ticks.
+> Le run couplé R2 de 5 000 ticks, la reprise partagée, les métriques ECHOS,
+> les validations de viabilité et le packaging V2 restent ouverts. Le
+> [statut transversal actuel](../../governance/LIVEX-CURRENT-STATUS.md) donne
+> les preuves et leurs dates.
+
 Le livre décrit un état, arrêté au 12 octobre 2026. Cette annexe dit ce qui vient après, dans quel ordre, et selon quelle règle, sans poser de date. Les mises à jour de code et de gouvernance postérieures à cette coupe sont décrites séparément dans le [statut courant du dépôt](../../governance/LIVEX-STATUS.md); elles ne sont pas rétroprojetées dans les campagnes historiques du livre.
 
 **Pourquoi cette annexe importe.** Une feuille de route est l'endroit où un projet est le plus tenté de mentir : en transformant un souhait en étape, et une étape en acquis. La règle adoptée ici est inverse : ne figure ci-dessous que ce qui est **déjà instrumenté** par un jalon, une décision ou un test, ou ce qui est explicitement **hors périmètre**. Un projet qui publie ses intentions doit aussi publier ses refus.
@@ -40,9 +49,14 @@ Dans la coupe du livre, le chantier principal restant est **l'indice de viabilit
 
 La comparaison entre runs et la reconstruction causale sont livrées. La **campagne de calibration** qui doit fournir des constantes mesurées, et non des valeurs de départ raisonnables, reste à mener : elle porte à la fois sur l'indice et sur les constantes de besoins et de seuils du moteur.
 
-## 4. Le rendu (PRISM) : une version de travail, une validation en attente
+## 4. PRISM V1 : état historique du rendu et validation en attente
 
-PRISM et son plugin sont en **version de travail**. Les contrats de transport sont stabilisés et documentés, mais l'étape décisive est l'autre : **valider contre SYNE réel** le cycle de préparation, d'initialisation et de démarrage, puis les instantanés, les différences et les événements. Tant que cette validation n'a pas eu lieu, une réussite contre des simulacres ne prouve pas l'interopérabilité ; la règle « un simulacre n'est pas une acceptation » est explicite dans le projet.
+Dans cette coupe historique V1, PRISM et son plugin sont en **version de
+travail**. Les contrats de transport sont stabilisés et documentés, mais le
+cycle de préparation, d'initialisation et de démarrage doit encore être validé
+contre SYNE réel. Une réussite contre des simulacres ne prouve pas
+l'interopérabilité. Cette réserve concerne V1 ; les critères de validation
+PRISM V2 sont différents et sont résumés au début de cette annexe.
 
 Au-delà de la validation : la génération de présentation, la mise à jour stable par identifiant, les vues d'inspection et de relations, la mesure du coût des instantanés selon le nombre d'entités, puis l'entretien des tests d'interopérabilité et de compatibilité de contrat. Ces étapes n'ajoutent aucune décision au monde : le rendu ne décide pas.
 

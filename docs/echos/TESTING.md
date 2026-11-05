@@ -360,8 +360,11 @@ et Parquet, puis vérifie les décisions, métriques et endpoints REST, dont le
 rapport post-run de calibration. Le test est activé par `LIVEX_SYNE_E2E=1` et
 exécuté par le job CI transverse quand les sources SYNE ou ECHOS changent.
 Ce test valide uniquement SYNE→ECHOS (ingestion, persistance, API et rapport).
-Il ne compile ni ne teste le plugin Unreal PRISM-LDK (`PrismLdk`) ni le projet
-Unreal PRISM qui l'intègre ; voir `../prism/TESTING.md`.
+Il ne compile ni ne teste le host PRISM V2 ou le plugin Unreal PRISM-LDK
+(`PrismLdk`) de la release V1. Les tests du flux PRISM dans ECHOS valident le
+parseur, l'ingestion et la persistance côté ECHOS seulement ; ils ne valident
+pas le producteur PRISM ni son intégration en run supervisé. Voir
+`../prism/TESTING.md` pour les tests du host.
 
 ### 4.6 Intégration `syne-mock` → ECHOS
 

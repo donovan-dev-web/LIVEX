@@ -1,7 +1,7 @@
 # COMMUNICATION.md
 
 **Composant** : LIVEX (général)
-**Statut** : [V1 ARCHIVÉE — CONTRAT V2 PRÉVU]
+**Statut** : [TRANSPORT V1 HISTORIQUE — CONTRAT PRISM V2 IMPLÉMENTÉ ; INTÉGRATION EN COURS]
 **Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`
 **Source Monographie** : §2.4 (contrats de transport), Partie 5.4 (PRISM), Partie 4.7 (API ECHOS)
@@ -10,41 +10,41 @@
 
 ## 1. Objectif
 
-Ce document décrit les **échanges inter-composants** de LIVEX. La section 3A présente la cible V2 de PRISM ; les sections 3 à 8 décrivent les transports V1 et restent une référence historique pour la release 1.0.0. Elles ne décrivent pas le contrat cible V2. Ne pas confondre ces échanges avec `syne/COMMUNICATION_PROTOCOL.md`, qui décrit la communication inter-entités dans le monde simulé.
+Ce document décrit les **échanges inter-composants** de LIVEX. La section 3A décrit le contrat PRISM V2 et son état d'intégration ; les sections 3 à 8 décrivent les transports V1 et restent une référence historique pour la release 1.0.0. Elles ne décrivent pas le contrat V2. Ne pas confondre ces échanges avec `syne/COMMUNICATION_PROTOCOL.md`, qui décrit la communication inter-entités dans le monde simulé.
 
 ## 2. Principes
 
 - **JSON texte camelCase** pour les charges utiles observabilité.
 - En V1, SYNE est l'autorité du monde et ECHOS/PRISM consomment ses flux.
-- Dans la cible V2, PRISM devient l'autorité de l'espace et de la matière ; SYNE garde la cognition et échange des commandes, observations et événements.
+- En V2, PRISM porte l'autorité de l'espace et de la matière ; SYNE porte la cognition. Cette séparation est déjà utilisée par le host et la boucle couplée, même si l'extraction complète du monde SYNE reste à faire.
 - Le contrat V2 est indépendant du transport et du moteur graphique.
 - **Indépendance** : aucun module ne dépend des abstractions des autres (Matrice de dépendances `ARCHITECTURE.md`).
 
 ## 3. Flux réseau
 
-### 3A. Cible PRISM V2 — contrat SYNE↔PRISM 1.0.0
+### 3A. PRISM V2 — contrat SYNE↔PRISM 1.0.0 et intégration actuelle
 
 La V2 remplace l'ancien modèle où PRISM lisait des snapshots globaux SYNE.
-Le protocole cible distingue le plan de contrôle du run et le plan de données
+Le protocole distingue le plan de contrôle du run et le plan de données
 des ticks. SYNE demeure l'horloge maîtresse : PRISM exécute un tick lorsqu'il
 reçoit la requête correspondante.
 
-| Flux cible | Sens | Contenu |
+| Flux | Sens | Contenu et état |
 | :-- | :-- | :-- |
-| Commandes | SYNE → PRISM | Intentions d'agent, primitives et macro-actions, avec identifiants idempotents |
-| Observations | PRISM → SYNE | Perception locale différentielle, état de soi et objets perçus |
-| Événements | PRISM → SYNE | Résultats, échecs motivés, effets matériels et changements du calendrier |
-| Flux de lecture | PRISM → ECHOS / viewer | Instantanés et deltas de régions, métriques et état des chantiers |
-| Contrôle du run | Launcher → PRISM | Préparer, démarrer, suspendre, reprendre et arrêter ; indépendant du transport de tick |
+| Commandes | SYNE → PRISM | Primitives et macro-actions idempotentes ; traitées par le host |
+| Observations | PRISM → SYNE | Perception locale différentielle et état de soi ; mappés aux croyances SYNE |
+| Événements | PRISM → SYNE | Résultats et échecs motivés ; intégrés aux résultats de tick |
+| Flux de lecture | PRISM → ECHOS / viewer | Snapshots, deltas, entités, métriques et chantiers ; client ECHOS persistant, viewer live encore à raccorder |
+| Contrôle du run | Launcher → PRISM | API HTTP de cycle de vie du host, intégration en cours |
 
-Le cycle prévu est `Prepare(config, seed, contentHash)` → `world_ready` →
+Le cycle contractuel est `Prepare(config, seed, contentHash)` → `world_ready` →
 incarnation des agents → `Start` → échanges ordonnés `TickRequest` / `TickResult`.
 Les messages utilisent JSON `camelCase`, `protocolVersion` et `tick`. Les
 commandes sont idempotentes, les échecs portent un code stable, les champs
 inconnus sont ignorés et l'absence d'un champ facultatif signifie « non
 mesuré ». Le détail normatif est dans [`prism/API_CONTRACTS.md`](prism/API_CONTRACTS.md).
 
-Le visualiseur prévu est un consommateur de lecture facultatif : il ne détient
+Le visualiseur est un consommateur de lecture facultatif : il ne détient
 pas l'état du monde et n'en cadence pas l'avancement. ECHOS consomme le flux de
 lecture PRISM et peut joindre les observations cognitives de SYNE.
 

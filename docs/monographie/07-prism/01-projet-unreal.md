@@ -1,4 +1,10 @@
-# PRISM I. Le projet Unreal et la place du rendu
+# PRISM V1. Le projet Unreal et la place du rendu
+
+> **Repère historique.** Ce chapitre décrit PRISM V1, la couche Unreal de la
+> release LIVEX 1.0.0. Il ne décrit pas PRISM V2, qui porte maintenant
+> l'autorité du monde physique dans une simulation .NET headless. La
+> présentation V2 et son état courant sont exposés dans le chapitre
+> [PRISM V2](05-prism-v2.md).
 
 Une simulation qui ne se voit pas reste une expérience mentale. PRISM donne au monde une représentation. Mais une représentation peut tricher : elle peut décider à la place du moteur, inventer une vie que le monde ne produit pas. Ce chapitre décrit la place du rendu et la frontière qui empêche cette triche.
 

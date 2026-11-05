@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : —
 **Source Monographie** : Partie 1 (Préface & Fondements), Partie 2 (Présentation du Projet)
 
@@ -14,9 +14,9 @@ LIVEX — **Living Intelligent Virtual Ecosystem eXperience** — est une platef
 
 | Module | Nom complet | Rôle |
 | :-- | :-- | :-- |
-| **SYNE** | Systems & Emergent Network Engine | Moteur de simulation ; possède la vérité du monde ; indépendant du rendu |
+| **SYNE** | Systems & Emergent Network Engine | Moteur autonome V1 ; en couplage V2, cognition et décisions des agents |
 | **ECHOS** | Emergent Cognition & Holistic Observation System | Système d'observation, d'analyse et de pilotage |
-| **PRISM** | Perceptual Rendering & Interactive Simulation Module | Projet Unreal final de LIVEX, intégrant le plugin PRISM-LDK |
+| **PRISM** | Persistent Reality & Interactive Simulation Module | En V1, rendu Unreal ; en V2, monde physique .NET headless, intégration en cours |
 
 LIVEX propose une **troisième voie** entre deux extrêmes :
 - scripter des comportements prédéfinis, ou
@@ -47,22 +47,22 @@ Trois exigences dominantes structurent le projet :
 3. **Observabilité partielle** — une entité ne connaît qu'une partie du monde ; l'information imparfaite est un moteur de diversité comportementale, d'erreur et d'exploration.
 4. **Émergence collective par contraintes** — mémoire dégradée, communication non confidentielle, énergie comme monnaie d'action : les motifs de groupe naissent des contraintes et interactions locales, pas d'un scénario collectif. L'apprentissage individuel n'est pas la cible.
 5. **Déterminisme scientifique** — grâce à un PRNG reproductible (xoshiro256\*\*) et une persistance de l'état complet, LIVEX est un instrument valide pour l'étude de l'émergence.
-6. **Indépendance du rendu** — SYNE fonctionne sans interface graphique ; PRISM communique avec lui par des contrats de transport, sans modifier la source de vérité du moteur.
+6. **Séparation versionnée** — en V1, SYNE porte le monde et PRISM le représente ; dans le couplage V2, PRISM porte l'état physique et SYNE la cognition. Le rendu reste indépendant de l'avancement du monde.
 
-**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
-complet qui réunit SYNE, ECHOS et PRISM. **PRISM** est son projet Unreal final.
-Il intègre **PRISM-LDK** (*LIVEX Development Kit*), le plugin qui expose les
-contrats SYNE aux Blueprints. LDK désigne le plugin, pas un projet Unreal
-complet distinct. Le dossier `../../prism/LDK/` contient le plugin et, dans le
-checkout courant, un `LDK.uproject` servant d'hôte technique pour son
-développement/sa compilation ; ce fichier n'est pas le produit final LIVEX.
-Le plugin privilégie les types, acteurs et mécanismes natifs d'Unreal ; le
-C++ est limité aux besoins d'intégration.
+**LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) réunit SYNE,
+ECHOS, PRISM et le Launcher. **PRISM V1** est le projet Unreal de la release
+1.0.0 ; il intègre **PRISM-LDK** (*LIVEX Development Kit*), le plugin qui
+expose les contrats SYNE à Blueprint. **PRISM V2** est une simulation .NET
+headless distincte. Son host détient le monde physique ; SYNE conserve la
+cognition et reçoit les observations PRISM. La boucle couplée a été exercée
+sur 1 000 ticks ; l'extraction complète du monde SYNE et le run R2 de 5 000
+ticks restent à faire. Le viewer V2 est facultatif et son lancement live
+reste à raccorder.
 
-Le dépôt inclut aussi `../../syne-mock/`, un serveur Node.js de développement pour
-tester les contrats et l'intégration PRISM sans démarrer le moteur complet.
-Il simule les échanges et une partie du comportement, mais ne remplace pas SYNE
-et ne garantit pas des décisions ou trajectoires équivalentes.
+Le dépôt inclut aussi `../../syne-mock/`, un serveur Node.js de développement
+pour les contrats V1. Il simule les échanges et une partie du comportement,
+mais ne remplace pas SYNE et ne garantit pas des décisions ou trajectoires
+équivalentes. Les campagnes PRISM V2 utilisent `Prism.Bots`.
 
 ## 4. L'ambition scientifique et culturelle
 

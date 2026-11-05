@@ -1,8 +1,8 @@
 # ROADMAP.md
 
 **Composant** : ECHOS
-**Statut** : [DRAFT]
-**Dernière mise à jour** : 18 octobre 2026
+**Statut** : [ROADMAP EN COURS — ANALYSE V1 DISPONIBLE ; INGESTION PRISM V2 PARTIELLE]
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `../ROADMAP.md` (racine), `../syne/ROADMAP.md`
 **Source Monographie** : §9.6, §7.9 (adapté), §4.2 (architecture)
 
@@ -26,8 +26,9 @@
 | 6 | Analyse causale | Reconstruction des chaînes causales depuis `decision_traces`, outillage de navigation — **LIVRÉ (ECHOS-060 → 063, jalon ph6, issues #215 → #218)** : ADR-002 [Accepted] (calcul hors ligne), `causal.build_chain` (7 couches), cycle/récurrence + profondeur bornée, `CausalCache` invalidé sur version, endpoint `GET /api/runs/{id}/causal-chains/{agentId}` |
 | 7 | Comparaison expérimentale | `/api/compare`, métriques de reproductibilité, format d'export | **LIVRÉ (ECHOS-070 → 072, jalon ph7, U7)** : `GET /api/compare` (`is_reproducible` seed×version×SHA-256, `ReproducibilityScore = 1 − (CognitiveDiff+SocialDiff)/2`, L2 normalisées sur croyances/confiance — `echos/analysis/reproducibility.py`), exports `json`/`csv` (séries alignées `tick,engine,metric,run_a_value,run_b_value,diff`), 11 tests (`test_compare.py`), couverture 97,97 % |
 | 8 | Interface intégrée | Écrans d'observation — **RETRAIT côté ECHOS (ADR-007, 05/10/2026)** : l'interface React/Vite a été supprimée ; la présentation est portée par les fenêtres natives du Launcher (consoles de logs, fenêtre d'analyse) |
-| 9 | Tests & couverture | **LIVRÉ (U8, ECHOS-090→092)** : suite pytest + goldens, couverture 96,01 %, test d’intégration réel SYNE→ECHOS en CI, rapport de calibration déterministe. Cette validation ne couvre pas PRISM ; PRISM-LDK (`PrismLdk`) et le projet Unreal PRISM doivent être validés séparément contre SYNE réel. |
+| 9 | Tests & couverture | **LIVRÉ pour la voie ECHOS V1** : suite pytest, goldens et intégration SYNE→ECHOS selon les relevés datés des rapports d'acceptation. Cette validation ne prouve pas l'ingestion en production du flux PRISM V2. |
 | 10 | Shell Electron | **RETRAIT (ADR-007, 05/10/2026)** : le packaging `.deb`/`.exe` livré (backend PyInstaller + interface FastAPI, CI matrice sur tag `echos-v*`) a été **supprimé** — ECHOS n'a plus d'interface ni de shell de bureau. Voir `../launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md` |
+| 11 | Flux de lecture PRISM V2 | **SOCLE IMPLÉMENTÉ (ECHOS-100)** : validation et persistance atomique des enveloppes séquencées, avec `contentHash`, et API de restitution `/api/runs/{id}/prism-stream`. L'ingestion au cycle de run, les métriques PRISM et la comparaison des runs restent à raccorder. |
 
 ### État de l’acceptation d’ingestion
 
@@ -46,7 +47,8 @@ La phase d’acceptation d’octobre 2026 a verrouillé par tests contractuels l
 ## 4. Dépendances externes
 
 - SYNE : WebSocket :5180 (snapshot/event), HTTP :5181 (contrôle), schéma SQLite Annexe G. Version moteur : **0.17.0** (calibration B1, ADR-016).
-- PRISM : les vues d'analyse sont portées par le Launcher depuis l'ADR-007 (l'interface ECHOS ayant été retirée) ; une éventuelle réutilisation dans PRISM reste à coordonner (cf. `../prism/UX_INTERACTION.md`) — coordination en `../ARCHITECTURE.md` racine.
+- PRISM V1 : Unreal/PRISM-LDK est un consommateur historique des flux SYNE.
+- PRISM V2 : ECHOS ingère séparément le flux de lecture du host ; le stockage brut est livré, mais le raccordement au run supervisé et aux métriques est ouvert. ECHOS n'est pas l'interface graphique de PRISM.
 
 ## 5. Limites assumées (cf. `LIMITATIONS.md`)
 

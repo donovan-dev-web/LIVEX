@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 12 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `../COMMUNICATION.md`, `DATA_MODEL.md`
 **Source Monographie** : §2.4 (contrats de transport), §5.4 (PRISM), §3.24 (événements), ADR-003/ADR-004
 
@@ -10,11 +10,13 @@
 
 ## 1. Objectif
 
-Définit les **contrats de données** exposés par le moteur .NET SYNE aux
-consommateurs, dont ECHOS et PRISM (projet Unreal) via le plugin PRISM-LDK
-(`PrismLdk`). Les
-consommateurs affichent ou pilotent le moteur ; SYNE reste l'autorité pour la
-simulation et les décisions. Toute évolution est gérée par `../../VERSIONING.md`.
+Définit les **contrats de données** exposés par le moteur SYNE autonome aux
+consommateurs V1, dont ECHOS et PRISM Unreal via PRISM-LDK (`PrismLdk`). Dans
+le couplage PRISM V2, le contrat SYNE↔PRISM distinct est versionné en `1.0.0`
+et décrit dans [`../prism/API_CONTRACTS.md`](../prism/API_CONTRACTS.md). Le
+couplage actuel mappe les observations PRISM vers la cognition SYNE ; il ne
+transforme pas les anciens snapshots SYNE en source de vérité du monde V2.
+Toute évolution est gérée par `../../VERSIONING.md`.
 
 Le service séparé `../../syne-mock/` simule une partie de ces contrats et flux
 pour développer le plugin sans démarrer le moteur. Il facilite l'intégration,

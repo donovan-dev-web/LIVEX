@@ -12,6 +12,11 @@ Cette annexe rassemble deux matériaux que le récit n'interrompt pas : les **pa
 | `simulation.simulatedSecondsPerTick` | 60 (défaut, soit un tick = une minute) ; 5 (profil PRISM) | Temps simulé par tick |
 | `worldWidth` / `worldHeight` | 500 (défaut) ; 2 240 (profil PRISM) | Dimensions du monde |
 | `worldCellSize` | 10 (défaut) ; 32 (profil PRISM) | Taille de cellule de la grille spatiale |
+
+> Le profil `prism` de ce tableau est un profil SYNE hérité, utilisé pour la
+> compatibilité et le couplage temporel. Il ne définit pas la carte physique
+> de PRISM V2 : celle-ci est générée par le host depuis un pack de contenu
+> dans son monde 2,5D.
 | `world.metersPerUnit` | 1,0 | Conversion des unités logiques |
 
 Deux profils coexistent : le scénario de référence (cadence 10) et le profil destiné au rendu (cadence 6, monde de 2 240 sur 2 240, soit environ 5 km² après conversion). Le facteur 100 de conversion vers Unreal est fixé par l'ADR-003 de PRISM.

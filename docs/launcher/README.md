@@ -1,29 +1,29 @@
 # LAUNCHER — Orchestrateur de la pile LIVEX
 
 **Composant** : LIVEX (Launcher)
-**Statut** : [DRAFT]
+**Statut** : [RELEASE V1 DISPONIBLE — INTÉGRATION PRISM V2 PARTIELLE]
 **Version cible** : 0.1.0
-**Dernière mise à jour** : 19 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `../syne`, `../echos`, `../prism`, `../COMMUNICATION.md`, `../../VERSIONING.md`
 **Source Monographie** : —
 
 ---
 
-## Rôle prévu
+## Rôle et état actuel
 
-Le LIVEX Launcher est la **couche d'orchestration** de LIVEX. Il permet de
-piloter, de combiner, de surveiller et d'archiver les travaux conduits avec SYNE,
-ECHOS et PRISM, depuis une interface unique et un format de données unique.
+Le LIVEX Launcher est la **couche d'orchestration** de LIVEX. La version
+0.1.0 est livrée avec la release V1 ; elle pilote, surveille et archive les
+travaux conduits avec SYNE et ECHOS dans un format de campagne commun.
 
 Il ne contient **ni la logique de simulation, ni la logique d'analyse, ni la
 logique de rendu**. Ces responsabilités appartiennent respectivement à SYNE, ECHOS
 et PRISM. Le Launcher ne fait que les coordonner.
 
-SYNE est le moteur unique du projet. **ECHOS et PRISM sont deux modes
-d'utilisation de ce moteur, de poids égal et sélectionnables** : ECHOS pour
-l'analyse, la reproductibilité et la calibration ; PRISM pour la représentation
-temps réel du monde simulé. Le Launcher permet de les activer séparément ou
-ensemble, sans jamais introduire de hiérarchie entre eux.
+En V1, SYNE est le moteur unique ; ECHOS analyse ses sorties et PRISM/Unreal
+les représente. En V2, PRISM est un moteur physique distinct, relié à la
+cognition SYNE par un contrat versionné. Le host PRISM possède un manifeste et
+le Launcher générique peut le reconnaître, mais le cycle complet de lancement,
+de contrôle des ports, d'archivage et de distribution V2 reste à intégrer.
 
 Le Launcher est prévu comme un composant **de poids égal** à SYNE, ECHOS et PRISM
 dans l'architecture de LIVEX : il possède son modèle de données, son format
@@ -47,8 +47,10 @@ démarrage sont dans `PACKAGING.md`.
 - **Avalonia** — rendu multi-plateforme, interface native et non web.
 - **SYNE** — moteur, indispensable pour tout profil d'exécution.
 - **ECHOS** — analyse, reproductibilité, calibration.
-- **PRISM** — représentation temps réel (verrouillé tant qu'il n'est pas
-  implémenté, voir `ROADMAP.md`).
+- **PRISM V1** — représentation Unreal de la release (mode Immersion soumis à
+  ses critères d'acceptation historiques).
+- **PRISM V2** — host .NET headless ; raccordement de session et de packaging
+  suivi par LAUNCHER-200 à 202.
 
 Le Launcher ne dépend d'aucun autre composant pour fonctionner. Les composants
 sont des participants, pas des dépendances.

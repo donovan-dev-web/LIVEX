@@ -50,11 +50,11 @@ Un fichier de configuration regroupe les paramètres en sections : simulation, a
 
 ## 3. Les profils
 
-Deux profils sont fournis. Le profil de référence reprend les défauts, avec une cadence de 10 ticks par seconde. Le profil de représentation décrit un monde plus vaste : 2 240 par 2 240, cellule de 32, 6 ticks par seconde et 5 secondes simulées par tick. Ce second profil est destiné à la scène Unreal, non à la simulation scientifique.
+Deux profils historiques sont fournis dans SYNE. Le profil de référence reprend les défauts, avec une cadence de 10 ticks par seconde. Le profil `prism` décrit une configuration SYNE de 2 240 par 2 240 unités, cellule de 32, 6 ticks par seconde et 5 secondes simulées par tick. Il sert à la compatibilité et au couplage temporel de SYNE ; il ne définit pas la géométrie du monde PRISM V2, qui utilise son propre pack et son monde 2,5D.
 
 Un profil s'applique **sous** la surcouche de configuration : les défauts viennent d'abord, le profil ensuite, la surcouche enfin, les options de ligne de commande en dernier. Ce point a son importance : un profil oublié au moment de la préparation du monde produisait un run sur le seul profil de référence. La correction garantit que la configuration résolue complète est transmise à la préparation.
 
-La distinction entre les deux profils est fondamentale pour la lecture du livre. Le profil de référence est celui de la science : c'est sur lui que les calibrations ont été faites et que les campagnes tournent. Le profil de représentation est celui de la scène : il agrandit le monde pour l'immersion visuelle, mais il ne change pas l'économie du moteur (les réserves sont globales, le coût de déplacement est forfaitaire). Un résultat scientifique obtenu sur le profil de représentation vaudrait ce que vaut une mesure faite dans des conditions non calibrées : rien de solide. Le livre y revient dans le chapitre PRISM.
+La distinction reste importante : ces deux profils règlent le monde interne de SYNE. Aucun ne remplace le pack de contenu ni les règles physiques exécutées par PRISM V2. Un résultat mesuré sur le profil `prism` SYNE ne vaut pas automatiquement validation du monde PRISM ; chaque run doit déclarer le moteur et la configuration effectivement utilisés.
 
 ## 4. Les options de ligne de commande
 

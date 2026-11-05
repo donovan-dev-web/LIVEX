@@ -30,7 +30,7 @@ D'où la troisième voie, qui donne son plan au livre. Il ne s'agit ni de script
 
 C'est une posture mécaniste et artisanale. Mécaniste, parce que chaque phénomène doit pouvoir être retracé à ses causes locales, sans narration cachée ni composant opaque. Artisanale, parce que la démarche est celle d'un atelier : construire, expérimenter, douter de ses hypothèses, recommencer, et documenter ce qui a été appris.
 
-Cette posture se traduit dans l'architecture par une séparation stricte des responsabilités. Un composant décide (SYNE, le moteur autoritaire). Un composant mesure sans toucher (ECHOS, l'observatoire). Un composant montre sans décider (PRISM, la scène). Un composant archive pour rejouer (le Launcher). Cette séparation protège la question : elle empêche que la représentation se substitue au monde, que la mesure modifie le mesuré, ou que l'archive relaie au lieu de sceller.
+Cette posture se traduit dans l'architecture par une séparation des responsabilités qui évolue entre les versions. En V1, SYNE détient le monde simulé ; ECHOS l'observe ; PRISM/Unreal le représente ; le Launcher orchestre et archive. En V2, PRISM devient l'autorité de l'état physique, tandis que SYNE traite la cognition des agents et lui envoie des commandes. PRISM renvoie des observations et événements ; le couplage les applique aux croyances SYNE. ECHOS peut ingérer les enveloppes de lecture PRISM, mais cette voie n'est pas encore branchée au cycle de production des runs. La séparation protège la question scientifique sans prétendre que l'extraction et l'intégration sont achevées.
 
 ```mermaid
 flowchart TB
@@ -49,7 +49,7 @@ Chaque boîte de ce schéma correspond à une partie du livre. La partie I étab
 
 ## 1.4 Ce que ce livre va faire, et ne pas faire
 
-Ce livre n'est ni un jeu commercial, ni une preuve d'intelligence, ni une société humaine miniature, ni un moteur physique. C'est le récit complet d'une plateforme expérimentale en temps réel, dans son état réel d'octobre 2026.
+Ce livre n'est ni un jeu commercial, ni une preuve d'intelligence, ni une société humaine miniature, ni un moteur physique. C'est le récit d'une plateforme expérimentale en temps réel. Cette édition décrit l'état connu au 4 novembre 2026 et distingue la release V1 des fonctions PRISM V2 déjà implémentées et de celles qui restent ouvertes.
 
 Vous y suivrez des entités comme Charlie, dont un calcul de décision complet est détaillé au chapitre SYNE : Charlie choisit de manger plutôt que de socialiser, non parce que je l'ai décidé, mais parce que ses chiffres penchent. Vous verrez pourquoi marcher coûtait trop cher avant une calibration, et comment cette découverte a rendu le monde viable. Vous comprendrez pourquoi un zéro dans une courbe peut signifier « l'instrument n'a rien vu » plutôt que « le monde est vide ». Ces trois exemples, un calcul, un échec corrigé, une mesure honnête, résument la méthode : montrer les mécanismes, assumer les erreurs, distinguer l'observé de l'aveugle.
 

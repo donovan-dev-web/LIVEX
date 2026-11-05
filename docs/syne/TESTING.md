@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 31 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `DETERMINISM.md`, `ARCHITECTURE.md`
 **Source Monographie** : §7.1 (xUnit + Moq), Annexe J (jalons de validation, 160+ tests), Annexe I (benchmarks)
 
@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Au relevé du **19 octobre 2026**, la suite exécutée compte **695 tests : 604 Core + 91 Console**, comme détaillé dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md#4-inventaire-des-tests). Les pourcentages de couverture restent ceux des rapports datés du statut (§6) et ne sont pas recalculés par ce document. Les additions décrites dans l'historique ci-dessous sont des jalons antérieurs ; la ventilation détaillée s'arrête à un état précédent et n'est pas le compte courant.
+Au relevé du **4 novembre 2026**, la suite exécutée compte **708 tests réussis : 604 Core + 104 Console**. Le pourcentage de couverture n'a pas été recalculé dans ce relevé ; les valeurs de couverture plus anciennes restent datées et ne doivent pas être lues comme une mesure du 4 novembre. Le relevé complet est dans le [statut transversal actuel](../governance/LIVEX-CURRENT-STATUS.md). La validation de la release V1 et ses compteurs détaillés sont conservés dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -84,8 +84,10 @@ Au relevé du **19 octobre 2026**, la suite exécutée compte **695 tests : 604 
 
 ## Points restés ouverts dans ce document
 - Répartition numérique exacte des tests (par système) à établir lors de l'implémentation.
-- Les tests du plugin PRISM-LDK (`PrismLdk`) et du projet Unreal PRISM sont
-  hors périmètre SYNE ; voir leurs projets respectifs. Le moteur et
-  `syne-mock` ont des suites distinctes : les tests du mock valident ses
-  contrats simulés, pas l'équivalence de ses algorithmes avec SYNE.
+- Les tests du plugin PRISM-LDK (`PrismLdk`) et du projet Unreal PRISM V1 sont
+  hors périmètre SYNE ; voir leurs projets respectifs. Les tests de l'adaptateur
+  V2 (`PrismObservationMapperTests`, `PrismCoupledRunnerTests`) appartiennent à
+  la suite SYNE. Le moteur et `syne-mock` ont des suites distinctes : les tests
+  du mock valident ses contrats simulés, pas l'équivalence de ses algorithmes
+  avec SYNE.
 | Livres (SYNE-121) | Coût d’écriture débité, tick poinçonné, lecteurs distincts, mutation tracée, désactivation par défaut, snapshot et reprise, événements console `world.book_written`/`world.book_read` — `SimulationLoopTests`, `ObservabilityTerritoryTests` | `dotnet test --filter "FullyQualifiedName~Books"` |

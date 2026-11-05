@@ -1,6 +1,6 @@
 # SYNE V. Les contrats
 
-SYNE possède la vérité du monde, mais il ne vit pas seul. Deux familles de clients l'entourent : ceux qui observent et mesurent (ECHOS), ceux qui montrent et pilotent (PRISM). Pour qu'ils puissent travailler sans réécrire le monde ni dépendre de ses détails internes, il faut des contrats explicites, versionnés et stables. Ce chapitre les décrit.
+En V1 autonome, SYNE publie l'état de son monde par ses contrats d'observabilité. ECHOS l'ingère et PRISM-LDK le représente. En V2, ce contrat reste nécessaire au mode SYNE autonome, mais le couplage avec PRISM utilise un contrat distinct : commandes SYNE vers PRISM, puis observations et événements PRISM vers SYNE. Les deux frontières doivent être identifiées par leur version.
 
 Depuis la version 0.17.0, le **contrat d'observabilité** porte la version 0.5.0, et la **version moteur** diffusée dans chaque message est 0.17.0. La version moteur identifie les règles du run : deux runs ne sont comparables que si leurs versions moteur coïncident.
 
@@ -9,6 +9,12 @@ Un contrat, dans ce projet, n'est pas un document : c'est une interface qui fonc
 **Pourquoi ce chapitre importe pour la question directrice.** Pour qu'on puisse observer un phénomène sans le fausser, il faut une langue commune entre celui qui agit et celui qui regarde. Les contrats sont cette langue. Sans eux, chaque client devrait deviner les détails internes du moteur, et toute évolution casserait les observateurs. Pour la question directrice, l'enjeu est précis : la séparation entre décider et mesurer n'est possible que si l'état du monde est transmis de façon stable et lisible. Les contrats sont donc ce qui rend l'observation scientifique plutôt qu'artisanale.
 
 ## 1. Deux transports
+
+Les ports 5180/5181 décrits dans ce chapitre concernent le service SYNE
+autonome et les intégrations V1. Ils ne décrivent pas à eux seuls le transport
+du contrat SYNE↔PRISM `1.0.0`. Dans V2, l'adaptateur SYNE consomme le flux de
+lecture PRISM, mappe les observations en perceptions cognitives et les applique
+aux croyances ; cette boucle a été exercée sur 1 000 ticks.
 
 Le moteur expose deux transports.
 

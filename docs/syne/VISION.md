@@ -10,14 +10,14 @@
 
 ## 1. Rôle de SYNE
 
-SYNE (**Systems & Emergent Network Engine**) est le **moteur .NET autoritaire de simulation et de décision** : il possède la vérité de l'état du monde et calcule ses évolutions, interactions et décisions, indépendamment de toute représentation graphique. PRISM est le projet Unreal final de LIVEX ; il intègre le plugin PRISM-LDK (*LIVEX Development Kit*, module technique `PrismLdk`). L'affichage et le pilotage Unreal ne font pas autorité sur la simulation.
+SYNE (**Systems & Emergent Network Engine**) est le moteur .NET autonome de simulation et de décision. Dans la version historique V1, il possède la vérité de l'état du monde. Dans le couplage PRISM V2, PRISM détient l'état physique ; SYNE conserve la cognition et applique aux croyances les observations renvoyées par PRISM. Cette boucle est implémentée, mais l'extraction complète du monde depuis SYNE est encore en cours. PRISM V1 et son plugin Unreal PRISM-LDK (`PrismLdk`) restent l'architecture de la release 1.0.0.
 
 Il fonctionne en **mode headless** (sans interface) et expose des snapshots globaux et des événements d'observabilité, ainsi qu'un contrôle HTTP. Le flux WebSocket précède les snapshots d'un événement `world_initialized` décrivant le monde préparé. Il sauvegarde/restaure son état avec une garantie de **déterminisme bit-à-bit**.
 
 ## 2. Principes fondateurs
 
 1. **Le moteur ne dicte pas aux entités ce qu'elles doivent faire** — il fournit des structures (état, besoins, perception, mémoire, croyances, capacités, système de décision, actions). (Monographie §3.7.1)
-2. **Indépendance de la présentation** — aucune dépendance à un moteur graphique ; PRISM/Unreal (via PRISM-LDK / `PrismLdk`) et ECHOS consomment les contrats de SYNE sans devenir la source de vérité de la simulation. (Monographie §1.4.6, actualisée)
+2. **Indépendance du rendu et séparation V2** — SYNE n'a aucune dépendance graphique. En V1, PRISM/Unreal consomme ses contrats ; en V2, PRISM est l'autorité du monde physique et échange observations et commandes avec SYNE.
 3. **Déterminisme** — reproductibilité exacte à seed + config + version moteur identiques. (Monographie §3.6.2)
 4. **Observabilité** — chaque décision produit une trace (DecisionRecord) ; le flux externe expose l'état global par tick et des événements horodatés/attribués.
 

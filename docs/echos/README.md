@@ -4,21 +4,25 @@
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
 [![7 moteurs](https://img.shields.io/badge/Moteurs-7-1f7f6f.svg)](METRICS_SPEC.md)
 [![API: REST 5000](https://img.shields.io/badge/API-REST%205000-1f7f6f.svg)](API_REST.md)
-[![Tests: 361](https://img.shields.io/badge/Tests-361-1f7f6f.svg)](TESTING.md)
-[![Couverture: 90,5 %](https://img.shields.io/badge/Couverture-90%2C5%25-1f7f6f.svg)](TESTING.md)
+[![Tests: 383](https://img.shields.io/badge/Tests-383-1f7f6f.svg)](TESTING.md)
+[![Couverture: 91,32 %](https://img.shields.io/badge/Couverture-91%2C32%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
 **Version** : 0.1.0
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : la documentation transversale (../), SYNE 0.17.0 (contrat d'observabilité 0.5.0)
 **Source Monographie** : Partie 4
+
+Dernier résultat de suite connu : 383 réussis, 14 ignorés et 91,32 % de
+couverture le 19 octobre 2026. La suite n'a pas de relevé plus récent dans les
+sources consultées.
 
 ---
 
 ## Rôle
 
-Observatoire de LIVEX : il transforme l'exécution de SYNE en données compréhensibles (états, événements, métriques, graphes, historiques, comparaisons, contrôles). **Il observe, il n'influence pas le phénomène mesuré.** ECHOS est un **moteur sans interface** (ADR-007) : il publie une API, le **Launcher présente**.
+Observatoire de LIVEX : ECHOS ingère les flux, calcule des métriques, conserve des données d'analyse et publie une API ; il n'écrit pas dans l'état simulé. Il demeure un moteur sans interface (ADR-007), présenté par le Launcher. Pour PRISM V2, un chemin dédié valide et persiste les enveloppes du flux de lecture PRISM, avec `contentHash` et séquence ; il ne les agrège pas encore au cycle de production d'un run.
 
 ## Lancement seul
 
@@ -34,12 +38,13 @@ uvicorn echos.api.app:app --host 127.0.0.1 --port 5000
 - **Python** : FastAPI, NumPy, Pandas, SciPy, NetworkX.
 - **Présentation** : **aucune** — pas de framework JS, pas de navigateur, pas de shell de bureau ; voir `../launcher/adr/ADR-007-consoles-et-fenetre-analyse-natives.md`.
 - **Stockage** : SQLite (agrégations) + Parquet (séries lourdes).
-- Se connecte à **SYNE** (WebSocket :5180 pour observer, HTTP :5181 pour piloter).
+- Connexion historique à **SYNE** (WebSocket :5180, HTTP :5181). Le flux de lecture PRISM V2 utilise un adaptateur d'ingestion distinct ; il ne remplace pas le chemin SYNE existant.
 
 ## Interfaces
 
 - `API_REST.md` — API REST locale, port 5000.
 - `../syne/API_CONTRACTS.md` — contrat d'entrée (snapshot/event de SYNE).
+- `GET /api/runs/{id}/prism-stream` — enveloppes PRISM V2 validées et persistées ; le raccordement à l'analyse des runs reste en cours.
 
 ## Documentation du composant
 

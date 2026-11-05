@@ -1,5 +1,13 @@
 # PLAN DE REFONTE DE LA DOCUMENTATION LIVEX
 
+> **État du plan initial.** Ce document date du 8 octobre 2026 et décrit la
+> réorganisation V1 de la documentation, exécutée en grande partie les 12
+> octobre puis confirmée dans la note ci-dessous. Il ne constitue pas le plan
+> de documentation PRISM V2. Après la livraison des premiers socles V2, les
+> documents généraux, SYNE, ECHOS et la monographie doivent distinguer les
+> fonctions déjà intégrées des travaux restants. Le suivi transversal courant
+> est dans [`LIVEX-CURRENT-STATUS.md`](LIVEX-CURRENT-STATUS.md).
+
 **Date** : 08 octobre 2026
 **Objectif** : Refondre intégralement la documentation du projet LIVEX à partir du code réellement implémenté, en distinguant clairement deux supports de documentation indépendants.
 

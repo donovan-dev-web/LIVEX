@@ -1,5 +1,9 @@
 # Annexe D. Schémas d'architecture
 
+Les schémas D.1 à D.10 conservent principalement la photographie V1 décrite
+dans l'édition d'octobre. D.11 donne l'architecture PRISM V2 et ses frontières
+au 4 novembre 2026.
+
 Cette annexe rassemble les schémas structurants du projet sous forme de diagrammes Mermaid, reproductibles dans le dépôt. Chaque schéma porte une légende qui indique ce qu'il montre et, surtout, ce qu'il ne montre pas.
 
 ## D.1 Vue d'ensemble de la pile
@@ -181,3 +185,19 @@ flowchart TB
 ```
 
 Lecture : quatre éléments définissent un run et deux empreintes le vérifient. Le schéma n'explique pas la tolérance temporelle, détaillée dans la partie sur la reproductibilité.
+
+## D.11 Architecture de PRISM V2 et couplage SYNE au 4 novembre 2026
+
+```mermaid
+flowchart LR
+    S["SYNE : cognition"] -->|"commandes, tick"| P["PRISM Host : monde physique 2,5D"]
+    P -->|"observations et événements"| S
+    P -->|"flux de lecture, enveloppes persistées"| E["ECHOS : intégration analytique à terminer"]
+    P -->|"client implémenté, lancement live à raccorder"| V["Viewer facultatif"]
+    L["Launcher"] -. "orchestration V2 partielle" .-> P
+```
+
+La boucle SYNE↔PRISM a été exercée sur 1 000 ticks. Le run R2 de 5 000 ticks,
+la reprise couplée, l'ingestion ECHOS en production et le viewer live restent
+ouverts. Le trait plein du contrat n'implique pas que toutes les intégrations
+de bout en bout soient terminées.

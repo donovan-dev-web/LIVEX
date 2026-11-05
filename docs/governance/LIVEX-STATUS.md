@@ -3,7 +3,7 @@
 **Composant** : LIVEX (général) · **Statut** : [RELEASE 1.0.0] · **Dernière mise à jour** : 31 octobre 2026
 **Dépend de** : [`ROADMAP.md`](ROADMAP.md), [`VERSIONING.md`](../../VERSIONING.md), manifestes, contrats et tests des composants
 
-> État documentaire du checkout au 31/10/2026. La release publique `livex-v1.0.0` est publiée et taguée. Les suites des composants ont été exécutées et validées pour la release ; ce relevé en consolide les compteurs documentés. Un test vert valide le comportement couvert, pas toute la pile ni une conclusion scientifique générale.
+> **Photographie historique de la release V1 au 31/10/2026.** La release publique `livex-v1.0.0` est publiée et taguée. Les suites des composants ont été exécutées et validées pour cette release ; ce relevé en conserve les compteurs. Il ne décrit pas l'état d'intégration de PRISM V2. Consulter le [statut transversal actuel](LIVEX-CURRENT-STATUS.md) pour les travaux V2. Un test vert valide le comportement couvert, pas toute la pile ni une conclusion scientifique générale.
 
 | Référence | Valeur |
 | :-- | :-- |

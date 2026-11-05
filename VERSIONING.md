@@ -66,12 +66,13 @@ Le versionnement est déclenché par les évènements suivants :
 - Toute libération composant visible publiquement incrémente au minimum `PATCH`.
 - Le numéro global `livex-v` n'est pas posé à chaque incrément composant : il est réservé aux releases assemblées.
 
-## 8. État courant des versions (31 octobre 2026)
+## 8. Versions de la release V1 et état de PRISM V2
 
-> Synoptique de référence après la campagne de correctifs
-> de runs du 29/09/2026 (ADR-015). L'état détaillé et les
-> matrice de compatibilité par composant vivent dans `docs/syne/ROADMAP.md`
-> et `docs/echos/ROADMAP.md`.
+> Le tableau ci-dessous consigne les versions publiées ou relevées pour la
+> release V1. PRISM V2 est en développement : sa version de composant cible est
+> `2.0.0`, distincte du contrat SYNE↔PRISM `1.0.0`, gelé mais pas encore livré
+> dans une release LIVEX V2. Le [statut transversal](docs/governance/LIVEX-CURRENT-STATUS.md)
+> donne l'état du travail au 4 novembre 2026.
 
 | Composant / contrat | Version | Évolution |
 | :-- | :-- | :-- |
@@ -86,6 +87,11 @@ Le versionnement est déclenché par les évènements suivants :
 | **PRISM / PRISM-LDK** | **1.0.0** | PRISM packagé Windows/Linux ; plugin Unreal `PrismLdk` 1.0.0 |
 | **Installateur** | **1.0.0** | Installateur publié pour Windows et Linux |
 | Présentation d'ECHOS | **retirée** (oct. 2026) | `echos-ui` supprimé (ADR-007) : la fenêtre d'analyse du Launcher consomme `outcome`/`extinctionTick` et `/api/compare?light=1` |
+
+PRISM `1.0.0` et PRISM-LDK `1.0.0` désignent la réalisation Unreal V1 de la
+release publiée. Le code PRISM V2 et son contrat ne doivent pas être confondus
+avec ces versions : PRISM V2 vise `2.0.0`, tandis que le contrat d'échange
+SYNE↔PRISM porte sa propre version `1.0.0`.
 
 ---
 

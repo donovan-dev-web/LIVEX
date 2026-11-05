@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 18 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `../governance/ROADMAP.md` (racine), `VISION.md`, `adr`
 **Source Monographie** : —
 
@@ -17,9 +17,10 @@
   vérifiable, jamais parce qu'une date est atteinte.
 - **Le format d'abord.** Le paquet `.livexp` est validé avant toute introduction de
   la concurrence, conformément à `adr/ADR-005-execution-sequentielle-mono-espace.md`.
-- **Pas de jalon de déverrouillage de PRISM.** Le déverrouillage du mode Immersion
-  n'est pas un jalon du Launcher : c'est une condition, évaluée à l'arrivée de
-  PRISM. Voir `adr/ADR-006-prism-verrouille-en-attente.md`.
+- Le verrou du mode Immersion concerne le parcours PRISM V1/Unreal. PRISM V2
+  dispose d'une lane séparée (LAUNCHER-200/201/202) : son host est découvrable
+  par manifeste, mais le cycle complet de session, de paquet et de viewer reste
+  à intégrer.
 
 ## 2. Position dans la feuille de route du projet
 
@@ -32,7 +33,7 @@ contrats de SYNE et d'ECHOS, dont il dépend pour piloter, et il accompagne PRIS
 | **1 — Cadrage général** | Consomme `../ARCHITECTURE.md` et `../COMMUNICATION.md` de la racine |
 | **2 — Moteur (SYNE)** | Dépend du contrat d'observabilité pour piloter le moteur |
 | **3 — Observation (ECHOS)** | Dépend du contrat de restitution pour collecter les artefacts |
-| **4 — Intégration Unreal (PRISM)** | Conditionne le déverrouillage du mode Immersion |
+| **4 — PRISM V1 puis V2** | Critères Immersion V1/Unreal ; intégration du host V2 suivie séparément par LAUNCHER-200/201/202 |
 | **5 — Consolidation** | Le Launcher devient le point d'entrée unique de LIVEX |
 
 ## 3. Les jalons

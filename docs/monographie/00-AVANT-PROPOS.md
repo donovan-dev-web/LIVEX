@@ -42,31 +42,54 @@ Il faut ajouter une mise en garde qui reviendra souvent : **ce livre ne fournit 
 
 ## 4. L'état décrit
 
-Le livre couvre l'état réel d'octobre 2026 : un moteur stabilisé et recalibré, un observatoire devenu volontairement sans interface, une scène en construction encadrée, un orchestrateur qui archive à l'octet, un outil d'intégration honnête sur ses limites, et un installateur à l'état de spécification.
+Cette édition est mise à jour au 4 novembre 2026. Elle distingue la release
+publique V1 et le développement de PRISM V2. Les passages anciens qui décrivent
+les contrats Unreal de V1 restent des faits historiques ; ils ne sont plus le
+modèle d'intégration actuel.
 
-L'état décrit par le livre est daté du 12 octobre 2026; ses chiffres d'inventaire, de tests et de couverture sont un relevé historique de cette date, pas une mesure du checkout actuel. Le relevé local distinct du 18 octobre 2026 est publié dans le [statut de gouvernance](../governance/LIVEX-STATUS.md) : SYNE 695 tests réussis, ECHOS 382 réussis et 14 ignorés, `syne-mock` 51 réussis et 2 ignorés, Launcher Unit 174/174 et Integration 20/20. Les deux parcours J3 E2E réels échouent dans cette vérification locale (31/33); le total de 1 258 tests verts et les couvertures agrégées du 12/10 ne doivent donc pas être lus comme résultat courant. Aucun de ces résultats ne signifie que toutes les capacités prévues sont livrées.
+Le relevé V1 détaillé, arrêté au 31 octobre, est conservé dans le [statut de la
+release](../governance/LIVEX-STATUS.md). L'état transversal V2 est synthétisé
+séparément dans le [statut courant](../governance/LIVEX-CURRENT-STATUS.md), afin
+que les compteurs mesurés à des dates différentes ne soient pas additionnés.
 
-Les composants à l'état décrit :
+- **SYNE 0.17.0** : moteur .NET autonome. Il porte encore son monde historique
+  en V1. Dans le couplage PRISM V2, il traite la cognition, reçoit les
+  observations PRISM et les applique aux croyances. La boucle couplée a été
+  exercée sur 1 000 ticks ; l'extraction complète des systèmes physiques reste
+  à faire. Les suites relevées le 4 novembre comptent 708 réussites.
+- **ECHOS 0.1.0** : API d'analyse headless, stockage SQLite/Parquet et
+  ingestion SYNE. ECHOS sait aussi valider et conserver le flux de lecture
+  PRISM V2 ; cette voie n'est pas encore raccordée au cycle de production des
+  runs et aux métriques. Le dernier relevé de tests trouvé date du 19 octobre :
+  383 réussis, 14 ignorés.
+- **PRISM V1 / PRISM-LDK** : projet et plugin Unreal livrés avec LIVEX 1.0.0.
+  Ils sont historiques et restent documentés à ce titre.
+- **PRISM V2** : simulation .NET headless, autorité du monde physique. Le
+  contrat SYNE↔PRISM `1.0.0`, le host, les chaînes d'actions et les campagnes
+  de bots ont des bases fonctionnelles. Au 4 novembre, 403 tests étaient
+  réussis ; la boucle couplée avec SYNE avait été exercée sur 1 000 ticks. Le
+  run R2 de 5 000 ticks, la reprise commune et plusieurs validations de release
+  restent ouverts.
+- **Launcher et installateur** : outils de la release V1 disponibles. Leur
+  intégration et leur packaging des composants V2 ne sont pas achevés.
+- **`syne-mock`** : outil Node.js des contrats V1, non équivalent au moteur et
+  non utilisé comme campagne PRISM V2 ; les campagnes PRISM utilisent
+  `Prism.Bots`.
 
-- **SYNE 0.17.0** (contrat d'observabilité 0.5.0) : moteur .NET autoritaire, déterministe, persistant, indépendant du rendu. Disponible.
-- **ECHOS 0.1.0** (`SCHEMA_VERSION = 6`) : ingestion, stockage, analyse et API REST headless. La migration BL-09 est appelée v7 dans ses tests/commentaires, mais le compteur courant reste 6; l'interface web a été retirée par décision.
-- **PRISM et PRISM-LDK** : projet Unreal final et plugin d'intégration, en version de travail. L'expérience de rendu complète est hors périmètre V0.1.
-- **Launcher 0.1.0** : application de bureau native d'orchestration et d'archivage, format de paquet `.livexp`. Les suites unitaires et d'intégration locales passent, mais le parcours E2E J3 réel a deux échecs dans le relevé du 18 octobre; ne pas le qualifier d'accepté sur la base de la seule campagne antérieure à 33/33.
-- **`syne-mock` 0.1.0** : serveur Node.js d'émulation pour le développement. Outil, non moteur équivalent.
-- **Installateur** : spécification seule, aucun code à ce jour. En développement.
+| Composant | Rôle V1 | Rôle en couplage V2 |
+| :-- | :-- | :-- |
+| SYNE | simuler le monde, décider, persister | décider et porter l'état cognitif ; monde historique encore présent |
+| PRISM | représenter les données SYNE dans Unreal | simuler l'état physique et appliquer les commandes |
+| ECHOS | ingérer et analyser les flux SYNE | conserver aussi les enveloppes de lecture PRISM ; intégration analytique en cours |
+| Launcher | lancer les services V1 et archiver les campagnes | orchestration PRISM V2 en cours d'intégration |
+| `syne-mock` | émuler les contrats SYNE pour les clients Unreal | outil historique, ne remplace ni SYNE ni `Prism.Bots` |
+| Installateur | distribuer la release publique | distribution V2 à préparer |
 
-Le tableau suivant récapitule la correspondance entre chaque composant et son rôle, pour fixer le vocabulaire employé dans tout le livre.
-
-| Composant | Rôle en un mot | Ce qu'il fait | Ce qu'il ne fait jamais |
-| :-- | :-- | :-- | :-- |
-| SYNE | décider | simule le monde, décide, persiste | afficher, analyser |
-| ECHOS | mesurer | ingère, calcule, stocke, publie | décider, écrire dans le monde |
-| PRISM | montrer | rend la scène, suit l'état | décider, modifier le monde |
-| Launcher | archiver | orchestre, archive, rejoue | simuler, analyser |
-| `syne-mock` | émuler | sert un contrat pour le développement | faire autorité |
-| Installateur | installer | dépose, configure, vérifie | simuler, orchestrer |
-
-La snapshot historique de conception (le document racine nommé monographie V0.1) demeure la référence de conception initiale. Les choix qui ont évolué depuis, notamment la scène actuelle et son plugin, sont décrits ici à jour, sans valeur prescriptive rétrospective. L'annexe J précise, choix par choix, ce que cette conception initiale a conservé, changé ou abandonné, de sorte qu'un lecteur qui consulte un document ancien sache ce qui est encore vrai.
+Les résultats expérimentaux ne changent pas de portée avec l'architecture : le
+contraste de quête spatiale est confirmé selon le protocole publié, le cycle
+social n'est pas confirmé, et l'émergence générale n'est pas établie. Une
+boucle logicielle fonctionnelle n'est pas, à elle seule, une preuve de
+viabilité ou d'émergence.
 
 ## 5. Le contrat de lecture
 

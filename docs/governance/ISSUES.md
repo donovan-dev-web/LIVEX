@@ -38,7 +38,7 @@ Ce document définit les règles et conventions pour la création et le suivi de
 | :-- | :-- |
 | `component/syne` | Issue portant sur le composant SYNE |
 | `component/echos` | Issue portant sur le composant ECHOS |
-| `component/prism` | Issue portant sur le composant PRISM / projet Unreal |
+| `component/prism` | Issue PRISM : distinguer le runtime .NET headless et le contrat V2 du projet Unreal / PRISM-LDK historique V1 |
 | `component/launcher` | Issue portant sur le composant Launcher / installateur |
 
 ### 2.3 Labels de statut / priorité / milestone

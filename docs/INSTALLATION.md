@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 31 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `governance/ROADMAP.md`, `COMMUNICATION.md`
 
 > **Versions courantes** : moteur **SYNE 0.17.0** (défauts intégrés calibrés B1,
@@ -16,11 +16,10 @@
 
 LIVEX **1.0.0** est également disponible en installateurs Windows et Linux dans la [release publique](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0). Pour installer la version publiée, suivez le [guide utilisateur de l'installateur](installer/GUIDE-UTILISATEUR.md). Ce guide-ci décrit le démarrage local depuis les sources de **SYNE**, **ECHOS**, `syne-mock` et du **Launcher**.
 
-> **PRISM / Unreal** : PRISM est le projet Unreal final de LIVEX ; il intègre
-> le plugin **PRISM-LDK** (`Plugins/PrismLdk`). Dans le checkout courant,
-> `../prism/LDK/LDK.uproject` sert d'hôte technique pour compiler et tester ce
-> plugin, sans être un projet produit distinct. Voir la
-> [documentation PRISM](prism/README.md) pour le workflow Blueprint.
+> **Deux versions PRISM coexistent dans la documentation.** PRISM V1/PRISM-LDK
+> est le projet Unreal historique de la release 1.0.0. PRISM V2 est une
+> simulation .NET headless en cours d'intégration ; elle constitue la voie de
+> développement actuelle. Le guide Unreal ci-dessous ne concerne que V1.
 
 ## Prérequis
 
@@ -38,7 +37,7 @@ npm --version
 curl --version
 ```
 
-## Développer l'intégration PRISM sans SYNE
+## Développer l'intégration V1 avec `syne-mock`
 
 Pour avancer sur l'intégration Unreal sans démarrer le moteur .NET complet,
 lancez le serveur Node.js de simulation du contrat :
@@ -63,10 +62,28 @@ initial et les snapshots, mais simplifie plusieurs comportements du vrai SYNE
 (notamment la délibération et le pathfinding). Il ne doit pas servir à produire
 des résultats scientifiques ni remplacer les tests avec le vrai moteur.
 
-## PRISM et son plugin PRISM-LDK
+## Développer PRISM V2
+
+PRISM V2 est le host .NET headless et le monde physique autoritaire de la
+nouvelle architecture. Pour construire ou exécuter ses suites depuis le
+dossier `prism/` :
+
+```console
+dotnet restore Prism.sln
+dotnet build Prism.sln --no-restore --configuration Release --warnaserror
+dotnet test Prism.sln --no-build --configuration Release
+```
+
+Le mode viewer ouvre un aperçu autonome ; il n'affiche pas encore une session
+PRISM live par défaut. Pour son lancement et les exigences du système
+graphique, consulter [`../prism/README.md`](../prism/README.md). Le couplage
+SYNE utilise le paramètre `--prism-url` dans le CLI SYNE ; son transport a été
+exercé sur 1 000 ticks, tandis que le run R2 de 5 000 ticks reste à réaliser.
+
+## PRISM V1 et son plugin PRISM-LDK (historique)
 
 **LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
-complet. **PRISM** est le projet Unreal final de LIVEX ; il intègre le plugin
+complet. **PRISM V1** est le projet Unreal historique de LIVEX ; il intègre le plugin
 **PRISM-LDK** (*LIVEX Development Kit*, nom technique du module `PrismLdk`).
 LDK désigne ce plugin, pas un projet complet distinct.
 

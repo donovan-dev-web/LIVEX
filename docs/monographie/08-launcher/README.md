@@ -1,5 +1,11 @@
 # Chapitre 8. Le Launcher : archiver pour rejouer
 
+**État au 4 novembre 2026.** Le Launcher décrit ici est celui de la release
+V1, disponible pour l'orchestration et l'archivage des composants publiés.
+Son manifeste générique peut reconnaître le host PRISM V2, mais le cycle
+complet de ports, préparation, orchestration et archivage V2 n'est pas encore
+intégré.
+
 Piloter sans posséder, archiver sans relayer. Le Launcher est l'orchestrateur qui permet à la question directrice de devenir une pratique : lancer la même expérience, l'interrompre, la reprendre sans la rejouer, la sceller à l'octet près, la rouvrir des mois plus tard.
 
 Le Launcher est une application de bureau native, écrite en .NET avec Avalonia. Il orchestre les composants sans contenir ni simulation (SYNE), ni analyse (ECHOS), ni rendu (PRISM). Il pilote leurs cycles de vie, laisse les données aller directement du moteur aux consommateurs, et recueille les résultats pour les archiver.
@@ -31,7 +37,7 @@ Le Launcher **pilote** les cycles de vie (il démarre, arrête, configure, inter
 
 Le Launcher est présent dans le dépôt et testé (tests unitaires, d'intégration et de bout en bout). Il est prévu comme un composant de poids égal à SYNE, ECHOS et PRISM : sa suppression ne doit rendre aucun autre composant inutilisable, et il ne dépend d'aucun autre composant pour fonctionner. Les composants sont des participants, pas des dépendances.
 
-Deux modes d'utilisation du moteur, de poids égal, structurent l'orchestration : ECHOS pour l'analyse, la reproductibilité et la calibration ; PRISM pour la représentation en temps réel. Le Launcher permet de les activer séparément ou ensemble, sans introduire de hiérarchie entre eux. Le mode représentation (PRISM) reste verrouillé tant que l'intégration Unreal n'est pas validée.
+Dans la release V1, deux modes d'utilisation structurent l'orchestration : ECHOS pour l'analyse, PRISM/Unreal pour la représentation. Le mode immersion V1 reste soumis à ses propres critères d'acceptation. PRISM V2 est une voie distincte : son host a un manifeste et un raccordement générique, mais son intégration complète au Launcher reste ouverte.
 
 ## Ce que cette partie apporte à la question directrice
 

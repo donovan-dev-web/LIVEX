@@ -2,13 +2,18 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 18 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `../ROADMAP.md` (racine)
 **Source Monographie** : Annexe J (feuille de route V2), §3.24 (fondations V0.1)
 
 ---
 
 ## 1. Principes
+
+> Cette roadmap décrit les phases internes de SYNE 0.17.0. Elle ne décrit pas
+> à elle seule l'intégration PRISM V2. La boucle couplée est livrée et exercée
+> sur 1 000 ticks ; l'extraction complète du monde SYNE, la reprise partagée
+> et le run R2 de 5 000 ticks restent ouverts. Voir le [statut transversal](../governance/LIVEX-CURRENT-STATUS.md).
 
 - Road map **en ordre, sans dates** (décision utilisateur) ; l'ordre reflète les dépendances techniques.
 - Alignée sur la feuille de route V2 de la Monographie (Annexe J), prolongée par les fondations V0.1.

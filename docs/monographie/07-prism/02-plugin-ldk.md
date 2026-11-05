@@ -1,3 +1,7 @@
+> **Repère historique V1.** Ce chapitre décrit PRISM-LDK, le plugin Unreal de
+> LIVEX 1.0.0. Il ne décrit pas l'interface SYNE↔PRISM de PRISM V2 ; voir
+> [le chapitre V2](05-prism-v2.md).
+
 # PRISM II. Le plugin PRISM-LDK
 
 Le projet Unreal et le moteur ne se parlent pas directement. Entre eux, un plugin fait le traducteur : il transporte les messages, les convertit en types utilisables par Blueprint, et rediffuse les événements. Ce chapitre décrit ce que le plugin est, ce qu'il fait, et la règle qui l'empêche de devenir un moteur parallèle.

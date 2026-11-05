@@ -2,13 +2,13 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 23 septembre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `VISION.md`, `../COMMUNICATION.md`
 **Source Monographie** : §4.2
 
 ---
 
-## 1. Architecture cible
+## 1. Architecture actuelle et ingestion PRISM V2
 
 | Composant | Rôle (V0.1) | Implémentation V0.1 |
 | :-- | :-- | :-- |
@@ -26,7 +26,9 @@ L'architecture cible de la Monographie (§4.2.1) prévoit **Django** (Applicatio
 
 ```mermaid
 flowchart LR
-    S[SYNE\nWebSocket :5180] -->|snapshot / event| E[ECHOS\nconsommateur d'événements]
+    S[SYNE V1\nWebSocket :5180] -->|snapshot / event| E[ECHOS\nconsommateur d'événements]
+    P[PRISM V2\nWebSocket lecture] -->|enveloppes séquencées| PE[Ingestion PRISM\nstockage brut]
+    PE --> DB
     E -->|contrôle / calibration\nHTTP :5181| S
     E --> M[Métriques temps réel]
     E --> DB[(Stockage SQLite\nhistorique)]
@@ -34,7 +36,8 @@ flowchart LR
     E --> WS2[Diffusion WebSocket\nmétriques]
 ```
 
-- ECHOS **observe** SYNE (contrat de transport, WebSocket :5180) et **pilote** SYNE (contrôle, calibration) — Monographie §4.2.2.
+- ECHOS observe le flux SYNE historique par WebSocket :5180 et utilise ses endpoints de contrôle au besoin.
+- Depuis ECHOS-100, un chemin distinct ingère et persiste le flux PRISM : enveloppes versionnées, séquence, tick, seed et `contentHash`. L'API `/api/runs/{id}/prism-stream` restitue ces enveloppes. Cette ingestion n'est pas encore branchée au cycle de run de production ni aux moteurs analytiques ; ECHOS n'invente pas de métriques SYNE absentes du contrat PRISM.
 - Le **présentatif est le Launcher** (ADR-007) : il sonde l'API REST :5000 (1 s) et affiche les séries dans sa fenêtre d'analyse. Aucune diffusion WebSocket de métriques n'est servie par ECHOS à ce jour.
 
 ## 3. Séparation des données
@@ -49,7 +52,8 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 
 | Système | Rôle | Doc |
 | :-- | :-- | :-- |
-| Ingestion temps réel | Consommateur WebSocket 5180 → `snapshot`/`event` — clients `ws_client` (transport injectable) + `control_client` HTTP 5181 | `../syne/API_CONTRACTS.md`, `../../echos/echos/ingestion` |
+| Ingestion SYNE historique | Consommateur WebSocket 5180 → `snapshot`/`event` — clients `ws_client` et `control_client` HTTP 5181 | `../syne/API_CONTRACTS.md`, `../../echos/echos/ingestion` |
+| Ingestion PRISM V2 | Validation et persistance atomique des enveloppes de lecture, avec séquence et `contentHash` ; restitution paginée par API. Pas encore d'analyse agrégée ni de raccordement au run supervisé. | `../../echos/echos/ingestion/prism_stream.py`, `../echos/API_REST.md` |
 | Stockage d'analyse | Agrégation incrémentale par tick (sans perte, sous-échantillonnage `sample_every`), SQLite `AnalyticsStore` (schéma stable versionné) + séries lourdes Parquet (jointure SQLite↔Parquet cohérente), pipeline `consume()` | `../../echos/echos/storage` |
 | 7 moteurs de métriques | Calculs d'analyse | `METRICS_SPEC.md` |
 | Indicateurs d'émergence | Score composite, auto-détection | `EMERGENCE_INDICATORS.md` |

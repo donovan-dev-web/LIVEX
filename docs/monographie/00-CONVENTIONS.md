@@ -37,7 +37,7 @@ Une convention de vocabulaire mérite d'être signalée d'emblée : le mot **soc
 Quelques règles rendent le texte homogène et imprimable.
 
 - Le tiret cadratin, le tiret demi-cadratin et le tiret insécable ne sont pas employés comme ponctuation. Les incises utilisent la virgule, les parenthèses ou les deux-points. Le trait d'union reste réservé à la formation des mots (par exemple « c'est-à-dire », « peut-être »).
-- Les acronymes désignent les composants : **LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*), **SYNE** (*Systems & Emergent Network Engine*), **ECHOS** (*Emergent Cognition & Holistic Observation System*), **PRISM** (*Perceptual Rendering & Interactive Simulation Module*), **PRISM-LDK** (*LIVEX Development Kit*, module technique `PrismLdk`).
+- Les acronymes désignent les composants : **LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*), **SYNE** (*Systems & Emergent Network Engine*), **ECHOS** (*Emergent Cognition & Holistic Observation System*), **PRISM** (*Persistent Reality & Interactive Simulation Module*, V2), **PRISM-LDK** (*LIVEX Development Kit*, plugin Unreal historique de PRISM V1, module `PrismLdk`).
 - Les formules sont présentées en ligne ou dans des blocs encadrés, avec les symboles explicités au moment de leur introduction.
 - Les valeurs numériques citées sont les valeurs par défaut du moteur à la version indiquée, sauf mention contraire. Elles proviennent du fichier de configuration, du contrat ou du code.
 - Les schémas portent un titre, une légende et, si nécessaire, une version. Un trait plein désigne un élément disponible, un trait pointillé un outil ou un élément en développement, ou hors périmètre. Aucun schéma n'est décoratif.

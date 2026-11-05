@@ -12,86 +12,74 @@ La communication du projet découle de cette vision : montrer comment le systèm
 
 On peut opposer deux manières de présenter un projet comme celui-ci. La première fait de la promesse le centre : « un monde où une société émerge toute seule ». La seconde fait de la méthode le centre : « un dispositif capable d'observer, honnêtement, si et comment une structure apparaît ». La première attire vite et déçoit ensuite. La seconde exige un effort et se vérifie. Le projet a choisi la seconde, et le livre ne s'en écarte jamais.
 
-## 4b.2 Quatre responsabilités, quatre interdits
+## 4b.2 Des responsabilités qui évoluent entre V1 et V2
 
-Un seul programme pourrait tout faire, et tout confondre : la scène déciderait à la place du monde, la mesure modifierait le mesuré, l'archive relaierait au lieu de sceller. D'où quatre responsabilités aux frontières non négociables.
+Les frontières du projet sont stables, mais leur emplacement a changé. En V1,
+SYNE détenait le monde et PRISM/Unreal le représentait. En V2, PRISM porte
+l'état physique ; SYNE reçoit les observations et traite les décisions
+cognitives. L'extraction du monde depuis SYNE est engagée par étapes, mais
+n'est pas terminée. Un texte rigoureux doit donc nommer la version avant
+d'attribuer l'autorité du monde.
 
-- **SYNE décide.** Il possède la vérité unique du monde. Il fonctionne sans écran, de manière déterministe et persistante. Interdiction faite aux autres de réécrire l'état simulé.
-- **ECHOS mesure sans toucher.** Il est en lecture seule, sans aléa ni horodatage, et signale les trous d'ingestion au lieu de les combler. Interdiction de modifier le phénomène observé.
-- **PRISM montre sans décider.** Il reflète l'état du monde en scripts visuels, en couche mince. Interdiction de devenir un moteur parallèle.
-- **Le Launcher archive sans relayer.** Il pilote les cycles de vie et laisse les données aller directement du moteur aux consommateurs. Il scelle l'archive à l'octet. Interdiction de s'interposer dans le flux de données.
+- **SYNE** reste le moteur cognitif et le moteur historique autonome. Dans le
+  couplage V2, il applique à ses croyances les observations PRISM et produit
+  les intentions des agents.
+- **PRISM V2** possède l'état physique du monde, exécute les commandes et
+  publie observations, événements et flux de lecture. Le viewer est un client,
+  jamais l'autorité de simulation.
+- **ECHOS** mesure et stocke sans écrire dans le monde. Il ingère le flux SYNE
+  historique et possède un chemin séparé pour valider et conserver les
+  enveloppes PRISM. La seconde voie n'est pas encore raccordée au cycle
+  analytique complet des runs.
+- **Le Launcher** orchestre la release V1. Ses lanes d'intégration PRISM V2
+  restent à compléter.
 
-Autour de ces quatre responsabilités, deux outils assument des rôles plus modestes. Le `syne-mock` émule le transport sans prouver la simulation. L'installateur promet une installation sans rien affirmer d'autre que sa spécification.
-
-| Composant | Responsabilité | Interdit | Preuve de non-violation |
+| Composant | V1 | V2 au 4 novembre 2026 | Frontière à préserver |
 | :-- | :-- | :-- | :-- |
-| SYNE | décider | être mis en scène | tests de trajectoire et d'empreinte |
-| ECHOS | mesurer | altérer le monde | lecture seule, provenance des mesures |
-| PRISM | montrer | décider | la scène suit l'instantané, ne le produit pas |
-| Launcher | archiver | relayer | données directes moteur vers consommateurs |
+| SYNE | Monde et cognition | Cognition couplée ; extraction du monde incomplète | Ne pas présenter les anciennes tables SYNE comme l'état physique PRISM |
+| PRISM | Représentation Unreal, via PRISM-LDK | Monde .NET autoritaire, rendu facultatif | Le viewer ne fait pas avancer la simulation |
+| ECHOS | Ingestion et analyse des flux SYNE | Ingestion brute PRISM présente, analyse de production à raccorder | Ne pas inventer les mesures absentes du contrat |
+| Launcher | Orchestration et archivage V1 | Raccordement PRISM V2 partiel | Ne pas assimiler un manifeste à une intégration complète |
+| `syne-mock` | Émulation de contrat V1 | N'est pas le moteur des campagnes PRISM | Un mock ne remplace pas la validation sur SYNE réel |
 
-Chaque interdit est testé. Le piloté égal à l'interrompu. Le rapport égal à sa régénération. L'entrée jamais rejouée. Le zéro lu distingué du zéro aveugle.
+## 4b.3 Architecture globale au 4 novembre 2026
 
-Cette liste d'interdits peut paraître abstraite. Elle a pourtant une conséquence très concrète sur la manière d'écrire le code : elle interdit les raccourcis commodes. Par exemple, il serait commode que le rendu calcule lui-même la position d'un agent pour lisser l'affichage ; c'est interdit, car la position simulée doit rester autoritaire. Il serait commode que l'analyse écrive un champ de contexte dans l'instantané ; c'est interdit, car l'analyse ne touche pas au monde. Ces interdits coûtent du travail, mais ils sont la raison d'être de la découpe. Un projet qui les relâcherait gagnerait en confort et perdrait sa crédibilité.
-
-## 4b.3 Architecture globale de référence
-
-Le schéma suivant décrit l'état V0.1. Un trait plein désigne un flux disponible, un trait pointillé un outil ou un élément en développement.
+Le schéma distingue les flux historiques des échanges V2 déjà exercés. Un trait
+plein représente une capacité implémentée ; le trait pointillé marque un
+raccordement encore incomplet.
 
 ```mermaid
 flowchart TB
-    subgraph SYNE["SYNE 0.17.0 : decider (verite, sans ecran)"]
-        CORE["Bibliotheque : monde, agents, cognition, actions, interactions, grille, navigation"]
-        SRV["Executable : flux 5180 + pilotage 5181"]
-        CORE --- SRV
+    subgraph S["SYNE : cognition, mode autonome V1 conservé"]
+        C["Pipeline cognitif"]
     end
-    subgraph ECHOS["ECHOS 0.1.0 : mesurer sans toucher (sans interface)"]
-        ING["Ingestion : consomme, contexte 1 sur 20 + dernier, trous signales"]
-        STO[("Base v6 + colonnaire")]
-        LEC["Lecture seule 5000"]
-        ING --> STO --> LEC
+    subgraph P["PRISM V2 : monde physique"]
+        H["Host .NET headless"]
+        W["Monde 2,5D, contenu et actions"]
+        H --> W
     end
-    subgraph PRISM["PRISM (version de travail) : montrer sans decider"]
-        SCN["Scene : tuiles, acteurs, effets"]
-        KIT["Kit : transport, parsing, conversion, diffusion"]
-        SCN --- KIT
-    end
-    subgraph LAU["Launcher 0.1.0 : archiver sans relayer (six niveaux, paquet scelle)"]
-        PIL["Registre, profils, processus, sondes"]
-        ARC["Campagnes sequentielles, ZIP deterministe"]
-        PIL --- ARC
-    end
-    OUT["Mock 0.1.0 : emule"]
-    SYNE -->|"5180 : init + snapshot + evenements"| ECHOS
-    SYNE -->|"5180 : init + snapshot + evenements"| PRISM
-    OUT -.->|"simule"| KIT
-    ECHOS -->|"5181 relaye : preparer, acquitter, demarrer, pauser, reprendre, arreter, reinitialiser"| SYNE
-    ECHOS -->|"5000 : runs, metriques, exports, comparaisons, inspections"| LAU
+    E["ECHOS : analyse et stockage"]
+    V["Viewer facultatif"]
+    L["Launcher : orchestration"]
+    C -->|"commandes, tick"| H
+    H -->|"observations mappées aux croyances"| C
+    H -->|"flux de lecture, ingestion brute livrée"| E
+    H -->|"client de lecture, CLI live à raccorder"| V
+    L -. "cycle V2 à finaliser" .-> H
+    S -. "flux autonome historique" .-> E
 ```
 
-**Lecture du schéma.** Le flux principal va du moteur vers l'analyse et la scène : d'abord une initialisation qui décrit la topologie et les entités de départ, puis, à chaque tick, un snapshot global de l'état, accompagné d'événements typés. Le pilotage emprunte un autre chemin : un port de contrôle avec accusé de réception obligatoire, où le redémarrage d'un run terminé renvoie une erreur dédiée. La lecture d'analyse expose des runs, des métriques, des exports, des comparaisons et des inspections, triées, sans aléa. Les ports sont configurables et jamais codés en dur. Le format est du JSON textuel. Les champs ajoutés sont tolérés selon la règle de compatibilité. Enfin, dans cette version locale, il n'y a pas d'authentification entre composants.
+La boucle de transport SYNE→PRISM→SYNE a été exercée sur 1 000 ticks. Cette
+mesure ne vaut pas validation R2 : le run couplé de 5 000 ticks, ses répétitions
+à empreintes identiques et la reprise partagée restent à faire. ECHOS persiste
+les enveloppes PRISM, mais ne les a pas encore raccordées à l'analyse du run
+supervisé. Le viewer sait consommer des messages, mais l'aperçu n'est pas
+encore une session live.
 
-**Séquences de référence.** Un monde est préparé, puis acquitté, puis démarré. Une réinitialisation partielle permet d'enchaîner plusieurs runs sans interrompre le serveur. Une campagne enchaîne des runs à graines dérivées, avec reprise exacte et scellement de l'archive.
-
-```mermaid
-sequenceDiagram
-    participant L as Launcher
-    participant S as SYNE
-    participant E as ECHOS
-    participant P as PRISM
-    L->>S: preparer (graine, configuration)
-    S-->>L: statut pret
-    L->>S: demarrer (ticks maximum)
-    loop a chaque tick
-        S-->>E: instantane + evenements
-        S-->>P: instantane + evenements
-    end
-    E-->>L: metriques et runs (lecture seule)
-    L->>S: arreter
-    E-->>L: export scelle
-```
-
-Ce schéma des séquences montre la propriété essentielle de l'architecture : **les données ne passent jamais par le Launcher**. Le Launcher donne l'ordre de démarrer et l'ordre d'arrêter, puis il lit l'analyse. Il ne relaie pas le flux du moteur, qui va directement aux consommateurs. C'est ce qui garantit qu'un problème dans l'orchestration ne déforme pas les données observées.
+La release V1 reste disponible et possède son propre relevé de tests. Les
+compteurs V2 ne doivent pas être additionnés aux compteurs V1 comme s'ils
+provenaient d'une seule exécution. Les versions et les preuves par composant
+sont datées dans le [statut transversal actuel](../governance/LIVEX-CURRENT-STATUS.md).
 
 ## 4b.4 Les niveaux du Launcher
 

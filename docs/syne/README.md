@@ -2,13 +2,13 @@
 
 [![Version: 0.17.0](https://img.shields.io/badge/Version-0.17.0-1f7f6f.svg)](CHANGELOG.md)
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
-[![Tests: 695](https://img.shields.io/badge/Tests-695-1f7f6f.svg)](TESTING.md)
+[![Tests: 708](https://img.shields.io/badge/Tests-708-1f7f6f.svg)](TESTING.md)
 [![Couverture: 81,19 %](https://img.shields.io/badge/Couverture-81%2C19%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : SYNE
 **Statut** : [STABLE]
 **Version moteur** : 0.17.0 (contrat d'observabilité 0.5.0)
-**Dernière mise à jour** : 19 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : la documentation transversale (../)
 **Source Monographie** : Partie 3, 7.2, 7.3.1
 
@@ -16,16 +16,18 @@
 
 ## Rôle actuel
 
-SYNE est le **moteur .NET autoritaire** de simulation et de décision de LIVEX :
-il crée et fait évoluer l'état du monde, exécute les comportements et décisions
-des entités, et définit leurs trajectoires. Il est indépendant de tout moteur
-graphique. PRISM est le projet Unreal final de LIVEX ; il intègre le plugin
-PRISM-LDK (*LIVEX Development Kit*, module technique `PrismLdk`). Ce plugin
-visualise et pilote le moteur au moyen de ses
-contrats, mais ne remplace pas sa logique de simulation.
+SYNE reste un moteur .NET autonome qui exécute la simulation et la cognition.
+Dans le mode historique V1, il détient l'ensemble du monde. Dans le couplage
+PRISM V2, PRISM porte l'état physique et SYNE traite les décisions cognitives :
+les commandes partent vers PRISM, puis son adaptateur transforme les
+observations reçues en croyances SYNE. La boucle couplée et l'application de
+ces observations sont implémentées et le transport a été exercé sur 1 000
+ticks. L'extraction complète du monde historique de SYNE vers PRISM n'est pas
+terminée ; les deux modes doivent donc rester distingués dans les descriptions
+et les résultats.
 
 Le répertoire séparé [`syne-mock`](../../syne-mock/) à la racine contient un
-serveur Node.js destiné au développement et aux tests du plugin sans lancer
+serveur Node.js destiné au développement et aux tests des clients V1 sans lancer
 SYNE. Il simule une partie des contrats et flux utiles à cette intégration ;
 ce n'est ni le moteur réel ni une référence d'équivalence algorithmique. Pour
 les résultats et garanties du moteur, la source de vérité est l'implémentation

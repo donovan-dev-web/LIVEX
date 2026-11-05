@@ -2,9 +2,13 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 27 septembre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `VISION.md`, `GLOSSARY.md`
 **Source Monographie** : Partie 8 (portée, risques, éthique) — reformulée en FAQ
+
+> Cette FAQ couvre les garanties scientifiques communes au projet et distingue
+> PRISM V1 de l'intégration PRISM V2 en cours. Pour les étapes et validations
+> datées, consulter le [statut transversal](../governance/LIVEX-CURRENT-STATUS.md).
 
 ---
 
@@ -32,7 +36,7 @@ Non par conception : l'**observabilité partielle** est une fonctionnalité de p
 
 ## 6. Y a-t-il une modélisation physique (collisions, corps, morphologie) ?
 
-Non (ADR-010). Les entités sont des **entités logiques** (position, vitesse, santé) sans représentation physique détaillée ; elles peuvent se chevaucher. Le rendu PRISM stylise ce modèle.
+Dans le monde autonome SYNE V1, les entités sont des états logiques et peuvent se chevaucher. PRISM V2 ajoute un corps et une position physiques dans son monde 2,5D, avec ses propres règles de déplacement et d'interaction ; ce n'est pas une simulation de corps ou de collisions réalistes.
 
 ## 7. Quelle est la limite d'échelle visée ?
 
@@ -45,29 +49,33 @@ Pas en V0.1. PRISM prévoit un futur **mode joueur-habitant** (incarner une enti
 ## 9. Quelle est la différence entre LIVEX, PRISM et PRISM-LDK ?
 
 **LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
-complet. **PRISM** est le projet Unreal final de LIVEX. Il intègre
+complet. **PRISM V1** est le projet Unreal de la release 1.0.0 ; il intègre
 **PRISM-LDK** (*LIVEX Development Kit*), le plugin Unreal qui expose les
-contrats SYNE à Blueprint (module technique `PrismLdk`). LDK désigne le
-plugin, pas un projet complet distinct. Le `../../prism/LDK/LDK.uproject` présent
-dans le dépôt est un hôte technique de développement/build du plugin.
+contrats SYNE à Blueprint (module `PrismLdk`). **PRISM V2** est une simulation
+.NET headless qui porte l'autorité du monde physique ; ce n'est pas une
+extension du plugin Unreal. LDK désigne le plugin V1, pas un projet complet
+distinct.
 
 Le choix d'Unreal et le rejet de Godot, Unity et de la non-décision sont
 argumentés dans l'[ADR-002](../prism/adr/ADR-002-choix-unreal-prism-ldk.md).
 
-PRISM privilégie les fonctionnalités natives d'Unreal et Blueprint. Le C++
-du plugin reste minimal et limité au transport, aux contrats et au parsing.
+PRISM-LDK privilégie les fonctionnalités natives d'Unreal et Blueprint. Le
+C++ du plugin V1 reste limité au transport, aux contrats et au parsing. PRISM
+V2 repose sur le host .NET et le contrat SYNE↔PRISM versionné en `1.0.0` ; le
+transport couplé a été exercé sur 1 000 ticks, tandis que R2 (5 000 ticks)
+reste ouvert.
 
-Le moteur de simulation reste découplé d'Unreal : SYNE prend les décisions et
-conserve l'état faisant autorité ; Unreal transforme les données reçues en
-représentation et en interactions.
+En V1, SYNE prend les décisions et conserve l'état faisant autorité ; Unreal
+représente ses données. En V2, PRISM conserve l'état physique faisant autorité
+et SYNE applique à sa cognition les observations renvoyées par PRISM.
 
 ## 10. Pourquoi existe-t-il un mock SYNE ?
 
-`../../syne-mock/` est un serveur Node.js léger pour avancer sur le plugin et le
-projet Unreal final sans faire tourner le moteur .NET complet. Il permet de
-tester l'initialisation du monde, le contrôle, les WebSockets, les snapshots
-globaux et le cycle d'un run avec un scénario reproductible (50 agents et
-jusqu'à 400 ticks par défaut).
+`../../syne-mock/` est un serveur Node.js léger pour tester les contrats V1
+sans faire tourner le moteur .NET complet. Il permet de vérifier
+l'initialisation du monde, le contrôle, les WebSockets, les snapshots globaux
+et le cycle d'un run avec un scénario reproductible. Les campagnes de PRISM V2
+utilisent `Prism.Bots`, et la validation de couplage utilise SYNE réel.
 
 Le mock ne reproduit pas tous les mécanismes de SYNE : sa délibération, ses
 systèmes sociaux et son pathfinding sont simplifiés. Il sert aux tests

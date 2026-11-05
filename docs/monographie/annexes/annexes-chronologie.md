@@ -32,7 +32,7 @@ Cette première phase a établi trois choses qui n'ont pas été remises en caus
 
 L'activité d'implémentation de cette phase est concentrée sur quelques semaines, avec un rythme élevé de fusions de branches. Chaque composant a été développé avec son propre versionnage, ce qui explique que les numéros de version ne se correspondent pas : SYNE 0.17.0, ECHOS 0.1.0, Launcher 0.1.0.
 
-## 3. État de référence au 18 octobre 2026
+## 3. Photographie historique au 18 octobre 2026
 
 Cette photographie documentaire actualise les versions et ajoute le résultat des vérifications locales exécutées le 18/10. Les événements antérieurs restent datés selon leurs sources.
 
@@ -41,13 +41,28 @@ Cette photographie documentaire actualise les versions et ajoute le résultat de
 | SYNE | 0.17.0 (observabilité 0.5.0, monde 1.1, snapshot schemaVersion 5) | Disponible; Core 604/604 et Console 91/91 dans la vérification locale. |
 | ECHOS | 0.1.0 (`SCHEMA_VERSION = 6`; métriques 2.0.0) | Service d'analyse sans interface; 382 réussis, 14 ignorés, couverture 91,30 %. La migration BL-09 dite v7 n'a pas incrémenté le compteur global. |
 | Launcher | 0.1.0 (paquet `.livexp`) | Unit 174/174, Integration 20/20; E2E 31/33 avec SYNE publié, les deux J3 restant en échec. Le rapport de campagne du 17/10 est un run distinct à 33/33. |
-| PRISM / PRISM-LDK | Version de travail; contrats consommés 0.5.0 / monde 1.1 | Specs UE documentées, non réexécutées dans ce relevé; rendu interactif complet reste une porte distincte. |
+| PRISM / PRISM-LDK | Version de travail; contrats consommés 0.5.0 / monde 1.1 | Specs UE documentées, non réexécutées dans ce relevé; rendu interactif complet reste une porte distincte. État V1 antérieur à la refonte V2. |
 | `syne-mock` | 0.1.0 | Outil de test; 51 réussis, 2 ignorés sous Windows. |
 | Installateur | (aucune version) | Spécification, non implémenté. |
 
 Le livre garde sa date de référence historique du 12 octobre 2026 pour ses descriptions narratives et campagnes de cette date. Le présent tableau n'actualise pas rétroactivement leurs protocoles ou résultats; consulter [`LIVEX-STATUS.md`](../../governance/LIVEX-STATUS.md) pour le détail complet des vérifications et limites.
 
-## 4. Ce que cette chronologie montre
+## 4. État de PRISM V2 au 4 novembre 2026
+
+PRISM V2 est passé de la spécification à une implémentation partielle. Le host
+.NET simule un monde 2,5D, des actions et des chaînes de contenu ; son contrat
+SYNE↔PRISM `1.0.0` est gelé. Les suites PRISM comptaient 403 réussites et la
+boucle couplée avec SYNE avait été exercée sur 1 000 ticks. La campagne PRISM
+complète de 3 graines × 5 000 ticks × 3 bots a été exécutée avec neuf
+empreintes consignées.
+
+ECHOS sait stocker les enveloppes PRISM ; l'ingestion au cycle de run et les
+métriques restent ouvertes. Le run R2 couplé de 5 000 ticks avec répétitions,
+la reprise partagée, les validations interplateformes et la livraison V2 ne
+sont pas encore achevés. Le détail des dates et des limites est dans le
+[statut transversal actuel](../../governance/LIVEX-CURRENT-STATUS.md).
+
+## 5. Ce que cette chronologie montre
 
 Trois enseignements se dégagent de ces dates.
 

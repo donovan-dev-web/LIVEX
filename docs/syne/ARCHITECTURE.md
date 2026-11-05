@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `VISION.md`, `../COMMUNICATION.md`
 **Source Monographie** : §3.2–3.5, §7.1 (monorepo), §7.3 (diagrammes, matrice de dépendances)
 
@@ -10,10 +10,12 @@
 
 ## 1. Vue d'ensemble — rôle actuel
 
-SYNE est le moteur .NET autoritaire de simulation et de décision. PRISM
-consomme ses données dans le projet Unreal PRISM via le plugin
-PRISM-LDK (`PrismLdk`) ; ce plugin n'est
-pas un moteur de simulation parallèle.
+SYNE est le moteur .NET de simulation autonome et de cognition. Dans la pile
+V1, il détient l'état du monde et diffuse ses snapshots aux consommateurs.
+Dans le couplage PRISM V2, PRISM détient l'état physique ; SYNE reçoit ses
+observations, les applique aux croyances et produit des décisions. Cette boucle
+est implémentée, mais l'extraction complète des systèmes physiques hors de
+SYNE reste à faire. Le plugin Unreal PRISM-LDK appartient au chemin V1.
 
 ```mermaid
 flowchart TB
@@ -35,12 +37,19 @@ flowchart TB
         RT --> NAV
     end
     SYNE -->|"WebSocket observabilité"| WS[(world_initialized / snapshot / events)]
-    PRISM["PRISM — projet Unreal / plugin PRISM-LDK (PrismLdk)"]
+    PRISM["PRISM V2 — monde .NET autoritaire"]
     ECHOS["ECHOS — consommateur"]
+    PRISM -->|"observations / événements"| COG
+    COG -->|"intentions / commandes"| PRISM
     WS --> PRISM
     WS --> ECHOS
     PRISM -->|"HTTP contrôle"| SYNE
 ```
+
+Le chemin WebSocket/HTTP décrit ci-dessus reste celui de SYNE autonome et de
+l'intégration V1. Le nouveau transport de tick et son port de lecture sont
+définis par le contrat PRISM V2 et ses manifestes ; le couplage `--prism-url`
+exerce les observations entrantes sur 1 000 ticks.
 
 Les ports par défaut sont 5180 (WebSocket) et 5181 (HTTP), sur l'interface
 locale `127.0.0.1`. Les options du serveur permettent de les configurer : ce
@@ -96,9 +105,11 @@ décrits dans `CONFIGURATION.md` et `API_CONTRACTS.md`.
 | Persistance | JSON (V1) / SQLite (V2) | schéma Annexe G |
 
 Les ports sont configurables et le bind par défaut est local (`127.0.0.1`).
-PRISM consomme ces interfaces via le plugin Unreal PRISM-LDK (`PrismLdk`) ; le
-contrôle et le rendu ne portent pas la logique de simulation. Voir
-`API_CONTRACTS.md` et `PERSISTENCE.md`.
+En V1, PRISM consomme ces interfaces via le plugin Unreal PRISM-LDK (`PrismLdk`) ;
+le contrôle et le rendu ne portent pas la logique de simulation. En V2, un
+client distinct échange avec le host PRISM et applique ses observations à la
+cognition SYNE. Voir `API_CONTRACTS.md` et `PERSISTENCE.md` pour les contrats
+SYNE autonomes ; le contrat V2 est défini dans la documentation PRISM.
 
 ## 6. Dépendances
 

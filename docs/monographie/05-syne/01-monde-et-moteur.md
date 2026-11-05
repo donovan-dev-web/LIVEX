@@ -1,5 +1,11 @@
 # SYNE I. La terre et son métabolisme
 
+> **Repère de version.** Ce chapitre décrit le monde contenu dans SYNE 0.17.0,
+> utilisé en mode autonome V1 et encore présent dans le code. PRISM V2 est
+> désormais l'autorité prévue et partiellement intégrée pour le monde physique.
+> Son extraction complète depuis SYNE n'est pas achevée ; ce chapitre ne doit
+> pas être lu comme la description du monde PRISM V2.
+
 Avant les habitants, la terre. Non un décor, mais un métabolisme : un plan continu où des réserves respirent, une géographie qui résiste, des rythmes qui passent, sans jamais raconter d'histoire à la place de ceux qui y vivent. C'est la première réponse concrète à la question directrice : des lois fondamentales aveugles, qui contraignent sans ordonner.
 
 Ce chapitre a une ambition précise. Il ne s'agit pas de décrire un monde « réaliste » au sens visuel, mais de poser les conditions minimales pour que des comportements non écrits puissent apparaître : un espace fini où l'on se rencontre, des ressources partagées et limitées, une géographie qui gêne le pas et le regard, des rythmes qui changent le contexte sans l'orchestrer. Chacun de ces choix peut sembler anodin. Mis bout à bout, ils forment la scène sur laquelle la question directrice peut se jouer. Le livre prend donc le temps de les dérouler, parce qu'une loi mal comprise au départ rend incompréhensible tout ce qui suit.

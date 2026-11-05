@@ -2,7 +2,12 @@
 
 **Composant** : Launcher 
 **Statut** : [STABLE] 
-**Dernière mise à jour** : 21 octobre 2026 
+**Dernière mise à jour** : 4 novembre 2026
+
+> Cette synthèse décrit surtout le Launcher V1. Le manifeste du host PRISM V2
+> est désormais présent et reconnu par le Launcher générique ; l'orchestration
+> complète des ports, du cycle de vie, du viewer et des archives V2 reste en
+> cours. Voir le [statut transversal](../governance/LIVEX-CURRENT-STATUS.md).
 
 ---
 

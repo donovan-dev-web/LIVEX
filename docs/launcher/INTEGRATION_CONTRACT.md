@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `COMPONENTS.md`, `ARCHITECTURE.md`, `OBSERVABILITY.md`, `NETWORK.md`
 **Source Monographie** : —
 
@@ -28,8 +28,11 @@ contrat ne crée aucune dépendance.
 > mais le parcours paquet complet n'est pas accepté. ECHOS expose les trois
 > routes headless du §10.1 contre sa base analytique ; le Launcher prépare
 > `experiment.json`, mais la chaîne d'ingestion reste à valider.
-> `syne-mock` reste une émulation de développement Linux non scientifique ;
-> PRISM n'a pas de manifeste Launcher accepté. Les statuts et portes par rôle
+> `syne-mock` reste une émulation de développement non scientifique.
+> `prism/component.json` déclare maintenant le host PRISM V2 et son flux de
+> lecture `/data/read`, et le manifeste est raccordé au Launcher générique.
+> Ce host n'est pas le viewer V1/Immersion : le cycle complet de lancement,
+> l'archivage V2 et le manifeste distinct du viewer restent ouverts. Les statuts et portes par rôle
 > sont suivis dans la [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md)
 > et la [roadmap de réalisation](../../launcher/ROADMAP-V1.md).
 
@@ -289,6 +292,9 @@ en bout. Machine de référence V0.1 : **Ubuntu x86-64, Python 3.14.4, pip 26.2.
 
 ## 11. Exigences propres à PRISM
 
+Les exigences V1 ci-dessous décrivent le mode Immersion Unreal et son rendu.
+Elles ne sont pas le contrat de distribution du host PRISM V2.
+
 | Exigence | Précision |
 | :-- | :-- |
 | **Consommer le flux de simulation** | Sans modifier la simulation. |
@@ -315,6 +321,16 @@ arrêté n'interrompt ni le moteur ni une campagne, `TESTING.md` §6).
 Tant qu'une seule vérification échoue, le mode Immersion reste verrouillé, avec
 **la cause exacte** affichée (§3.4 de `USER_INTERFACE.md`). Le déverrouillage est
 la conséquence d'un manifeste conforme, jamais d'une constante de code.
+
+### 11.2 État de l'intégration du host PRISM V2
+
+Le manifeste `prism/component.json` déclare le host `prism-host` et son
+endpoint WebSocket `readStream` (`/data/read`). Le CLI accepte `--read-port` ;
+le Launcher générique peut découvrir le composant. Ce socle ne finalise pas
+LAUNCHER-200/201/202 : orchestration des ports et du cycle de vie, configuration
+et `contentHash` dans les paquets `.livexp`, arrêt coordonné et archivage du
+flux restent à réaliser. Le viewer V2 est un composant distinct et son
+manifeste est encore à produire.
 
 ## 12. Reproductibilité — engagements des composants
 

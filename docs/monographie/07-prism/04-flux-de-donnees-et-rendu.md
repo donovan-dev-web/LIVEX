@@ -1,3 +1,7 @@
+> **Repère historique V1.** Ce chapitre documente le flux SYNE→Unreal de la
+> release V1. Le flux V2 est bidirectionnel entre SYNE et PRISM et comporte une
+> voie de lecture séparée vers ECHOS ; voir [le chapitre V2](05-prism-v2.md).
+
 # PRISM IV. Le flux de données et le rendu
 
 Recevoir des données et dessiner un monde sont deux problèmes distincts. Ce chapitre décrit le contrat de lecture du rendu : quel message fait autorité, comment un instantané se projette dans une scène, et pourquoi un affichage peut mentir alors même que les données sont justes.
@@ -72,4 +76,4 @@ C'est ce qui permet de dire qu'une structure observée à l'écran l'a bien ét�
 - La fidélité visuelle n'est pas mesurée : rien n'établit qu'un spectateur juge correctement une structure à partir de l'image.
 - L'interpolation n'est pas validée comme reconstruction exacte des trajectoires entre deux ticks.
 - Les choix de représentation (couleurs, indicateurs, échelles d'affichage) ne sont pas standardisés et pourraient induire des lectures différentes.
-- PRISM reste verrouillé en V0.1 : ce chapitre décrit un contrat de lecture et une intégration de travail, non un rendu complet et validé.
+- Dans la coupe V1 décrite ici, PRISM reste verrouillé : ce chapitre décrit un contrat de lecture et une intégration de travail, non un rendu complet validé.

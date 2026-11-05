@@ -6,21 +6,22 @@ Une conclusion de projet technique prend souvent la forme d'un bilan triomphal. 
 
 ## 1. Ce qui a été construit
 
-Le projet a produit une plateforme expérimentale en temps réel, composée de quatre responsabilités nettement séparées.
+Le projet a produit une plateforme expérimentale en temps réel. Ses responsabilités existent dans deux architectures qu'il faut distinguer : la release V1 publiée et l'intégration PRISM V2 en cours.
 
-- **SYNE décide.** Un moteur autoritaire, déterministe, persistant, indépendant du rendu. Il simule un monde fini à réserves partagées, fait décider des entités par une utilité transparente, se sauvegarde et se reprend au bit près, et se raconte par des contrats versionnés.
-- **ECHOS mesure sans toucher.** Un observatoire en lecture seule qui ingère, résume, stocke, calcule sept familles de métriques et publie une lecture, en signalant ses trous plutôt qu'en les recousant.
-- **PRISM montre sans décider.** Un projet Unreal et un plugin d'intégration en couche mince, reliés au moteur par des contrats, disciplinés au point de refuser de devenir un second monde.
-- **Le Launcher archive sans relayer.** Un orchestrateur de bureau qui pilote, supervise à six niveaux, enchaîne des campagnes et scelle des paquets déterministes.
+- **SYNE décide.** En V1, un moteur autonome et autoritaire, déterministe, persistant, indépendant du rendu. En V2 couplé, SYNE porte la cognition, applique aux croyances les observations PRISM et envoie les commandes ; l'extraction complète de son monde historique reste à faire.
+- **ECHOS mesure sans toucher.** Un observatoire headless qui analyse les flux SYNE. Son ingestion PRISM V2 sait valider et stocker les enveloppes brutes ; le cycle de run et les métriques restent à raccorder.
+- **PRISM V1 montrait ; PRISM V2 simule.** La release 1.0.0 incluait Unreal et le plugin PRISM-LDK. La V2 est un host .NET qui porte le monde physique, avec rendu facultatif.
+- **Le Launcher archive sans relayer.** Un orchestrateur de bureau livré en V1 ; le cycle complet d'orchestration PRISM V2 reste à intégrer.
 
 Autour, deux outils assument des rôles modestes : le mock émule sans prouver, l'installateur promet sans affirmer.
 
 | Composant | Verbe | Serment |
 | :-- | :-- | :-- |
-| SYNE | décider | ne jamais être mis en scène |
+| SYNE | cognition V2, moteur monde V1 | ne jamais réécrire le monde PRISM |
 | ECHOS | mesurer | ne jamais toucher au monde |
-| PRISM | montrer | ne jamais décider |
-| Launcher | archiver | ne jamais relayer |
+| PRISM V2 | simuler le monde physique | ne jamais confondre le rendu avec l'état simulé |
+| PRISM V1 | représenter | ne jamais être lu comme l'architecture V2 |
+| Launcher | orchestrer et archiver | ne pas relayer le flux de données |
 | syne-mock | émuler | ne jamais faire autorité |
 | Installateur | installer | ne jamais promettre |
 
@@ -52,7 +53,7 @@ flowchart LR
 
 ## 4. Ce qui reste ouvert
 
-Le projet laisse ouverts, et le dit, un certain nombre de chantiers. La scène interactive complète, hors périmètre de la version 0.1. Le support d'exécution au-delà de Windows et Linux. L'activation calibrée des systèmes livrés mais désactivés (saisons, territoires, livres, constructions, primitives cognitives). Les sources spatiales de ressources et la conflictualité collective. L'indice de viabilité dynamique reste une spécification : le relevé du code du 18 octobre ne trouve ni moteur DVI à sept composantes ni sorties correspondantes, malgré l'échéance antérieure envisagée avant publication. L'installateur, qui n'a pas encore une ligne de code. Le nombre de runs nécessaires pour conclure statistiquement.
+Au 4 novembre, le projet laisse ouverts le run R2 SYNE↔PRISM de 5 000 ticks et ses répétitions identiques, la reprise commune, l'extraction du monde historique SYNE, l'ingestion ECHOS au cycle de run, le viewer live, l'orchestration Launcher V2, les validations interplateformes et les portes de calibrage. PRISM V2 a des tests fonctionnels et des campagnes bots, mais aucune de ces preuves ne remplace R2 ou les validations de viabilité. Les limites et les résultats scientifiques de la release V1 restent décrits dans leurs sections datées.
 
 Ces chantiers ne sont pas des promesses : ce sont des constats d'inachèvement, écrits comme tels. L'annexe L les reprend un par un, dans l'ordre où ils se commandent, en distinguant les capacités livrées mais non activées, les jalons présents dans le code mais non franchis et ce qui reste hors périmètre.
 

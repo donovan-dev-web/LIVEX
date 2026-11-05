@@ -1,8 +1,16 @@
 # Chapitre 5. SYNE : le monde qui doit pouvoir se passer de nous
 
-Si la question directrice demande des lois fondamentales, SYNE est l'endroit où elles vivent. Ce chapitre raconte le moteur autoritaire, celui qui possède la vérité du monde et peut tourner sans écran, sans observateur et sans décor. Il montre en quoi chaque mécanisme sert la question : comment des règles locales et aveugles peuvent laisser apparaître du collectif sans jamais l'ordonner.
+**Mise à jour au 4 novembre 2026.** Les chapitres de cette partie décrivent
+SYNE 0.17.0 et ses mécanismes, dont le monde autonome historique. Dans le
+couplage V2, PRISM est l'autorité du monde physique et SYNE reçoit des
+observations pour la cognition. L'adaptateur, la boucle couplée et l'application
+aux croyances sont livrés ; l'extraction complète du monde SYNE et la reprise
+commune restent ouvertes. Les contrats WebSocket décrits ici restent ceux du
+mode SYNE autonome/V1 ; le contrat SYNE↔PRISM V2 est distinct.
 
-Le nom est un acronyme, mais c'est d'abord une fonction : **SYNE est le composant qui décide**. Tout le reste du projet tourne autour de ce fait. L'observatoire mesure ce que SYNE produit, la scène montre ce que SYNE décide, l'orchestrateur archive ce que SYNE a produit. Aucun de ces composants ne réécrit l'état du monde ; SYNE en est la source unique. Cette unicité est ce qui rend la question directrice testable, car il n'y a qu'un seul endroit où les lois du monde existent.
+Si la question directrice demande des lois fondamentales, le projet doit en décrire l'autorité sans ambiguïté. En V1, cette autorité vivait dans SYNE. En V2, le monde physique relève de PRISM, tandis que SYNE porte la cognition. Cette partie raconte le moteur .NET et ses mécanismes tels qu'ils sont implémentés ; elle distingue le mode autonome historique du couplage V2.
+
+Le nom est un acronyme, mais c'est d'abord une fonction : **SYNE est le composant cognitif qui décide**. En V1, il était aussi la source de vérité du monde physique. Dans le couplage V2, PRISM détient ce monde ; SYNE reçoit ses observations, les applique aux croyances et renvoie des commandes. La boucle fonctionne et a été exercée sur 1 000 ticks, mais l'extraction complète depuis le moteur SYNE n'est pas terminée.
 
 ## Ce que ce chapitre raconte
 
@@ -15,7 +23,7 @@ SYNE 0.17.0, en C# sur .NET, tient cette promesse par quatre vertus inséparable
 - **Il persiste.** On peut l'arrêter en plein vol et le reprendre à l'identique, au bit près.
 - **Il dit ce qu'il fait.** Des snapshots, des événements et des contrats versionnés.
 
-Le relevé historique du 12 octobre comptait 634 tests SYNE et 87,41 % de couverture agrégée. La vérification locale du 18 octobre passe 604 tests Core et 91 Console; les rapports Cobertura bruts donnent 91,17 % et 63,46 % par assemblage, sans agrégat par union recalculé. Voir le [statut courant](../../governance/LIVEX-STATUS.md). Ces résultats attestent les comportements couverts, pas une vérité générale sur le monde simulé.
+Au relevé du 4 novembre, les suites SYNE comptaient 708 réussites : 604 Core et 104 Console. Les chiffres de couverture et les relevés antérieurs sont datés dans les rapports de tests ; ils ne sont pas recalculés ici. Voir le [statut transversal](../../governance/LIVEX-CURRENT-STATUS.md) et le [relevé détaillé de la release V1](../../governance/LIVEX-STATUS.md). Ces résultats attestent les comportements couverts, pas une vérité générale sur le monde simulé.
 
 ## Comment lire cette partie
 

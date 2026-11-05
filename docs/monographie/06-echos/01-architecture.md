@@ -1,5 +1,11 @@
 # ECHOS I. Architecture et ingestion
 
+> **Mise à jour V2, 4 novembre 2026.** Le texte ci-dessous décrit d'abord
+> l'ingestion et l'analyse SYNE historiques. ECHOS possède maintenant une
+> voie supplémentaire pour valider et persister le flux de lecture PRISM V2.
+> Cette voie ne rejoint pas encore le cycle de production des runs ni les
+> moteurs analytiques ; les deux chemins restent distincts.
+
 ECHOS est un observatoire : il transforme l'exécution d'un monde en données compréhensibles, sans jamais écrire dans ce monde. Ce chapitre décrit sa place, son architecture, son mode d'ingestion et la manière la plus importante dont il reste honnête : en signalant ses trous plutôt qu'en les recousant.
 
 L'analogie la plus juste est celle du télescope. Un télescope n'agit pas sur l'étoile qu'il observe ; il collecte sa lumière, la concentre, et produit une image. Il a des aberrations, une résolution finie, des nuits où il ne voit rien. Un astronome honnête note les nuits manquées. ECHOS se veut de cette nature : un instrument qui regarde le monde de loin, sans le toucher, et qui documente ses propres limites.
@@ -23,9 +29,11 @@ Cette séparation entre les deux persistances est ce qui garantit la non-ingére
 ```mermaid
 flowchart LR
     S["SYNE : WebSocket 5180"] -->|"snapshot, evenements"| E["ECHOS : consommateur"]
+    P["PRISM V2 : flux de lecture"] -->|"enveloppes versionnées, contentHash"| R["Ingestion brute PRISM"]
+    R --> DB[('AnalyticsStore : SQLite + Parquet')]
     E -->|"controle HTTP 5181"| S
     E --> M["Moteurs de metriques"]
-    E --> DB[("AnalyticsStore : SQLite + Parquet")]
+    E --> DB
     E --> API["API REST 5000, lecture seule"]
     API --> L["Launcher : fenetres natives"]
 ```

@@ -2,19 +2,23 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `INTEGRATION_CONTRACT.md`, `../COMMUNICATION.md`
 **Source Monographie** : —
 
 > **Cible contractuelle et état du code :** les exemples de ce document
-> décrivent le modèle visé, pas la preuve qu'un composant le respecte déjà.
+> décrivent principalement le modèle Launcher V1 ; ils ne certifient pas la
+> conformité V2 des composants.
 > À la référence du 2 octobre 2026, SYNE réel, ECHOS headless et `syne-mock`
 > fournissent chacun un manifeste limité à Linux. Le batch SYNE ne connaît que
 > `reference` et son intégration au collecteur de paquets n'est pas acceptée ;
 > les opérations d'analyse ECHOS lisent des runs déjà présents dans la base
 > analytique, dont le flux d'ingestion depuis le Launcher n'est pas validé.
-> PRISM n'a pas de manifeste Launcher. Le mock remplace le rôle SYNE, il n'est
-> pas un quatrième rôle. Voir la
+> Le host PRISM V2 possède maintenant `prism/component.json` et le Launcher
+> générique peut le découvrir ; le cycle complet de session et de paquet V2
+> reste ouvert. Ce manifeste du host ne constitue pas un manifeste viewer.
+> Le mock remplace le rôle SYNE en mode développement V1, il n'est pas un
+> quatrième rôle. Voir la
 > [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md) pour l'état
 > observé et les critères d'acceptation.
 

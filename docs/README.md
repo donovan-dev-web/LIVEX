@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 31 octobre 2026
+**Dernière mise à jour** : 4 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `NAMING_CONVENTIONS.md`
 
 ---
@@ -53,8 +53,8 @@ CONTRIBUTING…) restent à la racine du dépôt.
 
 | Documentation | Contenu |
 |---|---|
-| [SYNE](syne/README.md) | Moteur autoritaire, simulation, configuration et contrats de données. |
-| [ECHOS](echos/README.md) | Ingestion, analyse, stockage et API headless (interface retirée — ADR-007). |
+| [SYNE](syne/README.md) | Moteur autonome V1, cognition couplée V2, simulation, configuration et contrats. |
+| [ECHOS](echos/README.md) | Analyse headless, ingestion SYNE et persistance brute partielle du flux PRISM V2. |
 | [PRISM](prism/README.md) | Refonte V2 : monde voxel autoritaire, noyau .NET headless, contrat SYNE↔PRISM et visualiseur facultatif. |
 | [Launcher](launcher/README.md) | Orchestrateur de la pile : matrice des modes, campagnes, supervision à six niveaux, réseau et Gateway, flux de données et format de paquet `.livexp`. |
 | [Installateur](installer/README.md) | Installateur LIVEX 1.0.0 : parcours graphique et CLI, installation Windows/Linux, maintenance et désinstallation. |
@@ -68,29 +68,33 @@ Astro documenté dans [`website/`](website/README.md) : architecture, pages,
 design system, composants, multilinguisme FR/EN, données éditoriales, SEO,
 accessibilité, déploiement et maintenance.
 
-## LIVEX, PRISM V1 et cible PRISM V2
+## LIVEX, PRISM V1 et PRISM V2 en cours
 
 **LIVEX** (*Living Intelligent Virtual Ecosystem eXperience*) est le projet
 complet. **PRISM V1** est le projet Unreal livré avec la release 1.0.0 ; il
 intègre **PRISM-LDK** (*LIVEX Development Kit*), le plugin Unreal historique.
 Cette architecture reste la référence pour la V1 et ses archives.
 
-La **cible PRISM V2** remplace cette architecture par un noyau .NET headless
-qui détient la vérité du monde matériel et spatial. SYNE conserve la cognition
-des agents ; ECHOS observe les flux. Le visualiseur prévu utilise Silk.NET et
-OpenGL, mais reste un client facultatif qui ne commande pas l'avancement du
-monde. La V2 échange le contrat SYNE↔PRISM 1.0.0 : commandes, observations,
-événements et flux de lecture.
+**PRISM V2** remplace l'architecture V1 par un noyau .NET headless qui porte
+l'état physique du monde. Son host exécute déjà le tick, les actions et les
+chaînes de contenu ; son contrat `1.0.0` échange commandes, observations,
+événements et flux de lecture. La boucle couplée avec SYNE applique les
+observations aux croyances et a été exercée sur 1 000 ticks. L'extraction
+complète de l'ancien monde SYNE, la reprise couplée et le run R2 de 5 000 ticks
+restent à faire. Le viewer Silk.NET/OpenGL est un client facultatif ; son
+client de flux est implémenté mais pas encore raccordé au lancement live.
 
-Les documents de [`prism/`](prism/README.md) décrivent la cible V2 complète.
-Ils ne déclarent pas que tous ses éléments sont déjà livrés. Les constats de
-réalisation seront actualisés avant toute publication de la documentation.
+Les documents de [`prism/`](prism/README.md) décrivent les fonctions V2
+implémentées et les travaux restant à livrer. Pour l'état transversal courant,
+consulter [`governance/LIVEX-CURRENT-STATUS.md`](governance/LIVEX-CURRENT-STATUS.md).
+Le relevé détaillé [`governance/LIVEX-STATUS.md`](governance/LIVEX-STATUS.md)
+reste la photographie de la release V1 au 31 octobre.
 
 ## Sources de vérité et limites du mock
 
-- Pour la cible V2, PRISM et ses spécifications portent l'autorité du monde
-  physique ; SYNE porte la cognition et `prism/API_CONTRACTS.md` définit le
-  contrat visé entre eux.
+- En V2, PRISM porte l'autorité du monde physique ; SYNE porte la cognition,
+  tandis que l'extraction des systèmes physiques encore présents dans SYNE
+  demeure incomplète. `prism/API_CONTRACTS.md` décrit le contrat `1.0.0` gelé.
 - Les contrats V1 de SYNE restent applicables à la release 1.0.0 et aux
   documents explicitement historiques.
 - `../syne-mock/` émule le transport et une partie du comportement pour permettre
@@ -102,8 +106,7 @@ réalisation seront actualisés avant toute publication de la documentation.
 
 ## Archives
 
-La [Monographie](../LIVEX-Monographie_SnapV0-1.md) décrit des étapes de
-conception antérieures. Les références à Godot, aux anciens répertoires ou aux
-moteurs graphiques encore « ouverts » dans cette archive ne décrivent pas la
-réalisation V1. Les ADR d'origine restent consultables comme historique ; les
-schémas V2 prévus sont dans les documents de contrat PRISM.
+La monographie est en cours de réalignement sur PRISM V2. Les chapitres V1
+conservés doivent être identifiés explicitement comme historiques ; ils ne
+décrivent pas l'architecture actuelle. Les ADR d'origine restent consultables
+comme historique.

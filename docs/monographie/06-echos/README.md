@@ -1,5 +1,11 @@
 # Chapitre 6. ECHOS : observer sans toucher
 
+**État mis à jour au 4 novembre 2026.** ECHOS conserve son ingestion et son
+analyse SYNE historiques. Un chemin distinct valide et persiste les enveloppes
+de lecture PRISM V2, avec séquence et `contentHash`. Cette ingestion brute
+n'est pas encore raccordée au cycle de run et aux métriques V2. Le dernier
+relevé de tests ECHOS trouvé date du 19 octobre 2026 : 383 réussis, 14 ignorés.
+
 Si SYNE est le monde, ECHOS est le regard qui refuse de le déformer. Ce chapitre raconte l'observatoire, devenu volontairement un moteur sans interface, et montre comment il sert la question directrice par la négative : prouver qu'on peut mesurer l'émergence sans la fabriquer.
 
 ECHOS est l'acronyme d'*Emergent Cognition & Holistic Observation System*. C'est le composant qui ingère le flux du moteur, calcule des métriques, stocke des historiques et publie une lecture. Il **observe, il n'influence pas le phénomène mesuré**. Depuis une décision de conception, il n'a plus d'interface propre : il publie une API, et c'est le Launcher qui présente les résultats. Cette séparation prolonge la règle d'or du projet : mesurer sans toucher.
@@ -44,7 +50,7 @@ Une quatrième règle, moins visible, complète les trois premières : une métr
 
 ## État
 
-ECHOS 0.1.0 est un backend Python (FastAPI) assorti de NumPy, Pandas, SciPy et NetworkX, d'un stockage SQLite dont `SCHEMA_VERSION` vaut 6, et de séries Parquet. La migration BL-09 qui rend l'utilité nullable est dite v7 dans ses tests/commentaires, mais le compteur global reste 6; cette discordance est explicitée dans l'[annexe des schémas](../annexes/annexes-parametres-et-bases-de-donnees.md). Le catalogue des métriques porte la version 2.0.0 et comporte soixante et une fiches. Le relevé local du 18 octobre 2026 passe 382 tests, en ignore 14 et mesure 91,30 % de couverture. L'endpoint de profil de viabilité décrit des séries observées et la calibration post-run; il ne publie pas le DVI spécifié dans le chapitre VII. Le composant est **disponible** en tant que service d'analyse headless.
+ECHOS 0.1.0 est un backend Python (FastAPI) assorti de NumPy, Pandas, SciPy et NetworkX, d'un stockage SQLite dont `SCHEMA_VERSION` vaut 6, et de séries Parquet. La migration BL-09 qui rend l'utilité nullable est dite v7 dans ses tests/commentaires, mais le compteur global reste 6; cette discordance est explicitée dans l'[annexe des schémas](../annexes/annexes-parametres-et-bases-de-donnees.md). Le catalogue des métriques porte la version 2.0.0 et comporte soixante et une fiches. Le dernier relevé local connu, daté du 19 octobre 2026, compte 383 tests réussis, 14 ignorés et 91,32 % de couverture. L'endpoint de profil de viabilité décrit des séries observées et la calibration post-run ; il ne publie pas le DVI spécifié dans le chapitre VII. Le flux PRISM est conservé brut, sans métriques calculées à partir de données absentes. ECHOS reste disponible comme service d'analyse headless.
 
 ## Ce que cette partie apporte à la question directrice
 

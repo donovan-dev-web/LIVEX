@@ -1,46 +1,59 @@
-# Chapitre 7. PRISM : montrer sans décider
+# Chapitre 7. PRISM : simuler le monde, puis le représenter
 
-Reste à donner au monde un visage sans lui donner des ordres. PRISM, projet Unreal final, est ce visage. Ce chapitre raconte pourquoi il doit rester un reflet discipliné si la question directrice veut garder son sens : dès que la scène décide à la place du moteur, l'émergence n'est plus observée, elle est truquée.
+PRISM a changé de fonction entre les deux versions de LIVEX. En V1, PRISM est
+un projet Unreal et son plugin PRISM-LDK reçoit les données du moteur SYNE pour
+les représenter. En V2, PRISM désigne une simulation .NET headless qui porte
+l'état physique du monde : terrain, matière, temps, déplacement, actions et
+structures. Cette transformation déplace une frontière fondamentale. La
+scène ne porte plus le monde ; le monde simulé existe sans scène.
 
-Trois entités portent des noms proches et ne doivent jamais être confondues. **LIVEX** est le projet complet. **PRISM** est son projet Unreal final : il porte le monde présenté, les acteurs, le rendu, l'interface et les interactions. **PRISM-LDK** (*LIVEX Development Kit*, nom de module Unreal `PrismLdk`) est le plugin d'intégration qui relie les deux : une couche mince qui transporte, convertit et diffuse, jamais un moteur parallèle.
+Ce chapitre décrit PRISM V2 tel qu'il est implémenté au 4 novembre 2026. Il
+distingue la base fonctionnelle, le couplage actuel avec SYNE et les preuves
+encore attendues. Les anciens chapitres Unreal sont conservés comme description
+historique de PRISM V1 et sont balisés comme tels.
 
-## Pourquoi la représentation est un problème, pas une évidence
+## Comment lire ce chapitre
 
-On pourrait croire que montrer un monde est neutre : on affiche ce que le moteur calcule, et c'est tout. En pratique, c'est faux. Une représentation doit prendre des décisions : où placer un objet, comment interpoler un déplacement, quelle animation jouer. Chacune de ces décisions est une occasion de s'écarter du monde. Une scène qui lisse un déplacement pour l'esthétique peut, sans le vouloir, suggérer une continuité que le monde n'a pas. Une scène qui anime un « rassemblement » peut faire croire à une structure que le moteur n'a pas produite. La discipline de PRISM consiste à limiter ces libertés au strict nécessaire, et à les garder visuelles, jamais décisionnelles.
+1. [PRISM V2 : le monde et sa simulation](05-prism-v2.md)
+2. [Le plugin PRISM-LDK de V1](02-plugin-ldk.md), repère historique
+3. [L'échelle et le transport Unreal de V1](03-echelle-cadence-et-transport.md), repère historique
+4. [Le flux et le rendu Unreal de V1](04-flux-de-donnees-et-rendu.md), repère historique
 
-## Comment lire cette partie
-
-1. **Le projet Unreal et la place du rendu** : ce que PRISM est, ce que l'hôte technique du dépôt n'est pas, et pourquoi la scène ne décide jamais.
-2. **Le plugin PRISM-LDK** : transport, conversion en types Blueprint, cycle de connexion et règles de consommation.
-3. **L'échelle, la cadence et le transport** : le facteur spatial, le ratio de temps simulé, le cycle de préparation, ce que le moteur exporte et ce que le rendu invente.
-4. **Le flux de données et le rendu** : l'instantané comme source de vérité, la construction du décor, la projection, l'interpolation et les trois interdits du rendu.
-
-## La frontière, en un regard
+## La frontière V2
 
 ```mermaid
 flowchart LR
-    S["SYNE : decide"] -->|"snapshots, evenements"| K["Plugin PRISM-LDK : transporte et convertit"]
-    K --> U["Scene Unreal : montre"]
-    U -->|"controle seulement"| S
-    U -.->|"jamais de retour d'etat"| X["Interdit"]
+    S["SYNE : cognition"] -->|"commandes par tick"| P["PRISM : monde physique autoritaire"]
+    P -->|"observations et événements"| S
+    P -->|"flux de lecture"| E["ECHOS : stockage et analyse"]
+    P -->|"flux de lecture"| V["Viewer : rendu facultatif"]
 ```
 
-Le trait plein descendant porte l'état du monde vers la scène. Le seul trait remontant autorisé porte des **commandes**, jamais des positions ou des états inventés par le rendu. La boucle interdite, en pointillé, est celle qui transformerait la scène en cause.
+SYNE reste l'horloge maîtresse et décide des actes cognitifs. PRISM applique les
+commandes au monde, avance ses systèmes et renvoie ce que l'agent peut
+observer. ECHOS et le viewer lisent les sorties de PRISM ; ils ne décident pas
+à sa place. Le viewer V2 est optionnel et son client de lecture n'est pas
+encore branché au lancement live.
 
-## État et avertissement de portée
+## Ce qui est et ce qui n'est pas établi
 
-PRISM et PRISM-LDK sont, à l'état décrit, en version de travail. Le plugin consomme le contrat d'observabilité SYNE 0.5.0. Dans le dépôt, l'hôte technique `LDK.uproject` sert à compiler et tester le plugin ; son nom n'en fait ni le projet complet LIVEX, ni un second produit.
+Le host, les actions physiques, la génération déterministe, les chaînes
+d'outils et d'agriculture, les structures et les points de reprise ont des
+tests fonctionnels. Le contrat SYNE↔PRISM `1.0.0` est gelé. Le relevé local du
+4 novembre compte 403 tests PRISM réussis. La boucle couplée SYNE/PRISM et
+l'application des observations aux croyances sont implémentées ; le transport
+a été exercé sur 1 000 ticks.
 
-L'expérience de rendu interactive complète est **hors périmètre** de la version 0.1 : les spécifications de scène, de rendu et d'interaction décrivent des objectifs de présentation, non des fonctions livrées. Toute capture ou image doit être rapportée à sa version, et toute illustration conceptuelle doit être annoncée comme telle, jamais présentée comme une preuve. La validation du plugin dans le projet Unreal ciblé est exigée avant livraison.
+Cela ne suffit pas à déclarer l'intégration complète. Le run R2 couplé de
+5 000 ticks, ses répétitions identiques, la reprise commune et les validations
+interplateformes restent à réaliser. ECHOS peut valider et conserver les
+enveloppes du flux PRISM, mais cette ingestion n'est pas encore intégrée au
+cycle de run et aux métriques. Les chaînes livrées n'ont pas toutes de
+scénarios bout en bout pilotés par bot. La performance mesurée après
+optimisation est un résultat local, pas une porte de viabilité franchie.
 
-## Ce que cette partie apporte à la question directrice
-
-Cette partie répond à une question précise : comment un monde logique devient-il une scène, sans que la scène devienne un second monde ? La réponse tient en une échelle explicite, une cadence découplée du rendu, et une frontière non négociable entre décider et montrer. À la fin de cette partie, le lecteur saura pourquoi ce que l'on voit est bien le monde, et non une mise en scène.
-
-| Risque | Garde-fou |
-| :-- | :-- |
-| la scène décide | SYNE seul décide |
-| la scène invente un état | la scène suit l'instantané |
-| la scène renvoie une position | interdiction de renvoyer un état |
-| cadence confondue avec le rendu | cadence et rendu découplés |
-| nom trompeur | PRISM, PRISM-LDK et LIVEX distingués |
+Les résultats expérimentaux disponibles restent bornés : le contraste de
+quête spatiale a été confirmé dans le protocole préenregistré ; le cycle
+homéostatique social n'a pas été confirmé ; l'émergence générale n'est pas
+établie. Un monde plus riche et des interactions fonctionnelles ne remplacent
+pas les expériences de validation.

@@ -1,3 +1,7 @@
+> **Repère historique V1.** Les facteurs d'échelle, la cadence et les ports
+> Unreal décrits ici appartiennent au profil PRISM V1. PRISM V2 utilise un monde
+> 2,5D et son propre contrat, décrits dans [le chapitre V2](05-prism-v2.md).
+
 # PRISM III. L'échelle, la cadence et le transport
 
 Un monde logique et un monde rendu ne parlent pas la même langue : l'un compte en unités abstraites et en ticks, l'autre en centimètres et en images par seconde. Ce chapitre décrit les deux ponts qui les relient : une **échelle** spatiale, `k`, et une **cadence** temporelle, `R`, puis les deux canaux qui transportent les données de l'un vers l'autre.
@@ -88,5 +92,5 @@ La séparation des transports porte la même exigence que celle du reste du proj
 - `k = 100` et la cadence de six ticks par seconde sont des conventions choisies, non des valeurs mesurées ; elles découlent du budget de rendu et de l'échelle narrative, pas d'une étude.
 - La borne de vitesse des entités et la densité sociale qui en dépend sont des calculs de cohérence, non des résultats observés.
 - Le rendu n'a pas été validé comme **fidèle** : l'interpolation entre deux états est une reconstruction plausible, pas une mesure.
-- PRISM reste verrouillé en V0.1 : ce chapitre décrit un transport documenté et un plugin de travail, non un affichage complet en service.
+- Dans la coupe V1 décrite ici, PRISM reste verrouillé : ce chapitre décrit un transport documenté et un plugin de travail, non un affichage complet validé.
 - `syne-mock` parle les mêmes transports mais **n'est pas équivalent** au moteur : une validation faite sur le mock ne vaut pas pour SYNE.

@@ -1,6 +1,6 @@
 # Annexe C. Architecture détaillée
 
-Cette annexe rassemble les éléments d'architecture trop fins pour le corps du livre : les sous-systèmes du moteur, son ordonnancement, le contrat de composant et la configuration du monde de rendu. Tous les éléments rassemblés ici sont ceux de l'état décrit au 12 octobre 2026, vérifiables dans le code et les contrats versionnés.
+Cette annexe rassemble des détails d'architecture trop fins pour le corps du livre. Les sections C.1 à C.4 et leurs valeurs du profil SYNE `prism` décrivent la photographie V1 du 12 octobre 2026. La section C.5 distingue l'architecture PRISM V2 connue au 4 novembre. Le profil SYNE `prism` ne constitue pas la carte de PRISM V2.
 
 ## C.1 Sous-systèmes du moteur SYNE
 
@@ -63,6 +63,23 @@ Le Launcher détecte les composants par ce manifeste ; l'Installateur les dépos
 | Repos | 1,5 d'énergie et 2 de fatigue par tick |
 
 Les valeurs sont celles des profils de configuration versionnés (`reference.json` et `prism.json`). Le monde de référence (500 sur 500 unités, cellule de 10) est celui des campagnes calibrées ; le monde du profil PRISM (2 240 sur 2 240, cellule de 32) est celui de la représentation.
+
+> Ces dimensions sont celles du monde historique SYNE configuré par le profil
+> `prism`. Le monde PRISM V2 est généré séparément, à partir de son pack, sur
+> une grille de colonnes 2,5D.
+
+## C.5 PRISM V2 au 4 novembre 2026
+
+PRISM V2 est une solution .NET composée de `Prism.Contracts`, `Prism.Core`,
+`Prism.Content`, `Prism.Host`, `Prism.Bots` et `Prism.Viewer`. Le host porte le
+monde physique, les commandes, le tick et la persistance. La géométrie actuelle
+est une grille bornée de colonnes 2,5D ; le viewer est un client facultatif.
+
+Le contrat `1.0.0` relie les commandes SYNE aux observations et événements
+PRISM. Au 4 novembre, l'adaptateur SYNE et la boucle couplée avaient été
+exercés sur 1 000 ticks. Restent le run R2 de 5 000 ticks, les répétitions
+bit-à-bit, la reprise commune, l'ingestion de production ECHOS, le viewer live
+et les validations de plateforme.
 
 ---
 

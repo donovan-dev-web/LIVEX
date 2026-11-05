@@ -74,9 +74,9 @@ Cette annexe définit les termes employés dans le livre. Lorsqu'un terme a un s
 
 **Perception.** Première étape de la boucle : transformation de l'état du monde en observations locales, potentiellement inexactes.
 
-**PRISM.** Projet Unreal final de LIVEX. Montre sans décider.
+**PRISM.** En V1, projet Unreal qui représente le monde SYNE. En V2, simulation .NET headless qui détient l'autorité du monde physique ; intégration encore en cours.
 
-**PRISM-LDK.** Plugin Unreal (*LIVEX Development Kit*, module `PrismLdk`) qui relie le projet PRISM au moteur.
+**PRISM-LDK.** Plugin Unreal (*LIVEX Development Kit*, module `PrismLdk`) qui relie PRISM V1 aux contrats SYNE. Historique de la release 1.0.0 ; distinct du contrat SYNE↔PRISM V2.
 
 **Pulsation.** Message lumineux public, local et dégradable échangé entre entités.
 
@@ -118,8 +118,8 @@ Cette annexe définit les termes employés dans le livre. Lorsqu'un terme a un s
 
 **LIVEX.** *Living Intelligent Virtual Ecosystem eXperience*. Nom du projet complet.
 
-**PRISM.** *Perceptual Rendering & Interactive Simulation Module*. Montre sans décider.
+**PRISM.** *Persistent Reality & Interactive Simulation Module*. V2 : monde physique autoritaire. Ne pas confondre avec la présentation Unreal V1.
 
 **SYNE.** *Systems & Emergent Network Engine*. Décide.
 
-**LDK.** *LIVEX Development Kit*. Le projet Unreal minimal du dépôt, qui sert d'hôte technique au plugin.
+**LDK.** *LIVEX Development Kit*. Nom du plugin Unreal PRISM-LDK et de son module `PrismLdk`, utilisé dans le chemin historique V1.

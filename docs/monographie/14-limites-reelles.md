@@ -1,5 +1,12 @@
 # Chapitre 14. Limites réelles
 
+**Mise à jour au 4 novembre 2026.** Les limites ci-dessous décrivent souvent
+la coupe V1 d'octobre. PRISM V2 apporte une simulation 2,5D, des actions
+matérielles et une boucle SYNE exercée sur 1 000 ticks ; cela modifie le
+périmètre technique, mais ne ferme pas les portes R2, reprise partagée,
+calibrage, ingestion ECHOS ou validation interplateforme. Voir le [statut
+transversal](../governance/LIVEX-CURRENT-STATUS.md).
+
 Un livre qui ne dirait que des réussites serait une brochure. Ce chapitre rassemble les limites réelles du projet, classées par nature : limites de la simulation, limites de méthode, limites techniques, limites de portée et questions éthiques. L'objectif est de rendre impossible toute surinterprétation des résultats.
 
 Ce chapitre pourrait sembler contredire l'ambition d'un livre exhaustif : pourquoi consacrer une partie entière à ce qui manque ? Parce qu'un projet se définit autant par ses frontières que par son contenu. Un lecteur qui connaît les limites d'un système peut l'utiliser correctement ; un lecteur qui les ignore finira par lui prêter des pouvoirs qu'il n'a pas. L'exhaustivité, ici, signifie l'exhaustivité dans l'aveu autant que dans la description.
@@ -31,7 +38,7 @@ Avant les limites fines, un cadrage net. LIVEX n'est pas un jeu commercial : il 
 
 ## 2. Les limites de la simulation
 
-Le monde logique est un plan continu bidimensionnel, sans relief, sans pente, sans NavMesh. Il ne simule pas la matière : il calcule des états. La physique est simplifiée au mouvement et au blocage. Les ressources sont des compteurs, non des objets spatiaux, dans cette version. Les entités sont abstraites : ce ne sont pas des modèles cognitifs complets, et elles peuvent se chevaucher.
+Le monde SYNE autonome V1 est un plan continu bidimensionnel, sans relief, sans pente, sans NavMesh. Il ne simule pas la matière : il calcule des états. PRISM V2 ajoute un monde physique distinct, en colonnes 2,5D, avec matière, objets, actions et structures ; ce modèle ne comporte ni cavernes ni surplombs et ses validations restent partielles. Les deux périmètres ne doivent pas être confondus.
 
 Ces limites ne sont pas des défauts cachés : elles définissent le domaine de validité des observations. Ce qui est vrai dans un plan sans relief ne l'est pas nécessairement dans un monde avec terrain.
 
@@ -47,7 +54,7 @@ La limite sur la correspondance conceptuelle est probablement la plus profonde. 
 
 ## 4. Les limites techniques
 
-Le projet est optimisé pour un développeur unique, avec un formatage uniforme. Les ressources externes sont à vérifier manuellement. La parallélisation est bornée par le déterminisme : on ne peut pas paralléliser librement les écritures. Les benchmarks montrent un plafond de débit à mille agents (six ticks par seconde au lieu de dix), dû à un goulot dans la perception ; l'annexe K détaille les mesures, la machine de référence et l'écart restant. Le support d'exécution est limité à Windows et Linux ; macOS n'est pas prévu.
+Le projet est optimisé pour un développeur unique, avec un formatage uniforme. Les ressources externes sont à vérifier manuellement. La parallélisation est bornée par le déterminisme : on ne peut pas paralléliser librement les écritures. Les benchmarks historiques SYNE montrent un plafond de débit à mille agents ; ils ne mesurent pas PRISM V2. Les mesures PRISM du 4 novembre sont locales à un poste et un profil : elles montrent une baisse du coût du tick après optimisation, sans valider les objectifs à 1 000 agents ni les plateformes Linux. Le support d'exécution du projet vise Windows et Linux ; macOS n'est pas prévu.
 
 Une limite d'échelle mérite d'être soulignée : la représentation vise un monde d'environ cinq kilomètres carrés, mais la densité sociale y est faible au lancement, ce qui contraint les interactions tant que la population n'est pas montée en effectifs. C'est un compromis documenté, non une découverte tardive.
 
@@ -63,11 +70,11 @@ Plusieurs fonctionnalités sont livrées mais désactivées par défaut : saison
 | Livré mais désactivé | saisons, territoires, livres, constructions, inventaire, engagements |
 | Hors périmètre 0.1 | rendu interactif complet, ressources spatiales, négociation territoriale, conflit actif |
 | Spécifié, non implémenté au relevé du 18/10 | indice de viabilité dynamique (DVI à sept composantes; seules les séries de source et la calibration post-run sont disponibles) |
-| Spécifié, non implémenté | installateur |
+| Livré V1 ; distribution V2 ouverte | installateur LIVEX 1.0.0 ; acquisition et packaging des composants PRISM V2 |
 
 Certaines capacités sont explicitement hors périmètre de la version 0.1 : l'expérience de rendu interactive complète, les sources spatiales de ressources, la négociation territoriale et la conflictualité collective active.
 
-Deux cas ne doivent pas être confondus avec une capacité livrée. L'**indice de viabilité dynamique** est spécifié, mais le relevé du code du 18 octobre 2026 ne trouve ni moteur DVI ni métriques à sept composantes. L'endpoint de viabilité publie les séries sources et la calibration post-run; le score composite reste le composite publié. Le chapitre ECHOS VII décrit la spécification et un plan en phases, non un mécanisme en service. La livraison autrefois prévue avant la publication du livre n'est pas attestée. L'**installateur** reste à l'état de spécification sans plan de livraison annoncé.
+Deux cas ne doivent pas être confondus avec une capacité livrée. L'**indice de viabilité dynamique** est spécifié, mais aucun moteur DVI ni métrique à sept composantes n'est attesté dans les sources consultées au 4 novembre. L'endpoint de viabilité publie les séries sources et la calibration post-run ; le score composite reste le composite publié. Le chapitre ECHOS VII décrit la spécification et un plan en phases, non un mécanisme en service. L'**installateur V1**, lui, a été livré avec LIVEX 1.0.0 ; le packaging des composants PRISM V2 reste à faire.
 
 ## 6. Les limites de provenance
 

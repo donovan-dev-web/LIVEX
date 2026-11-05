@@ -1,122 +1,130 @@
-# Chapitre 10. Intégration système
+# Chapitre 10. Intégrer deux moteurs sans confondre leurs responsabilités
 
-Les composants ont été décrits séparément. Ce chapitre les relie. Il raconte comment la pile fonctionne de bout en bout, quels contrats la tiennent, et comment un parcours complet a été vérifié contre les composants réels. C'est ici que la séparation des responsabilités cesse d'être un principe d'architecture pour devenir une pratique observée.
+Un monde V2 n'est plus le seul travail de SYNE. PRISM fait avancer le monde
+physique ; SYNE conserve la cognition des agents et leurs décisions. Pour
+qu'ils forment une simulation unique, ils doivent partager l'ordre du temps,
+des identifiants, des commandes et des observations. Les contrats rendent cette
+frontière vérifiable. Le code de couplage existe, mais l'intégration complète
+et sa preuve de longue durée restent à terminer.
 
-Il faut comprendre l'enjeu de ce chapitre. Décrire des composants isolés est relativement facile : chacun a ses contrats, ses tests, son rôle. La difficulté commence lorsqu'il faut les faire travailler ensemble. Deux composants qui fonctionnent parfaitement séparément peuvent échouer ensemble, parce qu'ils ne s'entendent pas sur un format, un ordre, une sémantique. L'intégration est donc le moment de vérité d'une architecture.
-
-**Pourquoi ce chapitre importe pour la question directrice.** Quatre instruments justes pris séparément peuvent former un ensemble faux : c'est le moment où les pièces doivent s'emboîter qui révèle si l'architecture tient. Pour la question directrice, l'intégration est l'épreuve de vérité : elle vérifie que le moteur décide, que l'observatoire mesure sans toucher, que la scène montre sans décider et que l'orchestrateur archive sans relayer, **ensemble**, sur des composants réels. Si un seul interdit cédait, la réponse à la question serait entachée.
+Ce chapitre décrit l'état connu au 4 novembre 2026. Il ne confond pas
+l'architecture V1 de la release publique avec le couplage V2 en cours, et ne
+présente pas le test de transport sur 1 000 ticks comme l'acceptation d'un run
+de 5 000 ticks.
 
 ## 1. La pile en un regard
 
-Quatre responsabilités, deux outils, un monde.
-
 ```mermaid
-flowchart TB
-    subgraph SYNE["SYNE : decider"]
-        SRV["Flux 5180 et controle 5181"]
-    end
-    subgraph ECHOS["ECHOS : mesurer sans toucher"]
-        API["API lecture seule 5000"]
-    end
-    subgraph PRISM["PRISM : montrer sans decider"]
-        PLG["Plugin PRISM-LDK et scene Unreal"]
-    end
-    subgraph LAU["Launcher : archiver sans relayer"]
-        ORCH["Orchestration, campagnes, paquet"]
-    end
-    SYNE -->|"snapshots, evenements"| ECHOS
-    SYNE -->|"snapshots, evenements"| PRISM
-    ECHOS -->|"controle"| SYNE
-    PRISM -->|"controle"| SYNE
-    ECHOS -->|"metriques, rapports"| LAU
-    LAU -->|"controle et archivage"| SYNE
-    LAU -->|"controle"| ECHOS
+flowchart LR
+    S["SYNE : cognition et décisions"] -->|"commandes d'agent, tick t"| P["PRISM Host : monde physique"]
+    P -->|"observations et événements du tick t"| S
+    P -->|"enveloppes de lecture"| E["ECHOS : ingestion, stockage, analyse"]
+    P -->|"flux de lecture"| V["Viewer optionnel"]
+    L["Launcher"] -. "orchestration V2 à achever" .-> P
 ```
 
-Le moteur produit la vérité du monde et la diffuse. L'observatoire la lit et la mesure. La scène la reflète. L'orchestrateur pilote les cycles de vie, laisse les données circuler directement et archive les résultats. Chaque composant protège les autres de leurs tentations.
+La boucle SYNE↔PRISM est couplée : SYNE prépare les décisions de ses agents,
+PRISM applique leurs commandes et renvoie ce qu'ils peuvent observer. SYNE
+reçoit ces observations et met à jour ses croyances. PRISM reste propriétaire
+de l'état physique ; SYNE reste propriétaire de l'état cognitif. Le viewer ne
+possède ni l'un ni l'autre. ECHOS reçoit un flux de lecture distinct.
 
-## 2. Les contrats qui tiennent la pile
+La migration demeure partielle. Le moteur SYNE conserve encore son monde
+historique et les systèmes à extraire. Il existe donc deux contextes valides :
+la simulation autonome V1, où SYNE porte le monde, et le couplage V2, où PRISM
+porte le monde physique utilisé par la boucle couplée. Les textes et les
+résultats doivent nommer le contexte qu'ils décrivent.
 
-L'intégration repose sur trois contrats.
+## 2. Les contrats et les transports
 
-| Contrat | Transport | Port | Contenu |
-| :-- | :-- | --: | :-- |
-| Temps réel | WebSocket | 5180 | initialisation, instantané par tick, événements |
-| Contrôle | HTTP | 5181 | préparer, acquitter, démarrer, pause, reprise, arrêt, réinitialisation, état |
-| Lecture | REST | 5000 | runs, métriques, exports, comparaisons, inspections |
+Le contrat SYNE↔PRISM `1.0.0` sépare les échanges de tick du contrôle de
+l'application.
 
-- Le **contrat temps réel** (WebSocket, port 5180 par défaut) : un message d'initialisation, puis un instantané global par tick et des événements typés. JSON textuel, camelCase.
-- Le **contrat de contrôle** (HTTP, port 5181 par défaut) : préparer, accuser réception, démarrer, mettre en pause, reprendre, arrêter, réinitialiser, lire l'état.
-- Le **contrat de lecture** (API REST d'ECHOS, port 5000 par défaut) : runs, métriques, exports, comparaisons, inspections, en lecture seule.
+| Échange | Sens | Canal | Rôle |
+| :-- | :-- | :-- | :-- |
+| Préparation et cycle de vie | Launcher → PRISM | HTTP | Préparer, démarrer, suspendre, reprendre et arrêter le host |
+| Commandes et résultat du tick | SYNE ↔ PRISM | WebSocket lockstep ou appel embarqué | Ordonner le tick et échanger commandes, observations et événements |
+| Flux de lecture | PRISM → ECHOS / viewer | WebSocket de lecture | Publier snapshots, deltas, entités, métriques et chantiers |
+| Analyse historique V1 | SYNE → ECHOS | WebSocket SYNE, puis API REST ECHOS | Ingestion des snapshots et événements V1 |
 
-La règle de compatibilité est unique : un ajout est compatible, une suppression ou un changement de sens est incompatible. C'est cette règle qui a permis d'ajouter des fonctionnalités (saisons, territoires, livres, inventaire, engagements, temps simulé en secondes) sans rompre les consommateurs.
+Le format JSON utilise des enveloppes versionnées et un numéro de tick. Les
+commandes sont idempotentes afin qu'un rejeu n'applique pas deux fois la même
+action. Les observations absentes ne sont pas assimilées à une valeur zéro.
+Les deux versions de simulation n'ont pas les mêmes schémas : le contrat
+WebSocket SYNE `0.5.0` n'est pas le contrat SYNE↔PRISM `1.0.0`.
 
-## 3. Le chemin de bout en bout
+## 3. La boucle couplée effectivement livrée
 
-Un parcours complet relie cinq moments.
+Le client SYNE prépare et contrôle PRISM. `PrismReadStreamClient` lit le flux,
+vérifie les versions et les séquences, et sait se resynchroniser sur un
+snapshot. `PrismObservationMapper` convertit les observations physiques en
+observations cognitives SYNE. `CognitionPipeline.ApplyExternalObservations`
+les applique aux croyances. `PrismCoupledRunner` orchestre ce parcours ; le
+CLI expose le paramètre `--prism-url`.
 
-1. **Préparer.** L'orchestrateur demande au moteur de préparer un monde, avec une graine et une cadence. Le moteur construit ce monde et en diffuse la description.
-2. **Acquitter.** La scène génère sa représentation et accuse réception. Après une préparation explicite, le démarrage exige cet accusé.
-3. **Démarrer.** Le moteur lance la simulation. Les instantanés partent vers l'observatoire et la scène, directement, sans passer par l'orchestrateur.
-4. **Mesurer et montrer.** L'observatoire agrège et expose ses métriques en lecture seule ; la scène met à jour sa représentation sans jamais décider.
-5. **Archiver.** À la fin de chaque run, l'orchestrateur collecte les restitutions et scelle la campagne dans un paquet.
+Au 4 novembre, cette boucle a été exercée pendant 1 000 ticks sans crash. Les
+suites SYNE comptaient 708 tests réussis et celles de PRISM 403. Ces résultats
+établissent que le transport et les composants couverts fonctionnent dans
+leurs scénarios. Ils ne prouvent pas encore que 5 000 ticks couplés sont
+reproductibles sur plusieurs exécutions, ni qu'une reprise restaure
+simultanément le monde PRISM et l'état cognitif SYNE.
 
-```mermaid
-sequenceDiagram
-    participant L as Launcher
-    participant S as SYNE
-    participant E as ECHOS
-    participant P as PRISM
-    L->>S: preparer (graine, cadence)
-    S-->>P: description du monde
-    P->>S: acquittement
-    L->>S: demarrer
-    S-->>E: instantanes (direct)
-    S-->>P: instantanes (direct)
-    E-->>L: metriques et rapports
-    L->>S: arreter
-```
+La prochaine preuve d'intégration est R2 : 5 000 ticks, au moins trois
+exécutions identiques, comparaison d'empreintes bit à bit et reprise partagée.
+Ce critère est plus exigeant qu'un test de connexion : il vérifie l'identité
+de la trajectoire complète après l'échange entre les moteurs.
 
-Le point essentiel est que les données de télémétrie survivent à un arrêt de l'orchestrateur : elles vont directement du moteur aux consommateurs. L'orchestrateur est sur le chemin du contrôle et de l'archivage, jamais sur celui des données temps réel.
+## 4. ECHOS reçoit le flux V2, sans analyser encore le run complet
 
-## 4. La preuve d'extrémité réelle
+ECHOS conserve son ingestion historique des flux SYNE. Une voie PRISM distincte
+valide et enregistre les enveloppes du flux de lecture avec leur séquence,
+leur tick et leur `contentHash`. L'API peut restituer les enveloppes
+enregistrées.
 
-Le livre conserve deux relevés qu'il faut distinguer. Le rapport d'acceptation Launcher du 17 octobre 2026 documente un run de bout en bout à 33/33 contre SYNE publié et ECHOS réel, avec une campagne scellée puis relue. Dans la vérification locale du 18 octobre, la suite est à 31/33 : les deux scénarios J3 réels échouent sur l'assertion du journal « analyse individuelle collectée ». Le premier est une campagne réussie antérieure, le second le résultat local plus récent; le parcours complet n'est donc pas vert dans le checkout courant. Les suites Unit (174/174) et Integration (20/20) restent vertes. Sans `LIVEX_SYNE_PUBLISHED_ROOT`, quatre tests conditionnels sont comptés comme échecs par le runner au lieu d'être marqués ignorés. Les détails et sorties se trouvent dans le [statut local courant](../governance/LIVEX-STATUS.md) et le [rapport d'acceptation pérenne](../governance/realignment/LAUNCHER-ACCEPTANCE-2026-10.md).
+Cette base ne constitue pas encore une ingestion de production. ECHOS-100 doit
+encore raccorder le flux au cycle d'un run, puis produire ou joindre les
+métriques attendues. Le service ne fabrique pas une mesure SYNE si le contrat
+PRISM ne la fournit pas. La séparation préserve la provenance : ce qui a été
+observé, ce qui a été calculé et ce qui n'a pas été mesuré restent distincts.
 
-Ce type de preuve est important parce qu'il dépasse le test unitaire. Un test unitaire valide un comportement isolé ; un parcours de bout en bout valide que les contrats s'emboîtent réellement : que l'observatoire ingère ce que le moteur émet, que l'orchestrateur reprend là où il s'est arrêté, que le paquet scellé se rouvre et que le rapport régénéré est identique. Le rapport ancien documente ces propriétés pour ses scénarios; l'échec local les empêche d'être généralisées comme acceptation courante sans réserve.
+## 5. Launcher et visualiseur
 
-Il faut mesurer la force et la faiblesse de ces preuves. Elles portent sur une seule plateforme (Windows) et des dates distinctes; elles ne prouvent pas que d'autres combinaisons fonctionneraient ni que le parcours J3 demeure vert dans tous les runs. « 33/33 le 17 octobre » est un résultat de campagne archivé, pas une promesse de reproductibilité universelle.
+Le Launcher V1 sait orchestrer et archiver la pile publiée. Un manifeste de
+host PRISM V2 est présent et raccordé au Launcher générique, mais le cycle
+complet de lancement, d'attribution des ports, de préparation coordonnée et
+d'archivage des résultats PRISM reste une tâche d'intégration. Les lanes
+LAUNCHER-200 à 202 décrivent ce travail.
 
-## 5. Les frontières vérifiées
+Le viewer V2 a des modes de caméra, un rendu de terrain par région et un
+client de flux live. Ce client sait traiter les séquences et les snapshots de
+resynchronisation, mais il n'est pas encore connecté à la commande CLI de
+lancement. L'aperçu actuel utilise des agents de démonstration statiques ; il
+ne doit pas être interprété comme une visualisation d'une campagne en direct.
 
-Chaque interdit de l'architecture est vérifié.
+## 6. Déterminisme, campagnes et limites
 
-- **Le piloté égale l'interrompu.** Un run piloté par le contrôle produit exactement le même état qu'un run laissé libre : l'ordonnancement du contrôle ne consomme aucun tirage.
-- **Le rapport égale sa régénération.** Un rapport archivé est identique au rapport régénéré à partir des mêmes données : la production est déterministe.
-- **L'entrée n'est jamais rejouée.** Une reprise reprend après le dernier run terminé, sans le rejouer.
-- **Le zéro lu est distingué du zéro aveugle.** Un chiffre non mesuré n'est jamais affiché comme un zéro observé.
+PRISM dispose d'une campagne réduite épinglée (trois graines, 200 ticks,
+trois bots) et d'une campagne complète manuelle (trois graines, 5 000 ticks,
+trois bots). Les neuf empreintes de la campagne complète du 4 novembre sont
+consignées dans le suivi PRISM. La boucle couplée SYNE↔PRISM n'a pas encore
+produit l'équivalent de cette campagne complète répétée.
 
-| Interdit | Preuve exécutable |
-| :-- | :-- |
-| SYNE ne doit pas être mis en scène | piloté égal à l'interrompu |
-| ECHOS ne doit pas altérer le monde | lecture seule, provenance des mesures |
-| PRISM ne doit pas décider | la scène suit l'instantané |
-| Le Launcher ne doit pas relayer | données directes moteur vers consommateurs |
-| La reprise ne doit pas rejouer | entrée prise après le dernier run terminé |
-| Un zéro ne doit pas mentir | provenance publiée point par point |
+La campagne PRISM observe les bots PRISM, pas la cognition SYNE. R2 observe le
+couplage et ne peut être remplacé par les empreintes des bots. De même, une
+campagne à un agent n'établit pas la viabilité d'un monde de cinquante ou cent
+agents. Chaque preuve répond à son propre critère.
 
-Ces quatre propriétés forment la version exécutable des quatre interdits : SYNE décide, ECHOS mesure sans toucher, PRISM montre sans décider, le Launcher archive sans relayer.
+## 7. Ce que l'intégration permet d'affirmer
 
-## 6. Les divergences assumées
+LIVEX possède une première boucle V2 fonctionnelle entre la cognition SYNE et
+le monde autoritaire PRISM. ECHOS sait conserver le flux de lecture PRISM et
+le viewer sait traiter ce flux côté client. Ces trois capacités sont des
+jalons distincts. L'ingestion ECHOS n'est pas encore liée au run supervisé et
+le viewer n'est pas encore lancé en mode live par défaut.
 
-L'intégration ne cache pas ses écarts. Plusieurs divergences entre la conception initiale et la réalisation sont consignées. L'observatoire n'utilise pas le cadre applicatif initialement prévu, mais un cadre plus léger. L'observatoire n'a plus d'interface propre : la présentation est portée par l'orchestrateur. L'échelle et la cadence de la représentation ont été formalisées par une décision dédiée. La communauté de détection utilise une méthode déterministe plutôt que l'algorithme initialement envisagé, incompatible avec la contrainte de déterminisme.
-
-Une divergence assumée n'est pas un défaut dissimulé : c'est une décision documentée, avec sa justification.
-
-La dernière divergence est particulièrement instructive. Un algorithme de détection de communautés avait été envisagé pour l'analyse ; il a été écarté au profit d'une méthode déterministe, parce qu'il introduisait de l'aléa et donc de la non-reproductibilité. C'est un exemple de contrainte forte (le déterminisme) qui l'emporte sur une préférence technique. Le projet choisit la reproductibilité, même au prix d'un algorithme moins raffiné.
-
-## 7. Ce que ce chapitre apporte à la question directrice
-
-Ce chapitre a montré que la pile fonctionne de bout en bout : préparation, acquittement, démarrage, mesure, archivage, reprise, scellement. Il a montré que les frontières entre composants sont vérifiées, et que les écarts de conception sont assumés.
-
-Ce que ce chapitre ne permet pas encore de conclure : que la pile soit fiable dans le temps. Pour cela, il faut examiner un contrat encore plus exigeant que les autres, celui qui commande tout le reste : le déterminisme. C'est le sujet du chapitre suivant.
+L'intégration V2 n'est pas déclarée achevée : restent R2, la reprise partagée,
+l'extraction complète du monde historique de SYNE, le raccordement de
+production ECHOS et Launcher, les validations multiplateformes et les portes
+de calibrage. Les résultats scientifiques déjà publiés demeurent bornés :
+quête spatiale confirmée selon le protocole, cycle social non confirmé,
+émergence générale non établie.

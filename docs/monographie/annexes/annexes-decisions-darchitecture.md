@@ -51,14 +51,21 @@ Les ADR-014 à ADR-016 racontent autre chose, et c'est une histoire précieuse :
 
 L'ADR-002 porte une décision de méthode, rappelée à plusieurs reprises dans le livre : le calcul causal n'est **pas** effectué en ligne, sur le flux temps réel. Il est reconstruit après coup, à partir des traces persistées, parce qu'une analyse en ligne pourrait ralentir le moteur et, à la marge, modifier le monde observé. Cette décision est un cas particulier de la règle d'or : observer sans toucher.
 
-## 4. PRISM (`docs/prism/adr/`)
+## 4. PRISM V1 (`docs/prism/adr/`)
 
 | Référence | Décision |
 | :-- | :-- |
 | ADR-002 | Unreal Engine et plugin PRISM-LDK pour PRISM |
 | ADR-003 | Échelle et cadence SYNE ↔ Unreal (facteur 100, 6 ticks par seconde, monde d'environ 5 km²) |
 
-L'ADR-003 est le seul endroit où l'échelle physique du monde est fixée : le facteur 100 convertit les unités logiques en centimètres Unreal, et la cadence de 6 ticks par seconde découle de l'échelle temporelle. Une décision de **rendu** détermine donc, en retour, la lecture du temps dans toute la communication entre composants, un bon exemple du fait que la découpe en composants n'isole jamais complètement.
+Ces décisions décrivent l'architecture Unreal de PRISM V1. L'ADR-003 fixe l'échelle de représentation : le facteur 100 convertit les unités logiques en centimètres Unreal, et la cadence de 6 ticks par seconde découle de l'échelle temporelle. Cette géométrie ne s'applique pas au monde PRISM V2.
+
+## 4.1. PRISM V2
+
+Les décisions `docs/prism/adr/ADR-004` à `ADR-012` documentent la refonte
+V2 : monde physique autoritaire, modèle 2,5D, déterminisme entier, transport
+HTTP/WebSocket et host headless. Elles complètent l'histoire V1 sans
+transformer rétroactivement ses ADR Unreal en décisions V2.
 
 ## 5. Launcher (`docs/launcher/adr/`)
 
@@ -72,7 +79,7 @@ L'ADR-003 est le seul endroit où l'échelle physique du monde est fixée : le f
 | ADR-006 | PRISM conçu mais verrouillé |
 | ADR-007 | Consoles natives et fenêtre d'analyse dans le Launcher, ECHOS sans interface |
 
-L'**ADR-003** est une décision d'architecture au sens fort : elle **retire** à ECHOS toute interface et transfère la présentation au Launcher. Elle explicite une frontière (« celui qui calcule n'affiche pas ») qui se retrouve dans la conception du livre lui-même, où l'observatoire est décrit comme un instrument aveugle. L'**ADR-005** explique pourquoi les campagnes de la V0.1 s'exécutent en séquence : un seul moteur, un run à la fois. L'**ADR-006** documente le fait que PRISM, bien que conçu, est verrouillé en attendant, une décision rare et courageuse dans un projet technique : celle d'annoncer ce qui n'est pas prêt.
+L'**ADR-003** est une décision d'architecture au sens fort : elle retire à ECHOS toute interface et transfère la présentation au Launcher. Elle explicite une frontière qui reste valable. Les **ADR du Launcher 005/006** décrivent son mode V1, dont PRISM Unreal verrouillé ; ils ne décrivent pas la lane d'intégration PRISM V2, encore en cours.
 
 ## 6. Installateur (`docs/installer/adr/`)
 

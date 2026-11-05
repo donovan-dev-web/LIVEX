@@ -4,7 +4,7 @@
 
 Cette monographie est le livre exhaustif du projet LIVEX. Elle décrit ce que le projet est réellement, comment il est construit, ce qu'il permet d'observer et ce qu'il ne permet pas encore d'affirmer. Elle s'appuie sur le code réellement implémenté, sur les contrats versionnés et sur les preuves exécutables (tests, campagnes rejouables, rapports). Nous distinguons systématiquement ce qui est disponible, expérimental, en développement, envisagé ou hors périmètre.
 
-État décrit : SYNE 0.17.0 (contrat d'observabilité 0.5.0), ECHOS 0.1.0 (`SCHEMA_VERSION = 6`; la migration BL-09 dite v7 reste à harmoniser), Launcher 0.1.0 (paquet `.livexp`), PRISM et PRISM-LDK en version de travail, `syne-mock` 0.1.0 (outil), installateur à l'état de spécification. Date de référence du livre : 12 octobre 2026. Les vérifications locales plus récentes et leurs limites figurent dans le [statut courant](../governance/LIVEX-STATUS.md).
+État décrit dans cette édition révisée : SYNE 0.17.0 (contrat d'observabilité 0.5.0), ECHOS 0.1.0, Launcher 0.1.0, PRISM V2 en implémentation (`2.0.0` cible, contrat SYNE↔PRISM `1.0.0`), `syne-mock` V1 et installateur V1 livré. Les sections qui décrivent l'architecture Unreal sont désormais explicitement historiques. Date de mise à jour : 4 novembre 2026. Les derniers relevés connus par composant et leurs limites figurent dans le [statut transversal actuel](../governance/LIVEX-CURRENT-STATUS.md) ; le relevé de la release V1 reste dans [`LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md).
 
 ## Comment ce sommaire est organisé
 
@@ -99,11 +99,11 @@ Les **formules** ne sont pas regroupées dans un chapitre unique : chacune est t
   - **ECHOS VI. Les formules des métriques, famille par famille** : diversité cognitive, propagation de l'information, complexité sociale, convergence des objectifs, répétitions d'action, durabilité des ressources, dynamique des groupes
   - **ECHOS VII. L'indice de viabilité dynamique** : sept composantes, noyau géométrique, couverture, régimes, trajectoire, marges aux seuils, sorties publiées, phases d'implémentation et calibration
   - **ECHOS VIII. Composites, reproductibilité et causalité** : score d'émergence, complexité, phénomènes, distance entre runs, statistiques post-run, chaîne causale
-- **Chapitre 7. PRISM : montrer sans décider**
-  - **PRISM I. Le projet Unreal et la place du rendu**
-  - **PRISM II. Le plugin PRISM-LDK** : transport, conversion, Blueprint
-  - **PRISM III. L'échelle, la cadence et le transport** : facteur spatial `k`, ratio de temps simulé `R`, cycle de préparation, ce que le moteur exporte et ce que le rendu invente
-  - **PRISM IV. Le flux de données et le rendu** : l'instantané comme source de vérité, construction du décor, projection, interpolation, les trois interdits du rendu
+- **Chapitre 7. PRISM : simuler le monde, puis le représenter**
+  - **PRISM I. PRISM V2 : monde autoritaire, contenu et simulation headless**
+  - **PRISM II. SYNE↔PRISM : commandes, observations, événements et couplage cognitif**
+  - **PRISM III. Campagnes, déterminisme et validation en cours**
+  - **PRISM V1. Unreal et PRISM-LDK : architecture historique de la release 1.0.0**
 - **Chapitre 8. Le Launcher : archiver pour rejouer**
   - **Launcher I. Orchestration, supervision et réseau**
   - **Launcher II. Campagnes et paquet `.livexp`**
