@@ -22,17 +22,20 @@ export const RELEASE = {
 } as const;
 
 export const PROJECT_STATE = {
-  observedDate: '19 octobre 2026',
-  branch: 'feature/livex-realignement-divergences-v0.2',
-  commit: 'a229c6a',
-  trackedFiles: 640,
+  observedDate: '4 novembre 2026',
+  branch: 'main',
+  commit: 'cd5b9d2',
+  trackedFiles: 1421,
   loc: {
-    total: 63231,
-    source: 38904,
-    tests: 24327,
+    files: 1335,
+    total: 221717,
+    code: 133820,
+    comments: 54456,
+    blank: 33441,
   },
   tests: {
-    passed: 1356,
+    total: 1566,
+    passed: 1550,
     ignored: 16,
     failed: 0,
     byComponent: [
@@ -40,6 +43,8 @@ export const PROJECT_STATE = {
       { name: 'ECHOS (Python)', value: 397 },
       { name: 'Launcher', value: 227 },
       { name: 'syne-mock', value: 53 },
+      { name: 'PRISM / PRISM-LDK', value: 76 },
+      { name: 'Installateur', value: 118 },
     ],
   },
   coverage: {
@@ -48,7 +53,7 @@ export const PROJECT_STATE = {
     syneCore: '91,17 %',
     syneConsole: '63,46 %',
   },
-  ci: '13/13 jobs verts, 19/10/2026',
+  ci: '13 jobs verts sur 15 (2 ignorés), 04/11/2026',
   windows: 'Support Windows validé localement depuis le 08/10/2026',
 } as const;
 
@@ -66,14 +71,14 @@ export const RELEASE_EN = {
 } as const;
 
 export const PROJECT_STATE_EN = {
-  observedDate: '19 October 2026',
+  observedDate: '4 November 2026',
   coverage: {
     echos: '91.32%',
     syne: '81.20%',
     syneCore: '91.17%',
     syneConsole: '63.46%',
   },
-  ci: '13/13 jobs green, 19 Oct 2026',
+  ci: '13 of 15 jobs green (2 skipped), 4 Nov 2026',
   windows: 'Windows support validated locally since 8 Oct 2026',
 } as const;
 

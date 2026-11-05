@@ -4,7 +4,7 @@ description: "La cible PRISM V2 remplace les réserves globales par des objets, 
 seoTitle: "Fabrication, outils et stocks dans PRISM V2"
 date: 2026-11-04
 tags: ["prism", "v2", "fabrication", "ressources"]
-draft: true
+draft: false
 ---
 
 Dans la cible PRISM V2, obtenir une ressource n'est que le début d'une chaîne. Un agent pourrait extraire de la pierre, fabriquer une tête et un manche, puis assembler une pioche à un établi. Pour atteindre le fer, il lui faudrait ensuite le bon outil, du minerai, du charbon et un four.

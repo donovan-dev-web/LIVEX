@@ -4,7 +4,7 @@ description: "Sol labouré, eau proche, croissance saisonnière et récolte : co
 seoTitle: "Agriculture et saisons dans PRISM V2"
 date: 2026-11-04
 tags: ["prism", "v2", "agriculture", "saisons"]
-draft: true
+draft: false
 ---
 
 Une récolte n'est pas une réserve que l'on peut simplement appeler. Dans la cible PRISM V2, l'agriculture doit demander une suite d'actions et une attente réelle : trouver une graine, préparer le sol avec une houe, planter près de l'eau, puis laisser la culture croître avant de la récolter.
