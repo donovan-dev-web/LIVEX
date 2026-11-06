@@ -64,16 +64,21 @@ public sealed class MovementGraph
         (1, 1, 1414),
     ];
 
-    public MovementGraph(WorldGrid world, MovementRules rules)
+    public MovementGraph(
+        WorldGrid world,
+        MovementRules rules,
+        Func<IReadOnlyList<ActiveStructureEffect>>? activeEffectsProvider = null)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(rules);
         World = world;
         Rules = rules;
+        ActiveEffectsProvider = activeEffectsProvider;
     }
 
     public WorldGrid World { get; }
     public MovementRules Rules { get; }
+    public Func<IReadOnlyList<ActiveStructureEffect>>? ActiveEffectsProvider { get; }
 
     public bool CanStandAt(int x, int y, out int feetZ)
     {
@@ -84,14 +89,46 @@ public sealed class MovementGraph
         }
 
         var floorCoordinate = new BlockCoordinate(x, y, surface.SurfaceZ);
+        var solidFloor = false;
         if (World.TryGetBlockOverride(floorCoordinate, out var floorOverride))
         {
-            if (floorOverride.IsAir || !Rules.SolidMaterials.Contains(floorOverride.MaterialId))
+            solidFloor = !floorOverride.IsAir && Rules.SolidMaterials.Contains(floorOverride.MaterialId);
+        }
+        else
+        {
+            solidFloor = Rules.SolidMaterials.Contains(surface.MaterialId);
+        }
+
+        // A stair effect lets an agent stand two levels above the surface even without a solid floor.
+        if (!solidFloor && HasEffect(StructureEffectConsumer.StairEffectType, x, y, surface.SurfaceZ + 2))
+        {
+            feetZ = surface.SurfaceZ + 2;
+            if (feetZ + 1 >= World.VerticalSize)
             {
                 return false;
             }
+
+            for (var z = feetZ; z < feetZ + 2; z++)
+            {
+                if (World.TryGetBlockOverride(new BlockCoordinate(x, y, z), out var block) &&
+                    !block.IsAir &&
+                    (Rules.LiquidMaterials.Contains(block.MaterialId) ||
+                     Rules.SolidMaterials.Contains(block.MaterialId)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
-        else if (!Rules.SolidMaterials.Contains(surface.MaterialId))
+
+        // A bridge effect lets an agent stand one level above the surface without a solid floor.
+        if (!solidFloor && HasEffect(StructureEffectConsumer.BridgeEffectType, x, y, surface.SurfaceZ + 1))
+        {
+            solidFloor = true;
+        }
+
+        if (!solidFloor)
         {
             return false;
         }
@@ -171,8 +208,19 @@ public sealed class MovementGraph
         var materialId = World.TryGetBlockOverride(coordinate, out var block) && !block.IsAir
             ? block.MaterialId
             : surface.MaterialId;
-        return Rules.PathMaterials.Contains(materialId);
+        return Rules.PathMaterials.Contains(materialId) ||
+               HasEffect(StructureEffectConsumer.PathSpeedEffectType, node.X, node.Y, node.FeetZ - 1);
     }
+
+    private IReadOnlyList<ActiveStructureEffect> ActiveEffects =>
+        ActiveEffectsProvider?.Invoke() ?? [];
+
+    private bool HasEffect(string type, int x, int y, int z) =>
+        ActiveEffects.Any(effect =>
+            effect.Type == type &&
+            x >= effect.Minimum.X && x <= effect.Maximum.X &&
+            y >= effect.Minimum.Y && y <= effect.Maximum.Y &&
+            z >= effect.Minimum.Z && z <= effect.Maximum.Z);
 
     private bool CanTraverseCardinal(MovementNode from, int x, int y)
     {

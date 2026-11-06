@@ -328,7 +328,8 @@ G0 : 001–005 · G1 : 010–018 · G2 : 020–039 · G3 : 040–082 · G4 : 090
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
-| 3 novembre 2026 | Audit de cohérence avec le code : PRISM-078, PRISM-115, bots, viewer Linux, ECHOS `prism-stream` et comptage des tests (371) alignés | Revue globale P0–P11 |
+| 6 novembre 2026 | P8 : chaînes eau et stockage couvertes (acceptation hôte + bots scriptés), effets restants intégrés au mouvement, ablation câblée ; PRISM-102 (run R1) reste le gate manuel | Avancement fonctionnel P8 |
+| 3 novembre 2026 | Audit de cohérence avec le code : PRISM-078, PRISM-115, bots, viewer Linux, ECHOS `prism-stream` et comptage des tests (371) alignés | Revue globale P0-P11 |
 | 3 novembre 2026 | PRISM-077 livré partiellement (`Prism.Bots`, runner, empreinte de run, CLI de campagne) et coût mesuré du tick documenté | Implémentation des bots et épinglage doré bloqué par les performances |
 | 3 novembre 2026 | Statuts partiels P11 et preuves de validation locale précisés | Revue fonctionnelle P1–P11 ; validations différées conservées |
 | 2 novembre 2026 | État d'exécution et références des issues GitHub ajoutés | Démarrage PRISM V2 |

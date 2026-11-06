@@ -27,6 +27,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
     private readonly ulong _runSeed;
     private readonly ActionDurationTracker? _durations;
     private readonly StructureEffectConsumer? _structureEffects;
+    private readonly AblationMechanisms _ablation;
     private readonly ushort? _waterMaterialId;
     private readonly int _containerDecayPermillePerTick;
 
@@ -48,7 +49,8 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         string kind,
         ActionDurationTracker? durations = null,
         StructureEffectConsumer? structureEffects = null,
-        ContainerDecayRules? containerDecayRules = null)
+        ContainerDecayRules? containerDecayRules = null,
+        AblationMechanisms? ablation = null)
     {
         ArgumentNullException.ThrowIfNull(lifecycle);
         ArgumentNullException.ThrowIfNull(content);
@@ -86,6 +88,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         _durations = durations;
         _structureEffects = structureEffects;
         _containerDecayPermillePerTick = (containerDecayRules ?? new ContainerDecayRules()).BasePermillePerTick;
+        _ablation = ablation ?? AblationMechanisms.AllEnabled;
         _waterMaterialId = content.Registries.Materials.TryGetId("water", out var waterMaterialId)
             ? waterMaterialId
             : null;
@@ -211,7 +214,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
                 _world,
                 _blockRules,
                 target,
-                _mastery.GetPermille(command.AgentId, MasteryCategories.Mining));
+                _ablation.Mastery ? _mastery.GetPermille(command.AgentId, MasteryCategories.Mining) : 0);
             if (duration > 0)
             {
                 return Schedule(command, "Miner", duration);
@@ -229,7 +232,10 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (result.Succeeded)
         {
             _containers.Remove(target);
-            _mastery.Award(command.AgentId, MasteryCategories.Mining);
+            if (_ablation.Mastery)
+            {
+                _mastery.Award(command.AgentId, MasteryCategories.Mining);
+            }
         }
 
         return ToResult(result.Succeeded, result.ErrorCode, new
@@ -332,7 +338,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
 
         var baseDurationTicks = GetRecipeDurationTicks(recipeId);
         // A production workshop (structure effect of type 'production') speeds up crafting.
-        if (_structureEffects is not null && baseDurationTicks > 0)
+        if (_ablation.Production && _structureEffects is not null && baseDurationTicks > 0)
         {
             var agent = GetAgent(command.AgentId);
             var usage = _structureEffects.QueryProduction(
@@ -382,12 +388,15 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
             recipeId,
             stationPosition,
             command.Tick,
-            _mastery.GetPermille(command.AgentId, masteryCategory),
+            _ablation.Mastery ? _mastery.GetPermille(command.AgentId, masteryCategory) : 0,
             stationPerceived);
         if (result.Succeeded)
         {
             _lifecycle.NotifyAgentMutation();
-            _mastery.Award(command.AgentId, masteryCategory);
+            if (_ablation.Mastery)
+            {
+                _mastery.Award(command.AgentId, masteryCategory);
+            }
         }
 
         return ToResult(result.Succeeded, result.ErrorCode, new
@@ -427,7 +436,10 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (result.Succeeded)
         {
             _lifecycle.NotifyAgentMutation();
-            _mastery.Award(command.AgentId, MasteryCategories.Farming);
+            if (_ablation.Mastery)
+            {
+                _mastery.Award(command.AgentId, MasteryCategories.Farming);
+            }
         }
 
         return ToResult(result.Succeeded, result.ErrorCode, new
@@ -473,7 +485,10 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (result.Succeeded)
         {
             _lifecycle.NotifyAgentMutation();
-            _mastery.Award(command.AgentId, MasteryCategories.Farming);
+            if (_ablation.Mastery)
+            {
+                _mastery.Award(command.AgentId, MasteryCategories.Farming);
+            }
         }
 
         return ToResult(result.Succeeded, result.ErrorCode, new
@@ -515,7 +530,10 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
         if (result.Succeeded)
         {
             _lifecycle.NotifyAgentMutation();
-            _mastery.Award(command.AgentId, MasteryCategories.Farming);
+            if (_ablation.Mastery)
+            {
+                _mastery.Award(command.AgentId, MasteryCategories.Farming);
+            }
         }
 
         return ToResult(result.Succeeded, result.ErrorCode, new
@@ -558,7 +576,8 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
             _consumptionRules,
             source,
             _lifecycle.HasPerceivedBlock(command.AgentId, source));
-        if (!drinkResult.Succeeded && drinkResult.ErrorCode == "not_drinkable")
+        if (!drinkResult.Succeeded &&
+            (drinkResult.ErrorCode == "not_drinkable" || drinkResult.ErrorCode == "not_perceived"))
         {
             drinkResult = TryDrinkFromWaterAccess(agent) ?? drinkResult;
         }
@@ -580,7 +599,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
     /// </summary>
     private ConsumptionActionResult? TryDrinkFromWaterAccess(AgentBody agent)
     {
-        if (_structureEffects is null || _waterMaterialId is null)
+        if (!_ablation.WaterAccess || _structureEffects is null || _waterMaterialId is null)
         {
             return null;
         }

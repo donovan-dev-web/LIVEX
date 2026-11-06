@@ -210,6 +210,7 @@ Le modèle de données de PRISM (matériaux, recettes, structures, contrat) est 
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 6 novembre 2026 | P8 : toutes les chaînes fonctionnelles couvertes (outils, agriculture, cuisson, eau, stockage), effets restants intégrés au mouvement, bots scriptés eau/stockage | Avancement fonctionnel P8 |
 | 2 novembre 2026 | Suivi d'implémentation P0/G0 et état des validations ajouté | Démarrage PRISM V2 |
 | 2 novembre 2026 | Avancement P7/P8/P11 et validations différées documentés | Host, gabarits et meshing incrémental |
 | 2 novembre 2026 | Matériaux procéduraux et silhouettes d'agents de démonstration ajoutés au viewer | P11 |

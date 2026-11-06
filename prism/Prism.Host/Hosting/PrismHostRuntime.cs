@@ -1070,6 +1070,10 @@ public sealed class PrismHostRuntime : IWorldHost
                 perceptionRules,
                 perceptionSettings);
         agentLifecycle = agentLifecycleSystem;
+        if (agentLifecycleSystem is not null && constructionSystem is not null)
+        {
+            agentLifecycleSystem.StructureEffects = new StructureEffectConsumer(constructionSystem);
+        }
         var ledger = new MatterLedger();
         var stations = new CraftingStationRegistry();
         var containers = new WorldContainerStore();

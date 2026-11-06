@@ -71,4 +71,37 @@ public sealed class PrismCoupledRunnerTests
         Assert.False(run.Succeeded);
         Assert.Equal(0, run.TicksCompleted);
     }
+
+    [Fact]
+    public async Task ResumesFromStartTick()
+    {
+        Func<TickRequest, CancellationToken, Task<TickResult>> step = (request, _) =>
+        {
+            var result = new TickResult(ProtocolVersion.Current.ToString(), request.Tick, [], []);
+            return Task.FromResult(result);
+        };
+
+        var runner = new PrismCoupledRunner(step);
+        var run = await runner.RunAsync(3, startTick: 7);
+
+        Assert.True(run.Succeeded);
+        Assert.Equal(7, run.StartTick);
+        Assert.Equal(3, run.TicksCompleted);
+    }
+
+    [Fact]
+    public async Task HandlesLargeTickHorizonWithoutCrash()
+    {
+        Func<TickRequest, CancellationToken, Task<TickResult>> step = (request, _) =>
+        {
+            var result = new TickResult(ProtocolVersion.Current.ToString(), request.Tick, [], []);
+            return Task.FromResult(result);
+        };
+
+        var runner = new PrismCoupledRunner(step);
+        var run = await runner.RunAsync(5000);
+
+        Assert.True(run.Succeeded);
+        Assert.Equal(5000, run.TicksCompleted);
+    }
 }

@@ -107,6 +107,30 @@ public sealed class PrismClient
     public Task<PrismClientStatus> StopAsync(CancellationToken cancellationToken = default) =>
         PostAsync<PrismClientStatus>("/control/stop", new { }, cancellationToken);
 
+    public Task<PrismClientStatus> SaveCheckpointAsync(
+        string checkpointId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkpointId);
+        return PostAsync<PrismClientStatus>(
+            "/control/checkpoint",
+            new { checkpointId },
+            cancellationToken);
+    }
+
+    public Task<PrismClientStatus> RestoreCheckpointAsync(
+        string checkpointId,
+        string contentHash,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(checkpointId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentHash);
+        return PostAsync<PrismClientStatus>(
+            "/control/restore",
+            new { checkpointId, contentHash },
+            cancellationToken);
+    }
+
     private Task<TResponse> PostAsync<TResponse>(
         string endpoint,
         object payload,

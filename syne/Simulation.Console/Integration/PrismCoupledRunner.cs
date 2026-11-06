@@ -35,6 +35,7 @@ public sealed class PrismCoupledRunner
 
     public async Task<PrismCoupledRunResult> RunAsync(
         long ticks,
+        long startTick = 0,
         CancellationToken cancellationToken = default)
     {
         if (ticks < 0)
@@ -42,10 +43,16 @@ public sealed class PrismCoupledRunner
             throw new ArgumentOutOfRangeException(nameof(ticks));
         }
 
-        var result = new PrismCoupledRunResult();
-        IReadOnlyList<ObservationEnvelope> previousObservations = [];
-        for (long tick = 0; tick < ticks; tick++)
+        if (startTick < 0)
         {
+            throw new ArgumentOutOfRangeException(nameof(startTick));
+        }
+
+        var result = new PrismCoupledRunResult { StartTick = startTick };
+        IReadOnlyList<ObservationEnvelope> previousObservations = [];
+        for (long i = 0; i < ticks; i++)
+        {
+            long tick = startTick + i;
             cancellationToken.ThrowIfCancellationRequested();
 
             var commands = _decide(tick, previousObservations);
@@ -93,6 +100,7 @@ public sealed class PrismCoupledRunner
 
 public sealed class PrismCoupledRunResult
 {
+    public long StartTick { get; set; }
     public long TicksCompleted { get; set; }
     public Exception? Failure { get; set; }
     public long? FailedAtTick { get; set; }

@@ -15,6 +15,9 @@ public sealed class StructureEffectConsumer
     public const string WaterAccessEffectType = "water_access";
     public const string StorageEffectType = "storage";
     public const string ProductionEffectType = "production";
+    public const string PathSpeedEffectType = "path_speed";
+    public const string StairEffectType = "stair";
+    public const string BridgeEffectType = "bridge";
     private readonly StructureConstructionSystem _construction;
 
     public StructureEffectConsumer(StructureConstructionSystem construction)
@@ -22,6 +25,8 @@ public sealed class StructureEffectConsumer
         ArgumentNullException.ThrowIfNull(construction);
         _construction = construction;
     }
+
+    public IReadOnlyList<ActiveStructureEffect> GetActiveEffects() => _construction.GetActiveEffects();
 
     public StructureUsage? QueryShelter(
         ulong agentId,
@@ -46,6 +51,24 @@ public sealed class StructureEffectConsumer
         BlockCoordinate feetPosition,
         IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
         QueryEffect(agentId, feetPosition, ProductionEffectType, groupPrincipals);
+
+    public StructureUsage? QueryPathSpeed(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, PathSpeedEffectType, groupPrincipals);
+
+    public StructureUsage? QueryStair(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, StairEffectType, groupPrincipals);
+
+    public StructureUsage? QueryBridge(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        IEnumerable<AccessPrincipal>? groupPrincipals = null) =>
+        QueryEffect(agentId, feetPosition, BridgeEffectType, groupPrincipals);
 
     public StructureUsage? QueryShelterWithGroups(
         ulong agentId,
@@ -81,6 +104,33 @@ public sealed class StructureEffectConsumer
     {
         ArgumentNullException.ThrowIfNull(membership);
         return QueryProduction(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    public StructureUsage? QueryPathSpeedWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryPathSpeed(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    public StructureUsage? QueryStairWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryStair(agentId, feetPosition, membership.PrincipalsOf(agentId));
+    }
+
+    public StructureUsage? QueryBridgeWithGroups(
+        ulong agentId,
+        BlockCoordinate feetPosition,
+        GroupMembership membership)
+    {
+        ArgumentNullException.ThrowIfNull(membership);
+        return QueryBridge(agentId, feetPosition, membership.PrincipalsOf(agentId));
     }
 
     /// <summary>

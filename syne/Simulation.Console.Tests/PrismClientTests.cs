@@ -96,6 +96,28 @@ public sealed class PrismClientTests
             .GetProperty("position").GetProperty("x").GetInt32());
     }
 
+    [Fact]
+    public async Task SavesAndRestoresCheckpointsThroughControlEndpoints()
+    {
+        var handler = new RecordingHandler();
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5182/"),
+        };
+        var client = new PrismClient(httpClient, "session-token");
+
+        var saved = await client.SaveCheckpointAsync("cp-1");
+        var restored = await client.RestoreCheckpointAsync("cp-1", "content-hash");
+
+        Assert.Equal("ready", saved.State);
+        Assert.Equal("ready", restored.State);
+        Assert.Equal(
+            ["/control/checkpoint", "/control/restore"],
+            handler.Requests.Select(static request => request.Path));
+        Assert.Contains("\"checkpointId\":\"cp-1\"", handler.Requests[0].Body, StringComparison.Ordinal);
+        Assert.Contains("\"contentHash\":\"content-hash\"", handler.Requests[1].Body, StringComparison.Ordinal);
+    }
+
     private sealed class RecordingHandler(
         HttpStatusCode statusCode = HttpStatusCode.OK,
         string? errorBody = null) : HttpMessageHandler
@@ -121,6 +143,8 @@ public sealed class PrismClientTests
                 "/control/start" => """{"state":"running","lastCompletedTick":-1,"seed":123,"contentHash":"content-hash","error":null}""",
                 "/data/tick" => """{"protocolVersion":"1.0.0","tick":0,"observations":[],"events":[]}""",
                 "/control/stop" => """{"state":"stopped","lastCompletedTick":0,"seed":123,"contentHash":"content-hash","error":null}""",
+                "/control/checkpoint" => """{"state":"ready","lastCompletedTick":0,"seed":123,"contentHash":"content-hash","error":null}""",
+                "/control/restore" => """{"state":"ready","lastCompletedTick":0,"seed":123,"contentHash":"content-hash","error":null}""",
                 _ => throw new InvalidOperationException($"Unexpected PRISM endpoint '{path}'."),
             });
             return new HttpResponseMessage(statusCode)

@@ -30,6 +30,7 @@ public sealed class AgentLifecycleSystem
     private static readonly JsonSerializerOptions CheckpointJsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly WorldGrid _world;
+    private StructureEffectConsumer? _structureEffects;
     private MovementGraph _movement;
     private readonly PerceptionSystem _perception = new();
     private PerceptionRules? _perceptionRules;
@@ -48,10 +49,16 @@ public sealed class AgentLifecycleSystem
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(rules);
         _world = world;
-        _movement = new MovementGraph(world, rules);
+        _movement = new MovementGraph(world, rules, () => _structureEffects?.GetActiveEffects() ?? []);
         _perceptionRules = perceptionRules;
         _perceptionSettings = perceptionSettings ?? new PerceptionSettings();
         _perceptionSettings.Validate();
+    }
+
+    public StructureEffectConsumer? StructureEffects
+    {
+        get => _structureEffects;
+        set => _structureEffects = value;
     }
 
     public int AgentCount => _agents.Count;
@@ -580,7 +587,7 @@ public sealed class AgentLifecycleSystem
             throw new InvalidDataException("Agent lifecycle checkpoint movement rules are invalid.", exception);
         }
 
-        var movement = new MovementGraph(_world, rules);
+        var movement = new MovementGraph(_world, rules, () => _structureEffects?.GetActiveEffects() ?? []);
         var agents = new AgentRegistry();
         foreach (var entry in checkpoint.Agents)
         {

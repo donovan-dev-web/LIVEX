@@ -49,9 +49,19 @@ public sealed record BotCommand(string Kind, JsonElement Payload)
             new { target = Coordinates(target), seed = seedItemTypeId },
             ProtocolJson.Options));
 
+    public static BotCommand Deposit(BotCoordinate target, ushort itemTypeId, int quantity) =>
+        new("Deposer", JsonSerializer.SerializeToElement(
+            new { container = Coordinates(target), item = itemTypeId, quantity },
+            ProtocolJson.Options));
+
     public static BotCommand Consume(ushort itemTypeId) =>
         new("Consommer", JsonSerializer.SerializeToElement(
             new { item = itemTypeId },
+            ProtocolJson.Options));
+
+    public static BotCommand Drink(BotCoordinate target) =>
+        new("Consommer", JsonSerializer.SerializeToElement(
+            new { target = Coordinates(target) },
             ProtocolJson.Options));
 
     public static BotCommand Place(BotCoordinate target, ushort itemTypeId, ushort materialId) =>
@@ -96,6 +106,16 @@ public sealed record BotCommand(string Kind, JsonElement Payload)
 
     public static BotCommand Cancel() =>
         new("Annuler", JsonSerializer.SerializeToElement(new { }, ProtocolJson.Options));
+
+    public static BotCommand StartConstruction(string siteId, string templateId, BotCoordinate position) =>
+        new("DemarrerChantier", JsonSerializer.SerializeToElement(
+            new { siteId, templateId, position = Coordinates(position) },
+            ProtocolJson.Options));
+
+    public static BotCommand Contribute(string siteId) =>
+        new("Contribuer", JsonSerializer.SerializeToElement(
+            new { siteId },
+            ProtocolJson.Options));
 
     private static object Coordinates(BotCoordinate coordinate) =>
         new { x = coordinate.X, y = coordinate.Y, z = coordinate.Z };
