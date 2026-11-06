@@ -70,7 +70,7 @@ public sealed class BirthSystem
 
     public void Step(
         ulong tick,
-        Simulation.Core.World.World world,
+        Simulation.Core.World.IWorld world,
         IReadOnlyDictionary<ulong, MindState> minds,
         SimulationOptions options)
     {
@@ -169,7 +169,7 @@ public sealed class BirthSystem
         MindState motherMind,
         Entity father,
         MindState fatherMind,
-        Simulation.Core.World.World world,
+        Simulation.Core.World.IWorld world,
         ReproductionSettings reproduction)
     {
         double consent = Math.Min(
@@ -206,7 +206,7 @@ public sealed class BirthSystem
         return true;
     }
 
-    private static Position Midpoint(Entity mother, Entity father, Simulation.Core.World.World world)
+    private static Position Midpoint(Entity mother, Entity father, Simulation.Core.World.IWorld world)
     {
         double x = (mother.Position.X + father.Position.X) / 2.0;
         double y = (mother.Position.Y + father.Position.Y) / 2.0;

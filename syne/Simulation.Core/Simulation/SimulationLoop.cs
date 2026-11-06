@@ -43,18 +43,18 @@ public sealed partial class SimulationLoop
     private bool _localizedResources;
     private double _resourceDt = 1.0;
 
-    public SimulationLoop(World.World world, Xoshiro256StarStar initialRng)
+    public SimulationLoop(Simulation.Core.World.IWorld world, Xoshiro256StarStar initialRng)
         : this(world, initialRng, new Simulation.Core.Configuration.SimulationOptions())
     {
     }
 
-    public SimulationLoop(World.World world, Xoshiro256StarStar initialRng, Simulation.Core.Configuration.SimulationOptions options)
+    public SimulationLoop(Simulation.Core.World.IWorld world, Xoshiro256StarStar initialRng, Simulation.Core.Configuration.SimulationOptions options)
         : this(world, initialRng, options, null)
     {
     }
 
     public SimulationLoop(
-        World.World world,
+        Simulation.Core.World.IWorld world,
         Xoshiro256StarStar initialRng,
         Simulation.Core.Configuration.SimulationOptions options,
         TickBudgetCollector? budget)
@@ -82,7 +82,7 @@ public sealed partial class SimulationLoop
     /// consommer aucun tirage du PRNG — le déterminisme bit-à-bit reste inchangé.
     /// </summary>
     public SimulationLoop(
-        World.World world,
+        Simulation.Core.World.IWorld world,
         Xoshiro256StarStar initialRng,
         Simulation.Core.Configuration.SimulationOptions options,
         TickBudgetCollector? budget,

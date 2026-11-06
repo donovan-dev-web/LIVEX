@@ -22,7 +22,7 @@ public sealed partial class SimulationLoop
     /// gisements. <b>Global</b> : aucune source spatiale, la réserve mondiale reste
     /// la source de Eat/Drink (modèle historique).
     /// </summary>
-    private void InitializeResourceModel(World.World world, Simulation.Core.Configuration.SimulationOptions options, double dt)
+    private void InitializeResourceModel(Simulation.Core.World.IWorld world, Simulation.Core.Configuration.SimulationOptions options, double dt)
     {
         _localizedResources = options.Resources.Localized;
         _resourceDt = dt;
@@ -89,7 +89,7 @@ public sealed partial class SimulationLoop
         SyncResourceAggregate();
     }
 
-    public World.World World { get; }
+    public Simulation.Core.World.IWorld World { get; }
 
     /// <summary>
     /// Options du run telles qu'elles ont été fournies à la boucle (avant mise à

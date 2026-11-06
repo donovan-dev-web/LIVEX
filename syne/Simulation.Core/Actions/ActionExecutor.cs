@@ -31,14 +31,14 @@ namespace Simulation.Core.Actions;
 /// </summary>
 public sealed partial class ActionExecutor
 {
-    private readonly World.World _world;
+    private readonly Simulation.Core.World.IWorld _world;
     private readonly ActionCatalog _catalog;
     private readonly ResourceStocks _stocks;
     private readonly SimulationOptions _options;
     private readonly AStarPathfinder _pathfinder;
     private TickCommitBuffer? _commit;
 
-    public ActionExecutor(World.World world, ActionCatalog catalog, ResourceStocks stocks, SimulationOptions options)
+    public ActionExecutor(Simulation.Core.World.IWorld world, ActionCatalog catalog, ResourceStocks stocks, SimulationOptions options)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(catalog);

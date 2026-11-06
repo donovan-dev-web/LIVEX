@@ -53,7 +53,7 @@ namespace Simulation.Core.Cognition;
 /// </summary>
 public sealed partial class CognitionPipeline
 {
-    private readonly Simulation.Core.World.World _world;
+    private readonly Simulation.Core.World.IWorld _world;
     private readonly SimulationOptions _options;
     private readonly PerceptionSystem _perception;
     private readonly World.ResourceStocks _stocks;
@@ -80,7 +80,7 @@ public sealed partial class CognitionPipeline
     private ulong _cacheTick = ulong.MaxValue;
 
     public CognitionPipeline(
-        Simulation.Core.World.World world,
+        Simulation.Core.World.IWorld world,
         SimulationOptions options,
         World.ResourceStocks stocks,
         TickBudgetCollector? budget = null)

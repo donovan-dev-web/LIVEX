@@ -66,7 +66,7 @@ public sealed record Observation
 /// </summary>
 public sealed class PerceptionSystem
 {
-    private readonly Simulation.Core.World.World _world;
+    private readonly Simulation.Core.World.IWorld _world;
     private readonly PerceptionSettings _settings;
 
     /// <summary>
@@ -89,7 +89,7 @@ public sealed class PerceptionSystem
     private readonly Dictionary<ulong, IReadOnlyDictionary<string, string>> _attributeCache = new();
     private ulong _attributeCacheTick = ulong.MaxValue;
 
-    public PerceptionSystem(Simulation.Core.World.World world, PerceptionSettings settings)
+    public PerceptionSystem(Simulation.Core.World.IWorld world, PerceptionSettings settings)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(settings);

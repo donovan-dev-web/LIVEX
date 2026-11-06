@@ -20,7 +20,7 @@ public static class EntityFactory
 {
     public static (Entity Entity, Xoshiro256StarStar Next) CreateNext(
         EntityTemplate template,
-        World.World world,
+        IWorld world,
         Xoshiro256StarStar rng,
         ulong entitySequence,
         ulong bornAt)

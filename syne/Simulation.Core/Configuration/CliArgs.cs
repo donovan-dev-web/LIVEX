@@ -42,7 +42,10 @@ public sealed record CliOptions(
     ulong? PrismSeed = null,
     string? PrismContentHash = null,
     string? PrismContentDir = null,
-    int? PrismAgents = null)
+    int? PrismAgents = null,
+    string? PrismCheckpointId = null,
+    int? PrismCheckpointEvery = null,
+    string? PrismRestoreCheckpoint = null)
 {
     /// <summary>Ports d'écoute acceptés par les écouteurs BCL.</summary>
     public const int MinPort = 1;
@@ -100,6 +103,11 @@ public sealed record CliOptions(
           --benchmark                     Mesure débit, budgets et checksum.
           --benchmark-ticks <int>         Ticks par palier de benchmark.
           --benchmark-populations <list>  Paliers de population, ex. 50,500,1000.
+
+        Persistance couplée (PRISM) :
+          --prism-checkpoint-id <id>       Identifiant de base des checkpoints couplés.
+          --prism-checkpoint-every <n>     Sauvegarde un checkpoint PRISM tous les n ticks.
+          --prism-restore-checkpoint <id>  Restaure le checkpoint PRISM indiqué avant le run.
 
         Aides :
           --help, -h                      Affiche cette aide.
@@ -162,6 +170,9 @@ public sealed record CliOptions(
         string? prismContentHash = null;
         string? prismContentDir = null;
         int? prismAgents = null;
+        string? prismCheckpointId = null;
+        int? prismCheckpointEvery = null;
+        string? prismRestoreCheckpoint = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -223,6 +234,15 @@ public sealed record CliOptions(
                     break;
                 case "--prism-agents":
                     prismAgents = ParseInt(RequireValue(args, ref i, "--prism-agents"), "--prism-agents");
+                    break;
+                case "--prism-checkpoint-id":
+                    prismCheckpointId = RequireValue(args, ref i, "--prism-checkpoint-id");
+                    break;
+                case "--prism-checkpoint-every":
+                    prismCheckpointEvery = ParseInt(RequireValue(args, ref i, "--prism-checkpoint-every"), "--prism-checkpoint-every");
+                    break;
+                case "--prism-restore-checkpoint":
+                    prismRestoreCheckpoint = RequireValue(args, ref i, "--prism-restore-checkpoint");
                     break;
                 case "--world-size":
                     // Deux valeurs : les lire d'un coup. Appeler RequireValue deux
@@ -338,7 +358,8 @@ public sealed record CliOptions(
             observe, observePort, benchmark, benchmarkTicks, benchmarkPopulations,
             serve, servePort, help, simulation, ticks, exportDirectory, runId, exportStream, autoStart,
             instanceId, controlPort, workDirectory, logDirectory, correlationId,
-            prismUrl, prismTicks, prismSeed, prismContentHash, prismContentDir, prismAgents);
+            prismUrl, prismTicks, prismSeed, prismContentHash, prismContentDir, prismAgents,
+            prismCheckpointId, prismCheckpointEvery, prismRestoreCheckpoint);
     }
 
     /// <summary>

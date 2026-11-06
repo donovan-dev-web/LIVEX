@@ -25,7 +25,7 @@ public sealed record EnvironmentChange(EnvironmentChangeKind Kind, Obstacle Obst
 /// Le monde : plan 2D continu non-toroidal, grille spatiale de perception,
 /// index des entités. Positions dans [0, Width] x [0, Height].
 /// </summary>
-public sealed class World
+public sealed class World : IWorld
 {
     private readonly List<Simulation.Core.Entities.Entity> _entities = [];
     private readonly List<Obstacle> _obstacles = [];
@@ -185,7 +185,7 @@ public sealed class World
     /// Remplace l'ensemble des gisements (restauration bit-à-bit) : la disposition
     /// d'init est écartée au profit de l'état sauvegardé (quantités comprises).
     /// </summary>
-    internal void ReplaceResourceNodes(IEnumerable<ResourceNode> nodes)
+    public void ReplaceResourceNodes(IEnumerable<ResourceNode> nodes)
     {
         ArgumentNullException.ThrowIfNull(nodes);
         _resourceNodes.Clear();

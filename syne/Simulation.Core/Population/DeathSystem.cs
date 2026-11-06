@@ -52,7 +52,7 @@ public sealed class DeathSystem
     /// </summary>
     public IReadOnlyList<ulong> Step(
         ulong tick,
-        Simulation.Core.World.World world,
+        Simulation.Core.World.IWorld world,
         IReadOnlyDictionary<ulong, MindState> minds)
     {
         ArgumentNullException.ThrowIfNull(world);

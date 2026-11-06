@@ -58,4 +58,12 @@ public sealed class WorldSettings
     /// inchangée (re-pin contractuel).
     /// </summary>
     public BookSettings Books { get; set; } = new();
+
+    /// <summary>
+    /// SYNE-220 étape 2 (bascule par profil) : quand vrai, SYNE ne génère
+    /// plus de monde local et s'appuie sur un adaptateur externe (PRISM) via
+    /// <see cref="Simulation.Core.World.PrismWorldAdapter"/>. Le monde local
+    /// reste le défaut pour la compatibilité.
+    /// </summary>
+    public bool ExternalWorld { get; set; }
 }

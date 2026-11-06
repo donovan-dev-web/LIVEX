@@ -43,12 +43,12 @@ public sealed class CommunicationSystem
     private const ulong Mix1 = 0xBF58476D1CE4E5B9UL;
     private const ulong Mix2 = 0x94D049BB133111EBUL;
 
-    private readonly Simulation.Core.World.World _world;
+    private readonly Simulation.Core.World.IWorld _world;
     private readonly CommunicationSettings _settings;
     private readonly List<MessageSent> _lastSent = new();
     private readonly List<MessageReceived> _lastReceived = new();
 
-    public CommunicationSystem(Simulation.Core.World.World world, CommunicationSettings settings)
+    public CommunicationSystem(Simulation.Core.World.IWorld world, CommunicationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(settings);

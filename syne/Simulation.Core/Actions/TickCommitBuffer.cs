@@ -97,7 +97,7 @@ public sealed class TickCommitBuffer
     /// du tick (<see cref="MindState.DefendingThisTick"/>) est résolue ici, sur
     /// l'état effectif de la cible à la fin de l'itération.
     /// </summary>
-    public void Commit(World.World world)
+    public void Commit(Simulation.Core.World.IWorld world)
     {
         ArgumentNullException.ThrowIfNull(world);
 

@@ -178,9 +178,21 @@ public static class Program
             System.Console.WriteLine($"PRISM prepare : {prepared.State} (tick {prepared.LastCompletedTick})");
         }
 
-        if (cli.PrismTicks is not null)
+        long startTick = 0;
+        if (!string.IsNullOrWhiteSpace(cli.PrismRestoreCheckpoint))
         {
-            var started = await client.StartAsync(maxTicks: ticks);
+            var restored = await client.RestoreCheckpointAsync(
+                cli.PrismRestoreCheckpoint!,
+                cli.PrismContentHash ?? string.Empty);
+            startTick = restored.LastCompletedTick;
+            ticks = (int)Math.Max(0, ticks - startTick);
+            System.Console.WriteLine(
+                $"PRISM restauration : {restored.State} (tick {restored.LastCompletedTick})");
+        }
+
+        if (cli.PrismTicks is not null && ticks > 0)
+        {
+            var started = await client.StartAsync(maxTicks: ticks + (int)startTick);
             System.Console.WriteLine($"PRISM start : {started.State}");
         }
 
@@ -197,6 +209,13 @@ public static class Program
             System.Console.WriteLine($"SYNE cognition : {agents} agent(s) initialisé(s).");
         }
 
+        Func<string, long, CancellationToken, Task>? saveCheckpoint = null;
+        if (!string.IsNullOrWhiteSpace(cli.PrismCheckpointId))
+        {
+            string checkpointBase = cli.PrismCheckpointId!;
+            saveCheckpoint = (id, tick, ct) => client.SaveCheckpointAsync(id, ct);
+        }
+
         var runner = new PrismCoupledRunner(
             (request, ct) => client.StepAsync(request, ct),
             onObservations: (agentId, obs, tick) =>
@@ -206,10 +225,23 @@ public static class Program
                 {
                     loop.Cognition.ApplyExternalObservations(entity, obs, (ulong)tick);
                 }
-            });
+            },
+            saveCheckpointAsync: saveCheckpoint);
 
-        System.Console.WriteLine($"SYNE — boucle couplée PRISM : {ticks} ticks...");
-        var run = await runner.RunAsync(ticks);
+        System.Console.WriteLine($"SYNE — boucle couplée PRISM : {ticks} ticks (départ {startTick})...");
+        var run = await runner.RunAsync(
+            ticks,
+            startTick: startTick,
+            checkpointId: cli.PrismCheckpointId,
+            checkpointEvery: cli.PrismCheckpointEvery ?? 0);
+        if (run.LastCheckpointId is not null)
+        {
+            System.Console.WriteLine($"SYNE — dernier checkpoint couplé : {run.LastCheckpointId} (tick {run.LastCheckpointTick})");
+        }
+        if (run.RestoredCheckpointId is not null)
+        {
+            System.Console.WriteLine($"SYNE — checkpoint restauré : {run.RestoredCheckpointId} (tick {run.RestoredCheckpointTick})");
+        }
 
         try
         {
@@ -625,23 +657,45 @@ public static class Program
         return BuildSimulation(options, population, seed, budgets: null);
     }
 
-    private static (Xoshiro256StarStar Rng, Simulation.Core.World.World World, SimulationLoop Loop, EntityTemplate Template) BuildSimulation(
+    private static (Xoshiro256StarStar Rng, Simulation.Core.World.IWorld World, SimulationLoop Loop, EntityTemplate Template) BuildSimulation(
         SimulationOptions options,
         ulong population,
         ulong seed,
         TickBudgetCollector? budgets)
     {
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
-        var world = new Simulation.Core.World.World(
-            new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
-            options.Agents.Perception.SpatialCellSize);
+        Simulation.Core.World.IWorld world;
 
         EntityTemplate template = EntityTemplate.DefaultA;
-        // Même peuplement que le serveur de contrôle (layout d'obstacles posé
-        // avant les entités, aucune entité dans une case bloquée) : une seule
-        // implémentation, pour que le run CLI et le run supervisé ne puissent pas
-        // diverger sur le monde initial.
-        rng = Simulation.Console.Control.SimulationFactory.Populate(world, options, population, rng);
+        if (options.World.ExternalWorld)
+        {
+            // SYNE-220 étape 2 : bascule par profil — SYNE ne génère plus de
+            // monde local, il s'appuie sur l'adaptateur externe (PRISM).
+            world = new Simulation.Core.World.PrismWorldAdapter(
+                new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
+                options.Agents.Perception.SpatialCellSize);
+
+            for (ulong i = 0; i < population; i++)
+            {
+                (Simulation.Core.Entities.Entity entity, Xoshiro256StarStar next) =
+                    Simulation.Core.Entities.EntityFactory.CreateNext(template, world, rng, i + 1, bornAt: 0);
+                rng = next;
+                world.AddEntity(entity);
+            }
+        }
+        else
+        {
+            var localWorld = new Simulation.Core.World.World(
+                new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
+                options.Agents.Perception.SpatialCellSize);
+
+            // Même peuplement que le serveur de contrôle (layout d'obstacles posé
+            // avant les entités, aucune entité dans une case bloquée) : une seule
+            // implémentation, pour que le run CLI et le run supervisé ne puissent pas
+            // diverger sur le monde initial.
+            rng = Simulation.Console.Control.SimulationFactory.Populate(localWorld, options, population, rng);
+            world = localWorld;
+        }
 
         var loop = new SimulationLoop(world, rng, options, budgets);
         return (rng, world, loop, template);
