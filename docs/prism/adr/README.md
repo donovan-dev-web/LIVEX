@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [STABLE]
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 6 novembre 2026
 
 ---
 
@@ -21,8 +21,9 @@
 | [ADR-010](ADR-010-eau-statique-gabarits-conservation.md) | Eau statique, gabarits, conservation de la matière | [Proposed] | — |
 | [ADR-011](ADR-011-modele-25d.md) | Géométrie 2.5D par colonnes et navigation de surface | [Accepted] | ADR-006 (géométrie) |
 | [ADR-012](ADR-012-transport.md) | Transport de référence HTTP et WebSocket JSON | [Accepted] | ADR-008 (liaison de référence) |
+| [ADR-013](ADR-013-convention-spatiale-bloc.md) | Convention spatiale unique : le bloc comme unité de monde | [Accepted] | ADR-003, monde 2 240 du profil SYNE `prism` |
 
-Les décisions ADR-011 et ADR-012 ont été acceptées le 2 novembre 2026 par décision du propriétaire du projet ; leurs preuves techniques restent vérifiées aux portes indiquées. Les ADR antérieurs suivent leur jalon de validation. Gabarit : [`0000-template.md`](0000-template.md).
+Les décisions ADR-011 et ADR-012 ont été acceptées le 2 novembre 2026, et ADR-013 le 6 novembre 2026, par décision du propriétaire du projet ; leurs preuves techniques restent vérifiées aux portes indiquées. Les ADR antérieurs suivent leur jalon de validation. Gabarit : [`0000-template.md`](0000-template.md).
 
 ## 2. Règle
 

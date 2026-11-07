@@ -73,6 +73,29 @@ public sealed class Inventory
     }
 
     /// <summary>
+    /// Consomme une quantité depuis l'inventaire — usage d'un <b>stock porté</b>
+    /// (sécurité alimentaire, SYNE-222) : l'agent mange de sa réserve quand aucun
+    /// gisement n'est à portée. Tout-ou-rien : faux sans effet si la quantité
+    /// détenue est insuffisante.
+    /// </summary>
+    public bool TryConsume(ResourceKind kind, double amount)
+    {
+        if (!double.IsFinite(amount) || amount <= 0.0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(amount), "La quantité doit être finie et > 0.");
+        }
+
+        if (Amount(kind) < amount)
+        {
+            return false;
+        }
+
+        _byKind[kind] = Amount(kind) - amount;
+        CurrentWeight -= amount;
+        return true;
+    }
+
+    /// <summary>
     /// Transfert inventaire → destinataire, tout-ou-rien : échoue (sans effet)
     /// si l'entité détient moins que la quantité demandée ou si la capacité du
     /// destinataire ne couvre pas le transfert.

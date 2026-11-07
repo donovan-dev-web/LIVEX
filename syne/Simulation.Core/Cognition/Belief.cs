@@ -21,7 +21,7 @@ public readonly record struct Fact(string Subject, string Predicate, string Valu
 /// </summary>
 public sealed class Belief
 {
-    public Belief(Fact fact, double confidence, string source, ulong bornTick, ulong expiryTick)
+    public Belief(Fact fact, double confidence, string source, ulong bornTick, ulong expiryTick, bool durable = false)
     {
         ArgumentNullException.ThrowIfNull(source);
         if (confidence is < 0.0 or > 1.0)
@@ -35,13 +35,21 @@ public sealed class Belief
         BornTick = bornTick;
         UpdatedTick = bornTick;
         ExpiryTick = expiryTick;
+        IsDurable = durable;
     }
 
-    public Belief(Fact fact, double confidence, string source, ulong bornTick, ulong updatedTick, ulong expiryTick)
-        : this(fact, confidence, source, bornTick, expiryTick)
+    public Belief(Fact fact, double confidence, string source, ulong bornTick, ulong updatedTick, ulong expiryTick, bool durable = false)
+        : this(fact, confidence, source, bornTick, expiryTick, durable)
     {
         UpdatedTick = updatedTick;
     }
+
+    /// <summary>
+    /// Savoir <b>durable</b> (SYNE-222/224) : une connaissance acquise (recette
+    /// apprise, page lue) ne s'oublie pas avec le temps — contrairement à un fait
+    /// observé. Une croyance durable ne décroît pas et n'expire jamais.
+    /// </summary>
+    public bool IsDurable { get; }
 
     public Fact Fact { get; private set; }
 
@@ -60,7 +68,7 @@ public sealed class Belief
     /// </summary>
     public ulong ExpiryTick { get; private set; }
 
-    public bool IsExpired(ulong currentTick) => currentTick >= ExpiryTick;
+    public bool IsExpired(ulong currentTick) => !IsDurable && currentTick >= ExpiryTick;
 
     internal void SetConfidence(double value)
     {
@@ -292,7 +300,7 @@ public sealed class BeliefSet
     {
         foreach (Belief belief in _beliefs.Values)
         {
-            if (belief.UpdatedTick == currentTick)
+            if (belief.UpdatedTick == currentTick || belief.IsDurable)
             {
                 continue;
             }

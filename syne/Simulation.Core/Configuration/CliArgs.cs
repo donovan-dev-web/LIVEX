@@ -45,7 +45,9 @@ public sealed record CliOptions(
     int? PrismAgents = null,
     string? PrismCheckpointId = null,
     int? PrismCheckpointEvery = null,
-    string? PrismRestoreCheckpoint = null)
+    string? PrismRestoreCheckpoint = null,
+    string? PrismCheckpointDir = null,
+    bool? ExternalWorld = null)
 {
     /// <summary>Ports d'écoute acceptés par les écouteurs BCL.</summary>
     public const int MinPort = 1;
@@ -72,7 +74,7 @@ public sealed record CliOptions(
         Options de simulation :
           --seed <ulong>                  Graine du PRNG (xoshiro256**).
           --max-ticks <int>               Nombre maximal de ticks.
-          --simulation <id>               Scénario batch pris en charge : reference, prism (ADR-017).
+          --simulation <id>               Scénario batch pris en charge : reference (ADR-017).
           --ticks <int>                   Horizon batch strictement positif.
           --export-dir <chemin>           Dossier des artefacts batch (result.json).
           --run-id <id>                   Identité du run écrite dans le flux exporté.
@@ -80,6 +82,8 @@ public sealed record CliOptions(
                                          dans le dossier d'export.
           --autostart                     Démarre le batch après préparation.
           --world-size <largeur> <hauteur> Dimensions du monde en unités monde.
+          --external-world                Monde fourni par PRISM (SYNE-220) : SYNE ne
+                                         génère aucun terrain et lit l'état perçu.
           --headless                      Exécute sans rapport de progression.
           --config <chemin>               Fichier de configuration JSON.
 
@@ -108,6 +112,8 @@ public sealed record CliOptions(
           --prism-checkpoint-id <id>       Identifiant de base des checkpoints couplés.
           --prism-checkpoint-every <n>     Sauvegarde un checkpoint PRISM tous les n ticks.
           --prism-restore-checkpoint <id>  Restaure le checkpoint PRISM indiqué avant le run.
+          --prism-checkpoint-dir <path>    Répertoire des snapshots SYNE couplés (défaut :
+                                           .livex/coupled-checkpoints).
 
         Aides :
           --help, -h                      Affiche cette aide.
@@ -121,6 +127,7 @@ public sealed record CliOptions(
     private static readonly HashSet<string> ValuelessFlags = new(StringComparer.Ordinal)
     {
         "--headless", "--observe", "--benchmark", "--serve", "--autostart", "--export-stream", "--help", "-h",
+        "--external-world",
     };
 
     /// <summary>
@@ -173,6 +180,8 @@ public sealed record CliOptions(
         string? prismCheckpointId = null;
         int? prismCheckpointEvery = null;
         string? prismRestoreCheckpoint = null;
+        string? prismCheckpointDir = null;
+        bool? externalWorld = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -238,11 +247,18 @@ public sealed record CliOptions(
                 case "--prism-checkpoint-id":
                     prismCheckpointId = RequireValue(args, ref i, "--prism-checkpoint-id");
                     break;
+
+                case "--prism-checkpoint-dir":
+                    prismCheckpointDir = RequireValue(args, ref i, "--prism-checkpoint-dir");
+                    break;
                 case "--prism-checkpoint-every":
                     prismCheckpointEvery = ParseInt(RequireValue(args, ref i, "--prism-checkpoint-every"), "--prism-checkpoint-every");
                     break;
                 case "--prism-restore-checkpoint":
                     prismRestoreCheckpoint = RequireValue(args, ref i, "--prism-restore-checkpoint");
+                    break;
+                case "--external-world":
+                    externalWorld = true;
                     break;
                 case "--world-size":
                     // Deux valeurs : les lire d'un coup. Appeler RequireValue deux
@@ -307,7 +323,7 @@ public sealed record CliOptions(
         {
             throw new ArgumentException(
                 $"Scénario batch non pris en charge : \"{simulation}\". " +
-                $"Valeurs acceptées : {SimulationProfiles.ReferenceId}, {SimulationProfiles.PrismId}.");
+                $"Valeur acceptée : {SimulationProfiles.ReferenceId}.");
         }
 
         if (ticks is <= 0)
@@ -359,7 +375,7 @@ public sealed record CliOptions(
             serve, servePort, help, simulation, ticks, exportDirectory, runId, exportStream, autoStart,
             instanceId, controlPort, workDirectory, logDirectory, correlationId,
             prismUrl, prismTicks, prismSeed, prismContentHash, prismContentDir, prismAgents,
-            prismCheckpointId, prismCheckpointEvery, prismRestoreCheckpoint);
+            prismCheckpointId, prismCheckpointEvery, prismRestoreCheckpoint, prismCheckpointDir, externalWorld);
     }
 
     /// <summary>

@@ -31,7 +31,7 @@ Avant tout `snapshot`, SYNE émet `world_initialized` avec `version`, `seed` et
 `cellCountY`, `agents[]`, `cells[]`,
 `obstacles[]`, `resources[]` et `regions[]`.
 **Version de description 1.1 (ADR-017, contrat 0.4.0)** : `simulatedSecondsPerTick`
-(entier, 60 par défaut — 1 tick = 1 minute simulée ; 5 pour le profil `prism`)
+(entier, 60 par défaut — 1 tick = 1 minute simulée ; toute valeur de `[1, 3600]` peut être déclarée par configuration)
 et `metersPerUnit` (double informatif, défaut 1,0) sont **additifs** ; les champs
 antérieurs sont inchangés et une référence à `"1.0"` reste acceptée par les
 consommateurs qui comparent les versions. Chaque obstacle initial contient
@@ -203,6 +203,10 @@ Exemple :
 ```
 
 > Événements typés du prototype : `tick_summary`, `agent_spawned`, `agent_died`, `decision_made` (ADR-004).
+> **Ajout additif (SYNE-222, lot 0.6.0)** : `action`/`intention` peut valoir `SecureFood`, désir
+> instrumental (aller vers une source de nourriture connue pour constituer un stock). Aucun champ
+> n'est ajouté ni renommé : les clients qui ignorent cette valeur continuent de fonctionner, elle
+> n'apparaît que si `agents.desires.instrumental.enabled` est vrai (faux par défaut).
 > **V0.1 émet** `tick_summary` (1/tick, `value.aliveCount`) et `decision_made` (1/entité/tick,
 > `value = {intention, utility, deliberated, interrupted}`, `cause = "hunger=…,thirst=…,fatigue=…"`).
 > `deliberated`/`interrupted` (bool, jalon SYNE ph3) indiquent si le tick a délibéré (fréquence

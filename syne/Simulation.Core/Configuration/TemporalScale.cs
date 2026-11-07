@@ -181,6 +181,31 @@ public static class TemporalScale
     }
 
     /// <summary>
+    /// Désirs instrumentaux (SYNE-222) : l'horizon d'anticipation est une
+    /// <b>période</b> (classe A → <c>/dt</c>) ; le niveau de stock visé est une
+    /// quantité (classe C, inchangée).
+    /// </summary>
+    public static DesireSettings ScaleDesires(DesireSettings settings, double dt)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        if (IsUnitStep(dt))
+        {
+            return settings;
+        }
+
+        InstrumentalSettings instrumental = settings.Instrumental;
+        return new DesireSettings
+        {
+            Instrumental = new InstrumentalSettings
+            {
+                Enabled = instrumental.Enabled,
+                AnticipateTicks = PeriodTicks(instrumental.AnticipateTicks, dt),
+                ReserveTarget = instrumental.ReserveTarget,
+            },
+        };
+    }
+
+    /// <summary>
     /// Actions (classe A : moveEnergyCost, restEnergyGain,
     /// restFatigueRecovery × dt) — les coûts/effets explicites du catalogue
     /// (classe C, ex. energyCost eat = 0,2) et les poids d'utilité (classe B)
@@ -268,7 +293,8 @@ public static class TemporalScale
         MemorySettings memory,
         BeliefSettings beliefs,
         TrustSettings trust,
-        ActionSettings actions)
+        ActionSettings actions,
+        DesireSettings desires)
     {
         ArgumentNullException.ThrowIfNull(options);
         var agents = new AgentSettings
@@ -284,6 +310,12 @@ public static class TemporalScale
             Inheritance = options.Agents.Inheritance,
             Life = options.Agents.Life,
             Pathfinding = options.Agents.Pathfinding,
+            // Section non temporelle : reportée telle quelle. Oublier un champ ici
+            // le remet silencieusement à son défaut dans le pipeline cognitif
+            // (cas rencontré avec agents.knowledge, SYNE-222).
+            Knowledge = options.Agents.Knowledge,
+            Planner = options.Agents.Planner,
+            Desires = desires,
         };
 
         return new SimulationOptions

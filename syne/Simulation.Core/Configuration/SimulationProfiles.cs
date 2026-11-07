@@ -14,19 +14,21 @@ public static class SimulationProfiles
     public const string ReferenceId = "reference";
 
     /// <summary>
-    /// Identifiant de scénario batch du profil PRISM (monde 2 240 /
-    /// 5 s simulées par tick) — accepté par <c>--simulation</c> et par le
-    /// sélecteur de scénario du Launcher.
-    /// </summary>
-    public const string PrismId = "prism";
-
-    /// <summary>
     /// Vrai si <paramref name="simulationId"/> est un scénario batch connu
     /// (<c>null</c> = défaut historique, équivalent à <see cref="ReferenceId"/> :
     /// le profil de référence EST le défaut intégré).
     /// </summary>
+    /// <remarks>
+    /// Un seul scénario calibré subsiste. Le profil <c>prism</c> qui existait à
+    /// côté est retiré : il ne portait plus rien que PRISM exige. Sa géométrie
+    /// (256 × 256, cellule 16) est désormais <b>lue</b> dans l'instantané de monde
+    /// de PRISM (ADR-013, PRISM autoritaire sur la géométrie), son décor en
+    /// disques était une approximation de la scène Unreal (jamais injectée dans
+    /// l'adaptateur couplé), et sa cadence (6 TPS, 5 s simulées/tick) était une
+    /// calibration SYNE qui ralentissait les désirs sans contrepartie côté PRISM.
+    /// </remarks>
     public static bool IsKnownSimulationId(string? simulationId) =>
-        simulationId is null or ReferenceId or PrismId;
+        simulationId is null or ReferenceId;
 
     /// <summary>
     /// Profil de référence : scénario de survie calibré.
@@ -105,64 +107,4 @@ public static class SimulationProfiles
     /// dont la désérialisation rendrait chaque clé absente destructive.
     /// </summary>
     public static string ReferenceJson() => ConfigLoader.ToJson(Reference());
-
-    /// <summary>
-    /// Profil <b>PRISM</b> : monde
-    /// 2 240 × 2 240 unités (70 × 70 cases de 32 m, case logique = cluster World
-    /// Partition 3 200 uu à k = 100 uu/unité), cadence 6 TPS (166,7 ms/tick) et
-    /// <b>5 secondes simulées par tick</b> — ratio R = 30 (1 s réelle = 30 s
-    /// simulées : faim en 3 min 20, journée en 48 min). Le pas de déplacement
-    /// reste 1 unité × trait <c>speed</c> par tick : la vitesse apparente
-    /// (600 uu/s à speed 1,0) est celle du joueur UE par défaut.
-    ///
-    /// <para>
-    /// <b>Additif et neutre</b> : seul <c>simulatedSecondsPerTick</c> change
-    /// l'écoulement du temps simulé (classe A mise à l'échelle au démarrage) ;
-    /// ni TPS de référence, ni trait de vitesse, ni échelle k ne bougent.
-    /// rejoue le profil <c>reference</c> calibré puis applique le bloc
-    /// PRISM — un profil doit être <b>complet</b> (le contrôleur applique la
-    /// configuration fournie sur les défauts intégrés).
-    /// </para>
-    /// <para>
-    /// <b>Obstacles de la scène</b> — <c>world.obstacles</c> est faux par défaut
-    /// (SYNE-071) : sans le bloc ci-dessous, PRISM ne reçoit <b>aucun</b> obstacle
-    /// à l'initialisation (<c>world_initialized.world.obstacles[]</c> vide), donc son
-    /// rendu d'obstacle — <c>BP_PRISM_Obstacle</c> et les mutations
-    /// <c>world.construction_placed</c>/<c>removed</c> — n'a rien à afficher et
-    /// paraît cassé alors que le contrat fonctionne. Le layout est une
-    /// <b>approximation du décor en disques</b> (seule forme supportée) : une côte
-    /// au sud et une crête au centre, plus un amer destiné à vérifier le cas
-    /// d'un obstacle plus petit qu'une case.
-    /// </para>
-    /// <para>
-    /// Les mêmes valeurs sont reproduites dans
-    /// <c>configs/simulation/prism.json</c> (profil CLI/Launcher) et dans le miroir
-    /// du mock <c>syne-mock/config_prism.json</c> : les trois fichiers bougent
-    /// ensemble, et le harnais <c>scripts/parity-mock-syne-world.js</c> compare la
-    /// description du monde des deux sources à partir de ces valeurs.
-    /// </para>
-    /// </summary>
-    public static SimulationOptions Prism()
-    {
-        var options = Reference();
-        options.Simulation.WorldWidth = 2240;
-        options.Simulation.WorldHeight = 2240;
-        options.Simulation.WorldCellSize = 32;
-        options.Simulation.TicksPerSecond = 6;
-        options.Simulation.SimulatedSecondsPerTick = 5;
-        options.World.MetersPerUnit = 1.0;
-        options.World.Obstacles = true;
-        options.World.ObstacleLayout =
-        [
-            new StaticObstacleSettings { Id = "cote-sud-1", X = 400, Y = 2180, Radius = 150 },
-            new StaticObstacleSettings { Id = "cote-sud-2", X = 1120, Y = 2180, Radius = 150 },
-            new StaticObstacleSettings { Id = "cote-sud-3", X = 1840, Y = 2180, Radius = 150 },
-            new StaticObstacleSettings { Id = "crete-centre", X = 1120, Y = 1120, Radius = 60 },
-            new StaticObstacleSettings { Id = "amer-1", X = 300, Y = 300, Radius = 8 },
-        ];
-        return options;
-    }
-
-    /// <summary>Profil PRISM sous forme de surcouche JSON (même sémantique que <see cref="ReferenceJson"/>).</summary>
-    public static string PrismJson() => ConfigLoader.ToJson(Prism());
 }

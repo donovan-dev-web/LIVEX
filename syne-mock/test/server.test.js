@@ -195,13 +195,13 @@ test('explicit prepare requires ready and exposes the world contract', async (t)
   assert.equal(status.simulatedSecondsPerTick, 60);
 });
 
-test('prism profile emits the ADR-017 temporal and spatial scale contract', async (t) => {
-  // Profil `prism` (spec PRISM) : monde 2240 / cellule 32 → 70 × 70 =
-  // 4 900 cases, cadence 6 TPS, 5 s simulées par tick (R = 30). La configuration
-  // testée est celle réellement livrée (`config_prism.json`), pour que le test
-  // porte sur ce que PRISM reçoit et pas sur une reconstruction du monde.
+test('the shipped configuration emits the ADR-017 temporal and spatial scale contract', async (t) => {
+  // Un seul profil calibré subsiste côté moteur (`reference` : 500 unites,
+  // cellule 10, 10 TPS, 60 s simulées par tick). Le mock doit annoncer le même
+  // monde que ce qu'il publie réellement (`config_example.json`), sinon PRISM
+  // calibre son échelle sur une géométrie que SYNE ne produira jamais.
   const server = openServer(t, {
-    ...readConfig(path.join(__dirname, '..', 'config_prism.json')),
+    ...readConfig(path.join(__dirname, '..', 'config_example.json')),
     agents: 0,
     maxTicks: 3,
   });
@@ -209,31 +209,26 @@ test('prism profile emits the ADR-017 temporal and spatial scale contract', asyn
   const port = server.httpServer.address().port;
   await fetch(`http://127.0.0.1:${port}/api/control/prepare`, {
     method: 'POST',
-    body: JSON.stringify({ seed: 42, ticksPerSecond: 6 }),
+    body: JSON.stringify({ seed: 42 }),
     headers: { 'content-type': 'application/json' },
   });
 
   const world = await (await fetch(`http://127.0.0.1:${port}/api/world`)).json();
   assert.equal(world.version, '1.1');
-  assert.equal(world.width, 2240);
-  assert.equal(world.cellSize, 32);
-  assert.equal(world.ticksPerSecond, 6);
-  assert.equal(world.simulatedSecondsPerTick, 5);
+  assert.equal(world.width, 500);
+  assert.equal(world.cellSize, 10);
+  assert.equal(world.ticksPerSecond, 10);
+  assert.equal(world.simulatedSecondsPerTick, 60);
   assert.equal(world.metersPerUnit, 1);
-  assert.equal(world.cellCountX, 70);
-  assert.equal(world.cellCountY, 70);
-  assert.equal(world.cells.length, 4900);
-  // Le profil prism declare cinq obstacles : les cases bloquees existent, comme
-  // cote moteur (`SimulationProfiles.Prism()` porte le meme layout).
-  assert.equal(world.obstacles.length, 5);
+  assert.equal(world.cellCountX, 50);
+  assert.equal(world.cellCountY, 50);
+  assert.equal(world.cells.length, 2500);
+  // Le décor est déclaré par la configuration livrée : les cases bloquées
+  // existent, et `walkable` suit les obstacles portés.
+  assert.equal(world.obstacles.length, 3);
   assert.ok(
     world.cells.some((cell) => !cell.walkable),
     'le layout doit bloquer des cases'
-  );
-  assert.deepEqual([...new Set(world.cells.map((cell) => cell.terrainType))], ['plains']);
-  assert.deepEqual(
-    [...new Set(world.cells.map((cell) => cell.movementCost))].sort((a, b) => a - b),
-    [1, 100]
   );
   for (const cell of world.cells)
     assert.equal(
@@ -247,11 +242,10 @@ test('prism profile emits the ADR-017 temporal and spatial scale contract', asyn
   server.simulation.start(42, 3);
   for (let i = 0; i < 3; i++) server.simulation.step();
   const snapshot = server.simulation.snapshot();
-  // tick × 5 s : secondes simulées exactes, minutes en plancher entier —
-  // l'ancienne formule `round(tick / ticksPerSecond)` donnait 1 minute au tick 3.
-  assert.equal(snapshot.simulatedTimeSeconds, 15);
-  assert.equal(snapshot.simulatedTimeMinutes, 0);
-  assert.equal(server.simulation.status().simulatedSecondsPerTick, 5);
+  // tick × 60 s : secondes simulées exactes, minutes == tick (contrat historique).
+  assert.equal(snapshot.simulatedTimeSeconds, 180);
+  assert.equal(snapshot.simulatedTimeMinutes, 3);
+  assert.equal(server.simulation.status().simulatedSecondsPerTick, 60);
   server.simulation.stop();
 
   const post = (path, body = {}) =>

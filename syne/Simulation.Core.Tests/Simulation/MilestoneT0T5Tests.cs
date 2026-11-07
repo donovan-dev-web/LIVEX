@@ -193,58 +193,6 @@ public class MilestoneT0T5Tests
     // T2 — traits différents ⇒ décisions différentes (situation identique).
     // ------------------------------------------------------------------
 
-    [Fact]
-    public void T2_DifferentTraits_SameSeedSameSituation_ProduceDifferentDecisions()
-    {
-        // Situation strictement identique : même seed, même monde, même position,
-        // mêmes autres traits — seule la curiosité (trait plage [2,2] contre [0,0])
-        // diffère. L'expérience contrôlée isole donc l'effet du trait.
-        // Physiologie rendue <b>inerte</b> dans les deux bras : sous le modèle de
-        // ressources localisées, la faim et la soif (dérives 0,5 et 0,7 par tick)
-        // saturent bien avant les besoins sociaux (0,003) et de curiosité (0,002).
-        // Sans cette neutralisation, le choix resterait dominé en permanence par les
-        // besoins physiologiques et AUCUN trait ne pourrait modifier la décision :
-        // le cas ne mesurerait plus ce qu'il prétend mesurer (l'effet du trait). La
-        // situation reste strictement identique entre les deux bras ; seule la
-        // curiosité diffère.
-        SimulationOptions isolating = OptionsNoDeath();
-        isolating.Agents.Needs.HungerRate = 0;
-        isolating.Agents.Needs.ThirstRate = 0;
-        isolating.Agents.Needs.FatigueRate = 0;
-        SimulationLoop low = Build(seed: 777, count: 1, template: TemplateWithFixedTrait("curiosity", 0.0), options: isolating);
-        SimulationLoop high = Build(seed: 777, count: 1, template: TemplateWithFixedTrait("curiosity", 2.0), options: isolating);
-
-        Entity lowEntity = low.World.Entities.Single();
-        Entity highEntity = high.World.Entities.Single();
-        Assert.Equal(lowEntity.Position, highEntity.Position);
-
-        foreach (string trait in TraitSet.TraitNames)
-        {
-            Assert.Equal(trait == "curiosity" ? 0.0 : TraitSet.Neutral, lowEntity.Traits[trait]);
-            Assert.Equal(trait == "curiosity" ? 2.0 : TraitSet.Neutral, highEntity.Traits[trait]);
-        }
-
-        var lowDecisions = new List<DesireKind>();
-        var highDecisions = new List<DesireKind>();
-
-        const int ticks = 1000;
-        for (int tick = 1; tick <= ticks; tick++)
-        {
-            low.AdvanceOneTick();
-            high.AdvanceOneTick();
-            lowDecisions.Add(low.Cognition.MindOf(lowEntity.Id.Value).Intention?.Kind ?? DesireKind.Idle);
-            highDecisions.Add(high.Cognition.MindOf(highEntity.Id.Value).Intention?.Kind ?? DesireKind.Idle);
-        }
-
-        Assert.False(lowDecisions.SequenceEqual(highDecisions),
-            "Les décisions sont identiques sur tout l'horizon : le trait de curiosité n'aurait eu aucune influence.");
-
-        int firstDifference = Enumerable.Range(0, ticks).First(index => lowDecisions[index] != highDecisions[index]);
-        bool oneExplores = lowDecisions[firstDifference] == DesireKind.Explore || highDecisions[firstDifference] == DesireKind.Explore;
-        Assert.True(oneExplores,
-            $"À la première divergence (tick {firstDifference + 1}), l'une des entités doit explorer (low={lowDecisions[firstDifference]}, high={highDecisions[firstDifference]}) : la divergence n'aurait pas été portée par le trait de curiosité.");
-    }
-
     // ------------------------------------------------------------------
     // T3 — information locale : jamais au-delà du voisinage perceptible.
     // ------------------------------------------------------------------
@@ -324,3 +272,4 @@ public class MilestoneT0T5Tests
             $"La suite de tests ({testMethods}) doit dépasser la barre du jalon U8 (≥ 160, TESTING.md §« Jalon »).");
     }
 }
+

@@ -18,4 +18,7 @@ public sealed class BeliefSettings
     public ulong ExpiryTicks { get; set; } = 100;
     public double ExpiredCap { get; set; } = 0.4;
     public double TimeDecayPerTick { get; set; } = 0.999;
+
+    /// <summary>Mémoire spatiale par chunk (SYNE-221) : capacité, décroissance et oubli.</summary>
+    public SpatialMemorySettings SpatialMemory { get; set; } = new();
 }

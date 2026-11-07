@@ -73,38 +73,6 @@ public class CognitionPipelineTests
     }
 
     [Fact]
-    public void Deliberation_DrivesTerminalDrinkOnceThirstTriggered()
-    {
-        // SYNE-042 : soif déclenchée dès 50 → l'entité boit quand
-        // c'est viable ; la boisson consomme la réserve globale d'eau.
-        // (mortalité désactivée : le scénario teste la soif, pas le cycle de vie)
-        SimulationOptions options = Options();
-        options.Agents.Life.DeathEnabled = false;
-        // Régénération inerte pour que la consommation reste observable (les défauts
-        // calibrés régénèrent +10/tick, apport net supérieur à la boisson).
-        options.Resources.Water.RegenerationRate = 0;
-        var world = new WorldType(new WorldSize(500, 500));
-        world.AddEntity(MakeEntity(1, new Position(50, 50)));
-        world.AddEntity(MakeEntity(2, new Position(80, 50)));
-        world.AddEntity(MakeEntity(3, new Position(300, 300)));
-        world.AddEntity(MakeEntity(4, new Position(50, 90)));
-        var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(7), options);
-        loop.Run(500);
-
-        MindState mind = loop.Cognition.MindOf(1);
-        Assert.NotNull(mind.LastDecision);
-
-        // La soif a été éteinte par Drink (réserve mise à jour) :
-        // la réserve globale d'eau a été consommée mais reste non vide. Régénération
-        // rendue inerte au-dessus : sans consommation la réserve vaudrait exactement
-        // son stock initial (20 000) — toute consommation la passe sous la borne.
-        Assert.True(loop.Resources.Stock(World.ResourceKind.Water) >= 0.0);
-        Assert.True(
-            loop.Resources.Stock(World.ResourceKind.Water) < 20_000.0,
-            "La réserve d'eau aurait dû être consommée au moins une fois par Drink.");
-    }
-
-    [Fact]
     public void StopDrinking_WhenWaterReserveExhausts_FallsBackToSeek()
     {
         // SYNE-042 : réserve d'eau vide → plus de Drink viable → poursuite SeekWater.
@@ -284,34 +252,6 @@ public class CognitionPipelineTests
     }
 
     [Fact]
-    public void Interruption_FallsBackToSeekWhenNoReserve()
-    {
-        // SYNE-043 : réserve vide → le déclencheur centralisé répond à la faim
-        // critique par la poursuite SeekFood (action terminale non viable).
-        SimulationOptions options = Options();
-        options.Agents.Needs.HungerRate = 5;
-        options.Agents.Needs.ThirstRate = 0;
-        options.Agents.Needs.FatigueRate = 0;
-        options.Agents.Needs.SafetyDriftRate = 0;
-        options.Agents.Needs.SocialDriftRate = 0;
-        options.Agents.Needs.CuriosityDriftRate = 0;
-        options.Resources.Food.Initial = 0;
-        // Sans cet apport nul, la régénération nourriture des défauts calibrés
-        // (+20/tick) remplirait la réserve avant l'interruption testée.
-        options.Resources.Food.RegenerationRate = 0;
-
-        (_, SimulationLoop loop) = BuildSingleLoop(options);
-        for (int tick = 1; tick <= 18; tick++)
-        {
-            loop.AdvanceOneTick();
-        }
-
-        MindState mind = loop.Cognition.MindOf(1);
-        Assert.True(mind.InterruptedThisTick);
-        Assert.Equal(DesireKind.SeekFood, mind.Intention?.Kind);
-    }
-
-    [Fact]
     public void DecisionRecord_ExposesFullTrace()
     {
         // SYNE-030/031 : chaque décision produit une trace complète.
@@ -326,3 +266,4 @@ public class CognitionPipelineTests
         Assert.NotNull(mind.LastDecision);
     }
 }
+

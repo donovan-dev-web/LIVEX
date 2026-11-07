@@ -270,11 +270,11 @@ La surcouche `config` (objet JSON, facultative) est **fusionnée sur la
 configuration de démarrage du mock**, exactement comme SYNE fusionne `config`
 sur ses défauts. C'est le mécanisme qui permet au **même appel** de préparer le
 même monde des deux côtés : sans elle, le mock applique son fichier de
-démarrage (ou 500 × 500 si aucun n'est fourni) et SYNE son profil de référence.
-Le profil `prism` de référence est `configs/simulation/prism.json`
-(`SimulationProfiles.Prism()`), dont `syne-mock/config_prism.json` est le
-miroir pour la géométrie ; `Prepare(seed, ticksPerSecond, configJson)` du
-plugin transmet cette chaîne telle quelle.
+démarrage (ou 500 × 500 si aucun n'est fourni) et SYNE son profil de référence —
+les deux jeux de valeurs par défaut coïncident (vérifié par
+`scripts/parity-mock-syne-world.js`). Le profil `prism` a été retiré : il n'y a
+plus qu'un profil calibré côté moteur ; `Prepare(seed, ticksPerSecond,
+configJson)` transmet la surcouche telle quelle.
 Après un prepare explicite, démarrer avec le même seed réutilise ce monde et
 sa cadence. Un seed différent est rejeté avec `409 prepared_seed_mismatch` ;
 répéter `prepare`, reconstruire le monde Unreal puis appeler `ready`.
@@ -320,11 +320,11 @@ le plus élevé entre la case de départ et la case visée.
 
 Ces valeurs ne sont pas une convention du mock mais une **égalité vérifiée** :
 [`../../scripts/parity-mock-syne-world.js`](../../scripts/parity-mock-syne-world.js)
-lance le moteur réel (profil `prism` + un layout d'obstacles) et le mock sur la
-même géométrie, puis compare le jeu de clés, l'en-tête, `cells[]` champ par
-champ et `obstacles[]`. Il sort en code 1 à la moindre divergence, et refuse de
-conclure si le layout ne bloque aucune case (une comparaison de deux mondes vides
-ne prouverait rien). Non comparé : le contenu de `agents[]`, que le mock place
+lance le moteur réel (profil de référence, aucun décor) et le mock sur ses
+défauts, puis compare le jeu de clés, l'en-tête, `cells[]` champ par champ,
+`obstacles[]` et `resources[]`. Il sort en code 1 à la moindre divergence, et
+refuse de conclure si un seul côté publie un obstacle (le profil de référence
+n'en déclare aucun). Non comparé : le contenu de `agents[]`, que le mock place
 avec son propre tirage (les marqueurs `resources[]` sont eux comparés champ par
 champ).
 

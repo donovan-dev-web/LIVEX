@@ -43,6 +43,61 @@ public sealed partial class CognitionPipeline
     }
 
     /// <summary>
+    /// Applique des <b>résumés de région</b> (SYNE-221) à la mémoire spatiale
+    /// d'une entité : un masque de tags par chunk, avec sa confiance et son
+    /// horodatage. Utilisé par la boucle couplée (PRISM publie ses résumés de
+    /// région dans les observations différentielles) ; aucun effet sur les
+    /// croyances ni sur la mémoire épisodique — un résumé n'est pas un fait
+    /// ponctuel.
+    /// </summary>
+    public void ApplyExternalSpatialObservations(
+        Entity self,
+        IReadOnlyList<SpatialChunkObservation> chunks,
+        ulong currentTick)
+    {
+        ArgumentNullException.ThrowIfNull(self);
+        ArgumentNullException.ThrowIfNull(chunks);
+        if (chunks.Count == 0)
+        {
+            return;
+        }
+
+        MindState mind = GetOrCreate(self.Id.Value, self);
+        foreach (SpatialChunkObservation chunk in chunks)
+        {
+            if (chunk.TagMask == 0)
+            {
+                // Aucun tag exposé : rien à mémoriser. Un chunk déjà cru n'est pas
+                // effacé ici — c'est la décroissance temporelle qui l'oublie.
+                continue;
+            }
+
+            mind.Spatial.Observe(chunk.ChunkX, chunk.ChunkY, chunk.TagMask, _options.Agents.Beliefs, currentTick);
+        }
+    }
+
+    /// <summary>
+    /// Apprend les recettes déclarées dans un livre lu (SYNE-224) : le savoir
+    /// enseigné devient durable et daté, exactement comme la connaissance
+    /// initiale — mais sa source dit <b>de quel livre</b> il vient.
+    /// </summary>
+    /// <returns>Nombre de recettes apprises (0 si le livre n'en déclare aucune).</returns>
+    public int LearnFromBook(Simulation.Core.World.Book book, ulong readerId, ulong currentTick)
+    {
+        ArgumentNullException.ThrowIfNull(book);
+        if (!_options.Agents.Knowledge.LearnFromBooks || !HasMind(readerId))
+        {
+            return 0;
+        }
+
+        return KnowledgeBuilder.LearnRecipeKnowledge(
+            MindOf(readerId).Beliefs,
+            string.Concat("book:", book.Id),
+            book.Content,
+            currentTick);
+    }
+
+    /// <summary>
     /// Stockage d'une observation : <b>mémoire</b> (récit canonique, source) puis
     /// <b>croyance</b> révisée par la formule du chapitre XI
     /// (<see cref="BeliefSet.ApplyObservation"/>) — croyance de <b>gisement</b>
@@ -93,9 +148,55 @@ public sealed partial class CognitionPipeline
             storeInMemory = !(mind.Beliefs.TryGet(state, out Belief? known) && !known.IsExpired(currentTick));
             mind.Beliefs.ApplyObservation(state, observation.Confidence, source, _options.Agents.Beliefs, currentTick);
         }
+        else if (observation.EntityType == "site")
+        {
+            // Chantier (SYNE-222) : deux croyances distinctes sur le même sujet —
+            // où il en est (position + état) et combien de travail reste. Un chantier
+            // n'est pas un gisement : il ne doit pas entrer dans les cibles de
+            // ressource, donc il a son propre sujet `site-<id>`.
+            string label = observation.Attributes.TryGetValue("label", out string? siteLabel) && siteLabel.Length > 0
+                ? siteLabel
+                : observation.EntityId.ToString(CultureInfo.InvariantCulture);
+            string state = observation.Attributes.TryGetValue("state", out string? siteState) ? siteState : "0";
+            Fact stateFact = new(
+                $"site-{label}",
+                KnowledgeBuilder.SiteStatePredicate,
+                string.Concat(CanonicalPosition(observation.Position), ",", state));
+
+            string completed = observation.Attributes.TryGetValue("amount", out string? workDone) ? workDone : "0";
+            string required = observation.Attributes.TryGetValue("required", out string? workNeeded) ? workNeeded : "0";
+            Fact progressFact = new(
+                $"site-{label}",
+                KnowledgeBuilder.SiteProgressPredicate,
+                string.Concat(completed, ",", required));
+
+            storeInMemory = !(mind.Beliefs.TryGet(stateFact, out Belief? knownSite) && !knownSite.IsExpired(currentTick));
+            mind.Beliefs.ApplyObservation(stateFact, observation.Confidence, source, _options.Agents.Beliefs, currentTick);
+            mind.Beliefs.ApplyObservation(progressFact, observation.Confidence, source, _options.Agents.Beliefs, currentTick);
+        }
+        else if (observation.EntityType == "structure")
+        {
+            // Effet d'abri éprouvé (SYNE-222) : l'agent s'est trouvé dans la
+            // structure, il en connaît le bonus. Sert de fait justificatif au
+            // planificateur (SYNE-223), pas encore d'objectif.
+            string label = observation.Attributes.TryGetValue("label", out string? structureLabel) && structureLabel.Length > 0
+                ? structureLabel
+                : observation.EntityId.ToString(CultureInfo.InvariantCulture);
+            string bonus = observation.Attributes.TryGetValue("shelterBonusPermille", out string? permille)
+                ? permille
+                : "0";
+            Fact shelter = new($"structure-{label}", KnowledgeBuilder.StructureShelterPredicate, bonus);
+            mind.Beliefs.ApplyObservation(shelter, observation.Confidence, source, _options.Agents.Beliefs, currentTick);
+        }
         else if (observation.EntityType == "obstacle")
         {
-            Fact obstacle = new($"obstacle-{observation.EntityId}", "radius", observation.Attributes["radius"]);
+            // Le rayon n'est pas toujours fourni (une observation PRISM décrit un
+            // bloc par son matériau et son altitude) : un index manquant levait une
+            // KeyNotFoundException qui faisait échouer tout le tick couplé.
+            string radius = observation.Attributes.TryGetValue("radius", out string? knownRadius)
+                ? knownRadius
+                : "0";
+            Fact obstacle = new($"obstacle-{observation.EntityId}", "radius", radius);
             mind.Beliefs.ApplyObservation(obstacle, observation.Confidence, source, _options.Agents.Beliefs, currentTick);
         }
 

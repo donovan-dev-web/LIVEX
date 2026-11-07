@@ -70,7 +70,7 @@ public readonly record struct CognitionKnowledge(
     /// <summary>Cible d'une action : la source pour un besoin physiologique, le pair pour un besoin social.</summary>
     public GoalTarget? TargetFor(DesireKind kind) => kind switch
     {
-        DesireKind.Eat or DesireKind.SeekFood => FoodSource,
+        DesireKind.Eat or DesireKind.SeekFood or DesireKind.SecureFood => FoodSource,
         DesireKind.Drink or DesireKind.SeekWater => WaterSource,
         DesireKind.Socialize or DesireKind.Give or DesireKind.Trade => Peer,
         DesireKind.Explore => Landmark,
@@ -89,6 +89,7 @@ public readonly record struct CognitionKnowledge(
         DesireKind.Eat => AtFoodSource ? 1.0 : null,
         DesireKind.Drink => AtWaterSource ? 1.0 : null,
         DesireKind.SeekFood => FoodSource?.Confidence,
+        DesireKind.SecureFood => FoodSource?.Confidence,
         DesireKind.SeekWater => WaterSource?.Confidence,
         DesireKind.Socialize or DesireKind.Give or DesireKind.Trade => Peer?.Confidence,
         DesireKind.Explore => Landmark?.Confidence,
@@ -149,4 +150,25 @@ public static partial class KnowledgeBuilder
 
     /// <summary>PrÃ©dicat de position d'une entitÃ© perÃ§ue (<c>entity-&lt;id&gt;</c>).</summary>
     public const string EntityPositionPredicate = "position";
+
+    /// <summary>
+    /// État d'un chantier (SYNE-222), sujet <c>site-&lt;siteId&gt;</c> : valeur
+    /// « x.xx,y.yy,&lt;état&gt; ». Le sujet distingue un chantier d'un gisement — une
+    /// croyance est indexée par (sujet, prédicat), les deux ne s'écrasent pas.
+    /// </summary>
+    public const string SiteStatePredicate = "state";
+
+    /// <summary>
+    /// Avancement d'un chantier, sujet <c>site-&lt;siteId&gt;</c> : valeur
+    /// « &lt;travail achevé&gt;,&lt;travail requis&gt; ».
+    /// </summary>
+    public const string SiteProgressPredicate = "progress";
+
+    /// <summary>
+    /// Effet d'abri d'une structure <b>éprouvée</b> (SYNE-222), sujet
+    /// <c>structure-&lt;siteId&gt;</c> : valeur « &lt;bonus de récupération de fatigue en
+    /// pour-mille&gt; ». L'agent ne peut le croire que s'il s'y est trouvé : c'est
+    /// une expérience, pas une observation à distance.
+    /// </summary>
+    public const string StructureShelterPredicate = "shelter";
 }

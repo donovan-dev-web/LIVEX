@@ -69,11 +69,13 @@ public class TerritoryPersistenceTests
         loop.AdvanceOneTick();
         SimulationSnapshot snapshot = SimulationSnapshotCodec.Capture(loop);
 
-        Assert.NotNull(snapshot.World.Territories);
-        Assert.Equal(2, snapshot.World.Territories.Count);
+        WorldSnapshotDto world = snapshot.World
+            ?? throw new InvalidOperationException("une capture complète porte le monde");
+        Assert.NotNull(world.Territories);
+        Assert.Equal(2, world.Territories.Count);
 
-        TerritorySnapshotDto nord = snapshot.World.Territories.Single(t => t.Id == "nord");
-        TerritorySnapshotDto sud = snapshot.World.Territories.Single(t => t.Id == "sud");
+        TerritorySnapshotDto nord = world.Territories.Single(t => t.Id == "nord");
+        TerritorySnapshotDto sud = world.Territories.Single(t => t.Id == "sud");
 
         Assert.Equal(100.0, nord.CenterY, 10);
         Assert.Equal(120.0, nord.Radius, 10);
@@ -150,7 +152,7 @@ public class TerritoryPersistenceTests
     {
         // Rétro-compatibilité : un snapshot v3 (sans champ territories) doit se
         // restaurer avec des listes vides plutôt que de lever.
-        // 4 → 5 (arbitrage A0-3, engineVersion 0.17.0) : retrait de
+        // 4 → 5 (arbitrage A0-3, engineVersion 0.18.0) : retrait de
         // `collectiveObjective` dans minds[] et ajout des distances de paires
         // liées dans groups[].
         Assert.Equal(5, SimulationSnapshotCodec.SchemaVersion);
@@ -169,6 +171,8 @@ public class TerritoryPersistenceTests
         SimulationSnapshot snapshot = SimulationSnapshotCodec.FromJson(legacy);
 
         Assert.NotNull(snapshot);
+        Assert.NotNull(snapshot.World);
         Assert.True(snapshot.World.Territories is null || snapshot.World.Territories.Count == 0);
     }
 }
+

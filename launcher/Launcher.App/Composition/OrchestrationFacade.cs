@@ -840,13 +840,14 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         if (isEngine && posture == EnginePosture.Piloted)
         {
             // Mode PRISM (posture pilotée) : ni `--autostart`, ni graine/horizon imposés —
-            // le projet Unreal prépare puis démarre via l'API de contrôle (`prepare`/`ready`/
-            // `start`). Le monde suit le profil `prism` et la
-            // diffusion WebSocket est exposée pour que le plugin reçoive `world_initialized`
-            // et les snapshots. Le port de contrôle (--control-port) sert déjà d'API de
-            // pilotage ; --observe-port ouvre le flux WS à côté, comme en campagne.
-            arguments.Add("--simulation");
-            arguments.Add(WellKnownSimulations.Prism);
+            // le pilote prépare puis démarre via l'API de contrôle (`prepare`/`ready`/
+            // `start`). Aucun scénario n'est imposé : le monde de PRISM est
+            // autoritaire (SYNE en lit la géométrie), et le profil `prism` dédié a été
+            // retiré — le défaut du moteur (profil de référence) s'applique. La
+            // diffusion WebSocket est exposée pour que le client reçoive
+            // `world_initialized` et les snapshots. Le port de contrôle
+            // (--control-port) sert déjà d'API de pilotage ; --observe-port ouvre le
+            // flux WS à côté, comme en campagne.
 
             ResolvedEndpoint observe;
             try

@@ -93,7 +93,7 @@ public sealed class ObservabilityHardeningTests
 
         // Tampon réellement alimenté : sans le vidage, il stagnerait et
         // rejouerait un événement obsolète à la première diffusion.
-        loop.World.PlaceConstruction(new Obstacle("maison-1", new Position(60, 60), radius: 10));
+        ((Simulation.Core.World.World)loop.World).PlaceConstruction(new Obstacle("maison-1", new Position(60, 60), radius: 10));
         Assert.Single(loop.World.LastEnvironmentChanges);
 
         loop.AdvanceOneTick();
@@ -113,7 +113,7 @@ public sealed class ObservabilityHardeningTests
         var sink = new RecordingSink { HasSubscribers = false };
         var emitter = new ObservabilityTickEmitter(loop, 1234, sink, "run-replay");
 
-        loop.World.PlaceConstruction(new Obstacle("maison-fantome", new Position(80, 80), radius: 10));
+        ((Simulation.Core.World.World)loop.World).PlaceConstruction(new Obstacle("maison-fantome", new Position(80, 80), radius: 10));
         loop.AdvanceOneTick();
         await emitter.EmitCurrentTickAsync();
 

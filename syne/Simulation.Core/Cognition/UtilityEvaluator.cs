@@ -174,6 +174,10 @@ public static class UtilityEvaluator
             DesireKind.Trade => Math.Max(needs.Hunger, needs.Thirst) * 0.54,
             // Attack/Defend ne portent aucun besoin en V0.1 (jamais générés —
             // doctrine point 13) : présents au catalogue (D3 temps 1).
+            // SecureFood (SYNE-222) : le bénéfice ne dérive PAS d'un besoin mais du
+            // manque de réserve — l'appelant (pipeline) le fournit en
+            // `benefitOverride` (`InstrumentalDesires.MaxBenefit × manque`).
+            DesireKind.SecureFood => 0.0,
             _ => 0.0,
         };
     }
@@ -186,6 +190,9 @@ public static class UtilityEvaluator
         {
             DesireKind.SeekFood or DesireKind.SeekWater or DesireKind.Flee or DesireKind.Socialize or DesireKind.Explore
                 => actions.MoveEnergyCost,
+            // Sécurité alimentaire (SYNE-222) : c'est un déplacement vers la source
+            // connue, donc le coût de mouvement — comme SeekFood.
+            DesireKind.SecureFood => actions.MoveEnergyCost,
             DesireKind.Eat => actions.Catalog.Entries["eat"].EnergyCost ?? actions.MoveEnergyCost,
             DesireKind.Drink => actions.Catalog.Entries["drink"].EnergyCost ?? actions.MoveEnergyCost,
             DesireKind.Take => actions.Catalog.Entries["take"].EnergyCost ?? actions.MoveEnergyCost,
@@ -203,6 +210,7 @@ public static class UtilityEvaluator
         DesireKind.Flee => 0.30,
         DesireKind.Explore => 0.25,
         DesireKind.SeekFood or DesireKind.SeekWater => 0.15,
+        DesireKind.SecureFood => 0.15,
         DesireKind.Give or DesireKind.Trade => 0.15,
         DesireKind.Socialize => 0.10,
         DesireKind.Eat or DesireKind.Drink => 0.10,
@@ -222,6 +230,8 @@ public static class UtilityEvaluator
         {
             DesireKind.SeekFood or DesireKind.SeekWater or DesireKind.Eat or DesireKind.Drink => 0.5 + factors.Greed,
             DesireKind.Take => 0.5 + factors.Greed,
+            // Constituer une réserve avant la faim : même ressort que Take (avarice).
+            DesireKind.SecureFood => 0.5 + factors.Greed,
             DesireKind.Explore => 0.5 + factors.Curiosity,
             DesireKind.Socialize => 0.5 + factors.Sociability,
             DesireKind.Give => 0.5 + factors.Sociability,
@@ -292,7 +302,8 @@ public static class UtilityEvaluator
         double successRate,
         ulong goalAge,
         ActionSettings actions,
-        double? currentKnowledgeConfidence = null)
+        double? currentKnowledgeConfidence = null,
+        double? currentBenefitOverride = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(factors);
@@ -303,6 +314,9 @@ public static class UtilityEvaluator
             return candidate;
         }
 
+        // Le bénéfice de l'intention courante peut être porté par l'appelant (désir
+        // instrumental : manque de réserve, SYNE-222) — sans quoi elle serait
+        // ré-évaluée à un bénéfice de besoin nul et cèderait pour un écart fictif.
         UtilityScore currentScore = Evaluate(
             current,
             needs,
@@ -311,6 +325,7 @@ public static class UtilityEvaluator
             goalAge,
             actions,
             current,
+            benefitOverride: currentBenefitOverride,
             knowledgeConfidence: currentKnowledgeConfidence);
         if (candidate.Utility < currentScore.Utility + actions.Deliberation.ActionSwitchMargin)
         {

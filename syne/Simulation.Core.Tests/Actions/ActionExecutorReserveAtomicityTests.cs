@@ -175,3 +175,5 @@ public class ActionExecutorReserveAtomicityTests
         Assert.Equal(energyAfterSetup, mind.Needs.Energy, 10);
     }
 }
+
+

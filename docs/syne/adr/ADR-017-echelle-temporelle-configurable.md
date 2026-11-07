@@ -26,7 +26,9 @@ Au défaut, 1 tick = 1 minute simulée — **identique à ADR-005, neutre par
 défaut, checksums dorés inchangés**.
 
 - **Ratio** : `R = ticksPerSecond × simulatedSecondsPerTick` (1 s réelle =
-  R s simulées). Profil `prism` : 6 TPS × 5 s = **R = 30**.
+  R s simulées). Exemple d'échelle fine : 6 TPS × 5 s = **R = 30** (portée
+  jusqu'au 6 novembre 2026 par un profil `prism` dédié, depuis retiré — voir
+  les mises à jour).
 - **Horloge instanciée** : `SimulationClock` (Configuration/SimulationClock.cs)
   remplace la constante statique, exposée par `SimulationLoop.Clock` ;
   `ToSimulatedSeconds(tick) = tick × simulatedSecondsPerTick` (long 64 bits),
@@ -50,9 +52,9 @@ défaut, checksums dorés inchangés**.
 - **Clé informative `world.metersPerUnit`** (double > 0, défaut 1,0) : jamais
   utilisée dans un calcul de moteur, transmise aux clients (PRISM : k = 100 uu
   / unité, 1 unité = 1 m).
-- **Profil `prism`** : `SimulationProfiles.Prism()` +
-  `../../../configs/simulation/prism.json` (profil **complet**) — monde 2 240 × 2 240,
-  cellule 32, 6 TPS, 5 s/tick.
+- **Profil `prism`** *(retiré le 6 novembre 2026, voir les mises à jour)* :
+  `SimulationProfiles.Prism()` + `../../../configs/simulation/prism.json`
+  (profil **complet**) — monde 2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick.
 - **Contrats additifs (MINOR, VERSIONING.md §3)** : contrat d'observabilité
   0.3.0 → **0.4.0** ; description `world_initialized` 1.0 → **1.1**
   (`simulatedSecondsPerTick`, `metersPerUnit`) ; snapshot +
@@ -85,6 +87,10 @@ défaut, checksums dorés inchangés**.
 ---
 
 ## Mises à jour
+
+| Date | Changement | Motif |
+| :-- | :-- | :-- |
+| 6 novembre 2026 | **Profil `prism` retiré** : plus de `SimulationProfiles.Prism()`, de `configs/simulation/prism.json`, ni de scénario `--simulation prism`. L'échelle temporelle reste un levier ordinaire (`simulation.simulatedSecondsPerTick`), exercée par surcouche. | PRISM est autoritaire sur la géométrie du monde (ADR-013) et le mode couplé lit dimensions/obstacles/gisements dans l'instantané : le profil ne portait plus que des vestiges (décor Unreal, cadence SYNE). |
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |

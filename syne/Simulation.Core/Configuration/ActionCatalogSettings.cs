@@ -35,5 +35,10 @@ public sealed class ActionCatalogSettings
         ["trade"] = new ActionEntrySettings { EnergyCost = 0.2 },
         ["attack"] = new ActionEntrySettings { EnergyCost = 0.5 },
         ["defend"] = new ActionEntrySettings(),
+        // Sécurité alimentaire (SYNE-222) : poursuite vers une source de
+        // nourriture connue pour constituer un stock — mouvement, aucun effet de
+        // besoin. Inerte tant que agents.desires.instrumental.enabled est faux
+        // (elle n'est alors jamais générée).
+        ["secureFood"] = new ActionEntrySettings { Movement = true },
     };
 }

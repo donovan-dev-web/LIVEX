@@ -50,7 +50,7 @@ Un fichier de configuration regroupe les paramètres en sections : simulation, a
 
 ## 3. Les profils
 
-Deux profils historiques sont fournis dans SYNE. Le profil de référence reprend les défauts, avec une cadence de 10 ticks par seconde. Le profil `prism` décrit une configuration SYNE de 2 240 par 2 240 unités, cellule de 32, 6 ticks par seconde et 5 secondes simulées par tick. Il sert à la compatibilité et au couplage temporel de SYNE ; il ne définit pas la géométrie du monde PRISM V2, qui utilise son propre pack et son monde 2,5D.
+Deux profils historiques sont fournis dans SYNE. Le profil de référence reprend les défauts, avec une cadence de 10 ticks par seconde. Le profil `prism` décrit une configuration SYNE de 2 240 par 2 240 unités, cellule de 32, 6 ticks par seconde et 5 secondes simulées par tick. Il sert à la compatibilité et au couplage temporel de SYNE ; il ne définit pas la géométrie du monde PRISM V2, qui utilise son propre pack et son monde 2,5D. *(Note du 6 novembre 2026 : ce profil est retiré — PRISM, devenu module du projet, fournit la géométrie et la cadence, et `reference` est le seul profil fourni.)*
 
 Un profil s'applique **sous** la surcouche de configuration : les défauts viennent d'abord, le profil ensuite, la surcouche enfin, les options de ligne de commande en dernier. Ce point a son importance : un profil oublié au moment de la préparation du monde produisait un run sur le seul profil de référence. La correction garantit que la configuration résolue complète est transmise à la préparation.
 

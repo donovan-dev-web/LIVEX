@@ -107,6 +107,32 @@ Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Res
 - Decay par type : Observation 0.01, Événement 0.005, Interaction 0.002.
 - À distinguer des **croyances** (Monographie §3.10.6).
 
+### 5.1 Mémoire spatiale par chunk (SYNE-221, engineVersion 0.17.0)
+
+Une **carte mentale** par région, distincte de la mémoire épisodique ci-dessus :
+un souvenir par chunk, indexé par coordonnées de chunk (celles que PRISM publie
+dans ses résumés de région).
+
+| Champ | Sens |
+| :-- | :-- |
+| `chunkX`, `chunkY` | coordonnées de la région |
+| `tagMask` (u32) | **masque cumulatif** (OU) des types de ressources **exposés** vus dans la région |
+| `confidence` | 0-1, révisée par la formule des croyances (signal 1 pour une observation directe) |
+| `lastSeenTick` | tick de la dernière observation **directe** |
+
+- **Ce que la mémoire dit — et ne dit pas** : « ce chunk contient *au moins* ces
+  tags ». Une ressource épuisée n'est pas désapprise par le masque : c'est la
+  confiance qui décroît, et l'agent doit retourner voir (information locale).
+- **Temps** : la confiance d'un chunk **non observé ce tick-ci** est multipliée
+  par `agents.beliefs.spatialMemory.decayPerTick` (classe A, `^dt`) ; sous
+  `forgetThreshold`, le chunk est oublié.
+- **Capacité** : au-delà de `maxChunksPerAgent`, éviction du chunk le moins cru,
+  puis le plus ancien, puis l'ordre des coordonnées — ordre **total**, donc
+  déterministe, sans tirage.
+- **Persistance** : les chunks sont écrits **additivement** (absents quand la
+  mémoire est vide), donc les empreintes des runs sans résumé de région sont
+  inchangées.
+
 ## 6. Croyances
 
 - Fait : `(subject, predicate, value)`.
@@ -115,6 +141,7 @@ Attributs perçus par type : Entités (AgentId, Énergie, Statut, Heading) ; Res
 - Cycle de vie : création (confiance initiale) → confirmation (alignement +0.2, max 1.0) → conflit (conflicting −0.1, plancher 0.1) → décroissance temporelle → expiration (expiry_tick, confiance plafonnée à 0.4) — Monographie §3.11.
 - **Conflit (J.V0.1, SYNE-014)** : un signal portant sur un **sujet + prédicat** déjà croyu mais avec une **valeur différente** pénalise les croyances concurrentes (−0.1, plancher 0.1) puis crée la nouvelle croyance au signal.
 - Étant donnée la clé `(subject, predicate, value)`, `position` est canoniquement sérialisée « X,Y » invariant à la culture.
+- **Croyance durable** (`Belief.IsDurable`, SYNE-222/224) : une **connaissance acquise** (recette configurée ou lue dans un livre) ne décroît pas et n'expire jamais — c'est la distinction entre un *fait observé* (périssable) et un *savoir*. Sérialisée par un drapeau additif (`durable`, absent quand faux), donc les empreintes des runs sans savoir sont inchangées. Les faits de savoir utilisent des sujets réservés : `recipe-<id>` (`inputs`, `outputs`, `station`), `book:<id>` (source d'apprentissage), `site-<id>` (`state`, `progress`), `structure-<id>` (`shelter`).
 
 ## 7. Besoins
 
@@ -135,6 +162,16 @@ Monographie §3.12, §3.13.1.
 > réserve globale est disponible, l'entité **exécute l'action terminale** Eat/Drink (consomme la
 > réserve, réduit le besoin) ; sinon elle poursuit SeekFood/SeekWater. Ces actions sont
 > ré-évaluées à chaque délibération/holdover tant que le besoin reste déclenché.
+
+> **Désirs instrumentaux — sécurité alimentaire (SYNE-222)** : un agent qui n'est pas encore
+> affamé mais dont la faim **projetée** à `agents.desires.instrumental.anticipateTicks` atteindra
+> son seuil, et dont la réserve de nourriture est sous `reserveTarget`, forme un désir
+> **instrumental** : `SecureFood` (aller vers la source de nourriture **crue**) puis `Take`
+> (primitive d'inventaire) — le moyen précède le besoin, qui reste physiologique et garde la main
+> dès que son seuil est franchi. Le bénéfice vient du manque de réserve, pas de la faim. Sans
+> cible crue, rien n'est proposé : c'est `Explore` qui prospecte. `Eat`/`Drink` peuvent consommer
+> la **réserve portée** quand aucun gisement n'est à portée, sinon le stock ne servirait à rien.
+> Désactivé par défaut (`agents.desires.instrumental.enabled = false`).
 
 ## 8. Contrats de persistence (SQLite Annexe G)
 

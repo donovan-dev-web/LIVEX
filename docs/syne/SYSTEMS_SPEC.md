@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 21 septembre 2026
+**Dernière mise à jour** : 6 novembre 2026
 **Dépend de** : `DATA_MODEL.md`, `COGNITIVE_ARCHITECTURE.md`, `SIMULATION_LOOP.md`
 **Source Monographie** : Partie 3 (SYNE), Partie 6 (concepts détaillés)
 
@@ -21,9 +21,12 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 | **Navigation** | Pathfinding 2D autour des obstacles, cache de chemins ; indépendant des moteurs graphiques ; appui sur Navigation2D = [HÉRITÉ] (V0.1 : SYNE calcule lui-même) | §3.19 |
 | **Scheduler** | Exécution multi-fréquences + LOD décisionnel | §3.4 |
 | **Événements** | Ring buffer borné (500 000 événements) ; émission `ExternalEvent` | §7.4.5 |
+| **Monde externe** (P9, SYNE-220) | `IWorld` + `PrismWorldAdapter` : PRISM est **autoritaire** sur la géométrie et les entités du monde (`world.externalWorld` / `--external-world`) ; `PrismWorldSynchronizer` alimente l'adaptateur depuis l'auto-observation PRISM. Le monde local reste le défaut (étape 3 de l'extraction à faire) | §3.9, `docs/prism/ADR-013` |
+| **Cognition avancée** (P9) | Croyances durables (recettes, chantiers, structures), mémoire spatiale par chunk, planificateur borné, désirs instrumentaux — tous **désactivés par défaut** (§11) | `COGNITIVE_ARCHITECTURE.md`, `DATA_MODEL.md` §5.1/§6 |
 
 ## 3. Monde & Environnement
 
+- **Autorité du monde** (P9, ADR-013 côté PRISM) : SYNE décrit son monde en **blocs** — 1 bloc = 1 m = 1 unité SYNE — et ne possède plus de géométrie propre en mode couplé : quand `world.externalWorld` (ou `--external-world`) est actif, `PrismWorldAdapter` fournit entités, gisements, constructions, description du monde et A*, et les dimensions sont **lues** dans l'instantané PRISM. Le monde local reste le défaut ; sa suppression est l'étape 3 de SYNE-220.
 - Espace 2D logique, dimensions configurables (défaut 500×500).
 - Clamping des positions ; monde non-toroidal.
 - Obstacles statiques (cercle en V0.1, rectangle reporté) : blocage mouvement **et** ligne de vue (perception masquée, ADR-013) — depuis le jalon SYNE ph1.
@@ -60,6 +63,15 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
   `world.season_changed` au basculement (API_CONTRACTS §2.2). Les **sources spatiales** de
   ressources restent **hors V0.1** (reportées — le jalon Saisons livre le cycle + facteurs, pas
   les sources spatiales).
+
+> **Mise à jour du 6 novembre 2026 — le modèle localisé est celui de la référence.** L'arbitrage
+> A0-2 (BL-35) a fait de `resources.localized = true` le modèle par défaut du profil de référence :
+> les gisements sont des **entités spatiales** (`ResourceNode {id, kind, position, amount,
+> capacity, regenerationRate}`), un agent ne prélève qu'un gisement **à portée d'interaction**
+> (`resources.interactionRadius`) et un échec est motivé (« aucun gisement à portée », « gisement
+> épuisé »). Les **réserves globales** (`ResourceStocks`) restent le modèle du mode non localisé et
+> la cible des primitives d'inventaire (`take`, `give`, `trade`). Les phrases ci-dessus décrivent
+> l'état antérieur ; le contrat d'observabilité publie les deux (`resources`, `resourceNodes`).
 
 ## 5. Groupes (Monographie §3.17, §6.7)
 
@@ -98,10 +110,54 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 - `ExternalEvent` émis via WebSocket ; DecisionRecord mémorisé.
 - Exigence anti-triche : l'entité ne voit jamais le monde complet (observabilité partielle).
 
+## 11. Cognition P9 — savoir, mémoire spatiale, planification, désirs (6 novembre 2026)
+
+Quatre ajouts de la phase P9, **tous désactivés par défaut** (trajectoire de référence bit-à-bit
+identique), qui préparent le gate G5 (« agents planifiant à partir de recettes »).
+
+### 11.1 Savoir des recettes (SYNE-222/224)
+
+- Recettes déclarées (`agents.knowledge`) injectées en **croyances durables** `recipe-<id>`
+  (`inputs`, `outputs`, `station`), de source `config` ; un livre peut les transmettre
+  (`recipe:` dans le texte, source `book:<id>`, `agents.knowledge.learnFromBooks`).
+- Une croyance durable ne décroît pas et n'expire jamais : c'est la distinction **fait observé /
+  savoir** (DATA_MODEL §6). Les livres ne font pas apprendre autre chose que des recettes.
+
+### 11.2 Mémoire spatiale par chunk (SYNE-221)
+
+- Un souvenir par région : masque cumulatif des types **exposés**, confiance révisée par la formule
+  des croyances, décroissance et oubli, capacité bornée avec éviction déterministe
+  (DATA_MODEL §5.1, `CONFIGURATION.md` §6.3).
+- Alimentée par les **résumés de région** PRISM (`PrismObservationMapper.ToSpatialChunks`) : c'est
+  la première source de connaissance qui ne vient pas d'une perception directe, et elle reste
+  locale (une région à la fois).
+
+### 11.3 Planificateur intégré (SYNE-223, décision **ADR-019**)
+
+- Chaînage arrière **borné sur règles de décomposition** (HTN léger, pas GOAP — voir
+  [`adr/ADR-019`](adr/ADR-019-planificateur-chainage-arriere-borne.md)) : une intention devient une
+  suite d'étapes avec le **vocabulaire d'actions existant** (poursuite → action terminale), cache à
+  clé `« <intention>@<cible|-> »`, replanification sur étape bloquée seulement, plans transitoires
+  (redérivés après reprise), aucun tirage PRNG.
+- Désactivé par défaut (`agents.planner.enabled`) ; la neutralité est mesurée (même trajectoire
+  avec et sans planificateur).
+
+### 11.4 Désirs instrumentaux et sécurité alimentaire (SYNE-222)
+
+- `SecureFood` : l'agent dont la faim **projetée** atteindra son seuil à l'horizon d'anticipation, et
+  dont la réserve est sous le niveau visé, vise un **stock** — poursuite vers la source de nourriture
+  **crue**, puis `take` ; consommer reste `eat`. Le désir s'efface dès que la faim franchit son seuil
+  et n'existe que si l'agent **sait** où trouver de la nourriture.
+- Le stock devient utilisable : `eat`/`drink` consomment la réserve portée hors de portée d'un
+  gisement. Désactivé par défaut et **refusé sans inventaire** (`agents.actions.inventory.enabled`).
+
 ---
 
 ## Points restés ouverts dans ce document
 - Détails chiffrés de résolution des conflits (probabilités, dégâts) — à documentation quand elle sera tranchée.
+- **P9, étape 3 de SYNE-220** : suppression du monde local de `Simulation.Core` (l'adaptateur `PrismWorldAdapter` n'est encore qu'une bascule) ; c'est elle qui débloque le retrait des tables du monde en persistance (SYNE-225) et le gate G5.
+- **P9, planificateur** : enrichissement des règles de décomposition (plans de recettes, préconditions de station) et couverture de bout en bout du chemin `Blocked` — décision et conditions de réouverture dans ADR-019.
+- **Calibrage** : poids relatif du désir instrumental et de `socialize` (SYNE-227, phase P12) ; les mécanismes sont livrés, les valeurs ne sont pas calibrées.
 - Modèle d'héritage (fusion consentie) : logique cognitive exacte à détailler.
 - Coûts des livres (décisions n°18/19) : modèles économiques — **[tranchés] au niveau hérité/prototype** (coûts héritables, budgets par fusion §6.6.3).
 - Cycle des saisons : **livré** (SYNE-072, jalon U8, engineVersion 0.9.0 — fonction pure du tick, `world.seasons`, événement `world.season_changed`) mais **désactivé par défaut** en V0.1 (`world.seasons.enabled: false`, scénario de référence intact). Les événements globaux du monde (type sécheresse/épidémie) restent une mécanique V2. *(réaligné le 30/09/2026 — ce point indiquait auparavant « non activée en V0.1 » sans distinguer le livré du défaut)*

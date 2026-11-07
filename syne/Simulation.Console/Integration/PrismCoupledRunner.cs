@@ -23,13 +23,23 @@ public sealed class PrismCoupledRunner
     private readonly Action<ulong, IReadOnlyList<Observation>, long>? _onObservations;
     private readonly Func<string, long, CancellationToken, Task>? _saveCheckpointAsync;
     private readonly Func<string, long, CancellationToken, Task>? _restoreCheckpointAsync;
+    private readonly Action<ObservationEnvelope, long>? _onEnvelope;
+    private readonly Action<TickResult>? _onTickResult;
+    private readonly PrismResourceSites? _resourceSites;
+    private readonly PrismItemCatalog? _itemCatalog;
+    private readonly Action<ulong, string, string, string, long>? _onCommandFailed;
 
     public PrismCoupledRunner(
         Func<TickRequest, CancellationToken, Task<TickResult>> stepAsync,
         Func<long, IReadOnlyList<ObservationEnvelope>, IReadOnlyList<CommandEnvelope>>? decide = null,
         Action<ulong, IReadOnlyList<Observation>, long>? onObservations = null,
         Func<string, long, CancellationToken, Task>? saveCheckpointAsync = null,
-        Func<string, long, CancellationToken, Task>? restoreCheckpointAsync = null)
+        Func<string, long, CancellationToken, Task>? restoreCheckpointAsync = null,
+        Action<ObservationEnvelope, long>? onEnvelope = null,
+        PrismResourceSites? resourceSites = null,
+        Action<TickResult>? onTickResult = null,
+        PrismItemCatalog? itemCatalog = null,
+        Action<ulong, string, string, string, long>? onCommandFailed = null)
     {
         ArgumentNullException.ThrowIfNull(stepAsync);
         _stepAsync = stepAsync;
@@ -37,6 +47,11 @@ public sealed class PrismCoupledRunner
         _onObservations = onObservations;
         _saveCheckpointAsync = saveCheckpointAsync;
         _restoreCheckpointAsync = restoreCheckpointAsync;
+        _onEnvelope = onEnvelope;
+        _resourceSites = resourceSites;
+        _onTickResult = onTickResult;
+        _itemCatalog = itemCatalog;
+        _onCommandFailed = onCommandFailed;
     }
 
     public async Task<PrismCoupledRunResult> RunAsync(
@@ -99,15 +114,32 @@ public sealed class PrismCoupledRunner
                 return result;
             }
 
+            // Trace des issues de commandes (`action_completed` / `action_failed`) :
+            // sans elle, une commande refusée par PRISM est invisible côté SYNE.
+            _onTickResult?.Invoke(tickResult);
+
+            // Un refus est **attribué** à la consigne envoyée (agent, nature,
+            // payload) : c'est ce qui permet au write-back de cesser de redemander
+            // une cible que PRISM vient de déclarer inatteignable. Sans cette
+            // attribution, l'événement ne porte qu'un `commandId` que SYNE jette.
+            if (_onCommandFailed is not null)
+            {
+                AttributeFailures(commands, tickResult, tick);
+            }
+
             foreach (var envelope in tickResult.Observations)
             {
+                // Le monde externe est mis à jour avant la cognition : la boucle
+                // couplée lit ainsi l'état du tick qu'elle vient de recevoir.
+                _onEnvelope?.Invoke(envelope, tick);
+
                 var prismObservation = new PrismAgentObservation(
                     envelope.ProtocolVersion,
                     envelope.Tick,
                     envelope.AgentId,
                     envelope.Changes,
                     envelope.Self);
-                var mapped = PrismObservationMapper.ToObservations(prismObservation);
+                var mapped = PrismObservationMapper.ToObservations(prismObservation, _resourceSites, _itemCatalog);
                 _onObservations?.Invoke(envelope.AgentId, mapped, tick);
             }
 
@@ -129,6 +161,51 @@ public sealed class PrismCoupledRunner
         }
 
         return result;
+    }
+
+    private void AttributeFailures(
+        IReadOnlyList<CommandEnvelope> commands,
+        TickResult tickResult,
+        long tick)
+    {
+        Dictionary<string, CommandEnvelope> byCommandId = new(StringComparer.Ordinal);
+        foreach (CommandEnvelope command in commands)
+        {
+            byCommandId[command.CommandId] = command;
+        }
+
+        if (byCommandId.Count == 0 || tickResult.Events.Count == 0)
+        {
+            return;
+        }
+
+        foreach (EventEnvelope entry in tickResult.Events)
+        {
+            if (!StringComparer.Ordinal.Equals(entry.Kind, "action_failed") ||
+                entry.Payload.ValueKind != System.Text.Json.JsonValueKind.Object ||
+                !entry.Payload.TryGetProperty("commandId", out System.Text.Json.JsonElement idElement) ||
+                idElement.ValueKind != System.Text.Json.JsonValueKind.String)
+            {
+                continue;
+            }
+
+            string? commandId = idElement.GetString();
+            if (commandId is null || !byCommandId.TryGetValue(commandId, out CommandEnvelope? command))
+            {
+                continue;
+            }
+
+            string reason = entry.Payload.TryGetProperty("reason", out System.Text.Json.JsonElement reasonElement) &&
+                            reasonElement.ValueKind == System.Text.Json.JsonValueKind.String
+                ? reasonElement.GetString()!
+                : string.Empty;
+            _onCommandFailed!(
+                command.AgentId,
+                command.Kind,
+                command.Payload.GetRawText(),
+                reason,
+                tick);
+        }
     }
 }
 

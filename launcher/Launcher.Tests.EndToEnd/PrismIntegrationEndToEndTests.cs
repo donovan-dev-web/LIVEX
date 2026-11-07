@@ -160,7 +160,7 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
     }
 
     [Fact]
-    public async Task Demarrage_pilote_passe_au_profil_prism_et_expose_l_observation()
+    public async Task Demarrage_pilote_n_impose_aucun_scenario_et_expose_l_observation()
     {
         using var composition = new Launcher.App.Composition.LauncherComposition(
             Path.Combine(_root, "packages"), _componentsParent, _dataRoot);
@@ -181,8 +181,9 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
         var instance = composition.Orchestration.Registry.FindByComponent("syne");
         Assert.NotNull(instance);
 
-        // Le profil prism (et non reference) a été transmis au moteur : la posture pilote
-        // le monde. Le stub écrit launch.json à son démarrage ; on attend le fichier.
+        // Aucun scénario n'est imposé : le monde appartient au pilote (PRISM en lit la
+        // géométrie), donc le moteur applique son défaut — `reference` ici, valeur par
+        // défaut du stub. Le stub écrit launch.json à son démarrage ; on attend le fichier.
         var launchPath = Path.Combine(_dataRoot, "workspace", "sessions", instance!.InstanceId, "launch.json");
         string? simulation = null;
         for (var attempt = 0; attempt < 100 && simulation is null; attempt++)
@@ -198,7 +199,7 @@ public sealed class PrismPilotedPostureEndToEndTests : IDisposable
             }
         }
 
-        Assert.Equal(WellKnownSimulations.Prism, simulation);
+        Assert.Equal(WellKnownSimulations.Reference, simulation);
 
         // Fin de vie : sans horizon imposé, le stub boucle dix ticks puis sort seul ; un arrêt
         // explicite l'est donc parfois déjà. Les deux issues sont normales. On attend que le

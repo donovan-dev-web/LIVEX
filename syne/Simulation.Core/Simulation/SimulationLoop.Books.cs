@@ -83,6 +83,11 @@ public sealed partial class SimulationLoop
 
         double benefit = _options.World.Books.ReadBenefit;
         book.MarkReadBy(readerId);
+
+        // SYNE-224 : le livre transmet les recettes qu'il déclare. La lecture reste
+        // déterministe (aucun tirage) et n'ajoute que des croyances durables.
+        Cognition.LearnFromBook(book, readerId, CurrentTick);
+
         _bookChanges.Add(new Simulation.Core.World.BookChange(
             Simulation.Core.World.BookChangeKind.Read, book, benefit, readerId));
     }

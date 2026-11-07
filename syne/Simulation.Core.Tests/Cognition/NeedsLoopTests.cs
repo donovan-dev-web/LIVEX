@@ -41,9 +41,7 @@ public class NeedsLoopTests
         var entity = new Entity(new EntityId(1), "Entité A", name: null, new Position(250, 250), TraitSet.NeutralAll, bornAt: 0);
         world.AddEntity(entity);
         var mind = new MindState(Options);
-        var executor = new ActionExecutor(
-            world,
-            new ActionCatalog(Options.Agents.Actions),
+        var executor = new ActionExecutor(world, new ActionCatalog(Options.Agents.Actions),
             new ResourceStocks(Options.Resources),
             Options);
         return (world, entity, mind, executor);
@@ -217,3 +215,5 @@ public class NeedsLoopTests
             $"Social ne doit jamais saturer (mesuré : max = {maxSocial}).");
     }
 }
+
+

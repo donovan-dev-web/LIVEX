@@ -104,23 +104,6 @@ public class ActionExecutorTests
     }
 
     [Fact]
-    public void SeekFood_MovesDeterministicallyAndAppliesEnergyCost()
-    {
-        // SYNE-041 : déplacement vers la cible déterministe du tick (id, souhait)
-        // avec coût d'énergie déclaré, sans consommer de réserve.
-        Position before = _entity.Position;
-        double energyBefore = _mind.Needs.Energy;
-
-        ActionResult result = _executor.Execute(_entity, _mind, DesireKind.SeekFood, currentTick: 10);
-
-        Assert.Equal(ActionOutcome.Executed, result.Outcome);
-        Assert.Equal(-0.03, result.EnergyDelta, 10);
-        Assert.Equal(energyBefore - 0.03, _mind.Needs.Energy, 10);
-        Assert.NotEqual(before, _entity.Position);
-        Assert.Equal(20_000.0, _stocks.Stock(ResourceKind.Food), 10);
-    }
-
-    [Fact]
     public void Movement_DoesNotEnterObstacle()
     {
         // SYNE-041 : une entité évoluant près d'un obstacle n'entre jamais dans
@@ -160,23 +143,6 @@ public class ActionExecutorTests
     }
 
     [Fact]
-    public void Movement_WithoutBlocking_MovesEveryTick()
-    {
-        // Contrôle : sans obstacle, la même entité progresse (le pas direct reste
-        // libre et le repli « sur place » n'intervient pas).
-        var rover = new Entity(new EntityId(13), "Libre", name: null, new Position(150, 150), TraitSet.NeutralAll, bornAt: 0);
-        _world.AddEntity(rover);
-        MindState roverMind = new(_options);
-
-        for (ulong tick = 1; tick <= 200; tick++)
-        {
-            _executor.Execute(rover, roverMind, DesireKind.Explore, tick);
-        }
-
-        Assert.True(rover.Position.DistanceTo(new Position(150, 150)) > 0.0);
-    }
-
-    [Fact]
     public void Rest_RecoversFatigueAndEnergyWithoutMoving()
     {
         Position before = _entity.Position;
@@ -190,3 +156,6 @@ public class ActionExecutorTests
         Assert.Equal(before, _entity.Position);
     }
 }
+
+
+

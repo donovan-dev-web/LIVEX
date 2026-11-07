@@ -4,7 +4,7 @@
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
 // Rôle : Tests « échelle temporelle configurable » : neutralité par défaut — à dt = 1, aucune valeur ne bouge ; par
-//        quantité de classe A, l'état après 12 ticks à dt = 1/12 (5 s simulées/tick, profil prism) est équivalent à
+//        quantité de classe A, l'état après 12 ticks à dt = 1/12 (5 s simulées/tick) est équivalent à
 //        1 tick à dt = 1 ; contrats additifs (horloge, snapshot, world_initialized) ; validation de
 //        simulatedSecondsPerTick et metersPerUnit.
 
@@ -27,7 +27,7 @@ namespace Simulation.Core.Tests.Configuration;
 /// <list type="number">
 /// <item>neutralité par défaut — à <c>dt = 1</c>, aucune valeur ne bouge ;</item>
 /// <item>par quantité de classe A, l'état après 12 ticks à
-/// <c>dt = 1/12</c> (5 s simulées/tick, profil <c>prism</c>) est équivalent à
+/// <c>dt = 1/12</c> (5 s simulées/tick) est équivalent à
 /// 1 tick à <c>dt = 1</c> ;</item>
 /// <item>contrats additifs (horloge, snapshot, <c>world_initialized</c>) ;</item>
 /// <item>validation de <c>simulatedSecondsPerTick</c> et <c>metersPerUnit</c>.</item>
@@ -35,8 +35,21 @@ namespace Simulation.Core.Tests.Configuration;
 /// </summary>
 public sealed class Adr017TemporalScaleTests
 {
-    /// <summary>Profil prism : 5 s simulées par tick = 1/12 minute simulée.</summary>
-    private const double PrismDt = 5.0 / 60.0;
+    /// <summary>Échelle non standard : 5 s simulées par tick = 1/12 minute simulée.</summary>
+    private const double FiveSecondsDt = 5.0 / 60.0;
+
+    /// <summary>
+    /// Échelle fine (5 s simulées par tick, 6 TPS) déclarée par surcouche sur le
+    /// profil de référence : l'échelle temporelle est un levier de configuration
+    /// ordinaire (ADR-017), pas un scénario dédié.
+    /// </summary>
+    private static SimulationOptions FineScaleOptions()
+    {
+        SimulationOptions options = SimulationProfiles.Reference();
+        options.Simulation.TicksPerSecond = 6;
+        options.Simulation.SimulatedSecondsPerTick = 5;
+        return options;
+    }
 
     // ---------------------------------------------------------------------
     //  — neutralité par défaut (pin contractuel)
@@ -78,31 +91,31 @@ public sealed class Adr017TemporalScaleTests
     // ---------------------------------------------------------------------
 
     [Fact]
-    public void NeedsRates_AtPrismScale_AccumulateLikeOneReferenceTick()
+    public void NeedsRates_AtAFinerScale_AccumulateLikeOneReferenceTick()
     {
         var raw = new NeedsSettings();
-        NeedsSettings scaled = TemporalScale.ScaleNeeds(raw, PrismDt);
+        NeedsSettings scaled = TemporalScale.ScaleNeeds(raw, FiveSecondsDt);
 
         var reference = BodyNeeds.FromState(hunger: 10, thirst: 20, fatigue: 30);
-        var prism = BodyNeeds.FromState(hunger: 10, thirst: 20, fatigue: 30);
+        var fine = BodyNeeds.FromState(hunger: 10, thirst: 20, fatigue: 30);
 
         reference.Advance(raw);
         for (int i = 0; i < 12; i++)
         {
-            prism.Advance(scaled);
+            fine.Advance(scaled);
         }
 
-        Assert.Equal(reference.Hunger, prism.Hunger, 10);
-        Assert.Equal(reference.Thirst, prism.Thirst, 10);
-        Assert.Equal(reference.Fatigue, prism.Fatigue, 10);
+        Assert.Equal(reference.Hunger, fine.Hunger, 10);
+        Assert.Equal(reference.Thirst, fine.Thirst, 10);
+        Assert.Equal(reference.Fatigue, fine.Fatigue, 10);
     }
 
     [Fact]
-    public void HungerTrigger_IsCrossedAroundTwelveHundredPrismTicks()
+    public void HungerTrigger_IsCrossedAroundTwelveHundredFineScaleTicks()
     {
         // Critère d'acceptation n°4 : seuil 50 franchi à ≈ 1 200 ticks
         // (0,5/min ÷ 12 = 0,0417/tick → 50 au tick 1 200).
-        NeedsSettings scaled = TemporalScale.ScaleNeeds(new NeedsSettings(), PrismDt);
+        NeedsSettings scaled = TemporalScale.ScaleNeeds(new NeedsSettings(), FiveSecondsDt);
         var needs = BodyNeeds.FromState();
 
         int crossedAt = 0;
@@ -124,49 +137,49 @@ public sealed class Adr017TemporalScaleTests
     }
 
     [Fact]
-    public void MemoryDecay_AtPrismScale_KeepsTheSameSalienceAfterOneSimulatedMinute()
+    public void MemoryDecay_AtAFinerScale_KeepsTheSameSalienceAfterOneSimulatedMinute()
     {
-        MemorySettings scaled = TemporalScale.ScaleMemory(new MemorySettings(), PrismDt);
+        MemorySettings scaled = TemporalScale.ScaleMemory(new MemorySettings(), FiveSecondsDt);
         var referenceMemory = new Memory(new MemorySettings());
-        var prismMemory = new Memory(scaled);
+        var fineMemory = new Memory(scaled);
         referenceMemory.Store(MemoryCategory.Observation, "entity-1", "c", 0.9, storedAt: 0);
-        prismMemory.Store(MemoryCategory.Observation, "entity-1", "c", 0.9, storedAt: 0);
+        fineMemory.Store(MemoryCategory.Observation, "entity-1", "c", 0.9, storedAt: 0);
 
         double reference = referenceMemory.SalienceOf(referenceMemory.AllEntries[0], currentTick: 1);
-        double prism = prismMemory.SalienceOf(prismMemory.AllEntries[0], currentTick: 12);
+        double fine = fineMemory.SalienceOf(fineMemory.AllEntries[0], currentTick: 12);
 
-        Assert.Equal(reference, prism, 12);
+        Assert.Equal(reference, fine, 12);
     }
 
     [Fact]
-    public void BeliefDecay_AtPrismScale_MultipliesLikeOneReferenceTick()
+    public void BeliefDecay_AtAFinerScale_MultipliesLikeOneReferenceTick()
     {
         var raw = new BeliefSettings { TimeDecayPerTick = 0.9 };
-        BeliefSettings scaled = TemporalScale.ScaleBeliefs(raw, PrismDt);
+        BeliefSettings scaled = TemporalScale.ScaleBeliefs(raw, FiveSecondsDt);
         var fact = new Fact("entity-2", "alive", "true");
 
         var referenceSet = new BeliefSet();
         referenceSet.ApplyEvidence(fact, signal: 0.8, source: "p1", raw, tick: 0);
         referenceSet.Tick(currentTick: 1, raw);
 
-        var prismSet = new BeliefSet();
-        prismSet.ApplyEvidence(fact, signal: 0.8, source: "p1", scaled, tick: 0);
+        var fineSet = new BeliefSet();
+        fineSet.ApplyEvidence(fact, signal: 0.8, source: "p1", scaled, tick: 0);
         for (ulong tick = 1; tick <= 12; tick++)
         {
-            prismSet.Tick(currentTick: tick, scaled);
+            fineSet.Tick(currentTick: tick, scaled);
         }
 
         Assert.True(referenceSet.TryGet(fact, out Belief? reference));
-        Assert.True(prismSet.TryGet(fact, out Belief? prism));
-        Assert.Equal(reference!.Confidence, prism!.Confidence, 12);
+        Assert.True(fineSet.TryGet(fact, out Belief? fine));
+        Assert.Equal(reference!.Confidence, fine!.Confidence, 12);
     }
 
     [Fact]
-    public void BeliefExpiry_AtPrismScale_IsExpressedInSimulatedMinutes()
+    public void BeliefExpiry_AtAFinerScale_IsExpressedInSimulatedMinutes()
     {
         // expiryTicks 100 (minutes simulées) : 100 ticks à dt = 1,
         // 1 200 ticks à dt = 1/12 — même durée de validité simulée.
-        BeliefSettings scaled = TemporalScale.ScaleBeliefs(new BeliefSettings(), PrismDt);
+        BeliefSettings scaled = TemporalScale.ScaleBeliefs(new BeliefSettings(), FiveSecondsDt);
 
         Assert.Equal(1_200UL, scaled.ExpiryTicks);
 
@@ -181,66 +194,66 @@ public sealed class Adr017TemporalScaleTests
     }
 
     [Fact]
-    public void TrustDecay_AtPrismScale_MultipliesLikeOneReferenceTick()
+    public void TrustDecay_AtAFinerScale_MultipliesLikeOneReferenceTick()
     {
         var raw = new TrustSettings { DecayFactorPerTick = 0.9 };
-        TrustSettings scaled = TemporalScale.ScaleTrust(raw, PrismDt);
+        TrustSettings scaled = TemporalScale.ScaleTrust(raw, FiveSecondsDt);
 
         var reference = new Relationships(raw);
-        var prism = new Relationships(scaled);
+        var fine = new Relationships(scaled);
         reference.Reward(7UL, 0.5);
-        prism.Reward(7UL, 0.5);
+        fine.Reward(7UL, 0.5);
         reference.Tick(); // purge le marqueur « interagi » du cycle d'amorçage
-        prism.Tick();
+        fine.Tick();
 
         reference.Tick(); // 1 minute simulée à dt = 1
         for (int i = 0; i < 12; i++)
         {
-            prism.Tick(); // 12 ticks × 5 s = 1 minute simulée à dt = 1/12
+            fine.Tick(); // 12 ticks × 5 s = 1 minute simulée à dt = 1/12
         }
 
-        Assert.Equal(reference.TrustWith(7UL), prism.TrustWith(7UL), 12);
+        Assert.Equal(reference.TrustWith(7UL), fine.TrustWith(7UL), 12);
     }
 
     [Fact]
-    public void ResourceLifecycle_AtPrismScale_RegeneratesTheSameAmountPerSimulatedMinute()
+    public void ResourceLifecycle_AtAFinerScale_RegeneratesTheSameAmountPerSimulatedMinute()
     {
         var raw = new ResourceSettings();
-        ResourceSettings scaled = TemporalScale.ScaleResources(raw, PrismDt);
+        ResourceSettings scaled = TemporalScale.ScaleResources(raw, FiveSecondsDt);
 
         Assert.Equal(raw.Food.RegenerationRate / 12.0, scaled.Food.RegenerationRate, 12);
         Assert.Null(scaled.Food.DegradationTick);
 
         var reference = new ResourceStocks(raw);
-        var prism = new ResourceStocks(scaled);
+        var fine = new ResourceStocks(scaled);
         reference.ApplyLifecycle(1, raw); // 1 tick = 1 minute simulée à dt = 1
         for (ulong tick = 1; tick <= 12; tick++)
         {
-            prism.ApplyLifecycle(tick, scaled); // 12 ticks × 5 s = 1 minute simulée
+            fine.ApplyLifecycle(tick, scaled); // 12 ticks × 5 s = 1 minute simulée
         }
 
-        Assert.Equal(reference.Stock(ResourceKind.Food), prism.Stock(ResourceKind.Food), 9);
-        Assert.Equal(reference.Stock(ResourceKind.Water), prism.Stock(ResourceKind.Water), 9);
+        Assert.Equal(reference.Stock(ResourceKind.Food), fine.Stock(ResourceKind.Food), 9);
+        Assert.Equal(reference.Stock(ResourceKind.Water), fine.Stock(ResourceKind.Water), 9);
     }
 
     [Fact]
-    public void DegradationPeriod_AtPrismScale_IsExpressedInSimulatedMinutes()
+    public void DegradationPeriod_AtAFinerScale_IsExpressedInSimulatedMinutes()
     {
         var raw = new ResourceSettings();
         raw.Wood.DegradationTick = 12;
-        ResourceSettings scaled = TemporalScale.ScaleResources(raw, PrismDt);
+        ResourceSettings scaled = TemporalScale.ScaleResources(raw, FiveSecondsDt);
 
         // Période de 12 minutes simulées : 12 ticks à dt = 1, 144 à dt = 1/12.
         Assert.Equal(144, scaled.Wood.DegradationTick);
     }
 
     [Fact]
-    public void SeasonLength_AtPrismScale_ChangesEveryFourThousandThreeHundredTwentyTicks()
+    public void SeasonLength_AtAFinerScale_ChangesEveryFourThousandThreeHundredTwentyTicks()
     {
         // Critère d'acceptation n°6 : saison de 360 minutes simulées
         // → 4 320 ticks à 5 s/tick (360 / (1/12)).
         var raw = new SeasonSettings { Enabled = true };
-        SeasonSettings scaled = TemporalScale.ScaleSeasons(raw, PrismDt);
+        SeasonSettings scaled = TemporalScale.ScaleSeasons(raw, FiveSecondsDt);
 
         Assert.Equal(4_320, scaled.SeasonLengthTicks);
         Assert.Equal(raw.At(359), scaled.At(4_319));
@@ -249,10 +262,10 @@ public sealed class Adr017TemporalScaleTests
     }
 
     [Fact]
-    public void ActionEnergyTemporalValues_AtPrismScale_PayPerEffectiveTick()
+    public void ActionEnergyTemporalValues_AtAFinerScale_PayPerEffectiveTick()
     {
         var raw = new ActionSettings();
-        ActionSettings scaled = TemporalScale.ScaleActions(raw, PrismDt);
+        ActionSettings scaled = TemporalScale.ScaleActions(raw, FiveSecondsDt);
 
         Assert.Equal(raw.MoveEnergyCost / 12.0, scaled.MoveEnergyCost, 12);
         Assert.Equal(raw.RestEnergyGain / 12.0, scaled.RestEnergyGain, 12);
@@ -324,15 +337,15 @@ public sealed class Adr017TemporalScaleTests
     }
 
     // ---------------------------------------------------------------------
-    //  — horloge, profil prism et contrats additifs
+    //  — horloge, profil fine et contrats additifs
     // ---------------------------------------------------------------------
 
     [Fact]
-    public void PrismClock_ReachesEightySixThousandFourHundredSecondsAtTick17280()
+    public void FineClock_ReachesEightySixThousandFourHundredSecondsAtTick17280()
     {
         // Critère d'acceptation n°5 : simulatedTimeSeconds == 86 400 au
         // tick 17 280 (journée complète à R = 30).
-        SimulationClock clock = SimulationClock.From(SimulationProfiles.Prism().Simulation);
+        SimulationClock clock = SimulationClock.From(FineScaleOptions().Simulation);
 
         Assert.Equal(5, clock.SimulatedSecondsPerTick);
         Assert.Equal(30.0, clock.RealTimeRatio(6));
@@ -341,36 +354,32 @@ public sealed class Adr017TemporalScaleTests
     }
 
     [Fact]
-    public void PrismProfile_IsCompleteValidAndNeutralForTheEngine()
+    public void FineScaleOverlay_ReplaysExactlyTheScaledOptions()
     {
-        SimulationOptions prism = SimulationProfiles.Prism();
+        // L'échelle temporelle n'a plus de profil dédié : elle se déclare par
+        // surcouche, avec la sémantique de fusion usuelle, et reste valide.
+        const string overlay = """{ "simulation": { "ticksPerSecond": 6, "simulatedSecondsPerTick": 5 } }""";
+        SimulationOptions replayed = ConfigLoader.MergeJson(ConfigLoader.LoadDefaults(), overlay);
 
-        Assert.Equal(2240, prism.Simulation.WorldWidth);
-        Assert.Equal(2240, prism.Simulation.WorldHeight);
-        Assert.Equal(32, prism.Simulation.WorldCellSize);
-        Assert.Equal(6, prism.Simulation.TicksPerSecond);
-        Assert.Equal(5, prism.Simulation.SimulatedSecondsPerTick);
-        Assert.Equal(1.0, prism.World.MetersPerUnit);
-        Assert.Empty(SimulationOptionsValidator.Validate(prism));
-
-        // Le profil est complet : rejoué comme surcouche sur les défauts, il
-        // redonne exactement le même objet.
-        SimulationOptions replayed = ConfigLoader.MergeJson(ConfigLoader.LoadDefaults(), SimulationProfiles.PrismJson());
         Assert.Equal(5, replayed.Simulation.SimulatedSecondsPerTick);
-        Assert.Equal(2240, replayed.Simulation.WorldWidth);
         Assert.Equal(6, replayed.Simulation.TicksPerSecond);
+        Assert.Equal(500, replayed.Simulation.WorldWidth);
+        Assert.Equal(1.0, replayed.World.MetersPerUnit);
+        Assert.Empty(SimulationOptionsValidator.Validate(replayed));
     }
 
     [Fact]
-    public void PrismRun_ExposesCoherentSimulatedTimeOnTheSnapshot()
+    public void FineScaleRun_ExposesCoherentSimulatedTimeOnTheSnapshot()
     {
         // Critères d'acceptation n°5 et n°6 sur le run réel : secondes au
         // tick 17 280, minutes en plancher entier (contrat ECHOS) et saisons
         // tous les 4 320 ticks.
-        SimulationOptions options = SimulationProfiles.Prism();
+        SimulationOptions options = FineScaleOptions();
         options.World.Seasons.Enabled = true;
         options.Agents.InitialCount = 0;
-        var world = new WorldType(new WorldSize(2240, 2240), options.Agents.Perception.SpatialCellSize);
+        var world = new WorldType(
+            new WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
+            options.Agents.Perception.SpatialCellSize);
         var loop = new SimulationLoop(world, Xoshiro256StarStar.Create(12_345), options);
 
         loop.Run(17_280);
@@ -390,10 +399,12 @@ public sealed class Adr017TemporalScaleTests
     {
         // Contrat 0.4.0 : la description du monde porte
         // simulatedSecondsPerTick et metersPerUnit (version 1.0 → 1.1), et le
-        // monde prism est bien découpé en 70 × 70 cases de 32 (4 900 cases).
-        SimulationOptions options = SimulationProfiles.Prism();
+        // découpage en cases suit la taille de case configurée.
+        SimulationOptions options = FineScaleOptions();
         options.Agents.InitialCount = 0;
-        var world = new WorldType(new WorldSize(2240, 2240), options.Agents.Perception.SpatialCellSize);
+        var world = new WorldType(
+            new WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
+            options.Agents.Perception.SpatialCellSize);
 
         Simulation.Core.World.WorldDescription description = WorldDescriptionBuilder.Build(
             world,
@@ -406,9 +417,9 @@ public sealed class Adr017TemporalScaleTests
         Assert.Equal("1.1", description.Version);
         Assert.Equal(5, description.SimulatedSecondsPerTick);
         Assert.Equal(1.0, description.MetersPerUnit);
-        Assert.Equal(70, description.CellCountX);
-        Assert.Equal(70, description.CellCountY);
-        Assert.Equal(4_900, description.Cells.Count);
+        Assert.Equal(50, description.CellCountX);
+        Assert.Equal(50, description.CellCountY);
+        Assert.Equal(2_500, description.Cells.Count);
     }
 
     [Fact]

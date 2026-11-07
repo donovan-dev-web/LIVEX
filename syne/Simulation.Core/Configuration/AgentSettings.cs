@@ -36,4 +36,13 @@ public sealed class AgentSettings
 
     /// <summary>Cheminement (SYNE-077) : A* déterministe sur grille rasterisée + cache LRU.</summary>
     public PathfindingSettings Pathfinding { get; set; } = new();
+
+    /// <summary>Recettes connues des agents (SYNE-222, source simple) — désactivé par défaut.</summary>
+    public KnowledgeSettings Knowledge { get; set; } = new();
+
+    /// <summary>Planificateur intégré, cache et replanification (SYNE-223) — désactivé par défaut.</summary>
+    public PlannerSettings Planner { get; set; } = new();
+
+    /// <summary>Désirs instrumentaux et sécurité alimentaire (SYNE-222) — désactivé par défaut.</summary>
+    public DesireSettings Desires { get; set; } = new();
 }

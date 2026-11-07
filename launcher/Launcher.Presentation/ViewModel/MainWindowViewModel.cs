@@ -448,8 +448,9 @@ public sealed class MainWindowViewModel : ObservableObject
         && long.TryParse(BaseSeedInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
         && SelectedTicksPerSecond is > 0 and <= 100_000;
 
-    // Scénarios SYNE acceptés (WellKnownSimulations) — `prism` est additif
-    // le défaut reste `reference`, aucun chemin existant ne change.
+    // Scénarios SYNE acceptés (WellKnownSimulations) : un seul, `reference`. Le
+    // profil `prism` a été retiré — PRISM fournit la géométrie et les obstacles
+    // de son monde, un scénario dédié n'avait plus de contenu propre.
     private bool IsSupportedSimulation => WellKnownSimulations.IsKnown(SimulationId.Trim());
 
     /// <summary>Commande de démarrage du moteur en mode PRISM (posture pilotée).</summary>
@@ -937,7 +938,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         if (resumePackagePath is null && !IsSupportedSimulation)
         {
-            CampaignStatus = $"Scénario non pris en charge : SYNE accepte « {WellKnownSimulations.Reference} » et « {WellKnownSimulations.Prism} ».";
+            CampaignStatus = $"Scénario non pris en charge : SYNE accepte « {WellKnownSimulations.Reference} ».";
             return;
         }
 

@@ -77,7 +77,9 @@ public class ObservabilityConstructionTests
         Assert.Empty(loop.World.LastEnvironmentChanges);
         ulong revisionBefore = loop.World.ObstacleRevision;
 
-        loop.World.PlaceConstruction(new Obstacle("maison-1", new Position(60, 60), radius: 10));
+        // Les constructions sont une mutation du monde local (le monde externe
+        // PRISM les publie par son propre flux, SYNE-220 étape 2).
+        ((Simulation.Core.World.World)loop.World).PlaceConstruction(new Obstacle("maison-1", new Position(60, 60), radius: 10));
         Assert.Single(loop.World.LastEnvironmentChanges);
         Assert.True(loop.World.ObstacleRevision > revisionBefore);
 
@@ -113,7 +115,7 @@ public class ObservabilityConstructionTests
         Assert.Equal("added", (string?)snapshot["worldChanges"]![0]!["kind"]);
         Assert.Equal("maison-1", (string?)snapshot["worldChanges"]![0]!["id"]);
 
-        loop.World.RemoveConstruction("maison-1");
+        ((Simulation.Core.World.World)loop.World).RemoveConstruction("maison-1");
         loop.AdvanceOneTick();
         await emitter.EmitCurrentTickAsync();
 

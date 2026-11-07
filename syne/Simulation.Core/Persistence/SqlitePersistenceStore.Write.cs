@@ -126,16 +126,27 @@ public sealed partial class SqlitePersistenceStore : IDisposable
         string runId,
         SimulationSnapshot snapshot)
     {
-        WriteAgents(connection, transaction, runId, snapshot);
-        WriteResources(connection, transaction, runId, snapshot);
+        // Un snapshot de cognition seule (étape 3a) n'a pas de tables locales à
+        // alimenter : les agents, les réserves et les métriques décrivent le monde,
+        // qui appartient à l'hôte. Refus explicite plutôt qu'un run à zéro agent.
+        WorldSnapshotDto world = snapshot.World
+            ?? throw new InvalidOperationException(
+                "Snapshot de cognition seule : les tables relationnelles décrivent un monde absent de ce snapshot.");
+
+        WriteAgents(connection, transaction, runId, world);
+        WriteResources(connection, transaction, runId, world, snapshot.Tick);
         WriteGroups(connection, transaction, runId, snapshot);
-        WriteMetrics(connection, transaction, runId, snapshot);
+        WriteMetrics(connection, transaction, runId, world, snapshot.Tick, snapshot.Groups.Count);
     }
 
 
-    private static void WriteAgents(SqliteConnection connection, SqliteTransaction transaction, string runId, SimulationSnapshot snapshot)
+    private static void WriteAgents(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string runId,
+        WorldSnapshotDto world)
     {
-        foreach (EntitySnapshotDto entity in snapshot.World.Entities)
+        foreach (EntitySnapshotDto entity in world.Entities)
         {
             using var command = connection.CreateCommand();
             command.Transaction = transaction;
@@ -158,14 +169,19 @@ public sealed partial class SqlitePersistenceStore : IDisposable
     }
 
 
-    private static void WriteResources(SqliteConnection connection, SqliteTransaction transaction, string runId, SimulationSnapshot snapshot)
+    private static void WriteResources(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string runId,
+        WorldSnapshotDto world,
+        ulong tick)
     {
         (string Kind, double Quantity)[] resources =
         {
-            ("food", snapshot.World.FoodStock),
-            ("water", snapshot.World.WaterStock),
-            ("wood", snapshot.World.WoodStock),
-            ("mineral", snapshot.World.MineralStock),
+            ("food", world.FoodStock),
+            ("water", world.WaterStock),
+            ("wood", world.WoodStock),
+            ("mineral", world.MineralStock),
         };
 
         foreach ((string kind, double quantity) in resources)
@@ -192,7 +208,7 @@ public sealed partial class SqlitePersistenceStore : IDisposable
                 ON CONFLICT(run_id, tick_number, resource_id) DO UPDATE SET quantity = excluded.quantity;
                 """;
             snapCommand.Parameters.AddWithValue("$run", runId);
-            snapCommand.Parameters.AddWithValue("$tick", checked((long)snapshot.Tick));
+            snapCommand.Parameters.AddWithValue("$tick", checked((long)tick));
             snapCommand.Parameters.AddWithValue("$id", $"global-{kind}");
             snapCommand.Parameters.AddWithValue("$qty", quantity);
             snapCommand.ExecuteNonQuery();
@@ -240,7 +256,13 @@ public sealed partial class SqlitePersistenceStore : IDisposable
     }
 
 
-    private static void WriteMetrics(SqliteConnection connection, SqliteTransaction transaction, string runId, SimulationSnapshot snapshot)
+    private static void WriteMetrics(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        string runId,
+        WorldSnapshotDto world,
+        ulong tick,
+        int groupsCount)
     {
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -252,9 +274,9 @@ public sealed partial class SqlitePersistenceStore : IDisposable
                 groups_count = excluded.groups_count;
             """;
         command.Parameters.AddWithValue("$run", runId);
-        command.Parameters.AddWithValue("$tick", checked((long)snapshot.Tick));
-        command.Parameters.AddWithValue("$alive", snapshot.World.Entities.Count);
-        command.Parameters.AddWithValue("$groups", snapshot.Groups.Count);
+        command.Parameters.AddWithValue("$tick", checked((long)tick));
+        command.Parameters.AddWithValue("$alive", world.Entities.Count);
+        command.Parameters.AddWithValue("$groups", groupsCount);
         command.ExecuteNonQuery();
     }
 }

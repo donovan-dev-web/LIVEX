@@ -75,7 +75,10 @@ public sealed class PrismClientTests
         var decisions = new[]
         {
             new DecisionRecord(0, 9, true, false, DesireKind.SeekFood, 0.8, [], Target: target),
-            new DecisionRecord(0, 2, true, false, DesireKind.Eat, 0.7, [], Target: target),
+            // `Drink` est le seul kind terminal traduisible : boire à une source
+            // se dit par coordonnée, sans identifiant d'objet (contrairement à Eat,
+            // qui exigerait un id d'objet que SYNE ne connaît pas).
+            new DecisionRecord(0, 2, true, false, DesireKind.Drink, 0.7, [], Target: target),
             new DecisionRecord(0, 4, true, false, DesireKind.Rest, 0.6, []),
         };
 
@@ -92,8 +95,13 @@ public sealed class PrismClientTests
         Assert.Equal("Consommer", commands[0].GetProperty("kind").GetString());
         Assert.Equal(9UL, commands[1].GetProperty("agentId").GetUInt64());
         Assert.Equal("Aller", commands[1].GetProperty("kind").GetString());
+        // Contrat PRISM : la coordonnée est directement sous `target`.
+        Assert.True(CommandPayloadValidator.TryValidate(
+            "Aller",
+            commands[1].GetProperty("payload"),
+            out string? detail), detail);
         Assert.Equal(4, commands[1].GetProperty("payload").GetProperty("target")
-            .GetProperty("position").GetProperty("x").GetInt32());
+            .GetProperty("x").GetInt32());
     }
 
     [Fact]

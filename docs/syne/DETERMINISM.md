@@ -51,6 +51,8 @@
 | Matrices seeds × configs (Annexe I.4) | Pour chaque seed ∈ [12345, 67890, 99999, 42, 999], exécuter 1000 ticks, valider checksum |
 | `DeterminismRegressionTests` (SYNE-015) | Hash **épinglé** de la trajectoire perception+décision (seed 12345, 25 ent., 200 ticks) + égalité bit-à-bit entre deux runs identiques et différence entre seeds |
 | Auto-égalité (SYNE-015) | Deux exécutions (même seed/config) → chaîne de perception identique |
+| `CoupledFingerprintTests` (P9) | Empreinte d'état couplé : même état → même empreinte ; tick, position et besoin en font partie |
+| `CoupledCheckpointStoreTests` (SYNE-225) | Reprise couplée : snapshot refusé si le tick ou l'empreinte ne correspondent pas, écriture atomique (aucun fichier temporaire laissé), cognition restaurée dans une autre boucle |
 
 **Contrat V0.1 (jalon SYNE ph1)** : le pipeline cognitif (perception → décision) ne consomme **aucun** tirage du PRNG — l'avance du générateur reste **1 tirage/tick** ; les cibles de déplacement dérivent d'un déterminisme propre (hash SplitMix64 stable, sans passerelle RNG).
 
@@ -72,6 +74,43 @@
 **Jalon U8 — Territoires (engineVersion 0.10.0)** : le **suivi de territoire (SYNE-073)** reste **0 tirage PRNG** — l'appartenance à une zone (`Territory`, disque autour d'un point de survie, décision n°21) est une **function pure des positions** (`distance ≤ radius`), **recalculée en fin de tick** par `SimulationLoop.TrackTerritoryMembership` (même fenêtre causale fermée que saisons/constructions, jamais intercalée dans les boucles entités) ; **aucun comportement agentique, aucune revendication, aucune passerelle RNG**. Ordre d'émission déterministe : par zone **telle que posée** (ordre de `world.territories.zones[]`), identifiant d'entité **croissant**, **sorties (Left) avant entrées (Entered)**. Les bascules sont tracées par `LastTerritoryChanges` (accumulées, vidables via `ClearTerritoryChanges`) et **drainées** par `ObservabilityTickEmitter` en `world.territory_membership_changed` — suivi **désactivé par défaut** (`world.territories.enabled = false`) : aucune altération de la trajectoire du scénario de référence → checksum doré de perception **inchangé** (0x27fad50065d8c4a4) et baseline ph10 **inchangée** (0x072a488aa18c05eb) — ré-épinglés identiques pour pin contractuel, `engineVersion` incrémenté 0.9.0 → 0.10.0. Activé, l'altération se borne à des champs **additifs** du snapshot (`territories[]`) et des événements typés, jamais à la cognition ni aux réserves.
 
 **Jalon SYNE ph10 (engineVersion 0.7.0, inchangé)** : les journaux utilisés par les empreintes dorées emploient le séparateur LF explicite afin que les valeurs soient identiques sous Windows et Linux. Les tests épinglent le golden de perception **0x27fad50065d8c4a4** et le golden d'état complet **0x072a488aa18c05eb**. La seconde valeur provient du journal canonique par tick (population, envois, groupes, naissances, décès, puis id/position/énergie/besoins/intention/mémoire/confiance de chaque entité), pour 25 entités, 200 ticks et seed 12345. Toute altération bit-à-bit de la trajectoire change ces valeurs ; recalcul + bump MINOR requis (§7).
+
+**Jalon P9 — couplage PRISM (engineVersion 0.17.0, inchangé)** : les ajouts de la
+phase P9 restent **0 tirage PRNG** et **neutres par défaut** :
+
+- **Empreinte couplée** (`CoupledFingerprint`) : FNV-1a sur les **bits** des
+  positions, besoins, intentions et inventaires, entités triées par identifiant
+  croissant, dernier tick inclus — aucune chaîne formatée (un arrondi masquerait
+  une divergence), aucune horloge, aucun tirage. Deux runs couplés identiques
+  produisent la même empreinte (R2 : `0bf833f4bcfc1e5e` × 3, puis
+  `449942918aec7c4c` × 3 après le write-back), et la **reprise couplée redonne
+  l'empreinte du run continu**.
+- **Point de reprise couplé** (`CoupledCheckpointStore`, SYNE-225) : écriture
+  **atomique** (fichier temporaire puis remplacement) ; le chargement **refuse**
+  un snapshot dont le hash de contenu, l'empreinte ou le tick ne correspondent
+  pas au checkpoint PRISM restauré — un refus explicite plutôt qu'une cognition
+  silencieusement désalignée. Le point de reprise contient le dernier tick
+  **achevé**, que PRISM refuse de rejouer (`unexpected_tick`) : la reprise
+  demande le tick suivant (`NextTickAfterRestore`).
+- **Persistance additive** : la mémoire spatiale (SYNE-221) n'est écrite que
+  quand elle est non vide, une croyance durable porte un drapeau `durable`
+  absent quand il est faux, et les sections `agents.knowledge`,
+  `agents.planner`, `agents.desires.instrumental` sont **désactivées par défaut**
+  — les empreintes des runs locaux restent donc **inchangées**, et
+  `DeterminismRegressionTests` / `Ph10DeterminismBaselineTests` continuent
+  d'épingler `0x27fad50065d8c4a4` et `0x072a488aa18c05eb`.
+- **Planificateur** (SYNE-223, ADR-019) : plan = fonction pure de l'intention, de
+  la cible crue et de l'issue d'action ; avancement sur arrivée à portée
+  d'interaction ; invalidation sur `Blocked` seulement ; plans **transitoires**
+  (redérivés à l'identique après reprise). Neutralité mesurée : planificateur
+  actif ou non, même trajectoire sur 25 ticks.
+- **Désirs instrumentaux** (SYNE-222) : génération déterministe (comparaisons
+  d'état, aucun tirage) ; un désir actif ajoute un **candidat** et un bénéfice
+  explicite à la délibération, sans changer la formule d'utilité. Section
+  désactivée → aucun candidat, trajectoire identique.
+- **Cibles PRISM** : les commandes émises ne dépendent que des décisions du tick
+  (ordre des identifiants, anti-redondance à 30 ticks, aucun tirage) — la boucle
+  est reproductible à seed, contenu et cadence identiques.
 
 ## 7. Impacts & contractuels
 

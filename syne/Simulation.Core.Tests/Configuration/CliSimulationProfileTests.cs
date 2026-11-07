@@ -3,8 +3,8 @@
 
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
-// Rôle : Scénarios batch acceptés par --simulation : reference (défaut intégré) et prism (profil PRISM) — toute
-//        autre valeur reste rejetée avec la liste des valeurs acceptées.
+// Rôle : Scénario batch accepté par --simulation : reference (défaut intégré) — toute autre valeur
+//        reste rejetée avec la liste des valeurs acceptées.
 
 using Simulation.Core.Configuration;
 using Xunit;
@@ -12,21 +12,30 @@ using Xunit;
 namespace Simulation.Core.Tests.Configuration;
 
 /// <summary>
-/// Scénarios batch acceptés par <c>--simulation</c> :
-/// <c>reference</c> (défaut intégré) et <c>prism</c> (profil PRISM) —
-/// toute autre valeur reste rejetée avec la liste des valeurs acceptées.
+/// Scénario batch accepté par <c>--simulation</c> : <c>reference</c>
+/// (défaut intégré) — toute autre valeur reste rejetée avec la liste des
+/// valeurs acceptées.
 /// </summary>
 public sealed class CliSimulationProfileTests
 {
-    [Theory]
-    [InlineData("reference")]
-    [InlineData("prism")]
-    public void Parse_AcceptsKnownSimulationIds(string id)
+    [Fact]
+    public void Parse_AcceptsTheReferenceSimulationId()
     {
-        CliOptions cli = CliOptions.Parse(["--simulation", id, "--headless"]);
+        CliOptions cli = CliOptions.Parse(["--simulation", "reference", "--headless"]);
 
-        Assert.Equal(id, cli.Simulation);
+        Assert.Equal("reference", cli.Simulation);
         Assert.True(cli.Headless);
+    }
+
+    [Fact]
+    public void Parse_RejectsTheRetiredPrismScenario()
+    {
+        // Le profil `prism` est retiré : PRISM fournit sa géométrie et ses
+        // obstacles, un scénario dédié n'a plus de contenu propre.
+        var exception = Assert.Throws<ArgumentException>(() =>
+            CliOptions.Parse(["--simulation", "prism"]));
+
+        Assert.Contains("prism", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -45,15 +54,16 @@ public sealed class CliSimulationProfileTests
             CliOptions.Parse(["--simulation", "ecosystem_01"]));
 
         Assert.Contains("reference", exception.Message, StringComparison.Ordinal);
-        Assert.Contains("prism", exception.Message, StringComparison.Ordinal);
         Assert.Contains("ecosystem_01", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void SimulationIds_AreDistinctConstants()
+    public void OnlyTheReferenceScenarioIsKnown()
     {
         Assert.Equal("reference", SimulationProfiles.ReferenceId);
-        Assert.Equal("prism", SimulationProfiles.PrismId);
+        Assert.True(SimulationProfiles.IsKnownSimulationId("reference"));
+        Assert.True(SimulationProfiles.IsKnownSimulationId(null));
+        Assert.False(SimulationProfiles.IsKnownSimulationId("prism"));
         Assert.False(SimulationProfiles.IsKnownSimulationId("bogus"));
     }
 }

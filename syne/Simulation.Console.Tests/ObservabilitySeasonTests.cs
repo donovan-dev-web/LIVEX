@@ -113,7 +113,7 @@ public class ObservabilitySeasonTests
         JsonNode snapshot = Assert.Single(snapshots);
         Assert.Equal("spring", (string?)snapshot["season"]);
         Assert.Equal(0, snapshot["seasonIndex"]!.GetValue<int>());
-        Assert.Equal("0.17.0", (string?)snapshot["engineVersion"]);
+        Assert.Equal("0.18.0", (string?)snapshot["engineVersion"]);
     }
 
     [Fact]
@@ -133,3 +133,4 @@ public class ObservabilitySeasonTests
             node => node!["type"]!.GetValue<string>() == ObservabilityContract.SeasonChanged);
     }
 }
+

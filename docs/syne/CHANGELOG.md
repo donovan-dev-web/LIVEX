@@ -2,17 +2,65 @@
 
 **Composant** : SYNE
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 11 octobre 2026
+**Dernière mise à jour** : 6 novembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`syne-vX.Y.Z`).
 
 ## [Unreleased]
 
+### Added — **boucle de refus du write-back (suite de l'étape 3b, 6 novembre 2026)**
+
+- **`PrismCommandFailureMemory`** : mémoire des refus **durables** de PRISM. `path_not_found` et `source_not_found` écartent la consigne exacte (agent + nature + payload) pendant 300 ticks ; `not_adjacent` (transitoire) et `invalid_payload` (défaut de notre write-back) restent retentés, car les masquer cacherait le problème au lieu de le montrer.
+- **Attribution des refus** : `PrismCoupledRunner` rapproche le `commandId` d'un `action_failed` de la commande émise au même tick et publie `(agent, nature, payload, raison, tick)`. Sans cela, SYNE savait qu'une commande avait échoué mais pas laquelle, donc ne pouvait rien en faire.
+- **Journal** : la ligne de write-back publie désormais `refus durables : <raison>=<n> ; cibles écartées <m>, <k> commande(s) non réémise(s)`.
+- Mesure sur le scénario couplé (6 agents × 600 ticks, pack minimal) : **`path_not_found` 12 → 2**, **260 réémissions évitées**, 76 commandes émises au lieu de 86, **empreinte couplée inchangée** (`9d52ab535453d277`), 86 actions abouties identiques.
+- Tests : 4 `PrismCommandFailureMemoryTests` (fenêtre de réessai, refus transitoires ignorés, isolation par agent et par cible, comptage/description) + 1 `PrismCoupledRunnerTests` (attribution d'un refus à sa consigne). Suites : **Console 188/188, Core 703/703**.
+
+### Added — **write-back élargi : `ObtenirObjet` et `Consommer { item }` (étape 3b de SYNE-220, 6 novembre 2026)**
+
+- **`PrismItemCatalog`** : lit `items/*.json` du pack de contenu PRISM et expose les identifiants **comestibles** (`edible`) et **buvables** (`drinkable`), indexés par la règle `StableIdRegistry` (tri ordinal puis indexation, comme les matériaux). Sans pack lisible : catalogue vide, comportement inchangé.
+- **`ObtenirObjet` pour la faim** : `SeekFood`/`SecureFood` deviennent une **acquisition** (PRISM cherche autour de l'indice, rejoint, prélève) au lieu d'un `Aller` vers une source que SYNE ne pouvait pas faire aboutir. Payload `{ tag: "edible", quantity: 1, hint, hintRadius: 8 }` ; `Aller` reste le repli quand le contenu n'est pas lisible.
+- **`Consommer { item }` pour manger** : l'inventaire observé (`self.inventory[].itemTypeId`) est lu par `PrismObservationMapper.ToCarriedItemIds`, croisé au catalogue, et `Eat` consomme le **plus petit identifiant comestible porté** (choix déterministe). Sans objet comestible porté, la décision reste intraduisible.
+- **Objets comestibles au sol nommés** : un `GroundItem` reconnu comestible devient une cible `resource-food-<id>` — la seule forme que `Knowledge.KindFromLabel` sait relire ; sans ce nom, la faim n'avait aucune cible en mode couplé.
+- **`PrismCommandVocabulary`** : le pont reçoit catalogue + objets portés ; sans vocabulaire il se comporte exactement comme avant (les tests de non-régression le verrouillent).
+- Tests : 4 `PrismItemCatalogTests`, 6 `PrismDecisionCommandMapperTests` (acquisition, repli, manger, refus sans objet comestible, boire inchangé), 3 `PrismObservationMapperTests` (inventaire porté, cible nourriture nommée). Suites : **Console 183/183, Core 703/703**.
+- Run couplé réel (6 agents × 600 ticks, pack minimal) : empreinte `9d52ab535453d277`, 86 commandes, **0 `invalid_payload`**, 12 `path_not_found` (`Explore`). Limite constatée : le monde minimal n'expose ni eau ni nourriture au sol, donc les désirs de faim/soif n'émettent encore rien — vocabulaire prêt, contenu manquant.
+
+### Changed — **snapshot scindé : cognition seule (étape 3a de SYNE-220, 6 novembre 2026)**
+
+- **`SimulationSnapshot.World` est optionnel** : un snapshot peut désormais décrire un état **cognitif seul**, sans monde. `SimulationSnapshotCodec.Capture` (run local) est inchangé ; `CaptureCognition(loop, contentHash?)` produit la variante cognitive, avec une `worldReference { width, height, cellSize, contentHash? }` à la place du monde — dimensions et cellule attendues, empreinte de contenu PRISM quand l'hôte la fournit.
+- **Le snapshot couplé n'embarque plus le monde** : `CoupledCheckpointStore.Save` écrit `CaptureCognition`. Le monde appartient à PRISM et vit dans son checkpoint ; en persister une copie laissait croire qu'une reprise locale était possible, et c'est cette copie qui aurait pu écraser l'état autoritaire.
+- **Refus explicites plutôt qu'une reprise vide** : `SimulationSnapshotRestorer.Restore` lève sur un snapshot sans monde (le chemin couplé passe par `RestoreCognition`, qui ne touche pas au monde) ; `SqlitePersistenceStore` refuse d'écrire les tables relationnelles (`agents`, `resources`, `metrics`) d'un monde absent.
+- **Neutralité locale vérifiée** : le JSON d'un snapshot complet reste identique (absence déclarée par `WhenWritingNull`, pas de `worldReference`), la persistance et la reprise locales passent par les mêmes chemins qu'avant. Tests : 6 Core (`CognitionOnlySnapshotTests`) et 1 Console (snapshot couplé sans `world`) ; **Core 703/703, Console 170/170**.
+
+### Documentation — **P9 : SYNE-226 (6 novembre 2026)**
+
+- `DATA_MODEL.md` : **§5.1 mémoire spatiale par chunk** (masque de tags cumulatif, confiance révisée, décroissance/oubli, capacité bornée, persistance additive) et **croyances durables** (fait observé ≠ savoir, drapeau `durable`, sujets réservés `recipe-`/`book:`/`site-`/`structure-`) ; désirs instrumentaux ajoutés en §7.
+- `SYSTEMS_SPEC.md` : tableau des sous-systèmes complété (monde externe `IWorld`/`PrismWorldAdapter`, cognition avancée), **autorité du monde PRISM** en §3, note datée en §4 sur le **modèle localisé devenu celui de la référence** (A0-2), nouvelle **§11 Cognition P9** (savoir, mémoire spatiale, planificateur, désirs instrumentaux) et chantiers restants dans les points ouverts.
+- `DETERMINISM.md` : jalon **P9** — empreinte couplée (`CoupledFingerprint`, FNV-1a sur bits, ordre canonique), point de reprise couplé (écriture atomique, refus explicite sur tick/hash/empreinte), neutralité additive des ajouts, planificateur et désirs instrumentaux sans PRNG ; deux tests ajoutés au tableau de vérification.
+- `PERSISTENCE.md` : **§4.1 ajouts P9 au snapshot** (mémoire spatiale, croyance durable, inventaire) et **§4.2 point de reprise couplé** (SYNE-225) ; reste ouvert : retrait des tables du monde (étape 3 de SYNE-220 — **3a livrée**, voir §4.3 et l'entrée « snapshot scindé » ci-dessus).
+- `CONFIGURATION.md` (§6.14 planificateur + ADR-019, §6.15 désirs instrumentaux) et `API_CONTRACTS.md` (valeur additive `SecureFood`) étaient déjà à jour.
+
+### Added — **désirs instrumentaux et sécurité alimentaire (SYNE-222, 6 novembre 2026)**
+
+- **`DesireKind.SecureFood`** (instrumental) : l'agent qui n'est **pas encore affamé** mais dont la faim *projetée* à l'horizon d'anticipation atteindra son seuil, et dont la réserve de nourriture est sous le niveau visé, forme un désir de **stock** — `SecureFood` (aller vers la source de nourriture **crue**, poursuite) puis `Take` dans le plan (`Planner.Build`), la consommation restant `Eat`. Désactivé par défaut : aucun candidat n'est produit tant que `agents.desires.instrumental.enabled` est faux, la trajectoire de référence reste bit-à-bit identique.
+- **Section `agents.desires.instrumental`** : `enabled` (faux), `anticipateTicks` (240, classe A — période divisée par `dt`), `reserveTarget` (3). Validée (`anticipateTicks` ≥ 1, `reserveTarget` ≥ 1) et **refusée sans inventaire actif** : un stock sans contenant n'a pas de sens.
+- **Bénéfice tiré du manque de réserve**, pas de la faim (`60 × (reserveTarget − stock) / reserveTarget`) : la formule d'utilité est inchangée, le bonus est fourni à la délibération comme celui des engagements (D5). Le désir est proposé **seulement** si l'agent sait où trouver de la nourriture (cible crue) ; sinon `Explore` prospecte. Il s'efface dès que la faim franchit son seuil.
+- **Le stock devient utile** : `Take` privilégie la nourriture quand la réserve est sous le niveau visé (même si la soif domine), `Eat`/`Drink` sont jugés viables avec la **réserve portée** et le sont aussi à l'exécution hors de portée d'un gisement (`Inventory.TryConsume`) ; `SeekFood`/`SeekWater` se résolvent en `Eat`/`Drink` dès que l'agent porte de quoi satisfaire le besoin. Toutes ces voies sont conditionnées par `agents.actions.inventory.enabled` (faux par défaut).
+- **Couplage** : `SecureFood` est mappé en `Aller` par `PrismDecisionCommandMapper` (poursuite vers la source) ; `Take` reste hors vocabulaire PRISM.
+- Tests : 18 Core (`InstrumentalDesiresTests`), dont un test de **boucle** qui vérifie que le désir entre dans la délibération avant le seuil de faim, et les cas de non-régression (sans stock, manger hors gisement reste refusé). Suites : **Console 169/169, Core 696/697** (seul le plancher de débit à 1 000 entités échoue sous charge parallèle et repasse seul).
+
+### Changed — **profil `prism` retiré, un seul profil de référence (6 novembre 2026)**
+
+- **`SimulationProfiles.Prism()`/`PrismJson()`/`PrismId` supprimés**, `configs/simulation/prism.json` supprimé, `--simulation` n'accepte plus que `reference` (défaut inchangé). Le profil datait du temps où PRISM était un monde Unreal : sa géométrie (256 × 256, cellule 16) est désormais **lue** dans l'instantané PRISM (ADR-013), son décor en cinq disques n'était jamais injecté en mode couplé, et sa cadence (6 TPS, 5 s/tick) n'était qu'une calibration SYNE qui ralentissait les désirs (`Idle` à 57 %). L'échelle temporelle reste un levier ordinaire (`simulation.simulatedSecondsPerTick`, surcouche `--config`).
+- **Mode couplé** : `ResolveOptions(cli)` (profil de référence) puis écrasement des dimensions par l'instantané PRISM — aucune constante de monde ne subsiste côté SYNE.
+- **Tests réécrits plutôt que supprimés** quand l'invariant restait utile : `Adr017PrismBatchTests` → `Adr017TemporalBatchTests` (surcouche 24 TPS / 5 s), `PrismObstaclePlacementTests` → `ObstaclePlacementTests` (layout déclaré par le test), parité mock↔moteur sur les défauts (`scripts/parity-mock-syne-world.js`), `ReferenceProfileParityTests` sans cas prism. Suites : **Console 169/169, Core 679/679**, Launcher 174/174, `syne-mock` 51/0.
+
 ### Fixed
 
 - **`groups[]` du snapshot n'émettait pas les distances que le contrat 0.5.0 annonce** : `ObservabilitySerializer.GroupsJson` omettait `maxBondDistance` / `meanBondDistance` (seul `group_formed` les portait), alors que `PrismLdk` les parse dans `groups[]` et que la documentation les déclarait publiées. Les deux clés sont désormais émises, arrondies à 4 décimales, avec `null` quand la paire n'a pas été mesurée — jamais `0.0`. Verrouillé par `AdrGroupObserverTests` (JSON publié + absence ≠ zéro).
-- **`configs/simulation/prism.json` ne rejouait pas `SimulationProfiles.Prism()`** : layout d'obstacles `15/5/120/90/80` au lieu de `150/150/150/60/8`, et dérives de besoins restées à l'ancienne calibration (`0,0002`/`0,0005`) au lieu de `0,003`/`0,002`. Même monde annoncé, décisions et décor différents — `scripts/parity-mock-syne-world.js` échouait (203 cases bloquées côté moteur contre 108 côté mock). Fichier réaligné et verrouillé par `ReferenceProfileParityTests.PrismJsonFile_ReplaysExactlyThePrismProfile`.
+- **`configs/simulation/prism.json` ne rejouait pas `SimulationProfiles.Prism()`** : layout d'obstacles `15/5/120/90/80` au lieu de `150/150/150/60/8`, et dérives de besoins restées à l'ancienne calibration (`0,0002`/`0,0005`) au lieu de `0,003`/`0,002`. Même monde annoncé, décisions et décor différents — `scripts/parity-mock-syne-world.js` échouait (203 cases bloquées côté moteur contre 108 côté mock). Fichier réaligné et verrouillé par `ReferenceProfileParityTests.PrismJsonFile_ReplaysExactlyThePrismProfile`. *(Obsolète depuis le 6 novembre 2026 : le profil `prism` et son fichier sont retirés — voir « profil `prism` retiré » ci-dessus.)*
 
 ### Changed — **arbitrage A0-3 « groupes : observateur seul » (engineVersion 0.17.0)**
 

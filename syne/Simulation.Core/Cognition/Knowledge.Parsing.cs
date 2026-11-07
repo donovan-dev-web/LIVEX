@@ -39,6 +39,50 @@ public static partial class KnowledgeBuilder
     }
 
 
+    /// <summary>
+    /// « x.xx,y.yy,&lt;état&gt; » → position d'un chantier et ordinal de son état
+    /// (SYNE-222, même disposition que l'état d'un gisement).
+    /// </summary>
+    public static bool TryParseSiteState(string value, out Position position, out int state)
+    {
+        position = default;
+        state = 0;
+        if (string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
+        string[] parts = value.Split(',');
+        if (parts.Length < 3 ||
+            !double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double x) ||
+            !double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double y) ||
+            !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out state))
+        {
+            return false;
+        }
+
+        position = new Position(x, y);
+        return true;
+    }
+
+
+    /// <summary>« &lt;achevé&gt;,&lt;requis&gt; » → avancement d'un chantier (SYNE-222).</summary>
+    public static bool TryParseSiteProgress(string value, out int completed, out int required)
+    {
+        completed = 0;
+        required = 0;
+        if (string.IsNullOrEmpty(value))
+        {
+            return false;
+        }
+
+        string[] parts = value.Split(',');
+        return parts.Length >= 2 &&
+               int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out completed) &&
+               int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out required);
+    }
+
+
     /// <summary>Â« x.xx,y.yy Â» â†’ position.</summary>
     public static bool TryParsePosition(string value, out Position position)
     {

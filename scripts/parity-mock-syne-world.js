@@ -6,25 +6,26 @@
  * Projet : LIVEX (PRISM/SYNE-MOCK)
  * Auteur : CHARTRAIN Donovan
  * Rôle : Comparer la WorldDescription du mock SYNE et celle du moteur SYNE reel,
- *        champ par champ, sur le profil `prism` tel qu'il est livre : c'est le
- *        monde que PRISM recoit, donc l'objet a verifier.
+ *        champ par champ, sur le profil de reference (seul profil calibre) :
+ *        c'est le monde que PRISM recoit, donc l'objet a verifier.
  *
  * Code de sortie 1 des qu'une divergence est trouvee.
  *
  * Motivation : les deux sources parlaient le meme contrat sur le papier, mais le
  * mock publiait des cases de terrain que le moteur ne sait pas produire
- * (`sea`/`river`, `movementCost: null` issu d'un `Infinity`) et des obstacles
- * proceduraux, tandis que le profil `prism` du moteur ne declarait aucun
- * obstacle : PRISM affichait un monde impossible d'un cote et vide de l'autre.
- * Ce script compare les deux sorties reelles au lieu de comparer des documents.
+ * (`sea`/`river`, `movementCost: null` issu d'un `Infinity`) que le moteur ne
+ * sait pas produire : PRISM affichait un monde impossible d'un cote et autre
+ * chose de l'autre. Ce script compare les deux sorties reelles au lieu de
+ * comparer des documents. Le profil `prism` a ete retire : la reference est
+ * desormais l'unique monde a tenir des deux cotes.
  *
  * Usage :
  *   node scripts/parity_mock_syne_world.js [--syne <chemin exe>] [--seed <entier>]
  *
- * Le moteur est lance en supervise avec `--simulation prism` (sans surcouche :
- * les valeurs viennent de `SimulationProfiles.Prism()`), le mock est instancie
- * avec `syne-mock/config_prism.json`. Les deux jeux d'obstacles doivent etre
- * identiques : c'est ce que ce script verifie champ par champ.
+ * Le moteur est lance en supervise sans scenario (profil de reference, ses
+ * valeurs par defaut), le mock est instancie avec ses defauts. Les deux jeux
+ * d'obstacles (vides) doivent etre identiques : c'est ce que ce script verifie
+ * champ par champ.
  */
 
 const { spawn } = require('node:child_process');
@@ -36,8 +37,6 @@ const root = path.join(__dirname, '..');
 const WebSocket = require(path.join(root, 'syne-mock', 'node_modules', 'ws'));
 const { Simulation } = require(path.join(root, 'syne-mock', 'src', 'server'));
 const { readConfig } = require(path.join(root, 'syne-mock', 'src', 'cli'));
-
-const PRISM_CONFIG = path.join(root, 'syne-mock', 'config_prism.json');
 
 const CELL_FIELDS = ['x', 'y', 'terrainType', 'walkable', 'height', 'movementCost', 'obstacles'];
 const RESOURCE_FIELDS = ['id', 'kind', 'x', 'y', 'quantity'];
@@ -56,7 +55,7 @@ function parseArgs(argv) {
   return options;
 }
 
-/** Lance SYNE en supervise (profil prism) et rend la trame `world_initialized`. */
+/** Lance SYNE en supervise (profil de reference) et rend la trame `world_initialized`. */
 function captureEngineWorld(syneExe, seed) {
   const workDir = path.join(os.tmpdir(), 'livex-parity-world');
   fs.rmSync(workDir, { recursive: true, force: true });
@@ -72,7 +71,6 @@ function captureEngineWorld(syneExe, seed) {
     '--observe-port', String(observePort),
     '--work-dir', workDir,
     '--log-dir', workDir,
-    '--simulation', 'prism',
     '--seed', String(seed),
     '--ticks', '2',
     '--autostart'
@@ -111,9 +109,9 @@ function captureEngineWorld(syneExe, seed) {
   });
 }
 
-/** Le monde du mock, avec la configuration reellement livree pour PRISM. */
+/** Le monde du mock, sur les defauts (profil de reference cote moteur). */
 function mockWorld(seed) {
-  const config = readConfig(PRISM_CONFIG);
+  const config = readConfig(null);
   const simulation = new Simulation(config);
   simulation.prepare(seed, config.ticksPerSecond);
   return simulation.worldDescription();
@@ -199,9 +197,7 @@ async function main() {
   if (!fs.existsSync(syneExe))
     throw new Error(`binaire SYNE introuvable : ${syneExe} (dotnet build syne/Simulation.Console -c Release)`);
 
-  const config = readConfig(PRISM_CONFIG);
-  console.log(`Profil prism livre — moteur : SimulationProfiles.Prism() | mock : ${path.relative(root, PRISM_CONFIG)} | seed ${options.seed}`);
-  console.log(`Monde ${config.world.width}x${config.world.height}, cellule ${config.world.cellSize}, ${config.world.obstacleLayout.length} obstacle(s) declares par le mock`);
+  console.log(`Profil de reference — moteur : defauts integres | mock : defauts | seed ${options.seed}`);
 
   const engine = await captureEngineWorld(syneExe, options.seed);
   const mocks = mockWorld(options.seed);
@@ -211,10 +207,13 @@ async function main() {
   console.log(`moteur : ${engine.world.cells.length} cases dont ${blocked(engine.world)} bloquee(s), ${engine.world.obstacles.length} obstacle(s), version ${engine.version}`);
   console.log(`mock   : ${mocks.cells.length} cases dont ${blocked(mocks)} bloquee(s), ${mocks.obstacles.length} obstacle(s), version ${mocks.version}`);
 
-  // Sans case bloquee, comparer deux mondes vides ne prouverait rien : le profil
-  // doit declarer des obstacles des deux cotes.
-  if (blocked(engine.world) === 0 || engine.world.obstacles.length === 0) {
-    console.error("ECHEC : le moteur n'a publie aucun obstacle — le profil prism ne les declare pas.");
+  // Le profil de reference ne declare aucun decor : les deux cotes doivent donc
+  // publier zero obstacle. Un obstacle d'un seul cote est une divergence, pas un
+  // detail — c'est exactement ce que le profil `prism` masquait avant son retrait.
+  if (engine.world.obstacles.length !== 0 || mocks.obstacles.length !== 0) {
+    console.error(
+      `ECHEC : obstacles divergents (moteur ${engine.world.obstacles.length}, mock ${mocks.obstacles.length}) — le profil de reference n'en declare aucun.`
+    );
     return 1;
   }
   console.log('Périmètre comparé : jeu de clés, en-tête, cells[] champ par champ, obstacles[], resources[] champ par champ.');

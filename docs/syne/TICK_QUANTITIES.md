@@ -11,7 +11,7 @@
 ## 1. Rappel des classes
 
 `dt = simulatedSecondsPerTick / 60` (minutes simulées par tick ; 1,0 au défaut,
-1/12 pour le profil `prism` — ADR-017).
+1/12 pour une échelle à 5 s par tick — ADR-017).
 
 | Classe | Règle | Exemple |
 | :-- | :-- | :-- |
@@ -45,6 +45,7 @@ Références : `syne/Simulation.Core/…`, lignes relevées sur la branche `deve
 | Expiration des croyances | `agents.beliefs.expiryTicks` | `Cognition/Belief.cs:147,152` (`tick + settings.ExpiryTicks`) | ` période / dt ` ticks |
 | Décroissance des croyances | `agents.beliefs.timeDecayPerTick` | `Cognition/Belief.cs:187` (`× settings.TimeDecayPerTick`), appelé `Cognition/CognitionPipeline.cs:155` | `^ dt` (court-circuit `dt == 1` bit-exact) |
 | Décroissance de confiance | `agents.trust.decayFactorPerTick` | `Cognition/Relationships.cs:113` (`× Settings.DecayFactorPerTick`), appelé `Cognition/CognitionPipeline.cs:156` | `^ dt` |
+| Horizon d'anticipation des désirs instrumentaux | `agents.desires.instrumental.anticipateTicks` | `Configuration/TemporalScale.cs` (`ScaleDesires`), lu `Cognition/InstrumentalDesires.cs` (`Evaluate`) | ` période / dt ` ticks — même horizon en temps simulé (SYNE-222) |
 | Durée d'une saison | `world.seasons.seasonLengthTicks` | `Configuration/SimulationOptions.cs:590` (`SeasonSettings.At`) | ` période / dt ` ticks — 360 min → 4 320 ticks à 5 s/tick |
 
 ### Quantité A déclarée mais **morte** (à trancher)

@@ -51,7 +51,7 @@
 | :-- | :-- | :-- | :-- |
 | R0 | bots (marche aléatoire) | 1 000 | Fumée |
 | R1 | bots planificateurs, 50 | 5 000 | Validation des chaînes |
-| R2 | agents SYNE (adaptateur minimal), 50 | 5 000 | Validation du contrat avec la cognition actuelle (G3) |
+| R2 | agents SYNE (adaptateur minimal), 50 | 5 000 | Validation du contrat avec la cognition actuelle (G3) — **concluante le 6 novembre 2026** (deuxième passe, après incarnation et ADR-013) : `minds = 50/50`, 250 000 observations positionnées, empreinte `0bf833f4bcfc1e5e` reproduite sur **trois hôtes distincts** ; reprise couplée (checkpoint `resA-299` → restauration → 300 ticks) = `44c2ea085d112e05`, identique au run continu de 600 ticks. Critère de succès : `minds > 0` en fin de run. La première passe (`079b736c91aae957` × 3, `minds = 0`) mesurait un état SYNE local faute de commande `Incarner` ; elle reste consignée. **Write-back branché (troisième passe, 6 novembre 2026)** : 10 agents × 1 500 ticks, seed 7, pack minimal — 388 commandes émises, 391 `action_completed`, 22 `path_not_found`, **3 832 déplacements observés**, 559 gisements exposés (bois), empreinte `b544dadd2d55f676` reproduite 3/3 sur le même hôte. Critère de succès : `minds > 0` **et** déplacements > 0. Limites : les désirs sous le profil `prism` restent majoritairement `Idle` (57 %) ; la mer du pack minimal est enterrée (niveau 26 sous un plateau à ~56), donc aucun gisement buvable n'existe et `Consommer` n'est couvert que par les tests de contrat ; coût ≈ 290 ms/tick à 50 agents, dont ≈ 60 ms fixes côté hôte PRISM. |
 | R3 | agents SYNE refondus, 100 | 5 000 | Run de référence V2 (G5) |
 | R4 | agents SYNE refondus, 1 000 | 2 000 | Charge (G5/P12) |
 | R5 | ablations | 10 000 | Effet des mécanismes (G7) |

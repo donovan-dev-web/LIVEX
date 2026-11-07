@@ -104,4 +104,48 @@ public sealed class PrismCoupledRunnerTests
         Assert.True(run.Succeeded);
         Assert.Equal(5000, run.TicksCompleted);
     }
+
+    [Fact]
+    public async Task AttributesARefusalToTheCommandThatCausedIt()
+    {
+        // Le refus PRISM ne porte qu'un `commandId` : sans attribution, SYNE sait
+        // qu'une commande a échoué mais pas laquelle, donc ne peut pas cesser de
+        // redemander cette cible.
+        var failures = new List<(ulong AgentId, string Kind, string Reason, string Payload)>();
+        Func<long, IReadOnlyList<ObservationEnvelope>, IReadOnlyList<CommandEnvelope>> decide =
+            (tick, _) =>
+            [
+                new CommandEnvelope(
+                    ProtocolVersion.Current.ToString(),
+                    tick,
+                    "walk-42",
+                    42,
+                    "Aller",
+                    JsonSerializer.SerializeToElement(new { target = new { x = 5, y = 6, z = 57 } }, ProtocolJson.Options)),
+            ];
+        Func<TickRequest, CancellationToken, Task<TickResult>> step = (request, _) =>
+        {
+            EventEnvelope refused = new(
+                ProtocolVersion.Current.ToString(),
+                request.Tick,
+                "walk-42:0",
+                "action_failed",
+                42,
+                JsonSerializer.SerializeToElement(new { commandId = "walk-42", reason = "path_not_found" }, ProtocolJson.Options));
+            return Task.FromResult(new TickResult(ProtocolVersion.Current.ToString(), request.Tick, [], [refused]));
+        };
+
+        var runner = new PrismCoupledRunner(
+            step,
+            decide: decide,
+            onCommandFailed: (agentId, kind, payload, reason, _) => failures.Add((agentId, kind, reason, payload)));
+        var run = await runner.RunAsync(1);
+
+        Assert.True(run.Succeeded);
+        var failure = Assert.Single(failures);
+        Assert.Equal(42UL, failure.AgentId);
+        Assert.Equal("Aller", failure.Kind);
+        Assert.Equal("path_not_found", failure.Reason);
+        Assert.Contains("\"x\":5", failure.Payload, StringComparison.Ordinal);
+    }
 }

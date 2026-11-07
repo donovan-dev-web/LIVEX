@@ -8,17 +8,16 @@ puis `npm start -- config_example.json`. Le WebSocket texte JSON camelCase est s
 (`contractVersion` de `src/config.js`), `engineVersion` **0.17.0**, alignés sur
 SYNE (`ObservabilityContract.cs`).
 
-Deux configurations de référence : `config_example.json` (500 × 500, cellule 10,
-10 TPS, 50 agents — les défauts du moteur) et **`config_prism.json`, miroir du
-profil `prism`** du moteur (2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick, 100 agents,
-réserves 20 000 avec régénération 20/10, **5 obstacles** — côte sud en trois
-disques, crête centrale, amer — **comme `SimulationProfiles.Prism()`** : rayons
-150/150/150/60/8, l'amer de rayon 8 étant plus petit qu'une case de 32). Attention au nom du fichier : `_`, pas
-`.`. Un chemin demandé et introuvable **arrête le démarrage** au lieu de
-retomber sur les défauts — le repli silencieux lançait le mock sur un monde de
-500 × 500 sans le dire. `npm start -- config_prism.json` évite
-le piège le plus visible : un mock laissé sur ses défauts annonce un monde de
-500 × 500 (k = 320) là où le moteur annonce 2 240 × 2 240 (k = 100).
+Une configuration de référence : `config_example.json` (500 × 500, cellule 10,
+10 TPS, 60 s simulées par tick, 50 agents, trois disques de décor — les défauts
+du moteur). Un chemin demandé et introuvable **arrête le démarrage** au lieu de
+retomber sur les défauts : le repli silencieux lançait le mock sur un monde que
+l'opérateur n'avait pas demandé, sans le dire.
+
+Le profil `prism` (256 × 256 blocs, 6 TPS, 5 s/tick, décor Unreal en cinq
+disques) a été retiré : PRISM est autoritaire sur la géométrie de son monde et
+le moteur n'a plus de calibration dédiée. Le mock, qui simule SYNE, suit le même
+unique profil de référence.
 
 Le terminal affiche le suivi avec le préfixe `[SYNE-MOCK ...]` : démarrage des
 ports, connexions/déconnexions WebSocket, requêtes/réponses HTTP et transitions
@@ -30,7 +29,7 @@ blocages, les réserves, l'histogramme d'actions et un échantillon de positions
 d'agents. C'est la trace qui permet de confronter pas à pas la sortie du mock et
 la projection Unreal. Il est **désactivé par défaut** (un run produit une ligne
 par tick) et s'active par `diagnostics.tickLog` dans la configuration —
-`config_prism.json` l'active — ou par `--tick-log` / `--no-tick-log` au CLI.
+`config_example.json` l'active — ou par `--tick-log` / `--no-tick-log` au CLI.
 `diagnostics.tickLogSampleSize` borne le nombre d'agents échantillonnés.
 
 ## Intégration au Launcher LIVEX

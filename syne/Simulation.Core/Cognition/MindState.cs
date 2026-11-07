@@ -37,12 +37,14 @@ public sealed class MindState
         ArgumentNullException.ThrowIfNull(options);
         Memory = new Memory(options.Agents.Memory);
         Beliefs = new BeliefSet();
+        Spatial = new SpatialMemory();
         Trust = new Relationships(options.Agents.Trust);
         Needs = new BodyNeeds();
         Communication = new CommunicationState();
         Inventory = options.Agents.Actions.Inventory.Enabled
             ? new Inventory(options.Agents.Actions.Inventory.CapacityWeight)
             : null;
+        KnowledgeBuilder.SeedRecipeKnowledge(Beliefs, options.Agents.Knowledge);
     }
 
     private MindState(SimulationOptions options, Memory memory, BeliefSet beliefs, Relationships trust)
@@ -50,17 +52,27 @@ public sealed class MindState
         ArgumentNullException.ThrowIfNull(options);
         Memory = memory;
         Beliefs = beliefs;
+        Spatial = new SpatialMemory();
         Trust = trust;
         Needs = new BodyNeeds();
         Communication = new CommunicationState();
         Inventory = options.Agents.Actions.Inventory.Enabled
             ? new Inventory(options.Agents.Actions.Inventory.CapacityWeight)
             : null;
+        KnowledgeBuilder.SeedRecipeKnowledge(Beliefs, options.Agents.Knowledge);
     }
 
     public Memory Memory { get; }
 
     public BeliefSet Beliefs { get; }
+
+    /// <summary>
+    /// Mémoire spatiale par chunk (SYNE-221) : masque de tags cru et confiance par
+    /// région. Alimentée par les résumés de région du flux PRISM ; vide (et sans
+    /// effet) tant qu'aucun résumé n'est reçu, donc la trajectoire locale est
+    /// inchangée.
+    /// </summary>
+    public SpatialMemory Spatial { get; }
 
     public Relationships Trust { get; }
 
@@ -96,6 +108,13 @@ public sealed class MindState
 
     /// <summary>Objectif courant (intention) — nul tant qu'aucune délibération n'a eu lieu.</summary>
     public Goal? Intention { get; set; }
+
+    /// <summary>
+    /// Plan en cours d'exécution (SYNE-223, planificateur actif seulement).
+    /// <b>Transitoire</b> : non persisté — il est redérivé à la délibération
+    /// suivante à partir des mêmes entrées (aucun tirage PRNG en jeu).
+    /// </summary>
+    public PlannerState? Plan { get; set; }
 
     public UtilityScore? LastDecision { get; private set; }
 
@@ -321,7 +340,8 @@ public sealed class MindState
         IReadOnlyDictionary<World.ResourceKind, double>? inventoryAmounts = null,
         IReadOnlyList<Commitment>? commitments = null,
         ulong lastDeliberationTick = 0,
-        IReadOnlyList<DesireKind>? triggeredAtLastDeliberation = null)
+        IReadOnlyList<DesireKind>? triggeredAtLastDeliberation = null,
+        SpatialMemory? spatial = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(memory);
@@ -335,6 +355,11 @@ public sealed class MindState
             needs.Social, needs.Curiosity, needs.Energy);
         Memory.RestoreState(memory.AllEntries, memory.NextSequence);
         Beliefs.RestoreState(beliefs.All);
+        if (spatial is not null)
+        {
+            Spatial.RestoreState(spatial.Chunks);
+        }
+
         Trust.RestoreState(trust.Snapshot());
         Communication.RestoreState(communication.OutgoingSnapshot, communication.RelayedIdsSnapshot);
         RestoreSuccessRates(successRates);

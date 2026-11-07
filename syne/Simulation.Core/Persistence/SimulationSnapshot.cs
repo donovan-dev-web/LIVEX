@@ -31,7 +31,13 @@ public sealed record SimulationSnapshot(
     string EngineVersion,
     ulong Tick,
     RngStateDto Rng,
-    WorldSnapshotDto World,
+    // Monde **optionnel** (SYNE-220 étape 3a) : présent pour un run local, absent
+    // d'un snapshot de cognition seule (mode couplé : le monde appartient à PRISM
+    // et son checkpoint fait foi). L'absence est déclarée, jamais un monde vide de
+    // remplissage — et elle est refusée par `Restore` (jamais restaurée en
+    // silence comme un monde à zéro entité).
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorldSnapshotDto? World,
     IReadOnlyList<MindSnapshotDto> Minds,
     IReadOnlyList<GroupSnapshotDto> Groups,
     ulong NextGroupId,
@@ -39,7 +45,30 @@ public sealed record SimulationSnapshot(
     // configuration effective au moment de la capture. Absent des snapshots
     // antérieurs — une absence déclarée, jamais un zéro de remplissage.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    ulong? ConfigHash = null);
+    ulong? ConfigHash = null,
+    // Référence de monde d'un snapshot **cognitif** (étape 3a) : dimensions et
+    // cellule attendues, et empreinte de contenu PRISM quand elle est connue.
+    // Absente des snapshots complets (le monde y est décrit en entier), donc le
+    // format local est inchangé.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorldReferenceDto? WorldReference = null);
+
+/// <summary>
+/// Référence de monde d'un snapshot cognitif (SYNE-220 étape 3a) : ce que SYNE doit
+/// savoir du monde qu'il ne possède pas — sa taille, sa cellule et, quand l'appelant
+/// la fournit, l'empreinte du contenu PRISM auquel la cognition se rattache.
+/// </summary>
+/// <remarks>
+/// Ce n'est <b>pas</b> un monde : aucune entité, aucun obstacle, aucun gisement.
+/// Le contenu physique vient de l'hôte, et un désalignement de contenu est un
+/// refus de reprise, pas une reconstruction approximative.
+/// </remarks>
+public sealed record WorldReferenceDto(
+    double Width,
+    double Height,
+    double CellSize,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ContentHash = null);
 
 /// <summary>État d'un PRNG xoshiro256** (4 × ulong).</summary>
 public sealed record RngStateDto(ulong S0, ulong S1, ulong S2, ulong S3);
@@ -126,7 +155,11 @@ public sealed record MindSnapshotDto(
     // exacte après reprise mais l'explication repartait d'un score nul et d'une
     // cible absente. Additif : absent si aucune décision.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DecisionSnapshotDto? Decision = null);
+    DecisionSnapshotDto? Decision = null,
+    // Mémoire spatiale par chunk (SYNE-221) : additive et absente quand elle est
+    // vide, donc les empreintes des runs sans PRISM restent identiques.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<SpatialChunkSnapshotDto>? SpatialChunks = null);
 
 /// <summary>
 /// Trace décisionnelle persistée : état (nouvelle / maintenue / interruptive /
@@ -201,6 +234,14 @@ public sealed record MemoryEntrySnapshotDto(
     double Confidence,
     ulong StoredAt);
 
+/// <summary>Souvenir d'un chunk : masque de tags cru, confiance et dernier tick vu.</summary>
+public sealed record SpatialChunkSnapshotDto(
+    int ChunkX,
+    int ChunkY,
+    uint TagMask,
+    double Confidence,
+    ulong LastSeenTick);
+
 public sealed record BeliefSnapshotDto(
     string Subject,
     string Predicate,
@@ -209,7 +250,11 @@ public sealed record BeliefSnapshotDto(
     string Source,
     ulong BornTick,
     ulong UpdatedTick,
-    ulong ExpiryTick);
+    ulong ExpiryTick,
+    // Savoir durable (SYNE-222/224) : absent quand faux, donc les empreintes des
+    // runs sans connaissance déclarée restent identiques.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    bool Durable = false);
 
 public sealed record TrustSnapshotDto(ulong PeerId, double Trust);
 

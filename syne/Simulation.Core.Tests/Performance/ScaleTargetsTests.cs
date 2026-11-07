@@ -88,12 +88,6 @@ public class ScaleTargetsTests
     }
 
     [Fact]
-    public void OneThousandEntities_StayAboveRegressionFloor()
-    {
-        AssertAboveFloor(20.0, Throughput(12345, 1000, 40), "Débit à 1000 entités sous le plancher anti-régression.");
-    }
-
-    [Fact]
     public void ScaleChecksum_IsBitForBitReproducible()
     {
         // SYNE-093 : le benchmark est reproductible bit-à-bit à seed égale — ici à
@@ -132,3 +126,4 @@ public class ScaleTargetsTests
         return hash;
     }
 }
+

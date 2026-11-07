@@ -45,15 +45,17 @@ lancez le serveur Node.js de simulation du contrat :
 ```bash
 cd syne-mock
 npm ci
-npm start -- config_prism.json   # miroir du profil `prism` du moteur
+npm start -- config_example.json  # monde de référence du moteur
 ```
 
 Le mock écoute par défaut sur `127.0.0.1:5181` (HTTP de contrôle) et
 `127.0.0.1:5180` (WebSocket), avec 50 agents et un maximum de 400 ticks par
 défaut. Ses ports et le scénario sont configurables dans le JSON — un
-`config_prism.json` livre le miroir du profil `prism` du moteur
-(2 240 × 2 240, cellule 32, 6 TPS, 5 s/tick, 100 agents), et un chemin de
-fichier introuvable arrête le démarrage au lieu de retomber sur les défauts. Consultez
+`config_example.json` livre le monde de référence du moteur (500 × 500 unités,
+cellule 10, 10 TPS, 60 s simulées par tick, 50 agents — convention ADR-013 :
+1 unité = 1 bloc = 1 m), et un chemin de fichier introuvable arrête le démarrage
+au lieu de retomber sur les défauts. Le profil `prism` que le mock miroitait
+a été retiré : PRISM est autoritaire sur la géométrie de son monde. Consultez
 [`../syne-mock/README.md`](../syne-mock/README.md) pour les routes, événements,
 options et commandes de validation.
 

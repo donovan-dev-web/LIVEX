@@ -54,25 +54,6 @@ public sealed class ReferenceProfileParityTests
     }
 
     [Fact]
-    public void PrismJsonFile_ReplaysExactlyThePrismProfile()
-    {
-        // Même verrou pour le profil `prism` : `configs/simulation/prism.json`
-        // est le profil CLI/Launcher et la surcouche que PRISM envoie dans
-        // `POST /api/control/prepare` ; `SimulationProfiles.Prism()` est ce que
-        // produit `--simulation prism`. Les deux avaient divergé (dérives
-        // 0,0002/0,0005 au lieu de 0,003/0,002, et un layout d'obstacles
-        // 15/5/120/90/80 au lieu de 150/150/150/60/8) : même géométrie annoncée,
-        // trajectoire et décor différents. Un écart doit casser ce test.
-        string overlay = File.ReadAllText(LocateSimulationConfig("prism.json"));
-
-        SimulationOptions fromFile = ConfigLoader.MergeJson(ConfigLoader.LoadDefaults(), overlay);
-
-        Assert.Equal(
-            CanonicalJson(ConfigLoader.ToJson(SimulationProfiles.Prism())),
-            CanonicalJson(ConfigLoader.ToJson(fromFile)));
-    }
-
-    [Fact]
     public void BuiltInDefaults_EqualTheReferenceProfile()
     {
         Assert.Equal(

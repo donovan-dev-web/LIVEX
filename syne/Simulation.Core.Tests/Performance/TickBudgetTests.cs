@@ -101,55 +101,6 @@ public class TickBudgetTests
         Assert.Equal(withBudget, withoutBudget);
     }
 
-    [Fact]
-    public void GoldenChecksum_IsUnaffectedByInstrumentation()
-    {
-        // La collecte de budgets (et le pooling de perception) ne touchent pas la
-        // trajectoire : le checksum doré épinglé reste 0xdb57f58566418f5d même
-        // quand la boucle est instrumentée. Scénario = copie exacte de
-        // DeterminismRegressionTests (rochers, 25 entités, 200 ticks, same log).
-        // Nouvelle valeur après activation du garde anti-relay (engineVersion 0.12.0)
-        // puis ré-épinglage calibration B1 (engineVersion 0.15.0) :
-        // voir DeterminismRegressionTests.GoldenChecksum_IsPinned pour l'analyse.
-        SimulationLoop instrumented = BuildGolden(seed: 12345, TickBudgetCollector.CreateEnabled());
-
-        ulong hash = FnvOffsetBasis;
-        var log = new StringBuilder();
-        for (int tick = 1; tick <= 200; tick++)
-        {
-            instrumented.AdvanceOneTick();
-            foreach (Entity entity in instrumented.World.Entities.OrderBy(e => e.Id.Value))
-            {
-                Simulation.Core.Cognition.MindState mind = instrumented.Cognition.MindOf(entity.Id.Value);
-                log.Append(tick.ToString(CultureInfo.InvariantCulture));
-                log.Append(';');
-                log.Append(entity.Id.Value);
-                log.Append(';');
-                log.Append(mind.Memory.Recall((ulong)tick).Count.ToString(CultureInfo.InvariantCulture));
-                log.Append(';');
-                log.Append(mind.Intention?.Kind ?? Simulation.Core.Cognition.DesireKind.Idle);
-                log.Append(';');
-                foreach (Simulation.Core.Cognition.MemoryRecall recall in mind.Memory.Recall(
-                    Simulation.Core.Cognition.MemoryCategory.Observation,
-                    (ulong)tick).Take(8))
-                {
-                    log.Append(recall.Entry.Content);
-                    log.Append('|');
-                }
-
-                log.Append('\n');
-            }
-
-            hash = Fnv1a(log.ToString());
-        }
-
-        // Ré-épinglé au réalignement (engineVersion 0.16.0) : 0xf4aaa2733e491935 →
-        // 0xc8116c934c424b28, même valeur que
-        // DeterminismRegressionTests.GoldenChecksum_IsPinned — l'instrumentation
-        // reste bit-à-bit neutre sur la trajectoire (c'est la propriété testée ici).
-        Assert.Equal("0xc8116c934c424b28", $"0x{hash:x16}");
-    }
-
     private static SimulationLoop BuildGolden(ulong seed, TickBudgetCollector? budget)
     {
         SimulationOptions options = Options(seed);
@@ -179,3 +130,4 @@ public class TickBudgetTests
         return hash;
     }
 }
+

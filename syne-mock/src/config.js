@@ -13,7 +13,7 @@ const DEFAULTS = {
   maxTicks: 400,
   ticksPerSecond: 10,
   // Parité de contrat SYNE : secondes simulées par tick — 60 au
-  // défaut (1 tick = 1 minute simulée), 5 pour le profil `prism`. Le temps
+  // défaut (1 tick = 1 minute simulée) ; le temps
   // émis est `tick × simulatedSecondsPerTick`, jamais dérivé de la cadence.
   simulatedSecondsPerTick: 60,
   world: {
@@ -110,7 +110,7 @@ const DEFAULTS = {
     // les tests en enchaînent des centaines : c'est un outil de diagnostic que
     // l'on active explicitement (`diagnostics.tickLog`, ou `--tick-log` au CLI).
     // C'est la trace qui permet de comparer pas à pas la sortie du mock et la
-    // projection Unreal (PRISM) ; `config_prism.json` l'active.
+    // projection Unreal (PRISM) ; la configuration livrée peut l'activer.
     tickLog: false,
     tickLogSampleSize: 3,
   },

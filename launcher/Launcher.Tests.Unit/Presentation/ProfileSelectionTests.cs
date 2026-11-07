@@ -50,19 +50,20 @@ public sealed class ProfileSelectionTests
     }
 
     [Fact]
-    public void Campagne_accepte_le_scenario_prism_ADR_017()
+    public void Campagne_refuse_le_scenario_prism_retire()
     {
-        // le scénario « prism » est désormais sélectionnable dans le
-        // formulaire de campagne (additif — `reference` reste le défaut).
+        // Le profil « prism » est retiré : PRISM fournit la géométrie et les
+        // obstacles de son monde, un scénario dédié n'avait plus de contenu.
         var viewModel = new MainWindowViewModel(new ScriptedProfileFacade());
 
-        viewModel.SimulationId = WellKnownSimulations.Prism;
+        viewModel.SimulationId = "prism";
+
+        Assert.False(viewModel.CanCreateCampaign);
+
+        // La validation tolère les espaces de bord : « reference » reste accepté.
+        viewModel.SimulationId = WellKnownSimulations.Reference + " ";
 
         Assert.True(viewModel.CanCreateCampaign);
-
-        viewModel.SimulationId = WellKnownSimulations.Prism + " ";
-
-        Assert.True(viewModel.CanCreateCampaign); // la validation tolère les espaces de bord
     }
 
     [Fact]

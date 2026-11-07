@@ -49,4 +49,5 @@ Validé au jalon G5 (agents SYNE accomplissant au moins trois chaînes sans plan
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 6 novembre 2026 | **Spike P9 consigné** : le choix algorithmique laissé ouvert ici est tranché par **SYNE ADR-019** — chaînage arrière borné sur règles de décomposition (HTN léger), pas GOAP, pour la V2. Le reste de la décision (la planification vit dans SYNE, sur les recettes connues) est inchangé. | La question « GOAP ou HTN ? » était renvoyée à un spike P9 jamais écrit, alors que le socle du planificateur était déjà livré |
 | 1er novembre 2026 | Création | Refonte V2 |

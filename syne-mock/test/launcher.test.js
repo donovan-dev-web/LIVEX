@@ -125,14 +125,13 @@ test('the existing positional JSON configuration remains supported', () => {
 });
 
 test('a requested configuration file that does not exist fails instead of falling back', () => {
-  // Le repli silencieux sur les defauts lancait le mock sur 500x500/50 agents
-  // alors que l'operateur croyait charger le profil `prism` : le monde publie
-  // ne correspondait ni a sa configuration, ni au moteur, sans aucun message.
-  // Le message nomme le fichier ressemblant du meme dossier (`config.prism.json`
-  // vs `config_prism.json`) quand il est unique, et ne propose rien sinon.
+  // Le repli silencieux sur les defauts lancait le mock sur un monde que
+  // l'operateur n'avait pas demande, sans aucun message. Le message nomme le
+  // fichier ressemblant du meme dossier quand il est unique, et ne propose rien
+  // sinon.
   assert.throws(
-    () => readConfig(path.join(__dirname, '..', 'config.prism.json')),
-    /introuvable[\s\S]*config_prism\.json/
+    () => readConfig(path.join(__dirname, '..', 'config.example.json')),
+    /introuvable[\s\S]*config_example\.json/
   );
   assert.throws(() => readConfig(path.join(__dirname, '..', 'absent.json')), /introuvable/);
   assert.throws(
@@ -142,32 +141,25 @@ test('a requested configuration file that does not exist fails instead of fallin
   // Un chemin absent reste equivalent aux defauts : seul un chemin demande est
   // une erreur.
   assert.deepEqual(readConfig(null), {});
-  assert.equal(readConfig(path.join(__dirname, '..', 'config_prism.json')).world.width, 2240);
+  assert.equal(readConfig(path.join(__dirname, '..', 'config_example.json')).world.width, 500);
 });
 
-test('the prism configuration mirrors the engine profile the plugin will consume', () => {
-  // `configs/simulation/prism.json` (moteur) : monde 2240/cellule 32, 6 TPS,
-  // 5 s/tick. Le mock doit annoncer le meme monde, sinon PRISM calibre son
-  // echelle sur une geometrie que SYNE ne produira jamais.
-  const config = readConfig(path.join(__dirname, '..', 'config_prism.json'));
-  assert.equal(config.ticksPerSecond, 6);
-  assert.equal(config.simulatedSecondsPerTick, 5);
-  assert.equal(config.world.width, 2240);
-  assert.equal(config.world.height, 2240);
-  assert.equal(config.world.cellSize, 32);
-  assert.equal(config.world.metersPerUnit, 1);
-  // Le profil prism du moteur declare les memes obstacles : sans layout d'aucun
-  // cote, PRISM affichait un monde vide et son rendu d'obstacle paraissait casse.
-  // Rayons egaux a ceux de `SimulationProfiles.Prism()` (150/150/150/60/8, dont
-  // l'amer r = 8 plus petit qu'une case de 32) : c'est ce que publie
-  // `--simulation prism` et ce que compare scripts/parity-mock-syne-world.js.
+test('the shipped configuration mirrors the engine defaults', () => {
+  // Un seul profil calibre subsiste cote moteur (`reference`) : 500 unites,
+  // cellule 10, 10 TPS, 60 s simulees par tick. Le mock doit annoncer ce meme
+  // monde, sinon PRISM calibre son echelle sur une geometrie que SYNE ne
+  // produira jamais.
+  const config = readConfig(path.join(__dirname, '..', 'config_example.json'));
+  assert.equal(config.ticksPerSecond, 10);
+  assert.equal(config.simulatedSecondsPerTick, 60);
+  assert.equal(config.world.width, 500);
+  assert.equal(config.world.height, 500);
+  assert.equal(config.world.cellSize, 10);
   assert.equal(config.world.obstacles, true);
   assert.deepEqual(config.world.obstacleLayout, [
-    { id: 'cote-sud-1', x: 400, y: 2180, radius: 150 },
-    { id: 'cote-sud-2', x: 1120, y: 2180, radius: 150 },
-    { id: 'cote-sud-3', x: 1840, y: 2180, radius: 150 },
-    { id: 'crete-centre', x: 1120, y: 1120, radius: 60 },
-    { id: 'amer-1', x: 300, y: 300, radius: 8 },
+    { id: 'rock-1', x: 250, y: 250, radius: 8 },
+    { id: 'ridge-1', x: 120, y: 300, radius: 6 },
+    { id: 'boulder-cluster-1', x: 380, y: 150, radius: 10 },
   ]);
 });
 

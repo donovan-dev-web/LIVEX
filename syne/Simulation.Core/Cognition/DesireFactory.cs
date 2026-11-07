@@ -53,6 +53,17 @@ public enum DesireKind
 
     /// <summary>Se défendre (D7) : réduit de moitié le dégât d'une attaque subie.</summary>
     Defend = 13,
+
+    /// <summary>
+    /// Sécurité alimentaire (SYNE-222, désir <b>instrumental</b>) : aller vers une
+    /// source de nourriture connue pour <b>constituer un stock</b>, avant que la
+    /// faim n'ait franchi son seuil. N'est jamais généré par
+    /// <see cref="DesireFactory"/> (aucun besoin physiologique associé) : il vient
+    /// de <see cref="InstrumentalDesires"/> quand
+    /// <c>agents.desires.instrumental.enabled</c> est vrai. L'action terminale est
+    /// <c>Take</c> (primitive D8) — la consommer reste <c>Eat</c>.
+    /// </summary>
+    SecureFood = 14,
 }
 
 /// <summary>
@@ -102,7 +113,8 @@ public static class DesireFactory
         IEnumerable<DesireKind> activeKinds,
         ActionCatalog catalog,
         ResourceStocks stocks,
-        CognitionKnowledge? knowledge = null)
+        CognitionKnowledge? knowledge = null,
+        Inventory? inventory = null)
     {
         ArgumentNullException.ThrowIfNull(needs);
         ArgumentNullException.ThrowIfNull(catalog);
@@ -123,7 +135,8 @@ public static class DesireFactory
             if (kind is DesireKind.Idle
                 or DesireKind.Eat or DesireKind.Drink
                 or DesireKind.Take or DesireKind.Give or DesireKind.Trade
-                or DesireKind.Attack or DesireKind.Defend)
+                or DesireKind.Attack or DesireKind.Defend
+                or DesireKind.SecureFood)
             {
                 continue;
             }
@@ -133,7 +146,7 @@ public static class DesireFactory
                 continue;
             }
 
-            DesireKind candidate = ResolveTerminal(kind, catalog, stocks, knowledge);
+            DesireKind candidate = ResolveTerminal(kind, catalog, stocks, knowledge, inventory);
             if (!active.Contains(candidate) && generated.Add(candidate))
             {
                 goals.Add(new Goal(candidate, tick, knowledge?.TargetFor(candidate)));
@@ -145,15 +158,17 @@ public static class DesireFactory
 
     /// <summary>
     /// Faim/soif : <b>localisé</b>, l'action dépend de la connaissance — sur le
-    /// gisement → action terminale ; gisement connu → poursuite ciblée ; rien de
-    /// connu → exploration. <b>Global</b>, la viabilité de la réserve mondiale
-    /// décide (modèle historique).
+    /// gisement → action terminale ; <b>stock porté</b> (sécurité alimentaire,
+    /// SYNE-222) → action terminale sans repartir vers un gisement ; gisement
+    /// connu → poursuite ciblée ; rien de connu → exploration. <b>Global</b>, la
+    /// viabilité de la réserve mondiale décide (modèle historique).
     /// </summary>
     private static DesireKind ResolveTerminal(
         DesireKind kind,
         ActionCatalog catalog,
         ResourceStocks stocks,
-        CognitionKnowledge? knowledge)
+        CognitionKnowledge? knowledge,
+        Inventory? inventory)
     {
         if (kind is not (DesireKind.SeekFood or DesireKind.SeekWater))
         {
@@ -165,6 +180,15 @@ public static class DesireFactory
             bool food = kind == DesireKind.SeekFood;
             bool atSource = food ? known.AtFoodSource : known.AtWaterSource;
             if (atSource)
+            {
+                return food ? DesireKind.Eat : DesireKind.Drink;
+            }
+
+            // Stock porté (SYNE-222) : un agent qui a de la nourriture sur lui
+            // mange de sa réserve — c'est ce qui donne un sens au désir
+            // instrumental. Inactif sans inventaire (référence inchangée).
+            if (inventory is { } carried
+                && carried.Amount(food ? ResourceKind.Food : ResourceKind.Water) > 0.0)
             {
                 return food ? DesireKind.Eat : DesireKind.Drink;
             }

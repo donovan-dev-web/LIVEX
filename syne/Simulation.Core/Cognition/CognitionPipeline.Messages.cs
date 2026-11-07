@@ -117,6 +117,29 @@ public sealed partial class CognitionPipeline
             mind.Needs.Advance(_options.Agents.Needs);
         }
 
+        DesireKind chosenKind = Deliberate(mind, entity, currentTick);
+
+        using (TickPhaseScope actionScope = _budget?.Begin(TickPhase.ActionsMovement) ?? TickPhaseScope.Noop)
+        {
+            ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick, MindOf);
+            mind.RecordAction(result);
+            ObservePlanResult(mind, chosenKind, result);
+        }
+    }
+
+    /// <summary>
+    /// Délibération d'un agent : besoins → connaissance des cibles → objectifs →
+    /// utilité → intention → étape de plan. Renvoie l'action à exécuter.
+    /// </summary>
+    /// <remarks>
+    /// Extraction pure de l'ancien corps de <see cref="StepEntity"/> : les mêmes
+    /// instructions, dans le même ordre, donc une trajectoire identique. Deux
+    /// appelants : la boucle locale (perception → délibération → exécution) et la
+    /// boucle couplée (<see cref="StepCoupled"/> : délibération seule, l'action
+    /// appartient à PRISM).
+    /// </remarks>
+    private DesireKind Deliberate(MindState mind, Entity entity, ulong currentTick)
+    {
         ActionSettings actions = _options.Agents.Actions;
         DesireKind chosenKind;
         mind.DefendingThisTick = false;
@@ -194,7 +217,8 @@ public sealed partial class CognitionPipeline
                     active.Select(goal => goal.Kind),
                     _catalog,
                     _stocks,
-                    current);
+                    current,
+                    mind.Inventory);
                 var candidates = new List<Goal>(active.Count + generated.Count);
                 candidates.AddRange(active);
                 candidates.AddRange(generated);
@@ -207,12 +231,28 @@ public sealed partial class CognitionPipeline
                     actions.Inventory, actions.Plans, currentTick);
                 candidates.AddRange(planCandidates);
 
+                // Sécurité alimentaire (SYNE-222) : désir <b>instrumental</b> —
+                // viser un stock de nourriture avant que la faim ne franchisse son
+                // seuil. Il n'invente aucun vocabulaire (SecureFood / Take) et son
+                // bénéfice vient du manque de réserve, pas d'une faim. Désactivé par
+                // défaut : aucun candidat, trajectoire de référence inchangée.
+                // Aucune allocation quand la section est désactivée (chemin de la
+                // trajectoire de référence).
+                Dictionary<DesireKind, double>? benefitOverrides = null;
+                if (_instrumental is { } instrumental
+                    && InstrumentalDesires.Evaluate(mind, current, _options.Agents.Needs, instrumental) is { } secure
+                    && !candidates.Any(goal => goal.Kind == secure.Kind))
+                {
+                    candidates.Add(new Goal(secure.Kind, currentTick, secure.Target));
+                    benefitOverrides = new Dictionary<DesireKind, double>(1) { [secure.Kind] = secure.Benefit };
+                }
+
                 // Référence d'hystérésis : l'intention courante, <b>sauf</b> si son
                 // objectif vient d'être accompli (cible atteinte) — comparer le
                 // nouveau choix à un objectif terminé bloquerait l'action terminale.
                 DesireKind? hysteresisReference = TargetReached(entity, mind) ? null : mind.Intention?.Kind;
                 (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(
-                    mind, candidates, currentTick, entity.Id.Value, current, hysteresisReference);
+                    mind, candidates, currentTick, entity.Id.Value, current, hysteresisReference, benefitOverrides);
                 GoalTarget? target = ResolveTarget(best.Kind, current, entity.Position);
                 mind.RecordDecision(
                     scores,
@@ -294,11 +334,10 @@ public sealed partial class CognitionPipeline
 
         mind.Intention = BuildGoal(chosenKind, mind, knowledge, knowledgeFresh, currentTick, entity.Position);
 
-        using (TickPhaseScope actionScope = _budget?.Begin(TickPhase.ActionsMovement) ?? TickPhaseScope.Noop)
-        {
-            ActionResult result = _executor.Execute(entity, mind, chosenKind, currentTick, MindOf);
-            mind.RecordAction(result);
-        }
+        // Planificateur (SYNE-223) : l'intention délibérée peut être une suite
+        // d'étapes — c'est l'étape courante qui est exécutée. Sans planificateur
+        // actif, cette ligne rend l'intention inchangée.
+        return AdvancePlan(mind, chosenKind, mind.Intention?.Target, entity, currentTick);
     }
 
 

@@ -3,10 +3,10 @@
 
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
-// Rôle : Parcours Launcher → SYNE pour le scénario prism : la résolution d'options place le profil sous la
-//        surcouche launcher-config.json, et le batch supervisé transporté par le Launcher (simulation prism
-//        --config … --autostart) porte bien le profil dans la trame world_initialized (description 1.1) et les
-//        snapshots.
+// Rôle : Parcours Launcher → SYNE : la résolution d'options empile défauts, surcouche launcher-config.json
+//        puis flags CLI, et le batch supervisé transporté par le Launcher (--simulation reference --config …
+//        --autostart) porte bien l'échelle temporelle dans la trame world_initialized (description 1.1) et
+//        les snapshots.
 
 using System.Diagnostics;
 using System.Net;
@@ -18,36 +18,44 @@ using Xunit;
 namespace Simulation.Console.Tests;
 
 /// <summary>
-/// Parcours Launcher → SYNE pour le scénario <c>prism</c> : la
-/// résolution d'options place le profil <b>sous</b> la surcouche
-/// <c>launcher-config.json</c>, et le batch supervisé transporté par le Launcher
-/// (<c>--simulation prism --config … --autostart</c>) porte bien le profil dans
+/// Parcours Launcher → SYNE sur l'unique scénario batch (<c>reference</c>) :
+/// la résolution d'options empile défauts, surcouche <c>launcher-config.json</c>
+/// puis flags CLI, et le batch supervisé porte l'échelle temporelle résolue dans
 /// la trame <c>world_initialized</c> (description 1.1) et les snapshots.
 /// </summary>
-public sealed class Adr017PrismBatchTests
+/// <remarks>
+/// Ce parcours se jouait sur un profil <c>prism</c> séparé, seul moyen d'obtenir
+/// une échelle non standard. Ce profil est retiré : l'échelle temporelle est un
+/// levier de configuration ordinaire (ADR-017), donc la surcouche du Launcher
+/// suffit à l'exercer sur le profil de référence.
+/// </remarks>
+public sealed class Adr017TemporalBatchTests
 {
+    private const string OverlayJson =
+        """{ "agents": { "initialCount": 3 }, "simulation": { "ticksPerSecond": 24, "simulatedSecondsPerTick": 5 } }""";
+
     [Fact]
-    public void ResolveOptions_AppliesThePrismProfileUnderTheConfigOverlay()
+    public void ResolveOptions_StacksDefaultsOverlayThenCliFlags()
     {
-        string overlayPath = WriteTempOverlay("""{ "agents": { "initialCount": 3 }, "simulation": { "ticksPerSecond": 24 } }""");
+        string overlayPath = WriteTempOverlay(OverlayJson);
         try
         {
             CliOptions cli = CliOptions.Parse([
-                "--simulation", "prism",
+                "--simulation", "reference",
                 "--config", overlayPath,
                 "--world-size", "999", "999",
                 "--seed", "77"]);
 
             SimulationOptions options = Program.ResolveOptions(cli);
 
-            // Profil prism …
-            Assert.Equal(32, options.Simulation.WorldCellSize);
-            Assert.Equal(5, options.Simulation.SimulatedSecondsPerTick);
+            // Défauts du profil de référence…
+            Assert.Equal(10, options.Simulation.WorldCellSize);
             Assert.Equal(1.0, options.World.MetersPerUnit);
-            // …sous la surcouche du Launcher (priorité)…
+            // …remplacés par la surcouche du Launcher…
             Assert.Equal(24, options.Simulation.TicksPerSecond);
+            Assert.Equal(5, options.Simulation.SimulatedSecondsPerTick);
             Assert.Equal(3, options.Agents.InitialCount);
-            // …et sous les flags CLI (priorité la plus haute : monde et seed).
+            // …et par les flags CLI (priorité la plus haute : monde et seed).
             Assert.Equal(999, options.Simulation.WorldWidth);
             Assert.Equal(999, options.Simulation.WorldHeight);
             Assert.Equal(77ul, options.Random.Seed);
@@ -76,11 +84,11 @@ public sealed class Adr017PrismBatchTests
     }
 
     [Fact]
-    public async Task SupervisedPrismBatch_ExposesTheScaleOnWorldInitializedAndSnapshots()
+    public async Task SupervisedBatch_ExposesTheResolvedScaleOnWorldInitializedAndSnapshots()
     {
         // Shape exact des arguments du Launcher (ProcessRunExecutor) : surcouche
-        // launcher-config.json (agents + cadence) + --simulation prism.
-        BatchOutcome outcome = await RunPrismBatchAsync();
+        // launcher-config.json (agents + échelle temporelle) + --simulation reference.
+        BatchOutcome outcome = await RunSupervisedBatchAsync();
         try
         {
             outcome.AssertSucceeded();
@@ -94,11 +102,12 @@ public sealed class Adr017PrismBatchTests
             Assert.Equal("1.1", initialized.GetProperty("version").GetString());
 
             JsonElement world = initialized.GetProperty("world");
-            Assert.Equal(2240, world.GetProperty("width").GetInt32());
-            Assert.Equal(32, world.GetProperty("cellSize").GetDouble());
+            Assert.Equal(500, world.GetProperty("width").GetInt32());
+            Assert.Equal(10, world.GetProperty("cellSize").GetDouble());
             Assert.Equal(5, world.GetProperty("simulatedSecondsPerTick").GetInt32());
             Assert.Equal(1.0, world.GetProperty("metersPerUnit").GetDouble());
-            // La surcouche du Launcher garde la priorité sur la cadence du profil.
+            // La surcouche du Launcher porte la cadence : elle est bien résolue,
+            // donc transportée, et non remplacée par le défaut.
             Assert.Equal(24, world.GetProperty("ticksPerSecond").GetInt32());
 
             List<JsonElement> snapshots = messages
@@ -120,14 +129,14 @@ public sealed class Adr017PrismBatchTests
 
     private static string WriteTempOverlay(string json)
     {
-        string path = Path.Combine(Path.GetTempPath(), $"syne-prism-overlay-{Guid.NewGuid():N}.json");
+        string path = Path.Combine(Path.GetTempPath(), $"syne-batch-overlay-{Guid.NewGuid():N}.json");
         File.WriteAllText(path, json);
         return path;
     }
 
-    private static async Task<BatchOutcome> RunPrismBatchAsync()
+    private static async Task<BatchOutcome> RunSupervisedBatchAsync()
     {
-        string root = Path.Combine(Path.GetTempPath(), $"syne-prism-batch-{Guid.NewGuid():N}");
+        string root = Path.Combine(Path.GetTempPath(), $"syne-batch-{Guid.NewGuid():N}");
         string workDirectory = Path.Combine(root, "work");
         string logDirectory = Path.Combine(root, "logs");
         Directory.CreateDirectory(workDirectory);
@@ -135,9 +144,9 @@ public sealed class Adr017PrismBatchTests
         string configurationPath = Path.Combine(workDirectory, "launcher-config.json");
         await File.WriteAllTextAsync(
             configurationPath,
-            """{"agents":{"initialCount":3},"simulation":{"ticksPerSecond":24}}""");
+            """{"agents":{"initialCount":3},"simulation":{"ticksPerSecond":24,"simulatedSecondsPerTick":5}}""");
         int controlPort = FreePort();
-        const string correlationId = "syne-prism-batch-acceptance";
+        const string correlationId = "syne-batch-acceptance";
 
         var startInfo = new ProcessStartInfo("dotnet")
         {
@@ -150,11 +159,11 @@ public sealed class Adr017PrismBatchTests
         foreach (string argument in new[]
         {
             "--headless",
-            "--instance-id", "syne-prism-batch",
+            "--instance-id", "syne-batch",
             "--control-port", controlPort.ToString(System.Globalization.CultureInfo.InvariantCulture),
             "--work-dir", workDirectory,
             "--log-dir", logDirectory,
-            "--simulation", "prism",
+            "--simulation", "reference",
             "--seed", "12345",
             "--ticks", "3",
             "--config", configurationPath,
@@ -166,11 +175,11 @@ public sealed class Adr017PrismBatchTests
             startInfo.ArgumentList.Add(argument);
         }
 
-        startInfo.Environment["LIVEX_SESSION_TOKEN"] = "syne-prism-token";
+        startInfo.Environment["LIVEX_SESSION_TOKEN"] = "syne-batch-token";
         startInfo.Environment["LIVEX_CORRELATION_ID"] = correlationId;
 
         var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("SYNE prism batch test process failed to start.");
+            ?? throw new InvalidOperationException("SYNE batch test process failed to start.");
         Task<string> standardOutput = process.StandardOutput.ReadToEndAsync();
         Task<string> standardError = process.StandardError.ReadToEndAsync();
         try

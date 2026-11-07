@@ -36,7 +36,15 @@ La configuration est un **contrat reproductible** : le même `config.json` + mê
     "memory": { "maxCapacity": 1000, "recallThreshold": 0.01,
                 "observationDecayRate": 0.01, "eventDecayRate": 0.005, "interactionDecayRate": 0.002 },
     "beliefs": { "updateStrength": 0.3, "maxChangePerSnap": 0.5, "alignBonus": 0.2,
-                 "conflictPenalty": 0.1, "expiryTicks": 100, "expiredCap": 0.4, "timeDecayPerTick": 0.999 },
+                 "conflictPenalty": 0.1, "expiryTicks": 100, "expiredCap": 0.4, "timeDecayPerTick": 0.999,
+                 "spatialMemory": { "maxChunksPerAgent": 512, "decayPerTick": 0.999,
+                                    "forgetThreshold": 0.05 } },
+    "planner": { "enabled": false, "maxPlanSteps": 6, "cacheCapacity": 64, "replanOnFailure": true },
+    "knowledge": { "enabled": false, "learnFromBooks": true,
+                   "recipes": [ { "id": "stone_pickaxe", "station": "atelier",
+                                  "inputs": [ { "item": "stone", "quantity": 3 },
+                                              { "item": "wood", "quantity": 2 } ],
+                                  "outputs": [ { "item": "pickaxe_stone", "quantity": 1 } ] } ] },
     "actions": { "moveEnergyCost": 0.03, "restEnergyGain": 1.5, "restFatigueRecovery": 2.0,
                  "deliberation": { "intervalTicks": 10, "alignBonus": 1.2,
                                    "actionSwitchMargin": 0.05, "conflictTieMargin": 0.5 },
@@ -148,10 +156,14 @@ le mock séparé `syne-mock` dispose de sa propre configuration.
   - `perception.radius` ∈ [20, 70] (décision n°6) ; `rotationInterval` ≥ 1 ;
   - `memory.maxCapacity` > 0 ; taux de décroissance ≥ 0 ;
   - `beliefs.updateStrength` ∈ [0, 1] ;
+  - `beliefs.spatialMemory.maxChunksPerAgent` ≥ 1 ; `decayPerTick` ∈ (0, 1] ; `forgetThreshold` ∈ [0, 1) (SYNE-221) ;
+  - `agents.planner.maxPlanSteps` ≥ 1 ; `agents.planner.cacheCapacity` ≥ 0 (0 = cache désactivé) (SYNE-223) ;
+  - `agents.desires.instrumental.anticipateTicks` >= 1 ; `reserveTarget` >= 1 ; la section est refusée quand `agents.actions.inventory.enabled` est faux (un stock sans contenant) (SYNE-222) ;
+  - `agents.knowledge.recipes` est refusé quand `agents.knowledge.enabled` est faux ; `id` non vide et unique ; `station` non vide quand elle est fournie ; au moins une entrée et une sortie ; `item` non vide, unique dans sa liste ; `quantity` ≥ 1 (SYNE-222) ;
   - `actions.deliberation.intervalTicks` ≥ 1 ; `alignBonus` > 0 ; `actionSwitchMargin`/`conflictTieMargin` ≥ 0 ;
   - `actions.interruption.utilityExcessMargin` ≥ 0 ; `criticalHunger` ∈ (0, 100] ; `criticalEnergy` ∈ [0, 100) ;
   - `needs.hungerTriggerThreshold`/`thirstTriggerThreshold`/`fatigueTriggerThreshold` ∈ (0, 100] ;
-  - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`, `take`, `give`, `trade`, `attack`, `defend` — les 5 primitives atomiques D7 depuis engineVersion 0.14.0) — échec déclaratif si une clé manque.
+  - `actions.catalog` complet : une entrée **obligatoire** pour chaque action (`idle`, `seekFood`, `seekWater`, `eat`, `drink`, `rest`, `flee`, `socialize`, `explore`, `take`, `give`, `trade`, `attack`, `defend`, `secureFood` — les 5 primitives atomiques D7 depuis engineVersion 0.14.0, `secureFood` depuis SYNE-222) — échec déclaratif si une clé manque.
   - `communication.transmissionRange` ∈ (0, 70] ; `maxSendsPerTick`/`maxReceivesPerTick` ≥ 0 ; `maxHops` ≥ 1 ; `incomprehensionRate`/`hopConfidenceDecay`/`trustDecay` ∈ [0, 1] ; coûts (base + facteurs) ≥ 0 (SYNE-052/053) ; `transmissionRange` > `perceptionRange` invalide (la perception doit rester strictement supérieure).
    - `groups.enabled`/`reproduction.enabled` booléens ; `reviewIntervalTicks`/`intervalTicks` ≥ 1 ; `trustThreshold`/`consensusThreshold`/`consentTrustThreshold` ∈ [0, 1] ; `minGroupSize` ≥ 2 ; `maxBirthsPerTick` ≥ 1 ; `agents.inheritance.salienceThreshold` > 0.
   - `resources.<type>.initial` ≥ 0 ; `regenerationRate` ≥ 0 ; `degradationTick` > 0 ou absent (SYNE-070).
@@ -420,14 +432,14 @@ Validation §6 : `zones` rejetée si `world.territories.enabled` est `false` ; p
 | `world.books.readBenefit` | `1.0` | n°19 | Bénéfice de principe tracé à la lecture ; son effet cognitif attend le moteur mémoire |
 
 Exemple : `{"world":{"books":{"enabled":true,"writeCostEnergy":20,"readBenefit":1}}}`.
-Les coûts doivent être positifs ou nuls. En V0.1, l’écriture et la lecture sont des appels explicites de l’API du moteur ; l’accès spatial, le temps de rédaction et l’effet cognitif détaillé restent hors de ce sous-jalon.
+Les coûts doivent être positifs ou nuls. En V0.1, l’écriture et la lecture sont des appels explicites de l’API du moteur ; l’accès spatial, le temps de rédaction et l’effet cognitif détaillé restent hors de ce sous-jalon — **sauf** la transmission du savoir qu'un livre **déclare** (§6.13, SYNE-224) : une lecture apprend les recettes écrites dans le contenu.
 
 ### 6.12 Clés d’échelle temporelle (ADR-017)
 
 | Clé | Défaut | Plage validée | Rôle |
 | :-- | :-- | :-- | :-- |
-| `simulation.simulatedSecondsPerTick` | `60` | `[1, 3600]` (entier) | Secondes simulées par tick — 60 : 1 tick = 1 minute simulée (ADR-005, comportement historique **inchangé**) ; 5 : profil `prism` (R = 30 à 6 TPS) |
-| `world.metersPerUnit` | `1.0` | `> 0` | **Informatif** : mètres par unité SYNE — jamais calculé par le moteur, transmis aux clients (`world_initialized`, PRISM k = 100 uu/unité) |
+| `simulation.simulatedSecondsPerTick` | `60` | `[1, 3600]` (entier) | Secondes simulées par tick — 60 : 1 tick = 1 minute simulée (ADR-005, comportement historique **inchangé**) ; une valeur plus fine (5, par exemple) reste possible par surcouche, sans profil dédié |
+| `world.metersPerUnit` | `1.0` | `> 0` | **Informatif** : mètres par unité SYNE — jamais calculé par le moteur, transmis aux clients (`world_initialized`). Vaut `1` sur le profil enregistré, ce qui **est** la convention spatiale (ADR-013) : 1 unité SYNE = 1 mètre = 1 bloc PRISM |
 
 Règle de conversion (ADR-017, inventaire complet `TICK_QUANTITIES.md`) : `dt = simulatedSecondsPerTick / 60` est appliqué **une fois au démarrage du run** — les quantités de **classe A** (taux de besoins, énergie mouvement/repos, régénérations/dégradation des réserves, décroissances mémoire/croyances/confiance, durée des saisons) sont exprimées **par minute simulée** dans la config et mises à l'échelle en valeurs par tick effectif ; les classes B (cadences en ticks) et C (effets par action) sont inchangées. Le ratio temps réel est `R = ticksPerSecond × simulatedSecondsPerTick` — l'UI doit l'afficher (ADR-005).
 
@@ -436,14 +448,78 @@ Profils enregistrés (`SimulationProfiles`) :
 | Profil | Fichier | Monde | TPS | spt | R |
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | `reference` | `../../configs/simulation/reference.json` | 500 × 500, cellule 10 | 10 | 60 | 600 (historique : 1 tick = 1 min) |
-| `prism` | `../../configs/simulation/prism.json` | 2 240 × 2 240, cellule 32 | 6 | **5** | **30** |
 
-Le fichier `prism.json` doit **rejouer exactement** `SimulationProfiles.Prism()` : même géométrie (dont les cinq obstacles du layout `cote-sud-1/2/3` `r = 150`, `crete-centre` `r = 60`, `amer-1` `r = 8`) et mêmes dérives de besoins (`0,003` / `0,002`). C'est le verrou `ReferenceProfileParityTests.PrismJsonFile_ReplaysExactlyThePrismProfile` ; `syne-mock/config_prism.json` en est le miroir pour la géométrie (`scripts/parity-mock-syne-world.js`).
+Un seul profil calibré subsiste. Le profil `prism` (256 × 256, cellule 16, 6 TPS,
+5 s/tick, décor Unreal en cinq disques) a été retiré : PRISM est autoritaire sur
+la géométrie de son monde — le mode couplé lit les dimensions, les obstacles et
+les gisements dans l'instantané PRISM (ADR-013) — et sa cadence n'était qu'une
+calibration SYNE qui ralentissait les désirs. Une échelle plus fine reste
+accessible par surcouche (`simulation.simulatedSecondsPerTick`), avec la
+sémantique de fusion ordinaire.
 
 Exemple : `{"simulation":{"simulatedSecondsPerTick":5}}`.
 Validation : valeur entière dans `[1, 3600]` (0, négatif, > 3600 et non entier rejetés) ; `world.metersPerUnit` strictement positif et fini.
 
-Activation du profil `prism` : `--simulation prism` (scénario batch accepté à côté de `reference` ; le profil s'applique **sous** `--config`, priorité §5 — `reference`/aucun scénario reste le défaut intégré, inchangé) ; côté Launcher, le champ « Scénario » de la campagne accepte `prism`.
+Scénario batch : `--simulation reference` (ou aucun scénario : c'est le défaut intégré). `prism` est **refusé** — le scénario n'existe plus, ni au CLI ni dans le champ « Scénario » du Launcher.
+
+### 6.13 Clés de connaissance — recettes et savoir durable (SYNE-222/224)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.knowledge` | `{enabled: false}` | SYNE-222 | Connaissance initiale déclarée ; désactivée par défaut, ne change pas le run de référence |
+| `agents.knowledge.enabled` | `false` | SYNE-222 | Sans elle, `recipes` est **refusé** à la validation |
+| `agents.knowledge.recipes[]` | `[]` | SYNE-222 | Recettes connues au départ : `{id, station?, inputs[], outputs[]}` |
+| `agents.knowledge.learnFromBooks` | `true` | SYNE-224 | Une lecture transmet les recettes déclarées dans le livre |
+
+Une croyance de recette est **durable** (`Belief.IsDurable`) : elle ne décroît pas et n'expire pas — c'est la différence entre un **fait observé** (périssable) et une **connaissance** ; le drapeau est persisté de façon additive (`durable`, absent quand faux).
+
+Chaque recette produit jusqu'à trois croyances `recipe-<id>` : `inputs` et `outputs` au format canonique trié (`stone:3;wood:2`), et `station` quand elle est déclarée. La connaissance déclarée est injectée à la **création de chaque esprit** (nouveau-nés compris), source `config`.
+
+Apprentissage par les livres (SYNE-224, nécessite `world.books.enabled`, §6.11) : une ligne du contenu qui commence exactement par `recipe:` déclare une recette, format `recipe:<id>|<station ou ->|<entrées>|<sorties>` —
+
+```text
+recipe:stone_pickaxe|atelier|stone:3;wood:2|pickaxe_stone:1
+recipe:sharp_stone|-|stone:1|sharp_stone:1
+```
+
+Les autres lignes sont de la prose ignorée ; une ligne mal formée est ignorée sans erreur (une faute dans un livre ne doit pas faire échouer un tick). Une recette répétée garde sa dernière déclaration dans le texte. La croyance apprise porte la source `book:<id>` et le tick de lecture (on peut dire **quand** l'agent l'a apprise) ; elle est persistée comme toute croyance durable. Un livre lu peut donc **remplacer** une recette configurée de même identifiant.
+
+### 6.14 Clés du planificateur — plans, cache, replanification (SYNE-223)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.planner` | `{enabled: false}` | SYNE-223 | Planificateur intégré ; désactivé par défaut, trajectoire de référence inchangée |
+| `agents.planner.maxPlanSteps` | `6` | SYNE-223 | Étapes maximales retenues (troncature au-delà) |
+| `agents.planner.cacheCapacity` | `64` | SYNE-223 | Taille du cache de plans ; `0` = pas de cache (plans reconstruits) |
+| `agents.planner.replanOnFailure` | `true` | SYNE-223 | Une étape bloquée invalide le plan et force une replanification |
+
+Le choix algorithmique est consigné dans [`adr/ADR-019`](adr/ADR-019-planificateur-chainage-arriere-borne.md) : **chaînage arrière borné sur règles de décomposition** (HTN léger), pas GOAP, pour la V2.
+
+Le planificateur transforme l'intention délibérée en une suite d'étapes construites avec le **vocabulaire d'actions existant** (aucune action nouvelle, aucun tirage PRNG) : une intention de recherche portant une cible connue donne deux étapes (aller vers, puis consommer) ; toute autre intention donne un plan d'une étape, ce qui garde l'exécutif et le cache uniformes. Une poursuite est **franchie** dès que la cible est à portée d'interaction ; une étape terminale ne se franchit qu'en s'exécutant.
+
+Le cache est borné et déterministe (ordre de réutilisation strict, éviction du moins récemment utilisé) et porte une clé stable `« <intention>@<cible|-> »` ; il est **invalidé** quand une étape est bloquée, et le plan est alors retiré — la délibération suivante reconstruit. Les plans sont **transitoires** : ils ne sont pas persistés, car ils se redérivent à l'identique des mêmes entrées (aucun état caché ne manque après une reprise).
+
+Exemple : `{"agents":{"planner":{"enabled":true,"maxPlanSteps":4}}}`.
+
+### 6.15 Clés des désirs instrumentaux — sécurité alimentaire (SYNE-222)
+
+| Clé | Défaut | Décision | Rôle |
+| :-- | :-- | :-- | :-- |
+| `agents.desires.instrumental` | `{enabled: false}` | SYNE-222 | Désirs instrumentaux ; désactivé par défaut, trajectoire de référence inchangée |
+| `agents.desires.instrumental.enabled` | `false` | SYNE-222 | Active la sécurité alimentaire ; exige `agents.actions.inventory.enabled` |
+| `agents.desires.instrumental.anticipateTicks` | `240` | SYNE-222 | Horizon d'anticipation : la faim **projetée** à cet horizon doit atteindre son seuil de déclenchement (classe A, période → `/dt`) |
+| `agents.desires.instrumental.reserveTarget` | `3` | SYNE-222 | Réserve de nourriture (unités en inventaire) en deçà de laquelle l'agent n'est **pas** en sécurité |
+
+Un désir **instrumental** vise un moyen, pas un état : l'agent qui n'est pas encore affamé mais dont la faim franchira son seuil à l'horizon, et dont la réserve est sous le niveau visé, se met en quête d'un **stock de nourriture**. Aucun vocabulaire d'action n'est inventé — la chaîne est `secureFood` (aller vers la source connue, poursuite) puis `take` (primitive d'inventaire D8) ; consommer reste `eat`.
+
+Le désir n'est proposé que si l'agent **sait** où trouver de la nourriture (croyance de gisement, à portée ou non) : sans cible crue, la prospection reste le rôle d'`explore`, et le désir instrumental ne remplace jamais le désir physiologique — il s'efface dès que la faim franchit son seuil. Son bénéfice ne vient pas de la faim mais du **manque de réserve** (`60 × (reserveTarget − stock) / reserveTarget`) ; il est fourni à la délibération sans modifier la formule d'utilité.
+
+Deux conséquences, toutes deux conditionnées par l'inventaire actif (donc absentes de la référence) :
+
+- **Prendre** privilégie la nourriture quand la réserve est sous le niveau visé, même si la soif domine la faim : c'est le moyen poursuivi, pas son substitut.
+- **Manger/boire** est possible à même la **réserve portée** quand aucun gisement n'est à portée, et `seekFood`/`seekWater` se résolvent en `eat`/`drink` dès que l'agent porte de quoi satisfaire le besoin — sinon un stock constitué ne servirait à rien. La réserve est débitée de `catalog.eat.reserveConsumption` (resp. `drink`).
+
+Exemple : `{"agents":{"actions":{"inventory":{"enabled":true}},"desires":{"instrumental":{"enabled":true,"anticipateTicks":240,"reserveTarget":3}}}}`.
 
 ---
 

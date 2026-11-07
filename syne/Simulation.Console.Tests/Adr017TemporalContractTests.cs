@@ -3,9 +3,9 @@
 
 // Projet : LIVEX (SYNE)
 // Auteur : CHARTRAIN Donovan
-// Rôle : Contrats additifs de l'échelle temporelle : la préparation du profil prism porte simulatedSecondsPerTick
-//        et metersPerUnit dans la description world_initialized et dans /api/control/status, sans rien changer au
-//        cycle de contrôle.
+// Rôle : Contrats additifs de l'échelle temporelle : une préparation portant une échelle non standard porte
+//        simulatedSecondsPerTick et metersPerUnit dans la description world_initialized et dans
+//        /api/control/status, sans rien changer au cycle de contrôle.
 
 using System.Collections.Concurrent;
 using System.Net.Http;
@@ -20,14 +20,18 @@ using Xunit;
 namespace Simulation.Console.Tests;
 
 /// <summary>
-/// Contrats additifs de l'échelle temporelle (spec PRISM) :
-/// la préparation du profil <c>prism</c> porte <c>simulatedSecondsPerTick</c>
-/// et <c>metersPerUnit</c> dans la description <c>world_initialized</c>
-/// (version 1.1) et dans <c>/api/control/status</c>, sans rien changer au
-/// cycle de contrôle.
+/// Contrats additifs de l'échelle temporelle (ADR-017) : une préparation
+/// portant une échelle non standard (5 s simulées par tick, 6 TPS) publie
+/// <c>simulatedSecondsPerTick</c> et <c>metersPerUnit</c> dans la description
+/// <c>world_initialized</c> (version 1.1) et dans <c>/api/control/status</c>,
+/// sans rien changer au cycle de contrôle.
 /// </summary>
 public sealed class Adr017TemporalContractTests : IAsyncLifetime
 {
+    /// <summary>Surcouche d'échelle temporelle, sur le profil de référence.</summary>
+    private const string ScaleOverlay =
+        """{ "simulation": { "ticksPerSecond": 6, "simulatedSecondsPerTick": 5 } }""";
+
     private readonly ControlServer _server = new(FreePort());
     private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(15) };
 
@@ -44,13 +48,13 @@ public sealed class Adr017TemporalContractTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PreparePrism_CarriesTheScaleOnWorldAndStatus()
+    public async Task Prepare_CarriesTheScaleOnWorldAndStatus()
     {
         using var prepare = new HttpRequestMessage(HttpMethod.Post, Url("/api/control/prepare"))
         {
-            // Le profil prism est complet : passé comme surcouche, il
-            // s'applique sur les défauts avec la sémantique de fusion usuelle.
-            Content = JsonBody($$"""{ "seed": 7, "config": {{SimulationProfiles.PrismJson()}} }"""),
+            // L'échelle temporelle est un levier de configuration ordinaire
+            // (ADR-017) : une surcouche suffit, sur le profil de référence.
+            Content = JsonBody($$"""{ "seed": 7, "config": {{ScaleOverlay}} }"""),
         };
         using HttpResponseMessage prepared = await _http.SendAsync(prepare);
         Assert.Equal(System.Net.HttpStatusCode.OK, prepared.StatusCode);
@@ -61,9 +65,9 @@ public sealed class Adr017TemporalContractTests : IAsyncLifetime
         Assert.Equal(5, (int?)world?["simulatedSecondsPerTick"]);
         Assert.Equal(1.0, (double?)world?["metersPerUnit"]);
         Assert.Equal(6, (int?)world?["ticksPerSecond"]);
-        Assert.Equal(2240, (int?)world?["width"]);
-        Assert.Equal(70, (int?)world?["cellCountX"]);
-        Assert.Equal(4_900, ((JsonArray?)world?["cells"])?.Count);
+        Assert.Equal(500, (int?)world?["width"]);
+        Assert.Equal(50, (int?)world?["cellCountX"]);
+        Assert.Equal(2500, ((JsonArray?)world?["cells"])?.Count);
 
         using HttpResponseMessage statusResponse = await _http.GetAsync(Url("/api/control/status"));
         JsonNode? status = JsonNode.Parse(await statusResponse.Content.ReadAsStringAsync());
@@ -88,7 +92,7 @@ public sealed class Adr017TemporalContractTests : IAsyncLifetime
         var sink = new RecordingSink();
         await using var controller = new SimulationController(sink);
 
-        await controller.PrepareAsync(7, SimulationProfiles.PrismJson());
+        await controller.PrepareAsync(7, ScaleOverlay);
 
         string frame = Assert.Single(sink.Messages);
         JsonNode? parsed = JsonNode.Parse(frame);
@@ -97,6 +101,8 @@ public sealed class Adr017TemporalContractTests : IAsyncLifetime
         Assert.Equal(5, (int?)parsed?["world"]?["simulatedSecondsPerTick"]);
         Assert.Equal(1.0, (double?)parsed?["world"]?["metersPerUnit"]);
         Assert.Equal(6, (int?)parsed?["world"]?["ticksPerSecond"]);
+        // Largeur par défaut : le profil de référence, pas un profil dédié.
+        Assert.Equal(500, (int?)parsed?["world"]?["width"]);
     }
 
     [Fact]

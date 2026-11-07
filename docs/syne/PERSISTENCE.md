@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 24 septembre 2026
+**Dernière mise à jour** : 6 novembre 2026
 **Dépend de** : `DATA_MODEL.md`, `DETERMINISM.md`
 **Source Monographie** : ADR-011 (Persistance JSON → SQLite), Annexe G (schéma SQLite V2.0), §3.6.4 (sérialisation état RNG)
 
@@ -69,6 +69,48 @@ erDiagram
 
 Les livres (SYNE-121) sont inclus dans le `WorldSnapshotDto` (contenu, auteur, tick d’écriture et lecteurs) afin que la reprise conserve les consultations déjà enregistrées. Le codec JSON évolue au schéma 3 ; le schéma relationnel SQLite reste à la version 2.
 
+### 4.1 Ajouts P9 au snapshot (tous additifs)
+
+| Élément | Où | Neutralité |
+| :-- | :-- | :-- |
+| **Mémoire spatiale par chunk** (SYNE-221) | `Spatial` par esprit : `chunkX`, `chunkY`, `tagMask`, `confidence`, `lastSeenTick` | Absente quand vide ⇒ empreintes des runs sans résumé de région **inchangées** |
+| **Croyance durable** (SYNE-222/224) | Drapeau `durable` sur `BeliefSnapshotDto` | Sérialisé seulement quand vrai (`WhenWritingDefault`) ⇒ aucune croyance ordinaire alourdie |
+| **Inventaire** (D8) | Quantités par `ResourceKind` | Déjà persisté ; restauré seulement si l'inventaire est actif |
+
+### 4.3 Snapshot scindé : cognition seule (étape 3a de SYNE-220, 6 novembre 2026)
+
+Le snapshot ne suppose plus que SYNE possède le monde. `SimulationSnapshot.World` est
+**optionnel** et `SimulationSnapshotCodec` expose deux captures :
+
+| Capture | Monde | Usage |
+| :-- | :-- | :-- |
+| `Capture(loop)` | complet (`world` : taille, obstacles, entités, gisements, réserves, livres, territoires) | run **local**, reprise autosuffisante — format et hash **inchangés** (le champ `worldReference` n'est écrit que pour une capture cognitive) |
+| `CaptureCognition(loop, contentHash?)` | **absent** | run **couplé** : le monde appartient à PRISM, seul l'état que l'hôte ne peut pas reconstruire est persisté |
+
+- Un snapshot cognitif porte à la place une **référence de monde** `worldReference { width, height, cellSize, contentHash? }` :
+  dimensions et cellule attendues, et l'empreinte du contenu PRISM quand l'appelant la fournit. Ce n'est pas un monde —
+  aucune entité, aucun gisement — donc il ne peut pas être restauré à la place du monde autoritaire.
+- `SimulationSnapshotRestorer.Restore` **refuse explicitement** un snapshot sans monde (il reconstruirait une boucle vide
+  et la ferait passer pour une reprise) ; le chemin couplé passe par `RestoreCognition`, qui ne touche pas au monde.
+- `SqlitePersistenceStore` refuse de même un snapshot cognitif : les tables relationnelles (`agents`, `resources`,
+  `metrics`) décrivent le monde, absent de ce snapshot.
+- **Neutralité locale** : un run local capture et restaure par les mêmes chemins qu'avant, et le JSON d'un snapshot complet
+  reste identique (absence déclarée par `WhenWritingNull`, jamais un monde vide de remplissage).
+- Reste ouvert : l'étape **3b** (perception/action par le flux d'observations, aujourd'hui `Aller`/`Consommer` seulement)
+  puis **3c** (suppression du monde local) — voir `docs/prism/RESPONSIBILITIES.md` §4.1.
+
+> Le snapshot SYNE reste autosuffisant pour un run local ; il cesse de l'être — volontairement — pour un run couplé.
+
+### 4.2 Point de reprise couplé (SYNE-225)
+
+En mode couplé, deux sauvegardes doivent rester **alignées** : le checkpoint PRISM (qui contient le monde) et le snapshot SYNE (qui contient la cognition).
+
+- `CoupledCheckpointStore.Save` écrit `<checkpointId>.syne.json` de façon **atomique** (fichier `.tmp` puis remplacement) : un arrêt brutal ne laisse jamais un snapshot tronqué à la place d'un point de reprise valide. Depuis l'étape 3a, ce fichier porte un snapshot **cognitif seul** (`CaptureCognition`, §4.3) — le monde ne voyage plus en double.
+- L'enveloppe porte `schema` (= 1), `checkpointId`, `tick`, l'**empreinte couplée** (`CoupledFingerprint`) et le **hash du snapshot** (`SimulationSnapshotCodec.Hash`).
+- `Load` **refuse** — explicitement, jamais silencieusement — un snapshot dont le tick ne correspond pas au checkpoint PRISM restauré, dont le hash de contenu ne correspond pas (fichier corrompu ou édité), ou qui est absent.
+- Le snapshot contient le dernier tick **achevé**, que PRISM refuse de rejouer (`unexpected_tick`) : la reprise demande `NextTickAfterRestore(lastCompletedTick)`.
+- La reprise restaure la **cognition seule** (les entités du monde viennent de PRISM) et est vérifiée bit-à-bit : un run couplé reprit redonne l'empreinte du run continu.
+
 ## 5. Sauvegarde automatique
 
 - `simulation.autoSaveEveryNTicks` (défaut 1000) et `maxBackups` (défaut 5) — Annexe H.
@@ -85,3 +127,4 @@ Les livres (SYNE-121) sont inclus dans le `WorldSnapshotDto` (contenu, auteur, t
 
 ## Points restés ouverts dans ce document
 - Politique de compression/archivage des vieux runs (rétention) — pas spécifié dans la Monographie (rotation simple `maxBackups` en V0.1).
+- **SYNE-225, reste** : retrait des tables du monde (dépend de l'étape 3 de SYNE-220) et jeu complet de points de reprise couplés (reprise après un saut de séquence PRISM, rotation des checkpoints).

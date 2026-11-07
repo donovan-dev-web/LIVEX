@@ -61,7 +61,7 @@ function parseArgs(args) {
 /**
  * Fichier voisin du chemin demandé, quand celui-ci n'existe pas : le nom réel
  * n'est comparé qu'aux noms du même dossier, séparateurs (`_`, `.`, `-`) et casse
- * ignorés. `config.prism.json` au lieu de `config_prism.json` est l'erreur
+ * ignorés. `config.example.json` au lieu de `config_example.json` est l'erreur
  * réellement commise par un opérateur, et proposer le nom attendu vaut mieux
  * qu'un « introuvable » que l'on croit avoir déjà corrigé.
  */
@@ -88,7 +88,7 @@ function readConfig(configPath) {
   const resolved = path.resolve(configPath);
   // Un fichier demandé et introuvable est une erreur, pas un retour aux défauts :
   // le repli silencieux lançait le mock sur 500x500/50 agents alors que
-  // l'opérateur croyait charger le profil `prism`, et le monde publié ne
+  // l'opérateur croyait charger sa configuration, et le monde publié ne
   // correspondait plus à rien (ni à sa configuration, ni au moteur).
   if (!fs.existsSync(resolved)) {
     const suggestion = nearMissConfigPath(resolved);

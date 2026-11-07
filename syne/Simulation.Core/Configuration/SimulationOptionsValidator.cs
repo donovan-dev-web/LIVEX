@@ -202,6 +202,26 @@ public static partial class SimulationOptionsValidator
             errors.Add($"agents.beliefs.timeDecayPerTick doit être dans (0, 1] (reçu : {options.Agents.Beliefs.TimeDecayPerTick}).");
         }
 
+        SpatialMemorySettings spatialMemory = options.Agents.Beliefs.SpatialMemory;
+        if (spatialMemory.MaxChunksPerAgent < 1)
+        {
+            errors.Add($"agents.beliefs.spatialMemory.maxChunksPerAgent doit être >= 1 (reçu : {spatialMemory.MaxChunksPerAgent}).");
+        }
+
+        if (spatialMemory.DecayPerTick is <= 0.0 or > 1.0)
+        {
+            errors.Add($"agents.beliefs.spatialMemory.decayPerTick doit être dans (0, 1] (reçu : {spatialMemory.DecayPerTick}).");
+        }
+
+        if (spatialMemory.ForgetThreshold is < 0.0 or >= 1.0)
+        {
+            errors.Add($"agents.beliefs.spatialMemory.forgetThreshold doit être dans [0, 1) (reçu : {spatialMemory.ForgetThreshold}).");
+        }
+
+        ValidateKnowledge(options, errors);
+        ValidatePlanner(options, errors);
+        ValidateDesires(options, errors);
+
         if (options.Agents.Actions.Deliberation.IntervalTicks < 1)
         {
             errors.Add($"agents.actions.deliberation.intervalTicks doit être &gt;= 1 (reçu : {options.Agents.Actions.Deliberation.IntervalTicks}).");
@@ -517,5 +537,125 @@ public static partial class SimulationOptionsValidator
         errors.AddRange(FindNonFiniteNumbers(options));
 
         return errors;
+    }
+
+    /// <summary>
+    /// Recettes déclarées (SYNE-222) : une recette désactivée dont la liste n'est
+    /// pas vide est une coquille (même doctrine que <c>world.obstacleLayout</c>),
+    /// un identifiant vide ou dupliqué rendrait la connaissance ambiguë, et une
+    /// quantité non positive produirait une croyance inutilisable.
+    /// </summary>
+    /// <summary>
+    /// Planificateur (SYNE-223) : un plan doit pouvoir porter au moins une étape,
+    /// et une capacité de cache négative n'a pas de sens (0 = cache désactivé).
+    /// </summary>
+    private static void ValidatePlanner(SimulationOptions options, List<string> errors)
+    {
+        PlannerSettings planner = options.Agents.Planner;
+        if (planner.MaxPlanSteps < 1)
+        {
+            errors.Add($"agents.planner.maxPlanSteps doit être >= 1 (reçu : {planner.MaxPlanSteps}).");
+        }
+
+        if (planner.CacheCapacity < 0)
+        {
+            errors.Add($"agents.planner.cacheCapacity doit être >= 0 (reçu : {planner.CacheCapacity}).");
+        }
+    }
+
+    /// <summary>
+    /// Désirs instrumentaux (SYNE-222) : un horizon d'anticipation au moins d'un
+    /// tick et une réserve visée d'au moins une unité ; et un stock exige un
+    /// contenant — la section est refusée si l'inventaire est inactif, plutôt que
+    /// de produire des désirs qu'aucune action ne peut satisfaire.
+    /// </summary>
+    private static void ValidateDesires(SimulationOptions options, List<string> errors)
+    {
+        InstrumentalSettings instrumental = options.Agents.Desires.Instrumental;
+        if (instrumental.AnticipateTicks < 1)
+        {
+            errors.Add($"agents.desires.instrumental.anticipateTicks doit être >= 1 (reçu : {instrumental.AnticipateTicks}).");
+        }
+
+        if (instrumental.ReserveTarget < 1)
+        {
+            errors.Add($"agents.desires.instrumental.reserveTarget doit être >= 1 (reçu : {instrumental.ReserveTarget}).");
+        }
+
+        if (instrumental.Enabled && !options.Agents.Actions.Inventory.Enabled)
+        {
+            errors.Add("agents.desires.instrumental.enabled exige agents.actions.inventory.enabled : une réserve de nourriture n'existe pas sans inventaire.");
+        }
+    }
+
+    private static void ValidateKnowledge(SimulationOptions options, List<string> errors)
+    {
+        KnowledgeSettings knowledge = options.Agents.Knowledge;
+        if (knowledge.Recipes.Count > 0 && !knowledge.Enabled)
+        {
+            errors.Add("agents.knowledge.recipes est fourni alors que agents.knowledge.enabled est false — activer la connaissance déclarée pour injecter les recettes.");
+        }
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (int index = 0; index < knowledge.Recipes.Count; index++)
+        {
+            RecipeKnowledgeSettings recipe = knowledge.Recipes[index];
+            // Une recette sans identifiant n'est pas indexée par son nom dans les
+            // chemins d'erreur, mais le reste de ses lignes est quand même validé :
+            // s'arrêter ici masquerait une quantité nulle derrière un id vide.
+            string label = string.IsNullOrWhiteSpace(recipe.Id) ? index.ToString(System.Globalization.CultureInfo.InvariantCulture) : recipe.Id;
+            if (string.IsNullOrWhiteSpace(recipe.Id))
+            {
+                errors.Add($"agents.knowledge.recipes[{index}].id ne doit pas être vide.");
+            }
+            else if (!seen.Add(recipe.Id))
+            {
+                errors.Add($"agents.knowledge.recipes définit deux fois la recette \"{recipe.Id}\" — un identifiant unique par recette attendu.");
+            }
+
+            if (recipe.Station is not null && string.IsNullOrWhiteSpace(recipe.Station))
+            {
+                errors.Add($"agents.knowledge.recipes[{label}].station, quand elle est fournie, ne doit pas être vide.");
+            }
+
+            if (recipe.Outputs.Count == 0)
+            {
+                errors.Add($"agents.knowledge.recipes[{label}].outputs doit déclarer au moins une sortie.");
+            }
+
+            if (recipe.Inputs.Count == 0)
+            {
+                errors.Add($"agents.knowledge.recipes[{label}].inputs doit déclarer au moins une entrée.");
+            }
+
+            ValidateIngredients(recipe.Inputs, $"agents.knowledge.recipes[{label}].inputs", errors);
+            ValidateIngredients(recipe.Outputs, $"agents.knowledge.recipes[{label}].outputs", errors);
+        }
+    }
+
+    private static void ValidateIngredients(
+        List<RecipeIngredientSettings> ingredients,
+        string path,
+        List<string> errors)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (RecipeIngredientSettings ingredient in ingredients)
+        {
+            if (string.IsNullOrWhiteSpace(ingredient.Item))
+            {
+                errors.Add($"{path}[].item ne doit pas être vide.");
+                continue;
+            }
+
+            if (!seen.Add(ingredient.Item))
+            {
+                errors.Add($"{path} définit deux fois l'objet \"{ingredient.Item}\" — une seule ligne par objet attendue.");
+            }
+
+            if (ingredient.Quantity < 1)
+            {
+                errors.Add($"{path}[{ingredient.Item}].quantity doit être >= 1 (reçu : {ingredient.Quantity}).");
+            }
+        }
     }
 }

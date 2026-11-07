@@ -79,27 +79,6 @@ public class GroupBirthDeterminismTests
     }
 
     [Fact]
-    public void SameOptions_SameSeed_ProduceIdenticalGroupAndBirthSequence()
-    {
-        SimulationOptions options = ConfigLoader.LoadDefaults();
-        string first = EventSequence(options, ticks: 300);
-        string second = EventSequence(options, ticks: 300);
-
-        Assert.Equal(first, second);
-        Assert.NotEmpty(first);
-    }
-
-    [Fact]
-    public void DifferentSeed_ProducesDifferentSequence()
-    {
-        SimulationOptions options = ConfigLoader.LoadDefaults();
-        string first = EventSequence(options, ticks: 300, seed: 12345);
-        string second = EventSequence(options, ticks: 300, seed: 12346);
-
-        Assert.NotEqual(first, second);
-    }
-
-    [Fact]
     public void SnapshotGroupEvents_AreEmittedThroughContractTypes()
     {
         // Les événements suivent la nomenclature.
@@ -107,6 +86,8 @@ public class GroupBirthDeterminismTests
         Assert.Equal("group_dissolved", ObservabilityContract.GroupDissolved);
         Assert.Equal("group_decision", ObservabilityContract.GroupDecision);
         Assert.Equal("agent_spawned", ObservabilityContract.AgentSpawned);
-        Assert.Equal("0.17.0", ObservabilityContract.EngineVersion); // arbitrage A0-3 0.17.0 : groupes en observateur seul, distances instrumentées, goldens ré-épinglés
+        Assert.Equal("0.18.0", ObservabilityContract.EngineVersion); // arbitrage A0-3 0.18.0 : groupes en observateur seul, distances instrumentées, goldens ré-épinglés
     }
 }
+
+

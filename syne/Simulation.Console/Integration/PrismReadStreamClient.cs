@@ -71,7 +71,14 @@ public interface IPrismReadStreamTransport : IAsyncDisposable
 
 public sealed class PrismReadStreamClient : IAsyncDisposable
 {
-    private const int MaximumMessageBytes = 4 * 1024 * 1024;
+    /// <summary>
+    /// Borne de sécurité d'une enveloppe de lecture. Elle doit couvrir
+    /// l'instantané de monde complet — 65 536 colonnes de surface plus les
+    /// surcharges pour un monde de 256 × 256 blocs dépassent 4 Mio — sans
+    /// laisser un producteur défaillant saturer la mémoire : le flux PRISM
+    /// n'impose aucune borne (le Viewer n'en a pas non plus).
+    /// </summary>
+    private const int MaximumMessageBytes = 64 * 1024 * 1024;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly Uri _endpoint;

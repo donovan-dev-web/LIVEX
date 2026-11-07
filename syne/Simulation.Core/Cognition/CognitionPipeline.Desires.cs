@@ -190,12 +190,31 @@ public sealed partial class CognitionPipeline
             return [];
         }
 
-        bool stillNeeded = mind.Needs.IsTriggered(intention.Kind, _options.Agents.Needs);
+        // Désir instrumental (SYNE-222) : il n'existe que par la section active —
+        // une intention SecureFood n'est donc pas poursuivie si
+        // `agents.desires.instrumental.enabled` est faux (aucune règle de
+        // satisfaction applicable).
+        if (intention.Kind == DesireKind.SecureFood && _instrumental is null)
+        {
+            return [];
+        }
+
+        bool stillNeeded = intention.Kind == DesireKind.SecureFood
+            ? _instrumental is { } instrumental && !InstrumentalDesires.IsSecure(mind, instrumental)
+            : mind.Needs.IsTriggered(intention.Kind, _options.Agents.Needs);
         bool recent = intention.Age(currentTick) < 100;
+
+        // Viabilité (SYNE-222) : manger/boire est possible à portée d'un gisement
+        // <b>ou</b> à même le stock porté — sinon une réserve constituée ne
+        // servirait à rien.
         bool viable = intention.Kind switch
         {
-            DesireKind.Eat => knowledge is { } knownFood ? knownFood.AtFoodSource : _catalog.IsViable(DesireKind.Eat, _stocks),
-            DesireKind.Drink => knowledge is { } knownWater ? knownWater.AtWaterSource : _catalog.IsViable(DesireKind.Drink, _stocks),
+            DesireKind.Eat => knowledge is { } knownFood
+                ? knownFood.AtFoodSource || CanConsumeFromStock(mind, DesireKind.Eat)
+                : _catalog.IsViable(DesireKind.Eat, _stocks) || CanConsumeFromStock(mind, DesireKind.Eat),
+            DesireKind.Drink => knowledge is { } knownWater
+                ? knownWater.AtWaterSource || CanConsumeFromStock(mind, DesireKind.Drink)
+                : _catalog.IsViable(DesireKind.Drink, _stocks) || CanConsumeFromStock(mind, DesireKind.Drink),
             _ => true,
         };
         bool targetKnown = knowledge is null ||
@@ -216,13 +235,27 @@ public sealed partial class CognitionPipeline
         self.Position.DistanceTo(target.Position) <= _options.Resources.InteractionRadius;
 
 
-    /// <summary>Une poursuite (déplacement vers une cible connue) s'oppose aux actions terminales, qui ne persistent pas.</summary>
-    private static bool IsPursuit(DesireKind kind) => kind switch
+    /// <summary>
+    /// La réserve <b>portée</b> couvre-t-elle la consommation d'une action qui exige
+    /// une ressource (Eat/Drink) ? C'est ce qui rend un stock utilisable hors de la
+    /// présence d'un gisement (sécurité alimentaire, SYNE-222). Faux sans inventaire
+    /// — la trajectoire de référence ne passe jamais par ici.
+    /// </summary>
+    private bool CanConsumeFromStock(MindState mind, DesireKind kind)
     {
-        DesireKind.SeekFood or DesireKind.SeekWater or DesireKind.Explore
-            or DesireKind.Socialize or DesireKind.Flee => true,
-        _ => false,
-    };
+        if (mind.Inventory is not { } inventory)
+        {
+            return false;
+        }
+
+        ActionDefinition definition = _catalog[kind];
+        return definition.RequiresReserve is { } reserve
+            && inventory.Amount(reserve) >= definition.ReserveConsumption;
+    }
+
+
+    /// <summary>Une poursuite (déplacement vers une cible connue) s'oppose aux actions terminales, qui ne persistent pas.</summary>
+    private static bool IsPursuit(DesireKind kind) => Planner.IsPursuit(kind);
 
 
     /// <summary>La cible crue de l'intention est-elle encore présente dans la connaissance active ?</summary>
@@ -252,6 +285,11 @@ public sealed partial class CognitionPipeline
             if (kind == DesireKind.Drink && !known.AtWaterSource)
             {
                 return known.KnowsWater ? DesireKind.SeekWater : DesireKind.Explore;
+            }
+
+            if (kind == DesireKind.SecureFood)
+            {
+                return known.KnowsFood ? DesireKind.SecureFood : DesireKind.Explore;
             }
 
             return kind;
@@ -287,7 +325,8 @@ public sealed partial class CognitionPipeline
         ulong currentTick,
         ulong entityId,
         CognitionKnowledge? knowledge,
-        DesireKind? currentIntention)
+        DesireKind? currentIntention,
+        IReadOnlyDictionary<DesireKind, double>? benefitOverrides = null)
     {
         AgentFactors factors;
         if (mind.Factors is { } resolved)
@@ -301,6 +340,12 @@ public sealed partial class CognitionPipeline
 
         ActionSettings actions = _options.Agents.Actions;
         double? Epistemic(DesireKind kind) => knowledge?.EpistemicFor(kind);
+
+        // Bénéfices portés par l'appelant (désirs instrumentaux, SYNE-222) : le
+        // manque de réserve n'est pas un besoin physiologique, donc il ne peut pas
+        // sortir de `BenefitOf` — il est fourni ici, sans changer la formule.
+        double? Override(DesireKind kind) =>
+            benefitOverrides is { } map && map.TryGetValue(kind, out double value) ? value : null;
 
         var scores = new List<UtilityScore>(candidates.Count + 1)
         {
@@ -328,6 +373,7 @@ public sealed partial class CognitionPipeline
                 goal.Age(currentTick),
                 actions,
                 currentIntention,
+                benefitOverride: Override(goal.Kind),
                 knowledgeConfidence: Epistemic(goal.Kind)));
         }
 
@@ -373,7 +419,8 @@ public sealed partial class CognitionPipeline
                 mind.SuccessRate(current),
                 mind.Intention?.Age(currentTick) ?? 0UL,
                 actions,
-                Epistemic(current));
+                Epistemic(current),
+                currentBenefitOverride: Override(current));
 
             if (adjusted.Kind != selected.Kind)
             {

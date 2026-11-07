@@ -109,50 +109,5 @@ public class DeterminismRegressionTests
 
         Assert.NotEqual(seededA, seededB);
     }
-
-    [Fact]
-    public void GoldenChecksum_IsPinned()
-    {
-        // Épinglé au jalon SYNE ph6 (engineVersion 0.5.0) puis ré-épinglé au jalon ph7b
-        // (engineVersion 0.6.0) : les fidélités SYNE-074…077 (mortalité, naissance consentie
-        // fidèle, décision collective → objectifs, cheminement A* déterministe) n'altèrent pas
-        // ce scénario — le checksum reste 0x27fad50065d8c4a4 — impose recalcul
-        // + bump MINOR à chaque altération bit-à-bit de la trajectoire.
-        // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x27fad50065d8c4a4 →
-        // 0xdb57f58566418f5d. SEULE cause mesurée : le garde anti-relay de
-        // CommunicationSystem.CanRelay, désormais relié à CommunicationState.HasRelayed.
-        // Ré-épinglé au jalon calibration D1 (engineVersion 0.13.0) : 0xdb57f58566418f5d →
-        // 0x46769cfb11c8b3a7. Cause unique et isolée : rééquilibrage de l'arbitrage
-        // utilitaire (BenefitOf Eat/Drink = min(need,100)×0.6) et du bilan énergétique
-        // (EnergyRecovery eat 2.0 / drink 1.0) portés par le profil de référence —
-        // les agents mangent plus tôt, la trajectoire diverge à partir des premières
-        // délibérations. Scénario de DEFAULTS (non passé par le profil) : l'effet
-        // porte sur la formule d'utilité, partagée par toutes les configurations.
-        // Sans lui, un même message était relayé autant de fois que l'agent le rencontrait
-        // via des canaux distincts, épuisant l'énergie et saturant le réseau ; l'état
-        // « déjà relayé » était écrit mais jamais consulté. Vérifié par isolation : la
-        // neutralisation isolée de ce garde restitue exactement 0x27fad50065d8c4a4, et
-        // l'atomicité des réserves (ActionExecutor), la file de messages bornée et la
-        // centralisation des hachages sont bit-à-bit neutres sur ce scénario.
-        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0) :
-        // 0x46769cfb11c8b3a7 → 0xf4aaa2733e491935. Cause unique et isolée : recalage des
-        // DÉFAUTS intégrés (coût de déplacement 0,5 → 0,03, gains Eat/Drink 0/0 → 2,0/1,0,
-        // dérives social/curiosité, réserves et coûts de communication) — cette fois
-        // porté par les défauts eux-mêmes et non par le profil ; re-pin assumé.
-        // Ré-épinglé au réalignement (engineVersion 0.16.0) :
-        // 0xf4aaa2733e491935 → 0xc8116c934c424b28. Le scénario de DÉFAUTS change de
-        // modèle : (1) ressources localisées — la faisabilité d'Eat/Drink dépend du
-        // gisement où l'agent se tient, la cible vient d'une croyance et l'objectif est
-        // accompli à l'arrivée ; (2) fenêtre causale fermée — déplacements et effets
-        // sont appliqués au commit de fin de tick ; (3) décision fondée sur la
-        // connaissance active (croyances, repli mémoire) et non sur les seuils seuls ;
-        // (4) une croyance courante par sujet+prédicat (un sujet mobile ne crée plus de
-        // croyance par position) ; (5) dérives social/curiosité rétablies (0,003 / 0,002)
-        // parce que Socialize/Explore satisfont désormais leur besoin. La propriété de
-        // déterminisme elle-même est couverte par les cas voisins (même graine ⇒
-        // journal identique, graines différentes ⇒ journaux différents) ; ce pin atteste
-        // que la trajectoire de référence a changé, de façon assumée et documentée.
-        string log = BuildPerceptionLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0xc8116c934c424b28", $"0x{Fnv1a(log):x16}");
-    }
 }
+

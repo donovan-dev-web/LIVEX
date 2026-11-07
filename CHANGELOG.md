@@ -2,12 +2,21 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 21 octobre 2026
+**Dernière mise à jour** : 6 novembre 2026
 **Dépend de** : `VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`livex-vX.Y.Z` = triplet SYNE + ECHOS + PRISM).
 
 ## [Unreleased]
+
+### Added
+- **SYNE / P9 — désirs instrumentaux et sécurité alimentaire (SYNE-222)** : nouveau désir `SecureFood` — un agent dont la faim *projetée* atteindra son seuil à l'horizon d'anticipation, et dont la réserve de nourriture est sous le niveau visé, va constituer un **stock** (poursuite vers la source connue, puis `Take`) au lieu d'attendre d'avoir faim. Section `agents.desires.instrumental` (désactivée par défaut, refusée sans inventaire) ; bénéfice tiré du manque de réserve, formule d'utilité inchangée ; `Eat`/`Drink` savent consommer la réserve portée hors de portée d'un gisement. Trajectoire de référence bit-à-bit identique.
+
+### Changed
+- **SYNE / PRISM — boucle de refus du write-back** : les refus durables de PRISM (`path_not_found`, `source_not_found`) sont attribués à leur consigne et ne sont plus réémis pendant 300 ticks ; sur le scénario couplé, `path_not_found` passe de 12 à 2 et 260 réémissions disparaissent, empreinte inchangée.
+- **SYNE / PRISM — write-back élargi (étape 3b de SYNE-220)** : SYNE émet désormais de vraies macro-actions — `ObtenirObjet` (tag `edible`, indice borné) pour la faim et `Consommer { item }` pour manger un objet porté identifié par le catalogue de contenu PRISM, `Aller` restant le repli. Les objets comestibles perçus au sol deviennent des cibles `resource-food-<id>`. Run couplé de contrôle : 0 commande refusée pour payload invalide.
+- **SYNE / P9 — snapshot scindé (étape 3a de SYNE-220)** : le snapshot SYNE peut désormais porter la **cognition seule** (`CaptureCognition`, `worldReference`) ; le point de reprise couplé n'embarque plus le monde, qui appartient à PRISM. `Restore` et la persistance SQLite refusent explicitement un snapshot sans monde au lieu de reconstruire une boucle vide. Format et trajectoire d'un run local inchangés.
+- **SYNE / PRISM — un seul profil de simulation (`reference`)** : le profil `prism` (256 × 256, cellule 16, 6 TPS, 5 s/tick, décor en disques) est retiré du moteur, du CLI (`--simulation`), du Launcher et de `syne-mock`. PRISM n'est plus un monde Unreal mais un module du projet : la géométrie de son monde est lue dans l'instantané PRISM (ADR-013), donc un profil dédié ne dupliquait plus qu'une calibration SYNE (et ralentissait les désirs). Le mode couplé résout le profil de référence ; l'échelle temporelle reste réglable par `simulation.simulatedSecondsPerTick`.
 
 ### Documentation
 - Mise à jour de la documentation générale pour présenter la cible PRISM V2 : autorité du monde physique, noyau .NET headless, contrat SYNE↔PRISM et visualiseur facultatif ; PRISM Unreal/PRISM-LDK est explicitement replacé dans l'historique V1.

@@ -14,16 +14,12 @@ public static class WellKnownSimulations
     public const string Reference = "reference";
 
     /// <summary>
-    /// Profil batch PRISM : monde 2 240 × 2 240, 6 TPS, 5 s simulées
-    /// par tick (R = 30) — accepté par `--simulation` depuis le contrat SYNE
-    /// 0.4.0. Additif : n'altère aucun chemin `reference`.
+    /// Vrai si <paramref name="simulationId"/> est un scénario SYNE connu. Un seul
+    /// scénario calibré subsiste : le profil <c>prism</c> a été retiré (PRISM est
+    /// autoritaire sur la géométrie du monde, il fournit aussi ses obstacles).
     /// </summary>
-    public const string Prism = "prism";
-
-    /// <summary>Vrai si <paramref name="simulationId"/> est un scénario SYNE connu.</summary>
     public static bool IsKnown(string simulationId) =>
-        string.Equals(simulationId, Reference, StringComparison.Ordinal)
-        || string.Equals(simulationId, Prism, StringComparison.Ordinal);
+        string.Equals(simulationId, Reference, StringComparison.Ordinal);
 }
 
 /// <summary>Profils d'exécution prédéfinis.</summary>

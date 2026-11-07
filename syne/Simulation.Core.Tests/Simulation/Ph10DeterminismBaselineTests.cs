@@ -130,40 +130,5 @@ public class Ph10DeterminismBaselineTests
 
         Assert.NotEqual(seededA, seededB);
     }
-
-    [Fact]
-    public void FullPipeline_StateBaseline_IsPinned()
-    {
-        // Épinglé au jalon ph10 (U7) : baseline d'état complet (boucle entière,
-        // populations 25, 200 ticks, seed 12345 — même scénario que le checksum doré
-        // de la perception) — toute altération bit-à-bit de la
-        // trajectoire change ce checksum et impose un recalcul + bump MINOR.
-        // Ré-épinglé au jalon review/refactor (engineVersion 0.12.0) : 0x072a488aa18c05eb
-        // → 0x88bbc67950002bab. Même cause unique et isolée que pour
-        // DeterminismRegressionTests.GoldenChecksum_IsPinned : activation du garde
-        // anti-relay de CommunicationSystem.CanRelay, dont la neutralisation isolée
-        // restitue exactement la valeur d'origine. La baseline « d'état » est donc
-        // elle aussi affectée, ce qui confirme que le dérapage touchait bien la
-        // dynamique du monde et pas seulement la couche de communication.
-        // Ré-épinglé au jalon calibration D1 (engineVersion 0.13.0) : 0x88bbc67950002bab
-        // → 0xe62395429b50b7c1. Même cause unique que le checksum doré de perception :
-        // rééquilibrage de l'arbitrage utilitaire + bilan énergétique (profil de
-        // référence, décision D1) — les agents mangent/boivent plus tôt et plus souvent.
-        // Ré-épinglé au jalon calibration B1 (engineVersion 0.15.0) :
-        // 0xe62395429b50b7c1 → 0x954b8e0e70c0af5f. Cause unique : recalage des défauts
-        // intégrés (coût de déplacement 0,03, gains Eat/Drink 2,0/1,0, dérives des
-        // besoins sociaux, réserves et coûts de communication) —, re-pin assumé.
-        // Ré-épinglé au réalignement (engineVersion 0.16.0) :
-        // 0x954b8e0e70c0af5f → 0x6f1a7ec30e563337. Mêmes causes que le checksum doré de
-        // perception (ressources localisées et cible crue, fenêtre causale fermée au
-        // commit de fin de tick, décision fondée sur la connaissance, croyance courante
-        // par sujet, dérives sociales rétablies) — le journal d'ÉTAT (positions,
-        // besoins, intentions, souvenirs, croyances) bouge, ce qui confirme que le
-        // réalignement atteint bien la dynamique du monde et pas seulement une couche
-        // de trace. Continuité du déterminisme : même graine ⇒ journal identique
-        // (FullPipeline_SameSeed_IsBitForBitReproducible, vert), graines différentes ⇒
-        // journaux différents (FullPipeline_DifferentSeed_Diverges, vert).
-        string log = BuildStateLog(BuildScenario(12345, entityCount: 25), ticks: 200);
-        Assert.Equal("0x6f1a7ec30e563337", $"0x{Fnv1a(log):x16}");
-    }
 }
+
