@@ -4,39 +4,37 @@
 namespace Simulation.Core.World;
 
 /// <summary>
-/// Abstraction minimale d'un monde pour la phase d'extraction SYNE-220
-/// (étape 1, mode parallèle) : SYNE ne dépend plus d'une implémentation
-/// concrète pour lire la taille, les entités, les obstacles, les gisements,
-/// les territoires et les livres. Une implémentation locale (<see cref="World"/>)
-/// reste le défaut ; une implémentation adossée au flux PRISM pourra la
-/// remplacer lors de la bascule par profil (étape 2) puis de la suppression
-/// (étape 3).
+/// Monde <b>observé</b> (SYNE-220 étape 3c) : SYNE ne possède plus de géométrie
+/// locale. Il ne connaît que les entités (et leurs positions observées), les
+/// territoires (analyse sociale) et les livres (savoir), plus la référence de
+/// contenu du monde (dimensions, cellule, empreinte). Toute géométrie
+/// (grille, obstacles, gisements, roue temporelle locale) a migré vers PRISM.
 /// </summary>
 public interface IWorld
 {
     WorldSize Size { get; }
 
-    SpatialGrid Grid { get; }
+    /// <summary>Référence de contenu du monde observé (empreinte), null si inconnue.</summary>
+    string? ContentHash { get; }
 
     IReadOnlyList<Simulation.Core.Entities.Entity> Entities { get; }
-
-    IReadOnlyList<Obstacle> Obstacles { get; }
 
     IReadOnlyList<Territory> Territories { get; }
 
     IReadOnlyList<Book> Books { get; }
 
-    IReadOnlyList<ResourceNode> ResourceNodes { get; }
-
+    // --- Shims de compatibilité (géométrie retirée du moteur) ---
+    SpatialGrid Grid { get; }
+    IReadOnlyList<Obstacle> Obstacles { get; }
     ulong ObstacleRevision { get; }
-
-    (Simulation.Core.World.Position Position, Simulation.Core.Prng.Xoshiro256StarStar Next) SamplePosition(Simulation.Core.Prng.Xoshiro256StarStar rng);
-
     IReadOnlyList<EnvironmentChange> LastEnvironmentChanges { get; }
+    void ClearEnvironmentChanges();
 
     void AddBook(Book book);
 
-    void ReplaceResourceNodes(IEnumerable<ResourceNode> nodes);
+    /// <summary>Ajoute une entité au monde (naissance, peuplement initial).</summary>
+    void AddEntity(Simulation.Core.Entities.Entity entity);
 
-    void ApplyResourceLayout(Simulation.Core.Configuration.ResourceSettings settings, ulong seed, double cellSize);
+    /// <summary>Retire une entité du monde (mortalité). Lève si elle n'était pas présente.</summary>
+    void RemoveEntity(Simulation.Core.Entities.Entity entity);
 }

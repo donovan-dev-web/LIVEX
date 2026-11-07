@@ -8,7 +8,6 @@
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
-using Simulation.Core.Navigation;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 
@@ -73,7 +72,16 @@ public sealed partial class ActionExecutor
 
         // Réserve ciblée : Food par défaut, Water si la soif domine la faim
         // (recette fixe courte — pas de planificateur).
-        ResourceKind reserve = mind.Needs.Hunger >= mind.Needs.Thirst ? ResourceKind.Food : ResourceKind.Water;
+        // Sécurité alimentaire (SYNE-222) : quand la section instrumentale est
+        // active et que la réserve de nourriture est sous son niveau visé, c'est de
+        // la nourriture qu'on prend — c'est le moyen que le désir instrumental
+        // poursuit. Désactivé par défaut : règle historique inchangée.
+        InstrumentalSettings instrumental = _options.Agents.Desires.Instrumental;
+        ResourceKind reserve = instrumental.Enabled
+            && inventory.Amount(ResourceKind.Food) < instrumental.ReserveTarget
+            && AvailableAtHand(entity, ResourceKind.Food) > 0.0
+                ? ResourceKind.Food
+                : mind.Needs.Hunger >= mind.Needs.Thirst ? ResourceKind.Food : ResourceKind.Water;
         double amount = Math.Min(_options.Agents.Actions.Inventory.TakeAmount, inventory.FreeWeight);
         double available = AvailableAtHand(entity, reserve);
         if (amount <= 0.0 || available <= 0.0)
@@ -115,7 +123,8 @@ public sealed partial class ActionExecutor
             return _stocks.Stock(kind);
         }
 
-        return _world.NearestResourceNode(entity.Position, kind, _options.Resources.InteractionRadius)?.Amount ?? 0.0;
+        // SYNE-220 étape 3c : plus de gisement local.
+        return 0.0;
     }
 
 
@@ -128,7 +137,7 @@ public sealed partial class ActionExecutor
             return;
         }
 
-        _world.NearestResourceNode(entity.Position, kind, _options.Resources.InteractionRadius)?.TryConsume(amount);
+        // SYNE-220 étape 3c : plus de gisement local.
     }
 
 
@@ -323,8 +332,7 @@ public sealed partial class ActionExecutor
             }
 
             double distance = self.Position.DistanceTo(position);
-            if (distance > _options.Agents.Perception.Radius ||
-                !LineOfSight.IsClear(self.Position, position, _world.Obstacles))
+            if (distance > _options.Agents.Perception.Radius) // SYNE-220 3c : plus de ligne de vue locale.
             {
                 continue;
             }
@@ -358,7 +366,6 @@ public sealed partial class ActionExecutor
                 return entity;
             }
         }
-
         return null;
     }
 }

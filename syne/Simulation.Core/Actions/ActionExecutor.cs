@@ -9,7 +9,6 @@
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
-using Simulation.Core.Navigation;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 
@@ -35,7 +34,6 @@ public sealed partial class ActionExecutor
     private readonly ActionCatalog _catalog;
     private readonly ResourceStocks _stocks;
     private readonly SimulationOptions _options;
-    private readonly AStarPathfinder _pathfinder;
     private TickCommitBuffer? _commit;
 
     public ActionExecutor(Simulation.Core.World.IWorld world, ActionCatalog catalog, ResourceStocks stocks, SimulationOptions options)
@@ -48,10 +46,7 @@ public sealed partial class ActionExecutor
         _catalog = catalog;
         _stocks = stocks;
         _options = options;
-        _pathfinder = new AStarPathfinder(world, options.Agents.Pathfinding);
     }
-
-    public AStarPathfinder Pathfinder => _pathfinder;
 
     /// <summary>
     /// Ouvre le tampon de conséquences du tick (fenêtre causale fermée,
@@ -116,18 +111,17 @@ public sealed partial class ActionExecutor
             consumed = definition.ReserveConsumption;
             if (_options.Resources.Localized)
             {
-                ResourceNode? node = _world.NearestResourceNode(entity.Position, reserve, _options.Resources.InteractionRadius);
-                if (node is null)
+                // SYNE-220 étape 3c : plus de gisement local. La réserve portée
+                // prend le relais, puis la réserve mondiale. La consommation réelle
+                // se fait côté PRISM via les commandes ObtenirObjet/Consommer.
+                if (mind.Inventory is { } stocked && stocked.TryConsume(reserve, consumed))
                 {
-                    return ActionResult.Blocked(kind, $"aucun gisement {reserve} à portée (cible connue non atteinte)");
+                    // réserve portée consommée
                 }
-
-                if (!node.TryConsume(consumed))
+                else if (!_stocks.TryConsume(reserve, consumed))
                 {
-                    return ActionResult.Blocked(kind, $"gisement {node.Id} épuisé ({node.Amount:0.###} < {consumed:0.###})");
+                    return ActionResult.Blocked(kind, $"aucune réserve {reserve} disponible (mode observé)");
                 }
-
-                sourceNodeId = node.Id;
             }
             else if (!_stocks.TryConsume(reserve, consumed))
             {

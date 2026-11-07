@@ -185,8 +185,7 @@ public sealed class BirthSystem
             return false;
         }
 
-        if (reproduction.RequireLineOfSight &&
-            !LineOfSight.IsClear(mother.Position, father.Position, world.Obstacles))
+        if (reproduction.RequireLineOfSight && false) // SYNE-220 étape 3c : plus de ligne de vue locale.
         {
             return false;
         }

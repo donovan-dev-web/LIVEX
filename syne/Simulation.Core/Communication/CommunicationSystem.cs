@@ -237,8 +237,12 @@ public sealed class CommunicationSystem
             return cached;
         }
 
-        var candidates = _world.Grid.QueryCircle(sender.Position, _settings.TransmissionRange, sender.Id.Value)
+        // SYNE-220 étape 3c : plus de grille/obstacles locaux. Les candidats
+        // sont les entités connues du monde observé dans la portée.
+        var candidates = _world.Entities
+            .Where(e => e.Id.Value != sender.Id.Value)
             .Select(candidate => (Candidate: candidate, Distance: sender.Position.DistanceTo(candidate.Position)))
+            .Where(c => c.Distance <= _settings.TransmissionRange)
             .ToList();
         candidates.Sort(static (a, b) =>
         {
@@ -249,10 +253,7 @@ public sealed class CommunicationSystem
         var deliverable = new List<(Entity Entity, double Distance)>(candidates.Count);
         foreach ((Entity candidate, double distance) in candidates)
         {
-            if (LineOfSight.IsClear(sender.Position, candidate.Position, _world.Obstacles))
-            {
-                deliverable.Add((candidate, distance));
-            }
+            deliverable.Add((candidate, distance));
         }
 
         cache[sender.Id.Value] = deliverable;

@@ -111,7 +111,7 @@ public sealed class TickCommitBuffer
 
             foreach (MoveRequest move in _moves)
             {
-                world.Grid.Move(move.Entity, move.Position);
+                move.Entity.SetPosition(move.Position);
             }
 
             _moves.Clear();

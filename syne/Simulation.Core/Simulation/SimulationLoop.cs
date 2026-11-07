@@ -35,7 +35,7 @@ public sealed partial class SimulationLoop
     private readonly Simulation.Core.Configuration.ResourceSettings _effectiveResources;
     private readonly Simulation.Core.Configuration.SeasonSettings _effectiveSeasons;
     private readonly List<Simulation.Core.Configuration.SeasonChange> _seasonChanges = new();
-    private readonly List<World.TerritoryMembershipChange> _territoryChanges = new();
+    private readonly List<Simulation.Core.World.TerritoryMembershipChange> _territoryChanges = new();
     private readonly List<Simulation.Core.World.BookChange> _bookChanges = new();
     private System.Collections.Generic.Dictionary<string, System.Collections.Generic.HashSet<ulong>> _territoryMembership =
         new(System.StringComparer.Ordinal);
@@ -69,7 +69,7 @@ public sealed partial class SimulationLoop
         double dt = _clock.SimulatedMinutesPerTick;
         _effectiveResources = Simulation.Core.Configuration.TemporalScale.ScaleResources(options.Resources, dt);
         _effectiveSeasons = Simulation.Core.Configuration.TemporalScale.ScaleSeasons(options.World.Seasons, dt);
-        Resources = new World.ResourceStocks(options.Resources);
+        Resources = new Simulation.Core.World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
         InitializeResourceModel(world, options, dt);
         _autoSaveEveryNTicks = options.Simulation.AutoSaveEveryNTicks;
@@ -99,7 +99,7 @@ public sealed partial class SimulationLoop
         double dt = _clock.SimulatedMinutesPerTick;
         _effectiveResources = Simulation.Core.Configuration.TemporalScale.ScaleResources(options.Resources, dt);
         _effectiveSeasons = Simulation.Core.Configuration.TemporalScale.ScaleSeasons(options.World.Seasons, dt);
-        Resources = new World.ResourceStocks(options.Resources);
+        Resources = new Simulation.Core.World.ResourceStocks(options.Resources);
         _cognition = new Simulation.Core.Cognition.CognitionPipeline(world, options, Resources, budget);
         InitializeResourceModel(world, options, dt);
         _autoSaveEveryNTicks = Math.Max(1, autoSaveEveryNTicks);

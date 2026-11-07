@@ -24,15 +24,8 @@ public sealed partial class SimulationLoop
     /// </summary>
     private void InitializeResourceModel(Simulation.Core.World.IWorld world, Simulation.Core.Configuration.SimulationOptions options, double dt)
     {
-        _localizedResources = options.Resources.Localized;
+        _localizedResources = false; // SYNE-220 étape 3c : plus de gisements locaux.
         _resourceDt = dt;
-        if (!_localizedResources)
-        {
-            return;
-        }
-
-        world.ApplyResourceLayout(options.Resources, options.Random.Seed, options.Simulation.WorldCellSize);
-        SyncResourceAggregate();
     }
 
 
@@ -43,27 +36,7 @@ public sealed partial class SimulationLoop
     /// </summary>
     internal void SyncResourceAggregate()
     {
-        double food = 0.0, water = 0.0, wood = 0.0, mineral = 0.0;
-        foreach (Simulation.Core.World.ResourceNode node in World.ResourceNodes)
-        {
-            switch (node.Kind)
-            {
-                case Simulation.Core.World.ResourceKind.Food:
-                    food += node.Amount;
-                    break;
-                case Simulation.Core.World.ResourceKind.Water:
-                    water += node.Amount;
-                    break;
-                case Simulation.Core.World.ResourceKind.Wood:
-                    wood += node.Amount;
-                    break;
-                default:
-                    mineral += node.Amount;
-                    break;
-            }
-        }
-
-        Resources.RestoreState(food, water, wood, mineral);
+        // SYNE-220 étape 3c : plus de gisements locaux.
     }
 
 
@@ -80,13 +53,7 @@ public sealed partial class SimulationLoop
             return;
         }
 
-        Simulation.Core.Configuration.SeasonFactors? factors = SeasonFactorsForTick();
-        foreach (Simulation.Core.World.ResourceNode node in World.ResourceNodes)
-        {
-            node.Regenerate((factors?.For(node.Kind) ?? 1.0) * _resourceDt);
-        }
-
-        SyncResourceAggregate();
+        // SYNE-220 étape 3c : plus de gisement local.
     }
 
     public Simulation.Core.World.IWorld World { get; }
@@ -117,19 +84,7 @@ public sealed partial class SimulationLoop
     /// </summary>
     internal void RestoreResourceNodes(IReadOnlyList<Persistence.ResourceNodeSnapshotDto>? nodes)
     {
-        if (nodes is null || nodes.Count == 0)
-        {
-            return;
-        }
-
-        World.ReplaceResourceNodes(nodes.Select(node => new Simulation.Core.World.ResourceNode(
-            node.Id,
-            (World.ResourceKind)node.Kind,
-            new World.Position(node.X, node.Y),
-            node.Amount,
-            node.Capacity,
-            node.RegenerationRate)));
-        SyncResourceAggregate();
+        // SYNE-220 étape 3c : plus de gisements locaux.
     }
 
     public ulong CurrentTick { get; private set; }

@@ -69,33 +69,10 @@ public static class SimulationSnapshotCodec
                 entity.BornAt));
         }
 
-        var obstacles = new List<ObstacleSnapshotDto>();
-        foreach (Obstacle obstacle in loop.World.Obstacles)
-        {
-            obstacles.Add(new ObstacleSnapshotDto(obstacle.Id, obstacle.Position.X, obstacle.Position.Y, obstacle.Radius));
-        }
+        var obstacles = new List<ObstacleSnapshotDto>(); // SYNE-220 étape 3c : plus d'obstacle local.
 
-        var minds = new List<MindSnapshotDto>();
-        foreach ((ulong entityId, MindState mind) in loop.Cognition.MindPairsSorted())
-        {
-            minds.Add(CaptureMind(entityId, mind));
-        }
-
-        var groups = new List<GroupSnapshotDto>();
-        foreach (Group group in loop.Cognition.Groups.Active)
-        {
-            groups.Add(new GroupSnapshotDto(
-                group.Id,
-                group.BornTick,
-                group.Members.ToList(),
-                group.MeanCohesion,
-                group.LeaderId,
-                group.Decision is { } decision ? (int)decision : null,
-                group.Consensus,
-                group.HadDecision,
-                group.MaxBondDistance,
-                group.MeanBondDistance));
-        }
+        IReadOnlyList<MindSnapshotDto> minds = CaptureMinds(loop);
+        IReadOnlyList<GroupSnapshotDto> groups = CaptureGroups(loop);
 
         var books = loop.World.Books.Select(book => new BookSnapshotDto(
             book.Id, book.AuthorId, book.Title, book.Content, book.WrittenTick, book.Readers.ToArray())).ToArray();
@@ -110,26 +87,14 @@ public static class SimulationSnapshotCodec
                 loop.MembersOfTerritory(zone.Id)))
             .ToArray();
 
-        // Gisements localisés (Phase 0) : omis quand le modèle global est actif
-        // (liste vide) — le hash des snapshots du modèle historique est inchangé.
-        IReadOnlyList<ResourceNodeSnapshotDto>? nodes = loop.World.ResourceNodes.Count == 0
-            ? null
-            : loop.World.ResourceNodes
-                .Select(node => new ResourceNodeSnapshotDto(
-                    node.Id,
-                    (int)node.Kind,
-                    node.Position.X,
-                    node.Position.Y,
-                    node.Amount,
-                    node.Capacity,
-                    node.RegenerationRate))
-                .ToList();
+        // SYNE-220 étape 3c : plus de gisement local.
+        IReadOnlyList<ResourceNodeSnapshotDto>? nodes = null;
 
         IReadOnlyDictionary<World.ResourceKind, double> stocks = loop.Resources.Snapshot();
         var world = new WorldSnapshotDto(
             loop.World.Size.Width,
             loop.World.Size.Height,
-            loop.World.Grid.CellSize,
+            loop.Options.Agents.Perception.SpatialCellSize,
             entities,
             obstacles,
             stocks[World.ResourceKind.Food],
@@ -152,6 +117,73 @@ public static class SimulationSnapshotCodec
             RunIdentity.ConfigHash(loop.Options));
     }
 
+    /// <summary>
+    /// Capte la <b>cognition seule</b> (SYNE-220 étape 3a) : esprits, groupes,
+    /// PRNG, tick et identité de configuration — <b>sans monde</b>, remplacé par une
+    /// <see cref="WorldReferenceDto"/>. C'est le snapshot de la reprise couplée : en
+    /// mode PRISM le monde appartient à l'hôte et son checkpoint fait foi, donc
+    /// embarquer une copie locale ne servait qu'à risquer de la restaurer.
+    /// </summary>
+    /// <param name="loop">Boucle dont on capture l'état cognitif.</param>
+    /// <param name="contentHash">
+    /// Empreinte du contenu PRISM au tick capturé, quand l'hôte la fournit ; elle
+    /// permet de refuser une cognition ré-alignée sur un monde différent.
+    /// </param>
+    public static SimulationSnapshot CaptureCognition(SimulationLoop loop, string? contentHash = null)
+    {
+        ArgumentNullException.ThrowIfNull(loop);
+
+        (ulong s0, ulong s1, ulong s2, ulong s3) = loop.Rng.State;
+
+        return new SimulationSnapshot(
+            SchemaVersion,
+            ObservabilityContract.EngineVersion,
+            loop.CurrentTick,
+            new RngStateDto(s0, s1, s2, s3),
+            null,
+            CaptureMinds(loop),
+            CaptureGroups(loop),
+            loop.Cognition.Groups.NextGroupId,
+            RunIdentity.ConfigHash(loop.Options),
+            new WorldReferenceDto(
+                loop.World.Size.Width,
+                loop.World.Size.Height,
+                loop.Options.Agents.Perception.SpatialCellSize,
+                string.IsNullOrWhiteSpace(contentHash) ? null : contentHash));
+    }
+
+    private static IReadOnlyList<MindSnapshotDto> CaptureMinds(SimulationLoop loop)
+    {
+        var minds = new List<MindSnapshotDto>();
+        foreach ((ulong entityId, MindState mind) in loop.Cognition.MindPairsSorted())
+        {
+            minds.Add(CaptureMind(entityId, mind));
+        }
+
+        return minds;
+    }
+
+    private static IReadOnlyList<GroupSnapshotDto> CaptureGroups(SimulationLoop loop)
+    {
+        var groups = new List<GroupSnapshotDto>();
+        foreach (Group group in loop.Cognition.Groups.Active)
+        {
+            groups.Add(new GroupSnapshotDto(
+                group.Id,
+                group.BornTick,
+                group.Members.ToList(),
+                group.MeanCohesion,
+                group.LeaderId,
+                group.Decision is { } decision ? (int)decision : null,
+                group.Consensus,
+                group.HadDecision,
+                group.MaxBondDistance,
+                group.MeanBondDistance));
+        }
+
+        return groups;
+    }
+
     private static MindSnapshotDto CaptureMind(ulong entityId, MindState mind)
     {
         var beliefs = new List<BeliefSnapshotDto>();
@@ -165,7 +197,19 @@ public static class SimulationSnapshotCodec
                 belief.Source,
                 belief.BornTick,
                 belief.UpdatedTick,
-                belief.ExpiryTick));
+                belief.ExpiryTick,
+                belief.IsDurable));
+        }
+
+        List<SpatialChunkSnapshotDto>? spatialChunks = null;
+        foreach (SpatialChunkMemory chunk in mind.Spatial.Chunks)
+        {
+            (spatialChunks ??= []).Add(new SpatialChunkSnapshotDto(
+                chunk.ChunkX,
+                chunk.ChunkY,
+                chunk.TagMask,
+                chunk.Confidence,
+                chunk.LastSeenTick));
         }
 
         var trust = new List<TrustSnapshotDto>();
@@ -276,7 +320,8 @@ public static class SimulationSnapshotCodec
             commitmentDtos,
             mind.LastDeliberationTick,
             triggeredDtos,
-            CaptureDecision(mind));
+            CaptureDecision(mind),
+            spatialChunks);
     }
 
     /// <summary>

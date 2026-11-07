@@ -27,7 +27,7 @@ public static class ObservabilityContract
     /// instrumentations de la distance des paires liées de groupe. Aucun champ
     /// existant retiré ni altéré côté observabilité.
     /// </summary>
-    public const string Version = "0.5.0";
+    public const string Version = "0.6.0";
 
     /// <summary>
     /// Version du moteur : identifie les
@@ -141,7 +141,7 @@ public static class ObservabilityContract
     /// proches — les mécanismes supprimés y étaient inertes. Le bump MINOR porte
     /// les règles et le schéma, pas une altération mesurée.
     /// </summary>
-    public const string EngineVersion = "0.17.0";
+    public const string EngineVersion = "0.18.0";
 
     public const string SnapshotType = "snapshot";
     public const string EventType = "event";

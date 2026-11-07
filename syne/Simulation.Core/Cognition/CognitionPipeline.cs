@@ -64,6 +64,7 @@ public sealed partial class CognitionPipeline
     private readonly GroupSystem _groups;
     private readonly BirthSystem _birth;
     private readonly DeathSystem _death;
+    private readonly InstrumentalSettings? _instrumental;
     private readonly TickBudgetCollector? _budget;
     private readonly Dictionary<ulong, MindState> _minds = new();
 
@@ -104,13 +105,25 @@ public sealed partial class CognitionPipeline
             Configuration.TemporalScale.ScaleMemory(options.Agents.Memory, dt),
             Configuration.TemporalScale.ScaleBeliefs(options.Agents.Beliefs, dt),
             Configuration.TemporalScale.ScaleTrust(options.Agents.Trust, dt),
-            Configuration.TemporalScale.ScaleActions(options.Agents.Actions, dt));
+            Configuration.TemporalScale.ScaleActions(options.Agents.Actions, dt),
+            Configuration.TemporalScale.ScaleDesires(options.Agents.Desires, dt));
 
         _perception = new PerceptionSystem(world, _options.Agents.Perception);
         _stocks = stocks;
         _catalog = new ActionCatalog(_options.Agents.Actions);
         _executor = new ActionExecutor(world, _catalog, stocks, _options);
         _interruption = new InterruptionTrigger(_catalog, stocks);
+        // Planificateur (SYNE-223) : instancié seulement s'il est activé —
+        // désactivé par défaut, aucun coût ni effet sur la trajectoire de référence.
+        _plannerRuntime = _options.Agents.Planner.Enabled
+            ? new PlannerRuntime(_options.Agents.Planner)
+            : null;
+        // Désirs instrumentaux (SYNE-222) : section conservée même désactivée (la
+        // génération vérifie le drapeau) pour que la trace puisse expliquer son
+        // absence ; aucun coût tant que `enabled` est faux.
+        _instrumental = _options.Agents.Desires.Instrumental.Enabled
+            ? _options.Agents.Desires.Instrumental
+            : null;
         _communication = new CommunicationSystem(world, _options.Communication);
         _groups = new GroupSystem(_options.Groups);
         _birth = new BirthSystem(_options.Reproduction);
@@ -233,6 +246,7 @@ public sealed partial class CognitionPipeline
             foreach (MindState mind in _minds.Values)
             {
                 mind.Beliefs.Tick(currentTick, _options.Agents.Beliefs);
+                mind.Spatial.Tick(currentTick, _options.Agents.Beliefs);
                 mind.Trust.Tick();
             }
 

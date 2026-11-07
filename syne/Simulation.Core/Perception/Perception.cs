@@ -16,6 +16,14 @@ using Simulation.Core.World;
 namespace Simulation.Core.Perception;
 
 /// <summary>
+/// Résumé d'une région perçue (SYNE-221) : coordonnées de chunk, masque des
+/// tags de ressources exposées et confiance de la source. C'est l'unité de la
+/// mémoire spatiale — pas un fait ponctuel, donc il ne devient ni croyance ni
+/// souvenir de mémoire épisodique.
+/// </summary>
+public readonly record struct SpatialChunkObservation(int ChunkX, int ChunkY, uint TagMask, double Confidence = 1.0);
+
+/// <summary>
 /// Observation : identité, type, position, confiance, tick,
 /// attributs (représentation canonique de type sérialisable).
 /// </summary>
@@ -151,12 +159,6 @@ public sealed class PerceptionSystem
 
             foreach ((Entity candidate, double distance) in ordered)
             {
-                if (_settings.LineOfSight &&
-                    !LineOfSight.IsClear(subject.Position, candidate.Position, _world.Obstacles))
-                {
-                    continue;
-                }
-
                 result.Add(ObservationOf(candidate, distance, tick));
             }
         }
@@ -165,64 +167,9 @@ public sealed class PerceptionSystem
             _sortBufferPool.Return(ordered);
         }
 
-        foreach (Obstacle obstacle in _world.Obstacles)
-        {
-            double distance = subject.Position.DistanceTo(obstacle.Position);
-            if (distance > _settings.Radius)
-            {
-                continue;
-            }
+        // SYNE-220 étape 3c : plus d'obstacle local (géométrie PRISM).
 
-            var attributes = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["radius"] = obstacle.Radius.ToString("0.00", CultureInfo.InvariantCulture),
-            };
-            result.Add(new Observation(
-                DeterministicId(obstacle.Id),
-                "obstacle",
-                obstacle.Position,
-                ConfidenceAt(distance),
-                tick,
-                attributes));
-        }
-
-        // Gisements localisés (Phase 0) : repères statiques du paysage, perçus
-        // dans une portée dédiée (<c>agents.perception.resourceRadius</c>) — la
-        // perception reste partielle (rayon fini, masquage par obstacle), mais un
-        // gisement doit pouvoir être <b>découvert</b> pour que la chaîne
-        // perception → mémoire → croyance → but ait un objet. L'agent perçoit
-        // l'état du gisement (position et quantité courante), pas seulement son
-        // existence : une source épuisée est un fait observable.
-        foreach (ResourceNode node in _world.ResourceNodes)
-        {
-            double distance = subject.Position.DistanceTo(node.Position);
-            if (distance > _settings.ResourceRadius)
-            {
-                continue;
-            }
-
-            if (_settings.LineOfSight &&
-                !LineOfSight.IsClear(subject.Position, node.Position, _world.Obstacles))
-            {
-                continue;
-            }
-
-            var nodeAttributes = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["label"] = node.Id,
-                ["kind"] = ResourceNodePlacement.KindName(node.Kind),
-                ["amount"] = node.Amount.ToString("0.###", CultureInfo.InvariantCulture),
-                ["x"] = node.Position.X.ToString("0.00", CultureInfo.InvariantCulture),
-                ["y"] = node.Position.Y.ToString("0.00", CultureInfo.InvariantCulture),
-            };
-            result.Add(new Observation(
-                node.NumericId,
-                "node",
-                node.Position,
-                ConfidenceAt(distance, _settings.ResourceRadius),
-                tick,
-                nodeAttributes));
-        }
+        // SYNE-220 étape 3c : plus de gisement local (géométrie PRISM).
 
         return result;
     }

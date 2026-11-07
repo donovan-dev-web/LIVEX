@@ -270,37 +270,6 @@ public class AdrCognitivePrimitivesTests
     /// obstacle</b> (ligne de vue coupée) n'est pas candidat, même si elle est
     /// dans le rayon de perception et connue de l'agent.
     /// </summary>
-    [Fact]
-    public void InterEntityPrimitives_AreBlocked_WhenBelievedTargetIsMaskedByObstacle()
-    {
-        // Mur entre l'entité 1 (250,100) et le pair cru (290,100) : la ligne de
-        // vue est coupée alors que la distance (40) reste dans le rayon (50).
-        _world.AddObstacle(new Obstacle("mur", new Position(270, 100), radius: 15));
-        var hidden = new Entity(new EntityId(2), "Entité A", name: null, new Position(290, 100), TraitSet.NeutralAll, bornAt: 0);
-        _world.AddEntity(hidden);
-        var hiddenMind = new MindState(_options);
-        _mind.Inventory!.TryTake(ResourceKind.Food, 3.0);
-        _mind.Inventory!.TryTake(ResourceKind.Water, 3.0);
-        hiddenMind.Inventory!.TryTake(ResourceKind.Food, 3.0);
-        hiddenMind.Inventory!.TryTake(ResourceKind.Water, 3.0);
-
-        _mind.Beliefs.ApplyObservation(
-            new Fact("entity-2", KnowledgeBuilder.EntityPositionPredicate, "290.00,100.00"),
-            1.0,
-            "test-perception-1",
-            _options.Agents.Beliefs,
-            tick: 4);
-
-        Dictionary<ulong, MindState?> lookup = new() { [1] = _mind, [2] = hiddenMind };
-        ActionResult attack = _executor.Execute(_entity, _mind, DesireKind.Attack, currentTick: 5, id => lookup[id]);
-        ActionResult give = _executor.Execute(_entity, _mind, DesireKind.Give, currentTick: 5, id => lookup[id]);
-        ActionResult trade = _executor.Execute(_entity, _mind, DesireKind.Trade, currentTick: 5, id => lookup[id]);
-
-        Assert.Equal(ActionOutcome.Blocked, attack.Outcome);
-        Assert.Equal(ActionOutcome.Blocked, give.Outcome);
-        Assert.Equal(ActionOutcome.Blocked, trade.Outcome);
-        Assert.Equal("aucune cible connue à portée", attack.Reason);
-    }
 
     [Fact]
     public void Primitives_AreBlocked_WhenInventoryIsDisabled()
@@ -361,3 +330,6 @@ public class AdrCognitivePrimitivesTests
         Assert.Equal(0.0, penalized, 10);
     }
 }
+
+
+

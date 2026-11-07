@@ -8,7 +8,6 @@
 using Simulation.Core.Cognition;
 using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
-using Simulation.Core.Navigation;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 
@@ -50,70 +49,14 @@ public sealed partial class ActionExecutor
     /// </summary>
     private void MoveTowardDestination(Entity entity, MindState mind, DesireKind kind, ulong currentTick)
     {
-        // SYNE-071 : une construction posée/retirée en cours de run re-rasterise la
-        // grille A* et purge le cache (no-op si aucune modification — déterminisme).
-        _pathfinder.Refresh();
-
-        GoalTarget? destination = mind.Intention is { Kind: var intentionKind, Target: { } intended } && intentionKind == kind
-            ? intended
-            : null;
-
-        Position target;
-        if (destination is { } aimed)
-        {
-            if (entity.Position.DistanceTo(aimed.Position) <= _options.Resources.InteractionRadius)
-            {
-                return; // arrivé : plus de pas (la satisfaction est décidée par le catalogue)
-            }
-
-            target = Position.Clamp(aimed.Position, _world.Size);
-        }
-        else
-        {
-            (double dx, double dy) = DeterministicOffset(entity.Id.Value, currentTick, kind);
-            target = Position.Clamp(
-                new Position(entity.Position.X + dx, entity.Position.Y + dy),
-                _world.Size);
-        }
-
-        double speed = Math.Max(0.0, entity.Traits["speed"]);
-        Position step = StepToward(entity.Position, target, speed);
-        if (IsBlocked(step))
-        {
-            step = PathStep(entity, target, speed);
-        }
-
-        if (step == entity.Position)
-        {
-            return;
-        }
-
-        if (_commit is { } buffer)
-        {
-            buffer.RequestMove(entity, step);
-        }
-        else
-        {
-            _world.Grid.Move(entity, step);
-        }
-    }
-
-
-    /// <summary>
-    /// Prend le pas suivant sur le chemin A* (SYNE-077) quand le pas direct vers
-    /// la cible est bloqué. Dépasse la cellule cible si elle est la dernière.
-    /// </summary>
-    private Position PathStep(Entity entity, Position target, double speed)
-    {
-        IReadOnlyList<Position> path = _pathfinder.FindPath(entity.Position, target);
-        if (path.Count == 0)
-        {
-            return entity.Position; // repli « sur place »
-        }
-
-        Position waypoint = path[0];
-        Position step = StepToward(entity.Position, waypoint, speed);
-        return IsBlocked(step) ? entity.Position : step;
+        // SYNE-220 étape 3c : le déplacement est désormais calculé et exécuté
+        // côté PRISM (commande Aller). SYNE n'applique plus de pas local ; il
+        // se contente de mettre à jour la réserve/les besoins. Aucune géométrie
+        // locale n'est consultée.
+        _ = entity;
+        _ = mind;
+        _ = kind;
+        _ = currentTick;
     }
 
 
@@ -133,10 +76,6 @@ public sealed partial class ActionExecutor
             from.X + ((dx / distance) * step),
             from.Y + ((dy / distance) * step));
     }
-
-
-    private bool IsBlocked(Position position) =>
-        _world.Obstacles.Any(obstacle => obstacle.Position.DistanceTo(position) <= obstacle.Radius);
 
     /// <summary>
     /// Cible de déplacement pseudo-aléatoire déterminée par (id, tick, désir) —

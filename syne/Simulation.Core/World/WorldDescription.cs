@@ -71,7 +71,7 @@ public static class WorldDescriptionBuilder
     private const int ResourceLocationsPerType = 3;
 
     public static WorldDescription Build(
-        World world,
+        IWorld world,
         ulong seed,
         double cellSize = 10,
         int ticksPerSecond = 10,
@@ -93,32 +93,14 @@ public static class WorldDescriptionBuilder
             .Select(entity => new WorldAgent(entity.Id.Value, entity.Species,
                 new WorldAgentPosition(entity.Position.X, entity.Position.Y)))
             .ToArray();
-        var initialObstacles = world.Obstacles
-            .OrderBy(obstacle => obstacle.Id, StringComparer.Ordinal)
-            .Select(obstacle => new WorldObstacle(
-                obstacle.Id,
-                obstacle.Position.X,
-                obstacle.Position.Y,
-                obstacle.Radius))
-            .ToArray();
+        var initialObstacles = Array.Empty<WorldObstacle>(); // SYNE-220 étape 3c : plus d'obstacle local.
         var cells = new List<WorldCell>(countX * countY);
-        // Couverture calculée **une fois** par case, et partagée par `cells[]` et par
-        // le placement des marqueurs de ressources : `walkable` et « marchable pour
-        // le placement » sont la même propriété, décidée par la même règle
-        // (`ObstacleGeometry`). Les recalculer séparément est ce qui avait laissé
-        // partir un marqueur de ressource dans un obstacle que la description
-        // publiait pourtant comme bloqué.
         var blocked = new bool[countX * countY];
         for (int y = 0; y < countY; y++)
             for (int x = 0; x < countX; x++)
             {
-                double cx = (x + 0.5) * cellSize;
-                double cy = (y + 0.5) * cellSize;
-                var obstacles = world.Obstacles
-                    .Where(o => ObstacleGeometry.CoversCell(o, cx, cy, cellSize))
-                    .Select(o => o.Id).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-                blocked[(y * countX) + x] = obstacles.Length > 0;
-                cells.Add(new WorldCell(x, y, "plains", obstacles.Length == 0, 0, obstacles.Length == 0 ? 1 : 100, obstacles));
+                blocked[(y * countX) + x] = false;
+                cells.Add(new WorldCell(x, y, "plains", true, 0, 1, Array.Empty<string>()));
             }
 
         string[] kinds = ["food", "water", "wood", "mineral"];

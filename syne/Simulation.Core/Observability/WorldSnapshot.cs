@@ -162,15 +162,7 @@ public sealed record WorldSnapshot(
                 group.MeanBondDistance is { } meanDistance ? Math.Round(meanDistance, 4) : null));
         }
 
-        var obstacles = new List<ObstacleSnapshot>(loop.World.Obstacles.Count);
-        foreach (World.Obstacle obstacle in loop.World.Obstacles)
-        {
-            obstacles.Add(new ObstacleSnapshot(
-                obstacle.Id,
-                Math.Round(obstacle.Position.X, 4),
-                Math.Round(obstacle.Position.Y, 4),
-                Math.Round(obstacle.Radius, 4)));
-        }
+        var obstacles = new List<ObstacleSnapshot>(); // SYNE-220 étape 3c : plus d'obstacle local.
 
         var territories = new List<TerritorySnapshot>();
         if (loop.TerritoriesEnabled)
@@ -208,12 +200,7 @@ public sealed record WorldSnapshot(
                     book.Id, book.AuthorId, book.Title, book.Content, book.WrittenTick,
                     book.Readers.ToArray(), book.ReadCount)).ToArray()
                 : [],
-            loop.World.LastEnvironmentChanges.Select(change => new WorldChangeSnapshot(
-                change.Kind == EnvironmentChangeKind.Added ? "added" : "removed",
-                change.Obstacle.Id,
-                Math.Round(change.Obstacle.Position.X, 4),
-                Math.Round(change.Obstacle.Position.Y, 4),
-                Math.Round(change.Obstacle.Radius, 4))).ToArray(),
+            Array.Empty<WorldChangeSnapshot>(),
             actions);
     }
 }

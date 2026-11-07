@@ -38,7 +38,9 @@ public static class EntityFactory
             traits[name] = Math.Clamp(min + ((max - min) * u), TraitSet.Min, TraitSet.Max);
         }
 
-        (Position position, next) = world.SamplePosition(next);
+        next = next.NextDouble(out double uu);
+        next = next.NextDouble(out double vv);
+        Position position = new Position(uu * world.Size.Width, vv * world.Size.Height);
 
         var entity = new Entity(
             new EntityId(entitySequence),

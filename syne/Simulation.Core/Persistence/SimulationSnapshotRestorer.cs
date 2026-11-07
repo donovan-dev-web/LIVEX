@@ -28,13 +28,26 @@ public static class SimulationSnapshotRestorer
     /// Restaure une boucle exécutable depuis le snapshot. L'appelant doit fournir
     /// les options de config du run (persistées par ailleurs : <c>runs.config</c>).
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Le snapshot ne porte pas de monde (capture de cognition seule, étape 3a) :
+    /// ce chemin reconstruirait une boucle vide et la ferait passer pour une
+    /// reprise. Le monde doit alors venir de l'hôte, et la reprise passer par
+    /// <see cref="RestoreCognition"/>.
+    /// </exception>
     public static SimulationLoop Restore(SimulationSnapshot snapshot, SimulationOptions options)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(options);
 
-        WorldNamespace.World world = RestoreWorld(snapshot.World);
-        var territoryMembership = RestoreTerritoryMembership(snapshot.World);
+        if (snapshot.World is not { } worldDto)
+        {
+            throw new InvalidOperationException(
+                "Snapshot de cognition seule (sans monde) : impossible de reconstruire une boucle locale. " +
+                "Le monde doit venir de l'hôte (PRISM) et l'état cognitif être réappliqué par RestoreCognition.");
+        }
+
+        WorldNamespace.World world = RestoreWorld(worldDto);
+        var territoryMembership = RestoreTerritoryMembership(worldDto);
 
         var rng = new Xoshiro256StarStar(
             snapshot.Rng.S0,
@@ -48,23 +61,18 @@ public static class SimulationSnapshotRestorer
         // comprises) remplace celle que l'init vient de poser — sinon une reprise
         // repartirait sur des gisements pleins alors que la trajectoire continue sur
         // des sources entamées, et le prochain tick divergerait du run continu.
-        loop.RestoreResourceNodes(snapshot.World.ResourceNodes);
-        loop.Resources.RestoreState(snapshot.World.FoodStock, snapshot.World.WaterStock, snapshot.World.WoodStock, snapshot.World.MineralStock);
+        loop.RestoreResourceNodes(worldDto.ResourceNodes);
+        loop.Resources.RestoreState(worldDto.FoodStock, worldDto.WaterStock, worldDto.WoodStock, worldDto.MineralStock);
         loop.RestoreState(snapshot.Tick, rng);
         loop.RestoreTerritoryMembership(territoryMembership);
 
-        RestoreCognition(loop, snapshot, options);
+        RestoreCognition(loop, snapshot);
         return loop;
     }
 
     private static WorldNamespace.World RestoreWorld(WorldSnapshotDto dto)
     {
-        var world = new WorldNamespace.World(new WorldNamespace.WorldSize((int)dto.Width, (int)dto.Height), dto.CellSize);
-
-        foreach (ObstacleSnapshotDto obstacle in dto.Obstacles)
-        {
-            world.AddObstacle(new WorldNamespace.Obstacle(obstacle.Id, new WorldNamespace.Position(obstacle.X, obstacle.Y), obstacle.Radius));
-        }
+        var world = new WorldNamespace.World(new WorldNamespace.WorldSize((int)dto.Width, (int)dto.Height));
 
         foreach (TerritorySnapshotDto territory in dto.Territories ?? [])
         {
@@ -116,7 +124,17 @@ public static class SimulationSnapshotRestorer
         return membership;
     }
 
-    private static void RestoreCognition(SimulationLoop loop, SimulationSnapshot snapshot, SimulationOptions options)
+    /// <summary>
+    /// Restaure <b>uniquement</b> l'état cognitif (esprits, groupes, trace
+    /// décisionnelle) dans une boucle existante, sans toucher au monde (SYNE-225).
+    /// </summary>
+    /// <remarks>
+    /// C'est le point d'entrée de la reprise couplée : en mode PRISM, le monde
+    /// appartient à l'hôte externe et le reconstruire localement écraserait
+    /// l'état autoritaire. Seule la cognition revient du snapshot ; les entités
+    /// sont ré-alignées par les observations du premier tick reçu.
+    /// </remarks>
+    public static void RestoreCognition(SimulationLoop loop, SimulationSnapshot snapshot)
     {
         var minds = new Dictionary<ulong, MindState>();
         // Les esprits restaurés reconstruisent mémoire/confiance depuis les
@@ -129,6 +147,10 @@ public static class SimulationSnapshotRestorer
         {
             minds[mindDto.EntityId] = RestoreMind(mindDto, mindOptions);
         }
+
+        // Les entités absentes du monde (monde externe pas encore ré-observé) ne
+        // doivent pas empêcher la reprise : leurs esprits reviennent et seront
+        // rattachés dès que l'adaptateur les aura ré-indexés.
 
         var groups = new List<Group>();
         foreach (GroupSnapshotDto group in snapshot.Groups)
@@ -256,7 +278,8 @@ public static class SimulationSnapshotRestorer
                 belief.Source,
                 belief.BornTick,
                 belief.UpdatedTick,
-                belief.ExpiryTick));
+                belief.ExpiryTick,
+                belief.Durable));
         }
 
         var trust = new List<(ulong PeerId, double Trust)>();
@@ -333,6 +356,18 @@ public static class SimulationSnapshotRestorer
         memoryState.RestoreState(memory, dto.Memory.NextSequence);
         var beliefsState = new BeliefSet();
         beliefsState.RestoreState(beliefs);
+        SpatialMemory? spatialState = null;
+        if (dto.SpatialChunks is { Count: > 0 } spatialChunks)
+        {
+            spatialState = new SpatialMemory();
+            spatialState.RestoreState(spatialChunks.Select(chunk => new SpatialChunkMemory(
+                chunk.ChunkX,
+                chunk.ChunkY,
+                chunk.TagMask,
+                chunk.Confidence,
+                chunk.LastSeenTick)));
+        }
+
         var trustState = new Relationships(options.Agents.Trust);
         trustState.RestoreState(trust);
         var communicationState = new CommunicationState();
@@ -350,7 +385,8 @@ public static class SimulationSnapshotRestorer
             inventoryAmounts,
             commitments,
             dto.LastDeliberationTick,
-            triggered);
+            triggered,
+            spatialState);
         mind.RestoreLastDecision(dto.LastDecisionKind is { } lastKind ? (DesireKind)lastKind : null);
         if (dto.Decision is { } decisionDto)
         {

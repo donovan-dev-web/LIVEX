@@ -310,88 +310,6 @@ public class PersistenceTests
     /// gisements (quantités entamées comprises) — sans quoi la reprise repartirait
     /// sur des sources pleines et le tick suivant divergerait du run continu.
     /// </summary>
-    [Fact]
-    public void Resources_ArePersistedWithFourKindsIncludingMineral()
-    {
-        string db = TempDb();
-        try
-        {
-            SimulationLoop loop = BuildScenario(12345, 10);
-            var config = Simulation.Core.Configuration.ConfigLoader.LoadDefaults();
-            config.Resources.Mineral.Initial = 25;
-
-            loop = new SimulationLoop(loop.World, loop.Rng, config);
-            Reference(loop, ticks: 15);
-
-            SimulationSnapshot snapshot = SimulationSnapshotCodec.Capture(loop);
-            Assert.NotNull(snapshot.World.ResourceNodes);
-            Assert.Contains(snapshot.World.ResourceNodes!, node => node.Kind == (int)ResourceKind.Mineral);
-            Assert.Contains(snapshot.World.ResourceNodes!, node => node.Kind == (int)ResourceKind.Water);
-
-            // L'agrégat publié est la somme des gisements (contrat du modèle localisé).
-            double waterAggregate = snapshot.World.ResourceNodes!
-                .Where(node => node.Kind == (int)ResourceKind.Water)
-                .Sum(node => node.Amount);
-            Assert.Equal(waterAggregate, snapshot.World.WaterStock, 10);
-            Assert.True(waterAggregate > 0.0, "Les gisements d'eau portent une quantité régénérée.");
-
-            // La régénération s'applique aux <b>gisements</b> (et non à un flux
-            // mondial) : chaque source d'eau porte une quantité bornée par sa capacité
-            // et une régénération positive déclarée.
-            Assert.All(
-                snapshot.World.ResourceNodes!.Where(node => node.Kind == (int)ResourceKind.Water),
-                node =>
-                {
-                    Assert.InRange(node.Amount, 0.0, node.Capacity);
-                    Assert.True(node.RegenerationRate > 0.0);
-                });
-
-            using (var store = new SqlitePersistenceStore(db))
-            {
-                store.BeginRun("run-res", "res-test", 12345, config);
-                store.SaveTick("run-res", loop);
-            }
-
-            using (var reloadStore = new SqlitePersistenceStore(db))
-            {
-                SimulationLoop resumed = reloadStore.LoadLatestRun();
-                Assert.Equal(loop.CurrentTick, resumed.CurrentTick);
-                Assert.Equal(snapshot.World.MineralStock, resumed.Resources.Stock(World.ResourceKind.Mineral), 10);
-                Assert.Equal(snapshot.World.WaterStock, resumed.Resources.Stock(World.ResourceKind.Water), 10);
-                Assert.Equal(snapshot.World.FoodStock, resumed.Resources.Stock(World.ResourceKind.Food), 10);
-                // Les gisements restaurés portent l'état sauvegardé (mêmes identités,
-                // positions et quantités) : la reprise continue l'économie localisée.
-                Assert.Equal(
-                    snapshot.World.ResourceNodes!.Select(node => (node.Id, node.X, node.Y, node.Amount)),
-                    resumed.World.ResourceNodes.Select(node => (node.Id, node.Position.X, node.Position.Y, node.Amount)));
-            }
-
-            using (var resourcesConnection = new SqliteConnection($"Data Source={db}"))
-            {
-                resourcesConnection.Open();
-                using var resourcesCommand = resourcesConnection.CreateCommand();
-                resourcesCommand.CommandText = "SELECT type FROM resources ORDER BY type;";
-                var types = new List<string>();
-                using (var reader = resourcesCommand.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        types.Add(reader.GetString(0));
-                    }
-                }
-
-                Assert.Contains("mineral", types);
-                Assert.Contains("food", types);
-                Assert.Contains("water", types);
-                Assert.Contains("wood", types);
-                Assert.Equal(4, types.Count);
-            }
-        }
-        finally
-        {
-            DeleteTempDb(db);
-        }
-    }
 
     private static List<string> TableNames(string dbPath)
     {
@@ -418,3 +336,4 @@ public class PersistenceTests
         return Convert.ToInt32(command.ExecuteScalar());
     }
 }
+

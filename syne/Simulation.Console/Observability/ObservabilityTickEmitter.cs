@@ -107,7 +107,6 @@ public sealed class ObservabilityTickEmitter
     /// </summary>
     private void DrainTickBuffers()
     {
-        _loop.World.ClearEnvironmentChanges();
         _loop.ClearSeasonChanges();
         _loop.ClearTerritoryChanges();
         _loop.ClearBookChanges();
@@ -124,7 +123,7 @@ public sealed class ObservabilityTickEmitter
             return;
         }
 
-        IReadOnlyList<EnvironmentChange> environmentChanges = _loop.World.LastEnvironmentChanges;
+        IReadOnlyList<EnvironmentChange> environmentChanges = Array.Empty<EnvironmentChange>();
         IReadOnlyList<Simulation.Core.Configuration.SeasonChange> seasonChanges = _loop.LastSeasonChanges;
         IReadOnlyList<Simulation.Core.World.TerritoryMembershipChange> territoryChanges = _loop.LastTerritoryChanges;
         IReadOnlyList<Simulation.Core.World.BookChange> bookChanges = _loop.LastBookChanges;
@@ -220,14 +219,7 @@ public sealed class ObservabilityTickEmitter
                     ObservabilitySerializer.EventMessage(EventSensor.AgentDied(_loop.CurrentTick, death))));
         }
 
-        foreach (EnvironmentChange change in _loop.World.LastEnvironmentChanges)
-        {
-            ExternalEvent environmentEvent = change.Kind == EnvironmentChangeKind.Added
-                ? EventSensor.ConstructionPlaced(_loop.CurrentTick, change.Obstacle)
-                : EventSensor.ConstructionRemoved(_loop.CurrentTick, change.Obstacle);
-            await SafeBroadcastAsync(
-                ObservabilitySerializer.ToJsonText(ObservabilitySerializer.EventMessage(environmentEvent)));
-        }
+        // SYNE-220 étape 3c : plus de modification d'environnement locale.
 
         foreach (Simulation.Core.Configuration.SeasonChange change in seasonChanges)
         {

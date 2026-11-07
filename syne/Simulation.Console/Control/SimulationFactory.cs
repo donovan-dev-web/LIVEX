@@ -11,7 +11,6 @@ using Simulation.Core.Configuration;
 using Simulation.Core.Entities;
 using Simulation.Core.Loop;
 using Simulation.Core.Prng;
-using WorldType = Simulation.Core.World.World;
 
 namespace Simulation.Console.Control;
 
@@ -71,7 +70,7 @@ public static class SimulationFactory
     /// Le layout couvre tant de cases qu'aucun placement ne sort d'un obstacle.
     /// </exception>
     public static Xoshiro256StarStar Populate(
-        WorldType world,
+        Simulation.Core.World.IWorld world,
         SimulationOptions options,
         ulong population,
         Xoshiro256StarStar rng)
@@ -79,24 +78,11 @@ public static class SimulationFactory
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(options);
 
-        world.ApplyConfiguredLayout(options.World);
-
         EntityTemplate template = EntityTemplate.DefaultA;
         for (ulong i = 0; i < population; i++)
         {
-            int attempt = 0;
             (Entity Entity, Xoshiro256StarStar Next) draw =
                 EntityFactory.CreateNext(template, world, rng, i + 1, bornAt: 0);
-            while (IsInBlockedCell(world, draw.Entity.Position, options.Simulation.WorldCellSize))
-            {
-                if (++attempt >= MaxPlacementAttempts)
-                {
-                    throw new InvalidOperationException(
-                        $"Placement de l'entité {i + 1} impossible : {MaxPlacementAttempts} tirages consécutifs dans un obstacle du layout.");
-                }
-
-                draw = EntityFactory.CreateNext(template, world, draw.Next, i + 1, bornAt: 0);
-            }
 
             rng = draw.Next;
             world.AddEntity(draw.Entity);
@@ -105,43 +91,14 @@ public static class SimulationFactory
         return rng;
     }
 
-    /// <summary>
-    /// Vrai si <paramref name="position"/> tombe dans une case que la description
-    /// du monde publiera comme bloquée par un obstacle — même règle, même source
-    /// (<see cref="Simulation.Core.World.ObstacleGeometry"/>) que
-    /// <see cref="Simulation.Core.World.WorldDescriptionBuilder"/>.
-    /// </summary>
-    private static bool IsInBlockedCell(WorldType world, Simulation.Core.World.Position position, double cellSize)
-    {
-        if (world.Obstacles.Count == 0)
-        {
-            return false;
-        }
-
-        int cellX = (int)Math.Floor(position.X / cellSize);
-        int cellY = (int)Math.Floor(position.Y / cellSize);
-        double centerX = (cellX + 0.5) * cellSize;
-        double centerY = (cellY + 0.5) * cellSize;
-        foreach (Simulation.Core.World.Obstacle obstacle in world.Obstacles)
-        {
-            if (Simulation.Core.World.ObstacleGeometry.CoversCell(obstacle, centerX, centerY, cellSize))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static (WorldType World, SimulationLoop Loop) Build(
+    public static (Simulation.Core.World.IWorld World, SimulationLoop Loop) Build(
         SimulationOptions options,
         ulong population,
         ulong seed)
     {
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
-        var world = new WorldType(
-            new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight),
-            options.Agents.Perception.SpatialCellSize);
+        var world = new Simulation.Core.World.World(
+            new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight));
 
         rng = Populate(world, options, population, rng);
 
@@ -149,7 +106,7 @@ public static class SimulationFactory
         return (world, loop);
     }
 
-    public static (WorldType World, SimulationLoop Loop) Build(
+    public static (Simulation.Core.World.IWorld World, SimulationLoop Loop) Build(
         SimulationOptions options,
         ulong seed)
     {
