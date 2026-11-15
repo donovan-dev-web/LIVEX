@@ -16,7 +16,7 @@ LIVEX — **Living Intelligent Virtual Ecosystem eXperience** — est une platef
 | :-- | :-- | :-- |
 | **SYNE** | Systems & Emergent Network Engine | Moteur autonome V1 ; en couplage V2, cognition et décisions des agents |
 | **ECHOS** | Emergent Cognition & Holistic Observation System | Système d'observation, d'analyse et de pilotage |
-| **PRISM** | Persistent Reality & Interactive Simulation Module | En V1, rendu Unreal ; en V2, monde physique .NET headless, intégration en cours |
+| **PRISM** | Perceptual Rendering & Interactive Simulation Module | En V1, rendu Unreal ; en V2, monde physique .NET headless, intégration en cours |
 
 LIVEX propose une **troisième voie** entre deux extrêmes :
 - scripter des comportements prédéfinis, ou
@@ -54,10 +54,9 @@ ECHOS, PRISM et le Launcher. **PRISM V1** est le projet Unreal de la release
 1.0.0 ; il intègre **PRISM-LDK** (*LIVEX Development Kit*), le plugin qui
 expose les contrats SYNE à Blueprint. **PRISM V2** est une simulation .NET
 headless distincte. Son host détient le monde physique ; SYNE conserve la
-cognition et reçoit les observations PRISM. La boucle couplée a été exercée
-sur 1 000 ticks ; l'extraction complète du monde SYNE et le run R2 de 5 000
-ticks restent à faire. Le viewer V2 est facultatif et son lancement live
-reste à raccorder.
+cognition et reçoit les observations PRISM. La boucle couplée est reproductible
+(R2, 5 000 ticks) et l'extraction du monde SYNE est achevée. Le viewer V2 est
+facultatif et son lancement live reste à raccorder.
 
 Le dépôt inclut aussi `../../syne-mock/`, un serveur Node.js de développement
 pour les contrats V1. Il simule les échanges et une partie du comportement,

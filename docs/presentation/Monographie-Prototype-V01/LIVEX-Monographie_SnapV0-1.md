@@ -1,13 +1,13 @@
 
 
-> **Note de statut — référence conceptuelle, snapshot V0.1.** Ce document
-> conserve la vision et les spécifications de la période de conception
-> initiale. Certaines décisions d'implémentation ont évolué depuis, notamment
-> PRISM : la réalisation actuelle cible Unreal Engine ; PRISM est le projet
-> Unreal final de LIVEX et intègre le plugin PRISM-LDK (`PrismLdk`, LIVEX
-> Development Kit). Les contrats et procédures à jour sont maintenus dans
-> [`docs/README.md`](docs/README.md) et les documentations SYNE/PRISM ; les
-> choix historiques de moteur dans cette monographie ne sont pas prescriptifs.
+> **Note de statut — référence conceptuelle, snapshot V0.1 (superseded).** Ce
+> document conserve la vision et les spécifications de la période de conception
+> initiale. Il n'est pas prescriptif : la réalisation actuelle est PRISM V2
+> (simulation .NET headless, monde voxel 2.5D), et non le projet Unreal de la
+> V1. Les contrats et procédures à jour sont maintenus dans
+> [`docs/README.md`](../../README.md), [`docs/prism/README.md`](../../prism/README.md)
+> et les documentations SYNE/ECHOS ; les choix historiques de moteur dans cette
+> monographie ne décrivent plus l'implémentation courante.
 
 ---
 

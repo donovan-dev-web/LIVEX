@@ -197,7 +197,9 @@ flowchart LR
     L["Launcher"] -. "orchestration V2 partielle" .-> P
 ```
 
-La boucle SYNE↔PRISM a été exercée sur 1 000 ticks. Le run R2 de 5 000 ticks,
-la reprise couplée, l'ingestion ECHOS en production et le viewer live restent
+La boucle SYNE↔PRISM a été exercée sur 1 000 ticks au moment de cette coupe.
+Depuis, R2 (50 agents × 5 000 ticks) et R3 (100 agents × 5 000 ticks, G5) sont
+reproductibles, la reprise couplée est bit-identique et l'extraction du monde
+SYNE est achevée. L'ingestion ECHOS au cycle de run et le viewer live restent
 ouverts. Le trait plein du contrat n'implique pas que toutes les intégrations
 de bout en bout soient terminées.

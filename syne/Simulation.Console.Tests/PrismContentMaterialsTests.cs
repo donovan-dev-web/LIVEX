@@ -40,9 +40,12 @@ public sealed class PrismContentMaterialsTests
         {
             IReadOnlyDictionary<ushort, ResourceKind> table = PrismContentMaterials.Load(root);
 
-            (ushort materialId, ResourceKind kind) = Assert.Single(table);
-            Assert.Equal(2, materialId);
-            Assert.Equal(ResourceKind.Water, kind);
+            // L'air n'a aucune nature ; la pierre est un gisement minéral (une
+            // chaîne d'outils commence par elle) et l'eau la seule ressource
+            // buvable.
+            Assert.Equal(ResourceKind.Mineral, table[1]);
+            Assert.Equal(ResourceKind.Water, table[2]);
+            Assert.Equal(2, table.Count);
         }
         finally
         {
@@ -87,16 +90,53 @@ public sealed class PrismContentMaterialsTests
         {
             IReadOnlyDictionary<ushort, ResourceKind> table = PrismContentMaterials.Load(root);
 
-            // Tri ordinal : iron_ore(0), leaves(1), log(2), stone(3).
+            // Tri ordinal : iron_ore(0), leaves(1), log(2), stone(3). La pierre
+            // porte le tag `stone` : c'est un gisement minéral, pas un décor.
             Assert.Equal(ResourceKind.Mineral, table[0]);
             Assert.Equal(ResourceKind.Wood, table[1]);
             Assert.Equal(ResourceKind.Wood, table[2]);
-            Assert.False(table.ContainsKey(3));
+            Assert.Equal(ResourceKind.Mineral, table[3]);
         }
         finally
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    [Fact]
+    public void LoadDropItemKinds_LinksAGatheredItemToItsDepositFamily()
+    {
+        // Prospection : une récolte de « stone » refusée faute de source doit
+        // pouvoir se traduire en « va vers un gisement minéral ». La table vient
+        // du pack (bloc qui produit l'objet), jamais d'un nom deviné.
+        string root = WritePack(
+            """
+            [
+              { "id": "log", "tags": ["wood"], "drops": [ { "item": "log", "qty": 1 } ] },
+              { "id": "stone", "tags": ["stone"], "drops": [ { "item": "stone", "qty": 1 } ] },
+              { "id": "grass", "tags": [], "drops": [ { "item": "wheat_seed", "qty": 1 } ] }
+            ]
+            """);
+        try
+        {
+            IReadOnlyDictionary<string, ResourceKind> table = PrismContentMaterials.LoadDropItemKinds(root);
+
+            Assert.Equal(ResourceKind.Wood, table["log"]);
+            Assert.Equal(ResourceKind.Mineral, table["stone"]);
+            // Un bloc sans nature ne donne aucune famille : on ne devine rien.
+            Assert.DoesNotContain("wheat_seed", table.Keys);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void LoadDropItemKinds_WithoutDirectoryIsEmpty()
+    {
+        Assert.Empty(PrismContentMaterials.LoadDropItemKinds(null));
+        Assert.Empty(PrismContentMaterials.LoadDropItemKinds("   "));
     }
 
     [Fact]

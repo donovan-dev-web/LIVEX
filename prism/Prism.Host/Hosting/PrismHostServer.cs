@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prism.Contracts;
 using Prism.Host.Persistence;
+using Prism.Host.Ticking;
 
 namespace Prism.Host.Hosting;
 
@@ -20,7 +21,8 @@ public static class PrismHostServer
         int port,
         PrismHostRuntime runtime,
         string? sessionToken,
-        int? readPort = null)
+        int? readPort = null,
+        int? maximumTickResponseBytes = null)
     {
         ArgumentNullException.ThrowIfNull(runtime);
         if (port is < 1 or > 65535)
@@ -33,6 +35,11 @@ public static class PrismHostServer
             throw new ArgumentOutOfRangeException(nameof(readPort));
         }
 
+        // Plafond par défaut : 8 Mio par réponse de tick (PRISM-142). Il est
+        // paramétrable pour que les tests forcent la pagination sur un petit monde.
+        int tickResponseCeiling = maximumTickResponseBytes ?? TickTransportLimits.MaximumTickResponseBytes;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tickResponseCeiling);
+
         var builder = WebApplication.CreateBuilder();
         var urls = readPort is { } streamPort && streamPort != port
             ? new[] { $"http://127.0.0.1:{port}", $"http://127.0.0.1:{streamPort}" }
@@ -41,6 +48,27 @@ public static class PrismHostServer
         builder.Services.AddSingleton(runtime);
         var app = builder.Build();
         app.UseWebSockets();
+
+        if (Environment.GetEnvironmentVariable("PRISM_TICK_PROFILE") == "1")
+        {
+            // Horodatages absolus (ms Unix) autour du tick : les comparer aux
+            // horodatages du client dit si une attente est côté hôte (file
+            // d'attente Kestrel, traitement, écriture) ou côté client.
+            app.Use(async (context, next) =>
+            {
+                if (!context.Request.Path.StartsWithSegments("/data/tick"))
+                {
+                    await next();
+                    return;
+                }
+
+                long arrived = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                await next();
+                long done = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                Console.Error.WriteLine(
+                    $"[profile] http tick arrive {arrived} done {done} handled {done - arrived} ms");
+            });
+        }
 
         app.MapGet("/health/live", () => Results.Ok(new { status = "live" }));
         app.MapGet("/health/ready", () => runtime.IsReady
@@ -137,7 +165,22 @@ public static class PrismHostServer
         app.MapPost("/data/tick", async (HttpContext context) =>
         {
             if (!IsAuthorized(context, sessionToken)) return Unauthorized();
-            return Results.Ok(runtime.Step(await ReadJsonAsync<TickRequest>(context)));
+            var result = runtime.Step(await ReadJsonAsync<TickRequest>(context));
+            // Une seule sérialisation sert de mesure et, si le tick tient sous le
+            // plafond, de corps de réponse : la pagination ne coûte rien quand elle
+            // est inutile, et rien n'est jamais tronqué quand elle l'est.
+            var plan = runtime.CreateTickPagePlan(result, tickResponseCeiling);
+            runtime.HoldTickPagePlan(plan);
+            return Results.Bytes(plan.FirstPage, "application/json");
+        });
+        app.MapGet("/data/tick/result", (HttpContext context) =>
+        {
+            if (!IsAuthorized(context, sessionToken)) return Unauthorized();
+            // Lecture seule : servir une page n'avance pas le monde et ne rejoue
+            // aucun calcul, la page est une tranche du résultat déjà produit.
+            return Results.Bytes(
+                runtime.RenderTickPage(context.Request.Query["cursor"].ToString()),
+                "application/json");
         });
         app.Map("/data/lockstep", async (HttpContext context) =>
         {
@@ -199,6 +242,13 @@ public static class PrismHostServer
                 context.Response.StatusCode = StatusCodes.Status409Conflict;
                 await context.Response.WriteAsJsonAsync(new { error = "content_hash_mismatch", detail = exception.Message });
             }
+            catch (TickPayloadTooLargeException exception)
+            {
+                // Refus explicite plutôt qu'un corps tronqué : le run doit s'arrêter
+                // sur un tick qu'on ne peut pas transporter (PRISM-142).
+                context.Response.StatusCode = StatusCodes.Status413PayloadTooLarge;
+                await context.Response.WriteAsJsonAsync(new { error = exception.ErrorCode, detail = exception.Message });
+            }
             catch (KeyNotFoundException exception)
             {
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -223,7 +273,25 @@ public static class PrismHostServer
             {
                 var request = ProtocolJson.Deserialize<TickRequest>(message);
                 var result = runtime.Step(request);
-                await SendTextAsync(socket, ProtocolJson.Serialize(result), cancellationToken);
+                // La liaison lockstep ne pagine pas : au-delà du plafond, elle refuse
+                // le tick plutôt que d'envoyer une trame que le contrat ne borne pas.
+                var payload = ProtocolJson.Serialize(result);
+                if (Encoding.UTF8.GetByteCount(payload) > TickTransportLimits.MaximumTickResponseBytes)
+                {
+                    await SendTextAsync(
+                        socket,
+                        JsonSerializer.Serialize(
+                            new
+                            {
+                                error = "payload_too_large",
+                                detail = $"Tick {result.Tick} exceeds the {TickTransportLimits.MaximumTickResponseBytes}-byte ceiling; use the HTTP tick endpoint, which pages its response.",
+                            },
+                            ProtocolJson.Options),
+                        cancellationToken);
+                    continue;
+                }
+
+                await SendTextAsync(socket, payload, cancellationToken);
             }
             catch (Exception exception) when (exception is JsonException or InvalidOperationException or ArgumentException)
             {

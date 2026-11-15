@@ -39,9 +39,9 @@ public class CausalWindowTests
         return new Entity(new EntityId(id), "Entité A", name: null, position, new TraitSet(traits), bornAt: 0);
     }
 
-    private static (Simulation.Core.World.World World, TickCommitBuffer Buffer) Build(params (ulong Id, Position Position)[] entities)
+    private static (Simulation.Core.World.PrismWorldAdapter World, TickCommitBuffer Buffer) Build(params (ulong Id, Position Position)[] entities)
     {
-        var world = new Simulation.Core.World.World(new WorldSize(500, 500));
+        var world = new Simulation.Core.World.PrismWorldAdapter(new WorldSize(500, 500));
         var buffer = new TickCommitBuffer();
         foreach ((ulong id, Position position) in entities)
         {
@@ -54,7 +54,7 @@ public class CausalWindowTests
     [Fact]
     public void RequestedMove_IsNotVisibleBeforeTheCommit()
     {
-        (Simulation.Core.World.World world, TickCommitBuffer buffer) = Build((1, new Position(100, 100)));
+        (Simulation.Core.World.PrismWorldAdapter world, TickCommitBuffer buffer) = Build((1, new Position(100, 100)));
         Entity mover = world.Entities.Single();
 
         buffer.RequestMove(mover, new Position(101, 100));
@@ -76,7 +76,7 @@ public class CausalWindowTests
         // Deux déplacements demandés dans l'ordre inverse des identifiants : l'ordre
         // d'application est celui des identifiants (déterminisme), l'ordre d'insertion
         // ne servant qu'à départager un même identifiant.
-        (Simulation.Core.World.World world, TickCommitBuffer buffer) = Build(
+        (Simulation.Core.World.PrismWorldAdapter world, TickCommitBuffer buffer) = Build(
             (1, new Position(100, 100)),
             (2, new Position(100, 100)));
         Entity first = world.Entities.Single(entity => entity.Id.Value == 1);
@@ -95,7 +95,7 @@ public class CausalWindowTests
     public void Commit_ResolvesDefenseOnTheTargetsEffectiveState()
     {
         var options = ConfigLoader.LoadDefaults();
-        (Simulation.Core.World.World world, TickCommitBuffer buffer) = Build(
+        (Simulation.Core.World.PrismWorldAdapter world, TickCommitBuffer buffer) = Build(
             (1, new Position(100, 100)),
             (2, new Position(100, 100)));
         Entity attacked = world.Entities.Single(entity => entity.Id.Value == 2);
@@ -115,7 +115,7 @@ public class CausalWindowTests
     public void RequestedThreat_LowersSafetyAtTheCommit()
     {
         var options = ConfigLoader.LoadDefaults();
-        (Simulation.Core.World.World world, TickCommitBuffer buffer) = Build((1, new Position(100, 100)));
+        (Simulation.Core.World.PrismWorldAdapter world, TickCommitBuffer buffer) = Build((1, new Position(100, 100)));
         MindState target = new(options);
         double safetyBefore = target.Needs.Safety;
 
@@ -133,7 +133,7 @@ public class CausalWindowTests
     [Fact]
     public void NullEffects_AreNotQueued_AndClearDiscardsTheTick()
     {
-        (Simulation.Core.World.World world, TickCommitBuffer buffer) = Build((1, new Position(100, 100)));
+        (Simulation.Core.World.PrismWorldAdapter world, TickCommitBuffer buffer) = Build((1, new Position(100, 100)));
         Entity entity = world.Entities.Single();
         MindState target = new(ConfigLoader.LoadDefaults());
 

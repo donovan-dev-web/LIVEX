@@ -1,8 +1,8 @@
 # PRISM_SYNTHESIS — Synthèse de PRISM V2
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION V2 EN COURS — P2 ; G1 EN ATTENTE]
-**Dernière mise à jour** : 2 novembre 2026
+**Statut** : [IMPLÉMENTATION V2 AVANCÉE — **P0–P9 CLÔTRÉES (P9 LE 15 NOVEMBRE 2026)**, P10 AMORCÉ, P11 (VIEWER) OUVERT ; **G4 FRANCHIE LE 9 NOVEMBRE 2026 (5/5 CHAÎNES PAR LES BOTS, AUDIT VERT)** ; **G5 FRANCHIE LE 14 NOVEMBRE 2026 (R3 REPRODUCTIBLE)** ; G1 OUVERTE NON BLOQUANTE]
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`README.md`](README.md)
 
 ---
@@ -25,6 +25,8 @@
 | Mécanismes de coopération testés | 7 (ablations A1…A8) |
 | Phases / portes | 14 / 9 |
 
-**Ce qui est incertain.** Le budget réel du modèle 2.5D (porte G1) ; l'émergence de la coopération (porte G7, résultat négatif possible et publiable).
+**Où en est-on (15 novembre 2026).** Les phases P0–P9 sont clôturées (P9 le 15 novembre 2026), P10 est amorcé, et la suite PRISM est verte (**487/487**). Les cinq chaînes sont jouées par des bots (G4) ; la boucle couplée SYNE↔PRISM est reproductible sur 5 000 ticks (R2) et 100 agents × 5 000 ticks (R3, G5). Le coût de l'hôte reste au-dessus des budgets de G1 (431,5 ms/tick à 100 agents, dominés par le pathfinding), sans bloquer l'implémentation. Le viewer (P11) est le chantier ouvert : meshing et client de lecture existent, mais l'atlas, les entités live, le suivi/coupe, l'inspecteur à sept calques, le mode `--connect`/embarqué/rejeu, les interventions journalisées, le test d'indépendance du rendu et le manifeste B8 restent à livrer. Le calibrage et le rapport expérimental (G7) sont reportés après l'implémentation complète.
+
+## Ce qui est incertain. Le budget réel du modèle 2.5D (porte G1) ; l'émergence de la coopération (porte G7, résultat négatif possible et publiable).
 
 **Pour aller plus loin** : [`VISION.md`](VISION.md) · [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`API_CONTRACTS.md`](API_CONTRACTS.md) · [`ROADMAP.md`](ROADMAP.md).

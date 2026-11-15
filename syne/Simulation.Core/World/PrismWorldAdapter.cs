@@ -30,6 +30,11 @@ public sealed class PrismWorldAdapter : IWorld
     private readonly List<Territory> _territories = [];
     private readonly List<Book> _books = [];
 
+    public PrismWorldAdapter(WorldSize size)
+        : this(size, null)
+    {
+    }
+
     public PrismWorldAdapter(WorldSize size, double spatialCellSize)
         : this(size, null)
     {
@@ -55,6 +60,18 @@ public sealed class PrismWorldAdapter : IWorld
     public void AddObstacle(Obstacle obstacle) { }
     public ResourceNode? NearestResourceNode(Position position, ResourceKind kind, double maxDistance) => null;
     public void ReplaceResourceNodes(IEnumerable<ResourceNode> nodes) { }
+
+    /// <summary>
+    /// Aucun gisement n'est créé côté SYNE : les ressources viennent de PRISM (gisements
+    /// observés, exposés par l'adaptateur). Le membre reste pour la parallèle des shims.
+    /// </summary>
+    public void AddResourceNode(ResourceNode node) { }
+
+    /// <summary>Les constructions sont des obstacles PRISM : SYNE n'en trace plus aucune.</summary>
+    public void PlaceConstruction(Obstacle obstacle) { }
+
+    /// <summary>Symétrique de <see cref="PlaceConstruction"/> : rien à retirer côté SYNE.</summary>
+    public bool RemoveConstruction(string id) => false;
     public void ApplyResourceLayout(Simulation.Core.Configuration.ResourceSettings settings, ulong seed, double cellSize) { }
     public (Position Position, Simulation.Core.Prng.Xoshiro256StarStar Next) SamplePosition(Simulation.Core.Prng.Xoshiro256StarStar rng)
     {
@@ -70,8 +87,46 @@ public sealed class PrismWorldAdapter : IWorld
     public IReadOnlyList<Book> Books => _books;
 
     /// <summary>
-    /// Ajoute une entité (sans grille locale). Même garde que
-    /// <see cref="World.AddEntity"/> : le plan n'est pas toroidal.
+    /// Ajoute une zone de territoire (analyse sociale sur positions observées).
+    /// Même garde que <see cref="AddEntity"/> : le plan n'est pas toroidal.
+    /// </summary>
+    public void AddTerritory(Territory territory)
+    {
+        ArgumentNullException.ThrowIfNull(territory);
+        if (territory.Center != Position.Clamp(territory.Center, Size))
+        {
+            throw new ArgumentOutOfRangeException(nameof(territory), "Le centre de la zone de territoire sort du monde (non-toroidal).");
+        }
+
+        if (_territories.Exists(existing => existing.Id == territory.Id))
+        {
+            throw new ArgumentException("Une zone de territoire portant cet identifiant existe déjà.", nameof(territory));
+        }
+
+        _territories.Add(territory);
+    }
+
+    /// <summary>
+    /// Applique les zones de territoire déclarées par la configuration. C'est la seule
+    /// partie du « layout de monde » qui reste côté SYNE : des positions observées, pas de
+    /// géométrie (SYNE-220 étape 3d).
+    /// </summary>
+    public void ApplyConfiguredLayout(Simulation.Core.Configuration.WorldSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        if (!settings.Territories.Enabled)
+        {
+            return;
+        }
+
+        foreach (Simulation.Core.Configuration.TerritoryZoneDefinition spec in settings.Territories.Zones)
+        {
+            AddTerritory(new Territory(spec.Id, new Position(spec.CenterX, spec.CenterY), spec.Radius));
+        }
+    }
+
+    /// <summary>
+    /// Ajoute une entité (sans grille locale). Le plan n'est pas toroidal.
     /// </summary>
     public void AddEntity(Simulation.Core.Entities.Entity entity)
     {

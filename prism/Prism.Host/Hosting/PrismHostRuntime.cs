@@ -4,6 +4,7 @@ using Prism.Content;
 using Prism.Contracts;
 using Prism.Core.Accounting;
 using Prism.Core.Actions;
+using Prism.Core.Navigation;
 using Prism.Core.Time;
 using Prism.Core.World;
 using Prism.Host.Persistence;
@@ -149,6 +150,7 @@ public sealed class PrismHostRuntime : IWorldHost
     private string? _error;
     private long _lastCompletedTick = -1;
     private long? _maxTicks;
+    private TickPagePlan? _tickPagePlan;
 
     public PrismHostRuntime(
         Func<IWorldHost>? worldHostFactory = null,
@@ -278,6 +280,7 @@ public sealed class PrismHostRuntime : IWorldHost
                 _contentHash = request.ContentHash;
                 _lastCompletedTick = -1;
                 _maxTicks = null;
+                _tickPagePlan = null;
                 _error = null;
                 _state = PrismHostState.Ready;
                 PublishState("world_ready");
@@ -474,18 +477,40 @@ public sealed class PrismHostRuntime : IWorldHost
             _contentHash = checkpoint.ContentHash;
             _lastCompletedTick = checkpoint.Tick;
             _maxTicks = null;
+            _tickPagePlan = null;
             _error = null;
             _state = PrismHostState.Ready;
             PublishState("world_ready");
         }
     }
 
+    /// <summary>
+    /// Profilage opt-in du tick côté runtime (<c>PRISM_TICK_PROFILE=1</c>) : ce qui
+    /// entoure le monde — validation du protocole, checkpoints automatiques,
+    /// publications du flux de lecture — reste invisible dans le profil par phases
+    /// d'<see cref="OrderedWorldHost"/>, alors que c'est du temps de tick.
+    /// </summary>
+    private static readonly bool RuntimeTickProfiling =
+        Environment.GetEnvironmentVariable("PRISM_TICK_PROFILE") == "1";
+
+    /// <summary>
+    /// Vérification opt-in des caches (<c>PRISM_VERIFY_CACHES=1</c>, PRISM-108) : la fenêtre de
+    /// perception et le mémo <c>CanStandAt</c> recalculent sans mémo et échouent franchement à la
+    /// première divergence. Désactivé, le mode ne change ni le comportement ni une empreinte.
+    /// </summary>
+    private static readonly bool VerifyCaches =
+        Prism.Core.Diagnostics.CacheVerification.FromEnvironment();
+
     public TickResult Step(TickRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
         lock (_gate)
         {
+            long stepEntered = RuntimeTickProfiling ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
             RequireState(PrismHostState.Running, "step");
+            // Les pages du tick précédent ne survivent pas à l'avancement du monde :
+            // elles décriraient un tick que l'hôte ne peut plus garantir.
+            _tickPagePlan = null;
             ProtocolJson.Serialize(request);
             if (request.Tick != checked(_lastCompletedTick + 1))
             {
@@ -500,13 +525,19 @@ public sealed class PrismHostRuntime : IWorldHost
                 var previousWorldRevision = _generatedWorld?.Grid.Revision;
                 var previousAgentRevision = _agentLifecycle?.Revision;
                 var result = _worldHost!.Step(request);
+                double worldMs = RuntimeTickProfiling
+                    ? (System.Diagnostics.Stopwatch.GetTimestamp() - stepEntered) * 1000.0 / System.Diagnostics.Stopwatch.Frequency
+                    : 0.0;
                 tickCommitted = true;
                 _lastCompletedTick = result.Tick;
                 TrackCommandFailures(result);
+                long sideStarted = RuntimeTickProfiling ? System.Diagnostics.Stopwatch.GetTimestamp() : 0;
+                bool checkpointed = false;
                 if (result.Tick % _automaticCheckpointIntervalTicks ==
                     _automaticCheckpointIntervalTicks - 1)
                 {
                     SaveAutomaticCheckpoint();
+                    checkpointed = true;
                 }
 
                 if (_generatedWorld is not null &&
@@ -535,8 +566,20 @@ public sealed class PrismHostRuntime : IWorldHost
                         CreateSnapshot);
                 }
 
+                double sideMs = RuntimeTickProfiling
+                    ? (System.Diagnostics.Stopwatch.GetTimestamp() - sideStarted) * 1000.0 / System.Diagnostics.Stopwatch.Frequency
+                    : 0.0;
                 var payload = JsonSerializer.SerializeToElement(result, ProtocolJson.Options);
                 _readStream.Publish("tick_result", payload, CreateSnapshot);
+                if (RuntimeTickProfiling)
+                {
+                    double totalMs = (System.Diagnostics.Stopwatch.GetTimestamp() - stepEntered) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
+                    Console.Error.WriteLine(string.Create(
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        $"[profile] runtime tick {result.Tick} total {totalMs:F1} ms (monde {worldMs:F1}, " +
+                        $"hors-monde {sideMs:F1}, checkpoint {(checkpointed ? "oui" : "non")}, " +
+                        $"abonnés {_readStream.SubscriberCount})"));
+                }
                 if (_generatedWorld is not null &&
                     result.Tick % _checksumIntervalTicks == _checksumIntervalTicks - 1)
                 {
@@ -596,6 +639,52 @@ public sealed class PrismHostRuntime : IWorldHost
         }
     }
 
+    /// <summary>
+    /// Prépare la réponse bornée d'un tick (PRISM-142, ADR-014). La sérialisation
+    /// complète du résultat a lieu ici, une seule fois : c'est elle qui décide s'il
+    /// tient sous le plafond, et elle sert de corps quand c'est le cas.
+    /// </summary>
+    public TickPagePlan CreateTickPagePlan(
+        TickResult result,
+        int maximumPageBytes = TickTransportLimits.MaximumTickResponseBytes)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        return TickPagePlan.Create(result, maximumPageBytes);
+    }
+
+    /// <summary>
+    /// Retient les pages du tick qui vient d'être répondu, jusqu'au tick suivant :
+    /// un lecteur peut alors réclamer les pages restantes sans que le monde avance.
+    /// </summary>
+    public void HoldTickPagePlan(TickPagePlan plan)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        lock (_gate)
+        {
+            _tickPagePlan = plan;
+        }
+    }
+
+    /// <summary>
+    /// Rend une page du dernier tick répondu. Refus explicite (409 côté HTTP) quand
+    /// aucune séquence n'attend — les pages d'un tick ne sont jamais rejouées
+    /// au-delà du tick suivant.
+    /// </summary>
+    public byte[] RenderTickPage(string cursor)
+    {
+        lock (_gate)
+        {
+            if (_tickPagePlan is not { } plan)
+            {
+                throw new HostLifecycleException(
+                    "page_expired",
+                    "No tick response is waiting to be paged; request the tick first.");
+            }
+
+            return plan.Render(cursor);
+        }
+    }
+
     public WorldMetricsSnapshot? CurrentMetrics
     {
         get
@@ -605,6 +694,21 @@ public sealed class PrismHostRuntime : IWorldHost
                 return _agentLifecycle is null && _construction is null && _ledger is null
                     ? null
                     : CreateMetrics();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Compteurs de recherche de chemin du monde courant (PRISM-104), ou <see langword="null"/>
+    /// quand le monde n'a pas d'agents. Lecture seule : le profil s'en sert, la simulation jamais.
+    /// </summary>
+    public PathfindingMetricsSnapshot? PathfindingTotals
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _agentLifecycle?.Pathfinding.Snapshot();
             }
         }
     }
@@ -627,7 +731,41 @@ public sealed class PrismHostRuntime : IWorldHost
         }
     }
 
-    private WorldMetricsSnapshot CreateMetrics()
+    /// <summary>
+    /// Audits matter conservation over the whole simulation (PRISM-027, run R1): every item the
+    /// ledger reports as created must still be somewhere — agent inventory, container or ground —
+    /// once what it reports as destroyed is removed. An empty list means the audit is green.
+    /// </summary>
+    /// <remarks>
+    /// The audit is only meaningful between two ticks: a command whose duration is still running
+    /// may hold inputs outside the counted places. Call it after a tick, never from inside one.
+    /// </remarks>
+    public IReadOnlyList<MatterAuditViolation> AuditConservation()
+    {
+        lock (_gate)
+        {
+            if (_ledger is null)
+            {
+                return [];
+            }
+
+            var (agentStocks, containerStocks, groundStocks) = CollectStocks();
+            var counts = new SortedDictionary<ushort, long>(agentStocks);
+            foreach (var (itemTypeId, quantity) in containerStocks)
+            {
+                counts[itemTypeId] = checked(counts.GetValueOrDefault(itemTypeId) + quantity);
+            }
+
+            foreach (var (itemTypeId, quantity) in groundStocks)
+            {
+                counts[itemTypeId] = checked(counts.GetValueOrDefault(itemTypeId) + quantity);
+            }
+
+            return _ledger.Audit(counts);
+        }
+    }
+
+    private (SortedDictionary<ushort, long> Agent, SortedDictionary<ushort, long> Container, SortedDictionary<ushort, long> Ground) CollectStocks()
     {
         var agentStocks = new SortedDictionary<ushort, long>();
         var containerStocks = new SortedDictionary<ushort, long>();
@@ -659,6 +797,12 @@ public sealed class PrismHostRuntime : IWorldHost
             }
         }
 
+        return (agentStocks, containerStocks, groundStocks);
+    }
+
+    private WorldMetricsSnapshot CreateMetrics()
+    {
+        var (agentStocks, containerStocks, groundStocks) = CollectStocks();
         var itemIds = new SortedSet<ushort>(agentStocks.Keys);
         itemIds.UnionWith(containerStocks.Keys);
         itemIds.UnionWith(groundStocks.Keys);
@@ -1068,7 +1212,8 @@ public sealed class PrismHostRuntime : IWorldHost
                 generatedWorld.Grid,
                 movementRules ?? new MovementRules([], []),
                 perceptionRules,
-                perceptionSettings);
+                perceptionSettings,
+                VerifyCaches);
         agentLifecycle = agentLifecycleSystem;
         if (agentLifecycleSystem is not null && constructionSystem is not null)
         {
@@ -1287,6 +1432,18 @@ internal sealed class ReadStreamHub
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(capacity);
         _capacity = capacity;
+    }
+
+    /// <summary>Nombre d'abonnés au flux de lecture (diagnostic de profilage).</summary>
+    public int SubscriberCount
+    {
+        get
+        {
+            lock (_gate)
+            {
+                return _subscribers.Count;
+            }
+        }
     }
 
     public ReadStreamSubscription Subscribe(JsonElement snapshot)

@@ -72,7 +72,7 @@ Le versionnement est déclenché par les évènements suivants :
 > release V1. PRISM V2 est en développement : sa version de composant cible est
 > `2.0.0`, distincte du contrat SYNE↔PRISM `1.0.0`, gelé mais pas encore livré
 > dans une release LIVEX V2. Le [statut transversal](docs/governance/LIVEX-CURRENT-STATUS.md)
-> donne l'état du travail au 4 novembre 2026.
+> donne l'état du travail au 15 novembre 2026.
 
 | Composant / contrat | Version | Évolution |
 | :-- | :-- | :-- |
@@ -92,6 +92,11 @@ PRISM `1.0.0` et PRISM-LDK `1.0.0` désignent la réalisation Unreal V1 de la
 release publiée. Le code PRISM V2 et son contrat ne doivent pas être confondus
 avec ces versions : PRISM V2 vise `2.0.0`, tandis que le contrat d'échange
 SYNE↔PRISM porte sa propre version `1.0.0`.
+
+> **Développement courant (branche V2, 15 novembre 2026)** : SYNE est passé à
+> **0.18.0** et son contrat d'observabilité à **0.6.0** ; ces versions ne sont
+> **pas** celles de la release V1 ci-dessus et ne seront publiées qu'avec LIVEX
+> `2.0.0`.
 
 ---
 

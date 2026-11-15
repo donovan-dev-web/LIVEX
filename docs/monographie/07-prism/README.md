@@ -37,6 +37,10 @@ encore branché au lancement live.
 
 ## Ce qui est et ce qui n'est pas établi
 
+> **Instantané daté du 4 novembre 2026.** Les compteurs ci-dessous sont
+> historiques ; au 15 novembre 2026, la suite PRISM compte **487/487** tests et
+> R2 est franchie. Voir le [statut transversal](../../governance/LIVEX-CURRENT-STATUS.md).
+
 Le host, les actions physiques, la génération déterministe, les chaînes
 d'outils et d'agriculture, les structures et les points de reprise ont des
 tests fonctionnels. Le contrat SYNE↔PRISM `1.0.0` est gelé. Le relevé local du
@@ -44,13 +48,15 @@ tests fonctionnels. Le contrat SYNE↔PRISM `1.0.0` est gelé. Le relevé local 
 l'application des observations aux croyances sont implémentées ; le transport
 a été exercé sur 1 000 ticks.
 
-Cela ne suffit pas à déclarer l'intégration complète. Le run R2 couplé de
-5 000 ticks, ses répétitions identiques, la reprise commune et les validations
-interplateformes restent à réaliser. ECHOS peut valider et conserver les
-enveloppes du flux PRISM, mais cette ingestion n'est pas encore intégrée au
-cycle de run et aux métriques. Les chaînes livrées n'ont pas toutes de
-scénarios bout en bout pilotés par bot. La performance mesurée après
-optimisation est un résultat local, pas une porte de viabilité franchie.
+Cela ne suffisait pas, au 4 novembre, à déclarer l'intégration complète. Depuis,
+le run R2 couplé de 5 000 ticks est reproductible sur trois hôtes et la reprise
+commune est bit-identique ; R3 (100 agents × 5 000 ticks) est également produite
+et reproductible. Restent les validations interplateformes (G2), le viewer
+complet (P11) et le raccordement de production ECHOS/Launcher. ECHOS peut
+valider et conserver les enveloppes du flux PRISM, mais cette ingestion n'est
+pas encore intégrée au cycle de run et aux métriques. Les chaînes livrées n'ont
+pas toutes de scénarios bout en bout pilotés par bot. La performance mesurée
+après optimisation est un résultat local, pas une porte de viabilité franchie.
 
 Les résultats expérimentaux disponibles restent bornés : le contraste de
 quête spatiale a été confirmé dans le protocole préenregistré ; le cycle

@@ -31,11 +31,6 @@ CONTRIBUTING…) restent à la racine du dépôt.
 
 ## Vue générale
 
-- [Cartographie interactive du codebase](codebase/index.html) — exploration interactive
-  des composants, fichiers, déclarations, paramètres et relations du dépôt, avec
-  une vue en plan 2D et une exploration par voisinage.
-- [Parcours interactif d'un run](codebase/flow.html) — machine à états 2D animée
-  du lancement à la boucle cognitive répétée, avec les cadences et l'observabilité.
 - [Architecture globale](ARCHITECTURE.md) — responsabilités des composants et
   cible d'architecture V2.
 - [Contrats de communication](COMMUNICATION.md) — transports et cycle de
@@ -79,10 +74,13 @@ Cette architecture reste la référence pour la V1 et ses archives.
 l'état physique du monde. Son host exécute déjà le tick, les actions et les
 chaînes de contenu ; son contrat `1.0.0` échange commandes, observations,
 événements et flux de lecture. La boucle couplée avec SYNE applique les
-observations aux croyances et a été exercée sur 1 000 ticks. L'extraction
-complète de l'ancien monde SYNE, la reprise couplée et le run R2 de 5 000 ticks
-restent à faire. Le viewer Silk.NET/OpenGL est un client facultatif ; son
-client de flux est implémenté mais pas encore raccordé au lancement live.
+observations aux croyances et est reproductible : run R2 (50 agents × 5 000
+ticks), reprise couplée bit-identique et run R3 (100 agents × 5 000 ticks,
+porte G5). L'extraction de l'ancien monde SYNE est achevée et
+`PrismWorldAdapter` est la seule implémentation de `IWorld`. Le viewer
+Silk.NET/OpenGL est un client facultatif ; son client de flux est implémenté
+mais pas encore raccordé au lancement live, et le viewer complet reste le
+chantier ouvert (P11).
 
 Les documents de [`prism/`](prism/README.md) décrivent les fonctions V2
 implémentées et les travaux restant à livrer. Pour l'état transversal courant,
@@ -92,9 +90,11 @@ reste la photographie de la release V1 au 31 octobre.
 
 ## Sources de vérité et limites du mock
 
-- En V2, PRISM porte l'autorité du monde physique ; SYNE porte la cognition,
-  tandis que l'extraction des systèmes physiques encore présents dans SYNE
-  demeure incomplète. `prism/API_CONTRACTS.md` décrit le contrat `1.0.0` gelé.
+- En V2, PRISM porte l'autorité du monde physique et SYNE la cognition ;
+  l'extraction des systèmes physiques de SYNE est achevée, `Simulation.Core`
+  ne contient plus de classe de monde et `PrismWorldAdapter` est la seule
+  implémentation de `IWorld`. `prism/API_CONTRACTS.md` décrit le contrat
+  `1.0.0` gelé.
 - Les contrats V1 de SYNE restent applicables à la release 1.0.0 et aux
   documents explicitement historiques.
 - `../syne-mock/` émule le transport et une partie du comportement pour permettre

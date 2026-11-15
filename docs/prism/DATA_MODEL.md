@@ -115,7 +115,7 @@ diagonales qui coupent un coin bloqué et attribue des coûts entiers 1 000
 | :-- | :-- |
 | `Structure` | `(structureId, templateId, origin, rotation, integrity, accessList)` ; créée à l'achèvement d'un chantier |
 | Intégrité | Rapport entre blocs du gabarit présents et attendus, vérifié paresseusement ; l'effet cesse sous un seuil |
-| `Site` (chantier) | `(siteId, templateId, origin, rotation, requiredMaterials, depositedMaterials, workTicksDone, state)` ; états : `planned → supplied → inProgress → completed | abandoned` |
+| `Site` (chantier) | `(siteId, templateId, origin, rotation, requiredMaterials, depositedMaterials, workTicksDone, state)` ; états : `planned → supplied → inProgress → completed \| abandoned` |
 | `accessList` | Liste d'identifiants autorisés (agents ou « groupes » opaques) avec droits `use`, `take`, `put`, `build` |
 
 ## 8. Tables annexes

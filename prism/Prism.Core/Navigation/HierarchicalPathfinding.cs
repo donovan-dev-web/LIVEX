@@ -202,9 +202,9 @@ public static class HierarchicalPathfinder
 
         var startNode = start.Value;
         var goalNode = goal.Value;
-        var worldRevision = graph.World.Revision;
         if (cache is not null &&
-            cache.TryGet(graph, worldRevision, startNode, goalNode, maximumExpandedNodes, out var cached))
+            cache.TryGet(graph, startNode, goalNode, maximumExpandedNodes, out var cached) ==
+            PathCacheLookup.Hit)
         {
             return cached!;
         }
@@ -215,7 +215,7 @@ public static class HierarchicalPathfinder
             goalNode,
             maximumExpandedNodes,
             regionGraph ?? RegionGraph.Build(graph));
-        cache?.Store(graph, worldRevision, startNode, goalNode, maximumExpandedNodes, result);
+        cache?.Store(graph, startNode, goalNode, maximumExpandedNodes, result);
         return result;
     }
 

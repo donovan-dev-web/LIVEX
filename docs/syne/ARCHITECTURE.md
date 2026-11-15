@@ -14,8 +14,9 @@ SYNE est le moteur .NET de simulation autonome et de cognition. Dans la pile
 V1, il détient l'état du monde et diffuse ses snapshots aux consommateurs.
 Dans le couplage PRISM V2, PRISM détient l'état physique ; SYNE reçoit ses
 observations, les applique aux croyances et produit des décisions. Cette boucle
-est implémentée, mais l'extraction complète des systèmes physiques hors de
-SYNE reste à faire. Le plugin Unreal PRISM-LDK appartient au chemin V1.
+est implémentée et reproductible (R2, 5 000 ticks), et l'extraction des
+systèmes physiques hors de SYNE est achevée. Le plugin Unreal PRISM-LDK
+appartient au chemin V1.
 
 ```mermaid
 flowchart TB
@@ -49,7 +50,7 @@ flowchart TB
 Le chemin WebSocket/HTTP décrit ci-dessus reste celui de SYNE autonome et de
 l'intégration V1. Le nouveau transport de tick et son port de lecture sont
 définis par le contrat PRISM V2 et ses manifestes ; le couplage `--prism-url`
-exerce les observations entrantes sur 1 000 ticks.
+est reproductible sur 5 000 ticks (R2) et à 100 agents (R3).
 
 Les ports par défaut sont 5180 (WebSocket) et 5181 (HTTP), sur l'interface
 locale `127.0.0.1`. Les options du serveur permettent de les configurer : ce

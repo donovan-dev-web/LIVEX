@@ -86,10 +86,12 @@ public sealed class ConsumptionSystemTests
         Assert.Equal(
             "not_perceived",
             ConsumptionSystem.DrinkFromSource(world, agent, rules, source, targetPerceived: false).ErrorCode);
+        // Two columns away: outside the 3×3×3 reach of the body, so adjacency is refused before
+        // the material is even looked at.
         Assert.Equal(
             "not_adjacent",
             ConsumptionSystem.DrinkFromSource(
-                world, agent, rules, new BlockCoordinate(1, 0, 6)).ErrorCode);
+                world, agent, rules, new BlockCoordinate(2, 0, 6)).ErrorCode);
         Assert.Equal(
             "not_drinkable",
             ConsumptionSystem.DrinkFromSource(world, agent, rules, source).ErrorCode);

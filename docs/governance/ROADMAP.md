@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général) 
 **Statut** : [ROADMAP TRANSVERSE — SOCLE V1 LIVRÉ ; INTÉGRATION PRISM V2 EN COURS]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `../presentation/VISION.md`, `../../VERSIONING.md` 
 **Source Monographie** : Annexe J (feuille de route V2 détaillée), Partie 9 (Conclusions) 
 
@@ -57,10 +57,10 @@ La Monographie fournit une feuille de route V2 en 24 semaines (13 phases). Elle 
 ## 5. Long terme (vision)
 
 Travaux de V2 encore ouverts :
-- Extraire complètement l'autorité du monde physique de l'ancien moteur SYNE.
-- Réaliser la reprise couplée SYNE/PRISM et le run R2 de 5 000 ticks reproductible.
-- Raccorder l'ingestion du flux PRISM au cycle de run ECHOS et aux métriques prévues.
-- Achever le mode viewer live, les validations interplateformes, les calibrages et le packaging V2.
+- Achever l'autorité du monde physique : l'extraction est faite côté SYNE ; restent la performance de l'hôte (G1, non bloquante) et, après elle seulement, le run R4 à 1 000 agents.
+- ~~Réaliser la reprise couplée SYNE/PRISM et le run R2 de 5 000 ticks reproductible.~~ **Fait** : R2 (50 agents × 5 000 ticks) est reproductible (`0bf833f4bcfc1e5e` × 3 hôtes) et la reprise couplée est bit-identique.
+- Raccorder l'ingestion du flux PRISM au cycle de run ECHOS et écrire les quatre indicateurs V2 (`ECHOS-120` à `ECHOS-123`).
+- Achever le mode viewer live, les validations interplateformes, les calibrages et le packaging V2 (calibrages reportés après l'implémentation).
 - Mode joueur-habitant (incarner une entité).
 
 Ces pistes sont documentées dans les ROADMAP de chaque composant ; elles ne sont pas datées.
@@ -81,10 +81,10 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 | **U7** — Performance & comparaison | ph9–10 (`SYNE-090…102`) | ph7 (`ECHOS-070…072`) | **Implémentation avancée — validation produit partielle** — budgets et benchmarks du moteur présents ; ECHOS `/api/compare`, reproductibilité et exports présents. La cadence contrôlée, le backpressure, le lag et le parcours UI ne sont pas encore des preuves de release. | Budgets tick ; comparaison de runs (seed 12345) ; T4 benchmarks ; mesure pipeline à ajouter |
 | **U8** — Tests & persistance (V0.1 → V1) | ph7 (`SYNE-070…073`) + ph11 (`SYNE-110…113`) + `SYNE-120…122` + `SYNE-130…131` | ph9 (`ECHOS-090…092`) — ph8 (Écrans web) retiré par ADR-007 | **Implémentation avancée — non accepté comme jalon transverse** — persistance, contrôle :5181 et intégration réelle multi-ticks présents ; la stabilité long-run, la reprise worker et le parcours UI complet restent à prouver. | Persistance bit-à-bit, contrôle, intégration SYNE→ECHOS, métriques REST ; test long-run et preuve de fraîcheur à ajouter |
 
-### Intégration PRISM V2 (état au 4 novembre 2026)
+### Intégration PRISM V2 (état au 15 novembre 2026)
 
-- PRISM V1/PRISM-LDK est la présentation Unreal historique de LIVEX 1.0.0. PRISM V2 est une solution .NET qui porte l'état du monde physique. Le host, le contrat `1.0.0`, les chaînes d'actions et les bots sont partiellement implémentés ; le relevé du 4 novembre compte 403 tests PRISM verts.
-- SYNE et PRISM échangent des commandes et observations dans une boucle couplée ; l'adaptateur et l'application des observations aux croyances sont livrés et le transport a été exercé sur 1 000 ticks. Le run R2 de 5 000 ticks, ses répétitions identiques et la reprise partagée restent ouverts.
+- PRISM V1/PRISM-LDK est la présentation Unreal historique de LIVEX 1.0.0. PRISM V2 est une solution .NET qui porte l'état du monde physique. Le host, le contrat `1.0.0`, les chaînes d'actions et les bots sont implémentés ; le relevé du 15 novembre 2026 compte **487 tests PRISM verts** et le viewer reste le chantier ouvert (P11).
+- SYNE et PRISM échangent des commandes et observations dans une boucle couplée ; l'adaptateur, l'application des observations aux croyances et le write-back sont livrés. **R2 est franchie** (50 agents × 5 000 ticks, `0bf833f4bcfc1e5e` × 3 hôtes, reprise couplée bit-identique) et **G5 est franchie** (R3, 100 agents × 5 000 ticks, `855fdc2e1387e8d3`).
 - ECHOS valide et persiste les enveloppes du flux de lecture PRISM ; l'ingestion au cycle de run et les métriques associées ne sont pas encore raccordées. Le viewer possède un client de lecture testé mais son lancement live reste à câbler.
 - Le mock Node.js demeure un outil de compatibilité V1 ; `Prism.Bots` sert aux campagnes V2 et ne remplace pas la validation couplée contre SYNE.
 

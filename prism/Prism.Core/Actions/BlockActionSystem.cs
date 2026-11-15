@@ -206,6 +206,18 @@ public static class BlockActionSystem
             return BlockActionResult.Failure("not_adjacent");
         }
 
+        // An agent cannot remove the block it is standing on. The movement graph derives a
+        // column's standing height from its surface; mining that surface leaves the agent in a
+        // cell `CanStandAt` rejects, and every subsequent path -- including the walk back out --
+        // fails. The agriculture bot used to dig the grass under its own feet for a seed and then
+        // looped on `path_not_found` for the rest of the campaign.
+        if (target.X == agent.Position.CellX &&
+            target.Y == agent.Position.CellY &&
+            target.Z == agent.Position.FeetZ - 1)
+        {
+            return BlockActionResult.Failure("support_required");
+        }
+
         if (!TryResolveTarget(world, target, out var materialId, out var state))
         {
             return BlockActionResult.Failure("block_already_mined");
@@ -497,11 +509,26 @@ public static class BlockActionSystem
         }).ToList();
     }
 
+    /// <summary>
+    /// Reach rule for blocks: the 3×3 columns around the body, at the feet level, one block below
+    /// and one block above. Every one of those blocks shares a face or an edge with the body, so
+    /// the agent can touch it.
+    /// <para>
+    /// The neighbour columns at feet level and one below were added when the rule was Manhattan
+    /// distance ≤ 1: the surface block of a neighbouring column was out of reach, i.e. every tree
+    /// base, every stone block and every ore block of a generated world. The block <em>above</em>
+    /// the base is the same story one level up (A2): a two-block tree only ever gave one log, so
+    /// the storage chain could not get the two logs its eight planks need.
+    /// </para>
+    /// </summary>
     public static bool IsAdjacent(AgentPosition position, BlockCoordinate target)
     {
-        var distance = Math.Abs((long)position.CellX - target.X) +
-                       Math.Abs((long)position.CellY - target.Y) +
-                       Math.Abs((long)position.FeetZ - target.Z);
-        return distance <= 1;
+        var dx = Math.Abs((long)position.CellX - target.X);
+        var dy = Math.Abs((long)position.CellY - target.Y);
+        var dz = (long)position.FeetZ - target.Z;
+
+        // Feet level (dz = 0), one block below (dz = +1) and head level (dz = -1), diagonals
+        // included: a 3×3×3 cube centred on the agent's feet.
+        return dx <= 1 && dy <= 1 && dz is >= -1 and <= 1;
     }
 }

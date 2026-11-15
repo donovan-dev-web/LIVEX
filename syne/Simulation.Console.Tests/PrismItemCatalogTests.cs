@@ -106,4 +106,34 @@ public sealed class PrismItemCatalogTests
             Directory.Delete(root, recursive: true);
         }
     }
+
+    [Fact]
+    public void Load_ExposesContentNamesAndPlacementMaterial()
+    {
+        // La cognition raisonne sur des noms (« workbench »), le pont sur des
+        // identifiants : la table doit aller dans les deux sens, et porter la
+        // matière posée par l'objet pour `Poser` (SYNE-223).
+        string root = WritePack(
+            """
+            [
+              { "id": "workbench", "tags": ["station"], "places": "workbench" },
+              { "id": "log", "tags": ["wood"], "places": "log" }
+            ]
+            """);
+        try
+        {
+            PrismItemCatalog catalog = PrismItemCatalog.Load(root);
+
+            Assert.True(catalog.TryGetId("workbench", out ushort workbenchId));
+            Assert.True(catalog.TryGetKey(workbenchId, out string key));
+            Assert.Equal("workbench", key);
+            Assert.True(catalog.TryGetPlaces("workbench", out string material));
+            Assert.Equal("workbench", material);
+            Assert.False(catalog.TryGetPlaces("log_missing", out _));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
 }

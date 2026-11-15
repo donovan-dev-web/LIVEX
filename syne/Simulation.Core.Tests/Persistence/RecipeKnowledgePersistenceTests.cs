@@ -34,7 +34,7 @@ public class RecipeKnowledgePersistenceTests
 
     private static (SimulationLoop Loop, Entity Entity) Build(SimulationOptions options)
     {
-        var world = new Simulation.Core.World.World(new WorldSize(500, 500), spatialCellSize: 50);
+        var world = new Simulation.Core.World.PrismWorldAdapter(new WorldSize(500, 500), spatialCellSize: 50);
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(4242);
         (Entity entity, Xoshiro256StarStar next) =
             EntityFactory.CreateNext(EntityTemplate.DefaultA, world, rng, 1, bornAt: 0);

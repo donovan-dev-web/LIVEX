@@ -40,5 +40,10 @@ public sealed class ActionCatalogSettings
         // besoin. Inerte tant que agents.desires.instrumental.enabled est faux
         // (elle n'est alors jamais générée).
         ["secureFood"] = new ActionEntrySettings { Movement = true },
+        // Production (SYNE-223) : intention de fabriquer un objet. Inerte tant
+        // que agents.desires.production.enabled est faux (elle n'est alors
+        // jamais générée) — la décomposition et l'exécution appartiennent au
+        // planificateur de production et à l'hôte.
+        ["produce"] = new ActionEntrySettings(),
     };
 }

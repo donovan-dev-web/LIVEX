@@ -34,8 +34,32 @@ public sealed record BotSenses(
     AgentPosition Position,
     IReadOnlyList<AgentItemStack> Inventory,
     IReadOnlyList<PerceptionEntry> Entries,
-    IReadOnlyList<BotCommandFailure> Failures)
+    IReadOnlyList<BotCommandFailure> Failures,
+    IReadOnlyList<string>? Completed = null)
 {
+    /// <summary>
+    /// Kinds of the commands that completed on the previous tick. Without this a bot cannot
+    /// tell "still running" from "finished but produced less than asked": a craft that makes
+    /// four planks for a step that needs eight would silently wait until its deadline.
+    /// </summary>
+    public bool CompletedKind(string kind)
+    {
+        if (Completed is null)
+        {
+            return false;
+        }
+
+        foreach (var completed in Completed)
+        {
+            if (StringComparer.Ordinal.Equals(completed, kind))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public int CountItems(ushort itemTypeId)
     {
         var total = 0;

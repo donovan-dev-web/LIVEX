@@ -106,7 +106,7 @@ Recommandation : commencer par la variante simple, activer la riche par configur
 
 ## 8. Compatibilité avec l'existant
 
-Le contrat PRISM peut être validé avec la **cognition actuelle de SYNE** avant la fin de la V2 : l'interface compte plus que la sophistication de l'agent. `Simulation.Console.Integration.PrismClient` fournit maintenant le transport HTTP authentifié prepare/start/tick/stop et valide les réponses lockstep. Il n'est pas encore branché au contrôleur ou à la boucle BDI et ne traduit pas les intentions de déplacement, manger ou boire en commandes PRISM ; SYNE conserve encore son monde local. Le LLM dans la boucle reste hors périmètre ; un usage hors boucle (génération de recettes ou de noms, figés ensuite dans les données) est une piste ultérieure.
+Le contrat PRISM est branché sur la **cognition actuelle de SYNE** : le mode couplé est la voie d'exécution de référence depuis la fin de la V2. `Simulation.Console.Integration.PrismCoupledRunner` pilote le run via `--prism-url` ; `PrismWorldAdapter` est l'unique implémentation de `IWorld` et lit le monde PRISM, si bien que `Simulation.Core` ne contient plus de classes de monde locales. Les intentions de déplacement, manger et boire sont traduites en commandes PRISM et les réponses lockstep sont validées. Les chaînes non encore couvertes sont listées au §5 (`FabriquerMacro`/`Cultiver`, chantiers, `Transferer`) : ce sont les désirs SYNE qui manquent, pas le transport. Le LLM dans la boucle reste hors périmètre ; un usage hors boucle (génération de recettes ou de noms, figés ensuite dans les données) est une piste ultérieure.
 
 ## 9. Impact sur le déterminisme de SYNE
 

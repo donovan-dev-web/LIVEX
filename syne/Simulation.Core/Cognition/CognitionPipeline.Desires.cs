@@ -42,7 +42,7 @@ public sealed partial class CognitionPipeline
             return held;
         }
 
-        GoalTarget? target = ResolveTarget(kind, knowledge, self);
+        GoalTarget? target = ResolveTarget(kind, mind, knowledge, self);
 
         if (mind.Intention is { } current && current.Kind == kind)
         {
@@ -63,10 +63,14 @@ public sealed partial class CognitionPipeline
 
 
     /// <summary>Cible concrète d'une action, dérivée de la connaissance active.</summary>
-    private GoalTarget? ResolveTarget(DesireKind kind, CognitionKnowledge? knowledge, World.Position self) =>
+    private GoalTarget? ResolveTarget(DesireKind kind, MindState mind, CognitionKnowledge? knowledge, World.Position self) =>
         kind switch
         {
             DesireKind.Flee => knowledge?.FleeDestination(self, _options.Agents.Perception.Radius * 0.5, _world.Size),
+            // Production (SYNE-223) : la cible est un OBJET (identifiant de
+            // contenu), pas un lieu ; elle vient du désir, pas de la perception.
+            DesireKind.Produce when !string.IsNullOrWhiteSpace(mind.ProductionGoal) =>
+                ProductionDesires.Target(mind.ProductionGoal!, self),
             _ => knowledge?.TargetFor(kind),
         };
 

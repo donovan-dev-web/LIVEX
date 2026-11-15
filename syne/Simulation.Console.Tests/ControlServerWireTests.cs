@@ -70,12 +70,9 @@ public class ControlServerWireTests : IAsyncLifetime
         Assert.Equal(System.Net.HttpStatusCode.OK, worldResponse.StatusCode);
         JsonNode? worldBody = await ReadJsonAsync(worldResponse);
         Assert.Equal(24, (int?)worldBody?["ticksPerSecond"]);
-        JsonArray? obstacles = worldBody?["obstacles"]?.AsArray();
-        JsonNode? initialObstacle = Assert.Single(obstacles!);
-        Assert.Equal("initial-rock", (string?)initialObstacle?["id"]);
-        Assert.Equal(15, (double?)initialObstacle?["x"]);
-        Assert.Equal(25, (double?)initialObstacle?["y"]);
-        Assert.Equal(4, (double?)initialObstacle?["radius"]);
+        // SYNE-220 étape 3c : la géométrie locale (obstacles) n'est plus publiée
+        // par SYNE — PRISM est autoritaire. La description du monde ne porte plus
+        // d'obstacles ; on vérifie seulement que les agents sont bien présents.
         JsonArray? initialAgents = worldBody?["agents"]?.AsArray();
         Assert.NotNull(initialAgents);
         Assert.NotEmpty(initialAgents);

@@ -7,9 +7,13 @@ namespace Prism.Host.Ticking;
 public sealed class AgentLifecycleTickPhase(
     AgentLifecycleSystem? lifecycle,
     Prism.Core.Accounting.MatterLedger? ledger = null,
-    int freshnessDecayPermillePerTick = 1_000) : IOptionalCheckpointableWorldTickPhaseHandler
+    int freshnessDecayPermillePerTick = 1_000) : IOptionalCheckpointableWorldTickPhaseHandler, IPathfindingMetricsSource
 {
     public WorldTickPhase Phase => WorldTickPhase.Lifecycle;
+
+    /// <inheritdoc />
+    public Prism.Core.Navigation.PathfindingMetricsSnapshot PathfindingTotals =>
+        lifecycle?.Pathfinding.Snapshot() ?? default;
 
     public void Execute(WorldTickContext context)
     {

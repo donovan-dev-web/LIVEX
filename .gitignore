@@ -74,3 +74,4 @@ echos/data/
 
 # Documentation generee (graphe du codebase) - non suivie, deplacee avant commit
 docs/codebase/
+.agentsroom/handoff-context-*.txt

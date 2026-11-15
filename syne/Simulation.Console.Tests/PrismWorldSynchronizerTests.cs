@@ -31,6 +31,22 @@ public sealed class PrismWorldSynchronizerTests
     }
 
     [Fact]
+    public void TryReadSelfFeet_ReadsTheVerticalCellInMilliBlocks()
+    {
+        // `self.position.z` est aussi en milli-blocs ; `FeetZ = floor(z / 1000)`
+        // (AgentPosition côté PRISM). La pose d'une station et la désignation
+        // d'une parcelle en dépendent (SYNE-223).
+        JsonElement self = JsonSerializer.SerializeToElement(
+            new { position = new { x = 12_500, y = 7_999, z = 56_000 } },
+            ProtocolJson.Options);
+
+        Assert.True(PrismWorldSynchronizer.TryReadSelfFeet(self, out PrismBlockPosition feet));
+        Assert.Equal(12, feet.X);
+        Assert.Equal(7, feet.Y);
+        Assert.Equal(56, feet.Z);
+    }
+
+    [Fact]
     public void Apply_MovesTheAgentToThePositionOfItsSelfObservation()
     {
         (PrismWorldAdapter world, Entity entity) = Build();

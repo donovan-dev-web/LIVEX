@@ -11,7 +11,7 @@ using Simulation.Core.Entities;
 using Simulation.Core.Population;
 using Simulation.Core.World;
 using Xunit;
-using WorldType = Simulation.Core.World.World;
+using WorldType = Simulation.Core.World.PrismWorldAdapter;
 
 namespace Simulation.Core.Tests;
 

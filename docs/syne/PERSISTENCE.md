@@ -96,8 +96,7 @@ Le snapshot ne suppose plus que SYNE possède le monde. `SimulationSnapshot.Worl
   `metrics`) décrivent le monde, absent de ce snapshot.
 - **Neutralité locale** : un run local capture et restaure par les mêmes chemins qu'avant, et le JSON d'un snapshot complet
   reste identique (absence déclarée par `WhenWritingNull`, jamais un monde vide de remplissage).
-- Reste ouvert : l'étape **3b** (perception/action par le flux d'observations, aujourd'hui `Aller`/`Consommer` seulement)
-  puis **3c** (suppression du monde local) — voir `docs/prism/RESPONSIBILITIES.md` §4.1.
+- **Livré** : l'étape **3b** (perception/action par le flux d'observations) et l'étape **3c** (suppression du monde local) sont achevées ; `Simulation.Core` ne contient plus de classes de monde et le snapshot couplé ne persiste que la cognition — voir `docs/prism/RESPONSIBILITIES.md` §4.1.
 
 > Le snapshot SYNE reste autosuffisant pour un run local ; il cesse de l'être — volontairement — pour un run couplé.
 
@@ -127,4 +126,4 @@ En mode couplé, deux sauvegardes doivent rester **alignées** : le checkpoint P
 
 ## Points restés ouverts dans ce document
 - Politique de compression/archivage des vieux runs (rétention) — pas spécifié dans la Monographie (rotation simple `maxBackups` en V0.1).
-- **SYNE-225, reste** : retrait des tables du monde (dépend de l'étape 3 de SYNE-220) et jeu complet de points de reprise couplés (reprise après un saut de séquence PRISM, rotation des checkpoints).
+- **SYNE-225, reste** : jeu complet de points de reprise couplés (reprise après un saut de séquence PRISM, rotation des checkpoints). Le retrait des tables du monde est fait avec l'étape 3 de SYNE-220.

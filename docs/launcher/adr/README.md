@@ -22,7 +22,7 @@ Ce dossier contient les ADR spécifiques au Launcher.
 
 | ADR | Sujet | Lien |
 | :-- | :-- | :-- |
-| ADR-002 | Unreal Engine et plugin PRISM-LDK pour PRISM | [`../../prism/adr/ADR-002-choix-unreal-prism-ldk.md`](../../prism/adr/ADR-002-choix-unreal-prism-ldk.md) |
+| ADR-002 | Unreal Engine et plugin PRISM-LDK pour PRISM (V1, archivé) | [Index des ADR PRISM](../../prism/adr/README.md) — remplacé par ADR-004/005 |
 | ADR-003 | API HTTP REST légère (contrôle SYNE :5181) | [`../../adr/ADR-003-api-http-rest.md`](../../adr/ADR-003-api-http-rest.md) |
 | ADR-004 | WebSocket temps réel (données SYNE :5180) | [`../../adr/ADR-004-websocket-temps-reel.md`](../../adr/ADR-004-websocket-temps-reel.md) |
 

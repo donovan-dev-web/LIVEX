@@ -97,7 +97,7 @@ public static class SimulationFactory
         ulong seed)
     {
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
-        var world = new Simulation.Core.World.World(
+        var world = new Simulation.Core.World.PrismWorldAdapter(
             new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight));
 
         rng = Populate(world, options, population, rng);

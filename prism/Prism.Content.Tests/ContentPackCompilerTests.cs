@@ -315,7 +315,7 @@ public sealed class ContentPackCompilerTests
         Assert.Equal(9, result.Pack.Templates.Count);
         Assert.Single(result.Pack.GrowthRules);
         Assert.Equal(3, result.Pack.Effects.Count);
-        Assert.Equal(250, result.Pack.Materials.Single(material => material.Id == "grass")
+        Assert.Equal(1_000, result.Pack.Materials.Single(material => material.Id == "grass")
             .Drops.Single().ChancePermille);
         Assert.Equal(new QuantityRange(2, 3), result.Pack.Materials
             .Single(material => material.Id == "wheat_crop").Drops[0].Quantity);

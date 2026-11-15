@@ -158,6 +158,14 @@ public static class Program
             options.Random.Seed = seed;
         }
 
+        if (!string.IsNullOrWhiteSpace(cli.Production))
+        {
+            options.Agents.Desires.Production.Enabled = true;
+            options.Agents.Desires.Production.Goals = cli.Production
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+        }
+
         return options;
     }
 
@@ -279,6 +287,22 @@ public static class Program
         // Étape 3b : ce que l'hôte sait obtenir. Sans pack de contenu lisible, le
         // pont retombe sur le vocabulaire minimal (Aller / Consommer à la source).
         PrismItemCatalog itemCatalog = PrismItemCatalog.Empty;
+        // Famille de gisement de chaque objet récoltable (prospection SYNE-223).
+        IReadOnlyDictionary<string, ResourceKind> gatherKinds =
+            new Dictionary<string, ResourceKind>(StringComparer.Ordinal);
+        IReadOnlyList<ProductionRecipe> productionRecipes = [];
+        PrismProductionExecutive? production = null;
+        var carriedByKey = new Dictionary<ulong, IReadOnlyDictionary<string, int>>();
+        var selfFeet = new Dictionary<ulong, PrismBlockPosition>();
+        var recentCells = new Dictionary<ulong, List<PrismBlockPosition>>();
+        var stationCells = new Dictionary<ulong, PrismBlockPosition>();
+        var placementBlacklist = new Dictionary<ulong, HashSet<PrismBlockPosition>>();
+        var pendingProduction = new Dictionary<string, (ulong AgentId, ProductionCommand Command, PrismBlockPosition Cell)>();
+        // Trace du plan de production : sans elle, un abandon ne dit pas quelle
+        // étape a dérivé (les compteurs d'issues ne portent pas l'étape).
+        bool productionTrace =
+            Environment.GetEnvironmentVariable("PRISM_DEBUG_PRODUCTION") == "1";
+        var emptyCarried = new Dictionary<string, int>(StringComparer.Ordinal);
         int agents = cli.PrismAgents ?? 0;
         if (agents > 0)
         {
@@ -311,6 +335,33 @@ public static class Program
             options.Random.Seed = cli.PrismSeed ?? restoredSeed ?? 1UL;
             options.Simulation.WorldWidth = worldGrid.Width;
             options.Simulation.WorldHeight = worldGrid.Height;
+
+            // Production (SYNE-223) : le graphe de recettes est une propriété du
+            // pack de contenu. Sans recette lisible, le désir serait un vœu pieux :
+            // on le désactive avant de construire la cognition plutôt que de
+            // laisser les agents demander des objets que rien ne produit.
+            if (options.Agents.Desires.Production.Enabled)
+            {
+                productionRecipes = PrismContentRecipes.Load(cli.PrismContentDir);
+                if (productionRecipes.Count == 0)
+                {
+                    System.Console.Error.WriteLine(
+                        "SYNE — production activée mais aucune recette lisible dans le pack : production désactivée.");
+                    options.Agents.Desires.Production.Enabled = false;
+                }
+                else
+                {
+                    production = new PrismProductionExecutive(
+                        productionRecipes,
+                        options.Agents.Desires.Production.MaxPlanNodes,
+                        options.Agents.Desires.Production.RetryTicks);
+                    System.Console.WriteLine(
+                        $"SYNE — production : {productionRecipes.Count} recette(s), " +
+                        $"{options.Agents.Desires.Production.Goals.Count} objectif(s) " +
+                        $"[{string.Join(", ", options.Agents.Desires.Production.Goals)}].");
+                }
+            }
+
             (_, Simulation.Core.World.IWorld world, loop, _) =
                 BuildSimulation(options, (ulong)agents, options.Random.Seed);
             if (world is not Simulation.Core.World.PrismWorldAdapter externalWorld)
@@ -330,6 +381,7 @@ public static class Program
             // SYNE-220 étape 3c : plus de gisement local (PRISM publie les ressources).
             System.Console.WriteLine(contentSummary);
             itemCatalog = PrismItemCatalog.Load(cli.PrismContentDir);
+            gatherKinds = PrismContentMaterials.LoadDropItemKinds(cli.PrismContentDir);
             System.Console.WriteLine(
                 itemCatalog.HasFood
                     ? $"SYNE — objets PRISM : {itemCatalog.FoodItemIds.Count} comestible(s), " +
@@ -413,6 +465,107 @@ public static class Program
         PrismBlockPosition? MapDrinkSource(GoalTarget target) =>
             resourceSites.TrySource(target.Label, out PrismBlockPosition source) ? source : null;
 
+        // Inventaire porté, en identifiants de contenu (SYNE-223) : la cognition
+        // raisonne sur « log », « plank », « stone_pickaxe », pas sur des indices
+        // d'un registre qu'elle ne connaît pas.
+        IReadOnlyDictionary<string, int> CarriedKeys(ulong agentId) =>
+            carriedByKey.TryGetValue(agentId, out IReadOnlyDictionary<string, int>? known) ? known : emptyCarried;
+
+        static string DescribeCarried(IReadOnlyDictionary<string, int> carried) =>
+            carried.Count == 0
+                ? "-"
+                : string.Join(
+                    ";",
+                    carried
+                        .Where(pair => pair.Value > 0)
+                        .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                        .Select(pair => string.Concat(
+                            pair.Key,
+                            ":",
+                            pair.Value.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+
+        // Case libre pour poser une station. L'agent ne connaît pas la géométrie
+        // du monde : on lui rend ce qu'il sait vraiment — les cases qu'il vient
+        // d'occuper (donc libres à sa hauteur) et, à défaut, les quatre voisines
+        // dans un ordre fixe. Un refus `block_occupied` blackliste la case et le
+        // réessai suivant en propose une autre.
+        PrismBlockPosition? ChoosePlacementCell(ulong agentId)
+        {
+            if (!selfFeet.TryGetValue(agentId, out PrismBlockPosition feet))
+            {
+                return null;
+            }
+
+            placementBlacklist.TryGetValue(agentId, out HashSet<PrismBlockPosition>? blacklist);
+            if (recentCells.TryGetValue(agentId, out List<PrismBlockPosition>? cells))
+            {
+                for (int index = cells.Count - 1; index >= 0; index--)
+                {
+                    PrismBlockPosition candidate = cells[index];
+                    if (candidate.Z != feet.Z || candidate == feet)
+                    {
+                        continue;
+                    }
+
+                    int distance = Math.Abs(candidate.X - feet.X) + Math.Abs(candidate.Y - feet.Y);
+                    if (distance == 1 && blacklist?.Contains(candidate) != true)
+                    {
+                        return candidate;
+                    }
+                }
+            }
+
+            (int Dx, int Dy)[] neighbours = [(1, 0), (0, 1), (-1, 0), (0, -1)];
+            foreach ((int dx, int dy) in neighbours)
+            {
+                var candidate = new PrismBlockPosition(feet.X + dx, feet.Y + dy, feet.Z);
+                if (blacklist?.Contains(candidate) != true)
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
+        }
+
+
+        // Prospection (SYNE-223) : une récolte refusée `source_not_found` dit « je
+        // ne perçois aucune source ». L'agent se rend alors au gisement connu le
+        // plus proche de cette matière — une direction qu'il sait atteindre, pas
+        // une matière devinée. Arrivé à portée, il laisse la récolte reprendre.
+        bool TryMapSearchCommand(long tick, ulong agentId, string item, out CommandEnvelope? command)
+        {
+            command = null;
+            if (!gatherKinds.TryGetValue(item, out ResourceKind kind) ||
+                !selfFeet.TryGetValue(agentId, out PrismBlockPosition feet) ||
+                !resourceSites.TryNearest(kind, feet.X, feet.Y, out PrismBlockPosition approach))
+            {
+                return false;
+            }
+
+            if (Math.Abs(approach.X - feet.X) + Math.Abs(approach.Y - feet.Y) <= 1)
+            {
+                return false;
+            }
+
+            command = new CommandEnvelope(
+                ProtocolVersion.Current.ToString(),
+                tick,
+                string.Concat(
+                    "syne:",
+                    tick.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ":",
+                    agentId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ":prospect-",
+                    item),
+                agentId,
+                "Aller",
+                JsonSerializer.SerializeToElement(
+                    new { target = new { x = approach.X, y = approach.Y, z = 0 } },
+                    ProtocolJson.Options));
+            return true;
+        }
+
         // Write-back BDI → PRISM (P9) : chaque décision traduisible devient une
         // commande du tick. Une commande n'est re-émise que si sa cible change, ou
         // toutes les `PrismCommandRefreshTicks` — sinon PRISM repaie un A* par agent
@@ -463,6 +616,102 @@ public static class Program
                     PrismCommandVocabulary? decisionVocabulary = itemCatalog.HasFood
                         ? new PrismCommandVocabulary(itemCatalog, carriedItems.GetValueOrDefault(decision.EntityId))
                         : null;
+
+                    // Production (SYNE-223) : le désir porte un OBJET ; l'exécutif
+                    // choisit l'étape suivante du plan de recettes (prélever,
+                    // fabriquer, poser) et le pont la traduit. Ce chemin n'est pas
+                    // soumis au rafraîchissement : une macro-action dure des
+                    // dizaines de ticks et l'exécutif n'émet rien tant qu'elle est
+                    // en vol.
+                    if (decision.Chosen == DesireKind.Produce)
+                    {
+                        if (production is null || string.IsNullOrWhiteSpace(decision.Target?.Label))
+                        {
+                            continue;
+                        }
+
+                        string goal = decision.Target!.Value.Label;
+
+                        // Matière manquante : aller la chercher prime sur un
+                        // réessai qui ne peut pas aboutir depuis la même case.
+                        if (production.TrySearch(decision.EntityId, tick, out string missingItem) &&
+                            TryMapSearchCommand(tick, decision.EntityId, missingItem, out CommandEnvelope? searchCommand))
+                        {
+                            string searchPayload = searchCommand!.Payload.GetRawText();
+                            if (lastCommands.TryGetValue(searchCommand.AgentId, out var lastSearch) &&
+                                lastSearch.Kind == searchCommand.Kind &&
+                                string.Equals(lastSearch.Payload, searchPayload, StringComparison.Ordinal) &&
+                                tick - lastSearch.Tick < PrismCommandRefreshTicks)
+                            {
+                                continue;
+                            }
+
+                            lastCommands[searchCommand.AgentId] = (
+                                searchCommand.Kind,
+                                searchPayload,
+                                tick);
+                            commands.Add(searchCommand);
+                            commandsSent++;
+                            continue;
+                        }
+
+                        if (!production.TryNext(
+                                decision.EntityId,
+                                goal,
+                                CarriedKeys(decision.EntityId),
+                                tick,
+                                out ProductionCommand productionCommand))
+                        {
+                            continue;
+                        }
+
+                        PrismBlockPosition? cell = productionCommand switch
+                        {
+                            PlaceProductionCommand => ChoosePlacementCell(decision.EntityId),
+                            CraftProductionCommand { StationItem: not null } =>
+                                stationCells.TryGetValue(decision.EntityId, out PrismBlockPosition station) ? station : null,
+                            _ => null,
+                        };
+                        bool needsCell = productionCommand is PlaceProductionCommand ||
+                                         productionCommand is CraftProductionCommand { StationItem: not null };
+                        if (needsCell && cell is null)
+                        {
+                            continue;
+                        }
+
+                        int stepIndex = production.CurrentStepIndex(decision.EntityId);
+                        string productionCommandId = PrismProductionCommandMapper.CommandId(
+                            tick, decision.EntityId, stepIndex, productionCommand);
+                        CommandEnvelope? productionEnvelope = PrismProductionCommandMapper.Map(
+                            tick,
+                            decision.EntityId,
+                            productionCommandId,
+                            productionCommand,
+                            cell,
+                            itemCatalog);
+                        if (productionEnvelope is null)
+                        {
+                            continue;
+                        }
+
+                        production.MarkIssued(decision.EntityId, productionCommandId);
+                        pendingProduction[productionCommandId] = (
+                            decision.EntityId,
+                            productionCommand,
+                            cell ?? default);
+                        if (productionTrace)
+                        {
+                            System.Console.Error.WriteLine(
+                                $"[prod] tick {tick} agent {decision.EntityId} step {stepIndex} " +
+                                $"{productionCommand.GetType().Name} " +
+                                $"carried={DescribeCarried(CarriedKeys(decision.EntityId))}");
+                        }
+
+                        commands.Add(productionEnvelope);
+                        commandsSent++;
+                        continue;
+                    }
+
                     CommandEnvelope? command = PrismDecisionCommandMapper.MapOne(
                         tick,
                         decision,
@@ -510,11 +759,56 @@ public static class Program
                 // Monde externe puis mémoire spatiale (SYNE-220 étape 2, SYNE-221) :
                 // les deux lisent l'état du tick qui vient d'être reçu.
                 synchronizer?.Apply(envelope);
-                carriedItems[envelope.AgentId] = PrismObservationMapper.ToCarriedItemIds(envelope);
+
+                // Inventaire observé, en deux vues : les identifiants PRISM pour
+                // le pont (manger), les noms de contenu pour la cognition
+                // (planifier une recette). Une pile inconnue du catalogue est
+                // ignorée : mieux vaut ne rien savoir que deviner un nom.
+                IReadOnlyDictionary<ushort, int> prismCarried =
+                    PrismObservationMapper.ToCarriedQuantities(envelope);
+                carriedItems[envelope.AgentId] = prismCarried.Keys.Order().ToList();
+                var keys = new Dictionary<string, int>(StringComparer.Ordinal);
+                foreach ((ushort itemTypeId, int quantity) in prismCarried)
+                {
+                    if (itemCatalog.TryGetKey(itemTypeId, out string key))
+                    {
+                        keys[key] = keys.GetValueOrDefault(key) + quantity;
+                    }
+                }
+
+                carriedByKey[envelope.AgentId] = keys;
+
+                // Une chaîne est accomplie quand l'objet final est <b>observé</b>
+                // dans l'inventaire, pas seulement au prochain désir de
+                // production : l'objet satisfait le désir, donc plus aucune
+                // décision `Produce` ne suivrait et l'accomplissement passerait
+                // inaperçu.
+                production?.ObserveInventory(envelope.AgentId, keys);
+
+                if (PrismWorldSynchronizer.TryReadSelfFeet(envelope.Self, out PrismBlockPosition feet))
+                {
+                    selfFeet[envelope.AgentId] = feet;
+                    if (!recentCells.TryGetValue(envelope.AgentId, out List<PrismBlockPosition>? trail))
+                    {
+                        trail = [];
+                        recentCells[envelope.AgentId] = trail;
+                    }
+
+                    if (trail.Count == 0 || trail[^1] != feet)
+                    {
+                        trail.Add(feet);
+                        if (trail.Count > 12)
+                        {
+                            trail.RemoveAt(0);
+                        }
+                    }
+                }
+
                 if (loop is not null &&
                     entitiesById is not null &&
                     entitiesById.TryGetValue(envelope.AgentId, out Entity? observed))
                 {
+                    loop.Cognition.ApplyExternalInventory(observed, keys);
                     IReadOnlyList<Simulation.Core.Perception.SpatialChunkObservation> chunks =
                         PrismObservationMapper.ToSpatialChunks(envelope);
                     if (chunks.Count > 0)
@@ -538,6 +832,74 @@ public static class Program
                                     reasonElement.ValueKind == JsonValueKind.String
                         ? reasonElement.GetString()!
                         : string.Empty;
+
+                    // Une commande de production n'avance que sur un fait publié :
+                    // la **fin** d'une macro-action franchit l'étape, `action_failed`
+                    // la réarme (ou l'abandonne après trop de refus). Attention : une
+                    // macro-commande acceptée est publiée `action_completed` avec
+                    // `result.started`. La prendre pour une fin faisait avancer le
+                    // plan pendant que la macro marchait encore (`input_missing`,
+                    // `action_already_active`) — voir `IsProductionStepCompleted`.
+                    if (envelope.Payload.ValueKind == JsonValueKind.Object &&
+                        envelope.Payload.TryGetProperty("commandId", out JsonElement productionIdElement) &&
+                        productionIdElement.ValueKind == JsonValueKind.String &&
+                        pendingProduction.TryGetValue(
+                            productionIdElement.GetString()!,
+                            out (ulong AgentId, ProductionCommand Command, PrismBlockPosition Cell) pending))
+                    {
+                        string productionId = productionIdElement.GetString()!;
+                        if (PrismProductionCommandMapper.IsCompletion(
+                                envelope.Kind,
+                                envelope.Payload,
+                                pending.Command))
+                        {
+                            pendingProduction.Remove(productionId);
+                            if (pending.Command is PlaceProductionCommand)
+                            {
+                                stationCells[pending.AgentId] = pending.Cell;
+                            }
+
+                            if (productionTrace)
+                            {
+                                int acquired = envelope.Payload.ValueKind == JsonValueKind.Object &&
+                                               envelope.Payload.TryGetProperty("quantityAcquired", out JsonElement acquiredElement) &&
+                                               acquiredElement.TryGetInt32(out int quantity)
+                                    ? quantity
+                                    : -1;
+                                System.Console.Error.WriteLine(
+                                    $"[prod] tick {result.Tick} agent {pending.AgentId} " +
+                                    $"OK {pending.Command.GetType().Name} acquired={acquired}");
+                            }
+
+                            production?.MarkCompleted(pending.AgentId, productionId, result.Tick);
+                        }
+                        else if (envelope.Kind == "action_failed")
+                        {
+                            pendingProduction.Remove(productionId);
+                            if (pending.Command is PlaceProductionCommand)
+                            {
+                                if (!placementBlacklist.TryGetValue(
+                                        pending.AgentId,
+                                        out HashSet<PrismBlockPosition>? blacklist))
+                                {
+                                    blacklist = [];
+                                    placementBlacklist[pending.AgentId] = blacklist;
+                                }
+
+                                blacklist.Add(pending.Cell);
+                            }
+
+                            if (productionTrace)
+                            {
+                                System.Console.Error.WriteLine(
+                                    $"[prod] tick {result.Tick} agent {pending.AgentId} " +
+                                    $"KO {pending.Command.GetType().Name} reason={reason}");
+                            }
+
+                            production?.MarkFailed(pending.AgentId, productionId, reason, result.Tick);
+                        }
+                    }
+
                     string key = reason.Length == 0
                         ? envelope.Kind
                         : string.Concat(envelope.Kind, ":", reason);
@@ -557,6 +919,28 @@ public static class Program
             startTick: startTick,
             checkpointId: cli.PrismCheckpointId,
             checkpointEvery: cli.PrismCheckpointEvery ?? 0);
+        run.Profile?.Report(System.Console.Out);
+        if (run.Profile is not null)
+        {
+            PrismHttpProfile.Report(System.Console.Out);
+            // Relevé machine du run (PRISM-106) : le harnais agrège ce fichier
+            // avec le JSONL de l'hôte au lieu de relire la console.
+            string? profileJson = Environment.GetEnvironmentVariable(
+                PrismCoupledProfile.JsonEnvironmentVariable);
+            if (!string.IsNullOrWhiteSpace(profileJson))
+            {
+                try
+                {
+                    run.Profile.WriteJson(profileJson);
+                }
+                catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+                {
+                    System.Console.Error.WriteLine(
+                        $"SYNE — relevé JSON du profil couplé non écrit : {exception.Message}");
+                }
+            }
+        }
+
         if (run.LastCheckpointId is not null)
         {
             System.Console.WriteLine($"SYNE — dernier checkpoint couplé : {run.LastCheckpointId} (tick {run.LastCheckpointTick})");
@@ -626,6 +1010,18 @@ public static class Program
                         $"dont {resourceSites.DrinkableCount} buvable(s) — " +
                         $"issues PRISM : {outcomes} ; refus durables : {failureMemory.Describe()}, " +
                         $"{commandsSuppressed} commande(s) non réémise(s).");
+                    if (production is not null)
+                    {
+                        string unsupported = production.UnsupportedGoals.Count == 0
+                            ? string.Empty
+                            : $" ; objectifs sans recette : {string.Join(", ", production.UnsupportedGoals)}";
+                        string completed = production.CompletedGoals.Count == 0
+                            ? string.Empty
+                            : $" [{string.Join(", ", production.CompletedGoals)}]";
+                        System.Console.WriteLine(
+                            $"SYNE — production : {production.CompletedRuns} chaîne(s) terminée(s){completed}, " +
+                            $"{production.AbandonedRuns} abandon(s){unsupported}.");
+                    }
                 }
             }
 
@@ -1055,7 +1451,7 @@ public static class Program
         }
         else
         {
-            var localWorld = new Simulation.Core.World.World(
+            var localWorld = new Simulation.Core.World.PrismWorldAdapter(
                 new Simulation.Core.World.WorldSize(options.Simulation.WorldWidth, options.Simulation.WorldHeight));
 
             // Même peuplement que le serveur de contrôle (layout d'obstacles posé

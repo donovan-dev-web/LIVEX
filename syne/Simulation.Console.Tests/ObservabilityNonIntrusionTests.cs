@@ -17,7 +17,7 @@ using Simulation.Core.Loop;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 using Xunit;
-using WorldType = Simulation.Core.World.World;
+using WorldType = Simulation.Core.World.PrismWorldAdapter;
 
 namespace Simulation.Console.Tests;
 
@@ -164,7 +164,7 @@ public class ObservabilityNonIntrusionTests
             rec.Record(loop);
         }
 
-        Assert.Equal("0xc8116c934c424b28", $"0x{Fnv1a(rec.Text):x16}");
+        Assert.Equal("0xadf3a379588ba8e8", $"0x{Fnv1a(rec.Text):x16}");
     }
 
     [Fact]

@@ -126,6 +126,110 @@ public sealed class PrismClientTests
         Assert.Contains("\"contentHash\":\"content-hash\"", handler.Requests[1].Body, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task DrainsPaginatedTickResponsesAndRebuildsTheSameStream()
+    {
+        var pages = new[]
+        {
+            Page(index: 0, pageCount: 2, agents: [1UL, 2UL], events: 1),
+            Page(index: 1, pageCount: 2, agents: [3UL], events: 0),
+        };
+        var handler = new PagedTickHandler(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["/data/tick"] = ProtocolJson.Serialize(pages[0]),
+            [$"/data/tick/result?cursor={Uri.EscapeDataString(pages[0].Page.Cursor!)}"] =
+                ProtocolJson.Serialize(pages[1]),
+        });
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5182/"),
+        };
+        var client = new PrismClient(httpClient, "session-token");
+
+        var result = await client.StepAsync(new TickRequest(ProtocolVersion.Current.ToString(), 0, []));
+
+        // Le flux reconstruit est celui du monde, dans l'ordre annoncé.
+        Assert.Equal(0, result.Tick);
+        Assert.Equal([1UL, 2UL, 3UL], result.Observations.Select(static observation => observation.AgentId));
+        Assert.Single(result.Events);
+        Assert.Equal(2, handler.Requests.Count);
+        Assert.Equal("/data/tick", handler.Requests[0].Path);
+        Assert.StartsWith("/data/tick/result?cursor=", handler.Requests[1].Path, StringComparison.Ordinal);
+        Assert.All(handler.Requests, request => Assert.Equal("session-token", request.SessionToken));
+    }
+
+    [Fact]
+    public async Task RefusesAPageSequenceWithAGapInsteadOfApplyingAPartialTick()
+    {
+        var first = Page(index: 0, pageCount: 3, agents: [1UL], events: 0);
+        // La page annoncée suivante saute de 0 à 2 : le tick est incomplet.
+        var skipped = Page(index: 2, pageCount: 3, agents: [2UL], events: 0);
+        var handler = new PagedTickHandler(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["/data/tick"] = ProtocolJson.Serialize(first),
+            [$"/data/tick/result?cursor={Uri.EscapeDataString(first.Page.Cursor!)}"] =
+                ProtocolJson.Serialize(skipped),
+        });
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://127.0.0.1:5182/"),
+        };
+        var client = new PrismClient(httpClient, "session-token");
+
+        var exception = await Assert.ThrowsAsync<PrismTickPageSequenceException>(
+            () => client.StepAsync(new TickRequest(ProtocolVersion.Current.ToString(), 0, [])));
+
+        Assert.Contains("Expected page", exception.Message, StringComparison.Ordinal);
+    }
+
+    private static TickPageEnvelope Page(int index, int pageCount, ulong[] agents, int events)
+    {
+        var complete = index == pageCount - 1;
+        return new TickPageEnvelope(
+            ProtocolVersion.Current.ToString(),
+            0,
+            new TickPageInfo(index, pageCount, complete, complete ? null : $"0.{index + 1}.{pageCount}.0123456789abcdef"),
+            new TickPageChunk(
+                agents.Select(agentId => new ObservationEnvelope(
+                    ProtocolVersion.Current.ToString(),
+                    0,
+                    agentId,
+                    JsonSerializer.SerializeToElement(new { changes = Array.Empty<object>() }, ProtocolJson.Options),
+                    JsonSerializer.SerializeToElement(new { position = new { x = 1, y = 2, z = 3 } }, ProtocolJson.Options))).ToArray(),
+                Enumerable.Range(0, events).Select(eventIndex => new EventEnvelope(
+                    ProtocolVersion.Current.ToString(),
+                    0,
+                    $"evt-{index}-{eventIndex}",
+                    "action_completed",
+                    (ulong)eventIndex,
+                    JsonSerializer.SerializeToElement(new { commandId = $"cmd-{index}" }, ProtocolJson.Options))).ToArray()));
+    }
+
+    private sealed class PagedTickHandler(IReadOnlyDictionary<string, string> responses) : HttpMessageHandler
+    {
+        public List<RecordedRequest> Requests { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var endpoint = request.RequestUri!.AbsolutePath + request.RequestUri.Query;
+            Requests.Add(new RecordedRequest(
+                endpoint,
+                string.Empty,
+                request.Headers.GetValues("X-LIVEX-Session-Token").Single()));
+            if (!responses.TryGetValue(endpoint, out var body))
+            {
+                throw new InvalidOperationException($"Unexpected PRISM endpoint '{endpoint}'.");
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(body, Encoding.UTF8, "application/json"),
+            });
+        }
+    }
+
     private sealed class RecordingHandler(
         HttpStatusCode statusCode = HttpStatusCode.OK,
         string? errorBody = null) : HttpMessageHandler

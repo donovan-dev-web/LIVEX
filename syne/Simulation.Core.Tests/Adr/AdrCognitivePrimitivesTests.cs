@@ -27,7 +27,7 @@ public class AdrCognitivePrimitivesTests
     private readonly SimulationOptions _options = ConfigLoader.LoadDefaults();
     private readonly ActionCatalog _catalog;
     private readonly ResourceStocks _stocks;
-    private readonly World.World _world;
+    private readonly World.PrismWorldAdapter _world;
     private readonly ActionExecutor _executor;
     private readonly Entity _entity;
     private readonly MindState _mind;
@@ -43,7 +43,7 @@ public class AdrCognitivePrimitivesTests
         _options.Agents.Actions.Plans.Enabled = true;
         _catalog = new ActionCatalog(_options.Agents.Actions);
         _stocks = new ResourceStocks(_options.Resources);
-        _world = new World.World(new WorldSize(500, 500));
+        _world = new World.PrismWorldAdapter(new WorldSize(500, 500));
         _entity = new Entity(new EntityId(1), "Entité A", name: null, new Position(250, 100), TraitSet.NeutralAll, bornAt: 0);
         _world.AddEntity(_entity);
         _executor = new ActionExecutor(_world, _catalog, _stocks, _options);

@@ -16,7 +16,7 @@ Ce document décrit les **échanges inter-composants** de LIVEX. La section 3A d
 
 - **JSON texte camelCase** pour les charges utiles observabilité.
 - En V1, SYNE est l'autorité du monde et ECHOS/PRISM consomment ses flux.
-- En V2, PRISM porte l'autorité de l'espace et de la matière ; SYNE porte la cognition. Cette séparation est déjà utilisée par le host et la boucle couplée, même si l'extraction complète du monde SYNE reste à faire.
+- En V2, PRISM porte l'autorité de l'espace et de la matière ; SYNE porte la cognition. Cette séparation est utilisée par le host et la boucle couplée ; l'extraction du monde SYNE est achevée.
 - Le contrat V2 est indépendant du transport et du moteur graphique.
 - **Indépendance** : aucun module ne dépend des abstractions des autres (Matrice de dépendances `ARCHITECTURE.md`).
 

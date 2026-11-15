@@ -10,6 +10,12 @@ namespace Prism.Bots.Tests;
 /// 5 000 ticks) stays a manual release gate; this one walks the same code path and pins the run
 /// fingerprints, so any behavioural drift in the tick, the perception or the bots fails the build.
 /// <para>
+/// These are <b>byte-level</b> fingerprints (PRISM-107): they hash the serialized stream in the
+/// order it was published, so a pure emission-order change moves them too. They stay the
+/// contract and replay pin; a performance change is judged on the trajectory level instead
+/// (see <see cref="TwoLevelFingerprintTests"/> and <c>docs/prism/TESTING.md</c> §3.1).
+/// </para>
+/// <para>
 /// Re-pinning is never silent: a changed fingerprint means the run changed, so update
 /// <c>docs/prism/ISSUES.md</c> (PRISM-077) with the reason before touching the constants below.
 /// </para>
@@ -20,15 +26,18 @@ public sealed class DeterministicCampaignTests
     public const long GoldenTicks = 200;
 
     [Theory]
-    [InlineData(1UL, "random", "e7a7de87375d26bf")]
-    [InlineData(1UL, "greedy", "e675629c8038b576")]
-    [InlineData(1UL, "planner", "623df86b644b7eee")]
-    [InlineData(2UL, "random", "fee18bde0b6f3d11")]
-    [InlineData(2UL, "greedy", "e8de84376ea91739")]
-    [InlineData(2UL, "planner", "d804c024ce703100")]
-    [InlineData(3UL, "random", "70e3a4e10abbc6e7")]
-    [InlineData(3UL, "greedy", "ae13168c5be4e1ca")]
-    [InlineData(3UL, "planner", "26256c608a33d3f9")]
+    [InlineData(1UL, "random", "1d57d8c21416379a")]
+    // 9 novembre 2026 : le graphe de déplacement accepte la cellule d'un trou miné (PRISM-102),
+    // une station se pose sur le sol de la colonne voisine et le bot outils ne perd plus la
+    // chaîne sur `path_not_found`. Greedy et planner bougent, donc leurs empreintes bougent.
+    [InlineData(1UL, "greedy", "733e128aebc76c3d")]
+    [InlineData(1UL, "planner", "ffde28674bbc6174")]
+    [InlineData(2UL, "random", "2290cf914cbad44a")]
+    [InlineData(2UL, "greedy", "6896049703c9b10a")]
+    [InlineData(2UL, "planner", "5444a165b8b0992a")]
+    [InlineData(3UL, "random", "435842c3fc778d52")]
+    [InlineData(3UL, "greedy", "0181f2dc0e0c3dc5")]
+    [InlineData(3UL, "planner", "fab40e8d19c72371")]
     public void ReducedGoldenCampaignKeepsItsFingerprint(ulong seed, string bot, string expected)
     {
         var root = Path.Combine(BotRunnerTests.FindPrismRoot(), "content", "minimal");

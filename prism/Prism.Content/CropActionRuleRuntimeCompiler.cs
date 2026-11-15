@@ -7,11 +7,10 @@ public static class CropActionRuleRuntimeCompiler
     public static CropActionRules Compile(
         CompiledContentPack pack,
         string farmlandMaterialId = "farmland",
-        string hoeTagId = "hoe")
+        string? hoeTagId = "hoe")
     {
         ArgumentNullException.ThrowIfNull(pack);
         ArgumentException.ThrowIfNullOrWhiteSpace(farmlandMaterialId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(hoeTagId);
 
         if (!pack.Registries.Materials.TryGetId(farmlandMaterialId, out var farmlandId))
         {
@@ -56,12 +55,16 @@ public static class CropActionRuleRuntimeCompiler
             Durability: item.Durability,
             WearPerAction: item.UsePerAction,
             ShelfLifeTicks: item.ShelfLifeTicks)).ToArray();
-        var parentByTag = pack.Tags.ToDictionary(tag => tag.Id, tag => tag.Parent, StringComparer.Ordinal);
-        var hoeItemId = pack.Items
-            .Where(item => HasTagOrAncestor(item.Tags, hoeTagId, parentByTag))
-            .OrderBy(item => item.Id, StringComparer.Ordinal)
-            .Select(item => (ushort?)pack.Registries.Items.GetId(item.Id))
-            .FirstOrDefault();
+        ushort? hoeItemId = null;
+        if (!string.IsNullOrWhiteSpace(hoeTagId))
+        {
+            var parentByTag = pack.Tags.ToDictionary(tag => tag.Id, tag => tag.Parent, StringComparer.Ordinal);
+            hoeItemId = pack.Items
+                .Where(item => HasTagOrAncestor(item.Tags, hoeTagId!, parentByTag))
+                .OrderBy(item => item.Id, StringComparer.Ordinal)
+                .Select(item => (ushort?)pack.Registries.Items.GetId(item.Id))
+                .FirstOrDefault();
+        }
 
         return new CropActionRules(
             cropRules,

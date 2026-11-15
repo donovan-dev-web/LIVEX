@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 17 septembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `../VISION.md` (racine), `../GLOSSARY.md`
 **Source Monographie** : Partie 3 (SYNE : Le Moteur de Simulation), §2.3.1
 
@@ -10,7 +10,7 @@
 
 ## 1. Rôle de SYNE
 
-SYNE (**Systems & Emergent Network Engine**) est le moteur .NET autonome de simulation et de décision. Dans la version historique V1, il possède la vérité de l'état du monde. Dans le couplage PRISM V2, PRISM détient l'état physique ; SYNE conserve la cognition et applique aux croyances les observations renvoyées par PRISM. Cette boucle est implémentée, mais l'extraction complète du monde depuis SYNE est encore en cours. PRISM V1 et son plugin Unreal PRISM-LDK (`PrismLdk`) restent l'architecture de la release 1.0.0.
+SYNE (**Systems & Emergent Network Engine**) est le moteur .NET autonome de simulation et de décision. Dans la version historique V1, il possède la vérité de l'état du monde. Dans le couplage PRISM V2, PRISM détient l'état physique ; SYNE conserve la cognition et applique aux croyances les observations renvoyées par PRISM. L'extraction du monde est achevée : `Simulation.Core` ne contient plus de classes de monde et `PrismWorldAdapter` est l'unique implémentation de `IWorld`. PRISM V1 et son plugin Unreal PRISM-LDK (`PrismLdk`) restent l'architecture de la release 1.0.0.
 
 Il fonctionne en **mode headless** (sans interface) et expose des snapshots globaux et des événements d'observabilité, ainsi qu'un contrôle HTTP. Le flux WebSocket précède les snapshots d'un événement `world_initialized` décrivant le monde préparé. Il sauvegarde/restaure son état avec une garantie de **déterminisme bit-à-bit**.
 

@@ -10,7 +10,7 @@
 
 ## 1. Vue d'ensemble
 
-Après la release V1, LIVEX développe PRISM V2 comme autorité du monde physique. Les rôles V2 décrits ici sont partiellement en service : le host PRISM exécute déjà la génération, le tick et plusieurs systèmes d'action ; le couplage applique les observations à SYNE. L'extraction complète du monde historique de SYNE, la reprise couplée et les validations de release restent ouvertes. SYNE porte la cognition, ECHOS l'observation et l'analyse, et le Launcher orchestre les processus.
+Après la release V1, LIVEX développe PRISM V2 comme autorité du monde physique. Les rôles V2 décrits ici sont en service pour le socle : le host PRISM exécute la génération, le tick et les systèmes d'action ; le couplage applique les observations à SYNE et l'extraction du monde historique de SYNE est achevée. Les validations de release (viewer complet, intégration ECHOS/Launcher V2, empreinte de monde v2) restent ouvertes. SYNE porte la cognition, ECHOS l'observation et l'analyse, et le Launcher orchestre les processus.
 
 ```mermaid
 flowchart TB
@@ -49,10 +49,10 @@ flowchart TB
 
 Source : Monographie §2.3, Partie 3.
 
-- **Rôle V1 autonome** : moteur de simulation et de cognition, avec son monde historique. **En couplage V2** : SYNE porte la cognition ; PRISM possède l'état physique faisant autorité. L'extraction des systèmes de monde de SYNE est prévue en plusieurs étapes et n'est pas terminée.
+- **Rôle V1 autonome** : moteur de simulation et de cognition, avec son monde historique. **En couplage V2** : SYNE porte la cognition ; PRISM possède l'état physique faisant autorité. L'extraction des systèmes de monde de SYNE est achevée : `Simulation.Core` ne contient plus de classes de monde et `PrismWorldAdapter` est l'unique implémentation de `IWorld`.
 - **Contraintes** : indépendant du rendu, fonctionne headless, déterministe pour un seed, une configuration et une version identiques, persistant.
 - **Sous-systèmes** : World, Agents, Cognition, Actions, Interaction, Spatial (grille spatiale), Nav (pathfinding).
-- **Contrats V1** : `WorldSnapshot` et `ExternalEvent` via WebSocket 5180 ; contrôle HTTP 5181. **Couplage V2** : adaptateur SYNE consomme les observations PRISM, les mappe en observations cognitives et les applique aux croyances. La boucle CLI `--prism-url` a été exercée sur 1 000 ticks.
+- **Contrats V1** : `WorldSnapshot` et `ExternalEvent` via WebSocket 5180 ; contrôle HTTP 5181. **Couplage V2** : adaptateur SYNE consomme les observations PRISM, les mappe en observations cognitives et les applique aux croyances. La boucle CLI `--prism-url` est reproductible sur 5 000 ticks (R2) et à 100 agents (R3, porte G5).
 
 Voir `syne/ARCHITECTURE.md`.
 
@@ -69,12 +69,12 @@ Source : Monographie Partie 4.
 
 Voir `echos/ARCHITECTURE.md`.
 
-### 2.3 PRISM — Persistent Reality & Interactive Simulation Module (V2)
+### 2.3 PRISM — Perceptual Rendering & Interactive Simulation Module (V2)
 
 Source : Monographie Partie 5.
 
 - **Rôle V2** : autorité de l'espace, de la matière et du temps physique ; monde 2,5D borné, défini par des packs, avec navigation, actions, cultures, fabrication et structures.
-- **Implémentation actuelle** : solution .NET avec `Prism.Core`, contrats, compilateur de contenu, host headless, viewer optionnel et bots déterministes. L'hôte raccorde les actions, les cultures, la construction, les conteneurs et plusieurs effets de structure. La campagne réduite est épinglée ; le run couplé de 5 000 ticks reste ouvert.
+- **Implémentation actuelle** : solution .NET avec `Prism.Core`, contrats, compilateur de contenu, host headless, viewer optionnel et bots déterministes. L'hôte raccorde les actions, les cultures, la construction, les conteneurs et plusieurs effets de structure. La campagne réduite est épinglée et le run couplé R2 (5 000 ticks) est reproductible.
 - **Contrat `1.0.0`** : commandes SYNE→PRISM, observations/événements PRISM→SYNE et flux de lecture PRISM→ECHOS/viewer. SYNE est l'horloge maîtresse ; le viewer ne fait pas avancer la simulation. Le contrat est gelé, mais l'intégration et plusieurs portes de validation restent en cours.
 - **V1** : le projet Unreal et le plugin PRISM-LDK livrés en 1.0.0 sont conservés comme référence historique de la version précédente.
 
@@ -100,10 +100,10 @@ Détaillé dans `COMMUNICATION.md`. Résumé contractuel :
 
 | Flux | Transport | Port | Payload (JSON camelCase) |
 | :-- | :-- | :-- | :-- |
-| SYNE ↔ PRISM V2 | HTTP de contrôle et WebSocket de tick/lecture, contrat versionné | Configuré par le host | Commandes, observations, événements et resynchronisation ; boucle couplée exercée sur 1 000 ticks |
+| SYNE ↔ PRISM V2 | HTTP de contrôle et WebSocket de tick/lecture, contrat versionné | Configuré par le host | Commandes, observations, événements et resynchronisation ; boucle couplée reproductible sur 5 000 ticks (R2) et à 100 agents (R3) |
 | PRISM → ECHOS / viewer V2 | WebSocket de lecture ; ingestion ECHOS dédiée | Configuré par le host | Snapshots, deltas, entités, métriques et chantiers ; ingestion ECHOS persistante, production continue à raccorder |
-| SYNE → ECHOS (V1) | WebSocket | 5180 par défaut | `world_initialized` 1.1, snapshots et événements (contrat 0.5.0) |
-| Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état (moteur **0.17.0**) |
+| SYNE → ECHOS (V1) | WebSocket | 5180 par défaut | `world_initialized` 1.1, snapshots et événements (contrat 0.5.0 de la release V1 ; développement courant : contrat 0.6.0) |
+| Contrôle de SYNE | HTTP REST | 5181 par défaut | `prepare/ready/start/pause/resume/stop/reset`, état (moteur **0.17.0** en release V1 ; **0.18.0** sur la branche V2) |
 | ECHOS API | HTTP REST | 5000 (V0.1 FastAPI) | runs (avec `outcome` de population), métriques, export, comparaison (`?light=1`) |
 
 Les valeurs par défaut ne remplacent pas la configuration du serveur. Le détail
@@ -124,7 +124,7 @@ des schémas et du cycle de préparation est dans
 Règle V1 : les clients présentaient les données de SYNE sans en devenir
 propriétaires. En V2, PRISM est propriétaire de l'état physique, SYNE de
 l'état cognitif, et le viewer/ECHOS n'altèrent ni l'un ni l'autre. L'extraction
-des systèmes physiques encore présents dans SYNE reste incomplète.
+des systèmes physiques de SYNE est achevée.
 
 ## 5. Stacks (Monographie §7.1)
 
@@ -162,7 +162,7 @@ LIVEX/
 └── .github/workflows/     # GitHub Actions (ci.yml, release.yml)
 ```
 
-> Note : l'archive `docs/docs_prototype/` (spécifications historiques du prototype Godot) a été retirée par la revue documentaire V0.1 (PR #502) ; la [Monographie](../LIVEX-Monographie_SnapV0-1.md) reste la référence historique. Les références à Godot dans les documents historiques ne décrivent pas l'implémentation PRISM actuelle.
+> Note : l'archive `docs/docs_prototype/` (spécifications historiques du prototype Godot) a été retirée par la revue documentaire V0.1 (PR #502) ; la [Monographie](presentation/Monographie-Prototype-V01/LIVEX-Monographie_SnapV0-1.md) reste la référence historique. Les références à Godot dans les documents historiques ne décrivent pas l'implémentation PRISM actuelle.
 
 ## 7. Flux de données de référence V1 (historique)
 
@@ -186,8 +186,8 @@ sequenceDiagram
 
 En V1, le déterminisme s'appuyait sur le `WorldSnapshot` de SYNE. En V2, PRISM
 fixe l'état physique et ses empreintes ; SYNE fixe l'état cognitif. La boucle
-couplée est implémentée, mais l'extraction du monde et la reprise partagée
-restent en cours.
+couplée et la reprise partagée sont implémentées et reproductibles (R2, 5 000
+ticks).
 Le contrat SYNE↔PRISM versionne les commandes, observations, événements et
 références de run conformément à `../VERSIONING.md`.
 

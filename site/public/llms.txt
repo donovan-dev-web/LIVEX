@@ -88,7 +88,7 @@ graphique » avant la maturité.
 | :-- | :-- | :-- |
 | SYNE | Systems & Emergent Network Engine | Cognition des agents et horloge maîtresse ; en V1, moteur du monde simulé. |
 | ECHOS | Emergent Cognition & Holistic Observation System | Observation, analyse et API headless. |
-| PRISM | Persistent Reality & Interactive Simulation Module | Autorité du monde physique en V2 (hôte .NET headless) ; visualiseur facultatif. En V1 : projet Unreal + PRISM-LDK. |
+| PRISM | Perceptual Rendering & Interactive Simulation Module | Autorité du monde physique en V2 (hôte .NET headless) ; visualiseur facultatif. En V1 : projet Unreal + PRISM-LDK. |
 
 - **SYNE** : moteur déterministe de simulation multi-agents. Règles, ticks, architecture BDI,
   déterminisme bit-à-bit à partir d'une graine. Peut fonctionner en mode headless. Publie son

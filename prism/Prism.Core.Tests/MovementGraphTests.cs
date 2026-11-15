@@ -41,7 +41,20 @@ public sealed class MovementGraphTests
         Assert.True(graph.CanStandAt(1, 0, out var feetZ));
         Assert.Equal(5, feetZ);
 
+        // A mined surface block no longer removes the column from the walk graph: the hole is the
+        // standing cell, one level below the neighbour's ground. A ladder that dug the stone of its
+        // furnace around itself used to end on a 1x1 pillar, every cardinal neighbour answering
+        // "cannot stand", and every walk died on `path_not_found` (R1 tools, T+1170).
         world.SetBlockOverride(new BlockCoordinate(0, 0, 4), new BlockOverride(0, 0, true));
+        Assert.True(graph.CanStandAt(0, 0, out feetZ));
+        Assert.Equal(4, feetZ);
+
+        // Dug right down to the bottom: there is no floor left to stand on.
+        for (var z = 3; z >= 0; z--)
+        {
+            world.SetBlockOverride(new BlockCoordinate(0, 0, z), new BlockOverride(0, 0, true));
+        }
+
         Assert.False(graph.CanStandAt(0, 0, out _));
     }
 
@@ -95,6 +108,31 @@ public sealed class MovementGraphTests
         Assert.Equal(
             2500,
             AStarPathfinder.FindPath(graph, 0, 0, 3, 0, 10).Cost);
+    }
+
+    [Fact]
+    public void StandMemoIsBoundToTheRegionRevisionOfItsCell()
+    {
+        var world = CreateRegionedWorld(8, 8, regionSize: 2, surfaceZ: 5);
+        var graph = CreateMovement(world);
+
+        Assert.True(graph.CanStandAt(2, 2, out var feetZ));
+        Assert.Equal(6, feetZ);
+        Assert.Equal(0, graph.StandMemoHits);
+
+        // A write in another region — (6,6) is region (3,3) — cannot change the column that was
+        // memoised, so the answer must be served from the memo. This is the point of PRISM-109:
+        // a mining somewhere else must not throw away every path query's memo.
+        world.SetSurfaceColumn(6, 6, new SurfaceColumn(6, 1, 0, 0));
+        Assert.True(graph.CanStandAt(2, 2, out _));
+        Assert.Equal(1, graph.StandMemoHits);
+
+        // The memoised cell's own region is written: the memo must be discarded, and the answer
+        // must follow the new floor.
+        world.SetSurfaceColumn(2, 2, new SurfaceColumn(6, 1, 0, 0));
+        Assert.True(graph.CanStandAt(2, 2, out var raisedFeetZ));
+        Assert.Equal(7, raisedFeetZ);
+        Assert.Equal(1, graph.StandMemoHits);
     }
 
     [Fact]

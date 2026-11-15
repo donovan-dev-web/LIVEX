@@ -88,6 +88,15 @@ public sealed class MacroActionSystem
     public bool Cancel(ulong agentId) =>
         _active.Remove(agentId) || _sequences.Remove(agentId);
 
+    /// <summary>
+    /// Classe de cible (tag) de la demande en cours pour l'agent, ou null si aucune
+    /// demande active / si la demande porte sur un type d'objet precis. Utilise par
+    /// l'hôte pour choisir un champ de distance (PRISM-143) sans modifier la forme
+    /// serialisee de <see cref="MacroActionStep"/>.
+    /// </summary>
+    public string? GetTargetClassKey(ulong agentId) =>
+        _active.TryGetValue(agentId, out var state) ? state.Request.TagId : null;
+
     public byte[] CaptureState()
     {
         var checkpoint = new MacroActionCheckpoint(
@@ -264,7 +273,7 @@ public sealed class MacroActionSystem
         var target = stationPosition ??
                      new BlockCoordinate(agent.Position.CellX, agent.Position.CellY, agent.Position.FeetZ);
         var steps = new List<MacroActionStep>();
-        if (stationPosition is { } station && GetDistance(agent.Position, station) > 1)
+        if (stationPosition is { } station && !BlockActionSystem.IsAdjacent(agent.Position, station))
         {
             steps.Add(new MacroActionStep(MacroStepKind.Move, station, 0, 0, 0));
         }
@@ -299,7 +308,7 @@ public sealed class MacroActionSystem
         }
 
         var steps = new List<MacroActionStep>();
-        if (GetDistance(agent.Position, parcel) > 1)
+        if (!BlockActionSystem.IsAdjacent(agent.Position, parcel))
         {
             steps.Add(new MacroActionStep(MacroStepKind.Move, parcel, 0, seedItemTypeId, 0));
         }
@@ -397,12 +406,22 @@ public sealed class MacroActionSystem
             candidate.AvailableQuantity > 0);
         if (source is null)
         {
-            _active.Remove(agentId);
-            return MacroActionResult.Failure("source_not_found", state.Acquired);
+            // The source was mined, harvested or taken away while the agent was working on it.
+            // That is not "nothing left in the world": the agent keeps what it already owns and
+            // the next perceived source takes over. Failing here ended every obtain after its
+            // first block, so a bot that needed two logs could never reach the second tree.
+            state.ExhaustedSources.Add(state.Source!.SourceId);
+            state.Source = null;
+            state.CurrentStep = null;
+            return GetNextStep(agentId, position, perceivedSources);
         }
 
+        // The reach question must be answered by the same rule the action applies
+        // (<see cref="BlockActionSystem.IsAdjacent"/>): with Manhattan distance here and a 3×3
+        // cube there, a block beside the agent's head was "far" to the macro and "adjacent" to
+        // Miner, so the macro emitted a move that moved nothing and looped until the plan died.
         state.Source = source;
-        if (GetDistance(position, source.Position) > 1)
+        if (!BlockActionSystem.IsAdjacent(position, source.Position))
         {
             state.CurrentStep ??= new MacroActionStep(
                 MacroStepKind.Move,
@@ -503,6 +522,24 @@ public sealed class MacroActionSystem
             if (string.IsNullOrWhiteSpace(failureCode))
             {
                 throw new ArgumentException("A failed macro step requires a reason.", nameof(failureCode));
+            }
+
+            var sourceFailed = step.Kind is MacroStepKind.Move && step.SourceId != 0 ||
+                               step.Kind is MacroStepKind.Mine && step.SourceId != 0 &&
+                               StringComparer.Ordinal.Equals(failureCode, "support_required");
+            if (sourceFailed)
+            {
+                // A source can be perceived and still be unreachable from where the agent
+                // stands (no path at this altitude), or be the block the agent is standing on
+                // (mining it would strand the agent, so the world refuses with
+                // `support_required`). That is not "nothing left to take": the source is
+                // exhausted and the next tick picks another one. Aborting the whole macro
+                // here made an obtain fail after its first step even when other perceived
+                // sources were reachable.
+                state.ExhaustedSources.Add(step.SourceId);
+                state.Source = null;
+                state.CurrentStep = null;
+                return new MacroActionResult(true, false, null, state.Acquired, null);
             }
 
             _active.Remove(agentId);

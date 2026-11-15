@@ -64,6 +64,16 @@ public enum DesireKind
     /// <c>Take</c> (primitive D8) — la consommer reste <c>Eat</c>.
     /// </summary>
     SecureFood = 14,
+
+    /// <summary>
+    /// Production (SYNE-223, étape 4, désir <b>instrumental</b>) : poursuivre un
+    /// objet à fabriquer. N'est jamais généré par <see cref="DesireFactory"/> :
+    /// il vient de <see cref="ProductionDesires"/> quand
+    /// <c>agents.desires.production.enabled</c> est vrai. La décomposition en
+    /// recettes n'est pas un plan scripté : elle est dérivée du graphe de
+    /// recettes et de l'inventaire observé.
+    /// </summary>
+    Produce = 15,
 }
 
 /// <summary>
@@ -136,7 +146,7 @@ public static class DesireFactory
                 or DesireKind.Eat or DesireKind.Drink
                 or DesireKind.Take or DesireKind.Give or DesireKind.Trade
                 or DesireKind.Attack or DesireKind.Defend
-                or DesireKind.SecureFood)
+                or DesireKind.SecureFood or DesireKind.Produce)
             {
                 continue;
             }

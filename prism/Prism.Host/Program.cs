@@ -104,7 +104,16 @@ if (values.TryGetValue("--correlation-id", out var correlationId))
     Environment.SetEnvironmentVariable("LIVEX_CORRELATION_ID", correlationId);
 }
 
-var runtime = new PrismHostRuntime(checkpointStore: checkpointStore);
+// Le checkpoint d'arrêt sérialise l'état complet du monde dans une chaîne JSON :
+// à 1 000 agents, elle dépasse la limite de 125 Mo de System.Text.Json et le
+// dernier tick part en HTTP 400. C'est un artefact de mesure (un run réel le paie
+// une fois, à l'arrêt), pas un coût de tick : un relevé de performance peut le
+// désactiver avec PRISM_CHECKPOINT_ON_STOP=0. Défaut inchangé.
+bool checkpointOnStop = Environment.GetEnvironmentVariable("PRISM_CHECKPOINT_ON_STOP") != "0";
+
+var runtime = new PrismHostRuntime(
+    checkpointStore: checkpointStore,
+    checkpointOnStop: checkpointOnStop);
 var app = PrismHostServer.Build(
     port,
     runtime,

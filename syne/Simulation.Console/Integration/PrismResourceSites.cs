@@ -156,6 +156,46 @@ public sealed class PrismResourceSites
     }
 
     /// <summary>
+    /// Gisement connu le plus proche d'une famille de ressources : la case
+    /// d'approche à viser par un déplacement, ou <c>false</c> si aucun gisement de
+    /// cette famille n'existe. Départage canonique (distance, puis libellé) pour
+    /// que deux exécutions choisissent le même.
+    /// </summary>
+    /// <remarks>
+    /// Sert la prospection : quand l'hôte refuse une récolte <c>source_not_found</c>,
+    /// l'agent ne perçoit aucune source. Un gisement connu lui donne une direction
+    /// honnête — un lieu qu'il sait atteindre, pas une matière devinée.
+    /// </remarks>
+    public bool TryNearest(ResourceKind kind, int fromX, int fromY, out PrismBlockPosition approach)
+    {
+        approach = default;
+        bool found = false;
+        long best = long.MaxValue;
+        string bestLabel = string.Empty;
+        foreach (ResourceNode node in _nodes)
+        {
+            if (node.Kind != kind || !_byLabel.TryGetValue(node.Id, out Site site))
+            {
+                continue;
+            }
+
+            long dx = site.Approach.X - fromX;
+            long dy = site.Approach.Y - fromY;
+            long distance = (dx * dx) + (dy * dy);
+            if (distance < best ||
+                distance == best && string.CompareOrdinal(site.Label, bestLabel) < 0)
+            {
+                best = distance;
+                bestLabel = site.Label;
+                approach = site.Approach;
+                found = true;
+            }
+        }
+
+        return found;
+    }
+
+    /// <summary>
     /// Décrit un bloc ressource perçu : libellé du gisement et position de sa
     /// case d'approche (la position que la cognition doit viser).
     /// </summary>

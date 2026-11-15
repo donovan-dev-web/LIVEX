@@ -65,6 +65,7 @@ public sealed partial class CognitionPipeline
     private readonly BirthSystem _birth;
     private readonly DeathSystem _death;
     private readonly InstrumentalSettings? _instrumental;
+    private readonly ProductionSettings? _production;
     private readonly TickBudgetCollector? _budget;
     private readonly Dictionary<ulong, MindState> _minds = new();
 
@@ -123,6 +124,11 @@ public sealed partial class CognitionPipeline
         // absence ; aucun coût tant que `enabled` est faux.
         _instrumental = _options.Agents.Desires.Instrumental.Enabled
             ? _options.Agents.Desires.Instrumental
+            : null;
+        // Production (SYNE-223) : même doctrine — section conservée seulement
+        // quand elle est active, aucun candidat ni allocation sinon.
+        _production = _options.Agents.Desires.Production.Enabled
+            ? _options.Agents.Desires.Production
             : null;
         _communication = new CommunicationSystem(world, _options.Communication);
         _groups = new GroupSystem(_options.Groups);

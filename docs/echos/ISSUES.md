@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
-**Dernière mise à jour** : 5 octobre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `ISSUES.md` (racine, conventions), `KANBAN.md` (governance), `ROADMAP.md` ECHOS
 **Source Monographie** : Annexe K (feuille de route V2), §4.10.3 (règle d'or), §9.6.4 (issues ADR)
 
@@ -129,7 +129,7 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ID | Titre | Labels | Prio | Dépend de | Critère d'acceptation |
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | ECHOS-090 | Suite de tests ECHOS — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-045, ECHOS-027 | ✓ Tests unitaires/API/golden ; couverture mesurée ≥ 80 % (96,01 % sur la suite U8). |
-| ECHOS-091 | Intégration SYNE↔ECHOS V1 — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le SYNE réel, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Cette validation historique ne couvre pas l'ingestion du flux PRISM V2 ; celle-ci est suivie séparément par ECHOS-100. |
+| ECHOS-091 | Intégration SYNE↔ECHOS V1 — **LIVRÉ au niveau contrat (U8)** | `type/test`, `component/echos`, `component/syne` | P1 | ECHOS-090 | ✓ Test CI lance le SYNE réel, ingère ses snapshots/événements WebSocket, persiste et vérifie les API/rapport de calibration. Cette validation historique ne couvre pas l'ingestion du flux PRISM V2 ; celle-ci est suivie séparément par ECHOS-120. |
 | ECHOS-092 | Non-régression des indicateurs — **LIVRÉ (U8)** | `type/test`, `component/echos` | P0 | ECHOS-030 | ✓ Baselines V0.1 et goldens vérifiés par les tests de métriques et API ; score inchangé sur données de référence. |
 
 ### Milestone ph10 (echos) — Shell de bureau (Electron) — **RETRAITÉ (ADR-007, 05/10/2026)**
@@ -143,6 +143,13 @@ Chaque sous-section = un milestone (aligné sur `ROADMAP.md` ECHOS, jalons J1–
 | ECHOS-101 | Interface servie par FastAPI (repli SPA) — **LIVRÉ** | `type/feature`, `component/echos` | P0 | ECHOS-100 | ✓ `create_app(ui_dist=…)` + `echos/server.py` (`echos-serve`) : build `echos-ui/dist` monté à la racine avec repli `index.html` (routeur React), routes `/api/*` prioritaires ; mêmes origine, sans CORS. |
 | ECHOS-102 | Empaquetage PyInstaller du backend (*onedir*) — **LIVRÉ** | `type/build`, `component/echos` | P0 | ECHOS-101 | ✓ `echos-desktop/backend/echos-server.spec` + `scripts/build-backend.mjs` : binaire `echos-server` autonome (uvicorn/websockets/pyarrow collectés), smoke test `/health` en CI. |
 | ECHOS-103 | Packaging `.deb`/`.exe` (electron-builder) + CI — **LIVRÉ** | `type/build`, `component/echos` | P0 | ECHOS-102 | ✓ `electron-builder.yml` (deb + NSIS), `extraResources` backend+UI, workflow `echos-desktop.yml` matrice `ubuntu`/`windows`, artefacts attachés sur tag `echos-v*` (`ADR-003`). |
+| ECHOS-120 | **Ingestion de production du flux de lecture PRISM** | `type/feature`, `component/echos` | P0 | contrat PRISM 1.0.0 | `ingest_prism_stream` est appelé par le cycle de run (pas seulement par les tests) ; un run PRISM produit en SQLite les enveloppes validées, indexées par `runId`, `sequence` et `contentHash`, avec reprise après coupure |
+| ECHOS-121 | **Refonte du moteur 6 sur les données PRISM** (stocks, production, usure) | `type/feature`, `component/echos` | P0 | ECHOS-120 | Les métriques de stocks/production/usure sont calculées depuis les snapshots PRISM, sans réutiliser les réservations globales SYNE V1 |
+| ECHOS-122 | **Indicateurs** : coopération, spécialisation, infrastructures, inégalité de stocks | `type/feature`, `component/echos` | P0 | ECHOS-120, ECHOS-121 | Les quatre indicateurs sont calculés sur `AgentEntitySnapshot.Inventory` et les événements PRISM, sans modification du contrat ; valeurs et incertitudes exposées par l'API |
+| ECHOS-123 | **Comparaison de runs** avec `contentHash` et premier tick de divergence | `type/feature`, `component/echos` | P1 | ECHOS-120 | Deux runs de même `contentHash` sont comparés ; le premier tick et le premier champ divergents sont nommés |
+| ECHOS-130 | **Pipeline d'ablation** (profils, ≥ 5 graines, statistiques) — **reporté après l'implémentation complète** | `type/experiment`, `component/echos` | P2 | ECHOS-122, PRISM-101 | Profils d'ablation rejoués sur ≥ 5 graines et 10 000 ticks ; tableaux et tests statistiques archivés |
+
+> **Intégration PRISM V2 (15 novembre 2026).** Les tickets `ECHOS-120…123` et `ECHOS-130` sont la reprise sous identifiants propres des tickets V2 autrefois notés `ECHOS-100…103` / `ECHOS-110` dans la documentation PRISM, qui collisionnaient avec le packaging bureau ci-dessus. L'ingestion PRISM existe en bibliothèque mais n'a **aucun appelant de production** (§ État), et aucun module d'analyse ne référence encore les snapshots PRISM.
 
 ## 4. Règles de suivi (Kanban)
 

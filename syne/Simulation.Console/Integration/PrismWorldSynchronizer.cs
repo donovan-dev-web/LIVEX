@@ -112,6 +112,39 @@ public sealed class PrismWorldSynchronizer
         return true;
     }
 
+    /// <summary>
+    /// Case de bloc occupée par les <b>pieds</b> de l'agent (SYNE-223) : la
+    /// composante <c>z</c> de <c>self.position</c> est aussi en milli-blocs, et
+    /// PRISM définit <c>FeetZ = floor(z / 1000)</c>. Sans elle, SYNE ne peut ni
+    /// poser un établi à sa hauteur ni désigner une parcelle.
+    /// </summary>
+    public static bool TryReadSelfFeet(JsonElement self, out PrismBlockPosition feet)
+    {
+        feet = default;
+        if (self.ValueKind != JsonValueKind.Object ||
+            !self.TryGetProperty("position", out JsonElement positionElement) ||
+            positionElement.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!TryReadCoordinate(positionElement, "x", out double x) ||
+            !TryReadCoordinate(positionElement, "y", out double y) ||
+            !TryReadCoordinate(positionElement, "z", out double z))
+        {
+            return false;
+        }
+
+        feet = new PrismBlockPosition(
+            FloorBlock(x),
+            FloorBlock(y),
+            FloorBlock(z));
+        return true;
+    }
+
+    private static int FloorBlock(double milliBlocks) =>
+        (int)Math.Floor(milliBlocks / WorldSpace.MilliBlocksPerBlock);
+
     private static bool TryReadCoordinate(JsonElement positionElement, string property, out double value)
     {
         value = 0;

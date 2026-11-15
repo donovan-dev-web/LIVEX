@@ -43,6 +43,21 @@ public sealed partial class CognitionPipeline
     }
 
     /// <summary>
+    /// Applique l'<b>inventaire observé</b> d'une entité (SYNE-223) : la seule
+    /// source honnête de « ce que je porte » en mode couplé. Remplace l'état
+    /// précédent au lieu de le fusionner — une pile consommée doit disparaître.
+    /// Aucun tirage, aucune décision : c'est un fait perçu, pas une action.
+    /// </summary>
+    public void ApplyExternalInventory(Entity self, IReadOnlyDictionary<string, int> carried)
+    {
+        ArgumentNullException.ThrowIfNull(self);
+        ArgumentNullException.ThrowIfNull(carried);
+
+        MindState mind = GetOrCreate(self.Id.Value, self);
+        mind.ObserveCarried(carried);
+    }
+
+    /// <summary>
     /// Applique des <b>résumés de région</b> (SYNE-221) à la mémoire spatiale
     /// d'une entité : un masque de tags par chunk, avec sa confiance et son
     /// horodatage. Utilisé par la boucle couplée (PRISM publie ses résumés de

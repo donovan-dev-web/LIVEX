@@ -14,8 +14,8 @@ namespace Simulation.Core.Tests.Entities;
 
 public class EntityFactoryTests
 {
-    private static (World.World World, EntityTemplate Template) Setup() =>
-        (new World.World(new WorldSize(500, 500), spatialCellSize: 30), EntityTemplate.DefaultA);
+    private static (World.PrismWorldAdapter World, EntityTemplate Template) Setup() =>
+        (new World.PrismWorldAdapter(new WorldSize(500, 500), spatialCellSize: 30), EntityTemplate.DefaultA);
 
     [Fact]
     public void CreateNext_ProducesEntitiesInTraitDomain()

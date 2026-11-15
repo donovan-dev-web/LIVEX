@@ -15,6 +15,8 @@ public sealed class BlockActionSystemTests
         var ledger = new MatterLedger();
         var groundItems = new GroundItemStore();
 
+        // The block beside the agent, not the one under its feet: mining your own support is
+        // refused (`support_required`).
         var result = BlockActionSystem.Mine(
             world,
             agent,
@@ -23,7 +25,7 @@ public sealed class BlockActionSystemTests
             ledger,
             runSeed: 42,
             tick: 12,
-            new BlockCoordinate(0, 0, 4),
+            new BlockCoordinate(1, 0, 4),
             targetPerceived: true);
 
         Assert.True(result.Succeeded);
@@ -31,7 +33,7 @@ public sealed class BlockActionSystemTests
         Assert.Equal(new AgentItemStack(10, 3, 10), Assert.Single(result.Produced));
         Assert.Equal(3, agent.Inventory.Count(10));
         Assert.Empty(groundItems.Snapshot());
-        Assert.True(world.TryGetBlockOverride(new BlockCoordinate(0, 0, 4), out var mined));
+        Assert.True(world.TryGetBlockOverride(new BlockCoordinate(1, 0, 4), out var mined));
         Assert.True(mined.IsAir);
 
         var placed = BlockActionSystem.Place(
@@ -70,7 +72,7 @@ public sealed class BlockActionSystemTests
             ledger,
             runSeed: 42,
             tick: 12,
-            new BlockCoordinate(0, 0, 4),
+            new BlockCoordinate(1, 0, 4),
             targetPerceived: true);
 
         Assert.True(result.Succeeded);
@@ -148,7 +150,7 @@ public sealed class BlockActionSystemTests
             ]);
         var ledger = new MatterLedger();
         ledger.SetInitialCount(20, 1);
-        var target = new BlockCoordinate(0, 0, 4);
+        var target = new BlockCoordinate(1, 0, 4);
 
         var first = BlockActionSystem.Mine(
             world, agent, new GroundItemStore(), rules, ledger, 42, 0, target, targetPerceived: true);

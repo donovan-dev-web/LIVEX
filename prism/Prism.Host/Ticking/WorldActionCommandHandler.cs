@@ -463,9 +463,16 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
             return busy;
         }
 
+        // A crop is sown into the air cell above the soil, and air is never a perception
+        // entry: gating on the target alone refused every planting with `not_perceived`, so no
+        // crop ever ripened and the farm and cooking chains could not finish. The soil the
+        // crop stands on is what the agent perceives.
+        var targetPerceived =
+            _lifecycle.HasPerceivedBlock(command.AgentId, target) ||
+            _lifecycle.HasPerceivedBlock(command.AgentId, target with { Z = target.Z - 1 });
         if (allowDefer && _durations is not null)
         {
-            return _lifecycle.HasPerceivedBlock(command.AgentId, target)
+            return targetPerceived
                 ? Schedule(command, "Planter", 1)
                 : CommandExecutionResult.Failure("not_perceived");
         }
@@ -481,7 +488,7 @@ public sealed class WorldActionCommandHandler : IWorldCommandHandler
             target,
             seedItemId,
             _calendar.GetSnapshot(command.Tick).Season,
-            _lifecycle.HasPerceivedBlock(command.AgentId, target));
+            targetPerceived);
         if (result.Succeeded)
         {
             _lifecycle.NotifyAgentMutation();

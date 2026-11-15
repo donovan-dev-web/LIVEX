@@ -2,7 +2,7 @@
   { "id": "air", "solid": false, "hardness": 0, "minToolTier": 0, "tags": [], "drops": [], "perceivable": false },
   { "id": "bedrock", "solid": true, "hardness": 0, "minToolTier": 0, "tags": [], "drops": [], "perceivable": false },
   { "id": "dirt", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [], "perceivable": true, "tillable": true },
-  { "id": "grass", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [{ "item": "wheat_seed", "qty": 1, "chancePermille": 250 }], "perceivable": true, "tillable": true },
+  { "id": "grass", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [{ "item": "wheat_seed", "qty": 1, "chancePermille": 1000 }], "perceivable": true, "tillable": true },
   { "id": "stone", "solid": true, "hardness": 8, "minToolTier": 0, "tags": ["stone"], "drops": [{ "item": "stone", "qty": 1 }], "perceivable": true },
   { "id": "sand", "solid": true, "hardness": 1, "minToolTier": 0, "tags": [], "drops": [], "perceivable": true },
   { "id": "water", "solid": false, "hardness": 0, "minToolTier": 0, "tags": ["drinkable"], "drops": [], "perceivable": true, "effects": "drink_water" },

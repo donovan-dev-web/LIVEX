@@ -110,6 +110,30 @@ public sealed class AgentInventory
     public IReadOnlyList<AgentItemStack> Snapshot() =>
         _slots.Where(slot => slot.HasValue).Select(slot => slot!.Value).ToArray();
 
+    /// <summary>
+    /// Allocation-free comparison of the live slots with a previously captured snapshot.
+    /// Perception uses it to keep a <c>SelfObservation</c> alive across ticks where the
+    /// inventory did not move (PRISM-141): resnapshotting every agent every tick was
+    /// pure garbage, and the frame's self block is only a function of these slots.
+    /// </summary>
+    internal bool SlotsMatch(AgentItemStack?[] slots)
+    {
+        if (slots.Length != _slots.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < _slots.Length; index++)
+        {
+            if (!Nullable.Equals(slots[index], _slots[index]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public bool CanAdd(ushort itemTypeId, int quantity, int maxStackSize)
     {
         if (quantity <= 0)
@@ -602,6 +626,13 @@ public sealed class GroundItemStore
     public int Count => _items.Count;
 
     public IReadOnlyList<GroundItem> Snapshot() => _items.Values.ToArray();
+
+    /// <summary>
+    /// Mêmes objets que <see cref="Snapshot"/>, dans le même ordre canonique d'identifiants,
+    /// mais sans copie : la perception relit le voisinage de chaque agent à chaque tick, et une
+    /// copie par agent recopiait tout le magasin 1 000 fois par tick à 1 000 agents (PRISM-141).
+    /// </summary>
+    public IEnumerable<GroundItem> Items => _items.Values;
 
     internal ulong NextId => _nextId;
 

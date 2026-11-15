@@ -128,7 +128,7 @@ public sealed class ContainerActionSystemTests
             ledger,
             runSeed: 1,
             tick: 0,
-            new BlockCoordinate(0, 0, 4),
+            new BlockCoordinate(1, 0, 4),
             targetPerceived: true);
         Assert.True(mined.Succeeded);
         Assert.Equal(4, Assert.Single(agent.Inventory.Snapshot()).DurabilityRemaining);

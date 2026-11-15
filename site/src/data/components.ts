@@ -69,7 +69,7 @@ export const COMPONENTS: Component[] = [
   {
     key: 'prism',
     name: 'PRISM',
-    acronym: 'Persistent Reality & Interactive Simulation Module',
+    acronym: 'Perceptual Rendering & Interactive Simulation Module',
     role: 'Monde physique (cible V2)',
     summary:
       "Cible V2 : monde voxel 2.5D autoritaire, noyau .NET headless, actions matérielles et visualiseur Silk.NET facultatif.",
@@ -132,7 +132,7 @@ export const COMPONENTS_EN: Component[] = [
   {
     key: 'prism',
     name: 'PRISM',
-    acronym: 'Persistent Reality & Interactive Simulation Module',
+    acronym: 'Perceptual Rendering & Interactive Simulation Module',
     role: 'Physical world (V2 target)',
     summary:
       'V2 target: authoritative 2.5D voxel world, headless .NET core, material actions and an optional Silk.NET viewer.',

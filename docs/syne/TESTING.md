@@ -2,7 +2,7 @@
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `DETERMINISM.md`, `ARCHITECTURE.md`
 **Source Monographie** : §7.1 (xUnit + Moq), Annexe J (jalons de validation, 160+ tests), Annexe I (benchmarks)
 
@@ -10,7 +10,7 @@
 
 ## 1. Objectif
 
-Au relevé du **4 novembre 2026**, la suite exécutée compte **708 tests réussis : 604 Core + 104 Console**. Le pourcentage de couverture n'a pas été recalculé dans ce relevé ; les valeurs de couverture plus anciennes restent datées et ne doivent pas être lues comme une mesure du 4 novembre. Le relevé complet est dans le [statut transversal actuel](../governance/LIVEX-CURRENT-STATUS.md). La validation de la release V1 et ses compteurs détaillés sont conservés dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md).
+Au relevé du **15 novembre 2026**, la suite exécutée compte **813 tests réussis : 600 Core + 213 Console**. Le pourcentage de couverture n'a pas été recalculé dans ce relevé ; les valeurs de couverture plus anciennes restent datées et ne doivent pas être lues comme une mesure du 15 novembre. Le relevé complet est dans le [statut transversal actuel](../governance/LIVEX-CURRENT-STATUS.md). La validation de la release V1 et ses compteurs détaillés sont conservés dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md).
 
 ## 2. Stack de tests (Monographie §7.1)
 
@@ -62,17 +62,17 @@ Au relevé du **4 novembre 2026**, la suite exécutée compte **708 tests réuss
 | Phase | Critère | Commande indicative |
 | :-- | :-- | :-- |
 | BDI+Perception | 50 ent., 1000 ticks, pas de crash ; **pipeline BDI testé (SYNE ph1)** | `dotnet test -c Release` ≥ 122 tests |
-| Mémoire+Croyances | 50 ent., 2000 ticks, croyances divergentes | `dotnet test --filter "MemoryTests|BeliefTests"` |
-| Décision+Utilité | traits différents → décisions différentes | `dotnet test --filter "UtilityEvaluatorTests|CognitionPipelineTests"` |
+| Mémoire+Croyances | 50 ent., 2000 ticks, croyances divergentes | `dotnet test --filter "MemoryTests\|BeliefTests"` |
+| Décision+Utilité | traits différents → décisions différentes | `dotnet test --filter "UtilityEvaluatorTests\|CognitionPipelineTests"` |
 | Communication (SYNE ph5) | information locale (rayon), interception, relais ≤ 2 sauts | `dotnet test --filter "CommunicationSystemTests"` |
-| Performance | micro-benchmark grille < budget CI ; **débits 50/500/1000 ≥ 120/30/20 t/s (ph9)** | `dotnet test --filter "PerceptionBenchmarkTests|ScaleTargetsTests"` |
-| Tests | **407 tests (385 Core + 22 Console), 94,01 % de couverture** (≥ 80 % requis, SYNE-100) ; jalons T0–T5 activés (SYNE-122) | `dotnet test --collect:"XPlat Code Coverage"` |
-| Déterminisme (SYNE-102) | golden `0x27fad50065d8c4a4` + baseline d'état `0x072a488aa18c05eb` (journaux normalisés LF, indépendants de l'OS) | `dotnet test --filter "DeterminismRegressionTests|Ph10DeterminismBaselineTests"` |
+| Performance | micro-benchmark grille < budget CI ; **débits 50/500/1000 ≥ 120/30/20 t/s (ph9)** | `dotnet test --filter "PerceptionBenchmarkTests\|ScaleTargetsTests"` |
+| Tests | **813 tests (600 Core + 213 Console) au 15 novembre 2026** (≥ 80 % requis, SYNE-100) ; couverture non recalculée dans ce relevé (dernière valeur datée : 94,01 %) ; jalons T0–T5 activés (SYNE-122) | `dotnet test --collect:"XPlat Code Coverage"` |
+| Déterminisme (SYNE-102) | golden `0x27fad50065d8c4a4` + baseline d'état `0x072a488aa18c05eb` (journaux normalisés LF, indépendants de l'OS) | `dotnet test --filter "DeterminismRegressionTests\|Ph10DeterminismBaselineTests"` |
 | Intégration (SYNE-101) | 150 ticks chaînés sans perte (contiguïté 1..N) | `dotnet test --filter "ObservabilityChainedLoopTests"` |
 | Contrôle (SYNE-113) | pilotage HTTP :5181 non intrusif (run piloté == ininterrompu) | `dotnet test --filter "ControlServerWireTests"` |
 | Jalons T0–T5 (SYNE-122) | T0 50/1000 sans crash + état valide déterministe ; T1 50/2000 croyances divergentes ; T2 traits → décisions différentes (situation identique) ; T3 info locale ; T4 reproductibilité benchmark ; T5 suite ≥ 160 tests | `dotnet test --filter "MilestoneT0T5Tests"` |
-| Saisons (SYNE-072) | cycle déterministe (`At` : spring 0..359, summer 360..719, ...), initialSeason respectée, longueur 1 ; facteurs spring/summer/autumn/winter par ressource, invariants purs ; `ApplyLifecycle` factorisé (régénération 120/105/110/100, dégradation ≥ 0) ; traçage au tick exact (Run(10), longueur 4 → 2 changements, autumn) + drain ; désactivé ⇒ aucun événement ; déterminisme bit-à-bit (FNV ResourceLog) ; snapshot `season`/`seasonIndex` (summer/1) ; sérialiseur (autumn/2) ; événement `world.season_changed` typé {previous, current} ; validateur défauts + 6 branches invalides ; Console end-to-end (au tick du basculement, traversant l'émetteur, désactivé ⇒ silence) ; engineVersion 0.9.0 — `SeasonTests`, `ObservabilitySeasonTests` | `dotnet test --filter "SeasonTests|ObservabilitySeasonTests"` |
-| Territoires (SYNE-073) | layout/ordre de pose (`ApplyConfiguredLayout`), `AddTerritory` bornes/id unique, bord inclus (`distance ≤ radius`) ; Entered puis Left (ordre), accumulation + drain (`ClearTerritoryChanges`) ; désactivé ⇒ aucun suivi ; déterminisme bit-à-bit (FNV MembershipLog, 2 répliques même seed) ; snapshot `territories[]` (members triés, membre par ordre croissant) + vide si désactivé ; sérialiseur JSON (`world.territory_membership_changed` {kind}) ; événement typé (agentId/targetId/value) ; validateur défauts + 6 branches invalides ; Console end-to-end (3 entités dans une zone géante au tick 1 → 3 `entered` drainés + snapshot `territories[]` traversant l'émetteur, désactivé ⇒ silence) ; engineVersion 0.10.0, checksums dorés inchangés (désactivé par défaut) — `TerritoryTests`, `ObservabilityTerritoryTests` | `dotnet test --filter "TerritoryTests|ObservabilityTerritoryTests"` |
+| Saisons (SYNE-072) | cycle déterministe (`At` : spring 0..359, summer 360..719, ...), initialSeason respectée, longueur 1 ; facteurs spring/summer/autumn/winter par ressource, invariants purs ; `ApplyLifecycle` factorisé (régénération 120/105/110/100, dégradation ≥ 0) ; traçage au tick exact (Run(10), longueur 4 → 2 changements, autumn) + drain ; désactivé ⇒ aucun événement ; déterminisme bit-à-bit (FNV ResourceLog) ; snapshot `season`/`seasonIndex` (summer/1) ; sérialiseur (autumn/2) ; événement `world.season_changed` typé {previous, current} ; validateur défauts + 6 branches invalides ; Console end-to-end (au tick du basculement, traversant l'émetteur, désactivé ⇒ silence) ; engineVersion 0.9.0 — `SeasonTests`, `ObservabilitySeasonTests` | `dotnet test --filter "SeasonTests\|ObservabilitySeasonTests"` |
+| Territoires (SYNE-073) | layout/ordre de pose (`ApplyConfiguredLayout`), `AddTerritory` bornes/id unique, bord inclus (`distance ≤ radius`) ; Entered puis Left (ordre), accumulation + drain (`ClearTerritoryChanges`) ; désactivé ⇒ aucun suivi ; déterminisme bit-à-bit (FNV MembershipLog, 2 répliques même seed) ; snapshot `territories[]` (members triés, membre par ordre croissant) + vide si désactivé ; sérialiseur JSON (`world.territory_membership_changed` {kind}) ; événement typé (agentId/targetId/value) ; validateur défauts + 6 branches invalides ; Console end-to-end (3 entités dans une zone géante au tick 1 → 3 `entered` drainés + snapshot `territories[]` traversant l'émetteur, désactivé ⇒ silence) ; engineVersion 0.10.0, checksums dorés inchangés (désactivé par défaut) — `TerritoryTests`, `ObservabilityTerritoryTests` | `dotnet test --filter "TerritoryTests\|ObservabilityTerritoryTests"` |
 
 ## 7. Convention d'écriture
 

@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 18 octobre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `../../VERSIONING.md`
 
 Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement : SemVer (`echos-vX.Y.Z`).
@@ -34,6 +34,16 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
   modélisation (`test_group_bond_distances_are_parsed_and_stay_nullable`) et de
   route (publication, vide, sans lien, 404/503). `API_REST.md` §2/§3.6/§3.20 et
   `METRICS_DICTIONARY.md` §3.2 mis à jour.
+
+### Changed
+- **Alignement documentaire du 15 novembre 2026** : le relevé de référence est
+  **407 cas — 393 réussis, 14 ignorés, 0 échec**, couverture **91,24 %**
+  (`pytest-cov`). Les tickets d'intégration PRISM V2 sont repris sous
+  `ECHOS-120…123` (ingestion de production, moteur 6, quatre indicateurs,
+  comparaison de runs) et `ECHOS-130` (ablations, reporté après l'implémentation
+  complète) ; les anciens libellés `ECHOS-100…103` / `ECHOS-110` employés dans la
+  documentation PRISM collisionnaient avec le packaging bureau livré. La
+  dépendance de composant est SYNE `0.18.0` / contrat d'observabilité `0.6.0`.
 
 ### Fixed
 - **Absence de décision ramenée à zéro à l'ingestion (BL-09 / S-28 / D-03 / B-10) —

@@ -42,7 +42,7 @@ public class TransmissionChainTests
     private static SimulationLoop Build()
     {
         SimulationOptions options = ConfigLoader.LoadDefaults();
-        var world = new Simulation.Core.World.World(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
+        var world = new Simulation.Core.World.PrismWorldAdapter(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
         world.ApplyResourceLayout(options.Resources, seed: 12345, cellSize: options.Agents.Perception.Radius);
         world.AddEntity(MakeEntity(SharerId, new Position(250, 250)));
         world.AddEntity(MakeEntity(ReceiverId, new Position(255, 250)));

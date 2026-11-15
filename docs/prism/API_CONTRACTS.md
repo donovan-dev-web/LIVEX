@@ -45,6 +45,29 @@ Prepare(config, seed, contentHash)
  → Start(maxTicks) → [ tick t ← TickRequest ; TickResult ]*
 ```
 
+### 2.1 Plafond de réponse et pagination (ADR-014, PRISM-142)
+
+Aucune réponse de tick ne dépasse **8 Mio** (8 388 608 octets, `TickTransportLimits.MaximumTickResponseBytes`), enveloppes comprises. La taille d'une réponse ne dépend donc jamais du nombre d'agents :
+
+| Cas | Réponse |
+| :-- | :-- |
+| Le tick tient sous le plafond | `TickResult(protocolVersion, tick, observations[], events[])`, **inchangé** |
+| Le tick dépasse le plafond | `TickPageEnvelope(protocolVersion, tick, page{index, pageCount, complete, cursor?}, chunk{observations[], events[]})` |
+
+```text
+POST /data/tick          → page 1 : { page: { index: 0, pageCount: N, complete: false, cursor: "…" },
+                                        chunk: { observations: […], events: […] } }
+GET  /data/tick/result?cursor=…  → page 2 … page N : même forme, last page { complete: true } (sans cursor)
+```
+
+Règles du contrat :
+
+- les pages sont des **tranches contiguës** du flux — observations puis événements, dans l'ordre publié : les concaténer par `index` redonne le `TickResult` d'origine, à l'octet près ;
+- `pageCount` est connu dès la fin du tick : un lecteur peut prouver qu'il a tout reçu, et un chaînage incomplet est une **erreur**, jamais une lecture partielle ;
+- le contenu est sous `chunk` et la position sous `page`, **jamais à la racine** : une page ne peut pas être désérialisée comme un `TickResult`, donc un client qui ignore la pagination échoue au lieu d'appliquer un tick partiel ;
+- `GET /data/tick/result` est en lecture seule : servir une page n'avance pas le monde et ne rejoue rien. Les pages restent valables jusqu'au tick suivant (`page_expired` ensuite, 409) ; un curseur illisible ou étranger est refusé (`page_invalid`, 409) ;
+- si un **élément seul** dépasse le plafond (une observation qui ne peut pas être coupée en deux), l'hôte répond `413 payload_too_large` avec la taille fautive et n'envoie **aucun corps partiel** ; la liaison lockstep WebSocket refuse de la même façon et renvoie `{ "error": "payload_too_large" }`.
+
 ## 3. Commandes (SYNE → PRISM)
 
 Toutes portent `{ commandId, agentId, tick }`. Chaque handler valide la forme de son payload avant exécution (`invalid_payload`) : `CommandPayloadValidator` couvre les champs obligatoires documentés ici (coordonnées, identifiants, quantités, listes de droits) et les handlers conservent leurs contrôles métier.
@@ -134,7 +157,7 @@ Le flux de lecture est **non intrusif** : ECHOS et le visualiseur ne modifient j
 
 Le host émet `checksum` et `metrics` tous les 100 ticks par défaut (intervalle configurable dans `PrismHostRuntime`) ; l'empreinte porte sur l'état courant de la grille et ses métadonnées de génération. La route HTTP `/metrics` expose les mêmes agrégats au format Prometheus (stocks, matière créée/détruite, échecs par raison, réservations et effets actifs).
 Chaque enveloppe porte `protocolVersion`, `sequence`, `tick`, `kind` et `payload`. La séquence est strictement croissante pour le host, mais un lecteur peut observer un saut lorsque le host remplace une file saturée par un nouveau `world_snapshot` complet. ECHOS accepte un démarrage sur un tel snapshot et un saut uniquement lorsqu'il est suivi d'un snapshot complet ; les messages différentiels après ce point doivent reprendre sans autre saut. ECHOS v8 conserve les enveloppes reçues et leur `contentHash` sans les projeter en métriques SYNE non présentes dans le contrat.
-L'adaptateur SYNE consomme également ces enveloppes via `PrismReadStreamClient`; les enveloppes `tick_result` exposent les observations agent/tick sans les traduire encore en croyances. Le lecteur accepte les resynchronisations par snapshot et refuse une version majeure ou un message incohérent. Le visualiseur dispose du même socle (`ViewerReadStreamClient`/`ViewerLiveSession`, resynchronisation comprise) ; l'option `--connect` n'est pas encore exposée par son CLI.
+L'adaptateur SYNE consomme également ces enveloppes via `PrismReadStreamClient` et les mappe en croyances avec `PrismObservationMapper` et `CognitionPipeline.ApplyExternalObservations` ; le couplage `--prism-url` est reproductible sur 5 000 ticks (R2) et à 100 agents (R3). Le lecteur accepte les resynchronisations par snapshot et refuse une version majeure ou un message incohérent. Le visualiseur dispose du même socle (`ViewerReadStreamClient`/`ViewerLiveSession`, resynchronisation comprise) ; l'option `--connect` n'est pas encore exposée par son CLI.
 
 ## 7. Plan de contrôle (HTTP)
 
@@ -171,6 +194,7 @@ Q-02 (accès). Le transport de référence est tranché par ADR-012 ; les schém
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 11 novembre 2026 | Plafond de 8 Mio par réponse de tick et pagination à curseur (`TickPageEnvelope`, `GET /data/tick/result`), dépassement non paginable refusé en `413 payload_too_large` ; le `TickResult` d'un tick qui tient sous le plafond reste inchangé | PRISM-142, ADR-014 |
 | 4 novembre 2026 | Péremption des conteneurs à chaque tick, ralentie dans le volume d'une structure `storage` ; `item_spoiled` est aussi publié pour les conteneurs (même payload) | PRISM-098 |
 | 4 novembre 2026 | `Consommer` accepte en plus le volume `water_access` d'une structure achevée : même payload, même événement `item_consumed` (canal `source`, matériau d'eau du pack) — ajout compatible MINOR, aucun champ nouveau | PRISM-096 |
 | 4 novembre 2026 | Contrat gelé en `1.0.0` : `ProtocolVersion.Current = 1.0.0`, matrice 23/23 sur les trois liaisons, empreintes de run identiques avant/après l'optimisation du tick | PRISM-081 |

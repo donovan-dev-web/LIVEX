@@ -20,7 +20,7 @@ public class SpatialMemoryPersistenceTests
 {
     private static SimulationLoop BuildScenario(ulong seed, int entityCount)
     {
-        var world = new Simulation.Core.World.World(new WorldSize(500, 500), spatialCellSize: 50);
+        var world = new Simulation.Core.World.PrismWorldAdapter(new WorldSize(500, 500), spatialCellSize: 50);
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
         for (int i = 0; i < entityCount; i++)
         {

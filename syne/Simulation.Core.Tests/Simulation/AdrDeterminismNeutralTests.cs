@@ -16,7 +16,7 @@ using Simulation.Core.Loop;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 using Xunit;
-using WorldType = Simulation.Core.World.World;
+using WorldType = Simulation.Core.World.PrismWorldAdapter;
 
 namespace Simulation.Core.Tests;
 

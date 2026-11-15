@@ -112,7 +112,7 @@ Première étape de la boucle BDI : transformation de l'état du monde en observ
 Jeu de fichiers JSON versionné qui **définit** les règles de PRISM V2 : manifeste, matériaux, objets, recettes, gabarits, croissance, effets, tags et paramètres. Il est compilé et validé au démarrage (erreurs structurées, pack invalide = démarrage refusé) et résumé par un `contentHash` : deux runs ne sont comparables que si le hash est identique. Le pack minimal `prism/content/minimal` est le pack de référence. (PRISM-021/022)
 
 ### PRISM
-Pour la V1 : *Perceptual Rendering & Interactive Simulation Module*, projet Unreal de représentation livré dans LIVEX 1.0.0. Pour la cible V2 : *Persistent Reality & Interactive Simulation Module*, autorité .NET headless du monde physique ; SYNE conserve la cognition et le viewer Silk.NET facultatif lit le flux publié.
+*Perceptual Rendering & Interactive Simulation Module* — le sigle est le même en V1 et en V2. La V1 est le projet Unreal de représentation livré dans LIVEX 1.0.0 ; la cible V2 en fait l'autorité .NET headless du monde physique, SYNE conservant la cognition et le viewer Silk.NET facultatif lisant le flux publié.
 
 ### PRISM-LDK
 Plugin Unreal historique (*LIVEX Development Kit*) de PRISM V1 ; module `PrismLdk`. PRISM V2 remplace cette architecture par un noyau .NET headless.
@@ -137,7 +137,7 @@ Entier 64 bits initialisant le PRNG ; elle rend deux runs comparables et reprodu
 Composant qui exécute les sous-systèmes à des fréquences différentes (élevée, moyenne, adaptative, faible) selon leur coût et leur besoin. (Monographie §3.4)
 
 ### SYNE
-Systems & Emergent Network Engine. En V1 autonome, moteur de simulation qui possède le monde ; dans le couplage V2, moteur cognitif qui échange commandes et observations avec PRISM. L'extraction de ses anciens systèmes de monde reste en cours. (Monographie §2.3.1)
+Systems & Emergent Network Engine. En V1 autonome, moteur de simulation qui possède le monde ; dans le couplage V2, moteur cognitif qui échange commandes et observations avec PRISM. L'extraction de ses anciens systèmes de monde est achevée : `Simulation.Core` ne contient plus de classes de monde. (Monographie §2.3.1)
 
 ### syne-mock
 Serveur Node.js de développement qui émule une partie du protocole et du cycle de simulation de SYNE pour tester les clients, en particulier le plugin Unreal. Ses algorithmes sont simplifiés ; il n'est pas le moteur de simulation et ses résultats ne sont pas interchangeables avec ceux de SYNE.

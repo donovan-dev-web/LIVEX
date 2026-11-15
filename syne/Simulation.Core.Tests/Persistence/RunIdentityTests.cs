@@ -22,7 +22,7 @@ public class RunIdentityTests
     private static SimulationLoop Build(ulong seed, ulong entityCount = 5, SimulationOptions? options = null)
     {
         options ??= ConfigLoader.LoadDefaults();
-        var world = new Simulation.Core.World.World(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
+        var world = new Simulation.Core.World.PrismWorldAdapter(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
         world.ApplyResourceLayout(options.Resources, seed, options.Agents.Perception.Radius);
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
         for (ulong i = 1; i <= entityCount; i++)

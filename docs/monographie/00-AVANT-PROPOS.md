@@ -52,24 +52,24 @@ release](../governance/LIVEX-STATUS.md). L'état transversal V2 est synthétisé
 séparément dans le [statut courant](../governance/LIVEX-CURRENT-STATUS.md), afin
 que les compteurs mesurés à des dates différentes ne soient pas additionnés.
 
-- **SYNE 0.17.0** : moteur .NET autonome. Il porte encore son monde historique
-  en V1. Dans le couplage PRISM V2, il traite la cognition, reçoit les
-  observations PRISM et les applique aux croyances. La boucle couplée a été
-  exercée sur 1 000 ticks ; l'extraction complète des systèmes physiques reste
-  à faire. Les suites relevées le 4 novembre comptent 708 réussites.
+- **SYNE 0.18.0** : moteur .NET autonome. Il a cédé son monde historique à
+  PRISM V2 dans le couplage : il traite la cognition, reçoit les observations
+  PRISM et les applique aux croyances. La boucle couplée est reproductible
+  (R2 sur 5 000 ticks, R3 sur 100 agents × 5 000 ticks) et la porte G5 est
+  franchie. Les suites du 15 novembre 2026 comptent **813 réussites**.
 - **ECHOS 0.1.0** : API d'analyse headless, stockage SQLite/Parquet et
-  ingestion SYNE. ECHOS sait aussi valider et conserver le flux de lecture
-  PRISM V2 ; cette voie n'est pas encore raccordée au cycle de production des
-  runs et aux métriques. Le dernier relevé de tests trouvé date du 19 octobre :
-  383 réussis, 14 ignorés.
+  ingestion SYNE. ECHOS sait valider et conserver le flux de lecture PRISM V2 ;
+  cette voie n'est pas encore raccordée au cycle de production des runs et aux
+  métriques. Relevé du 15 novembre 2026 : **393 réussis, 14 ignorés,
+  couverture 91,24 %**.
 - **PRISM V1 / PRISM-LDK** : projet et plugin Unreal livrés avec LIVEX 1.0.0.
   Ils sont historiques et restent documentés à ce titre.
 - **PRISM V2** : simulation .NET headless, autorité du monde physique. Le
-  contrat SYNE↔PRISM `1.0.0`, le host, les chaînes d'actions et les campagnes
-  de bots ont des bases fonctionnelles. Au 4 novembre, 403 tests étaient
-  réussis ; la boucle couplée avec SYNE avait été exercée sur 1 000 ticks. Le
-  run R2 de 5 000 ticks, la reprise commune et plusieurs validations de release
-  restent ouverts.
+  contrat SYNE↔PRISM `1.0.0`, le host, les cinq chaînes d'actions et les
+  campagnes de bots sont implémentés ; **487 tests sont verts au 15 novembre
+  2026**, R2 et R3 sont reproductibles et G5 est franchie. Le viewer complet
+  (P11), l'ingestion ECHOS de production, le raccordement Launcher/installateur
+  et la validation interplateforme restent ouverts.
 - **Launcher et installateur** : outils de la release V1 disponibles. Leur
   intégration et leur packaging des composants V2 ne sont pas achevés.
 - **`syne-mock`** : outil Node.js des contrats V1, non équivalent au moteur et
@@ -78,7 +78,7 @@ que les compteurs mesurés à des dates différentes ne soient pas additionnés.
 
 | Composant | Rôle V1 | Rôle en couplage V2 |
 | :-- | :-- | :-- |
-| SYNE | simuler le monde, décider, persister | décider et porter l'état cognitif ; monde historique encore présent |
+| SYNE | simuler le monde, décider, persister | décider et porter l'état cognitif ; monde délégué à PRISM (extraction achevée) |
 | PRISM | représenter les données SYNE dans Unreal | simuler l'état physique et appliquer les commandes |
 | ECHOS | ingérer et analyser les flux SYNE | conserver aussi les enveloppes de lecture PRISM ; intégration analytique en cours |
 | Launcher | lancer les services V1 et archiver les campagnes | orchestration PRISM V2 en cours d'intégration |

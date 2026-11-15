@@ -2,12 +2,21 @@ using System.Text.Json;
 using Prism.Content;
 using Prism.Contracts;
 using Prism.Core.Actions;
+using Prism.Core.Navigation;
 using Prism.Core.World;
 
 namespace Prism.Host.Ticking;
 
 public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhaseHandler
 {
+    /// <summary>
+    /// Per-step tracing is opt-in: it used to be printed unconditionally, which made a full R1
+    /// campaign spend most of its wall clock writing tens of thousands of stderr lines (and made
+    /// every host test noisy). Set <c>PRISM_DEBUG_MACRO=1</c> to get the old trace back.
+    /// </summary>
+    private static readonly bool TraceEnabled =
+        Environment.GetEnvironmentVariable("PRISM_DEBUG_MACRO") is { Length: > 0 };
+
     private readonly MacroActionSystem _macros;
     private readonly AgentLifecycleSystem? _lifecycle;
     private readonly CompiledContentPack? _content;
@@ -128,6 +137,10 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
                 continue;
             }
 
+            if (next.Step is { } stepDebug && TraceEnabled)
+            {
+                Console.Error.WriteLine($"[macro] agent {agentId} tick {context.Tick}: next step {stepDebug.Kind} at {stepDebug.Target}");
+            }
             if (next.Step is not { } step)
             {
                 if (_macros.TryGetWaitingCrop(agentId, out var cropPosition) &&
@@ -154,6 +167,10 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
                 continue;
             }
 
+            if (step.Kind == MacroStepKind.Plant && TraceEnabled)
+            {
+                Console.Error.WriteLine($"[macro] agent {agentId} tick {context.Tick}: queuing Plant at {step.Target}");
+            }
             QueueStep(context, agentId, step, sources);
         }
     }
@@ -208,6 +225,7 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
         IReadOnlyList<PerceivedMacroSource> perceivedSources)
     {
         var commandId = _commandIds.GetValueOrDefault(agentId, $"macro:{agentId}");
+        string label = $"agent {agentId} {step.Kind}";
         context.QueueWorldWrite(() =>
         {
             var execution = ExecuteStep(context, agentId, step, perceivedSources);
@@ -223,13 +241,37 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
                 return;
             }
 
+            if (step.Kind == MacroStepKind.Move &&
+                execution.Succeeded &&
+                _lifecycle!.TryGetAgent(agentId, out var walker) &&
+                !BlockActionSystem.IsAdjacent(walker!.Position, step.Target))
+            {
+                // The move step walks at most one cell per tick, but it is only complete once
+                // the target is inside the action's adjacency cube. Completing it after a
+                // single step made the next step (Till, Plant, Craft) fire from several blocks
+                // away and killed the whole sequence with not_adjacent; the planner then
+                // restarted it from scratch and the bot never reached the parcel.
+                if (TraceEnabled)
+                {
+                    Console.Error.WriteLine(
+                        $"[macro-walk] agent {agentId} tick {context.Tick}: heading to {step.Target} from {walker.Position.CellX},{walker.Position.CellY},{walker.Position.FeetZ}");
+                }
+
+                return;
+            }
+
             var completed = _macros.CompleteCurrentStep(
                 agentId,
                 execution.Succeeded,
                 execution.QuantityAcquired,
                 execution.ErrorCode);
-            if (!execution.Succeeded || !completed.Succeeded)
+            if (!completed.Succeeded)
             {
+                if (TraceEnabled)
+                {
+                    Console.Error.WriteLine($"[macro-fail] agent {agentId} tick {context.Tick}: step={step.Kind} err={execution.ErrorCode ?? completed.ErrorCode}");
+                }
+
                 _commandIds.Remove(agentId);
                 AddMacroEvent(
                     context,
@@ -241,6 +283,15 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
                 return;
             }
 
+            if (!execution.Succeeded)
+            {
+                // The macro is still active: it declared this source unreachable
+                // (or unusable) and will pick the next perceived one on the next
+                // tick. Emitting action_failed here would kill a macro that has
+                // other sources left, which is exactly what an agent cannot see.
+                return;
+            }
+
             AddMacroEvent(
                 context,
                 commandId,
@@ -248,7 +299,7 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
                 "macro_step_completed",
                 null,
                 new { step = step.Kind.ToString(), quantityAcquired = execution.QuantityAcquired });
-        });
+        }, label);
     }
 
     private StepExecution ExecuteStep(
@@ -259,7 +310,65 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
     {
         if (step.Kind == MacroStepKind.Move)
         {
-            var moved = _lifecycle!.TryMoveOneStep(agentId, step.Target, out var moveError);
+            _lifecycle!.TryGetAgent(agentId, out var mover);
+            var before = mover?.Position;
+
+            // PRISM-143 : rejet precoce via champ de distance — si l'agent ne peut atteindre
+            // aucune source de la classe visee, inutile de payer un A* qui echouera de toute
+            // facon. Les trajectoires restent identiques (A* n'est evite que sur les echecs).
+            var moved = false;
+            var moveError = (string?)null;
+            var targetClassKey = _macros.GetTargetClassKey(agentId);
+            if (!string.IsNullOrEmpty(targetClassKey) && mover is not null)
+            {
+                var classSources = sources.Where(s => s.Tags.Contains(targetClassKey!))
+                    .Select(s => s.Position)
+                    .ToArray();
+                var field = _lifecycle.TryGetDistanceField(targetClassKey!, classSources);
+                if (field is not null && field.Get(mover.Position.CellX, mover.Position.CellY) == DistanceField.Unreachable)
+                {
+                    moveError = "path_not_found";
+                    moved = false;
+                }
+                else
+                {
+                    moved = _lifecycle.TryMoveOneStep(agentId, step.Target, out moveError);
+                }
+            }
+            else
+            {
+                moved = _lifecycle.TryMoveOneStep(agentId, step.Target, out moveError);
+            }
+            if (!moved && StringComparer.Ordinal.Equals(moveError, "path_not_found"))
+            {
+                // The step targets a block (tree, station, crop): its own cell is never
+                // walkable, so the move is retried toward the cell that makes the action
+                // adjacent instead of ending the macro-action on a path that cannot exist.
+                moved = _lifecycle.TryMoveAdjacentToOneStep(agentId, step.Target, out moveError);
+            }
+            else if (moved &&
+                     _lifecycle.TryGetAgent(agentId, out mover) &&
+                     !BlockActionSystem.IsAdjacent(mover!.Position, step.Target) &&
+                     before is { } start &&
+                     mover.Position.CellX == start.CellX &&
+                     mover.Position.CellY == start.CellY &&
+                     mover.Position.FeetZ == start.FeetZ)
+            {
+                // The graph path ended on the target's column without a step to take, but the
+                // block is not inside the 3x3x3 adjacency cube from there (typically a block
+                // one level above or below the neighbouring ground). Pick the approach cell.
+                moved = _lifecycle.TryMoveAdjacentToOneStep(agentId, step.Target, out moveError);
+            }
+
+            if (!moved && TraceEnabled)
+            {
+                var approach = mover is { } walker
+                    ? _lifecycle!.FindApproachCell(walker.Position, step.Target)?.ToString() ?? "none"
+                    : "no-agent";
+                Console.Error.WriteLine(
+                    $"[macro-walk-fail] agent {agentId} target={step.Target} approach={approach} from={mover?.Position.ToString() ?? "?"} err={moveError}");
+            }
+
             return new StepExecution(moved, 0, moveError);
         }
 
@@ -323,6 +432,10 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
         JsonElement payload,
         MacroActionStep step)
     {
+        if (TraceEnabled)
+        {
+            Console.Error.WriteLine($"[macro-invoke] agent {agentId} tick {context.Tick}: invoking {kind}");
+        }
         if (!_commandHandlers.TryGetValue(kind, out var handler))
         {
             return new StepExecution(false, 0, "unknown_command");
@@ -345,6 +458,10 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
 
             _dispatch.Schedule(synthetic, execution);
             _deferred.Expect(agentId, synthetic.CommandId, step);
+            if (TraceEnabled)
+            {
+                Console.Error.WriteLine($"[macro-deferred-sched] agent {agentId} tick {context.Tick}: scheduled {kind} cmdId={synthetic.CommandId} resolveTick={context.Tick + 1}");
+            }
             return new StepExecution(true, 0, null, Deferred: true);
         }
 
@@ -420,7 +537,11 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
             execution.Succeeded,
             execution.QuantityAcquired,
             execution.ErrorCode);
-        if (!execution.Succeeded || !completed.Succeeded)
+        if (TraceEnabled)
+        {
+            Console.Error.WriteLine($"[macro-deferred] agent {agentId} tick {context.Tick}: kind={resolution.Step.Kind} succeeded={execution.Succeeded} completed={completed.Succeeded} err={execution.ErrorCode ?? completed.ErrorCode}");
+        }
+        if (!completed.Succeeded)
         {
             _commandIds.Remove(agentId);
             AddMacroEvent(
@@ -430,6 +551,16 @@ public sealed class MacroActionTickPhase : IOptionalCheckpointableWorldTickPhase
                 "action_failed",
                 execution.ErrorCode ?? completed.ErrorCode,
                 new { quantityAcquired = completed.QuantityAcquired });
+            return;
+        }
+
+        if (!execution.Succeeded)
+        {
+            // The macro still active is authoritative: it declared this source unreachable (or
+            // unusable, e.g. mining the block under the agent's feet answers `support_required`)
+            // and will pick the next perceived source on the next tick. Failing the whole macro
+            // here made an obtain die on its first refused block — the farm and cooking chains
+            // lost `wheat_seed` to the grass the agent was standing on.
             return;
         }
 

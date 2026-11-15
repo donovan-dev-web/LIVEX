@@ -56,14 +56,15 @@ contrats SYNE à Blueprint (module `PrismLdk`). **PRISM V2** est une simulation
 extension du plugin Unreal. LDK désigne le plugin V1, pas un projet complet
 distinct.
 
-Le choix d'Unreal et le rejet de Godot, Unity et de la non-décision sont
-argumentés dans l'[ADR-002](../prism/adr/ADR-002-choix-unreal-prism-ldk.md).
+Le choix d'Unreal, propre à la V1, est acté dans l'ADR-002 (archivé avec la
+V1) ; il est remplacé pour la V2 par l'[ADR-004](../prism/adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md)
+puis l'[ADR-005](../prism/adr/ADR-005-stack-dotnet-silknet-headless.md).
 
 PRISM-LDK privilégie les fonctionnalités natives d'Unreal et Blueprint. Le
 C++ du plugin V1 reste limité au transport, aux contrats et au parsing. PRISM
 V2 repose sur le host .NET et le contrat SYNE↔PRISM versionné en `1.0.0` ; le
-transport couplé a été exercé sur 1 000 ticks, tandis que R2 (5 000 ticks)
-reste ouvert.
+transport couplé est reproductible (R2, 5 000 ticks) et R3 (100 agents) est
+produit.
 
 En V1, SYNE prend les décisions et conserve l'état faisant autorité ; Unreal
 représente ses données. En V2, PRISM conserve l'état physique faisant autorité

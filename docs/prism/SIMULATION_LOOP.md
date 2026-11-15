@@ -41,7 +41,7 @@ Une macro-action est une machine à états exécutée par PRISM sur plusieurs ti
 
 | Macro-action | Étapes internes |
 | :-- | :-- |
-| `ObtenirObjet(type|tag, qty, hint)` | Se rendre à l'indice → vérifier la source *perçue* → s'orienter → miner/récolter/prendre → répéter jusqu'à `qty` → (option) revenir |
+| `ObtenirObjet(type\|tag, qty, hint)` | Se rendre à l'indice → vérifier la source *perçue* → s'orienter → miner/récolter/prendre → répéter jusqu'à `qty` → (option) revenir |
 | `Fabriquer(recette)` | Aller à la station → déposer les entrées → attendre `durationTicks` (réduit par la maîtrise) → récupérer les sorties |
 | `Cultiver(parcelle)` | Labourer → planter → arroser/s'assurer de l'eau → signaler la maturité (événement) → récolter sur ordre |
 | `DemarrerChantier(gabarit, position)` | Créer le chantier ; puis `Contribuer(chantier)` par apports de matériaux ou de travail |

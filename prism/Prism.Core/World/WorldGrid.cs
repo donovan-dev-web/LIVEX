@@ -16,8 +16,31 @@ public sealed class WorldGrid
         });
 
     private readonly WorldRegion[] _regions;
+    private readonly long[] _regionRevisions;
     private readonly int[] _overrideCountsByRegion;
     private readonly SortedSet<BlockCoordinate>[] _overridesByRegion;
+
+    /// <summary>
+    /// Write counter of every column, bumped for the written column and its four cardinal
+    /// neighbours. A block's visibility is a function of its own column and of those neighbours
+    /// (the exposure test asks them whether they are open), so this is the exact dependency of a
+    /// perception window, one step finer than a region (PRISM-119).
+    /// <para>
+    /// Never serialised and never read by the simulation: it is a cache key. Wraparound at
+    /// <see cref="int.MaxValue"/> writes to the same column is accepted — a wrong answer would
+    /// need two writes to one cell to land exactly 2^31 apart in the same comparison window.
+    /// </para>
+    /// </summary>
+    private int[]? _columnRevisions;
+
+    /// <summary>
+    /// Overrides of one column, in Z order. Indexed by column so a perception window can be slid
+    /// one column at a time (PRISM-105): the leading band of a sliding window must read a single
+    /// column's overrides, and walking a whole region's set for one column would cost more than
+    /// the full rescan it replaces. Entries are kept in the canonical Z/Y/X order the rest of the
+    /// grid uses, restricted to a column where Y and X are fixed.
+    /// </summary>
+    private readonly Dictionary<long, List<BlockCoordinate>> _overridesByColumn = [];
     private readonly SortedDictionary<BlockCoordinate, BlockOverride> _overrides =
         new(CanonicalCoordinateComparer);
 
@@ -51,6 +74,7 @@ public sealed class WorldGrid
         RegionCountY = ((height - 1) / regionSize) + 1;
         var regionCount = checked(RegionCountX * RegionCountY);
         _regions = new WorldRegion[regionCount];
+        _regionRevisions = new long[regionCount];
         _overrideCountsByRegion = new int[regionCount];
         _overridesByRegion = new SortedSet<BlockCoordinate>[regionCount];
         for (var regionId = 0; regionId < _regions.Length; regionId++)
@@ -70,7 +94,69 @@ public sealed class WorldGrid
     public int RegionCountY { get; }
     public int RegionCount => _regions.Length;
     public int OverrideCount => _overrides.Count;
+
+    /// <summary>
+    /// Global revision of the grid: one bump per write, wherever it lands.
+    /// <para>
+    /// Kept because consumers that mirror the whole world need exactly this — the viewer mesher
+    /// (<c>IncrementalTerrainMesher</c>), the host's "did the world move during this tick" check,
+    /// and the path caches (<c>PathfindingCache</c>, <c>AgentLifecycleSystem._paths</c>), whose
+    /// result depends on every cell A* explored and therefore cannot be narrowed to a region.
+    /// A cache that depends on a known set of cells must use <see cref="GetRegionRevision"/>
+    /// instead: the global counter invalidates every agent's window on every write, which is the
+    /// defect PRISM-109 fixes.
+    /// </para>
+    /// </summary>
     public long Revision { get; private set; }
+
+    /// <summary>
+    /// Monotonic revision of one region, bumped only by writes whose cell belongs to it.
+    /// <para>
+    /// A revision is a write counter, not a content hash: two writes can cancel out and the
+    /// revision still moves. Consumers that read across a region border (the exposure test reads
+    /// the four cardinal neighbours, for instance) must include the neighbouring region in their
+    /// key — the grid deliberately does not propagate a bump, because a consumer's dependency set
+    /// is its own to declare and a propagated bump would invalidate far more than it must.
+    /// </para>
+    /// </summary>
+    public long GetRegionRevision(int regionId)
+    {
+        _ = GetRegion(regionId);
+        return _regionRevisions[regionId];
+    }
+
+    /// <summary>Revision of the region containing a cell; the cell must be inside the world.</summary>
+    public long GetRegionRevisionAt(int x, int y)
+    {
+        ValidateHorizontalCoordinate(x, y);
+        return _regionRevisions[(x / RegionSize) + RegionCountX * (y / RegionSize)];
+    }
+
+    /// <summary>
+    /// Write counter of one column, or <c>0</c> outside the world. The four cardinal neighbours
+    /// are bumped too, so a consumer that compares a set of columns sees every write that can
+    /// change what it reads from them (PRISM-119).
+    /// </summary>
+    public int GetColumnRevision(int x, int y) =>
+        _columnRevisions is not null && IsWithinHorizontalBounds(x, y)
+            ? _columnRevisions[y * Width + x]
+            : 0;
+
+    /// <summary>
+    /// Counters of a whole row, for a bulk comparison: a consumer that reuses a window compares
+    /// row segments instead of calling <see cref="GetColumnRevision"/> once per cell, and the
+    /// BCL's <c>SequenceEqual</c> does that compare with vector instructions. Empty when the grid
+    /// has never been written or the row is outside the world.
+    /// </summary>
+    public ReadOnlySpan<int> GetColumnRevisionRow(int y)
+    {
+        if (_columnRevisions is null || (uint)y >= (uint)Height)
+        {
+            return ReadOnlySpan<int>.Empty;
+        }
+
+        return _columnRevisions.AsSpan(y * Width, Width);
+    }
 
     public SurfaceColumn GetSurfaceColumn(int x, int y)
     {
@@ -104,7 +190,8 @@ public sealed class WorldGrid
         if (_regions[regionId].SetSurfaceColumn(localIndex, column))
         {
             MarkRegionDirty(x, y);
-            Revision = checked(Revision + 1);
+            BumpRevision(regionId);
+            BumpColumnRevisions(x, y);
         }
     }
 
@@ -144,16 +231,18 @@ public sealed class WorldGrid
             return;
         }
 
+        var (regionId, _) = GetRegionAndLocalIndex(coordinate.X, coordinate.Y);
         if (!_overrides.ContainsKey(coordinate))
         {
-            var (regionId, _) = GetRegionAndLocalIndex(coordinate.X, coordinate.Y);
             _overrideCountsByRegion[regionId]++;
             _overridesByRegion[regionId].Add(coordinate);
+            AddToColumnIndex(coordinate);
         }
 
         _overrides[coordinate] = block;
         MarkRegionDirty(coordinate.X, coordinate.Y);
-        Revision = checked(Revision + 1);
+        BumpRevision(regionId);
+        BumpColumnRevisions(coordinate.X, coordinate.Y);
     }
 
     public bool RemoveBlockOverride(BlockCoordinate coordinate)
@@ -167,8 +256,10 @@ public sealed class WorldGrid
         var (regionId, _) = GetRegionAndLocalIndex(coordinate.X, coordinate.Y);
         _overrideCountsByRegion[regionId]--;
         _overridesByRegion[regionId].Remove(coordinate);
+        RemoveFromColumnIndex(coordinate);
         MarkRegionDirty(coordinate.X, coordinate.Y);
-        Revision = checked(Revision + 1);
+        BumpRevision(regionId);
+        BumpColumnRevisions(coordinate.X, coordinate.Y);
         return true;
     }
 
@@ -177,6 +268,76 @@ public sealed class WorldGrid
         foreach (var entry in _overrides)
         {
             yield return entry;
+        }
+    }
+
+    /// <summary>
+    /// Number of overrides in one column. Combined with <see cref="GetColumnOverrideAt"/>, this
+    /// lets a consumer read a column without allocating an enumerator or a list (PRISM-105).
+    /// </summary>
+    public int GetColumnOverrideCount(int x, int y)
+    {
+        ValidateHorizontalCoordinate(x, y);
+        return _overridesByColumn.TryGetValue(ColumnKey(x, y), out var coordinates)
+            ? coordinates.Count
+            : 0;
+    }
+
+    /// <summary>Coordinate of the n-th override of a column, in ascending Z order.</summary>
+    public BlockCoordinate GetColumnOverrideAt(int x, int y, int index)
+    {
+        ValidateHorizontalCoordinate(x, y);
+        if (!_overridesByColumn.TryGetValue(ColumnKey(x, y), out var coordinates) ||
+            (uint)index >= (uint)coordinates.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return coordinates[index];
+    }
+
+    private static long ColumnKey(int x, int y) => ((long)x << 32) | (uint)y;
+
+    private void AddToColumnIndex(BlockCoordinate coordinate)
+    {
+        var key = ColumnKey(coordinate.X, coordinate.Y);
+        if (!_overridesByColumn.TryGetValue(key, out var coordinates))
+        {
+            coordinates = [];
+            _overridesByColumn.Add(key, coordinates);
+        }
+
+        // Ascending Z keeps the column in canonical order without sorting on every read.
+        var low = 0;
+        var high = coordinates.Count;
+        while (low < high)
+        {
+            var middle = (low + high) / 2;
+            if (coordinates[middle].Z < coordinate.Z)
+            {
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
+            }
+        }
+
+        coordinates.Insert(low, coordinate);
+    }
+
+    private void RemoveFromColumnIndex(BlockCoordinate coordinate)
+    {
+        var key = ColumnKey(coordinate.X, coordinate.Y);
+        if (!_overridesByColumn.TryGetValue(key, out var coordinates))
+        {
+            return;
+        }
+
+        coordinates.Remove(coordinate);
+        if (coordinates.Count == 0)
+        {
+            _overridesByColumn.Remove(key);
         }
     }
 
@@ -242,6 +403,40 @@ public sealed class WorldGrid
         MarkNeighborRegionDirty(x + 1, y, regionId);
         MarkNeighborRegionDirty(x, y - 1, regionId);
         MarkNeighborRegionDirty(x, y + 1, regionId);
+    }
+
+    /// <summary>
+    /// One write: the global revision moves, and only the written region's revision moves. The
+    /// neighbour dirty flags are for the mesher and the delta stream, which need "what could look
+    /// different"; revisions are the exact write key caches compare against.
+    /// </summary>
+    private void BumpRevision(int regionId)
+    {
+        Revision = checked(Revision + 1);
+        _regionRevisions[regionId] = checked(_regionRevisions[regionId] + 1);
+    }
+
+    /// <summary>
+    /// One write marks five columns: the written one and its four cardinal neighbours, the exact
+    /// set of columns whose perception can change. Deliberately not propagated further: the four
+    /// diagonals never decide a block's visibility, so bumping them would only invalidate work.
+    /// </summary>
+    private void BumpColumnRevisions(int x, int y)
+    {
+        _columnRevisions ??= new int[checked(Width * Height)];
+        BumpColumnRevision(x, y);
+        BumpColumnRevision(x - 1, y);
+        BumpColumnRevision(x + 1, y);
+        BumpColumnRevision(x, y - 1);
+        BumpColumnRevision(x, y + 1);
+    }
+
+    private void BumpColumnRevision(int x, int y)
+    {
+        if (IsWithinHorizontalBounds(x, y))
+        {
+            _columnRevisions![y * Width + x] = unchecked(_columnRevisions[y * Width + x] + 1);
+        }
     }
 
     private void MarkNeighborRegionDirty(int x, int y, int currentRegionId)

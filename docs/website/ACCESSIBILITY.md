@@ -17,7 +17,7 @@ et la bascule de thème sont des améliorations progressives.
 
 | Élément | Implémentation |
 | :-- | :-- |
-| Langue du document | `<html lang="fr|en">`, ajusté sur la 404 par script. |
+| Langue du document | `<html lang="fr\|en">`, ajusté sur la 404 par script. |
 | Lien d'évitement | `.skip` → `#contenu` (`<main id="contenu" tabindex="-1">`). |
 | Repères | `<header>`, `<main>`, `<footer>`, `<nav>` labellisés (`aria-label` : « Navigation principale », « Fil d'Ariane », « Navigation de pied de page », « Langue »). |
 | Titres | Un seul `<h1>` par page ; hiérarchie `h2`/`h3` cohérente. |

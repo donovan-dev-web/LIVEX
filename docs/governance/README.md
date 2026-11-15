@@ -1,6 +1,6 @@
 # Dossier de gouvernance — LIVEX
 
-**État courant** : [PRISM V2 en intégration au 4 novembre 2026](LIVEX-CURRENT-STATUS.md). Le relevé `LIVEX-STATUS.md` reste la photographie détaillée de la release V1 au 31 octobre.
+**État courant** : [PRISM V2 en intégration au 15 novembre 2026](LIVEX-CURRENT-STATUS.md). Le relevé `LIVEX-STATUS.md` reste la photographie détaillée de la release V1 au 31 octobre.
 
 Ce dossier regroupe les décisions, l’état du projet et les rapports de validation pérennes. Les documents de référence par composant restent dans leurs dossiers respectifs.
 
@@ -8,7 +8,7 @@ Ce dossier regroupe les décisions, l’état du projet et les rapports de valid
 
 | Document | Description |
 |---|---|
-| [`LIVEX-CURRENT-STATUS.md`](LIVEX-CURRENT-STATUS.md) | État transversal PRISM V2 au 4 novembre 2026 et validations par composant. |
+| [`LIVEX-CURRENT-STATUS.md`](LIVEX-CURRENT-STATUS.md) | État transversal PRISM V2 au 15 novembre 2026, comptabilité des tests de tous les composants et validations par composant. |
 | [`LIVEX-STATUS.md`](LIVEX-STATUS.md) | État observé du projet et de ses composants. |
 | [`LIVEX-PERFORMANCE-2026-10.md`](LIVEX-PERFORMANCE-2026-10.md) | Relevé de performance et de tests : comptage, benchmarks par composant et par scénario, capacité maximale et configuration d’exécution minimale/recommandée. |
 | [`ROADMAP.md`](ROADMAP.md) | Jalons transverses et backlog unifié. |

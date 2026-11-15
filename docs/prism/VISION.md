@@ -1,8 +1,8 @@
 # VISION — PRISM (V2)
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 1er novembre 2026
+**Statut** : [SPÉCIFICATION V2 — **P0–P9 CLÔTRÉES**, P10 AMORCÉ, VIEWER P11 OUVERT ; 487/487 TESTS VERTS AU 15 NOVEMBRE 2026]
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`../presentation/VISION.md`](../presentation/VISION.md), [`adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md`](adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md)
 **Source Monographie** : —
 
@@ -18,11 +18,11 @@ PRISM V2 répond à ce double problème : **élargir ce que les agents peuvent f
 
 | # | Objectif | Mesure de réussite |
 | :-- | :-- | :-- |
-| O1 | **Étendre le champ des possibles** : chaînes de production (extraction, outils, agriculture, stockage, construction) à la place de « aller chercher » | Cinq chaînes jouables de bout en bout par des agents (jalon G4) |
-| O2 | **Créer des raisons de coopérer** sans les imposer par script | Effet mesurable des mécanismes de coopération par ablation (jalon G7) |
+| O1 | **Étendre le champ des possibles** : chaînes de production (extraction, outils, agriculture, stockage, construction) à la place de « aller chercher » | Cinq chaînes jouables de bout en bout par des agents (jalon G4 — **atteint le 9 novembre 2026** : 5/5 chaînes par les bots R1, audit vert) |
+| O2 | **Créer des raisons de coopérer** sans les imposer par script | Effet mesurable des mécanismes de coopération par ablation (jalon G7 — **reporté après l'implémentation complète**, sur décision du propriétaire) |
 | O3 | **Séparer les responsabilités** : SYNE = cognition ; PRISM = matière, espace, temps physique | Aucune classe de géométrie ou de ressource dans `Simulation.Core` (jalon G5) |
 | O4 | **Rendre le contenu extensible par la donnée** | Un matériau, une recette ou une culture s'ajoute sans recompiler (test de non-régression de contenu) |
-| O5 | **Donner à PRISM une identité visuelle forte** : monde voxel lisible, cohérent avec l'idée d'un monde simulé | Visualiseur Silk.NET livré (phase P11) |
+| O5 | **Donner à PRISM une identité visuelle forte** : monde voxel lisible, cohérent avec l'idée d'un monde simulé | Visualiseur Silk.NET complet (phase P11) — socle client en place ; atlas, entités live, suivi/coupe, inspecteur et manifeste B8 restent à livrer |
 | O6 | **Préserver l'existant** : déterminisme par seed, runs headless, comparaison dans ECHOS, orchestration par le Launcher | Reprise bit-à-bit, empreintes dorées, manifestes conformes (jalons G3, G6) |
 
 ## 3. Principes de conception

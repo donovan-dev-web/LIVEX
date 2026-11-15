@@ -77,9 +77,11 @@ est une grille bornée de colonnes 2,5D ; le viewer est un client facultatif.
 
 Le contrat `1.0.0` relie les commandes SYNE aux observations et événements
 PRISM. Au 4 novembre, l'adaptateur SYNE et la boucle couplée avaient été
-exercés sur 1 000 ticks. Restent le run R2 de 5 000 ticks, les répétitions
-bit-à-bit, la reprise commune, l'ingestion de production ECHOS, le viewer live
-et les validations de plateforme.
+exercés sur 1 000 ticks. **Depuis, R2 (50 agents × 5 000 ticks) et R3
+(100 agents × 5 000 ticks, G5) sont reproductibles, la reprise couplée est
+bit-identique et l'extraction du monde SYNE est achevée.** Restent ouverts
+l'ingestion ECHOS au cycle de run, le viewer live et les validations de
+plateforme.
 
 ---
 

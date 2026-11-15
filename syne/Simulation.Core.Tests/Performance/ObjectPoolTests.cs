@@ -74,7 +74,7 @@ public class ObjectPoolTests
     [Fact]
     public void Perception_SortBuffersAreBalancedPerPerceive()
     {
-        var world = new Simulation.Core.World.World(new Simulation.Core.World.WorldSize(500, 500), spatialCellSize: 50);
+        var world = new Simulation.Core.World.PrismWorldAdapter(new Simulation.Core.World.WorldSize(500, 500), spatialCellSize: 50);
         var system = new Simulation.Core.Perception.PerceptionSystem(world, new Simulation.Core.Configuration.PerceptionSettings { LineOfSight = false });
 
         long rentsBefore = system.SortBuffers.RentCount;

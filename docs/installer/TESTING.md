@@ -2,9 +2,12 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 29 octobre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
+> **Relevé du 15 novembre 2026 (branche V2)** : **120 réussis** — Unit 73,
+> App 34, Integration 7, EndToEnd 6.
+>
 > **Validation V1.0.0 :** 118 cas xUnit exécutés et réussis pour la release
 > des attributs `[Fact]` et `[InlineData]` : Unit 72, App 34, Integration 6,
 > EndToEnd 6. Il s'agit du nombre de cas définis dans le code, pas d'un rapport

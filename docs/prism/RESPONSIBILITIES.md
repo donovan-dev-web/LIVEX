@@ -1,8 +1,8 @@
 # RESPONSIBILITIES — Répartition des responsabilités et plan d'extraction
 
 **Composant** : PRISM (transverse SYNE, ECHOS, Launcher, Installateur)
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 6 novembre 2026
+**Statut** : [EXTRACTION FAITE — AUCUNE CLASSE DE MONDE DANS `Simulation.Core` (§4) ; LES AGENTS SYNE JOUENT LES CHAÎNES (10 novembre 2026) ; RESTE R3, BORNÉE PAR LE COÛT DU TICK COUPLÉ]
+**Dernière mise à jour** : 8 novembre 2026
 **Dépend de** : [`adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md`](adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md), `../syne/ARCHITECTURE.md`, `../launcher/INTEGRATION_CONTRACT.md`
 **Source Monographie** : —
 
@@ -45,7 +45,7 @@ Le relevé ci-dessous s'appuie sur l'arborescence de `syne/Simulation.Core` à l
 
 | Élément actuel de SYNE | Devenir |
 | :-- | :-- |
-| `World/World.cs`, `WorldSize.cs`, `WorldDescription.cs`, `Position.cs` | Retirés. SYNE ne connaît plus que des positions **observées** et des identifiants de chunks |
+| `World/World.cs`, `World/ObservedWorld.cs` | **Tous deux retirés** (étapes 3d et 3e, 7 novembre 2026). `Simulation.Core` ne contient plus aucune classe de monde : `PrismWorldAdapter` est la seule implémentation de `IWorld` et se borne à refléter l'état observé (entités, territoires, livres). `WorldSize.cs`, `WorldDescription.cs` et `Position.cs` restent : ce sont des descriptions, pas de la géométrie autoritaire |
 | `World/Obstacle.cs`, `LineOfSight.cs`, `SpatialGrid.cs` | Retirés (géométrie → PRISM). La perception de proximité d'agents vient des positions de chaque tick ; un index spatial minimal reste côté SYNE pour la communication |
 | `World/ResourceNode.cs`, `ResourceStocks.cs` | Retirés. Remplacés par objets, inventaires et conteneurs PRISM |
 | `World/Season.cs` | Retiré. La saison est un événement PRISM (`season_changed`) |
@@ -61,10 +61,15 @@ Le relevé ci-dessous s'appuie sur l'arborescence de `syne/Simulation.Core` à l
 
 Nouveaux éléments SYNE : mémoire spatiale par chunk, planificateur, croyances sur recettes/structures/chantiers, désirs instrumentaux, adaptateur de contrat (`PrismClient`). Détail : [`AGENT_INTERFACE.md`](AGENT_INTERFACE.md).
 
-### 4.1 Relevé P9 (6 novembre 2026) — ce que SYNE consomme encore du monde local
+### 4.1 Relevé P9 (6 novembre 2026) — ce que SYNE consommait encore du monde local
+
+> **État au 15 novembre 2026 : les étapes 3a, 3b et 3c sont livrées.** Ce relevé
+> reste la trace de l'inventaire du 6 novembre ; il ne décrit plus un travail
+> restant. `Simulation.Core` ne contient plus de classes de monde et
+> `PrismWorldAdapter` est l'unique implémentation de `IWorld`.
 
 Le relevé par noms de fichiers ci-dessus est complété par un relevé **au symbole**, sur
-`syne/` à la date du 6 novembre 2026. Il dit ce qui reste réellement à retirer, et dans
+`syne/` à la date du 6 novembre 2026. Il dit ce qui restait réellement à retirer, et dans
 quel ordre.
 
 **Où le monde concret apparaît encore** (hors `bin/`, `obj/`) :
@@ -164,6 +169,7 @@ L'extraction n'est jamais « tout d'un coup » : la phase P9 de [`ROADMAP.md`](R
 | :-- | :-- | :-- |
 | 6 novembre 2026 | **Boucle de refus du write-back** (suite 3b) : attribution des `action_failed` à leur consigne (`commandId` → agent/nature/payload) et `PrismCommandFailureMemory` (refus durables uniquement, fenêtre 300 ticks) ; `path_not_found` 12 → 2, 260 réémissions évitées, empreinte couplée inchangée | Le write-back écoutait le verdict de PRISM sans jamais en tenir compte : la même cible inatteignable était redemandée à chaque fenêtre de rafraîchissement |
 | 6 novembre 2026 | **§4.1 étape 3b livrée** : `PrismItemCatalog` (tags `edible`/`drinkable` du pack), `ObtenirObjet` pour la faim, `Consommer { item }` depuis l'inventaire observé, objets comestibles au sol nommés `resource-food-<id>` ; run couplé 600 ticks, 86 commandes, 0 `invalid_payload` | Le write-back ne savait pas prélever ni consommer un objet : la faim ne pouvait pas aboutir en mode couplé |
+| 10 novembre 2026 | **Capacité des agents SYNE livrée** : l'exécutif de production avance sur les faits de l'hôte (fin de macro distinguée de son acceptation), constate une chaîne accomplie dans l'inventaire observé et **prospecte** un gisement connu quand une récolte est refusée faute de source ; le tag `stone` du pack devient un gisement minéral. Mesures : 3 chaînes sans plan scripté (6 agents × 1 500 ticks), 5 chaînes sur 20 agents × 120 ticks, empreinte `233d76e194c897cf` reproduite deux fois, 811/811 tests. **Seul R3 reste** et il est borné par le coût du tick couplé (2 à 6,5 s/tick à 20–100 agents contre 50 ms de budget, coût croissant avec la durée du run) — [`G5-R3-REPORT.md`](G5-R3-REPORT.md). | Le gate G5 §4 demandait la capacité des agents en plus du retrait du monde ; elle tient à trois défauts du write-back, pas à la cognition. |
 | 7 novembre 2026 | **§4.1 étape 3c — démarrage de la passe complète** : inventaire des consommateurs (perception, A*, mouvement, gisements, persistance, naissance/mort, communication, territoires) et plan de migration ordonné ; builds et suites verts (SYNE 891/891, PRISM 412/412) avant la passe. Premiers retraits visés : `AStarPathfinder`/`PathCache` et la navigation locale, puis perception (remplacée par les observations PRISM), puis gisements/ressources, puis naissance/mort/communication, enfin persistance et suppression de `World`/`WorldSize`/`Obstacle`/`LineOfSight`/`SpatialGrid`/`ResourceNode`/`ResourceStocks`/`Season`. | L'utilisateur a demandé la finalisation de P9 ; l'étape 3c est le gate G5 et reste un chantier XL multi-sessions. |
 | 7 novembre 2026 | **§4.1 étape 3c — terminée (moteur)** : moteur découplé de la géométrie locale (mouvement no-op, ressources globales, pathfinding supprimé, perception/communication/birth adaptés) ; `World` réduit à un conteneur observé avec shims de compatibilité ; builds verts et **587/587 tests SYNE Core verts** ; version SYNE `0.18.0`, contrat d'observabilité `0.6.0`. Les shims et la classe `World` seront retirés lors de la suppression finale des tests géométriques. | Finalisation de P9 demandée par l'utilisateur ; gate G5 avancé (moteur sans géométrie locale). |
 | 6 novembre 2026 | **§4.1 étape 3a livrée** : snapshot scindé (monde optionnel, `CaptureCognition` + `worldReference`), `CoupledCheckpointStore` n'embarque plus le monde, refus explicite côté `Restore` et SQLite ; `Core 703/703`, `Console 170/170` | Le monde appartient à PRISM : continuer à en persister une copie entretenait une reprise locale qui n'a plus de sens en mode couplé |

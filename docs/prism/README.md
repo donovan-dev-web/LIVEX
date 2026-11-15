@@ -1,10 +1,10 @@
-# PRISM — Persistent Reality & Interactive Simulation Module (V2)
+# PRISM — Perceptual Rendering & Interactive Simulation Module (V2)
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION EN COURS — SOCLES P0–P11 ; P12/P13 À FAIRE ; G1–G8 EN ATTENTE]
+**Statut** : [IMPLÉMENTATION EN COURS — **P0–P9 CLÔTRÉES**, P10 AMORCÉ, P11 (VIEWER) OUVERT ; G0, G3, G4 ET G5 FRANCHIES ; G1 OUVERTE NON BLOQUANTE, G2 ET G6 OUVERTES ; P12/P13 REPORTÉES]
 **Version cible** : PRISM `2.0.0` — consomme et produit le contrat SYNE↔PRISM `1.0.0` (voir [`API_CONTRACTS.md`](API_CONTRACTS.md))
 **Implémentation visée** : .NET (C#), noyau headless `Prism.Core` + hôte `Prism.Host` + visualiseur `Prism.Viewer` (Silk.NET / OpenGL)
-**Dernière mise à jour** : 3 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`VISION.md`](VISION.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`RESPONSIBILITIES.md`](RESPONSIBILITIES.md)
 **Source Monographie** : —
 
@@ -12,7 +12,7 @@
 
 > **Lecture obligatoire avant tout.** Ce dossier décrit PRISM **V2**, une refonte de scope. Il remplace la documentation de PRISM V1 (projet Unreal + plugin PRISM-LDK, livré en `1.0.0`), archivée séparément. La simulation V2 est en cours d'implémentation ; consulter la roadmap et le backlog pour l'état réel des phases et les validations différées.
 
-**État d'avancement :** les socles P0–P11 sont amorcés : noyau du monde (P2–P6), hôte headless, contrat et persistance (P7), structures et chantiers (P8), adaptateurs SYNE/ECHOS (P9–P10) et viewer (P11). La matrice contractuelle PRISM-078 couvre les 21 kinds sur les trois liaisons ; les bots, le cycle jour/nuit et le client de lecture du viewer sont en place. Les phases P12–P13 (calibrage, validation, livraison) restent à faire ; la validation Linux et les benchmarks sont reportés et G1–G8 ne sont pas franchies. Le suivi détaillé est dans [`ROADMAP.md`](ROADMAP.md) et [`ISSUES.md`](ISSUES.md).
+**État d'avancement :** les phases P0–P9 sont clôturées (P9 le 15 novembre 2026) et P10 est amorcé, P11 (viewer) restant le chantier ouvert : noyau du monde (P2–P6), hôte headless, contrat et persistance (P7), structures et chantiers (P8), adaptateurs SYNE/ECHOS (P9–P10) et viewer (P11). La matrice contractuelle PRISM-078 couvre les 21 kinds sur les trois liaisons ; les bots, le cycle jour/nuit et le client de lecture du viewer sont en place. **Au 15 novembre 2026, la suite PRISM compte 487/487 tests verts** (Architecture 8, Contracts 23, Viewer 62, Core 242, Content 51, Bots 23, Host 78) et SYNE 813/813. G0, G3, G4 (5 chaînes jouées par les bots, audit de conservation vert, [`G4-R1-REPORT.md`](G4-R1-REPORT.md)) et G5 ([`G5-R3-REPORT.md`](G5-R3-REPORT.md)) sont franchies ; G1 reste ouverte mais **non bloquante**, G2 attend le hash de monde v2 et un rapport daté (la comparaison Windows/Linux est déjà assurée par la matrice CI), G6 attend ECHOS/Launcher/Installateur, et P12–P13 (calibrage, rapport, livraison) sont **reportées après l'implémentation complète**. Le suivi détaillé est dans [`ROADMAP.md`](ROADMAP.md), [`ISSUES.md`](ISSUES.md) et le plan d'implémentation [`../governance/IMPLEMENTATION-PLAN-2026-11-15.md`](../governance/IMPLEMENTATION-PLAN-2026-11-15.md).
 
 ## Rôle en une phrase
 
@@ -68,6 +68,7 @@ PRISM V2 est **l'autorité du monde** : un monde voxel borné, déterministe, pi
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 15 novembre 2026 | Statut, compteurs de tests, portes (G5 franchie, G1 non bloquante, G2 quasi couverte, G6 ouverte), identifiants ECHOS V2 (`ECHOS-120…123` / `ECHOS-130`) et lien vers le plan d'implémentation alignés sur l'arbre de travail | Checkup du 15 novembre 2026 et exécution des suites |
 | 3 novembre 2026 | Statut et état d'avancement alignés sur les socles P0–P11 | Audit de cohérence avec le code |
 | 2 novembre 2026 | Début d'implémentation P0/G0 et ajout du suivi | PRISM V2 |
 | 1er novembre 2026 | Création | Refonte de scope V2 (monde voxel autoritaire) |

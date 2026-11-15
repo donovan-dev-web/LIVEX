@@ -37,7 +37,7 @@ flowchart LR
 ```
 
 - ECHOS observe le flux SYNE historique par WebSocket :5180 et utilise ses endpoints de contrôle au besoin.
-- Depuis ECHOS-100, un chemin distinct ingère et persiste le flux PRISM : enveloppes versionnées, séquence, tick, seed et `contentHash`. L'API `/api/runs/{id}/prism-stream` restitue ces enveloppes. Cette ingestion n'est pas encore branchée au cycle de run de production ni aux moteurs analytiques ; ECHOS n'invente pas de métriques SYNE absentes du contrat PRISM.
+- Depuis `ECHOS-120`, un chemin distinct ingère et persiste le flux PRISM : enveloppes versionnées, séquence, tick, seed et `contentHash`. L'API `/api/runs/{id}/prism-stream` restitue ces enveloppes. Cette ingestion n'est pas encore branchée au cycle de run de production ni aux moteurs analytiques ; ECHOS n'invente pas de métriques SYNE absentes du contrat PRISM.
 - Le **présentatif est le Launcher** (ADR-007) : il sonde l'API REST :5000 (1 s) et affiche les séries dans sa fenêtre d'analyse. Aucune diffusion WebSocket de métriques n'est servie par ECHOS à ce jour.
 
 ## 3. Séparation des données

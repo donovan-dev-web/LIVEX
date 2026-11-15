@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [IMPLÉMENTATION EN COURS — PRISM-030 À 037]
-**Dernière mise à jour** : 3 novembre 2026
+**Dernière mise à jour** : 8 novembre 2026
 **Dépend de** : [`DATA_MODEL.md`](DATA_MODEL.md), [`DETERMINISM.md`](DETERMINISM.md), [`adr/ADR-007-determinisme-entier-flux-hasard.md`](adr/ADR-007-determinisme-entier-flux-hasard.md), [`adr/ADR-011-modele-25d.md`](adr/ADR-011-modele-25d.md)
 **Source Monographie** : —
 
@@ -53,9 +53,19 @@ Le monde est **borné** ; hors limites = solide. La bordure est une **falaise** 
 | Plaine | Habitat et agriculture | `grass`, sol plat, un peu de bois |
 | Forêt | Bois | Arbres denses, sol `grass`/`dirt` |
 | Roche | Minéraux | `stone` affleurant, filons exposés par l'érosion (falaises) |
-| Bord d'eau | Eau, sable | `sand`, lacs, rives marchables |
+| Bord d'eau | Eau, sable | `sand` immergé, lacs, rives marchables |
 
 Chaque zone doit rester **atteignable à pied** depuis les sites d'apparition (voir §4).
+
+**Rive et herbe (A1, 8 novembre 2026).** Une colonne est classée *bord d'eau* quand sa surface est
+**strictement sous** la ligne d'eau (`surfaceZ < seaLevelZ + shoreBand`, `shoreBand` = nombre de
+rangées de plage **au-dessus** de l'eau, 0 par défaut). Conséquence : à `shoreBand = 0`, le sable
+n'apparaît que sous l'eau, la colonne au niveau marin est de l'herbe et son bloc de surface partage
+sa face avec le bloc d'eau de la colonne voisine — « l'herbe touche l'eau ». C'est ce qui rend
+l'irrigation réelle (`wheat_crop.requires.waterWithin: 4`) sans élargir le rayon de croissance ;
+la preuve d'acceptation est `Prism.Content.Tests/ShorelineAgricultureAcceptanceTests`, qui sème et
+récolte du blé sur la côte générée. Toute modification de cette règle incrémente `worldGenVersion`
+et recale les empreintes de mondes dorés dans la même passe.
 
 ## 4. Contrôles de jouabilité
 
@@ -72,7 +82,7 @@ En cas d'échec, la génération **réessaie avec une graine dérivée** (`attem
 - Monde (tableaux de chunks), `WorldMetadata{ worldGenVersion, attempt, zoneMap, spawnSites[], contentHash }`.
 - **Empreinte du monde généré** (hachage ordonné des chunks) : référence de test (« mondes dorés », `TESTING.md` §3).
 
-L'orchestrateur fournit le sélecteur d'apparition et les tentatives dérivées. `WorldGenerationResult` expose la seed initiale, l'index de tentative, les sites sélectionnés, le hash de contenu et une empreinte intégrant ces métadonnées. Les planchers globaux de ressources sont vérifiés avant la recherche (code motivé `world.resources.below_floor`) ; la validation croisée des empreintes sur runners Windows/Linux reste à compléter. Trois empreintes de référence locales sont couvertes par tests.
+L'orchestrateur fournit le sélecteur d'apparition et les tentatives dérivées. `WorldGenerationResult` expose la seed initiale, l'index de tentative, les sites sélectionnés, le hash de contenu et une empreinte intégrant ces métadonnées. Les planchers globaux de ressources sont vérifiés avant la recherche (code motivé `world.resources.below_floor`) ; la matrice CI exécute déjà les empreintes sous Windows et Linux, et il reste à publier une empreinte du monde **`WorldGenVersion 2`** pour clore G2. Trois empreintes de référence locales sont couvertes par tests.
 
 ## 6. Performance attendue
 

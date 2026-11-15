@@ -47,7 +47,8 @@ public sealed record CliOptions(
     int? PrismCheckpointEvery = null,
     string? PrismRestoreCheckpoint = null,
     string? PrismCheckpointDir = null,
-    bool? ExternalWorld = null)
+    bool? ExternalWorld = null,
+    string? Production = null)
 {
     /// <summary>Ports d'écoute acceptés par les écouteurs BCL.</summary>
     public const int MinPort = 1;
@@ -114,6 +115,11 @@ public sealed record CliOptions(
           --prism-restore-checkpoint <id>  Restaure le checkpoint PRISM indiqué avant le run.
           --prism-checkpoint-dir <path>    Répertoire des snapshots SYNE couplés (défaut :
                                            .livex/coupled-checkpoints).
+
+        Production (désir SYNE-223) :
+          --production <objets>            Active le désir de production ; liste d'objets
+                                           séparés par des virgules, répartis entre les
+                                           agents par identifiant (ex. stone_pickaxe,chest).
 
         Aides :
           --help, -h                      Affiche cette aide.
@@ -182,6 +188,7 @@ public sealed record CliOptions(
         string? prismRestoreCheckpoint = null;
         string? prismCheckpointDir = null;
         bool? externalWorld = null;
+        string? production = null;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -243,6 +250,9 @@ public sealed record CliOptions(
                     break;
                 case "--prism-agents":
                     prismAgents = ParseInt(RequireValue(args, ref i, "--prism-agents"), "--prism-agents");
+                    break;
+                case "--production":
+                    production = RequireValue(args, ref i, "--production");
                     break;
                 case "--prism-checkpoint-id":
                     prismCheckpointId = RequireValue(args, ref i, "--prism-checkpoint-id");
@@ -375,7 +385,8 @@ public sealed record CliOptions(
             serve, servePort, help, simulation, ticks, exportDirectory, runId, exportStream, autoStart,
             instanceId, controlPort, workDirectory, logDirectory, correlationId,
             prismUrl, prismTicks, prismSeed, prismContentHash, prismContentDir, prismAgents,
-            prismCheckpointId, prismCheckpointEvery, prismRestoreCheckpoint, prismCheckpointDir, externalWorld);
+            prismCheckpointId, prismCheckpointEvery, prismRestoreCheckpoint, prismCheckpointDir, externalWorld,
+            production);
     }
 
     /// <summary>

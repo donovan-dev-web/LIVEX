@@ -240,11 +240,37 @@ public sealed partial class CognitionPipeline
                 // trajectoire de référence).
                 Dictionary<DesireKind, double>? benefitOverrides = null;
                 if (_instrumental is { } instrumental
-                    && InstrumentalDesires.Evaluate(mind, current, _options.Agents.Needs, instrumental) is { } secure
-                    && !candidates.Any(goal => goal.Kind == secure.Kind))
+                    && InstrumentalDesires.Evaluate(mind, current, _options.Agents.Needs, instrumental) is { } secure)
                 {
-                    candidates.Add(new Goal(secure.Kind, currentTick, secure.Target));
-                    benefitOverrides = new Dictionary<DesireKind, double>(1) { [secure.Kind] = secure.Benefit };
+                    AddInstrumental(secure);
+                }
+
+                // Production (SYNE-223) : un but d'objet, pas un plan. La cible
+                // porte l'identifiant de contenu ; le plan est dérivé des
+                // recettes. Désactivé par défaut → aucun candidat.
+                if (_production is { } production
+                    && ProductionDesires.Evaluate(mind, entity.Id.Value, production) is { } produce)
+                {
+                    mind.ProductionGoal = produce.Goal;
+                    if (!candidates.Any(goal => goal.Kind == DesireKind.Produce))
+                    {
+                        candidates.Add(new Goal(
+                            DesireKind.Produce,
+                            currentTick,
+                            ProductionDesires.Target(produce.Goal, entity.Position)));
+                        (benefitOverrides ??= new Dictionary<DesireKind, double>(2))[DesireKind.Produce] = produce.Benefit;
+                    }
+                }
+
+                void AddInstrumental(InstrumentalDesire desire)
+                {
+                    if (candidates.Any(goal => goal.Kind == desire.Kind))
+                    {
+                        return;
+                    }
+
+                    candidates.Add(new Goal(desire.Kind, currentTick, desire.Target));
+                    (benefitOverrides ??= new Dictionary<DesireKind, double>(2))[desire.Kind] = desire.Benefit;
                 }
 
                 // Référence d'hystérésis : l'intention courante, <b>sauf</b> si son
@@ -253,7 +279,7 @@ public sealed partial class CognitionPipeline
                 DesireKind? hysteresisReference = TargetReached(entity, mind) ? null : mind.Intention?.Kind;
                 (IReadOnlyList<UtilityScore> scores, UtilityScore best) = Deliberate(
                     mind, candidates, currentTick, entity.Id.Value, current, hysteresisReference, benefitOverrides);
-                GoalTarget? target = ResolveTarget(best.Kind, current, entity.Position);
+                GoalTarget? target = ResolveTarget(best.Kind, mind, current, entity.Position);
                 mind.RecordDecision(
                     scores,
                     best,
@@ -315,7 +341,7 @@ public sealed partial class CognitionPipeline
 
                 if (interruption is { } chosen)
                 {
-                    GoalTarget? target = ResolveTarget(chosen.Kind, criticalNeeds ? knowledge : null, entity.Position);
+                    GoalTarget? target = ResolveTarget(chosen.Kind, mind, criticalNeeds ? knowledge : null, entity.Position);
                     mind.RecordDecision(
                         scores,
                         chosen,

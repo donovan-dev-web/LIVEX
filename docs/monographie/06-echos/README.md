@@ -1,10 +1,11 @@
 # Chapitre 6. ECHOS : observer sans toucher
 
-**État mis à jour au 4 novembre 2026.** ECHOS conserve son ingestion et son
+**État mis à jour au 15 novembre 2026.** ECHOS conserve son ingestion et son
 analyse SYNE historiques. Un chemin distinct valide et persiste les enveloppes
 de lecture PRISM V2, avec séquence et `contentHash`. Cette ingestion brute
 n'est pas encore raccordée au cycle de run et aux métriques V2. Le dernier
-relevé de tests ECHOS trouvé date du 19 octobre 2026 : 383 réussis, 14 ignorés.
+relevé de tests ECHOS date du 15 novembre 2026 : **393 réussis, 14 ignorés**,
+couverture **91,24 %**.
 
 Si SYNE est le monde, ECHOS est le regard qui refuse de le déformer. Ce chapitre raconte l'observatoire, devenu volontairement un moteur sans interface, et montre comment il sert la question directrice par la négative : prouver qu'on peut mesurer l'émergence sans la fabriquer.
 

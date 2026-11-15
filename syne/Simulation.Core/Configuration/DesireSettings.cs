@@ -16,4 +16,7 @@ public sealed class DesireSettings
 {
     /// <summary>Désirs instrumentaux et sécurité alimentaire (SYNE-222) — désactivé par défaut.</summary>
     public InstrumentalSettings Instrumental { get; set; } = new();
+
+    /// <summary>Désir de production (SYNE-223) — désactivé par défaut.</summary>
+    public ProductionSettings Production { get; set; } = new();
 }

@@ -17,9 +17,10 @@ On peut opposer deux manières de présenter un projet comme celui-ci. La premi�
 Les frontières du projet sont stables, mais leur emplacement a changé. En V1,
 SYNE détenait le monde et PRISM/Unreal le représentait. En V2, PRISM porte
 l'état physique ; SYNE reçoit les observations et traite les décisions
-cognitives. L'extraction du monde depuis SYNE est engagée par étapes, mais
-n'est pas terminée. Un texte rigoureux doit donc nommer la version avant
-d'attribuer l'autorité du monde.
+cognitives. L'extraction du monde depuis SYNE est achevée : les systèmes
+physiques vivent dans PRISM et `Simulation.Core` ne contient plus de classes de
+monde. Un texte rigoureux doit néanmoins nommer la version avant d'attribuer
+l'autorité du monde.
 
 - **SYNE** reste le moteur cognitif et le moteur historique autonome. Dans le
   couplage V2, il applique à ses croyances les observations PRISM et produit
@@ -34,15 +35,15 @@ d'attribuer l'autorité du monde.
 - **Le Launcher** orchestre la release V1. Ses lanes d'intégration PRISM V2
   restent à compléter.
 
-| Composant | V1 | V2 au 4 novembre 2026 | Frontière à préserver |
+| Composant | V1 | V2 au 15 novembre 2026 | Frontière à préserver |
 | :-- | :-- | :-- | :-- |
-| SYNE | Monde et cognition | Cognition couplée ; extraction du monde incomplète | Ne pas présenter les anciennes tables SYNE comme l'état physique PRISM |
+| SYNE | Monde et cognition | Cognition couplée ; extraction du monde achevée | Ne pas présenter les anciennes tables SYNE comme l'état physique PRISM |
 | PRISM | Représentation Unreal, via PRISM-LDK | Monde .NET autoritaire, rendu facultatif | Le viewer ne fait pas avancer la simulation |
 | ECHOS | Ingestion et analyse des flux SYNE | Ingestion brute PRISM présente, analyse de production à raccorder | Ne pas inventer les mesures absentes du contrat |
 | Launcher | Orchestration et archivage V1 | Raccordement PRISM V2 partiel | Ne pas assimiler un manifeste à une intégration complète |
 | `syne-mock` | Émulation de contrat V1 | N'est pas le moteur des campagnes PRISM | Un mock ne remplace pas la validation sur SYNE réel |
 
-## 4b.3 Architecture globale au 4 novembre 2026
+## 4b.3 Architecture globale au 15 novembre 2026
 
 Le schéma distingue les flux historiques des échanges V2 déjà exercés. Un trait
 plein représente une capacité implémentée ; le trait pointillé marque un
@@ -69,12 +70,12 @@ flowchart TB
     S -. "flux autonome historique" .-> E
 ```
 
-La boucle de transport SYNE→PRISM→SYNE a été exercée sur 1 000 ticks. Cette
-mesure ne vaut pas validation R2 : le run couplé de 5 000 ticks, ses répétitions
-à empreintes identiques et la reprise partagée restent à faire. ECHOS persiste
-les enveloppes PRISM, mais ne les a pas encore raccordées à l'analyse du run
-supervisé. Le viewer sait consommer des messages, mais l'aperçu n'est pas
-encore une session live.
+La boucle de transport SYNE→PRISM→SYNE est reproductible : R2 rejoue 50 agents
+× 5 000 ticks avec des empreintes identiques sur trois hôtes et une reprise
+partagée bit-identique ; R3 (100 agents × 5 000 ticks) est également produite
+et reproductible. ECHOS persiste les enveloppes PRISM, mais ne les a pas encore
+raccordées à l'analyse du run supervisé. Le viewer sait consommer des messages,
+mais l'aperçu n'est pas encore une session live.
 
 La release V1 reste disponible et possède son propre relevé de tests. Les
 compteurs V2 ne doivent pas être additionnés aux compteurs V1 comme s'ils

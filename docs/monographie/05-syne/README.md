@@ -4,13 +4,14 @@
 SYNE 0.17.0 et ses mécanismes, dont le monde autonome historique. Dans le
 couplage V2, PRISM est l'autorité du monde physique et SYNE reçoit des
 observations pour la cognition. L'adaptateur, la boucle couplée et l'application
-aux croyances sont livrés ; l'extraction complète du monde SYNE et la reprise
-commune restent ouvertes. Les contrats WebSocket décrits ici restent ceux du
-mode SYNE autonome/V1 ; le contrat SYNE↔PRISM V2 est distinct.
+aux croyances sont livrés ; **au 15 novembre 2026**, l'extraction du monde SYNE
+est achevée et R2/R3 sont produits et reproductibles. Les contrats WebSocket
+décrits ici restent ceux du mode SYNE autonome/V1 ; le contrat SYNE↔PRISM V2
+est distinct.
 
 Si la question directrice demande des lois fondamentales, le projet doit en décrire l'autorité sans ambiguïté. En V1, cette autorité vivait dans SYNE. En V2, le monde physique relève de PRISM, tandis que SYNE porte la cognition. Cette partie raconte le moteur .NET et ses mécanismes tels qu'ils sont implémentés ; elle distingue le mode autonome historique du couplage V2.
 
-Le nom est un acronyme, mais c'est d'abord une fonction : **SYNE est le composant cognitif qui décide**. En V1, il était aussi la source de vérité du monde physique. Dans le couplage V2, PRISM détient ce monde ; SYNE reçoit ses observations, les applique aux croyances et renvoie des commandes. La boucle fonctionne et a été exercée sur 1 000 ticks, mais l'extraction complète depuis le moteur SYNE n'est pas terminée.
+Le nom est un acronyme, mais c'est d'abord une fonction : **SYNE est le composant cognitif qui décide**. En V1, il était aussi la source de vérité du monde physique. Dans le couplage V2, PRISM détient ce monde ; SYNE reçoit ses observations, les applique aux croyances et renvoie des commandes. La boucle fonctionne et est reproductible (R2 sur 5 000 ticks) ; l'extraction du monde depuis le moteur SYNE est achevée.
 
 ## Ce que ce chapitre raconte
 

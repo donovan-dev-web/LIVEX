@@ -45,11 +45,22 @@ public sealed class PrismItemCatalog
 
     private readonly HashSet<ushort> _food;
     private readonly HashSet<ushort> _drink;
+    private readonly Dictionary<ushort, string> _keyById;
+    private readonly Dictionary<string, ushort> _idByKey;
+    private readonly Dictionary<string, string> _placesByKey;
 
-    private PrismItemCatalog(HashSet<ushort> food, HashSet<ushort> drink)
+    private PrismItemCatalog(
+        HashSet<ushort> food,
+        HashSet<ushort> drink,
+        Dictionary<ushort, string>? keyById = null,
+        Dictionary<string, ushort>? idByKey = null,
+        Dictionary<string, string>? placesByKey = null)
     {
         _food = food;
         _drink = drink;
+        _keyById = keyById ?? [];
+        _idByKey = idByKey ?? new Dictionary<string, ushort>(StringComparer.Ordinal);
+        _placesByKey = placesByKey ?? new Dictionary<string, string>(StringComparer.Ordinal);
         FoodItemIds = food.Order().ToArray();
         DrinkItemIds = drink.Order().ToArray();
     }
@@ -89,6 +100,19 @@ public sealed class PrismItemCatalog
 
     public bool IsDrink(ushort itemTypeId) => _drink.Contains(itemTypeId);
 
+    /// <summary>Nom de contenu d'un objet (SYNE-223 : inventaire porté lisible par la cognition).</summary>
+    public bool TryGetKey(ushort itemTypeId, out string key) => _keyById.TryGetValue(itemTypeId, out key!);
+
+    /// <summary>Identifiant PRISM d'un nom de contenu (ordre stable du registre).</summary>
+    public bool TryGetId(string key, out ushort itemTypeId) => _idByKey.TryGetValue(key, out itemTypeId);
+
+    /// <summary>
+    /// Matière posée par un objet (champ <c>places</c> du pack), pour traduire
+    /// « poser un établi » en commande <c>Poser</c> sans deviner l'identifiant.
+    /// </summary>
+    public bool TryGetPlaces(string itemKey, out string materialKey) =>
+        _placesByKey.TryGetValue(itemKey, out materialKey!);
+
     /// <summary>
     /// Charge le catalogue d'un pack. Les fichiers sont lus récursivement sous
     /// <c>items/</c> ; l'ordre des fichiers n'a pas d'importance puisque les
@@ -109,6 +133,7 @@ public sealed class PrismItemCatalog
 
         var itemIds = new List<string>();
         var tagsByItem = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+        var placesByItem = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string file in Directory
                      .EnumerateFiles(itemsDirectory, "*.json", SearchOption.AllDirectories)
                      .OrderBy(path => path, StringComparer.Ordinal))
@@ -142,6 +167,11 @@ public sealed class PrismItemCatalog
                     string id = idElement.GetString()!;
                     itemIds.Add(id);
                     tagsByItem[id] = ReadTags(item);
+                    if (item.TryGetProperty("places", out JsonElement places) &&
+                        places.ValueKind == JsonValueKind.String)
+                    {
+                        placesByItem[id] = places.GetString()!;
+                    }
                 }
             }
         }
@@ -156,9 +186,20 @@ public sealed class PrismItemCatalog
         itemIds.Sort(StringComparer.Ordinal);
         var food = new HashSet<ushort>();
         var drink = new HashSet<ushort>();
+        var keyById = new Dictionary<ushort, string>(itemIds.Count);
+        var idByKey = new Dictionary<string, ushort>(itemIds.Count, StringComparer.Ordinal);
+        var placesByKey = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int index = 0; index < itemIds.Count; index++)
         {
-            List<string> tags = tagsByItem[itemIds[index]];
+            string key = itemIds[index];
+            keyById[(ushort)index] = key;
+            idByKey[key] = (ushort)index;
+            if (placesByItem.TryGetValue(key, out string? material))
+            {
+                placesByKey[key] = material;
+            }
+
+            List<string> tags = tagsByItem[key];
             if (tags.Contains(FoodTag, StringComparer.Ordinal))
             {
                 food.Add((ushort)index);
@@ -170,7 +211,7 @@ public sealed class PrismItemCatalog
             }
         }
 
-        return new PrismItemCatalog(food, drink);
+        return new PrismItemCatalog(food, drink, keyById, idByKey, placesByKey);
     }
 
     private static List<string> ReadTags(JsonElement item)

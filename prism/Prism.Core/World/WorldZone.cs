@@ -12,7 +12,11 @@ public enum WorldZone : byte
 
 public sealed record WorldZoneConfig(
     int SeaLevelZ = 26,
-    int ShoreBand = 2,
+    // Rows of beach (sand) above the waterline. Zero means there is no beach above the water:
+    // the grass starts at the water level itself, so a shoreline grass block and the water block
+    // next to it share a face and a crop sown there is irrigated. One means a single sand row at
+    // the waterline (the water surface is then one block below the grass top), and so on.
+    int ShoreBand = 0,
     int MoistureScale = 96,
     int ForestThresholdPermille = 150,
     int RockScale = 48,
@@ -66,7 +70,7 @@ public static class WorldZoneGenerator
                         $"Surface height at ({x}, {y}) is outside the vertical world.");
                 }
 
-                if (surfaceZ <= config.SeaLevelZ + config.ShoreBand)
+                if (surfaceZ < config.SeaLevelZ + config.ShoreBand)
                 {
                     zones[index] = WorldZone.Shore;
                     continue;

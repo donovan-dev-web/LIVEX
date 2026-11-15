@@ -3,8 +3,9 @@
 **Mise à jour au 4 novembre 2026.** Les limites ci-dessous décrivent souvent
 la coupe V1 d'octobre. PRISM V2 apporte une simulation 2,5D, des actions
 matérielles et une boucle SYNE exercée sur 1 000 ticks ; cela modifie le
-périmètre technique, mais ne ferme pas les portes R2, reprise partagée,
-calibrage, ingestion ECHOS ou validation interplateforme. Voir le [statut
+périmètre technique. **Depuis, R2 et la reprise partagée sont franchies, ainsi
+que R3 (porte G5) ; restent le calibrage, l'ingestion ECHOS en production et la
+validation interplateforme.** Voir le [statut
 transversal](../governance/LIVEX-CURRENT-STATUS.md).
 
 Un livre qui ne dirait que des réussites serait une brochure. Ce chapitre rassemble les limites réelles du projet, classées par nature : limites de la simulation, limites de méthode, limites techniques, limites de portée et questions éthiques. L'objectif est de rendre impossible toute surinterprétation des résultats.

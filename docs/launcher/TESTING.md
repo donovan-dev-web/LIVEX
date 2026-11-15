@@ -2,11 +2,15 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 30 septembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `PACKAGE_FORMAT.md`, `COMPONENTS.md`
 **Source Monographie** : —
 
-> **Dernier relevé exécuté consigné (19/10/2026)** : Unit 174/174, Integration
+> **Relevé du 15 novembre 2026 (branche V2)** : **229 réussis, 4 ignorés**
+> (Unit 174, Integration 20, EndToEnd 35). Les 4 ignorés sont dynamiques
+> (`LIVEX_SYNE_PUBLISHED_ROOT` absent), pas des régressions.
+>
+> **Relevé historique du 19/10/2026 (release V1)** : Unit 174/174, Integration
 > 20/20 et EndToEnd 33/33 avec SYNE publié, soit 227 cas. Ce résultat n'a pas
 > été relancé dans la mise à jour documentaire du 31/10 ; le compte global et
 > ses réserves figurent dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md#4-inventaire-des-tests).

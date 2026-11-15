@@ -9,7 +9,7 @@ using Simulation.Core.Perception;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 using Xunit;
-using WorldType = Simulation.Core.World.World;
+using WorldType = Simulation.Core.World.PrismWorldAdapter;
 
 namespace Simulation.Console.Tests;
 

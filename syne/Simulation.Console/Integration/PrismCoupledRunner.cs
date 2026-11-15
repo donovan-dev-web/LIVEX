@@ -28,6 +28,7 @@ public sealed class PrismCoupledRunner
     private readonly PrismResourceSites? _resourceSites;
     private readonly PrismItemCatalog? _itemCatalog;
     private readonly Action<ulong, string, string, string, long>? _onCommandFailed;
+    private readonly PrismCoupledProfile? _profile = PrismCoupledProfile.FromEnvironment();
 
     public PrismCoupledRunner(
         Func<TickRequest, CancellationToken, Task<TickResult>> stepAsync,
@@ -76,7 +77,7 @@ public sealed class PrismCoupledRunner
             throw new ArgumentOutOfRangeException(nameof(checkpointEvery));
         }
 
-        var result = new PrismCoupledRunResult { StartTick = startTick };
+        var result = new PrismCoupledRunResult { StartTick = startTick, Profile = _profile };
 
         if (startTick > 0 && !string.IsNullOrWhiteSpace(checkpointId) && _restoreCheckpointAsync is not null)
         {
@@ -91,8 +92,12 @@ public sealed class PrismCoupledRunner
             long tick = startTick + i;
             cancellationToken.ThrowIfCancellationRequested();
 
+            _profile?.BeginDecide(tick);
             var commands = _decide(tick, previousObservations);
+            _profile?.EndDecide(tick);
+
             TickResult tickResult;
+            _profile?.BeginStep();
             try
             {
                 tickResult = await _stepAsync(
@@ -127,8 +132,12 @@ public sealed class PrismCoupledRunner
                 AttributeFailures(commands, tickResult, tick);
             }
 
+            _profile?.EndStep();
+            _profile?.BeginApply();
+            int receivedChanges = 0;
             foreach (var envelope in tickResult.Observations)
             {
+                receivedChanges += ChangeCount(envelope.Changes);
                 // Le monde externe est mis à jour avant la cognition : la boucle
                 // couplée lit ainsi l'état du tick qu'elle vient de recevoir.
                 _onEnvelope?.Invoke(envelope, tick);
@@ -142,6 +151,8 @@ public sealed class PrismCoupledRunner
                 var mapped = PrismObservationMapper.ToObservations(prismObservation, _resourceSites, _itemCatalog);
                 _onObservations?.Invoke(envelope.AgentId, mapped, tick);
             }
+
+            _profile?.EndApply(tickResult.Observations.Count, receivedChanges);
 
             previousObservations = tickResult.Observations;
             result.TicksCompleted++;
@@ -161,6 +172,20 @@ public sealed class PrismCoupledRunner
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Nombre d'entrées du diff de perception d'une enveloppe. Ce compteur est
+    /// le premier suspect d'une dégradation : si PRISM renvoie un diff cumulatif
+    /// plutôt que le diff du tick, le flux grossit sans qu'aucun calcul ne change.
+    /// </summary>
+    private static int ChangeCount(System.Text.Json.JsonElement changes)
+    {
+        return changes.ValueKind == System.Text.Json.JsonValueKind.Object &&
+               changes.TryGetProperty("changes", out System.Text.Json.JsonElement array) &&
+               array.ValueKind == System.Text.Json.JsonValueKind.Array
+            ? array.GetArrayLength()
+            : 0;
     }
 
     private void AttributeFailures(
@@ -227,6 +252,9 @@ public sealed class PrismCoupledRunResult
 
     /// <summary>Tick associé au dernier checkpoint sauvegardé (le cas échéant).</summary>
     public long? LastCheckpointTick { get; set; }
+
+    /// <summary>Relevé de profilage du run (nul hors <c>SYNE_COUPLED_PROFILE</c>).</summary>
+    public PrismCoupledProfile? Profile { get; set; }
 
     public bool Succeeded => Failure is null;
 }

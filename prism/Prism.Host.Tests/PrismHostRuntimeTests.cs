@@ -361,7 +361,13 @@ public sealed class PrismHostRuntimeTests
                         "ObtenirObjet",
                         distantObtainPayload.RootElement.Clone()),
                 ]));
-            Assert.Contains(travelling.Events, static entry => entry.Kind == "macro_step_completed");
+            Assert.Contains(travelling.Events, static entry => entry.Kind == "action_completed");
+            // A Move step now completes only once the target is inside the action's adjacency cube
+            // (a single walked cell used to complete it and the next step fired from several
+            // blocks away), so the step event lands on a later tick, not on the starting one.
+            Assert.True(
+                AdvanceUntil(restored, static entry => entry.Kind == "macro_step_completed"),
+                "The restored obtain-object macro never completed a step.");
             restored.SaveCheckpoint("macro-checkpoint");
 
             var resumed = new PrismHostRuntime(checkpointStore: store, checkpointOnStop: false);

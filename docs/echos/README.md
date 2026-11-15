@@ -4,19 +4,18 @@
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
 [![7 moteurs](https://img.shields.io/badge/Moteurs-7-1f7f6f.svg)](METRICS_SPEC.md)
 [![API: REST 5000](https://img.shields.io/badge/API-REST%205000-1f7f6f.svg)](API_REST.md)
-[![Tests: 383](https://img.shields.io/badge/Tests-383-1f7f6f.svg)](TESTING.md)
-[![Couverture: 91,32 %](https://img.shields.io/badge/Couverture-91%2C32%25-1f7f6f.svg)](TESTING.md)
+[![Tests: 393](https://img.shields.io/badge/Tests-393-1f7f6f.svg)](TESTING.md)
+[![Couverture: 91,24 %](https://img.shields.io/badge/Couverture-91%2C24%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
 **Version** : 0.1.0
-**Dernière mise à jour** : 4 novembre 2026
-**Dépend de** : la documentation transversale (../), SYNE 0.17.0 (contrat d'observabilité 0.5.0)
+**Dernière mise à jour** : 15 novembre 2026
+**Dépend de** : la documentation transversale (../), SYNE 0.18.0 (contrat d'observabilité 0.6.0)
 **Source Monographie** : Partie 4
 
-Dernier résultat de suite connu : 383 réussis, 14 ignorés et 91,32 % de
-couverture le 19 octobre 2026. La suite n'a pas de relevé plus récent dans les
-sources consultées.
+Dernier résultat de suite connu : **393 réussis, 14 ignorés et 91,24 %** de
+couverture au **15 novembre 2026**.
 
 ---
 

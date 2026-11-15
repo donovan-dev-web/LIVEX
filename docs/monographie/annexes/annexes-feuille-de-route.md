@@ -1,15 +1,17 @@
 # Annexe L. Feuille de route
 
-> **Mise à jour au 4 novembre 2026.** Les jalons ci-dessous conservent la
-> feuille de route établie pour la coupe historique d'octobre. PRISM V2 a
-> depuis reçu une implémentation partielle : host, contrat `1.0.0`, actions,
-> contenu, bots, ingestion brute ECHOS et boucle SYNE exercée sur 1 000 ticks.
-> Le run couplé R2 de 5 000 ticks, la reprise partagée, les métriques ECHOS,
-> les validations de viabilité et le packaging V2 restent ouverts. Le
+> **Mise à jour au 15 novembre 2026.** Les jalons ci-dessous conservent la
+> feuille de route établie pour la coupe historique d'octobre. PRISM V2 a reçu
+> son socle : host, contrat `1.0.0`, actions, contenu, bots, ingestion brute
+> ECHOS, extraction achevée du monde SYNE et boucle couplée reproductible.
+> R2 (50 agents × 5 000 ticks) et R3 (100 agents × 5 000 ticks, porte G5) sont
+> franchies. Restent ouverts le viewer complet, l'ingestion ECHOS au cycle de
+> run, l'orchestration Launcher V2, les validations de plateforme et le
+> packaging V2. Le
 > [statut transversal actuel](../../governance/LIVEX-CURRENT-STATUS.md) donne
 > les preuves et leurs dates.
 
-Le livre décrit un état, arrêté au 12 octobre 2026. Cette annexe dit ce qui vient après, dans quel ordre, et selon quelle règle, sans poser de date. Les mises à jour de code et de gouvernance postérieures à cette coupe sont décrites séparément dans le [statut courant du dépôt](../../governance/LIVEX-STATUS.md); elles ne sont pas rétroprojetées dans les campagnes historiques du livre.
+Le livre décrit un état, arrêté au 12 octobre 2026. Cette annexe dit ce qui vient après, dans quel ordre, et selon quelle règle, sans poser de date. Les mises à jour de code et de gouvernance postérieures à cette coupe sont décrites séparément dans le [statut courant du dépôt](../../governance/LIVEX-CURRENT-STATUS.md); elles ne sont pas rétroprojetées dans les campagnes historiques du livre.
 
 **Pourquoi cette annexe importe.** Une feuille de route est l'endroit où un projet est le plus tenté de mentir : en transformant un souhait en étape, et une étape en acquis. La règle adoptée ici est inverse : ne figure ci-dessous que ce qui est **déjà instrumenté** par un jalon, une décision ou un test, ou ce qui est explicitement **hors périmètre**. Un projet qui publie ses intentions doit aussi publier ses refus.
 

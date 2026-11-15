@@ -1,14 +1,14 @@
 # SYNE — Systems & Emergent Network Engine
 
-[![Version: 0.17.0](https://img.shields.io/badge/Version-0.17.0-1f7f6f.svg)](CHANGELOG.md)
+[![Version: 0.18.0](https://img.shields.io/badge/Version-0.18.0-1f7f6f.svg)](CHANGELOG.md)
 [![Statut: STABLE](https://img.shields.io/badge/Statut-STABLE-00d4a0.svg)](README.md)
-[![Tests: 708](https://img.shields.io/badge/Tests-708-1f7f6f.svg)](TESTING.md)
-[![Couverture: 81,19 %](https://img.shields.io/badge/Couverture-81%2C19%25-1f7f6f.svg)](TESTING.md)
+[![Tests: 813](https://img.shields.io/badge/Tests-813-1f7f6f.svg)](TESTING.md)
+[![Couverture: 81,19 % (V1)](https://img.shields.io/badge/Couverture-81%2C19%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : SYNE
 **Statut** : [STABLE]
-**Version moteur** : 0.17.0 (contrat d'observabilité 0.5.0)
-**Dernière mise à jour** : 4 novembre 2026
+**Version moteur** : 0.18.0 (contrat d'observabilité 0.6.0) sur la branche V2 ; la release V1 reste 0.17.0 / contrat 0.5.0
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : la documentation transversale (../)
 **Source Monographie** : Partie 3, 7.2, 7.3.1
 
@@ -21,10 +21,12 @@ Dans le mode historique V1, il détient l'ensemble du monde. Dans le couplage
 PRISM V2, PRISM porte l'état physique et SYNE traite les décisions cognitives :
 les commandes partent vers PRISM, puis son adaptateur transforme les
 observations reçues en croyances SYNE. La boucle couplée et l'application de
-ces observations sont implémentées et le transport a été exercé sur 1 000
-ticks. L'extraction complète du monde historique de SYNE vers PRISM n'est pas
-terminée ; les deux modes doivent donc rester distingués dans les descriptions
-et les résultats.
+ces observations sont implémentées ; le transport a été exercé sur 1 000 ticks,
+puis R2 (5 000 ticks) est devenu reproductible et R3 (100 agents) est produit.
+L'extraction du monde historique de SYNE vers PRISM est achevée :
+`Simulation.Core` ne contient plus de classes de monde et `PrismWorldAdapter`
+est l'unique implémentation de `IWorld`. Les deux modes — V1 autonome et V2
+couplé — restent distingués dans les descriptions et les résultats.
 
 Le répertoire séparé [`syne-mock`](../../syne-mock/) à la racine contient un
 serveur Node.js destiné au développement et aux tests des clients V1 sans lancer
@@ -74,7 +76,7 @@ et ne doivent pas être supposés fixes.
 | `CONFIGURATION.md` | Config, flags, paramétrages |
 | `API_CONTRACTS.md` | Contrats de transport (WS/HTTP) |
 | `PERFORMANCE.md` | Scalabilité, budget de tick, benchmarks |
-| `TESTING.md` | Plan de tests (634 tests, couverture 87,4 %) |
+| `TESTING.md` | Plan de tests (813 tests au 15 novembre 2026) |
 | `ROADMAP.md` | Roadmap SYNE |
 | `CHANGELOG.md` | Versions |
 | `adr` | Décisions d'architecture |

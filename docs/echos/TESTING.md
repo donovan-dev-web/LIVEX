@@ -2,7 +2,7 @@
 
 **Composant** : ECHOS
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 31 octobre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `METRICS_SPEC.md`, `REFERENCE_SCENARIOS.md`
 **Source Monographie** : §4.9.2 (instrumentation du prototype V1), Annexe I.3 (couverture ≥ 80 %)
 
@@ -12,11 +12,10 @@
 
 Garantir la **correction et la stabilité des métriques**. Objectif de couverture : **≥ 80 %** (Annexe I.3).
 
-Dernier résultat d'exécution consigné, le **19/10/2026** : **397 cas** (383 réussis,
-14 ignorés, 0 échec), couverture **91,32 %** (`pytest-cov`). Les tests d'intégration
-SYNE et `syne-mock` sont compris parmi les 14 ignorés. Ce résultat est daté et n'a
-pas été relancé lors de la mise à jour documentaire du 31/10. Voir l'inventaire
-global dans [`../governance/LIVEX-STATUS.md`](../governance/LIVEX-STATUS.md#4-inventaire-des-tests).
+Dernier résultat d'exécution consigné, le **15/11/2026** : **407 cas** (393 réussis,
+14 ignorés, 0 échec), couverture **91,24 %** (`pytest-cov`). Les tests d'intégration
+SYNE et `syne-mock` sont compris parmi les 14 ignorés. Voir l'inventaire
+global dans [`../governance/LIVEX-CURRENT-STATUS.md`](../governance/LIVEX-CURRENT-STATUS.md#comptabilité-des-tests--total-projet).
 
 ## 2. Référence validée dans le prototype V1 (Annexe §4.9.2)
 

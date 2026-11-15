@@ -69,8 +69,7 @@ Décrit SYNE, ECHOS et PRISM, avec un miroir anglais `COMPONENTS_EN` (mêmes
 | :-- | :-- |
 | SYNE | Systems & Emergent Network Engine |
 | ECHOS | Emergent Cognition & Holistic Observation System |
-| PRISM V1 | Perceptual Rendering & Interactive Simulation Module |
-| PRISM V2 | Persistent Reality & Interactive Simulation Module |
+| PRISM V1 et V2 | Perceptual Rendering & Interactive Simulation Module (même sigle : projet Unreal en V1, autorité .NET headless en V2) |
 
 ### 3.1 Statuts (`StatusId`)
 

@@ -36,7 +36,7 @@ public class TickBudgetTests
     private static SimulationLoop Build(ulong seed, ulong count, TickBudgetCollector? budget)
     {
         SimulationOptions options = Options(seed);
-        var world = new Simulation.Core.World.World(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
+        var world = new Simulation.Core.World.PrismWorldAdapter(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
         for (ulong i = 1; i <= count; i++)
         {
@@ -104,7 +104,7 @@ public class TickBudgetTests
     private static SimulationLoop BuildGolden(ulong seed, TickBudgetCollector? budget)
     {
         SimulationOptions options = Options(seed);
-        var world = new Simulation.Core.World.World(WorldSize.From(options), spatialCellSize: 50);
+        var world = new Simulation.Core.World.PrismWorldAdapter(WorldSize.From(options), spatialCellSize: 50);
         world.AddObstacle(new Obstacle("rocher-1", new Position(250, 150), radius: 15));
         world.AddObstacle(new Obstacle("rocher-2", new Position(420, 380), radius: 25));
 

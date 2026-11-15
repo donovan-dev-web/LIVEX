@@ -13,8 +13,15 @@ public sealed class OrderedWorldHost : ICheckpointableWorldHost
     private static readonly bool TickProfiling =
         Environment.GetEnvironmentVariable("PRISM_TICK_PROFILE") == "1";
 
+    /// <summary>
+    /// Relevé JSONL par tick (<c>PRISM_BENCHMARK_JSON</c>) : la forme rejouable en
+    /// CI de la même mesure (PRISM-106). Nul quand il n'est pas demandé.
+    /// </summary>
+    private static readonly TickBenchmarkRecorder? BenchmarkRecorder = TickBenchmarkRecorder.Current;
+
     private readonly object _gate = new();
     private readonly IReadOnlyList<IWorldTickPhaseHandler> _phases;
+    private readonly IPathfindingMetricsSource? _pathfindingSource;
     private long _lastCompletedTick = -1;
     private bool _faulted;
     private bool _stepping;
@@ -37,6 +44,7 @@ public sealed class OrderedWorldHost : ICheckpointableWorldHost
         }
 
         _phases = registeredPhases.OrderBy(static handler => handler.Phase).ToArray();
+        _pathfindingSource = registeredPhases.OfType<IPathfindingMetricsSource>().FirstOrDefault();
     }
 
     public long LastCompletedTick
@@ -146,7 +154,20 @@ public sealed class OrderedWorldHost : ICheckpointableWorldHost
                 throw new InvalidOperationException("A world tick cannot be started recursively.");
             }
 
+            bool measuring = TickProfiling || BenchmarkRecorder is not null;
+            long stepStarted = measuring ? Stopwatch.GetTimestamp() : 0;
+            BenchmarkRecorder?.BeginTick(request.Tick);
+            long roundtripStarted = stepStarted;
+            long requestAllocatedStart = measuring
+                ? GC.GetTotalAllocatedBytes(precise: false)
+                : 0;
             request = ProtocolJson.Deserialize<TickRequest>(ProtocolJson.Serialize(request));
+            double roundtripMs = TickProfiling
+                ? (Stopwatch.GetTimestamp() - roundtripStarted) * 1000.0 / Stopwatch.Frequency
+                : 0.0;
+            BenchmarkRecorder?.RecordRequest(
+                roundtripMs,
+                measuring ? GC.GetTotalAllocatedBytes(precise: false) - requestAllocatedStart : 0);
             var expectedTick = checked(_lastCompletedTick + 1);
             if (request.Tick != expectedTick)
             {
@@ -156,6 +177,7 @@ public sealed class OrderedWorldHost : ICheckpointableWorldHost
             }
 
             var context = new WorldTickContext(request);
+            var pathfindingAtStart = _pathfindingSource?.PathfindingTotals ?? default;
             var completed = false;
             var worldExecutionStarted = false;
             _stepping = true;
@@ -168,20 +190,82 @@ public sealed class OrderedWorldHost : ICheckpointableWorldHost
                         worldExecutionStarted = true;
                     }
 
-                    if (!TickProfiling)
+                    if (!measuring)
                     {
                         phase.Execute(context);
                         continue;
                     }
 
+                    long phaseAllocatedStart = GC.GetTotalAllocatedBytes(precise: false);
                     var phaseStarted = Stopwatch.GetTimestamp();
                     phase.Execute(context);
-                    Console.Error.WriteLine(
-                        $"[profile] phase {phase.Phase}: {Stopwatch.GetElapsedTime(phaseStarted).TotalMilliseconds:F1} ms");
+                    double phaseMs = Stopwatch.GetElapsedTime(phaseStarted).TotalMilliseconds;
+                    long phaseAllocated = GC.GetTotalAllocatedBytes(precise: false) - phaseAllocatedStart;
+                    BenchmarkRecorder?.RecordPhase(phase.Phase, phaseMs, phaseAllocated);
+                    if (TickProfiling)
+                    {
+                        Console.Error.WriteLine(string.Create(
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            $"[profile] phase {phase.Phase}: {phaseMs:F1} ms, {phaseAllocated / 1024 / 1024.0:F1} Mo"));
+                    }
                 }
 
+                long resultStarted = measuring ? Stopwatch.GetTimestamp() : 0;
+                long outputAllocatedStart = measuring
+                    ? GC.GetTotalAllocatedBytes(precise: false)
+                    : 0;
                 var result = context.CreateResult();
-                ProtocolJson.Serialize(result);
+                // Une seule sérialisation, en octets : c'est le corps de réponse de
+                // la pagination, et c'est la mesure. La chaîne intermédiaire coûtait
+                // une passe complète d'encodage et ~82 Mo à 1 000 agents (PRISM-141).
+                byte[] payload = ProtocolJson.SerializeToUtf8Bytes(result);
+                result = result with { SerializedUtf8 = payload };
+                double resultMs = measuring
+                    ? (Stopwatch.GetTimestamp() - resultStarted) * 1000.0 / Stopwatch.Frequency
+                    : 0.0;
+                long outputAllocated = measuring
+                    ? GC.GetTotalAllocatedBytes(precise: false) - outputAllocatedStart
+                    : 0;
+                BenchmarkRecorder?.RecordOutput(
+                    resultMs,
+                    payload.Length,
+                    result.Observations.Count,
+                    result.Events.Count,
+                    outputAllocated);
+                var pathfinding = _pathfindingSource is null
+                    ? default
+                    : _pathfindingSource.PathfindingTotals - pathfindingAtStart;
+                BenchmarkRecorder?.RecordPathfinding(pathfinding);
+                if (TickProfiling && _pathfindingSource is not null)
+                {
+                    Console.Error.WriteLine(string.Create(
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        $"[profile] pathfinding tick {request.Tick}: {pathfinding.Searches} recherche(s), " +
+                        $"{pathfinding.CacheHits} cache, {pathfinding.CacheInvalidations} périmée(s), " +
+                        $"{pathfinding.ExpandedNodes} nœuds, {pathfinding.FailedSearches} échec(s), " +
+                        $"{pathfinding.BudgetExhaustedSearches} budget(s) épuisé(s)"));
+                }
+
+                if (measuring)
+                {
+                    BenchmarkRecorder?.CompleteTick(
+                        request.Tick,
+                        (Stopwatch.GetTimestamp() - stepStarted) * 1000.0 / Stopwatch.Frequency);
+                }
+
+                if (TickProfiling)
+                {
+                    // Ligne compacte : le total du tick dit si le coût restant est
+                    // dans le protocole (aller-retour de requête, sérialisation et
+                    // taille de la réponse) plutôt que dans les phases du monde.
+                    double stepMs = (Stopwatch.GetTimestamp() - stepStarted) * 1000.0 / Stopwatch.Frequency;
+                    Console.Error.WriteLine(string.Create(
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        $"[profile] tick {request.Tick} total {stepMs:F1} ms (requête {roundtripMs:F1}, " +
+                        $"résultat {resultMs:F1}, {payload.Length} octets, {result.Observations.Count} obs, " +
+                        $"{result.Events.Count} évén.)"));
+                }
+
                 _lastCompletedTick = request.Tick;
                 completed = true;
                 return result;

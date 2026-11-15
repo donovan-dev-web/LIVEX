@@ -1,8 +1,8 @@
 # ARCHITECTURE — PRISM (V2)
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — NON IMPLÉMENTÉ]
-**Dernière mise à jour** : 3 novembre 2026
+**Statut** : [IMPLÉMENTATION EN COURS — SOCLES P2 À P11 EN PLACE ; P12/P13 À FAIRE]
+**Dernière mise à jour** : 11 novembre 2026
 **Dépend de** : [`VISION.md`](VISION.md), [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md), [`API_CONTRACTS.md`](API_CONTRACTS.md)
 **Source Monographie** : —
 
@@ -55,8 +55,38 @@ Règles de dépendance : `Core` ← `Content` ← `Host` ; `Viewer` ne référen
 
 1. **Entrée** : `TickRequest(t, commands[])` de SYNE (ou `IWorldHost.Step`).
 2. **Traitement** : l'ordre fixe de [`SIMULATION_LOOP.md`](SIMULATION_LOOP.md) §2.
-3. **Sortie** : `TickResult(t, observations[], events[], worldChecksum?)` à SYNE.
+3. **Sortie** : `TickResult(t, observations[], events[], worldChecksum?)` à SYNE, dans une réponse bornée (voir §4.1).
 4. **Lecture** : après le tick, les chunks modifiés (*dirty*) et les métriques sont publiés pour ECHOS et le visualiseur ; l'instantané complet est envoyé à la connexion, puis des deltas.
+
+### 4.1 Protocole de réponse par tick : plafond et pagination (ADR-014)
+
+Aucune réponse de tick ne dépasse **8 Mio** (8 388 608 octets, enveloppes
+comprises). La taille d'**une** réponse ne dépend donc jamais du nombre d'agents,
+ni du nombre d'écritures d'un tick.
+
+| Cas | Forme de la réponse |
+| :-- | :-- |
+| Le tick tient sous le plafond | `TickResult(protocolVersion, tick, observations[], events[])` — **inchangé** |
+| Le tick dépasse le plafond | `TickPageEnvelope(protocolVersion, tick, page{index, pageCount, complete, cursor?}, chunk{observations[], events[]})` |
+
+- Les pages sont des **tranches contiguës** du flux (observations puis événements,
+  dans l'ordre publié) : les concaténer par `index` redonne le `TickResult`
+  d'origine à l'octet près. Le découpage ne dépend ni du temps, ni d'un ordre
+  d'itération de dictionnaire.
+- `pageCount` est connu dès la fin du tick : un lecteur prouve qu'il a tout reçu,
+  et un chaînage incomplet est une erreur, jamais une lecture partielle.
+- Suite de la lecture : `GET /data/tick/result?cursor=…`, en lecture seule (le
+  monde n'avance pas). Les pages d'un tick restent valables jusqu'au tick suivant
+  (`page_expired`, 409) ; un curseur illisible est refusé (`page_invalid`, 409).
+- Le contenu est sous `chunk`, jamais à la racine : une page **ne peut pas** être
+  désérialisée comme un `TickResult`, donc un client qui ignore la pagination
+  échoue au lieu d'appliquer un tick partiel.
+- Un élément seul plus gros que le plafond ne peut pas être découpé : l'hôte
+  répond `413 payload_too_large` avec la taille fautive et n'envoie aucun corps
+  partiel. La liaison lockstep WebSocket, qui ne pagine pas, refuse de la même
+  façon (`{ error: "payload_too_large" }`).
+- Contrat détaillé : [`API_CONTRACTS.md`](API_CONTRACTS.md) §2.1 ; décision et
+  alternatives écartées : [`adr/ADR-014`](adr/ADR-014-plafond-reponse-tick-pagination.md).
 
 ## 5. Cycle de vie
 
@@ -96,5 +126,6 @@ Voir [`adr/README.md`](adr/README.md) §3 (Q-01, Q-05).
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 11 novembre 2026 | §4.1 : plafond de 8 Mio par réponse de tick et pagination à curseur (`TickPageEnvelope`, `GET /data/tick/result`) ; dépassement insécable refusé en `413 payload_too_large` | PRISM-142, ADR-014 |
 | 3 novembre 2026 | Arborescence des tests complétée (14 projets) ; manifeste viewer signalé comme restant à produire | Audit de cohérence avec le code |
 | 1er novembre 2026 | Création | Refonte V2 |

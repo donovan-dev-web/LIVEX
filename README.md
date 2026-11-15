@@ -6,16 +6,16 @@
 
 <a href="docs/syne/README.md"><img alt="SYNE · simulation" src="https://img.shields.io/badge/SYNE-simulation-3fb8ea?style=plastic" /></a>
 <a href="docs/echos/README.md"><img alt="ECHOS · observation" src="https://img.shields.io/badge/ECHOS-observation-a97bff?style=plastic" /></a>
-<a href="docs/prism/README.md"><img alt="PRISM V2 · implémentation en cours" src="https://img.shields.io/badge/PRISM%20V2-impl%C3%A9mentation%20en%20cours-f0a846?style=plastic" /></a>
+<a href="docs/prism/README.md"><img alt="PRISM V2 · intégration en cours" src="https://img.shields.io/badge/PRISM%20V2-int%C3%A9gration%20en%20cours-f0a846?style=plastic" /></a>
 
 [![Version globale 1.0.0](https://img.shields.io/badge/LIVEX-1.0.0-315c9b?labelColor=090C16)](VERSIONING.md)
 [![Licence GPLv3](https://img.shields.io/badge/Licence-GPLv3-216e5a?logo=gplv3&logoColor=BD0000&labelColor=090C16)](LICENSE)
-[![Moteur SYNE 0.17.0](https://img.shields.io/badge/SYNE-0.17.0-3fb8ea?labelColor=090C16)](syne/component.json)
-[![Contrat d’observabilité 0.5.0](https://img.shields.io/badge/Contrat-0.5.0-a97bff?labelColor=090C16)](docs/syne/API_CONTRACTS.md)
+[![Moteur SYNE 0.18.0](https://img.shields.io/badge/SYNE-0.18.0-3fb8ea?labelColor=090C16)](syne/component.json)
+[![Contrat d’observabilité 0.6.0](https://img.shields.io/badge/Contrat-0.6.0-a97bff?labelColor=090C16)](docs/syne/API_CONTRACTS.md)
 
 [![CI](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/donovan-dev-web/LIVEX/actions/workflows/ci.yml)
-[![Tests release: 1 566 réussis](https://img.shields.io/badge/Tests_release-1566%20réussis-orange)](docs/governance/LIVEX-STATUS.md#4-inventaire-des-tests)
-[![Couverture de tests: 81,20 %](https://img.shields.io/badge/Couverture_de_tests-81%2C20%25-blue)](docs/governance/LIVEX-STATUS.md#couverture)
+[![Tests projet: 2 093 réussis](https://img.shields.io/badge/Tests_projet-2093%20réussis-orange)](docs/governance/LIVEX-CURRENT-STATUS.md#comptabilité-des-tests--total-projet)
+[![Couverture ECHOS: 91,24 %](https://img.shields.io/badge/Couverture_ECHOS-91%2C24%25-blue)](docs/echos/README.md)
 
 **[Site web](https://donovan-dev-web.github.io/LIVEX/)** &nbsp;·&nbsp; **[Le projet](#le-projet)** &nbsp;·&nbsp; **[Architecture](#architecture)** &nbsp;·&nbsp; **[Performances](#performances)** &nbsp;·&nbsp; **[Démarrage](#démarrage-rapide)** &nbsp;·&nbsp; **[Documentation](#documentation)** &nbsp;·&nbsp; **[Contribuer](#contribuer)**
 
@@ -58,7 +58,7 @@ Le moteur fait évoluer des entités autonomes dans un monde régi par des règl
 <a id="architecture"></a>
 <img src="docs/assets/h-architecture.svg" alt="Architecture" width="80%" />
 
-LIVEX repose sur SYNE (cognition), PRISM (monde physique) et ECHOS (observation et analyse), reliés par des contrats explicites. LIVEX 1.0.0 est la release publique V1 : SYNE y détient le monde et PRISM/Unreal le représente. PRISM V2 est maintenant en cours d'implémentation comme simulation .NET headless autoritaire. Son host exécute déjà le monde, plusieurs chaînes d'actions et les échanges avec SYNE ; la boucle couplée a été exercée sur 1 000 ticks. L'extraction complète du monde SYNE, le run R2 de 5 000 ticks, l'ingestion analytique ECHOS en production, le viewer live et le packaging V2 restent à achever. Les résultats V1 et V2 sont distingués dans le [statut transversal actuel](docs/governance/LIVEX-CURRENT-STATUS.md).
+LIVEX repose sur SYNE (cognition), PRISM (monde physique) et ECHOS (observation et analyse), reliés par des contrats explicites. LIVEX 1.0.0 est la release publique V1 : SYNE y détient le monde et PRISM/Unreal le représente. PRISM V2 est maintenant en cours d'implémentation comme simulation .NET headless autoritaire. Son host exécute le monde, les cinq chaînes d'actions et les échanges avec SYNE ; la boucle couplée est reproductible (R2 sur 5 000 ticks, R3 sur 100 agents) et **G5 est franchie**. Restent à achever : le viewer live complet (P11), l'ingestion analytique ECHOS en production, le raccordement du Launcher et de l'installateur aux artefacts V2, et la preuve interplateforme (G2). Les résultats V1 et V2 sont distingués dans le [statut transversal actuel](docs/governance/LIVEX-CURRENT-STATUS.md).
 
 <div align="center">
 
@@ -91,9 +91,9 @@ flowchart LR
 
 | Composant | Rôle | Responsabilité |
 |:--|:--|:--|
-| **SYNE**<br/><sub>*Systems & Emergent Network Engine*</sub> | Cognition multi-agents | En couplage V2, porte besoins, croyances, mémoire, relations, groupes et décisions ; émet des commandes et applique les observations PRISM. L'extraction du monde historique reste en cours. |
+| **SYNE**<br/><sub>*Systems & Emergent Network Engine*</sub> | Cognition multi-agents | En couplage V2, porte besoins, croyances, mémoire, relations, groupes et décisions ; émet des commandes et applique les observations PRISM. L'extraction du monde historique est achevée : `PrismWorldAdapter` est la seule implémentation de `IWorld`. |
 | **ECHOS**<br/><sub>*Emergent Cognition & Holistic Observation System*</sub> | Observation et analyse | Ingestion SYNE disponible ; valide et stocke aussi les enveloppes du flux PRISM. L'analyse et le cycle de production ECHOS pour les runs PRISM restent à raccorder. |
-| **PRISM**<br/><sub>*Persistent Reality & Interactive Simulation Module (V2)*</sub> | Monde physique autoritaire | Simulation .NET headless en cours d'intégration : monde 2,5D, matière, actions, navigation, temps physique et structures. Le viewer Silk.NET/OpenGL est facultatif ; son client live n'est pas encore câblé au lancement. |
+| **PRISM**<br/><sub>*Perceptual Rendering & Interactive Simulation Module (V2)*</sub> | Monde physique autoritaire | Simulation .NET headless en cours d'intégration : monde 2,5D, matière, actions, navigation, temps physique et structures. Le viewer Silk.NET/OpenGL est facultatif ; son client live n'est pas encore câblé au lancement. |
 
 ### Les outils
 
@@ -107,7 +107,7 @@ flowchart LR
 
 Les applications communiquent par des interfaces réseau documentées, indépendantes de leurs langages et de leurs frameworks.
 
-- **Contrat SYNE↔PRISM 1.0.0** : commandes SYNE→PRISM, observations et événements PRISM→SYNE, et flux de lecture PRISM→ECHOS / visualiseur. La boucle couplée a été exercée sur 1 000 ticks ; R2 reste à valider sur 5 000 ticks répétés.
+- **Contrat SYNE↔PRISM 1.0.0** : commandes SYNE→PRISM, observations et événements PRISM→SYNE, et flux de lecture PRISM→ECHOS / visualiseur. R2 est validé sur 5 000 ticks répétés (`0bf833f4bcfc1e5e` × 3 hôtes) et R3 sur 100 agents × 5 000 ticks (`855fdc2e1387e8d3` × 2 passes).
 - **Plan de contrôle HTTP** : préparation et cycle de vie du run ; le plan de données de tick est indépendant du transport.
 - **Contrats versionnés** : ils cadrent l’évolution des composants et la compatibilité des messages.
 

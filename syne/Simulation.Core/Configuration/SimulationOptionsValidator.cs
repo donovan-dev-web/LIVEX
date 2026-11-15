@@ -586,6 +586,41 @@ public static partial class SimulationOptionsValidator
         {
             errors.Add("agents.desires.instrumental.enabled exige agents.actions.inventory.enabled : une réserve de nourriture n'existe pas sans inventaire.");
         }
+
+        ProductionSettings production = options.Agents.Desires.Production;
+        if (production.Enabled && production.Goals.Count == 0)
+        {
+            errors.Add("agents.desires.production.enabled exige au moins un objectif dans agents.desires.production.goals.");
+        }
+
+        var goals = new HashSet<string>(StringComparer.Ordinal);
+        for (int index = 0; index < production.Goals.Count; index++)
+        {
+            string goal = production.Goals[index];
+            if (string.IsNullOrWhiteSpace(goal))
+            {
+                errors.Add($"agents.desires.production.goals[{index}] ne doit pas être vide.");
+            }
+            else if (!goals.Add(goal))
+            {
+                errors.Add($"agents.desires.production.goals définit deux fois \"{goal}\" — un objectif n'a de sens qu'une fois.");
+            }
+        }
+
+        if (!double.IsFinite(production.Benefit) || production.Benefit < 0.0)
+        {
+            errors.Add($"agents.desires.production.benefit doit être un nombre fini >= 0 (reçu : {production.Benefit}).");
+        }
+
+        if (production.MaxPlanNodes < 1)
+        {
+            errors.Add($"agents.desires.production.maxPlanNodes doit être >= 1 (reçu : {production.MaxPlanNodes}).");
+        }
+
+        if (production.RetryTicks < 0)
+        {
+            errors.Add($"agents.desires.production.retryTicks doit être >= 0 (reçu : {production.RetryTicks}).");
+        }
     }
 
     private static void ValidateKnowledge(SimulationOptions options, List<string> errors)

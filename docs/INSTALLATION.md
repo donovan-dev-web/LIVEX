@@ -2,10 +2,10 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `governance/ROADMAP.md`, `COMMUNICATION.md`
 
-> **Versions courantes** : moteur **SYNE 0.17.0** (défauts intégrés calibrés B1,
+> **Versions de la release V1 (référence datée)** : moteur **SYNE 0.17.0** (défauts intégrés calibrés B1,
 > ADR-016, profil de référence ADR-015 — voir
 > `syne/adr/ADR-016-calibration-stabilite-2500-ticks.md`),
 > contrat d'observabilité SYNE **0.5.0** (champ `seed` et `simulatedTimeSeconds`
@@ -13,13 +13,19 @@
 > format canonique des runs pilotés `run-<seed>-<12hex>`), stockage d'analyse
 > ECHOS **schéma v6**. Les versions évoluent indépendamment par composant
 > (`../VERSIONING.md`).
+>
+> **Développement courant (branche V2, 15 novembre 2026)** : SYNE est en
+> **0.18.0** avec le contrat d'observabilité **0.6.0** ; PRISM V2 vise `2.0.0`
+> et le contrat SYNE↔PRISM `1.0.0`. Les chiffres de la release V1 ci-dessus ne
+> décrivent donc pas l'arbre de travail : voir
+> [`governance/LIVEX-CURRENT-STATUS.md`](governance/LIVEX-CURRENT-STATUS.md).
 
 LIVEX **1.0.0** est également disponible en installateurs Windows et Linux dans la [release publique](https://github.com/donovan-dev-web/LIVEX/releases/tag/livex-v1.0.0). Pour installer la version publiée, suivez le [guide utilisateur de l'installateur](installer/GUIDE-UTILISATEUR.md). Ce guide-ci décrit le démarrage local depuis les sources de **SYNE**, **ECHOS**, `syne-mock` et du **Launcher**.
 
 > **Deux versions PRISM coexistent dans la documentation.** PRISM V1/PRISM-LDK
 > est le projet Unreal historique de la release 1.0.0. PRISM V2 est une
-> simulation .NET headless en cours d'intégration ; elle constitue la voie de
-> développement actuelle. Le guide Unreal ci-dessous ne concerne que V1.
+> simulation .NET headless dont le socle est implémenté ; elle constitue la voie
+> de développement actuelle. Le guide Unreal ci-dessous ne concerne que V1.
 
 ## Prérequis
 
@@ -80,7 +86,8 @@ Le mode viewer ouvre un aperçu autonome ; il n'affiche pas encore une session
 PRISM live par défaut. Pour son lancement et les exigences du système
 graphique, consulter [`../prism/README.md`](../prism/README.md). Le couplage
 SYNE utilise le paramètre `--prism-url` dans le CLI SYNE ; son transport a été
-exercé sur 1 000 ticks, tandis que le run R2 de 5 000 ticks reste à réaliser.
+exercé sur 1 000 ticks, puis R2 (5 000 ticks) est reproductible et R3
+(100 agents × 5 000 ticks) est produit.
 
 ## PRISM V1 et son plugin PRISM-LDK (historique)
 
@@ -94,8 +101,8 @@ technique utilisé pour ouvrir/compiler/tester le plugin. Il n'est ni le projet
 LIVEX complet ni un second produit. PRISM-LDK expose les contrats et événements
 utiles à Blueprint, et garde le C++ au minimum pour la connexion, le transport
 et la conversion des messages. Pour l'ordre d'initialisation du monde et le
-câblage des événements, suivre
-[`prism/PRISM_UNREAL_IMPLEMENTATION.md`](prism/PRISM_UNREAL_IMPLEMENTATION.md).
+câblage des événements du host V2, suivre
+[`prism/ARCHITECTURE.md`](prism/ARCHITECTURE.md).
 
 ### Démarrage complet : SYNE, ECHOS et interface d’analyse
 

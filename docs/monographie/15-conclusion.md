@@ -1,5 +1,11 @@
 # Chapitre 15. Conclusion
 
+> **Instantané daté.** Ce chapitre clôt l'édition arrêtée au 4 novembre 2026.
+> Depuis, R2 et R3 sont franchies, l'extraction du monde SYNE est achevée et
+> cinq chaînes de production sont jouées par les agents. Les constats
+> ci-dessous restent ceux de la date indiquée ; l'état courant est tenu dans
+> [`../governance/LIVEX-CURRENT-STATUS.md`](../governance/LIVEX-CURRENT-STATUS.md).
+
 La question était : peut-on construire un environnement virtuel régi par des lois fondamentales, au sein duquel des entités autonomes peuvent produire des comportements et des structures qui n'ont pas été explicitement programmés ? Ce livre n'a pas répondu oui, et il n'a pas répondu non. Il a montré comment la question est devenue un système qui tourne, et ce que ce système permet honnêtement d'affirmer.
 
 Une conclusion de projet technique prend souvent la forme d'un bilan triomphal. Ce livre refuse ce ton, non par fausse modestie, mais parce qu'un bilan triomphal trahirait la question. La question n'était pas « peut-on construire un système impressionnant ? » ; elle était « peut-on construire un environnement où des comportements non programmés apparaissent, et le démontrer honnêtement ? ». La seconde partie de la question, la démonstration honnête, est aussi exigeante que la première.
@@ -8,7 +14,7 @@ Une conclusion de projet technique prend souvent la forme d'un bilan triomphal. 
 
 Le projet a produit une plateforme expérimentale en temps réel. Ses responsabilités existent dans deux architectures qu'il faut distinguer : la release V1 publiée et l'intégration PRISM V2 en cours.
 
-- **SYNE décide.** En V1, un moteur autonome et autoritaire, déterministe, persistant, indépendant du rendu. En V2 couplé, SYNE porte la cognition, applique aux croyances les observations PRISM et envoie les commandes ; l'extraction complète de son monde historique reste à faire.
+- **SYNE décide.** En V1, un moteur autonome et autoritaire, déterministe, persistant, indépendant du rendu. En V2 couplé, SYNE porte la cognition, applique aux croyances les observations PRISM et envoie les commandes ; l'extraction de son monde historique est achevée depuis (voir la note en tête de chapitre).
 - **ECHOS mesure sans toucher.** Un observatoire headless qui analyse les flux SYNE. Son ingestion PRISM V2 sait valider et stocker les enveloppes brutes ; le cycle de run et les métriques restent à raccorder.
 - **PRISM V1 montrait ; PRISM V2 simule.** La release 1.0.0 incluait Unreal et le plugin PRISM-LDK. La V2 est un host .NET qui porte le monde physique, avec rendu facultatif.
 - **Le Launcher archive sans relayer.** Un orchestrateur de bureau livré en V1 ; le cycle complet d'orchestration PRISM V2 reste à intégrer.

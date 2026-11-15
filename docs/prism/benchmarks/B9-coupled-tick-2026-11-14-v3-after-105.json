@@ -1,0 +1,495 @@
+{
+  "schema": "livex.prism.coupled-tick-benchmark.v1",
+  "runVersion": 1,
+  "generatedAtUtc": "2026-11-14T08:52:09Z",
+  "seed": 7,
+  "contentHash": "793A8996297CF2562ABB112F638995BAD8D40CD843CE8CA4608712257F04AA82",
+  "protocol": {
+    "contentDir": "prism/content/minimal",
+    "production": [
+      "stone_pickaxe",
+      "chest",
+      "wooden_bucket",
+      "stone_hoe",
+      "furnace"
+    ],
+    "runsPerScenario": 3,
+    "warmupRunsPerScenario": 1,
+    "highPriorityProcesses": true,
+    "varianceThresholdPct": 10.0,
+    "varianceDefinition": "(max - min) / mediane des medianes de run, en % (publie)",
+    "reproducibilityMetric": "erreur-type relative des medianes de run : ecart-type / sqrt(n) / mediane, en %",
+    "varianceGatedOn": "phases publiees (perception, pathfinding, macros, writes, total)",
+    "p95Definition": "interpolation lineaire sur les ticks mesures de chaque run, puis mediane des runs",
+    "excludedTicksPerRun": "tick 0 (caches froids) et dernier tick (arret du run)",
+    "checkpointOnStop": false,
+    "checkpointOnStopReason": "le checkpoint d'arret n'est pas un cout de tick ; a 1 000 agents sa serialisation depasse la limite JSON de 125 Mo et ferait echouer le run",
+    "phases": {
+      "perception": "phase Perception du monde",
+      "pathfinding": "phase ApplyWrites (recherche de chemin et application des ecritures differees)",
+      "macros": "phase AdvanceMacroActions",
+      "writes": "duree cumulee des ecritures differees, sous-ensemble d'ApplyWrites",
+      "updates": "somme des phases ScheduledUpdates, RandomUpdates, WearExpiryAndConstruction, Calendar",
+      "transport": "appel /data/tick cote client moins le tick du monde cote hote",
+      "total": "duree du tick du monde (toutes phases + serialisation du resultat)",
+      "roundTrip": "appel /data/tick cote client (transport + handler complet de l'hote)"
+    },
+    "budgetsFrom": "docs/prism/PERFORMANCE.md §2 (1000 agents) et §1 (100 agents)"
+  },
+  "provenance": {
+    "gitCommit": "34e6ba5",
+    "gitBranch": "Feat-Refonte-PRISM-V2",
+    "workingTreeDirty": true,
+    "dotnet": "10.0.404",
+    "platform": "win32",
+    "python": "3.12.10",
+    "cpus": 12,
+    "host": "prism/Prism.Host (Release), PRISM_BENCHMARK_JSON",
+    "client": "syne/Simulation.Console (Release), SYNE_COUPLED_PROFILE_JSON"
+  },
+  "scenarios": [
+    {
+      "agents": 100,
+      "ticks": 25,
+      "runs": 3,
+      "measuredTicksPerRun": [
+        23,
+        23,
+        23
+      ],
+      "excludedTicks": {
+        "firstTick": 0,
+        "lastTick": 24,
+        "reason": "caches froids et checkpoint d'arret"
+      },
+      "fingerprints": [
+        "fbd59443744b0dbd",
+        "fbd59443744b0dbd",
+        "fbd59443744b0dbd"
+      ],
+      "fingerprintStable": true,
+      "completedTicks": [
+        "25/25",
+        "25/25",
+        "25/25"
+      ],
+      "phases": {
+        "perception": {
+          "medianMs": 28.938,
+          "p95Ms": 70.635,
+          "runMediansMs": [
+            28.296,
+            31.483,
+            28.938
+          ],
+          "runP95Ms": [
+            69.612,
+            70.635,
+            98.944
+          ],
+          "spreadPct": 11.01,
+          "standardErrorPct": 3.36
+        },
+        "pathfinding": {
+          "medianMs": 336.252,
+          "p95Ms": 423.086,
+          "runMediansMs": [
+            336.252,
+            334.22,
+            337.388
+          ],
+          "runP95Ms": [
+            424.555,
+            415.634,
+            423.086
+          ],
+          "spreadPct": 0.94,
+          "standardErrorPct": 0.28
+        },
+        "macros": {
+          "medianMs": 12.68,
+          "p95Ms": 58.384,
+          "runMediansMs": [
+            14.84,
+            12.68,
+            11.217
+          ],
+          "runP95Ms": [
+            63.04,
+            58.384,
+            34.876
+          ],
+          "spreadPct": 28.57,
+          "standardErrorPct": 8.3
+        },
+        "total": {
+          "medianMs": 377.424,
+          "p95Ms": 494.219,
+          "runMediansMs": [
+            386.571,
+            377.424,
+            376.534
+          ],
+          "runP95Ms": [
+            507.7,
+            480.636,
+            494.219
+          ],
+          "spreadPct": 2.66,
+          "standardErrorPct": 0.85,
+          "budgetMs": 50.0,
+          "gapMs": 327.424,
+          "gapPctOfBudget": 654.8
+        },
+        "writes": {
+          "medianMs": 336.243,
+          "p95Ms": 423.074,
+          "runMediansMs": [
+            336.243,
+            334.208,
+            337.375
+          ],
+          "runP95Ms": [
+            424.542,
+            415.62,
+            423.074
+          ],
+          "spreadPct": 0.94,
+          "standardErrorPct": 0.28
+        },
+        "updates": {
+          "medianMs": 0.02,
+          "p95Ms": 0.045,
+          "runMediansMs": [
+            0.019,
+            0.02,
+            0.021
+          ],
+          "runP95Ms": [
+            0.032,
+            0.109,
+            0.045
+          ],
+          "spreadPct": 10.0,
+          "standardErrorPct": 2.89
+        },
+        "transport": {
+          "medianMs": 18.858,
+          "p95Ms": 120.918,
+          "runMediansMs": [
+            21.138,
+            18.858,
+            17.749
+          ],
+          "runP95Ms": [
+            120.743,
+            120.918,
+            124.846
+          ],
+          "spreadPct": 17.97,
+          "standardErrorPct": 5.29
+        }
+      },
+      "allocation": {
+        "medianBytesPerTick": 124418928.0,
+        "medianMbPerTick": 118.7,
+        "runMediansBytesPerTick": [
+          124423104.0,
+          124418928.0,
+          124418856.0
+        ],
+        "medianBytesPerTickInWrites": 112859008.0,
+        "variancePct": 0.0
+      },
+      "gcPause": {
+        "medianMsPerTick": 11.55,
+        "p95MsPerTick": 25.41,
+        "runMediansMsPerTick": [
+          9.919,
+          13.095,
+          11.55
+        ],
+        "variancePct": 27.5
+      },
+      "roundTrip": {
+        "medianMs": 399.636,
+        "p95Ms": 560.097,
+        "runMediansMs": [
+          407.233,
+          399.636,
+          394.338
+        ],
+        "variancePct": 3.23
+      },
+      "client": {
+        "decide": {
+          "medianMs": 6.085,
+          "runMediansMs": [
+            5.283,
+            6.085,
+            7.514
+          ],
+          "variancePct": 36.66
+        },
+        "apply": {
+          "medianMs": 17.366,
+          "runMediansMs": [
+            20.806,
+            17.366,
+            16.21
+          ],
+          "variancePct": 26.47
+        }
+      },
+      "variance": {
+        "spreadDefinition": "(max - min) / mediane des medianes de run, en %",
+        "standardErrorDefinition": "ecart-type des medianes de run / sqrt(n) / mediane, en %",
+        "gatedMetric": "standardErrorPct",
+        "gatedPhases": [
+          "perception",
+          "pathfinding",
+          "macros",
+          "writes",
+          "total"
+        ],
+        "maxVariancePct": 28.57,
+        "maxStandardErrorPct": 8.3,
+        "thresholdPct": 10.0,
+        "passed": true
+      }
+    },
+    {
+      "agents": 1000,
+      "ticks": 8,
+      "runs": 3,
+      "measuredTicksPerRun": [
+        6,
+        6,
+        6
+      ],
+      "excludedTicks": {
+        "firstTick": 0,
+        "lastTick": 7,
+        "reason": "caches froids et checkpoint d'arret"
+      },
+      "fingerprints": [
+        "27f05beab5435150",
+        "27f05beab5435150",
+        "27f05beab5435150"
+      ],
+      "fingerprintStable": true,
+      "completedTicks": [
+        "8/8",
+        "8/8",
+        "8/8"
+      ],
+      "phases": {
+        "perception": {
+          "medianMs": 425.164,
+          "p95Ms": 658.541,
+          "runMediansMs": [
+            425.164,
+            443.087,
+            394.901
+          ],
+          "runP95Ms": [
+            711.644,
+            658.541,
+            645.149
+          ],
+          "spreadPct": 11.33,
+          "standardErrorPct": 3.31,
+          "budgetMs": 35.0,
+          "gapMs": 390.164,
+          "gapPctOfBudget": 1114.8
+        },
+        "pathfinding": {
+          "medianMs": 113.526,
+          "p95Ms": 4629.582,
+          "runMediansMs": [
+            114.98,
+            113.526,
+            113.413
+          ],
+          "runP95Ms": [
+            4629.582,
+            4738.495,
+            4614.961
+          ],
+          "spreadPct": 1.38,
+          "standardErrorPct": 0.44,
+          "budgetMs": 90.0,
+          "gapMs": 23.526,
+          "gapPctOfBudget": 26.1
+        },
+        "macros": {
+          "medianMs": 104.032,
+          "p95Ms": 209.708,
+          "runMediansMs": [
+            104.032,
+            95.593,
+            112.323
+          ],
+          "runP95Ms": [
+            168.657,
+            209.708,
+            273.238
+          ],
+          "spreadPct": 16.08,
+          "standardErrorPct": 4.64
+        },
+        "total": {
+          "medianMs": 917.27,
+          "p95Ms": 5748.156,
+          "runMediansMs": [
+            941.087,
+            914.589,
+            917.27
+          ],
+          "runP95Ms": [
+            5748.156,
+            5840.795,
+            5686.611
+          ],
+          "spreadPct": 2.89,
+          "standardErrorPct": 0.92,
+          "budgetMs": 250.0,
+          "gapMs": 667.27,
+          "gapPctOfBudget": 266.9
+        },
+        "writes": {
+          "medianMs": 113.494,
+          "p95Ms": 4629.535,
+          "runMediansMs": [
+            114.942,
+            113.494,
+            113.381
+          ],
+          "runP95Ms": [
+            4629.535,
+            4738.443,
+            4614.914
+          ],
+          "spreadPct": 1.38,
+          "standardErrorPct": 0.44
+        },
+        "updates": {
+          "medianMs": 0.021,
+          "p95Ms": 0.109,
+          "runMediansMs": [
+            0.026,
+            0.021,
+            0.021
+          ],
+          "runP95Ms": [
+            0.109,
+            0.11,
+            0.105
+          ],
+          "spreadPct": 23.26,
+          "standardErrorPct": 7.39,
+          "budgetMs": 20.0,
+          "gapMs": -19.979,
+          "gapPctOfBudget": -99.9
+        },
+        "transport": {
+          "medianMs": 604.39,
+          "p95Ms": 1626.603,
+          "runMediansMs": [
+            633.2,
+            592.632,
+            604.39
+          ],
+          "runP95Ms": [
+            1626.603,
+            1625.044,
+            1645.278
+          ],
+          "spreadPct": 6.71,
+          "standardErrorPct": 1.99,
+          "budgetMs": 40.0,
+          "gapMs": 564.39,
+          "gapPctOfBudget": 1411.0
+        }
+      },
+      "allocation": {
+        "medianBytesPerTick": 326549896.0,
+        "medianMbPerTick": 311.4,
+        "runMediansBytesPerTick": [
+          326549896.0,
+          326034760.0,
+          334757188.0
+        ],
+        "medianBytesPerTickInWrites": 44939812.0,
+        "variancePct": 2.67
+      },
+      "gcPause": {
+        "medianMsPerTick": 79.439,
+        "p95MsPerTick": 217.623,
+        "runMediansMsPerTick": [
+          77.154,
+          79.439,
+          92.406
+        ],
+        "variancePct": 19.2
+      },
+      "roundTrip": {
+        "medianMs": 2192.107,
+        "p95Ms": 6330.417,
+        "runMediansMs": [
+          2245.004,
+          2179.999,
+          2192.107
+        ],
+        "variancePct": 2.97
+      },
+      "client": {
+        "decide": {
+          "medianMs": 71.415,
+          "runMediansMs": [
+            73.755,
+            68.803,
+            71.415
+          ],
+          "variancePct": 6.93
+        },
+        "apply": {
+          "medianMs": 391.014,
+          "runMediansMs": [
+            384.345,
+            402.839,
+            391.014
+          ],
+          "variancePct": 4.73
+        }
+      },
+      "variance": {
+        "spreadDefinition": "(max - min) / mediane des medianes de run, en %",
+        "standardErrorDefinition": "ecart-type des medianes de run / sqrt(n) / mediane, en %",
+        "gatedMetric": "standardErrorPct",
+        "gatedPhases": [
+          "perception",
+          "pathfinding",
+          "macros",
+          "writes",
+          "total"
+        ],
+        "maxVariancePct": 16.08,
+        "maxStandardErrorPct": 4.64,
+        "thresholdPct": 10.0,
+        "passed": true
+      }
+    }
+  ],
+  "acceptance": {
+    "command": "python scripts/prism-coupled-benchmark.py",
+    "runsPerScenario": 3,
+    "varianceThresholdPct": 10.0,
+    "maxVariancePct": 28.57,
+    "maxStandardErrorPct": 8.3,
+    "gatedMetric": "standardErrorPct",
+    "allVariancesUnderThreshold": true,
+    "allFingerprintsStable": true
+  },
+  "durationSeconds": 379.1
+}

@@ -35,7 +35,7 @@ public class ScaleTargetsTests
     private static SimulationLoop Build(ulong seed, ulong count)
     {
         SimulationOptions options = ConfigLoader.LoadDefaults();
-        var world = new Simulation.Core.World.World(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
+        var world = new Simulation.Core.World.PrismWorldAdapter(WorldSize.From(options), spatialCellSize: options.Agents.Perception.Radius);
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
         for (ulong i = 1; i <= count; i++)
         {

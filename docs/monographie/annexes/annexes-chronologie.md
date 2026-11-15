@@ -59,8 +59,9 @@ empreintes consignées.
 ECHOS sait stocker les enveloppes PRISM ; l'ingestion au cycle de run et les
 métriques restent ouvertes. Le run R2 couplé de 5 000 ticks avec répétitions,
 la reprise partagée, les validations interplateformes et la livraison V2 ne
-sont pas encore achevés. Le détail des dates et des limites est dans le
-[statut transversal actuel](../../governance/LIVEX-CURRENT-STATUS.md).
+sont pas encore achevés à cette date. **Depuis, R2 et R3 (G5) sont franchies et
+l'extraction du monde SYNE est achevée** ; le détail des dates et des limites
+est dans le [statut transversal actuel](../../governance/LIVEX-CURRENT-STATUS.md).
 
 ## 5. Ce que cette chronologie montre
 

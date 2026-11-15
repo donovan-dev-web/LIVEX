@@ -1,0 +1,1 @@
+{"schema":"livex.syne.coupled-tick.v1","ticks":[{"tick":0,"decideMs":7.785,"prismMs":1263.622,"applyMs":211.572,"observations":100,"changes":25600},{"tick":1,"decideMs":62.333,"prismMs":350.305,"applyMs":119.562,"observations":100,"changes":25445},{"tick":2,"decideMs":19.588,"prismMs":5196.62,"applyMs":140.533,"observations":100,"changes":25002}]}

@@ -21,12 +21,12 @@ Spécifications fonctionnelles des **sous-systèmes** du moteur SYNE. Chaque sec
 | **Navigation** | Pathfinding 2D autour des obstacles, cache de chemins ; indépendant des moteurs graphiques ; appui sur Navigation2D = [HÉRITÉ] (V0.1 : SYNE calcule lui-même) | §3.19 |
 | **Scheduler** | Exécution multi-fréquences + LOD décisionnel | §3.4 |
 | **Événements** | Ring buffer borné (500 000 événements) ; émission `ExternalEvent` | §7.4.5 |
-| **Monde externe** (P9, SYNE-220) | `IWorld` + `PrismWorldAdapter` : PRISM est **autoritaire** sur la géométrie et les entités du monde (`world.externalWorld` / `--external-world`) ; `PrismWorldSynchronizer` alimente l'adaptateur depuis l'auto-observation PRISM. Le monde local reste le défaut (étape 3 de l'extraction à faire) | §3.9, `docs/prism/ADR-013` |
+| **Monde externe** (P9, SYNE-220) | `IWorld` + `PrismWorldAdapter` : PRISM est **autoritaire** sur la géométrie et les entités du monde (`world.externalWorld` / `--external-world`) ; `PrismWorldSynchronizer` alimente l'adaptateur depuis l'auto-observation PRISM. L'extraction est achevée : `Simulation.Core` ne contient plus de classes de monde et `PrismWorldAdapter` est l'unique implémentation de `IWorld`. | §3.9, `docs/prism/ADR-013` |
 | **Cognition avancée** (P9) | Croyances durables (recettes, chantiers, structures), mémoire spatiale par chunk, planificateur borné, désirs instrumentaux — tous **désactivés par défaut** (§11) | `COGNITIVE_ARCHITECTURE.md`, `DATA_MODEL.md` §5.1/§6 |
 
 ## 3. Monde & Environnement
 
-- **Autorité du monde** (P9, ADR-013 côté PRISM) : SYNE décrit son monde en **blocs** — 1 bloc = 1 m = 1 unité SYNE — et ne possède plus de géométrie propre en mode couplé : quand `world.externalWorld` (ou `--external-world`) est actif, `PrismWorldAdapter` fournit entités, gisements, constructions, description du monde et A*, et les dimensions sont **lues** dans l'instantané PRISM. Le monde local reste le défaut ; sa suppression est l'étape 3 de SYNE-220.
+- **Autorité du monde** (P9, ADR-013 côté PRISM) : SYNE décrit son monde en **blocs** — 1 bloc = 1 m = 1 unité SYNE — et ne possède plus de géométrie propre en mode couplé : `PrismWorldAdapter` fournit entités, gisements, constructions, description du monde et A*, et les dimensions sont **lues** dans l'instantané PRISM. L'extraction est achevée (étape 3 de SYNE-220 livrée) : `Simulation.Core` ne contient plus de classes de monde.
 - Espace 2D logique, dimensions configurables (défaut 500×500).
 - Clamping des positions ; monde non-toroidal.
 - Obstacles statiques (cercle en V0.1, rectangle reporté) : blocage mouvement **et** ligne de vue (perception masquée, ADR-013) — depuis le jalon SYNE ph1.
@@ -155,7 +155,6 @@ identique), qui préparent le gate G5 (« agents planifiant à partir de recette
 
 ## Points restés ouverts dans ce document
 - Détails chiffrés de résolution des conflits (probabilités, dégâts) — à documentation quand elle sera tranchée.
-- **P9, étape 3 de SYNE-220** : suppression du monde local de `Simulation.Core` (l'adaptateur `PrismWorldAdapter` n'est encore qu'une bascule) ; c'est elle qui débloque le retrait des tables du monde en persistance (SYNE-225) et le gate G5.
 - **P9, planificateur** : enrichissement des règles de décomposition (plans de recettes, préconditions de station) et couverture de bout en bout du chemin `Blocked` — décision et conditions de réouverture dans ADR-019.
 - **Calibrage** : poids relatif du désir instrumental et de `socialize` (SYNE-227, phase P12) ; les mécanismes sont livrés, les valeurs ne sont pas calibrées.
 - Modèle d'héritage (fusion consentie) : logique cognitive exacte à détailler.

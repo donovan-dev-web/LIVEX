@@ -185,6 +185,39 @@ public sealed class PrismObservationMapperTests
     }
 
     [Fact]
+    public void ToCarriedQuantities_KeepsStackCountsForPlanning()
+    {
+        // Le plan de production ne demande pas « ai-je du bois ? » mais « combien
+        // m'en manque-t-il ? » : les piles sont donc conservées, pas seulement
+        // les identifiants (SYNE-223).
+        var envelope = new ObservationEnvelope(
+            ProtocolVersion.Current.ToString(),
+            12,
+            4,
+            JsonSerializer.SerializeToElement(new { changes = Array.Empty<object>() }, ProtocolJson.Options),
+            JsonSerializer.SerializeToElement(
+                new
+                {
+                    position = new { x = 1, y = 2, z = 3 },
+                    inventory = new object[]
+                    {
+                        new { itemTypeId = 9, quantity = 2, maxStackSize = 64 },
+                        new { itemTypeId = 9, quantity = 3, maxStackSize = 64 },
+                        new { itemTypeId = 2, quantity = 0, maxStackSize = 64 },
+                        new { itemTypeId = 5, quantity = 1, maxStackSize = 16 },
+                    },
+                },
+                ProtocolJson.Options));
+
+        IReadOnlyDictionary<ushort, int> carried = PrismObservationMapper.ToCarriedQuantities(envelope);
+
+        Assert.Equal(2, carried.Count);
+        Assert.Equal(5, carried[9]);
+        Assert.Equal(1, carried[5]);
+        Assert.False(carried.ContainsKey(2));
+    }
+
+    [Fact]
     public void MapsAnEdibleGroundItemToANamedFoodTarget()
     {
         // Sans nom reconnaissable, un tas de blé reste « l'objet 4 » et la faim ne

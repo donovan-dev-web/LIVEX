@@ -186,4 +186,33 @@ public sealed class PrismResourceSitesTests
         Assert.Equal(2, sites.Count);
         Assert.All(sites.Nodes, node => Assert.Equal(ResourceKind.Wood, node.Kind));
     }
+
+    [Fact]
+    public void TryNearest_ReturnsTheClosestApproachCellOfThatFamily()
+    {
+        // Prospection : la matière manquante désigne une famille, pas un bloc. Le
+        // plus proche départage par libellé, pour que deux runs choisissent pareil.
+        PrismWorldGrid grid = Grid(
+            12,
+            12,
+            surfaceZ: 10,
+            (2, 2, 11, WaterMaterialId),
+            (9, 9, 11, LogMaterialId),
+            (3, 9, 11, StoneMaterialId));
+        var materials = new Dictionary<ushort, ResourceKind>
+        {
+            [WaterMaterialId] = ResourceKind.Water,
+            [LogMaterialId] = ResourceKind.Wood,
+            [StoneMaterialId] = ResourceKind.Mineral,
+        };
+
+        PrismResourceSites sites = PrismResourceSites.Build(grid, materials);
+
+        Assert.True(sites.TryNearest(ResourceKind.Mineral, 0, 0, out PrismBlockPosition mineral));
+        Assert.Equal(1, Math.Abs(mineral.X - 3) + Math.Abs(mineral.Y - 9));
+        Assert.Equal(11, mineral.Z);
+        Assert.True(sites.TryNearest(ResourceKind.Wood, 0, 0, out PrismBlockPosition wood));
+        Assert.Equal(1, Math.Abs(wood.X - 9) + Math.Abs(wood.Y - 9));
+        Assert.False(sites.TryNearest(ResourceKind.Food, 0, 0, out _));
+    }
 }

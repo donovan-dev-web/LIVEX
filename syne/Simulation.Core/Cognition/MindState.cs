@@ -86,6 +86,41 @@ public sealed class MindState
     /// </summary>
     public Inventory? Inventory { get; }
 
+    /// <summary>
+    /// Ce que l'agent <b>porte</b> d'après la dernière observation de l'hôte
+    /// (SYNE-223) : identifiant de contenu → quantité. En mode couplé, c'est
+    /// l'inventaire PRISM qui fait foi ; SYNE ne le devine pas et ne le modifie
+    /// pas. <b>Transitoire</b> : ré-observé à chaque trame, il n'est pas persisté
+    /// (une reprise le retrouve à la première observation, sans décision entre
+    /// les deux).
+    /// </summary>
+    public IReadOnlyDictionary<string, int> Carried => _carried;
+
+    private Dictionary<string, int> _carried = new(StringComparer.Ordinal);
+
+    /// <summary>Quantité portée d'un objet (0 s'il n'en porte pas).</summary>
+    public int CarriedCount(string item)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(item);
+        return _carried.TryGetValue(item, out int quantity) ? quantity : 0;
+    }
+
+    /// <summary>Remplace l'inventaire observé (les piles vides sont omises).</summary>
+    internal void ObserveCarried(IReadOnlyDictionary<string, int> carried)
+    {
+        ArgumentNullException.ThrowIfNull(carried);
+        var next = new Dictionary<string, int>(carried.Count, StringComparer.Ordinal);
+        foreach ((string item, int quantity) in carried)
+        {
+            if (quantity > 0 && !string.IsNullOrWhiteSpace(item))
+            {
+                next[item] = quantity;
+            }
+        }
+
+        _carried = next;
+    }
+
     /// <summary>Engagements communicationnels actifs (D5, version minimale — au plus un par pair).</summary>
     public List<Commitment> Commitments { get; } = new();
 
@@ -108,6 +143,14 @@ public sealed class MindState
 
     /// <summary>Objectif courant (intention) — nul tant qu'aucune délibération n'a eu lieu.</summary>
     public Goal? Intention { get; set; }
+
+    /// <summary>
+    /// Objet visé par le désir de production (SYNE-223) : renseigné à la
+    /// délibération quand la section est active. L'intention <c>Produce</c> s'en
+    /// sert pour porter un but stable (« item:stone_pickaxe ») d'un tick à l'autre.
+    /// <b>Transitoire</b> : il est réévalué à chaque délibération.
+    /// </summary>
+    public string? ProductionGoal { get; set; }
 
     /// <summary>
     /// Plan en cours d'exécution (SYNE-223, planificateur actif seulement).

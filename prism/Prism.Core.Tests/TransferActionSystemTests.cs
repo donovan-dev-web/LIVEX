@@ -31,7 +31,7 @@ public sealed class TransferActionSystemTests
             new Prism.Core.Accounting.MatterLedger(),
             1,
             0,
-            new BlockCoordinate(0, 0, 4),
+            new BlockCoordinate(1, 0, 4),
             targetPerceived: true);
         Assert.True(damaged.Succeeded);
         Assert.Equal(4, Assert.Single(sender.Inventory.Snapshot(), stack => stack.ItemTypeId == 20).DurabilityRemaining);

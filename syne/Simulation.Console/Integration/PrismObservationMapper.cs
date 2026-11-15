@@ -236,6 +236,42 @@ public static class PrismObservationMapper
     }
 
     /// <summary>
+    /// Quantités <b>portées</b> par objet (SYNE-223) : la même lecture que
+    /// <see cref="ToCarriedItemIds(ObservationEnvelope)"/>, mais avec les piles.
+    /// La cognition en a besoin pour savoir ce qui manque à une recette, pas
+    /// seulement ce qu'elle possède.
+    /// </summary>
+    public static IReadOnlyDictionary<ushort, int> ToCarriedQuantities(ObservationEnvelope envelope)
+    {
+        ArgumentNullException.ThrowIfNull(envelope);
+
+        JsonElement self = envelope.Self;
+        if (self.ValueKind != JsonValueKind.Object ||
+            !self.TryGetProperty("inventory", out JsonElement inventory) ||
+            inventory.ValueKind != JsonValueKind.Array)
+        {
+            return new Dictionary<ushort, int>();
+        }
+
+        var quantities = new Dictionary<ushort, int>();
+        foreach (JsonElement stack in inventory.EnumerateArray())
+        {
+            if (stack.ValueKind != JsonValueKind.Object ||
+                !stack.TryGetProperty("itemTypeId", out JsonElement idElement) ||
+                !idElement.TryGetUInt16(out ushort itemTypeId) ||
+                !stack.TryGetProperty("quantity", out JsonElement quantityElement) ||
+                !quantityElement.TryGetInt32(out int quantity) || quantity <= 0)
+            {
+                continue;
+            }
+
+            quantities[itemTypeId] = quantities.GetValueOrDefault(itemTypeId) + quantity;
+        }
+
+        return quantities;
+    }
+
+    /// <summary>
     /// Résumés de région d'une observation PRISM (SYNE-221) : un masque de tags de
     /// ressources exposées par chunk, pour la mémoire spatiale. Les résumés
     /// <c>Disappeared</c> sont ignorés : le chunk n'est pas « effacé », il cesse

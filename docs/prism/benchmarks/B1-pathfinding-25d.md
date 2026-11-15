@@ -1,9 +1,15 @@
 # B1 — Pathfinding 2.5D (prototype initial)
 
-**Statut** : Mesure initiale ; dans le poste indicatif révisé, tick complet à confirmer  
-**Date** : 2 novembre 2026  
+> **Mesure historique, supplantée par B9.** Ce prototype date du 2 novembre 2026.
+> La décision ADR-011 reste valable, mais l'optimisation hiérarchique
+> (`PRISM-053`) est **retirée du backlog** : le code n'est pas câblé, il peut
+> allonger le chemin et la mesure B9 attribue le coût aux recherches rejouées qui
+> échouent (`PRISM-143`), pas au corridor. Les chiffres ci-dessous ne décrivent
+> donc ni le chemin de production actuel ni un travail planifié.
+
+**Statut** : Mesure historique (2 novembre 2026) ; ne pas utiliser comme référence de budget
 **Référence** : `Prism.Benchmarks`, exécutions Release  
-**Décision liée** : ADR-011 ; optimisation hiérarchique prévue par PRISM-053
+**Décision liée** : ADR-011 (toujours en vigueur) ; `PRISM-053` retiré le 15 novembre 2026
 
 ## Protocole
 
@@ -36,7 +42,7 @@ Le mode parallèle réduit le temps mesuré sans modifier le nombre de cellules 
 
 ## Limites et suite
 
-Ce prototype ne reconstruit pas les listes de cellules du chemin, ne mesure pas les allocations ni la mémoire du cache et n'implémente pas le cache de chemins. Le terrain et les demandes ne représentent pas encore une simulation de production. Les timings sont indicatifs d'une machine de développement partagée. PRISM-053 (recherche hiérarchique par portails) et le cache restent à évaluer avant de figer le budget B1.
+Ce prototype ne reconstruit pas les listes de cellules du chemin, ne mesure pas les allocations ni la mémoire du cache et n'implémente pas le cache de chemins. Le terrain et les demandes ne représentent pas encore une simulation de production. Les timings sont indicatifs d'une machine de développement partagée. La recherche hiérarchique par portails (`PRISM-053`) n'a pas été retenue ; le cache de chemins (`PRISM-104/109`) a livré le gain attendu.
 
 Les premières exécutions avaient des échecs dus à un débordement `int` dans l'interpolation fixe du bruit. Le produit intermédiaire est désormais calculé en `long` ; les résultats ci-dessus sont postérieurs à ce correctif.
 

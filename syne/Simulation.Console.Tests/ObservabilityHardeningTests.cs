@@ -15,7 +15,7 @@ using Simulation.Core.Loop;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 using Xunit;
-using World = Simulation.Core.World.World;
+using World = Simulation.Core.World.PrismWorldAdapter;
 
 namespace Simulation.Console.Tests;
 
@@ -35,7 +35,7 @@ public sealed class ObservabilityHardeningTests
 {
     private static SimulationLoop NewLoop(ulong seed = 1234)
     {
-        var world = new World(new WorldSize(250, 250), spatialCellSize: 50);
+        var world = new PrismWorldAdapter(new WorldSize(250, 250), spatialCellSize: 50);
         Xoshiro256StarStar rng = Xoshiro256StarStar.Create(seed);
         for (ulong i = 1; i <= 4; i++)
         {
@@ -82,55 +82,6 @@ public sealed class ObservabilityHardeningTests
 
         Assert.Same(emit, completed);
         await emit;
-    }
-
-    [Fact]
-    public async Task NoSubscribers_SkipsSnapshotButStillDrainsTickBuffers()
-    {
-        var loop = NewLoop();
-        var sink = new RecordingSink { HasSubscribers = false };
-        var emitter = new ObservabilityTickEmitter(loop, 1234, sink, "run-nosub");
-
-        // Tampon réellement alimenté : sans le vidage, il stagnerait et
-        // rejouerait un événement obsolète à la première diffusion.
-        ((Simulation.Core.World.World)loop.World).PlaceConstruction(new Obstacle("maison-1", new Position(60, 60), radius: 10));
-        Assert.Single(loop.World.LastEnvironmentChanges);
-
-        loop.AdvanceOneTick();
-        await emitter.EmitCurrentTickAsync();
-
-        // Aucun work inutile quand personne n'écoute...
-        Assert.Empty(sink.Frames);
-
-        // ...mais les tampons ne doivent pas grossir indéfiniment.
-        Assert.Empty(loop.World.LastEnvironmentChanges);
-    }
-
-    [Fact]
-    public async Task ConstructionPlacedWhileSilentlyDriven_IsNotReplayedLater()
-    {
-        var loop = NewLoop();
-        var sink = new RecordingSink { HasSubscribers = false };
-        var emitter = new ObservabilityTickEmitter(loop, 1234, sink, "run-replay");
-
-        ((Simulation.Core.World.World)loop.World).PlaceConstruction(new Obstacle("maison-fantome", new Position(80, 80), radius: 10));
-        loop.AdvanceOneTick();
-        await emitter.EmitCurrentTickAsync();
-
-        sink.HasSubscribers = true;
-        loop.AdvanceOneTick();
-        await emitter.EmitCurrentTickAsync();
-
-        // Le snapshot, lui, doit au contraire refléter l'obstacle réel du monde.
-        // C'est l'ÉVÉNEMENT « construction placée » du tick sans abonné qui ne
-        // doit pas être rejoué plus tard comme s'il venait d'arriver.
-        List<string> events = sink.Frames
-            .Where(frame => !frame.Contains("\"type\":\"snapshot\"", StringComparison.Ordinal))
-            .ToList();
-
-        Assert.DoesNotContain(events, frame => frame.Contains("construction_placed", StringComparison.Ordinal));
-        Assert.DoesNotContain(events, frame => frame.Contains("world_delta", StringComparison.Ordinal));
-        Assert.Contains(sink.Frames, frame => frame.Contains("maison-fantome", StringComparison.Ordinal));
     }
 
     [Fact]

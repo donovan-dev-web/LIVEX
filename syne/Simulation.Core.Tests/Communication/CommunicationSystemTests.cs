@@ -43,11 +43,11 @@ public class CommunicationSystemTests
         return new Entity(new EntityId(id), "Entité", null, position, new TraitSet(traits), bornAt: 0);
     }
 
-    private static (Simulation.Core.World.World World, CommunicationSystem System, Dictionary<ulong, MindState> Minds) Build(
+    private static (Simulation.Core.World.PrismWorldAdapter World, CommunicationSystem System, Dictionary<ulong, MindState> Minds) Build(
         CommunicationSettings settings,
         params (ulong Id, Position Position, double Sociability)[] entities)
     {
-        var world = new Simulation.Core.World.World(new WorldSize(500, 500));
+        var world = new Simulation.Core.World.PrismWorldAdapter(new WorldSize(500, 500));
         var minds = new Dictionary<ulong, MindState>();
         var options = ConfigLoader.LoadDefaults();
         options.Communication = settings;
@@ -361,7 +361,7 @@ public class CommunicationSystemTests
     public void Validation_RequiresPositiveTransmissionRange()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            new CommunicationSystem(new Simulation.Core.World.World(new WorldSize(100, 100)),
+            new CommunicationSystem(new Simulation.Core.World.PrismWorldAdapter(new WorldSize(100, 100)),
                 new CommunicationSettings { TransmissionRange = 0 }));
     }
 }

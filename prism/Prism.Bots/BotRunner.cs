@@ -16,7 +16,19 @@ public sealed record BotAgentReport(
     int CommandsAccepted,
     IReadOnlyDictionary<string, int> FailureReasons);
 
-/// <summary>Outcome of a bot run: the pinned fingerprint plus why commands were refused.</summary>
+/// <summary>
+/// Outcome of a bot run: the two fingerprints plus why commands were refused.
+/// <para>
+/// <see cref="FingerprintHex"/> is the <b>byte level</b>: the whole serialized stream of every
+/// tick, in the order it was published. It is the contract and replay pin, and it moves for any
+/// change of emission order.
+/// <see cref="TrajectoryFingerprintHex"/> is the <b>trajectory level</b> (PRISM-107): the agents'
+/// cells, shelter state and inventory totals plus the events published per kind, sampled every
+/// <see cref="RunTrajectory.DefaultIntervalTicks"/> ticks in canonical order. A performance change
+/// must leave it untouched; <see cref="TrajectoryFrames"/> says how many samples it holds, zero
+/// meaning the run was shorter than one sampling window.
+/// </para>
+/// </summary>
 public sealed record BotRunResult(
     long FirstTick,
     long LastTick,
@@ -24,9 +36,15 @@ public sealed record BotRunResult(
     int CommandsSent,
     int CommandsAccepted,
     IReadOnlyList<BotAgentReport> Agents,
-    IReadOnlyDictionary<string, int> FailureReasons)
+    IReadOnlyDictionary<string, int> FailureReasons,
+    int CropRipeEvents = 0,
+    int CropWitheredEvents = 0,
+    ulong TrajectoryFingerprint = RunFingerprint.Empty,
+    int TrajectoryFrames = 0)
 {
     public string FingerprintHex => RunFingerprint.Format(Fingerprint);
+
+    public string TrajectoryFingerprintHex => RunFingerprint.Format(TrajectoryFingerprint);
 }
 
 /// <summary>
@@ -43,9 +61,12 @@ public sealed class BotRunner
     private readonly Dictionary<ulong, BotPerceptionMemory> _memories = [];
     private readonly Dictionary<string, string> _commandKinds = new(StringComparer.Ordinal);
     private readonly Dictionary<ulong, List<BotCommandFailure>> _failures = [];
+    private readonly Dictionary<ulong, List<string>> _completed = [];
     private readonly Dictionary<ulong, int> _commandsSent = [];
     private readonly Dictionary<ulong, int> _commandsAccepted = [];
     private readonly Dictionary<ulong, Dictionary<string, int>> _failureReasons = [];
+    private int _cropRipeEvents;
+    private int _cropWitheredEvents;
 
     public BotRunner(IWorldHost host, IReadOnlyDictionary<ulong, IPrismBot> bots)
     {
@@ -57,6 +78,7 @@ public sealed class BotRunner
         {
             _memories[agentId] = new BotPerceptionMemory();
             _failures[agentId] = [];
+            _completed[agentId] = [];
             _commandsSent[agentId] = 0;
             _commandsAccepted[agentId] = 0;
             _failureReasons[agentId] = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -85,6 +107,7 @@ public sealed class BotRunner
         }
 
         var hash = RunFingerprint.Empty;
+        var trajectory = new TrajectoryAccumulator();
         var commands = new List<CommandEnvelope>(spawns.Count);
         foreach (var spawn in spawns)
         {
@@ -96,7 +119,8 @@ public sealed class BotRunner
         {
             var tick = checked(startTick + offset);
             var result = _host.Step(new TickRequest(ProtocolVersion.Current.ToString(), tick, commands));
-            hash = HashTick(hash, result);
+            hash = RunFingerprint.AppendSerializedTick(hash, result);
+            trajectory.Add(result);
             ApplyResult(result);
             lastTick = tick;
             commands = DecideCommands(checked(tick + 1));
@@ -130,7 +154,11 @@ public sealed class BotRunner
             _commandsSent.Values.Sum(),
             _commandsAccepted.Values.Sum(),
             agents,
-            new Dictionary<string, int>(totals, StringComparer.Ordinal));
+            new Dictionary<string, int>(totals, StringComparer.Ordinal),
+            _cropRipeEvents,
+            _cropWitheredEvents,
+            trajectory.Fingerprint,
+            trajectory.Frames);
     }
 
     private List<CommandEnvelope> DecideCommands(long tick)
@@ -145,8 +173,10 @@ public sealed class BotRunner
                 _lastPosition.GetValueOrDefault(agentId, AgentPosition.AtCell(0, 0, 0)),
                 _lastInventory.GetValueOrDefault(agentId, Array.Empty<AgentItemStack>()),
                 memory.Entries,
-                _failures[agentId]);
+                _failures[agentId],
+                _completed[agentId]);
             _failures[agentId] = [];
+            _completed[agentId] = [];
 
             var decisions = entry.Value.Decide(senses);
             var index = 0;
@@ -176,27 +206,6 @@ public sealed class BotRunner
             command.Payload);
     }
 
-    private static ulong HashTick(ulong hash, TickResult result)
-    {
-        hash = RunFingerprint.Append(hash, result.Tick);
-        foreach (var eventEnvelope in result.Events)
-        {
-            hash = RunFingerprint.Append(hash, eventEnvelope.Kind);
-            hash = RunFingerprint.Append(hash, eventEnvelope.AgentId?.ToString() ?? "-");
-            hash = RunFingerprint.Append(hash, eventEnvelope.Payload.GetRawText());
-        }
-
-        foreach (var observation in result.Observations)
-        {
-            hash = RunFingerprint.Append(hash, "obs");
-            hash = RunFingerprint.Append(hash, observation.AgentId);
-            hash = RunFingerprint.Append(hash, observation.Changes.GetRawText());
-            hash = RunFingerprint.Append(hash, observation.Self.GetRawText());
-        }
-
-        return hash;
-    }
-
     private void ApplyResult(TickResult result)
     {
         foreach (var eventEnvelope in result.Events)
@@ -217,11 +226,35 @@ public sealed class BotRunner
 
         foreach (var eventEnvelope in result.Events)
         {
-            if (eventEnvelope.AgentId is { } agentId &&
-                _commandsAccepted.ContainsKey(agentId) &&
-                eventEnvelope.Kind is "action_completed" or "action_started")
+            if (StringComparer.Ordinal.Equals(eventEnvelope.Kind, "crop_ripe"))
+            {
+                _cropRipeEvents++;
+            }
+            else if (StringComparer.Ordinal.Equals(eventEnvelope.Kind, "crop_withered"))
+            {
+                _cropWitheredEvents++;
+            }
+        }
+
+        foreach (var eventEnvelope in result.Events)
+        {
+            if (eventEnvelope.AgentId is not { } agentId || !_commandsAccepted.ContainsKey(agentId))
+            {
+                continue;
+            }
+
+            if (eventEnvelope.Kind is "action_completed" or "action_started")
             {
                 _commandsAccepted[agentId] = _commandsAccepted.GetValueOrDefault(agentId) + 1;
+            }
+
+            // `action_completed` is what tells a bot its command really finished. Macro-actions
+            // report it once, at the end; a bot that only saw refusals could not tell that some
+            // work happened (a craft that produced less than the step asked for).
+            if (StringComparer.Ordinal.Equals(eventEnvelope.Kind, "action_completed") &&
+                _completed.TryGetValue(agentId, out var completed))
+            {
+                completed.Add(ReadCommandKind(eventEnvelope.Payload));
             }
         }
 

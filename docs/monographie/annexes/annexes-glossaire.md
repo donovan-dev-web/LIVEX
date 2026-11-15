@@ -118,7 +118,7 @@ Cette annexe définit les termes employés dans le livre. Lorsqu'un terme a un s
 
 **LIVEX.** *Living Intelligent Virtual Ecosystem eXperience*. Nom du projet complet.
 
-**PRISM.** *Persistent Reality & Interactive Simulation Module*. V2 : monde physique autoritaire. Ne pas confondre avec la présentation Unreal V1.
+**PRISM.** *Perceptual Rendering & Interactive Simulation Module*. V2 : monde physique autoritaire. Ne pas confondre avec la présentation Unreal V1.
 
 **SYNE.** *Systems & Emergent Network Engine*. Décide.
 

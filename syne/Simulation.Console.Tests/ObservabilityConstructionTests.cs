@@ -18,7 +18,7 @@ using Simulation.Core.Observability;
 using Simulation.Core.Prng;
 using Simulation.Core.World;
 using Xunit;
-using WorldType = Simulation.Core.World.World;
+using WorldType = Simulation.Core.World.PrismWorldAdapter;
 
 namespace Simulation.Console.Tests;
 
@@ -60,72 +60,36 @@ public class ObservabilityConstructionTests
         JsonNode.Parse(frame) ?? throw new InvalidOperationException("trame JSON invalide");
 
     [Fact]
-    public async Task PlacementAndRemoval_AreEmittedAndDrained_WithoutBreakingTheRun()
+    public async Task LocalConstructionPlacement_IsNoLongerTraced_SincePrismOwnsTheGeometry()
     {
-        const int warmup = 3;
+        // SYNE-220 étape 3c : la pose locale d'une construction est un shim vide
+        // (la géométrie appartient à PRISM). Ce test verrouille l'absence de
+        // fuite : aucune modification d'environnement, aucun événement local,
+        // afin que le flux d'observabilité ne prétende plus tracer un monde
+        // que SYNE ne possède pas.
         var sink = new RecordingSink();
         SimulationLoop loop = BuildScenario(seed: 7);
         var emitter = new ObservabilityTickEmitter(loop, seed: 7, sink);
 
-        for (int tick = 1; tick <= warmup; tick++)
+        for (int tick = 1; tick <= 3; tick++)
         {
             loop.AdvanceOneTick();
             await emitter.EmitCurrentTickAsync();
         }
 
+        ((WorldType)loop.World).PlaceConstruction(
+            new Obstacle("maison-1", new Position(60, 60), radius: 10));
+        loop.AdvanceOneTick();
+        await emitter.EmitCurrentTickAsync();
+
         Assert.Empty(loop.World.Obstacles);
         Assert.Empty(loop.World.LastEnvironmentChanges);
-        ulong revisionBefore = loop.World.ObstacleRevision;
-
-        // Les constructions sont une mutation du monde local (le monde externe
-        // PRISM les publie par son propre flux, SYNE-220 étape 2).
-        ((Simulation.Core.World.World)loop.World).PlaceConstruction(new Obstacle("maison-1", new Position(60, 60), radius: 10));
-        Assert.Single(loop.World.LastEnvironmentChanges);
-        Assert.True(loop.World.ObstacleRevision > revisionBefore);
-
-        loop.AdvanceOneTick();
-        await emitter.EmitCurrentTickAsync();
-
-        var placed = sink.Frames.Select(ParseFrame)
-            .Where(node => node!["type"]!.GetValue<string>() == ObservabilityContract.ConstructionPlaced)
-            .ToList();
-        JsonNode placedFrame = Assert.Single(placed);
-        Assert.Equal("maison-1", (string?)placedFrame["targetId"]);
-        Assert.Equal((ulong)warmup + 1, placedFrame["tick"]!.GetValue<ulong>());
-        Assert.Equal(60.0, (double?)placedFrame["value"]!["x"]);
-        Assert.Equal(10.0, (double?)placedFrame["value"]!["radius"]);
-        JsonNode delta = Assert.Single(sink.Frames.Select(ParseFrame),
-            node => node!["type"]!.GetValue<string>() == ObservabilityContract.WorldDelta);
-        Assert.Equal((ulong)warmup + 1, delta["tick"]!.GetValue<ulong>());
-        Assert.Equal("run-7", delta["runId"]!.GetValue<string>());
-        Assert.Equal("added", delta["changes"]![0]!["kind"]!.GetValue<string>());
-        Assert.Equal("maison-1", delta["changes"]![0]!["id"]!.GetValue<string>());
-
-        // Le drain consomme les modifications tracées (événement émis une seule fois).
-        Assert.Empty(loop.World.LastEnvironmentChanges);
-        Assert.DoesNotContain(sink.Frames.Select(ParseFrame),
+        Assert.DoesNotContain(
+            sink.Frames.Select(ParseFrame),
+            node => node!["type"]!.GetValue<string>() == ObservabilityContract.ConstructionPlaced);
+        Assert.DoesNotContain(
+            sink.Frames.Select(ParseFrame),
             node => node!["type"]!.GetValue<string>() == ObservabilityContract.ConstructionRemoved);
-
-        // Le snapshot porte l'obstacle (même tick d'émission).
-        JsonNode snapshot = sink.Frames.Select(ParseFrame)
-            .Last(node => node!["type"]!.GetValue<string>() == "snapshot");
-        JsonArray obstacles = snapshot["obstacles"]!.AsArray();
-        Assert.Single(obstacles);
-        Assert.Equal("maison-1", (string?)obstacles[0]!["id"]);
-        Assert.Equal("added", (string?)snapshot["worldChanges"]![0]!["kind"]);
-        Assert.Equal("maison-1", (string?)snapshot["worldChanges"]![0]!["id"]);
-
-        ((Simulation.Core.World.World)loop.World).RemoveConstruction("maison-1");
-        loop.AdvanceOneTick();
-        await emitter.EmitCurrentTickAsync();
-
-        var removed = sink.Frames.Select(ParseFrame)
-            .Where(node => node!["type"]!.GetValue<string>() == ObservabilityContract.ConstructionRemoved)
-            .ToList();
-        Assert.Single(removed);
-        Assert.Equal("maison-1", (string?)removed[0]!["targetId"]);
-        Assert.Equal((ulong)warmup + 2, removed[0]!["tick"]!.GetValue<ulong>());
-        Assert.Empty(loop.World.LastEnvironmentChanges);
     }
 
     [Fact]

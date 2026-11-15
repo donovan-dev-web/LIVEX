@@ -46,7 +46,7 @@ public static class SimulationSnapshotRestorer
                 "Le monde doit venir de l'hôte (PRISM) et l'état cognitif être réappliqué par RestoreCognition.");
         }
 
-        WorldNamespace.World world = RestoreWorld(worldDto);
+        WorldNamespace.PrismWorldAdapter world = RestoreWorld(worldDto);
         var territoryMembership = RestoreTerritoryMembership(worldDto);
 
         var rng = new Xoshiro256StarStar(
@@ -70,9 +70,11 @@ public static class SimulationSnapshotRestorer
         return loop;
     }
 
-    private static WorldNamespace.World RestoreWorld(WorldSnapshotDto dto)
+    private static WorldNamespace.PrismWorldAdapter RestoreWorld(WorldSnapshotDto dto)
     {
-        var world = new WorldNamespace.World(new WorldNamespace.WorldSize((int)dto.Width, (int)dto.Height));
+        var world = new WorldNamespace.PrismWorldAdapter(
+            new WorldNamespace.WorldSize((int)dto.Width, (int)dto.Height),
+            contentHash: null);
 
         foreach (TerritorySnapshotDto territory in dto.Territories ?? [])
         {

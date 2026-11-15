@@ -543,7 +543,7 @@ public sealed class WorldGridTests
             new ulong[]
             {
                 7_090_205_665_110_659_518UL,
-                5_276_140_206_464_966_917UL,
+                599_076_574_980_715_548UL,
                 14_547_522_915_312_224_719UL
             },
             hashes);
@@ -717,6 +717,48 @@ public sealed class WorldGridTests
         Assert.True(world.IsRegionDirty(regionId));
         world.ClearRegionDirty(regionId);
         Assert.False(world.IsRegionDirty(regionId));
+    }
+
+    [Fact]
+    public void RegionRevisionsMoveOnlyForTheWrittenRegion()
+    {
+        var world = new WorldGrid(width: 32, height: 16, regionSize: 16);
+        Assert.Equal(0, world.Revision);
+        Assert.Equal(0, world.GetRegionRevision(0));
+        Assert.Equal(0, world.GetRegionRevision(1));
+
+        world.SetSurfaceColumn(2, 2, new SurfaceColumn(5, 1, 0, 0));
+        Assert.Equal(1, world.Revision);
+        Assert.Equal(1, world.GetRegionRevision(0));
+        Assert.Equal(0, world.GetRegionRevision(1));
+        Assert.Equal(1, world.GetRegionRevisionAt(2, 2));
+
+        // A write that changes nothing is not a write: neither counter moves.
+        world.SetSurfaceColumn(2, 2, new SurfaceColumn(5, 1, 0, 0));
+        Assert.Equal(1, world.Revision);
+        Assert.Equal(1, world.GetRegionRevision(0));
+
+        world.SetBlockOverride(new BlockCoordinate(20, 2, 4), new BlockOverride(7, 0, false));
+        Assert.Equal(2, world.Revision);
+        Assert.Equal(1, world.GetRegionRevision(0));
+        Assert.Equal(1, world.GetRegionRevision(1));
+        Assert.Equal(1, world.GetRegionRevisionAt(20, 2));
+
+        world.RemoveBlockOverride(new BlockCoordinate(20, 2, 4));
+        Assert.Equal(3, world.Revision);
+        Assert.Equal(1, world.GetRegionRevision(0));
+        Assert.Equal(2, world.GetRegionRevision(1));
+    }
+
+    [Fact]
+    public void RegionRevisionsRejectUnknownRegionsAndOutOfBoundsCells()
+    {
+        var world = new WorldGrid(width: 16, height: 16, regionSize: 8);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => world.GetRegionRevision(-1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => world.GetRegionRevision(world.RegionCount));
+        Assert.Throws<ArgumentOutOfRangeException>(() => world.GetRegionRevisionAt(16, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => world.GetRegionRevisionAt(0, -1));
     }
 
     [Fact]

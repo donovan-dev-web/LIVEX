@@ -15,14 +15,14 @@ public sealed class MacroActionSystemTests
             new PerceivedMacroSource(
                 9,
                 MacroSourceKind.GroundItem,
-                new BlockCoordinate(1, 0, 6),
+                new BlockCoordinate(2, 0, 6),
                 10,
                 3,
                 new HashSet<string>(StringComparer.Ordinal) { "wood" }),
             new PerceivedMacroSource(
                 4,
                 MacroSourceKind.GroundItem,
-                new BlockCoordinate(1, 0, 6),
+                new BlockCoordinate(2, 0, 6),
                 10,
                 1,
                 new HashSet<string>(StringComparer.Ordinal) { "wood" }),
@@ -65,7 +65,7 @@ public sealed class MacroActionSystemTests
         var source = new PerceivedMacroSource(
             1,
             MacroSourceKind.GroundItem,
-            new BlockCoordinate(1, 0, 6),
+            new BlockCoordinate(2, 0, 6),
             10,
             2,
             new HashSet<string>(StringComparer.Ordinal) { "wood" });
@@ -176,7 +176,7 @@ public sealed class MacroActionSystemTests
         var source = new PerceivedMacroSource(
             55,
             MacroSourceKind.GroundItem,
-            new BlockCoordinate(1, 0, 6),
+            new BlockCoordinate(2, 0, 6),
             10,
             2,
             new HashSet<string>(StringComparer.Ordinal) { "wood", "material" });
@@ -207,6 +207,65 @@ public sealed class MacroActionSystemTests
             agent.AgentId,
             AgentPosition.AtCell(1, 0, 5),
             [source]).QuantityAcquired);
+    }
+
+    [Fact]
+    public void AnUnreachableSourceIsExhaustedInsteadOfKillingTheWholeObtain()
+    {
+        // Two perceived sources; the closest one has no path at this altitude. A refused move
+        // must only remove that source: the agent can still reach the second one, so the macro
+        // has to keep working (PRISM-102: a bot lost its whole plan on a single path refusal).
+        var (agent, _) = CreateAgents();
+        var sets = new HashSet<string>(StringComparer.Ordinal) { "wood" };
+        var near = new PerceivedMacroSource(1, MacroSourceKind.Block, new BlockCoordinate(2, 0, 6), 10, 1, sets);
+        var far = new PerceivedMacroSource(2, MacroSourceKind.Block, new BlockCoordinate(2, 0, 8), 10, 1, sets);
+        var macroActions = new MacroActionSystem();
+        var started = macroActions.StartObtainObject(
+            agent,
+            new ObtainObjectRequest(ItemTypeId: 10, TagId: null, Quantity: 1),
+            [near, far]);
+        Assert.Equal(MacroStepKind.Move, started.Step!.Kind);
+        Assert.Equal((ulong)1, started.Step.SourceId);
+
+        var retried = macroActions.CompleteCurrentStep(
+            agent.AgentId,
+            succeeded: false,
+            failureCode: "path_not_found");
+
+        Assert.True(retried.Succeeded);
+        Assert.False(retried.Completed);
+        Assert.Equal(0, retried.QuantityAcquired);
+
+        var next = macroActions.GetNextStep(agent.AgentId, agent.Position, [near, far]);
+        Assert.True(next.Succeeded);
+        Assert.Equal(MacroStepKind.Move, next.Step!.Kind);
+        Assert.Equal((ulong)2, next.Step.SourceId);
+    }
+
+    [Fact]
+    public void ObtainFailsWhenEveryPerceivedSourceIsUnreachable()
+    {
+        var (agent, _) = CreateAgents();
+        var source = new PerceivedMacroSource(
+            1,
+            MacroSourceKind.Block,
+            new BlockCoordinate(2, 0, 6),
+            10,
+            1,
+            new HashSet<string>(StringComparer.Ordinal) { "wood" });
+        var macroActions = new MacroActionSystem();
+        _ = macroActions.StartObtainObject(
+            agent,
+            new ObtainObjectRequest(ItemTypeId: 10, TagId: null, Quantity: 1),
+            [source]);
+
+        Assert.True(macroActions.CompleteCurrentStep(
+            agent.AgentId,
+            succeeded: false,
+            failureCode: "path_not_found").Succeeded);
+        var exhausted = macroActions.GetNextStep(agent.AgentId, agent.Position, [source]);
+
+        Assert.Equal("source_not_found", exhausted.ErrorCode);
     }
 
     [Fact]

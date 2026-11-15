@@ -2,7 +2,7 @@
 
 **Composant** : PRISM
 **Statut** : [IMPLÉMENTATION EN COURS — PRISM-024/025/030]
-**Dernière mise à jour** : 2 novembre 2026
+**Dernière mise à jour** : 11 novembre 2026
 **Dépend de** : [`adr/ADR-007-determinisme-entier-flux-hasard.md`](adr/ADR-007-determinisme-entier-flux-hasard.md), `../syne/DETERMINISM.md`
 **Source Monographie** : §2.3.4
 
@@ -15,7 +15,7 @@
 | Niveau | Garantie | Condition |
 | :-- | :-- | :-- |
 | **Exact, même plateforme** | Bit-à-bit | — |
-| **Exact, entre plateformes** (cible V2) | Bit-à-bit pour l'état du monde PRISM | Arithmétique entière, aucune dépendance flottante dans `Prism.Core` ; **à prouver** par test Windows/Linux (G3) |
+| **Exact, entre plateformes** (cible V2) | Bit-à-bit pour l'état du monde PRISM | Arithmétique entière, aucune dépendance flottante dans `Prism.Core` ; la matrice CI exécute les suites sous Windows et Linux avec les empreintes épinglées ; le job dédié de rejeu interplateforme reste PRISM-079 |
 | **Ensemble SYNE + PRISM** | Exact sur une plateforme ; entre plateformes, le niveau de SYNE (statistique tant que ses flottants influencent la cognition) | Voir `../launcher/INTEGRATION_CONTRACT.md` §12 |
 
 ## 2. Les cinq piliers
@@ -50,6 +50,10 @@ Les mises à jour aléatoires sélectionnent des colonnes sans doublon dans chaq
 | Région | FNV-1a 64 des colonnes et surcharges triées canoniquement |
 | Monde | FNV-1a 64 de la suite ordonnée (`regionId` croissant) des empreintes de régions, plus des tables d'état (agents, conteneurs, chantiers, structures, calendrier, files programmées) en ordre canonique |
 | Run | Suite des empreintes de monde aux ticks `k × checksumIntervalTicks` + empreinte finale |
+| Trajectoire (run de bots) | FNV-1a 64 des frames prises toutes les 100 ticks — par agent sa case, son état `sheltered` et ses totaux d'inventaire par type d'objet, plus les compteurs d'événements par type — en ordre canonique : insensible à un ordre d'émission interne (PRISM-107) |
+| Octets (run de bots) | FNV-1a 64 du flux sérialisé complet de chaque tick (événements et observations, payloads JSON bruts), dans l'ordre publié : critère du contrat et du rejeu bit-à-bit (PRISM-107) |
+
+Les deux derniers niveaux répondent à deux questions distinctes — « la simulation se comporte-t-elle pareil ? » et « le flux est-il identique ? » — et ne se comparent jamais l'un à l'autre : une optimisation se juge sur la trajectoire, une empreinte d'octets qui bouge seule est une différence d'ordre d'émission. Contrat complet : [`TESTING.md`](TESTING.md) §3.1.
 
 Les empreintes sont publiées dans `checksum` (flux de lecture) et consignées dans les résultats de run. ECHOS peut comparer deux runs et situer **le premier tick de divergence**.
 
@@ -69,6 +73,7 @@ Les empreintes sont publiées dans `checksum` (flux de lecture) et consignées d
 | Reprise | Run interrompu au tick `t`, restauré, poursuivi → empreintes identiques à un run continu |
 | Ordre | Permutation des commandes d'un tick (même ensemble) → même résultat (l'ordre vient des clés de priorité) |
 | Analyseur | Refus de `float`/`double`, `DateTime.Now`, `Random`, `Dictionary` itéré sans tri dans `Prism.Core` |
+| Caches | `PRISM_VERIFY_CACHES=1` recalcule sans mémo la fenêtre de perception, le masque de région et `CanStandAt`, et échoue sur la première divergence (PRISM-108) |
 | Indépendance du rendu | Run avec et sans visualiseur connecté → mêmes empreintes |
 
 ## 7. Déterminisme et interventions humaines
@@ -83,6 +88,7 @@ Preuve inter-plateformes à produire en phase P7.
 
 | Date | Changement | Motif |
 | :-- | :-- | :-- |
+| 11 novembre 2026 | Empreintes de run de bots séparées en deux niveaux : **trajectoire** (grossière, insensible à l'ordre d'émission interne) et **octets** (flux complet, rejeu bit-à-bit) — `RunTrajectory` et `RunFingerprint.AppendSerializedTick` dans `Prism.Bots` | PRISM-107 : une permutation d'ordre interne obligeait à re-épingler six empreintes et bloquait PRISM-104 |
 | 2 novembre 2026 | Mix64, flux nommés, xoshiro256**, hasard à compteur et FNV-1a canonique amorcés dans Prism.Core | PRISM-024/025 |
 | 2 novembre 2026 | Bruit de valeurs, octaves et domaine déformé en entier/16.16 avec vecteurs fixes | PRISM-030 |
 | 1er novembre 2026 | Création | Refonte V2 |

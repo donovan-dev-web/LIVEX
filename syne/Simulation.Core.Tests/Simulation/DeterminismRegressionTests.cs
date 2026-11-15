@@ -32,7 +32,7 @@ public class DeterminismRegressionTests
 
     private static SimulationLoop BuildScenario(ulong populationSeed, ulong entityCount)
     {
-        var world = new Simulation.Core.World.World(WorldSize.From(ScenarioOptions(42)), spatialCellSize: 50);
+        var world = new Simulation.Core.World.PrismWorldAdapter(WorldSize.From(ScenarioOptions(42)), spatialCellSize: 50);
         world.AddObstacle(new Obstacle("rocher-1", new Position(250, 150), radius: 15));
         world.AddObstacle(new Obstacle("rocher-2", new Position(420, 380), radius: 25));
 

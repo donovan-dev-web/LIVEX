@@ -51,7 +51,7 @@ public static class WorldGenerationConfigCompiler
             height,
             verticalSize,
             regionSize,
-            WorldGenVersion: 1,
+            WorldGenVersion: 2,
             HeightConfig: new SurfaceHeightConfig(
                 BaseHeight: verticalSize * 30 / 64,
                 Amplitude: verticalSize * 12 / 64,

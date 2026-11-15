@@ -193,7 +193,7 @@ flowchart TD
 
 Le tag `fuel` couvre `log`, `plank` et `coal` dans le pack v0 : une recette qui demande un combustible fonctionne avec chacun. La paille reste une extension de contenu.
 
-**Origine des graines.** Miner `grass` donne une `wheat_seed` avec probabilité `chancePermille` (hasard à compteur sur `(position, tick)`) : le premier cycle agricole est amorçable sans bloc supplémentaire.
+**Origine des graines.** Miner `grass` donne une `wheat_seed` avec probabilité `chancePermille` (hasard à compteur sur `(position, tick)`) : le premier cycle agricole est amorçable sans bloc supplémentaire. Le pack minimal la fixe à **1 000 ‰** (une graine par bloc d'herbe miné) pour que la chaîne agricole soit déterministe, comme les filons de fer exposés garantis par les sites d'apparition.
 
 ## 6. Règles transversales
 
