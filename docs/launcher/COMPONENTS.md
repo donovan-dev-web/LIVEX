@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `INTEGRATION_CONTRACT.md`, `../COMMUNICATION.md`
 **Source Monographie** : —
 
@@ -14,9 +14,11 @@
 > `reference` et son intégration au collecteur de paquets n'est pas acceptée ;
 > les opérations d'analyse ECHOS lisent des runs déjà présents dans la base
 > analytique, dont le flux d'ingestion depuis le Launcher n'est pas validé.
-> Le host PRISM V2 possède maintenant `prism/component.json` et le Launcher
-> générique peut le découvrir ; le cycle complet de session et de paquet V2
-> reste ouvert. Ce manifeste du host ne constitue pas un manifeste viewer.
+> Le host PRISM V2 possède `prism/component.json` et le viewer
+> `prism/viewer.component.json` ; le Launcher découvre les deux, et la session
+> V2 (hôte préparé → SYNE en attente → viewer, pilotée en Play/Pause/Stop/Quit)
+> est opérationnelle depuis le 15 novembre 2026. Le cycle de paquet V2 reste
+> ouvert.
 > Le mock remplace le rôle SYNE en mode développement V1, il n'est pas un
 > quatrième rôle. Voir la
 > [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md) pour l'état

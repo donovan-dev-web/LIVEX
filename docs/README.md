@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (général)
 **Statut** : [STABLE]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `ARCHITECTURE.md`, `NAMING_CONVENTIONS.md`
 
 ---
@@ -78,9 +78,14 @@ observations aux croyances et est reproductible : run R2 (50 agents × 5 000
 ticks), reprise couplée bit-identique et run R3 (100 agents × 5 000 ticks,
 porte G5). L'extraction de l'ancien monde SYNE est achevée et
 `PrismWorldAdapter` est la seule implémentation de `IWorld`. Le viewer
-Silk.NET/OpenGL est un client facultatif ; son client de flux est implémenté
-mais pas encore raccordé au lancement live, et le viewer complet reste le
-chantier ouvert (P11).
+Silk.NET/OpenGL est un client facultatif, **livré en P11 le 15 novembre 2026** :
+modes client (`--connect`), embarqué et rejeu, atlas procédural, entités live,
+inspecteur et sept calques, interventions journalisées désactivées par défaut.
+Il porte le **plan de contrôle** de la session (Play/Pause/Stop/Quit relayés à
+l'hôte, qui reste l'autorité) et le Launcher propose les modes **Hôte** et
+**Viewer** ; aucun tick n'est exécuté avant **Play**. Relevé du 15 novembre :
+PRISM **525/525** tests, SYNE **813/813**. La clôture de P11 attend le relevé B8
+et la validation graphique Linux.
 
 Les documents de [`prism/`](prism/README.md) décrivent les fonctions V2
 implémentées et les travaux restant à livrer. Pour l'état transversal courant,

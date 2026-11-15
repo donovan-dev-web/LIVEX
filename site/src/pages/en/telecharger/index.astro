@@ -27,7 +27,7 @@ import { url } from '../../../utils/url';
       <div class="pl br" style="padding:24px;margin-top:8px">
         <p style="margin:0 0 10px"><StatusBadge status="developpement" label={RELEASE_EN.plannedLabel} lang="en" /></p>
         <h2 style="margin-top:0">Next planned version: {RELEASE.planned}.</h2>
-        <p>The V1.0.0 release marks the first public version. V2.0.0 is in preparation; this page presents its planned scope and does not claim PRISM V2 has been validated.</p>
+        <p>The V1.0.0 release marks the first public version. V2.0.0 is in preparation: the PRISM V2 foundation is delivered and tested (P0–P11), with no published release to date. This page separates what is available from what remains to be validated.</p>
         <p>See <a href={RELEASE.releasesUrl} rel="noopener">GitHub Releases</a> for published versions.</p>
         <div class="cta">
           <a class="bt" href={url('versions/', 'en')}>Version status</a>
@@ -40,8 +40,8 @@ import { url } from '../../../utils/url';
 
   <section class="block">
     <div class="w">
-      <div class="sh"><b>11.1</b> V2 target</div>
-      <h2>Components planned for V2.</h2>
+      <div class="sh"><b>11.1</b> V2 components</div>
+      <h2>The components of V2.</h2>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Item</th><th scope="col">Expected form</th><th scope="col">State</th></tr></thead>
@@ -49,12 +49,13 @@ import { url } from '../../../utils/url';
             <tr><td>Launcher (desktop)</td><td>Desktop application (Avalonia) to pilot and observe</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
             <tr><td>SYNE engine</td><td>.NET binary and engine packages</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td>ECHOS</td><td>Python package (observation, headless API)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>PRISM</td><td>Headless .NET physical world core and host, with optional Silk.NET viewer</td><td><StatusBadge status="envisage" lang="en" /></td></tr>
+            <tr><td>PRISM</td><td>Headless .NET physical world core and host, with optional Silk.NET viewer</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="cc"><p>These lines describe an <em>intended form</em>, not a commitment to a date: no dated milestone
-        is set before the phases in progress are consolidated.</p></div>
+      <div class="cc"><p>The PRISM V2 foundation is delivered; the <code>prism-host</code>, <code>prism-viewer</code> and
+        pack packages are produced by the release pipeline (win-x64, linux-x64). No V2 release is published: clean-machine
+        acceptance remains to be recorded.</p></div>
     </div>
   </section>
 

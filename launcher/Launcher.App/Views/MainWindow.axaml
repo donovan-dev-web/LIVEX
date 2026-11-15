@@ -783,20 +783,34 @@
             <!-- ·Vue PRISM : posture pilotée — le moteur tourne sans autostart, le projet Unreal pilote ·-->
             <Border Classes="panel" Padding="16" IsVisible="{Binding SelectedNavId, Converter={x:Static vm:StringConverters.NavEquals}, ConverterParameter=prism}">
               <StackPanel Spacing="12">
-                <TextBlock Text="PRISM — MODE PILOTÉ" Classes="panel-title"/>
-                <TextBlock Text="Le moteur démarre sans --autostart sur le profil prism (monde 2 240, 1 tick = 5 s simulées, ADR-017). Votre projet Unreal rejoint les points d'accès ci-dessous puis pilote la simulation : Prepare(seed, ticksPerSecond) → Ready(worldVersion) → Start(seed, maxTicks) (TRANSPORT_API.md §3). Tant que ce mode est actif, l'écran Expériences est verrouillé — les deux parcours sont exclusifs."
+                <TextBlock Text="PRISM — HÔTE / VIEWER" Classes="panel-title"/>
+                <TextBlock Text="Mode hôte : PRISM seul, monde préparé et horloge locale. Mode viewer : l'hôte, SYNE puis le viewer sont chargés, et le viewer pilote le run (Play, Pause, Stop, Quitter). La simulation ne démarre qu'une fois la pile prête et sur votre Play. Tant que ce mode est actif, l'écran Expériences est verrouillé."
                            Classes="muted" TextWrapping="Wrap"/>
 
                 <Border Background="#0b0e13" BorderBrush="#262b34" BorderThickness="1" CornerRadius="8" Padding="12">
                   <StackPanel Spacing="10">
                     <TextBlock Text="MOTEUR" Classes="h-gold"/>
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                      <Button Classes="btn-primary" Content="Démarrer en mode PRISM" Command="{Binding StartPrismCommand}"
+                      <TextBlock Text="Mode" Classes="small" VerticalAlignment="Center"/>
+                      <ComboBox ItemsSource="{Binding PrismModes}" SelectedItem="{Binding SelectedPrismMode}"
+                                IsEnabled="{Binding !IsPrismRunning}" MinWidth="150"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Classes="btn-primary" Content="Démarrer" Command="{Binding StartPrismCommand}"
                               CommandParameter="start" IsEnabled="{Binding !IsPrismRunning}"/>
                       <Button Classes="btn" Content="Arrêter" Command="{Binding StopPrismCommand}"
                               CommandParameter="stop" IsEnabled="{Binding IsPrismRunning}"/>
                     </StackPanel>
                     <TextBlock Text="{Binding PrismStatus}" Classes="body" TextWrapping="Wrap"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding CanControlPrism}">
+                      <Button Classes="btn-primary" Content="Play" Command="{Binding PrismPlayCommand}"/>
+                      <Button Classes="btn" Content="Pause" Command="{Binding PrismPauseCommand}"/>
+                      <Button Classes="btn" Content="Stop" Command="{Binding PrismStopRunCommand}"/>
+                      <Button Classes="btn" Content="Quitter le viewer" Command="{Binding PrismQuitCommand}"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding PrismRunState}" Classes="muted" TextWrapping="Wrap"
+                               IsVisible="{Binding CanControlPrism}"/>
 
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6"
                           IsVisible="{Binding IsPrismRunning}" Margin="0,4,0,0">

@@ -5,20 +5,20 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import StatusBadge from '../components/StatusBadge.astro';
-import { PROJECT_STATE, RELEASE, VERSION_TABLE } from '../data/release';
+import { PROJECT_STATE, VERSION_TABLE } from '../data/release';
 import { url } from '../utils/url';
 
 const nf = new Intl.NumberFormat('fr-FR');
 ---
 <BaseLayout
   title="LIVEX — Démarrer en 5 minutes"
-  description="Guide de démarrage LIVEX et cible V2 : release V1.0.0, cognition SYNE, monde PRISM et analyse ECHOS."
+  description="Guide de démarrage LIVEX et V2 : release V1.0.0, cognition SYNE, monde PRISM et analyse ECHOS."
 >
   <PageHeader
     index="12b"
     eyebrow="Démarrer"
     title="LIVEX en 5 minutes."
-    lead="La release V1.0.0 est disponible ; ce guide conserve le démarrage depuis les sources. La cible V2.0.0 redéfinit notamment le rôle de PRISM."
+    lead="La release V1.0.0 est disponible ; ce guide conserve le démarrage depuis les sources. La V2.0.0 redéfinit le rôle de PRISM, dont le socle est livré."
     crumbs={[{ label: 'Démarrer' }]}
   />
 
@@ -32,13 +32,13 @@ const nf = new Intl.NumberFormat('fr-FR');
           <tbody>
             <tr><td>{VERSION_TABLE[0].component}</td><td>{VERSION_TABLE[0].version}</td><td><StatusBadge status="experimental" /></td></tr>
             <tr><td>{VERSION_TABLE[1].component}</td><td>{VERSION_TABLE[1].version}</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td>{VERSION_TABLE[2].component}</td><td>{VERSION_TABLE[2].version}</td><td><StatusBadge status="envisage" /></td></tr>
+            <tr><td>{VERSION_TABLE[2].component}</td><td>{VERSION_TABLE[2].version}</td><td><StatusBadge status="developpement" /></td></tr>
             <tr><td>{VERSION_TABLE[3].component}</td><td>{VERSION_TABLE[3].version}</td><td><StatusBadge status="developpement" /></td></tr>
           </tbody>
         </table>
       </div>
       <p class="mu" style="margin-top:14px;font-size:0.76rem">
-        V1.0.0 est publiée ; PRISM {RELEASE.planned} reste une cible. Les mesures du dépôt conservent la date de leur relevé.
+        V1.0.0 est publiée ; PRISM V2 est en préparation (socle P0–P11 livré, aucune release V2). Les mesures du dépôt conservent la date de leur relevé.
       </p>
     </div>
   </section>
@@ -57,7 +57,7 @@ const nf = new Intl.NumberFormat('fr-FR');
           </tbody>
         </table>
       </div>
-      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 n'est requis que pour PRISM.</p>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 n'est requis que pour PRISM V1 (release 1.0.0). PRISM V2 se construit avec le même SDK .NET (<code>dotnet build prism/Prism.sln</code>) ; le viewer est facultatif.</p>
     </div>
   </section>
 

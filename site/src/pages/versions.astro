@@ -18,7 +18,7 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
     index="13"
     eyebrow="Versions"
     title="Où en est le projet."
-    lead="La release V1.0.0 est publiée ; la version globale V2.0.0 est en préparation. Les données de réalisation affichées restent datées et ne décrivent pas l'avancement de la cible PRISM V2."
+    lead="La release V1.0.0 est publiée ; la version globale V2.0.0 est en préparation. Les données de réalisation sont datées : elles décrivent l'avancement du socle V2, pas une release publiée."
     crumbs={[{ label: 'Versions' }]}
   />
 
@@ -36,7 +36,7 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
           <tbody>
             <tr><td>SYNE</td><td>{VERSION_TABLE[0].version}</td><td>{VERSION_TABLE[0].note}</td><td><StatusBadge status="experimental" /></td></tr>
             <tr><td>ECHOS</td><td>{VERSION_TABLE[1].version}</td><td>{VERSION_TABLE[1].note}</td><td><StatusBadge status="experimental" /></td></tr>
-            <tr><td>PRISM</td><td>{VERSION_TABLE[2].version}</td><td>{VERSION_TABLE[2].note}</td><td><StatusBadge status="envisage" /></td></tr>
+            <tr><td>PRISM</td><td>{VERSION_TABLE[2].version}</td><td>{VERSION_TABLE[2].note}</td><td><StatusBadge status="developpement" /></td></tr>
             <tr><td>Launcher</td><td>{VERSION_TABLE[3].version}</td><td>{VERSION_TABLE[3].note}</td><td><StatusBadge status="developpement" /></td></tr>
           </tbody>
         </table>
@@ -61,9 +61,9 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
           <p>Relevé du {PROJECT_STATE.observedDate} : 0 échec sur les suites unitaires et d'intégration.</p>
         </div>
         <div>
-          <div class="n">{nf.format(PROJECT_STATE.trackedFiles)}</div>
-          <h3>fichiers suivis</h3>
-          <p>{nf.format(PROJECT_STATE.loc.total)} lignes analysées (source et tests).</p>
+          <div class="n">{nf.format(PROJECT_STATE.tests.total)}</div>
+          <h3>cas collectés</h3>
+          <p>{PROJECT_STATE.tests.ignored} ignorés, {PROJECT_STATE.tests.dynamic} cas Launcher dynamiques, {nf.format(PROJECT_STATE.trackedFiles)} fichiers suivis au {PROJECT_STATE.repoObservedDate}.</p>
         </div>
         <div>
           <div class="n">{ciJobs}</div>
@@ -78,8 +78,9 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
           <tbody>
             <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests par composant</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
-            <tr><td>Couverture ECHOS</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
-            <tr><td>Couverture SYNE (agrégée)</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
+            <tr><td>Couverture ECHOS</td><td>{PROJECT_STATE.coverage.echos} au {PROJECT_STATE.coverage.echosDate}</td></tr>
+            <tr><td>Couverture SYNE (agrégée)</td><td>{PROJECT_STATE.coverage.syne} au {PROJECT_STATE.coverage.syneDate} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
+            <tr><td>Portes franchies</td><td>G3 et G4 le 09/11/2026 · G5 le 14/11/2026 ; G1, G2 et G6 ouvertes</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
             <tr><td>Release</td><td>V1.0.0 publiée — {RELEASE.planned} en préparation</td></tr>
           </tbody>
@@ -96,8 +97,9 @@ const ciJobs = PROJECT_STATE.ci.split(' ')[0];
       <div class="sh"><b>13.3</b> Notes de version</div>
       <h2>Le changelog et les tags.</h2>
       <p>
-        La release V1.0.0 est publiée. Les données datées ci-dessus correspondent au relevé du dépôt indiqué ; elles
-        ne décrivent pas la réalisation de la cible V2.0.0. Le journal des changements et les releases GitHub font foi.
+        La release V1.0.0 est publiée. Les données datées ci-dessus correspondent au relevé indiqué ; elles décrivent
+        l'avancement du socle V2 (P0–P11, 525 tests PRISM) et non une release publiée. Le journal des changements et
+        les releases GitHub font foi.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Lire le CHANGELOG.md →</a>

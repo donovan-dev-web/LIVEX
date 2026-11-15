@@ -59,6 +59,30 @@ export const CLAIMS: Claim[] = [
     date: '2026-11-04',
   },
   {
+    id: 'tests-2026-11-15',
+    statement:
+      'Au 15 novembre 2026, les suites locales totalisent 2 184 cas collectés : 2 164 réussis, 16 ignorés, 0 échec (PRISM 525, SYNE 813, ECHOS 419, Launcher 236, Installateur 120, syne-mock 51 ; 4 cas Launcher dynamiques).',
+    status: 'vérifiée',
+    source: 'docs/governance/LIVEX-CURRENT-STATUS.md §2',
+    date: '2026-11-15',
+  },
+  {
+    id: 'coverage-2026-11-15',
+    statement:
+      'La couverture ECHOS est de 91,14 % au 15 novembre 2026 ; la couverture SYNE affichée (81,20 %) date du 19 octobre 2026 et n’a pas été rejouée depuis.',
+    status: 'vérifiée',
+    source: 'docs/governance/LIVEX-CURRENT-STATUS.md §2',
+    date: '2026-11-15',
+  },
+  {
+    id: 'gates-2026-11-15',
+    statement:
+      'G5 est franchie le 14 novembre 2026 (R3 : 30,5 ms/tick à 100 agents, empreinte 855fdc2e1387e8d3 reproduite deux fois) ; G1 reste ouverte (B9 : 431,5 ms/tick, ApplyWrites 404,7 ms soit 94 %).',
+    status: 'vérifiée',
+    source: 'docs/governance/LIVEX-CURRENT-STATUS.md §3–§4',
+    date: '2026-11-15',
+  },
+  {
     id: 'prism-ldk-package',
     statement: 'PRISM-LDK est le plugin Unreal de PRISM V1 ; cette architecture est historique et ne décrit pas la cible V2.',
     status: 'prudente',

@@ -17,7 +17,7 @@ import { PROJECT_STATE_EN } from '../../../data/release';
     index="12"
     eyebrow="Download · Installation"
     title="Start LIVEX from source."
-    lead="No installer is distributed yet. Here is how to run the SYNE + ECHOS stack from the repository, locally — a development environment, not a public service."
+    lead="The V1.0.0 installer is available (Windows x64, Linux x64). Here is also how to run the SYNE + ECHOS + PRISM stack from the repository, locally — a development environment, not a public service."
     crumbs={[{ label: 'Download', href: 'telecharger/' }, { label: 'Installation' }]}
   />
 
@@ -41,7 +41,7 @@ import { PROJECT_STATE_EN } from '../../../data/release';
         </table>
       </div>
       <div class="cc"><p>Three tools are enough for the full stack: .NET SDK, Python and Node.js. Unreal Engine is
-        only required to run PRISM V1. The V2 target is planned in .NET.</p></div>
+        only required to run PRISM V1; PRISM V2 is a .NET host (<code>prism/Prism.sln</code>).</p></div>
     </div>
   </section>
 
@@ -104,10 +104,13 @@ cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
 # ECHOS (from the root)
 echos/.venv/bin/python -m pytest -q
 
+# PRISM V2
+cd prism &amp;&amp; dotnet test Prism.sln --configuration Release
+
 # Launcher
 cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
       <p><StatusBadge status="experimental" lang="en" /> Measured on {PROJECT_STATE_EN.observedDate}: <strong>0
-        failures</strong> across these three suites. The paths remain indicative and follow the development
+        failures</strong> across these suites (2,164 passing, 16 ignored). The paths remain indicative and follow the development
         repository.</p>
       <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Full installation guide ↗</a></p>
     </div>

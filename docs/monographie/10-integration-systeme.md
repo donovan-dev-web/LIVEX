@@ -74,7 +74,7 @@ simultanément le monde PRISM et l'état cognitif SYNE.
 > **Depuis, ces preuves ont été produites.** R2 (50 agents × 5 000 ticks) est
 > reproductible (`0bf833f4bcfc1e5e` × 3 hôtes) et la reprise couplée est
 > bit-identique ; au 15 novembre 2026, les suites comptent **813/813** pour SYNE
-> et **487/487** pour PRISM. Voir le
+> et **525/525** pour PRISM. Voir le
 > [statut transversal](../governance/LIVEX-CURRENT-STATUS.md).
 
 La preuve d'intégration R2 est donc acquise : 5 000 ticks, au moins trois

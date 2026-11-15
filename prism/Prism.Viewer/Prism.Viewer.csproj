@@ -6,6 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Prism.Contracts\Prism.Contracts.csproj" />
     <ProjectReference Include="..\Prism.Core\Prism.Core.csproj" />
+    <ProjectReference Include="..\Prism.Host\Prism.Host.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Silk.NET.GLFW" Version="2.22.0" />

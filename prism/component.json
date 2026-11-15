@@ -10,6 +10,10 @@
     "linux": "bin/prism-host"
   },
   "workingDirectory": ".",
+  "arguments": [
+    "--seed",
+    "12345"
+  ],
   "endpoints": {
     "control": {
       "transport": "http"

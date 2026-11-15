@@ -60,8 +60,8 @@ que les compteurs mesurés à des dates différentes ne soient pas additionnés.
 - **ECHOS 0.1.0** : API d'analyse headless, stockage SQLite/Parquet et
   ingestion SYNE. ECHOS sait valider et conserver le flux de lecture PRISM V2 ;
   cette voie n'est pas encore raccordée au cycle de production des runs et aux
-  métriques. Relevé du 15 novembre 2026 : **393 réussis, 14 ignorés,
-  couverture 91,24 %**.
+  métriques.Relevé du 15 novembre 2026 : **419 réussis, 14 ignorés,
+couverture 91,14 %**.
 - **PRISM V1 / PRISM-LDK** : projet et plugin Unreal livrés avec LIVEX 1.0.0.
   Ils sont historiques et restent documentés à ce titre.
 - **PRISM V2** : simulation .NET headless, autorité du monde physique. Le

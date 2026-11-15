@@ -1,9 +1,9 @@
 # LAUNCHER — Orchestrateur de la pile LIVEX
 
 **Composant** : LIVEX (Launcher)
-**Statut** : [RELEASE V1 DISPONIBLE — INTÉGRATION PRISM V2 PARTIELLE]
+**Statut** : [RELEASE V1 DISPONIBLE — SESSION PRISM V2 OPÉRATIONNELLE (MODES HÔTE/VIEWER)]
 **Version cible** : 0.1.0
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `../syne`, `../echos`, `../prism`, `../COMMUNICATION.md`, `../../VERSIONING.md`
 **Source Monographie** : —
 

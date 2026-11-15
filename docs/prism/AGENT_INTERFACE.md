@@ -1,8 +1,8 @@
 # AGENT_INTERFACE — Impact sur les agents BDI (côté SYNE)
 
 **Composant** : PRISM (impact SYNE)
-**Statut** : [SOCLE DE TRANSPORT — ADAPTATION COGNITIVE NON IMPLÉMENTÉE]
-**Dernière mise à jour** : 3 novembre 2026
+**Statut** : [ADAPTATION COGNITIVE LIVRÉE — `PrismObservationMapper`, write-back BDI ; CONTRAT 1.0.0 GELÉ]
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`API_CONTRACTS.md`](API_CONTRACTS.md), [`adr/ADR-009-planification-dans-syne-savoir-des-recettes.md`](adr/ADR-009-planification-dans-syne-savoir-des-recettes.md), `../syne/COGNITIVE_ARCHITECTURE.md`
 **Source Monographie** : —
 

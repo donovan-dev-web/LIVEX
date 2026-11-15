@@ -29,7 +29,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 {
     private const string SessionTokenPrefix = "lxt-";
     private const int RecentLogCount = 30;
-    private static readonly string[] KnownComponents = ["syne", "syne-mock", "echos", "prism"];
+    private static readonly string[] KnownComponents =
+        ["syne", "syne-mock", "echos", "prism", "prism-host", "prism-viewer"];
 
     private readonly OrchestrationService _orchestration;
     private readonly IProcessManager _processes;
@@ -227,6 +228,190 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
             ? observe.Url
             : null;
         return new PrismEngineStart(null, engineId, controlUrl, observeUrl);
+    }
+
+    /// <summary>Démarre l'hôte PRISM seul : monde préparé et horloge locale.</summary>
+    public async Task<PrismEngineStart> StartPrismHostAsync()
+    {
+        var error = await StartComponentAsync(
+            "prism-host",
+            extraArguments: ["--autostart", "--ticks-per-second", "20"]).ConfigureAwait(false);
+        return error is null
+            ? BuildStart("prism-host")
+            : new PrismEngineStart(error, null, null, null);
+    }
+
+    /// <summary>
+    /// Charge la pile puis ouvre le viewer : hôte préparé, SYNE en attente (cognition
+    /// construite, « ready »), viewer en dernier. Aucun tick avant le Play du viewer.
+    /// </summary>
+    public async Task<PrismEngineStart> StartPrismViewerSessionAsync()
+    {
+        var started = new List<string>();
+
+        async Task<string?> StartOneAsync(string componentId, IReadOnlyList<string>? extra)
+        {
+            var failure = await StartComponentAsync(componentId, extraArguments: extra).ConfigureAwait(false);
+            if (failure is null)
+            {
+                started.Add(componentId);
+            }
+
+            return failure;
+        }
+
+        async Task<PrismEngineStart> FailAsync(string cause)
+        {
+            foreach (var componentId in Enumerable.Reverse(started))
+            {
+                await StopComponentAsync(componentId).ConfigureAwait(false);
+            }
+
+            return new PrismEngineStart(cause, null, null, null);
+        }
+
+        var error = await StartOneAsync("prism-host", ["--prepare"]).ConfigureAwait(false);
+        if (error is not null)
+        {
+            return await FailAsync(error).ConfigureAwait(false);
+        }
+
+        if (!TryGetManaged("prism-host", out var host))
+        {
+            return await FailAsync("hôte PRISM non enregistré").ConfigureAwait(false);
+        }
+
+        var ready = await WaitReadyAsync(host.Control, TimeSpan.FromSeconds(60)).ConfigureAwait(false);
+        if (ready is not null)
+        {
+            return await FailAsync(ready).ConfigureAwait(false);
+        }
+
+        error = await StartOneAsync("syne", [
+            "--prism-url", host.Control.ToString().TrimEnd('/'),
+            "--prism-agents", "12",
+            "--prism-ticks", "1000000",
+            // Le pack accompagne l'hôte publié (prism-host/content/minimal).
+            "--prism-content-dir", Path.Combine(host.Installation.Location, "content", "minimal"),
+            "--prism-standby",
+        ]).ConfigureAwait(false);
+        if (error is not null)
+        {
+            return await FailAsync(error).ConfigureAwait(false);
+        }
+
+        if (!TryGetManaged("syne", out var syne))
+        {
+            return await FailAsync("SYNE non enregistré").ConfigureAwait(false);
+        }
+
+        ready = await WaitReadyAsync(syne.Control, TimeSpan.FromMinutes(3)).ConfigureAwait(false);
+        if (ready is not null)
+        {
+            return await FailAsync(ready).ConfigureAwait(false);
+        }
+
+        error = await StartOneAsync("prism-viewer", null).ConfigureAwait(false);
+        if (error is not null)
+        {
+            return await FailAsync(error).ConfigureAwait(false);
+        }
+
+        if (!TryGetManaged("prism-viewer", out var viewer))
+        {
+            return await FailAsync("viewer non enregistré").ConfigureAwait(false);
+        }
+
+        string? readStream = _orchestration.Registry.FindByComponent("prism-host") is { } hostInstance
+            && hostInstance.Endpoints.TryGetValue("readStream", out var stream)
+                ? stream.Url
+                : null;
+        return new PrismEngineStart(
+            null,
+            "prism-viewer",
+            viewer.Control.ToString().TrimEnd('/'),
+            readStream);
+    }
+
+    /// <summary>Play/Pause/Stop/Quit : le viewer relaie la commande à l'hôte PRISM.</summary>
+    public async Task<string?> PrismRunControlAsync(string action)
+    {
+        if (action is not ("play" or "pause" or "stop" or "quit"))
+        {
+            return $"action de pilotage inconnue : {action}";
+        }
+
+        if (!TryGetManaged("prism-viewer", out var viewer))
+        {
+            return "le viewer n'est pas démarré";
+        }
+
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            new Uri(viewer.Control, $"/control/{action}"))
+        {
+            // HttpListener exige un corps borné sur POST : sans lui, la requête
+            // est refusée en 411 avant même d'atteindre le viewer.
+            Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json"),
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _sessionToken);
+        try
+        {
+            using var response = await client.SendAsync(request).ConfigureAwait(false);
+            return response.IsSuccessStatusCode
+                ? null
+                : $"le viewer refuse la commande (HTTP {(int)response.StatusCode})";
+        }
+        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+        {
+            return exception.Message;
+        }
+    }
+
+    /// <summary>Arrête la session PRISM dans l'ordre inverse du démarrage.</summary>
+    public async Task StopPrismSessionAsync()
+    {
+        foreach (var componentId in new[] { "prism-viewer", "syne", "prism-host" })
+        {
+            await StopComponentAsync(componentId).ConfigureAwait(false);
+        }
+    }
+
+    private PrismEngineStart BuildStart(string componentId)
+    {
+        var instance = _orchestration.Registry.FindByComponent(componentId);
+        string? controlUrl = instance is not null && instance.Endpoints.TryGetValue("control", out var control)
+            ? control.Url
+            : null;
+        string? readStreamUrl = instance is not null && instance.Endpoints.TryGetValue("readStream", out var stream)
+            ? stream.Url
+            : null;
+        return new PrismEngineStart(null, componentId, controlUrl, readStreamUrl);
+    }
+
+    private static async Task<string?> WaitReadyAsync(Uri control, TimeSpan timeout)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                using var response = await client.GetAsync(new Uri(control, "/health/ready")).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+            }
+            catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+            {
+            }
+
+            await Task.Delay(500).ConfigureAwait(false);
+        }
+
+        return $"{control} : composant non prêt après {timeout.TotalSeconds:F0} s";
     }
 
     /// <summary>Posture de lancement du moteur : batch piloté par le Launcher, ou pilotée par PRISM.</summary>
@@ -702,7 +887,10 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         }
     }
 
-    private async Task<string?> StartComponentAsync(string componentId, EnginePosture posture = EnginePosture.Batch)
+    private async Task<string?> StartComponentAsync(
+        string componentId,
+        EnginePosture posture = EnginePosture.Batch,
+        IReadOnlyList<string>? extraArguments = null)
     {
         lock (_gate)
         {
@@ -727,7 +915,7 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
 
         try
         {
-            return await StartComponentCoreAsync(componentId, posture).ConfigureAwait(false);
+            return await StartComponentCoreAsync(componentId, posture, extraArguments).ConfigureAwait(false);
         }
         finally
         {
@@ -738,7 +926,10 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         }
     }
 
-    private async Task<string?> StartComponentCoreAsync(string componentId, EnginePosture posture)
+    private async Task<string?> StartComponentCoreAsync(
+        string componentId,
+        EnginePosture posture,
+        IReadOnlyList<string>? extraArguments = null)
     {
         var installation = _orchestration.Registry.GetActiveInstallation(componentId);
         if (installation is null)
@@ -820,6 +1011,13 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         if (manifest.Arguments is { Count: > 0 } declaredArguments)
         {
             arguments.AddRange(declaredArguments);
+        }
+
+        // Arguments de session (PRISM gaté, pilotage) : ils complètent le manifeste
+        // sans le modifier, et ne sont jamais passés à un autre composant.
+        if (extraArguments is { Count: > 0 })
+        {
+            arguments.AddRange(extraArguments);
         }
 
         foreach (var (kind, endpoint) in endpointDefinitions)
@@ -1210,6 +1408,14 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         }
     }
 
+    private bool TryGetManaged(string componentId, out ManagedInstance instance)
+    {
+        lock (_gate)
+        {
+            return _managed.TryGetValue(componentId, out instance!);
+        }
+    }
+
     private static long ParseMemInfoKb(string line)
     {
         var digits = new string(line.SkipWhile(char.IsWhiteSpace)
@@ -1278,6 +1484,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         "syne-mock" => "SYNE — mock",
         "echos" => "ECHOS",
         "prism" => "PRISM",
+        "prism-host" => "PRISM — hôte",
+        "prism-viewer" => "PRISM — viewer",
         _ => componentId,
     };
 
@@ -1287,6 +1495,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         "syne-mock" => "Moteur de simulation simulé pour le développement",
         "echos" => "Analyse et observation des mondes simulés",
         "prism" => "Immersion dans le monde simulé",
+        "prism-host" => "Hôte headless du monde simulé",
+        "prism-viewer" => "Rendu et observation du run",
         _ => string.Empty,
     };
 
@@ -1296,6 +1506,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         "syne-mock" => "Mock SYNE — exécution de développement",
         "echos" => "Python — API REST",
         "prism" => "Unreal Engine — PRISM-LDK",
+        "prism-host" => ".NET 10 — Prism.Host",
+        "prism-viewer" => ".NET 10 — Prism.Viewer (Silk.NET)",
         _ => string.Empty,
     };
 
@@ -1305,6 +1517,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         "syne-mock" => "Remplace SYNE pour tester l'orchestration sans moteur de production.",
         "echos" => "Collecte les flux de simulation et produit analyses et rapports d'émergence.",
         "prism" => "Rend le monde en immersion. Non implémenté — verrouillé au jalon G7 (ADR-006).",
+        "prism-host" => "Prépare le monde, avance les ticks et publie le flux de lecture.",
+        "prism-viewer" => "Affiche le monde et les agents du run, en lecture seule.",
         _ => string.Empty,
     };
 
@@ -1326,6 +1540,8 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
         "syne" => "#1fa8e8",
         "echos" => "#a04cf0",
         "prism" => "#f0902d",
+        "prism-host" => "#f0902d",
+        "prism-viewer" => "#e8b46a",
         _ => "#9aa0aa",
     };
 

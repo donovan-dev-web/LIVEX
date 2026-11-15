@@ -1,8 +1,8 @@
 # ARCHITECTURE — PRISM (V2)
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION EN COURS — SOCLES P2 À P11 EN PLACE ; P12/P13 À FAIRE]
-**Dernière mise à jour** : 11 novembre 2026
+**Statut** : [IMPLÉMENTATION EN COURS — P2 À P11 LIVRÉES (VIEWER COMPRIS) ; P12/P13 À FAIRE]
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`VISION.md`](VISION.md), [`adr/ADR-005-stack-dotnet-silknet-headless.md`](adr/ADR-005-stack-dotnet-silknet-headless.md), [`API_CONTRACTS.md`](API_CONTRACTS.md)
 **Source Monographie** : —
 
@@ -37,7 +37,7 @@ prism/
 ├── Prism.Core.Tests/  Prism.Viewer.Tests/  Prism.Content.Tests/  Prism.Contracts.Tests/
 ├── Prism.Host.Tests/  Prism.Bots.Tests/  Prism.Architecture.Tests/
 ├── content/               # pack de contenu par défaut (JSON) — voir CONTENT_SPEC.md
-└── component.json         # manifeste Launcher (host) ; le manifeste viewer reste à produire (PRISM-118)
+└── component.json         # manifeste Launcher (host) ; celui du viewer est `viewer.component.json` (PRISM-118)
 ```
 
 Règles de dépendance : `Core` ← `Content` ← `Host` ; `Viewer` ne référence que `Contracts` (et `Core` en lecture pour le meshing partagé via un sous-ensemble `Prism.Core.Readonly`). Aucune flèche ne va de `Core` vers un projet graphique. Un test d'architecture (analyseur de références) l'impose en CI.

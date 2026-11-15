@@ -6,24 +6,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
 import CtaBand from '../../components/CtaBand.astro';
+import { Image } from 'astro:assets';
+import prismViewer from '../../assets/captures/prism-viewer-embedded.png';
 import { url } from '../../utils/url';
 ---
 <BaseLayout
   title="PRISM V2 : le monde physique de LIVEX"
-  description="La cible PRISM V2 fait de PRISM l’autorité du monde physique de LIVEX : un noyau .NET headless, un contrat avec SYNE et un visualiseur facultatif."
+  description="PRISM V2 est l’autorité du monde physique de LIVEX : hôte .NET headless, contrat 1.0.0 avec SYNE, viewer facultatif et plan de contrôle. Socle P0–P11 livré."
 >
   <PageHeader
     index="08"
     eyebrow="Architecture · PRISM V2"
     title="Le monde devient un composant."
-    lead="Après la release V1, PRISM est entièrement repensé : il porte l’espace, la matière et le temps physique. SYNE garde la cognition des agents ; le rendu devient un client facultatif."
+    lead="Après la release V1, PRISM a été entièrement repensé : il porte l’espace, la matière et le temps physique. Le socle est livré ; SYNE garde la cognition des agents, le rendu est un client facultatif."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'PRISM' }]}
   />
 
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="envisage" /> <span class="mu">Version cible PRISM 2.0.0 · périmètre prévu</span></p>
-      <div class="cc"><p>Cette page décrit <strong>la cible V2 prévue</strong> et part du principe que le périmètre spécifié sera réalisé. Elle ne présente pas un audit de l’état actuel. La documentation sera confrontée aux réalisations et validations avant toute publication publique.</p></div>
+      <p style="margin-top:0"><StatusBadge status="developpement" /> <span class="mu">PRISM 2.0.0-preview.1 · socle P0–P11 livré</span></p>
+      <div class="cc"><p>Le socle est <strong>livré et testé</strong> (525/525 au 15 novembre 2026) : monde, contenu, temps, corps et navigation, actions, hôte headless, persistance, viewer et plan de contrôle. Cette page décrit ce qui fonctionne et ce qui reste ouvert — notamment la performance de l’hôte (G1). Aucune release V2 n’est publiée.</p></div>
 
       <div class="sh"><b>8.1</b> Responsabilités</div>
       <h2>PRISM porte le monde matériel.</h2>
@@ -45,9 +47,9 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>8.2</b> Monde et simulation</div>
       <h2>Un monde borné, décrit par des données.</h2>
-      <p>La cible est un monde de colonnes 2.5D, découpé en régions, généré par seed et défini par des packs de contenu. Matériaux, objets, recettes, cultures et gabarits déterminent les règles du monde sans imposer une recompilation pour chaque ajout de contenu.</p>
+      <p>Le monde est un ensemble de colonnes 2.5D, découpé en régions, généré par seed et défini par des packs de contenu. Matériaux, objets, recettes, cultures et gabarits déterminent les règles du monde sans imposer une recompilation pour chaque ajout de contenu. Un pack invalide empêche le démarrage et liste toutes ses violations.</p>
       <p>Les agents peuvent se déplacer, extraire des ressources, fabriquer et stocker des objets, cultiver, construire par gabarits et coopérer autour de chantiers. La perception est locale et différentielle : PRISM fournit à SYNE ce qu’un agent peut observer, tandis que SYNE conserve ses souvenirs et ses croyances.</p>
-      <p>Un noyau .NET indépendant du rendu doit permettre les runs headless. L’arithmétique entière, les flux aléatoires déterministes, les empreintes et les points de reprise visent des simulations reproductibles.</p>
+      <p>Le noyau .NET est indépendant du rendu : les runs headless sont la règle, le viewer l’exception. L’arithmétique entière, les flux aléatoires déterministes, les empreintes et les points de reprise visent des simulations reproductibles. R2 (50 agents) rejoue trois fois la même empreinte <code>0bf833f4bcfc1e5e</code>, checkpoint relu après redémarrage ; R3 tient 30,5 ms/tick à 100 agents, sous le budget de 50 ms (G5 franchie le 14 novembre 2026).</p>
     </div>
   </section>
 
@@ -55,17 +57,41 @@ import { url } from '../../utils/url';
     <div class="w">
       <div class="sh"><b>8.3</b> Contrat et visualisation</div>
       <h2>Des intentions aux conséquences.</h2>
-      <p>Le contrat cible SYNE↔PRISM 1.0 organise les échanges en commandes, observations et événements. Les commandes sont idempotentes et les échecs sont motivés. Un flux de lecture distinct transmet à ECHOS et au visualiseur les instantanés, deltas régionaux et informations utiles à l’analyse.</p>
-      <p>Le host headless pilote le cycle de vie du run et avance selon les ticks de SYNE. Le visualiseur prévu repose sur Silk.NET et OpenGL ; il lit l’état publié sans détenir la vérité du monde ni imposer sa cadence.</p>
+      <p>Le contrat SYNE↔PRISM 1.0, gelé le 4 novembre 2026, organise les échanges en commandes, observations et événements. Les commandes sont idempotentes par <code>commandId</code> et les échecs sont motivés. Un flux de lecture distinct transmet à ECHOS et au visualiseur les instantanés, deltas régionaux et informations utiles à l’analyse ; ECHOS l’ingère déjà en production.</p>
+      <p>L’hôte headless pilote le cycle de vie du run et avance selon les ticks de SYNE. Le viewer repose sur Silk.NET et OpenGL : terrain par régions avec budget par image, atlas procédural, cycle jour/nuit, entités interpolées, chantiers en fantômes et sept calques d’inspection. Il lit l’état publié sans détenir la vérité du monde ni imposer sa cadence, et se lance en client (<code>--connect</code>), embarqué ou en rejeu.</p>
+      <p>Le contrôle est explicite : le viewer expose <code>play</code>, <code>pause</code>, <code>stop</code> et <code>quit</code>, mais chaque commande est relayée à l’hôte, seule autorité. Le Launcher propose deux modes de session, <strong>Hôte</strong> et <strong>Viewer</strong> ; la pile reste au tick <code>-1</code> jusqu’au Play, vérifié par une chaîne réelle (Play au tick 338, pause 343, reprise 499, arrêt 503).</p>
+      <figure style="margin:26px 0 0">
+        <Image src={prismViewer} alt="Viewer PRISM V2 en mode embarqué : monde voxel 256×256, agents et HUD de débogage" style="width:100%;height:auto" loading="lazy" />
+        <figcaption class="mu" style="margin-top:8px;font-size:0.74rem">Viewer PRISM V2 en mode embarqué, capture du 15 novembre 2026 par le module <code>--screenshot</code> : monde 256×256, huit agents, HUD de débogage. Le rendu est un client de lecture ; la capture documente l’interface, pas le relevé B8.</figcaption>
+      </figure>
       <div class="cc"><p>La coopération est une hypothèse à mesurer par des expériences et des ablations. Les systèmes du monde peuvent créer des occasions de coopération ; ils ne garantissent ni son apparition ni un résultat social déterminé.</p></div>
       <p style="margin-top:18px"><a class="bt" href={url('technique/')}>← Vue d'ensemble</a></p>
     </div>
   </section>
 
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>8.4</b> Preuves et limites</div>
+      <h2>Ce qui est vérifié, ce qui reste ouvert.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Acquis au 15 novembre 2026</th><th scope="col">Reste à produire</th></tr></thead>
+          <tbody>
+            <tr><td>525/525 tests PRISM, dont 100/100 pour le viewer.</td><td>Relevé <strong>B8</strong> publiable : la sonde du 15 novembre n’a pas été retenue comme relevé.</td></tr>
+            <tr><td>Chaîne de contrôle réelle : pile au tick <code>-1</code>, Play 338, pause 343, reprise 499, arrêt 503, <code>quit</code> HTTP 202.</td><td><strong>Validation graphique Linux</strong> sur fenêtre réelle ; seule Windows a été vérifiée à l’écran.</td></tr>
+            <tr><td>R2 : empreinte <code>0bf833f4bcfc1e5e</code> rejouée sur trois hôtes, 50 agents × 5 000 ticks.</td><td><strong>G1</strong> (performance de l’hôte) ouverte : 431,5 ms/tick à 100 agents, dont 94 % dans <code>ApplyWrites</code> ; 850 ms à 1 000 agents.</td></tr>
+            <tr><td>G5 franchie le 14 novembre : 30,5 ms/tick à 100 agents côté SYNE, 25 chaînes, sous le budget de 50 ms.</td><td>Calques <code>Structures</code> et <code>Ownership</code> limités à ce que publie le contrat 1.0.0 ; G7 (rapport expérimental) reportée.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>Aucune release V2 n’est publiée. Le socle est livré, mais une capture ou un test ne remplace pas une validation expérimentale : les portes ouvertes restent nommées, avec leur mesure et leur date.</p></div>
+    </div>
+  </section>
+
   <CtaBand
-    eyebrow="8.4 · Documentation"
-    title="Explorer la conception V2"
-    lead="Les spécifications PRISM détaillent le monde, les systèmes, le contrat et les critères de validation prévus."
+    eyebrow="8.5 · Documentation"
+    title="Explorer PRISM V2"
+    lead="Les spécifications détaillent le monde, les systèmes, le contrat et les critères de validation ; les mesures et leurs limites sont publiées à part."
     primaryLabel="Documentation PRISM"
     primaryHref="documentation/"
     secondaryLabel="Architecture LIVEX"

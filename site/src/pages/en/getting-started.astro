@@ -5,7 +5,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import StatusBadge from '../../components/StatusBadge.astro';
-import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN, VERSION_TABLE_EN } from '../../data/release';
+import { PROJECT_STATE, PROJECT_STATE_EN, VERSION_TABLE_EN } from '../../data/release';
 import { url } from '../../utils/url';
 
 const nf = new Intl.NumberFormat('en-US');
@@ -35,13 +35,13 @@ const nf = new Intl.NumberFormat('en-US');
           <tbody>
             <tr><td>{VERSION_TABLE_EN[0].component}</td><td>{VERSION_TABLE_EN[0].version}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td>{VERSION_TABLE_EN[1].component}</td><td>{VERSION_TABLE_EN[1].version}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>{VERSION_TABLE_EN[2].component}</td><td>{VERSION_TABLE_EN[2].version}</td><td><StatusBadge status="envisage" lang="en" /></td></tr>
+            <tr><td>{VERSION_TABLE_EN[2].component}</td><td>{VERSION_TABLE_EN[2].version}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
             <tr><td>{VERSION_TABLE_EN[3].component}</td><td>{VERSION_TABLE_EN[3].version}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
           </tbody>
         </table>
       </div>
       <p class="mu" style="margin-top:14px;font-size:0.76rem">
-        V1.0.0 is released; PRISM {RELEASE_EN.plannedLabel} remains a target. Repository measures keep their observation date.
+        V1.0.0 is released; PRISM V2 is in preparation (P0–P11 foundation delivered, no V2 release). Repository measures keep their observation date.
       </p>
     </div>
   </section>
@@ -60,7 +60,7 @@ const nf = new Intl.NumberFormat('en-US');
           </tbody>
         </table>
       </div>
-      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 is required only for PRISM.</p>
+      <p class="mu" style="margin-top:14px;font-size:0.76rem">Unreal Engine 5.8 is required only for PRISM V1 (release 1.0.0). PRISM V2 builds with the same .NET SDK (<code>dotnet build prism/Prism.sln</code>); the viewer is optional.</p>
     </div>
   </section>
 

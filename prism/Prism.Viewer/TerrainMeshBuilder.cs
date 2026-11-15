@@ -11,11 +11,19 @@ public sealed record TerrainMaterialPalette(
     ushort Soil,
     ushort Bedrock,
     ushort Water,
-    bool ZoneOverlay = false)
+    bool ZoneOverlay = false,
+    ViewerLayer[]? ActiveLayers = null,
+    ushort Tree = 0,
+    ushort Leaves = 0,
+    ushort Ore = 0,
+    bool ShowBuried = false)
 {
+    public bool HasLayer(ViewerLayer layer) =>
+        ActiveLayers is not null && Array.IndexOf(ActiveLayers, layer) >= 0;
+
     public (float R, float G, float B) GetColor(ushort materialId, WorldZone zone)
     {
-        if (ZoneOverlay)
+        if (ZoneOverlay || HasLayer(ViewerLayer.Zones))
         {
             return zone switch
             {
@@ -26,6 +34,21 @@ public sealed record TerrainMaterialPalette(
             };
         }
 
+        if (HasLayer(ViewerLayer.Resources))
+        {
+            // Calque « ressources » : le matériau porte la lecture, la zone est neutralisée
+            // pour que la teinte signale la matière et non le biome.
+            if (materialId == Water) return (0.14f, 0.34f, 0.60f);
+            if (materialId == Sand) return (0.88f, 0.78f, 0.48f);
+            if (materialId == Stone) return (0.56f, 0.60f, 0.66f);
+            if (materialId == Soil) return (0.46f, 0.30f, 0.18f);
+            if (materialId == Bedrock) return (0.22f, 0.22f, 0.26f);
+            return (0.52f, 0.54f, 0.36f);
+        }
+
+        if (Ore != 0 && materialId == Ore) return (0.74f, 0.50f, 0.24f);
+        if (Tree != 0 && materialId == Tree) return (0.40f, 0.27f, 0.16f);
+        if (Leaves != 0 && materialId == Leaves) return (0.20f, 0.47f, 0.25f);
         if (materialId == Water) return (0.20f, 0.48f, 0.68f);
         if (materialId == Sand) return (0.70f, 0.64f, 0.46f);
         if (materialId == Stone) return (0.48f, 0.50f, 0.52f);
@@ -43,13 +66,16 @@ public sealed record TerrainMaterialPalette(
 
 public static class TerrainMeshBuilder
 {
+    /// <summary>Position (3), couleur (3) et coordonnées de texture (2).</summary>
+    public const int FloatsPerVertex = 8;
+
     public static IReadOnlyList<TerrainRegionMesh> BuildRegions(
         WorldGrid world,
         ReadOnlySpan<WorldZone> zones,
         TerrainMaterialPalette palette)
     {
         ValidateInputs(world, zones, palette);
-        BuildTopSurfaces(world, out var topHeights, out var topMaterials);
+        BuildTopSurfaces(world, palette.Water, out var topHeights, out var topMaterials);
         var regions = new TerrainRegionMesh[world.RegionCount];
         for (var regionId = 0; regionId < world.RegionCount; regionId++)
         {
@@ -125,6 +151,7 @@ public static class TerrainMeshBuilder
                 }
 
                 var color = palette.GetColor(key.MaterialId, key.Zone);
+                var tile = ViewerTextureAtlas.GetTileIndex(key.MaterialId, palette);
                 AddQuad(
                     vertices,
                     (x, y, key.TopZ),
@@ -132,6 +159,7 @@ public static class TerrainMeshBuilder
                     (x + width, y + height, key.TopZ),
                     (x, y + height, key.TopZ),
                     color,
+                    tile,
                     CornerOcclusion(x, y, key.TopZ),
                     CornerOcclusion(x + width, y, key.TopZ),
                     CornerOcclusion(x + width, y + height, key.TopZ),
@@ -143,6 +171,7 @@ public static class TerrainMeshBuilder
         AddHorizontalSides(false);
         AddVerticalSides(true);
         AddVerticalSides(false);
+        AddOverrideBoxes();
         return new TerrainRegionMesh(regionId, vertices.ToArray());
 
         void AddHorizontalSides(bool north)
@@ -175,6 +204,7 @@ public static class TerrainMeshBuilder
                     }
 
                     var color = ShadeSide(palette.GetColor(key.MaterialId, key.Zone));
+                    var tile = ViewerTextureAtlas.GetTileIndex(key.MaterialId, palette);
                     if (north)
                     {
                         AddQuad(vertices,
@@ -182,7 +212,7 @@ public static class TerrainMeshBuilder
                             (minX + runEnd + 1, y, key.BottomZ),
                             (minX + runEnd + 1, y, key.TopZ),
                             (minX + runStart, y, key.TopZ),
-                            color, 1f);
+                            color, tile, 1f);
                     }
                     else
                     {
@@ -191,7 +221,7 @@ public static class TerrainMeshBuilder
                             (minX + runStart, y + 1, key.BottomZ),
                             (minX + runStart, y + 1, key.TopZ),
                             (minX + runEnd + 1, y + 1, key.TopZ),
-                            color, 1f);
+                            color, tile, 1f);
                     }
 
                     localX = runEnd + 1;
@@ -229,6 +259,7 @@ public static class TerrainMeshBuilder
                     }
 
                     var color = ShadeSide(palette.GetColor(key.MaterialId, key.Zone));
+                    var tile = ViewerTextureAtlas.GetTileIndex(key.MaterialId, palette);
                     if (west)
                     {
                         AddQuad(vertices,
@@ -236,7 +267,7 @@ public static class TerrainMeshBuilder
                             (x, minY + runStart, key.BottomZ),
                             (x, minY + runStart, key.TopZ),
                             (x, minY + runEnd + 1, key.TopZ),
-                            color, 1f);
+                            color, tile, 1f);
                     }
                     else
                     {
@@ -245,12 +276,85 @@ public static class TerrainMeshBuilder
                             (x + 1, minY + runEnd + 1, key.BottomZ),
                             (x + 1, minY + runEnd + 1, key.TopZ),
                             (x + 1, minY + runStart, key.TopZ),
-                            color, 1f);
+                            color, tile, 1f);
                     }
 
                     localY = runEnd + 1;
                 }
             }
+        }
+
+        // Arbres, minerais et blocs posés : les overrides non aqueux sont rendus en volumes.
+        // Un bloc enterré reste dessiné mais caché par la surface, et réapparaît dans la vue en
+        // coupe ; un bloc retiré (override air ou entrée disparue du delta) disparaît au rebuild.
+        void AddOverrideBoxes()
+        {
+            foreach (var entry in world.EnumerateRegionOverrides(regionId))
+            {
+                var block = entry.Value;
+                if (block.IsAir || block.MaterialId == 0 || block.MaterialId == palette.Water)
+                {
+                    continue;
+                }
+
+                var coordinate = entry.Key;
+                var index = coordinate.X + world.Width * coordinate.Y;
+                // Un bloc enterré n'est pas rendu dans la vue normale : la coque du monde
+                // n'a pas de volume intérieur, il flotterait devant les parois. La vue en
+                // coupe le révèle (ShowBuried), car c'est là qu'il porte une information.
+                if (coordinate.Z < topHeights[index] && !palette.ShowBuried)
+                {
+                    continue;
+                }
+
+                // Une face n'est dessinée que si elle donne sur du vide : les blocs d'un
+                // arbre ne produisent pas de faces internes, et un bloc au bord du monde
+                // ne double pas la paroi extérieure (évite le z-fighting du minerai).
+                var west = coordinate.X > 0 &&
+                    !IsFilled(coordinate.X - 1, coordinate.Y, coordinate.Z);
+                var east = coordinate.X < world.Width - 1 &&
+                    !IsFilled(coordinate.X + 1, coordinate.Y, coordinate.Z);
+                var north = coordinate.Y > 0 &&
+                    !IsFilled(coordinate.X, coordinate.Y - 1, coordinate.Z);
+                var south = coordinate.Y < world.Height - 1 &&
+                    !IsFilled(coordinate.X, coordinate.Y + 1, coordinate.Z);
+                var top = !IsFilled(coordinate.X, coordinate.Y, coordinate.Z + 1);
+                var bottom = coordinate.Z > 0 &&
+                    !IsFilled(coordinate.X, coordinate.Y, coordinate.Z - 1);
+                if (!west && !east && !north && !south && !top && !bottom)
+                {
+                    continue;
+                }
+
+                AddBox(
+                    vertices,
+                    coordinate.X,
+                    coordinate.Y,
+                    coordinate.Z,
+                    palette.GetColor(block.MaterialId, zoneMap[index]),
+                    ViewerTextureAtlas.GetTileIndex(block.MaterialId, palette),
+                    west,
+                    east,
+                    north,
+                    south,
+                    top,
+                    bottom);
+            }
+        }
+
+        bool IsFilled(int x, int y, int z)
+        {
+            if ((uint)x >= (uint)world.Width ||
+                (uint)y >= (uint)world.Height ||
+                (uint)z >= (uint)world.VerticalSize)
+            {
+                return false;
+            }
+
+            return world.TryGetBlockOverride(new BlockCoordinate(x, y, z), out var neighbor) &&
+                   !neighbor.IsAir &&
+                   neighbor.MaterialId != 0 &&
+                   neighbor.MaterialId != palette.Water;
         }
 
         bool TryGetSideKey(int x, int y, int neighborX, int neighborY, out SideKey key)
@@ -304,7 +408,18 @@ public static class TerrainMeshBuilder
         }
     }
 
-    internal static void BuildTopSurfaces(WorldGrid world, out int[] heights, out ushort[] materials)
+    /// <summary>Hauteurs du sol seul : aucun override, pas même l'eau, ne relève la colonne.</summary>
+    internal static void BuildTopSurfaces(
+        WorldGrid world,
+        out int[] heights,
+        out ushort[] materials) =>
+        BuildTopSurfaces(world, waterMaterialId: 0, out heights, out materials);
+
+    internal static void BuildTopSurfaces(
+        WorldGrid world,
+        ushort waterMaterialId,
+        out int[] heights,
+        out ushort[] materials)
     {
         var cellCount = checked(world.Width * world.Height);
         heights = new int[cellCount];
@@ -320,9 +435,13 @@ public static class TerrainMeshBuilder
             }
         }
 
+        // Seule l'eau relève la surface visible : les arbres, minerais et blocs posés sont des
+        // volumes (AddOverrideBoxes) et ne doivent pas aplatir la colonne qu'ils surplombent.
         foreach (var entry in world.EnumerateOverrides())
         {
-            if (!entry.Value.IsAir && entry.Key.Z > heights[entry.Key.X + world.Width * entry.Key.Y])
+            if (!entry.Value.IsAir &&
+                entry.Value.MaterialId == waterMaterialId &&
+                entry.Key.Z > heights[entry.Key.X + world.Width * entry.Key.Y])
             {
                 var index = entry.Key.X + world.Width * entry.Key.Y;
                 heights[index] = entry.Key.Z;
@@ -353,9 +472,10 @@ public static class TerrainMeshBuilder
         (int X, int Y, int Z) c,
         (int X, int Y, int Z) d,
         (float R, float G, float B) color,
+        int tile,
         float shade)
     {
-        AddQuad(vertices, a, b, c, d, color, shade, shade, shade, shade);
+        AddQuad(vertices, a, b, c, d, color, tile, shade, shade, shade, shade);
     }
 
     private static void AddQuad(
@@ -365,24 +485,111 @@ public static class TerrainMeshBuilder
         (int X, int Y, int Z) c,
         (int X, int Y, int Z) d,
         (float R, float G, float B) color,
+        int tile,
         float shadeA,
         float shadeB,
         float shadeC,
         float shadeD)
     {
-        AddVertex(vertices, a, color, shadeA);
-        AddVertex(vertices, b, color, shadeB);
-        AddVertex(vertices, c, color, shadeC);
-        AddVertex(vertices, a, color, shadeA);
-        AddVertex(vertices, c, color, shadeC);
-        AddVertex(vertices, d, color, shadeD);
+        var (minU, minV, maxU, maxV) = GetTileBounds(tile);
+        AddVertex(vertices, a, color, shadeA, minU, minV);
+        AddVertex(vertices, b, color, shadeB, maxU, minV);
+        AddVertex(vertices, c, color, shadeC, maxU, maxV);
+        AddVertex(vertices, a, color, shadeA, minU, minV);
+        AddVertex(vertices, c, color, shadeC, maxU, maxV);
+        AddVertex(vertices, d, color, shadeD, minU, maxV);
+    }
+
+    private static void AddBox(
+        List<float> vertices,
+        int x,
+        int y,
+        int z,
+        (float R, float G, float B) color,
+        int tile,
+        bool west,
+        bool east,
+        bool north,
+        bool south,
+        bool top,
+        bool bottom)
+    {
+        var (minU, minV, maxU, maxV) = GetTileBounds(tile);
+        if (top)
+        {
+            AddFace(vertices, (x, y, z + 1), (x + 1, y, z + 1), (x + 1, y + 1, z + 1), (x, y + 1, z + 1),
+                color, 1.00f, minU, minV, maxU, maxV);
+        }
+
+        if (bottom)
+        {
+            AddFace(vertices, (x, y, z), (x, y + 1, z), (x + 1, y + 1, z), (x + 1, y, z),
+                color, 0.55f, minU, minV, maxU, maxV);
+        }
+
+        if (north)
+        {
+            AddFace(vertices, (x, y, z), (x + 1, y, z), (x + 1, y, z + 1), (x, y, z + 1),
+                color, 0.86f, minU, minV, maxU, maxV);
+        }
+
+        if (south)
+        {
+            AddFace(vertices, (x + 1, y + 1, z), (x, y + 1, z), (x, y + 1, z + 1), (x + 1, y + 1, z + 1),
+                color, 0.86f, minU, minV, maxU, maxV);
+        }
+
+        if (west)
+        {
+            AddFace(vertices, (x, y + 1, z), (x, y, z), (x, y, z + 1), (x, y + 1, z + 1),
+                color, 0.72f, minU, minV, maxU, maxV);
+        }
+
+        if (east)
+        {
+            AddFace(vertices, (x + 1, y, z), (x + 1, y + 1, z), (x + 1, y + 1, z + 1), (x + 1, y, z + 1),
+                color, 0.72f, minU, minV, maxU, maxV);
+        }
+    }
+
+    private static void AddFace(
+        List<float> vertices,
+        (int X, int Y, int Z) a,
+        (int X, int Y, int Z) b,
+        (int X, int Y, int Z) c,
+        (int X, int Y, int Z) d,
+        (float R, float G, float B) color,
+        float shade,
+        float minU,
+        float minV,
+        float maxU,
+        float maxV)
+    {
+        AddVertex(vertices, a, color, shade, minU, minV);
+        AddVertex(vertices, b, color, shade, maxU, minV);
+        AddVertex(vertices, c, color, shade, maxU, maxV);
+        AddVertex(vertices, a, color, shade, minU, minV);
+        AddVertex(vertices, c, color, shade, maxU, maxV);
+        AddVertex(vertices, d, color, shade, minU, maxV);
+    }
+
+    private static (float MinU, float MinV, float MaxU, float MaxV) GetTileBounds(int tile)
+    {
+        var column = tile % ViewerTextureAtlas.Columns;
+        var row = tile / ViewerTextureAtlas.Columns;
+        var step = 1f / ViewerTextureAtlas.Columns;
+        var minU = column * step;
+        var minV = row * step;
+        return (minU, minV, minU + step, minV + step);
     }
 
     private static void AddVertex(
         List<float> vertices,
         (int X, int Y, int Z) point,
         (float R, float G, float B) color,
-        float shade)
+        float shade,
+        float u,
+        float v)
     {
         vertices.Add(point.X);
         vertices.Add(point.Y);
@@ -390,6 +597,8 @@ public static class TerrainMeshBuilder
         vertices.Add(color.R * shade);
         vertices.Add(color.G * shade);
         vertices.Add(color.B * shade);
+        vertices.Add(u);
+        vertices.Add(v);
     }
 
     private readonly record struct SurfaceKey(int TopZ, ushort MaterialId, WorldZone Zone);

@@ -43,7 +43,7 @@ public sealed class IncrementalTerrainMesher
 
         if (_worldRevision != world.Revision)
         {
-            TerrainMeshBuilder.BuildTopSurfaces(world, out _topHeights, out _topMaterials);
+            TerrainMeshBuilder.BuildTopSurfaces(world, palette.Water, out _topHeights, out _topMaterials);
             _worldRevision = world.Revision;
         }
 

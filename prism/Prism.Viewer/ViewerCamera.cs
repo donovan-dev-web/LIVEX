@@ -173,6 +173,33 @@ public sealed class ViewerCamera
         }
     }
 
+    /// <summary>
+    /// Déplace le point visé dans le plan du sol : glisser à la souris revient à pousser la
+    /// carte, pas à tourner autour d'elle. L'amplitude suit la distance d'orbite pour que le
+    /// geste reste constant à l'écran quelle que soit l'échelle.
+    /// </summary>
+    public void Pan(float right, float forward)
+    {
+        if (!float.IsFinite(right) || !float.IsFinite(forward))
+        {
+            throw new ArgumentOutOfRangeException(nameof(right));
+        }
+
+        var rightVector = new Vector3(-MathF.Sin(_yaw), MathF.Cos(_yaw), 0);
+        var forwardVector = new Vector3(MathF.Cos(_yaw), MathF.Sin(_yaw), 0);
+        var scale = Math.Clamp(_orbitDistance * 0.03f, 0.05f, 8f);
+        var offset = (rightVector * right + forwardVector * forward) * scale;
+        _target += offset;
+        if (Mode == ViewerCameraMode.Orbit)
+        {
+            UpdateOrbitPosition();
+        }
+        else
+        {
+            _position += offset;
+        }
+    }
+
     public void Zoom(float distanceDelta)
     {
         if (!float.IsFinite(distanceDelta))

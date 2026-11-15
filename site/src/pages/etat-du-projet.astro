@@ -29,18 +29,22 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
         <a href={`${repo}/docs/governance/LIVEX-STATUS.md`} rel="noopener">LIVEX-STATUS.md</a>.</p></div>
 
       <div class="sh"><b>13b.1</b> Référence analysée</div>
-      <h2>Mesuré le {PROJECT_STATE.observedDate}.</h2>
+      <h2>Suites mesurées le {PROJECT_STATE.observedDate}.</h2>
+      <p class="mu" style="font-size:0.78rem">Les compteurs de tests et de couverture sont datés du {PROJECT_STATE.observedDate} ; le décompte de fichiers et de lignes (Tokei) date du {PROJECT_STATE.repoObservedDate} et n'est pas rejoué à chaque passe.</p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Indicateur</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
-            <tr><td>Référence</td><td><code>{PROJECT_STATE.branch}</code> à {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Fichiers suivis (Git)</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
+            <tr><td>Branche de travail</td><td><code>{PROJECT_STATE.branch}</code> · commit V1 <code>{PROJECT_STATE.commit}</code></td></tr>
+            <tr><td>Tests ({PROJECT_STATE.observedDate})</td><td>{nf.format(PROJECT_STATE.tests.passed)} réussis sur {nf.format(PROJECT_STATE.tests.total)} cas collectés, {PROJECT_STATE.tests.failed} échec, {PROJECT_STATE.tests.ignored} ignorés, {PROJECT_STATE.tests.dynamic} cas Launcher dynamiques</td></tr>
+            <tr><td>Tests par composant</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
+            <tr><td>Couverture ECHOS</td><td>{PROJECT_STATE.coverage.echos} au {PROJECT_STATE.coverage.echosDate}</td></tr>
+            <tr><td>Couverture SYNE</td><td>{PROJECT_STATE.coverage.syne} au {PROJECT_STATE.coverage.syneDate} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
+            <tr><td>Portes de validation</td><td>G3 et G4 franchies le 09/11/2026 · G5 franchie le 14/11/2026 · G1 ouverte (non bloquante) · G2 et G6 ouvertes</td></tr>
+            <tr><td>Livrables PRISM V2</td><td><code>prism-host</code>, <code>prism-viewer</code> et pack publiés (win-x64, linux-x64) ; recette INSTALLER-200 sur machine propre à faire</td></tr>
+            <tr><td>Fichiers suivis (Git)</td><td>{nf.format(PROJECT_STATE.trackedFiles)} (relevé du {PROJECT_STATE.repoObservedDate})</td></tr>
             <tr><td>Fichiers reconnus (Tokei)</td><td>{nf.format(PROJECT_STATE.loc.files)}</td></tr>
             <tr><td>Lignes (Tokei)</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.code)} de code, {nf.format(PROJECT_STATE.loc.comments)} de commentaires, {nf.format(PROJECT_STATE.loc.blank)} blanches)</td></tr>
-            <tr><td>Tests (validation release 1.0.0)</td><td>{nf.format(PROJECT_STATE.tests.passed)} au vert sur {nf.format(PROJECT_STATE.tests.total)} cas, {PROJECT_STATE.tests.failed} échec, {PROJECT_STATE.tests.ignored} ignorés</td></tr>
-            <tr><td>Couverture ECHOS</td><td>{PROJECT_STATE.coverage.echos}</td></tr>
-            <tr><td>Couverture SYNE</td><td>{PROJECT_STATE.coverage.syne} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole})</td></tr>
             <tr><td>CI</td><td>{PROJECT_STATE.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
           </tbody>
@@ -49,7 +53,7 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
       <p style="margin-top:18px">
         <a class="bt" href={url('versions/')}>Voir les versions par composant →</a>
         <span style="display:inline-block;width:8px"></span>
-        <a class="bt" href={`${repo}/docs/governance/LIVEX-STATUS.md`} rel="noopener">LIVEX-STATUS.md →</a>
+        <a class="bt" href={`${repo}/docs/governance/LIVEX-CURRENT-STATUS.md`} rel="noopener">LIVEX-CURRENT-STATUS.md →</a>
       </p>
     </div>
   </section>

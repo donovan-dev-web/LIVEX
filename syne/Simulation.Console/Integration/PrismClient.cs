@@ -198,6 +198,14 @@ public sealed class PrismClient
     public Task<PrismClientStatus> StopAsync(CancellationToken cancellationToken = default) =>
         PostAsync<PrismClientStatus>("/control/stop", new { }, cancellationToken);
 
+    /// <summary>État courant du monde, lu sans le modifier (attente d'un run gaté).</summary>
+    public async Task<PrismClientStatus> GetStatusAsync(CancellationToken cancellationToken = default)
+    {
+        var exchange = await SendForBodyAsync("/control/status", content: null, cancellationToken)
+            .ConfigureAwait(false);
+        return ReadBody("/control/status", exchange, body => ProtocolJson.Deserialize<PrismClientStatus>(body));
+    }
+
     public Task<PrismClientStatus> SaveCheckpointAsync(
         string checkpointId,
         CancellationToken cancellationToken = default)

@@ -66,14 +66,17 @@ public static class Program
                 return 2;
             }
 
-            if (cli.ControlPort is not null)
-            {
-                return await RunSupervisedAsync(options, cli);
-            }
-
+            // Le mode couplé prime sur la supervision : le Launcher fournit
+            // toujours --control-port, mais c'est PRISM qui pilote les ticks. La
+            // surface de contrôle reste exposée en santé seule par le run couplé.
             if (cli.PrismUrl is not null)
             {
                 return await RunPrismCoupledAsync(cli);
+            }
+
+            if (cli.ControlPort is not null)
+            {
+                return await RunSupervisedAsync(options, cli);
             }
 
             if (cli.Observe == true)
@@ -199,6 +202,64 @@ public static class Program
     }
 
     /// <summary>
+    /// Run gaté : la cognition est prête mais le monde n'avance pas tant que
+    /// l'utilisateur n'a pas lancé la simulation depuis le viewer.
+    /// </summary>
+    private static async Task WaitForHostRunningAsync(
+        PrismClient client,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            PrismClientStatus status = await client.GetStatusAsync(cancellationToken).ConfigureAwait(false);
+            if (string.Equals(status.State, "running", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (string.Equals(status.State, "stopped", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(status.State, "failed", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"PRISM est {status.State} : le run ne peut pas démarrer ({status.Error}).");
+            }
+
+            await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Un pas pendant une pause est refusé par l'hôte : au lieu d'abandonner le
+    /// run, attendre la reprise. Un arrêt ou une panne remonte tel quel et termine
+    /// le run.
+    /// </summary>
+    private static async Task<TickResult> StepWhenRunningAsync(
+        PrismClient client,
+        TickRequest request,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            try
+            {
+                return await client.StepAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (PrismClientException exception)
+                when (exception.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                PrismClientStatus status = await client.GetStatusAsync(cancellationToken).ConfigureAwait(false);
+                if (string.Equals(status.State, "paused", StringComparison.OrdinalIgnoreCase))
+                {
+                    await Task.Delay(200, cancellationToken).ConfigureAwait(false);
+                    continue;
+                }
+
+                throw;
+            }
+        }
+    }
+
+    /// <summary>
     /// Gisements connus de SYNE : blocs ressource de l'instantané de monde PRISM,
     /// typés par le pack de contenu (seule table qui dise ce qu'un matériau est).
     /// </summary>
@@ -238,6 +299,38 @@ public static class Program
         string sessionToken = Environment.GetEnvironmentVariable("LIVEX_SESSION_TOKEN") ?? "dev-token";
         var client = new PrismClient(httpClient, sessionToken);
 
+        // Lancé par le Launcher, SYNE reçoit --control-port : on expose la santé et
+        // l'arrêt sur ce port, sans exposer les commandes de contrôle locales (le
+        // pilotage appartient au run couplé). Sans ce serveur, le Launcher verrait
+        // le composant défaillant alors que le run tourne.
+        Control.ControlServer? controlServer = null;
+        if (cli.ControlPort is { } controlPort)
+        {
+            try
+            {
+                controlServer = new Control.ControlServer(
+                    controlPort,
+                    sessionToken: Environment.GetEnvironmentVariable("LIVEX_SESSION_TOKEN"),
+                    instanceId: cli.InstanceId ?? "syne",
+                    // En attente du viewer, la pile n'est « ready » qu'une fois la
+                    // cognition construite : le Launcher attend ce signal avant
+                    // d'ouvrir le viewer, donc avant tout démarrage possible.
+                    initiallyReady: !cli.PrismStandby,
+                    healthOnly: true);
+                controlServer.Start();
+                _ = Task.Run(async () =>
+                {
+                    await controlServer.ShutdownRequested;
+                    System.Console.WriteLine("SYNE couplé : arrêt demandé par le Launcher.");
+                    Environment.Exit(0);
+                });
+            }
+            catch (Exception exception) when (exception is System.Net.HttpListenerException or InvalidOperationException)
+            {
+                System.Console.Error.WriteLine($"SYNE couplé : surface de contrôle indisponible : {exception.Message}");
+            }
+        }
+
         if (cli.PrismSeed is { } seed && cli.PrismContentHash is { } contentHash)
         {
             var prepared = await client.PrepareAsync(seed, contentHash, cli.PrismContentDir);
@@ -270,10 +363,21 @@ public static class Program
                 $"PRISM restauration : {restored.State} (dernier tick achevé {restoredCheckpointTick}, reprise à {startTick})");
         }
 
-        if (cli.PrismTicks is not null && ticks > 0)
+        if (!cli.PrismStandby && cli.PrismTicks is not null && ticks > 0)
         {
-            var started = await client.StartAsync(maxTicks: ticks + (int)startTick);
-            System.Console.WriteLine($"PRISM start : {started.State}");
+            try
+            {
+                var started = await client.StartAsync(maxTicks: ticks + (int)startTick);
+                System.Console.WriteLine($"PRISM start : {started.State}");
+            }
+            catch (PrismClientException exception)
+                when (exception.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                // Hôte déjà préparé et démarré (--autostart) : le run couplé le
+                // pilote sans le redémarrer, sinon chaque lancement Launcher
+                // échouerait sur un monde pourtant prêt.
+                System.Console.WriteLine("PRISM déjà démarré : pilotage couplé repris.");
+            }
         }
 
         // Point de reprise couplé (SYNE-225) : répertoire des snapshots SYNE.
@@ -585,8 +689,16 @@ public static class Program
         // inatteignable n'est pas redemandée à chaque fenêtre de rafraîchissement.
         var failureMemory = new PrismCommandFailureMemory();
 
+        if (cli.PrismStandby)
+        {
+            controlServer?.MarkReady();
+            System.Console.WriteLine("SYNE — pile chargée, en attente du démarrage demandé par le viewer...");
+            await WaitForHostRunningAsync(client, CancellationToken.None);
+            System.Console.WriteLine("SYNE — démarrage demandé : pilotage du run.");
+        }
+
         var runner = new PrismCoupledRunner(
-            (request, ct) => client.StepAsync(request, ct),
+            (request, ct) => StepWhenRunningAsync(client, request, ct),
             decide: (tick, observed) =>
             {
                 var commands = new List<CommandEnvelope>();

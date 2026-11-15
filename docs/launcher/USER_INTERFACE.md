@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 18 octobre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `VISION.md`, `COMPONENTS.md`, `ARCHITECTURE.md`, `GUI.md`
 **Source Monographie** : —
 
@@ -94,8 +94,9 @@ simultanément.
 
 Les quatre modes (`Console`, `Standard`, `Développement`, `Personnaliser`)
 déterminent les composants demandés et leur rôle. Ils ne remplacent pas les écrans.
-PRISM est un composant de la pile, pas une entrée de navigation ; son profil reste
-verrouillé tant que son manifeste ne satisfait pas `INTEGRATION_CONTRACT.md` §11.1.
+PRISM est un composant de la pile, pas une entrée de navigation ; son manifeste
+satisfait `INTEGRATION_CONTRACT.md` §11.1 et son écran propose les modes **Hôte**
+et **Viewer** (voir §3.2).
 
 La maquette historique représente sept écrans. La navigation applicative est
 étendue à neuf entrées : Monitoring et Documentation sont ajoutés pour répondre
@@ -200,8 +201,26 @@ surfaces natives d'observation.
 
 PRISM apparaît dans la pile et peut être demandé par un profil. Sa sélection n'est
 possible que si une installation détectée fournit un manifeste conforme aux
-exigences publiées. Sinon, le profil est refusé avec la cause et le jalon G7. Le
-Launcher n'héberge aucun rendu 3D : PRISM reste propriétaire de cette surface.
+exigences publiées ; c'est le cas des manifestes V2 (`prism/component.json` et
+`prism/viewer.component.json`). Le Launcher n'héberge aucun rendu 3D : PRISM
+reste propriétaire de cette surface et le viewer ouvre sa propre fenêtre, sans
+console.
+
+L'écran **PRISM** propose deux modes, figés pendant une session :
+
+| Mode | Chaîne démarrée | Démarrage du run |
+| :-- | :-- | :-- |
+| **Hôte** | `prism-host` seul, monde préparé, horloge locale (20 ticks/s) | immédiat |
+| **Viewer** | `prism-host --prepare` → `syne --prism-standby` → `prism-viewer` | **Play** (bouton de l'écran PRISM) |
+
+En mode Viewer, le Launcher attend la readiness de l'hôte puis de SYNE avant
+d'ouvrir la fenêtre du viewer ; la pile reste au tick `-1` tant que **Play** n'a
+pas été demandé. Les boutons **Play**, **Pause**, **Stop** et **Quitter le
+viewer** envoient `/control/play`, `/control/pause`, `/control/stop` et
+`/control/quit` au viewer, qui les relaie à l'hôte — ce dernier reste l'autorité
+du monde. **Stop** termine le run et laisse le viewer ouvert ; **Arrêter**
+(écran PRISM) arrête ensuite viewer, SYNE puis hôte. Le profil UI
+`immersion-v2` a été retiré au profit de ces deux modes.
 
 ## 4. Mise en page de la zone de contenu
 

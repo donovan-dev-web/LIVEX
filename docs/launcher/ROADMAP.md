@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `../governance/ROADMAP.md` (racine), `VISION.md`, `adr`
 **Source Monographie** : —
 
@@ -18,9 +18,10 @@
 - **Le format d'abord.** Le paquet `.livexp` est validé avant toute introduction de
   la concurrence, conformément à `adr/ADR-005-execution-sequentielle-mono-espace.md`.
 - Le verrou du mode Immersion concerne le parcours PRISM V1/Unreal. PRISM V2
-  dispose d'une lane séparée (LAUNCHER-200/201/202) : son host est découvrable
-  par manifeste, mais le cycle complet de session, de paquet et de viewer reste
-  à intégrer.
+  dispose d'une lane séparée (LAUNCHER-200/201/202) : host et viewer sont
+  découvrables par manifeste et la session V2 est opérationnelle (modes
+  Hôte/Viewer, run gaté jusqu'au Play, contrôles relayés à l'hôte). Le cycle de
+  paquet `.livexp` et l'archivage du flux restent à intégrer.
 
 ## 2. Position dans la feuille de route du projet
 

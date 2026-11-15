@@ -14,31 +14,31 @@ public sealed class AgentVisualMeshBuilderTests
         var repeated = Assert.Single(AgentVisualMeshBuilder.Build([agent]));
 
         Assert.Equal(17UL, mesh.AgentId);
-        Assert.Equal(216 * 6, mesh.Vertices.Length);
+        Assert.Equal(216 * AgentVisualMeshBuilder.FloatsPerVertex, mesh.Vertices.Length);
         Assert.Equal(mesh.Vertices, repeated.Vertices);
         Assert.Equal(
             4.02f,
-            mesh.Vertices.Where((_, index) => index % 6 == 0).Min(),
+            mesh.Vertices.Where((_, index) => index % AgentVisualMeshBuilder.FloatsPerVertex == 0).Min(),
             2);
         Assert.Equal(
             4.98f,
-            mesh.Vertices.Where((_, index) => index % 6 == 0).Max(),
+            mesh.Vertices.Where((_, index) => index % AgentVisualMeshBuilder.FloatsPerVertex == 0).Max(),
             2);
         Assert.Equal(
             5.27f,
-            mesh.Vertices.Where((_, index) => index % 6 == 1).Min(),
+            mesh.Vertices.Where((_, index) => index % AgentVisualMeshBuilder.FloatsPerVertex == 1).Min(),
             2);
         Assert.Equal(
             5.73f,
-            mesh.Vertices.Where((_, index) => index % 6 == 1).Max(),
+            mesh.Vertices.Where((_, index) => index % AgentVisualMeshBuilder.FloatsPerVertex == 1).Max(),
             2);
         Assert.Equal(
             6f,
-            mesh.Vertices.Where((_, index) => index % 6 == 2).Min(),
+            mesh.Vertices.Where((_, index) => index % AgentVisualMeshBuilder.FloatsPerVertex == 2).Min(),
             2);
         Assert.Equal(
             7.88f,
-            mesh.Vertices.Where((_, index) => index % 6 == 2).Max(),
+            mesh.Vertices.Where((_, index) => index % AgentVisualMeshBuilder.FloatsPerVertex == 2).Max(),
             2);
     }
 
@@ -55,8 +55,8 @@ public sealed class AgentVisualMeshBuilderTests
                 [new AgentItemStack(3, 1, 10)]),
         ]));
 
-        Assert.Equal(216 * 6, empty.Vertices.Length);
-        Assert.Equal(252 * 6, carrying.Vertices.Length);
+        Assert.Equal(216 * AgentVisualMeshBuilder.FloatsPerVertex, empty.Vertices.Length);
+        Assert.Equal(252 * AgentVisualMeshBuilder.FloatsPerVertex, carrying.Vertices.Length);
         Assert.Contains(0.94f, carrying.Vertices);
         Assert.NotEqual(empty.Vertices, carrying.Vertices);
     }

@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Prism.Viewer\Prism.Viewer.csproj" />
+    <ProjectReference Include="..\Prism.Host\Prism.Host.csproj" />
   </ItemGroup>
 </Project>

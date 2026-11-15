@@ -33,6 +33,8 @@ public static class WellKnownProfiles
     public const string AnalyseAvecTelemetrie = "analyse-avec-telemetrie";
     /// <summary>SYNE + PRISM (verrouillé tant que PRISM est absent).</summary>
     public const string Immersion = "immersion";
+    /// <summary>SYNE couplé + hôte PRISM + viewer : voir le run s'animer.</summary>
+    public const string ImmersionV2 = "immersion-v2";
     /// <summary>Campagne multi-run et rapports.</summary>
     public const string Experience = "experience";
     /// <summary>Diagnostic et injection de panne, stubs possibles.</summary>
@@ -68,6 +70,8 @@ public static class ComponentDependencies
     {
         "echos" => new[] { "syne" },
         "prism" => new[] { "syne" },
+        "prism-viewer" => new[] { "prism-host" },
+        "prism-host" => Array.Empty<string>(),
         "syne" => Array.Empty<string>(),
         _ => Array.Empty<string>(),
     };

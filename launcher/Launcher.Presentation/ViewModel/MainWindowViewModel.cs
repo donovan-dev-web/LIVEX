@@ -66,6 +66,8 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _prismObserveUrl = string.Empty;
     private bool _isPrismRunning;
     private string? _prismComponentId;
+    private string _selectedPrismMode = "Viewer";
+    private string _prismRunState = string.Empty;
 
     /// <summary>Initialise la vue modèle avec la façade d'orchestration.</summary>
     public MainWindowViewModel(IOrchestrationFacade orchestration)
@@ -104,6 +106,19 @@ public sealed class MainWindowViewModel : ObservableObject
         StopPrismCommand = new RelayCommand<string>(
             async _ => await StopPrismAsync().ConfigureAwait(true),
             _ => IsPrismRunning);
+        PrismModes = ["Hôte", "Viewer"];
+        PrismPlayCommand = new RelayCommand<string>(
+            async _ => await PrismControlAsync("play").ConfigureAwait(true),
+            _ => CanControlPrism);
+        PrismPauseCommand = new RelayCommand<string>(
+            async _ => await PrismControlAsync("pause").ConfigureAwait(true),
+            _ => CanControlPrism);
+        PrismStopRunCommand = new RelayCommand<string>(
+            async _ => await PrismControlAsync("stop").ConfigureAwait(true),
+            _ => CanControlPrism);
+        PrismQuitCommand = new RelayCommand<string>(
+            async _ => await PrismControlAsync("quit").ConfigureAwait(true),
+            _ => CanControlPrism);
         DocumentationItems = new ObservableCollection<DocumentationItemViewModel>(_orchestration.ListDocumentation());
         if (DocumentationItems.Count > 0)
         {
@@ -459,6 +474,50 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Commande d'arrêt du moteur en mode PRISM.</summary>
     public RelayCommand<string> StopPrismCommand { get; }
 
+    /// <summary>Modes PRISM proposés : hôte seul, ou pile complète avec viewer.</summary>
+    public IReadOnlyList<string> PrismModes { get; }
+
+    /// <summary>Mode choisi ; figé tant qu'une session tourne.</summary>
+    public string SelectedPrismMode
+    {
+        get => _selectedPrismMode;
+        set
+        {
+            if (IsPrismRunning || !SetProperty(ref _selectedPrismMode, value))
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(IsPrismModeViewer));
+            OnPropertyChanged(nameof(CanControlPrism));
+            PrismStatus = IsPrismModeViewer
+                ? "Mode viewer : la pile (hôte, SYNE, viewer) sera chargée, puis le viewer pilotera le run."
+                : "Mode hôte : PRISM seul, monde préparé et horloge locale.";
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    /// <summary>Vrai en mode viewer : c'est lui qui déclenche le run.</summary>
+    public bool IsPrismModeViewer => SelectedPrismMode == "Viewer";
+
+    /// <summary>Les commandes de run n'existent que dans le mode viewer.</summary>
+    public bool CanControlPrism => IsPrismRunning && IsPrismModeViewer;
+
+    /// <summary>Dernier retour de Play/Pause/Stop/Quit.</summary>
+    public string PrismRunState { get => _prismRunState; private set => SetProperty(ref _prismRunState, value); }
+
+    /// <summary>Play : le viewer demande le démarrage (ou la reprise) à l'hôte.</summary>
+    public RelayCommand<string> PrismPlayCommand { get; }
+
+    /// <summary>Pause : le viewer met le run en pause via l'hôte.</summary>
+    public RelayCommand<string> PrismPauseCommand { get; }
+
+    /// <summary>Stop : termine le run sans fermer le viewer.</summary>
+    public RelayCommand<string> PrismStopRunCommand { get; }
+
+    /// <summary>Quit : ferme la fenêtre du viewer.</summary>
+    public RelayCommand<string> PrismQuitCommand { get; }
+
     /// <summary>État du mode PRISM, affiché dans l'écran dédié.</summary>
     public string PrismStatus { get => _prismStatus; private set => SetProperty(ref _prismStatus, value); }
 
@@ -477,6 +536,7 @@ public sealed class MainWindowViewModel : ObservableObject
             if (SetProperty(ref _isPrismRunning, value))
             {
                 OnPropertyChanged(nameof(IsExperienceLocked));
+                OnPropertyChanged(nameof(CanControlPrism));
                 OnPropertyChanged(nameof(CanCreateCampaign));
                 CommandManager.InvalidateRequerySuggested();
             }
@@ -488,15 +548,20 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private async Task StartPrismAsync()
     {
-        PrismStatus = "Démarrage du moteur en mode PRISM…";
-        var result = await _orchestration.StartEnginePrismAsync().ConfigureAwait(true);
+        PrismStatus = IsPrismModeViewer
+            ? "Chargement de la pile : hôte PRISM, SYNE, puis viewer…"
+            : "Démarrage de l'hôte PRISM…";
+        PrismRunState = string.Empty;
+        var result = IsPrismModeViewer
+            ? await _orchestration.StartPrismViewerSessionAsync().ConfigureAwait(true)
+            : await _orchestration.StartPrismHostAsync().ConfigureAwait(true);
         if (result.Error is not null)
         {
             _prismComponentId = null;
             IsPrismRunning = false;
             PrismControlUrl = string.Empty;
             PrismObserveUrl = string.Empty;
-            PrismStatus = $"Mode PRISM indisponible : {result.Error}";
+            PrismStatus = $"PRISM indisponible : {result.Error}";
             return;
         }
 
@@ -504,8 +569,30 @@ public sealed class MainWindowViewModel : ObservableObject
         PrismControlUrl = result.ControlUrl ?? "—";
         PrismObserveUrl = result.ObserveUrl ?? "—";
         IsPrismRunning = true;
-        PrismStatus = "Moteur en mode PRISM : rejoignez les points d'accès ci-dessous depuis votre projet Unreal, puis enchaînez prepare → ready → start.";
+        PrismStatus = IsPrismModeViewer
+            ? "Pile prête, viewer ouvert. Play démarre la simulation ; Pause, Stop et Quitter la contrôlent."
+            : "Hôte PRISM seul en cours d'exécution (horloge locale, 20 ticks/s).";
+        PrismRunState = IsPrismModeViewer ? "En attente de Play." : "Hôte seul.";
         RefreshFromRegistry();
+    }
+
+    private async Task PrismControlAsync(string action)
+    {
+        var error = await _orchestration.PrismRunControlAsync(action).ConfigureAwait(true);
+        if (error is not null)
+        {
+            PrismRunState = $"Commande « {action} » refusée : {error}";
+            return;
+        }
+
+        PrismRunState = action switch
+        {
+            "play" => "Simulation en cours (ou reprise).",
+            "pause" => "Simulation en pause.",
+            "stop" => "Run arrêté.",
+            "quit" => "Viewer fermé.",
+            _ => "Commande envoyée.",
+        };
     }
 
     private async Task StopPrismAsync()
@@ -515,14 +602,13 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        var error = await _orchestration.ToggleComponentAsync(_prismComponentId, false).ConfigureAwait(true);
+        await _orchestration.StopPrismSessionAsync().ConfigureAwait(true);
         _prismComponentId = null;
         IsPrismRunning = false;
         PrismControlUrl = string.Empty;
         PrismObserveUrl = string.Empty;
-        PrismStatus = error is null
-            ? "Moteur arrêté. Le mode Expérience est de nouveau disponible."
-            : $"Arrêt impossible : {error}";
+        PrismRunState = string.Empty;
+        PrismStatus = "Session PRISM arrêtée. Le mode Expérience est de nouveau disponible.";
         RefreshFromRegistry();
     }
 
@@ -1358,6 +1444,21 @@ public interface IOrchestrationFacade
     /// l'API de contrôle. Rend les points d'accès à rejoindre, ou l'erreur de démarrage.
     /// </summary>
     Task<PrismEngineStart> StartEnginePrismAsync();
+
+    /// <summary>Démarre l'hôte PRISM seul, monde préparé et horloge locale.</summary>
+    Task<PrismEngineStart> StartPrismHostAsync();
+
+    /// <summary>
+    /// Charge hôte PRISM + SYNE en attente, attend la disponibilité de la pile,
+    /// puis ouvre le viewer. Rend l'URL de contrôle du viewer.
+    /// </summary>
+    Task<PrismEngineStart> StartPrismViewerSessionAsync();
+
+    /// <summary>Relaye Play/Pause/Stop/Quit au viewer (qui pilote l'hôte).</summary>
+    Task<string?> PrismRunControlAsync(string action);
+
+    /// <summary>Arrête la session PRISM (viewer, SYNE, hôte).</summary>
+    Task StopPrismSessionAsync();
 
     /// <summary>Échantillonne les ressources locales, sans métrique scientifique.</summary>
     ResourceSnapshot SampleResources();

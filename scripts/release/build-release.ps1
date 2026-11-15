@@ -67,8 +67,12 @@ if (-not $SkipComponents) {
 
     Invoke-Step "Publication de SYNE" {
         Publish-DotNet (Join-Path $Root "syne/Simulation.Console/Simulation.Console.csproj") (Join-Path $Staging "syne")
-        # Le manifeste de composant accompagne toujours le binaire publié.
+        # Le manifeste de composant accompagne toujours le binaire publié. Le staging
+        # est à plat : ses chemins d'exécutable doivent l'être aussi, sinon le
+        # Launcher cherche un binaire sous bin/Release/... qui n'existe pas.
         Copy-Item -LiteralPath (Join-Path $Root "syne/component.json") -Destination (Join-Path $Staging "syne/component.json") -Force
+        & $Python (Join-Path $Root "scripts/release/flatten_staging_manifest.py") (Join-Path $Staging "syne/component.json") --windows Simulation.Console.exe --linux Simulation.Console
+        if ($LASTEXITCODE -ne 0) { throw "Réécriture du manifeste SYNE impossible" }
     }
 
     # Composants V2 facultatifs : une machine sans les packs .NET nécessaires les

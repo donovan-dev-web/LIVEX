@@ -21,10 +21,10 @@ public sealed class ViewerHudMeshBuilderTests
         Assert.Equal(vertices, repeated);
         Assert.NotEqual(vertices, freeCamera);
         Assert.All(
-            vertices.Chunk(6),
+            vertices.Chunk(ViewerHudMeshBuilder.FloatsPerVertex),
             vertex => Assert.InRange(vertex[0], -1f, 1f));
         Assert.All(
-            vertices.Chunk(6),
+            vertices.Chunk(ViewerHudMeshBuilder.FloatsPerVertex),
             vertex => Assert.InRange(vertex[1], -1f, 1f));
     }
 
@@ -45,8 +45,12 @@ public sealed class ViewerHudMeshBuilderTests
         var vertices = ViewerHudMeshBuilder.Build(state, 240, 160);
 
         Assert.NotEmpty(vertices);
-        Assert.All(vertices.Chunk(6), vertex => Assert.InRange(vertex[0], -1f, 1f));
-        Assert.All(vertices.Chunk(6), vertex => Assert.InRange(vertex[1], -1f, 1f));
+        Assert.All(
+            vertices.Chunk(ViewerHudMeshBuilder.FloatsPerVertex),
+            vertex => Assert.InRange(vertex[0], -1f, 1f));
+        Assert.All(
+            vertices.Chunk(ViewerHudMeshBuilder.FloatsPerVertex),
+            vertex => Assert.InRange(vertex[1], -1f, 1f));
     }
 
     [Fact]

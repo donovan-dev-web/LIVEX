@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (installateur)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 29 octobre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`SPECIFICATION.md`](SPECIFICATION.md),
 [ADR-006](adr/ADR-006-perimetre-composants-v02.md),
 [ADR-008](adr/ADR-008-acquisition-modules-facultatifs.md),
@@ -36,7 +36,7 @@ Il distingue trois choses que l'on confond facilement :
 | **PRISM** | représentation 3D et interaction | application **packagée** Windows/Linux | reflète l'état, ne décide pas |
 | **PRISM-LDK** | plugin d'intégration pour un projet Unreal | archive ZIP de plugin | adaptateur, pas un moteur |
 | **PRISM V2 (hôte)** | autorité du monde V2 : snapshots, flux de lecture, API de contrôle | service .NET autonome | autorité du monde simulé |
-| **PRISM V2 (viewer)** | client de lecture et rendu 3D du monde PRISM | application .NET autonome | reflète l'état, ne décide pas |
+| **PRISM V2 (viewer)** | rendu 3D et plan de contrôle de la session PRISM | application .NET autonome | reflète l'état et relaie play/pause/stop/quit à l'hôte ; ne décide pas du monde |
 | **Pack de contenu PRISM** | recettes, gabarits, matériaux, croissance du contenu V2 | données (`pack.json` + tables) | données, pas un moteur |
 | **SYNE-Mock** | émulation du contrat SYNE pour le développement | service Node | outil, pas un moteur |
 | **Contrats** | schémas et protocoles entre composants | documents + schéma JSON | référence normative |

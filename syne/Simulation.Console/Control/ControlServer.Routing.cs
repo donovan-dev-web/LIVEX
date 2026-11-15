@@ -59,6 +59,13 @@ public sealed partial class ControlServer : IAsyncDisposable
             return (200, ToJson(OkJson("shutdown")));
         }
 
+        // Run couplé : la santé et l'arrêt suffisent, les commandes de contrôle
+        // locales restent fermées (le pilote est PRISM via /data/tick).
+        if (_healthOnly)
+        {
+            return (404, ToJson(ErrorJson("not_found", "Ressource inconnue.")));
+        }
+
         if (path == "/api/control/status" && method == "GET")
         {
             return (200, ToJson(StatusJson(

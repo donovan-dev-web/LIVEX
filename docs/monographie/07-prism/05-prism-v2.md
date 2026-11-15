@@ -2,7 +2,7 @@
 
 > **Instantané daté.** Ce chapitre décrit l'état du 4 novembre 2026. Depuis,
 > R2 a été franchie, G4 et G5 sont franchies et la suite PRISM compte
-> **487/487** tests au 15 novembre 2026 (voir
+> **525/525** tests au 15 novembre 2026 (voir
 > [`../../governance/LIVEX-CURRENT-STATUS.md`](../../governance/LIVEX-CURRENT-STATUS.md)).
 > Les chiffres cités ci-dessous restent ceux de la date indiquée.
 

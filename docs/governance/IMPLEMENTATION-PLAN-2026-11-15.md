@@ -20,13 +20,13 @@ Deux conséquences :
 
 | Composant | Suites | État fonctionnel |
 | :-- | :-- | :-- |
-| PRISM V2 | **487/487** | P0–P10 socles, P11 (viewer) ouvert ; hôte, contrat `1.0.0`, persistance, bots, chaînes |
+| PRISM V2 | **525/525** | P0–P11 livrées ; hôte, contrat `1.0.0`, persistance, bots, chaînes, viewer complet |
 | SYNE | **813/813** | `0.18.0`, contrat d'observabilité `0.6.0`, monde extrait, R3 reproductible |
-| ECHOS | **393 + 14 ignorés** | API et analyse V1 ; socle d'ingestion PRISM sans appelant de production |
-| Launcher | **229 + 4 ignorés** | Orchestration V1 ; manifeste PRISM V2 refusé par `PrismRequirements` |
-| Installateur | **120** | Release V1 ; artefacts V2 non distribués |
+| ECHOS | **419 + 14 ignorés** | API et analyse V1 ; **ingestion PRISM de production** (`POST /ingest/prism`), analyse et comparaison de runs livrés |
+| Launcher | **236 + 4 cas dynamiques** | Orchestration V1 ; manifeste PRISM V2 accepté, modes **Hôte**/**Viewer** et plan de contrôle opérationnels, `--check` 5/5 |
+| Installateur | **120** | Release V1 ; artefacts V2 distribués (`prism-host`, `prism-viewer`, pack) |
 | `syne-mock` | **51 + 2 ignorés** | Outil de test historique, hors produit livré |
-| **Total projet** | **2 093 réussis / 20 ignorés / 2 113 collectés** | — |
+| **Total projet** | **2 164 réussis / 16 ignorés / 2 184 collectés** | 4 cas Launcher dynamiques (`LIVEX_SYNE_PUBLISHED_ROOT` absent) |
 
 Portes : G0, G3, G4, G5 franchies ; G1 ouverte et **non bloquante** ; G2 quasi couverte (hash de monde v2 et rapport daté manquants) ; G6 ouverte ; G7/G8 reportées.
 
@@ -93,6 +93,7 @@ L'ordre suit les dépendances réelles : l'observabilité avant la présentation
 - Terminer le rendu et l'inspection : atlas, occlusion, entités et actions live, caméras/coupe, inspecteur et sept calques, modes `--connect` / embarqué / rejeu, interventions journalisées désactivées par défaut, test d'indépendance du rendu, manifeste viewer et B8.
 - **Composants** : PRISM Viewer. **Taille** : L.
 - **Sortie** : P11 close, viewer livrable et testé sur Windows et Linux.
+- *(Réalisé le 15/11, PRISM-110 à PRISM-118 : atlas procédural et UV de sommet, entités/actions live et chantiers fantômes, suivi live et coupe, inspecteur et sept calques, modes `--connect`/`--embedded`/`--replay`/`--record`, interventions journalisées via `/control/intervention`, test d'indépendance du rendu, manifeste `prism/viewer.component.json` et harnais B8. Preuves : Viewer **100/100** après câblage des assets et vérification à l'écran, Host **78/78**, Architecture **8/8** ; build solution sans erreur. **Vérification du 15/11 sur fenêtre réelle** : volumes d'arbres/minerais/blocs, blocs minés retirés par `region_delta`, captures PNG (`--screenshot`, `F12`), caméra souris, coupe effective (uniforme `uCutEnabled` corrigé) et arrêt propre du host embarqué ; captures dans `tmp/prism-captures/` (aperçu, coupe `z=18`, embarqué). **Câblage des assets (15/11)** : `ViewerAssets` charge `assets/` ou `--assets <dir>` (atlas, palette terrain, palette agents, police HUD) avec décodeur PNG interne et repli procédural ; `publish_prism_v2.py` copie `prism/assets/` ; un atlas externe de contrôle a été chargé sur fenêtre réelle (`tmp/prism-captures/assets-atlas.png`). **Limites** : la validation graphique locale a produit les captures ci-dessus, mais aucune comparaison graphique Windows/Linux ni aucun relevé B8 publiable n'a été exécuté (validation différée demandée par le propriétaire) ; les calques `Structures` et `Ownership` n'affichent que les données publiées par le contrat `1.0.0`, qui ne porte ni propriétaire ni ACL de site.)*
 
 ### L10 — Clôture produit
 

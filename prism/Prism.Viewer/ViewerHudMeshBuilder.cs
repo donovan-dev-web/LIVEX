@@ -13,63 +13,35 @@ public sealed record ViewerHudState(
     ulong? FollowedAgentId,
     long? Tick = null,
     ViewerDayNightState? Time = null,
-    bool Live = false);
+    bool Live = false,
+    string Mode = "preview",
+    string? SelectedAction = null,
+    ViewerLayer[]? ActiveLayers = null,
+    float CutZ = 0f,
+    bool CutEnabled = false,
+    ulong? WorldHash = null,
+    int Resynchronisations = 0,
+    string? Status = null);
 
 public static class ViewerHudMeshBuilder
 {
+    /// <summary>Position (3), couleur (3) et coordonnées de texture (2), comme le monde.</summary>
+    public const int FloatsPerVertex = TerrainMeshBuilder.FloatsPerVertex;
+
     private const int Margin = 16;
-    private const int PanelWidth = 430;
-    private const int PanelHeight = 300;
+    private const int PanelWidth = 470;
+    private const int PanelHeight = 380;
     private const int GlyphScale = 2;
     private const int LineHeight = 17;
-    private static readonly IReadOnlyDictionary<char, byte[]> Glyphs = new Dictionary<char, byte[]>
-    {
-        [' '] = [0, 0, 0, 0, 0, 0, 0],
-        ['-'] = [0, 0, 0, 31, 0, 0, 0],
-        [':'] = [0, 12, 12, 0, 12, 12, 0],
-        ['/'] = [1, 2, 2, 4, 8, 8, 16],
-        ['.'] = [0, 0, 0, 0, 0, 12, 12],
-        ['0'] = [14, 17, 19, 21, 25, 17, 14],
-        ['1'] = [4, 12, 4, 4, 4, 4, 14],
-        ['2'] = [14, 17, 1, 2, 4, 8, 31],
-        ['3'] = [30, 1, 1, 14, 1, 1, 30],
-        ['4'] = [2, 6, 10, 18, 31, 2, 2],
-        ['5'] = [31, 16, 16, 30, 1, 1, 30],
-        ['6'] = [14, 16, 16, 30, 17, 17, 14],
-        ['7'] = [31, 1, 2, 4, 8, 8, 8],
-        ['8'] = [14, 17, 17, 14, 17, 17, 14],
-        ['9'] = [14, 17, 17, 15, 1, 1, 14],
-        ['A'] = [14, 17, 17, 31, 17, 17, 17],
-        ['B'] = [30, 17, 17, 30, 17, 17, 30],
-        ['C'] = [14, 17, 16, 16, 16, 17, 14],
-        ['D'] = [30, 17, 17, 17, 17, 17, 30],
-        ['E'] = [31, 16, 16, 30, 16, 16, 31],
-        ['F'] = [31, 16, 16, 30, 16, 16, 16],
-        ['G'] = [14, 17, 16, 23, 17, 17, 15],
-        ['H'] = [17, 17, 17, 31, 17, 17, 17],
-        ['I'] = [14, 4, 4, 4, 4, 4, 14],
-        ['J'] = [7, 2, 2, 2, 2, 18, 12],
-        ['K'] = [17, 18, 20, 24, 20, 18, 17],
-        ['L'] = [16, 16, 16, 16, 16, 16, 31],
-        ['M'] = [17, 27, 21, 21, 17, 17, 17],
-        ['N'] = [17, 25, 21, 19, 17, 17, 17],
-        ['O'] = [14, 17, 17, 17, 17, 17, 14],
-        ['P'] = [30, 17, 17, 30, 16, 16, 16],
-        ['Q'] = [14, 17, 17, 17, 21, 18, 13],
-        ['R'] = [30, 17, 17, 30, 20, 18, 17],
-        ['S'] = [15, 16, 16, 14, 1, 1, 30],
-        ['T'] = [31, 4, 4, 4, 4, 4, 4],
-        ['U'] = [17, 17, 17, 17, 17, 17, 14],
-        ['V'] = [17, 17, 17, 17, 17, 10, 4],
-        ['W'] = [17, 17, 17, 21, 21, 21, 10],
-        ['X'] = [17, 17, 10, 4, 10, 17, 17],
-        ['Y'] = [17, 17, 10, 4, 4, 4, 4],
-        ['Z'] = [31, 1, 2, 4, 8, 16, 31],
-    };
 
-    public static float[] Build(ViewerHudState state, int width, int height)
+    public static float[] Build(
+        ViewerHudState state,
+        int width,
+        int height,
+        ViewerHudFont? font = null)
     {
         ArgumentNullException.ThrowIfNull(state);
+        var glyphs = font ?? ViewerHudFont.Default;
         ArgumentOutOfRangeException.ThrowIfNegative(state.WorldWidth);
         ArgumentOutOfRangeException.ThrowIfNegative(state.WorldHeight);
         ArgumentOutOfRangeException.ThrowIfNegative(state.AgentCount);
@@ -89,35 +61,48 @@ public static class ViewerHudMeshBuilder
         AddRectangle(vertices, width, height, Margin, Margin,
             PanelWidth, PanelHeight, scale, (0.055f, 0.085f, 0.11f));
 
-        var lines = new[]
+        var lines = new List<string>
         {
-            $"PRISM DEBUG VIEWER",
-            state.Live ? "LIVE HOST STREAM" : "STATIC PREVIEW / NO LIVE HOST",
+            "PRISM DEBUG VIEWER",
+            GetModeLine(state),
             $"SEED: {state.Seed}   SIZE: {state.WorldWidth} X {state.WorldHeight}",
             $"TICK: {GetTick(state)}   AGENTS: {state.AgentCount}",
             GetCalendarLine(state.Time),
             GetLightLine(state.Time),
-            $"CAMERA: {state.CameraMode}   ZONE OVERLAY: {(state.ZoneOverlay ? "ON" : "OFF")}",
+            $"CAMERA: {state.CameraMode}   CUT: {GetCutLine(state)}",
+            $"LAYERS: {GetLayersLine(state)}",
+            GetWorldLine(state),
             "O ORBIT  F FREE  WASD MOVE",
             "ARROWS LOOK  Q/E ZOOM  ESC EXIT",
-            "V ZONE OVERLAY  TAB CYCLE AGENT",
-            "C FOLLOW/UNFOLLOW SELECTED AGENT",
+            "TAB AGENT  C FOLLOW  V ZONES",
+            "1-7 LAYERS  X CUT  [/] SLICE",
+            "P PLACE  R REMOVE (JOURNALED)",
             $"AGENT: {GetAgentId(state.SelectedAgent)}",
             GetAgentPosition(state.SelectedAgent),
             GetInventorySummary(state.SelectedAgent),
+            $"ACTION: {state.SelectedAction ?? "IDLE"}",
             $"CAMERA FOLLOW: {state.FollowedAgentId?.ToString() ?? "OFF"}",
+            GetStatusLine(state),
         };
-        for (var index = 0; index < lines.Length; index++)
+        for (var index = 0; index < lines.Count; index++)
         {
             var color = index == 0
                 ? (R: 0.36f, G: 0.83f, B: 0.78f)
                 : (R: 0.86f, G: 0.90f, B: 0.91f);
-            AddText(vertices, lines[index], Margin + 13, Margin + 10 + index * LineHeight,
+            AddText(vertices, glyphs, lines[index], Margin + 13, Margin + 10 + index * LineHeight,
                 width, height, scale, color);
         }
 
         return vertices.ToArray();
     }
+
+    private static string GetModeLine(ViewerHudState state) => state.Mode switch
+    {
+        "live" => state.Live ? "MODE: LIVE CLIENT" : "MODE: LIVE CLIENT / CONNECTING",
+        "embedded" => "MODE: EMBEDDED HOST",
+        "replay" => "MODE: REPLAY",
+        _ => "MODE: STATIC PREVIEW / NO LIVE HOST",
+    };
 
     private static string GetTick(ViewerHudState state) =>
         state.Tick?.ToString() ?? "PREVIEW";
@@ -133,6 +118,34 @@ public static class ViewerHudMeshBuilder
             ? "SUN: UNAVAILABLE"
             : $"SUNLIGHT: {(int)MathF.Round(time.Value.Daylight * 100f)}%  " +
               $"ELEVATION: {(int)MathF.Round(time.Value.SunElevation * 100f)}%";
+
+    private static string GetCutLine(ViewerHudState state) =>
+        state.CutEnabled ? $"ON Z={(int)MathF.Round(state.CutZ)}" : "OFF";
+
+    private static string GetLayersLine(ViewerHudState state)
+    {
+        var layers = state.ActiveLayers;
+        if (layers is null || layers.Length == 0)
+        {
+            return "NONE";
+        }
+
+        var names = layers
+            .OrderBy(layer => layer)
+            .Select(layer => layer.ToString().ToUpperInvariant());
+        return string.Join(" ", names);
+    }
+
+    private static string GetWorldLine(ViewerHudState state)
+    {
+        var hash = state.WorldHash is { } value ? $"HASH: {value:X16}" : "HASH: UNAVAILABLE";
+        return state.Resynchronisations > 0
+            ? $"{hash}  RESYNC: {state.Resynchronisations}"
+            : hash;
+    }
+
+    private static string GetStatusLine(ViewerHudState state) =>
+        string.IsNullOrWhiteSpace(state.Status) ? "STATUS: READY" : $"STATUS: {state.Status}";
 
     private static string GetAgentId(AgentEntitySnapshot? agent) =>
         agent is null ? "NONE SELECTED" : agent.AgentId.ToString();
@@ -155,6 +168,7 @@ public static class ViewerHudMeshBuilder
 
     private static void AddText(
         List<float> vertices,
+        ViewerHudFont font,
         string text,
         int x,
         int y,
@@ -165,13 +179,13 @@ public static class ViewerHudMeshBuilder
     {
         foreach (var character in text.ToUpperInvariant())
         {
-            if (Glyphs.TryGetValue(character, out var glyph))
+            if (font.TryGetGlyph(character, out var glyph))
             {
-                for (var row = 0; row < glyph.Length; row++)
+                for (var row = 0; row < font.GlyphHeight && row < glyph.Length; row++)
                 {
-                    for (var column = 0; column < 5; column++)
+                    for (var column = 0; column < font.GlyphWidth; column++)
                     {
-                        if ((glyph[row] & (1 << (4 - column))) == 0)
+                        if ((glyph[row] & (1 << (font.GlyphWidth - 1 - column))) == 0)
                         {
                             continue;
                         }
@@ -190,7 +204,7 @@ public static class ViewerHudMeshBuilder
                 }
             }
 
-            x += 6 * GlyphScale;
+            x += font.Advance * GlyphScale;
         }
     }
 
@@ -229,5 +243,7 @@ public static class ViewerHudMeshBuilder
         vertices.Add(color.R);
         vertices.Add(color.G);
         vertices.Add(color.B);
+        vertices.Add(0.5f);
+        vertices.Add(0.5f);
     }
 }

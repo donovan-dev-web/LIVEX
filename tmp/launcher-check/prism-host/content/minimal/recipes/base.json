@@ -1,0 +1,103 @@
+[
+  {
+    "id": "make_plank",
+    "inputs": [{ "item": "log", "qty": 1 }],
+    "outputs": [{ "item": "plank", "qty": 4 }],
+    "durationTicks": 2,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "make_handle",
+    "inputs": [{ "item": "plank", "qty": 2 }],
+    "outputs": [{ "item": "handle", "qty": 1 }],
+    "durationTicks": 2,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "make_stone_head",
+    "inputs": [{ "item": "stone", "qty": 2 }],
+    "outputs": [{ "item": "stone_head", "qty": 1 }],
+    "durationTicks": 4,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "craft_stone_pickaxe",
+    "inputs": [{ "tag": "handle", "qty": 1 }, { "tag": "stone_head", "qty": 1 }],
+    "outputs": [{ "item": "stone_pickaxe", "qty": 1 }],
+    "station": "workbench",
+    "durationTicks": 20,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "smelt_iron",
+    "inputs": [{ "item": "iron_ore_chunk", "qty": 1 }, { "tag": "fuel", "qty": 1 }],
+    "outputs": [{ "item": "iron_ingot", "qty": 1 }],
+    "station": "furnace",
+    "durationTicks": 30,
+    "minMastery": 0,
+    "masteryCategory": "smelt"
+  },
+  {
+    "id": "craft_iron_pickaxe",
+    "inputs": [{ "tag": "handle", "qty": 1 }, { "item": "iron_ingot", "qty": 3 }],
+    "outputs": [{ "item": "iron_pickaxe", "qty": 1 }],
+    "station": "workbench",
+    "durationTicks": 30,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "bake_flatbread",
+    "inputs": [{ "item": "wheat", "qty": 3 }, { "tag": "fuel", "qty": 1 }],
+    "outputs": [{ "item": "flatbread", "qty": 1 }],
+    "station": "furnace",
+    "durationTicks": 12,
+    "minMastery": 0,
+    "masteryCategory": "cook"
+  },
+  {
+    "id": "craft_stone_hoe",
+    "inputs": [{ "tag": "handle", "qty": 1 }, { "tag": "stone_head", "qty": 1 }],
+    "outputs": [{ "item": "stone_hoe", "qty": 1 }],
+    "station": "workbench",
+    "durationTicks": 16,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "craft_workbench",
+    "inputs": [{ "item": "plank", "qty": 4 }],
+    "outputs": [{ "item": "workbench", "qty": 1 }],
+    "durationTicks": 10,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "craft_furnace",
+    "inputs": [{ "item": "stone", "qty": 8 }],
+    "outputs": [{ "item": "furnace", "qty": 1 }],
+    "durationTicks": 20,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "craft_chest",
+    "inputs": [{ "item": "plank", "qty": 8 }],
+    "outputs": [{ "item": "chest", "qty": 1 }],
+    "durationTicks": 10,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  },
+  {
+    "id": "craft_wooden_bucket",
+    "inputs": [{ "item": "plank", "qty": 3 }],
+    "outputs": [{ "item": "wooden_bucket", "qty": 1 }],
+    "durationTicks": 8,
+    "minMastery": 0,
+    "masteryCategory": "craft"
+  }
+]

@@ -10,11 +10,11 @@ export const SITE = {
   name: 'LIVEX',
   title: 'LIVEX — Living Intelligent Virtual Ecosystem eXperience',
   description:
-    "LIVEX étudie l'émergence collective faible dans une simulation multi-agents : SYNE porte la cognition, PRISM le monde physique (cible V2) et ECHOS l'observation.",
+    "LIVEX étudie l'émergence collective faible dans une simulation multi-agents : SYNE porte la cognition, PRISM le monde physique (V2, socle livré) et ECHOS l'observation.",
   descriptionEn:
-    'LIVEX studies weak collective emergence in a multi-agent simulation: SYNE owns cognition, PRISM the physical world (V2 target), and ECHOS observation and analysis.',
+    'LIVEX studies weak collective emergence in a multi-agent simulation: SYNE owns cognition, PRISM the physical world (V2, foundation delivered), and ECHOS observation and analysis.',
   shortDescription:
-    "Émergence collective faible : cognition SYNE, monde physique PRISM (cible V2), observation et analyse ECHOS.",
+    "Émergence collective faible : cognition SYNE, monde physique PRISM (V2, socle livré), observation et analyse ECHOS.",
   repo: 'https://github.com/donovan-dev-web/LIVEX',
   license: 'GPL-3.0-or-later',
   author: 'Donovan',

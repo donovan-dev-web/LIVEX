@@ -56,7 +56,8 @@ import { url } from '../utils/url';
       </div>
       <div class="cc" style="margin-top:22px"><p>Confondre les deux premières catégories est l'erreur la plus coûteuse
         d'un tel projet : un mécanisme livré mais inerte ne produit rien, et le présenter comme livré laisserait croire
-        que le monde contient ce qu'il ne contient pas encore.</p></div>
+        que le monde contient ce qu'il ne contient pas encore. P11 en est l'illustration : livrée et testée, mais pas
+        close tant que le relevé B8 et la validation Linux manquent.</p></div>
     </div>
   </section>
 
@@ -93,9 +94,9 @@ import { url } from '../utils/url';
           <tbody>
             <tr><td>Moteur SYNE</td><td><strong>Douze phases techniques livrées</strong> (socle, BDI et perception, mémoire et croyances, décision, actions, communication, groupes, ressources, fidélités, observabilité, performance, tests et persistance). Capacités en réserve : saisons, territoires, constructions, inventaire, engagements.</td></tr>
             <tr><td>Observatoire ECHOS</td><td><strong>Neuf phases livrées, deux retirées</strong> (interface intégrée et shell Electron, ADR-007 du 5 octobre 2026). Chantier principal restant : l'indice de viabilité dynamique.</td></tr>
-            <tr><td>Rendu PRISM</td><td><strong>Version de travail.</strong> Contrats de transport stabilisés ; validation contre SYNE réel en attente.</td></tr>
-            <tr><td>Launcher</td><td><strong>Jalons G0–G4 largement présents.</strong> G5 (session complète avec ECHOS réel) : livré côté Launcher mais non franchi. G7 (mode Immersion) : verrouillé, faute de PRISM conforme.</td></tr>
-            <tr><td>Installateur</td><td><strong>À l'état de spécification, sans ligne de code.</strong> Cinq jalons définis ; Linux d'abord.</td></tr>
+            <tr><td>PRISM V2</td><td><strong>Socle P0–P11 livré</strong> (15 novembre 2026) : monde, contenu, temps, corps et navigation, actions, hôte headless, persistance, viewer et plan de contrôle. 525/525 tests. Deux preuves manquent pour clore P11 : relevé B8 et validation graphique Linux. <strong>G1 (performance de l'hôte) ouverte</strong>, non bloquante ; B9 mesure 431,5 ms/tick à 100 agents, dont 94 % dans ApplyWrites.</td></tr>
+            <tr><td>Launcher</td><td><strong>G3, G4 franchies (09/11/2026) et G5 franchie (14/11/2026)</strong> : session SYNE↔PRISM↔ECHOS pilotée depuis l'interface, modes Hôte et Viewer, 236 tests. <strong>G2 (empreinte de monde v2) et G6 (recette INSTALLER-200 sur machine propre) ouvertes</strong> ; G7 (Immersion, calibrage et ablations) reportée.</td></tr>
+            <tr><td>Installateur</td><td><strong>Livré en V1</strong> (Windows x64, Linux x64 ; variantes <code>core</code> et <code>full</code>, 120 tests). Pour la V2, <code>prism-host</code>, <code>prism-viewer</code> et le pack sont publiés par la chaîne de release ; la recette INSTALLER-200 reste à consigner.</td></tr>
           </tbody>
         </table>
       </div>

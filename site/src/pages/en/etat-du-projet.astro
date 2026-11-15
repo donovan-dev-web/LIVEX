@@ -29,21 +29,25 @@ const repo = 'https://github.com/donovan-dev-web/LIVEX/blob/main';
     <div class="w">
       <div class="cc"><p><strong>V1.0.0 released.</strong> Target version {RELEASE.planned} in preparation.
         See <a href={RELEASE.releasesUrl} rel="noopener">GitHub releases</a> and
-        <a href={`${repo}/docs/governance/LIVEX-STATUS.md`} rel="noopener">LIVEX-STATUS.md</a>.</p></div>
+        <a href={`${repo}/docs/governance/LIVEX-CURRENT-STATUS.md`} rel="noopener">LIVEX-CURRENT-STATUS.md</a>.</p></div>
 
       <div class="sh"><b>13b.1</b> Analysed reference</div>
-      <h2>Measured on {PROJECT_STATE_EN.observedDate}.</h2>
+      <h2>Suites measured on {PROJECT_STATE_EN.observedDate}.</h2>
+      <p class="mu" style="font-size:0.78rem">Test and coverage counters are dated {PROJECT_STATE_EN.observedDate}; the file and line count (Tokei) is dated {PROJECT_STATE_EN.repoObservedDate} and is not replayed on every pass.</p>
       <div class="ov">
         <table class="tb">
           <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
-            <tr><td>Reference</td><td><code>{PROJECT_STATE.branch}</code> at {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tracked files (Git)</td><td>{nf.format(PROJECT_STATE.trackedFiles)}</td></tr>
+            <tr><td>Working branch</td><td><code>{PROJECT_STATE.branch}</code> · V1 commit <code>{PROJECT_STATE.commit}</code></td></tr>
+            <tr><td>Tests ({PROJECT_STATE_EN.observedDate})</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing out of {nf.format(PROJECT_STATE.tests.total)} collected cases, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored, {PROJECT_STATE.tests.dynamic} dynamic Launcher cases</td></tr>
+            <tr><td>Tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
+            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos} on {PROJECT_STATE_EN.coverage.echosDate}</td></tr>
+            <tr><td>SYNE coverage</td><td>{PROJECT_STATE_EN.coverage.syne} on {PROJECT_STATE_EN.coverage.syneDate} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
+            <tr><td>Validation gates</td><td>G3 and G4 crossed 9 Nov 2026 · G5 crossed 14 Nov 2026 · G1 open (non-blocking) · G2 and G6 open</td></tr>
+            <tr><td>PRISM V2 deliverables</td><td><code>prism-host</code>, <code>prism-viewer</code> and pack published (win-x64, linux-x64); INSTALLER-200 clean-machine acceptance still to be recorded</td></tr>
+            <tr><td>Tracked files (Git)</td><td>{nf.format(PROJECT_STATE.trackedFiles)} (read on {PROJECT_STATE_EN.repoObservedDate})</td></tr>
             <tr><td>Files recognised (Tokei)</td><td>{nf.format(PROJECT_STATE.loc.files)}</td></tr>
             <tr><td>Lines (Tokei)</td><td>{nf.format(PROJECT_STATE.loc.total)} ({nf.format(PROJECT_STATE.loc.code)} code, {nf.format(PROJECT_STATE.loc.comments)} comments, {nf.format(PROJECT_STATE.loc.blank)} blank)</td></tr>
-            <tr><td>Tests (release 1.0.0 validation)</td><td>{nf.format(PROJECT_STATE.tests.passed)} passing out of {nf.format(PROJECT_STATE.tests.total)} cases, {PROJECT_STATE.tests.failed} failing, {PROJECT_STATE.tests.ignored} ignored</td></tr>
-            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
-            <tr><td>SYNE coverage</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
             <tr><td>CI</td><td>{PROJECT_STATE_EN.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
           </tbody>

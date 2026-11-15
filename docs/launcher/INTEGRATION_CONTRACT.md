@@ -2,7 +2,7 @@
 
 **Composant** : LIVEX (Launcher)
 **Statut** : [DRAFT]
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `COMPONENTS.md`, `ARCHITECTURE.md`, `OBSERVABILITY.md`, `NETWORK.md`
 **Source Monographie** : —
 
@@ -34,10 +34,14 @@ contrat ne crée aucune dépendance.
 > `immersion`, `contributesTo` `immersion`, capacités `snapshotStream` et
 > `renderCadence`, contrôle déclaré) : le verrou Immersion n'a plus de cause
 > manifeste.
-> Ce host n'est pas le viewer V1/Immersion : le cycle complet de lancement,
-> l'archivage V2 et le manifeste distinct du viewer restent ouverts. Les statuts et portes par rôle
-> sont suivis dans la [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md)
-> et la [roadmap de réalisation](../../launcher/ROADMAP-V1.md).
+> Le viewer V2 est un composant distinct, orchestrable depuis le 15 novembre 2026 :
+> `prism/viewer.component.json` déclare un `control` HTTP, consomme `readStream`
+> de `prism-host` et le requiert. L'écran PRISM propose les modes **Hôte** et
+> **Viewer** (hôte préparé → SYNE en attente → viewer) ; le profil `immersion-v2`
+> a été retiré de la liste. Il reste l'archivage du flux par run.
+> Les statuts et portes par rôle sont suivis dans la
+> [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md) et la
+> [roadmap de réalisation](../../launcher/ROADMAP-V1.md).
 
 Ce document a deux lectures :
 
@@ -339,10 +343,17 @@ le lecteur expose ; un composant déclare au manifeste les points d'accès qu'il
 consomme (`consumes`), le Launcher lui transmet l'URL résolue du producteur
 (`--prism-stream` pour ECHOS) et refuse de le lancer si le producteur n'est pas
 démarré ; l'ordre de démarrage se déduit des `requires` et des `consumes`, et
-l'arrêt reste l'inverse strict, avec le délai de grâce du manifeste. Restent le
-viewer V2 — composant distinct dont le manifeste est encore à produire — et
-l'archivage du flux PRISM par run. La session complète n'a pas été jouée avec un
-host PRISM réel : les preuves sont les tests de domaine, de format et d'ECHOS.
+l'arrêt reste l'inverse strict, avec le délai de grâce du manifeste. Le viewer
+V2 est désormais orchestrable : `prism/viewer.component.json` déclare `control`
+HTTP (`/health/ready`, `/info`, `POST /control/shutdown`), `requires`
+`prism-host` et consomme son `readStream` (`--connect`). L'écran PRISM propose deux modes : **Hôte** (`prism-host` seul) et **Viewer**
+(`prism-host --prepare` → `syne --prism-standby` → `prism-viewer`). En mode
+viewer, le Launcher attend la readiness de l'hôte puis de SYNE avant d'ouvrir la
+fenêtre ; le run reste au tick `-1` jusqu'au **Play** du viewer, qui relaie
+`play|pause|stop|quit` à l'hôte via son endpoint `control`. Session gatée jouée le
+15 novembre 2026 avec les binaires publiés : hôte `ready` tick `-1`, SYNE `ready`
+sans tick, Play → 338, Pause → 343 stable, reprise → 499, Stop → `stopped` 503.
+Reste l'archivage du flux PRISM par run.
 
 ## 12. Reproductibilité — engagements des composants
 

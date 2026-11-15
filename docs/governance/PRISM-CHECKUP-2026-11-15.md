@@ -16,7 +16,7 @@
 
 ## 0. Verdict en dix lignes
 
-1. **Le socle PRISM est solide et vert** : 487/487 tests, chaînes jouées par des bots, déterminisme épinglé, hôte headless, flux de lecture `/data/read`, persistance, contenu et structures.
+1. **Le socle PRISM est solide et vert** : 525/525 tests, chaînes jouées par des bots, déterminisme épinglé, hôte headless, flux de lecture `/data/read`, persistance, contenu et structures.
 2. **La documentation est en retard sur le code** : trois totaux de tests différents (423, 444, 477) pour une réalité de **487**, et plusieurs portes annoncées ouvertes qui sont franchies.
 3. **Le chemin critique n'est plus PRISM** : c'est **ECHOS** (ingestion de production + les quatre indicateurs) puis le **calibrage du comportement SYNE**.
 4. **G1 n'est pas requis par le protocole scientifique** : V1–V7 sont définis à 100 agents, et le run de production R3 coûte **157,7 ms/tick**, pas les 431 ms du banc de bots B9.
@@ -57,10 +57,10 @@ Le reste (viewer, Launcher, installateur, G1) sert la **livraison du produit**, 
 
 | Composant | Commande | Résultat | Détail |
 | :-- | :-- | --: | :-- |
-| PRISM | `dotnet test Prism.sln -c Release` | **487/487** | Architecture 8, Contracts 23, Viewer 62, Core 242, Content 51, Bots 23, Host 78 |
+| PRISM | `dotnet test Prism.sln -c Release` | **525/525** | Architecture 8, Contracts 23, Viewer 100, Core 242, Content 51, Bots 23, Host 78 |
 | SYNE | `dotnet test Syne.sln -c Release` | **813/813** | Core 600, Console 213 |
-| ECHOS | `.venv\Scripts\python -m pytest` | **393 réussis, 14 ignorés** | couverture **91,24 %** |
-| Launcher | `dotnet test Launcher.sln -c Release` | **229 réussis, 4 ignorés** | Unit 174, Integration 20, E2E 35 ; les 4 « échecs » du résumé sont des skips dynamiques faute de `LIVEX_SYNE_PUBLISHED_ROOT` en local, pas des régressions |
+| ECHOS | `.venv\Scripts\python -m pytest` | **419 réussis, 14 ignorés** | couverture **91,14 %** |
+| Launcher | `dotnet test Launcher.sln -c Release` | **236 réussis, 4 échecs dynamiques** | Unit 181, Integration 20, E2E 35/39 ; les 4 échecs sont des skips dynamiques (`$XunitDynamicSkip$`) faute de `LIVEX_SYNE_PUBLISHED_ROOT` en local, pas des régressions |
 
 Aucune régression n'est donc à déplorer. Le problème n'est pas la santé du code, c'est **ce qui n'est pas encore branché**.
 
@@ -108,8 +108,8 @@ Chaque ligne est vérifiable dans le fichier cité. La gravité indique le risqu
 
 | # | Document | Ce qui est écrit | Réalité vérifiée | Gravité |
 | :-- | :-- | :-- | :-- | :-- |
-| 1 | `docs/prism/README.md:15` | « PRISM 423/423, SYNE 768/768 », G1, G2, **G5**, G6 ouvertes | 487/487, 813/813, **G5 franchie** | Haute |
-| 2 | `docs/prism/TESTING.md:4` | « PRISM 444/444 au 11 novembre » | 487/487 au 15 novembre | Haute |
+| 1 | `docs/prism/README.md:15` | « PRISM 423/423, SYNE 768/768 », G1, G2, **G5**, G6 ouvertes | 525/525, 813/813, **G5 franchie** | Haute |
+| 2 | `docs/prism/TESTING.md:4` | « PRISM 444/444 au 11 novembre » | 525/525 au 15 novembre | Haute |
 | 3 | `docs/governance/LIVEX-CURRENT-STATUS.md:31` | « PRISM 477/477 (Core 232) » | 487 (Core 242, +10 tests de champ de distance) | Moyenne |
 | 4 | `docs/governance/LIVEX-CURRENT-STATUS.md:8` | « état connu au 8 novembre », alors que l'en-tête dit 15 novembre | contradiction interne ; la ligne 24 répète une phrase orpheline | Moyenne |
 | 5 | `docs/prism/PRISM_SYNTHESIS.md:4` | « G4 franchie, G1 en attente », 9 novembre | G5 franchie, travail du 15 novembre absent | Haute |
@@ -119,10 +119,10 @@ Chaque ligne est vérifiable dans le fichier cité. La gravité indique le risqu
 | 9 | `docs/prism/WORLD_GENERATION.md:67` | « toute modification incrémente `worldGenVersion` et **recale les empreintes de mondes dorés** » | `ReferenceWorldSeedsProduceGoldenHashes` reste en `WorldGenVersion: 1` ; aucune empreinte du monde de production n'est épinglée | Moyenne |
 | 10 | `docs/prism/ISSUES.md` §4 et §ph10 | `ECHOS-100…103`, `ECHOS-110` = intégration PRISM V2 | dans `docs/echos/ISSUES.md`, `ECHOS-100…103` = shell Electron, UI, PyInstaller, packaging : **livrés**, et `ECHOS-110` **n'existe pas** | Critique |
 | 11 | `docs/prism/ISSUES.md` (mesure du 15/11) | « variance 14,8 %, rejeté par le harnais = 10 % » | 14,78 % est l'**erreur-type de la perception**, pas la variance ; l'étendue maximale est 29,56 %. Le total (431,5 ms, SE 5,15 %) et le pathfinding (404,7 ms, SE 5,49 %) sont dans la tolérance | Faible |
-| 12 | `README.md` badge | SYNE `0.17.0` | `syne/component.json` = **0.18.0** dans l'arbre de travail | Moyenne |
+| 12 | `syne/component.json` et `README.md` | SYNE `0.18.0` | cohérents sur la branche V2 ; `installer/build/components.json` déclare encore `0.17.0` (release V1) : dérive à trancher au packaging | Moyenne |
 | 13 | `docs/prism/ROADMAP.md:27` | PRISM-037 : comparaison Windows/Linux « reportée » | la CI la fait sur deux OS avec hashes épinglés | Faible |
 | 14 | `docs/prism/ROADMAP.md:29` | PRISM-053 attend « la mesure B1 » | B1 est déclaré supplanté par B9 ; l'attente n'a plus d'objet | Moyenne |
-| 15 | `docs/governance/LIVEX-CURRENT-STATUS.md:32` | ECHOS 383 réussis, 91,32 %, 19 octobre | 393 réussis, 14 ignorés, 91,24 % | Faible |
+| 15 | `docs/governance/LIVEX-CURRENT-STATUS.md:32` | ECHOS 383 réussis, 91,32 %, 19 octobre | 419 réussis, 14 ignorés, 91,14 % | Faible |
 
 **Règle à appliquer** : conformément à la consigne « une mise à jour de documentation porte sur toute la documentation », ces 15 points doivent être corrigés **dans la même passe**, avec le CHANGELOG comme point d'entrée.
 
@@ -134,7 +134,7 @@ Chaque ligne est vérifiable dans le fichier cité. La gravité indique le risqu
 
 #### S1. Committer et remettre la documentation à la vérité — 1 à 2 jours
 
-- Committer le lot courant (487/487 vert) avec un message `feat(prism): ...` décrivant la côte, `worldGenVersion 2`, les champs de distance et les bots.
+- Committer le lot courant (525/525 vert) avec un message `feat(prism): ...` décrivant la côte, `worldGenVersion 2`, les champs de distance et les bots.
 - Corriger les 15 écarts du §3, y compris les identifiants ECHOS et l'ajout de `ECHOS-110` au backlog ECHOS.
 - Ajouter une entrée CHANGELOG pour `WorldGenVersion 2` et `ShoreBand 0`.
 - **Critère de sortie** : un seul total de tests par composant, cohérent dans README, TESTING, CURRENT-STATUS, ISSUES, CHANGELOG ; plus aucune porte annoncée ouverte à tort.

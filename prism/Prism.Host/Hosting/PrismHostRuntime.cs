@@ -86,6 +86,46 @@ public sealed record StructureMetric(
 
 public sealed record CommandFailureMetric(string Reason, long Count);
 
+/// <summary>
+/// Intervention demandée par un client de lecture (PRISM-116). Le host la traduit en commande
+/// du contrat gelé : aucun kind nouveau, aucune écriture directe dans le monde.
+/// </summary>
+public sealed record InterventionRequest(
+    ulong AgentId,
+    string Kind,
+    int X,
+    int Y,
+    int Z,
+    int ItemTypeId,
+    int MaterialId)
+{
+    public CommandEnvelope ToCommand(string protocolVersion)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(protocolVersion);
+        if (Kind is not ("Poser" or "Retirer"))
+        {
+            throw new ArgumentException(
+                "An intervention kind must be 'Poser' or 'Retirer'.",
+                nameof(Kind));
+        }
+
+        var payload = Kind == "Poser"
+            ? JsonSerializer.SerializeToElement(
+                new { position = new { x = X, y = Y, z = Z }, item = ItemTypeId, material = MaterialId },
+                ProtocolJson.Options)
+            : JsonSerializer.SerializeToElement(
+                new { position = new { x = X, y = Y, z = Z } },
+                ProtocolJson.Options);
+        return new CommandEnvelope(
+            protocolVersion,
+            0,
+            $"intervention-{Guid.NewGuid():N}",
+            AgentId,
+            Kind,
+            payload);
+    }
+}
+
 public sealed record WorldMetricsSnapshot(
     long Tick,
     ItemStockMetric[] Stocks,
@@ -128,6 +168,8 @@ public sealed record AgentEntitySnapshotEnvelope(
 public sealed class PrismHostRuntime : IWorldHost
 {
     private readonly object _gate = new();
+    private readonly List<CommandEnvelope> _pendingInterventions = [];
+    private long _interventionSequence;
     private readonly Func<IWorldHost>? _customWorldHostFactory;
     private readonly ReadStreamHub _readStream;
     private readonly WorldCheckpointStore? _checkpointStore;
@@ -274,6 +316,7 @@ public sealed class PrismHostRuntime : IWorldHost
                 _containers = containerStore;
                 _stations = stationRegistry;
                 _failures.Clear();
+                _pendingInterventions.Clear();
                 _generatedWorld = generatedWorld;
                 _compiledPack = compiledPack;
                 _seed = request.Seed;
@@ -511,6 +554,22 @@ public sealed class PrismHostRuntime : IWorldHost
             // Les pages du tick précédent ne survivent pas à l'avancement du monde :
             // elles décriraient un tick que l'hôte ne peut plus garantir.
             _tickPagePlan = null;
+            if (_pendingInterventions.Count > 0)
+            {
+                // Une intervention entre dans le tick comme n'importe quelle commande :
+                // elle est journalisée, validée et appliquée par le monde autoritaire.
+                var mergedCommands = new List<CommandEnvelope>(
+                    request.Commands.Count + _pendingInterventions.Count);
+                foreach (var intervention in _pendingInterventions)
+                {
+                    mergedCommands.Add(intervention with { Tick = request.Tick });
+                }
+
+                mergedCommands.AddRange(request.Commands);
+                _pendingInterventions.Clear();
+                request = request with { Commands = mergedCommands };
+            }
+
             ProtocolJson.Serialize(request);
             if (request.Tick != checked(_lastCompletedTick + 1))
             {
@@ -628,6 +687,28 @@ public sealed class PrismHostRuntime : IWorldHost
 
                 throw;
             }
+        }
+    }
+
+    /// <summary>
+    /// Intervention du viewer (PRISM-116) : appliquée au prochain tick sous l'autorité du monde.
+    /// Le run reste marqué par la journalisation côté client ; le host ne décide de rien.
+    /// </summary>
+    public long QueueIntervention(CommandEnvelope command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        if (!CommandKinds.All.Contains(command.Kind))
+        {
+            throw new HostLifecycleException(
+                "invalid_intervention",
+                $"Command kind '{command.Kind}' is not part of the contract vocabulary.");
+        }
+
+        lock (_gate)
+        {
+            RequireState(PrismHostState.Running, "intervention");
+            _pendingInterventions.Add(command);
+            return ++_interventionSequence;
         }
     }
 
@@ -892,18 +973,23 @@ public sealed class PrismHostRuntime : IWorldHost
     private JsonElement CreateSnapshot()
     {
         var status = CreateStatus();
+        // Avant le premier tick, lastCompletedTick vaut -1 : le contrat du flux de
+        // lecture interdit un tick négatif (PRISM-117), et un client qui se connecte
+        // à un hôte déjà préparé doit recevoir l'instantané initial, pas une erreur.
+        // Le monde est alors publié au tick 0, celui que le premier pas produira.
+        var snapshotTick = Math.Max(0, _lastCompletedTick);
         var world = _generatedWorld is null
             ? null
             : CreateGeneratedWorldSnapshot(
                 _generatedWorld,
-                _lastCompletedTick,
+                snapshotTick,
                 _construction,
                 _agentLifecycle);
         return JsonSerializer.SerializeToElement(
             new
             {
                 status.State,
-                status.LastCompletedTick,
+                LastCompletedTick = snapshotTick,
                 status.Seed,
                 status.ContentHash,
                 status.Error,

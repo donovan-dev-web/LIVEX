@@ -78,7 +78,16 @@ public sealed class App : Avalonia.Application
             // ouverte automatiquement au démarrage et à la demande depuis les cartes.
             var consoles = new ConsoleWindowHost(_composition.Logs, facade.LogsDirectoryFor);
             facade.ComponentStarted += (_, started) =>
+            {
+                // Le viewer EST sa fenêtre : ouvrir une console par-dessus masquerait
+                // le rendu. Les autres composants gardent leur console.
+                if (started.ComponentId == "prism-viewer")
+                {
+                    return;
+                }
+
                 Dispatcher.UIThread.Post(() => consoles.Open(started.InstanceId));
+            };
             viewModel.SetConsoleHandler(instanceId => consoles.Open(instanceId));
 
             // Fenêtre d'analyse native : une seule fenêtre, alimentée par l'API

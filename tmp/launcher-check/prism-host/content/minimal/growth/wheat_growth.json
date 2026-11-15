@@ -1,0 +1,13 @@
+{
+  "id": "wheat_growth",
+  "stages": 4,
+  "stageTicks": 150,
+  "jitterTicks": 25,
+  "seasonFactorsPermille": {
+    "spring": 1200,
+    "summer": 1000,
+    "autumn": 800,
+    "winter": 0
+  },
+  "witherAfterTicks": 600
+}

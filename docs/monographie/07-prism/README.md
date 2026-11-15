@@ -7,7 +7,7 @@ l'état physique du monde : terrain, matière, temps, déplacement, actions et
 structures. Cette transformation déplace une frontière fondamentale. La
 scène ne porte plus le monde ; le monde simulé existe sans scène.
 
-Ce chapitre décrit PRISM V2 tel qu'il est implémenté au 4 novembre 2026. Il
+Ce chapitre décrit PRISM V2 tel qu'il est implémenté au 15 novembre 2026. Il
 distingue la base fonctionnelle, le couplage actuel avec SYNE et les preuves
 encore attendues. Les anciens chapitres Unreal sont conservés comme description
 historique de PRISM V1 et sont balisés comme tels.
@@ -32,14 +32,14 @@ flowchart LR
 SYNE reste l'horloge maîtresse et décide des actes cognitifs. PRISM applique les
 commandes au monde, avance ses systèmes et renvoie ce que l'agent peut
 observer. ECHOS et le viewer lisent les sorties de PRISM ; ils ne décident pas
-à sa place. Le viewer V2 est optionnel et son client de lecture n'est pas
-encore branché au lancement live.
+à sa place. Le viewer V2 est optionnel : livré en P11, il consomme le flux de lecture en
+direct et porte le plan de contrôle (Play/Pause/Stop/Quit relayés à l'hôte).
 
 ## Ce qui est et ce qui n'est pas établi
 
 > **Instantané daté du 4 novembre 2026.** Les compteurs ci-dessous sont
-> historiques ; au 15 novembre 2026, la suite PRISM compte **487/487** tests et
-> R2 est franchie. Voir le [statut transversal](../../governance/LIVEX-CURRENT-STATUS.md).
+> historiques ; au 15 novembre 2026, la suite PRISM compte **525/525** tests ; R2 et R3 sont
+> franchies (G5). Voir le [statut transversal](../../governance/LIVEX-CURRENT-STATUS.md).
 
 Le host, les actions physiques, la génération déterministe, les chaînes
 d'outils et d'agriculture, les structures et les points de reprise ont des
@@ -51,11 +51,12 @@ a été exercé sur 1 000 ticks.
 Cela ne suffisait pas, au 4 novembre, à déclarer l'intégration complète. Depuis,
 le run R2 couplé de 5 000 ticks est reproductible sur trois hôtes et la reprise
 commune est bit-identique ; R3 (100 agents × 5 000 ticks) est également produite
-et reproductible. Restent les validations interplateformes (G2), le viewer
-complet (P11) et le raccordement de production ECHOS/Launcher. ECHOS peut
-valider et conserver les enveloppes du flux PRISM, mais cette ingestion n'est
-pas encore intégrée au cycle de run et aux métriques. Les chaînes livrées n'ont
-pas toutes de scénarios bout en bout pilotés par bot. La performance mesurée
+et reproductible. Le viewer est livré (P11, 15 novembre 2026 : modes
+client/embarqué/rejeu, atlas, entités live, inspecteur et sept calques,
+interventions journalisées). Restent les validations interplateformes (G2),
+les mesures de rendu (B8) et la validation graphique Linux. ECHOS ingère
+désormais le flux PRISM en production (`POST /ingest/prism`, analyse et
+métriques) et les cinq chaînes sont jouées de bout en bout par des bots (G4). La performance mesurée
 après optimisation est un résultat local, pas une porte de viabilité franchie.
 
 Les résultats expérimentaux disponibles restent bornés : le contraste de

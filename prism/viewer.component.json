@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "id": "prism-viewer",
+  "name": "PRISM Viewer",
+  "type": "viewer",
+  "version": "2.0.0-preview.1",
+  "runtime": "native",
+  "executable": {
+    "windows": "bin/Prism.Viewer.exe",
+    "linux": "bin/Prism.Viewer"
+  },
+  "workingDirectory": ".",
+  "endpoints": {
+    "control": {
+      "transport": "http",
+      "launchArgument": "--control-port"
+    },
+    "readStream": {
+      "transport": "websocket",
+      "launchArgument": "--connect",
+      "path": "/data/read"
+    }
+  },
+  "capabilities": [
+    "renderCadence",
+    "readOnlyClient",
+    "replay"
+  ],
+  "health": {
+    "probe": "http",
+    "path": "/health/ready",
+    "intervalMs": 1000
+  },
+  "timeouts": {
+    "startupMs": 15000,
+    "shutdownMs": 5000
+  },
+  "protocolVersion": 1,
+  "contributesTo": [
+    "immersion"
+  ],
+  "requires": [
+    "prism-host"
+  ],
+  "consumes": {
+    "readStream": {
+      "from": "prism-host",
+      "launchArgument": "--connect"
+    },
+    "control": {
+      "from": "prism-host",
+      "launchArgument": "--control"
+    }
+  }
+}

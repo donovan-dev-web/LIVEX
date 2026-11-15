@@ -18,7 +18,7 @@ public sealed class TerrainMeshBuilderTests
         var mesh = Assert.Single(TerrainMeshBuilder.BuildRegions(world, zones, Palette));
         var repeatedMesh = Assert.Single(TerrainMeshBuilder.BuildRegions(world, zones, Palette));
 
-        Assert.Equal(30, mesh.Vertices.Length / 6);
+        Assert.Equal(30, mesh.Vertices.Length / TerrainMeshBuilder.FloatsPerVertex);
         Assert.Equal(mesh.Vertices, repeatedMesh.Vertices);
     }
 
@@ -32,7 +32,7 @@ public sealed class TerrainMeshBuilderTests
 
         var mesh = Assert.Single(TerrainMeshBuilder.BuildRegions(world, zones, Palette));
 
-        Assert.Equal(54, mesh.Vertices.Length / 6);
+        Assert.Equal(54, mesh.Vertices.Length / TerrainMeshBuilder.FloatsPerVertex);
     }
 
     [Fact]
@@ -77,7 +77,8 @@ public sealed class TerrainMeshBuilderTests
             [WorldZone.Plains, WorldZone.Plains],
             Palette));
 
-        Assert.Equal(0.598f, mesh.Vertices[10], 3);
+        // Vertice 1, composante verte : la position occupe 3 flottants, la couleur suit.
+        Assert.Equal(0.598f, mesh.Vertices[TerrainMeshBuilder.FloatsPerVertex + 4], 3);
     }
 
     [Fact]

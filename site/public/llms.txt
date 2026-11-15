@@ -90,11 +90,11 @@ graphique » avant la maturité.
 | ECHOS | Emergent Cognition & Holistic Observation System | Observation, analyse et API headless. |
 | PRISM | Perceptual Rendering & Interactive Simulation Module | Autorité du monde physique en V2 (hôte .NET headless) ; visualiseur facultatif. En V1 : projet Unreal + PRISM-LDK. |
 
-- **SYNE** : moteur déterministe de simulation multi-agents. Règles, ticks, architecture BDI,
+- **SYNE** : moteur déterministe de cognition multi-agents. Règles, ticks, architecture BDI,
   déterminisme bit-à-bit à partir d'une graine. Peut fonctionner en mode headless. Publie son
-  état par des contrats d'observabilité versionnés. Version 0.17.0 (moteur .NET), statut
-  expérimental, non distribué publiquement ; la cible V2 (0.18.0, contrat d'observabilité 0.6.0)
-  n'est pas livrée.
+  état par des contrats d'observabilité versionnés. Version 0.18.0 (moteur .NET), contrat
+  d'observabilité 0.6.0, statut expérimental, non distribué publiquement. En V2, SYNE ne détient
+  plus le monde : il porte la cognition et applique les observations de PRISM.
 - **ECHOS** : ingestion, analyse et API headless. Lecture des runs, métriques de viabilité,
   détection de boucles et de motifs émergents. Calcule des métriques d'émergence (diversité
   cognitive, propagation de l'information, complexité sociale, dynamiques de groupes). Analyse
@@ -105,15 +105,17 @@ graphique » avant la maturité.
   physique : grille 2,5D de blocs et de chunks, contenu déclaratif (packs JSON), corps et
   navigation, actions, agriculture, fabrication, structures et chantiers. Contrat avec SYNE gelé
   en 1.0.0 (4 novembre 2026). Hôte headless `prism-host`, visualiseur Silk.NET/OpenGL facultatif,
-  bots de validation. Implémentation en cours, non publiée.
+  bots de validation. Socle P0–P11 livré au 15 novembre 2026 (525/525 tests, viewer et plan de
+  contrôle compris) ; aucune release V2 publiée.
 
 Composants transverses :
 - **Launcher** : orchestrateur de la pile, application de bureau Avalonia (version 0.1.0) :
-  modes, campagnes reproductibles, supervision, paquets `.livexp`. Sa refonte V2 est en
-  préparation.
+  modes, campagnes reproductibles, supervision, paquets `.livexp`. Livré côté V1 ; orchestre la
+  pile V2 en modes Hôte et Viewer (236 tests au 15 novembre 2026).
 - **Installateur** : livré en version 1.0.0 avec la release publique (Windows x64 et Linux x64,
   variantes `core` et `full`) : installation, modules facultatifs, mise à jour, réparation et
-  désinstallation.
+  désinstallation. Pour la V2, `prism-host`, `prism-viewer` et le pack sont publiés par la chaîne
+  de release (win-x64, linux-x64) ; la recette INSTALLER-200 sur machine propre reste à consigner.
 - **syne-mock** : serveur Node.js de développement, hérité de la V1, pour tester les contrats et
   l'intégration PRISM sans démarrer le moteur complet. Émule le transport et une partie du
   comportement ; ne reproduit pas les décisions, le pathfinding ni tous les systèmes sociaux de
@@ -137,10 +139,11 @@ Composants transverses :
 - **Monde 2,5D borné** : grille de blocs, chunks et régions ; perception locale et différentielle
   plafonnée par agent. PRISM ne transmet que ce qu'un agent peut percevoir ; SYNE conserve
   mémoire, croyances et souvenirs.
-- **État d'avancement (novembre 2026)** : socles du noyau du monde, du contenu, du temps, des
-  corps et de la navigation, des actions et de l'hôte headless implémentés et testés ;
-  visualiseur v0 et bots de validation ; boucle couplée SYNE et ingestion ECHOS amorcées. Aucune
-  release V2.
+- **État d'avancement (15 novembre 2026)** : noyau du monde, contenu, temps, corps et navigation,
+  actions, hôte headless et persistance livrés et testés ; viewer complet (P11) et plan de contrôle
+  piloté depuis le Launcher ; boucle couplée R2/R3 reproductible et ingestion ECHOS en production.
+  525/525 tests PRISM. G5 franchie le 14 novembre ; G1 (performance de l'hôte) ouverte, non
+  bloquante. Aucune release V2.
 
 **PRISM V1 (référence historique).** Dans la release 1.0.0, PRISM est le projet Unreal final de
 LIVEX et PRISM-LDK (LIVEX Development Kit) le plugin Unreal qui l'intègre, en version 0.1.0
@@ -162,7 +165,7 @@ Discipline de lecture commune aux clients (V1 comme V2) :
   `world_initialized`, snapshot par tick, `world_delta`, événements) et HTTP
   `http://127.0.0.1:5181` (commandes de préparation, confirmation, démarrage, pause, reprise,
   arrêt, réinitialisation, statut) ; contrat d'observabilité 0.5.0 et description de monde 1.1.
-- **V2 en préparation** : contrat d'interface 1.0.0 indépendant du transport. L'hôte PRISM
+- **V2 (socle livré)** : contrat d'interface 1.0.0 indépendant du transport. L'hôte PRISM
   expose le contrôle HTTP, un flux de lecture WebSocket (`--read-port`, chemin `/data/read`), des
   sondes de disponibilité (`/health/ready`) et des métriques (`/metrics`). Aucun port n'est
   imposé par défaut : il est défini par la configuration du host.
@@ -173,11 +176,13 @@ Discipline de lecture commune aux clients (V1 comme V2) :
 ## Statuts et versions (résumé factuel)
 
 - Release publique : **1.0.0** (30 octobre 2026) ; **2.0.0** en préparation.
-- SYNE : 0.17.0, moteur .NET, expérimental, non distribué publiquement.
-- ECHOS : 0.1.0, paquet Python, expérimental, non distribué publiquement.
+- SYNE : 0.18.0, moteur .NET, contrat d'observabilité 0.6.0, expérimental, non distribué publiquement.
+- ECHOS : 0.1.0, paquet Python, schéma SQLite v9 (ingestion du flux PRISM), expérimental, non
+  distribué publiquement.
 - PRISM : 2.0.0 en préparation (préversion interne `2.0.0-preview.1`, hôte de monde .NET
-  headless), non publié.
-- Launcher : 0.1.0, application de bureau Avalonia.
+  headless), socle P0–P11 livré, non publié.
+- Launcher : 0.1.0, application de bureau Avalonia, modes Hôte et Viewer.
+- Suites locales au 15 novembre 2026 : 2 164 réussis, 16 ignorés, 0 échec (2 184 cas collectés).
 - Installateur : 1.0.0, livré avec la release.
 - PRISM V1 (projet Unreal + plugin PRISM-LDK 0.1.0) : livré dans la release 1.0.0, conservé
   comme référence historique.
@@ -204,7 +209,8 @@ Contact : https://donovan-dev-web.vercel.app/contact (formulaire, pas d'e-mail p
 - [Architecture](https://donovan-dev-web.github.io/LIVEX/technique/): vue d'ensemble des composants.
 - [SYNE](https://donovan-dev-web.github.io/LIVEX/technique/syne/): moteur de simulation multi-agents.
 - [ECHOS](https://donovan-dev-web.github.io/LIVEX/technique/echos/): système de cognition émergente.
-- [PRISM](https://donovan-dev-web.github.io/LIVEX/technique/prism/): monde physique V2, contrat avec SYNE et visualiseur facultatif.
+- [PRISM](https://donovan-dev-web.github.io/LIVEX/technique/prism/): monde physique V2 livré (P0–P11), contrat avec SYNE et visualiseur facultatif.
+- [État du projet](https://donovan-dev-web.github.io/LIVEX/etat-du-projet/): relevé daté des suites et des portes.
 - [Launcher](https://donovan-dev-web.github.io/LIVEX/technique/launcher/): lanceur et outillage.
 - [Reproductibilité et mesures](https://donovan-dev-web.github.io/LIVEX/technique/resultats/): protocoles, seeds et métriques.
 

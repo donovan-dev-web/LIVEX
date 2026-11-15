@@ -6,8 +6,8 @@
 **Dépend de** : `ARCHITECTURE.md`, `PACKAGE_FORMAT.md`, `COMPONENTS.md`
 **Source Monographie** : —
 
-> **Relevé du 15 novembre 2026 (branche V2)** : **229 réussis, 4 ignorés**
-> (Unit 174, Integration 20, EndToEnd 35). Les 4 ignorés sont dynamiques
+> **Relevé du 15 novembre 2026 (branche V2)** : **236 réussis, 4 cas dynamiques en échec**
+> (Unit 181, Integration 20, EndToEnd 35/39). Les 4 cas restants sont dynamiques
 > (`LIVEX_SYNE_PUBLISHED_ROOT` absent), pas des régressions.
 >
 > **Relevé historique du 19/10/2026 (release V1)** : Unit 174/174, Integration

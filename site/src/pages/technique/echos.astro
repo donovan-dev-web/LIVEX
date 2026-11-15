@@ -13,7 +13,7 @@ import { PROJECT_STATE } from '../../data/release';
 import echosAgents from '../../assets/captures/echos-agents.png';
 import echosRelations from '../../assets/captures/echos-relations.png';
 
-const coverageEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%', ' %');
+const coverageEchos = PROJECT_STATE.coverage.echos;
 ---
 <BaseLayout
   title="ECHOS : observation et analyse des runs"
@@ -23,7 +23,7 @@ const coverageEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%'
     index="07"
     eyebrow="Architecture · ECHOS"
     title="L'observation."
-    lead="ECHOS (Emergent Cognition & Holistic Observation System) lit les traces produites par SYNE et en tire des mesures. Il observe le monde sans jamais intervenir dessus."
+    lead="ECHOS (Emergent Cognition & Holistic Observation System) lit les traces de SYNE et le flux de PRISM, puis en tire des mesures. Il observe le monde sans jamais intervenir dessus."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'ECHOS' }]}
   />
 
@@ -34,14 +34,14 @@ const coverageEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%'
   <section class="block">
     <div class="w">
       <p style="margin-top:0"><StatusBadge status="experimental" /> <span class="mu">ECHOS 0.1.0 · paquet Python (dépôt)</span></p>
-      <div class="cc"><p>Expérimental : l'API headless est fonctionnelle dans le dépôt, mais non distribuée publiquement à ce jour.</p></div>
+      <div class="cc"><p>Expérimental : l'API headless est fonctionnelle dans le dépôt (419 tests au 15 novembre 2026), mais non distribuée publiquement à ce jour.</p></div>
 
       <div class="sh"><b>7.1</b> Rôle</div>
       <h2>Transformer les traces en mesures.</h2>
       <p>
-        ECHOS ingère les snapshots et événements d'un run, les stocke (schéma SQLite <strong>v6</strong>) puis en
-        dérive des mesures : viabilité du monde, évolution des ressources, motifs récurrents et
-        <strong>boucles de rétroaction</strong>.
+        ECHOS ingère les snapshots et événements d'un run — y compris les enveloppes du flux de lecture PRISM
+        (<code>POST /ingest/prism</code>) — les stocke (schéma SQLite <strong>v9</strong>) puis en dérive des mesures :
+        viabilité du monde, évolution des ressources, motifs récurrents et <strong>boucles de rétroaction</strong>.
       </p>
       <p>
         Sa sortie est consommable par d'autres outils via une <strong>API headless</strong> : la présentation n'est pas
@@ -73,7 +73,7 @@ const coverageEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%'
         <div class="pl br" style="padding:18px"><h3>Boucles</h3><p class="mu" style="margin:0">Rétroactions où le comportement d'un agent infléchit le suivant.</p></div>
         <div class="pl br" style="padding:18px"><h3>Relations</h3><p class="mu" style="margin:0">Interactions entre agents, observées et agrégées.</p></div>
       </div>
-      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS était de {coverageEchos} au {PROJECT_STATE.observedDate}.</p></div>
+      <div class="cc" style="margin-top:22px"><p>La couverture de lignes mesurée pour ECHOS est de {coverageEchos} au {PROJECT_STATE.coverage.echosDate} (14 tests ignorés).</p></div>
     </div>
   </section>
 

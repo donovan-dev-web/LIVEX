@@ -1,0 +1,11 @@
+{
+  "grass": 1,
+  "sand": 2,
+  "stone": 3,
+  "soil": 4,
+  "bedrock": 5,
+  "water": 6,
+  "ore": 7,
+  "tree": 8,
+  "leaves": 9
+}

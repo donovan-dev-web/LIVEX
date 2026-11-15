@@ -9,14 +9,15 @@ SHA-256) ni les installer. Ce script produit, pour un RID donné, l'arborescence
 attendue par `scripts/release/build_distribution.py` :
 
     dist/staging/<rid>/prism-host/bin/<prism-host>   (+ component.json)
-    dist/staging/<rid>/prism-viewer/bin/<Prism.Viewer>
+    dist/staging/<rid>/prism-viewer/bin/<Prism.Viewer> (+ component.json)
     dist/staging/<rid>/prism-content/<pack.json, ...>
     dist/staging/<rid>/prism-artifacts.json          (trace de publication)
 
-Le manifeste du host est celui du dépôt (`prism/component.json`) : la
-distribution l'aligne ensuite sur la version déclarée dans
-`installer/build/components.json`. Le viewer n'a pas encore de manifeste
-Launcher — il relève de PRISM-118 (P11) — donc seul son binaire est publié ici.
+Les manifestes sont ceux du dépôt (`prism/component.json` pour l'hôte,
+`prism/viewer.component.json` pour le viewer) : la distribution les aligne
+ensuite sur la version déclarée dans `installer/build/components.json`. Le
+viewer déclare son endpoint `readStream` consommé et sa capacité `renderCadence`
+(PRISM-118), ce qui laisse le Launcher résoudre l'URL du producteur.
 
 Aucune empreinte n'est calculée ici : `build_distribution.py` mesure les
 archives qu'il produit. Ce script se contente de publier et de **vérifier que
@@ -39,6 +40,8 @@ PRISM_ROOT = ROOT / "prism"
 HOST_PROJECT = PRISM_ROOT / "Prism.Host" / "Prism.Host.csproj"
 VIEWER_PROJECT = PRISM_ROOT / "Prism.Viewer" / "Prism.Viewer.csproj"
 HOST_MANIFEST = PRISM_ROOT / "component.json"
+VIEWER_MANIFEST = PRISM_ROOT / "viewer.component.json"
+ASSETS_ROOT = PRISM_ROOT / "assets"
 CONTENT_ROOT = PRISM_ROOT / "content"
 COMPONENTS_FILE = ROOT / "installer" / "build" / "components.json"
 
@@ -115,10 +118,29 @@ def publish_rid(rid: str, staging: Path, configuration: str) -> dict:
     host_root = staging / "prism-host"
     publish_project(HOST_PROJECT, host_root / "bin", rid, configuration)
     shutil.copy2(HOST_MANIFEST, host_root / "component.json")
+    # Le pack minimal accompagne l'hôte : `--autostart --content content/minimal`
+    # lui permet de préparer son monde sans hash externe ni chemin absolu.
+    minimal_pack = CONTENT_ROOT / CONTENT_PROFILE
+    if (minimal_pack / "pack.json").is_file():
+        shutil.copytree(
+            minimal_pack,
+            host_root / "content" / CONTENT_PROFILE,
+            dirs_exist_ok=True,
+        )
     host_version = json.loads(HOST_MANIFEST.read_text(encoding="utf-8"))["version"]
 
     viewer_root = staging / "prism-viewer"
     publish_project(VIEWER_PROJECT, viewer_root / "bin", rid, configuration)
+    shutil.copy2(VIEWER_MANIFEST, viewer_root / "component.json")
+    viewer_version = json.loads(VIEWER_MANIFEST.read_text(encoding="utf-8"))["version"]
+    # Assets optionnels du viewer (atlas, palettes, police) : le binaire les cherche dans
+    # `assets/` à côté de lui, c'est-à-dire dans `bin/` puisque le manifeste déclare
+    # `bin/Prism.Viewer[.exe]`. Absents, il génère tout par programme.
+    if ASSETS_ROOT.is_dir():
+        # Nettoyer l'ancien emplacement (`<composant>/assets`, avant la correction du
+        # 15/11) : sinon un dossier périmé reste à côté du manifeste et induit en erreur.
+        shutil.rmtree(viewer_root / "assets", ignore_errors=True)
+        shutil.copytree(ASSETS_ROOT, viewer_root / "bin" / "assets", dirs_exist_ok=True)
 
     content_source = CONTENT_ROOT / CONTENT_PROFILE
     if not (content_source / "pack.json").is_file():
@@ -134,7 +156,7 @@ def publish_rid(rid: str, staging: Path, configuration: str) -> dict:
     verify_versions(
         {
             "prism-host": host_version,
-            "prism-viewer": host_version,
+            "prism-viewer": viewer_version,
             "prism-content": content_version,
         }
     )
@@ -142,7 +164,7 @@ def publish_rid(rid: str, staging: Path, configuration: str) -> dict:
     entries = []
     for component, version, directory in (
         ("prism-host", host_version, host_root),
-        ("prism-viewer", host_version, viewer_root),
+        ("prism-viewer", viewer_version, viewer_root),
         ("prism-content", content_version, content_root),
     ):
         files, size = staging_stats(directory)

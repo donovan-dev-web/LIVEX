@@ -1,0 +1,14 @@
+Fatal error.
+0xC0000005
+   at Silk.NET.OpenGL.GL.DeleteBuffers(UInt32, UInt32*)
+   at Silk.NET.OpenGL.GL.DeleteBuffer(UInt32)
+   at ViewerWindow.OnClosing()
+   at Silk.NET.Windowing.Glfw.GlfwWindow.Close()
+   at Program+<>c__DisplayClass0_0+<<<Main>$>b__2>d.MoveNext()
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[[System.Threading.Tasks.VoidTaskResult, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Program+<>c__DisplayClass0_0+<<<Main>$>b__2>d, Prism.Viewer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]].ExecutionContextCallback(System.Object)
+   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(System.Threading.Thread, System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[[System.Threading.Tasks.VoidTaskResult, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Program+<>c__DisplayClass0_0+<<<Main>$>b__2>d, Prism.Viewer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]].MoveNext(System.Threading.Thread)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1+AsyncStateMachineBox`1[[System.Threading.Tasks.VoidTaskResult, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[Program+<>c__DisplayClass0_0+<<<Main>$>b__2>d, Prism.Viewer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]].ExecuteFromThreadPool(System.Threading.Thread)
+   at System.Threading.ThreadPoolWorkQueue.Dispatch()
+   at System.Threading.PortableThreadPool+WorkerThread.WorkerThreadStart()
+   at System.Threading.Thread.StartCallback()

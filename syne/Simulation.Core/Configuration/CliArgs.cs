@@ -48,7 +48,8 @@ public sealed record CliOptions(
     string? PrismRestoreCheckpoint = null,
     string? PrismCheckpointDir = null,
     bool? ExternalWorld = null,
-    string? Production = null)
+    string? Production = null,
+    bool PrismStandby = false)
 {
     /// <summary>Ports d'écoute acceptés par les écouteurs BCL.</summary>
     public const int MinPort = 1;
@@ -113,6 +114,8 @@ public sealed record CliOptions(
           --prism-checkpoint-id <id>       Identifiant de base des checkpoints couplés.
           --prism-checkpoint-every <n>     Sauvegarde un checkpoint PRISM tous les n ticks.
           --prism-restore-checkpoint <id>  Restaure le checkpoint PRISM indiqué avant le run.
+          --prism-standby                  Charge le monde et attend le démarrage demandé
+                                           par le viewer (run gaté, ticks suspendus).
           --prism-checkpoint-dir <path>    Répertoire des snapshots SYNE couplés (défaut :
                                            .livex/coupled-checkpoints).
 
@@ -189,6 +192,7 @@ public sealed record CliOptions(
         string? prismCheckpointDir = null;
         bool? externalWorld = null;
         string? production = null;
+        var prismStandby = false;
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -250,6 +254,9 @@ public sealed record CliOptions(
                     break;
                 case "--prism-agents":
                     prismAgents = ParseInt(RequireValue(args, ref i, "--prism-agents"), "--prism-agents");
+                    break;
+                case "--prism-standby":
+                    prismStandby = true;
                     break;
                 case "--production":
                     production = RequireValue(args, ref i, "--production");
@@ -386,7 +393,7 @@ public sealed record CliOptions(
             instanceId, controlPort, workDirectory, logDirectory, correlationId,
             prismUrl, prismTicks, prismSeed, prismContentHash, prismContentDir, prismAgents,
             prismCheckpointId, prismCheckpointEvery, prismRestoreCheckpoint, prismCheckpointDir, externalWorld,
-            production);
+            production, prismStandby);
     }
 
     /// <summary>

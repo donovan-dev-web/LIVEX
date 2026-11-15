@@ -10,8 +10,8 @@ import { PROJECT_STATE } from '../../data/release';
 import { url } from '../../utils/url';
 
 const nf = new Intl.NumberFormat('fr-FR');
-const covEchos = PROJECT_STATE.coverage.echos.replace('.', ',').replace('%', ' %');
-const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %');
+const covEchos = PROJECT_STATE.coverage.echos;
+const covSyne = PROJECT_STATE.coverage.syne;
 ---
 <BaseLayout
   title="Reproductibilité et mesures LIVEX"
@@ -68,23 +68,22 @@ const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %')
           <h3>tests au vert</h3>
           <p>0 échec sur les suites locales.</p>
         </div>
-        <div>
-          <div class="n">{PROJECT_STATE.coverage.echos}</div>
-          <h3>couverture ECHOS</h3>
-          <p>Couverture de lignes de l'observatoire (paquet Python).</p>
+        <div>              <div class="n">{PROJECT_STATE.coverage.echos}</div>
+              <h3>couverture ECHOS</h3>
+              <p>Lignes de l'observatoire (paquet Python), mesurées le {PROJECT_STATE.coverage.echosDate}.</p>
         </div>
-        <div>
-          <div class="n">{PROJECT_STATE.coverage.syne}</div>
-          <h3>couverture SYNE</h3>
-          <p>Assemblages SYNE agrégés (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole}).</p>
+        <div>              <div class="n">{PROJECT_STATE.coverage.syne}</div>
+              <h3>couverture SYNE</h3>
+              <p>Assemblages SYNE agrégés, mesurés le {PROJECT_STATE.coverage.syneDate} (Core {PROJECT_STATE.coverage.syneCore}, Console {PROJECT_STATE.coverage.syneConsole}).</p>
         </div>
       </div>
       <div class="ov" style="margin-top:28px">
         <table class="tb">
           <thead><tr><th scope="col">Indicateur</th><th scope="col">Valeur</th></tr></thead>
           <tbody>
-            <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Tests au vert par composant</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
+            <tr><td>Référence analysée</td><td><code>{PROJECT_STATE.branch}</code> · commit V1 {PROJECT_STATE.commit}</td></tr>
+            <tr><td>Tests au vert par composant</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')} · {nf.format(PROJECT_STATE.tests.passed)} réussis au total</td></tr>
+            <tr><td>Cas non exécutés</td><td>{PROJECT_STATE.tests.ignored} ignorés ({PROJECT_STATE.tests.ignored} déclarés) et {PROJECT_STATE.tests.dynamic} cas Launcher dynamiques exigés par <code>LIVEX_SYNE_PUBLISHED_ROOT</code></td></tr>
             <tr><td>Intégration continue</td><td>{PROJECT_STATE.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE.windows}</td></tr>
           </tbody>
@@ -119,6 +118,28 @@ const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %')
         <p><strong>Écart assumé à 1 000 entités.</strong> La cible de scalabilité n'est pas tenue à cette échelle
           (≈ 6 t/s contre ≥ 10). L'optimisation de la perception et le traitement par lots des événements sont le
           chantier identifié ; il ne bloque pas V0.1, dont les scénarios tournent à 100 agents ou moins.</p>
+      </div>
+      <h3 style="margin-top:34px">PRISM V2 — le tick couplé (15 novembre 2026)</h3>
+      <p>
+        La même question se pose pour le couple SYNE↔PRISM : combien coûte un tick quand la cognition et le monde
+        avancent ensemble ? Les mesures R2, R3 et B9 répondent séparément au coût propre de SYNE et au coût complet de
+        l'hôte, sur 5 000 ticks.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Mesure</th><th scope="col">Valeur</th><th scope="col">Conditions et preuve</th></tr></thead>
+          <tbody>
+            <tr><td>SYNE seul, 100 agents (R3)</td><td>30,5 ms/tick</td><td>100 × 5 000 ticks, 25 chaînes terminées par passe, 0 abandon ; empreinte <code>855fdc2e1387e8d3</code> reproduite deux fois. Budget 50 ms → <strong>G5 franchie</strong>.</td></tr>
+            <tr><td>SYNE + PRISM, 50 agents (R2)</td><td>reprise bit-identique</td><td>Empreinte <code>0bf833f4bcfc1e5e</code> reproduite trois fois, checkpoint relu après redémarrage.</td></tr>
+            <tr><td>SYNE + PRISM, 100 agents (B9)</td><td>431,5 ms/tick</td><td>Deux passes concordantes ; ApplyWrites 404,7 ms (94 %), perception 15,2 ms, macros 14,4 ms. Budget 50 ms → <strong>G1 ouverte</strong>.</td></tr>
+            <tr><td>SYNE + PRISM, 1 000 agents</td><td>850 ms/tick</td><td>Dernière mesure valide à cette échelle ; budget 250 ms. Non rejouée depuis B9.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc">
+        <p><strong>G1 n'est pas un échec silencieux.</strong> Le budget de 50 ms n'est pas tenu à 100 agents (≈ 8,6×),
+          et le levier est identifié : 94 % du tick part dans ApplyWrites, dont des recherches de chemin rejouées
+          (PRISM-143). La porte reste ouverte et non bloquante ; aucune optimisation n'est annoncée avant mesure.</p>
       </div>
       <p class="mu" style="font-size:0.78rem">
         Le coût de l'observabilité (pile ECHOS branchée sur SYNE) est mesuré séparément par un script de benchmark
@@ -166,10 +187,12 @@ const covSyne = PROJECT_STATE.coverage.syne.replace('.', ',').replace('%', ' %')
         <table class="tb">
           <thead><tr><th scope="col">Affirmation</th><th scope="col">Statut</th><th scope="col">Source</th></tr></thead>
           <tbody>
-            <tr><td>{nf.format(PROJECT_STATE.tests.passed)} tests réussis, {PROJECT_STATE.tests.failed} échec au {PROJECT_STATE.observedDate}</td><td>Vérifiée</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>Couverture ECHOS {covEchos} / SYNE {covSyne} au {PROJECT_STATE.observedDate}</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>{PROJECT_STATE.ci}</td><td>Vérifiée</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>Écart ≈ 1,7× sous la cible à 1 000 entités</td><td>Vérifiée</td><td>PERFORMANCE §9.2</td></tr>
+            <tr><td>{nf.format(PROJECT_STATE.tests.passed)} tests réussis, {PROJECT_STATE.tests.ignored} ignorés, {PROJECT_STATE.tests.failed} échec au {PROJECT_STATE.observedDate}</td><td>Vérifiée</td><td>LIVEX-CURRENT-STATUS §2</td></tr>
+            <tr><td>Couverture ECHOS {covEchos} au {PROJECT_STATE.coverage.echosDate} ; SYNE {covSyne} au {PROJECT_STATE.coverage.syneDate}</td><td>Vérifiée</td><td>LIVEX-CURRENT-STATUS §2 ; mesures de dates différentes</td></tr>
+            <tr><td>R3 : 30,5 ms/tick à 100 agents, empreinte reproduite</td><td>Vérifiée</td><td>R3 ; <code>docs/governance/LIVEX-CURRENT-STATUS.md</code></td></tr>
+            <tr><td>B9 : 431,5 ms/tick à 100 agents, ApplyWrites 94 %</td><td>Vérifiée</td><td>B9 ; budget G1 non tenu</td></tr>
+            <tr><td>{PROJECT_STATE.ci}</td><td>Vérifiée</td><td>CI du 04/11/2026</td></tr>
+            <tr><td>Écart ≈ 1,7× sous la cible V1 à 1 000 entités</td><td>Vérifiée</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
         </table>
       </div>

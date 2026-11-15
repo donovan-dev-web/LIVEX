@@ -37,11 +37,11 @@ const faq = [
   },
   {
     q: 'Y a-t-il une modélisation physique (collisions, corps, morphologie) ?',
-    a: "Non. Les entités sont logiques (position, vitesse, santé), sans représentation physique détaillée, et peuvent se chevaucher. Le rendu PRISM stylise ce modèle.",
+    a: "Pas en V1 : les entités y sont logiques (position, vitesse, santé), sans représentation physique détaillée, et peuvent se chevaucher. En V2, PRISM introduit un monde 2,5D en blocs, des corps et une navigation ; la morphologie détaillée et les collisions fines ne sont pas visées à ce stade.",
   },
   {
     q: "Quelle est la limite d'échelle visée ?",
-    a: "Des objectifs de performance existent pour une phase ultérieure (notamment 50 et 500 entités à des cadences cibles). La montée à l'échelle au-delà est un axe de recherche (grille spatiale, culling).",
+    a: "La V1 vise 50 et 500 entités à des cadences cibles. La V2 mesure le tick couplé à 100 agents (budget 50 ms) et à 1 000 agents (budget 250 ms) : G5 est franchie à 100 agents, G1 reste ouverte à cette échelle. La montée au-delà est un axe de recherche (grille spatiale, culling).",
   },
   {
     q: 'LIVEX est-il multijoueur ?',
@@ -49,11 +49,11 @@ const faq = [
   },
   {
     q: 'Quelle différence entre LIVEX, PRISM et PRISM-LDK ?',
-    a: "LIVEX est le projet complet. PRISM V1 était le projet Unreal avec le plugin PRISM-LDK. Après la release V1, la cible PRISM V2 devient un monde physique autoritaire .NET ; SYNE garde la cognition des agents et le viewer Silk.NET prévu reste facultatif. La page PRISM présente ce périmètre cible.",
+    a: "LIVEX est le projet complet. PRISM V1 était le projet Unreal avec le plugin PRISM-LDK. Après la release V1, PRISM V2 devient un monde physique autoritaire .NET : son socle P0–P11 est livré (hôte headless, contrat 1.0.0, viewer Silk.NET facultatif), sans release V2 publiée. SYNE garde la cognition des agents.",
   },
   {
     q: 'Pourquoi existe-t-il un mock SYNE ?',
-    a: "syne-mock est un serveur Node.js léger pour avancer sur l'intégration Unreal sans faire tourner le moteur .NET complet. Il simplifie la délibération, les systèmes sociaux et le pathfinding : il sert aux tests d'intégration et d'interface, jamais aux résultats scientifiques.",
+    a: "syne-mock est un serveur Node.js léger pour tester les contrats sans faire tourner le moteur .NET complet, y compris l'intégration PRISM V2. Il simplifie la délibération, les systèmes sociaux et le pathfinding : il sert aux tests d'intégration et d'interface, jamais aux résultats scientifiques.",
   },
   {
     q: 'Quelle est la licence, et qui possède le projet ?',

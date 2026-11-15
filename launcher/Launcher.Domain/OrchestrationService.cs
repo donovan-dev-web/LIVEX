@@ -72,6 +72,9 @@ public sealed class OrchestrationService
             case WellKnownProfiles.Immersion:
                 requested.AddRange(ImmersionComponents);
                 break;
+            case WellKnownProfiles.ImmersionV2:
+                requested.AddRange(ImmersionV2Components);
+                break;
             case WellKnownProfiles.Developpement:
                 requested.AddRange(DevelopmentComponents);
                 break;
@@ -219,6 +222,9 @@ public sealed class OrchestrationService
 
     /// <summary>Composants du mode Immersion.</summary>
     private static readonly string[] ImmersionComponents = ["syne", "prism"];
+    // L'hôte précède le viewer (qui consomme son flux) et SYNE, qui le pilote
+    // en mode couplé une fois l'hôte prêt.
+    private static readonly string[] ImmersionV2Components = ["prism-host", "prism-viewer", "syne"];
 
     /// <summary>Composants du type Développement.</summary>
     private static readonly string[] DevelopmentComponents = ["syne-mock", "echos"];

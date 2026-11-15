@@ -15,7 +15,7 @@ import { PROJECT_STATE } from '../../data/release';
     index="12"
     eyebrow="Télécharger · Installation"
     title="Démarrer LIVEX depuis les sources."
-    lead="Aucun installeur n'est distribué pour l'instant. Voici comment faire tourner la pile SYNE + ECHOS depuis le dépôt, en local : un environnement de développement, pas un service public."
+    lead="L'installateur V1.0.0 est livré (Windows x64, Linux x64). Voici aussi comment faire tourner la pile SYNE + ECHOS + PRISM depuis le dépôt, en local : un environnement de développement, pas un service public."
     crumbs={[{ label: 'Télécharger', href: 'telecharger/' }, { label: 'Installation' }]}
   />
 
@@ -39,7 +39,7 @@ import { PROJECT_STATE } from '../../data/release';
         </table>
       </div>
       <div class="cc"><p>Trois outils suffisent pour la pile complète : .NET SDK, Python et Node.js. Unreal Engine
-        est nécessaire uniquement pour lancer les composants PRISM V1. La cible V2 est prévue en .NET.</p></div>
+        n'est nécessaire que pour lancer les composants PRISM V1 ; PRISM V2 est un hôte .NET (<code>prism/Prism.sln</code>).</p></div>
     </div>
   </section>
 
@@ -102,10 +102,13 @@ cd syne &amp;&amp; dotnet test Syne.sln --configuration Release
 # ECHOS (depuis la racine)
 echos/.venv/bin/python -m pytest -q
 
+# PRISM V2
+cd prism &amp;&amp; dotnet test Prism.sln --configuration Release
+
 # Launcher
 cd launcher &amp;&amp; dotnet test Launcher.Tests.Unit</code></pre>
       <p><StatusBadge status="experimental" /> Relevé du {PROJECT_STATE.observedDate} : <strong>0 échec</strong> sur
-        ces trois suites. Les chemins restent indicatifs et suivent le dépôt de développement.</p>
+        ces suites (2 164 réussis, 16 ignorés). Les chemins restent indicatifs et suivent le dépôt de développement.</p>
       <p style="margin-top:18px"><a class="bt" href="https://github.com/donovan-dev-web/LIVEX/blob/main/docs/INSTALLATION.md" rel="noopener">Guide d'installation complet ↗</a></p>
     </div>
   </section>

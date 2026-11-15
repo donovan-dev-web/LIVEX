@@ -204,6 +204,16 @@ public sealed class ProfileSelectionTests
         public Task<PrismEngineStart> StartEnginePrismAsync() =>
             Task.FromResult(new PrismEngineStart("non utilisé dans ce banc", null, null, null));
 
+        public Task<PrismEngineStart> StartPrismHostAsync() =>
+            Task.FromResult(new PrismEngineStart("non utilisé dans ce banc", null, null, null));
+
+        public Task<PrismEngineStart> StartPrismViewerSessionAsync() =>
+            Task.FromResult(new PrismEngineStart("non utilisé dans ce banc", null, null, null));
+
+        public Task<string?> PrismRunControlAsync(string action) => Task.FromResult<string?>(null);
+
+        public Task StopPrismSessionAsync() => Task.CompletedTask;
+
         public ResourceSnapshot SampleResources() => new(double.NaN, double.NaN, 31);
 
         public IReadOnlyList<LogEntryViewModel> RecentLogs() => [];

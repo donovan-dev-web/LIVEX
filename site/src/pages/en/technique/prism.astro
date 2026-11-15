@@ -6,27 +6,29 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageHeader from '../../../components/PageHeader.astro';
 import StatusBadge from '../../../components/StatusBadge.astro';
 import CtaBand from '../../../components/CtaBand.astro';
+import { Image } from 'astro:assets';
+import prismViewer from '../../../assets/captures/prism-viewer-embedded.png';
 import { url } from '../../../utils/url';
 ---
 <BaseLayout
   lang="en"
   translated
   title="PRISM V2: LIVEX’s physical world"
-  description="The PRISM V2 target makes PRISM the authority for LIVEX’s physical world: a headless .NET core, a contract with SYNE and an optional viewer."
+  description="PRISM V2 is the authority for LIVEX’s physical world: a headless .NET host, the 1.0.0 contract with SYNE, an optional viewer and a control plan. P0–P11 foundation delivered."
 >
   <PageHeader
     lang="en"
     index="08"
     eyebrow="Architecture · PRISM V2"
     title="The world becomes a component."
-    lead="After the V1 release, PRISM is being redesigned from the ground up: it owns space, matter and physical time. SYNE keeps agent cognition; rendering becomes an optional client."
+    lead="After the V1 release, PRISM was redesigned from the ground up: it owns space, matter and physical time. The foundation is delivered; SYNE keeps agent cognition, rendering is an optional client."
     crumbs={[{ label: 'Architecture', href: 'technique/' }, { label: 'PRISM' }]}
   />
 
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="envisage" lang="en" /> <span class="mu">PRISM 2.0.0 target · planned scope</span></p>
-      <div class="cc"><p>This page describes <strong>the planned V2 target</strong> and assumes the full specified scope will be delivered. It is not an audit of the current implementation. The documentation will be checked against implementation and validation before public release.</p></div>
+      <p style="margin-top:0"><StatusBadge status="developpement" lang="en" /> <span class="mu">PRISM 2.0.0-preview.1 · P0–P11 foundation delivered</span></p>
+      <div class="cc"><p>The foundation is <strong>delivered and tested</strong> (525/525 on 15 November 2026): world, content, time, bodies and navigation, actions, headless host, persistence, viewer and control plan. This page describes what works and what remains open — notably host performance (G1). No V2 release is published.</p></div>
 
       <div class="sh"><b>8.1</b> Responsibilities</div>
       <h2>PRISM owns the material world.</h2>
@@ -48,9 +50,9 @@ import { url } from '../../../utils/url';
     <div class="w">
       <div class="sh"><b>8.2</b> World and simulation</div>
       <h2>A bounded, data-defined world.</h2>
-      <p>The target is a 2.5D column world divided into regions, generated from a seed and defined by content packs. Materials, items, recipes, crops and templates determine world rules, so content can be extended without recompiling for every addition.</p>
+      <p>The world is a 2.5D column world divided into regions, generated from a seed and defined by content packs. Materials, items, recipes, crops and templates determine world rules, so content can be extended without recompiling for every addition. An invalid pack prevents startup and lists every violation.</p>
       <p>Agents can move, extract resources, craft and store items, farm, build from templates and cooperate on construction sites. Perception is local and differential: PRISM tells SYNE what an agent can observe, while SYNE keeps its memories and beliefs.</p>
-      <p>A rendering-independent .NET core is designed to support headless runs. Integer arithmetic, deterministic random streams, checksums and checkpoints target reproducible simulations.</p>
+      <p>The .NET core is rendering-independent: headless runs are the rule, the viewer the exception. Integer arithmetic, deterministic random streams, checksums and checkpoints target reproducible simulations. R2 (50 agents) replays the same <code>0bf833f4bcfc1e5e</code> checksum three times, with a checkpoint reloaded after restart; R3 holds 30.5 ms/tick at 100 agents, under the 50 ms budget (G5 crossed on 14 November 2026).</p>
     </div>
   </section>
 
@@ -58,18 +60,42 @@ import { url } from '../../../utils/url';
     <div class="w">
       <div class="sh"><b>8.3</b> Contract and visualization</div>
       <h2>From intentions to consequences.</h2>
-      <p>The target SYNE↔PRISM 1.0 contract organizes exchanges into commands, observations and events. Commands are idempotent and failures carry reasons. A separate read stream sends snapshots, regional deltas and analysis data to ECHOS and the viewer.</p>
-      <p>The headless host manages the run lifecycle and advances on SYNE ticks. The planned viewer uses Silk.NET and OpenGL; it reads published state without owning the world or setting its pace.</p>
+      <p>The SYNE↔PRISM 1.0 contract, frozen on 4 November 2026, organizes exchanges into commands, observations and events. Commands are idempotent by <code>commandId</code> and failures carry reasons. A separate read stream sends snapshots, regional deltas and analysis data to ECHOS and the viewer; ECHOS already ingests it in production.</p>
+      <p>The headless host manages the run lifecycle and advances on SYNE ticks. The viewer uses Silk.NET and OpenGL: per-region terrain with a per-frame budget, procedural atlas, day/night cycle, interpolated entities, construction ghosts and seven inspection layers. It reads published state without owning the world or setting its pace, and runs as a client (<code>--connect</code>), embedded or in replay.</p>
+      <p>Control is explicit: the viewer exposes <code>play</code>, <code>pause</code>, <code>stop</code> and <code>quit</code>, but every command is relayed to the host, the sole authority. The Launcher offers two session modes, <strong>Host</strong> and <strong>Viewer</strong>; the stack stays at tick <code>-1</code> until Play, verified on a real chain (Play at tick 338, pause 343, resume 499, stop 503).</p>
+      <figure style="margin:26px 0 0">
+        <Image src={prismViewer} alt="PRISM V2 viewer in embedded mode: 256×256 voxel world, agents and debug HUD" style="width:100%;height:auto" loading="lazy" />
+        <figcaption class="mu" style="margin-top:8px;font-size:0.74rem">PRISM V2 viewer in embedded mode, captured on 15 November 2026 with the <code>--screenshot</code> module: 256×256 world, eight agents, debug HUD. Rendering is a read-only client; the capture documents the interface, not the B8 reading.</figcaption>
+      </figure>
       <div class="cc"><p>Cooperation is a hypothesis to be measured through experiments and ablations. World systems can create opportunities for cooperation; they do not guarantee its emergence or any particular social outcome.</p></div>
       <p style="margin-top:18px"><a class="bt" href={url('technique/', 'en')}>← Overview</a></p>
     </div>
   </section>
 
+  <section class="block">
+    <div class="w">
+      <div class="sh"><b>8.4</b> Evidence and limits</div>
+      <h2>What is verified, what remains open.</h2>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Established on 15 November 2026</th><th scope="col">Still to produce</th></tr></thead>
+          <tbody>
+            <tr><td>525/525 PRISM tests, including 100/100 for the viewer.</td><td>Publishable <strong>B8</strong> reading: the 15 November probe was not retained as a reading.</td></tr>
+            <tr><td>Real control chain: stack at tick <code>-1</code>, Play 338, pause 343, resume 499, stop 503, <code>quit</code> HTTP 202.</td><td><strong>Linux graphical validation</strong> on a real window; only Windows was checked on screen.</td></tr>
+            <tr><td>R2: checksum <code>0bf833f4bcfc1e5e</code> replayed on three hosts, 50 agents × 5,000 ticks.</td><td><strong>G1</strong> (host performance) open: 431.5 ms/tick at 100 agents, 94% of it in <code>ApplyWrites</code>; 850 ms at 1,000 agents.</td></tr>
+            <tr><td>G5 crossed on 14 November: 30.5 ms/tick at 100 agents on the SYNE side, 25 chains, under the 50 ms budget.</td><td><code>Structures</code> and <code>Ownership</code> layers limited to what contract 1.0.0 publishes; G7 (experimental report) postponed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc" style="margin-top:22px"><p>No V2 release is published. The foundation is delivered, but a capture or a test does not replace experimental validation: open gates stay named, with their measurement and date.</p></div>
+    </div>
+  </section>
+
   <CtaBand
     lang="en"
-    eyebrow="8.4 · Documentation"
-    title="Explore the V2 design"
-    lead="PRISM specifications detail the planned world, systems, contract and validation criteria."
+    eyebrow="8.5 · Documentation"
+    title="Explore PRISM V2"
+    lead="Specifications detail the world, systems, contract and validation criteria; measurements and their limits are published separately."
     primaryLabel="PRISM documentation"
     primaryHref="documentation/"
     secondaryLabel="LIVEX architecture"

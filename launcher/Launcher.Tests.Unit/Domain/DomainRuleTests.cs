@@ -362,6 +362,19 @@ public sealed class OrchestrationServiceTests
     }
 
     [Fact]
+    public void Profil_immersion_v2_ordonne_hote_viewer_puis_syne()
+    {
+        var resolution = BuildService(
+                Valid("syne", "SYNE"),
+                Valid("prism-host", "PRISM — hôte"),
+                Valid("prism-viewer", "PRISM — viewer"))
+            .ResolveProfile(WellKnownProfiles.ImmersionV2);
+
+        Assert.True(resolution.Satisfiable, string.Join(" ; ", resolution.Problems));
+        Assert.Equal(["prism-host", "prism-viewer", "syne"], resolution.StartupOrder);
+    }
+
+    [Fact]
     public void Echos_sans_syne_complete_le_moteur()
     {
         var resolution = BuildService(Valid("syne", "SYNE"), Valid("echos", "ECHOS")).ResolveProfile(

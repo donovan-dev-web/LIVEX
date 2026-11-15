@@ -83,7 +83,7 @@ Section de **backlog consolidé** qui référence les issues des deux composants
 
 ### Intégration PRISM V2 (état au 15 novembre 2026)
 
-- PRISM V1/PRISM-LDK est la présentation Unreal historique de LIVEX 1.0.0. PRISM V2 est une solution .NET qui porte l'état du monde physique. Le host, le contrat `1.0.0`, les chaînes d'actions et les bots sont implémentés ; le relevé du 15 novembre 2026 compte **487 tests PRISM verts** et le viewer reste le chantier ouvert (P11).
+- PRISM V1/PRISM-LDK est la présentation Unreal historique de LIVEX 1.0.0. PRISM V2 est une solution .NET qui porte l'état du monde physique. Le host, le contrat `1.0.0`, les chaînes d'actions et les bots sont implémentés ; le relevé du 15 novembre 2026 compte **525 tests PRISM verts** et le viewer est livré (P11, 100 tests viewer, chargeurs d'assets câblés, plan de contrôle et run gaté depuis le Launcher).
 - SYNE et PRISM échangent des commandes et observations dans une boucle couplée ; l'adaptateur, l'application des observations aux croyances et le write-back sont livrés. **R2 est franchie** (50 agents × 5 000 ticks, `0bf833f4bcfc1e5e` × 3 hôtes, reprise couplée bit-identique) et **G5 est franchie** (R3, 100 agents × 5 000 ticks, `855fdc2e1387e8d3`).
 - ECHOS valide et persiste les enveloppes du flux de lecture PRISM ; l'ingestion au cycle de run et les métriques associées ne sont pas encore raccordées. Le viewer possède un client de lecture testé mais son lancement live reste à câbler.
 - Le mock Node.js demeure un outil de compatibilité V1 ; `Prism.Bots` sert aux campagnes V2 et ne remplace pas la validation couplée contre SYNE.

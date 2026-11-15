@@ -6,29 +6,60 @@ public sealed record AgentVisualMesh(ulong AgentId, float[] Vertices);
 
 public static class AgentVisualMeshBuilder
 {
+    public const int FloatsPerVertex = TerrainMeshBuilder.FloatsPerVertex;
+
     private const float WorldUnitsPerCell = 1000f;
 
     public static IReadOnlyList<AgentVisualMesh> Build(
-        IEnumerable<AgentEntitySnapshot> agents)
+        IEnumerable<AgentEntitySnapshot> agents,
+        ViewerAgentPalette? palette = null)
     {
         ArgumentNullException.ThrowIfNull(agents);
+        return Build(agents.Select(static agent =>
+        {
+            ArgumentNullException.ThrowIfNull(agent);
+            return new ViewerAgentSample(
+                agent.AgentId,
+                agent.Position.X / WorldUnitsPerCell,
+                agent.Position.Y / WorldUnitsPerCell,
+                agent.Position.Z / WorldUnitsPerCell,
+                agent.Inventory,
+                null);
+        }), palette);
+    }
+
+    /// <summary>
+    /// Silhouettes voxel des agents live (RENDERING_SPEC.md §2) : la couleur distingue un agent
+    /// inactif, chargé ou en action ; un marqueur au-dessus de la tête porte l'action en cours.
+    /// </summary>
+    public static IReadOnlyList<AgentVisualMesh> Build(
+        IEnumerable<ViewerAgentSample> agents,
+        ViewerAgentPalette? palette = null)
+    {
+        ArgumentNullException.ThrowIfNull(agents);
+        var colors = palette ?? ViewerAgentPalette.Default;
         var meshes = new List<AgentVisualMesh>();
         foreach (var agent in agents)
         {
             ArgumentNullException.ThrowIfNull(agent);
             ArgumentNullException.ThrowIfNull(agent.Inventory);
             var vertices = new List<float>();
-            var x = agent.Position.X / WorldUnitsPerCell;
-            var y = agent.Position.Y / WorldUnitsPerCell;
-            var feetZ = agent.Position.Z / WorldUnitsPerCell;
+            var x = agent.X;
+            var y = agent.Y;
+            var feetZ = agent.Z;
             var carrying = agent.Inventory.Length > 0;
-            var body = carrying
-                ? (R: 0.82f, G: 0.49f, B: 0.20f)
-                : (R: 0.20f, G: 0.57f, B: 0.68f);
-            var head = (R: Math.Min(body.R + 0.12f, 1f),
-                G: Math.Min(body.G + 0.12f, 1f),
-                B: Math.Min(body.B + 0.12f, 1f));
-            var legs = (R: body.R * 0.72f, G: body.G * 0.72f, B: body.B * 0.72f);
+            var acting = !string.IsNullOrEmpty(agent.ActiveAction);
+            var body = acting
+                ? colors.Acting
+                : carrying
+                    ? colors.Carrying
+                    : colors.Idle;
+            var head = (R: Math.Min(body.R + colors.HeadBoost, 1f),
+                G: Math.Min(body.G + colors.HeadBoost, 1f),
+                B: Math.Min(body.B + colors.HeadBoost, 1f));
+            var legs = (R: body.R * colors.LegDarken,
+                G: body.G * colors.LegDarken,
+                B: body.B * colors.LegDarken);
 
             AddBox(vertices, x - 0.30f, y - 0.22f, feetZ,
                 x - 0.04f, y + 0.22f, feetZ + 0.48f, legs);
@@ -48,6 +79,14 @@ public static class AgentVisualMeshBuilder
                 AddBox(vertices, x + 0.28f, y - 0.30f, feetZ + 0.78f,
                     x + 0.48f, y - 0.08f, feetZ + 1.02f,
                     (R: 0.94f, G: 0.77f, B: 0.31f));
+            }
+
+            if (acting)
+            {
+                // Marqueur d'action : petite barre au-dessus de la tête, lisible de loin.
+                AddBox(vertices, x - 0.20f, y - 0.20f, feetZ + 2.02f,
+                    x + 0.20f, y + 0.20f, feetZ + 2.16f,
+                    (R: 0.90f, G: 0.94f, B: 0.52f));
             }
 
             meshes.Add(new AgentVisualMesh(agent.AgentId, vertices.ToArray()));
@@ -121,5 +160,7 @@ public static class AgentVisualMeshBuilder
         vertices.Add(color.R * shade);
         vertices.Add(color.G * shade);
         vertices.Add(color.B * shade);
+        vertices.Add(0.5f);
+        vertices.Add(0.5f);
     }
 }

@@ -14,14 +14,14 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
   lang="en"
   translated
   title="LIVEX — Component versions and project status"
-  description={`LIVEX component versions (SYNE, ECHOS, PRISM, Launcher), V2 target and measured project state as of ${PROJECT_STATE_EN.observedDate}.`}
+  description={`LIVEX component versions (SYNE, ECHOS, PRISM, Launcher), V2 in preparation and measured project state as of ${PROJECT_STATE_EN.observedDate}.`}
 >
   <PageHeader
     lang="en"
     index="13"
     eyebrow="Versions"
     title="Where the project stands."
-    lead="V1.0.0 is released; the global V2.0.0 version is in preparation. Implementation figures remain dated and do not describe PRISM V2 target progress."
+    lead="V1.0.0 is released; the global V2.0.0 version is in preparation. Implementation figures are dated: they describe V2 foundation progress, not a published release."
     crumbs={[{ label: 'Versions' }]}
   />
 
@@ -39,7 +39,7 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
           <tbody>
             <tr><td>SYNE</td><td>{VERSION_TABLE_EN[0].version}</td><td>{VERSION_TABLE_EN[0].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
             <tr><td>ECHOS</td><td>{VERSION_TABLE_EN[1].version}</td><td>{VERSION_TABLE_EN[1].note}</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td>PRISM</td><td>{VERSION_TABLE_EN[2].version}</td><td>{VERSION_TABLE_EN[2].note}</td><td><StatusBadge status="envisage" lang="en" /></td></tr>
+            <tr><td>PRISM</td><td>{VERSION_TABLE_EN[2].version}</td><td>{VERSION_TABLE_EN[2].note}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
             <tr><td>Launcher</td><td>{VERSION_TABLE_EN[3].version}</td><td>{VERSION_TABLE_EN[3].note}</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
           </tbody>
         </table>
@@ -64,9 +64,9 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
           <p>Measured on {PROJECT_STATE_EN.observedDate}: 0 failures in the unit and integration suites.</p>
         </div>
         <div>
-          <div class="n">{nf.format(PROJECT_STATE.trackedFiles)}</div>
-          <h3>tracked files</h3>
-          <p>{nf.format(PROJECT_STATE.loc.total)} lines analysed (source and tests).</p>
+          <div class="n">{nf.format(PROJECT_STATE.tests.total)}</div>
+          <h3>collected cases</h3>
+          <p>{PROJECT_STATE.tests.ignored} ignored, {PROJECT_STATE.tests.dynamic} dynamic Launcher cases, {nf.format(PROJECT_STATE.trackedFiles)} tracked files on {PROJECT_STATE_EN.repoObservedDate}.</p>
         </div>
         <div>
           <div class="n">{ciJobs}</div>
@@ -81,8 +81,9 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
           <tbody>
             <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
             <tr><td>Tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')}</td></tr>
-            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos}</td></tr>
-            <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE_EN.coverage.syne} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
+            <tr><td>ECHOS coverage</td><td>{PROJECT_STATE_EN.coverage.echos} on {PROJECT_STATE_EN.coverage.echosDate}</td></tr>
+            <tr><td>SYNE coverage (aggregated)</td><td>{PROJECT_STATE_EN.coverage.syne} on {PROJECT_STATE_EN.coverage.syneDate} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole})</td></tr>
+            <tr><td>Crossed gates</td><td>G3 and G4 on 9 Nov 2026 · G5 on 14 Nov 2026; G1, G2 and G6 open</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
             <tr><td>Release</td><td>V1.0.0 released — {RELEASE.planned} in preparation</td></tr>
           </tbody>
@@ -99,8 +100,9 @@ const ciJobs = PROJECT_STATE_EN.ci.split(' ')[0];
       <div class="sh"><b>13.3</b> Release notes</div>
       <h2>The changelog and the tags.</h2>
       <p>
-        V1.0.0 has been released. The dated figures above correspond to the stated repository snapshot; they do not
-        describe delivery of the V2.0.0 target. The repository changelog and GitHub releases are authoritative.
+        V1.0.0 has been released. The dated figures above correspond to the stated reading; they describe V2 foundation
+        progress (P0–P11, 525 PRISM tests), not a published release. The repository changelog and GitHub releases are
+        authoritative.
       </p>
       <p style="margin-top:18px">
         <a class="bt" href={RELEASE.changelogUrl} rel="noopener">Read CHANGELOG.md →</a>

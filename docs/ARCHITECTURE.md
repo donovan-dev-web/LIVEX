@@ -1,8 +1,8 @@
 # ARCHITECTURE.md
 
 **Composant** : LIVEX (général)
-**Statut** : [V1 LIVRÉE — PRISM V2 PARTIELLEMENT IMPLÉMENTÉE ; INTÉGRATION EN COURS]
-**Dernière mise à jour** : 4 novembre 2026
+**Statut** : [V1 LIVRÉE — PRISM V2 P2–P11 LIVRÉES ; RECETTE G6 ET PREUVES P11 RESTANTES]
+**Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : `presentation/VISION.md`, `CI_CD.md`
 **Source Monographie** : Partie 2 (Présentation du Projet), §7.1–7.3 (monorepo, diagrammes, contrats)
 

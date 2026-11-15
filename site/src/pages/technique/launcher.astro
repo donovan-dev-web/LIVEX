@@ -31,8 +31,8 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
 
   <section class="block">
     <div class="w">
-      <p style="margin-top:0"><StatusBadge status="developpement" /> <span class="mu">Version cible 0.1.0 · application de bureau Avalonia</span></p>
-      <div class="cc"><p>En développement : les parcours principaux de l'interface sont présents dans le dépôt ; les variantes et la validation complète restent ouvertes. Aucune distribution publique à ce jour.</p></div>
+      <p style="margin-top:0"><StatusBadge status="developpement" /> <span class="mu">Launcher 0.1.0 · application de bureau Avalonia</span></p>
+      <div class="cc"><p>En développement : les parcours principaux de l'interface sont présents dans le dépôt (236 tests au 15 novembre 2026), dont les modes de session <strong>Hôte</strong> et <strong>Viewer</strong> ; la validation complète reste ouverte et aucune distribution publique n'existe à ce jour.</p></div>
 
       <div class="sh"><b>9.1</b> Rôle</div>
       <h2>Coordonner, sans décider à la place des composants.</h2>
@@ -80,7 +80,7 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
         </div>
         <div class="pl br" style="padding:18px">
           <h3>Contextualiser</h3>
-          <p class="mu" style="margin:0">Ouvrir une session de rendu PRISM lorsqu'elle est disponible, en parallèle de l'analyse.</p>
+          <p class="mu" style="margin:0">Ouvrir une session de rendu PRISM (mode Viewer) en parallèle de l'analyse, ou piloter l'hôte directement (mode Hôte).</p>
         </div>
       </div>
 
@@ -109,12 +109,13 @@ import launcherPrism from '../../assets/captures/launcher-prism.png';
           <tbody>
             <tr><td>Usage</td><td>Application de bureau native (interface <em>non</em> web)</td></tr>
             <tr><td>Technologie</td><td>.NET (C#), architecture MVVM, rendu multi-plateforme Avalonia</td></tr>
-            <tr><td>Plateformes V1</td><td>Windows et Linux</td></tr>
-            <tr><td>Installateur</td><td>À l'état de spécification — non livré</td></tr>
+            <tr><td>Plateformes</td><td>Windows et Linux</td></tr>
+            <tr><td>Modes de session</td><td>Hôte (pilotage de la pile) et Viewer (rendu PRISM relayé à l'hôte)</td></tr>
+            <tr><td>Installateur</td><td>Livré en V1 ; les paquets V2 (<code>prism-host</code>, <code>prism-viewer</code>) sont publiés par la chaîne de release</td></tr>
           </tbody>
         </table>
       </div>
-      <p>Lancement prévu depuis un terminal :</p>
+      <p>Lancement depuis un terminal :</p>
       <pre><code>livex-launcher            # ouverture de l'espace de travail
 livex-launcher --check    # vérification de l'environnement, sans interface
 livex-launcher --package &lt;chemin.livexp&gt;   # ouverture d'une campagne</code></pre>

@@ -2,12 +2,14 @@
 
 **Composant** : Launcher 
 **Statut** : [STABLE] 
-**Dernière mise à jour** : 4 novembre 2026
+**Dernière mise à jour** : 15 novembre 2026
 
-> Cette synthèse décrit surtout le Launcher V1. Le manifeste du host PRISM V2
-> est désormais présent et reconnu par le Launcher générique ; l'orchestration
-> complète des ports, du cycle de vie, du viewer et des archives V2 reste en
-> cours. Voir le [statut transversal](../governance/LIVEX-CURRENT-STATUS.md).
+> Cette synthèse décrit surtout le Launcher V1. Les manifestes du host PRISM V2
+> et du viewer sont reconnus par le Launcher générique ; la session V2 est
+> opérationnelle depuis le 15 novembre 2026 (modes **Hôte**/**Viewer**, hôte
+> préparé → SYNE en attente → viewer, contrôles Play/Pause/Stop/Quit relayés à
+> l'hôte). Les archives de flux V2 restent en cours. Voir le
+> [statut transversal](../governance/LIVEX-CURRENT-STATUS.md).
 
 ---
 

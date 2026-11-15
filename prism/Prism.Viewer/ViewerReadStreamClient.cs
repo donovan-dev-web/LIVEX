@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Prism.Contracts;
 using Prism.Core.World;
+using Prism.Host.Hosting;
 
 namespace Prism.Viewer;
 
@@ -53,6 +54,9 @@ public sealed class ViewerLiveSession(ViewerEntityStore? store = null)
     public long Tick { get; private set; } = -1;
 
     public ulong? WorldHash { get; private set; }
+
+    /// <summary>Monde autoritaire publié par le host ; le viewer ne génère rien en mode client.</summary>
+    public GeneratedWorldSnapshot? World { get; private set; }
 
     public long LastSequence { get; private set; } = -1;
 
@@ -119,6 +123,12 @@ public sealed class ViewerLiveSession(ViewerEntityStore? store = null)
         if (envelope.Payload.TryGetProperty("worldHash", out var hash))
         {
             WorldHash = hash.GetUInt64();
+        }
+
+        if (envelope.Payload.TryGetProperty("world", out var world) &&
+            world.ValueKind == JsonValueKind.Object)
+        {
+            World = world.Deserialize<GeneratedWorldSnapshot>(ProtocolJson.Options);
         }
 
         if (envelope.Payload.TryGetProperty("agents", out var agents) &&

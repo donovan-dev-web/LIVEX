@@ -106,6 +106,24 @@ Viewer controls:
 | `C` | Follow/unfollow the selected sample agent |
 | `Esc` | Close the viewer |
 
+To run against a live host instead of the static preview, start the host with
+the content pack and connect the viewer to its read stream:
+
+```sh
+LIVEX_SESSION_TOKEN=dev dotnet run --project Prism.Host -- \
+  --control-port 8131 --read-port 8132 \
+  --work-dir ../tmp/prism-manual/work --log-dir ../tmp/prism-manual/logs \
+  --instance-id manual --correlation-id manual --headless
+# prepare the world (contentHash printed by `--content-hash`) then start it,
+# then in another terminal:
+dotnet run --project Prism.Viewer/Prism.Viewer.csproj -- \
+  --connect ws://127.0.0.1:8132/data/read
+```
+
+The full recipe set — static preview, embedded host, separate host + client,
+coupled SYNE + PRISM run, ports, cleanup and the Launcher's current limits — is
+in [`../docs/prism/MANUAL_RUN.md`](../docs/prism/MANUAL_RUN.md).
+
 To run the already-built viewer without rebuilding, use
 `dotnet run --no-build --project Prism.Viewer/Prism.Viewer.csproj -- --seed 12345 --size 96`.
 

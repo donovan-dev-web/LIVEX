@@ -71,20 +71,21 @@ const nf = new Intl.NumberFormat('en-US');
         <div>
           <div class="n">{PROJECT_STATE_EN.coverage.echos}</div>
           <h3>ECHOS coverage</h3>
-          <p>Line coverage of the observatory (Python package).</p>
+          <p>Line coverage of the observatory (Python package), measured on {PROJECT_STATE_EN.coverage.echosDate}.</p>
         </div>
         <div>
           <div class="n">{PROJECT_STATE_EN.coverage.syne}</div>
           <h3>SYNE coverage</h3>
-          <p>Aggregated SYNE assemblies (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole}).</p>
+          <p>Aggregated SYNE assemblies, measured on {PROJECT_STATE_EN.coverage.syneDate} (Core {PROJECT_STATE_EN.coverage.syneCore}, Console {PROJECT_STATE_EN.coverage.syneConsole}).</p>
         </div>
       </div>
       <div class="ov" style="margin-top:28px">
         <table class="tb">
           <thead><tr><th scope="col">Indicator</th><th scope="col">Value</th></tr></thead>
           <tbody>
-            <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · {PROJECT_STATE.commit}</td></tr>
-            <tr><td>Passing tests per component</td><td>SYNE 695 · ECHOS 383 · Launcher 227 · syne-mock 51</td></tr>
+            <tr><td>Analysed reference</td><td><code>{PROJECT_STATE.branch}</code> · V1 commit {PROJECT_STATE.commit}</td></tr>
+            <tr><td>Passing tests per component</td><td>{PROJECT_STATE.tests.byComponent.map((c) => `${c.name} ${nf.format(c.value)}`).join(' · ')} · {nf.format(PROJECT_STATE.tests.passed)} passing in total</td></tr>
+            <tr><td>Unexecuted cases</td><td>{PROJECT_STATE.tests.ignored} ignored and {PROJECT_STATE.tests.dynamic} dynamic Launcher cases requiring <code>LIVEX_SYNE_PUBLISHED_ROOT</code></td></tr>
             <tr><td>Continuous integration</td><td>{PROJECT_STATE_EN.ci}</td></tr>
             <tr><td>Windows</td><td>{PROJECT_STATE_EN.windows}</td></tr>
           </tbody>
@@ -116,6 +117,27 @@ const nf = new Intl.NumberFormat('en-US');
       <div class="cc">
         <p><strong>Known gap at 1,000 entities.</strong> The scalability target is not met at this scale (≈ 6 t/s vs ≥ 10).
           Optimising perception and batch-processing events is the identified task; it does not block V0.1, whose scenarios run at 100 agents or fewer.</p>
+      </div>
+      <h3 style="margin-top:34px">PRISM V2 — the coupled tick (15 November 2026)</h3>
+      <p>
+        The same question applies to the SYNE↔PRISM pair: what does a tick cost when cognition and world advance
+        together? R2, R3 and B9 answer separately for SYNE alone and for the full host, over 5,000 ticks.
+      </p>
+      <div class="ov">
+        <table class="tb">
+          <thead><tr><th scope="col">Measure</th><th scope="col">Value</th><th scope="col">Conditions and evidence</th></tr></thead>
+          <tbody>
+            <tr><td>SYNE alone, 100 agents (R3)</td><td>30.5 ms/tick</td><td>100 × 5,000 ticks, 25 chains completed per pass, 0 abandoned; checksum <code>855fdc2e1387e8d3</code> reproduced twice. 50 ms budget → <strong>G5 crossed</strong>.</td></tr>
+            <tr><td>SYNE + PRISM, 50 agents (R2)</td><td>bit-identical replay</td><td>Checksum <code>0bf833f4bcfc1e5e</code> reproduced three times, checkpoint reloaded after restart.</td></tr>
+            <tr><td>SYNE + PRISM, 100 agents (B9)</td><td>431.5 ms/tick</td><td>Two concordant passes; ApplyWrites 404.7 ms (94%), perception 15.2 ms, macros 14.4 ms. 50 ms budget → <strong>G1 open</strong>.</td></tr>
+            <tr><td>SYNE + PRISM, 1,000 agents</td><td>850 ms/tick</td><td>Last valid measurement at this scale; 250 ms budget. Not replayed since B9.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cc">
+        <p><strong>G1 is not a silent failure.</strong> The 50 ms budget is not met at 100 agents (≈ 8.6×), and the lever
+          is identified: 94% of the tick goes into ApplyWrites, including replayed path searches (PRISM-143). The gate
+          stays open and non-blocking; no optimisation is announced before measurement.</p>
       </div>
       <p class="mu" style="font-size:0.78rem">
         The cost of observability (ECHOS stack connected to SYNE) is measured separately by a dedicated benchmark script:
@@ -163,9 +185,11 @@ const nf = new Intl.NumberFormat('en-US');
         <table class="tb">
           <thead><tr><th scope="col">Claim</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
           <tbody>
-            <tr><td>{nf.format(PROJECT_STATE.tests.passed)} passing tests, {PROJECT_STATE.tests.failed} failures as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1, §5</td></tr>
-            <tr><td>ECHOS coverage {PROJECT_STATE_EN.coverage.echos} / SYNE {PROJECT_STATE_EN.coverage.syne} as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
-            <tr><td>{PROJECT_STATE_EN.ci}</td><td>Verified</td><td>LIVEX-STATUS §1</td></tr>
+            <tr><td>{nf.format(PROJECT_STATE.tests.passed)} passing tests, {PROJECT_STATE.tests.ignored} ignored, {PROJECT_STATE.tests.failed} failures as of {PROJECT_STATE_EN.observedDate}</td><td>Verified</td><td>LIVEX-CURRENT-STATUS §2</td></tr>
+            <tr><td>ECHOS coverage {PROJECT_STATE_EN.coverage.echos} on {PROJECT_STATE_EN.coverage.echosDate}; SYNE {PROJECT_STATE_EN.coverage.syne} on {PROJECT_STATE_EN.coverage.syneDate}</td><td>Verified</td><td>LIVEX-CURRENT-STATUS §2; measurements of different dates</td></tr>
+            <tr><td>R3: 30.5 ms/tick at 100 agents, checksum reproduced</td><td>Verified</td><td>R3; <code>docs/governance/LIVEX-CURRENT-STATUS.md</code></td></tr>
+            <tr><td>B9: 431.5 ms/tick at 100 agents, ApplyWrites 94%</td><td>Verified</td><td>B9; G1 budget not met</td></tr>
+            <tr><td>{PROJECT_STATE_EN.ci}</td><td>Verified</td><td>CI of 4 Nov 2026</td></tr>
             <tr><td>Gap ≈ 1.7× below target at 1,000 entities</td><td>Verified</td><td>PERFORMANCE §9.2</td></tr>
           </tbody>
         </table>

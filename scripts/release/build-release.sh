@@ -86,8 +86,12 @@ if (( ! SKIP_COMPONENTS )); then
 
     step "Publication de SYNE"
     publish_dotnet "$ROOT/syne/Simulation.Console/Simulation.Console.csproj" "$STAGING/syne"
-    # Le manifeste de composant accompagne toujours le binaire publié.
+    # Le manifeste de composant accompagne toujours le binaire publié. Le staging
+    # est à plat : ses chemins d'exécutable doivent l'être aussi, sinon le
+    # Launcher cherche un binaire sous bin/Release/... qui n'existe pas.
     cp -f "$ROOT/syne/component.json" "$STAGING/syne/component.json"
+    "$PYTHON" "$ROOT/scripts/release/flatten_staging_manifest.py" "$STAGING/syne/component.json" \
+        --windows "Simulation.Console.exe" --linux "Simulation.Console"
 
     # Les trois composants V2 de PRISM sont facultatifs : une machine sans les
     # packs .NET nécessaires les laisse absents plutôt que d'échouer — la

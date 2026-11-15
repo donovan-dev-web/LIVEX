@@ -36,6 +36,7 @@ public sealed partial class ControlServer : IAsyncDisposable
     private readonly string? _sessionToken;
     private readonly string _instanceId;
     private readonly string _version;
+    private readonly bool _healthOnly;
     private readonly TaskCompletionSource _shutdownRequested = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool _running;
     private volatile bool _ready;
@@ -47,7 +48,8 @@ public sealed partial class ControlServer : IAsyncDisposable
         string? sessionToken = null,
         string instanceId = "syne",
         string version = "0.18.0",
-        bool initiallyReady = true)
+        bool initiallyReady = true,
+        bool healthOnly = false)
     {
         _listener.Prefixes.Add($"http://127.0.0.1:{port}/");
         Port = port;
@@ -56,6 +58,7 @@ public sealed partial class ControlServer : IAsyncDisposable
         _sessionToken = sessionToken;
         _instanceId = instanceId;
         _version = version;
+        _healthOnly = healthOnly;
         _ready = initiallyReady;
     }
 

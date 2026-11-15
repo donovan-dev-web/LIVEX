@@ -162,6 +162,14 @@ public static class PrismHostServer
             context.RequestServices.GetRequiredService<IHostApplicationLifetime>().StopApplication();
             return Results.Accepted();
         });
+        app.MapPost("/control/intervention", async (HttpContext context) =>
+        {
+            if (!IsAuthorized(context, sessionToken)) return Unauthorized();
+            var request = await ReadJsonAsync<InterventionRequest>(context);
+            var sequence = runtime.QueueIntervention(
+                request.ToCommand(ProtocolVersion.Current.ToString()));
+            return Results.Ok(new { accepted = true, sequence });
+        });
         app.MapPost("/data/tick", async (HttpContext context) =>
         {
             if (!IsAuthorized(context, sessionToken)) return Unauthorized();

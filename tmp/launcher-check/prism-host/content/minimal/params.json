@@ -1,0 +1,18 @@
+{
+  "world": { "size": [256, 256, 64], "regionSize": [16, 16] },
+  "time": { "dayLengthTicks": 480, "seasonLengthDays": 4 },
+  "perception": { "nearRadius": 16, "midRadiusChunks": 3, "maxObservedPerAgent": 256 },
+  "agent": { "inventorySlots": 12, "moveBudgetPerTick": 1000 },
+  "movement": { "pathSpeedupPermille": 2000 },
+  "growth": { "wheat": { "stageTicks": 150, "jitterTicks": 25 }, "waterRadius": 4 },
+  "tools": { "stonePickaxe": { "durability": 60 }, "ironPickaxe": { "durability": 200 } },
+  "mining": { "baseTicksPerHardness": 10 },
+  "food": {
+    "rawWheat": { "nutrition": 10, "shelfLifeTicks": 600 },
+    "flatbread": { "nutrition": 30, "shelfLifeTicks": 2400 }
+  },
+  "granary": { "decaySlowdownPermille": 500 },
+  "mastery": { "gainPerActionPermille": 5, "maxSpeedupPermille": 500 },
+  "updates": { "randomTicksPerChunkPerTick": 3, "grassSpreadChancePermille": 100 },
+  "wear": { "structure": { "decayPerTickPermille": 0 } }
+}

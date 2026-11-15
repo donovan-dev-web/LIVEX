@@ -28,7 +28,7 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
       <h2>Le projet, résumé.</h2>
       <blockquote class="sf" style="font-size:clamp(1.5rem,3vw,2.2rem);line-height:1.3;margin:0 0 20px;border-left:2px solid var(--ve);padding-left:22px;max-width:40ch">
         LIVEX est un écosystème de simulation multi-agents qui rend observables les comportements collectifs : un
-        cognition (SYNE), monde physique autoritaire prévu (PRISM V2) et observation (ECHOS).
+        cognition (SYNE), monde physique autoritaire (PRISM V2, socle livré) et observation (ECHOS).
       </blockquote>
 
       <div class="g3 br">
@@ -39,15 +39,15 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
         </div>
         <div>
           <h3>30 secondes</h3>
-          <p>{SITE.name} réunit la cognition des agents (SYNE), le monde physique autoritaire prévu de PRISM V2 et
+          <p>{SITE.name} réunit la cognition des agents (SYNE), le monde physique autoritaire de PRISM V2 (socle livré) et
             l'observation (ECHOS). Objectif : produire des comportements non explicitement programmés, puis les
             analyser et les reproduire.</p>
         </div>
         <div>
           <h3>1 minute</h3>
           <p>Né d'une question — peut-on obtenir des comportements émergents à partir de lois simples ? — {SITE.name}
-            est un projet de recherche personnel. La release V1.0.0 est disponible ; la cible V2.0.0 prévoit la refonte
-            complète de PRISM. Les statuts du dépôt restent datés. Les éléments Unreal de PRISM V1 sont soumis à l'EULA d'Epic Games.</p>
+            est un projet de recherche personnel. La release V1.0.0 est disponible ; la V2.0.0 porte PRISM V2, dont le
+            socle P0–P11 est livré, sans release V2 publiée. Les statuts du dépôt restent datés. Les éléments Unreal de PRISM V1 sont soumis à l'EULA d'Epic Games.</p>
         </div>
       </div>
       <p class="mu" style="margin-top:16px;font-size:0.78rem">
@@ -70,7 +70,7 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
             <tr><td>Composants</td><td>SYNE (moteur) · ECHOS (observation) · PRISM (rendu)</td></tr>
             <tr><td>Auteur</td><td>Donovan Chartrain</td></tr>
             <tr><td>Licence</td><td>GPL-3.0-or-later (code LIVEX hors PRISM) · CC BY 4.0 (contenu du site)</td></tr>
-            <tr><td>Release</td><td>V1.0.0 publiée — version cible {RELEASE.planned}</td></tr>
+            <tr><td>Release</td><td>V1.0.0 publiée — {RELEASE.planned} en préparation</td></tr>
             <tr><td>Dernier état mesuré</td><td>{PROJECT_STATE.observedDate}</td></tr>
             <tr><td>Dépôt</td><td><a href={SITE.repo} rel="noopener">github.com/donovan-dev-web/LIVEX ↗</a></td></tr>
           </tbody>
@@ -96,10 +96,10 @@ const logoUrl = `${SITE.repo}/blob/main/site/src/assets/marks/livex-mark.svg`;
         <a href={`${SITE.repo}/blob/main/site/src/assets/marks/prism-mark.svg`} rel="noopener">prism-mark.svg ↗</a>.
       </p>
       <p class="mu" style="font-size:0.78rem">
-        Des captures d'écran réelles du Launcher et d'ECHOS sont également publiées dans le dépôt
+        Des captures d'écran réelles du Launcher, d'ECHOS et du viewer PRISM V2 sont également publiées dans le dépôt
         (<a href={`${SITE.repo}/tree/main/site/public/captures`} rel="noopener">site/public/captures/ ↗</a>) et
-        réutilisables. Ces captures datent de la version de développement : à ne pas les citer comme captation
-        d'une version publiée.
+        réutilisables. Celles du Launcher et d'ECHOS datent de la version de développement ; celle du viewer PRISM V2
+        a été prise le 15 novembre 2026 en mode embarqué. Aucune ne doit être citée comme captation d'une version publiée.
       </p>
       <div class="cc" style="padding:18px 20px">
         <p><strong>Règles d'usage.</strong> Le nom et le logo LIVEX sont protégés ; leur usage est réservé à des fins

@@ -9,20 +9,21 @@ import StatusBadge from '../../../components/StatusBadge.astro';
 import SyneSchema from '../../../components/SyneSchema.astro';
 import { Image } from 'astro:assets';
 import echosAgents from '../../../assets/captures/echos-agents.png';
+import prismViewer from '../../../assets/captures/prism-viewer-embedded.png';
 import { COMPONENTS_EN } from '../../../data/components';
 import { url } from '../../../utils/url';
 ---
 <BaseLayout
   lang="en"
   title="LIVEX architecture: SYNE, ECHOS, PRISM"
-  description="LIVEX V2 target architecture: SYNE cognition, PRISM’s authoritative physical world and ECHOS analysis, linked by versioned contracts."
+  description="LIVEX V2 architecture: SYNE cognition, PRISM’s authoritative physical world and ECHOS analysis, linked by versioned contracts on a delivered foundation."
 >
   <PageHeader
     lang="en"
     index="05"
     eyebrow="Architecture"
     title="Three components, separate responsibilities."
-    lead="In the V2 target, SYNE owns cognition, PRISM the physical world and ECHOS observation. The PRISM viewer reads the world without governing the simulation."
+    lead="In the V2 architecture, SYNE owns cognition, PRISM the physical world and ECHOS observation. The PRISM viewer reads the world without governing the simulation."
     crumbs={[{ label: 'Architecture' }]}
   />
 
@@ -38,9 +39,10 @@ import { url } from '../../../utils/url';
         cognition <span>SYNE</span> physical world <span>PRISM</span> analysis <span>ECHOS</span>
       </div>
       <p>
-        This architecture describes the planned V2 scope. SYNE and PRISM exchange commands, observations and events;
-        ECHOS receives their traces and PRISM publishes a read stream. The viewer is optional. Implementation and
-        validation information will be revised before publication.
+        This architecture is now the repository's: the V2 foundation is delivered and tested (P0–P11 on 15 November
+        2026). SYNE and PRISM exchange commands, observations and events; ECHOS receives their traces and PRISM publishes
+        a read stream. The viewer is optional and never advances the simulation. No V2 release is published; the missing
+        proofs (B8, Linux validation, G1) remain stated.
       </p>
     </div>
   </section>
@@ -48,7 +50,7 @@ import { url } from '../../../utils/url';
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.2</b> Components</div>
-      <h2>Components and their planned roles.</h2>
+      <h2>Components and their roles.</h2>
       {COMPONENTS_EN.map((c) => (
         <div class="bn">
           <div>
@@ -63,27 +65,28 @@ import { url } from '../../../utils/url';
           </div>
           {c.key === 'syne' && <SyneSchema lang="en" />}
           {c.key === 'echos' && <Image src={echosAgents} alt="ECHOS capture: tracking of observed agents" style="width:100%;height:auto" loading="lazy" />}
-          {c.key === 'prism' && <p class="mu">The associated capture shows the V1 generation; it does not illustrate the planned V2 viewer.</p>}
+          {c.key === 'prism' && <Image src={prismViewer} alt="PRISM V2 viewer in embedded mode: 256×256 world, agents and debug HUD" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
-      <p class="mu" style="font-size:0.7rem">The SYNE diagram is conceptual. The ECHOS capture and the earlier PRISM capture show V1/development versions; they do not demonstrate delivery of the V2 target.</p>
+      <p class="mu" style="font-size:0.7rem">The SYNE diagram is conceptual. The ECHOS capture shows a V1 work-in-progress version; the PRISM capture shows the V2 viewer in embedded mode, taken on 15 November 2026 with the <code>--screenshot</code> module (256×256 world, eight agents). It documents rendering, not the B8 reading or Linux graphical validation.</p>
     </div>
   </section>
 
   <section class="block">
     <div class="w">
       <div class="sh"><b>5.3</b> Interface contracts</div>
-      <h2>Planned contract and data flows.</h2>
+      <h2>Contracts and flows in service.</h2>
       <div class="ov">
         <table class="tb">
           <thead>
             <tr><th scope="col">Contract</th><th scope="col">Version / format</th><th scope="col">Note</th></tr>
           </thead>
           <tbody>
-            <tr><td>SYNE↔PRISM contract (V2 target)</td><td>1.0.0</td><td>Commands, observations, events and world read stream; target described in PRISM specifications.</td></tr>
+            <tr><td>SYNE↔PRISM contract</td><td>1.0.0 (frozen 4 Nov 2026)</td><td>Commands, observations, events and world read stream; 21 command kinds covered by a conformance matrix.</td></tr>
+            <tr><td>SYNE observability contract</td><td>0.6.0</td><td>Traces, snapshots and events consumed by ECHOS; engine version 0.18.0.</td></tr>
             <tr><td>Run identifier format</td><td><code>run-&lt;seed&gt;-&lt;12hex&gt;</code></td><td>Seed is included in the identifier; ECHOS does not derive it from the ID.</td></tr>
-            <tr><td>ECHOS persistence schema</td><td>SQLite v6</td><td>Additive migration <code>mean_food</code>/<code>mean_water</code>.</td></tr>
-            <tr><td>PRISM read stream</td><td>V2 target</td><td>Regional deltas and world state for ECHOS and the optional viewer.</td></tr>
+            <tr><td>ECHOS persistence schema</td><td>SQLite v9</td><td>Additive migrations, including PRISM read-stream ingestion (<code>POST /ingest/prism</code>).</td></tr>
+            <tr><td>PRISM read stream</td><td>Delivered — WebSocket <code>/data/read</code></td><td>Snapshots, regional deltas and world state for ECHOS and the optional viewer; port set by host configuration.</td></tr>
           </tbody>
         </table>
       </div>
@@ -104,10 +107,10 @@ import { url } from '../../../utils/url';
             <tr><th scope="col">Directory</th><th scope="col">Content</th><th scope="col">Status</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>syne/</code></td><td>Agent cognition and decisions</td><td>V2 target</td></tr>
-            <tr><td><code>echos/</code></td><td>Observation, analysis, headless API (Python package)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
-            <tr><td><code>prism/</code></td><td>Headless .NET physical world; optional Silk.NET viewer</td><td>V2 target</td></tr>
-            <tr><td><code>launcher/</code></td><td>Desktop application (Avalonia) — orchestration and presentation</td><td><StatusBadge status="developpement" lang="en" /></td></tr>
+            <tr><td><code>syne/</code></td><td>Agent cognition and decisions (0.18.0)</td><td>Delivered (repository)</td></tr>
+            <tr><td><code>echos/</code></td><td>Observation, analysis, headless API (Python package 0.1.0)</td><td><StatusBadge status="experimental" lang="en" /></td></tr>
+            <tr><td><code>prism/</code></td><td>Headless .NET physical world; optional Silk.NET viewer</td><td>P0–P11 delivered</td></tr>
+            <tr><td><code>launcher/</code></td><td>Desktop application (Avalonia) — orchestration and presentation</td><td>0.1.0 delivered</td></tr>
             <tr><td><code>docs/</code></td><td>Monograph, architecture, governance, documentation</td><td>—</td></tr>
             <tr><td><code>site/</code></td><td>This static showcase site (Astro)</td><td>—</td></tr>
           </tbody>

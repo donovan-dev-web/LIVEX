@@ -29,7 +29,8 @@ public sealed record ViewerGroundItemSample(
     int Y,
     int Z,
     ushort ItemTypeId,
-    int Quantity);
+    int Quantity,
+    int? FreshnessPermilleTicks = null);
 
     public sealed record ViewerConstructionSiteSample(
     string SiteId,
@@ -53,6 +54,11 @@ public sealed class ViewerEntityStore
     public long Revision => _revision;
 
     public int AgentCount => _agents.Count;
+
+    /// <summary>Identifiants connus, triés : la sélection `Tab` reste déterministe.</summary>
+    public IReadOnlyList<ulong> AgentIds => _agents.Keys.OrderBy(static id => id).ToArray();
+
+    public bool HasAgent(ulong agentId) => _agents.ContainsKey(agentId);
 
     public IReadOnlyList<ViewerGroundItemSample> GroundItems => _groundItems;
     public IReadOnlyList<ViewerConstructionSiteSample> ConstructionSites => _constructionSites;
@@ -143,7 +149,8 @@ public sealed class ViewerEntityStore
                 item.Position.Y,
                 item.Position.Z,
                 item.Stack.ItemTypeId,
-                item.Stack.Quantity));
+                item.Stack.Quantity,
+                item.Stack.FreshnessPermilleTicks));
         }
 
         _revision++;

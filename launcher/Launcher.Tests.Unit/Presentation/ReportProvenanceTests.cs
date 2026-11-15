@@ -97,6 +97,28 @@ public sealed class FakeOrchestrationFacade : IOrchestrationFacade
         return Task.FromResult(PrismStartResult);
     }
 
+    public Task<PrismEngineStart> StartPrismHostAsync()
+    {
+        PrismStartCalls++;
+        return Task.FromResult(PrismStartResult);
+    }
+
+    public Task<PrismEngineStart> StartPrismViewerSessionAsync()
+    {
+        PrismStartCalls++;
+        return Task.FromResult(PrismStartResult);
+    }
+
+    public Task<string?> PrismRunControlAsync(string action) => Task.FromResult<string?>(null);
+
+    public Task StopPrismSessionAsync()
+    {
+        ToggleCalls.Add(("prism-viewer", false));
+        ToggleCalls.Add(("syne", false));
+        ToggleCalls.Add(("prism-host", false));
+        return Task.CompletedTask;
+    }
+
     /// <inheritdoc />
     public ResourceSnapshot SampleResources() => new(double.NaN, double.NaN, 31);
 
@@ -269,7 +291,9 @@ public sealed class ReportProvenanceTests : IDisposable
         viewModel.StopPrismCommand.Execute("stop");
         await Task.Delay(1);
 
-        Assert.Equal(("syne", false), Assert.Single(facade.ToggleCalls));
+        Assert.Equal(
+            [("prism-viewer", false), ("syne", false), ("prism-host", false)],
+            facade.ToggleCalls);
         Assert.False(viewModel.IsPrismRunning);
         Assert.False(viewModel.IsExperienceLocked);
         Assert.True(viewModel.CanCreateCampaign);

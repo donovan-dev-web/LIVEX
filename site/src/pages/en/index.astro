@@ -12,7 +12,7 @@ import { SITE } from '../../data/site';
 import { COMPONENTS_EN } from '../../data/components';
 import { PROJECT_STATE, PROJECT_STATE_EN, RELEASE_EN } from '../../data/release';
 import echosAgents from '../../assets/captures/echos-agents.png';
-import launcherPrism from '../../assets/captures/launcher-prism.png';
+import prismViewer from '../../assets/captures/prism-viewer-embedded.png';
 import { Image } from 'astro:assets';
 import { url } from '../../utils/url';
 
@@ -43,8 +43,8 @@ const softwareJsonLd = {
         <p class="ey">Living Intelligent Virtual Ecosystem eXperience</p>
         <h1>Observe what <i>emerges.</i></h1>
         <p class="l">
-          An experimental multi-agent simulation platform: SYNE owns cognition, PRISM the physical world (V2 target),
-          and ECHOS observation and analysis. LIVEX studies collective emergence, not individual agent learning.
+          An experimental multi-agent simulation platform: SYNE owns cognition, PRISM the physical world (V2, foundation
+          delivered), and ECHOS observation and analysis. LIVEX studies collective emergence, not individual agent learning.
         </p>
         <div class="hero-badges" style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px">
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">Target version V2.0.0</span>
@@ -53,7 +53,7 @@ const softwareJsonLd = {
           <span class="badge br" style="font-size:0.78rem;padding:4px 10px">ECHOS coverage {PROJECT_STATE_EN.coverage.echos}</span>
         </div>
         <div class="cta">
-          <a class="bt p" href={url('technique/prism/', 'en')}>Explore the PRISM V2 target</a>
+          <a class="bt p" href={url('technique/prism/', 'en')}>Explore PRISM V2</a>
           <a class="bt" href={url('documentation/', 'en')}>Read the documentation</a>
           <a class="bt" href={url('participer/', 'en')}>Contribute</a>
         </div>
@@ -66,8 +66,9 @@ const softwareJsonLd = {
     <div class="vs br" style="padding-left:16px;padding-right:16px;border:1px solid var(--ln)">
       <StatusBadge status="developpement" label={RELEASE_EN.plannedLabel} lang="en" />
       <p>
-        LIVEX 1.0.0 is the public release. Version V2.0.0 is in preparation; the PRISM V2 target below describes planned
-        scope, not validation status. See the <a href={url('versions/', 'en')}>Versions</a> page.
+        LIVEX 1.0.0 is the public release. Version V2.0.0 is in preparation: the PRISM V2 foundation is delivered and
+        tested (P0–P11), gates G3, G4 and G5 are crossed, G1 remains open. No V2 release is published; see the
+        <a href={url('versions/', 'en')}>Versions</a> page.
       </p>
     </div>
   </div>
@@ -133,7 +134,7 @@ const softwareJsonLd = {
         <CardLink
           lang="en"
           title="Versioned contracts"
-          text="The SYNE↔PRISM 1.0 contract is planned for commands, observations and events in the V2 target."
+          text="The SYNE↔PRISM 1.0 contract, frozen on 4 November 2026, covers V2 commands, observations and events."
           href="technique/syne/"
           cta="Read the contract →"
         />
@@ -164,9 +165,9 @@ const softwareJsonLd = {
           <p>An engine, an observation system, a rendering module — independent, linked by explicit contracts.</p>
         </div>
         <div>
-          <div class="n">00</div>
+          <div class="n">01</div>
           <h3>public version</h3>
-          <p>V1.0.0 is available. The planned V2.0.0 includes a complete PRISM redesign.</p>
+          <p>V1.0.0 is available. The V2.0.0 in preparation includes a complete PRISM redesign.</p>
         </div>
         <div>
           <div class="n">{nf.format(PROJECT_STATE.tests.passed)}</div>
@@ -200,12 +201,12 @@ const softwareJsonLd = {
           </div>
           {c.key === 'syne' && <SyneSchema lang="en" />}
           {c.key === 'echos' && <Image src={echosAgents} alt="Preview of ECHOS: agent tracking" style="width:100%;height:auto" loading="lazy" />}
-          {c.key === 'prism' && <Image src={launcherPrism} alt="Preview of PRISM rendering" style="width:100%;height:auto" loading="lazy" />}
+          {c.key === 'prism' && <Image src={prismViewer} alt="PRISM V2 viewer in embedded mode: 256×256 world, agents and debug HUD" style="width:100%;height:auto" loading="lazy" />}
         </div>
       ))}
 
-      <div class="ct">Public interface contracts — snapshot 0.5.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · persistence schema v5</div>
-      <p class="mu" style="font-size:0.7rem">Real captures for ECHOS and PRISM (measured {PROJECT_STATE_EN.observedDate}); for SYNE, a conceptual schema — an engine has no interface to capture. None of these visuals demonstrates the published version.</p>
+      <div class="ct">Public interface contracts — SYNE observability 0.6.0 · run_id “run-&lt;seed&gt;-&lt;12hex&gt;” · snapshot schemaVersion 5 · ECHOS SQLite v9</div>
+      <p class="mu" style="font-size:0.7rem">The ECHOS capture shows the V1 work-in-progress version. The PRISM capture is the V2 viewer in embedded mode, taken on 15 November 2026 (256×256 world, eight agents) with the <code>--screenshot</code> module; it documents rendering, not the B8 reading or Linux graphical validation, which remain to be produced. For SYNE, a conceptual schema — an engine has no interface to capture.</p>
     </div>
   </section>
 
