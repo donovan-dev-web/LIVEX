@@ -82,6 +82,57 @@
       "installRoot": "plugins/prism-ldk"
     },
     {
+      "id": "prism-host",
+      "version": "2.0.0-preview.1",
+      "mandatory": false,
+      "optional": true,
+      "external": null,
+      "nameFr": "Hôte PRISM",
+      "nameEn": "PRISM host",
+      "descriptionFr": "Autorité du monde V2 : snapshots, flux de lecture et API de contrôle.",
+      "descriptionEn": "V2 world authority: snapshots, read stream and control API.",
+      "license": "GPL-3.0-or-later",
+      "requires": ["prism-content"],
+      "installRoot": "components/prism-host",
+      "manifest": "prism/component.json",
+      "executables": {
+        "win-x64": "bin/prism-host.exe",
+        "linux-x64": "bin/prism-host"
+      }
+    },
+    {
+      "id": "prism-viewer",
+      "version": "2.0.0-preview.1",
+      "mandatory": false,
+      "optional": true,
+      "external": null,
+      "nameFr": "Visualiseur PRISM",
+      "nameEn": "PRISM viewer",
+      "descriptionFr": "Client de lecture et rendu 3D du monde PRISM.",
+      "descriptionEn": "PRISM world read client and 3D renderer.",
+      "license": "GPL-3.0-or-later",
+      "requires": ["prism-host"],
+      "installRoot": "components/prism-viewer",
+      "executables": {
+        "win-x64": "bin/Prism.Viewer.exe",
+        "linux-x64": "bin/Prism.Viewer"
+      }
+    },
+    {
+      "id": "prism-content",
+      "version": "0.1.0",
+      "mandatory": false,
+      "optional": true,
+      "external": null,
+      "nameFr": "Pack de contenu PRISM",
+      "nameEn": "PRISM content pack",
+      "descriptionFr": "Contenu minimal (recettes, gabarits, matériaux, croissance) requis par l'hôte.",
+      "descriptionEn": "Minimal content (recipes, templates, materials, growth) required by the host.",
+      "license": "GPL-3.0-or-later",
+      "requires": [],
+      "installRoot": "components/prism-content"
+    },
+    {
       "id": "syne-mock",
       "version": "0.1.0",
       "mandatory": false,

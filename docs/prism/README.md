@@ -1,7 +1,7 @@
 # PRISM — Perceptual Rendering & Interactive Simulation Module (V2)
 
 **Composant** : PRISM
-**Statut** : [IMPLÉMENTATION EN COURS — **P0–P9 CLÔTRÉES**, P10 AMORCÉ, P11 (VIEWER) OUVERT ; G0, G3, G4 ET G5 FRANCHIES ; G1 OUVERTE NON BLOQUANTE, G2 ET G6 OUVERTES ; P12/P13 REPORTÉES]
+**Statut** : [IMPLÉMENTATION EN COURS — **P0–P9 CLÔTRÉES**, P10 EN COURS (ECHOS ET LAUNCHER LIVRÉS ; INSTALLATEUR OUVERT), P11 (VIEWER) OUVERT ; G0, G3, G4 ET G5 FRANCHIES ; G1 OUVERTE NON BLOQUANTE, G2 ET G6 OUVERTES ; P12/P13 REPORTÉES]
 **Version cible** : PRISM `2.0.0` — consomme et produit le contrat SYNE↔PRISM `1.0.0` (voir [`API_CONTRACTS.md`](API_CONTRACTS.md))
 **Implémentation visée** : .NET (C#), noyau headless `Prism.Core` + hôte `Prism.Host` + visualiseur `Prism.Viewer` (Silk.NET / OpenGL)
 **Dernière mise à jour** : 15 novembre 2026

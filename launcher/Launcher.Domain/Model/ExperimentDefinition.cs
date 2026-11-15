@@ -64,6 +64,13 @@ public sealed class ExperimentDefinition : ISchemaVersioned
     /// <summary>Note libre de l'utilisateur.</summary>
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// Monde PRISM engagé dans la campagne, nul si la campagne ne joue pas de monde
+    /// (analyse SYNE seule). Archivé dans <c>world.json</c> : deux campagnes de même
+    /// définition ne sont reproductibles que si le monde qu'elles ont observé est identifié.
+    /// </summary>
+    public ExperimentWorld? World { get; set; }
+
     /// <summary>Valide la définition : refuse tout champ incohérent avant création du paquet.</summary>
     public IReadOnlyList<string> Validate()
     {
@@ -123,11 +130,50 @@ public sealed class ExperimentDefinition : ISchemaVersioned
             problems.Add("politique « retry » : maxRetries doit être au moins 1");
         }
 
+        if (World is not null)
+        {
+            // L'empreinte est recopiée du host PRISM, jamais recalculée par le Launcher :
+            // on n'exige donc que sa forme, pas sa provenance — une empreinte vide ferait
+            // de world.json un fichier décoratif qui n'identifie aucun monde.
+            if (string.IsNullOrWhiteSpace(World.ContentHash))
+            {
+                problems.Add("monde PRISM : contentHash manquant (le paquet doit identifier le monde engagé)");
+            }
+            else if (World.ContentHash.Length is < 16 or > 128 || !World.ContentHash.All(Uri.IsHexDigit))
+            {
+                problems.Add("monde PRISM : contentHash doit être une empreinte hexadécimale de 16 à 128 caractères");
+            }
+
+            if (!string.IsNullOrWhiteSpace(World.PackVersion) && string.IsNullOrWhiteSpace(World.PackId))
+            {
+                problems.Add("monde PRISM : version de pack déclarée sans identifiant de pack");
+            }
+        }
+
         return problems;
     }
 
     /// <summary>Dérive la graine du run donné (indexé à partir de 0).</summary>
     public long SeedFor(int runNumber) => SeedDeriver.Derive(SeedStrategy, BaseSeed, runNumber, ExplicitSeeds);
+}
+
+/// <summary>
+/// Monde PRISM engagé par une campagne : l'empreinte de contenu qui l'identifie, sa
+/// graine et, si la campagne en dépend, le pack de contenu employé.
+/// </summary>
+public sealed class ExperimentWorld
+{
+    /// <summary>Empreinte du contenu de monde publiée par le host PRISM.</summary>
+    public string ContentHash { get; set; } = string.Empty;
+
+    /// <summary>Graine du monde.</summary>
+    public long Seed { get; set; }
+
+    /// <summary>Identifiant du pack de contenu, s'il est déclaré.</summary>
+    public string? PackId { get; set; }
+
+    /// <summary>Version du pack de contenu, si elle est déclarée.</summary>
+    public string? PackVersion { get; set; }
 }
 
 /// <summary>Statuts d'exécution d'une campagne.</summary>

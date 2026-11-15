@@ -423,6 +423,80 @@ public sealed class LivexPackagePropertyTests : IDisposable
         Assert.Equal(oversizedLog.LongLength, new FileInfo(exportedPath).Length);
     }
 
+    // ------------------------------------------------------------------
+    // P11. Monde engagé : un paquet de campagne d'immersion identifie le monde
+    // qu'il a observé, et n'en fabrique pas un quand la campagne n'en déclare pas.
+    // ------------------------------------------------------------------
+    [Fact]
+    public void P11_world_json_porte_le_monde_prism_engage()
+    {
+        var path = PathFor("P11.livexp");
+        var definition = Definition(1);
+        definition.Profile = WellKnownProfiles.Immersion;
+        definition.World = new ExperimentWorld
+        {
+            ContentHash = "9f2c41ab77e0d5c8b3a6f4d2e1c0b9a8",
+            Seed = 4242,
+            PackId = "terres-basses",
+            PackVersion = "1.2.0",
+        };
+
+        using (var writer = LivexPackageWriter.CreateNew(path, definition, "0.1.0", DateTimeOffset.UnixEpoch))
+        {
+            FillRuns(writer, definition, "p11");
+        }
+
+        using var reader = new LivexPackageReader(path);
+        var world = reader.ReadWorld();
+        Assert.NotNull(world);
+        Assert.Equal("prism-host", world!.Component);
+        Assert.Equal("9f2c41ab77e0d5c8b3a6f4d2e1c0b9a8", world.ContentHash);
+        Assert.Equal(4242, world.Seed);
+        Assert.Equal("terres-basses", world.Pack!.Id);
+        Assert.Equal("1.2.0", world.Pack.Version);
+    }
+
+    [Fact]
+    public void P11_world_absent_ne_produit_aucune_entree()
+    {
+        var path = PathFor("P11-absent.livexp");
+        using (var writer = LivexPackageWriter.CreateNew(path, Definition(1), "0.1.0", DateTimeOffset.UnixEpoch))
+        {
+            writer.Seal(DateTimeOffset.UnixEpoch);
+        }
+
+        // Une analyse SYNE seule n'engage aucun monde : le paquet reste valide et
+        // l'absence de world.json est un état normal, pas un paquet incomplet.
+        using var reader = new LivexPackageReader(path);
+        Assert.Null(reader.ReadWorld());
+        Assert.Null(reader.ReadEntry(PackageConstants.WorldEntry));
+    }
+
+    [Fact]
+    public void P11_world_json_est_deterministe()
+    {
+        var first = PathFor("P11-det-a.livexp");
+        var second = PathFor("P11-det-b.livexp");
+        for (var i = 0; i < 2; i++)
+        {
+            var definition = Definition(2);
+            definition.Profile = WellKnownProfiles.Immersion;
+            definition.World = new ExperimentWorld
+            {
+                ContentHash = "00112233445566778899aabbccddeeff",
+                Seed = 7,
+                PackId = "pack",
+                PackVersion = "1.0.0",
+            };
+            using var writer = LivexPackageWriter.CreateNew(
+                i == 0 ? first : second, definition, "0.1.0", DateTimeOffset.UnixEpoch, "01JQ8X4M2N7PW0RLD001");
+            FillRuns(writer, definition, "p11det");
+            writer.Seal(DateTimeOffset.UnixEpoch);
+        }
+
+        Assert.Equal(File.ReadAllBytes(first), File.ReadAllBytes(second));
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {

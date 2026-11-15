@@ -29,8 +29,11 @@ contrat ne crée aucune dépendance.
 > routes headless du §10.1 contre sa base analytique ; le Launcher prépare
 > `experiment.json`, mais la chaîne d'ingestion reste à valider.
 > `syne-mock` reste une émulation de développement non scientifique.
-> `prism/component.json` déclare maintenant le host PRISM V2 et son flux de
-> lecture `/data/read`, et le manifeste est raccordé au Launcher générique.
+> `prism/component.json` déclare le host PRISM V2 et son flux de lecture
+> `/data/read`, et il satisfait désormais les vérifications §11.1 (`type`
+> `immersion`, `contributesTo` `immersion`, capacités `snapshotStream` et
+> `renderCadence`, contrôle déclaré) : le verrou Immersion n'a plus de cause
+> manifeste.
 > Ce host n'est pas le viewer V1/Immersion : le cycle complet de lancement,
 > l'archivage V2 et le manifeste distinct du viewer restent ouverts. Les statuts et portes par rôle
 > sont suivis dans la [matrice des capacités](../../launcher/V1-CAPABILITY-MATRIX.md)
@@ -324,13 +327,22 @@ la conséquence d'un manifeste conforme, jamais d'une constante de code.
 
 ### 11.2 État de l'intégration du host PRISM V2
 
-Le manifeste `prism/component.json` déclare le host `prism-host` et son
-endpoint WebSocket `readStream` (`/data/read`). Le CLI accepte `--read-port` ;
-le Launcher générique peut découvrir le composant. Ce socle ne finalise pas
-LAUNCHER-200/201/202 : orchestration des ports et du cycle de vie, configuration
-et `contentHash` dans les paquets `.livexp`, arrêt coordonné et archivage du
-flux restent à réaliser. Le viewer V2 est un composant distinct et son
-manifeste est encore à produire.
+Le manifeste `prism/component.json` déclare le host `prism-host`, son endpoint
+WebSocket `readStream` (`/data/read`) et, depuis le lot P10, les exigences
+§11.1 : `type: immersion`, `contributesTo: ["immersion"]`, capacités
+`snapshotStream` et `renderCadence`, contrôle HTTP déclaré. `PrismRequirements`
+ne renvoie donc plus aucune cause et PRISM V2 n'est plus verrouillé côté
+manifeste. Le CLI accepte `--read-port` ; le Launcher générique peut découvrir
+le composant. **LAUNCHER-201 et LAUNCHER-202 sont livrés.** Le paquet `.livexp` porte
+`world.json` (composant autoritaire `prism-host`, `contentHash`, graine, pack) que
+le lecteur expose ; un composant déclare au manifeste les points d'accès qu'il
+consomme (`consumes`), le Launcher lui transmet l'URL résolue du producteur
+(`--prism-stream` pour ECHOS) et refuse de le lancer si le producteur n'est pas
+démarré ; l'ordre de démarrage se déduit des `requires` et des `consumes`, et
+l'arrêt reste l'inverse strict, avec le délai de grâce du manifeste. Restent le
+viewer V2 — composant distinct dont le manifeste est encore à produire — et
+l'archivage du flux PRISM par run. La session complète n'a pas été jouée avec un
+host PRISM réel : les preuves sont les tests de domaine, de format et d'ECHOS.
 
 ## 12. Reproductibilité — engagements des composants
 

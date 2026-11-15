@@ -89,6 +89,15 @@ if (( ! SKIP_COMPONENTS )); then
     # Le manifeste de composant accompagne toujours le binaire publié.
     cp -f "$ROOT/syne/component.json" "$STAGING/syne/component.json"
 
+    # Les trois composants V2 de PRISM sont facultatifs : une machine sans les
+    # packs .NET nécessaires les laisse absents plutôt que d'échouer — la
+    # distribution les déclare alors « indisponibles » au lieu de mentir sur
+    # leur contenu (même règle que les actifs externes).
+    step "Publication de PRISM V2 (hôte, viewer, pack de contenu)"
+    if ! "$PYTHON" "$ROOT/scripts/release/publish_prism_v2.py" --rid "$RID" --staging "$STAGING"; then
+        echo "AVERTISSEMENT : PRISM V2 n'a pas pu être publié ; composants marqués indisponibles." >&2
+    fi
+
     step "Staging d'ECHOS"
     TARGET="$STAGING/echos"
     copy_filtered "$ROOT/echos" "$TARGET" .venv .pytest_cache __pycache__ .coverage htmlcov

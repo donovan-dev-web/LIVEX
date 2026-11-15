@@ -25,6 +25,8 @@ des artefacts.
 | **Global LIVEX** | `1.0.0` | `distribution.json.version`, tag `livex-v1.0.0`, `CITATION.cff` |
 | **Installateur** | `1.0.0` | `installer/Directory.Build.props`, affichée par `--version` |
 | **PRISM** | `1.0.0` | archives d'entrée, `external-inputs.json` |
+| **PRISM V2** | `2.0.0-preview.1` | `prism/component.json` (hôte), `installer/build/components.json` (viewer, pack) |
+| **Pack de contenu PRISM** | `0.1.0` | `prism/content/minimal/pack.json` |
 | **PRISM-LDK** | `1.0.0` | `VersionName` `1.0` du `.uplugin`, archive d'entrée |
 | **SYNE** | `0.17.0` | `syne/component.json` |
 | **ECHOS** | `0.1.0` | `echos/component.json` |
@@ -57,6 +59,7 @@ composants sont consignées dans les notes de release.
 | Composants | `launcher-0.1.0-<rid>.<ext>`, `syne-0.17.0-<rid>.<ext>`, `echos-0.1.0-<rid>.<ext>` | CI |
 | PRISM | `prism-1.0.0-win-x64.zip`, `prism-1.0.0-linux-x64.tar.gz` | entrée externe, recopiée |
 | Modules | `prism-ldk-1.0.0.zip`, `livex-docs-1.0.0.zip`, `syne-mock-0.1.0-<rid>.<ext>` | LDK : entrée externe ; docs et mock : CI |
+| PRISM V2 (facultatif) | `prism-host-2.0.0-preview.1-<rid>.zip`, `prism-viewer-2.0.0-preview.1-<rid>.zip`, `prism-content-0.1.0-<rid>.zip` | `scripts/release/publish_prism_v2.py` puis CI (`build_distribution.py` mesure taille et SHA-256) |
 | Intégrité | `SHA256SUMS` couvrant tous les assets ; attestations GitHub de provenance | CI |
 
 Contenu d'un installateur (identique pour les deux profils, à la charge utile
@@ -115,6 +118,10 @@ prism-ldk-1.0.0.zip        # copie bit à bit de prism/LDK_Package/PrismLdk.zip
 3. assembler ECHOS : CPython 3.12 + site-packages figés
 4. produire les actifs facultatifs : archive de documentation, archive SYNE-Mock
    + runtime Node
+4 bis. publier les composants V2 de PRISM : `prism-host`, `prism-viewer` et le
+   pack de contenu par `scripts/release/publish_prism_v2.py` (`dotnet publish`
+   autonome par RID, versions vérifiées contre `installer/build/components.json`).
+   Facultatifs : absents, la distribution les déclare « indisponibles »
 5. télécharger les entrées de prism-v1.0.0 et vérifier external-inputs.json
 6. assembler la charge utile core et full (PRISM depuis l'entrée vérifiée) puis
    calculer tailles et empreintes

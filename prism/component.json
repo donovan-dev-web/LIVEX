@@ -2,7 +2,7 @@
   "schema": 1,
   "id": "prism-host",
   "name": "PRISM World Host",
-  "type": "world",
+  "type": "immersion",
   "version": "2.0.0-preview.1",
   "runtime": "native",
   "executable": {
@@ -22,7 +22,8 @@
   },
   "capabilities": [
     "headless",
-    "snapshotStream"
+    "snapshotStream",
+    "renderCadence"
   ],
   "health": {
     "probe": "http",
@@ -34,6 +35,8 @@
     "shutdownMs": 5000
   },
   "protocolVersion": 1,
-  "contributesTo": [],
+  "contributesTo": [
+    "immersion"
+  ],
   "requires": []
 }

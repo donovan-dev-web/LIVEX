@@ -6,6 +6,16 @@
 **Dépend de** : ADR-006, ADR-007, ADR-008
 **Source Monographie** : —
 
+**Amendement du 15 novembre 2026 (INSTALLER-200)** : la décision reste valable
+pour les **entrées V1** (`prism` packagé sous Unreal, `prism-ldk`) — aucun
+runner de la CI ne peut les produire. Elle ne s'applique plus aux **composants
+V2** : `prism-host`, `prism-viewer` et le pack de contenu sont des projets .NET
+de ce dépôt, publiés par `scripts/release/publish_prism_v2.py` (`dotnet publish`
+autonome, par RID, versions vérifiées contre `installer/build/components.json`)
+puis mesurés et zippés par `build_distribution.py` (taille et SHA-256 dans
+`distribution.json`). Leur production est reproductible sans Unreal Engine :
+l'ordre « publier hors CI, épingler, consommer » ne les concerne pas.
+
 ---
 
 ## Contexte

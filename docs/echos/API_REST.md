@@ -28,6 +28,10 @@ API REST **locale** d'ECHOS (FastAPI en V0.1 — voir `ARCHITECTURE.md`), port *
 | GET | `/api/runs` | Liste des runs enregistrés |
 | GET | `/api/runs/{id}` | Métriques complètes du run (dernier tick) + phénomènes |
 | GET | `/api/runs/{id}/prism-stream` | Enveloppes du flux de lecture PRISM, pages `?after_sequence=`/`?limit=` |
+| POST | `/ingest/prism` | Ingestion en tâche de fond d'un flux `/data/read` PRISM (`runId`, `seed`, `contentHash`) — ECHOS-120. `wsUrl` est optionnel : à défaut, l'adresse fournie par le Launcher (`--prism-stream`) s'applique, et son absence est un 400 — ECHOS-121/LAUNCHER-202 |
+| POST | `/api/runs/{id}/prism-analysis` | Rejeu du flux PRISM conservé : stocks/production/usure + quatre indicateurs — ECHOS-121/122 |
+| GET | `/api/runs/{id}/prism-indicators` | Quatre indicateurs du dernier tick analysé + provenance à trois états |
+| GET | `/api/prism/compare` | Comparaison de runs PRISM : `contentHash`, `seed`, premier tick de divergence — ECHOS-123 |
 | GET | `/api/runs/{id}/metrics` | Séries de métriques (JSON, `?engine=`, `?metric=`, `?every=N`) |
 | GET | `/api/runs/{id}/export` | Export des métriques (`?format=json\|csv`), reproductible |
 | GET | `/api/runs/{id}/decisions` | Traces de décision des entités (analyse causale) |
@@ -123,6 +127,63 @@ Un run connu mais sans flux PRISM répond 404 ; un run absent répond également
 404. Le client poursuit en passant le dernier `sequence` reçu dans
 `after_sequence`. Chaque requête est bornée et peut être répétée sans modifier
 les données persistées.
+
+`envelopes[].payload` est la **charge utile** de l'enveloppe, jamais l'enveloppe
+elle-même : la v8 la ré-imbriquait dans son propre champ (double imbrication),
+ce qui rendait tout consommateur muet. Un run peut être **en cours
+d'ingestion** (schéma v9) : `lastSequence` est alors partiel et progresse.
+
+### 3.2.2 `POST /api/runs/{id}/prism-analysis`, `GET /api/runs/{id}/prism-indicators`, `GET /api/prism/compare`
+
+L'analyse PRISM est un **rejeu** du flux conservé, jamais une lecture du host :
+ECHOS reste observateur, et un run peut être analysé après la fin de la session.
+Le rejeu est idempotent (clé `(run_id, tick, engine, metric)`).
+
+```json
+{"run_id": "prism-run-1", "ticks_analyzed": 30, "metrics_written": 360,
+ "resource_ticks": 30, "indicator_ticks": 30, "last_tick": 29}
+```
+
+Deux moteurs sont écrits dans `tick_metrics`, **hors** du registre SYNE (leurs
+métriques n'existent pas sur un snapshot SYNE) :
+
+- `PrismResourceMetrics` — `TotalStockedQuantity`, `AgentStockRatio`,
+  `ContainerStockRatio`, `GroundStockRatio`, `MatterCreated`, `MatterDestroyed`,
+  `NetMatterBalance`, `WearDestroyedQuantity`, `StructureCount`,
+  `ReservedStations`, `ActiveStructureEffects`, `CommandFailureCount` ;
+- `PrismCooperationMetrics` — `CooperationIndex`, `SpecializationIndex`,
+  `InfrastructureIndex`, `StockInequalityIndex`, `TransferEvents`,
+  `TransferVolume`, `ContributionEvents`, `ActiveStructureEffects`,
+  `AgentStockSample`.
+
+```json
+{"run_id": "prism-run-1", "tick": 29,
+ "indicators": {"PrismCooperationMetrics": {"CooperationIndex": 0.5}},
+ "measured": {"PrismCooperationMetrics": {"CooperationIndex": true}},
+ "sources": {"metricsTick": 29, "agentsPublished": true,
+             "eventsPublished": true, "agentCount": 12},
+ "provenance": [{"engine": "PrismCooperationMetrics",
+                 "metric": "CooperationIndex", "value": 0.5,
+                 "state": "measured"}]}
+```
+
+`state` ∈ {`measured`, `observed_zero`, `absent`} : `absent` n'est **pas** un
+zéro observé (la source n'était pas publiée). Un run non encore analysé répond
+404, et le message nomme la route d'analyse.
+
+```json
+{"run_a": {"runId": "run-a", "seed": "42", "contentHash": "content-1", "envelopes": 120},
+ "run_b": {"runId": "run-b", "seed": "42", "contentHash": "content-2", "envelopes": 120},
+ "same_content_hash": false, "same_seed": true, "diverged": true,
+ "first_divergence": {"sequence": 42, "tick": 21, "field": "payload",
+                      "run_a": "tick_result", "run_b": "tick_result"},
+ "envelope_counts": {"run_a": 120, "run_b": 120},
+ "last_ticks": {"run_a": 30, "run_b": 30}}
+```
+
+`field` ∈ {`sequence`, `tick`, `kind`, `payload`, `missing_envelope`}. Un run
+sans flux PRISM répond 404 : comparer un run SYNE à un run PRISM n'a pas de sens,
+et deux flux vides produiraient un faux « identique ».
 
 ### 3.3 `GET /api/runs/{id}/metrics`
 

@@ -79,6 +79,14 @@ public sealed class LivexPackageWriter : IDisposable
         var resolvedPackageId = packageId ?? manifest.PackageId;
         var writer = new LivexPackageWriter(path, stream, manifest, new RunIndex(), journal);
         writer.WriteEntry(PackageConstants.ExperimentEntry, ContractJson.Serialize(experiment));
+        if (experiment.World is not null)
+        {
+            // Le monde engagé est écrit avec la définition, avant l'index : un paquet
+            // dont la campagne déclare un monde et qui n'en porterait pas l'empreinte
+            // serait rejouable sans savoir sur quoi il a été joué.
+            writer.WriteEntry(PackageConstants.WorldEntry, ContractJson.Serialize(BuildWorld(experiment)));
+        }
+
         writer.WriteEntry(PackageConstants.RunsIndexEntry, ContractJson.Serialize(writer._runIndex));
         writer.WriteEntry(PackageConstants.ProvenanceEntry, ContractJson.Serialize(BuildProvenance(experiment, launcherVersion, createdAt, resolvedPackageId)));
         writer.WriteEntry("README.md", BuildReadme(experiment));
@@ -587,6 +595,25 @@ public sealed class LivexPackageWriter : IDisposable
         var json = reader.ReadToEnd();
         return ContractJson.DeserializeWithSchema<T>(json, PackageConstants.SchemaVersion, entryName);
     }
+
+    /// <summary>
+    /// Projection de la définition vers <c>world.json</c>. Le composant est nommé
+    /// <c>prism-host</c> — l'autorité sur le monde — et l'empreinte est recopiée telle
+    /// qu'elle a été engagée : le Launcher ne la recalcule pas.
+    /// </summary>
+    private static PackageWorld BuildWorld(ExperimentDefinition experiment) => new()
+    {
+        Component = "prism-host",
+        ContentHash = experiment.World!.ContentHash,
+        Seed = experiment.World.Seed,
+        Pack = string.IsNullOrWhiteSpace(experiment.World.PackId)
+            ? null
+            : new JsonWorldPack
+            {
+                Id = experiment.World.PackId,
+                Version = experiment.World.PackVersion ?? string.Empty,
+            },
+    };
 
     private static PackageProvenance BuildProvenance(ExperimentDefinition experiment, string launcherVersion, DateTimeOffset createdAt, string packageId) => new()
     {

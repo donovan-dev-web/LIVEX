@@ -5,7 +5,7 @@
 [![7 moteurs](https://img.shields.io/badge/Moteurs-7-1f7f6f.svg)](METRICS_SPEC.md)
 [![API: REST 5000](https://img.shields.io/badge/API-REST%205000-1f7f6f.svg)](API_REST.md)
 [![Tests: 393](https://img.shields.io/badge/Tests-393-1f7f6f.svg)](TESTING.md)
-[![Couverture: 91,24 %](https://img.shields.io/badge/Couverture-91%2C24%25-1f7f6f.svg)](TESTING.md)
+[![Couverture: 91,14 %](https://img.shields.io/badge/Couverture-91%2C14%25-1f7f6f.svg)](TESTING.md)
 
 **Composant** : ECHOS
 **Statut** : [STABLE]
@@ -14,14 +14,14 @@
 **Dépend de** : la documentation transversale (../), SYNE 0.18.0 (contrat d'observabilité 0.6.0)
 **Source Monographie** : Partie 4
 
-Dernier résultat de suite connu : **393 réussis, 14 ignorés et 91,24 %** de
+Dernier résultat de suite connu : **419 réussis, 14 ignorés et 91,14 %** de
 couverture au **15 novembre 2026**.
 
 ---
 
 ## Rôle
 
-Observatoire de LIVEX : ECHOS ingère les flux, calcule des métriques, conserve des données d'analyse et publie une API ; il n'écrit pas dans l'état simulé. Il demeure un moteur sans interface (ADR-007), présenté par le Launcher. Pour PRISM V2, un chemin dédié valide et persiste les enveloppes du flux de lecture PRISM, avec `contentHash` et séquence ; il ne les agrège pas encore au cycle de production d'un run.
+Observatoire de LIVEX : ECHOS ingère les flux, calcule des métriques, conserve des données d'analyse et publie une API ; il n'écrit pas dans l'état simulé. Il demeure un moteur sans interface (ADR-007), présenté par le Launcher. Pour PRISM V2, un chemin dédié valide, persiste et reprend les enveloppes du flux de lecture PRISM (avec `contentHash`, séquence et reprise après coupure), les rejoue en métriques de stocks/production/usure et en quatre indicateurs, et compare deux runs par `contentHash` et premier tick de divergence.
 
 ## Lancement seul
 
@@ -43,7 +43,7 @@ uvicorn echos.api.app:app --host 127.0.0.1 --port 5000
 
 - `API_REST.md` — API REST locale, port 5000.
 - `../syne/API_CONTRACTS.md` — contrat d'entrée (snapshot/event de SYNE).
-- `GET /api/runs/{id}/prism-stream` — enveloppes PRISM V2 validées et persistées ; le raccordement à l'analyse des runs reste en cours.
+- `GET /api/runs/{id}/prism-stream` — enveloppes PRISM V2 validées, persistées et reprises après coupure (ECHOS-120).
 
 ## Documentation du composant
 

@@ -37,7 +37,8 @@ flowchart LR
 ```
 
 - ECHOS observe le flux SYNE historique par WebSocket :5180 et utilise ses endpoints de contrôle au besoin.
-- Depuis `ECHOS-120`, un chemin distinct ingère et persiste le flux PRISM : enveloppes versionnées, séquence, tick, seed et `contentHash`. L'API `/api/runs/{id}/prism-stream` restitue ces enveloppes. Cette ingestion n'est pas encore branchée au cycle de run de production ni aux moteurs analytiques ; ECHOS n'invente pas de métriques SYNE absentes du contrat PRISM.
+- Depuis `ECHOS-120` (lot P10), un chemin distinct ingère le flux PRISM : `POST /ingest/prism` branche `ingest_prism_run` sur `/data/read`, `PrismRunIngestor` écrit les enveloppes par lots bornés et la reprise après coupure est idempotente (séquences déjà stockées ignorées, identité `seed`/`contentHash` vérifiée). L'API `/api/runs/{id}/prism-stream` restitue ces enveloppes.
+- Depuis P10, ce flux est aussi **analysé** : `consume_prism` le rejoue et projette `PrismResourceMetrics` (stocks, production, usure, structures) et `PrismCooperationMetrics` (coopération, spécialisation, infrastructures, inégalité de stocks), avec provenance à trois états ; `GET /api/prism/compare` compare deux runs par `contentHash`, `seed` et premier tick de divergence. Ces moteurs sont **hors** du registre SYNE et ECHOS n'invente aucune métrique SYNE absente du contrat PRISM.
 - Le **présentatif est le Launcher** (ADR-007) : il sonde l'API REST :5000 (1 s) et affiche les séries dans sa fenêtre d'analyse. Aucune diffusion WebSocket de métriques n'est servie par ECHOS à ce jour.
 
 ## 3. Séparation des données
@@ -53,7 +54,8 @@ Cette séparation garantit que l'observation ne modifie pas la persistance de r�
 | Système | Rôle | Doc |
 | :-- | :-- | :-- |
 | Ingestion SYNE historique | Consommateur WebSocket 5180 → `snapshot`/`event` — clients `ws_client` et `control_client` HTTP 5181 | `../syne/API_CONTRACTS.md`, `../../echos/echos/ingestion` |
-| Ingestion PRISM V2 | Validation et persistance atomique des enveloppes de lecture, avec séquence et `contentHash` ; restitution paginée par API. Pas encore d'analyse agrégée ni de raccordement au run supervisé. | `../../echos/echos/ingestion/prism_stream.py`, `../echos/API_REST.md` |
+| Ingestion PRISM V2 | Validation, persistance incrémentale et reprise après coupure des enveloppes de lecture, avec séquence et `contentHash` ; restitution paginée par API. Appelée par le cycle de run (`POST /ingest/prism`). | `../../echos/echos/ingestion/prism_stream.py`, `../../echos/echos/ingestion/prism_run.py`, `../echos/API_REST.md` |
+| Analyse PRISM V2 | Rejeu du flux conservé : stocks/production/usure (`PrismResourceMetrics`), quatre indicateurs (`PrismCooperationMetrics`), provenance à trois états et comparaison de runs par `contentHash` / premier tick de divergence. | `../../echos/echos/analysis/prism_projection.py`, `../../echos/echos/analysis/prism_compare.py` |
 | Stockage d'analyse | Agrégation incrémentale par tick (sans perte, sous-échantillonnage `sample_every`), SQLite `AnalyticsStore` (schéma stable versionné) + séries lourdes Parquet (jointure SQLite↔Parquet cohérente), pipeline `consume()` | `../../echos/echos/storage` |
 | 7 moteurs de métriques | Calculs d'analyse | `METRICS_SPEC.md` |
 | Indicateurs d'émergence | Score composite, auto-détection | `EMERGENCE_INDICATORS.md` |
@@ -80,8 +82,10 @@ echos/
 │   │   ├── app.py            #   create_app(store) FastAPI + ECHOS_ANALYTICS_DB, /health
 │   │   ├── routes.py         #   /api/runs*, /metrics, /export, /beliefs, /relationships, /groups, /emergent-phenomena
 │   │   └── series.py         #   SeriesCache LRU invalide par ingest_version
-│   ├── analysis/             # 8 moteurs (7 métriques + EmergenceIndicators)
-│   │   └── __init__.py       #   registre ENGINES + known_engines() + compute_all(snapshot)
+│   ├── analysis/             # 8 moteurs SYNE (7 métriques + EmergenceIndicators)
+│   │   ├── __init__.py       #   registre ENGINES + known_engines() + compute_all(snapshot)
+│   │   ├── prism_projection.py # moteur 6 PRISM + 4 indicateurs P10 (purs)
+│   │   └── prism_compare.py  #   comparaison de runs PRISM (contentHash, 1er écart)
 │   └── ingestion/            # clients ws/control SYNE (API_CONTRACTS.md §2-3)
 │       ├── models.py         #   WorldSnapshot / ExternalEvent (camelCase) + parse_message
 │       ├── stream.py         #   TickSegment / aligned_ticks (flux aligné par tick)
@@ -91,7 +95,8 @@ echos/
 │       ├── aggregation.py    #   TickRecord.from_segment / summarize / downsample
 │       ├── sqlite.py         #   AnalyticsStore (SCHEMA_VERSION "5", tables tick_metrics + tick_contexts, thread-safe)
 │       ├── parquet.py        #   séries lourdes PyArrow + coherence_errors
-│       └── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
+│       ├── pipeline.py       #   consume() flux → SQLite + Parquet + moteurs (compute_all)
+│       └── prism_pipeline.py #   consume_prism() : rejeu du flux PRISM → métriques P10
 ├── tests/                    # pytest (api, registre moteurs, versionnage) + fixtures/golden
 ```
 

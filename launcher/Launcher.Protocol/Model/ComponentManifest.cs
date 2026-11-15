@@ -87,6 +87,31 @@ public sealed class ComponentManifest
     [JsonPropertyName("requires")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Requires { get; set; }
+
+    /// <summary>
+    /// Points d'accès d'autres composants que celui-ci consomme. Déclaré au
+    /// manifeste, jamais codé en dur dans le Launcher : c'est ce qui permet à ECHOS
+    /// de recevoir l'adresse réelle du flux de lecture de PRISM résolue pour la session
+    /// (LAUNCHER-202), sans que le Launcher connaisse ni le nom du paramètre ni le port.
+    /// </summary>
+    [JsonPropertyName("consumes")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, JsonConsume>? Consumes { get; set; }
+}
+
+/// <summary>
+/// Consommation d'un point d'accès produit par un autre composant : de qui il vient
+/// et sous quelle option de ligne de commande le consommateur reçoit son adresse.
+/// </summary>
+public sealed class JsonConsume
+{
+    /// <summary>Identifiant du composant producteur (celui du registre, ex. « prism »).</summary>
+    [JsonPropertyName("from")]
+    public string From { get; set; } = string.Empty;
+
+    /// <summary>Option CLI qui reçoit l'URL résolue du point d'accès.</summary>
+    [JsonPropertyName("launchArgument")]
+    public string LaunchArgument { get; set; } = string.Empty;
 }
 
 /// <summary>Exécutable déclaré : chaîne simple, ou par plateforme.</summary>

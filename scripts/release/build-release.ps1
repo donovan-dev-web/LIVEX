@@ -71,6 +71,17 @@ if (-not $SkipComponents) {
         Copy-Item -LiteralPath (Join-Path $Root "syne/component.json") -Destination (Join-Path $Staging "syne/component.json") -Force
     }
 
+    # Composants V2 facultatifs : une machine sans les packs .NET nécessaires les
+    # laisse absents plutôt que d'échouer, et la distribution les déclare alors
+    # « indisponibles » (même règle que les actifs externes).
+    Invoke-Step "Publication de PRISM V2 (hôte, viewer, pack de contenu)" {
+        & $Python (Join-Path $Root "scripts/release/publish_prism_v2.py") --rid $Rid --staging $Staging
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "PRISM V2 n'a pas pu être publié ; composants marqués indisponibles."
+            $global:LASTEXITCODE = 0
+        }
+    }
+
     Invoke-Step "Staging d'ECHOS" {
         $target = Join-Path $Staging "echos"
         if (Test-Path $target) { Remove-Item -LiteralPath $target -Recurse -Force }

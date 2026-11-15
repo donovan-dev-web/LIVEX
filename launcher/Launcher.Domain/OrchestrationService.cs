@@ -137,7 +137,7 @@ public sealed class OrchestrationService
             }
         }
 
-        foreach (var componentId in distinct)
+        foreach (var componentId in OrderForStartup(distinct))
         {
             var installation = _registry.GetActiveInstallation(componentId);
             if (installation is null)
@@ -222,6 +222,62 @@ public sealed class OrchestrationService
 
     /// <summary>Composants du type Développement.</summary>
     private static readonly string[] DevelopmentComponents = ["syne-mock", "echos"];
+
+    /// <summary>
+    /// Ordonne le démarrage : un composant démarre après ceux qu'il requiert et après
+    /// ceux dont il consomme un point d'accès (LAUNCHER-202). À dépendances égales,
+    /// l'ordre demandé est conservé — un tri non stable ferait varier l'ordre de
+    /// lancement entre deux résolutions identiques, donc entre deux sessions.
+    /// Un cycle de dépendances ne boucle pas : l'ordre demandé est conservé et la
+    /// résolution reste évaluable.
+    /// </summary>
+    private IReadOnlyList<string> OrderForStartup(IReadOnlyList<string> components)
+    {
+        var pending = components.ToList();
+        var ordered = new List<string>(components.Count);
+        while (pending.Count > 0)
+        {
+            var progressed = false;
+            foreach (var candidate in pending.ToList())
+            {
+                var blockers = DependenciesOf(candidate).Where(pending.Contains).ToList();
+                if (blockers.Count > 0)
+                {
+                    continue;
+                }
+
+                ordered.Add(candidate);
+                pending.Remove(candidate);
+                progressed = true;
+            }
+
+            if (!progressed)
+            {
+                ordered.AddRange(pending);
+                break;
+            }
+        }
+
+        return ordered;
+    }
+
+    /// <summary>
+    /// Dépendances de démarrage d'un composant : composants requis, puis producteurs des
+    /// points d'accès qu'il consomme. Lues au manifeste, jamais devinées.
+    /// </summary>
+    private IEnumerable<string> DependenciesOf(string componentId)
+    {
+        var dependencies = new List<string>(ComponentDependencies.RequiredBy(componentId));
+        var consumes = _registry.GetActiveInstallation(componentId)?.Manifest?.Consumes;
+        if (consumes is { Count: > 0 })
+        {
+            dependencies.AddRange(consumes.Values
+                .Select(consume => consume.From)
+                .Where(from => !string.IsNullOrWhiteSpace(from)));
+        }
+
+        return dependencies;
+    }
 
     /// <summary>Construit l'ordre d'arrêt : inverse strict de l'ordre de démarrage.</summary>
     public static IReadOnlyList<string> ShutdownOrder(IReadOnlyList<string> startupOrder)

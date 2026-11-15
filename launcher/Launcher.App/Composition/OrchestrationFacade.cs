@@ -833,6 +833,38 @@ public sealed class OrchestrationFacade : IOrchestrationFacade, IDisposable
             }
         }
 
+        // Points d'accès consommés (LAUNCHER-202) : le consommateur reçoit l'**URL
+        // résolue** du producteur, pas un port à recalculer — la session ne connaît
+        // qu'une adresse, celle que l'allocateur a attribuée. Le lien est déclaré au
+        // manifeste (`consumes`), donc le Launcher n'attache aucune signification à
+        // « echos » ni à « prism ».
+        if (manifest.Consumes is { Count: > 0 } consumptions)
+        {
+            foreach (var (kind, consume) in consumptions)
+            {
+                if (string.IsNullOrWhiteSpace(consume.From)
+                    || string.IsNullOrWhiteSpace(consume.LaunchArgument)
+                    || consume.LaunchArgument[0] != '-'
+                    || consume.LaunchArgument.Any(char.IsWhiteSpace))
+                {
+                    _ports.Release(instanceId);
+                    return $"manifeste de « {componentId} » : consommation « {kind} » mal déclarée";
+                }
+
+                var producer = _orchestration.Registry.FindByComponent(consume.From);
+                if (producer is null || !producer.Endpoints.TryGetValue(kind, out var stream))
+                {
+                    // Aucune adresse n'est inventée : lancer un consommateur sans
+                    // producteur ne produirait qu'un composant sain qui ne reçoit rien.
+                    _ports.Release(instanceId);
+                    return $"« {kind} » de {DisplayName(consume.From)} indisponible : {DisplayName(consume.From)} n'est pas démarré";
+                }
+
+                arguments.Add(consume.LaunchArgument);
+                arguments.Add(stream.Url);
+            }
+        }
+
         // Moteur : type « engine » ou capacités de lot déclarées (seed + tickLimit).
         var isEngine = string.Equals(manifest.Type, "engine", StringComparison.Ordinal)
             || (manifest.Capabilities.Contains("seed", StringComparer.Ordinal)

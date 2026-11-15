@@ -38,10 +38,13 @@ from echos.analysis.headless import (
     analyze_run,
     generate_experiment_report,
 )
+from echos.analysis.prism_compare import PrismCompareError, compare_prism_runs
 from echos.ingestion import ControlClient, ControlError
 from echos.ingestion.batch import IngestError, ingest_run_stream
+from echos.ingestion.prism_run import ingest_prism_run
 from echos.ingestion.ws_client import WsClient
 from echos.storage.pipeline import consume
+from echos.storage.prism_pipeline import PrismAnalysisError, consume_prism
 from echos.storage.sqlite import AnalyticsStore
 
 from .causal_cache import CausalCache
@@ -131,6 +134,48 @@ class _IngestLiveRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     wsUrl: str = Field(min_length=1)
+
+
+def _configured_prism_stream() -> str:
+    """Adresse du flux de lecture PRISM fournie par le Launcher (LAUNCHER-202).
+
+    Le Launcher résout les ports de la session et transmet l'URL au lancement
+    (``--prism-stream``). ECHOS ne devine ni un port ni une plage : sans adresse
+    explicite dans la requête, c'est celle-ci qui s'applique, et son absence est
+    une erreur de demande (400), jamais un flux choisi d'office.
+    """
+    return os.environ.get("ECHOS_PRISM_STREAM", "").strip()
+
+
+class _PrismIngestRequest(BaseModel):
+    """Demande d'ingestion du flux de lecture PRISM (ECHOS-120).
+
+    ``runId``, ``seed`` et ``contentHash`` viennent de la provenance du monde
+    (host PRISM), jamais d'une dérivation d'ECHOS : un identifiant inventé
+    casserait la jointure avec le run observé, et ``contentHash`` conditionne
+    la comparaison de runs (ECHOS-123).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    wsUrl: str | None = Field(default=None, min_length=1)
+    runId: str = Field(min_length=1)
+    seed: int = Field(ge=0)
+    contentHash: str = Field(min_length=1)
+
+    @field_validator("runId")
+    @classmethod
+    def validate_run_id(cls, value: str) -> str:
+        if not _IDENTIFIER.fullmatch(value):
+            raise ValueError("runId must be a safe identifier")
+        return value
+
+    @field_validator("contentHash")
+    @classmethod
+    def validate_content_hash(cls, value: str) -> str:
+        if not _IDENTIFIER.fullmatch(value):
+            raise ValueError("contentHash must be a safe identifier")
+        return value
 
 
 def _headless(operation, *args):
@@ -254,6 +299,41 @@ def _metric_pairs(
         (str(eng), str(met))
         for eng, met in store.metric_names(run_id, engine=engine, metric=metric)
     ]
+
+
+def _prism_provenance(
+    values: dict[str, dict[str, float]],
+    measured: dict[str, dict[str, bool]],
+) -> list[dict]:
+    """État de provenance de chaque métrique PRISM (trois états distincts).
+
+    ``absent`` — la source n'a pas été publiée sur le tick : le 0.0 écrit n'est
+    pas une mesure ; ``observed_zero`` — la source a été publiée et valait zéro
+    (observation réelle) ; ``measured`` — valeur calculée non nulle. Un run non
+    analysé n'a aucune ligne, donc aucune entrée : l'absence totale se lit dans
+    le 404 de la route, jamais confondue avec un zéro.
+    """
+    rows: list[dict] = []
+    for engine in sorted(values):
+        flags = measured.get(engine) or {}
+        for metric in sorted(values[engine]):
+            value = values[engine][metric]
+            observed = bool(flags.get(metric, False))
+            if not observed:
+                state = "absent"
+            elif value == 0:
+                state = "observed_zero"
+            else:
+                state = "measured"
+            rows.append(
+                {
+                    "engine": engine,
+                    "metric": metric,
+                    "value": value,
+                    "state": state,
+                }
+            )
+    return rows
 
 
 def _downsample(items: list, every: int) -> list:
@@ -508,6 +588,107 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
 
         return {"started": True, "wsUrl": url}
 
+    prism_state: dict[str, object] = {"thread": None, "url": None, "runId": None}
+    prism_lock = threading.Lock()
+
+    @app.post("/ingest/prism", tags=["ingestion"])
+    def ingest_prism(request: _PrismIngestRequest) -> dict:
+        """Ingère le flux de lecture PRISM en tâche de fond (ECHOS-120).
+
+        Premier appelant **de production** de ``ingest_prism_run`` : sans lui,
+        le socle d'ingestion PRISM restait une bibliothèque utilisée seulement
+        par les tests. À la fin du flux, le run est analysé (ECHOS-121/122),
+        ce qui rend ses indicateurs interrogeables sans commande séparée.
+
+        Un seul consommateur à la fois : même cible est un no-op, une autre
+        cible pendant qu'un consommateur tourne est un 409. Une interruption du
+        flux n'est jamais fatale — ECHOS reste observateur, et le run conserve
+        les ticks déjà persistés.
+        """
+        active = _require_store(store)
+        # Adresse fournie par le Launcher (``--prism-stream``) quand la session en a
+        # résolu une : le Launcher attribue les ports, ECHOS ne les devine pas. Une
+        # adresse explicite dans la requête reste prioritaire.
+        url = (request.wsUrl or _configured_prism_stream()).strip()
+        if not url:
+            raise HTTPException(
+                status_code=400,
+                detail="wsUrl requis : aucun flux PRISM configuré par le Launcher",
+            )
+        parsed = urlparse(url)
+        if parsed.scheme not in {"ws", "wss"} or parsed.hostname not in {
+            "127.0.0.1",
+            "localhost",
+            "::1",
+        }:
+            raise HTTPException(
+                status_code=400,
+                detail="wsUrl doit être un WebSocket local (127.0.0.1)",
+            )
+
+        with prism_lock:
+            current = prism_state.get("thread")
+            if isinstance(current, threading.Thread) and current.is_alive():
+                if (
+                    prism_state.get("url") == url
+                    and prism_state.get("runId") == request.runId
+                ):
+                    return {
+                        "started": False,
+                        "wsUrl": url,
+                        "runId": request.runId,
+                        "reason": "consommateur déjà en cours sur cette cible",
+                    }
+                raise HTTPException(
+                    status_code=409,
+                    detail="un consommateur de flux PRISM est déjà en cours",
+                )
+
+            def _run() -> None:
+                client = WsClient()
+                try:
+                    # Le port de lecture s'ouvre après le lancement du host :
+                    # on réessaie brièvement (10 s) avant d'abandonner, sinon
+                    # la course démarrage/connexion perdrait le run entier.
+                    for attempt in range(40):
+                        try:
+                            client.connect(url)
+                            break
+                        except Exception:
+                            if attempt == 39:
+                                raise
+                            time.sleep(0.25)
+                    ingested = ingest_prism_run(
+                        active,
+                        client,
+                        request.runId,
+                        request.seed,
+                        request.contentHash,
+                    )
+                    analysis = consume_prism(active, request.runId)
+                    _LOGGER.info(
+                        "flux PRISM ingéré (%s) : %s enveloppe(s), %s tick(s) analysé(s)",
+                        url,
+                        ingested.get("envelopes"),
+                        analysis.ticks_analyzed,
+                    )
+                except Exception as exc:  # noqa: BLE001 — observateur jamais fatal
+                    _LOGGER.warning(
+                        "ingestion du flux PRISM interrompue (%s): %s", url, exc
+                    )
+                finally:
+                    client.close()
+
+            thread = threading.Thread(
+                target=_run, name="echos-prism-ingest", daemon=True
+            )
+            prism_state.update(
+                {"thread": thread, "url": url, "runId": request.runId}
+            )
+            thread.start()
+
+        return {"started": True, "wsUrl": url, "runId": request.runId}
+
     @app.get("/api/runs", tags=["api"])
     def list_runs() -> dict:
         active = _require_store(store)
@@ -588,6 +769,82 @@ def register_routes(app: FastAPI, store: AnalyticsStore | None) -> None:
             "envelopes": envelopes,
             "has_more": has_more,
         }
+
+    @app.post("/api/runs/{run_id}/prism-analysis", tags=["api"])
+    def run_prism_analysis(run_id: str) -> dict:
+        """Rejoue le flux PRISM persisté et calcule les métriques P10.
+
+        ECHOS-121/122 : stocks, production, usure et les quatre indicateurs sont
+        projetés depuis les enveloppes conservées, sans dépendre du host. Le
+        rejeu est idempotent (clé ``(run_id, tick, engine, metric)``) : l'appeler
+        deux fois redonne les mêmes valeurs, condition d'une comparaison de runs
+        fiable.
+        """
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+        try:
+            result = consume_prism(active, resolved)
+        except PrismAnalysisError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        return {"run_id": resolved, **result.to_dict()}
+
+    @app.get("/api/runs/{run_id}/prism-indicators", tags=["api"])
+    def run_prism_indicators(run_id: str) -> dict:
+        """Quatre indicateurs P10 du dernier tick analysé, avec provenance.
+
+        Trois états sont distinguables : ``measured`` (source publiée, valeur
+        non nulle), ``observed_zero`` (source publiée, valeur nulle — un zéro
+        observé) et ``absent`` (source non publiée : le 0.0 n'est pas une
+        mesure). Un run non encore analysé répond 404 plutôt que de servir des
+        zéros.
+        """
+        active = _require_store(store)
+        resolved = _resolve_run(active, run_id)
+        if active.prism_read_summary(resolved) is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"aucun flux de lecture PRISM pour le run : {resolved}",
+            )
+        latest = active.latest_context(resolved, "prismIndicators")
+        if latest is None:
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    "flux PRISM non analysé : appeler POST "
+                    f"/api/runs/{resolved}/prism-analysis"
+                ),
+            )
+        tick, payload = latest
+        values = payload.get("values") or {}
+        measured = payload.get("measured") or {}
+        return {
+            "run_id": resolved,
+            "tick": tick,
+            "indicators": values,
+            "measured": measured,
+            "sources": payload.get("sources") or {},
+            "provenance": _prism_provenance(values, measured),
+        }
+
+    @app.get("/api/prism/compare", tags=["api"])
+    def prism_compare(run_a: str = Query(...), run_b: str = Query(...)) -> dict:
+        """Comparaison de deux runs PRISM (ECHOS-123).
+
+        ``contentHash``, ``seed`` et **premier tick de divergence** : deux runs
+        identiques divergent à zéro (``first_divergence`` nul) ; un paramètre
+        changé nomme le tick et le champ divergents.
+        """
+        active = _require_store(store)
+        known = {run["run_id"] for run in active.runs()}
+        for run_id in (run_a, run_b):
+            if run_id not in known:
+                raise HTTPException(
+                    status_code=404, detail=f"run inconnu : {run_id}"
+                )
+        try:
+            return compare_prism_runs(active, run_a, run_b)
+        except PrismCompareError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     @app.get("/api/runs/{run_id}/calibration", tags=["api"])
     def run_calibration(run_id: str) -> dict:

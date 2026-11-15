@@ -47,6 +47,7 @@ campagne.livexp
 ├── experiment.json                # définition : profil, graines, config résolue
 ├── journal.ndjson                 # journal d'exécution, ajout seul
 ├── provenance.json                # qui, quand, quelles versions, quelle plateforme
+├── world.json                     # monde PRISM engagé : contentHash, graine, pack (absent hors immersion)
 ├── README.md                      # note de lecture, générée à la création
 ├── runs/
 │   ├── index.json                 # index des runs et de leur état
@@ -73,6 +74,7 @@ celui produit dans `Experiments/<id>/analysis` sur le disque. Voir
 | :-- | :-- | :-- |
 | `manifest.json` | Launcher | **Point de commit.** Identité, état, schéma, inventaire |
 | `experiment.json` | Launcher | Définition déclarative de la campagne |
+| `world.json` | Launcher | Monde PRISM engagé : `contentHash`, graine, pack. Absent d'une campagne sans monde |
 | `journal.ndjson` | Launcher | Journal d'exécution, une ligne par événement |
 | `provenance.json` | Launcher | Traçabilité de la production |
 | `README.md` | Launcher | Note de lecture, pour qui ouvre le paquet sans le Launcher |

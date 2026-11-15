@@ -21,6 +21,12 @@
     "headless",
     "analytics"
   ],
+  "consumes": {
+    "readStream": {
+      "from": "prism",
+      "launchArgument": "--prism-stream"
+    }
+  },
   "health": {
     "probe": "http",
     "path": "/health/ready",

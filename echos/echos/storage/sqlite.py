@@ -29,7 +29,7 @@ from pathlib import Path
 
 from echos.storage.aggregation import TickRecord
 
-SCHEMA_VERSION = "8"
+SCHEMA_VERSION = "9"
 """Version du schéma — toute migration doit la bump + documenter (CHANGELOG).
 
 v3 (jalon ECHOS ph5, ECHOS-051) : table ``decision_traces``.
@@ -46,6 +46,12 @@ un régime vide (0.0) et le rapport de calibration les signale comme absentes.
 v7 (BL-09) : colonnes cognitives des traces de décision et utilité nullable.
 v8 (ECHOS-100) : flux de lecture PRISM conservé par enveloppe séquencée, avec
 contentHash, sans inventer de métriques SYNE absentes du contrat PRISM.
+v9 (ECHOS-120) : ingestion PRISM **incrémentale et reprenable**. Aucune table
+n'est ajoutée : la v8 suffisait à conserver le flux, il manquait l'append
+partiel (`append_prism_read_envelopes`) qui rend une reprise après coupure
+possible. La version est bumpée parce que la sémantique de `prism_read_envelopes`
+change : un run peut désormais être en cours d'ingestion, avec un `lastSequence`
+partiel que la v8 ne produisait jamais (elle écrivait le flux complet d'un bloc).
 """
 
 _DDL = """
@@ -388,6 +394,151 @@ class AnalyticsStore:
             self._bump()
             return len(envelopes)
 
+    def append_prism_read_envelopes(
+        self,
+        run_id: str,
+        seed: str,
+        content_hash: str,
+        envelopes: list[dict],
+    ) -> int:
+        """Ajoute des enveloppes PRISM à un flux, de façon reprenable (ECHOS-120).
+
+        Complément de :meth:`append_prism_read_stream` (flux **fini**, refusé en
+        double) pour l'ingestion de production :
+
+        - la continuité est validée contre ce qui est **déjà persisté**, donc une
+          reprise qui rejoue le flux depuis son début est acceptée ;
+        - les séquences déjà stockées sont **ignorées** (idempotence) : rejouer
+          une fenêtre chevauchante n'écrit ni doublon ni erreur ;
+        - l'identité du run est vérifiée avant toute écriture (propriétaire,
+          seed, `contentHash`) : deux flux différents ne peuvent pas partager un
+          `run_id`, sinon la comparaison de runs porterait sur un mélange.
+
+        Retourne le nombre d'enveloppes réellement écrites (0 si tout était déjà
+        présent). Toute erreur annule la transaction : un lot invalide ne laisse
+        pas de lignes à moitié écrites.
+        """
+        if not run_id.strip() or not content_hash.strip():
+            raise ValueError("PRISM run identity and content hash are required")
+        if not envelopes:
+            return 0
+
+        with self._lock:
+            try:
+                existing_run = self._conn.execute(
+                    "SELECT version, seed FROM runs WHERE run_id = ?", (run_id,)
+                ).fetchone()
+                if existing_run is not None and not str(existing_run[0]).startswith(
+                    "PRISM"
+                ):
+                    raise ValueError(
+                        f"Run '{run_id}' is already owned by another producer"
+                    )
+                if existing_run is not None and str(existing_run[1]) != str(seed):
+                    raise ValueError(f"Run '{run_id}' already has a different seed")
+
+                stored = self._conn.execute(
+                    """
+                    SELECT COUNT(*), COALESCE(MAX(sequence), -1),
+                           COALESCE(MAX(tick), -1), COALESCE(MAX(content_hash), '')
+                    FROM prism_read_envelopes
+                    WHERE run_id = ?
+                    """,
+                    (run_id,),
+                ).fetchone()
+                count = int(stored[0])
+                last_sequence = int(stored[1])
+                last_tick = int(stored[2])
+                stored_hash = str(stored[3])
+                if count and stored_hash and stored_hash != content_hash:
+                    raise ValueError(
+                        f"Run '{run_id}' already has a different content hash"
+                    )
+
+                rows: list[tuple] = []
+                written_sequence = last_sequence
+                written_tick = last_tick
+                for envelope in envelopes:
+                    sequence = int(envelope["sequence"])
+                    tick = int(envelope["tick"])
+                    kind = str(envelope["kind"])
+                    if sequence <= written_sequence:
+                        # Reprise après coupure : le flux est rejoué depuis son
+                        # début, ces enveloppes sont déjà en base.
+                        continue
+                    if written_sequence < 0 and kind != "world_snapshot":
+                        raise ValueError(
+                            "A PRISM read stream must start with a full snapshot"
+                        )
+                    if (
+                        written_sequence >= 0
+                        and sequence != written_sequence + 1
+                        and kind != "world_snapshot"
+                    ):
+                        raise ValueError(
+                            "A sequence gap must be followed by a full snapshot"
+                        )
+                    if tick < -1 or tick < written_tick:
+                        raise ValueError(
+                            "PRISM envelope ticks must be valid and non-decreasing"
+                        )
+                    written_sequence = sequence
+                    written_tick = tick
+                    rows.append(
+                        (
+                            run_id,
+                            sequence,
+                            tick,
+                            kind,
+                            content_hash,
+                            json.dumps(
+                                envelope,
+                                ensure_ascii=False,
+                                sort_keys=True,
+                                separators=(",", ":"),
+                            ),
+                        )
+                    )
+
+                if not rows:
+                    self._conn.commit()
+                    return 0
+
+                self._conn.execute(
+                    "INSERT OR IGNORE INTO runs (run_id, version, seed) VALUES (?, ?, ?)",
+                    (run_id, "PRISM-1.0", seed),
+                )
+                self._conn.executemany(
+                    """
+                    INSERT INTO prism_read_envelopes
+                        (run_id, sequence, tick, kind, content_hash, payload)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                    """,
+                    rows,
+                )
+                self._conn.commit()
+            except Exception:
+                self._conn.rollback()
+                raise
+            self._bump()
+            return len(rows)
+
+    def prism_read_identity(self, run_id: str) -> dict | None:
+        """Résumé du flux PRISM **avec** la graine du run (comparaison ECHOS-123).
+
+        :meth:`prism_read_summary` reste inchangé (contrat de l'API `prism-stream`
+        et de ses tests) ; l'identité ajoute la seed stockée dans `runs`, seule
+        information nécessaire à la comparaison et absente du résumé d'enveloppes.
+        """
+        summary = self.prism_read_summary(run_id)
+        if summary is None:
+            return None
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT seed FROM runs WHERE run_id = ?", (run_id,)
+            ).fetchone()
+        return {**summary, "seed": str(row[0]) if row else ""}
+
     def prism_read_summary(self, run_id: str) -> dict | None:
         with self._lock:
             rows = self._conn.execute(
@@ -438,13 +589,7 @@ class AnalyticsStore:
                 (run_id, after_sequence, limit),
             ).fetchall()
         return [
-            {
-                "sequence": int(sequence),
-                "tick": int(tick),
-                "kind": str(kind),
-                "contentHash": str(content_hash),
-                "payload": json.loads(payload),
-            }
+            _prism_envelope_row(sequence, tick, kind, content_hash, payload)
             for sequence, tick, kind, content_hash, payload in rows
         ]
 
@@ -1212,6 +1357,35 @@ class AnalyticsStore:
 def _json_dumps(payload: object) -> str:
     """Sérialisation JSON compacte et déterministe (clés triées pour l'export)."""
     return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+
+def _prism_envelope_row(
+    sequence: int,
+    tick: int,
+    kind: str,
+    content_hash: str,
+    stored: str,
+) -> dict:
+    """Reconstitue une enveloppe PRISM telle que le contrat la publie.
+
+    La colonne ``payload`` contient, selon la version d'écriture, l'enveloppe
+    **entière** (socle v8) ou sa seule charge utile. Sans ce déballage, l'API
+    rendait une enveloppe imbriquée dans son propre champ ``payload`` : conforme
+    à aucun contrat, et illisible pour un consommateur qui attend
+    ``payload.payload`` — c'est exactement ce qui faisait calculer des métriques
+    nulles au rejeu PRISM. L'enveloppe restituée garde les cinq clés documentées
+    (``sequence``, ``tick``, ``kind``, ``contentHash``, ``payload``).
+    """
+    decoded = json.loads(stored)
+    inner = decoded.get("payload") if isinstance(decoded, dict) else None
+    is_envelope = isinstance(decoded, dict) and "protocolVersion" in decoded
+    return {
+        "sequence": int(sequence),
+        "tick": int(tick),
+        "kind": str(kind),
+        "contentHash": str(content_hash),
+        "payload": inner if is_envelope and isinstance(inner, dict) else decoded,
+    }
 
 
 def _encode_context(payload: object) -> str:

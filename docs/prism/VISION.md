@@ -1,7 +1,7 @@
 # VISION — PRISM (V2)
 
 **Composant** : PRISM
-**Statut** : [SPÉCIFICATION V2 — **P0–P9 CLÔTRÉES**, P10 AMORCÉ, VIEWER P11 OUVERT ; 487/487 TESTS VERTS AU 15 NOVEMBRE 2026]
+**Statut** : [SPÉCIFICATION V2 — **P0–P9 CLÔTRÉES**, P10 EN COURS (ECHOS ET LAUNCHER LIVRÉS ; INSTALLATEUR OUVERT), VIEWER P11 OUVERT ; 487/487 TESTS VERTS AU 15 NOVEMBRE 2026]
 **Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`../presentation/VISION.md`](../presentation/VISION.md), [`adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md`](adr/ADR-004-refonte-prism-monde-voxel-autoritaire.md)
 **Source Monographie** : —

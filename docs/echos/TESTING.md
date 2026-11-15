@@ -12,8 +12,8 @@
 
 Garantir la **correction et la stabilité des métriques**. Objectif de couverture : **≥ 80 %** (Annexe I.3).
 
-Dernier résultat d'exécution consigné, le **15/11/2026** : **407 cas** (393 réussis,
-14 ignorés, 0 échec), couverture **91,24 %** (`pytest-cov`). Les tests d'intégration
+Dernier résultat d'exécution consigné, le **15/11/2026** : **433 cas** (419 réussis,
+14 ignorés, 0 échec), couverture **91,14 %** (`pytest-cov`). Les tests d'intégration
 SYNE et `syne-mock` sont compris parmi les 14 ignorés. Voir l'inventaire
 global dans [`../governance/LIVEX-CURRENT-STATUS.md`](../governance/LIVEX-CURRENT-STATUS.md#comptabilité-des-tests--total-projet).
 

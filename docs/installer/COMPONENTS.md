@@ -35,6 +35,9 @@ Il distingue trois choses que l'on confond facilement :
 | **ECHOS** | ingestion, analyse, métriques d'émergence, API d'observation | service Python | observe, ne décide pas |
 | **PRISM** | représentation 3D et interaction | application **packagée** Windows/Linux | reflète l'état, ne décide pas |
 | **PRISM-LDK** | plugin d'intégration pour un projet Unreal | archive ZIP de plugin | adaptateur, pas un moteur |
+| **PRISM V2 (hôte)** | autorité du monde V2 : snapshots, flux de lecture, API de contrôle | service .NET autonome | autorité du monde simulé |
+| **PRISM V2 (viewer)** | client de lecture et rendu 3D du monde PRISM | application .NET autonome | reflète l'état, ne décide pas |
+| **Pack de contenu PRISM** | recettes, gabarits, matériaux, croissance du contenu V2 | données (`pack.json` + tables) | données, pas un moteur |
 | **SYNE-Mock** | émulation du contrat SYNE pour le développement | service Node | outil, pas un moteur |
 | **Contrats** | schémas et protocoles entre composants | documents + schéma JSON | référence normative |
 | **Ressources** | icônes, licences, mentions | fichiers | — |
@@ -42,6 +45,17 @@ Il distingue trois choses que l'on confond facilement :
 Règle produit : **SYNE est la seule autorité**. ECHOS et PRISM consomment ses
 contrats ; le Launcher les orchestre. L'installateur ne change jamais cette
 hiérarchie : il installe des artefacts et vérifie leur présence.
+
+PRISM V1 (`prism`, packagé sous Unreal Engine) et PRISM V2 (`prism-host`,
+`prism-viewer`, pack de contenu) sont **deux artefacts distincts**. Le premier
+reste une entrée externe produite hors CI (ADR-010) ; les seconds sont publiés
+depuis ce dépôt par `scripts/release/publish_prism_v2.py` (`dotnet publish`
+autonome par RID), mesurés puis zippés par `build_distribution.py`. Ils
+s'installent sous `components/prism-host`, `components/prism-viewer` et
+`components/prism-content`, et sont **facultatifs tous les trois** : la
+sélection propose donc trois options indépendantes, où l'hôte entraîne le pack
+de contenu et le viewer entraîne l'hôte. Aucun des trois n'est requis par le
+socle : une distribution sans eux reste valide.
 
 ## 3. Fiches composants
 

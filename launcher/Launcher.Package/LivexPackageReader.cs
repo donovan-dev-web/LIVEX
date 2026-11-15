@@ -123,6 +123,16 @@ public sealed class LivexPackageReader : IDisposable
     /// <summary>Définition de campagne.</summary>
     public ExperimentDefinition Experiment => ReadJson<ExperimentDefinition>(PackageConstants.ExperimentEntry);
 
+    /// <summary>
+    /// Monde PRISM engagé dans la campagne (<c>world.json</c>), ou <c>null</c> si la
+    /// campagne n'en déclare pas. Un paquet antérieur à LAUNCHER-201 n'a pas cette
+    /// entrée : l'absence est un état normal, jamais une erreur de lecture.
+    /// </summary>
+    public PackageWorld? ReadWorld() =>
+        _archive.GetEntry(PackageConstants.WorldEntry) is null
+            ? null
+            : ReadJson<PackageWorld>(PackageConstants.WorldEntry);
+
     /// <summary>Lignes du journal d'exécution.</summary>
     public IReadOnlyList<JournalLine> Journal()
     {

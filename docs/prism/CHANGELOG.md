@@ -14,7 +14,18 @@ Format : Keep a Changelog. Ce fichier retrace la **documentation** de la V2 ; l'
 - Feuille de route de bout en bout et backlog (`ROADMAP.md`, `ISSUES.md`).
 
 ### Changed
-- **Relevé du 15 novembre 2026** : suite PRISM **487/487** (Architecture 8, Contracts 23, Viewer 62, Core 242, Content 51, Bots 23, Host 78) ; total projet **2 093 réussis, 20 ignorés** (PRISM, SYNE, ECHOS, Launcher, Installateur, `syne-mock`). Les compteurs 423/444/477 des documents antérieurs sont remplacés par ce relevé daté.
+- **P10 — ECHOS branché sur PRISM (15 novembre 2026)** : le manifeste
+  `prism/component.json` déclare `type: immersion`, `contributesTo: ["immersion"]`
+  et la capacité `renderCadence` ; `PrismRequirements` ne renvoie plus aucune
+  cause et le mode Immersion n'est plus verrouillé côté manifeste
+  (LAUNCHER-200). Côté ECHOS, `POST /ingest/prism` est l'appelant de production
+  de l'ingestion (reprise après coupure idempotente, schéma SQLite v9),
+  `PrismResourceMetrics` et `PrismCooperationMetrics` projettent
+  stocks/production/usure et les quatre indicateurs avec provenance à trois
+  états, et `GET /api/prism/compare` nomme le premier tick de divergence par
+  `contentHash` et `seed`. Suites ECHOS : **419 réussis, 14 ignorés**
+  (couverture 91,14 %).
+- **Relevé du 15 novembre 2026** : suite PRISM **487/487** (Architecture 8, Contracts 23, Viewer 62, Core 242, Content 51, Bots 23, Host 78) ; total projet **2 119 réussis, 20 ignorés** (PRISM, SYNE, ECHOS, Launcher, Installateur, `syne-mock`). Les compteurs 423/444/477 des documents antérieurs sont remplacés par ce relevé daté.
 - **Passe de cohérence documentaire du 15 novembre 2026** : R3 est décrite comme produite et reproductible ; la mesure B9 est relue en erreur-type (total 5,15 %, ApplyWrites 5,49 %, perception 14,78 % non concluante) ; les identifiants ECHOS V2 sont cités sous `ECHOS-120…123` / `ECHOS-130` ; les liens vers [`../governance/IMPLEMENTATION-PLAN-2026-11-15.md`](../governance/IMPLEMENTATION-PLAN-2026-11-15.md) sont désormais valides.
 - **Monde généré** : la côte est nivelée (`ShoreBand = 0`) et le générateur passe à `WorldGenVersion 2`. Les empreintes dorées de campagne restent épinglées en `WorldGenVersion 1` ; aucun hash de monde v2 n'est encore publié (G2).
 - **Viewer** : état réel documenté — meshing glouton, client de lecture `/data/read`, cycle jour/nuit et silhouettes de démonstration en place ; atlas, entités live, suivi/coupe, inspecteur à sept calques, `--connect`/embarqué/rejeu, interventions journalisées, test d'indépendance du rendu et manifeste B8 restent ouverts.

@@ -29,6 +29,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--work-dir")
     parser.add_argument("--log-dir")
     parser.add_argument("--correlation-id")
+    # Le Launcher résout les ports de la session : il transmet l'URL du flux de
+    # lecture PRISM (LAUNCHER-202). ECHOS l'accepte et la publie comme source par
+    # défaut de ``POST /ingest/prism`` ; l'identité du run reste dans la requête.
+    parser.add_argument("--prism-stream")
     return parser.parse_args(argv)
 
 
@@ -76,6 +80,8 @@ def main(argv: list[str] | None = None) -> None:
         if not 1 <= args.control_port <= 65535:
             raise SystemExit("--control-port must be between 1 and 65535")
         os.environ["ECHOS_PORT"] = str(args.control_port)
+    if args.prism_stream:
+        os.environ["ECHOS_PRISM_STREAM"] = args.prism_stream
     ensure_analytics_db()
     from echos.server import main as serve
 

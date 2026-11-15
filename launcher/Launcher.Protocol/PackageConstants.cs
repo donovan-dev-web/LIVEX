@@ -40,6 +40,13 @@ public static class PackageConstants
     /// <summary>Nom du rapport d'émergence, fichier de référence.</summary>
     public const string EmergenceReportEntry = "analysis/emergence_report.md";
 
+    /// <summary>
+    /// Nom de la configuration de monde PRISM engagée dans la campagne, avec son
+    /// empreinte de contenu. Absente d'un paquet dont la campagne ne déclare pas de monde
+    /// (analyse SYNE seule) : le fichier atteste d'un engagement, il ne le fabrique pas.
+    /// </summary>
+    public const string WorldEntry = "world.json";
+
     /// <summary>Horodatage d'entrée ZIP fixé pour le déterminisme : 1980-01-01 00:00:00 UTC, borne du format DOS.</summary>
     public const long ZipEpochTimestamp = 315532800L;
 }

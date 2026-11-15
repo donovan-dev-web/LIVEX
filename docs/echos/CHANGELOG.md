@@ -10,6 +10,47 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ## [Unreleased]
 
 ### Added
+- **P10 — ECHOS ingère, analyse et compare les runs PRISM (ECHOS-120…123)** :
+  l'ingestion PRISM n'est plus une bibliothèque sans appelant.
+  `POST /ingest/prism` branche `ingest_prism_run` sur un flux `/data/read`
+  réel et persiste les enveloppes par lots (`PrismRunIngestor`,
+  `append_prism_read_envelopes`) : la continuité de séquence est validée
+  contre la **base** (et non contre le lot courant), les séquences déjà
+  stockées sont ignorées — la reprise après coupure est donc idempotente — et
+  l'identité du run (propriétaire, `seed`, `contentHash`) est vérifiée avant
+  toute écriture. Le schéma passe en **v9** : aucune table ajoutée, mais un run
+  peut désormais être **en cours d'ingestion**, ce que la v8 (écriture du flux
+  complet d'un bloc) ne produisait jamais.
+  `POST /api/runs/{id}/prism-analysis` rejoue le flux conservé et projette
+  `PrismResourceMetrics` — stocks agents/conteneurs/sol, matière créée et
+  détruite par `ruleId`, bilan net, matière détruite par usure, structures,
+  réservations, effets actifs, échecs — **sans** réutiliser les réserves
+  globales SYNE V1, puis `PrismCooperationMetrics` : coopération (densité de
+  `item_transferred`), spécialisation (concentration des inventaires par
+  agent), infrastructures (avancement × intégrité) et inégalité de stocks
+  (Gini). `GET /api/runs/{id}/prism-indicators` publie ces valeurs avec une
+  provenance à **trois états** (`measured`, `observed_zero`, `absent`) ;
+  `GET /api/prism/compare` compare deux runs par `contentHash`, `seed` et
+  **premier tick de divergence**, en nommant le champ (`sequence`, `tick`,
+  `kind`, `payload` ou `missing_envelope`).
+  Correction de contrat au passage : `prism_read_envelopes` restituait
+  l'enveloppe entière dans son propre champ `payload` (double imbrication
+  héritée de la v8), ce qui rendait le rejeu muet — métriques nulles et run
+  déclaré « non analysé » alors que le flux était conservé. L'API sert
+  désormais la charge utile documentée (§3.2.1).
+- **Le flux PRISM d'une session est fourni par le Launcher (LAUNCHER-202)** :
+  `echos/component.json` déclare la consommation `readStream` du composant
+  `prism` (`launchArgument: --prism-stream`) ; l'adaptateur de lancement accepte
+  `--prism-stream <url>` et la publie comme source par défaut de
+  `POST /ingest/prism` (`wsUrl` devient optionnel). Une adresse explicite dans
+  la requête reste prioritaire, et l'absence de toute adresse est un **400** :
+  ECHOS ne devine ni port ni plage — les ports appartiennent au Launcher. La
+  validation « WebSocket local » est inchangée, y compris pour l'adresse
+  transmise par le Launcher. Preuves : `test_prism_stream_wiring.py` (6 cas).
+  Preuves : **419 réussis, 14 ignorés** (433 collectés), 35 nouveaux cas dans
+  `test_prism_ingestion.py`, `test_prism_metrics.py` et `test_prism_compare.py`
+  (reprise après coupure, idempotence, quatre indicateurs, provenance, rejeu
+  idempotent, comparaison à zéro divergence).
 - **Groupes natifs SYNE publiés tels qu'observés (A0-3)** : nouvelle route
   `GET /api/runs/{id}/native-groups?tick=` qui sert l'observation
   `groups_native` écrite à l'ingestion — l'état des groupes **déclarés par le
@@ -38,6 +79,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versionnement
 ### Changed
 - **Alignement documentaire du 15 novembre 2026** : le relevé de référence est
   **407 cas — 393 réussis, 14 ignorés, 0 échec**, couverture **91,24 %**
+  (relevé remplacé par le lot P10 ci-dessus : **433 cas — 419 réussis,
+  14 ignorés**, couverture **91,14 %**)
   (`pytest-cov`). Les tickets d'intégration PRISM V2 sont repris sous
   `ECHOS-120…123` (ingestion de production, moteur 6, quatre indicateurs,
   comparaison de runs) et `ECHOS-130` (ablations, reporté après l'implémentation

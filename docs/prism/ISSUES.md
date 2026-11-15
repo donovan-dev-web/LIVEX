@@ -1,7 +1,7 @@
 # ISSUES — Backlog PRISM V2
 
 **Composant** : PRISM
-**Statut** : [BACKLOG ACTIF — **P0–P9 CLÔTRÉES**, P10 AMORCÉ, P11 (VIEWER) OUVERT ; R1 VERT, G4 FRANCHIE, G5 FRANCHIE, **P9 CLÔTRÉE LE 15 NOVEMBRE 2026** (R3 produite et reproductible, empreinte `855fdc2e1387e8d3`) ; G1 OUVERTE NON BLOQUANTE ; G7/G8 REPORTÉES]
+**Statut** : [BACKLOG ACTIF — **P0–P9 CLÔTRÉES**, P10 EN COURS (ECHOS ET LAUNCHER LIVRÉS ; INSTALLATEUR OUVERT), P11 (VIEWER) OUVERT ; R1 VERT, G4 FRANCHIE, G5 FRANCHIE, **P9 CLÔTRÉE LE 15 NOVEMBRE 2026** (R3 produite et reproductible, empreinte `855fdc2e1387e8d3`) ; G1 OUVERTE NON BLOQUANTE ; G7/G8 REPORTÉES]
 **Dernière mise à jour** : 15 novembre 2026
 **Dépend de** : [`ROADMAP.md`](ROADMAP.md), `../governance/ISSUES.md`, `../governance/KANBAN.md`
 **Source Monographie** : Annexe K

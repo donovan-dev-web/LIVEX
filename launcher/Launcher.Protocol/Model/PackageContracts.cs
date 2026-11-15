@@ -69,6 +69,51 @@ public sealed class PackageManifest : ISchemaVersioned
     public JsonIntegrity? Integrity { get; set; }
 }
 
+/// <summary>
+/// Contenu de <c>world.json</c> : la configuration de monde PRISM engagée dans la
+/// campagne et l'empreinte de contenu qui l'identifie (LAUNCHER-201).
+///
+/// <para>
+/// Sans cette entrée, deux campagnes jouées sur deux mondes différents produisaient des
+/// paquets indistinguables : le <c>contentHash</c> est ce qui rattache un run au monde
+/// qu'il a réellement observé, et c'est la même empreinte que le host publie et
+/// qu'ECHOS vérifie à l'ingestion. Le Launcher la recopie, il ne la calcule pas —
+/// le monde appartient à PRISM.
+/// </para>
+/// </summary>
+public sealed class PackageWorld : ISchemaVersioned
+{
+    [JsonPropertyName("schema")]
+    public int Schema { get; set; } = PackageConstants.SchemaVersion;
+
+    /// <summary>Composant autoritaire sur le monde (« prism-host »).</summary>
+    [JsonPropertyName("component")]
+    public string Component { get; set; } = "prism-host";
+
+    /// <summary>Empreinte du contenu de monde, telle que le host la publie.</summary>
+    [JsonPropertyName("contentHash")]
+    public string ContentHash { get; set; } = string.Empty;
+
+    /// <summary>Graine du monde.</summary>
+    [JsonPropertyName("seed")]
+    public long Seed { get; set; }
+
+    /// <summary>Pack de contenu engagé, s'il est déclaré.</summary>
+    [JsonPropertyName("pack")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonWorldPack? Pack { get; set; }
+}
+
+/// <summary>Pack de contenu d'un monde : identifiant et version.</summary>
+public sealed class JsonWorldPack
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("version")]
+    public string Version { get; set; } = string.Empty;
+}
+
 public sealed class JsonGenerator
 {
     [JsonPropertyName("name")]
